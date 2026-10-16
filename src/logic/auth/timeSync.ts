@@ -6,7 +6,10 @@ import { setServerTimeOffsetNanoseconds, setServerTimeSynced } from '@/logic/uti
 const SERVER_SYNC_TIMEOUT_SEC = 3;
 
 export async function syncServerTime(): Promise<void> {
-  if (typeof window !== 'undefined' && safeStorage.getItem('pokevicio_session_mode') === 'offline') {
+  if (
+    typeof window !== 'undefined' &&
+    safeStorage.getItem('pokevicio_session_mode') === 'offline'
+  ) {
     setServerTimeSynced(true);
     return;
   }
@@ -15,10 +18,15 @@ export async function syncServerTime(): Promise<void> {
     const { supabase } = await import('@/logic/db/supabase.ts');
     const result = await Promise.race([
       supabase.rpc('fn_get_server_time'),
-      new Promise((_, reject) => gsap.delayedCall(SERVER_SYNC_TIMEOUT_SEC, () => reject(new Error('FETCH_TIMEOUT'))))
+      new Promise((_, reject) =>
+        gsap.delayedCall(SERVER_SYNC_TIMEOUT_SEC, () => reject(new Error('FETCH_TIMEOUT')))
+      )
     ]);
 
-    const { data: serverTime, error } = result as { data: string | null; error: { message: string } | null };
+    const { data: serverTime, error } = result as {
+      data: string | null;
+      error: { message: string } | null;
+    };
 
     if (error) throw new Error(error.message);
     if (!serverTime) throw new Error('NO_SERVER_TIME_RETURNED');
@@ -31,9 +39,15 @@ export async function syncServerTime(): Promise<void> {
     setServerTimeSynced(true);
 
     const NANOSECONDS_PER_MILLISECOND = 1000000;
-    logger.info('TIME', `Server Sync Completed. Offset: ${offset / BigInt(NANOSECONDS_PER_MILLISECOND)}ms`);
-  } catch (_err) {
-    if (typeof window !== 'undefined' && safeStorage.getItem('pokevicio_session_mode') !== 'offline') {
+    logger.info(
+      'TIME',
+      `Server Sync Completed. Offset: ${offset / BigInt(NANOSECONDS_PER_MILLISECOND)}ms`
+    );
+  } catch {
+    if (
+      typeof window !== 'undefined' &&
+      safeStorage.getItem('pokevicio_session_mode') !== 'offline'
+    ) {
       logger.warn('TIME', 'Failed to sync with server, using local time.');
     }
     setServerTimeSynced(true);

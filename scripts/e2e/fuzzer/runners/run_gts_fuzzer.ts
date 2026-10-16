@@ -9,7 +9,10 @@ import type { NatureId } from '../../../../src/data/battle/natures.ts';
 import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
 import type { PokemonType } from '../../../../src/data/battle/types.ts';
 
-const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_gts_coverage_report.json');
+const REPORT_FILE = path.resolve(
+  process.cwd(),
+  'scripts/e2e/results/fuzzer_gts_coverage_report.json'
+);
 
 interface GTSListing {
   id: string;
@@ -53,7 +56,7 @@ async function runGTSFuzzer() {
       volatileCounters: {},
       status: '',
       exp: 0,
-      isShiny: false,
+      isShiny: false
     };
   };
 
@@ -87,9 +90,9 @@ async function runGTSFuzzer() {
             id: listId,
             sellerId: 'player-1',
             price,
-            pokemon: pokeToSell,
+            pokemon: pokeToSell
           });
-          playerTeam = playerTeam.filter(p => p.uid !== pokeToSell.uid);
+          playerTeam = playerTeam.filter((p) => p.uid !== pokeToSell.uid);
           passed++;
           results.push({ type: 'sell', price, success: true });
         } else {
@@ -126,7 +129,6 @@ async function runGTSFuzzer() {
           results.push({ type: 'buy', price: listing.price, success: false, errorMsg: localError });
         }
       }
-
     } catch (err: unknown) {
       errors.push(`Excepción en transacción GTS #${i}: ${(err as Error).message}`);
       failed++;
@@ -141,27 +143,29 @@ async function runGTSFuzzer() {
       failed,
       listingsRemaining: listings.size,
       playerFinalMoney: playerMoney,
-      playerFinalTeamSize: playerTeam.length,
+      playerFinalTeamSize: playerTeam.length
     },
     results,
     errors,
-    warnings,
+    warnings
   };
 
   await fs.mkdir(path.dirname(REPORT_FILE), { recursive: true });
   await fs.writeFile(REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
   console.log(`💾 Reporte de GTS guardado en: ${REPORT_FILE}`);
 
-  return [{
-    label: 'GTS (GTS Transactions)',
-    passed,
-    failed,
-    untested: 0,
-    total: 200,
-  }];
+  return [
+    {
+      label: 'GTS (GTS Transactions)',
+      passed,
+      failed,
+      untested: 0,
+      total: 200
+    }
+  ];
 }
 
 await runFuzzerSuite({
   suiteName: 'Fuzzer — Transacciones de GTS (Gen 9)',
-  run: runGTSFuzzer,
+  run: runGTSFuzzer
 });

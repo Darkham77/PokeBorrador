@@ -29,7 +29,9 @@ export function useRankedValidation() {
 
     // 3. Type Restrictions
     if ((rules.allowedTypes?.length ?? 0) > 0) {
-      const types = Array.isArray(pokemon.type) ? pokemon.type as PokemonType[] : [pokemon.type as PokemonType];
+      const types = Array.isArray(pokemon.type)
+        ? (pokemon.type as PokemonType[])
+        : [pokemon.type as PokemonType];
       const hasAllowedType = types.some((t: PokemonType) => rules.allowedTypes!.includes(t));
       if (!hasAllowedType) {
         return { ok: false, reason: `${pokemon.name} no cumple con los tipos permitidos.` };

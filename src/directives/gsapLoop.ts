@@ -2,30 +2,33 @@ import type { Directive } from 'vue';
 import gsap from 'gsap';
 
 import { SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals';
+import { FULL_ROTATION_DEG } from '@/logic/constants/animations';
 
 // Map to keep track of animations for cleanup
 const activeAnimations = new Map<HTMLElement, gsap.core.Tween | gsap.core.Timeline>();
 
 const GSAP_OBSERVER_THRESHOLD_PCT = 0.05;
-const SPINNER_FULL_ROTATION_DEG = 360;
 const OPACITY_DEFAULT_FULL_LEVEL = 1;
 const DEFAULT_PULSE_SCALE_BOOST = 1.05;
 const DEFAULT_BLINK_MIN_OPACITY = 0.75;
 
 // Global IntersectionObserver to optimize CPU/GPU overhead by pausing animations when off-screen
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    const el = entry.target as HTMLElement;
-    const anim = activeAnimations.get(el);
-    if (anim) {
-      if (entry.isIntersecting) {
-        anim.play();
-      } else {
-        anim.pause();
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      const el = entry.target as HTMLElement;
+      const anim = activeAnimations.get(el);
+      if (anim) {
+        if (entry.isIntersecting) {
+          anim.play();
+        } else {
+          anim.pause();
+        }
       }
-    }
-  });
-}, { threshold: GSAP_OBSERVER_THRESHOLD_PCT });
+    });
+  },
+  { threshold: GSAP_OBSERVER_THRESHOLD_PCT }
+);
 
 /**
  * Custom Vue Directive to handle premium real-time looping GSAP animations.
@@ -68,20 +71,20 @@ const DEFAULT_BLINK_DIM_COLOR = '#888888' as const;
 const DEFAULT_FALLBACK_TEXT_COLOR = '#ffffff' as const;
 
 interface GsapLoopOptions {
-  effect: string
-  duration?: number
-  ease?: string
-  active?: boolean
-  scale?: number
-  color?: string
-  boxShadow?: string
-  y?: number
-  rotation?: number
-  opacity?: number
-  [key: string]: string | number | boolean | undefined
+  effect: string;
+  duration?: number;
+  ease?: string;
+  active?: boolean;
+  scale?: number;
+  color?: string;
+  boxShadow?: string;
+  y?: number;
+  rotation?: number;
+  opacity?: number;
+  [key: string]: string | number | boolean | undefined;
 }
 
-type AnimationExtraVars = Record<string, string | number | boolean | undefined>;
+type AnimationExtraVars = Record<string, string | number | boolean | undefined>; // open-record: Dynamic GSAP tween variables configuration
 
 function extractExtraVars(optObj: GsapLoopOptions): AnimationExtraVars {
   const extraVars: AnimationExtraVars = { ...optObj };
@@ -111,9 +114,14 @@ function ensureInlineBlockDisplay(el: HTMLElement, effect: string): void {
   }
 }
 
-function buildSpinAnimation(el: HTMLElement, duration: number, ease: string, extraVars: AnimationExtraVars): gsap.core.Tween {
+function buildSpinAnimation(
+  el: HTMLElement,
+  duration: number,
+  ease: string,
+  extraVars: AnimationExtraVars
+): gsap.core.Tween {
   return gsap.to(el, {
-    rotation: SPINNER_FULL_ROTATION_DEG,
+    rotation: FULL_ROTATION_DEG,
     duration,
     ease,
     repeat: -1,
@@ -121,24 +129,54 @@ function buildSpinAnimation(el: HTMLElement, duration: number, ease: string, ext
   });
 }
 
-function buildPulseAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration: number, ease: string, extraVars: AnimationExtraVars): gsap.core.Tween {
+function buildPulseAnimation(
+  el: HTMLElement,
+  optObj: GsapLoopOptions,
+  duration: number,
+  ease: string,
+  extraVars: AnimationExtraVars
+): gsap.core.Tween {
   return gsap.fromTo(
     el,
     { scale: SCALE_DEFAULT_BASE_FACTOR },
-    { scale: optObj.scale || DEFAULT_PULSE_SCALE_BOOST, duration, yoyo: true, repeat: -1, ease, ...extraVars }
+    {
+      scale: optObj.scale || DEFAULT_PULSE_SCALE_BOOST,
+      duration,
+      yoyo: true,
+      repeat: -1,
+      ease,
+      ...extraVars
+    }
   );
 }
 
-function buildPulseShadowAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration: number, extraVars: AnimationExtraVars): gsap.core.Tween {
+function buildPulseShadowAnimation(
+  el: HTMLElement,
+  optObj: GsapLoopOptions,
+  duration: number,
+  extraVars: AnimationExtraVars
+): gsap.core.Tween {
   const shadowColor = optObj.color || 'rgba(59, 130, 246, 0.4)';
   return gsap.fromTo(
     el,
     { boxShadow: `0 0 0 0 ${shadowColor}` },
-    { boxShadow: optObj.boxShadow || '0 0 0 10px rgba(59, 130, 246, 0)', duration, repeat: -1, ease: 'power1.out', ...extraVars }
+    {
+      boxShadow: optObj.boxShadow || '0 0 0 10px rgba(59, 130, 246, 0)',
+      duration,
+      repeat: -1,
+      ease: 'power1.out',
+      ...extraVars
+    }
   );
 }
 
-function buildBlinkAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration: number, ease: string, extraVars: AnimationExtraVars): gsap.core.Tween {
+function buildBlinkAnimation(
+  el: HTMLElement,
+  optObj: GsapLoopOptions,
+  duration: number,
+  ease: string,
+  extraVars: AnimationExtraVars
+): gsap.core.Tween {
   const hasText = el.innerText && el.innerText.trim().length > 0;
   if (hasText) {
     const origColor = window.getComputedStyle(el).color || DEFAULT_FALLBACK_TEXT_COLOR;
@@ -151,27 +189,65 @@ function buildBlinkAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration:
   return gsap.fromTo(
     el,
     { opacity: OPACITY_DEFAULT_FULL_LEVEL },
-    { opacity: optObj.opacity !== undefined ? optObj.opacity : DEFAULT_BLINK_MIN_OPACITY, duration, yoyo: true, repeat: -1, ease, ...extraVars }
+    {
+      opacity: optObj.opacity !== undefined ? optObj.opacity : DEFAULT_BLINK_MIN_OPACITY,
+      duration,
+      yoyo: true,
+      repeat: -1,
+      ease,
+      ...extraVars
+    }
   );
 }
 
-function buildBlinkRedAnimation(el: HTMLElement, duration: number, ease: string, extraVars: AnimationExtraVars): gsap.core.Tween {
+function buildBlinkRedAnimation(
+  el: HTMLElement,
+  duration: number,
+  ease: string,
+  extraVars: AnimationExtraVars
+): gsap.core.Tween {
   return gsap.fromTo(
     el,
     { backgroundColor: 'rgba(239, 68, 68, 1)', boxShadow: '0 0 20px rgba(239, 68, 68, 1)' },
-    { backgroundColor: 'rgba(153, 27, 27, 1)', boxShadow: '0 0 5px rgba(153, 27, 27, 1)', duration, yoyo: true, repeat: -1, ease, ...extraVars }
+    {
+      backgroundColor: 'rgba(153, 27, 27, 1)',
+      boxShadow: '0 0 5px rgba(153, 27, 27, 1)',
+      duration,
+      yoyo: true,
+      repeat: -1,
+      ease,
+      ...extraVars
+    }
   );
 }
 
-function buildBounceAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration: number, extraVars: AnimationExtraVars): gsap.core.Tween {
+function buildBounceAnimation(
+  el: HTMLElement,
+  optObj: GsapLoopOptions,
+  duration: number,
+  extraVars: AnimationExtraVars
+): gsap.core.Tween {
   return gsap.fromTo(
     el,
     { y: 0 },
-    { y: optObj.y || DEFAULT_BOUNCE_Y_OFFSET, duration, yoyo: true, repeat: -1, ease: 'power1.inOut', ...extraVars }
+    {
+      y: optObj.y || DEFAULT_BOUNCE_Y_OFFSET,
+      duration,
+      yoyo: true,
+      repeat: -1,
+      ease: 'power1.inOut',
+      ...extraVars
+    }
   );
 }
 
-function buildFloatAnimation(el: HTMLElement, optObj: GsapLoopOptions, duration: number, ease: string, extraVars: AnimationExtraVars): gsap.core.Tween {
+function buildFloatAnimation(
+  el: HTMLElement,
+  optObj: GsapLoopOptions,
+  duration: number,
+  ease: string,
+  extraVars: AnimationExtraVars
+): gsap.core.Tween {
   return gsap.fromTo(
     el,
     { y: 0, rotation: 0 },

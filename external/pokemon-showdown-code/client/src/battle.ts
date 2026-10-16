@@ -1,25 +1,56 @@
 import {
-  DataKind, GameType, Generation, Generations, HPColor, ID, PokemonSet, SideID, toID,
+  DataKind,
+  GameType,
+  Generation,
+  Generations,
+  HPColor,
+  ID,
+  PokemonSet,
+  SideID,
+  toID
 } from '@pkmn/data';
 import {
-  ArgType, BattleArgsKWArgType, FormatName, Message, PokemonDetails, PokemonHPStatus,
-  PokemonHealth, PokemonIdent, PokemonSearchID, Protocol, SpeciesName,
+  ArgType,
+  BattleArgsKWArgType,
+  FormatName,
+  Message,
+  PokemonDetails,
+  PokemonHPStatus,
+  PokemonHealth,
+  PokemonIdent,
+  PokemonSearchID,
+  Protocol,
+  SpeciesName
 } from '@pkmn/protocol';
 
-import {Field} from './field';
-import {Handler} from './handler';
-import {Pokemon} from './pokemon';
-import {Side} from './side';
+import { Field } from './field';
+import { Handler } from './handler';
+import { Pokemon } from './pokemon';
+import { Side } from './side';
 
-const SLOTS: {[slot: string]: number} = {a: 0, b: 1, c: 2, d: 3, e: 4, f: 5};
+const SLOTS: { [slot: string]: number } = { a: 0, b: 1, c: 2, d: 3, e: 4, f: 5 };
 
-export const NULL = {name: '', id: '' as ID, kind: 'Condition' as DataKind};
+export const NULL = { name: '', id: '' as ID, kind: 'Condition' as DataKind };
 export type NA = typeof NULL;
 
 const SIDE_CONDITIONS = [
-  'mist', 'lightscreen', 'reflect', 'spikes', 'safeguard', 'tailwind', 'toxicspikes', 'stealthrock',
-  'waterpledge', 'firepledge', 'grasspledge', 'stickyweb', 'auroraveil', 'gmaxsteelsurge',
-  'gmaxcannonade', 'gmaxvinelash', 'gmaxwildfire',
+  'mist',
+  'lightscreen',
+  'reflect',
+  'spikes',
+  'safeguard',
+  'tailwind',
+  'toxicspikes',
+  'stealthrock',
+  'waterpledge',
+  'firepledge',
+  'grasspledge',
+  'stickyweb',
+  'auroraveil',
+  'gmaxsteelsurge',
+  'gmaxcannonade',
+  'gmaxvinelash',
+  'gmaxwildfire'
 ];
 
 export class Battle {
@@ -39,7 +70,7 @@ export class Battle {
   gameType: GameType;
   pokemonControlled = 0;
   rated: boolean | Message;
-  rules: {[ruleName: string]: 1 | 0} = {};
+  rules: { [ruleName: string]: 1 | 0 } = {};
   tier: FormatName | '';
   teamPreviewCount: number;
   speciesClause: boolean;
@@ -67,9 +98,15 @@ export class Battle {
     this.gen = gens.get(8);
 
     this.createSide = (n: 0 | 1 | 2 | 3) =>
-      side(this, n,
-        !n ? sets && (!sets[0] || Array.isArray(sets[0]) ? sets[0] : sets as PokemonSet[])
-        : sets && Array.isArray(sets[1]) ? sets[1] : undefined);
+      side(
+        this,
+        n,
+        !n
+          ? sets && (!sets[0] || Array.isArray(sets[0]) ? sets[0] : (sets as PokemonSet[]))
+          : sets && Array.isArray(sets[1])
+            ? sets[1]
+            : undefined
+      );
 
     this.field = field(this);
     this.p1 = this.createSide(0);
@@ -96,8 +133,8 @@ export class Battle {
   add(line: string): void;
   add(args: ArgType, kwArgs: BattleArgsKWArgType): void;
   add(a: ArgType | string, b: BattleArgsKWArgType = {}) {
-    const {args, kwArgs} =
-      typeof a === 'string' ? Protocol.parseBattleLine(a) : {args: a, kwArgs: b};
+    const { args, kwArgs } =
+      typeof a === 'string' ? Protocol.parseBattleLine(a) : { args: a, kwArgs: b };
     const key = Protocol.key(args);
     if (!key) return;
     if (key in this.handler) (this.handler as any)[key](args, kwArgs);
@@ -140,7 +177,7 @@ export class Battle {
           }
           if (side.sets) {
             if (!pokemon.set || (pokemon.set.name || pokemon.set.species) !== p.name) {
-              (pokemon as any).set = side.sets.find(s => (s.name || s.species) === p.name);
+              (pokemon as any).set = side.sets.find((s) => (s.name || s.species) === p.name);
             }
           }
         } else {
@@ -165,7 +202,7 @@ export class Battle {
           mpoke.moveSlots = [];
           for (const move of active.moves) {
             if (move.id === 'struggle' || !('pp' in move)) continue;
-            mpoke.moveSlots.push({ppUsed: move.maxpp - move.pp, ...move});
+            mpoke.moveSlots.push({ ppUsed: move.maxpp - move.pp, ...move });
           }
           poke.maxMoves = active.maxMoves;
           poke.zMoves = active.zMoves;
@@ -195,7 +232,7 @@ export class Battle {
   // Null object pattern for data retrieval - the server is the source of
   // truth and if the client is out of date it should degrade gracefully
   get(type: 'abilities' | 'items' | 'moves' | 'species' | 'conditions', s?: string) {
-    return !s ? NULL : (this.gen[type].get(s) || {name: s, id: toID(s), kind: 'Condition'});
+    return !s ? NULL : this.gen[type].get(s) || { name: s, id: toID(s), kind: 'Condition' };
   }
 
   setTurn(turnNum: string | number) {
@@ -257,12 +294,11 @@ export class Battle {
       pokemonid = `p${siden + 1}: ${name}` as PokemonIdent;
     }
 
-    return {name, siden, slot, pokemonid};
+    return { name, siden, slot, pokemonid };
   }
 
   getSwitchedPokemon(pokemonid: PokemonIdent | SideID, details: PokemonDetails) {
-    const {name, siden, slot, pokemonid: parsedPokemonid} =
-      this.parsePokemonId(pokemonid);
+    const { name, siden, slot, pokemonid: parsedPokemonid } = this.parsePokemonId(pokemonid);
     pokemonid = parsedPokemonid;
 
     const searchid = `${pokemonid}|${details}` as PokemonSearchID;
@@ -292,7 +328,8 @@ export class Battle {
       if (!pokemon.searchid && pokemon.checkDetails(details)) {
         // switch-in matches Team Preview entry
         pokemon = side.addPokemon(
-          Protocol.parseDetails(name, pokemonid as PokemonIdent, details), i
+          Protocol.parseDetails(name, pokemonid as PokemonIdent, details),
+          i
         );
         if (slot >= 0) pokemon.slot = slot;
         pokemon.revealedDetails = pokemon.details;
@@ -319,9 +356,11 @@ export class Battle {
       if (pokemon) {
         for (let i = side.team.length - 1; i >= 0; i--) {
           const p = side.team[i];
-          if (p.speciesForme === detailed.speciesForme &&
+          if (
+            p.speciesForme === detailed.speciesForme &&
             p.gender === (detailed.gender || 'N') &&
-            p.shiny === detailed.shiny) {
+            p.shiny === detailed.shiny
+          ) {
             pokemon.slot = slot;
 
             if (pokemon.revealedDetails !== pokemon.details) {
@@ -349,7 +388,7 @@ export class Battle {
   }
 
   rememberTeamPreviewPokemon(sideid: SideID, details: PokemonDetails) {
-    const {siden} = this.parsePokemonId(sideid);
+    const { siden } = this.parsePokemonId(sideid);
     return this.sides[siden].addPokemon(Protocol.parseDetails('', '' as PokemonIdent, details));
   }
 
@@ -368,7 +407,7 @@ export class Battle {
     if (this.p4?.name === sidename) return this.p4;
     return {
       name: sidename,
-      id: sidename.replace(/ /g, ''),
+      id: sidename.replace(/ /g, '')
     } as any;
   }
 
@@ -381,8 +420,10 @@ export class Battle {
       const side2 = this.sides[1];
       for (const id of SIDE_CONDITIONS) {
         if (side1.sideConditions[id] && side2.sideConditions[id]) {
-          [side1.sideConditions[id], side2.sideConditions[id]] =
-            [side2.sideConditions[id], side1.sideConditions[id]];
+          [side1.sideConditions[id], side2.sideConditions[id]] = [
+            side2.sideConditions[id],
+            side1.sideConditions[id]
+          ];
         } else if (side1.sideConditions[id] && !side2.sideConditions[id]) {
           side2.sideConditions[id] = side1.sideConditions[id];
           side1.removeSideCondition(id as ID);
@@ -398,11 +439,11 @@ export class Battle {
     if (!pokemonid || pokemonid === '??' || pokemonid === 'null' || pokemonid === 'false') {
       return null;
     }
-    const {siden, slot, pokemonid: parsedPokemonid} = this.parsePokemonId(pokemonid);
+    const { siden, slot, pokemonid: parsedPokemonid } = this.parsePokemonId(pokemonid);
     pokemonid = parsedPokemonid;
 
     // if true, don't match an active pokemon
-    const isInactive = (slot < 0) && !revival;
+    const isInactive = slot < 0 && !revival;
     const side = this.sides[siden];
 
     // search player's pokemon
@@ -410,7 +451,8 @@ export class Battle {
 
     for (const pokemon of side.team) {
       if (isInactive && side.active.includes(pokemon)) continue;
-      if (pokemon.originalIdent === pokemonid) { // name matched, good enough
+      if (pokemon.originalIdent === pokemonid) {
+        // name matched, good enough
         if (slot >= 0) pokemon.slot = slot;
         return pokemon;
       }
@@ -441,7 +483,7 @@ export class Battle {
       maxhp: p.maxhp,
       hpcolor: p.hpcolor,
       status: p.status,
-      fainted: p.fainted,
+      fainted: p.fainted
     };
 
     const damage = Pokemon.parseHealth(hpstring, health);
@@ -450,7 +492,7 @@ export class Battle {
     const range = Pokemon.getDamageRange(damage, health.hpcolor as HPColor);
     let percent = '' + Pokemon.getFormattedRange(range, damage[1] === 100 ? 0 : 1, '\u2013');
     if (damage[1] !== 100) {
-      let hover = '' + ((damage[0] < 0) ? '\u2212' : '') + Math.abs(damage[0]) + '/' + damage[1];
+      let hover = '' + (damage[0] < 0 ? '\u2212' : '') + Math.abs(damage[0]) + '/' + damage[1];
       if (damage[1] === 48) hover += ' pixels'; // this is a hack
       percent = '||' + hover + '||' + percent + '||';
     }
@@ -496,7 +538,7 @@ export class Battle {
 
   abilityActive(abilities: ID[]) {
     if (this.ngasActive()) {
-      abilities = abilities.filter(a => this.gen.abilities.get(a)?.flags.cantsuppress);
+      abilities = abilities.filter((a) => this.gen.abilities.get(a)?.flags.cantsuppress);
       if (!abilities.length) return false;
     }
     for (const active of this.getAllActive()) {
@@ -515,20 +557,20 @@ export class Battle {
 
   destroy() {
     this.field.destroy();
-    // @ts-ignore readonly
+    // @ts-expect-error readonly
     this.field = null!;
 
     for (let i = 0; i < this.sides.length; i++) {
       if (this.sides[i]) this.sides[i].destroy();
       this.sides[i] = null!;
     }
-    // @ts-ignore readonly
+    // @ts-expect-error readonly
     this.p1 = null!;
-    // @ts-ignore readonly
+    // @ts-expect-error readonly
     this.p2 = null!;
-    // @ts-ignore readonly
+    // @ts-expect-error readonly
     this.p3 = null!;
-    // @ts-ignore readonly
+    // @ts-expect-error readonly
     this.p4 = null!;
   }
 }

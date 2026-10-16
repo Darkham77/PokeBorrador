@@ -1,5 +1,5 @@
 // src/styles/views/box/_filters.scss
-@use "../../core/tools" as *;
+@use '../../core/tools' as *;
 
 .filter-toggle-btn-premium {
   @include pixelated;
@@ -16,7 +16,10 @@
   cursor: pointer;
   white-space: nowrap;
 
-  &:hover { background: Rgb(255 255 255 / 8%); color: var(--white); }
+  &:hover {
+    background: Rgb(255 255 255 / 8%);
+    color: var(--white);
+  }
   &.active {
     background: var(--yellow);
     color: $black;
@@ -25,7 +28,9 @@
     box-shadow: var(--shadow-glow-amber);
   }
 
-  .box-icon-ref { font-size: var(--font-10); }
+  .box-icon-ref {
+    font-size: var(--font-10);
+  }
 }
 
 .filter-section {
@@ -46,12 +51,13 @@
     max-height: 180px;
     overflow-y: auto;
     padding-right: 12px;
-    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
   }
 }
 
 .sort-controls-integrated {
-
   display: flex;
   align-items: center;
   gap: $spacing-xs;
@@ -84,7 +90,10 @@
     cursor: pointer;
     white-space: nowrap;
 
-    &:hover { background: Rgb(255 255 255 / 5%); color: var(--white); }
+    &:hover {
+      background: Rgb(255 255 255 / 5%);
+      color: var(--white);
+    }
     &.active {
       background: Rgb(255 214 10 / 10%);
       color: var(--yellow);
@@ -108,7 +117,10 @@
   font-size: var(--font-10);
   cursor: pointer;
 
-  &:hover { background: Rgb(255 255 255 / 8%); border-color: Rgb(255 255 255 / 20%); }
+  &:hover {
+    background: Rgb(255 255 255 / 8%);
+    border-color: Rgb(255 255 255 / 20%);
+  }
 }
 
 .tags-group-mini {
@@ -150,7 +162,10 @@
     white-space: nowrap;
     flex-shrink: 0;
 
-    &:hover { background: Rgb(255 255 255 / 8%); border-color: Rgb(255 255 255 / 20%); }
+    &:hover {
+      background: Rgb(255 255 255 / 8%);
+      border-color: Rgb(255 255 255 / 20%);
+    }
 
     .box-tag-icon-inner {
       display: inline-flex;
@@ -170,7 +185,9 @@
       background: var(--purple-low);
       color: var(--white);
       border-color: var(--purple);
-      & > .box-tag-icon-inner { opacity: 1; }
+      & > .box-tag-icon-inner {
+        opacity: 1;
+      }
     }
   }
 }
@@ -201,7 +218,7 @@
   font-size: var(--font-8);
   cursor: pointer;
 
-  &:hover { 
+  &:hover {
     background: Rgb(255 255 255 / 10%);
     color: var(--white);
     transform: Translatey(-2px);
@@ -219,7 +236,7 @@
     border: 1px solid Rgb(255 255 255 / 10%);
     background: Rgb(255 255 255 / 5%);
     white-space: nowrap;
-    
+
     &.active {
       background: var(--yellow);
       color: $black;
@@ -278,7 +295,6 @@
 }
 
 .filters-grid-columns {
-
   display: grid;
   gap: $spacing-xl;
   grid-template-columns: repeat(3, 1fr);
@@ -296,7 +312,7 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-lg;
-  min-width: 0; 
+  min-width: 0;
 }
 
 .compact-section {
@@ -305,10 +321,16 @@
   border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: $radius-2xl;
   background: Rgb(0 0 0 / 20%);
-  
-  &.full-width { width: 100%; }
-  &.full-height { flex: 1; }
-  &.margin-top { margin-top: 4px; }
+
+  &.full-width {
+    width: 100%;
+  }
+  &.full-height {
+    flex: 1;
+  }
+  &.margin-top {
+    margin-top: 4px;
+  }
 
   .box-section-label {
     @include pixelated;
@@ -358,13 +380,15 @@
   gap: $spacing-xs;
 }
 
-.slider-row-mini, .iv-slider-row-mini {
+.slider-row-mini,
+.iv-slider-row-mini {
   display: flex;
   align-items: center;
   gap: $spacing-md-alt;
   padding: 4px 0;
 
-  .label, .stat-name {
+  .label,
+  .stat-name {
     @include pixelated;
 
     width: 65px;
@@ -374,7 +398,7 @@
     white-space: nowrap;
   }
 
-  input[type="range"] {
+  input[type='range'] {
     height: 3px;
     border-radius: $radius-xs;
     background: Rgb(255 255 255 / 10%);
@@ -393,7 +417,8 @@
     }
   }
 
-  .val, .stat-val {
+  .val,
+  .stat-val {
     @include pixelated;
 
     width: 25px;
@@ -416,7 +441,9 @@
   margin-top: 12px;
   cursor: pointer;
 
-  &:hover { background: Rgb(255 255 255 / 6%); }
+  &:hover {
+    background: Rgb(255 255 255 / 6%);
+  }
   &.active {
     background: var(--yellow);
     color: $black;
@@ -441,7 +468,9 @@
     gap: $spacing-sm-alt;
     color: var(--yellow);
     font-size: var(--font-7);
-    .box-icon-results { font-size: var(--font-10); }
+    .box-icon-results {
+      font-size: var(--font-10);
+    }
   }
 }
 

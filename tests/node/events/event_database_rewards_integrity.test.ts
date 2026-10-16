@@ -12,12 +12,15 @@
  * Enforces Zero Error Suppression: Fails loudly if ANY item or species is mistyped.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
-import { splitSQLStatements, translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
+import {
+  splitSQLStatements,
+  translatePostgresToSqlite
+} from '../../../src/logic/db/sqlTranslator.ts';
 import { getItemById, getItemName } from '../../../src/data/inventory/items.ts';
 import { isEnabledPokemonId } from '../../../src/data/system/constants.ts';
 import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
@@ -92,12 +95,18 @@ function executeMigrationStatement(db: DatabaseSync, sql: string, migrationId: s
     const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
     const isMissing = msg.includes('no such column');
     if (!isDuplicate && !isMissing) {
-      throw new Error(`[Migration Error] Failed in migration "${migrationId}": ${(err as Error).message}\nSQL: ${sql}`, { cause: err });
+      throw new Error(
+        `[Migration Error] Failed in migration "${migrationId}": ${(err as Error).message}\nSQL: ${sql}`,
+        { cause: err }
+      );
     }
   }
 }
 
-function applySingleMigration(db: DatabaseSync, m: { id: string; sql: string; sqlite_sql?: string }): void {
+function applySingleMigration(
+  db: DatabaseSync,
+  m: { id: string; sql: string; sqlite_sql?: string }
+): void {
   const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql;
   const isSqliteSpec = m.sqlite_sql !== undefined;
   const statements = splitSQLStatements(sqlSource);
@@ -119,7 +128,9 @@ describe('Event Database Rewards & Species Integrity', () => {
       db.exec(`CREATE TABLE IF NOT EXISTS ${schema}`);
     }
 
-    db.exec("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))");
+    db.exec(
+      "CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))"
+    );
 
     // 2. Apply all migrations in sequence
     for (const m of DATABASE_MIGRATIONS as { id: string; sql: string; sqlite_sql?: string }[]) {
@@ -133,15 +144,12 @@ describe('Event Database Rewards & Species Integrity', () => {
     // Validate single item
     if (prize.item) {
       const itemId = prize.item;
-      assert.doesNotThrow(
-        () => {
-          const item = getItemById(itemId);
-          assert.ok(item, `Item ${itemId} returned empty object`);
-          const name = getItemName(itemId);
-          assert.ok(name && name.length > 0, `Item ${itemId} has empty name`);
-        },
-        `[${context}] Invalid prize.item "${itemId}". It does not exist in items database.`
-      );
+      assert.doesNotThrow(() => {
+        const item = getItemById(itemId);
+        assert.ok(item, `Item ${itemId} returned empty object`);
+        const name = getItemName(itemId);
+        assert.ok(name && name.length > 0, `Item ${itemId} has empty name`);
+      }, `[${context}] Invalid prize.item "${itemId}". It does not exist in items database.`);
     }
 
     // Validate multiple items map
@@ -151,15 +159,12 @@ describe('Event Database Rewards & Species Integrity', () => {
           typeof qty === 'number' && qty > 0,
           `[${context}] Invalid quantity for item "${itemId}": ${qty}. Must be positive number.`
         );
-        assert.doesNotThrow(
-          () => {
-            const item = getItemById(itemId);
-            assert.ok(item, `Item ${itemId} returned empty object`);
-            const name = getItemName(itemId);
-            assert.ok(name && name.length > 0, `Item ${itemId} has empty name`);
-          },
-          `[${context}] Invalid prize.items key "${itemId}". It does not exist in items database.`
-        );
+        assert.doesNotThrow(() => {
+          const item = getItemById(itemId);
+          assert.ok(item, `Item ${itemId} returned empty object`);
+          const name = getItemName(itemId);
+          assert.ok(name && name.length > 0, `Item ${itemId} has empty name`);
+        }, `[${context}] Invalid prize.items key "${itemId}". It does not exist in items database.`);
       }
     }
 
@@ -195,7 +200,7 @@ describe('Event Database Rewards & Species Integrity', () => {
 
   function validateConfigSpecies(config: RawEventConfig, ctx: string): void {
     if (!config.species || config.species === '*') return;
-    const speciesList = config.species.split(',').map(s => s.trim().toLowerCase());
+    const speciesList = config.species.split(',').map((s) => s.trim().toLowerCase());
     for (const sp of speciesList) {
       if (sp) {
         assert.ok(
@@ -211,7 +216,7 @@ describe('Event Database Rewards & Species Integrity', () => {
     for (const [weekNum, rot] of Object.entries(config.weeklyRotations)) {
       const rotCtx = `${ctx} > WeeklyRotation: week ${weekNum}`;
       if (rot.species && rot.species !== '*') {
-        const rotSpecies = rot.species.split(',').map(s => s.trim().toLowerCase());
+        const rotSpecies = rot.species.split(',').map((s) => s.trim().toLowerCase());
         for (const sp of rotSpecies) {
           if (sp) {
             assert.ok(
@@ -234,9 +239,12 @@ describe('Event Database Rewards & Species Integrity', () => {
     const ctx = `Event: ${evt.id} (${evt.name}, active=${evt.active})`;
     let config: RawEventConfig;
     try {
-      config = typeof evt.config === 'string' ? JSON.parse(evt.config) as RawEventConfig : evt.config;
+      config =
+        typeof evt.config === 'string' ? (JSON.parse(evt.config) as RawEventConfig) : evt.config;
     } catch (err) {
-      throw new Error(`[${ctx}] Invalid JSON in config column: ${(err as Error).message}`, { cause: err });
+      throw new Error(`[${ctx}] Invalid JSON in config column: ${(err as Error).message}`, {
+        cause: err
+      });
     }
 
     validateTopLevelPrizes(config, ctx);
@@ -247,8 +255,11 @@ describe('Event Database Rewards & Species Integrity', () => {
 
   it('migrates database and verifies ALL events in events_config have 100% valid item rewards and enabled species', () => {
     using db = createMigratedDatabase();
-    const allEvents = db.prepare("SELECT * FROM events_config").all() as unknown as EventRow[];
-    assert.ok(allEvents.length >= 8, `Expected at least 8 events in events_config, found ${allEvents.length}`);
+    const allEvents = db.prepare('SELECT * FROM events_config').all() as unknown as EventRow[];
+    assert.ok(
+      allEvents.length >= 8,
+      `Expected at least 8 events in events_config, found ${allEvents.length}`
+    );
 
     for (const evt of allEvents) {
       validateEventRowConfig(evt);
@@ -305,9 +316,11 @@ describe('Event Database Rewards & Species Integrity', () => {
 
   it('verifies ALL migrated events execute seamlessly across ALL maps, minigames, and 52 calendar weeks without errors', () => {
     using db = createMigratedDatabase();
-    const rows = db.prepare("SELECT * FROM events_config WHERE active = 1").all() as unknown as EventRow[];
+    const rows = db
+      .prepare('SELECT * FROM events_config WHERE active = 1')
+      .all() as unknown as EventRow[];
 
-    const activeEvents: GameEvent[] = rows.map(r => ({
+    const activeEvents: GameEvent[] = rows.map((r) => ({
       id: r.id,
       name: r.name,
       icon: r.icon,

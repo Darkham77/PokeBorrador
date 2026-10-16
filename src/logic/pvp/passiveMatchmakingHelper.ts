@@ -21,10 +21,12 @@ export interface PassiveTeamCandidate {
 /**
  * Computes the next action for an offline passive enemy using Showdown request state.
  */
-export function computePassiveEnemyChoice(p2Req: ShowdownPlayerRequest | undefined): PvPAction | null {
+export function computePassiveEnemyChoice(
+  p2Req: ShowdownPlayerRequest | undefined
+): PvPAction | null {
   if (p2Req?.forceSwitch?.[0]) {
     const sidePoke = p2Req.side?.pokemon || [];
-    const benchIndex = sidePoke.findIndex(p => !p.active && !p.condition?.endsWith('fnt'));
+    const benchIndex = sidePoke.findIndex((p) => !p.active && !p.condition?.endsWith('fnt'));
     if (benchIndex !== -1) {
       return { type: 'switch', switchIndex: benchIndex, choiceString: `switch ${benchIndex + 1}` };
     }
@@ -32,7 +34,7 @@ export function computePassiveEnemyChoice(p2Req: ShowdownPlayerRequest | undefin
   }
 
   const activeMoves = p2Req?.active?.[0]?.moves || [];
-  const validMoves = activeMoves.filter(m => !m.disabled);
+  const validMoves = activeMoves.filter((m) => !m.disabled);
   if (validMoves.length > 0 && validMoves[0]) {
     const move = validMoves[0];
     const moveIdx = activeMoves.indexOf(move);
@@ -100,7 +102,7 @@ interface DefenderProfileDetails {
 function validateAndFilterCandidates(
   candidates: readonly PassiveTeamCandidate[],
   db: DBRouter,
-  seasonRules?: Record<string, unknown> | null,
+  seasonRules?: Record<string, unknown> | null
 ): PassiveTeamCandidate[] {
   const validCandidates: PassiveTeamCandidate[] = [];
   for (const candidate of candidates) {
@@ -109,7 +111,9 @@ function validateAndFilterCandidates(
     if (team.length === 0) continue;
 
     // Validate that every combatant has required battle properties (species id, ability, valid moves)
-    const hasCorruptPokemon = team.some(p => !p.id || !p.ability || !Array.isArray(p.moves) || p.moves.length === 0);
+    const hasCorruptPokemon = team.some(
+      (p) => !p.id || !p.ability || !Array.isArray(p.moves) || p.moves.length === 0
+    );
     if (hasCorruptPokemon) {
       if (candidate.user_id) {
         void db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
@@ -118,10 +122,13 @@ function validateAndFilterCandidates(
     }
 
     if (seasonRules) {
-      const hasIneligible = team.some(p => !evaluatePokemonForSeason(p, seasonRules).eligible);
+      const hasIneligible = team.some((p) => !evaluatePokemonForSeason(p, seasonRules).eligible);
       if (hasIneligible) {
         if (candidate.user_id) {
-          void db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
+          void db
+            .from('passive_teams')
+            .update({ is_active: false })
+            .eq('user_id', candidate.user_id);
         }
         continue;
       }
@@ -147,7 +154,7 @@ async function fetchDefenderProfile(db: DBRouter, userId: string): Promise<Defen
     return {
       name: profile?.username || defaultDetails.name,
       playerClass: profile?.player_class,
-      gender: profile?.gender,
+      gender: profile?.gender
     };
   } catch (err) {
     logger.warn('[passiveMatchmakingHelper] Error obteniendo perfil del defensor:', err);
@@ -179,7 +186,10 @@ export async function executePassiveMatchmakingFallback(params: {
     const validCandidates = validateAndFilterCandidates(candidates, db, seasonRules);
     const selected = selectPassiveOpponent(validCandidates, myElo, userUid);
     if (!selected) {
-      notify('No hay jugadores disponibles en la arena ranked en este momento. Por favor, intenta más tarde.', '🛡️');
+      notify(
+        'No hay jugadores disponibles en la arena ranked en este momento. Por favor, intenta más tarde.',
+        '🛡️'
+      );
       return null;
     }
 
@@ -198,10 +208,13 @@ export async function executePassiveMatchmakingFallback(params: {
       opponentElo,
       enemyTeam,
       opponentClass: defenderProfile.playerClass,
-      opponentGender: defenderProfile.gender,
+      opponentGender: defenderProfile.gender
     };
   } catch (err) {
-    logger.error('PassiveMatchmaking', `Error in executePassiveMatchmakingFallback: ${(err as Error).message}`);
+    logger.error(
+      'PassiveMatchmaking',
+      `Error in executePassiveMatchmakingFallback: ${(err as Error).message}`
+    );
     notify('Error al iniciar batalla pasiva.', '⚠️');
     return null;
   }

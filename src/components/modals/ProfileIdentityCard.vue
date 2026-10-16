@@ -1,59 +1,61 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import { isFactionId, type FactionId } from '@/types/system/game'
+import { computed } from 'vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import { isFactionId, type FactionId } from '@/types/system/game';
 
 const FACTION_DISPLAY_NAMES: Record<FactionId, string> = {
   union: 'EQUIPO UNIÓN',
   poder: 'EQUIPO PODER'
-}
+};
 
 const props = defineProps<{
   gs: {
-    playerClass?: string | null
-    trainerLevel?: number
-    avatar_style?: string | null
-    gender?: string | null
-    nick_style?: string | null
-  }
-  displayUsername: string
-  email: string
+    playerClass?: string | null;
+    trainerLevel?: number;
+    avatar_style?: string | null;
+    gender?: string | null;
+    nick_style?: string | null;
+  };
+  displayUsername: string;
+  email: string;
   classStore: {
-    playerClass?: string | null
+    playerClass?: string | null;
     currentClassDef?: {
-      name: string
-      icon: string
-    } | null
-  }
-  faction: FactionId | string | null
-}>()
+      name: string;
+      icon: string;
+    } | null;
+  };
+  faction: FactionId | string | null;
+}>();
 
 const displayFaction = computed(() => {
   if (props.faction && isFactionId(props.faction)) {
-    return FACTION_DISPLAY_NAMES[props.faction]
+    return FACTION_DISPLAY_NAMES[props.faction];
   }
-  return 'SIN FACCIÓN'
-})
+  return 'SIN FACCIÓN';
+});
 
 const emit = defineEmits<{
-  (e: 'edit-profile'): void
-  (e: 'avatar-enter', evt: MouseEvent): void
-  (e: 'avatar-leave', evt: MouseEvent): void
-  (e: 'open-rename'): void
-  (e: 'open-class-modal'): void
-  (e: 'faction-choice'): void
-}>()
+  (e: 'edit-profile'): void;
+  (e: 'avatar-enter', evt: MouseEvent): void;
+  (e: 'avatar-leave', evt: MouseEvent): void;
+  (e: 'open-rename'): void;
+  (e: 'open-class-modal'): void;
+  (e: 'faction-choice'): void;
+}>();
 </script>
 
 <template>
   <div class="profile-identity-card">
     <div
-      id="profile-identity-card-div-1" 
+      id="profile-identity-card-div-1"
+      role="button"
+      tabindex="0"
       class="avatar-wrap"
       @click.stop="emit('edit-profile')"
-      @mouseenter="e => emit('avatar-enter', e)"
-      @mouseleave="e => emit('avatar-leave', e)"
+      @mouseenter="(e) => emit('avatar-enter', e)"
+      @mouseleave="(e) => emit('avatar-leave', e)"
     >
       <TrainerAvatar
         :player-class="gs.playerClass"
@@ -75,11 +77,7 @@ const emit = defineEmits<{
           >
             {{ displayUsername }}
           </span>
-          <PVGenderBadge
-            :gender="gs.gender"
-            is-trainer
-            size="sm"
-          />
+          <PVGenderBadge :gender="gs.gender" is-trainer size="sm" />
         </div>
         <button
           id="profile-identity-card-btn-cambiar"
@@ -157,8 +155,8 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .profile-identity-card {
   display: flex;
@@ -208,8 +206,6 @@ const emit = defineEmits<{
       }
     }
 
-
-
     .value {
       @include pixelated;
 
@@ -224,7 +220,9 @@ const emit = defineEmits<{
       }
 
       &.faction-val {
-        &.none { color: var(--slate-400); }
+        &.none {
+          color: var(--slate-400);
+        }
       }
     }
 

@@ -10,42 +10,46 @@ class FieldAbilitiesAttractionSimulation extends BaseE2ESimulation {
   }
 
   public async setupMagnetPullLeader(): Promise<void> {
-    await this.page.evaluate(
-      async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-        const gameStore = useGameStore();
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+      const gameStore = useGameStore();
 
-        const magnemite = pokemonDebugService.generate({ id: requirePokemonSpeciesId('magnemite'), level: 25 });
-        magnemite.ability = 'magnetpull';
-        magnemite.hp = magnemite.maxHp;
+      const magnemite = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('magnemite'),
+        level: 25
+      });
+      magnemite.ability = 'magnetpull';
+      magnemite.hp = magnemite.maxHp;
 
-        gameStore.state.starterChosen = true;
-        gameStore.state.team = [magnemite];
-        gameStore.state.box = [];
-      }
-    );
+      gameStore.state.starterChosen = true;
+      gameStore.state.team = [magnemite];
+      gameStore.state.box = [];
+    });
     await this.saveGameAndAwaitExport();
   }
 
   public async setupStaticLeader(): Promise<void> {
-    await this.page.evaluate(
-      async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-        const gameStore = useGameStore();
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+      const gameStore = useGameStore();
 
-        const pikachu = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: 25 });
-        pikachu.ability = 'static';
-        pikachu.hp = pikachu.maxHp;
+      const pikachu = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('pikachu'),
+        level: 25
+      });
+      pikachu.ability = 'static';
+      pikachu.hp = pikachu.maxHp;
 
-        gameStore.state.starterChosen = true;
-        gameStore.state.team = [pikachu];
-        gameStore.state.box = [];
-      }
-    );
+      gameStore.state.starterChosen = true;
+      gameStore.state.team = [pikachu];
+      gameStore.state.box = [];
+    });
     await this.saveGameAndAwaitExport();
   }
 
@@ -57,10 +61,14 @@ class FieldAbilitiesAttractionSimulation extends BaseE2ESimulation {
         const gameStore = useGameStore();
 
         for (let i = 0; i < maxAttempts; i++) {
-          const encounter = await generateEncounter('power_plant', {
-            faction: gameStore.state.faction,
-            team: gameStore.state.team
-          }, { forceEncounter: true });
+          const encounter = await generateEncounter(
+            'power_plant',
+            {
+              faction: gameStore.state.faction,
+              team: gameStore.state.team
+            },
+            { forceEncounter: true }
+          );
 
           if (encounter && encounter.type === 'wild' && encounter.pokemon) {
             if (encounter.pokemon.type === expType || encounter.pokemon.type2 === expType) {

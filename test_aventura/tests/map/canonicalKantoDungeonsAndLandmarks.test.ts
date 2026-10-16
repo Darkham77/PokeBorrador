@@ -32,20 +32,20 @@ describe('Canonical Kanto Dungeons and Landmarks Architecture', () => {
     expect(rtSouth!.elevation, 'Rock Tunnel South entrance must be ground level (elev 0)').toBe(0);
   });
 
-  it('classifies Bill\'s House and Power Plant as landmarks, NOT route_gate', () => {
+  it("classifies Bill's House and Power Plant as landmarks, NOT route_gate", () => {
     const { pois } = buildCanonicalRegionMap('kanto');
 
     const bill = pois.find((p) => p.id === 'billshouse');
     const power = pois.find((p) => p.id === 'powerplant');
 
-    expect(bill, 'Bill\'s House must exist').toBeDefined();
+    expect(bill, "Bill's House must exist").toBeDefined();
     expect(power, 'Power Plant must exist').toBeDefined();
 
-    expect(bill!.type, 'Bill\'s House must not be a route_gate').not.toBe('route_gate');
+    expect(bill!.type, "Bill's House must not be a route_gate").not.toBe('route_gate');
     expect(power!.type, 'Power Plant must not be a route_gate').not.toBe('route_gate');
   });
 
-  it('embeds Diglett\'s Cave against a real rock cliff', () => {
+  it("embeds Diglett's Cave against a real rock cliff", () => {
     const { pois, continent } = buildCanonicalRegionMap('kanto');
 
     const diglett = pois.find((p) => p.id === 'diglettcave');
@@ -64,6 +64,6 @@ describe('Canonical Kanto Dungeons and Landmarks Architecture', () => {
       }
     }
 
-    expect(hasBackingCliff, 'Diglett\'s Cave must have a cliff wall directly backing it').toBe(true);
+    expect(hasBackingCliff, "Diglett's Cave must have a cliff wall directly backing it").toBe(true);
   });
 });

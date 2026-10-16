@@ -17,6 +17,7 @@ export const parsePrize = (rawPrize: unknown): Record<string, unknown> => {
 };
 
 const EXCLUDED_PRIZE_KEY_MAP: Record<string, true> = {
+  // open-record: Dynamic prize payload field keys for exclusion filtering
   type: true,
   amount: true,
   qty: true,
@@ -37,7 +38,10 @@ const EXCLUDED_PRIZE_KEY_MAP: Record<string, true> = {
   sold_pokemon: true
 }; // open-record: Generic key-value data dictionary container
 
-function extractMoneyPill(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill | null {
+function extractMoneyPill(
+  prize: Record<string, unknown>,
+  prefix: string
+): UnifiedRewardPill | null {
   let money = 0;
   if (typeof prize.money === 'number') {
     money = prize.money;
@@ -75,10 +79,14 @@ function extractBcPill(prize: Record<string, unknown>, prefix: string): UnifiedR
   };
 }
 
-function extractSingleItemPill(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill | null {
+function extractSingleItemPill(
+  prize: Record<string, unknown>,
+  prefix: string
+): UnifiedRewardPill | null {
   if (!prize.item || typeof prize.item !== 'string') return null;
   const itId = prize.item;
-  const qty = typeof prize.qty === 'number' ? prize.qty : (typeof prize.amount === 'number' ? prize.amount : 1);
+  const qty =
+    typeof prize.qty === 'number' ? prize.qty : typeof prize.amount === 'number' ? prize.amount : 1;
   const itDef = getItemById(itId);
   const name = itDef?.name || getItemName(itId);
 
@@ -92,11 +100,15 @@ function extractSingleItemPill(prize: Record<string, unknown>, prefix: string): 
   };
 }
 
-function extractNestedItemPills(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill[] {
+function extractNestedItemPills(
+  prize: Record<string, unknown>,
+  prefix: string
+): UnifiedRewardPill[] {
   if (!prize.items || typeof prize.items !== 'object') return [];
   const pills: UnifiedRewardPill[] = [];
 
-  for (const [itId, itQty] of Object.entries(prize.items as Record<string, number>)) { // open-record: Generic key-value data dictionary container
+  for (const [itId, itQty] of Object.entries(prize.items as Record<string, number>)) {
+    // open-record: Generic key-value data dictionary container
     if (typeof itQty === 'number' && itQty > 0) {
       const itDef = getItemById(itId);
       const name = itDef?.name || getItemName(itId);
@@ -113,7 +125,10 @@ function extractNestedItemPills(prize: Record<string, unknown>, prefix: string):
   return pills;
 }
 
-function extractDirectItemPills(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill[] {
+function extractDirectItemPills(
+  prize: Record<string, unknown>,
+  prefix: string
+): UnifiedRewardPill[] {
   const pills: UnifiedRewardPill[] = [];
 
   for (const [key, val] of Object.entries(prize)) {
@@ -164,7 +179,7 @@ function extractSoldGtsPills(prize: Record<string, unknown>, prefix: string): Un
       pills.push({
         id: `${prefix}-sold-poke-${sPoke.name}`,
         label: `${sPoke.name.toUpperCase()}`, // text-ok: UI text display localization string
-        qtyText: sPoke.level ? `Nv. ${sPoke.level}` : (isShiny ? '✨' : undefined),
+        qtyText: sPoke.level ? `Nv. ${sPoke.level}` : isShiny ? '✨' : undefined,
         spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, toID(sPoke.name), { isShiny }),
         description: `Ejemplar Pokémon vendido: ${sPoke.name}.`,
         colorClass: 'pokemon'
@@ -175,10 +190,16 @@ function extractSoldGtsPills(prize: Record<string, unknown>, prefix: string): Un
   return pills;
 }
 
-function extractPokemonPill(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill | null {
+function extractPokemonPill(
+  prize: Record<string, unknown>,
+  prefix: string
+): UnifiedRewardPill | null {
   if (prize.type !== 'pokemon' && !prize.species && !prize.pokemon) return null;
 
-  const rawPoke = prize.pokemon && typeof prize.pokemon === 'object' ? (prize.pokemon as Record<string, unknown>) : null; // open-record: Generic key-value data dictionary container
+  const rawPoke =
+    prize.pokemon && typeof prize.pokemon === 'object'
+      ? (prize.pokemon as Record<string, unknown>)
+      : null; // open-record: Generic key-value data dictionary container
   let sp = '';
   if (typeof prize.species === 'string') {
     sp = prize.species;
@@ -195,18 +216,24 @@ function extractPokemonPill(prize: Record<string, unknown>, prefix: string): Uni
   return {
     id: `${prefix}-poke-${sp}`,
     label: `${sp.toUpperCase()}`, // text-ok: UI text display localization string
-    qtyText: lv ? `Nv. ${lv}` : (shiny ? '✨' : undefined),
+    qtyText:
+      typeof lv === 'number' || typeof lv === 'string' ? `Nv. ${lv}` : shiny ? '✨' : undefined,
     spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, toID(sp), { isShiny: shiny }),
     description: `Ejemplar Pokémon especial ${shiny ? 'Variocolor (Shiny)' : ''} listo para sumarse a tu equipo.`,
     colorClass: 'pokemon'
   };
 }
 
-function extractRankedMedalPill(prize: Record<string, unknown>, prefix: string): UnifiedRewardPill | null {
+function extractRankedMedalPill(
+  prize: Record<string, unknown>,
+  prefix: string
+): UnifiedRewardPill | null {
   if (prize.type !== 'ranked_medal' && !prize.tier) return null;
 
-  const tier = String(prize.tier || 'Clasificatorio');
-  const season = prize.season ? ` (${prize.season})` : '';
+  const tier = typeof prize.tier === 'string' ? prize.tier : 'Clasificatorio';
+  const rawSeason = prize.season;
+  const season =
+    typeof rawSeason === 'string' || typeof rawSeason === 'number' ? ` (${rawSeason})` : '';
 
   return {
     id: `${prefix}-medal-${tier}`,
@@ -217,7 +244,10 @@ function extractRankedMedalPill(prize: Record<string, unknown>, prefix: string):
   };
 }
 
-export const buildRewardPills = (prize: Record<string, unknown>, prefix = 'pill'): readonly UnifiedRewardPill[] => {
+export const buildRewardPills = (
+  prize: Record<string, unknown>,
+  prefix = 'pill'
+): readonly UnifiedRewardPill[] => {
   if (!prize || typeof prize !== 'object') return [];
 
   const pills: UnifiedRewardPill[] = [];

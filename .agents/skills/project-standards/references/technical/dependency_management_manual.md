@@ -6,14 +6,14 @@ This manual defines the versioning policy and library stability for the Poké Vi
 
 To guarantee the operation of critical systems (PWA, Service Workers, Animations), the project adheres to a "Confirmed Stability Stack":
 
-| Library | Version | Role |
-| :--- | :--- | :--- |
-| **Vite** | `^8.x` | Build Tool & Dev Server |
-| **Vue** | `^3.5.x` | Framework Core |
-| **Pinia** | `^4.x` | State Management |
-| **Vue Router** | `^5.x` | Routing |
-| **Vitest** | `^5.x` | Testing Framework |
-| **TypeScript** | `^6.x` | Type Checker |
+| Library        | Version  | Role                                   |
+| :------------- | :------- | :------------------------------------- |
+| **Vite+**      | `^1.x`   | Unified Toolchain Engine (`vite-plus`) |
+| **Vue**        | `^3.5.x` | Framework Core                         |
+| **Pinia**      | `^4.x`   | State Management                       |
+| **Vue Router** | `^5.x`   | Routing                                |
+| **Vite+ Test** | `^5.x`   | Testing Framework (`vite-plus/test`)   |
+| **TypeScript** | `^6.x`   | Type Checker                           |
 
 ### Upgrade Policy
 
@@ -38,7 +38,7 @@ To ensure total cross-platform resilience and clean developer setup:
 When critical vulnerabilities are detected in deep sub-dependencies that have not been updated by their maintainers, the project uses the `overrides` field in `package.json`.
 
 > [!IMPORTANT]
-> **Current Build Patches**: All overrides (such as the one for `serialize-javascript`) are corrective measures for the current build and ecosystem state. They must be reviewed during every major version jump.
+> **Current Build Patches**: All overrides (such as the one for `serialize-javascript` and Vite+ type unification) are corrective measures for the current build and ecosystem state. They must be reviewed during every major version jump.
 
 ---
 
@@ -55,7 +55,7 @@ Before attempting to upgrade any library in the "Core Stack", this protocol MUST
 
 ## 🛠️ Environment Initialization & Workspace Update Mandate
 
-Whenever asked to "actualiza el entorno de trabajo", "actualizar el entorno de trabajo", "actualizar herramientas", "update tools", "preparar entorno", "update workspace", or "instalar librerías / dependencias", the agent MUST execute the dedicated root setup script corresponding to the current operating system. This script automatically handles NVM verification/installation, Node.js runtime alignment, local `.npmrc` security settings, and clean project dependency installation via `npm ci`. By default in development, it queries nodejs.org for the latest Current stable Node.js release, synchronizes `.nvmrc` and `package.json`, and updates `npm@latest` globally. For servers, CI, or reproducible locked runs, use `--declared-versions` / `-DeclaredVersions`:
+Whenever asked to "actualiza el entorno de trabajo", "actualizar el entorno de trabajo", "actualizar herramientas", "update tools", "preparar entorno", "update workspace", or "instalar librerías / dependencias", the agent MUST execute the dedicated root setup script corresponding to the current operating system. This script automatically handles NVM verification/installation, Node.js runtime alignment, local `.npmrc` security settings, and clean project dependency installation via `npm ci`. By default in development, it queries nodejs.org for the latest Current stable Node.js release, synchronizes `.node-version` (with fallback to `.nvmrc`) and `package.json`, and updates `npm@latest` globally. For servers, CI, or reproducible locked runs, use `--declared-versions` / `-DeclaredVersions`:
 
 - **Linux / macOS**: `chmod +x ./setup-linux.sh && ./setup-linux.sh [--declared-versions]`
 - **Windows (PowerShell as Administrator / Terminal)**: `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-DeclaredVersions]`
@@ -90,7 +90,7 @@ To maintain a single codebase that runs in both Node.js (scripts/tests) and Brow
    - **Atomicity**: To prevent time inconsistencies (clock skew/race conditions) and unnecessary system calls/allocations when chaining time formatting, always capture a single Temporal instance in a constant (e.g., `const now = Temporal.Now.instant().toZonedDateTimeISO('UTC')`) and perform subsequent calculations/formatting on that single instance.
 4. **Node.js 26 Permission Model**: All maintenance/utility scripts MUST be compatible with the `--permission` flag. When performing network (fetch) or file (read/write) operations, ensure the user or the automated orchestrator can grant precise access (e.g., `--allow-net=archives.bulbagarden.net`, `--allow-fs-read=.`). Scripts must not assume unrestricted access to the system.
 5. **Pure Node.js ESM Relative Import Extension**: In pure Node.js 26+ ESM execution mode (`--experimental-strip-types`), relative imports within TypeScript files MUST explicitly include the `.ts` extension (e.g., `import { mulberry32 } from '../utils/math.ts';`) to avoid `ERR_MODULE_NOT_FOUND` during native script execution. This rule applies to maintenance scripts and test suites importing helpers or logic files to ensure a zero-warning audit execution path.
-6. **Cache-First Pattern for Permission Model Scripts**: Scripts running under `--permission` that use a local cache directory (e.g., `scripts/.cache/`) MUST check for cache file existence (`fs.access`) *before* attempting `fs.mkdir` on the parent directory. When `--allow-fs-write` is not granted, `fs.mkdir` throws even with `{ recursive: true }` on an existing directory. Checking the cache first allows read-only execution to succeed when the cache is already populated.
+6. **Cache-First Pattern for Permission Model Scripts**: Scripts running under `--permission` that use a local cache directory (e.g., `scripts/.cache/`) MUST check for cache file existence (`fs.access`) _before_ attempting `fs.mkdir` on the parent directory. When `--allow-fs-write` is not granted, `fs.mkdir` throws even with `{ recursive: true }` on an existing directory. Checking the cache first allows read-only execution to succeed when the cache is already populated.
 7. **Vite Config Top-Level Code Trap**: Any code written at the **module top level** of `vite.config.ts` (outside of plugin hooks) is executed on **every** Vite invocation — including `npm run dev`, `npm run test`, and `npm run build`. This means top-level `fs.writeFileSync()` calls will silently overwrite production build artifacts (e.g., `public/version.json`) every time the dev server starts, corrupting the canonical build version that server-update scripts depend on. File-writing operations that belong exclusively to the build output MUST be placed inside a Vite plugin's `buildStart()` hook, which only runs during `npm run build`:
 
    ```typescript

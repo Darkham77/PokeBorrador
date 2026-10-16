@@ -1,14 +1,35 @@
 import {
-  BoostsTable, DataKind, Effect, GenderName, HPColor, HPTypeName, ID, Move,
-  MoveTarget, NatureName, PokemonSet, SpeciesName, StatID, StatusName, TypeName, toID,
+  BoostsTable,
+  DataKind,
+  Effect,
+  GenderName,
+  HPColor,
+  HPTypeName,
+  ID,
+  Move,
+  MoveTarget,
+  NatureName,
+  PokemonSet,
+  SpeciesName,
+  StatID,
+  StatusName,
+  TypeName,
+  toID
 } from '@pkmn/data';
 import {
-  DetailedPokemon, EffectName, MoveName, PokemonDetails, PokemonHPStatus,
-  PokemonHealth, PokemonIdent, PokemonSearchID, Protocol,
+  DetailedPokemon,
+  EffectName,
+  MoveName,
+  PokemonDetails,
+  PokemonHPStatus,
+  PokemonHealth,
+  PokemonIdent,
+  PokemonSearchID,
+  Protocol
 } from '@pkmn/protocol';
 
-import {NA} from './battle';
-import {Side} from './side';
+import { NA } from './battle';
+import { Side } from './side';
 
 interface EffectState {
   id: ID;
@@ -23,36 +44,72 @@ interface EffectState {
   duration?: 'turn' | 'move' | number;
 }
 
-interface EffectTable {[effectid: string]: EffectState}
+interface EffectTable {
+  [effectid: string]: EffectState;
+}
 
-type MoveSlot = {
-  name: MoveName;
-  id: ID;
-  ppUsed: PPState;
-  virtual?: boolean;
-} | {
-  name: MoveName;
-  id: ID;
-  ppUsed: PPState;
-  pp: number;
-  maxpp: number;
-  target: MoveTarget;
-  disabled?: boolean;
-  virtual?: boolean;
-};
+type MoveSlot =
+  | {
+      name: MoveName;
+      id: ID;
+      ppUsed: PPState;
+      virtual?: boolean;
+    }
+  | {
+      name: MoveName;
+      id: ID;
+      ppUsed: PPState;
+      pp: number;
+      maxpp: number;
+      target: MoveTarget;
+      disabled?: boolean;
+      virtual?: boolean;
+    };
 
 export type ItemEffect =
-   'found' | 'frisked' | 'knocked off' | 'stolen' |
-   'harvested' | 'bestowed' | 'tricked' | 'disturbed';
+  | 'found'
+  | 'frisked'
+  | 'knocked off'
+  | 'stolen'
+  | 'harvested'
+  | 'bestowed'
+  | 'tricked'
+  | 'disturbed';
 export type LastItemEffect =
-   'eaten' | 'flung' | 'knocked off' | 'stolen' | 'consumed' | 'incinerated' | 'popped' | 'held up';
+  | 'eaten'
+  | 'flung'
+  | 'knocked off'
+  | 'stolen'
+  | 'consumed'
+  | 'incinerated'
+  | 'popped'
+  | 'held up';
 export type CopySource = 'batonpass' | 'illusion' | 'shedtail';
 export type PPState = number | [number, number];
 
 const VOLATILES = [
-  'airballoon', 'attract', 'autotomize', 'disable', 'encore', 'foresight', 'gmaxchistrike',
-  'imprison', 'laserfocus', 'mimic', 'miracleeye', 'nightmare', 'saltcure', 'smackdown',
-  'stockpile1', 'stockpile2', 'stockpile3', 'syrupbomb', 'torment', 'typeadd', 'typechange', 'yawn',
+  'airballoon',
+  'attract',
+  'autotomize',
+  'disable',
+  'encore',
+  'foresight',
+  'gmaxchistrike',
+  'imprison',
+  'laserfocus',
+  'mimic',
+  'miracleeye',
+  'nightmare',
+  'saltcure',
+  'smackdown',
+  'stockpile1',
+  'stockpile2',
+  'stockpile3',
+  'syrupbomb',
+  'torment',
+  'typeadd',
+  'typechange',
+  'yawn'
 ];
 
 export class Pokemon implements DetailedPokemon, PokemonHealth {
@@ -81,7 +138,7 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
   beingCalledBack: boolean;
 
   statusStage: number;
-  statusState: {sleepTurns: number; toxicTurns: number};
+  statusState: { sleepTurns: number; toxicTurns: number };
   boosts: Partial<BoostsTable>;
   volatiles: EffectTable;
 
@@ -152,7 +209,7 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
     this.beingCalledBack = false;
 
     this.statusStage = 0;
-    this.statusState = {sleepTurns: 0, toxicTurns: 0};
+    this.statusState = { sleepTurns: 0, toxicTurns: 0 };
     this.boosts = {};
     this.volatiles = {};
 
@@ -169,10 +226,11 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
 
     this.nature = set?.nature ? this.side.battle.gen.natures.get(set.nature)?.name : undefined;
     this.hpType = set?.hpType
-      ? this.side.battle.gen.types.get(set.hpType)?.name as HPTypeName
+      ? (this.side.battle.gen.types.get(set.hpType)?.name as HPTypeName)
       : undefined;
-    this.terastallized =
-      set?.teraType ? this.side.battle.gen.types.get(set?.teraType)?.name : undefined;
+    this.terastallized = set?.teraType
+      ? this.side.battle.gen.types.get(set?.teraType)?.name
+      : undefined;
 
     this.moveSlots = [];
     this.maxMoves = undefined;
@@ -214,11 +272,9 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
   }
 
   get ident() {
-    return (
-      this.originalIdent.substr(0, 2) +
+    return (this.originalIdent.substr(0, 2) +
       'abcdef'.charAt(this.slot) +
-      this.originalIdent.substr(2)
-    ) as PokemonIdent;
+      this.originalIdent.substr(2)) as PokemonIdent;
   }
 
   get position() {
@@ -251,8 +307,9 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
     if (this.isTerastallized && this.teraType !== 'Stellar') {
       types = [this.teraType!];
     } else if (this.volatiles.typechange) {
-      types =
-        this.volatiles.typechange.apparentType!.split('/') as [TypeName] | [TypeName, TypeName];
+      types = this.volatiles.typechange.apparentType!.split('/') as
+        | [TypeName]
+        | [TypeName, TypeName];
     } else {
       types = this.species.types;
     }
@@ -261,7 +318,9 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
 
   actualTypes(types: [TypeName] | [TypeName, TypeName]) {
     if (this.hasVolatile('roost' as ID) && types.includes('Flying')) {
-      types = types.filter(typeName => typeName !== 'Flying') as [TypeName] | [TypeName, TypeName];
+      types = types.filter((typeName) => typeName !== 'Flying') as
+        | [TypeName]
+        | [TypeName, TypeName];
       if (!types.length) types = ['Normal'];
     }
     return types;
@@ -284,7 +343,7 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
   }
 
   get moves() {
-    return this.moveSlots.map(m => m.id);
+    return this.moveSlots.map((m) => m.id);
   }
 
   hasItem() {
@@ -306,18 +365,18 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
 
   static parseHealth(
     hpstring: string,
-    output: PokemonHealth = {hp: 0, maxhp: 0, hpcolor: ''}
+    output: PokemonHealth = { hp: 0, maxhp: 0, hpcolor: '' }
   ): [delta: number, denominator: number, oldnum: number, oldcolor: HPColor | ''] | null {
     if (!hpstring?.length) return null;
 
-    let oldhp = output.fainted ? 0 : (output.hp || 1);
+    let oldhp = output.fainted ? 0 : output.hp || 1;
     let oldmaxhp = output.maxhp;
     const oldcolor = output.hpcolor;
 
     void Protocol.parseHealth(hpstring as PokemonHPStatus, output);
     // max hp not known before parsing this message
     if (oldmaxhp === 0) oldmaxhp = oldhp = output.maxhp;
-    const oldnum = oldhp ? (Math.floor(output.maxhp * oldhp / oldmaxhp) || 1) : 0;
+    const oldnum = oldhp ? Math.floor((output.maxhp * oldhp) / oldmaxhp) || 1 : 0;
     const delta = output.hp - oldnum;
     return [delta, output.maxhp, oldnum, oldcolor];
   }
@@ -342,7 +401,7 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
 
   addVolatile(volatile: ID, args?: Omit<EffectState, 'id'>) {
     if (this.hasVolatile(volatile) && !args) return;
-    this.volatiles[volatile] = {...args, id: volatile};
+    this.volatiles[volatile] = { ...args, id: volatile };
   }
 
   removeVolatile(volatile: ID) {
@@ -432,7 +491,7 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
       if (ppUsed[0] < 0) ppUsed[0] = 0;
       if (ppUsed[1] < 0) ppUsed[1] = 0;
       const move = this.side.battle.gen.moves.get(entry[0])!;
-      let maxpp = (move.pp === 1 || move.noPPBoosts ? move.pp : move.pp * 8 / 5);
+      let maxpp = move.pp === 1 || move.noPPBoosts ? move.pp : (move.pp * 8) / 5;
       if (this.side.battle.tier.includes('Champions')) {
         maxpp = move.pp > 20 ? 20 : move.pp;
         maxpp = move.pp === 1 || move.noPPBoosts ? move.pp : (move.pp / 5 + 1) * 4;
@@ -461,14 +520,10 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
         return;
       }
     }
-    this.moveSlots.push({id: move.id, name: move.name as MoveName, ppUsed, virtual});
+    this.moveSlots.push({ id: move.id, name: move.name as MoveName, ppUsed, virtual });
   }
 
-  useMove(
-    move: Partial<Move> & NA,
-    target: Pokemon | null,
-    from?: EffectName | MoveName
-  ) {
+  useMove(move: Partial<Move> & NA, target: Pokemon | null, from?: EffectName | MoveName) {
     const fromeffect = this.side.battle.get('conditions', from);
     this.activateAbility(fromeffect);
     this.clearMovestatuses();
@@ -505,13 +560,19 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
       }
       // 1 pp was already deducted from using the move itself
       let pp: PPState = callerMoveForPressure ? 0 : 1;
-      if ((this.side.battle.abilityActive(['pressure'] as ID[]) ||
-      this.side.battle.gen.num === 3) &&
-        move.id !== 'stickyweb') {
+      if (
+        (this.side.battle.abilityActive(['pressure'] as ID[]) || this.side.battle.gen.num === 3) &&
+        move.id !== 'stickyweb'
+      ) {
         const foeTargets = [];
         const moveTarget = (move.pressureTarget || move.target)!;
         const singles = [
-          'self', 'allies', 'allySide', 'adjacentAlly', 'adjacentAllyOrSelf', 'allyTeam',
+          'self',
+          'allies',
+          'allySide',
+          'adjacentAlly',
+          'adjacentAllyOrSelf',
+          'allyTeam'
         ];
         const ffa = ['all', 'allAdjacent', 'allAdjacentFoes', 'foeSide'];
         if (!target && this.side.battle.gameType === 'singles' && !singles.includes(moveTarget)) {
@@ -521,8 +582,10 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
           for (const active of this.side.battle.getAllActive()) {
             if (active === this) continue;
             // Pressure affects allies in gen 3 and 4
-            if (this.side.battle.gen.num <= 4 ||
-                (active.side !== this.side && active.side.ally !== this.side)) {
+            if (
+              this.side.battle.gen.num <= 4 ||
+              (active.side !== this.side && active.side.ally !== this.side)
+            ) {
               foeTargets.push(active);
             }
           }
@@ -530,13 +593,15 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
           foeTargets.push(target);
         }
 
-        pp = this.getPressurePP(pp, foeTargets.filter(foe => foe && !foe.fainted) as Pokemon[]);
+        pp = this.getPressurePP(pp, foeTargets.filter((foe) => foe && !foe.fainted) as Pokemon[]);
       }
       this.rememberMove(callerMoveForPressure ? callerMoveForPressure.name : moveName, pp);
     }
     this.lastMove = move.id;
     this.lastMoveTargetLoc = target
-      ? target.side === this.side ? -(target.slot + 1) : target.slot + 1
+      ? target.side === this.side
+        ? -(target.slot + 1)
+        : target.slot + 1
       : 0;
     this.side.battle.lastMove = move.id;
     this.moveThisTurn = move.id;
@@ -547,8 +612,9 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
   }
   private getPressurePP(pp: PPState, foes: Pokemon[]) {
     for (const foe of foes) {
-      const abilities =
-        Object.values(this.side.battle.gen.species.get(foe.speciesForme)!.abilities);
+      const abilities = Object.values(
+        this.side.battle.gen.species.get(foe.speciesForme)!.abilities
+      );
       const canHavePressure = this.side.battle.gen.num === 3 && abilities.includes('Pressure');
       if (foe.effectiveAbility() === 'Pressure' || (canHavePressure && abilities.length === 1)) {
         if (typeof pp === 'number') {
@@ -567,10 +633,7 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
     return pp;
   }
 
-  cantUseMove(
-    effect: Partial<Effect> & NA,
-    move?: Partial<Move> & NA,
-  ) {
+  cantUseMove(effect: Partial<Effect> & NA, move?: Partial<Move> & NA) {
     this.clearMovestatuses();
     this.activateAbility(effect);
     if (move?.id) this.rememberMove(move.name, 0);
@@ -583,13 +646,16 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
         if (this.side.battle.gen.num === 1) this.lastMove = '';
         return;
       }
-      case 'focuspunch': return this.removeVolatile('focuspunch' as ID);
-      case 'shelltrap': return this.removeVolatile('shelltrap' as ID);
-      case 'flinch': return this.removeVolatile('focuspunch' as ID);
+      case 'focuspunch':
+        return this.removeVolatile('focuspunch' as ID);
+      case 'shelltrap':
+        return this.removeVolatile('shelltrap' as ID);
+      case 'flinch':
+        return this.removeVolatile('focuspunch' as ID);
     }
   }
 
-  activateAbility(effectOrName?: {kind: DataKind; name: string} | string, isNotBase?: boolean) {
+  activateAbility(effectOrName?: { kind: DataKind; name: string } | string, isNotBase?: boolean) {
     if (!effectOrName) return;
     if (typeof effectOrName !== 'string') {
       if (effectOrName.kind !== 'Ability') return;
@@ -613,11 +679,12 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
   }
 
   copyTypesFrom(pokemon: Pokemon, preterastallized = false) {
-    const apparentType =
-      (preterastallized ? pokemon.actualTypes(pokemon.species.types) : pokemon.types).join('/');
-    this.addVolatile('typechange' as ID, {apparentType});
+    const apparentType = (
+      preterastallized ? pokemon.actualTypes(pokemon.species.types) : pokemon.types
+    ).join('/');
+    this.addVolatile('typechange' as ID, { apparentType });
     if (pokemon.addedType) {
-      this.addVolatile('typeadd' as ID, {type: pokemon.addedType});
+      this.addVolatile('typeadd' as ID, { type: pokemon.addedType });
     } else {
       this.removeVolatile('typeadd' as ID);
     }
@@ -635,7 +702,8 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
 
     let item = this.item;
     const ability = this.effectiveAbility();
-    if (battle.field.hasPseudoWeather('magicroom' as ID) ||
+    if (
+      battle.field.hasPseudoWeather('magicroom' as ID) ||
       this.volatiles['embargo'] ||
       ability === 'klutz'
     ) {
@@ -665,7 +733,8 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
       // no change in displayed pixel width
       return [0, newrange[1] - newrange[0]];
     }
-    if (oldrange[0] < newrange[0]) { // swap order
+    if (oldrange[0] < newrange[0]) {
+      // swap order
       const r = oldrange;
       oldrange = newrange;
       newrange = r;
@@ -679,16 +748,20 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
     if (pixels === 0) return [0, 0];
     if (pixels === 1) return [0 + epsilon, 2 / 48 - epsilon];
     if (pixels === 9) {
-      if (color === 'y') { // ratio is > 0.2
+      if (color === 'y') {
+        // ratio is > 0.2
         return [0.2 + epsilon, 10 / 48 - epsilon];
-      } else if (color === 'r') { // ratio is <= 0.2
+      } else if (color === 'r') {
+        // ratio is <= 0.2
         return [9 / 48, 0.2];
       }
     }
     if (pixels === 24) {
-      if (color === 'g') { // ratio is > 0.5
+      if (color === 'g') {
+        // ratio is > 0.5
         return [0.5 + epsilon, 25 / 48 - epsilon];
-      } else if (color === 'y') { // ratio is exactly 0.5
+      } else if (color === 'y') {
+        // ratio is exactly 0.5
         return [0.5, 0.5];
       }
     }
@@ -727,7 +800,7 @@ export class Pokemon implements DetailedPokemon, PokemonHealth {
   }
 
   destroy() {
-    // @ts-ignore readonly
+    // @ts-expect-error readonly
     this.side = null!;
   }
 }

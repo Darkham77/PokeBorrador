@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import {
   determineLegalAutoPick,
   saveActivePvPSession,
@@ -166,8 +166,12 @@ describe('PvP AFK Timeout & Reconnection Helpers', () => {
 
       vi.stubGlobal('sessionStorage', {
         getItem: (k: string) => mockStorage[k] || null,
-        setItem: (k: string, v: string) => { mockStorage[k] = v; },
-        removeItem: (k: string) => { delete mockStorage[k]; }
+        setItem: (k: string, v: string) => {
+          mockStorage[k] = v;
+        },
+        removeItem: (k: string) => {
+          delete mockStorage[k];
+        }
       });
       vi.stubGlobal('window', { sessionStorage: globalThis.sessionStorage });
     });

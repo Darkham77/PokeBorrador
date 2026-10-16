@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { createServer, type Server } from 'node:http';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
@@ -39,7 +39,7 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
     server = createServer((req, res) => {
       if (req.url?.startsWith('/api/dev-lan-pvp') && req.method === 'POST') {
         const chunks: Buffer[] = [];
-        req.on('data', chunk => chunks.push(chunk as Buffer));
+        req.on('data', (chunk) => chunks.push(chunk as Buffer));
         req.on('end', () => {
           try {
             const body = JSON.parse(Buffer.concat(chunks).toString('utf-8')) as {
@@ -47,7 +47,9 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
               sql: string;
               params?: SQLInputValue[];
             };
-            const params: SQLInputValue[] = (body.params || []).map(p => (p === undefined ? null : p) as SQLInputValue);
+            const params: SQLInputValue[] = (body.params || []).map(
+              (p) => (p === undefined ? null : p) as SQLInputValue
+            );
             if (body.type === 'query') {
               const rows = db.prepare(body.sql).all(...params);
               res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -57,12 +59,14 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
             if (body.type === 'run') {
               const result = db.prepare(body.sql).run(...params);
               res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({
-                data: result,
-                lastInsertRowid: Number(result.lastInsertRowid),
-                changes: Number(result.changes),
-                error: null
-              }));
+              res.end(
+                JSON.stringify({
+                  data: result,
+                  lastInsertRowid: Number(result.lastInsertRowid),
+                  changes: Number(result.changes),
+                  error: null
+                })
+              );
               return;
             }
             res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -81,14 +85,14 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
     wss = new WebSocketServer({ noServer: true });
     server.on('upgrade', (req, socket, head) => {
       if (req.url?.startsWith('/api/dev-lan-relay')) {
-        wss.handleUpgrade(req, socket, head, ws => {
+        wss.handleUpgrade(req, socket, head, (ws) => {
           wss.emit('connection', ws, req);
         });
       }
     });
 
-    wss.on('connection', ws => {
-      ws.on('message', raw => {
+    wss.on('connection', (ws) => {
+      ws.on('message', (raw) => {
         try {
           const msg = JSON.parse(raw.toString('utf-8')) as {
             action?: string;
@@ -121,7 +125,7 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
       });
     });
 
-    await new Promise<void>(resolve => {
+    await new Promise<void>((resolve) => {
       server.listen(0, '127.0.0.1', () => {
         serverPort = (server.address() as AddressInfo).port;
         resolve();
@@ -132,7 +136,7 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
   afterEach(async () => {
     wss.close();
     channelSubscriptions.clear();
-    await new Promise<void>(resolve => server.close(() => resolve()));
+    await new Promise<void>((resolve) => server.close(() => resolve()));
   });
 
   it('coordinates matchmaking and battle channel exchange across simulated LAN network clients', async () => {
@@ -157,7 +161,9 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
     expect(ashInsert.error).toBeNull();
 
     // Verify Ash is in the queue
-    const queueCheck = await lanQuery('query', 'SELECT * FROM ranked_queue WHERE status = ?', ['searching']);
+    const queueCheck = await lanQuery('query', 'SELECT * FROM ranked_queue WHERE status = ?', [
+      'searching'
+    ]);
     expect(queueCheck.data).toHaveLength(1);
     expect(queueCheck.data[0].user_id).toBe('local_ash');
 
@@ -187,7 +193,10 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
     const inviteId = String(inviteRes.lastInsertRowid);
 
     // Gary removes both from queue
-    await lanQuery('run', 'DELETE FROM ranked_queue WHERE user_id IN (?, ?)', ['local_ash', 'local_gary']);
+    await lanQuery('run', 'DELETE FROM ranked_queue WHERE user_id IN (?, ?)', [
+      'local_ash',
+      'local_gary'
+    ]);
     const queueAfterMatch = await lanQuery('query', 'SELECT * FROM ranked_queue');
     expect(queueAfterMatch.data).toHaveLength(0);
 
@@ -209,8 +218,8 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
     const wsGary = new WebSocket(wsUrl);
 
     await Promise.all([
-      new Promise(resolve => wsAsh.on('open', resolve)),
-      new Promise(resolve => wsGary.on('open', resolve))
+      new Promise((resolve) => wsAsh.on('open', resolve)),
+      new Promise((resolve) => wsGary.on('open', resolve))
     ]);
 
     // Both subscribe to channel
@@ -218,11 +227,11 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
     wsGary.send(JSON.stringify({ action: 'subscribe', channel: channelName }));
 
     // Wait a brief tick for server subscription map to populate
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 50));
 
     // Ash sends pvp_team broadcast
-    const garyReceivedPromise = new Promise<Record<string, unknown>>(resolve => {
-      wsGary.on('message', raw => {
+    const garyReceivedPromise = new Promise<Record<string, unknown>>((resolve) => {
+      wsGary.on('message', (raw) => {
         const msg = JSON.parse(raw.toString('utf-8'));
         if (msg.channel === channelName && msg.action === 'broadcast') {
           resolve(msg.data);
@@ -230,27 +239,29 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
       });
     });
 
-    wsAsh.send(JSON.stringify({
-      action: 'broadcast',
-      channel: channelName,
-      senderId: 'ash_client',
-      data: {
-        type: 'broadcast',
-        event: 'pvp_team',
-        payload: {
-          trainerName: 'Ash',
-          team: [{ species: 'pikachu', hp: 100 }]
+    wsAsh.send(
+      JSON.stringify({
+        action: 'broadcast',
+        channel: channelName,
+        senderId: 'ash_client',
+        data: {
+          type: 'broadcast',
+          event: 'pvp_team',
+          payload: {
+            trainerName: 'Ash',
+            team: [{ species: 'pikachu', hp: 100 }]
+          }
         }
-      }
-    }));
+      })
+    );
 
     const garyReceived = await garyReceivedPromise;
     expect(garyReceived.event).toBe('pvp_team');
     expect((garyReceived.payload as Record<string, unknown>).trainerName).toBe('Ash');
 
     // Gary sends pvp_team broadcast back to Ash
-    const ashReceivedPromise = new Promise<Record<string, unknown>>(resolve => {
-      wsAsh.on('message', raw => {
+    const ashReceivedPromise = new Promise<Record<string, unknown>>((resolve) => {
+      wsAsh.on('message', (raw) => {
         const msg = JSON.parse(raw.toString('utf-8'));
         if (msg.channel === channelName && msg.action === 'broadcast') {
           resolve(msg.data);
@@ -258,19 +269,21 @@ describe('LAN PvP & Matchmaking Integration Simulation', () => {
       });
     });
 
-    wsGary.send(JSON.stringify({
-      action: 'broadcast',
-      channel: channelName,
-      senderId: 'gary_client',
-      data: {
-        type: 'broadcast',
-        event: 'pvp_team',
-        payload: {
-          trainerName: 'Gary',
-          team: [{ species: 'blastoise', hp: 160 }]
+    wsGary.send(
+      JSON.stringify({
+        action: 'broadcast',
+        channel: channelName,
+        senderId: 'gary_client',
+        data: {
+          type: 'broadcast',
+          event: 'pvp_team',
+          payload: {
+            trainerName: 'Gary',
+            team: [{ species: 'blastoise', hp: 160 }]
+          }
         }
-      }
-    }));
+      })
+    );
 
     const ashReceived = await ashReceivedPromise;
     expect(ashReceived.event).toBe('pvp_team');

@@ -43,9 +43,17 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 // Type-safe narrowing: each type has a unique discriminant field
-const spawnItems = computed(() => props.items.filter((i): i is RouteSpawnMappedItem => 'isSeen' in i));
-const npcItems = computed(() => props.items.filter((i): i is NpcChanceInfo => 'active' in i && 'chance' in i && !('isSeen' in i)));
-const archaeologyItems = computed(() => props.items.filter((i): i is ArchaeologyRewardData => 'sprite' in i && !('isSeen' in i) && !('active' in i)));
+const spawnItems = computed(() =>
+  props.items.filter((i): i is RouteSpawnMappedItem => 'isSeen' in i)
+);
+const npcItems = computed(() =>
+  props.items.filter((i): i is NpcChanceInfo => 'active' in i && 'chance' in i && !('isSeen' in i))
+);
+const archaeologyItems = computed(() =>
+  props.items.filter(
+    (i): i is ArchaeologyRewardData => 'sprite' in i && !('isSeen' in i) && !('active' in i)
+  )
+);
 
 const tableScrollClass = computed(() => {
   if (props.mode === 'fishing') return 'fishing-table';
@@ -62,18 +70,14 @@ defineEmits<{
 <template>
   <div class="spawns-section">
     <h3 class="section-title-pixel">
-      <span
-        v-if="emoji"
-        class="emoji title-emoji"
-      >{{ emoji }}</span>
+      <span v-if="emoji" class="emoji title-emoji">{{ emoji }}</span>
       <span class="title-text">{{ title }}</span>
-      <span
-        class="section-prob-badge"
-        :class="probClass"
-      >
+      <span class="section-prob-badge" :class="probClass">
         <template v-if="mode === 'npc'">(PROBABILIDAD: VARIABLE)</template>
         <template v-else>
-          (PROBABILIDAD: {{ probability }}%<template v-if="eventMultiplier && eventMultiplier > 1"> · <span class="emoji">✨</span> EVENTO x{{ eventMultiplier }}</template>)
+          (PROBABILIDAD: {{ probability }}%<template v-if="eventMultiplier && eventMultiplier > 1">
+            · <span class="emoji">✨</span> EVENTO x{{ eventMultiplier }}</template
+          >)
         </template>
       </span>
     </h3>
@@ -93,10 +97,7 @@ defineEmits<{
           @select-pokemon="(id, isSeen) => $emit('select-pokemon', id, isSeen)"
         />
 
-        <RouteSpawnsNpcRows
-          v-else-if="mode === 'npc'"
-          :npc-items="npcItems"
-        />
+        <RouteSpawnsNpcRows v-else-if="mode === 'npc'" :npc-items="npcItems" />
 
         <RouteSpawnsItemRows
           v-else

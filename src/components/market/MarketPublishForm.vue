@@ -1,39 +1,36 @@
 <script setup lang="ts">
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { MarketListingType } from '@/logic/economy/market'
-import type { InventoryItem } from './useMarketPublishInventory.ts'
-import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MarketListingType } from '@/logic/economy/market';
+import type { InventoryItem } from './useMarketPublishInventory.ts';
+import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue';
 
 interface Props {
-  selection: Pokemon | InventoryItem | null
-  activeMode: MarketListingType
-  isSmallScreen: boolean
-  selectedPokemon: Pokemon | null
-  itemSpriteUrl: string
-  price: number
-  itemQty: number
-  formattedFee: string
-  formattedNet: string
-  publishing: boolean
+  selection: Pokemon | InventoryItem | null;
+  activeMode: MarketListingType;
+  isSmallScreen: boolean;
+  selectedPokemon: Pokemon | null;
+  itemSpriteUrl: string;
+  price: number;
+  itemQty: number;
+  formattedFee: string;
+  formattedNet: string;
+  publishing: boolean;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'update:price', val: number): void
-  (e: 'update:itemQty', val: number): void
-  (e: 'open-detail'): void
-  (e: 'publish'): void
-  (e: 'clear-selection'): void
-}>()
+  (e: 'update:price', val: number): void;
+  (e: 'update:itemQty', val: number): void;
+  (e: 'open-detail'): void;
+  (e: 'publish'): void;
+  (e: 'clear-selection'): void;
+}>();
 </script>
 
 <template>
   <div class="publish-panel">
-    <div
-      v-if="selection"
-      class="form-container"
-    >
+    <div v-if="selection" class="form-container">
       <div class="selected-summary">
         <span class="label">VAS A VENDER:</span>
 
@@ -42,6 +39,8 @@ const emit = defineEmits<{
           v-if="selectedPokemon"
           id="gts-selected-pokemon-preview"
           class="selected-pokemon-card-wrap"
+          role="button"
+          tabindex="0"
           @click.stop="emit('open-detail')"
         >
           <BoxPokemonCard
@@ -59,54 +58,46 @@ const emit = defineEmits<{
         </div>
 
         <!-- Preview para Objetos -->
-        <div
-          v-else-if="activeMode === 'item' && selection"
-          class="selected-item-preview"
-        >
+        <div v-else-if="activeMode === 'item' && selection" class="selected-item-preview">
           <img
             v-if="itemSpriteUrl"
             :src="itemSpriteUrl"
             class="item-icon"
             alt="item"
-          
             width="32"
             height="32"
-          >
+          />
           <span class="val">{{ selection.name }}</span>
         </div>
 
-        <span
-          v-else
-          class="val"
-        >{{ selection.name }}</span>
+        <span v-else class="val">{{ selection.name }}</span>
       </div>
 
-      <div
-        v-if="activeMode === 'item' && selection && 'qty' in selection"
-        class="input-group"
-      >
+      <div v-if="activeMode === 'item' && selection && 'qty' in selection" class="input-group">
         <label>CANTIDAD (MÁX: {{ selection.qty }})</label>
-        <input 
+        <input
           id="gts-item-qty-input"
-          :value="itemQty" 
-          type="number" 
+          :value="itemQty"
+          type="number"
           min="1"
           :max="selection.qty"
+          aria-label="Cantidad de objetos a vender"
           class="price-input"
           @input="emit('update:itemQty', Number(($event.target as HTMLInputElement).value))"
-        >
+        />
       </div>
 
       <div class="input-group">
         <label>PRECIO DE VENTA (₱)</label>
-        <input 
+        <input
           id="gts-price-input"
-          :value="price" 
-          type="number" 
+          :value="price"
+          type="number"
           min="1"
+          aria-label="Precio de venta"
           class="price-input"
           @input="emit('update:price', Number(($event.target as HTMLInputElement).value))"
-        >
+        />
       </div>
 
       <div class="financials">
@@ -121,10 +112,10 @@ const emit = defineEmits<{
       </div>
 
       <div class="form-actions">
-        <button 
+        <button
           id="gts-publish-offer-btn"
           v-gsap-hover
-          class="btn-vicio-secondary btn-vicio-sm" 
+          class="btn-vicio-secondary btn-vicio-sm"
           :disabled="publishing"
           @click.stop="emit('publish')"
         >
@@ -142,14 +133,8 @@ const emit = defineEmits<{
         </button>
       </div>
     </div>
-    <div
-      v-else
-      id="gts-selection-hint"
-      class="selection-hint"
-    >
-      <div class="emoji hint-icon">
-        👈
-      </div>
+    <div v-else id="gts-selection-hint" class="selection-hint">
+      <div class="emoji hint-icon">👈</div>
       <p>Selecciona un Pokémon u objeto para venderlo en el mercado mundial.</p>
     </div>
   </div>

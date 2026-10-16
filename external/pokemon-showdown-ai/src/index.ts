@@ -79,7 +79,11 @@ class PokemonShowdownAI {
       log(`Joining battle: ${battleId}`);
       this.client.joinBattle(battleId);
       this.currentBattle = new BattleOrchestrator(
-        battleId, this.client, this.calc, this.inference, this.claude
+        battleId,
+        this.client,
+        this.calc,
+        this.inference,
+        this.claude
       );
       // Turn on timer to avoid timeouts
       this.client.sendTimer(battleId, true);

@@ -33,7 +33,7 @@ export const TRAINER_RANKS = [
   { lv: 27, title: 'Omnisciente', expNeeded: 127500 },
   { lv: 28, title: 'Eterno', expNeeded: 139000 },
   { lv: 29, title: 'Divinidad Pokémon', expNeeded: 151500 },
-  { lv: 30, title: 'Deidad de Kanto', expNeeded: 9999999 },
+  { lv: 30, title: 'Deidad de Kanto', expNeeded: 9999999 }
 ];
 
 export const MARKET_UNLOCKS = {

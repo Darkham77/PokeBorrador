@@ -49,12 +49,10 @@ describe('Mountain Plateau Integrity & Consolidation (Elimination of Grass Holes
           const isOuterCornerBorderingGround = Boolean(
             mCell &&
             (mCell.role.includes('corner_outer') || mCell.role === 'peak_isolated') &&
-            (
-              (continent.heightmap[y - 1]?.[x] ?? 0) === 0 ||
+            ((continent.heightmap[y - 1]?.[x] ?? 0) === 0 ||
               (continent.heightmap[y + 1]?.[x] ?? 0) === 0 ||
               (continent.heightmap[y]?.[x - 1] ?? 0) === 0 ||
-              (continent.heightmap[y]?.[x + 1] ?? 0) === 0
-            )
+              (continent.heightmap[y]?.[x + 1] ?? 0) === 0)
           );
           if (isOuterCornerBorderingGround) continue;
 
@@ -120,7 +118,13 @@ describe('Mountain Plateau Integrity & Consolidation (Elimination of Grass Holes
 
           const hasStructureOrMountain =
             isCoveredByCave ||
-            filenames.some((f) => f.includes('cave') || f.includes('cliff') || f.includes('stairs') || f.includes('rock'));
+            filenames.some(
+              (f) =>
+                f.includes('cave') ||
+                f.includes('cliff') ||
+                f.includes('stairs') ||
+                f.includes('rock')
+            );
 
           if (!hasStructureOrMountain) {
             footprintGaps.push({ caveId: cave.id, x: gx, y: gy });
@@ -143,17 +147,18 @@ describe('Mountain Plateau Integrity & Consolidation (Elimination of Grass Holes
       const gy = inst.py / 32;
       const elev = continent.heightmap[gy]?.[gx] ?? 0;
 
-      if (elev > 0 && (inst.filename.includes('grass_top') || inst.filename === 'poke_grass_plain.png')) {
+      if (
+        elev > 0 &&
+        (inst.filename.includes('grass_top') || inst.filename === 'poke_grass_plain.png')
+      ) {
         const mCell = continent.resolvedMountain.cellDetails[gy]?.[gx];
         const isOuterCornerBorderingGround = Boolean(
           mCell &&
           (mCell.role.includes('corner_outer') || mCell.role === 'peak_isolated') &&
-          (
-            (continent.heightmap[gy - 1]?.[gx] ?? 0) === 0 ||
+          ((continent.heightmap[gy - 1]?.[gx] ?? 0) === 0 ||
             (continent.heightmap[gy + 1]?.[gx] ?? 0) === 0 ||
             (continent.heightmap[gy]?.[gx - 1] ?? 0) === 0 ||
-            (continent.heightmap[gy]?.[gx + 1] ?? 0) === 0
-          )
+            (continent.heightmap[gy]?.[gx + 1] ?? 0) === 0)
         );
         if (isOuterCornerBorderingGround && inst.filename === 'poke_grass_plain.png') {
           continue;

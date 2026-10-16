@@ -12,16 +12,16 @@ import {
   loadTilesRegistry,
   type TilesRegistryJson
 } from '../../logic/map/tilesRegistry.ts';
-import {
-  ProceduralMapGenerator
-} from '../../logic/map/proceduralMapGenerator.ts';
+import { ProceduralMapGenerator } from '../../logic/map/proceduralMapGenerator.ts';
 
 describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   let registryService: TilesRegistryService;
 
   beforeAll(() => {
     const registryPath = path.resolve('test_aventura/assets/tiles_registry.json');
-    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(true);
+    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(
+      true
+    );
     const raw = fs.readFileSync(registryPath, 'utf-8');
     const data = JSON.parse(raw) as TilesRegistryJson;
     registryService = new TilesRegistryService(data);
@@ -134,8 +134,10 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
   });
 
   it('stamps multitile structure templates atomically onto target map', async () => {
-    const { generateProceduralMap, stampStructure } = await import('../../logic/map/proceduralMapGenerator.ts');
-    const { KANTO_HOUSE_SMALL, POKEMART, POKEMON_CENTER } = await import('../../config/mapStructures.ts');
+    const { generateProceduralMap, stampStructure } =
+      await import('../../logic/map/proceduralMapGenerator.ts');
+    const { KANTO_HOUSE_SMALL, POKEMART, POKEMON_CENTER } =
+      await import('../../config/mapStructures.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 123 },
@@ -183,7 +185,8 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
 
   it('automatically executes Town Pass when withTown is enabled on a 30x30 map', async () => {
     const { generateProceduralMap } = await import('../../logic/map/proceduralMapGenerator.ts');
-    const { POKEMON_CENTER, POKEMART, KANTO_HOUSE_SMALL } = await import('../../config/mapStructures.ts');
+    const { POKEMON_CENTER, POKEMART, KANTO_HOUSE_SMALL } =
+      await import('../../config/mapStructures.ts');
 
     const map = generateProceduralMap(
       { width: 30, height: 30, theme: 'firered', seed: 42, withTown: true },
@@ -226,7 +229,10 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
         const baseTileId = map.layers.ground[y]![x]!.tileId;
         if (baseTileId.startsWith('tile_terrain_')) {
           pathCellCount++;
-          expect(map.layers.decorations[y]![x], `Path decorations at (${x}, ${y}) must be null`).toBeNull();
+          expect(
+            map.layers.decorations[y]![x],
+            `Path decorations at (${x}, ${y}) must be null`
+          ).toBeNull();
           expect(map.collisionMatrix[y]![x], `Path collision at (${x}, ${y}) must be 0`).toBe(0);
         }
       }
@@ -246,7 +252,9 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
     for (const warp of map.entities.warps) {
       expect(warp.y, 'Building entrance must clear perimeter trees').toBeGreaterThanOrEqual(4);
       expect(warp.x, 'Building entrance must clear left perimeter trees').toBeGreaterThanOrEqual(3);
-      expect(warp.x, 'Building entrance must clear right perimeter trees').toBeLessThanOrEqual(map.width - 4);
+      expect(warp.x, 'Building entrance must clear right perimeter trees').toBeLessThanOrEqual(
+        map.width - 4
+      );
     }
   });
 
@@ -295,7 +303,7 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
     );
 
     // In procedural town: find Pokémon Center warp
-    const pcWarp = map.entities.warps.find(w => w.targetMapId === 'interior_pokemon_center')!;
+    const pcWarp = map.entities.warps.find((w) => w.targetMapId === 'interior_pokemon_center')!;
     expect(pcWarp).toBeDefined();
     const pcDoorStep = map.layers.ground[pcWarp.y + 1]![pcWarp.x]!;
     expect(pcDoorStep.tileId).toBe('tile_terrain_4756bdfd4e');
@@ -338,5 +346,3 @@ describe('Procedural Map Generator Engine (SSoT v2.0)', () => {
     }
   });
 });
-
-

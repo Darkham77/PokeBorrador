@@ -36,15 +36,14 @@ const baseFillWidth = computed(() => {
 });
 
 const extraFillWidth = computed(() => `${diff.value * PROBABILITY_BAR_SCALE_FACTOR}%`);
-const reducedFillWidth = computed(() => `${props.reward.percentage * PROBABILITY_BAR_SCALE_FACTOR}%`);
+const reducedFillWidth = computed(
+  () => `${props.reward.percentage * PROBABILITY_BAR_SCALE_FACTOR}%`
+);
 const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_SCALE_FACTOR}%`);
 </script>
 
 <template>
-  <div
-    class="report-row"
-    :class="reward.statusClass"
-  >
+  <div class="report-row" :class="reward.statusClass">
     <!-- Item Info -->
     <div class="col-pokemon row-cell flex-align">
       <div class="mini-sprite-wrapper">
@@ -52,14 +51,11 @@ const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_S
           :src="reward.sprite"
           :alt="reward.name"
           class="mini-sprite"
-          style=" width: 24px; height: 24px;object-fit: contain;"
-        >
+          style="width: 24px; height: 24px; object-fit: contain"
+        />
       </div>
       <div class="poke-name-wrap">
-        <span
-          class="poke-name"
-          style="font-size: var(--font-11); line-height: 1.4;"
-        >
+        <span class="poke-name" style="font-size: var(--font-11); line-height: 1.4">
           {{ reward.name }}
         </span>
       </div>
@@ -75,7 +71,7 @@ const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_S
         <span
           class="status-tag"
           :class="reward.statusClass"
-          style=" padding: 2px 4px;font-size: var(--font-9);"
+          style="padding: 2px 4px; font-size: var(--font-9)"
         >
           {{ reward.type }}
         </span>
@@ -85,45 +81,32 @@ const lostFillWidth = computed(() => `${Math.abs(diff.value) * PROBABILITY_BAR_S
     <!-- Details/Description -->
     <div
       class="col-multiplier row-cell flex-align"
-      style="font-size: var(--font-9); line-height: 1.2; opacity: 0.8; white-space: normal;"
+      style="font-size: var(--font-9); line-height: 1.2; opacity: 0.8; white-space: normal"
     >
       {{ reward.description || 'Fósil desenterrable en la zona' }}
     </div>
 
     <!-- Probability -->
     <div class="col-prob row-cell flex-align">
-      <PVTooltip
-        v-bind="getItemTooltip(reward)"
-        tag="div"
-        style="width: 100%;"
-      >
+      <PVTooltip v-bind="getItemTooltip(reward)" tag="div" style="width: 100%">
         <div class="prob-bar-wrapper">
           <div class="prob-numerical">
-            <span class="active-prob">
-              {{ reward.percentage.toFixed(1) }}%
-            </span>
+            <span class="active-prob"> {{ reward.percentage.toFixed(1) }}% </span>
             <span
               v-if="hasDelta"
               class="delta-text"
               :class="isPositiveDelta ? 'positive' : 'negative'"
-              style="font-size: var(--font-8); margin-left: 4px;"
+              style="font-size: var(--font-8); margin-left: 4px"
             >
               {{ deltaText }}
             </span>
           </div>
           <div class="prob-visual-progress">
             <template v-if="!hasDelta">
-              <div
-                class="fill base-fill"
-                :style="{ width: baseFillWidth }"
-              />
+              <div class="fill base-fill" :style="{ width: baseFillWidth }" />
             </template>
             <template v-else>
-              <div
-                v-if="diff >= 0"
-                class="fill base-fill"
-                :style="{ width: baseFillWidth }"
-              />
+              <div v-if="diff >= 0" class="fill base-fill" :style="{ width: baseFillWidth }" />
               <div
                 v-if="isPositiveDelta"
                 class="fill extra-fill"

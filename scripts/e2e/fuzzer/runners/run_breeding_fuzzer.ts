@@ -1,34 +1,56 @@
 // scripts/e2e/fuzzer/runners/run_breeding_fuzzer.ts
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { checkCompatibility, getEggSpecies } from '../../../../src/logic/breeding/breedingEngine.ts';
-import { calculateInheritance, inheritNature, inheritMoves } from '../../../../src/logic/breeding/breedingInheritance.ts';
+import {
+  checkCompatibility,
+  getEggSpecies
+} from '../../../../src/logic/breeding/breedingEngine.ts';
+import {
+  calculateInheritance,
+  inheritNature,
+  inheritMoves
+} from '../../../../src/logic/breeding/breedingInheritance.ts';
 import { Dex } from '@pkmn/sim';
 import type { Pokemon, PokemonGender, PokemonIVs } from '../../../../src/types/pokemon/pokemon.ts';
-import { requirePokemonSpeciesId, isPokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
+import {
+  requirePokemonSpeciesId,
+  isPokemonSpeciesId
+} from '../../../../src/data/pokemon/pokedex.ts';
 
-const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_breeding_coverage_report.json');
+const REPORT_FILE = path.resolve(
+  process.cwd(),
+  'scripts/e2e/results/fuzzer_breeding_coverage_report.json'
+);
 
 async function runBreedingFuzzer() {
   const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
   const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
-  
+
   // Obtener todas las especies válidas en nuestro Pokédex que tienen grupos de huevo definidos
-  const speciesList = Array.from(Dex.species.all()).filter(s => s.exists && s.eggGroups && isPokemonSpeciesId(Dex.toID(s.name)));
-  
+  const speciesList = Array.from(Dex.species.all()).filter(
+    (s) => s.exists && s.eggGroups && isPokemonSpeciesId(Dex.toID(s.name))
+  );
+
   let totalSimulations = 0;
   let compatibleCount = 0;
   let incompatibleCount = 0;
   let passed = 0;
   let failed = 0;
 
-  console.log(`🧬 Iniciando Fuzzer Matricial Completo: Cruzando todas las ${speciesList.length} especies entre sí (${speciesList.length * speciesList.length} combinaciones)...`);
+  console.log(
+    `🧬 Iniciando Fuzzer Matricial Completo: Cruzando todas las ${speciesList.length} especies entre sí (${speciesList.length * speciesList.length} combinaciones)...`
+  );
 
-  const createMockPoke = (speciesName: string, gender: PokemonGender, customId: number): Pokemon => {
+  const createMockPoke = (
+    speciesName: string,
+    gender: PokemonGender,
+    customId: number
+  ): Pokemon => {
     const speciesId = requirePokemonSpeciesId(Dex.toID(speciesName));
-    const ivs: PokemonIVs = customId === 1
-      ? { hp: 31, atk: 30, def: 29, spa: 28, spd: 27, spe: 26 }
-      : { hp: 5, atk: 6, def: 7, spa: 8, spd: 9, spe: 10 };
+    const ivs: PokemonIVs =
+      customId === 1
+        ? { hp: 31, atk: 30, def: 29, spa: 28, spd: 27, spe: 26 }
+        : { hp: 5, atk: 6, def: 7, spa: 8, spd: 9, spe: 10 };
     return {
       uid: `mock-${speciesName}-${customId}`,
       id: speciesId,
@@ -51,14 +73,14 @@ async function runBreedingFuzzer() {
       exp: 0,
       expNeeded: 100,
       isShiny: false,
-      type: 'normal',
+      type: 'normal'
     };
   };
 
   // Matriz completa: cruzamos todas las especies de la base de datos entre sí
   for (let i = 0; i < speciesList.length; i++) {
     const sA = speciesList[i]!;
-    
+
     for (let j = 0; j < speciesList.length; j++) {
       const sB = speciesList[j]!;
       totalSimulations++;
@@ -90,7 +112,9 @@ async function runBreedingFuzzer() {
 
           // Consistencia de género en compatibles
           if (pA.gender === pB.gender && !isDittoA && !isDittoB) {
-            errors.push(`[Error] Cruce compatible con mismo género sin Ditto: ${pA.name} x ${pB.name}`);
+            errors.push(
+              `[Error] Cruce compatible con mismo género sin Ditto: ${pA.name} x ${pB.name}`
+            );
             failed++;
             continue;
           }
@@ -98,7 +122,9 @@ async function runBreedingFuzzer() {
           // Especie de Huevo
           const eggSpecies = getEggSpecies(isDittoA ? pB.id : pA.id);
           if (!eggSpecies) {
-            errors.push(`[Error] Especie de huevo indefinida para madre compatible: ${pA.name} x ${pB.name}`);
+            errors.push(
+              `[Error] Especie de huevo indefinida para madre compatible: ${pA.name} x ${pB.name}`
+            );
             failed++;
             continue;
           }
@@ -106,7 +132,9 @@ async function runBreedingFuzzer() {
           // Validar que la especie de huevo sea válida en el Dex de Showdown
           const dexSpecies = Dex.species.get(eggSpecies);
           if (!dexSpecies.exists) {
-            errors.push(`[Error] Especie de huevo resultante '${eggSpecies}' no existe en el Dex de Showdown: ${pA.name} x ${pB.name}`);
+            errors.push(
+              `[Error] Especie de huevo resultante '${eggSpecies}' no existe en el Dex de Showdown: ${pA.name} x ${pB.name}`
+            );
             failed++;
             continue;
           }
@@ -115,13 +143,18 @@ async function runBreedingFuzzer() {
           // 1. Everstone
           const nat = inheritNature(pA, pB, 'everstone', '');
           if (nat !== pA.nature) {
-            errors.push(`[Error] Everstone falló: esperado '${pA.nature}', obtenido '${nat}' en cruce ${pA.name} x ${pB.name}`);
+            errors.push(
+              `[Error] Everstone falló: esperado '${pA.nature}', obtenido '${nat}' en cruce ${pA.name} x ${pB.name}`
+            );
             failed++;
             continue;
           }
 
           // 2. Power Items
-          const ivs = calculateInheritance(pA, pB, 'powerweight', 'powerbracer') as Record<string, number>; // open-record: Generic key-value data dictionary container
+          const ivs = calculateInheritance(pA, pB, 'powerweight', 'powerbracer') as Record<
+            string,
+            number
+          >; // open-record: Generic key-value data dictionary container
           if (ivs.hp !== pA.ivs.hp || ivs.atk !== pB.ivs.atk) {
             errors.push(`[Error] Power items fallaron en cruce ${pA.name} x ${pB.name}`);
             failed++;
@@ -134,7 +167,9 @@ async function runBreedingFuzzer() {
           for (const s of stats) {
             const val = ivs[s];
             if (val !== undefined && (val < 0 || val > 31)) {
-              errors.push(`[Error] IV fuera de rango [0-31] en stat '${s}': valor ${val} en cruce ${pA.name} x ${pB.name}`);
+              errors.push(
+                `[Error] IV fuera de rango [0-31] en stat '${s}': valor ${val} en cruce ${pA.name} x ${pB.name}`
+              );
               ivsRangeValid = false;
               failed++;
               break;
@@ -145,7 +180,9 @@ async function runBreedingFuzzer() {
           // 3. Validar movimientos heredados
           const inheritedMoves = inheritMoves(pA, pB, requirePokemonSpeciesId(eggSpecies));
           if (inheritedMoves.length > 4) {
-            errors.push(`[Error] Demasiados movimientos heredados (${inheritedMoves.length}) en cruce ${pA.name} x ${pB.name}`);
+            errors.push(
+              `[Error] Demasiados movimientos heredados (${inheritedMoves.length}) en cruce ${pA.name} x ${pB.name}`
+            );
             failed++;
             continue;
           }
@@ -153,7 +190,9 @@ async function runBreedingFuzzer() {
           for (const mId of inheritedMoves) {
             const move = Dex.moves.get(mId);
             if (!move.exists) {
-              errors.push(`[Error] Movimiento heredado '${mId}' no existe en el Dex de Showdown en cruce ${pA.name} x ${pB.name}`);
+              errors.push(
+                `[Error] Movimiento heredado '${mId}' no existe en el Dex de Showdown en cruce ${pA.name} x ${pB.name}`
+              );
               movesValid = false;
               failed++;
               break;
@@ -180,10 +219,10 @@ async function runBreedingFuzzer() {
       passed,
       failed,
       compatibleCount,
-      incompatibleCount,
+      incompatibleCount
     },
     errors: errors.slice(0, 100), // Guardar las primeras 100 fallas para análisis
-    warnings,
+    warnings
   };
 
   await fs.mkdir(path.dirname(REPORT_FILE), { recursive: true });
@@ -200,7 +239,7 @@ async function runBreedingFuzzer() {
 }
 
 if (process.argv[1] === import.meta.filename) {
-  runBreedingFuzzer().catch(err => {
+  runBreedingFuzzer().catch((err) => {
     console.error(err);
     process.exit(1);
   });

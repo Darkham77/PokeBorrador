@@ -6,12 +6,21 @@ import { processGymVictory, type Gym } from '../../../../src/logic/gym/gymEngine
 import type { GameState } from '../../../../src/types/system/game.ts';
 import type { GymId } from '../../../../src/data/world/gyms.ts';
 
-const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_gyms_coverage_report.json');
+const REPORT_FILE = path.resolve(
+  process.cwd(),
+  'scripts/e2e/results/fuzzer_gyms_coverage_report.json'
+);
 
 async function runGymsFuzzer() {
   const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
   const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const results: Array<{ gymId: string; diff: string; tmDropped: boolean; extraCoins: number; isFirst: boolean }> = [];
+  const results: Array<{
+    gymId: string;
+    diff: string;
+    tmDropped: boolean;
+    extraCoins: number;
+    isFirst: boolean;
+  }> = [];
 
   let passed = 0;
   let failed = 0;
@@ -26,7 +35,7 @@ async function runGymsFuzzer() {
     { id: 'fuchsia', leader: 'Koga', rewardTM: 'TM06', level: 43 },
     { id: 'saffron', leader: 'Sabrina', rewardTM: 'TM04', level: 43 },
     { id: 'cinnabar', leader: 'Blaine', rewardTM: 'TM38', level: 47 },
-    { id: 'viridian', leader: 'Giovanni', rewardTM: 'TM26', level: 50 },
+    { id: 'viridian', leader: 'Giovanni', rewardTM: 'TM26', level: 50 }
   ];
 
   const createMockGameState = (defeated: string[]): Partial<GameState> => {
@@ -38,7 +47,7 @@ async function runGymsFuzzer() {
       box: [],
       starterChosen: true,
       eggs: [],
-      inventory: {},
+      inventory: {}
     };
   };
 
@@ -79,9 +88,8 @@ async function runGymsFuzzer() {
         diff,
         tmDropped: res.tmDropped,
         extraCoins: res.extraCoins,
-        isFirst: res.isFirstTime,
+        isFirst: res.isFirstTime
       });
-
     } catch (err: unknown) {
       errors.push(`Excepción procesando victoria en gimnasio ${gym.id}: ${(err as Error).message}`);
       failed++;
@@ -94,28 +102,30 @@ async function runGymsFuzzer() {
       total: 200,
       passed,
       failed,
-      firstTimeCount: results.filter(r => r.isFirst).length,
-      rematchCount: results.filter(r => !r.isFirst).length,
+      firstTimeCount: results.filter((r) => r.isFirst).length,
+      rematchCount: results.filter((r) => !r.isFirst).length
     },
     results,
     errors,
-    warnings,
+    warnings
   };
 
   await fs.mkdir(path.dirname(REPORT_FILE), { recursive: true });
   await fs.writeFile(REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
   console.log(`💾 Reporte de Gimnasios guardado en: ${REPORT_FILE}`);
 
-  return [{
-    label: 'Gimnasios (Gyms)',
-    passed,
-    failed,
-    untested: 0,
-    total: 200,
-  }];
+  return [
+    {
+      label: 'Gimnasios (Gyms)',
+      passed,
+      failed,
+      untested: 0,
+      total: 200
+    }
+  ];
 }
 
 await runFuzzerSuite({
   suiteName: 'Fuzzer — Lógica de Gimnasios (Gen 9)',
-  run: runGymsFuzzer,
+  run: runGymsFuzzer
 });

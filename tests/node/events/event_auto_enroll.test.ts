@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   evaluateCapturedPokemonForEvents,
   computeOptimalAutoFillAssignments
@@ -43,7 +43,13 @@ describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
     }
   };
 
-  const createTestPokemon = (id: string, ivTotal: number, weight = 10, height = 1, uid = `uid-${id}`): Pokemon => {
+  const createTestPokemon = (
+    id: string,
+    ivTotal: number,
+    weight = 10,
+    height = 1,
+    uid = `uid-${id}`
+  ): Pokemon => {
     const poke = makePokemon(id as never, 50);
     if (!poke) throw new Error(`Failed to create test pokemon: ${id}`);
     poke.uid = uid;
@@ -53,7 +59,7 @@ describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
       def: Math.min(31, Math.floor(ivTotal / 6)),
       spa: Math.min(31, Math.floor(ivTotal / 6)),
       spd: Math.min(31, Math.floor(ivTotal / 6)),
-      spe: ivTotal - (Math.min(31, Math.floor(ivTotal / 6)) * 5)
+      spe: ivTotal - Math.min(31, Math.floor(ivTotal / 6)) * 5
     };
     poke.weight = weight;
     poke.height = height;
@@ -70,15 +76,11 @@ describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
 
     it('returns first-entry candidates for all categories when user has no entries', () => {
       const poke = createTestPokemon('snorlax', 160, 460, 2.1);
-      const candidates = evaluateCapturedPokemonForEvents(
-        poke,
-        [mockCompetitionEvent],
-        {}
-      );
+      const candidates = evaluateCapturedPokemonForEvents(poke, [mockCompetitionEvent], {});
 
       expect(candidates.length).toBe(3);
-      expect(candidates.map(c => c.categoryId)).toEqual(['ivs', 'weight', 'height']);
-      expect(candidates.every(c => c.isFirstEntry)).toBe(true);
+      expect(candidates.map((c) => c.categoryId)).toEqual(['ivs', 'weight', 'height']);
+      expect(candidates.every((c) => c.isFirstEntry)).toBe(true);
     });
 
     it('identifies improvement when captured pokemon has higher IVs than existing record', () => {
@@ -118,16 +120,16 @@ describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
       );
 
       // Beats IVs (170 > 120) and height (first entry in height), but does NOT beat weight (48 < 500)
-      const ivCandidate = candidates.find(c => c.categoryId === 'ivs');
+      const ivCandidate = candidates.find((c) => c.categoryId === 'ivs');
       expect(ivCandidate).toBeDefined();
       expect(ivCandidate?.newScore).toBe(170);
       expect(ivCandidate?.previousScore).toBe(120);
       expect(ivCandidate?.isFirstEntry).toBe(false);
 
-      const weightCandidate = candidates.find(c => c.categoryId === 'weight');
+      const weightCandidate = candidates.find((c) => c.categoryId === 'weight');
       expect(weightCandidate).toBeUndefined();
 
-      const heightCandidate = candidates.find(c => c.categoryId === 'height');
+      const heightCandidate = candidates.find((c) => c.categoryId === 'height');
       expect(heightCandidate).toBeDefined();
       expect(heightCandidate?.isFirstEntry).toBe(true);
     });
@@ -180,7 +182,7 @@ describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
   describe('computeOptimalAutoFillAssignments', () => {
     it('greedily assigns best available Pokémon without cross-enrolling the same Pokémon', () => {
       const pokeA = createTestPokemon('snorlax', 180, 500, 2.5, 'uid-snorlax'); // Best in weight AND IVs
-      const pokeB = createTestPokemon('onix', 150, 210, 8.8, 'uid-onix');      // Best in height
+      const pokeB = createTestPokemon('onix', 150, 210, 8.8, 'uid-onix'); // Best in height
       const pokeC = createTestPokemon('alakazam', 175, 48, 1.5, 'uid-alakazam'); // 2nd best in IVs
 
       const assignments = computeOptimalAutoFillAssignments(
@@ -191,13 +193,13 @@ describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
 
       expect(assignments.length).toBe(3);
 
-      const assignedUids = assignments.map(a => a.pokemon.uid);
+      const assignedUids = assignments.map((a) => a.pokemon.uid);
       const uniqueUids = new Set(assignedUids);
       // Absolute guarantee: zero cross-enrollment duplication
       expect(uniqueUids.size).toBe(3);
 
       // Height should be assigned to onix (8.8m)
-      const heightAssignment = assignments.find(a => a.subComp.id === 'height');
+      const heightAssignment = assignments.find((a) => a.subComp.id === 'height');
       expect(heightAssignment?.pokemon.uid).toBe('uid-onix');
     });
 
@@ -229,7 +231,7 @@ describe('Event Auto-Enrollment & Greedy Auto-Fill Engine', () => {
         existingEntries
       );
 
-      const ivAssignment = assignments.find(a => a.subComp.id === 'ivs');
+      const ivAssignment = assignments.find((a) => a.subComp.id === 'ivs');
       expect(ivAssignment).toBeDefined();
       expect(ivAssignment?.isImprovement).toBe(false);
     });

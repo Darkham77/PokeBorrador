@@ -10,55 +10,55 @@
 
 ### Layer 0: Fuzzers & Headless Replayers
 
-| Script | Command | Purpose |
-|---|---|---|
-| `sim:fuzzer` | `npm run sim:fuzzer` | Master runner: executes all domain fuzzers, regenerates `fuzzer_certified_cases.json` |
-| `sim:fuzzer:moves` | `npm run sim:fuzzer:moves` | Moves coverage fuzzer |
-| `sim:fuzzer:abilities` | `npm run sim:fuzzer:abilities` | Abilities coverage fuzzer |
-| `sim:fuzzer:items` | `npm run sim:fuzzer:items` | Held items coverage fuzzer |
-| `sim:fuzzer:scenarios` | `npm run sim:fuzzer:scenarios` | Complex ability scenarios fuzzer |
-| `sim:fuzzer:breeding` | `npm run sim:fuzzer:breeding` | Daycare egg breeding fuzzer |
-| `sim:fuzzer:missions` | `npm run sim:fuzzer:missions` | Daily mission progression fuzzer |
-| `sim:fuzzer:gyms` | `npm run sim:fuzzer:gyms` | Gym leader progression fuzzer |
-| `sim:fuzzer:gts` | `npm run sim:fuzzer:gts` | Global Trade System transactions fuzzer |
-| `sim:fuzzer:ai` | `npm run sim:fuzzer:ai` | Heuristic battle AI decision fuzzer |
-| `sim:fuzzer:trace` | `npm run sim:fuzzer:trace` | Fast headless case replayer in pure Node (1-2s execution) |
-| `sim:fuzzer:validate` | `npm run sim:fuzzer:validate` | Validates all terminal cases in `fuzzer_certified_cases.json` |
-| `sim:audit` | `npm run sim:audit` | Showdown 1:1 parity diagnostic scanner across engine & FSM |
+| Script                 | Command                        | Purpose                                                                               |
+| ---------------------- | ------------------------------ | ------------------------------------------------------------------------------------- |
+| `sim:fuzzer`           | `npm run sim:fuzzer`           | Master runner: executes all domain fuzzers, regenerates `fuzzer_certified_cases.json` |
+| `sim:fuzzer:moves`     | `npm run sim:fuzzer:moves`     | Moves coverage fuzzer                                                                 |
+| `sim:fuzzer:abilities` | `npm run sim:fuzzer:abilities` | Abilities coverage fuzzer                                                             |
+| `sim:fuzzer:items`     | `npm run sim:fuzzer:items`     | Held items coverage fuzzer                                                            |
+| `sim:fuzzer:scenarios` | `npm run sim:fuzzer:scenarios` | Complex ability scenarios fuzzer                                                      |
+| `sim:fuzzer:breeding`  | `npm run sim:fuzzer:breeding`  | Daycare egg breeding fuzzer                                                           |
+| `sim:fuzzer:missions`  | `npm run sim:fuzzer:missions`  | Daily mission progression fuzzer                                                      |
+| `sim:fuzzer:gyms`      | `npm run sim:fuzzer:gyms`      | Gym leader progression fuzzer                                                         |
+| `sim:fuzzer:gts`       | `npm run sim:fuzzer:gts`       | Global Trade System transactions fuzzer                                               |
+| `sim:fuzzer:ai`        | `npm run sim:fuzzer:ai`        | Heuristic battle AI decision fuzzer                                                   |
+| `sim:fuzzer:trace`     | `npm run sim:fuzzer:trace`     | Fast headless case replayer in pure Node (1-2s execution)                             |
+| `sim:fuzzer:validate`  | `npm run sim:fuzzer:validate`  | Validates all terminal cases in `fuzzer_certified_cases.json`                         |
+| `sim:audit`            | `npm run sim:audit`            | Showdown 1:1 parity diagnostic scanner across engine & FSM                            |
 
 ### Layers 1 & 2: Unit & Parity Tests
 
-| Script | Command | Purpose |
-|---|---|---|
+| Script      | Command             | Purpose                                                                    |
+| ----------- | ------------------- | -------------------------------------------------------------------------- |
 | `test:node` | `npm run test:node` | All `tests/node/**/*.test.ts` via native `node:test` (100% green required) |
-| `test` | `npm run test` | Full Vitest test suite (`unit` + `node` workspace projects) |
+| `test`      | `npm run test`      | Full Vitest test suite (`unit` + `node` workspace projects)                |
 
 ### Layer 3: Playwright E2E Simulations
 
-| Script | Command | Purpose |
-|---|---|---|
-| `sim:e2e` | `npm run sim:e2e` | Dynamic sequential execution across all 58+ suites (dual driver SQLite + Postgres, halts on 1st error) |
-| `sim:e2e:table` | `npm run sim:e2e:table` | Scans `scripts/e2e/`, counts cases, sorts by complexity, prints markdown table |
-| `sim:e2e:list` | `npm run sim:e2e:list` | Lists all discovered simulation suites and case counts |
-| `sim:e2e:combat` | `npm run sim:e2e:combat` | Combat core suites (`battle_fsm_sync`, `battle_manual_scenarios`, `battle_locked_moves`) |
-| `sim:e2e:combat:report` | `npm run sim:e2e:combat:report` | Combat core simulation with output redirected to log |
-| `sim:e2e:capture` | `npm run sim:e2e:capture` | Wild encounters and capture mechanics simulation |
-| `sim:e2e:capture:report` | `npm run sim:e2e:capture:report` | Wild capture simulation with log redirection |
-| `sim:e2e:pvp` | `npm run sim:e2e:pvp` | PvP combat simulation suites |
-| `sim:e2e:pvp:report` | `npm run sim:e2e:pvp:report` | PvP simulation with log redirection |
-| `sim:e2e:ai` | `npm run sim:e2e:ai` | Heuristic battle AI simulation (`heuristic_ai.simulation.ts`) |
-| `sim:e2e:search` | `npm run sim:e2e:search` | Wild encounter search loop sequential simulation |
-| `sim:e2e:search:report` | `npm run sim:e2e:search:report` | Search loop simulation with log redirection |
-| `sim:e2e:abilities` | `npm run sim:e2e:abilities` | Field and combat abilities simulation suites |
-| `sim:e2e:items` | `npm run sim:e2e:items` | Bag and inventory items simulation suites |
-| `sim:e2e:gts` | `npm run sim:e2e:gts` | GTS trade listings and transaction simulation suites |
-| `sim:e2e:save` | `npm run sim:e2e:save` | Persistence, SaveCoordinator and save shield simulation suites |
-| `sim:e2e:breeding` | `npm run sim:e2e:breeding` | Daycare deposit and egg hatching simulation suites |
-| `sim:e2e:missions` | `npm run sim:e2e:missions` | Daycare mission lifecycle simulation suites |
-| `sim:e2e:gyms` | `npm run sim:e2e:gyms` | Gym progression and badge unlock simulation suites |
-| `sim:e2e:events` | `npm run sim:e2e:events` | Contests, tournaments and reward claims simulation suites |
-| `sim:e2e:pokemon` | `npm run sim:e2e:pokemon` | Box management, summary and evolution simulation suites |
-| `sim:e2e:system` | `npm run sim:e2e:system` | System options, audio and authentication simulation suites |
+| Script                   | Command                          | Purpose                                                                                                |
+| ------------------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `sim:e2e`                | `npm run sim:e2e`                | Dynamic sequential execution across all 58+ suites (dual driver SQLite + Postgres, halts on 1st error) |
+| `sim:e2e:table`          | `npm run sim:e2e:table`          | Scans `scripts/e2e/`, counts cases, sorts by complexity, prints markdown table                         |
+| `sim:e2e:list`           | `npm run sim:e2e:list`           | Lists all discovered simulation suites and case counts                                                 |
+| `sim:e2e:combat`         | `npm run sim:e2e:combat`         | Combat core suites (`battle_fsm_sync`, `battle_manual_scenarios`, `battle_locked_moves`)               |
+| `sim:e2e:combat:report`  | `npm run sim:e2e:combat:report`  | Combat core simulation with output redirected to log                                                   |
+| `sim:e2e:capture`        | `npm run sim:e2e:capture`        | Wild encounters and capture mechanics simulation                                                       |
+| `sim:e2e:capture:report` | `npm run sim:e2e:capture:report` | Wild capture simulation with log redirection                                                           |
+| `sim:e2e:pvp`            | `npm run sim:e2e:pvp`            | PvP combat simulation suites                                                                           |
+| `sim:e2e:pvp:report`     | `npm run sim:e2e:pvp:report`     | PvP simulation with log redirection                                                                    |
+| `sim:e2e:ai`             | `npm run sim:e2e:ai`             | Heuristic battle AI simulation (`heuristic_ai.simulation.ts`)                                          |
+| `sim:e2e:search`         | `npm run sim:e2e:search`         | Wild encounter search loop sequential simulation                                                       |
+| `sim:e2e:search:report`  | `npm run sim:e2e:search:report`  | Search loop simulation with log redirection                                                            |
+| `sim:e2e:abilities`      | `npm run sim:e2e:abilities`      | Field and combat abilities simulation suites                                                           |
+| `sim:e2e:items`          | `npm run sim:e2e:items`          | Bag and inventory items simulation suites                                                              |
+| `sim:e2e:gts`            | `npm run sim:e2e:gts`            | GTS trade listings and transaction simulation suites                                                   |
+| `sim:e2e:save`           | `npm run sim:e2e:save`           | Persistence, SaveCoordinator and save shield simulation suites                                         |
+| `sim:e2e:breeding`       | `npm run sim:e2e:breeding`       | Daycare deposit and egg hatching simulation suites                                                     |
+| `sim:e2e:missions`       | `npm run sim:e2e:missions`       | Daycare mission lifecycle simulation suites                                                            |
+| `sim:e2e:gyms`           | `npm run sim:e2e:gyms`           | Gym progression and badge unlock simulation suites                                                     |
+| `sim:e2e:events`         | `npm run sim:e2e:events`         | Contests, tournaments and reward claims simulation suites                                              |
+| `sim:e2e:pokemon`        | `npm run sim:e2e:pokemon`        | Box management, summary and evolution simulation suites                                                |
+| `sim:e2e:system`         | `npm run sim:e2e:system`         | System options, audio and authentication simulation suites                                             |
 
 ---
 

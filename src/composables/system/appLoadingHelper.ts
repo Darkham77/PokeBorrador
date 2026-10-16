@@ -8,7 +8,12 @@ export interface AppLoadingState {
 
 export interface ResolveLoadingParams {
   loadingStoreActive: boolean;
-  loadingStoreCurrent?: { message?: string; subMessage?: string; isGlobal?: boolean; icon?: string } | null;
+  loadingStoreCurrent?: {
+    message?: string;
+    subMessage?: string;
+    isGlobal?: boolean;
+    icon?: string;
+  } | null;
   authLoading: boolean;
   hasUser: boolean;
   isLoginPage: boolean;
@@ -41,7 +46,12 @@ export function resolveAppLoadingInfo(params: ResolveLoadingParams): AppLoadingS
     };
   }
 
-  if (params.hasUser && !params.isLoginPage && !params.isStandaloneDevPage && (!params.isDataLoaded || !params.isEngineReady)) {
+  if (
+    params.hasUser &&
+    !params.isLoginPage &&
+    !params.isStandaloneDevPage &&
+    (!params.isDataLoaded || !params.isEngineReady)
+  ) {
     return {
       active: true,
       msg: !params.isDataLoaded ? 'Cargando datos...' : 'Iniciando motor...',

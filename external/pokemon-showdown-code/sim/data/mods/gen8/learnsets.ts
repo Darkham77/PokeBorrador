@@ -1,1 +1,3 @@
-export const Learnsets: {[k: string]:  import('../../../sim/dex-species').ModdedLearnsetData} = { vivillonfancy: {} };
+export const Learnsets: { [k: string]: import('../../../sim/dex-species').ModdedLearnsetData } = {
+  vivillonfancy: {}
+};

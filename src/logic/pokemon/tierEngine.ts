@@ -1,8 +1,7 @@
-
 /**
  * Tier system for Pokémon based on the sum of all 6 IVs (max = 186).
  * Scales: S+ (186), S (168–185), A (140–167), B (112–139), C (84–111), D (56–83), F (0–55).
- * 
+ *
  * Part of the specialized Pokemon Logic context.
  */
 
@@ -18,16 +17,68 @@ export interface TierConfig {
   label: string;
 }
 
-const TIER_F_CONFIG: TierConfig = { min: 0, max: 55, color: '#ff3b3b', rgb: '255, 59, 59', bg: 'rgba(255, 59, 59, 0.14)', label: 'F' };
+const TIER_F_CONFIG: TierConfig = {
+  min: 0,
+  max: 55,
+  color: '#ff3b3b',
+  rgb: '255, 59, 59',
+  bg: 'rgba(255, 59, 59, 0.14)',
+  label: 'F'
+};
 
-export const BOX_TIER_CONFIG: Record<string, TierConfig> = {
-  'S+': { min: 186, max: 186, color: '#ffd700', rgb: '255, 215, 0', bg: 'rgba(255, 215, 0, 0.18)', label: 'S+' },
-  'S': { min: 168, max: 185, color: '#ffa500', rgb: '255, 165, 0', bg: 'rgba(255, 165, 0, 0.14)', label: 'S' },
-  'A': { min: 140, max: 167, color: '#bf5af2', rgb: '191, 90, 242', bg: 'rgba(191, 90, 242, 0.14)', label: 'A' },
-  'B': { min: 112, max: 139, color: '#0a84ff', rgb: '10, 132, 255', bg: 'rgba(10, 132, 255, 0.14)', label: 'B' },
-  'C': { min: 84, max: 111, color: '#32d74b', rgb: '50, 215, 75', bg: 'rgba(50, 215, 75, 0.14)', label: 'C' },
-  'D': { min: 56, max: 83, color: '#ff9632', rgb: '255, 150, 50', bg: 'rgba(255, 150, 50, 0.14)', label: 'D' },
-  'F': TIER_F_CONFIG,
+const POKEMON_IV_TIERS = ['S+', 'S', 'A', 'B', 'C', 'D', 'F'] as const;
+export type PokemonIvTier = (typeof POKEMON_IV_TIERS)[number];
+
+export const BOX_TIER_CONFIG: Record<PokemonIvTier, TierConfig> = {
+  'S+': {
+    min: 186,
+    max: 186,
+    color: '#ffd700',
+    rgb: '255, 215, 0',
+    bg: 'rgba(255, 215, 0, 0.18)',
+    label: 'S+'
+  },
+  S: {
+    min: 168,
+    max: 185,
+    color: '#ffa500',
+    rgb: '255, 165, 0',
+    bg: 'rgba(255, 165, 0, 0.14)',
+    label: 'S'
+  },
+  A: {
+    min: 140,
+    max: 167,
+    color: '#bf5af2',
+    rgb: '191, 90, 242',
+    bg: 'rgba(191, 90, 242, 0.14)',
+    label: 'A'
+  },
+  B: {
+    min: 112,
+    max: 139,
+    color: '#0a84ff',
+    rgb: '10, 132, 255',
+    bg: 'rgba(10, 132, 255, 0.14)',
+    label: 'B'
+  },
+  C: {
+    min: 84,
+    max: 111,
+    color: '#32d74b',
+    rgb: '50, 215, 75',
+    bg: 'rgba(50, 215, 75, 0.14)',
+    label: 'C'
+  },
+  D: {
+    min: 56,
+    max: 83,
+    color: '#ff9632',
+    rgb: '255, 150, 50',
+    bg: 'rgba(255, 150, 50, 0.14)',
+    label: 'D'
+  },
+  F: TIER_F_CONFIG
 };
 
 /**

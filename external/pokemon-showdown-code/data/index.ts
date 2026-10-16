@@ -24,7 +24,7 @@ import {
   StatID,
   StatsTable,
   Tier,
-  TypeName,
+  TypeName
 } from '@pkmn/dex-types';
 
 const DEFAULT_EXISTS = (d: Data) => {
@@ -34,12 +34,12 @@ const DEFAULT_EXISTS = (d: Data) => {
   return !('tier' in d && ['Illegal', 'Unreleased'].includes(d.tier));
 };
 
-const tr = (num: number, bits = 0) => bits ? (num >>> 0) % (2 ** bits) : num >>> 0;
+const tr = (num: number, bits = 0) => (bits ? (num >>> 0) % 2 ** bits : num >>> 0);
 
 export type ExistsFn = (d: Data, g: GenerationNum) => boolean;
 type BoundExistsFn = (d: Data) => boolean;
 
-function assignWithout(a: {[key: string]: any}, b: {[key: string]: any}, exclude: Set<string>) {
+function assignWithout(a: { [key: string]: any }, b: { [key: string]: any }, exclude: Set<string>) {
   for (const key in b) {
     if (Object.prototype.hasOwnProperty.call(b, key) && !exclude.has(key)) {
       a[key] = b[key];
@@ -55,7 +55,7 @@ export function toID(text: any): ID {
 }
 
 export class Generations {
-  /* private */ readonly cache = Object.create(null) as {[num: number]: Generation};
+  /* private */ readonly cache = Object.create(null) as { [num: number]: Generation };
 
   /* private */ readonly dex: Dex;
   /* private */ readonly exists: ExistsFn;
@@ -72,7 +72,7 @@ export class Generations {
     const gen = (typeof g === 'string' ? parseInt(g.slice(g.search(/\d/))) : g) as GenerationNum;
     if (isNaN(+gen)) throw new Error(`Invalid gen ${g}`);
     if (this.cache[gen]) return this.cache[gen];
-    return (this.cache[gen] = new Generation(this.dex.forGen(gen), d => this.exists(d, gen)));
+    return (this.cache[gen] = new Generation(this.dex.forGen(gen), (d) => this.exists(d, gen)));
   }
 
   *[Symbol.iterator]() {
@@ -196,7 +196,7 @@ export class Moves {
 }
 
 export class Species {
-  /* private */ readonly cache = Object.create(null) as {[id: string]: Specie};
+  /* private */ readonly cache = Object.create(null) as { [id: string]: Specie };
 
   /* private */ readonly dex: Dex;
   /* private */ readonly exists: BoundExistsFn;
@@ -262,7 +262,7 @@ export class Specie implements DexSpecies {
   readonly otherFormes?: SpeciesName[];
   readonly formeOrder?: SpeciesName[];
   readonly formes?: SpeciesName[];
-  readonly genderRatio: {M: number; F: number};
+  readonly genderRatio: { M: number; F: number };
   readonly isMega?: boolean;
   readonly isPrimal?: boolean;
   readonly battleOnly?: SpeciesName | SpeciesName[];
@@ -288,8 +288,15 @@ export class Specie implements DexSpecies {
   /* private */ readonly dex: Dex;
 
   /* private */ static readonly EXCLUDE = new Set([
-    'abilities', 'cosmeticFormes', 'evos', 'formeOrder',
-    'gender', 'genderRatio', 'nfe', 'otherFormes', 'prevo',
+    'abilities',
+    'cosmeticFormes',
+    'evos',
+    'formeOrder',
+    'gender',
+    'genderRatio',
+    'nfe',
+    'otherFormes',
+    'prevo'
   ]);
 
   constructor(dex: Dex, exists: BoundExistsFn, species: DexSpecies) {
@@ -299,41 +306,48 @@ export class Specie implements DexSpecies {
       this.gender = species.gender;
       this.genderRatio = species.genderRatio;
     } else {
-      this.genderRatio = {M: 0, F: 0};
+      this.genderRatio = { M: 0, F: 0 };
     }
     if (this.dex.gen >= 3) {
-      this.abilities = {0: species.abilities[0]};
+      this.abilities = { 0: species.abilities[0] };
       // "because PS", Pokemon have the abilities that were added in Gen 4 in Gen 3 :bigthonk:
-      if (species.abilities[1] &&
-          this.dex.abilities.get(species.abilities[1]).gen <= this.dex.gen) {
+      if (
+        species.abilities[1] &&
+        this.dex.abilities.get(species.abilities[1]).gen <= this.dex.gen
+      ) {
         this.abilities[1] = species.abilities[1];
       }
       if (this.dex.gen >= 5 && species.abilities.H) this.abilities.H = species.abilities.H;
       if (this.dex.gen >= 7 && species.abilities.S) this.abilities.S = species.abilities.S;
     } else {
-      this.abilities = {0: ''};
+      this.abilities = { 0: '' };
     }
-    this.evos = species.evos?.filter(s => exists(this.dex.species.get(s)));
+    this.evos = species.evos?.filter((s) => exists(this.dex.species.get(s)));
     this.nfe = !!this.evos?.length;
     if (!this.nfe) this.evos = undefined;
-    this.cosmeticFormes = species.cosmeticFormes?.filter(s => exists(this.dex.species.get(s)));
+    this.cosmeticFormes = species.cosmeticFormes?.filter((s) => exists(this.dex.species.get(s)));
     if (!this.cosmeticFormes?.length) this.cosmeticFormes = undefined;
-    this.otherFormes = species.otherFormes?.filter(s => exists(this.dex.species.get(s)));
+    this.otherFormes = species.otherFormes?.filter((s) => exists(this.dex.species.get(s)));
     if (!this.otherFormes?.length) this.otherFormes = undefined;
-    this.formeOrder = species.formeOrder?.filter(s => exists(this.dex.species.get(s)));
+    this.formeOrder = species.formeOrder?.filter((s) => exists(this.dex.species.get(s)));
     if (!this.formeOrder || this.formeOrder.length <= 1) this.formeOrder = undefined;
-    this.formes = this.formeOrder?.filter(s =>
-      this.dex.species.get(s).isNonstandard !== 'Gigantamax');
+    this.formes = this.formeOrder?.filter(
+      (s) => this.dex.species.get(s).isNonstandard !== 'Gigantamax'
+    );
     this.prevo =
       species.prevo && exists(this.dex.species.get(species.prevo)) ? species.prevo : undefined;
   }
 
   get formeNum() {
-    return (this.baseSpecies === this.name
-      ? this.formeOrder ? this.formeOrder.findIndex(name => name === this.name) : 0
-      : this.dex.species.get(this.baseSpecies).formeOrder!.findIndex(
-        name => name === (this.isNonstandard === 'Gigantamax' ? this.baseSpecies : this.name)
-      ));
+    return this.baseSpecies === this.name
+      ? this.formeOrder
+        ? this.formeOrder.findIndex((name) => name === this.name)
+        : 0
+      : this.dex.species
+          .get(this.baseSpecies)
+          .formeOrder!.findIndex(
+            (name) => name === (this.isNonstandard === 'Gigantamax' ? this.baseSpecies : this.name)
+          );
   }
 
   toString() {
@@ -390,13 +404,13 @@ const EFFECTIVENESS = {
   '0': 1,
   '1': 2,
   '2': 4,
-  '3': 8,
+  '3': 8
 };
 
-type TypeTarget = {getTypes: () => TypeName[]} | {types: TypeName[]} | TypeName[] | TypeName;
+type TypeTarget = { getTypes: () => TypeName[] } | { types: TypeName[] } | TypeName[] | TypeName;
 
 export class Types {
-  /* private */ readonly cache = Object.create(null) as {[id: string]: Type};
+  /* private */ readonly cache = Object.create(null) as { [id: string]: Type };
 
   /* private */ readonly unknown: Type;
   /* private */ readonly dex: Dex;
@@ -406,21 +420,25 @@ export class Types {
     this.dex = dex;
     this.exists = exists;
     // PS doesn't contain data for the '???' type
-    this.unknown = new Type({
-      effectType: 'Type',
-      kind: 'Type',
-      // Regrettably PS ID's can't represent '???'
-      id: '',
-      name: '???',
-      // Technically this only exists as a true type in Gens 2-4, but there are moves dealing
-      // typeless damage in Gen 1 so we include it there.
-      exists: dex.gen <= 4,
-      gen: 1,
-      // This gets filled in for us by Type's constructor
-      damageTaken: {} as {[t in Exclude<TypeName, '???'>]: number},
-      HPivs: {},
-      HPdvs: {},
-    }, dex, this);
+    this.unknown = new Type(
+      {
+        effectType: 'Type',
+        kind: 'Type',
+        // Regrettably PS ID's can't represent '???'
+        id: '',
+        name: '???',
+        // Technically this only exists as a true type in Gens 2-4, but there are moves dealing
+        // typeless damage in Gen 1 so we include it there.
+        exists: dex.gen <= 4,
+        gen: 1,
+        // This gets filled in for us by Type's constructor
+        damageTaken: {} as { [t in Exclude<TypeName, '???'>]: number },
+        HPivs: {},
+        HPdvs: {}
+      },
+      dex,
+      this
+    );
   }
 
   get(name: string) {
@@ -446,11 +464,11 @@ export class Types {
     return this.dex.getHiddenPower(ivs);
   }
 
-  canDamage(source: {type: TypeName} | TypeName, target: TypeTarget) {
+  canDamage(source: { type: TypeName } | TypeName, target: TypeTarget) {
     return this.dex.getImmunity(source, target);
   }
 
-  totalEffectiveness(source: {type: TypeName} | TypeName, target: TypeTarget) {
+  totalEffectiveness(source: { type: TypeName } | TypeName, target: TypeTarget) {
     if (!this.canDamage(source, target)) return 0;
     const e = `${this.dex.getEffectiveness(source, target)}`;
     // convert from PS's ridiculous encoding to something usable
@@ -470,7 +488,7 @@ export class Type {
   readonly kind!: 'Type';
   readonly exists!: boolean;
   readonly gen!: GenerationNum;
-  readonly effectiveness: {[t in TypeName]: TypeEffectiveness};
+  readonly effectiveness: { [t in TypeName]: TypeEffectiveness };
   readonly HPivs!: Partial<StatsTable>;
   readonly HPdvs!: Partial<StatsTable>;
   readonly category?: Exclude<MoveCategory, 'Status'>;
@@ -481,11 +499,14 @@ export class Type {
     Object.assign(this, type);
     this.types = types;
     this.category = ['Fairy', 'Stellar'].includes(this.name)
-      ? undefined : SPECIAL.includes(this.name) ? 'Special' : 'Physical';
+      ? undefined
+      : SPECIAL.includes(this.name)
+        ? 'Special'
+        : 'Physical';
     // convert from PS's ridiculous encoding to something usable (plus damage taken -> dealt)
-    this.effectiveness = {'???': 1} as {[t in TypeName]: TypeEffectiveness};
+    this.effectiveness = { '???': 1 } as { [t in TypeName]: TypeEffectiveness };
     for (const k in dex.data.Types) {
-      const t = k.charAt(0).toUpperCase() + k.slice(1) as Exclude<TypeName, '???'>;
+      const t = (k.charAt(0).toUpperCase() + k.slice(1)) as Exclude<TypeName, '???'>;
       const data = dex.data.Types[k as Lowercase<string>];
       this.effectiveness[t] = DAMAGE_TAKEN[data.damageTaken[this.name] || 0];
     }
@@ -508,17 +529,32 @@ export class Type {
   }
 }
 
-const GEN3_HMS =
-  new Set(['cut', 'fly', 'surf', 'strength', 'flash', 'rocksmash', 'waterfall', 'dive'] as ID[]);
+const GEN3_HMS = new Set([
+  'cut',
+  'fly',
+  'surf',
+  'strength',
+  'flash',
+  'rocksmash',
+  'waterfall',
+  'dive'
+] as ID[]);
 // NOTE: Whirlpool and Defog are Gen 4 HMs but the HMs differ in DPPt vs. HGSS
-const GEN4_HMS =
-  new Set(['cut', 'fly', 'surf', 'strength', 'rocksmash', 'waterfall', 'rockclimb'] as ID[]);
+const GEN4_HMS = new Set([
+  'cut',
+  'fly',
+  'surf',
+  'strength',
+  'rocksmash',
+  'waterfall',
+  'rockclimb'
+] as ID[]);
 
 type Restriction = 'Pentagon' | 'Plus' | 'Galar' | 'Paldea';
 
 export class Learnsets {
   /* private */ readonly cache = Object.create(null) as {
-    [speciesid: string]: {[moveid: string]: MoveSource[]};
+    [speciesid: string]: { [moveid: string]: MoveSource[] };
   };
 
   /* private */ readonly gen: Generation;
@@ -544,13 +580,14 @@ export class Learnsets {
     }
   }
 
-  async* all(species: Specie) {
+  async *all(species: Specie) {
     let id = species.id;
     let learnset = await this.get(id);
     if (!learnset) {
-      id = typeof species.battleOnly === 'string' && species.battleOnly !== species.baseSpecies
-        ? toID(species.battleOnly)
-        : toID(species.baseSpecies);
+      id =
+        typeof species.battleOnly === 'string' && species.battleOnly !== species.baseSpecies
+          ? toID(species.battleOnly)
+          : toID(species.baseSpecies);
       learnset = await this.get(id);
     }
 
@@ -586,7 +623,7 @@ export class Learnsets {
       if (cached) return cached;
     }
 
-    const moves: {[moveid: string]: MoveSource[]} = {};
+    const moves: { [moveid: string]: MoveSource[] } = {};
 
     for await (const learnset of this.all(species)) {
       if (learnset.learnset) {
@@ -595,7 +632,7 @@ export class Learnsets {
           if (move) {
             const sources = learnset.learnset[moveid];
             if (this.isLegal(move, sources, restriction || this.gen)) {
-              const filtered = sources.filter(s => +s.charAt(0) <= this.gen.num);
+              const filtered = sources.filter((s) => +s.charAt(0) <= this.gen.num);
               if (!filtered.length) continue;
               if (moves[move.id]) {
                 // If we simply add filtered to moves[move.id] we may end up with some duplicates or
@@ -635,7 +672,7 @@ export class Learnsets {
     const species = this.gen.species.get(name);
     if (!species) return false;
 
-    move = typeof move === 'string' && this.gen.moves.get(move) || move;
+    move = (typeof move === 'string' && this.gen.moves.get(move)) || move;
     if (typeof move === 'string') return false;
 
     for await (const learnset of this.all(species)) {
@@ -652,12 +689,11 @@ export class Learnsets {
   isLegal(move: Move, sources: MoveSource[] | undefined, gen: Generation | Restriction) {
     if (!sources) return undefined;
 
-    const gens = sources.map(x => Number(x[0]));
+    const gens = sources.map((x) => Number(x[0]));
     const minGen = Math.min(...gens);
-    const vcOnly = (
-      minGen === 7 && sources.every(x => x[0] !== '7' || x === '7V') ||
-      minGen === 8 && sources.every(x => x[0] !== '8' || x === '8V')
-    );
+    const vcOnly =
+      (minGen === 7 && sources.every((x) => x[0] !== '7' || x === '7V')) ||
+      (minGen === 8 && sources.every((x) => x[0] !== '8' || x === '8V'));
 
     if (gen === 'Pentagon') return gens.includes(6);
     if (gen === 'Plus') return gens.includes(7) && !vcOnly;
@@ -680,7 +716,7 @@ export class Learnsets {
       }
       if (available) available = !GEN4_HMS.has(move.id);
 
-      const minUpperGen = available ? 5 : Math.min(...gens.filter(g => g > 4));
+      const minUpperGen = available ? 5 : Math.min(...gens.filter((g) => g > 4));
       legalGens += '0123456789'.slice(minUpperGen);
       return legalGens.includes(`${gen.num}`);
     } else {
@@ -691,24 +727,42 @@ export class Learnsets {
 
 const STATS = ['hp', 'atk', 'def', 'spe', 'spa', 'spd'] as const;
 
-const NAMES: Readonly<{[name: string]: StatID}> = {
-  HP: 'hp', hp: 'hp',
-  Attack: 'atk', Atk: 'atk', atk: 'atk',
-  Defense: 'def', Def: 'def', def: 'def',
-  'Special Attack': 'spa', SpA: 'spa', SAtk: 'spa', SpAtk: 'spa', spa: 'spa',
-  Special: 'spa', spc: 'spa', Spc: 'spa',
-  'Special Defense': 'spd', SpD: 'spd', SDef: 'spd', SpDef: 'spd', spd: 'spd',
-  Speed: 'spe', Spe: 'spe', Spd: 'spe', spe: 'spe',
+const NAMES: Readonly<{ [name: string]: StatID }> = {
+  HP: 'hp',
+  hp: 'hp',
+  Attack: 'atk',
+  Atk: 'atk',
+  atk: 'atk',
+  Defense: 'def',
+  Def: 'def',
+  def: 'def',
+  'Special Attack': 'spa',
+  SpA: 'spa',
+  SAtk: 'spa',
+  SpAtk: 'spa',
+  spa: 'spa',
+  Special: 'spa',
+  spc: 'spa',
+  Spc: 'spa',
+  'Special Defense': 'spd',
+  SpD: 'spd',
+  SDef: 'spd',
+  SpDef: 'spd',
+  spd: 'spd',
+  Speed: 'spe',
+  Spe: 'spe',
+  Spd: 'spe',
+  spe: 'spe'
 };
 
-const DISPLAY: Readonly<{[stat: string]: Readonly<[string, string]>}> = {
+const DISPLAY: Readonly<{ [stat: string]: Readonly<[string, string]> }> = {
   hp: ['HP', 'HP'],
   atk: ['Atk', 'Attack'],
   def: ['Def', 'Defense'],
   spa: ['SpA', 'Special Attack'],
   spd: ['SpD', 'Special Defense'],
   spe: ['Spe', 'Speed'],
-  spc: ['Spc', 'Special'],
+  spc: ['Spc', 'Special']
 };
 
 export class Stats {
@@ -725,9 +779,9 @@ export class Stats {
       nature = undefined;
     }
     if (stat === 'hp') {
-      return base === 1 ? base : tr(tr(2 * base + iv + tr(ev / 4) + 100) * level / 100 + 10);
+      return base === 1 ? base : tr((tr(2 * base + iv + tr(ev / 4) + 100) * level) / 100 + 10);
     } else {
-      const val = tr(tr(2 * base + iv + tr(ev / 4)) * level / 100 + 5);
+      const val = tr((tr(2 * base + iv + tr(ev / 4)) * level) / 100 + 5);
       if (nature !== undefined) {
         if (nature.plus === stat) return tr(tr(val * 110, 16) / 100);
         if (nature.minus === stat) return tr(tr(val * 90, 16) / 100);
@@ -838,5 +892,5 @@ export type {
   // Type,
   Nature,
   GenID,
-  Dex,
+  Dex
 } from '@pkmn/dex-types';

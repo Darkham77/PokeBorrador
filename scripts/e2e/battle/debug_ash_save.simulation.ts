@@ -22,8 +22,15 @@ class AshSaveSimWrapper extends BaseBattleSimulation {
       const gs = useGameStore();
       if (gs?.state) {
         gs.state.map.currentMap = requireMapRouteId('route1');
-        if ('classData' in gs.state && typeof gs.state.classData === 'object' && gs.state.classData !== null) {
-          const cd = gs.state.classData as { officialRouteId?: string; officialRouteTimestamp?: string };
+        if (
+          'classData' in gs.state &&
+          typeof gs.state.classData === 'object' &&
+          gs.state.classData !== null
+        ) {
+          const cd = gs.state.classData as {
+            officialRouteId?: string;
+            officialRouteTimestamp?: string;
+          };
           cd.officialRouteId = 'route1';
           cd.officialRouteTimestamp = String(Temporal.Now.instant().epochMilliseconds);
         }

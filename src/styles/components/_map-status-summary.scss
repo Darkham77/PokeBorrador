@@ -1,5 +1,5 @@
 // src/styles/components/_map-status-summary.scss
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .map-view-container {
   width: 100%;
@@ -24,10 +24,13 @@
   }
 
   .pc-right {
+    --summary-slot-width: calc(var(--visible-slots, 1) * 250px * var(--event-aspect, 1.7916));
+    --summary-gap-width: calc((var(--visible-slots, 1) - 1) * 16px);
+
     display: flex;
     align-items: stretch;
     gap: $spacing-lg;
-    max-width: calc(var(--visible-slots, 1) * 250px * var(--event-aspect, 1.7916) + (var(--visible-slots, 1) - 1) * 16px);
+    max-width: calc(var(--summary-slot-width) + var(--summary-gap-width));
     height: 250px;
     max-height: 250px;
     flex: 0 0 auto;
@@ -272,7 +275,9 @@
     background: Linear-Gradient(180deg, Rgb(255 255 255 / 8%), Rgb(255 255 255 / 1%));
     content: '';
     inset: 0;
-    mask: Linear-Gradient(var(--white) 0 0) content-box, Linear-Gradient(var(--white) 0 0);
+    mask:
+      Linear-Gradient(var(--white) 0 0) content-box,
+      Linear-Gradient(var(--white) 0 0);
     mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -320,7 +325,7 @@
 }
 
 .pc-banner-text {
-  @include pixelated; 
+  @include pixelated;
 
   min-width: 0;
   color: var(--white);
@@ -330,16 +335,16 @@
   flex: 1 1 180px;
   white-space: normal; // Ensure wrapping
   overflow-wrap: break-word;
-  
-  span { 
+
+  span {
     color: var(--yellow);
     font-weight: normal !important;
   }
-  
-  .text-highlight { 
+
+  .text-highlight {
     @include pixelated;
 
-    display: block; 
+    display: block;
     color: var(--yellow);
     font-size: var(--font-8) !important; // Match base text size
     font-weight: normal !important;
@@ -411,7 +416,7 @@
   }
 }
 
-.pixelated { 
+.pixelated {
   @include pixelated;
 
   -ms-interpolation-mode: nearest-neighbor;
@@ -423,13 +428,13 @@
 
 @media (width <= 768px) {
   /* Removed layout overrides to preserve unified styles defined at the top */
-  
+
   .pc-banner-text {
     flex: 1 1 120px; // More flexible for small screens
   }
 
-  .pc-banner { 
-    height: auto; 
+  .pc-banner {
+    height: auto;
     min-height: 70px;
     padding: 10px 12px;
   }

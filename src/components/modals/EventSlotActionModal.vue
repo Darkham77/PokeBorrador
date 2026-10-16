@@ -1,62 +1,67 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import BaseModal from '@/components/common/BaseModal.vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getSubCompTitle, type Event as GameEvent, type SubCompetitionConfig, type ResolvedSubCompetition } from '@/logic/events/eventEngine'
-import type { CompetitionParticipant } from '@/types/system/stores'
-import { isPokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { computed } from 'vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import {
+  getSubCompTitle,
+  type Event as GameEvent,
+  type SubCompetitionConfig,
+  type ResolvedSubCompetition
+} from '@/logic/events/eventEngine';
+import type { CompetitionParticipant } from '@/types/system/stores';
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 interface Props {
-  show?: boolean
-  event: GameEvent
-  sub: ResolvedSubCompetition | SubCompetitionConfig
-  participant: CompetitionParticipant
-  onChange?: () => void
-  onWithdraw?: () => void
+  show?: boolean;
+  event: GameEvent;
+  sub: ResolvedSubCompetition | SubCompetitionConfig;
+  participant: CompetitionParticipant;
+  onChange?: () => void;
+  onWithdraw?: () => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   onChange: undefined,
   onWithdraw: undefined
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'change'): void
-  (e: 'withdraw'): void
-}>()
+  (e: 'close'): void;
+  (e: 'change'): void;
+  (e: 'withdraw'): void;
+}>();
 
-const categoryTitle = computed(() => getSubCompTitle(props.event.id, props.sub))
+const categoryTitle = computed(() => getSubCompTitle(props.event.id, props.sub));
 
 const pokemonSpriteUrl = computed(() => {
   if (props.participant.id && isPokemonSpeciesId(props.participant.id)) {
-    return getAssetUrl(ASSET_TYPES.POKEMON, props.participant.id)
+    return getAssetUrl(ASSET_TYPES.POKEMON, props.participant.id);
   }
-  return ''
-})
+  return '';
+});
 
 const handleClose = () => {
-  emit('close')
-}
+  emit('close');
+};
 
 const handleChange = () => {
   if (props.onChange) {
-    props.onChange()
+    props.onChange();
   } else {
-    emit('change')
+    emit('change');
   }
-  emit('close')
-}
+  emit('close');
+};
 
 const handleWithdraw = () => {
   if (props.onWithdraw) {
-    props.onWithdraw()
+    props.onWithdraw();
   } else {
-    emit('withdraw')
+    emit('withdraw');
   }
-  emit('close')
-}
+  emit('close');
+};
 </script>
 
 <template>
@@ -83,14 +88,10 @@ const handleWithdraw = () => {
             :src="pokemonSpriteUrl"
             :alt="participant.name"
             class="pokemon-sprite-img"
-          
             width="32"
             height="32"
-          >
-          <span
-            v-if="participant.isShiny"
-            class="shiny-badge"
-          ><span class="emoji">✨</span></span>
+          />
+          <span v-if="participant.isShiny" class="shiny-badge"><span class="emoji">✨</span></span>
         </div>
 
         <div class="pokemon-details">
@@ -106,26 +107,16 @@ const handleWithdraw = () => {
         </div>
       </div>
 
-      <p class="instruction-hint">
-        ¿Qué acción deseas realizar con este Pokémon en el evento?
-      </p>
+      <p class="instruction-hint">¿Qué acción deseas realizar con este Pokémon en el evento?</p>
 
       <!-- Action Buttons -->
       <div class="action-buttons-list">
-        <button
-          id="event-slot-change-btn"
-          class="btn-change"
-          @click.stop="handleChange"
-        >
+        <button id="event-slot-change-btn" class="btn-change" @click.stop="handleChange">
           <span class="emoji">🔄</span>
           CAMBIAR POKÉMON
         </button>
 
-        <button
-          id="event-slot-withdraw-btn"
-          class="btn-withdraw"
-          @click.stop="handleWithdraw"
-        >
+        <button id="event-slot-withdraw-btn" class="btn-withdraw" @click.stop="handleWithdraw">
           <span class="emoji">❌</span>
           SACAR / DESINSCRIBIR POKÉMON
         </button>
@@ -134,11 +125,7 @@ const handleWithdraw = () => {
 
     <template #footer>
       <div class="slot-action-modal-footer">
-        <button
-          id="event-slot-cancel-btn"
-          class="btn-cancel"
-          @click.stop="handleClose"
-        >
+        <button id="event-slot-cancel-btn" class="btn-cancel" @click.stop="handleClose">
           CANCELAR
         </button>
       </div>
@@ -147,7 +134,7 @@ const handleWithdraw = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .slot-action-modal-body {
   display: flex;

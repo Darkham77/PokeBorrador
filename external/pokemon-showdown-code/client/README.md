@@ -10,7 +10,7 @@ Package encapsulating a refactored and extended version of the generic parts of 
 The package has the following goals:
 
 - track everything Pokémon Showdown's client already tracks
-- provide a single place to track *all* known information about a battle
+- provide a single place to track _all_ known information about a battle
 - integrate seamlessly with other [`@pkmn`](https://pkmn.cc/@pkmn/) projects
 
 To that end, any [divergence](#changes) from the canonical Pokémon Showdown's client can be
@@ -56,7 +56,7 @@ The [UI integration test](../integration/src/ui/index.ts) serves as an example f
 `@pkmn/client` library can be used to display the results of a battle visually. Note how it makes
 use of multiple `Handler`'s **ordered carefully** to account for when the `Battle` state was
 updated. [`@pkmn/view`](../view)'s [`LogFormatter`](../view/src/log-formatter.ts) is an example of
-a `Handler` which depends on being run *before* the client's `Handler` (and has been designed to
+a `Handler` which depends on being run _before_ the client's `Handler` (and has been designed to
 work hand-in-hand with `Battle`).
 
 ### Browser

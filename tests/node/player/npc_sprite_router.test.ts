@@ -6,7 +6,7 @@
  * Tests the classification and routing rules in src/logic/utils/npcSpriteRouter.ts.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import {
@@ -78,7 +78,7 @@ describe('NPC Sprite Catalog Coverage & Encounter Group Parity', () => {
         t.pool && t.pool.length > 0,
         `Trainer type "${key}" has an empty or missing Pokémon pool`
       );
-      
+
       // 2. Verify phrases/personality
       const quote = getRandomQuoteForTrainer(key);
       assert.ok(

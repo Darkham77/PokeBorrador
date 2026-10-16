@@ -5,7 +5,7 @@
  * matching the exact SQLite profiles table schema.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
@@ -29,7 +29,8 @@ async function applyAllMigrations(db: DatabaseSync): Promise<void> {
     try {
       const check = db.prepare('SELECT id FROM _migrations WHERE id = ?').get(migration.id);
       if (check) alreadyApplied = true;
-    } catch { // catch-ok: _migrations might not exist yet
+    } catch {
+      // catch-ok: _migrations might not exist yet
     }
 
     if (alreadyApplied) continue;
@@ -43,15 +44,18 @@ async function applyAllMigrations(db: DatabaseSync): Promise<void> {
       const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
       try {
         db.exec(sql);
-      } catch { // catch-ok: ignore individual migration statement errors
+      } catch {
+        // catch-ok: ignore individual migration statement errors
       }
     }
   }
   db.exec('COMMIT;');
 }
 
-function serializePayloadParams(payload: Record<string, unknown>): Array<string | number | bigint | Uint8Array | null> {
-  return Object.values(payload).map(v => {
+function serializePayloadParams(
+  payload: Record<string, unknown>
+): Array<string | number | bigint | Uint8Array | null> {
+  return Object.values(payload).map((v) => {
     if (v === null || v === undefined) return null;
     if (typeof v === 'object') return JSON.stringify(v);
     return v as string | number;
@@ -65,7 +69,9 @@ function createMockDBRouter(db: DatabaseSync, existingColumnNames: Set<string>):
       select: (cols: string) => ({
         eq: (col: string, val: unknown) => ({
           maybeSingle: async () => {
-            const row = db.prepare(`SELECT ${cols} FROM ${table} WHERE ${col} = ?`).get(val as string);
+            const row = db
+              .prepare(`SELECT ${cols} FROM ${table} WHERE ${col} = ?`)
+              .get(val as string);
             return { data: row || null, error: null };
           }
         })
@@ -78,7 +84,9 @@ function createMockDBRouter(db: DatabaseSync, existingColumnNames: Set<string>):
               `Update payload key "${key}" does not exist in SQLite "${table}" table columns!`
             );
           }
-          const setClause = Object.keys(payload).map(k => `${k} = ?`).join(', ');
+          const setClause = Object.keys(payload)
+            .map((k) => `${k} = ?`)
+            .join(', ');
           const params = serializePayloadParams(payload);
           params.push((val ?? null) as string | number | null);
           db.prepare(`UPDATE ${table} SET ${setClause} WHERE ${col} = ?`).run(...params);
@@ -95,7 +103,9 @@ function createMockDBRouter(db: DatabaseSync, existingColumnNames: Set<string>):
         const keys = Object.keys(payload);
         const placeholders = keys.map(() => '?').join(', ');
         const params = serializePayloadParams(payload);
-        db.prepare(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`).run(...params);
+        db.prepare(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`).run(
+          ...params
+        );
         return { data: payload, error: null };
       }
     })
@@ -104,7 +114,10 @@ function createMockDBRouter(db: DatabaseSync, existingColumnNames: Set<string>):
 
 describe('Profile Sync SQLite Column Parity', () => {
   it('updates and inserts profile fields matching exact SQLite schema columns without error', async () => {
-    const tempDbPath = path.join(os.tmpdir(), `test_profile_sync_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`);
+    const tempDbPath = path.join(
+      os.tmpdir(),
+      `test_profile_sync_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`
+    );
     fs.copyFileSync(DB_PATH, tempDbPath);
 
     try {
@@ -113,16 +126,29 @@ describe('Profile Sync SQLite Column Parity', () => {
 
       await applyAllMigrations(db);
 
-      const pragmaCols = db.prepare("PRAGMA table_info('profiles')").all() as Array<{ name: string }>;
-      const existingColumnNames = new Set(pragmaCols.map(c => c.name));
+      const pragmaCols = db.prepare("PRAGMA table_info('profiles')").all() as Array<{
+        name: string;
+      }>;
+      const existingColumnNames = new Set(pragmaCols.map((c) => c.name));
 
-      assert.ok(existingColumnNames.has('capture_successes'), 'profiles table must contain capture_successes column');
-      assert.ok(existingColumnNames.has('capture_attempts'), 'profiles table must contain capture_attempts column');
-      assert.ok(!existingColumnNames.has('captureSuccesses'), 'profiles table must NOT contain camelCase captureSuccesses column');
+      assert.ok(
+        existingColumnNames.has('capture_successes'),
+        'profiles table must contain capture_successes column'
+      );
+      assert.ok(
+        existingColumnNames.has('capture_attempts'),
+        'profiles table must contain capture_attempts column'
+      );
+      assert.ok(
+        !existingColumnNames.has('captureSuccesses'),
+        'profiles table must NOT contain camelCase captureSuccesses column'
+      );
 
       const mockDBRouter = createMockDBRouter(db, existingColumnNames);
 
-      const existingProfile = db.prepare('SELECT id FROM profiles LIMIT 1').get() as { id: string } | undefined;
+      const existingProfile = db.prepare('SELECT id FROM profiles LIMIT 1').get() as
+        | { id: string }
+        | undefined;
       const targetUserId = existingProfile?.id || 'local_ash';
 
       const testUser: AuthUser = {
@@ -168,11 +194,17 @@ describe('Profile Sync SQLite Column Parity', () => {
       // 1. Test update path for existing user
       await syncUserProfileData(mockDBRouter, testUser, mockSaveData);
 
-      const ashRow = db.prepare('SELECT capture_successes, capture_attempts, max_damage FROM profiles WHERE id = ?').get(targetUserId) as {
-        capture_successes: number;
-        capture_attempts: number;
-        max_damage: number;
-      } | undefined;
+      const ashRow = db
+        .prepare(
+          'SELECT capture_successes, capture_attempts, max_damage FROM profiles WHERE id = ?'
+        )
+        .get(targetUserId) as
+        | {
+            capture_successes: number;
+            capture_attempts: number;
+            max_damage: number;
+          }
+        | undefined;
       assert.ok(ashRow, `Row for ${targetUserId} should exist in profiles`);
       assert.strictEqual(ashRow.capture_successes, 15);
       assert.strictEqual(ashRow.capture_attempts, 20);
@@ -188,7 +220,11 @@ describe('Profile Sync SQLite Column Parity', () => {
 
       await syncUserProfileData(mockDBRouter, newGaryUser, mockSaveData);
 
-      const garyRow = db.prepare('SELECT capture_successes, capture_attempts, max_damage FROM profiles WHERE id = ?').get('gary_new') as {
+      const garyRow = db
+        .prepare(
+          'SELECT capture_successes, capture_attempts, max_damage FROM profiles WHERE id = ?'
+        )
+        .get('gary_new') as {
         capture_successes: number;
         capture_attempts: number;
         max_damage: number;
@@ -216,14 +252,29 @@ describe('Profile Sync SQLite Column Parity', () => {
           FROM information_schema.columns 
           WHERE table_schema = 'public' AND table_name = 'profiles'
         `;
-        const pgColumnNames = new Set(cols.map(c => c.column_name as string));
+        const pgColumnNames = new Set(cols.map((c) => c.column_name as string));
 
         // Assert essential columns exist in snake_case on PostgreSQL
-        assert.ok(pgColumnNames.has('capture_successes'), 'PG profiles table must contain capture_successes column');
-        assert.ok(pgColumnNames.has('capture_attempts'), 'PG profiles table must contain capture_attempts column');
-        assert.ok(pgColumnNames.has('max_damage'), 'PG profiles table must contain max_damage column');
-        assert.ok(pgColumnNames.has('total_battles'), 'PG profiles table must contain total_battles column');
-        assert.ok(pgColumnNames.has('ranked_max_elo'), 'PG profiles table must contain ranked_max_elo column');
+        assert.ok(
+          pgColumnNames.has('capture_successes'),
+          'PG profiles table must contain capture_successes column'
+        );
+        assert.ok(
+          pgColumnNames.has('capture_attempts'),
+          'PG profiles table must contain capture_attempts column'
+        );
+        assert.ok(
+          pgColumnNames.has('max_damage'),
+          'PG profiles table must contain max_damage column'
+        );
+        assert.ok(
+          pgColumnNames.has('total_battles'),
+          'PG profiles table must contain total_battles column'
+        );
+        assert.ok(
+          pgColumnNames.has('ranked_max_elo'),
+          'PG profiles table must contain ranked_max_elo column'
+        );
         assert.ok(pgColumnNames.has('badges'), 'PG profiles table must contain badges column');
         assert.ok(pgColumnNames.has('gender'), 'PG profiles table must contain gender column');
         assert.ok(pgColumnNames.has('playtime'), 'PG profiles table must contain playtime column');

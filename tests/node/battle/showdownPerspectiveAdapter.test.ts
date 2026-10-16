@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { ShowdownPerspectiveAdapter } from '@/logic/battle/helpers/showdownPerspectiveAdapter';
 
 describe('ShowdownPerspectiveAdapter', () => {
@@ -8,7 +8,9 @@ describe('ShowdownPerspectiveAdapter', () => {
     expect(invertedMove).toBe('|move|p2a: Charizard|Flamethrower|p1a: Blastoise');
 
     const damageLine = '|-damage|p2a: Blastoise|45/100';
-    expect(ShowdownPerspectiveAdapter.invertLine(damageLine)).toBe('|-damage|p1a: Blastoise|45/100');
+    expect(ShowdownPerspectiveAdapter.invertLine(damageLine)).toBe(
+      '|-damage|p1a: Blastoise|45/100'
+    );
 
     const switchLine = '|switch|p1a: Pikachu|Pikachu, L50, M|100/100|[uids]p1a:Pikachu=pk-1';
     expect(ShowdownPerspectiveAdapter.invertLine(switchLine)).toBe(

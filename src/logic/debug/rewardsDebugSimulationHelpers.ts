@@ -10,7 +10,11 @@ import type { AuthUser } from '@/types/auth/auth';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import type { SeasonalThemeId } from '@/types/battle/pvp';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { isRankedRewardMilestoneId, getSeasonalThemeForMonth, type RankedRewardMilestoneId } from '@/data/system/rankedData';
+import {
+  isRankedRewardMilestoneId,
+  getSeasonalThemeForMonth,
+  type RankedRewardMilestoneId
+} from '@/data/system/rankedData';
 import { safeStorage } from '@/logic/utils/storage';
 import { logger } from '@/logic/utils/logger';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
@@ -42,9 +46,10 @@ async function persistAwardsToDb(
   awardedAt: string
 ): Promise<void> {
   try {
-    const dbWinnerId = (db.mode === 'online' && (!user?.id || user.id.length !== UUID_STRING_LENGTH))
-      ? '00000000-0000-0000-0000-000000000000'
-      : (user?.id || 'player_test');
+    const dbWinnerId =
+      db.mode === 'online' && (!user?.id || user.id.length !== UUID_STRING_LENGTH)
+        ? '00000000-0000-0000-0000-000000000000'
+        : user?.id || 'player_test';
 
     const dbRow = {
       id: awardId,
@@ -80,7 +85,9 @@ export async function injectSimulatedPastEventAwards(
 
   const { event, endedAt } = pastMatch;
   const { prize, rankLabel, categoryId, categoryName } = pickRandomPrize(event);
-  const awardId = isOnlineDb ? crypto.randomUUID() : `test_award_${Temporal.Now.instant().epochMilliseconds}`;
+  const awardId = isOnlineDb
+    ? crypto.randomUUID()
+    : `test_award_${Temporal.Now.instant().epochMilliseconds}`;
   const prizeStr = JSON.stringify(prize);
 
   const newAward: PendingAward = {
@@ -95,7 +102,9 @@ export async function injectSimulatedPastEventAwards(
     awarded_at: endedAt.toString()
   };
 
-  const archivedAwardId = isOnlineDb ? crypto.randomUUID() : `test_archived_award_${Temporal.Now.instant().epochMilliseconds}`;
+  const archivedAwardId = isOnlineDb
+    ? crypto.randomUUID()
+    : `test_archived_award_${Temporal.Now.instant().epochMilliseconds}`;
   const archivedPrize = { money: ARCHIVED_TOURNAMENT_PRIZE_MONEY, item: 'rarecandy', qty: 2 };
   const archivedAward: PendingAward = {
     id: archivedAwardId,
@@ -111,13 +120,20 @@ export async function injectSimulatedPastEventAwards(
 
   if (db) {
     await persistAwardsToDb(db, user, awardId, event.id, prize, endedAt.toString());
-    await persistAwardsToDb(db, user, archivedAwardId, 'legacy_archived_tournament_2024', archivedPrize, '2024-01-01T00:00:00Z');
+    await persistAwardsToDb(
+      db,
+      user,
+      archivedAwardId,
+      'legacy_archived_tournament_2024',
+      archivedPrize,
+      '2024-01-01T00:00:00Z'
+    );
   }
 
   const updatedAwards = [
     newAward,
     archivedAward,
-    ...existingAwards.filter(a => a.id !== awardId && a.id !== archivedAwardId)
+    ...existingAwards.filter((a) => a.id !== awardId && a.id !== archivedAwardId)
   ];
 
   return {
@@ -135,8 +151,8 @@ export function injectSimulatedClassMission(state: GameState): void {
     ...state.classData,
     activeMission: {
       id: 'mission_6h',
-      startedAt: nowMs - (SIMULATED_MISSION_STARTED_HOURS_AGO * SECONDS_IN_AN_HOUR * MS_IN_A_SECOND),
-      endsAt: nowMs - (SIMULATED_MISSION_ENDED_HOURS_AGO * SECONDS_IN_AN_HOUR * MS_IN_A_SECOND),
+      startedAt: nowMs - SIMULATED_MISSION_STARTED_HOURS_AGO * SECONDS_IN_AN_HOUR * MS_IN_A_SECOND,
+      endsAt: nowMs - SIMULATED_MISSION_ENDED_HOURS_AGO * SECONDS_IN_AN_HOUR * MS_IN_A_SECOND,
       projectedReward: SIMULATED_MISSION_PROJECTED_REWARD
     }
   };
@@ -227,8 +243,12 @@ export async function injectSimulatedGtsClaimsAndListings(
   isOnlineDb: boolean,
   setSalesHistory?: (listing: MarketListing) => void
 ): Promise<void> {
-  const claimId = isOnlineDb ? crypto.randomUUID() : `test_claim_${Temporal.Now.instant().epochMilliseconds}`;
-  const pokeClaimUid = isOnlineDb ? crypto.randomUUID() : `test_claim_poke_${Temporal.Now.instant().epochMilliseconds}`;
+  const claimId = isOnlineDb
+    ? crypto.randomUUID()
+    : `test_claim_${Temporal.Now.instant().epochMilliseconds}`;
+  const pokeClaimUid = isOnlineDb
+    ? crypto.randomUUID()
+    : `test_claim_poke_${Temporal.Now.instant().epochMilliseconds}`;
   const numericListingId = Math.floor(Temporal.Now.instant().epochMilliseconds % INT32_MAX);
   const listingId = isOnlineDb ? crypto.randomUUID() : String(numericListingId);
   const pokeListingUid = isOnlineDb ? crypto.randomUUID() : String(numericListingId + 1);
@@ -269,11 +289,26 @@ export async function injectSimulatedGtsClaimsAndListings(
   state.claimQueue = [
     newClaim,
     pokeClaim,
-    ...(state.claimQueue || []).filter(c => !String(c.id).startsWith('test_claim_') && c.id !== claimId && c.id !== pokeClaimUid)
+    ...(state.claimQueue || []).filter(
+      (c) => !String(c.id).startsWith('test_claim_') && c.id !== claimId && c.id !== pokeClaimUid
+    )
   ];
 
   if (db) {
-    await persistGtsClaimsAndListingToDb(db, sellerId, sellerName, claimId, pokeClaimUid, listingId, pokeListingUid, buyerId, nowIso, newClaim.asset_data, pokeClaim.asset_data, numericListingId);
+    await persistGtsClaimsAndListingToDb(
+      db,
+      sellerId,
+      sellerName,
+      claimId,
+      pokeClaimUid,
+      listingId,
+      pokeListingUid,
+      buyerId,
+      nowIso,
+      newClaim.asset_data,
+      pokeClaim.asset_data,
+      numericListingId
+    );
   }
 
   if (setSalesHistory) {
@@ -303,9 +338,10 @@ async function persistRankedAwardToDb(
   nowIso: string
 ): Promise<void> {
   try {
-    const dbWinnerId = (db.mode === 'online' && (!sellerId || sellerId.length !== UUID_STRING_LENGTH))
-      ? '00000000-0000-0000-0000-000000000000'
-      : sellerId;
+    const dbWinnerId =
+      db.mode === 'online' && (!sellerId || sellerId.length !== UUID_STRING_LENGTH)
+        ? '00000000-0000-0000-0000-000000000000'
+        : sellerId;
 
     const dbRow = {
       id: rankedAwardUid,
@@ -342,24 +378,32 @@ export async function injectSimulatedRankedSeason(
   isOnlineDb: boolean,
   nowZdt: Temporal.ZonedDateTime,
   currentSeasonRulesName?: string,
-  syncPvpStore?: (targetElo: number, unlockedMilestones: ReadonlySet<RankedRewardMilestoneId>) => string[],
+  syncPvpStore?: (
+    targetElo: number,
+    unlockedMilestones: ReadonlySet<RankedRewardMilestoneId>
+  ) => string[],
   addPendingAward?: (award: PendingAward) => void
 ): Promise<void> {
   const targetElo = SIMULATED_TARGET_ELO;
   state.rankedMaxElo = targetElo;
   state.eloRating = targetElo;
-  const unlockedMilestones: ReadonlySet<RankedRewardMilestoneId> = new Set<RankedRewardMilestoneId>([ // runtime-set: Fast O(1) membership lookup set
-    'bronce_1000',
-    'bronce_1100',
-    'plata_1200',
-    'plata_1400',
-  ]);
+  const unlockedMilestones: ReadonlySet<RankedRewardMilestoneId> = new Set<RankedRewardMilestoneId>(
+    [
+      // runtime-set: Fast O(1) membership lookup set
+      'bronce_1000',
+      'bronce_1100',
+      'plata_1200',
+      'plata_1400'
+    ]
+  );
 
   if (syncPvpStore) {
     const rewards = syncPvpStore(targetElo, unlockedMilestones);
     state.rankedRewardsClaimed = rewards;
   } else {
-    state.rankedRewardsClaimed = (state.rankedRewardsClaimed || []).filter(id => !isRankedRewardMilestoneId(id) || !unlockedMilestones.has(id));
+    state.rankedRewardsClaimed = (state.rankedRewardsClaimed || []).filter(
+      (id) => !isRankedRewardMilestoneId(id) || !unlockedMilestones.has(id)
+    );
   }
 
   const currentTheme = getSeasonalThemeForMonth(nowZdt.month);
@@ -368,7 +412,9 @@ export async function injectSimulatedRankedSeason(
   const nowIso = Temporal.Now.instant().toString();
   const sellerId = user?.id || 'local_user';
 
-  const rankedAwardUid = isOnlineDb ? crypto.randomUUID() : `test_ranked_award_${Temporal.Now.instant().epochMilliseconds}`;
+  const rankedAwardUid = isOnlineDb
+    ? crypto.randomUUID()
+    : `test_ranked_award_${Temporal.Now.instant().epochMilliseconds}`;
   const rankedSeasonAward: PendingAward = {
     id: rankedAwardUid,
     winner_id: sellerId,
@@ -391,7 +437,17 @@ export async function injectSimulatedRankedSeason(
   };
 
   if (db) {
-    await persistRankedAwardToDb(db, user, sellerId, rankedAwardUid, eventId, tournamentName, currentTheme.id, targetElo, nowIso);
+    await persistRankedAwardToDb(
+      db,
+      user,
+      sellerId,
+      rankedAwardUid,
+      eventId,
+      tournamentName,
+      currentTheme.id,
+      targetElo,
+      nowIso
+    );
   }
 
   if (addPendingAward) {
@@ -403,12 +459,13 @@ export async function clearSimulatedAwards(
   pendingAwards: PendingAward[],
   db: DBRouter | null
 ): Promise<PendingAward[]> {
-  const filtered = pendingAwards.filter(a =>
-    !a.id.startsWith('test_award_') &&
-    !a.id.startsWith('test_ranked_award_') &&
-    !a.id.startsWith('test_archived_award_') &&
-    a.event_id !== 'legacy_archived_tournament_2024' &&
-    (a as { winner_email?: string }).winner_email !== 'test_reward@pokevicio.com'
+  const filtered = pendingAwards.filter(
+    (a) =>
+      !a.id.startsWith('test_award_') &&
+      !a.id.startsWith('test_ranked_award_') &&
+      !a.id.startsWith('test_archived_award_') &&
+      a.event_id !== 'legacy_archived_tournament_2024' &&
+      (a as { winner_email?: string }).winner_email !== 'test_reward@pokevicio.com'
   );
 
   if (db) {
@@ -423,9 +480,16 @@ export async function clearSimulatedAwards(
 }
 
 export function clearSimulatedClassMission(state: GameState): void {
-  const classData = state.classData as { activeMission?: { id?: string; endsAt?: number } | null } | undefined;
+  const classData = state.classData as
+    | { activeMission?: { id?: string; endsAt?: number } | null }
+    | undefined;
   const mission = classData?.activeMission;
-  if (mission && mission.id === 'mission_6h' && typeof mission.endsAt === 'number' && mission.endsAt < Temporal.Now.instant().epochMilliseconds) {
+  if (
+    mission &&
+    mission.id === 'mission_6h' &&
+    typeof mission.endsAt === 'number' &&
+    mission.endsAt < Temporal.Now.instant().epochMilliseconds
+  ) {
     if (state.classData) {
       state.classData.activeMission = null;
     }
@@ -437,7 +501,9 @@ export async function clearSimulatedGts(
   db: DBRouter | null,
   filterSalesHistory?: () => void
 ): Promise<void> {
-  state.claimQueue = (state.claimQueue || []).filter(c => !String(c.id).startsWith('test_claim_'));
+  state.claimQueue = (state.claimQueue || []).filter(
+    (c) => !String(c.id).startsWith('test_claim_')
+  );
 
   if (filterSalesHistory) {
     filterSalesHistory();
@@ -446,19 +512,23 @@ export async function clearSimulatedGts(
   if (db) {
     try {
       await db.from('claim_queue').delete().ilike('id', 'test_claim_%');
-      await db.from('market_listings').delete().eq('price', SIMULATED_SALE_PRICE).eq('status', 'sold');
+      await db
+        .from('market_listings')
+        .delete()
+        .eq('price', SIMULATED_SALE_PRICE)
+        .eq('status', 'sold');
       const { persistSQLite } = await import('@/logic/db/sqliteEngine');
       await persistSQLite();
     } catch (err) {
-      logger.warn('[rewardsDebugSimulation] Fallo al eliminar claims/listings de prueba en DB:', err);
+      logger.warn(
+        '[rewardsDebugSimulation] Fallo al eliminar claims/listings de prueba en DB:',
+        err
+      );
     }
   }
 }
 
-export function clearSimulatedRankedState(
-  state: GameState,
-  resetPvpStore?: () => void
-): void {
+export function clearSimulatedRankedState(state: GameState, resetPvpStore?: () => void): void {
   state.rankedMaxElo = DEFAULT_RESET_ELO;
   state.eloRating = DEFAULT_RESET_ELO;
   if (resetPvpStore) {

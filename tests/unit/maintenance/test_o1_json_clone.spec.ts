@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -11,7 +11,7 @@ describe('validate_o1_data_structures - o1-json-clone rule', () => {
     const code = `const copy = JSON.parse(JSON.stringify(original));`;
     const issues = scanFileForO1Issues('src/some/file.ts', code);
 
-    const jsonCloneIssues = issues.filter(i => i.ruleId === 'o1-json-clone');
+    const jsonCloneIssues = issues.filter((i) => i.ruleId === 'o1-json-clone');
     expect(jsonCloneIssues).toHaveLength(1);
     const firstIssue = jsonCloneIssues[0];
     expect(firstIssue).toBeDefined();
@@ -24,7 +24,7 @@ describe('validate_o1_data_structures - o1-json-clone rule', () => {
     const code = `const copy = JSON.parse(   JSON.stringify(  state  )  );`;
     const issues = scanFileForO1Issues('src/some/file.ts', code);
 
-    const jsonCloneIssues = issues.filter(i => i.ruleId === 'o1-json-clone');
+    const jsonCloneIssues = issues.filter((i) => i.ruleId === 'o1-json-clone');
     expect(jsonCloneIssues).toHaveLength(1);
   });
 
@@ -32,7 +32,7 @@ describe('validate_o1_data_structures - o1-json-clone rule', () => {
     const code = `const copy = structuredClone(original);`;
     const issues = scanFileForO1Issues('src/some/file.ts', code);
 
-    const jsonCloneIssues = issues.filter(i => i.ruleId === 'o1-json-clone');
+    const jsonCloneIssues = issues.filter((i) => i.ruleId === 'o1-json-clone');
     expect(jsonCloneIssues).toHaveLength(0);
   });
 
@@ -43,7 +43,7 @@ describe('validate_o1_data_structures - o1-json-clone rule', () => {
     `;
     const issues = scanFileForO1Issues('src/some/file.ts', code);
 
-    const jsonCloneIssues = issues.filter(i => i.ruleId === 'o1-json-clone');
+    const jsonCloneIssues = issues.filter((i) => i.ruleId === 'o1-json-clone');
     expect(jsonCloneIssues).toHaveLength(0);
   });
 

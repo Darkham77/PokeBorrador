@@ -1,9 +1,9 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .battle-header-actions {
   position: absolute;
   top: 16px;
-  right: 64px; 
+  right: 64px;
   z-index: var(--z-low);
   display: flex;
   align-items: center;
@@ -28,8 +28,15 @@
   &.is-fullscreen {
     height: 100%;
     flex: 1;
-    :deep(.battle-log) { gap: $spacing-2xs !important; padding: 2px 4px !important; }
-    :deep(.log-entry) { font-size: var(--font-11) !important; line-height: 1.4 !important; padding-bottom: 4px !important; }
+    :deep(.battle-log) {
+      gap: $spacing-2xs !important;
+      padding: 2px 4px !important;
+    }
+    :deep(.log-entry) {
+      font-size: var(--font-11) !important;
+      line-height: 1.4 !important;
+      padding-bottom: 4px !important;
+    }
   }
 }
 
@@ -40,7 +47,7 @@
   max-width: none !important;
   height: 100%; // Asegurar llenado total en móvil
   min-height: 0;
-  margin: 0 !important; 
+  margin: 0 !important;
   background: Linear-Gradient(180deg, Rgb(255 255 255 / 3%) 0%, transparent 100%);
   flex: 1;
   overflow: hidden;
@@ -53,7 +60,7 @@
     max-width: 1600px; /* 280px log + 1320px arena/controls */
     height: 100%; // Llenado total
     max-height: 100%;
-    grid-template: "log arena" 1fr "moves moves" auto / calc(320px * var(--app-zoom, 1)) 1fr;
+    grid-template: 'log arena' 1fr 'moves moves' auto / calc(320px * var(--app-zoom, 1)) 1fr;
   }
 }
 
@@ -65,7 +72,7 @@
   grid-area: log;
   zoom: var(--app-zoom, 1);
   will-change: zoom;
-  overflow: hidden; 
+  overflow: hidden;
   flex: 1;
 
   :deep(.battle-log) {
@@ -76,7 +83,7 @@
     border-right: 1px solid Rgb(255 255 255 / 15%);
     box-shadow: var(--shadow-2xl);
   }
-  
+
   .battle-screen-grid.is-fullscreen & {
     height: 90px;
     min-height: 72px;
@@ -111,17 +118,17 @@
 }
 
 /* Ensure controls and arena take their grid spots */
-:deep(.battle-arena) { 
+:deep(.battle-arena) {
   width: 100%;
   height: 100% !important;
-  min-height: 0; 
+  min-height: 0;
   grid-area: arena;
   flex: 1; // Unificar crecimiento para evitar tirones
   object-fit: contain;
 
   .battle-screen-grid.is-fullscreen & {
-     height: auto !important;
-     flex: 1; // Crece para ocupar todo el espacio superior
+    height: auto !important;
+    flex: 1; // Crece para ocupar todo el espacio superior
   }
 }
 
@@ -129,10 +136,10 @@
   z-index: var(--z-hud);
   height: 192px;
   min-height: 192px;
-  max-height: 192px; 
-  grid-area: moves; 
+  max-height: 192px;
+  grid-area: moves;
   zoom: var(--app-zoom, 1);
-  will-change: zoom; 
+  will-change: zoom;
   border-top: 1px solid Rgb(255 255 255 / 20%);
   box-shadow: var(--shadow-card);
   margin-top: -1px; // Solapamiento para evitar fugas de luz

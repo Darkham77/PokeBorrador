@@ -1,6 +1,6 @@
 /**
  * src/logic/validation/subschemas/socialSchemas.ts
- * 
+ *
  * Valibot validation schemas for GTS, Trades, Daycare Missions, Notifications, and Claims.
  */
 
@@ -19,7 +19,7 @@ import {
   picklist,
   variant,
   unknown,
-  type InferOutput,
+  type InferOutput
 } from 'valibot';
 
 import { pokemonSchema } from './pokemonSchemas.ts';
@@ -28,7 +28,7 @@ import { MARKET_LISTING_STATUSES } from '@/logic/economy/market.ts';
 export const gtsItemDataSchema = object({
   id: union([string(), number()]),
   name: optional(string()),
-  qty: pipe(number(), minValue(1, 'La cantidad debe ser al menos 1')),
+  qty: pipe(number(), minValue(1, 'La cantidad debe ser al menos 1'))
 });
 
 const gtsPokemonListingSchema = object({
@@ -53,7 +53,10 @@ const gtsItemListingSchema = object({
   created_at: string()
 });
 
-export const gtsListingSchema = variant('listing_type', [gtsPokemonListingSchema, gtsItemListingSchema]);
+export const gtsListingSchema = variant('listing_type', [
+  gtsPokemonListingSchema,
+  gtsItemListingSchema
+]);
 
 export const tradeOfferSchema = object({
   id: string(),
@@ -66,30 +69,39 @@ export const tradeOfferSchema = object({
   request_items: record(string(), pipe(number(), minValue(1))),
   request_money: pipe(number(), minValue(0)),
   message: string(),
-  status: union([literal('pending'), literal('accepted'), literal('rejected'), literal('cancelled')]),
+  status: union([
+    literal('pending'),
+    literal('accepted'),
+    literal('rejected'),
+    literal('cancelled')
+  ]),
   created_at: string()
 });
 
 export const daycareMissionSchema = object({
   date: optional(string()),
   targetId: optional(string()),
-  requirement: optional(object({
-    type: optional(string()),
-    minLevel: optional(number()),
-    minIvTotal: optional(number()),
-    nature: optional(string()),
-    stat31: optional(string())
-  })),
+  requirement: optional(
+    object({
+      type: optional(string()),
+      minLevel: optional(number()),
+      minIvTotal: optional(number()),
+      nature: optional(string()),
+      stat31: optional(string())
+    })
+  ),
   reqText: optional(string()),
-  reward: optional(object({
-    id: optional(string()),
-    name: optional(string()),
-    qty: optional(number()),
-    icon: optional(string()),
-    money: optional(number()),
-    exp: optional(number()),
-    item: optional(string())
-  })),
+  reward: optional(
+    object({
+      id: optional(string()),
+      name: optional(string()),
+      qty: optional(number()),
+      icon: optional(string()),
+      money: optional(number()),
+      exp: optional(number()),
+      item: optional(string())
+    })
+  ),
   completed: optional(boolean()),
   claimed: optional(boolean()),
   trainerType: optional(string()),
@@ -114,15 +126,19 @@ export const claimItemSchema = object({
   asset_data: object({
     type: union([literal('pokemon'), literal('item'), literal('money'), literal('currency')]),
     data: unknown(),
-    sold_item: optional(object({
-      name: optional(string()),
-      qty: optional(number())
-    })),
-    sold_pokemon: optional(object({
-      name: optional(string()),
-      level: optional(number()),
-      isShiny: optional(boolean())
-    }))
+    sold_item: optional(
+      object({
+        name: optional(string()),
+        qty: optional(number())
+      })
+    ),
+    sold_pokemon: optional(
+      object({
+        name: optional(string()),
+        level: optional(number()),
+        isShiny: optional(boolean())
+      })
+    )
   }),
   source_type: string(),
   source_id: string(),

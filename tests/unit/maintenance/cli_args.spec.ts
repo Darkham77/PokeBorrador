@@ -1,42 +1,42 @@
-import { describe, it, expect } from 'vitest'
-import { parseArgs } from 'node:util'
-import { parseServerArguments } from '@/../scripts/lib/supabaseClient.ts'
+import { describe, it, expect } from 'vite-plus/test';
+import { parseArgs } from 'node:util';
+import { parseServerArguments } from '@/../scripts/lib/supabaseClient.ts';
 
 describe('CLI Argument Parsing & Standardization', () => {
-  const baseProfiles = ['server_franco', 'cloud']
-  const allAvailable = ['server_franco', 'cloud', 'local-docker', 'official_prod']
+  const baseProfiles = ['server_franco', 'cloud'];
+  const allAvailable = ['server_franco', 'cloud', 'local-docker', 'official_prod'];
 
   describe('parseServerArguments', () => {
     it('correctly extracts server from --server=<profile>', () => {
-      const args = ['--server=server_franco']
-      const result = parseServerArguments(args, baseProfiles, allAvailable)
-      expect(result).toEqual(['server_franco'])
-    })
+      const args = ['--server=server_franco'];
+      const result = parseServerArguments(args, baseProfiles, allAvailable);
+      expect(result).toEqual(['server_franco']);
+    });
 
     it('correctly extracts server from -s=<profile>', () => {
-      const args = ['-s=cloud']
-      const result = parseServerArguments(args, baseProfiles, allAvailable)
-      expect(result).toEqual(['cloud'])
-    })
+      const args = ['-s=cloud'];
+      const result = parseServerArguments(args, baseProfiles, allAvailable);
+      expect(result).toEqual(['cloud']);
+    });
 
     it('correctly extracts server from separated --server <profile>', () => {
-      const args = ['--server', 'server_franco']
-      const result = parseServerArguments(args, baseProfiles, allAvailable)
-      expect(result).toEqual(['server_franco'])
-    })
+      const args = ['--server', 'server_franco'];
+      const result = parseServerArguments(args, baseProfiles, allAvailable);
+      expect(result).toEqual(['server_franco']);
+    });
 
     it('correctly returns all profiles when --all is passed', () => {
-      const args = ['--all']
-      const result = parseServerArguments(args, baseProfiles, allAvailable)
-      expect(result).toEqual(baseProfiles)
-    })
+      const args = ['--all'];
+      const result = parseServerArguments(args, baseProfiles, allAvailable);
+      expect(result).toEqual(baseProfiles);
+    });
 
     it('correctly returns all profiles when positional all is passed', () => {
-      const args = ['all']
-      const result = parseServerArguments(args, baseProfiles, allAvailable)
-      expect(result).toEqual(baseProfiles)
-    })
-  })
+      const args = ['all'];
+      const result = parseServerArguments(args, baseProfiles, allAvailable);
+      expect(result).toEqual(baseProfiles);
+    });
+  });
 
   describe('admin_supabase_users parseArgs schema', () => {
     const parseAdminArgs = (args: string[]) => {
@@ -53,8 +53,8 @@ describe('CLI Argument Parsing & Standardization', () => {
         },
         allowPositionals: true,
         strict: false
-      })
-    }
+      });
+    };
 
     it('correctly parses all explicit flags for set-password', () => {
       const args = [
@@ -62,27 +62,27 @@ describe('CLI Argument Parsing & Standardization', () => {
         '--action=set-password',
         '--email=usuario@ejemplo.com',
         '--password=poke312'
-      ]
-      const { values } = parseAdminArgs(args)
-      expect(values.server).toBe('server_franco')
-      expect(values.action).toBe('set-password')
-      expect(values.email).toBe('usuario@ejemplo.com')
-      expect(values.password).toBe('poke312')
-    })
+      ];
+      const { values } = parseAdminArgs(args);
+      expect(values.server).toBe('server_franco');
+      expect(values.action).toBe('set-password');
+      expect(values.email).toBe('usuario@ejemplo.com');
+      expect(values.password).toBe('poke312');
+    });
 
     it('correctly parses unban and promote actions with email', () => {
-      const unbanArgs = ['--server=cloud', '--action=unban', '--email=banned@ejemplo.com']
-      const { values: unbanValues } = parseAdminArgs(unbanArgs)
-      expect(unbanValues.server).toBe('cloud')
-      expect(unbanValues.action).toBe('unban')
-      expect(unbanValues.email).toBe('banned@ejemplo.com')
+      const unbanArgs = ['--server=cloud', '--action=unban', '--email=banned@ejemplo.com'];
+      const { values: unbanValues } = parseAdminArgs(unbanArgs);
+      expect(unbanValues.server).toBe('cloud');
+      expect(unbanValues.action).toBe('unban');
+      expect(unbanValues.email).toBe('banned@ejemplo.com');
 
-      const promoteArgs = ['--server=cloud', '--action=promote', '--email=admin@ejemplo.com']
-      const { values: promoteValues } = parseAdminArgs(promoteArgs)
-      expect(promoteValues.server).toBe('cloud')
-      expect(promoteValues.action).toBe('promote')
-      expect(promoteValues.email).toBe('admin@ejemplo.com')
-    })
+      const promoteArgs = ['--server=cloud', '--action=promote', '--email=admin@ejemplo.com'];
+      const { values: promoteValues } = parseAdminArgs(promoteArgs);
+      expect(promoteValues.server).toBe('cloud');
+      expect(promoteValues.action).toBe('promote');
+      expect(promoteValues.email).toBe('admin@ejemplo.com');
+    });
 
     it('correctly parses set-email with new-email flag', () => {
       const args = [
@@ -90,12 +90,12 @@ describe('CLI Argument Parsing & Standardization', () => {
         '--action=set-email',
         '--email=old@test.com',
         '--new-email=new@test.com'
-      ]
-      const { values } = parseAdminArgs(args)
-      expect(values.server).toBe('server_franco')
-      expect(values.action).toBe('set-email')
-      expect(values.email).toBe('old@test.com')
-      expect(values['new-email']).toBe('new@test.com')
-    })
-  })
-})
+      ];
+      const { values } = parseAdminArgs(args);
+      expect(values.server).toBe('server_franco');
+      expect(values.action).toBe('set-email');
+      expect(values.email).toBe('old@test.com');
+      expect(values['new-email']).toBe('new@test.com');
+    });
+  });
+});

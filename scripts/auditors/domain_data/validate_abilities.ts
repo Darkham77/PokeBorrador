@@ -1,13 +1,13 @@
 /**
  * scripts/auditors/domain_data/validate_abilities.ts
- * 
+ *
  * ABILITY INTEGRITY VALIDATOR (Node.js 26+ Native)
  * Validates abilities assigned in POKEMON_DB against the local Showdown DB.
  */
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { ABILITY_TRANSLATIONS_ES } from '../../../src/data/battle/abilities.ts';
 import { Dex, toID } from '@pkmn/sim';
@@ -85,7 +85,7 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
       if (!isEnabledPokemonId(pokeId)) continue;
       const species = Dex.species.get(pokeId);
       if (species && species.exists) {
-        Object.values(species.abilities).forEach(abiName => {
+        Object.values(species.abilities).forEach((abiName) => {
           gameAbilities.add(toID(abiName) as AbilityTranslationId);
         });
       }
@@ -175,6 +175,10 @@ export class AbilityAuditor extends BaseAuditor<AbilityRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new AbilityAuditor());
 }

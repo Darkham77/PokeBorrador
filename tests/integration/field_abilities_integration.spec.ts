@@ -1,4 +1,4 @@
-import { describe, test, beforeEach } from 'vitest';
+import { describe, test, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert';
 import { setActivePinia, createPinia } from 'pinia';
 import { generateEncounter } from '../../src/logic/encounters/encounters.ts';
@@ -31,7 +31,11 @@ describe('field_abilities_integration.spec - Cross-Boundary System Tests', () =>
     const encounter = await generateEncounter('route1', state, { forceEncounter: true });
     assert.ok(encounter, 'Encounter must be generated');
     if (encounter.type === 'wild' && encounter.pokemon) {
-      assert.strictEqual(encounter.pokemon.nature, 'modest', 'Wild Pokemon must inherit Modest nature via Synchronize');
+      assert.strictEqual(
+        encounter.pokemon.nature,
+        'modest',
+        'Wild Pokemon must inherit Modest nature via Synchronize'
+      );
     }
   });
 
@@ -85,6 +89,10 @@ describe('field_abilities_integration.spec - Cross-Boundary System Tests', () =>
 
     // Base reduction for 'battle' is 2. With Magmar (Flame Body), it must be 2 * 2 = 4 steps!
     breedingStore.reduceHatchTimers('battle');
-    assert.strictEqual(gameStore.state.eggs[0]?.steps, 16, 'Egg steps must be reduced by 4 (2 * 2x booster)');
+    assert.strictEqual(
+      gameStore.state.eggs[0]?.steps,
+      16,
+      'Egg steps must be reduced by 4 (2 * 2x booster)'
+    );
   });
 });

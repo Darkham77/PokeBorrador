@@ -1,135 +1,141 @@
 /**
  * src/components/battle/useBattleCombatantSpriteLoop.ts
- * 
+ *
  * GSAP Timeline spritesheet animation loop for combatant sprites (idle + variation cycling).
  */
 
-import { ref, type Ref, onUnmounted } from 'vue'
-import { gsap } from 'gsap'
-import type { BattleCombatantProps } from '@/types/battle/battle'
+import { ref, type Ref, onUnmounted } from 'vue';
+import { gsap } from 'gsap';
+import type { BattleCombatantProps } from '@/types/battle/battle';
 import {
   POKEMON_SPRITE_IDLE_FPS,
   POKEMON_SPRITE_VARIATION_FPS
-} from '@/logic/constants/animations'
+} from '@/logic/constants/animations';
 
 export interface AnimatedSpriteFramesInfo {
-  frames: number
+  frames: number;
 }
 
-const IDLE_CYCLES_MIN = 2
-const IDLE_CYCLES_VARIANCE = 3
+const IDLE_CYCLES_MIN = 2;
+const IDLE_CYCLES_VARIANCE = 3;
 
 export interface UseBattleCombatantSpriteLoopParams {
-  props: BattleCombatantProps
-  spriteRef: Ref<HTMLElement | null>
-  isAnimated: Ref<boolean>
-  frames: Ref<number>
-  variationMeta: Ref<AnimatedSpriteFramesInfo | null>
+  props: BattleCombatantProps;
+  spriteRef: Ref<HTMLElement | null>;
+  isAnimated: Ref<boolean>;
+  frames: Ref<number>;
+  variationMeta: Ref<AnimatedSpriteFramesInfo | null>;
 }
 
 export function useBattleCombatantSpriteLoop(params: UseBattleCombatantSpriteLoopParams) {
-  const { props, spriteRef, isAnimated, frames, variationMeta } = params
+  const { props, spriteRef, isAnimated, frames, variationMeta } = params;
 
-  const currentMode = ref<'idle' | 'variation'>('idle')
-  const idleCyclesTarget = ref(Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN)
-  const animTween = ref<gsap.core.Timeline | null>(null)
+  const currentMode = ref<'idle' | 'variation'>('idle');
+  const idleCyclesTarget = ref(Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN);
+  const animTween = ref<gsap.core.Timeline | null>(null);
 
   const animateSpritesheet = () => {
     if (animTween.value) {
-      animTween.value.kill()
-      animTween.value = null
+      animTween.value.kill();
+      animTween.value = null;
     }
-    if (!isAnimated.value || !spriteRef.value) return
+    if (!isAnimated.value || !spriteRef.value) return;
 
-    const imgEl = spriteRef.value.querySelector('.pokemon-combat-image') as HTMLElement
-    if (!imgEl) return
+    const imgEl = spriteRef.value.querySelector('.pokemon-combat-image') as HTMLElement;
+    if (!imgEl) return;
 
     // If frozen or asleep, force first frame of idle and stop animation
     if (props.pokemon?.status === 'frz' || props.pokemon?.status === 'slp') {
-      currentMode.value = 'idle'
-      const imgEl = spriteRef.value.querySelector('.pokemon-image-idle') as HTMLElement
+      currentMode.value = 'idle';
+      const imgEl = spriteRef.value.querySelector('.pokemon-image-idle') as HTMLElement;
       if (imgEl) {
-        gsap.set(imgEl, { x: 0, xPercent: 0 })
+        gsap.set(imgEl, { x: 0, xPercent: 0 });
       }
-      return
+      return;
     }
 
     const playMode = () => {
       // 1. Clean up previous timelines and stop all onComplete callbacks
       if (animTween.value) {
-        animTween.value.kill()
-        animTween.value = null
+        animTween.value.kill();
+        animTween.value = null;
       }
-      if (!props.pokemon) return
+      if (!props.pokemon) return;
 
       const startTween = () => {
-        if (!spriteRef.value) return
-        
-        const activeClass = currentMode.value === 'idle' ? '.pokemon-image-idle' : '.pokemon-image-variation'
-        const imgEl = spriteRef.value.querySelector(activeClass) as HTMLElement
-        if (!imgEl) return
+        if (!spriteRef.value) return;
 
-        const totalFrames = currentMode.value === 'idle' 
-          ? (frames.value) 
-          : (variationMeta.value?.frames ?? 0)
+        const activeClass =
+          currentMode.value === 'idle' ? '.pokemon-image-idle' : '.pokemon-image-variation';
+        const imgEl = spriteRef.value.querySelector(activeClass) as HTMLElement;
+        if (!imgEl) return;
+
+        const totalFrames =
+          currentMode.value === 'idle' ? frames.value : (variationMeta.value?.frames ?? 0);
 
         if (totalFrames <= 1 || (currentMode.value === 'variation' && !variationMeta.value)) {
-          currentMode.value = 'idle'
-          const idleImg = spriteRef.value.querySelector('.pokemon-image-idle') as HTMLElement
+          currentMode.value = 'idle';
+          const idleImg = spriteRef.value.querySelector('.pokemon-image-idle') as HTMLElement;
           if (idleImg) {
-            gsap.set(idleImg, { x: 0, xPercent: 0 })
+            gsap.set(idleImg, { x: 0, xPercent: 0 });
           }
-          return
+          return;
         }
 
-        gsap.killTweensOf(imgEl)
-        gsap.set(imgEl, { clearProps: 'x,xPercent,transform' })
-        gsap.set(imgEl, { x: 0, xPercent: 0 })
+        gsap.killTweensOf(imgEl);
+        gsap.set(imgEl, { clearProps: 'x,xPercent,transform' });
+        gsap.set(imgEl, { x: 0, xPercent: 0 });
 
-        const endXPercent = -((totalFrames - 1) / totalFrames) * 100
-        const fps = currentMode.value === 'idle' ? POKEMON_SPRITE_IDLE_FPS : POKEMON_SPRITE_VARIATION_FPS
-        const duration = totalFrames / fps
-        const repeatCount = currentMode.value === 'idle' ? (idleCyclesTarget.value - 1) : 0
+        const endXPercent = -((totalFrames - 1) / totalFrames) * 100;
+        const fps =
+          currentMode.value === 'idle' ? POKEMON_SPRITE_IDLE_FPS : POKEMON_SPRITE_VARIATION_FPS;
+        const duration = totalFrames / fps;
+        const repeatCount = currentMode.value === 'idle' ? idleCyclesTarget.value - 1 : 0;
 
         const tl = gsap.timeline({
           onComplete: () => {
-            if (!props.pokemon) return
-            if (currentMode.value === 'idle' && variationMeta.value && variationMeta.value.frames > 1) {
-              currentMode.value = 'variation'
-              idleCyclesTarget.value = Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN
+            if (!props.pokemon) return;
+            if (
+              currentMode.value === 'idle' &&
+              variationMeta.value &&
+              variationMeta.value.frames > 1
+            ) {
+              currentMode.value = 'variation';
+              idleCyclesTarget.value =
+                Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN;
             } else {
-              currentMode.value = 'idle'
+              currentMode.value = 'idle';
             }
-            playMode()
+            playMode();
           }
-        })
+        });
 
         tl.to(imgEl, {
           xPercent: endXPercent,
           ease: `steps(${totalFrames - 1})`,
           duration,
           repeat: repeatCount
-        })
+        });
 
-        animTween.value = tl
-      }
+        animTween.value = tl;
+      };
 
-      startTween()
-    }
+      startTween();
+    };
 
-    playMode()
-  }
+    playMode();
+  };
 
   onUnmounted(() => {
     if (animTween.value) {
-      animTween.value.kill()
+      animTween.value.kill();
     }
-  })
+  });
 
   return {
     currentMode,
     idleCyclesTarget,
     animTween,
     animateSpritesheet
-  }
+  };
 }

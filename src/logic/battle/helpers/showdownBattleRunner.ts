@@ -1,6 +1,9 @@
 import type { SideID } from '@pkmn/sim';
 import { ChoiceRequest, requiresAction } from './requestHelper.ts';
-import { isCertifiedBattleGameAction, type CertifiedBattleGameAction } from '../../../types/battle/certifiedBattleActions.ts';
+import {
+  isCertifiedBattleGameAction,
+  type CertifiedBattleGameAction
+} from '../../../types/battle/certifiedBattleActions.ts';
 import { REPLAY_SEATS, isReplaySeat } from './showdownSeats.ts';
 import type { PokemonMoveId } from '@/data/battle/moves.ts';
 
@@ -80,14 +83,21 @@ export class ShowdownBattleRunner {
    */
   static requireHistoryChoice(debug: object, seat: SideID): string {
     if (seat !== 'p1' && seat !== 'p2') {
-      throw new Error(`[ShowdownBattleRunner] Seat is not available in the current singles simulator request. context=${JSON.stringify({ seat })}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Seat is not available in the current singles simulator request. context=${JSON.stringify({ seat })}`
+      );
     }
     const history = Reflect.get(debug, 'history') as CertifiedReplayHistoryEntry[];
     const historyIndex = Reflect.get(debug, 'replayHistoryIdx') as number | undefined;
     if (!Array.isArray(history) || typeof historyIndex !== 'number') {
-      throw new Error(`[ShowdownBattleRunner] Certified replay history or cursor is missing. context=${JSON.stringify({ seat, historyIndex, hasHistory: Array.isArray(history) })}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Certified replay history or cursor is missing. context=${JSON.stringify({ seat, historyIndex, hasHistory: Array.isArray(history) })}`
+      );
     }
-    if (historyIndex >= history.length || Reflect.get(debug, 'certifiedReplayWorkerEnded') === true) {
+    if (
+      historyIndex >= history.length ||
+      Reflect.get(debug, 'certifiedReplayWorkerEnded') === true
+    ) {
       return '';
     }
     return this.requireHistoryEntry(history, historyIndex)[`${seat}Choice`];
@@ -102,7 +112,9 @@ export class ShowdownBattleRunner {
     const history = Reflect.get(debug, 'history') as CertifiedReplayHistoryEntry[];
     const historyIndex = Reflect.get(debug, 'replayHistoryIdx') as number | undefined;
     if (!Array.isArray(history) || typeof historyIndex !== 'number') {
-      throw new Error(`[ShowdownBattleRunner] Certified replay history or cursor is missing. context=${JSON.stringify({ historyIndex, hasHistory: Array.isArray(history) })}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Certified replay history or cursor is missing. context=${JSON.stringify({ historyIndex, hasHistory: Array.isArray(history) })}`
+      );
     }
 
     const workerEnded = Reflect.get(debug, 'certifiedReplayWorkerEnded') === true;
@@ -110,55 +122,88 @@ export class ShowdownBattleRunner {
       return null;
     }
     if (historyIndex >= history.length) {
-      throw new Error(`[ShowdownBattleRunner] Certified replay history step is missing. context=${JSON.stringify({ historyIndex, historyLength: history.length })}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Certified replay history step is missing. context=${JSON.stringify({ historyIndex, historyLength: history.length })}`
+      );
     }
 
     return this.requireHistoryEntry(history, historyIndex);
   }
 
-  static requireHistoryEntry(history: unknown[], historyIndex: number): CertifiedReplayHistoryEntry {
+  static requireHistoryEntry(
+    history: unknown[],
+    historyIndex: number
+  ): CertifiedReplayHistoryEntry {
     const step = history[historyIndex];
     if (!step || typeof step !== 'object') {
-      throw new Error(`[ShowdownBattleRunner] Certified replay history step is missing. context=${JSON.stringify({ historyIndex, historyLength: history.length })}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Certified replay history step is missing. context=${JSON.stringify({ historyIndex, historyLength: history.length })}`
+      );
     }
     const p1Choice = Reflect.get(step, 'p1Choice') as string | undefined;
     const p2Choice = Reflect.get(step, 'p2Choice') as string | undefined;
     const battleTurn = Reflect.get(step, 'battleTurn') as number | undefined;
     const p1GameAction: unknown = Reflect.get(step, 'p1GameAction');
-    if (typeof p1Choice !== 'string' || typeof p2Choice !== 'string' || (battleTurn !== undefined && typeof battleTurn !== 'number') || (p1GameAction !== undefined && (!isCertifiedBattleGameAction(p1GameAction) || p1Choice !== '' || p2Choice === ''))) {
-      throw new Error(`[ShowdownBattleRunner] Certified replay history entry is invalid. context=${JSON.stringify({ historyIndex, p1Choice, p2Choice, battleTurn, p1GameAction })}`);
+    if (
+      typeof p1Choice !== 'string' ||
+      typeof p2Choice !== 'string' ||
+      (battleTurn !== undefined && typeof battleTurn !== 'number') ||
+      (p1GameAction !== undefined &&
+        (!isCertifiedBattleGameAction(p1GameAction) || p1Choice !== '' || p2Choice === ''))
+    ) {
+      throw new Error(
+        `[ShowdownBattleRunner] Certified replay history entry is invalid. context=${JSON.stringify({ historyIndex, p1Choice, p2Choice, battleTurn, p1GameAction })}`
+      );
     }
     return {
       ...(step as CertifiedReplayHistoryEntry),
       p1Choice,
       p2Choice,
       battleTurn,
-      ...(p1GameAction !== undefined ? { p1GameAction: p1GameAction as CertifiedBattleGameAction } : {})
+      ...(p1GameAction !== undefined
+        ? { p1GameAction: p1GameAction as CertifiedBattleGameAction }
+        : {})
     };
   }
 
   static advanceHistoryAfterAcceptedTurn(debug: object): void {
     const historyIndex = Reflect.get(debug, 'replayHistoryIdx') as number | undefined;
     if (typeof historyIndex !== 'number') {
-      throw new Error('[ShowdownBattleRunner] Certified replay cursor is missing after an accepted Showdown turn.');
+      throw new Error(
+        '[ShowdownBattleRunner] Certified replay cursor is missing after an accepted Showdown turn.'
+      );
     }
     const history: unknown = Reflect.get(debug, 'history');
     if (!Array.isArray(history)) {
-      throw new Error('[ShowdownBattleRunner] Certified replay history is missing after an accepted Showdown turn.');
+      throw new Error(
+        '[ShowdownBattleRunner] Certified replay history is missing after an accepted Showdown turn.'
+      );
     }
     if (historyIndex >= history.length) {
       Reflect.set(debug, 'certifiedReplayWorkerEnded', true);
       return;
     }
     const nextHistoryIndex = historyIndex + 1;
-    const consumedHistory = history.slice(0, nextHistoryIndex).map((_, index) => this.requireHistoryEntry(history, index));
-    console.debug(`[REPLAY-CURSOR-ADVANCE] Advancing cursor: ${historyIndex} -> ${nextHistoryIndex}. Next step: p1="${(history[nextHistoryIndex] as CertifiedReplayHistoryEntry | undefined)?.p1Choice}", p2="${(history[nextHistoryIndex] as CertifiedReplayHistoryEntry | undefined)?.p2Choice}"`);
+    const consumedHistory = history
+      .slice(0, nextHistoryIndex)
+      .map((_, index) => this.requireHistoryEntry(history, index));
+    console.debug(
+      `[REPLAY-CURSOR-ADVANCE] Advancing cursor: ${historyIndex} -> ${nextHistoryIndex}. Next step: p1="${(history[nextHistoryIndex] as CertifiedReplayHistoryEntry | undefined)?.p1Choice}", p2="${(history[nextHistoryIndex] as CertifiedReplayHistoryEntry | undefined)?.p2Choice}"`
+    );
     Reflect.set(debug, 'replayHistoryIdx', nextHistoryIndex);
     if (nextHistoryIndex >= history.length) {
       Reflect.set(debug, 'certifiedReplayWorkerEnded', true);
     }
-    Reflect.set(debug, 'p1ChoiceIdx', consumedHistory.filter(({ p1Choice }) => p1Choice !== '').length);
-    Reflect.set(debug, 'p2ChoiceIdx', consumedHistory.filter(({ p2Choice }) => p2Choice !== '').length);
+    Reflect.set(
+      debug,
+      'p1ChoiceIdx',
+      consumedHistory.filter(({ p1Choice }) => p1Choice !== '').length
+    );
+    Reflect.set(
+      debug,
+      'p2ChoiceIdx',
+      consumedHistory.filter(({ p2Choice }) => p2Choice !== '').length
+    );
   }
 
   get p1ChoiceIdx(): number {
@@ -192,13 +237,17 @@ export class ShowdownBattleRunner {
   peekNextChoice(player: SideID, activeRequest: unknown): string {
     if (!requiresAction(activeRequest)) return 'pass';
     if (!isReplaySeat(player)) {
-      throw new Error(`[ShowdownBattleRunner] Seat is not available in the current simulator request. context=${JSON.stringify({ seat: player, activeRequest })}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Seat is not available in the current simulator request. context=${JSON.stringify({ seat: player, activeRequest })}`
+      );
     }
     const index = this.indicesBySeat.get(player) ?? 0;
     const choices = this.choicesBySeat.get(player) ?? [];
     const choice = choices[index];
     if (!choice || choice.trim().length === 0) {
-      throw new Error(`[ShowdownBattleRunner] Required certified preview choice is missing. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Required certified preview choice is missing. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`
+      );
     }
     return choice;
   }
@@ -223,28 +272,44 @@ export class ShowdownBattleRunner {
     });
 
     if (isProcessing) {
-      throw new Error(`[ShowdownBattleRunner] Required certified choice cannot execute while the battle is processing. context=${replayContext}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Required certified choice cannot execute while the battle is processing. context=${replayContext}`
+      );
     }
 
     if (subState && !VALID_CERTIFIED_SUBSTATES.has(subState as ValidCertifiedSubstateKey)) {
-      throw new Error(`[ShowdownBattleRunner] Required certified choice cannot execute from its FSM substate. context=${replayContext}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Required certified choice cannot execute from its FSM substate. context=${replayContext}`
+      );
     }
 
     const needsSwitchState = hasPendingSwitch || (activePokeHp !== undefined && activePokeHp <= 0);
-    if (needsSwitchState && (!subState || !VALID_SWITCH_SUBSTATES.has(subState as ValidSwitchSubstateKey))) {
-      throw new Error(`[ShowdownBattleRunner] Required certified switch choice arrived before the switch FSM state. context=${replayContext}`);
+    if (
+      needsSwitchState &&
+      (!subState || !VALID_SWITCH_SUBSTATES.has(subState as ValidSwitchSubstateKey))
+    ) {
+      throw new Error(
+        `[ShowdownBattleRunner] Required certified switch choice arrived before the switch FSM state. context=${replayContext}`
+      );
     }
   }
 
-  private consumeNextChoiceBySeat(player: SideID, activeRequest: ChoiceRequest | null | undefined): string {
+  private consumeNextChoiceBySeat(
+    player: SideID,
+    activeRequest: ChoiceRequest | null | undefined
+  ): string {
     const index = this.indicesBySeat.get(player) ?? 0;
     const choices = this.choicesBySeat.get(player) ?? [];
     if (index >= choices.length) {
-      throw new Error(`[ShowdownBattleRunner] Required certified choice is missing. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Required certified choice is missing. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`
+      );
     }
     const choice = choices[index]!;
     if (!choice || choice.trim().length === 0) {
-      throw new Error(`[ShowdownBattleRunner] Required certified choice is empty. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`);
+      throw new Error(
+        `[ShowdownBattleRunner] Required certified choice is empty. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`
+      );
     }
     this.indicesBySeat.set(player, index + 1);
     return choice;

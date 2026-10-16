@@ -1,7 +1,7 @@
 import {
   BATTLE_UI_EVENTS,
   type BattleFlowCompletedDetail,
-  type BattleFlowDestination,
+  type BattleFlowDestination
 } from '@/types/battle/battleEvents';
 
 export function emitBattleFlowCompleted(destination: BattleFlowDestination): void {

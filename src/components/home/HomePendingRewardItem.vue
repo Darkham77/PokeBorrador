@@ -40,32 +40,20 @@ const getSourceLabel = (item: UnifiedRewardItem): { icon: string; text: string }
           <span class="emoji">{{ getSourceLabel(item).icon }}</span> {{ getSourceLabel(item).text }}
         </span>
         <span class="award-name text-outline">{{ item.title }}</span>
-        <span
-          v-if="item.categoryBadge"
-          class="category-badge"
-        >
+        <span v-if="item.categoryBadge" class="category-badge">
           <span class="emoji">{{ item.categoryBadge.icon }}</span> {{ item.categoryBadge.name }}
         </span>
-        <span
-          v-if="item.isLegacy"
-          class="legacy-badge"
-        >
+        <span v-if="item.isLegacy" class="legacy-badge">
           <span class="emoji">⚠️</span> ARCHIVADO
         </span>
       </div>
 
-      <div
-        v-if="item.subtitle"
-        class="award-sub-meta"
-      >
+      <div v-if="item.subtitle" class="award-sub-meta">
         {{ item.subtitle }}
       </div>
 
       <div class="award-pills-wrap">
-        <RewardPillsGroup
-          :pills="item.pills"
-          :prize="item.prize"
-        />
+        <RewardPillsGroup :pills="item.pills" :prize="item.prize" />
       </div>
     </div>
 
@@ -95,7 +83,7 @@ const getSourceLabel = (item: UnifiedRewardItem): { icon: string; text: string }
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .award-item {
   display: flex;

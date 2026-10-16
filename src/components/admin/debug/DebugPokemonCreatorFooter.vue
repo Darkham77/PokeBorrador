@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
 interface Props {
-  selectedMinigame: string
+  selectedMinigame: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'action', protocol: string): void
-}>()
+  (e: 'action', protocol: string): void;
+}>();
 </script>
 
 <template>

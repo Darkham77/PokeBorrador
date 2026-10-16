@@ -1,93 +1,93 @@
-import './logic/utils/temporal-init.ts'
-import '@/logic/system/gamePrefetchCoordinator.ts'
-import { createApp } from 'vue'
+import './logic/utils/temporal-init.ts';
+import '@/logic/system/gamePrefetchCoordinator.ts';
+import { createApp } from 'vue';
 
-import { createPinia, type Pinia } from 'pinia'
-import App from './App.vue'
-import router from './router/index.ts'
-import { DataLoaderPlugin } from 'vue-router/experimental'
-import '@/styles/_index.scss'
-import { useErrorStore } from '@/stores/errorStore'
-import { useUpdateStore } from '@/stores/update'
-import { gameBus } from '@/logic/events/gameBus'
+import { createPinia, type Pinia } from 'pinia';
+import App from './App.vue';
+import router from './router/index.ts';
+import { DataLoaderPlugin } from 'vue-router/experimental';
+import '@/styles/_index.scss';
+import { useErrorStore } from '@/stores/errorStore';
+import { useUpdateStore } from '@/stores/update';
+import { gameBus } from '@/logic/events/gameBus';
 
 declare global {
   interface Window {
-    Pinia?: Pinia
+    Pinia?: Pinia;
   }
 }
 
 // Global Components
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
 // Global Directives
-import { gsapNick } from '@/directives/gsapNick'
-import { gsapLoop } from '@/directives/gsapLoop'
-import { gsapHover } from '@/directives/gsapHover'
-import { initGlobalHoverSystem } from '@/logic/hover/globalHover'
+import { gsapNick } from '@/directives/gsapNick';
+import { gsapLoop } from '@/directives/gsapLoop';
+import { gsapHover } from '@/directives/gsapHover';
+import { initGlobalHoverSystem } from '@/logic/hover/globalHover';
 
-import { gsap } from 'gsap'
+import { gsap } from 'gsap';
 
-const app = createApp(App)
-const pinia = createPinia()
+const app = createApp(App);
+const pinia = createPinia();
 
 if (typeof window !== 'undefined') {
-  window.Pinia = pinia
-  window.gsap = gsap
+  window.Pinia = pinia;
+  window.gsap = gsap;
   if (window.__E2E__ || window.location.search.includes('e2e=true')) {
     gsap.globalTimeline.timeScale(100);
     console.debug('⚡ [E2E] GSAP timeScale set to 100x for instant animations.');
   }
 }
 
-app.component('PVTooltip', PVTooltip)
+app.component('PVTooltip', PVTooltip);
 
-app.directive('gsap-nick', gsapNick)
-app.directive('gsap-loop', gsapLoop)
-app.directive('gsap-hover', gsapHover)
+app.directive('gsap-nick', gsapNick);
+app.directive('gsap-loop', gsapLoop);
+app.directive('gsap-hover', gsapHover);
 
-app.use(pinia)
-app.use(DataLoaderPlugin, { router })
-app.use(router)
+app.use(pinia);
+app.use(DataLoaderPlugin, { router });
+app.use(router);
 
 app.config.errorHandler = (err, _instance, info) => {
   try {
-    const errorStore = useErrorStore(pinia)
+    const errorStore = useErrorStore(pinia);
     errorStore.setError(err, {
       type: 'Vue Render Error',
       source: info
-    })
+    });
   } catch (e) {
-    console.error('Failed to log Vue error to errorStore:', e)
+    console.error('Failed to log Vue error to errorStore:', e);
   }
-  console.error('[Vue error]:', err)
-}
+  console.error('[Vue error]:', err);
+};
 
-app.mount('#app')
-window.pwa_app_mounted = true
+app.mount('#app');
+window.pwa_app_mounted = true;
 
 // Initialize global hover animations
-initGlobalHoverSystem()
+initGlobalHoverSystem();
 
 if (typeof window !== 'undefined') {
   // Battery/CPU optimization: Sleep GSAP ticker when tab is hidden
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      gsap.ticker.sleep()
+      gsap.ticker.sleep();
     } else {
-      gsap.ticker.wake()
+      gsap.ticker.wake();
     }
-  })
+  });
 
   window.addEventListener('vite:preloadError', (event) => {
-    event.preventDefault()
-    console.warn('[Vite] Chunk preload error detected (stale deployment assets). Triggering update flow via gameBus.')
+    event.preventDefault();
+    console.warn(
+      '[Vite] Chunk preload error detected (stale deployment assets). Triggering update flow via gameBus.'
+    );
     try {
-      useUpdateStore(pinia).notifyChunkLoadError(event)
+      useUpdateStore(pinia).notifyChunkLoadError(event);
     } catch {
-      gameBus.emit('PWA_NEED_REFRESH')
+      gameBus.emit('PWA_NEED_REFRESH');
     }
-  })
+  });
 }
-
-

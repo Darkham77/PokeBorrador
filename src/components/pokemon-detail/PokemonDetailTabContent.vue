@@ -1,37 +1,37 @@
 <script setup lang="ts">
-import PokemonSummaryTab from '@/components/pokemon-detail/PokemonSummaryTab.vue'
-import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue'
-import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
-import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue'
-import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsTab.vue'
-import PokemonTrophiesTab from '@/components/pokemon-detail/PokemonTrophiesTab.vue'
-import type { Pokemon, PokemonSelectionSource, Move } from '@/types/pokemon/pokemon'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { usePokemonDetail } from '@/composables/pokemon/usePokemonDetail'
+import PokemonSummaryTab from '@/components/pokemon-detail/PokemonSummaryTab.vue';
+import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue';
+import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue';
+import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue';
+import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsTab.vue';
+import PokemonTrophiesTab from '@/components/pokemon-detail/PokemonTrophiesTab.vue';
+import type { Pokemon, PokemonSelectionSource, Move } from '@/types/pokemon/pokemon';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { usePokemonDetail } from '@/composables/pokemon/usePokemonDetail';
 
-type PokemonDetailReturn = ReturnType<typeof usePokemonDetail>
+type PokemonDetailReturn = ReturnType<typeof usePokemonDetail>;
 
 interface Props {
-  activeTab: string
-  species: NonNullable<PokemonDetailReturn['species']['value']>
-  cleanCategory: string
-  isInstance: boolean
-  instancePhysicalData: PokemonDetailReturn['instancePhysicalData']['value']
-  targetPokemon: Pokemon | null
-  context?: PokemonSelectionSource
-  targetSpeciesId: PokemonSpeciesId
-  captureDateFormatted: string | null
-  displayStats: PokemonDetailReturn['displayStats']['value']
-  currentMoves: PokemonDetailReturn['currentMoves']['value']
-  moveDetails: PokemonDetailReturn['moveDetails']['value']
-  evolutions: PokemonDetailReturn['evolutions']['value']
+  activeTab: string;
+  species: NonNullable<PokemonDetailReturn['species']['value']>;
+  cleanCategory: string;
+  isInstance: boolean;
+  instancePhysicalData: PokemonDetailReturn['instancePhysicalData']['value'];
+  targetPokemon: Pokemon | null;
+  context?: PokemonSelectionSource;
+  targetSpeciesId: PokemonSpeciesId;
+  captureDateFormatted: string | null;
+  displayStats: PokemonDetailReturn['displayStats']['value'];
+  currentMoves: PokemonDetailReturn['currentMoves']['value'];
+  moveDetails: PokemonDetailReturn['moveDetails']['value'];
+  evolutions: PokemonDetailReturn['evolutions']['value'];
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'reorderMoves', from: number, to: number): void
-}>()
+  (e: 'reorderMoves', from: number, to: number): void;
+}>();
 </script>
 
 <template>
@@ -68,10 +68,7 @@ const emit = defineEmits<{
     />
 
     <!-- TMs Tab -->
-    <PokemonTmsTab
-      v-if="activeTab === 'tms'"
-      :species-id="targetSpeciesId"
-    />
+    <PokemonTmsTab v-if="activeTab === 'tms'" :species-id="targetSpeciesId" />
 
     <!-- Evolution Tab -->
     <PokemonEvolutionsTab
@@ -91,6 +88,6 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "../../styles/components/pokedex-detail" as *;
-@use "../../styles/components/unified-pokemon-detail" as *;
+@use '../../styles/components/pokedex-detail' as *;
+@use '../../styles/components/unified-pokemon-detail' as *;
 </style>

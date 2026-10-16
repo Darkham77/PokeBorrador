@@ -5,7 +5,8 @@
   background: Linear-Gradient(135deg, $yellow, $red, $blue);
   font-family: $font-pixel;
   font-size: clamp(24px, 5dvw, 48px);
-  text-align: center; background-clip: text;;;;;;;;;;;;;;;;;;
+  text-align: center;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 8px;
   will-change: transform, filter, opacity;
@@ -29,12 +30,12 @@
   max-width: 700px;
   margin: 30px auto;
   place-items: stretch center;
-  
+
   @media (width <= 1024px) {
     gap: $spacing-md;
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   @media (width <= 768px) {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -69,11 +70,20 @@
     inset: 0;
   }
 
-  &.grass::before { background: Radial-Gradient(circle at 50% 0%, Rgba($green, 0.25), transparent 70%); }
-  &.fire::before { background: Radial-Gradient(circle at 50% 0%, Rgba($red, 0.25), transparent 70%); }
-  &.water::before { background: Radial-Gradient(circle at 50% 0%, Rgba($blue, 0.25), transparent 70%); }
+  &.grass::before {
+    background: Radial-Gradient(circle at 50% 0%, Rgba($green, 0.25), transparent 70%);
+  }
+  &.fire::before {
+    background: Radial-Gradient(circle at 50% 0%, Rgba($red, 0.25), transparent 70%);
+  }
+  &.water::before {
+    background: Radial-Gradient(circle at 50% 0%, Rgba($blue, 0.25), transparent 70%);
+  }
 
-  & > * { position: relative; z-index: var(--z-base); }
+  & > * {
+    position: relative;
+    z-index: var(--z-base);
+  }
 }
 
 .starter-name {
@@ -90,9 +100,18 @@
   font-weight: 700;
   margin-top: 2px;
 
-  &.type-grass { background: Rgba($green, 0.12); color: $green; }
-  &.type-fire { background: Rgba($red, 0.12); color: $red; }
-  &.type-water { background: Rgba($blue, 0.12); color: $blue; }
+  &.type-grass {
+    background: Rgba($green, 0.12);
+    color: $green;
+  }
+  &.type-fire {
+    background: Rgba($red, 0.12);
+    color: $red;
+  }
+  &.type-water {
+    background: Rgba($blue, 0.12);
+    color: $blue;
+  }
 }
 
 .starter-stats {
@@ -108,7 +127,7 @@
   margin: 2px 0;
   color: $gray;
   font-size: var(--font-10);
-  
+
   span:last-child {
     color: $white;
     font-family: $font-pixel;
@@ -121,7 +140,7 @@
   .title-sub {
     margin-bottom: 20px;
   }
-  
+
   .starter-grid {
     gap: $spacing-md-alt;
     margin: 15px auto;
@@ -171,7 +190,7 @@
   color: $gray;
   font-size: var(--font-12);
   text-align: center;
-  
+
   %divider-line {
     position: absolute;
     top: 50%;

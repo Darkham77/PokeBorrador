@@ -1,32 +1,40 @@
-import { gsap } from 'gsap'
-import type { Ref } from 'vue'
-import type { WeatherId } from '@/logic/weather/weatherRegistry'
-import { TEXTURE_TILE_SIZE_BASE } from '@/logic/constants/visuals'
+import { gsap } from 'gsap';
+import type { Ref } from 'vue';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import { TEXTURE_TILE_SIZE_BASE } from '@/logic/constants/visuals';
 
-const RAIN_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['rain', 'storm', 'heavy_rain', 'thunderstorm']) // runtime-set: Fast O(1) membership lookup set
-const STORM_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['storm', 'thunderstorm']) // runtime-set: Fast O(1) membership lookup set
+const RAIN_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>([
+  'rain',
+  'storm',
+  'heavy_rain',
+  'thunderstorm'
+]); // runtime-set: Fast O(1) membership lookup set
+const STORM_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>([
+  'storm',
+  'thunderstorm'
+]); // runtime-set: Fast O(1) membership lookup set
 
-const HEAVY_RAIN_BASE_SPEED = 0.35
-const HEAVY_RAIN_VAR_SPEED = 0.2
-const HEAVY_RAIN_LAYER2_SPEED_MULT = 1.3
-const HEAVY_RAIN_LAYER2_ADDITIONAL_DUR_MULT = 1.5
-const STORM_BASE_SPEED = 0.65
-const STORM_VAR_SPEED = 0.6
-const STORM_LAYER2_SPEED_MULT = 1.4
-const RAIN_BASE_SPEED = 0.4
-const RAIN_VAR_SPEED = 0.4
-const RAIN_LAYER2_SPEED_MULT = 1.6
-const LIGHTNING_MIN_X_PCT = 5
-const LIGHTNING_RANGE_X_PCT = 90
-const HALF_PROBABILITY_THRESHOLD = 0.5
-const LIGHTNING_FLASH_DURATION_SEC = 0.05
-const LIGHTNING_FADE_DURATION_SEC = 0.25
-const FLASH_MAX_OPACITY = 0.6
-const FLASH_FADE_DURATION_SEC = 0.4
-const THUNDERSTORM_DELAY_BASE_SEC = 1
-const THUNDERSTORM_DELAY_VAR_SEC = 2
-const STORM_DELAY_BASE_SEC = 4
-const STORM_DELAY_VAR_SEC = 6
+const HEAVY_RAIN_BASE_SPEED = 0.35;
+const HEAVY_RAIN_VAR_SPEED = 0.2;
+const HEAVY_RAIN_LAYER2_SPEED_MULT = 1.3;
+const HEAVY_RAIN_LAYER2_ADDITIONAL_DUR_MULT = 1.5;
+const STORM_BASE_SPEED = 0.65;
+const STORM_VAR_SPEED = 0.6;
+const STORM_LAYER2_SPEED_MULT = 1.4;
+const RAIN_BASE_SPEED = 0.4;
+const RAIN_VAR_SPEED = 0.4;
+const RAIN_LAYER2_SPEED_MULT = 1.6;
+const LIGHTNING_MIN_X_PCT = 5;
+const LIGHTNING_RANGE_X_PCT = 90;
+const HALF_PROBABILITY_THRESHOLD = 0.5;
+const LIGHTNING_FLASH_DURATION_SEC = 0.05;
+const LIGHTNING_FADE_DURATION_SEC = 0.25;
+const FLASH_MAX_OPACITY = 0.6;
+const FLASH_FADE_DURATION_SEC = 0.4;
+const THUNDERSTORM_DELAY_BASE_SEC = 1;
+const THUNDERSTORM_DELAY_VAR_SEC = 2;
+const STORM_DELAY_BASE_SEC = 4;
+const STORM_DELAY_VAR_SEC = 6;
 
 export function useAtmosphereRainAnim(
   layer1Ref: Ref<HTMLElement | null>,
@@ -35,7 +43,7 @@ export function useAtmosphereRainAnim(
   flashRef: Ref<HTMLElement | null>,
   lightningPos: Ref<{ x1: number; x2: number }>
 ) {
-  let lightningTimer: gsap.core.Tween | null = null
+  let lightningTimer: gsap.core.Tween | null = null;
 
   const initRainAnim = (
     w: WeatherId,
@@ -46,72 +54,87 @@ export function useAtmosphereRainAnim(
     speedVar: number,
     weatherTimeline: gsap.core.Timeline | null,
     atmosphereContext: gsap.Context | null,
-    props: { isVisible: boolean; isFastMode?: boolean; isPerformanceMode?: boolean; weather: WeatherId }
+    props: {
+      isVisible: boolean;
+      isFastMode?: boolean;
+      isPerformanceMode?: boolean;
+      weather: WeatherId;
+    }
   ) => {
-    if (!RAIN_ATMOSPHERE_WEATHER_IDS_SET.has(w) || !weatherTimeline) return
+    if (!RAIN_ATMOSPHERE_WEATHER_IDS_SET.has(w) || !weatherTimeline) return;
 
-    const isStorm = w === 'storm' || w === 'thunderstorm'
-    const isHeavy = w === 'heavy_rain'
+    const isStorm = w === 'storm' || w === 'thunderstorm';
+    const isHeavy = w === 'heavy_rain';
 
-    let variantSpeed1: number, variantSpeed2: number
+    let variantSpeed1: number, variantSpeed2: number;
 
     if (isHeavy) {
-      variantSpeed1 = (HEAVY_RAIN_BASE_SPEED + (animSeed * HEAVY_RAIN_VAR_SPEED)) * speedVar
-      variantSpeed2 = variantSpeed1 * HEAVY_RAIN_LAYER2_SPEED_MULT
+      variantSpeed1 = (HEAVY_RAIN_BASE_SPEED + animSeed * HEAVY_RAIN_VAR_SPEED) * speedVar;
+      variantSpeed2 = variantSpeed1 * HEAVY_RAIN_LAYER2_SPEED_MULT;
     } else if (isStorm) {
-      variantSpeed1 = (STORM_BASE_SPEED + (animSeed * STORM_VAR_SPEED)) * speedVar
-      variantSpeed2 = variantSpeed1 * STORM_LAYER2_SPEED_MULT
+      variantSpeed1 = (STORM_BASE_SPEED + animSeed * STORM_VAR_SPEED) * speedVar;
+      variantSpeed2 = variantSpeed1 * STORM_LAYER2_SPEED_MULT;
     } else {
-      variantSpeed1 = (RAIN_BASE_SPEED + (animSeed * RAIN_VAR_SPEED)) * speedVar
-      variantSpeed2 = variantSpeed1 * RAIN_LAYER2_SPEED_MULT
+      variantSpeed1 = (RAIN_BASE_SPEED + animSeed * RAIN_VAR_SPEED) * speedVar;
+      variantSpeed2 = variantSpeed1 * RAIN_LAYER2_SPEED_MULT;
     }
 
     if (layer1Ref.value) {
-      const driftX = isStorm ? -TEXTURE_TILE_SIZE_BASE : 0
+      const driftX = isStorm ? -TEXTURE_TILE_SIZE_BASE : 0;
 
-      weatherTimeline.fromTo(
-        layer1Ref.value,
-        { x: 0, y: -TEXTURE_TILE_SIZE_BASE },
-        {
-          x: driftX,
-          y: 0,
-          duration: variantSpeed1,
-          repeat: -1,
-          ease: 'none'
-        },
-        0
-      ).progress(seed1)
+      weatherTimeline
+        .fromTo(
+          layer1Ref.value,
+          { x: 0, y: -TEXTURE_TILE_SIZE_BASE },
+          {
+            x: driftX,
+            y: 0,
+            duration: variantSpeed1,
+            repeat: -1,
+            ease: 'none'
+          },
+          0
+        )
+        .progress(seed1);
     }
 
     if (layer2Ref.value && !isLowPower) {
-      const driftX = isStorm ? -TEXTURE_TILE_SIZE_BASE : 0
+      const driftX = isStorm ? -TEXTURE_TILE_SIZE_BASE : 0;
 
-      weatherTimeline.fromTo(
-        layer2Ref.value,
-        { x: 0, y: -TEXTURE_TILE_SIZE_BASE },
-        {
-          x: driftX,
-          y: 0,
-          duration: variantSpeed2 * (isHeavy ? HEAVY_RAIN_LAYER2_ADDITIONAL_DUR_MULT : 1),
-          repeat: -1,
-          ease: 'none'
-        },
-        0
-      ).progress(seed2)
+      weatherTimeline
+        .fromTo(
+          layer2Ref.value,
+          { x: 0, y: -TEXTURE_TILE_SIZE_BASE },
+          {
+            x: driftX,
+            y: 0,
+            duration: variantSpeed2 * (isHeavy ? HEAVY_RAIN_LAYER2_ADDITIONAL_DUR_MULT : 1),
+            repeat: -1,
+            ease: 'none'
+          },
+          0
+        )
+        .progress(seed2);
     }
 
     if (isStorm) {
       const strike = () => {
-        const isFast = props.isFastMode ?? props.isPerformanceMode ?? false
-        if (!props.isVisible || isFast || !STORM_ATMOSPHERE_WEATHER_IDS_SET.has(props.weather) || !lightningRef.value) return
+        const isFast = props.isFastMode ?? props.isPerformanceMode ?? false;
+        if (
+          !props.isVisible ||
+          isFast ||
+          !STORM_ATMOSPHERE_WEATHER_IDS_SET.has(props.weather) ||
+          !lightningRef.value
+        )
+          return;
 
-        const x1 = Math.floor(Math.random() * LIGHTNING_RANGE_X_PCT) + LIGHTNING_MIN_X_PCT
-        const isFlipped = Math.random() > HALF_PROBABILITY_THRESHOLD
-        lightningPos.value = { x1, x2: x1 }
+        const x1 = Math.floor(Math.random() * LIGHTNING_RANGE_X_PCT) + LIGHTNING_MIN_X_PCT;
+        const isFlipped = Math.random() > HALF_PROBABILITY_THRESHOLD;
+        lightningPos.value = { x1, x2: x1 };
 
         const runStrike = () => {
-          if (!lightningRef.value) return
-          const tl = gsap.timeline()
+          if (!lightningRef.value) return;
+          const tl = gsap.timeline();
           tl.to(lightningRef.value, {
             opacity: 1,
             duration: LIGHTNING_FLASH_DURATION_SEC,
@@ -119,39 +142,48 @@ export function useAtmosphereRainAnim(
           })
             .to(lightningRef.value, { opacity: 0, duration: LIGHTNING_FLASH_DURATION_SEC })
             .to(lightningRef.value, { opacity: 1, duration: LIGHTNING_FLASH_DURATION_SEC })
-            .to(lightningRef.value, { opacity: 0, duration: LIGHTNING_FADE_DURATION_SEC })
+            .to(lightningRef.value, { opacity: 0, duration: LIGHTNING_FADE_DURATION_SEC });
 
           if (flashRef.value) {
-            gsap.timeline()
-              .to(flashRef.value, { opacity: FLASH_MAX_OPACITY, duration: LIGHTNING_FLASH_DURATION_SEC })
-              .to(flashRef.value, { opacity: 0, duration: FLASH_FADE_DURATION_SEC, ease: 'power2.out' })
+            gsap
+              .timeline()
+              .to(flashRef.value, {
+                opacity: FLASH_MAX_OPACITY,
+                duration: LIGHTNING_FLASH_DURATION_SEC
+              })
+              .to(flashRef.value, {
+                opacity: 0,
+                duration: FLASH_FADE_DURATION_SEC,
+                ease: 'power2.out'
+              });
           }
 
-          const nextDelay = w === 'thunderstorm'
-            ? (THUNDERSTORM_DELAY_BASE_SEC + Math.random() * THUNDERSTORM_DELAY_VAR_SEC)
-            : (STORM_DELAY_BASE_SEC + Math.random() * STORM_DELAY_VAR_SEC)
-          lightningTimer = gsap.delayedCall(nextDelay, strike)
-        }
+          const nextDelay =
+            w === 'thunderstorm'
+              ? THUNDERSTORM_DELAY_BASE_SEC + Math.random() * THUNDERSTORM_DELAY_VAR_SEC
+              : STORM_DELAY_BASE_SEC + Math.random() * STORM_DELAY_VAR_SEC;
+          lightningTimer = gsap.delayedCall(nextDelay, strike);
+        };
 
         if (atmosphereContext) {
-          atmosphereContext.add(runStrike)
+          atmosphereContext.add(runStrike);
         } else {
-          runStrike()
+          runStrike();
         }
-      }
-      lightningTimer = gsap.delayedCall(2 + Math.random() * 3, strike)
+      };
+      lightningTimer = gsap.delayedCall(2 + Math.random() * 3, strike);
     }
-  }
+  };
 
   const cleanUpLightning = () => {
     if (lightningTimer) {
-      lightningTimer.kill()
-      lightningTimer = null
+      lightningTimer.kill();
+      lightningTimer = null;
     }
-  }
+  };
 
   return {
     initRainAnim,
     cleanUpLightning
-  }
+  };
 }

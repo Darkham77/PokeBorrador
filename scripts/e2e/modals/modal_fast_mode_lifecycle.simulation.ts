@@ -43,7 +43,9 @@ class ModalFastModeSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Modal Fast Mode (Modo Rápido) Lifecycle Simulation', () => {
-  test('should immediately activate fast-mode on map cards when modal opens and restore on close', async ({ page }) => {
+  test('should immediately activate fast-mode on map cards when modal opens and restore on close', async ({
+    page
+  }) => {
     const sim = new ModalFastModeSimWrapper(page, 'TestModalFastMode');
     await sim.setup();
 

@@ -39,7 +39,7 @@ export function buildSpectateSyncPayload(
     guestTeam: cloneReactive(enemyTeam),
     hostActiveUid: active.player?.uid,
     guestActiveUid: active.enemy?.uid,
-    logs: (ctx.battleLogs.value || []).map(l => (typeof l === 'string' ? l : l.msg)),
+    logs: (ctx.battleLogs.value || []).map((l) => (typeof l === 'string' ? l : l.msg)),
     weather: typeof active.weather === 'string' ? active.weather : active.weather?.type
   };
 }

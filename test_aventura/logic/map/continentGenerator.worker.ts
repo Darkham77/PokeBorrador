@@ -18,10 +18,7 @@ import {
   type ContinentGeneratorOptions
 } from './continentGenerator.ts';
 import { computeTransitableGrid } from './transitableGridEngine.ts';
-import {
-  placeRegionalPOIs,
-  type POIPlacementOptions
-} from './poiPlacementEngine.ts';
+import { placeRegionalPOIs, type POIPlacementOptions } from './poiPlacementEngine.ts';
 import { generatePokemonContinentalWorld } from './continent/continentalEngine.ts';
 import {
   generateRouteNetwork,
@@ -59,10 +56,7 @@ import {
 } from '../../config/continentWorkerConfig.ts';
 
 export interface RegionalGenerationOptions
-  extends ContinentGeneratorOptions,
-    POIPlacementOptions,
-    RouteNetworkOptions,
-    WildernessOptions {}
+  extends ContinentGeneratorOptions, POIPlacementOptions, RouteNetworkOptions, WildernessOptions {}
 
 export interface RegionalGenerationPipelineResult {
   readonly continent: ContinentMapResult;
@@ -246,9 +240,18 @@ export function executeRegionalGenerationJob(
   const continent = generateContinentMap(options);
   const pois = placeRegionalPOIs(continent, options);
   const routeNetwork = generateRouteNetwork(continent, pois, options);
-  const transitableGrid = computeTransitableGrid(continent, routeNetwork.pathGrid, routeNetwork.bridgeGrid, pois);
-  (continent as { transitableGrid?: readonly (readonly boolean[])[] }).transitableGrid = transitableGrid;
-  const wilderness = generateWildernessLayer(continent, pois, routeNetwork.pathGrid, { ...options, transitableGrid });
+  const transitableGrid = computeTransitableGrid(
+    continent,
+    routeNetwork.pathGrid,
+    routeNetwork.bridgeGrid,
+    pois
+  );
+  (continent as { transitableGrid?: readonly (readonly boolean[])[] }).transitableGrid =
+    transitableGrid;
+  const wilderness = generateWildernessLayer(continent, pois, routeNetwork.pathGrid, {
+    ...options,
+    transitableGrid
+  });
   const rawBuffer = buildZeroCopyPreviewBuffer(continent, routeNetwork.pathGrid);
 
   return {
@@ -264,9 +267,7 @@ export function executeRegionalGenerationJob(
  * Pure execution function for localized incident A* rerouting.
  * Exported for 100% deterministic unit testing in Vitest.
  */
-export function executeRerouteJob(
-  req: Omit<RerouteNodeRequest, 'type'>
-): {
+export function executeRerouteJob(req: Omit<RerouteNodeRequest, 'type'>): {
   readonly updatedNodes: readonly POINode[];
   readonly updatedEdges: readonly RouteEdge[];
 } {

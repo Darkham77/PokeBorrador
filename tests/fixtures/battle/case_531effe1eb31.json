@@ -26,12 +26,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "flamethrower",
-        "surf",
-        "closecombat",
-        "thunderwave"
-      ],
+      "moves": ["flamethrower", "surf", "closecombat", "thunderwave"],
       "uid": "a2e8f4c1-750d-4710-8d0a-ceacf07ae9a9",
       "stats": {
         "maxHp": 404,
@@ -68,12 +63,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "worryseed",
-        "flamethrower",
-        "surf",
-        "toxic"
-      ],
+      "moves": ["worryseed", "flamethrower", "surf", "toxic"],
       "uid": "646d7e65-76b6-4c53-9e6a-9267bca820cd",
       "stats": {
         "maxHp": 404,
@@ -87,32 +77,9 @@
   ],
   "movesToTest": [],
   "abilitiesToTest": [],
-  "seed": [
-    18588,
-    21544,
-    54523,
-    34263
-  ],
-  "playerChoices": [
-    "move 1",
-    "move 2",
-    "move 3",
-    "move 4",
-    "move 3",
-    "move 3",
-    "move 3",
-    "move 3"
-  ],
-  "enemyChoices": [
-    "move 1",
-    "move 1",
-    "move 1",
-    "move 1",
-    "move 1",
-    "move 1",
-    "move 1",
-    "move 1"
-  ],
+  "seed": [18588, 21544, 54523, 34263],
+  "playerChoices": ["move 1", "move 2", "move 3", "move 4", "move 3", "move 3", "move 3", "move 3"],
+  "enemyChoices": ["move 1", "move 1", "move 1", "move 1", "move 1", "move 1", "move 1", "move 1"],
   "history": [
     {
       "turnCount": 1,

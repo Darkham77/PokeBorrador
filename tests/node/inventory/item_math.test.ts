@@ -7,7 +7,7 @@
  * All data is passed inline — zero mocks, zero Pinia, zero Vue.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import {
@@ -19,7 +19,7 @@ import {
   curaTotalPure,
   restorePPPure,
   calcTotalPower,
-  calcRocketSellPrice,
+  calcRocketSellPrice
 } from '../../../src/logic/items/itemMath.ts';
 
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
@@ -28,16 +28,34 @@ import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 function makeMon(overrides: Partial<Pokemon> = {}): Pokemon {
   return {
-    uid: 'test', id: 'pikachu', name: 'Pikachu', level: 25,
-    hp: 30, maxHp: 60, status: null,
+    uid: 'test',
+    id: 'pikachu',
+    name: 'Pikachu',
+    level: 25,
+    hp: 30,
+    maxHp: 60,
+    status: null,
     moves: [{ name: 'Placaje', pp: 10, maxPP: 35 }],
-    atk: 55, def: 40, spa: 50, spd: 50, spe: 90,
-    type: 'electric', nature: 'Fuerte', ability: 'Estática',
+    atk: 55,
+    def: 40,
+    spa: 50,
+    spd: 50,
+    spe: 90,
+    type: 'electric',
+    nature: 'Fuerte',
+    ability: 'Estática',
     ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
-    exp: 0, expNeeded: 1000, friendship: 70, vigor: 5, isShiny: false,
-    gender: 'M', nickname: null, heldItem: null,
-    obtainedAt: 0, sleepTurns: 0,
-    ...overrides,
+    exp: 0,
+    expNeeded: 1000,
+    friendship: 70,
+    vigor: 5,
+    isShiny: false,
+    gender: 'M',
+    nickname: null,
+    heldItem: null,
+    obtainedAt: 0,
+    sleepTurns: 0,
+    ...overrides
   } as unknown as Pokemon;
 }
 
@@ -214,13 +232,13 @@ describe('restorePPPure', () => {
 describe('calcTotalPower', () => {
   it('pikachu with perfect IVs = BST(320) + IVs(186) = 506', () => {
     const base = { hp: 35, atk: 55, def: 40, spa: 50, spd: 50, spe: 90 };
-    const ivs  = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
+    const ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
     assert.strictEqual(calcTotalPower(base, ivs), 506);
   });
 
   it('bulbasaur with zero IVs = BST(318) + IVs(0) = 318', () => {
     const base = { hp: 45, atk: 49, def: 49, spa: 65, spd: 65, spe: 45 };
-    const ivs  = { hp: 0,  atk: 0,  def: 0,  spa: 0,  spd: 0,  spe: 0  };
+    const ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
     assert.strictEqual(calcTotalPower(base, ivs), 318);
   });
 });

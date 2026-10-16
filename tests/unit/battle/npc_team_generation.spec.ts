@@ -11,7 +11,7 @@
  * source of truth for what Showdown considers legal.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { TeamGenerators } from '@pkmn/randoms';
 import { Dex, toID } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';
@@ -23,10 +23,8 @@ import type { PokemonSet } from '@pkmn/sim';
 /** Levels sampled across the full 1–100 range (representative, not exhaustive). */
 const SAMPLED_LEVELS = [1, 5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100];
 
-
 /** Rival archetype pool — mirrors TRAINER_TYPES['rival'].pool (SSoT in trainerTypes.ts). */
 const RIVAL_POOL = ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras'] as const;
-
 
 function validateSet(set: PokemonSet): string[] {
   const violations: string[] = [];
@@ -88,7 +86,8 @@ import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_GENERATION}randombattle`);
 
 const gen = {
-  randomSet: (species: string, level = 100): PokemonSet => getRandomSetForSpecies(requirePokemonSpeciesId(species), level)
+  randomSet: (species: string, level = 100): PokemonSet =>
+    getRandomSetForSpecies(requirePokemonSpeciesId(species), level)
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -105,16 +104,15 @@ describe('getTeam() — full NPC team validity', () => {
     const team = generator.getTeam();
     for (const set of team) {
       const violations = validateSet(set);
-      expect(
-        violations,
-        `Invalid set for ${set.species}: ${violations.join('; ')}`
-      ).toHaveLength(0);
+      expect(violations, `Invalid set for ${set.species}: ${violations.join('; ')}`).toHaveLength(
+        0
+      );
     }
   });
 
   it('no two sets in the same team share the same species', () => {
     const team = generator.getTeam();
-    const speciesIds = team.map(s => toID(s.species));
+    const speciesIds = team.map((s) => toID(s.species));
     const unique = new Set(speciesIds);
     expect(unique.size).toBe(team.length);
   });
@@ -181,7 +179,6 @@ describe('randomSet() — rival pool species produce valid competitive sets', ()
     });
   }
 });
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. Rival team — ace from pool + getTeam() fill at sampled NPC levels
@@ -253,10 +250,7 @@ describe('Regression — randomSet stability for rival pool', () => {
         const set = gen.randomSet(species);
 
         const violations = validateSet(set);
-        expect(
-          violations,
-          `[run ${i + 1}] ${species}: ${violations.join('; ')}`
-        ).toHaveLength(0);
+        expect(violations, `[run ${i + 1}] ${species}: ${violations.join('; ')}`).toHaveLength(0);
       }
     }
   });

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import HomeRankedWidget from '@/components/home/HomeRankedWidget.vue';
@@ -44,7 +44,11 @@ describe('Ranked Format and Team Selection Protocol', () => {
       seasonEndDate: '2026-12-31T23:59:59'
     };
 
-    const team3 = [createPoke('gengar', 'u-1'), createPoke('dragonite', 'u-2'), createPoke('nidorino', 'u-3')];
+    const team3 = [
+      createPoke('gengar', 'u-1'),
+      createPoke('dragonite', 'u-2'),
+      createPoke('nidorino', 'u-3')
+    ];
     gameStore.state.team = team3;
     gameStore.state.pvpTeam = ['u-1', 'u-2', 'u-3'];
     gameStore.state.starterChosen = true;

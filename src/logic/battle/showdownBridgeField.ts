@@ -1,5 +1,8 @@
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
-import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '../weather/weatherVisualMapper.ts';
+import {
+  getLocalizedWeatherName,
+  mapOfficialToVisualWeather
+} from '../weather/weatherVisualMapper.ts';
 import { toID } from '@/logic/utils/strings.ts';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import { isWeatherId, requireWeatherId } from '../weather/weatherRegistry.ts';
@@ -7,35 +10,40 @@ import { requireBattleConditionKey, type BattleConditionKey } from '@/types/batt
 import { CANONICAL_TERRAINS } from '../constants/gameplay.ts';
 import { handleStartVolatileEvent, handleEndVolatileEvent } from './showdownBridgeVolatiles.ts';
 
-const CANONICAL_TERRAINS_SET: ReadonlySet<BattleConditionKey> = new Set<BattleConditionKey>(CANONICAL_TERRAINS);
+const CANONICAL_TERRAINS_SET: ReadonlySet<BattleConditionKey> = new Set<BattleConditionKey>(
+  CANONICAL_TERRAINS
+);
 
 const WEATHER_EMOJIS: Record<string, string> = {
-  'Sandstorm': '🌀',
-  'RainDance': '🌧️',
-  'SunnyDay': '☀️',
-  'Hail': '❄️',
-  'Snow': '❄️',
-  'none': '🌤️'
+  // open-record: Showdown weather condition emoji map
+  Sandstorm: '🌀',
+  RainDance: '🌧️',
+  SunnyDay: '☀️',
+  Hail: '❄️',
+  Snow: '❄️',
+  none: '🌤️'
 };
 
 const FIELD_START_MESSAGES: Record<string, string> = {
+  // open-record: Showdown field condition start message map
   'Trick Room': '¡Espacio Raro distorsionó el tiempo!',
-  'Gravity': '¡La gravedad se intensificó!',
+  Gravity: '¡La gravedad se intensificó!',
   'Magic Room': '¡Zona Mágica eliminó el efecto de los objetos!',
   'Wonder Room': '¡Zona Extraña cambió la Defensa y Def. Esp.!',
   'Electric Terrain': '¡Un terreno eléctrico envolvió el campo!',
   'Grassy Terrain': '¡Un terreno de hierba envolvió el campo!',
   'Misty Terrain': '¡Un terreno de niebla envolvió el campo!',
   'Psychic Terrain': '¡Un terreno psíquico envolvió el campo!',
-  'electricterrain': '¡Un terreno eléctrico envolvió el campo!',
-  'grassyterrain': '¡Un terreno de hierba envolvió el campo!',
-  'mistyterrain': '¡Un terreno de niebla envolvió el campo!',
-  'psychicterrain': '¡Un terreno psíquico envolvió el campo!'
+  electricterrain: '¡Un terreno eléctrico envolvió el campo!',
+  grassyterrain: '¡Un terreno de hierba envolvió el campo!',
+  mistyterrain: '¡Un terreno de niebla envolvió el campo!',
+  psychicterrain: '¡Un terreno psíquico envolvió el campo!'
 };
 
 const FIELD_END_MESSAGES: Record<string, string> = {
+  // open-record: Showdown field condition end message map
   'Trick Room': '¡Espacio Raro volvió a la normalidad!',
-  'Gravity': '¡La gravedad volvió a la normalidad!',
+  Gravity: '¡La gravedad volvió a la normalidad!',
   'Magic Room': '¡El efecto de Zona Mágica terminó!',
   'Wonder Room': '¡El efecto de Zona Extraña terminó!',
   'Electric Terrain': '¡El terreno eléctrico desapareció!',
@@ -67,7 +75,10 @@ function handleWeatherEvent(ctx: SBCtx, parts: string[], line: string): boolean 
 
     if (nextWeatherType !== currentWeatherType && !isUpkeep && !isFromDebug) {
       const emoji = WEATHER_EMOJIS[weatherType] || '🌤️';
-      const localizedName = getLocalizedWeatherName(isWeatherId(weatherType) ? weatherType : 'none', ACTIVE_GENERATION);
+      const localizedName = getLocalizedWeatherName(
+        isWeatherId(weatherType) ? weatherType : 'none',
+        ACTIVE_GENERATION
+      );
       if (weatherType !== 'none' || nextWeatherType !== 'clear') {
         store.addLog(`¡El clima cambió a ${localizedName}!`, 'log-info', emoji);
       }
@@ -119,9 +130,14 @@ function handleSwapSideConditions(ctx: SBCtx, line: string): boolean {
   if (line.includes('[silent]')) return true;
   if (ctx.store.activeBattle.value) {
     const temp = ctx.store.activeBattle.value.playerSideConditions;
-    ctx.store.activeBattle.value.playerSideConditions = ctx.store.activeBattle.value.enemySideConditions;
+    ctx.store.activeBattle.value.playerSideConditions =
+      ctx.store.activeBattle.value.enemySideConditions;
     ctx.store.activeBattle.value.enemySideConditions = temp;
-    ctx.store.addLog('¡Los efectos de ambos lados del campo fueron intercambiados!', 'log-info', '🔄');
+    ctx.store.addLog(
+      '¡Los efectos de ambos lados del campo fueron intercambiados!',
+      'log-info',
+      '🔄'
+    );
   }
   return true;
 }

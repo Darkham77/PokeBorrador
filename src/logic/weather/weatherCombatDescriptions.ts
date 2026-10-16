@@ -1,8 +1,9 @@
 import { toID } from '@/logic/utils/strings.ts';
 import { SINNOH_GENERATION_NUM } from '@/logic/constants/gameplay.ts';
 import { mapVisualToOfficialWeather } from './weatherGenerationProvider.ts';
+import type { ShowdownWeatherId } from './weatherRegistry.ts';
 
-const STATIC_COMBAT_DESCRIPTIONS: Record<string, string> = {
+const STATIC_COMBAT_DESCRIPTIONS: Partial<Record<ShowdownWeatherId, string>> = {
   raindance: '▲ Potencia Agua (x1.5)\n▼ Debilita Fuego (x0.5)\n• Efecto: Trueno 100% precisión',
   sunnyday: '▲ Potencia Fuego (x1.5)\n▼ Debilita Agua (x0.5)\n• Efecto: Rayo Solar sin carga',
   hail: '▼ Debilita a no Hielo (1/16 HP por turno)\n• Efecto: Ventisca 100% precisión',
@@ -15,12 +16,15 @@ const STATIC_COMBAT_DESCRIPTIONS: Record<string, string> = {
 /**
  * Returns the combat description dynamically based on the mapped Showdown weather and generation rules.
  */
-export function getWeatherCombatDescription(visualWeather: string | null | undefined, gen: number): string {
+export function getWeatherCombatDescription(
+  visualWeather: string | null | undefined,
+  gen: number
+): string {
   const officialWeather = mapVisualToOfficialWeather(visualWeather, gen);
-  const lower = toID(officialWeather);
-
-  const staticDesc = STATIC_COMBAT_DESCRIPTIONS[lower];
+  const staticDesc = STATIC_COMBAT_DESCRIPTIONS[officialWeather];
   if (staticDesc) return staticDesc;
+
+  const lower = toID(officialWeather);
 
   if (lower === 'sandstorm') {
     return gen >= SINNOH_GENERATION_NUM

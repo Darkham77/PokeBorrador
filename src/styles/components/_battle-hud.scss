@@ -18,12 +18,12 @@
     max-width: 130px;
     padding: 4px 8px;
     border-radius: $radius-lg;
-    transform: Scale3d(0.85, 0.85, 1); 
+    transform: Scale3d(0.85, 0.85, 1);
     transform-origin: left center;
   }
 
   // Right side info (Player) scale origin
-  &[style*="text-align:right"] {
+  &[style*='text-align:right'] {
     transform-origin: right center !important;
   }
 
@@ -55,16 +55,22 @@
   }
 
   // Align to right if container is right-aligned (Player side)
-  .battle-pokemon-info[style*="text-align:right"] & {
+  .battle-pokemon-info[style*='text-align:right'] & {
     justify-content: flex-end;
   }
 
   .bh-gender-badge {
     font-size: var(--font-11);
     margin-left: 4px;
-    
-    &.male, &.gender-male { color: Rgb(89 166 255 / 100%); }
-    &.female, &.gender-female { color: Rgb(255 126 185 / 100%); }
+
+    &.male,
+    &.gender-male {
+      color: Rgb(89 166 255 / 100%);
+    }
+    &.female,
+    &.gender-female {
+      color: Rgb(255 126 185 / 100%);
+    }
   }
 }
 
@@ -80,7 +86,8 @@
 }
 
 // HP & EXP Bars
-.hp-bar-wrap, .exp-bar-wrap {
+.hp-bar-wrap,
+.exp-bar-wrap {
   @include gpu-layer;
 
   position: relative;
@@ -91,7 +98,6 @@
   overflow: hidden;
   margin-bottom: 8px;
   box-shadow: var(--shadow-card);
-
 }
 
 .hp-bar {
@@ -99,21 +105,33 @@
   height: 100%;
   border-radius: $radius-3xl;
   box-shadow: var(--shadow-card);
-  
+
   &::before {
     position: absolute;
-    top: 0; right: 0; left: 0; height: 50%;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 50%;
     border-radius: inherit;
     background: Linear-Gradient(180deg, Rgb(255 255 255 / 25%) 0%, Rgb(255 255 255 / 0%) 100%);
     content: '';
   }
-  
-  &.hp-high { background: linear-gradient(90deg, var(--emerald-500, #10b981), var(--emerald-400, #34d399)); will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 8px Rgb(16 185 129 / 60%)); }
-  &.hp-mid  { background: linear-gradient(90deg, var(--amber-500, #f59e0b), var(--amber-400, #fbbf24)); will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 8px Rgb(245 158 11 / 60%)); }
-  &.hp-low  { background: linear-gradient(90deg, var(--red-500, #ef4444), var(--red-400, #f87171)); will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 8px Rgb(239 68 68 / 60%)); }
+
+  &.hp-high {
+    background: linear-gradient(90deg, var(--emerald-500, #10b981), var(--emerald-400, #34d399));
+    will-change: transform, filter, opacity;
+    filter: Drop-Shadow(0 0 8px Rgb(16 185 129 / 60%));
+  }
+  &.hp-mid {
+    background: linear-gradient(90deg, var(--amber-500, #f59e0b), var(--amber-400, #fbbf24));
+    will-change: transform, filter, opacity;
+    filter: Drop-Shadow(0 0 8px Rgb(245 158 11 / 60%));
+  }
+  &.hp-low {
+    background: linear-gradient(90deg, var(--red-500, #ef4444), var(--red-400, #f87171));
+    will-change: transform, filter, opacity;
+    filter: Drop-Shadow(0 0 8px Rgb(239 68 68 / 60%));
+  }
 }
 
 .exp-bar {
@@ -121,10 +139,13 @@
   border-radius: $radius-3xl;
   background: linear-gradient(90deg, var(--indigo-500, #6366f1), var(--purple-500, #a855f7));
   box-shadow: var(--shadow-card);
-  
+
   &::before {
     position: absolute;
-    top: 0; right: 0; left: 0; height: 50%;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 50%;
     border-radius: inherit;
     background: Linear-Gradient(180deg, Rgb(255 255 255 / 20%) 0%, Rgb(255 255 255 / 0%) 100%);
     content: '';

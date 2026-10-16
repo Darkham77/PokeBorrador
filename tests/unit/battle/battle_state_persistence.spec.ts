@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
 import type { BattleState, BattleStages } from '@/types/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -9,44 +9,60 @@ vi.mock('@/logic/weather/weatherRegistry', async (importOriginal) => {
   return {
     ...actual,
     requireWeatherId: vi.fn((id: string) => id),
-    resolveCurrentWeather: vi.fn(() => 'clear'),
+    resolveCurrentWeather: vi.fn(() => 'clear')
   };
 });
 
 vi.mock('@/logic/weather/weatherGenerationProvider', () => ({
-  mapVisualToOfficialWeather: vi.fn(() => 'none'),
+  mapVisualToOfficialWeather: vi.fn(() => 'none')
 }));
 
 vi.mock('@/data/system/constants', () => ({
-  ACTIVE_GENERATION: 'gen3',
+  ACTIVE_GENERATION: 'gen3'
 }));
 
 vi.mock('@/stores/map', () => ({
-  useMapStore: vi.fn(() => ({ currentWeather: 'clear' })),
+  useMapStore: vi.fn(() => ({ currentWeather: 'clear' }))
 }));
 
 function makeMockPokemon(overrides: Partial<Record<string, unknown>> = {}): Pokemon {
   return {
-    uid: 'test-uid', id: 'bulbasaur', name: 'Bulbasaur',
-    hp: 45, maxHp: 45, level: 5, moves: [],
-    type: ['grass'], stats: { hp: 45, atk: 49, def: 49, spa: 65, spd: 65, spe: 45 },
-    status: null, ...overrides,
+    uid: 'test-uid',
+    id: 'bulbasaur',
+    name: 'Bulbasaur',
+    hp: 45,
+    maxHp: 45,
+    level: 5,
+    moves: [],
+    type: ['grass'],
+    stats: { hp: 45, atk: 49, def: 49, spa: 65, spd: 65, spe: 45 },
+    status: null,
+    ...overrides
   } as unknown as Pokemon;
 }
 
 function makeMockBattleState(): BattleState {
   return {
-    player: null, enemy: null, playerTeamIndex: 0, enemyTeamIndex: 0,
-    participants: [], locationId: 'route1' as BattleState['locationId'], isTrainer: false,
+    player: null,
+    enemy: null,
+    playerTeamIndex: 0,
+    enemyTeamIndex: 0,
+    participants: [],
+    locationId: 'route1' as BattleState['locationId'],
+    isTrainer: false,
     weather: { type: 'none' as BattleState['weather']['type'], turns: -1 },
-    turnCount: 1, over: false, escapeAttempts: 0,
+    turnCount: 1,
+    over: false,
+    escapeAttempts: 0,
     terrain: 'electricterrain',
     fieldConditions: { trickroom: { turns: 3 } },
     playerSideConditions: { reflect: { turns: 2 } },
     enemySideConditions: { lightscreen: { turns: 4 } },
-    pendingSlotEffects: [{ move: 'futuresight', side: 'enemy', targetSlot: 0, turnsLeft: 1, damage: 20 }],
+    pendingSlotEffects: [
+      { move: 'futuresight', side: 'enemy', targetSlot: 0, turnsLeft: 1, damage: 20 }
+    ],
     playerRequest: { wait: true },
-    enemyRequest: { wait: true },
+    enemyRequest: { wait: true }
   } as unknown as BattleState;
 }
 
@@ -61,9 +77,18 @@ interface MockCtx {
 
 function makeMockCtx(battleState: BattleState, player: Pokemon): MockCtx {
   const stages: BattleStages = {
-    atk: 1, def: 0, spa: 0, spd: 0, spe: 0,
-    accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0,
-    safeguard: 0, mist: 0, spikes: 0,
+    atk: 1,
+    def: 0,
+    spa: 0,
+    spd: 0,
+    spe: 0,
+    accuracy: 0,
+    evasion: 0,
+    reflect: 0,
+    lightScreen: 0,
+    safeguard: 0,
+    mist: 0,
+    spikes: 0
   };
   return {
     activeBattle: ref(battleState) as unknown as MockCtx['activeBattle'],
@@ -71,7 +96,7 @@ function makeMockCtx(battleState: BattleState, player: Pokemon): MockCtx {
     enemyStages: ref({ ...stages }) as unknown as MockCtx['enemyStages'],
     faintedSides: ref(new Set<string>()) as unknown as MockCtx['faintedSides'],
     clearLogs: vi.fn(),
-    gs: { state: { team: [player] } },
+    gs: { state: { team: [player] } }
   };
 }
 
@@ -160,9 +185,25 @@ interface SimpleEffect {
 
 describe('pendingSlotEffects — Future Sight slot condition model (Fix #2)', () => {
   it('fires on the Pokemon in the target slot, not on the original Pokemon reference', () => {
-    const originalTarget = makeMockPokemon({ uid: 'original', name: 'Original', hp: 100, maxHp: 100 });
-    const replacement = makeMockPokemon({ uid: 'replacement', name: 'Replacement', hp: 80, maxHp: 80 });
-    const effect: SimpleEffect = { move: 'futuresight', side: 'enemy', targetSlot: 0, turnsLeft: 1, damage: 20 };
+    const originalTarget = makeMockPokemon({
+      uid: 'original',
+      name: 'Original',
+      hp: 100,
+      maxHp: 100
+    });
+    const replacement = makeMockPokemon({
+      uid: 'replacement',
+      name: 'Replacement',
+      hp: 80,
+      maxHp: 80
+    });
+    const effect: SimpleEffect = {
+      move: 'futuresight',
+      side: 'enemy',
+      targetSlot: 0,
+      turnsLeft: 1,
+      damage: 20
+    };
     effect.turnsLeft--;
     const activeEnemy = replacement; // replacement is now in the slot
     if (effect.turnsLeft <= 0 && activeEnemy.hp > 0) {
@@ -181,7 +222,7 @@ describe('pendingSlotEffects — Future Sight slot condition model (Fix #2)', ()
   it('countdown removes resolved effects after they fire', () => {
     const effects: SimpleEffect[] = [
       { move: 'futuresight', side: 'enemy', targetSlot: 0, turnsLeft: 2, damage: 20 },
-      { move: 'futuresight', side: 'player', targetSlot: 0, turnsLeft: 1, damage: 15 },
+      { move: 'futuresight', side: 'player', targetSlot: 0, turnsLeft: 1, damage: 15 }
     ];
     const resolved: SimpleEffect[] = [];
     for (const e of effects) {
@@ -197,23 +238,35 @@ describe('pendingSlotEffects — Future Sight slot condition model (Fix #2)', ()
   it('two concurrent slot effects decrement independently', () => {
     let effects: SimpleEffect[] = [
       { move: 'futuresight', side: 'enemy', targetSlot: 0, turnsLeft: 3, damage: 25 },
-      { move: 'doomdesire', side: 'player', targetSlot: 0, turnsLeft: 2, damage: 30 },
+      { move: 'doomdesire', side: 'player', targetSlot: 0, turnsLeft: 2, damage: 30 }
     ];
     // tick 1
-    effects = effects.map(e => ({ ...e, turnsLeft: e.turnsLeft - 1 })).filter(e => e.turnsLeft > 0);
+    effects = effects
+      .map((e) => ({ ...e, turnsLeft: e.turnsLeft - 1 }))
+      .filter((e) => e.turnsLeft > 0);
     expect(effects).toHaveLength(2);
     // tick 2 — doom desire fires
-    effects = effects.map(e => ({ ...e, turnsLeft: e.turnsLeft - 1 })).filter(e => e.turnsLeft > 0);
+    effects = effects
+      .map((e) => ({ ...e, turnsLeft: e.turnsLeft - 1 }))
+      .filter((e) => e.turnsLeft > 0);
     expect(effects).toHaveLength(1);
     expect(effects[0]?.move).toBe('futuresight');
     // tick 3 — future sight fires
-    effects = effects.map(e => ({ ...e, turnsLeft: e.turnsLeft - 1 })).filter(e => e.turnsLeft > 0);
+    effects = effects
+      .map((e) => ({ ...e, turnsLeft: e.turnsLeft - 1 }))
+      .filter((e) => e.turnsLeft > 0);
     expect(effects).toHaveLength(0);
   });
 
   it('does not apply damage to a fainted Pokemon (hp === 0)', () => {
     const fainted = makeMockPokemon({ uid: 'fainted', hp: 0, maxHp: 100 });
-    const effect: SimpleEffect = { move: 'futuresight', side: 'enemy', targetSlot: 0, turnsLeft: 1, damage: 25 };
+    const effect: SimpleEffect = {
+      move: 'futuresight',
+      side: 'enemy',
+      targetSlot: 0,
+      turnsLeft: 1,
+      damage: 25
+    };
     effect.turnsLeft--;
     if (effect.turnsLeft <= 0 && fainted.hp > 0) {
       fainted.hp = Math.max(0, fainted.hp - effect.damage);

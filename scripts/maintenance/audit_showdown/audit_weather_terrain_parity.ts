@@ -12,7 +12,17 @@ export function auditWeatherTerrainParity(bridgeFieldPath: string): WeatherTerra
   if (!existsSync(bridgeFieldPath)) return { unhandledWeatherTokens };
 
   const content = readFileSync(bridgeFieldPath, 'utf-8');
-  const requiredTokens = ['rain', 'sunnyday', 'sandstorm', 'hail', 'snow', 'electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain']; // no-domain: Non-domain utility collection or data structure
+  const requiredTokens = [
+    'rain',
+    'sunnyday',
+    'sandstorm',
+    'hail',
+    'snow',
+    'electricterrain',
+    'grassyterrain',
+    'mistyterrain',
+    'psychicterrain'
+  ]; // no-domain: Non-domain utility collection or data structure
 
   for (const token of requiredTokens) {
     if (!content.toLowerCase().includes(token)) {

@@ -55,7 +55,19 @@ export interface RoadsidePropsContext {
  * Places roadside props, fences, signposts, boulders, and bushes.
  */
 export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
-  const { pois, H, W, pathGrid, tallGrassGrid, continent, urbanBlocked, stairBlocked, prng, treeBlocked, props } = ctx;
+  const {
+    pois,
+    H,
+    W,
+    pathGrid,
+    tallGrassGrid,
+    continent,
+    urbanBlocked,
+    stairBlocked,
+    prng,
+    treeBlocked,
+    props
+  } = ctx;
   const roadsidePropBlocked: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
 
   // Gatehouses handle their own flank barriers; block random roadside props within 16 tiles of any route_gate
@@ -64,10 +76,18 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
       const b = poi.urbanLayout?.buildings[0];
       const gateCenterX = b ? Math.floor(b.x + b.width / 2) : poi.gridX + 5;
       const gateCenterY = b ? Math.floor(b.y + b.height / 2) : poi.gridY + 4;
-      for (let dy = -ROUTE_GATE_PROPS_CLEARANCE_RADIUS; dy <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS; dy++) {
+      for (
+        let dy = -ROUTE_GATE_PROPS_CLEARANCE_RADIUS;
+        dy <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS;
+        dy++
+      ) {
         const ny = gateCenterY + dy;
         if (ny < 0 || ny >= H) continue;
-        for (let dx = -ROUTE_GATE_PROPS_CLEARANCE_RADIUS; dx <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS; dx++) {
+        for (
+          let dx = -ROUTE_GATE_PROPS_CLEARANCE_RADIUS;
+          dx <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS;
+          dx++
+        ) {
           const nx = gateCenterX + dx;
           if (nx < 0 || nx >= W) continue;
           if (Math.hypot(dx, dy) <= ROUTE_GATE_PROPS_CLEARANCE_RADIUS) {
@@ -88,7 +108,8 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
     if (continent.resolvedMountain.cellDetails[y]?.[x]) return false;
     if (urbanBlocked[y]?.[x] || stairBlocked[y]?.[x] || roadsidePropBlocked[y]?.[x]) return false;
 
-    if (isCellAdjacentToMountainStairs(x, y, continent.resolvedMountain.cellDetails, W, H)) return false;
+    if (isCellAdjacentToMountainStairs(x, y, continent.resolvedMountain.cellDetails, W, H))
+      return false;
 
     if (!allowCliffBase) {
       for (let dy = -1; dy <= 1; dy++) {
@@ -134,7 +155,10 @@ export function placeRoadsideProps(ctx: RoadsidePropsContext): void {
     }
   };
 
-  const addRoadsideProp = (prop: WildernessPropPlacement, clearanceRadius: number = ROADSIDE_PROP_CLEARANCE_DEFAULT): void => {
+  const addRoadsideProp = (
+    prop: WildernessPropPlacement,
+    clearanceRadius: number = ROADSIDE_PROP_CLEARANCE_DEFAULT
+  ): void => {
     props.push(prop);
     treeBlocked[prop.y]![prop.x] = true;
     blockRadius(prop.x, prop.y, clearanceRadius);

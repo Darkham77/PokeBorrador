@@ -3,59 +3,61 @@
  * PVStatusOverlayLayer.vue
  * Renders an isolated particle overlay group for primary, secondary, tactical, or field status effects.
  */
-import { computed } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { resolveEffectSettings } from '@/data/battle/fx-configs'
-import { Z_LAYERS } from '@/logic/constants/visuals'
-import type { FXData, FXCategoryKind } from './statusParticleHelpers'
+import { computed } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { resolveEffectSettings } from '@/data/battle/fx-configs';
+import { Z_LAYERS } from '@/logic/constants/visuals';
+import type { FXData, FXCategoryKind } from './statusParticleHelpers';
 
 const props = withDefaults(
   defineProps<{
-    fx: FXData
-    radius: number
-    isBattle?: boolean
-    isSimplified?: boolean
-    category: FXCategoryKind
+    fx: FXData;
+    radius: number;
+    isBattle?: boolean;
+    isSimplified?: boolean;
+    category: FXCategoryKind;
   }>(),
   {
     isBattle: false,
     isSimplified: false
   }
-)
+);
 
 const particleCount = computed(() => {
   const options = {
     isField: props.category === 'field' || Boolean(props.fx.isField),
     isSimplified: props.isSimplified,
     isBattle: props.isBattle
-  }
-  return resolveEffectSettings(props.fx.type, props.radius, options).activeRange[1]
-})
+  };
+  return resolveEffectSettings(props.fx.type, props.radius, options).activeRange[1];
+});
 
-const isFreezeAsset = computed(() => props.fx.type === 'freeze' || props.fx.type === 'frozen')
-const isShinyAsset = computed(() => props.fx.type === 'shiny')
-const isWobbleContent = computed(() => props.fx.type === 'confusion' || props.fx.type === 'confused')
+const isFreezeAsset = computed(() => props.fx.type === 'freeze' || props.fx.type === 'frozen');
+const isShinyAsset = computed(() => props.fx.type === 'shiny');
+const isWobbleContent = computed(
+  () => props.fx.type === 'confusion' || props.fx.type === 'confused'
+);
 
 const containerCategoryClass = computed(() => {
-  if (props.category === 'secondary') return 'secondary-container'
-  if (props.category === 'tactical') return 'tactical-container'
-  if (props.category === 'field') return 'field-container'
-  return ''
-})
+  if (props.category === 'secondary') return 'secondary-container';
+  if (props.category === 'tactical') return 'tactical-container';
+  if (props.category === 'field') return 'field-container';
+  return '';
+});
 
 const particleCategoryClass = computed(() => {
-  if (props.category === 'secondary') return 'secondary-status'
-  if (props.category === 'tactical') return 'tactical-status'
-  if (props.category === 'field') return 'field-status'
-  return 'primary-status'
-})
+  if (props.category === 'secondary') return 'secondary-status';
+  if (props.category === 'tactical') return 'tactical-status';
+  if (props.category === 'field') return 'field-status';
+  return 'primary-status';
+});
 
 const isLayerVisible = computed(() => {
   if (props.category === 'tactical' || props.category === 'field') {
-    return !props.isSimplified
+    return !props.isSimplified;
   }
-  return true
-})
+  return true;
+});
 </script>
 
 <template>
@@ -71,36 +73,25 @@ const isLayerVisible = computed(() => {
       class="emoji status-particle"
       :class="particleCategoryClass"
     >
-      <span
-        v-if="category === 'primary' && isFreezeAsset"
-        class="freeze-asset-wrapper"
-      >
+      <span v-if="category === 'primary' && isFreezeAsset" class="freeze-asset-wrapper">
         <img
           :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
           class="freeze-asset"
           alt="Freeze"
-        
           width="32"
           height="32"
-        >
+        />
       </span>
-      <span
-        v-else-if="category === 'secondary' && isShinyAsset"
-        class="shiny-asset-wrapper"
-      >
+      <span v-else-if="category === 'secondary' && isShinyAsset" class="shiny-asset-wrapper">
         <img
           :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
           class="shiny-asset"
           alt="Shiny"
-        
           width="32"
           height="32"
-        >
+        />
       </span>
-      <span
-        v-else-if="category === 'secondary'"
-        :class="{ 'wobble-content': isWobbleContent }"
-      >
+      <span v-else-if="category === 'secondary'" :class="{ 'wobble-content': isWobbleContent }">
         {{ fx.emoji }}
       </span>
       <template v-else>
@@ -179,11 +170,8 @@ const isLayerVisible = computed(() => {
   width: 32px;
   height: 32px;
   object-fit: contain;
-  filter: Brightness(0) Invert(1)
-          Drop-Shadow(1px 0 0 Rgb(0 255 255 / 95%))
-          Drop-Shadow(-1px 0 0 Rgb(0 255 255 / 95%))
-          Drop-Shadow(0 1px 0 Rgb(0 255 255 / 95%))
-          Drop-Shadow(0 -1px 0 Rgb(0 255 255 / 95%))
-          Drop-Shadow(0 0 6px Rgb(0 255 255 / 80%));
+  filter: Brightness(0) Invert(1) Drop-Shadow(1px 0 0 Rgb(0 255 255 / 95%))
+    Drop-Shadow(-1px 0 0 Rgb(0 255 255 / 95%)) Drop-Shadow(0 1px 0 Rgb(0 255 255 / 95%))
+    Drop-Shadow(0 -1px 0 Rgb(0 255 255 / 95%)) Drop-Shadow(0 0 6px Rgb(0 255 255 / 80%));
 }
 </style>

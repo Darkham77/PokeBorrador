@@ -18,7 +18,7 @@ export const CONTINENT_GEN = {
   // Continental lobe harmonic frequencies & multipliers
   LOBE_1_FREQ: 2,
   LOBE_1_SEED_SCALE: 0.13,
-  LOBE_1_AMP: 0.20,
+  LOBE_1_AMP: 0.2,
   LOBE_2_FREQ: 3,
   LOBE_2_SEED_SCALE: 0.27,
   LOBE_2_AMP: 0.14,

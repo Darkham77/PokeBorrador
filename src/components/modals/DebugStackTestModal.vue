@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import BaseModal from '@/components/common/BaseModal.vue'
+import BaseModal from '@/components/common/BaseModal.vue';
 
 interface Props {
-  id?: string
-  show?: boolean
-  number: number
-  type?: string
-  variant?: string
-  hideHeader?: boolean
-  corners?: string | null
-  showBorder?: boolean
-  blurOverlay?: boolean
-  yellowBorder?: boolean
-  overlay?: string
-  maxWidth?: string
-  padding?: string
-  positionMode?: string | null
+  id?: string;
+  show?: boolean;
+  number: number;
+  type?: string;
+  variant?: string;
+  hideHeader?: boolean;
+  corners?: string | null;
+  showBorder?: boolean;
+  blurOverlay?: boolean;
+  yellowBorder?: boolean;
+  overlay?: string;
+  maxWidth?: string;
+  padding?: string;
+  positionMode?: string | null;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -32,11 +32,11 @@ withDefaults(defineProps<Props>(), {
   maxWidth: '340px',
   padding: 'standard',
   positionMode: null
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 </script>
 
 <template>
@@ -61,11 +61,7 @@ const emit = defineEmits<{
       <h1 class="big-number">
         {{ number }}
       </h1>
-      <button
-        id="debug-stack-test-modal-btn-cerrar"
-        class="pixel-btn"
-        @click.stop="emit('close')"
-      >
+      <button id="debug-stack-test-modal-btn-cerrar" class="pixel-btn" @click.stop="emit('close')">
         CERRAR
       </button>
     </div>
@@ -73,8 +69,8 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .test-content {
   display: flex;

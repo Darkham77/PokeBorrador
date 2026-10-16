@@ -31,7 +31,13 @@ export interface ForestPlacementContext {
   readonly isAreaFree: (x: number, y: number, w: number, h: number, margin?: number) => boolean;
   readonly markAreaOccupied: (x: number, y: number, w: number, h: number) => void;
   readonly getMinDistanceToPlaced: (x: number, y: number) => number;
-  readonly computeNodeGateways: (x: number, y: number, w: number, h: number, type: POINode['type']) => POIGateway[];
+  readonly computeNodeGateways: (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    type: POINode['type']
+  ) => POIGateway[];
   readonly getSettlementContext: () => SettlementTerrainContext;
 }
 
@@ -60,8 +66,16 @@ function findBestForestLocation(
     const curW = size.w;
     const curH = size.h;
 
-    for (let y = FOREST_MAP_MARGIN_CELLS; y < H - curH - FOREST_MAP_MARGIN_CELLS; y += FOREST_SEARCH_STEP) {
-      for (let x = FOREST_MAP_MARGIN_CELLS; x < W - curW - FOREST_MAP_MARGIN_CELLS; x += FOREST_SEARCH_STEP) {
+    for (
+      let y = FOREST_MAP_MARGIN_CELLS;
+      y < H - curH - FOREST_MAP_MARGIN_CELLS;
+      y += FOREST_SEARCH_STEP
+    ) {
+      for (
+        let x = FOREST_MAP_MARGIN_CELLS;
+        x < W - curW - FOREST_MAP_MARGIN_CELLS;
+        x += FOREST_SEARCH_STEP
+      ) {
         let valid = true;
         for (let dy = 0; dy < curH; dy++) {
           for (let dx = 0; dx < curW; dx++) {
@@ -83,7 +97,10 @@ function findBestForestLocation(
           const centerX = x + Math.floor(curW / 2);
           const centerY = y + Math.floor(curH / 2);
           const d = getMinDistanceToPlaced(centerX, centerY);
-          const minForestDist = Math.min(W, H) <= COMPACT_MAP_THRESHOLD ? COMPACT_MIN_FOREST_DIST : STANDARD_MIN_FOREST_DIST;
+          const minForestDist =
+            Math.min(W, H) <= COMPACT_MAP_THRESHOLD
+              ? COMPACT_MIN_FOREST_DIST
+              : STANDARD_MIN_FOREST_DIST;
           if (d >= minForestDist && d > maxDist) {
             maxDist = d;
             candidate = { x, y, w: curW, h: curH };
@@ -115,11 +132,12 @@ export function placeDungeonForests(ctx: ForestPlacementContext): void {
 
   const forestTemplates = activeCatalog.filter((t) => t.type === 'dungeon_forest');
   for (const tmpl of forestTemplates) {
-    const candidateSizes = Math.min(W, H) >= REGIONAL_MASSIVE_DIMENSION
-      ? [...FOREST_CANDIDATE_SIZES_MASSIVE, { w: tmpl.width, h: tmpl.height }]
-      : Math.min(W, H) >= REGIONAL_LARGE_DIMENSION
-        ? [...FOREST_CANDIDATE_SIZES_LARGE, { w: tmpl.width, h: tmpl.height }]
-        : [{ w: tmpl.width, h: tmpl.height }];
+    const candidateSizes =
+      Math.min(W, H) >= REGIONAL_MASSIVE_DIMENSION
+        ? [...FOREST_CANDIDATE_SIZES_MASSIVE, { w: tmpl.width, h: tmpl.height }]
+        : Math.min(W, H) >= REGIONAL_LARGE_DIMENSION
+          ? [...FOREST_CANDIDATE_SIZES_LARGE, { w: tmpl.width, h: tmpl.height }]
+          : [{ w: tmpl.width, h: tmpl.height }];
 
     const bestForest = findBestForestLocation(
       continentMap,
@@ -131,7 +149,13 @@ export function placeDungeonForests(ctx: ForestPlacementContext): void {
     );
 
     if (bestForest) {
-      const gateways = computeNodeGateways(bestForest.x, bestForest.y, bestForest.w, bestForest.h, tmpl.type);
+      const gateways = computeNodeGateways(
+        bestForest.x,
+        bestForest.y,
+        bestForest.w,
+        bestForest.h,
+        tmpl.type
+      );
       const node: POINode = {
         id: tmpl.id,
         name: tmpl.name,
@@ -143,7 +167,10 @@ export function placeDungeonForests(ctx: ForestPlacementContext): void {
         elevation: 0,
         gateways
       };
-      if (bestForest.w >= FOREST_URBAN_LAYOUT_MIN_WIDTH && bestForest.h >= FOREST_URBAN_LAYOUT_MIN_HEIGHT) {
+      if (
+        bestForest.w >= FOREST_URBAN_LAYOUT_MIN_WIDTH &&
+        bestForest.h >= FOREST_URBAN_LAYOUT_MIN_HEIGHT
+      ) {
         const layout = generateSettlementLayout(node, getSettlementContext());
         (node as { urbanLayout?: typeof layout }).urbanLayout = layout;
       }

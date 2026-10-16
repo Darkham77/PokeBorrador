@@ -43,33 +43,33 @@ $$\text{Stat} = \left\lfloor \left( \left\lfloor \frac{\left(2 \cdot \text{Base}
 
 #### Complete 25-Nature Statistical & Flavor Matrix
 
-| Nature | Boosted Stat ($+10\%$) | Lowered Stat ($-10\%$) | Preferred Flavor | Disliked Flavor |
-| :--- | :--- | :--- | :--- | :--- |
-| **Hardy** | — (Neutral) | — (Neutral) | — | — |
-| **Lonely** | Attack | Defense | Spicy | Sour |
-| **Brave** | Attack | Speed | Spicy | Sweet |
-| **Adamant** | Attack | Sp. Attack | Spicy | Dry |
-| **Naughty** | Attack | Sp. Defense | Spicy | Bitter |
-| **Bold** | Defense | Attack | Sour | Spicy |
-| **Docile** | — (Neutral) | — (Neutral) | — | — |
-| **Relaxed** | Defense | Speed | Sour | Sweet |
-| **Impish** | Defense | Sp. Attack | Sour | Dry |
-| **Lax** | Defense | Sp. Defense | Sour | Bitter |
-| **Timid** | Speed | Attack | Sweet | Spicy |
-| **Hasty** | Speed | Defense | Sweet | Sour |
-| **Jolly** | Speed | Sp. Attack | Sweet | Dry |
-| **Naive** | Speed | Sp. Defense | Sweet | Bitter |
-| **Serious** | — (Neutral) | — (Neutral) | — | — |
-| **Modest** | Sp. Attack | Attack | Dry | Spicy |
-| **Mild** | Sp. Attack | Defense | Dry | Sour |
-| **Quiet** | Sp. Attack | Speed | Dry | Sweet |
-| **Bashful** | — (Neutral) | — (Neutral) | — | — |
-| **Rash** | Sp. Attack | Sp. Defense | Dry | Bitter |
-| **Calm** | Sp. Defense | Attack | Bitter | Spicy |
-| **Gentle** | Sp. Defense | Defense | Bitter | Sour |
-| **Sassy** | Sp. Defense | Speed | Bitter | Sweet |
-| **Careful** | Sp. Defense | Sp. Attack | Bitter | Dry |
-| **Quirky** | — (Neutral) | — (Neutral) | — | — |
+| Nature      | Boosted Stat ($+10\%$) | Lowered Stat ($-10\%$) | Preferred Flavor | Disliked Flavor |
+| :---------- | :--------------------- | :--------------------- | :--------------- | :-------------- |
+| **Hardy**   | — (Neutral)            | — (Neutral)            | —                | —               |
+| **Lonely**  | Attack                 | Defense                | Spicy            | Sour            |
+| **Brave**   | Attack                 | Speed                  | Spicy            | Sweet           |
+| **Adamant** | Attack                 | Sp. Attack             | Spicy            | Dry             |
+| **Naughty** | Attack                 | Sp. Defense            | Spicy            | Bitter          |
+| **Bold**    | Defense                | Attack                 | Sour             | Spicy           |
+| **Docile**  | — (Neutral)            | — (Neutral)            | —                | —               |
+| **Relaxed** | Defense                | Speed                  | Sour             | Sweet           |
+| **Impish**  | Defense                | Sp. Attack             | Sour             | Dry             |
+| **Lax**     | Defense                | Sp. Defense            | Sour             | Bitter          |
+| **Timid**   | Speed                  | Attack                 | Sweet            | Spicy           |
+| **Hasty**   | Speed                  | Defense                | Sweet            | Sour            |
+| **Jolly**   | Speed                  | Sp. Attack             | Sweet            | Dry             |
+| **Naive**   | Speed                  | Sp. Defense            | Sweet            | Bitter          |
+| **Serious** | — (Neutral)            | — (Neutral)            | —                | —               |
+| **Modest**  | Sp. Attack             | Attack                 | Dry              | Spicy           |
+| **Mild**    | Sp. Attack             | Defense                | Dry              | Sour            |
+| **Quiet**   | Sp. Attack             | Speed                  | Dry              | Sweet           |
+| **Bashful** | — (Neutral)            | — (Neutral)            | —                | —               |
+| **Rash**    | Sp. Attack             | Sp. Defense            | Dry              | Bitter          |
+| **Calm**    | Sp. Defense            | Attack                 | Bitter           | Spicy           |
+| **Gentle**  | Sp. Defense            | Defense                | Bitter           | Sour            |
+| **Sassy**   | Sp. Defense            | Speed                  | Bitter           | Sweet           |
+| **Careful** | Sp. Defense            | Sp. Attack             | Bitter           | Dry             |
+| **Quirky**  | — (Neutral)            | — (Neutral)            | —                | —               |
 
 ### 3. Total Power (TOT / TOTAL)
 
@@ -89,52 +89,52 @@ In battle, stats can be boosted or lowered across stages from $-6$ to $+6$.
 
 $$\text{Multiplier}(S) = \frac{\max(2, 2 + S)}{\max(2, 2 - S)}$$
 
-| Stage ($S$) | Multiplier Fraction | Decimal | Percentage Change |
-| :---: | :---: | :---: | :---: |
-| **$-6$** | $\frac{2}{8}$ | $0.25\times$ | $-75\%$ |
-| **$-5$** | $\frac{2}{7}$ | $\approx 0.285\times$ | $-71.4\%$ |
-| **$-4$** | $\frac{2}{6}$ | $\approx 0.333\times$ | $-66.7\%$ |
-| **$-3$** | $\frac{2}{5}$ | $0.40\times$ | $-60\%$ |
-| **$-2$** | $\frac{2}{4}$ | $0.50\times$ | $-50\%$ |
-| **$-1$** | $\frac{2}{3}$ | $\approx 0.666\times$ | $-33.3\%$ |
-| **$0$** | $\frac{2}{2}$ | $1.00\times$ | Baseline |
-| **$+1$** | $\frac{3}{2}$ | $1.50\times$ | $+50\%$ |
-| **$+2$** | $\frac{4}{2}$ | $2.00\times$ | $+100\%$ |
-| **$+3$** | $\frac{5}{2}$ | $2.50\times$ | $+150\%$ |
-| **$+4$** | $\frac{6}{2}$ | $3.00\times$ | $+200\%$ |
-| **$+5$** | $\frac{7}{2}$ | $3.50\times$ | $+250\%$ |
-| **$+6$** | $\frac{8}{2}$ | $4.00\times$ | $+300\%$ |
+| Stage ($S$) | Multiplier Fraction |        Decimal        | Percentage Change |
+| :---------: | :-----------------: | :-------------------: | :---------------: |
+|  **$-6$**   |    $\frac{2}{8}$    |     $0.25\times$      |      $-75\%$      |
+|  **$-5$**   |    $\frac{2}{7}$    | $\approx 0.285\times$ |     $-71.4\%$     |
+|  **$-4$**   |    $\frac{2}{6}$    | $\approx 0.333\times$ |     $-66.7\%$     |
+|  **$-3$**   |    $\frac{2}{5}$    |     $0.40\times$      |      $-60\%$      |
+|  **$-2$**   |    $\frac{2}{4}$    |     $0.50\times$      |      $-50\%$      |
+|  **$-1$**   |    $\frac{2}{3}$    | $\approx 0.666\times$ |     $-33.3\%$     |
+|   **$0$**   |    $\frac{2}{2}$    |     $1.00\times$      |     Baseline      |
+|  **$+1$**   |    $\frac{3}{2}$    |     $1.50\times$      |      $+50\%$      |
+|  **$+2$**   |    $\frac{4}{2}$    |     $2.00\times$      |     $+100\%$      |
+|  **$+3$**   |    $\frac{5}{2}$    |     $2.50\times$      |     $+150\%$      |
+|  **$+4$**   |    $\frac{6}{2}$    |     $3.00\times$      |     $+200\%$      |
+|  **$+5$**   |    $\frac{7}{2}$    |     $3.50\times$      |     $+250\%$      |
+|  **$+6$**   |    $\frac{8}{2}$    |     $4.00\times$      |     $+300\%$      |
 
 ### 2. Accuracy and Evasion Stages
 
 $$\text{AccMultiplier}(S) = \frac{\max(3, 3 + S)}{\max(3, 3 - S)}$$
 
-| Stage ($S$) | Fraction | Decimal |
-| :---: | :---: | :---: |
-| **$-6$** | $\frac{3}{9}$ | $0.333\times$ |
-| **$-5$** | $\frac{3}{8}$ | $0.375\times$ |
-| **$-4$** | $\frac{3}{7}$ | $\approx 0.428\times$ |
-| **$-3$** | $\frac{3}{6}$ | $0.50\times$ |
-| **$-2$** | $\frac{3}{5}$ | $0.60\times$ |
-| **$-1$** | $\frac{3}{4}$ | $0.75\times$ |
-| **$0$** | $\frac{3}{3}$ | $1.00\times$ |
-| **$+1$** | $\frac{4}{3}$ | $\approx 1.333\times$ |
-| **$+2$** | $\frac{5}{3}$ | $\approx 1.666\times$ |
-| **$+3$** | $\frac{6}{3}$ | $2.00\times$ |
-| **$+4$** | $\frac{7}{3}$ | $\approx 2.333\times$ |
-| **$+5$** | $\frac{8}{3}$ | $\approx 2.666\times$ |
-| **$+6$** | $\frac{9}{3}$ | $3.00\times$ |
+| Stage ($S$) |   Fraction    |        Decimal        |
+| :---------: | :-----------: | :-------------------: |
+|  **$-6$**   | $\frac{3}{9}$ |     $0.333\times$     |
+|  **$-5$**   | $\frac{3}{8}$ |     $0.375\times$     |
+|  **$-4$**   | $\frac{3}{7}$ | $\approx 0.428\times$ |
+|  **$-3$**   | $\frac{3}{6}$ |     $0.50\times$      |
+|  **$-2$**   | $\frac{3}{5}$ |     $0.60\times$      |
+|  **$-1$**   | $\frac{3}{4}$ |     $0.75\times$      |
+|   **$0$**   | $\frac{3}{3}$ |     $1.00\times$      |
+|  **$+1$**   | $\frac{4}{3}$ | $\approx 1.333\times$ |
+|  **$+2$**   | $\frac{5}{3}$ | $\approx 1.666\times$ |
+|  **$+3$**   | $\frac{6}{3}$ |     $2.00\times$      |
+|  **$+4$**   | $\frac{7}{3}$ | $\approx 2.333\times$ |
+|  **$+5$**   | $\frac{8}{3}$ | $\approx 2.666\times$ |
+|  **$+6$**   | $\frac{9}{3}$ |     $3.00\times$      |
 
 ### 3. Critical Hit Probability (Gen VII+)
 
-| Critical Stage ($C$) | Probability Fraction | Percentage |
-| :---: | :---: | :---: |
-| **$0$** | $\frac{1}{24}$ | $\approx 4.17\%$ |
-| **$+1$** | $\frac{1}{8}$ | $12.5\%$ |
-| **$+2$** | $\frac{1}{2}$ | $50\%$ |
-| **$+3$ or higher** | $\frac{1}{1}$ | $100\%$ (Guaranteed) |
+| Critical Stage ($C$) | Probability Fraction |      Percentage      |
+| :------------------: | :------------------: | :------------------: |
+|       **$0$**        |    $\frac{1}{24}$    |   $\approx 4.17\%$   |
+|       **$+1$**       |    $\frac{1}{8}$     |       $12.5\%$       |
+|       **$+2$**       |    $\frac{1}{2}$     |        $50\%$        |
+|  **$+3$ or higher**  |    $\frac{1}{1}$     | $100\%$ (Guaranteed) |
 
-- **Damage Multiplier**: $1.5\times$ standard ($2.0\times$ if the attacker has *Sniper*).
+- **Damage Multiplier**: $1.5\times$ standard ($2.0\times$ if the attacker has _Sniper_).
 - **Stage Bypass**: Critical hits ignore negative Attack/SpA stages on the attacker and positive Defense/SpD stages on the defender.
 
 ---
@@ -153,7 +153,7 @@ IV = floor(Random(0, 31))
 IV_Final = max(ivFloor, max(Random(0, 31), Random(0, 31)))
 ```
 
-*Where `ivFloor` is `12` for Guardians/Alphas.*
+_Where `ivFloor` is `12` for Guardians/Alphas._
 
 ### 3. Faction War / Contextual Floors
 
@@ -167,15 +167,15 @@ IV_Effective = max(ContextualBonus, IV_Generated)
 
 ## 5. 🌪️ Weather Combat Multipliers
 
-| Weather | Damage Boost | Damage Reduction | Defensive Boost | Residual Damage | Special Effects |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Sun** | Fire ($1.5\times$) | Water ($0.5\times$) | — | — | Solar Beam (Instant), Synthesis (66%), Thunder/Hurricane (50% Acc) |
-| **Rain** | Water ($1.5\times$) | Fire ($0.5\times$) | — | — | Thunder/Hurricane (100% Acc), Synthesis (25%) |
-| **Sandstorm** | — | — | Rock ($1.5\times$ SpD) | $\frac{1}{16}$ HP (Non-Rock/Ground/Steel) | Solar Beam (50% Pow), Synthesis (25%) |
-| **Snow** | — | — | Ice ($1.5\times$ Def) | **NONE** | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
-| **Hail** | — | — | — | $\frac{1}{16}$ HP (Non-Ice) | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
-| **Fog** | — | — | — | — | **Accuracy: 60% (All moves)**, Solar Beam (50% Pow) |
-| **Strong Winds** | — | — | — | — | **Delta Stream**: Removes flying weaknesses. |
+| Weather          | Damage Boost        | Damage Reduction    | Defensive Boost        | Residual Damage                           | Special Effects                                                    |
+| :--------------- | :------------------ | :------------------ | :--------------------- | :---------------------------------------- | :----------------------------------------------------------------- |
+| **Sun**          | Fire ($1.5\times$)  | Water ($0.5\times$) | —                      | —                                         | Solar Beam (Instant), Synthesis (66%), Thunder/Hurricane (50% Acc) |
+| **Rain**         | Water ($1.5\times$) | Fire ($0.5\times$)  | —                      | —                                         | Thunder/Hurricane (100% Acc), Synthesis (25%)                      |
+| **Sandstorm**    | —                   | —                   | Rock ($1.5\times$ SpD) | $\frac{1}{16}$ HP (Non-Rock/Ground/Steel) | Solar Beam (50% Pow), Synthesis (25%)                              |
+| **Snow**         | —                   | —                   | Ice ($1.5\times$ Def)  | **NONE**                                  | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow)         |
+| **Hail**         | —                   | —                   | —                      | $\frac{1}{16}$ HP (Non-Ice)               | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow)         |
+| **Fog**          | —                   | —                   | —                      | —                                         | **Accuracy: 60% (All moves)**, Solar Beam (50% Pow)                |
+| **Strong Winds** | —                   | —                   | —                      | —                                         | **Delta Stream**: Removes flying weaknesses.                       |
 
 ---
 
@@ -216,15 +216,15 @@ Dimension = Base_Dimension * factor
 
 ### Dimension Tiers
 
-| Tier | ID | Delta Range | UI Glow / Aura |
-| :--- | :--- | :--- | :--- |
-| **Miniature** | `XXS` | $< -12.5\%$ | Cyan Ice Diamond Glow |
-| **Small** | `XS` | $[-12.5\%, -9.0\%)$ | Blue Ice |
-| **Short** | `S` | $[-9.0\%, -6.0\%)$ | Slate Blue |
-| **Standard** | `M` | $[-6.0\%, +6.0\%]$ | Neutral Gray |
-| **Tall** | `L` | $(+6.0\%, +9.0\%]$ | Amber Gold |
-| **Large** | `XL` | $(+9.0\%, +12.5\%]$ | Orange Flame |
-| **Titan** | `XXL` | $> +12.5\%$ | Legendary Gold Aura |
+| Tier          | ID    | Delta Range         | UI Glow / Aura        |
+| :------------ | :---- | :------------------ | :-------------------- |
+| **Miniature** | `XXS` | $< -12.5\%$         | Cyan Ice Diamond Glow |
+| **Small**     | `XS`  | $[-12.5\%, -9.0\%)$ | Blue Ice              |
+| **Short**     | `S`   | $[-9.0\%, -6.0\%)$  | Slate Blue            |
+| **Standard**  | `M`   | $[-6.0\%, +6.0\%]$  | Neutral Gray          |
+| **Tall**      | `L`   | $(+6.0\%, +9.0\%]$  | Amber Gold            |
+| **Large**     | `XL`  | $(+9.0\%, +12.5\%]$ | Orange Flame          |
+| **Titan**     | `XXL` | $> +12.5\%$         | Legendary Gold Aura   |
 
 ---
 
@@ -236,7 +236,7 @@ Dimension = Base_Dimension * factor
 Price = floor((Level * 50 + (TotalIVs / 186) * 500) * 0.8)
 ```
 
-*Where `TotalIVs` is the sum of all 6 genetic IVs (max 186).*
+_Where `TotalIVs` is the sum of all 6 genetic IVs (max 186)._
 
 ---
 
@@ -281,11 +281,11 @@ The roulette features 12 slots (4 species: Wynaut, Azurill, Skitty, Makuhita $\t
 
 $$\text{Payout Multiplier} = \frac{12}{\text{Empty Winning Slots}}$$
 
-| Bet Type | Base Winning Slots | Empty Table Multiplier | 1 Empty Slot Left | 2 Empty Slots Left | 3 Empty Slots Left |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Specific Slot** | $1$ | $12\times$ | $12\times$ | — | — |
-| **Species Column** | $3$ | $4\times$ | $12\times$ | $6\times$ | $4\times$ |
-| **Color Row** | $4$ | $3\times$ | $12\times$ | $6\times$ | $4\times$ |
+| Bet Type           | Base Winning Slots | Empty Table Multiplier | 1 Empty Slot Left | 2 Empty Slots Left | 3 Empty Slots Left |
+| :----------------- | :----------------: | :--------------------: | :---------------: | :----------------: | :----------------: |
+| **Specific Slot**  |        $1$         |       $12\times$       |    $12\times$     |         —          |         —          |
+| **Species Column** |        $3$         |       $4\times$        |    $12\times$     |     $6\times$      |     $4\times$      |
+| **Color Row**      |        $4$         |       $3\times$        |    $12\times$     |     $6\times$      |     $4\times$      |
 
 - **Ball Collision**: If a ball lands on an occupied slot, it bounces to an adjacent slot at random.
 - **Rescue Mechanics**: If stuck between two occupied slots, a rescue Pokémon (Taillow/Shroomish) dislodges the ball into an empty slot.
@@ -297,7 +297,7 @@ $$\text{Payout Multiplier} = \frac{12}{\text{Empty Winning Slots}}$$
 ### 1. Cloning Cost Formula
 
 $$\text{Cost} = 3000 + 1000 \cdot N$$
-*Where $N$ is the number of additional sacrificed fossils ($0 \le N \le 6$). Maximum cost is $\$9,000$.*
+_Where $N$ is the number of additional sacrificed fossils ($0 \le N \le 6$). Maximum cost is $\$9,000$._
 
 ### 2. Genetic IV Re-rolls
 
@@ -307,7 +307,7 @@ $$\text{Cost} = 3000 + 1000 \cdot N$$
 ### 3. Shiny Probability Inheritance
 
 $$\text{Shiny\_Probability} = \frac{1 + 0.25 \cdot N}{4096}$$
-*Reaches up to a $2.5\times$ multiplier ($N=6$) compared to the baseline $1/4096$ Shiny rate.*
+_Reaches up to a $2.5\times$ multiplier ($N=6$) compared to the baseline $1/4096$ Shiny rate._
 
 ---
 
@@ -384,12 +384,12 @@ $$\text{DifficultyScore} = \text{round}\left(0.40 \cdot \text{LevelScore} + 0.60
 
 ### 2. Difficulty Tiers & Parameter Calibration Matrix
 
-| Tier | Score Range | Notes | Speed Base (Collapse) | Spawn Interval | Hit Window | Level Bonus Range | IV Reroll |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Fácil (Easy)** | $\text{Score} \le 45$ | 5 | $910\text{ ms}$ | $680\text{ ms}$ | $200\text{ ms}$ | $+0$ | None |
-| **Medio (Medium)** | $46 \le \text{Score} \le 70$ | 8 | $780\text{ ms}$ | $580\text{ ms}$ | $160\text{ ms}$ | $+1 \text{ to } +4$ | None |
-| **Difícil (Hard)** | $71 \le \text{Score} \le 85$ | 11 | $680\text{ ms}$ | $500\text{ ms}$ | $130\text{ ms}$ | $+4 \text{ to } +7$ | None |
-| **Experto (Expert)** | $\text{Score} > 85$ | 13 | $580\text{ ms}$ | $420\text{ ms}$ | $100\text{ ms}$ | $+7 \text{ to } +10$ | 1 Reroll ($\max(\text{IV}_{\text{current}}, \text{Roll})$) |
+| Tier                 | Score Range                  | Notes | Speed Base (Collapse) | Spawn Interval  | Hit Window      | Level Bonus Range    | IV Reroll                                                  |
+| :------------------- | :--------------------------- | :---- | :-------------------- | :-------------- | :-------------- | :------------------- | :--------------------------------------------------------- |
+| **Fácil (Easy)**     | $\text{Score} \le 45$        | 5     | $910\text{ ms}$       | $680\text{ ms}$ | $200\text{ ms}$ | $+0$                 | None                                                       |
+| **Medio (Medium)**   | $46 \le \text{Score} \le 70$ | 8     | $780\text{ ms}$       | $580\text{ ms}$ | $160\text{ ms}$ | $+1 \text{ to } +4$  | None                                                       |
+| **Difícil (Hard)**   | $71 \le \text{Score} \le 85$ | 11    | $680\text{ ms}$       | $500\text{ ms}$ | $130\text{ ms}$ | $+4 \text{ to } +7$  | None                                                       |
+| **Experto (Expert)** | $\text{Score} > 85$          | 13    | $580\text{ ms}$       | $420\text{ ms}$ | $100\text{ ms}$ | $+7 \text{ to } +10$ | 1 Reroll ($\max(\text{IV}_{\text{current}}, \text{Roll})$) |
 
 ### 3. Random Level Bonus Resolution
 
@@ -438,13 +438,13 @@ $$\text{newElo} = \left\lfloor \max\left(1000, 1000 + \frac{\text{currentElo} - 
 
 ### 4. Canonical Tier Progression & Seasonal Reward Milestones
 
-| Tier Name | Code | LP Range | Badge / Medal Sprite | Minimum Battles | Seasonal Reward Package |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Bronce** | `bronce` | $1000 - 1199$ | `/assets/sprites/ranked_medals/bronce.webp` | 5 | 25 Battle Coins |
-| **Plata** | `plata` | $1200 - 1599$ | `/assets/sprites/ranked_medals/plata.webp` | 5 | 1x Ticket Cueva Celeste + 75 Battle Coins |
-| **Oro** | `oro` | $1600 - 2099$ | `/assets/sprites/ranked_medals/oro.webp` | 5 | 1x Ticket Cueva Celeste + 1x Ticket Islas Espumas + 150 Battle Coins |
-| **Platino** | `platino` | $2100 - 2699$ | `/assets/sprites/ranked_medals/platino.webp` | 5 | 2x Ticket Cueva Celeste + 2x Ticket Islas Espumas + 250 Battle Coins |
-| **Diamante** | `diamante` | $2700 - 3399$ | `/assets/sprites/ranked_medals/diamante.webp` | 5 | Seasonal Themed Pokémon (High IVs) + 2x Ticket CC + 2x Ticket IE + 350 Battle Coins |
-| **Maestro** | `maestro` | $\ge 3400$ | `/assets/sprites/ranked_medals/maestro.webp` | 5 | Guaranteed 6 IV 31 Competitive Shiny Pokémon + 3x Ticket CC + 3x Ticket IE + 500 Battle Coins |
+| Tier Name    | Code       | LP Range      | Badge / Medal Sprite                          | Minimum Battles | Seasonal Reward Package                                                                       |
+| :----------- | :--------- | :------------ | :-------------------------------------------- | :-------------- | :-------------------------------------------------------------------------------------------- |
+| **Bronce**   | `bronce`   | $1000 - 1199$ | `/assets/sprites/ranked_medals/bronce.webp`   | 5               | 25 Battle Coins                                                                               |
+| **Plata**    | `plata`    | $1200 - 1599$ | `/assets/sprites/ranked_medals/plata.webp`    | 5               | 1x Ticket Cueva Celeste + 75 Battle Coins                                                     |
+| **Oro**      | `oro`      | $1600 - 2099$ | `/assets/sprites/ranked_medals/oro.webp`      | 5               | 1x Ticket Cueva Celeste + 1x Ticket Islas Espumas + 150 Battle Coins                          |
+| **Platino**  | `platino`  | $2100 - 2699$ | `/assets/sprites/ranked_medals/platino.webp`  | 5               | 2x Ticket Cueva Celeste + 2x Ticket Islas Espumas + 250 Battle Coins                          |
+| **Diamante** | `diamante` | $2700 - 3399$ | `/assets/sprites/ranked_medals/diamante.webp` | 5               | Seasonal Themed Pokémon (High IVs) + 2x Ticket CC + 2x Ticket IE + 350 Battle Coins           |
+| **Maestro**  | `maestro`  | $\ge 3400$    | `/assets/sprites/ranked_medals/maestro.webp`  | 5               | Guaranteed 6 IV 31 Competitive Shiny Pokémon + 3x Ticket CC + 3x Ticket IE + 500 Battle Coins |
 
 Rewards are awarded automatically into `public.awards` by `fn_award_ranked_season_automated` (PostgreSQL) and emulated in SQLite via `src/logic/db/rpcEmulations/rankedRpc.ts`.

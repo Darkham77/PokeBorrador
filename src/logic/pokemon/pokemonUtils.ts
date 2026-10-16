@@ -1,7 +1,11 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 export { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
-import { calculateTotalBaseStats, calculateTotalIVs, calculateRocketSellPriceRaw } from '@/logic/pokemon/statsMath';
+import {
+  calculateTotalBaseStats,
+  calculateTotalIVs,
+  calculateRocketSellPriceRaw
+} from '@/logic/pokemon/statsMath';
 import { calculateEvBonusIvs } from '@/logic/pokemon/evMath';
 
 export {
@@ -52,7 +56,7 @@ const SCORE_LEVEL_MULTIPLIER = 10000;
  */
 export function calculatePokemonStrengthScore(p: Pokemon): number {
   if (!p) return 0;
-  return (p.level * SCORE_LEVEL_MULTIPLIER) + calculateTotalPower(p);
+  return p.level * SCORE_LEVEL_MULTIPLIER + calculateTotalPower(p);
 }
 
 /**
@@ -69,11 +73,19 @@ export function calculateRocketSellPrice(p: Pokemon): number {
  */
 export function isPokemonLocked(p: Pokemon | null | undefined): boolean {
   if (!p) return false;
-  const isLockedMove = !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0);
-  const isTwoTurnActive = !!(p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0);
-  const isMustRecharge = !!(p.volatileCounters?.['mustrecharge'] && p.volatileCounters['mustrecharge'] > 0);
+  const isLockedMove = !!(
+    p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0
+  );
+  const isTwoTurnActive = !!(
+    p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0
+  );
+  const isMustRecharge = !!(
+    p.volatileCounters?.['mustrecharge'] && p.volatileCounters['mustrecharge'] > 0
+  );
   const isThrashLocked = !!(p.thrashTurns && p.thrashTurns > 0);
   const isBideActive = !!(p.volatileCounters?.['bide'] && p.volatileCounters['bide'] > 0);
   const isTrapped = !!p.trapped;
-  return isLockedMove || isTwoTurnActive || isMustRecharge || isThrashLocked || isBideActive || isTrapped;
+  return (
+    isLockedMove || isTwoTurnActive || isMustRecharge || isThrashLocked || isBideActive || isTrapped
+  );
 }

@@ -1,4 +1,4 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .team-balls-row {
   display: flex;
@@ -16,7 +16,7 @@
     background: var(--white);
     box-sizing: border-box;
     overflow: hidden;
-    
+
     &.active {
       box-shadow: var(--shadow-glow-yellow-sm);
 
@@ -30,7 +30,7 @@
         content: '';
       }
     }
-    
+
     &.fainted {
       background: var(--slate-600);
       &::after {
@@ -44,7 +44,7 @@
         content: '';
       }
     }
-    
+
     &.empty {
       border: 1px dashed Rgb(255 255 255 / 30%);
       background: transparent;

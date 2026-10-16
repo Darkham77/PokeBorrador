@@ -36,10 +36,21 @@ const SCRATCH_STAGING_DIR = path.resolve(process.cwd(), 'scratch', 'item_sprites
 const RAW_ASSETS_DIR = path.resolve(process.cwd(), '_raw-assets', 'public', 'assets', 'sprites');
 const RAW_ITEMS_DIR = path.resolve(RAW_ASSETS_DIR, 'items');
 
-const POKEAPI_SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+const POKEAPI_SPRITE_BASE =
+  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
 
-const POKESPRITE_FOLDERS = [ // no-domain: Non-domain utility collection or data structure
-  'hold-item', 'battle-item', 'berry', 'medicine', 'general', 'key-item', 'ball', 'evo-item', 'tm-hm', 'other'
+const POKESPRITE_FOLDERS = [
+  // no-domain: Non-domain utility collection or data structure
+  'hold-item',
+  'battle-item',
+  'berry',
+  'medicine',
+  'general',
+  'key-item',
+  'ball',
+  'evo-item',
+  'tm-hm',
+  'other'
 ] as const;
 
 // Multi-source sprite URLs for items
@@ -53,15 +64,19 @@ const ITEM_SOURCES: Array<(name: string, cleanItemSlug: string) => string> = [
   (name) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${name}.png`,
 
   // 3. PokéSprite multi-category
-  ...POKESPRITE_FOLDERS.map(f => (name: string) => `https://raw.githubusercontent.com/msikma/pokesprite/master/items/${f}/${name}.png`),
+  ...POKESPRITE_FOLDERS.map(
+    (f) => (name: string) =>
+      `https://raw.githubusercontent.com/msikma/pokesprite/master/items/${f}/${name}.png`
+  ),
 
   // 4. Pokémon Showdown Item Icons
   (name) => `https://play.pokemonshowdown.com/sprites/itemicons/${name}.png`,
-  (_name, cleanItemSlug) => `https://play.pokemonshowdown.com/sprites/itemicons/${cleanItemSlug}.png`,
+  (_name, cleanItemSlug) =>
+    `https://play.pokemonshowdown.com/sprites/itemicons/${cleanItemSlug}.png`,
   (name) => `https://play.pokemonshowdown.com/sprites/itemsprites/${name}.png`,
 
   // 5. PokémonDB
-  (name) => `https://img.pokemondb.net/sprites/items/${name}.png`,
+  (name) => `https://img.pokemondb.net/sprites/items/${name}.png`
 ];
 
 interface ShopItem {
@@ -82,7 +97,10 @@ export function toItemSlugCandidates(id: string): string[] {
   // 1. Check Pokémon Showdown Canon Dex
   const dexItem = Dex.items.get(toID(clean));
   if (dexItem.exists && dexItem.name) {
-    const slug = dexItem.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); // string-ok: Internal string formatting or DOM token identifier
+    const slug = dexItem.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, ''); // string-ok: Internal string formatting or DOM token identifier
     candidates.add(slug);
     candidates.add(dexItem.id);
   }
@@ -96,7 +114,8 @@ export function toItemSlugCandidates(id: string): string[] {
   }
 
   // 3. Common Pokémon Sub-word tokenization
-  const subwordRegex = /(berry|ball|stone|feather|mochi|potion|repel|restore|cure|herb|seed|plate|incense|gem|scarf|specs|band|belt|glasses|orb|candy|scale|tooth|fang|boots|glove|mask|apple|sweet|patch|capsule|flute|letter|ticket|mail|powder|spoon|tag|bell|rock|clay|dice|vest|cloak|helmet|sash|lens|knot|moss|umbrella|spray|policy|goggles|card|service|amulet|disc|cuff|wreath|teacup|pot|egg|rod)$/;
+  const subwordRegex =
+    /(berry|ball|stone|feather|mochi|potion|repel|restore|cure|herb|seed|plate|incense|gem|scarf|specs|band|belt|glasses|orb|candy|scale|tooth|fang|boots|glove|mask|apple|sweet|patch|capsule|flute|letter|ticket|mail|powder|spoon|tag|bell|rock|clay|dice|vest|cloak|helmet|sash|lens|knot|moss|umbrella|spray|policy|goggles|card|service|amulet|disc|cuff|wreath|teacup|pot|egg|rod)$/;
   if (subwordRegex.test(clean)) {
     const matched = clean.match(subwordRegex)![0];
     const prefix = clean.slice(0, clean.length - matched.length);
@@ -131,7 +150,8 @@ export function toItemSlugCandidates(id: string): string[] {
   return Array.from(candidates);
 }
 
-const ALLOWED_ASSET_HOSTS = new Set([ // runtime-set: Fast O(1) membership lookup set
+const ALLOWED_ASSET_HOSTS = new Set([
+  // runtime-set: Fast O(1) membership lookup set
   'www.serebii.net',
   'raw.githubusercontent.com',
   'play.pokemonshowdown.com',
@@ -149,8 +169,9 @@ async function tryFetchAssetBuffer(url: string): Promise<Buffer | null> {
   try {
     const res = await fetch(parsedUrl.href, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'image/png,image/webp,image/*,*/*;q=0.8',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'image/png,image/webp,image/*,*/*;q=0.8'
       }
     });
     if (!res.ok) return null;
@@ -164,16 +185,23 @@ async function tryFetchAssetBuffer(url: string): Promise<Buffer | null> {
     const BULBAPEDIA_HTML_ERROR_PAGE_BYTE_SIZE = 36570 as const;
     const MIN_IMAGE_BUFFER_BYTES = 50 as const;
     // Check for valid PNG or image signature (> 50 bytes and not error page)
-    if (buf.length > MIN_IMAGE_BUFFER_BYTES && buf.length !== BULBAPEDIA_HTML_ERROR_PAGE_BYTE_SIZE) {
+    if (
+      buf.length > MIN_IMAGE_BUFFER_BYTES &&
+      buf.length !== BULBAPEDIA_HTML_ERROR_PAGE_BYTE_SIZE
+    ) {
       return buf;
     }
-  } catch { // catch-ok: try next source
+  } catch {
+    // catch-ok: try next source
     // Try next source
   }
   return null;
 }
 
-async function fetchBufferWithFallback(candidateNames: string[], cleanItemSlug: string): Promise<{ buffer: Buffer; sourceUrl: string; matchedName: string } | null> {
+async function fetchBufferWithFallback(
+  candidateNames: string[],
+  cleanItemSlug: string
+): Promise<{ buffer: Buffer; sourceUrl: string; matchedName: string } | null> {
   for (const name of candidateNames) {
     for (const sourceFn of ITEM_SOURCES) {
       const url = sourceFn(name, cleanItemSlug);
@@ -202,7 +230,7 @@ export async function downloadAllItems(): Promise<{
   const allItems = itemsData.SHOP_ITEMS || [];
 
   // Dinámicamente identificar ítems canónicos de Showdown/Dex o marcados con isCanon
-  const canonItems = allItems.filter(item => {
+  const canonItems = allItems.filter((item) => {
     if (item.isCanon === false) return false;
     if (item.isCanon === true) return true;
     const dexItem = Dex.items.get(toID(item.id));
@@ -214,7 +242,12 @@ export async function downloadAllItems(): Promise<{
   await fs.mkdir(SCRATCH_STAGING_DIR, { recursive: true });
   await fs.mkdir(RAW_ITEMS_DIR, { recursive: true });
 
-  console.log(styleText('yellow', `\n📦 Iniciando descarga de ${canonItems.length} ítems CANÓNICOS oficiales (multi-fuente)...`));
+  console.log(
+    styleText(
+      'yellow',
+      `\n📦 Iniciando descarga de ${canonItems.length} ítems CANÓNICOS oficiales (multi-fuente)...`
+    )
+  );
   console.log(styleText('gray', `   Ítems caseros del proyecto ignorados: ${ignoredCustomCount}`));
   console.log(styleText('gray', `   Directorio temporal staging: ${SCRATCH_STAGING_DIR}`));
   console.log(styleText('gray', `   Directorio destino raw:      ${RAW_ITEMS_DIR}\n`));
@@ -225,38 +258,53 @@ export async function downloadAllItems(): Promise<{
 
   for (let i = 0; i < canonItems.length; i += CONCURRENCY_LIMIT) {
     const chunk = canonItems.slice(i, i + CONCURRENCY_LIMIT);
-    await Promise.all(chunk.map(async (item) => {
-      const finalRawPath = path.join(RAW_ITEMS_DIR, `${item.id}.png`);
-      const stagingPath = path.join(SCRATCH_STAGING_DIR, `${item.id}.png`);
+    await Promise.all(
+      chunk.map(async (item) => {
+        const finalRawPath = path.join(RAW_ITEMS_DIR, `${item.id}.png`);
+        const stagingPath = path.join(SCRATCH_STAGING_DIR, `${item.id}.png`);
 
-      // Si ya existe en _raw-assets, no re-descargar
-      if (existsSync(finalRawPath)) {
-        existingCount++;
-        return;
-      }
+        // Si ya existe en _raw-assets, no re-descargar
+        if (existsSync(finalRawPath)) {
+          existingCount++;
+          return;
+        }
 
-      const candidates = toItemSlugCandidates(item.id);
-      const result = await fetchBufferWithFallback(candidates, item.id);
+        const candidates = toItemSlugCandidates(item.id);
+        const result = await fetchBufferWithFallback(candidates, item.id);
 
-      if (result) {
-        // 1. Guardar primero en staging temporal en scratch/
-        await fs.writeFile(stagingPath, result.buffer);
-        // 2. Reubicar en _raw-assets/public/assets/sprites/items/
-        await fs.writeFile(finalRawPath, result.buffer);
-        downloadedCount++;
-        console.log(styleText('green', `   ✅ [${item.id}]`), `${item.name || item.id} (desde ${result.sourceUrl})`);
-      } else {
-        failed.push(item.id);
-        console.log(styleText('red', `   ❌ [${item.id}]`), `No se encontró en ninguna fuente (${candidates.join(', ')})`);
-      }
-    }));
+        if (result) {
+          // 1. Guardar primero en staging temporal en scratch/
+          await fs.writeFile(stagingPath, result.buffer);
+          // 2. Reubicar en _raw-assets/public/assets/sprites/items/
+          await fs.writeFile(finalRawPath, result.buffer);
+          downloadedCount++;
+          console.log(
+            styleText('green', `   ✅ [${item.id}]`),
+            `${item.name || item.id} (desde ${result.sourceUrl})`
+          );
+        } else {
+          failed.push(item.id);
+          console.log(
+            styleText('red', `   ❌ [${item.id}]`),
+            `No se encontró en ninguna fuente (${candidates.join(', ')})`
+          );
+        }
+      })
+    );
   }
 
   console.log(styleText('cyan', '\n───────────────────────────────────────────────────────'));
-  console.log(`Resumen ítems: ${styleText('green', `${downloadedCount} descargados`)}, ${styleText('gray', `${existingCount} ya existentes`)}, ${styleText(failed.length === 0 ? 'green' : 'yellow', `${failed.length} pendientes`)}, ${styleText('blue', `${ignoredCustomCount} custom ignorados`)}.`);
+  console.log(
+    `Resumen ítems: ${styleText('green', `${downloadedCount} descargados`)}, ${styleText('gray', `${existingCount} ya existentes`)}, ${styleText(failed.length === 0 ? 'green' : 'yellow', `${failed.length} pendientes`)}, ${styleText('blue', `${ignoredCustomCount} custom ignorados`)}.`
+  );
   console.log(styleText('cyan', '───────────────────────────────────────────────────────\n'));
 
-  return { downloaded: downloadedCount, existing: existingCount, ignoredCustom: ignoredCustomCount, failed };
+  return {
+    downloaded: downloadedCount,
+    existing: existingCount,
+    ignoredCustom: ignoredCustomCount,
+    failed
+  };
 }
 
 async function downloadPokemon(limit: number) {
@@ -279,7 +327,8 @@ async function downloadPokemon(limit: number) {
         const buf = Buffer.from(await res.arrayBuffer());
         await fs.writeFile(target, buf);
       }
-    } catch { // catch-ok: ignore single failure during bulk download
+    } catch {
+      // catch-ok: ignore single failure during bulk download
       // Ignore single failure
     }
   }
@@ -303,10 +352,19 @@ async function main() {
   const isPositionalTrainers = positionals.includes('trainers');
   const isPositionalAll = positionals.includes('all');
 
-  const doAll = values.all || isPositionalAll || (!values.pokemon && !values.items && !values.trainers && !isPositionalItems && !isPositionalPokemon && !isPositionalTrainers);
+  const doAll =
+    values.all ||
+    isPositionalAll ||
+    (!values.pokemon &&
+      !values.items &&
+      !values.trainers &&
+      !isPositionalItems &&
+      !isPositionalPokemon &&
+      !isPositionalTrainers);
   const doItems = doAll || values.items || isPositionalItems;
   const doPokemon = doAll || values.pokemon || isPositionalPokemon;
-  const pokemonLimit = typeof values.limit === 'string' ? parseInt(values.limit, 10) : TOTAL_POKEMON_SPECIES;
+  const pokemonLimit =
+    typeof values.limit === 'string' ? parseInt(values.limit, 10) : TOTAL_POKEMON_SPECIES;
 
   console.log(styleText('bold', '\n--- 📥 UNIVERSAL ASSET DOWNLOADER & MULTI-SOURCE SCRAPER ---'));
 
@@ -320,7 +378,7 @@ async function main() {
 }
 
 if (process.argv[1]?.endsWith('download_assets.ts')) {
-  main().catch(err => {
+  main().catch((err) => {
     console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
     process.exit(1);
   });

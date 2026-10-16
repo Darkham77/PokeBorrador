@@ -1,5 +1,5 @@
-@use "variables" as *;
-@use "mixins/layout" as layout;
+@use 'variables' as *;
+@use 'mixins/layout' as layout;
 
 // src/styles/core/_gpu.scss
 
@@ -29,17 +29,17 @@
     width: 4px;
     height: 4px;
   }
-  
+
   &::-webkit-scrollbar-track {
     border-radius: $radius-xs;
     background: Rgb(0 0 0 / 20%);
   }
-  
+
   &::-webkit-scrollbar-thumb {
     border: 1px solid Rgb(255 255 255 / 10%);
     border-radius: $radius-xs;
     background: var(--modal-accent, var(--yellow-dark, #8b6d11));
-    
+
     &:hover {
       filter: Brightness(1.2);
     }

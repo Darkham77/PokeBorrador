@@ -1,52 +1,56 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { gsap } from 'gsap'
-import { logToInspector, updateSerializedFormData } from '../logic/useLiveInspector.ts'
+import { ref, watch } from 'vue';
+import { gsap } from 'gsap';
+import { logToInspector, updateSerializedFormData } from '../logic/useLiveInspector.ts';
 
 // Group A & Controls
-const serverSelected = ref('Servidor Oficial Pokémon Vicio 1 (Latam)')
-const trainerName = ref('Ash Ketchum')
-const passwordVal = ref('SuperSecretPassword123')
-const searchVal = ref('Pikachu')
+const serverSelected = ref('Servidor Oficial Pokémon Vicio 1 (Latam)');
+const trainerName = ref('Ash Ketchum');
+const passwordVal = ref('SuperSecretPassword123');
+const searchVal = ref('Pikachu');
 
 // Group B
-const emailVal = ref('entrenador@pokevicio.com')
-const telVal = ref('+34 600 123 456')
-const urlVal = ref('https://pokevicio.online')
-const numQty = ref(25)
+const emailVal = ref('entrenador@pokevicio.com');
+const telVal = ref('+34 600 123 456');
+const urlVal = ref('https://pokevicio.online');
+const numQty = ref(25);
 
-const rememberMe = ref(true)
-const musicEnabled = ref(true)
-const stepperCount = ref(5)
+const rememberMe = ref(true);
+const musicEnabled = ref(true);
+const stepperCount = ref(5);
 
-const checkMarkRef = ref<SVGElement | null>(null)
-const toggleThumbRef = ref<HTMLElement | null>(null)
+const checkMarkRef = ref<SVGElement | null>(null);
+const toggleThumbRef = ref<HTMLElement | null>(null);
 
 watch(rememberMe, (checked) => {
-  logToInspector(`Checkbox "Recordar": ${checked ? 'activado' : 'desactivado'}`)
-  if (!checkMarkRef.value) return
+  logToInspector(`Checkbox "Recordar": ${checked ? 'activado' : 'desactivado'}`);
+  if (!checkMarkRef.value) return;
   if (checked) {
-    gsap.to(checkMarkRef.value, { scale: 1, opacity: 1, duration: 0.15, ease: 'back.out(2)' })
+    gsap.to(checkMarkRef.value, { scale: 1, opacity: 1, duration: 0.15, ease: 'back.out(2)' });
   } else {
-    gsap.to(checkMarkRef.value, { scale: 0.5, opacity: 0, duration: 0.1 })
+    gsap.to(checkMarkRef.value, { scale: 0.5, opacity: 0, duration: 0.1 });
   }
-})
+});
 
 const TOGGLE_THUMB_ON_LEFT_PX = 27 as const;
 const STEPPER_MAX_VALUE = 99 as const;
 
 watch(musicEnabled, (enabled) => {
-  logToInspector(`Toggle "Música": ${enabled ? 'ON' : 'OFF'}`)
-  if (!toggleThumbRef.value) return
+  logToInspector(`Toggle "Música": ${enabled ? 'ON' : 'OFF'}`);
+  if (!toggleThumbRef.value) return;
   if (enabled) {
-    gsap.to(toggleThumbRef.value, { left: TOGGLE_THUMB_ON_LEFT_PX, duration: 0.18, ease: 'power2.out' })
+    gsap.to(toggleThumbRef.value, {
+      left: TOGGLE_THUMB_ON_LEFT_PX,
+      duration: 0.18,
+      ease: 'power2.out'
+    });
   } else {
-    gsap.to(toggleThumbRef.value, { left: 3, duration: 0.18, ease: 'power2.out' })
+    gsap.to(toggleThumbRef.value, { left: 3, duration: 0.18, ease: 'power2.out' });
   }
-})
+});
 
 function onInputChange(name: string, val: string | number) {
-  logToInspector(`Cambio en ${name}: "${val}"`)
+  logToInspector(`Cambio en ${name}: "${val}"`);
   updateSerializedFormData({
     server: serverSelected.value,
     trainerName: trainerName.value,
@@ -59,12 +63,12 @@ function onInputChange(name: string, val: string | number) {
     stepper: stepperCount.value,
     rememberMe: rememberMe.value,
     musicEnabled: musicEnabled.value
-  })
+  });
 }
 
 function step(delta: number) {
-  stepperCount.value = Math.max(1, Math.min(STEPPER_MAX_VALUE, stepperCount.value + delta))
-  onInputChange('stepperCount', stepperCount.value)
+  stepperCount.value = Math.max(1, Math.min(STEPPER_MAX_VALUE, stepperCount.value + delta));
+  onInputChange('stepperCount', stepperCount.value);
 }
 </script>
 
@@ -98,7 +102,7 @@ function step(delta: number) {
                   class="pv-input"
                   placeholder="Nombre de Entrenador..."
                   @input="onInputChange('trainerName', trainerName)"
-                >
+                />
               </div>
               <span class="field-desc">Entrada de texto plano en una línea.</span>
             </div>
@@ -117,7 +121,7 @@ function step(delta: number) {
                   class="pv-input"
                   placeholder="Contraseña..."
                   @input="onInputChange('password', '••••••••')"
-                >
+                />
               </div>
               <span class="field-desc">Caracteres ofuscados nativamente.</span>
             </div>
@@ -135,7 +139,7 @@ function step(delta: number) {
                   class="pv-input"
                   placeholder="Buscar Pokémon..."
                   @input="onInputChange('search', searchVal)"
-                >
+                />
               </div>
               <span class="field-desc">Búsqueda rápida con borrado nativo.</span>
             </div>
@@ -163,7 +167,7 @@ function step(delta: number) {
                   class="pv-input"
                   placeholder="usuario@dominio.com"
                   @input="onInputChange('email', emailVal)"
-                >
+                />
               </div>
               <span class="field-desc">Validación estándar RFC.</span>
             </div>
@@ -181,7 +185,7 @@ function step(delta: number) {
                   class="pv-input"
                   placeholder="+54 9 11..."
                   @input="onInputChange('tel', telVal)"
-                >
+                />
               </div>
               <span class="field-desc">Dispara teclado numérico móvil.</span>
             </div>
@@ -199,7 +203,7 @@ function step(delta: number) {
                   class="pv-input"
                   placeholder="https://..."
                   @input="onInputChange('url', urlVal)"
-                >
+                />
               </div>
               <span class="field-desc">Exige protocolo formal http/https.</span>
             </div>
@@ -219,7 +223,7 @@ function step(delta: number) {
                   step="5"
                   class="pv-input"
                   @input="onInputChange('numQty', numQty)"
-                >
+                />
               </div>
               <span class="field-desc">Soporta min (0), max (100) y step (5).</span>
             </div>
@@ -227,14 +231,9 @@ function step(delta: number) {
         </fieldset>
 
         <!-- CONTROLES RETRO EXTRAS: SELECTOR, CHECKBOX, TOGGLE, STEPPER -->
-        <div
-          class="grid-2"
-          style="margin-top: 10px;"
-        >
+        <div class="grid-2" style="margin-top: 10px">
           <div>
-            <div class="sub-label">
-              SELECTOR DE SERVIDOR (SELECT):
-            </div>
+            <div class="sub-label">SELECTOR DE SERVIDOR (SELECT):</div>
             <div class="pv-frame-control pv-input-wrap">
               <select
                 v-model="serverSelected"
@@ -247,9 +246,7 @@ function step(delta: number) {
               </select>
             </div>
 
-            <div class="sub-label">
-              CANTIDAD / STEPPER NUMÉRICO:
-            </div>
+            <div class="sub-label">CANTIDAD / STEPPER NUMÉRICO:</div>
             <div class="pv-frame-control pv-stepper-wrap">
               <button
                 v-gsap-hover="'button'"
@@ -276,22 +273,12 @@ function step(delta: number) {
           </div>
 
           <div>
-            <div class="sub-label">
-              CHECKBOX RETRO:
-            </div>
+            <div class="sub-label">CHECKBOX RETRO:</div>
             <div>
               <label class="pv-checkbox-row">
-                <input
-                  v-model="rememberMe"
-                  type="checkbox"
-                >
+                <input v-model="rememberMe" type="checkbox" />
                 <span class="pv-frame-pill pv-pixel-checkbox">
-                  <svg
-                    ref="checkMarkRef"
-                    class="pv-checkbox-mark"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                  >
+                  <svg ref="checkMarkRef" class="pv-checkbox-mark" viewBox="0 0 12 12" fill="none">
                     <path
                       d="M2 6L5 9L10 3"
                       stroke="#ffffff"
@@ -304,15 +291,10 @@ function step(delta: number) {
               </label>
             </div>
 
-            <div class="sub-label">
-              INTERRUPTOR TOGGLE (ON/OFF - CÁPSULA 100% CERRADA):
-            </div>
+            <div class="sub-label">INTERRUPTOR TOGGLE (ON/OFF - CÁPSULA 100% CERRADA):</div>
             <div>
               <label class="pv-toggle-row">
-                <input
-                  v-model="musicEnabled"
-                  type="checkbox"
-                >
+                <input v-model="musicEnabled" type="checkbox" />
                 <span class="pv-frame-pill pv-toggle-track">
                   <span
                     ref="toggleThumbRef"
@@ -320,10 +302,7 @@ function step(delta: number) {
                     :style="{ left: musicEnabled ? '27px' : '3px' }"
                   />
                 </span>
-                <span
-                  class="toggle-status-text"
-                  :class="{ active: musicEnabled }"
-                >
+                <span class="toggle-status-text" :class="{ active: musicEnabled }">
                   {{ musicEnabled ? 'MÚSICA ACTIVADA' : 'MÚSICA DESACTIVADA' }}
                 </span>
               </label>

@@ -1,5 +1,5 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .debug-menu {
   @include gpu-layer;
@@ -295,7 +295,7 @@
       margin: 0;
       appearance: none;
     }
-    &[type="number"] {
+    &[type='number'] {
       appearance: textfield;
     }
   }

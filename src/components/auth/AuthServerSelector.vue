@@ -1,56 +1,54 @@
 <script setup lang="ts">
-import { nextTick } from 'vue'
-import { gsap } from 'gsap'
+import { nextTick } from 'vue';
+import { gsap } from 'gsap';
 
 interface Props {
-  modelValue: string
+  modelValue: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-}>()
+  (e: 'update:modelValue', value: string): void;
+}>();
 
 function handleServerTabEnter(e: MouseEvent) {
-  const tab = e.currentTarget as HTMLElement
+  const tab = e.currentTarget as HTMLElement;
   if (!tab.classList.contains('active')) {
     gsap.to(tab, {
       color: 'var(--blue)',
       backgroundColor: 'rgba(59, 139, 255, 0.08)',
       duration: 0.2
-    })
+    });
   }
 }
 
 function handleServerTabLeave(e: MouseEvent) {
-  const tab = e.currentTarget as HTMLElement
+  const tab = e.currentTarget as HTMLElement;
   if (!tab.classList.contains('active')) {
     gsap.to(tab, {
       color: 'var(--gray)',
       backgroundColor: 'transparent',
       duration: 0.2
-    })
+    });
   }
 }
 
 async function selectTab(value: string) {
-  emit('update:modelValue', value)
-  await nextTick()
-  gsap.killTweensOf('.login-server-tab')
-  gsap.set('.login-server-tab', { clearProps: 'all' })
+  emit('update:modelValue', value);
+  await nextTick();
+  gsap.killTweensOf('.login-server-tab');
+  gsap.set('.login-server-tab', { clearProps: 'all' });
 }
 </script>
 
 <template>
   <div class="server-selector">
-    <div class="server-selector-label">
-      Servidor
-    </div>
+    <div class="server-selector-label">Servidor</div>
     <div class="server-tabs">
-      <button 
+      <button
         id="server-tab-online"
-        class="login-server-tab" 
+        class="login-server-tab"
         :class="{ active: modelValue === 'online' }"
         @click.stop="selectTab('online')"
         @mouseenter="handleServerTabEnter"
@@ -58,9 +56,9 @@ async function selectTab(value: string) {
       >
         <span class="emoji">🌐</span><span>Online</span>
       </button>
-      <button 
+      <button
         id="server-tab-local"
-        class="login-server-tab" 
+        class="login-server-tab"
         :class="{ active: modelValue === 'local' }"
         @click.stop="selectTab('local')"
         @mouseenter="handleServerTabEnter"
@@ -73,5 +71,5 @@ async function selectTab(value: string) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/views/login";
+@use '@/styles/views/login';
 </style>

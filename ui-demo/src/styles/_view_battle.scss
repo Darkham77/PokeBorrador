@@ -56,7 +56,9 @@
   user-select: none;
   box-sizing: border-box;
   --frame-border: var(--card-border-color, #64748b);
-  box-shadow: inset 1px 1px 0 Rgba(255, 255, 255, 0.08), inset -1px -1px 0 Rgba(0, 0, 0, 0.4);
+  box-shadow:
+    inset 1px 1px 0 Rgba(255, 255, 255, 0.08),
+    inset -1px -1px 0 Rgba(0, 0, 0, 0.4);
 
   &:hover {
     filter: Brightness(1.15);
@@ -90,9 +92,23 @@
   padding: 1px 2px;
   z-index: calc(var(--z-base, 1) + 2);
 
-  .dock-iv-tag { font-size: var(--font-6); font-weight: bold; color: var(--yellow); line-height: 1; }
-  .dock-item-icon { width: 11px; height: 11px; image-rendering: pixelated; }
-  .dock-star-icon, .dock-shiny-icon { font-size: var(--font-6); line-height: 1; color: var(--yellow); }
+  .dock-iv-tag {
+    font-size: var(--font-6);
+    font-weight: bold;
+    color: var(--yellow);
+    line-height: 1;
+  }
+  .dock-item-icon {
+    width: 11px;
+    height: 11px;
+    image-rendering: pixelated;
+  }
+  .dock-star-icon,
+  .dock-shiny-icon {
+    font-size: var(--font-6);
+    line-height: 1;
+    color: var(--yellow);
+  }
 }
 
 // Columna Superior Derecha
@@ -115,7 +131,10 @@
     background: Rgba(0, 0, 0, 0.5);
   }
 
-  .dock-passive-icon { font-size: var(--font-7); line-height: 1; }
+  .dock-passive-icon {
+    font-size: var(--font-7);
+    line-height: 1;
+  }
 }
 
 // Sprite
@@ -170,7 +189,10 @@
   font-size: var(--font-7);
   margin-top: 2px;
 
-  .dock-poke-lvl { color: var(--color-text-gold); font-weight: bold; }
+  .dock-poke-lvl {
+    color: var(--color-text-gold);
+    font-weight: bold;
+  }
 
   .dock-gender-icon {
     width: 11px;
@@ -184,8 +206,12 @@
     color: var(--white);
     line-height: 1;
 
-    &.gender-male { background: var(--sky); }
-    &.gender-female { background: var(--rose); }
+    &.gender-male {
+      background: var(--sky);
+    }
+    &.gender-female {
+      background: var(--rose);
+    }
   }
 }
 
@@ -196,7 +222,10 @@
   overflow: hidden;
   margin-top: 2px;
 
-  .dock-card-hp-fill { height: 100%; background: var(--emerald); }
+  .dock-card-hp-fill {
+    height: 100%;
+    background: var(--emerald);
+  }
 }
 
 // ZONA 2: MOVIMIENTOS & ACCIONES
@@ -249,7 +278,10 @@
       cursor: pointer;
       line-height: 1;
 
-      &:hover { color: var(--yellow); border-color: var(--yellow); }
+      &:hover {
+        color: var(--yellow);
+        border-color: var(--yellow);
+      }
     }
 
     .dock-move-name {
@@ -263,7 +295,11 @@
       text-align: center;
     }
 
-    .pv-type-sm { font-size: var(--font-7); padding: 1px 5px; line-height: 1.2; }
+    .pv-type-sm {
+      font-size: var(--font-7);
+      padding: 1px 5px;
+      line-height: 1.2;
+    }
   }
 
   .dock-move-stats {
@@ -273,10 +309,21 @@
     font-size: var(--font-7);
     color: var(--color-text-muted);
 
-    .dock-stat-item { display: flex; align-items: center; gap: 2px; }
-    .stat-val { font-weight: bold; color: var(--color-text-main); }
-    .stat-buff { color: var(--emerald); }
-    .pp-val { color: var(--color-text-gold); }
+    .dock-stat-item {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .stat-val {
+      font-weight: bold;
+      color: var(--color-text-main);
+    }
+    .stat-buff {
+      color: var(--emerald);
+    }
+    .pp-val {
+      color: var(--color-text-gold);
+    }
   }
 }
 
@@ -294,7 +341,10 @@
     font-size: var(--font-8);
     padding: 5px 16px;
     min-height: 28px;
-    &:hover { background: var(--blue-500); --frame-border: var(--blue-400); }
+    &:hover {
+      background: var(--blue-500);
+      --frame-border: var(--blue-400);
+    }
   }
 
   .dock-btn-mochila {
@@ -304,7 +354,10 @@
     font-size: var(--font-8);
     padding: 5px 16px;
     min-height: 28px;
-    &:hover { background: #059669; --frame-border: #6ee7b7; }
+    &:hover {
+      background: #059669;
+      --frame-border: #6ee7b7;
+    }
   }
 
   .dock-center-pokeball {
@@ -323,7 +376,10 @@
     padding: 0;
     box-shadow: 0 3px 6px Rgba(0, 0, 0, 0.5);
 
-    &:hover { transform: Scale(1.08); filter: Brightness(1.1); }
+    &:hover {
+      transform: Scale(1.08);
+      filter: Brightness(1.1);
+    }
 
     .pokeball-top {
       position: absolute;
@@ -366,7 +422,9 @@
 }
 
 // ZONA 3: MOCHILA RÁPIDA (4 COLS X 2 ROWS)
-.dock-quickbag-zone { flex-shrink: 0; }
+.dock-quickbag-zone {
+  flex-shrink: 0;
+}
 
 .dock-quickbag-grid {
   display: grid;
@@ -423,10 +481,15 @@
     }
   }
 
-  .dock-move-card { background: #e6edd1; }
+  .dock-move-card {
+    background: #e6edd1;
+  }
 
   .dock-quickbag-slot {
     background: #eef3db;
-    .quickbag-qty-tag { text-shadow: none; color: var(--amber-dark); }
+    .quickbag-qty-tag {
+      text-shadow: none;
+      color: var(--amber-dark);
+    }
   }
 }

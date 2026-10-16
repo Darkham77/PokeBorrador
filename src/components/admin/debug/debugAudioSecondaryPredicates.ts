@@ -1,15 +1,23 @@
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Pokemon, VolatileStatusKey } from '@/types/pokemon/pokemon';
 
-export type SecondaryPredicate = (p: Pokemon & Record<string, unknown>, vc: Partial<Record<string, number>>) => boolean;
+export type SecondaryPredicate = (
+  p: Pokemon & Record<string, unknown>, // open-record: Flexible pokemon debug inspection
+  vc: Partial<Record<VolatileStatusKey, number>>
+) => boolean;
 
 export const SECONDARY_EFFECT_PREDICATES: Record<string, SecondaryPredicate> = {
+  // open-record: Secondary volatile effect condition predicates
   confusion: (p, vc) => (Number(p.confused) || 0) > 0 || (vc.confusion || 0) > 0,
-  taunt: (p, vc) => (Number(p.tauntTurns) || 0) > 0 || (vc.taunt || 0) > 0 || (vc.tauntTurns || 0) > 0,
+  taunt: (p, vc) =>
+    (Number(p.tauntTurns) || 0) > 0 || (vc.taunt || 0) > 0 || (vc.tauntTurns || 0) > 0,
   substitute: (p, vc) => (Number(p.substitute) || 0) > 0 || (vc.substitute || 0) > 0,
-  disable: (p, vc) => (Number(p.disabledTurns) || 0) > 0 || (vc.disable || 0) > 0 || (vc.disabledTurns || 0) > 0,
-  encore: (p, vc) => (Number(p.encoreTurns) || 0) > 0 || (vc.encore || 0) > 0 || (vc.encoreTurns || 0) > 0,
+  disable: (p, vc) =>
+    (Number(p.disabledTurns) || 0) > 0 || (vc.disable || 0) > 0 || (vc.disabledTurns || 0) > 0,
+  encore: (p, vc) =>
+    (Number(p.encoreTurns) || 0) > 0 || (vc.encore || 0) > 0 || (vc.encoreTurns || 0) > 0,
   perishsong: (p, vc) => (Number(p.perishSongCount) || 0) > 0 || (vc.perishsong || 0) > 0,
-  bound: (p, vc) => (Number(p.bound) || 0) > 0 || (vc.bound || 0) > 0 || (vc.partiallytrapped || 0) > 0,
+  bound: (p, vc) =>
+    (Number(p.bound) || 0) > 0 || (vc.bound || 0) > 0 || (vc.partiallytrapped || 0) > 0,
   attract: (p, vc) => Boolean(p.attracted) || (vc.attract || 0) > 0,
   curse: (p, vc) => Boolean(p.cursed) || (vc.curse || 0) > 0,
   leechseed: (p, vc) => Boolean(p.seeded) || (vc.leechseed || 0) > 0,

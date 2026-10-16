@@ -2,9 +2,10 @@
  * hatchAuras.ts
  * Aura and color configuration utilities for egg hatching.
  */
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { isPokemonType, type PokemonType } from '@/data/battle/types';
 
-export const TYPE_AURA_COLORS: Record<string, { c1: string; c2: string }> = {
+export const TYPE_AURA_COLORS: Record<PokemonType, { c1: string; c2: string }> = {
   normal: { c1: 'rgba(168, 168, 120, 0.95)', c2: 'rgba(120, 120, 90, 0.8)' },
   fire: { c1: 'rgba(240, 128, 48, 0.95)', c2: 'rgba(180, 70, 20, 0.85)' },
   water: { c1: 'rgba(104, 144, 240, 0.95)', c2: 'rgba(30, 70, 180, 0.85)' },
@@ -23,32 +24,26 @@ export const TYPE_AURA_COLORS: Record<string, { c1: string; c2: string }> = {
   dark: { c1: 'rgba(112, 88, 72, 0.95)', c2: 'rgba(60, 45, 35, 0.85)' },
   steel: { c1: 'rgba(184, 184, 208, 0.95)', c2: 'rgba(120, 120, 150, 0.85)' },
   fairy: { c1: 'rgba(240, 166, 178, 0.95)', c2: 'rgba(180, 90, 110, 0.85)' }
-}
+};
 
-export function getAuraStyles(
-  pokemon: Pokemon | null,
-  flare1Url: string,
-  flare2Url: string
-) {
-  let c1 = 'rgba(0, 255, 255, 0.85)' // Default bright cyan
-  let c2 = 'rgba(0, 190, 255, 0.75)' // Default deep blue
+export function getAuraStyles(pokemon: Pokemon | null, flare1Url: string, flare2Url: string) {
+  let c1 = 'rgba(0, 255, 255, 0.85)'; // Default bright cyan
+  let c2 = 'rgba(0, 190, 255, 0.75)'; // Default deep blue
 
   if (pokemon) {
-    const primaryType = pokemon.type?.toLowerCase() || 'normal'
-    const colors = TYPE_AURA_COLORS[primaryType] ?? TYPE_AURA_COLORS.normal ?? {
-      c1: 'rgba(0, 255, 255, 0.85)',
-      c2: 'rgba(0, 190, 255, 0.75)'
-    }
-    c1 = colors.c1
-    c2 = colors.c2
+    const rawType = pokemon.type?.toLowerCase() || 'normal';
+    const primaryType: PokemonType = isPokemonType(rawType) ? rawType : 'normal';
+    const colors = TYPE_AURA_COLORS[primaryType] ?? TYPE_AURA_COLORS.normal;
+    c1 = colors.c1;
+    c2 = colors.c2;
 
     // If shiny or guardian, overwrite with premium rarity colors
     if (pokemon.isShiny) {
-      c1 = 'rgba(255, 215, 0, 0.95)' // Bright gold
-      c2 = 'rgba(255, 140, 0, 0.85)' // Fire orange
+      c1 = 'rgba(255, 215, 0, 0.95)'; // Bright gold
+      c2 = 'rgba(255, 140, 0, 0.85)'; // Fire orange
     } else if (pokemon.isGuardian) {
-      c1 = 'rgba(255, 255, 255, 0.95)' // Pure white
-      c2 = 'rgba(173, 216, 230, 0.85)' // Silver / soft sky blue
+      c1 = 'rgba(255, 255, 255, 0.95)'; // Pure white
+      c2 = 'rgba(173, 216, 230, 0.85)'; // Silver / soft sky blue
     }
   }
 
@@ -58,5 +53,5 @@ export function getAuraStyles(
     '--aura-color-1': c1,
     '--aura-color-2': c2,
     '--particle-color': c1
-  }
+  };
 }

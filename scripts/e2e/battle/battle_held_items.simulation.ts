@@ -20,7 +20,12 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
       { id: 'caterpie', level: E2E_CATERPIE_LEVEL, moves: ['stringshot'] },
       {
         playerTeam: [
-          { id: 'snorlax', level: E2E_SNORLAX_LEVEL, heldItem: 'leftovers', moves: ['substitute', 'defensecurl'] }
+          {
+            id: 'snorlax',
+            level: E2E_SNORLAX_LEVEL,
+            heldItem: 'leftovers',
+            moves: ['substitute', 'defensecurl']
+          }
         ]
       }
     );
@@ -43,7 +48,13 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
       {
         weather: 'clear',
         playerTeam: [
-          { id: 'sunkern', level: E2E_CATERPIE_LEVEL, ability: 'chlorophyll', heldItem: 'focussash', moves: ['tackle'] }
+          {
+            id: 'sunkern',
+            level: E2E_CATERPIE_LEVEL,
+            ability: 'chlorophyll',
+            heldItem: 'focussash',
+            moves: ['tackle']
+          }
         ]
       }
     );

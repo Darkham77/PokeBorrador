@@ -186,14 +186,24 @@ export function stampFloraLedgesAndProps(options: FloraAndPropsOptions): void {
   // 9. Curated Flowers along roads and open pasture
   for (let x = 4; x < width - 4; x++) {
     const yTopRoad = midY - 2;
-    if (yTopRoad >= 0 && !isPathCell[yTopRoad]![x] && !elevationLayer[yTopRoad]![x] && !objectLayer[yTopRoad]![x]) {
+    if (
+      yTopRoad >= 0 &&
+      !isPathCell[yTopRoad]![x] &&
+      !elevationLayer[yTopRoad]![x] &&
+      !objectLayer[yTopRoad]![x]
+    ) {
       if (prng() < ROAD_FLOWER_CHANCE && palette.props.flowers.length > 0) {
         const flowerId = palette.props.flowers[Math.floor(prng() * palette.props.flowers.length)]!;
         objectLayer[yTopRoad]![x] = makeCell(flowerId, false);
       }
     }
     const yBottomRoad = midY + 2;
-    if (yBottomRoad < height && !isPathCell[yBottomRoad]![x] && !elevationLayer[yBottomRoad]![x] && !objectLayer[yBottomRoad]![x]) {
+    if (
+      yBottomRoad < height &&
+      !isPathCell[yBottomRoad]![x] &&
+      !elevationLayer[yBottomRoad]![x] &&
+      !objectLayer[yBottomRoad]![x]
+    ) {
       if (prng() < ROAD_FLOWER_CHANCE && palette.props.flowers.length > 0) {
         const flowerId = palette.props.flowers[Math.floor(prng() * palette.props.flowers.length)]!;
         objectLayer[yBottomRoad]![x] = makeCell(flowerId, false);
@@ -204,7 +214,8 @@ export function stampFloraLedgesAndProps(options: FloraAndPropsOptions): void {
   // 10. Scatter Small Rocks & Bushes
   for (let y = 3; y < height - 3; y++) {
     for (let x = 3; x < width - 3; x++) {
-      if (isPathCell[y]![x] || elevationLayer[y]![x] !== null || objectLayer[y]![x] !== null) continue;
+      if (isPathCell[y]![x] || elevationLayer[y]![x] !== null || objectLayer[y]![x] !== null)
+        continue;
       const roll = prng();
       if (roll < SCATTER_BUSH_CHANCE) {
         objectLayer[y]![x] = makeCell(palette.props.bush, true);

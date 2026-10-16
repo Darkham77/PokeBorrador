@@ -1,97 +1,109 @@
-import { ref, computed, onMounted, type Ref, type ComponentPublicInstance } from 'vue'
-import { useResizeObserver } from '@vueuse/core'
-import { useUIStore } from '@/stores/ui'
-import { useGameStore } from '@/stores/game'
-import { useWindowListener, useDocumentListener } from '@/composables/ui/useWindowListener'
+import { ref, computed, onMounted, type Ref, type ComponentPublicInstance } from 'vue';
+import { useResizeObserver } from '@vueuse/core';
+import { useUIStore } from '@/stores/ui';
+import { useGameStore } from '@/stores/game';
+import { useWindowListener, useDocumentListener } from '@/composables/ui/useWindowListener';
 
-const DEFAULT_TOP_HUD_HEIGHT_PX = 110 as const
-const DEFAULT_BOTTOM_HUD_HEIGHT_PX = 80 as const
+const DEFAULT_TOP_HUD_HEIGHT_PX = 110 as const;
+const DEFAULT_BOTTOM_HUD_HEIGHT_PX = 80 as const;
 
 export function useMainLayout(
-  hudRef: Ref<HTMLElement | null>, 
-  hudBottomRef: Ref<HTMLElement | ComponentPublicInstance | null>, 
+  hudRef: Ref<HTMLElement | null>,
+  hudBottomRef: Ref<HTMLElement | ComponentPublicInstance | null>,
   innerHudRef: Ref<HTMLElement | null>
 ) {
-  const uiStore = useUIStore()
-  const gameStore = useGameStore()
+  const uiStore = useUIStore();
+  const gameStore = useGameStore();
 
-  const hudHeight = ref<number>(DEFAULT_TOP_HUD_HEIGHT_PX)
-  const hudBottomHeight = ref<number>(gameStore.state.starterChosen ? DEFAULT_BOTTOM_HUD_HEIGHT_PX : 0)
-  const isHudHidden = ref(false)
+  const hudHeight = ref<number>(DEFAULT_TOP_HUD_HEIGHT_PX);
+  const hudBottomHeight = ref<number>(
+    gameStore.state.starterChosen ? DEFAULT_BOTTOM_HUD_HEIGHT_PX : 0
+  );
+  const isHudHidden = ref(false);
 
   // 1. Outside Click logic
   function handleOutsideClick(e: MouseEvent) {
-    if (!uiStore.openHudGroup) return
+    if (!uiStore.openHudGroup) return;
 
-    const isInsideTopHud = hudRef.value?.contains(e.target as Node)
-    const bottomValue = hudBottomRef.value
-    const bottomEl = (bottomValue && '$el' in bottomValue) ? (bottomValue.$el as HTMLElement) : (bottomValue as HTMLElement | null)
-    const isInsideBottomHud = bottomEl ? bottomEl.contains(e.target as Node) : false
-    
+    const isInsideTopHud = hudRef.value?.contains(e.target as Node);
+    const bottomValue = hudBottomRef.value;
+    const bottomEl =
+      bottomValue && '$el' in bottomValue
+        ? (bottomValue.$el as HTMLElement)
+        : (bottomValue as HTMLElement | null);
+    const isInsideBottomHud = bottomEl ? bottomEl.contains(e.target as Node) : false;
+
     if (!isInsideTopHud && !isInsideBottomHud) {
-      uiStore.openHudGroup = null
+      uiStore.openHudGroup = null;
     }
   }
 
   // 2. Height calculation logic
-  let isUpdatingHeight = false
+  let isUpdatingHeight = false;
   function updateHudHeight() {
-    if (isUpdatingHeight) return
-    isUpdatingHeight = true
-    
+    if (isUpdatingHeight) return;
+    isUpdatingHeight = true;
+
     requestAnimationFrame(() => {
       if (isHudHidden.value) {
-        isUpdatingHeight = false
-        return
+        isUpdatingHeight = false;
+        return;
       }
 
-      let newHeight = 0
+      let newHeight = 0;
       if (innerHudRef.value) {
-        newHeight = innerHudRef.value.offsetHeight
+        newHeight = innerHudRef.value.offsetHeight;
       } else if (hudRef.value) {
-        newHeight = hudRef.value.offsetHeight
+        newHeight = hudRef.value.offsetHeight;
       }
 
       if (Math.abs(hudHeight.value - newHeight) > 2) {
-        hudHeight.value = newHeight
+        hudHeight.value = newHeight;
       }
-      
-      const bottomValue = hudBottomRef.value
-      const bottomEl = (bottomValue && '$el' in bottomValue) ? (bottomValue.$el as HTMLElement) : (bottomValue as HTMLElement | null)
-      const newBottomHeight = bottomEl ? bottomEl.offsetHeight : 0
+
+      const bottomValue = hudBottomRef.value;
+      const bottomEl =
+        bottomValue && '$el' in bottomValue
+          ? (bottomValue.$el as HTMLElement)
+          : (bottomValue as HTMLElement | null);
+      const newBottomHeight = bottomEl ? bottomEl.offsetHeight : 0;
       if (Math.abs(hudBottomHeight.value - newBottomHeight) > 2) {
-        hudBottomHeight.value = newBottomHeight
+        hudBottomHeight.value = newBottomHeight;
       }
-      
-      isUpdatingHeight = false
-    })
+
+      isUpdatingHeight = false;
+    });
   }
 
   const bottomElement = computed(() => {
-    const val = hudBottomRef.value
-    return (val && '$el' in val) ? (val.$el as HTMLElement) : (val as HTMLElement | null)
-  })
+    const val = hudBottomRef.value;
+    return val && '$el' in val ? (val.$el as HTMLElement) : (val as HTMLElement | null);
+  });
 
   // ResizeObserver to detect layout shifts and dynamically recalculate heights
   useResizeObserver([innerHudRef, hudRef, bottomElement], () => {
-    updateHudHeight()
-  })
+    updateHudHeight();
+  });
 
   onMounted(() => {
-    updateHudHeight()
-  })
+    updateHudHeight();
+  });
 
   // Lifecycle listeners
-  useWindowListener('resize', () => {
-    updateHudHeight()
-  }, { passive: true })
+  useWindowListener(
+    'resize',
+    () => {
+      updateHudHeight();
+    },
+    { passive: true }
+  );
 
-  useDocumentListener('click', handleOutsideClick as EventListener)
+  useDocumentListener('click', handleOutsideClick as EventListener);
 
   return {
     hudHeight,
     hudBottomHeight,
     isHudHidden,
     updateHudHeight
-  }
+  };
 }

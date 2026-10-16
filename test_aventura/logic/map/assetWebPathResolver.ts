@@ -17,7 +17,8 @@ const ASSETS_REPLACEMENT_PREFIX = '/test_aventura/assets/';
 export function resolveAssetWebPath(name: string): string | undefined {
   if (!name) return undefined;
   if (name.startsWith(TEST_AVENTURA_PREFIX)) return name;
-  if (name.startsWith(ASSETS_PREFIX)) return `${ASSETS_REPLACEMENT_PREFIX}${name.slice(ASSETS_PREFIX.length)}`;
+  if (name.startsWith(ASSETS_PREFIX))
+    return `${ASSETS_REPLACEMENT_PREFIX}${name.slice(ASSETS_PREFIX.length)}`;
 
   const clean = name.replace(POKE_PREFIX_REGEX, '');
   const noExt = clean.replace(PNG_EXTENSION_REGEX, '');

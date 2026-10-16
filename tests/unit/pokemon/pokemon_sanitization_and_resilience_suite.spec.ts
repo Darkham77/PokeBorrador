@@ -3,16 +3,16 @@
  * Cohesive domain suite consolidating Pokemon resilience, save sanitization safeguards,
  * disabled/unreleased species purging, stats recalculation, and buff timer clamps.
  */
-import { describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { checkPokemonLegality, repairPokemonLegality } from '@/logic/pokemon/pokemonLegality'
-import { validateAndSanitize } from '@/logic/auth/saveSanitizer'
-import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter'
-import { auditAndRepairSaveData } from '../../../scripts/maintenance/repair_account_legality.ts'
-import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
-import { BUFF_FIELDS, getMaxBuffDuration } from '@/data/inventory/items'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { SaveDataDto } from '@/logic/validation/schemas'
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+import { setActivePinia, createPinia } from 'pinia';
+import { checkPokemonLegality, repairPokemonLegality } from '@/logic/pokemon/pokemonLegality';
+import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
+import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter';
+import { auditAndRepairSaveData } from '../../../scripts/maintenance/repair_account_legality.ts';
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+import { BUFF_FIELDS, getMaxBuffDuration } from '@/data/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { SaveDataDto } from '@/logic/validation/schemas';
 
 function createTestSave(team: Pokemon[]): SaveDataDto {
   return {
@@ -52,13 +52,13 @@ function createTestSave(team: Pokemon[]): SaveDataDto {
     warCoinsSpent: 0,
     lastPokemonCenterHeal: 0,
     playtime: 0
-  }
+  };
 }
 
 describe('Pokemon Sanitization & Resilience Domain Suite', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-  })
+    setActivePinia(createPinia());
+  });
 
   describe('Pokemon Resilience & Save Safeguards', () => {
     it('sanitizes a save with illegal pokemon gracefully by marking isIllegal without crashing save load', () => {
@@ -86,16 +86,16 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
         nature: 'adamant',
         ability: 'deltastream' as any
-      } as unknown as Pokemon
+      } as unknown as Pokemon;
 
-      const mockSave = createTestSave([mockMon])
+      const mockSave = createTestSave([mockMon]);
 
-      const result = validateAndSanitize(mockSave)
-      expect(result.valid).toBe(true)
-      expect(result.data).toBeDefined()
-      expect(result.data?.team[0]?.isIllegal).toBe(true)
-      expect(result.data?.team[0]?.illegalReasons?.length).toBeGreaterThan(0)
-    })
+      const result = validateAndSanitize(mockSave);
+      expect(result.valid).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.data?.team[0]?.isIllegal).toBe(true);
+      expect(result.data?.team[0]?.illegalReasons?.length).toBeGreaterThan(0);
+    });
 
     it('allows volatile search in battle switch mode without persisting', () => {
       const p1 = {
@@ -107,7 +107,7 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         level: 25,
         type: 'electric',
         moves: []
-      } as unknown as Pokemon
+      } as unknown as Pokemon;
 
       const p2 = {
         uid: 'p-2',
@@ -118,23 +118,23 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         level: 25,
         type: 'grass',
         moves: []
-      } as unknown as Pokemon
+      } as unknown as Pokemon;
 
       const candidates = [
         { pokemon: p1, _source: 'team' as const, index: 0 },
         { pokemon: p2, _source: 'team' as const, index: 1 }
-      ]
+      ];
 
       const filtered = filterAndSortPokemon(candidates, {
         searchQuery: 'bulba',
         sortBy: 'recent',
         sortOrder: 'desc',
         activeTags: []
-      })
+      });
 
-      expect(filtered).toHaveLength(1)
-      expect(filtered[0]?.pokemon.id).toBe('bulbasaur')
-    })
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0]?.pokemon.id).toBe('bulbasaur');
+    });
 
     it('heals illegal moves and abilities during repairPokemonLegality', () => {
       const corrupted: Pokemon = {
@@ -164,20 +164,20 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         ],
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
         nature: 'timid'
-      } as unknown as Pokemon
+      } as unknown as Pokemon;
 
-      const preCheck = checkPokemonLegality(corrupted)
-      expect(preCheck.isLegal).toBe(false)
+      const preCheck = checkPokemonLegality(corrupted);
+      expect(preCheck.isLegal).toBe(false);
 
-      const repairReport = repairPokemonLegality(corrupted)
-      expect(repairReport.repaired).toBe(true)
+      const repairReport = repairPokemonLegality(corrupted);
+      expect(repairReport.repaired).toBe(true);
 
-      const postCheck = checkPokemonLegality(corrupted)
-      expect(postCheck.isLegal).toBe(true)
-      expect(corrupted.ability).toBe('blaze')
-      expect(corrupted.moves.some(m => m?.id === 'aeroblast')).toBe(false)
-    })
-  })
+      const postCheck = checkPokemonLegality(corrupted);
+      expect(postCheck.isLegal).toBe(true);
+      expect(corrupted.ability).toBe('blaze');
+      expect(corrupted.moves.some((m) => m?.id === 'aeroblast')).toBe(false);
+    });
+  });
 
   describe('Disabled Species & Eggs Sanitization Tests', () => {
     it('identifies unreleased / disabled species as illegal in checkPokemonLegality unless allowUnreleased is true', () => {
@@ -187,15 +187,15 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         name: 'Sunflora',
         level: 25,
         moves: [{ id: 'absorb', name: 'Absorber' }]
-      } as unknown as Pokemon
+      } as unknown as Pokemon;
 
-      const report = checkPokemonLegality(sunflora)
-      expect(report.isLegal).toBe(false)
-      expect(report.issues.some(i => i.includes('whitelist global'))).toBe(true)
+      const report = checkPokemonLegality(sunflora);
+      expect(report.isLegal).toBe(false);
+      expect(report.issues.some((i) => i.includes('whitelist global'))).toBe(true);
 
-      const debugReport = checkPokemonLegality(sunflora, { allowUnreleased: true })
-      expect(debugReport.isLegal).toBe(true)
-    })
+      const debugReport = checkPokemonLegality(sunflora, { allowUnreleased: true });
+      expect(debugReport.isLegal).toBe(true);
+    });
 
     it('purges disabled pokemon from box and daycareWarehouse, and purges disabled eggs', () => {
       const fakeSave = {
@@ -318,21 +318,21 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         warCoinsSpent: 0,
         lastPokemonCenterHeal: 0,
         playtime: 100
-      } as unknown as SaveDataDto
+      } as unknown as SaveDataDto;
 
-      const result = auditAndRepairSaveData(fakeSave, true)
-      expect(result.modified).toBe(true)
+      const result = auditAndRepairSaveData(fakeSave, true);
+      expect(result.modified).toBe(true);
 
-      expect(fakeSave.box.some((p: any) => p?.id === 'sunflora')).toBe(false)
-      expect(fakeSave.box.some((p: any) => p?.id === 'charmander')).toBe(true)
+      expect(fakeSave.box.some((p: any) => p?.id === 'sunflora')).toBe(false);
+      expect(fakeSave.box.some((p: any) => p?.id === 'charmander')).toBe(true);
 
-      expect(fakeSave.eggs?.some(e => e?.id === 'sunflora')).toBe(false)
-      expect(fakeSave.eggs?.some(e => e?.id === 'pichu')).toBe(true)
+      expect(fakeSave.eggs?.some((e) => e?.id === 'sunflora')).toBe(false);
+      expect(fakeSave.eggs?.some((e) => e?.id === 'pichu')).toBe(true);
 
-      const warehouse = (fakeSave as any).daycareWarehouse
-      expect(warehouse.some((p: any) => p?.id === 'sunflora')).toBe(false)
-      expect(warehouse.some((p: any) => p?.id === 'squirtle')).toBe(true)
-    })
+      const warehouse = (fakeSave as any).daycareWarehouse;
+      expect(warehouse.some((p: any) => p?.id === 'sunflora')).toBe(false);
+      expect(warehouse.some((p: any) => p?.id === 'squirtle')).toBe(true);
+    });
 
     it('preserves Save Shield: promotes a legal pokemon from box if all team members are illegal/disabled', () => {
       const fakeSave = {
@@ -399,16 +399,16 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         warCoinsSpent: 0,
         lastPokemonCenterHeal: 0,
         playtime: 10
-      }
+      };
 
-      const result = auditAndRepairSaveData(fakeSave as unknown as SaveDataDto, true)
-      expect(result.modified).toBe(true)
+      const result = auditAndRepairSaveData(fakeSave as unknown as SaveDataDto, true);
+      expect(result.modified).toBe(true);
 
       // Squirtle must be promoted to team to prevent empty team
-      expect(fakeSave.team.length).toBe(1)
-      expect(fakeSave.team[0]?.id).toBe('squirtle')
-      expect(fakeSave.box.length).toBe(0)
-    })
+      expect(fakeSave.team.length).toBe(1);
+      expect(fakeSave.team[0]?.id).toBe('squirtle');
+      expect(fakeSave.box.length).toBe(0);
+    });
 
     it('preserves Save Shield: creates a legal rescue starter if entire account had only disabled pokemon', () => {
       const fakeSave = {
@@ -455,17 +455,17 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         warCoinsSpent: 0,
         lastPokemonCenterHeal: 0,
         playtime: 10
-      }
+      };
 
-      const result = auditAndRepairSaveData(fakeSave as unknown as SaveDataDto, true)
-      expect(result.modified).toBe(true)
+      const result = auditAndRepairSaveData(fakeSave as unknown as SaveDataDto, true);
+      expect(result.modified).toBe(true);
 
       // Team must have at least 1 legal Pokémon (Bulbasaur fallback)
-      expect(fakeSave.team.length).toBe(1)
-      expect(fakeSave.team[0]?.id).toBe('bulbasaur')
-      expect(checkPokemonLegality(fakeSave.team[0] as unknown as Pokemon).isLegal).toBe(true)
-    })
-  })
+      expect(fakeSave.team.length).toBe(1);
+      expect(fakeSave.team[0]?.id).toBe('bulbasaur');
+      expect(checkPokemonLegality(fakeSave.team[0] as unknown as Pokemon).isLegal).toBe(true);
+    });
+  });
 
   describe('Pokemon Stats Recalculation & Buff Duration Sanitization', () => {
     it('should fix missing stats in recalcPokemonStats on a valid structure', () => {
@@ -482,13 +482,13 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         maxHp: 100,
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
         moves: [{ id: 'scratch', name: 'Arañazo' }]
-      } as unknown as Pokemon
+      } as unknown as Pokemon;
 
-      recalcPokemonStats(p)
+      recalcPokemonStats(p);
 
-      expect(p.maxHp).toBeGreaterThan(0)
-      expect(p.atk).toBeGreaterThan(0)
-    })
+      expect(p.maxHp).toBeGreaterThan(0);
+      expect(p.atk).toBeGreaterThan(0);
+    });
 
     it('should handle corrupt stats (NaN) during recalculation', () => {
       const p = {
@@ -504,16 +504,16 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
         moves: [{ id: 'wingattack', name: 'Ataque Ala' }],
         atk: NaN
-      } as unknown as Pokemon
+      } as unknown as Pokemon;
 
-      p.maxHp = undefined as unknown as number
+      p.maxHp = undefined as unknown as number;
 
-      recalcPokemonStats(p)
+      recalcPokemonStats(p);
 
-      expect(isNaN(p.atk)).toBe(false)
-      expect(p.atk).toBeGreaterThan(0)
-      expect(p.maxHp).toBeGreaterThan(0)
-    })
+      expect(isNaN(p.atk)).toBe(false);
+      expect(p.atk).toBeGreaterThan(0);
+      expect(p.maxHp).toBeGreaterThan(0);
+    });
 
     it('should sanitize active buff timers that exceed the maximum limit of the database item descriptions', () => {
       const state: Record<string, unknown> = {
@@ -524,24 +524,24 @@ describe('Pokemon Sanitization & Resilience Domain Suite', () => {
         team: [],
         box: [],
         eggs: []
-      }
+      };
 
-      const buffFields = BUFF_FIELDS.filter(field => state[field] !== undefined)
-      
-      buffFields.forEach(field => {
-        const val = state[field]
+      const buffFields = BUFF_FIELDS.filter((field) => state[field] !== undefined);
+
+      buffFields.forEach((field) => {
+        const val = state[field];
         if (val !== undefined && typeof val === 'number') {
-          const maxAllowedSecs = getMaxBuffDuration(field)
+          const maxAllowedSecs = getMaxBuffDuration(field);
           if (val > maxAllowedSecs) {
-            (state as Record<string, number>)[field] = maxAllowedSecs
+            (state as Record<string, number>)[field] = maxAllowedSecs;
           }
         }
-      })
+      });
 
-      expect(state.repelSecs).toBe(1800)
-      expect(state.amuletCoinSecs).toBe(3600)
-      expect(state.luckyEggSecs).toBe(1500)
-      expect(state.shinyBoostSecs).toBe(0)
-    })
-  })
-})
+      expect(state.repelSecs).toBe(1800);
+      expect(state.amuletCoinSecs).toBe(3600);
+      expect(state.luckyEggSecs).toBe(1500);
+      expect(state.shinyBoostSecs).toBe(0);
+    });
+  });
+});

@@ -31,7 +31,9 @@ const GLOW_ACTIVE_OPACITY = 0.2;
 const GLOW_BASE_OPACITY = 0.05;
 
 function splitLeadingEmoji(text: string): { emoji: string | null; text: string } {
-  const match = text.match(/^(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)\s*(.*)$/u);
+  const match = text.match(
+    /^(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)\s*(.*)$/u
+  );
   if (match) {
     return { emoji: match[1] ?? null, text: match[2] ?? '' };
   }
@@ -44,11 +46,16 @@ const getTrainerSprite = (id: string) => {
 
 const getButtonVariant = (clsId: PlayerClassId) => {
   switch (clsId) {
-    case 'rocket': return 'danger';
-    case 'cazabichos': return 'success';
-    case 'entrenador': return 'info';
-    case 'criador': return 'secondary';
-    default: return 'primary';
+    case 'rocket':
+      return 'danger';
+    case 'cazabichos':
+      return 'success';
+    case 'entrenador':
+      return 'info';
+    case 'criador':
+      return 'secondary';
+    default:
+      return 'primary';
   }
 };
 
@@ -138,10 +145,9 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
           :alt="cls.name || 'Entrenador'"
           class="trainer-pixel-art"
           width="32"
-        
           height="32"
           @error="handleImageError"
-        >
+        />
       </div>
     </div>
 
@@ -156,21 +162,17 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
       <div class="stats-section pros">
         <h3><span class="emoji">✅</span> VENTAJAS</h3>
         <ul>
-          <li
-            v-for="(bonus, idx) in cls.bonuses"
-            :key="idx"
-          >
+          <li v-for="(bonus, idx) in cls.bonuses" :key="idx">
             <PVTooltip
               :description="cls.technicalBonuses?.[idx] || 'Información no disponible.'"
               position="top"
               :delay="100"
-              style="cursor: help;"
+              style="cursor: help"
             >
               <span class="bullet-item-flex">
-                <span
-                  v-if="splitLeadingEmoji(bonus).emoji"
-                  class="emoji bullet-icon"
-                >{{ splitLeadingEmoji(bonus).emoji }}</span>
+                <span v-if="splitLeadingEmoji(bonus).emoji" class="emoji bullet-icon">{{
+                  splitLeadingEmoji(bonus).emoji
+                }}</span>
                 <span class="bullet-text">{{ splitLeadingEmoji(bonus).text }}</span>
               </span>
             </PVTooltip>
@@ -181,21 +183,17 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
       <div class="stats-section cons">
         <h3><span class="emoji">❌</span> PENALIZACIONES</h3>
         <ul>
-          <li
-            v-for="(penalty, idx) in cls.penalties"
-            :key="idx"
-          >
+          <li v-for="(penalty, idx) in cls.penalties" :key="idx">
             <PVTooltip
               :description="cls.technicalPenalties?.[idx] || 'Información no disponible.'"
               position="top"
               :delay="100"
-              style="cursor: help;"
+              style="cursor: help"
             >
               <span class="bullet-item-flex">
-                <span
-                  v-if="splitLeadingEmoji(penalty).emoji"
-                  class="emoji bullet-icon"
-                >{{ splitLeadingEmoji(penalty).emoji }}</span>
+                <span v-if="splitLeadingEmoji(penalty).emoji" class="emoji bullet-icon">{{
+                  splitLeadingEmoji(penalty).emoji
+                }}</span>
                 <span class="bullet-text">{{ splitLeadingEmoji(penalty).text }}</span>
               </span>
             </PVTooltip>
@@ -212,20 +210,17 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
     >
       <span class="btn-label-stack">
         <span class="btn-label">
-          {{ isCurrent ? 'CLASE ACTUAL' : (currentPlayerClass ? 'CAMBIAR' : 'ELEGIR') }}
+          {{ isCurrent ? 'CLASE ACTUAL' : currentPlayerClass ? 'CAMBIAR' : 'ELEGIR' }}
         </span>
-        <span
-          v-if="currentPlayerClass && !isCurrent"
-          class="btn-price"
-        >10,000 BC</span>
+        <span v-if="currentPlayerClass && !isCurrent" class="btn-price">10,000 BC</span>
       </span>
     </button>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .class-card-premium {
   @include gpu-layer;
@@ -300,7 +295,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
   line-height: 1.3;
   text-align: center;
   margin-bottom: 16px;
-  text-shadow: 0 0 10px var(--cls-color)66;
+  text-shadow: 0 0 10px var(--cls-color) 66;
 }
 
 .class-desc {
@@ -335,8 +330,12 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
       margin-bottom: 12px;
     }
 
-    &.pros h3 { color: Rgb(34 197 94 / 100%); }
-    &.cons h3 { color: Rgb(239 68 68 / 100%); }
+    &.pros h3 {
+      color: Rgb(34 197 94 / 100%);
+    }
+    &.cons h3 {
+      color: Rgb(239 68 68 / 100%);
+    }
 
     ul {
       display: flex;
@@ -385,7 +384,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
 }
 
 // Standardized Button Overrides for Price Labels
-[class^="btn-vicio-"] {
+[class^='btn-vicio-'] {
   width: 100%;
 
   .btn-price {

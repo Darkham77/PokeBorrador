@@ -1,30 +1,35 @@
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { SeasonRules, PvPStats, PersonalPvPMatchSummary } from '@/types/battle/pvp'
-import type { DBRouter } from '@/logic/db/dbRouter'
-import { DEFAULT_INITIAL_ELO, DEFAULT_PVP_LEVEL_CAP, MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay.ts'
-import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
-import { getSeasonalThemeForMonth, SEASONAL_ANNUAL_THEMES } from '@/data/system/rankedData'
-import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter'
-import { fetchOnlineMatchHistory, mergeMatchHistories } from '@/logic/pvp/pvpMatchHistoryHelper'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { SeasonRules, PvPStats, PersonalPvPMatchSummary } from '@/types/battle/pvp';
+import type { DBRouter } from '@/logic/db/dbRouter';
+import {
+  DEFAULT_INITIAL_ELO,
+  DEFAULT_PVP_LEVEL_CAP,
+  MAX_POKEMON_TEAM_SIZE
+} from '@/logic/constants/gameplay.ts';
+import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils';
+import { getSeasonalThemeForMonth, SEASONAL_ANNUAL_THEMES } from '@/data/system/rankedData';
+import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter';
+import { fetchOnlineMatchHistory, mergeMatchHistories } from '@/logic/pvp/pvpMatchHistoryHelper';
 
 interface ProfileRow {
-  elo_rating: number
-  pvp_wins: number
-  pvp_losses: number
-  pvp_draws: number
-  role: string
+  elo_rating: number;
+  pvp_wins: number;
+  pvp_losses: number;
+  pvp_draws: number;
+  role: string;
 }
 
 export async function fetchProfilePvPData(
   db: DBRouter,
   userId: string
 ): Promise<{ elo: number; stats: PvPStats } | null> {
-  const { data: profile } = await db.from('profiles')
+  const { data: profile } = (await db
+    .from('profiles')
     .select('elo_rating, pvp_wins, pvp_losses, pvp_draws, role')
     .eq('id', userId)
-    .single() as { data: ProfileRow | null }
+    .single()) as { data: ProfileRow | null };
 
-  if (!profile) return null
+  if (!profile) return null;
 
   return {
     elo: profile.elo_rating || DEFAULT_INITIAL_ELO,
@@ -33,34 +38,34 @@ export async function fetchProfilePvPData(
       losses: profile.pvp_losses || 0,
       draws: profile.pvp_draws || 0
     }
-  }
+  };
 }
 
-export async function fetchActiveSeasonRules(
-  db: DBRouter
-): Promise<SeasonRules | null> {
+export async function fetchActiveSeasonRules(db: DBRouter): Promise<SeasonRules | null> {
   try {
-    const { data: rulesConfig } = await db
+    const { data: rulesConfig } = (await db
       .from('ranked_rules_config')
       .select('id, season_name, config')
       .eq('id', 'current')
-      .maybeSingle() as { data: { season_name?: string; config?: SeasonRules } | null }
+      .maybeSingle()) as { data: { season_name?: string; config?: SeasonRules } | null };
 
-    const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE)
-    const currentTheme = getSeasonalThemeForMonth(now.month)
+    const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE);
+    const currentTheme = getSeasonalThemeForMonth(now.month);
 
     if (rulesConfig?.config) {
-      const endStr = rulesConfig.config.endDate || rulesConfig.config.seasonEndDate
-      const isExpired = endStr ? Temporal.ZonedDateTime.compare(parseZonedTime(endStr, now.toString()), now) <= 0 : false
+      const endStr = rulesConfig.config.endDate || rulesConfig.config.seasonEndDate;
+      const isExpired = endStr
+        ? Temporal.ZonedDateTime.compare(parseZonedTime(endStr, now.toString()), now) <= 0
+        : false;
 
       const configTheme = SEASONAL_ANNUAL_THEMES.find(
-        t => t.name.toLowerCase() === rulesConfig.config?.name?.toLowerCase()
-      )
-      const isStaleCalendarTheme = Boolean(configTheme && configTheme.monthIndex !== now.month)
-      const isStale = isExpired || isStaleCalendarTheme
+        (t) => t.name.toLowerCase() === rulesConfig.config?.name?.toLowerCase()
+      );
+      const isStaleCalendarTheme = Boolean(configTheme && configTheme.monthIndex !== now.month);
+      const isStale = isExpired || isStaleCalendarTheme;
 
       if (!isStale) {
-        return rulesConfig.config
+        return rulesConfig.config;
       }
     }
 
@@ -71,10 +76,10 @@ export async function fetchActiveSeasonRules(
       maxPokemon: MAX_POKEMON_TEAM_SIZE,
       allowedTypes: currentTheme.allowedTypes ? [...currentTheme.allowedTypes] : [],
       bannedPokemonIds: currentTheme.bannedPokemonIds ? [...currentTheme.bannedPokemonIds] : []
-    }
+    };
   } catch (err) {
-    console.error('[loadPvPData Rules Error]', err)
-    return null
+    console.error('[loadPvPData Rules Error]', err);
+    return null;
   }
 }
 
@@ -83,15 +88,15 @@ export function findInvalidDefendingPokemon(
   seasonRules: SeasonRules
 ): { mon: Pokemon; reason: string } | null {
   for (const mon of defendingTeam) {
-    const check = evaluatePokemonForSeason(mon, seasonRules)
+    const check = evaluatePokemonForSeason(mon, seasonRules);
     if (!check.eligible) {
       return {
         mon,
         reason: check.reason || 'no cumple las reglas de la temporada'
-      }
+      };
     }
   }
-  return null
+  return null;
 }
 
 export async function syncPvPPersonalHistory(
@@ -99,9 +104,9 @@ export async function syncPvPPersonalHistory(
   userId: string,
   currentHistory: PersonalPvPMatchSummary[]
 ): Promise<PersonalPvPMatchSummary[]> {
-  const onlineHistory = await fetchOnlineMatchHistory(db, userId)
+  const onlineHistory = await fetchOnlineMatchHistory(db, userId);
   if (onlineHistory.length > 0) {
-    return mergeMatchHistories(currentHistory, onlineHistory)
+    return mergeMatchHistories(currentHistory, onlineHistory);
   }
-  return currentHistory
+  return currentHistory;
 }

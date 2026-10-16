@@ -3,6 +3,11 @@ import { gsap } from 'gsap';
 import { logger } from '@/logic/utils/logger';
 import type { useBattleStore } from '@/stores/battle/battle';
 import type { TrainerAnimationState } from './useBattleTrainerAnimations.ts';
+import type { BattleSeatId } from '@/types/battle/battle';
+import {
+  isBattleSubStateName,
+  type BattleSubStateName
+} from '@/logic/battle/battleStateMachine.ts';
 
 export interface BattleAnimSeatState {
   entry: { animState?: string | null; pokemonUid?: string | null };
@@ -20,7 +25,7 @@ export interface BattleAnimationContext {
   silhouetteOpacity: Ref<number>;
   trainerAnimState: Ref<TrainerAnimationState | null>;
   isTrainerVisible: Ref<boolean>;
-  seats: Ref<Record<string, BattleAnimSeatState>>;
+  seats: Ref<Record<BattleSeatId, BattleAnimSeatState>>;
   resetAll: () => void;
   isTrainerTransitionActive: (state: TrainerAnimationState | null) => boolean;
 }
@@ -31,12 +36,14 @@ const CLEANUP_STATES_SET: ReadonlySet<string> = new Set<string>(CLEANUP_STATES);
 const DEFEAT_SUBSTATES = ['DEFEAT_SCREEN', 'DEFEAT_WAIT'] as const;
 const DEFEAT_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(DEFEAT_SUBSTATES); // runtime-set: Fast O(1) membership lookup set
 
-function checkIsTrainer(state: { isTrainer?: boolean; isGym?: boolean; isPvP?: boolean } | null | undefined): boolean {
+function checkIsTrainer(
+  state: { isTrainer?: boolean; isGym?: boolean; isPvP?: boolean } | null | undefined
+): boolean {
   if (!state) return false;
   return Boolean(state.isTrainer || state.isGym || state.isPvP);
 }
 
-function clearSeatAnimStates(seatsMap: Record<string, BattleAnimSeatState>): void {
+function clearSeatAnimStates(seatsMap: Record<BattleSeatId, BattleAnimSeatState>): void {
   for (const seat of Object.values(seatsMap)) {
     if (seat) {
       seat.entry.animState = null;
@@ -45,7 +52,7 @@ function clearSeatAnimStates(seatsMap: Record<string, BattleAnimSeatState>): voi
   }
 }
 
-function clearOrphanSeatAnimStates(seatsMap: Record<string, BattleAnimSeatState>): void {
+function clearOrphanSeatAnimStates(seatsMap: Record<BattleSeatId, BattleAnimSeatState>): void {
   for (const seat of Object.values(seatsMap)) {
     if (seat) {
       if (!seat.entry.pokemonUid) seat.entry.animState = null;
@@ -136,7 +143,9 @@ function handleEmptyWait(ctx: BattleAnimationContext): void {
   clearSeatAnimStates(ctx.seats.value);
 }
 
-const SUBSTATE_HANDLERS: Readonly<Record<string, (ctx: BattleAnimationContext) => void>> = {
+const SUBSTATE_HANDLERS: Readonly<
+  Partial<Record<BattleSubStateName, (ctx: BattleAnimationContext) => void>>
+> = {
   PARALLEL_PREP: handleParallelPrep,
   PARALLEL_ENTRY: handleParallelPrep,
   WILD_ENTRY: handleParallelPrep,
@@ -159,7 +168,9 @@ const SUBSTATE_HANDLERS: Readonly<Record<string, (ctx: BattleAnimationContext) =
 };
 
 function handleCleanupState(state: string, subState: string, ctx: BattleAnimationContext): void {
-  ctx.isGlobalFadeActive.value = Boolean(state === 'EXIT_BATTLE' && !DEFEAT_SUBSTATES_SET.has(subState));
+  ctx.isGlobalFadeActive.value = Boolean(
+    state === 'EXIT_BATTLE' && !DEFEAT_SUBSTATES_SET.has(subState)
+  );
   const bState = ctx.battleStore.state;
   const isWild = bState ? !bState.isTrainer && !bState.isGym : false;
   const isSearching = Boolean(bState?.wasSearching || ctx.battleStore.isSearching);
@@ -207,8 +218,10 @@ export function dispatchBattleAnimationState(
     return;
   }
 
-  const handler = SUBSTATE_HANDLERS[sub];
-  if (handler) {
-    handler(ctx);
+  if (isBattleSubStateName(sub)) {
+    const handler = SUBSTATE_HANDLERS[sub];
+    if (handler) {
+      handler(ctx);
+    }
   }
 }

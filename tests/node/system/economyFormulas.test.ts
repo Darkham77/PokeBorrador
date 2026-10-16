@@ -1,6 +1,10 @@
-import { test, describe } from 'vitest';
+import { test, describe } from 'vite-plus/test';
 import assert from 'node:assert';
-import { calculateIndividualHealCost, calculateTotalHealCost, calculatePokemonCenterCooldown } from '../../../src/logic/economy/economyFormulas.ts';
+import {
+  calculateIndividualHealCost,
+  calculateTotalHealCost,
+  calculatePokemonCenterCooldown
+} from '../../../src/logic/economy/economyFormulas.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 describe('Economy Formulas - Individual Heal Cost (Rocket)', () => {
@@ -34,11 +38,13 @@ describe('Economy Formulas - Individual Heal Cost (Rocket)', () => {
 
 describe('Economy Formulas - Total Team Heal Cost', () => {
   const p1: Partial<Pokemon> = {
-    hp: 10, maxHp: 100, // Damaged
+    hp: 10,
+    maxHp: 100, // Damaged
     ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } // Tier D (Mult 1.2)
   };
   const p2: Partial<Pokemon> = {
-    hp: 100, maxHp: 100, // Healthy
+    hp: 100,
+    maxHp: 100, // Healthy
     ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }
   };
 
@@ -51,7 +57,8 @@ describe('Economy Formulas - Total Team Heal Cost', () => {
 
   test('includes PP depletion as damaged', () => {
     const p3 = {
-      hp: 100, maxHp: 100,
+      hp: 100,
+      maxHp: 100,
       moves: [{ name: 'Tackle', pp: 5, maxPP: 35 }], // Needs PP
       ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }
     } as unknown as Pokemon;

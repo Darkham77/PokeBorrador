@@ -3,48 +3,48 @@
  * FactionChoiceModal
  * Standardized modal for faction selection.
  */
-import { ref } from 'vue'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import BaseModal from '@/components/common/BaseModal.vue'
-import type { FactionId } from '@/types/system/game'
+import { ref } from 'vue';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import BaseModal from '@/components/common/BaseModal.vue';
+import type { FactionId } from '@/types/system/game';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const classStore = usePlayerClassStore()
+const classStore = usePlayerClassStore();
 
-const isProcessing = ref(false)
+const isProcessing = ref(false);
 
 const chooseFaction = async (faction: FactionId) => {
-  if (isProcessing.value) return
-  
-  isProcessing.value = true
+  if (isProcessing.value) return;
+
+  isProcessing.value = true;
   try {
-    const res = await classStore.setFaction(faction)
+    const res = await classStore.setFaction(faction);
     if (res.success) {
-      emit('close')
+      emit('close');
     }
   } finally {
-    isProcessing.value = false
+    isProcessing.value = false;
   }
-}
+};
 
 const handleImgError = (e: Event) => {
-  (e.target as HTMLImageElement).style.display = 'none'
-}
+  (e.target as HTMLImageElement).style.display = 'none';
+};
 
 // Expose to template
-const getAssetUrlLocal = getAssetUrl
+const getAssetUrlLocal = getAssetUrl;
 </script>
 
 <template>
@@ -62,11 +62,10 @@ const getAssetUrlLocal = getAssetUrl
   >
     <div class="faction-content">
       <div class="faction-intro">
-        <p class="intro-text">
-          Tu bando determina con quién disputas el control de Kanto.
-        </p>
+        <p class="intro-text">Tu bando determina con quién disputas el control de Kanto.</p>
         <p class="cost-text">
-          Cambiar cuesta <span class="coin"><span class="emoji">🪙</span> 25.000</span> y resetea tus puntos actuales.
+          Cambiar cuesta <span class="coin"><span class="emoji">🪙</span> 25.000</span> y resetea
+          tus puntos actuales.
         </p>
       </div>
 
@@ -83,10 +82,9 @@ const getAssetUrlLocal = getAssetUrl
               alt="Team Unión"
               class="faction-icon-large"
               width="32"
-            
               height="32"
               @error="handleImgError"
-            >
+            />
           </span>
           <span class="faction-info">
             <span class="faction-name union-text">Team Unión</span>
@@ -106,10 +104,9 @@ const getAssetUrlLocal = getAssetUrl
               alt="Team Poder"
               class="faction-icon-large"
               width="32"
-            
               height="32"
               @error="handleImgError"
-            >
+            />
           </span>
           <span class="faction-info">
             <span class="faction-name poder-text">Team Poder</span>
@@ -122,7 +119,7 @@ const getAssetUrlLocal = getAssetUrl
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .faction-content {
   padding: 8px 12px 20px;
@@ -131,21 +128,23 @@ const getAssetUrlLocal = getAssetUrl
 .faction-intro {
   text-align: center;
   margin-bottom: 24px;
-  
+
   .intro-text {
     color: $white;
     font-size: var(--font-14);
     line-height: 1.4;
     margin-bottom: 8px;
   }
-  
+
   .cost-text {
     @include pixelated;
 
     color: $white;
     font-size: var(--font-9);
-    
-    .coin { color: var(--yellow, $coin-gold); }
+
+    .coin {
+      color: var(--yellow, $coin-gold);
+    }
   }
 }
 
@@ -171,19 +170,25 @@ const getAssetUrlLocal = getAssetUrl
     opacity: 0.5;
     cursor: not-allowed;
     will-change: transform, filter, opacity;
-  filter: Grayscale(0.8);
+    filter: Grayscale(0.8);
   }
 
   &.union-btn {
     border: 2px solid var(--blue-500);
     box-shadow: var(--shadow-2xl);
-    &:hover:not(:disabled) { background: Rgb(59 130 246 / 10%); transform: Scale(1.02); }
+    &:hover:not(:disabled) {
+      background: Rgb(59 130 246 / 10%);
+      transform: Scale(1.02);
+    }
   }
 
   &.poder-btn {
     border: 2px solid var(--red-light);
     box-shadow: var(--shadow-2xl);
-    &:hover:not(:disabled) { background: Rgb(239 68 68 / 10%); transform: Scale(1.02); }
+    &:hover:not(:disabled) {
+      background: Rgb(239 68 68 / 10%);
+      transform: Scale(1.02);
+    }
   }
 }
 
@@ -221,7 +226,11 @@ const getAssetUrlLocal = getAssetUrl
   opacity: 0.8;
 }
 
-.union-text { color: var(--blue-400); }
+.union-text {
+  color: var(--blue-400);
+}
 
-.poder-text { color: var(--rose); }
+.poder-text {
+  color: var(--rose);
+}
 </style>

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { processPlayerFaintSequence } from '../../../src/logic/battle/battleFaintSequence.ts';
 import type { BattleContext } from '../../../src/types/battle/battleContext.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
@@ -15,9 +15,27 @@ describe('processPlayerFaintSequence - Final Turn Double Faint Fix', () => {
       })
     };
 
-    const poke1 = { uid: 'p1', name: 'Mewtwo', hp: 0, maxHp: 300, fainted: true } as unknown as Pokemon;
-    const poke2 = { uid: 'p2', name: 'Mewtwo #2', hp: 300, maxHp: 300, fainted: false } as unknown as Pokemon;
-    const enemy1 = { uid: 'e1', name: 'Exeggcute', hp: 0, maxHp: 200, fainted: true } as unknown as Pokemon;
+    const poke1 = {
+      uid: 'p1',
+      name: 'Mewtwo',
+      hp: 0,
+      maxHp: 300,
+      fainted: true
+    } as unknown as Pokemon;
+    const poke2 = {
+      uid: 'p2',
+      name: 'Mewtwo #2',
+      hp: 300,
+      maxHp: 300,
+      fainted: false
+    } as unknown as Pokemon;
+    const enemy1 = {
+      uid: 'e1',
+      name: 'Exeggcute',
+      hp: 0,
+      maxHp: 200,
+      fainted: true
+    } as unknown as Pokemon;
 
     const terminateBattleMock = vi.fn(async () => {});
 
@@ -60,7 +78,7 @@ describe('processPlayerFaintSequence - Final Turn Double Faint Fix', () => {
     await processPlayerFaintSequence(ctx, poke1, { terminateBattle: terminateBattleMock });
 
     // Assert that SWITCH_MENU was NEVER transitioned to
-    const reachedSwitchMenu = transitions.some(t => t.subState === BATTLE_SUBSTATES.SWITCH_MENU);
+    const reachedSwitchMenu = transitions.some((t) => t.subState === BATTLE_SUBSTATES.SWITCH_MENU);
     expect(reachedSwitchMenu).toBe(false);
     expect(ctx.uiStore.isBattleSwitchForced).toBe(false);
 

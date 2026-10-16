@@ -1,7 +1,11 @@
 import { TeamGenerators } from '@pkmn/randoms';
 import { Dex, type PokemonSet } from '@pkmn/sim';
 import { toID } from '@/logic/utils/strings.ts';
-import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS_SET, MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import {
+  ACTIVE_GENERATION,
+  ENABLED_POKEMON_IDS_SET,
+  MAX_POKEMON_LEVEL
+} from '@/data/system/constants';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
@@ -10,7 +14,7 @@ import { logger } from '@/logic/utils/logger';
 export interface TrainerTeamOptions {
   level: number;
   teamSize: number;
-  allowedSpecies: ReadonlySet<PokemonSpeciesId | string>;
+  allowedSpecies: ReadonlySet<string>;
   aceSpeciesId?: PokemonSpeciesId;
 }
 
@@ -18,7 +22,7 @@ export interface RivalTeamOptions {
   level: number;
   teamSize: number;
   aceSpeciesId: PokemonSpeciesId;
-  allowedSpecies?: ReadonlySet<PokemonSpeciesId | string>;
+  allowedSpecies?: ReadonlySet<string>;
 }
 
 const OLDEST_RANDOM_SET_GEN = 2;
@@ -26,7 +30,11 @@ const MAX_TEAM_GENERATION_ATTEMPTS = 10;
 const DEFAULT_FALLBACK_EVS = { hp: 85, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 } as const;
 const DEFAULT_FALLBACK_IVS = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } as const;
 
-function locateShowdownRandomSet(speciesId: PokemonSpeciesId, speciesName: string, level: number): PokemonSet | null {
+function locateShowdownRandomSet(
+  speciesId: PokemonSpeciesId,
+  speciesName: string,
+  level: number
+): PokemonSet | null {
   for (let g = ACTIVE_GENERATION; g >= OLDEST_RANDOM_SET_GEN; g--) {
     try {
       const gen = TeamGenerators.getTeamGenerator(`gen${g}randombattle`);
@@ -49,11 +57,15 @@ function locateShowdownRandomSet(speciesId: PokemonSpeciesId, speciesName: strin
   return null;
 }
 
-function buildFallbackPokemonSet(species: ReturnType<typeof Dex.species.get>, level: number): PokemonSet {
+function buildFallbackPokemonSet(
+  species: ReturnType<typeof Dex.species.get>,
+  level: number
+): PokemonSet {
   const movesAtLevel = getMovesAtLevel(species.id, level);
-  const moves: PokemonMoveId[] = movesAtLevel.length > 0
-    ? movesAtLevel.filter(m => Boolean(m.id)).map(m => requirePokemonMoveId(m.id!))
-    : ['tackle'];
+  const moves: PokemonMoveId[] =
+    movesAtLevel.length > 0
+      ? movesAtLevel.filter((m) => Boolean(m.id)).map((m) => requirePokemonMoveId(m.id!))
+      : ['tackle'];
   const ability = (species.abilities && Object.values(species.abilities)[0]) || 'No Ability';
 
   return {
@@ -87,9 +99,11 @@ export function getRandomSetForSpecies(speciesId: PokemonSpeciesId, level: numbe
 
 function restrictGeneratorAllowedSpecies(
   generator: ReturnType<typeof TeamGenerators.getTeamGenerator>,
-  allowed: ReadonlySet<PokemonSpeciesId | string>
+  allowed: ReadonlySet<string>
 ): void {
-  const rawData = (Reflect.get(generator, 'randomData') || Reflect.get(generator, 'randomSets')) as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
+  const rawData = (Reflect.get(generator, 'randomData') || Reflect.get(generator, 'randomSets')) as
+    | Record<string, unknown>
+    | undefined; // open-record: Generic key-value data dictionary container
   if (!rawData) return;
 
   const filtered = Object.fromEntries(
@@ -105,7 +119,7 @@ function restrictGeneratorAllowedSpecies(
 
 function fillTeamFromShowdownGenerator(
   generator: ReturnType<typeof TeamGenerators.getTeamGenerator>,
-  allowed: ReadonlySet<PokemonSpeciesId | string>,
+  allowed: ReadonlySet<string>,
   targetTeamSize: number,
   clampedLevel: number,
   finalTeam: PokemonSet[],
@@ -132,13 +146,13 @@ function fillTeamFromShowdownGenerator(
 }
 
 function fillTeamFromRemainingSpecies(
-  allowed: ReadonlySet<PokemonSpeciesId | string>,
+  allowed: ReadonlySet<string>,
   targetTeamSize: number,
   clampedLevel: number,
   finalTeam: PokemonSet[],
   usedSpecies: Set<string>
 ): void {
-  const remainingSpecies = [...allowed].filter(id => !usedSpecies.has(id));
+  const remainingSpecies = [...allowed].filter((id) => !usedSpecies.has(id));
   while (finalTeam.length < targetTeamSize && remainingSpecies.length > 0) {
     const idx = Math.floor(Math.random() * remainingSpecies.length);
     const fallbackId = remainingSpecies.splice(idx, 1)[0]!;
@@ -153,7 +167,7 @@ function fillTeamFromRemainingSpecies(
 }
 
 function fillTeamByCyclingPool(
-  allowed: ReadonlySet<PokemonSpeciesId | string>,
+  allowed: ReadonlySet<string>,
   targetTeamSize: number,
   clampedLevel: number,
   finalTeam: PokemonSet[]
@@ -206,7 +220,14 @@ export class TrainerTeamGenerator {
     }
 
     // 4. Generate the rest of the team using Showdown's competitive team generator if possible
-    fillTeamFromShowdownGenerator(generator, allowed, targetTeamSize, clampedLevel, finalTeam, usedSpecies);
+    fillTeamFromShowdownGenerator(
+      generator,
+      allowed,
+      targetTeamSize,
+      clampedLevel,
+      finalTeam,
+      usedSpecies
+    );
 
     // 5. Fallback 1: Unused species from allowed pool
     if (finalTeam.length < targetTeamSize) {

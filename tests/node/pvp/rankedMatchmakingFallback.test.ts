@@ -1,9 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { ref } from 'vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { DBRouter } from '@/logic/db/dbRouter';
-import { executePollMatchmaking, getMatchmakingTimeoutSec } from '@/logic/pvp/livePvPMatchmakingHandler';
+import {
+  executePollMatchmaking,
+  getMatchmakingTimeoutSec
+} from '@/logic/pvp/livePvPMatchmakingHandler';
 import { executePassiveMatchmakingFallback } from '@/logic/pvp/passiveMatchmakingHelper';
 import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer';
 import { executeStartPassiveBattle } from '@/logic/pvp/livePvPPassiveFallbackHandler';
@@ -279,16 +282,18 @@ describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Ze
     });
 
     it('prunes and deactivates candidates in passive_teams that lack an ability', async () => {
-      const corruptPokeJson = JSON.stringify([{
-        uid: 'corrupt-gyarados',
-        id: 'gyarados',
-        name: 'Gyarados',
-        level: 50,
-        hp: 100,
-        maxHp: 100,
-        // Missing ability!
-        moves: [{ name: 'Waterfall', pp: 15 }]
-      }]);
+      const corruptPokeJson = JSON.stringify([
+        {
+          uid: 'corrupt-gyarados',
+          id: 'gyarados',
+          name: 'Gyarados',
+          level: 50,
+          hp: 100,
+          maxHp: 100,
+          // Missing ability!
+          moves: [{ name: 'Waterfall', pp: 15 }]
+        }
+      ]);
 
       let deactivatedUserId = '';
       const mockDb = {
@@ -345,7 +350,8 @@ describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Ze
 
   describe('Ranked Matchmaking Delay Toggle (Debug Tool)', () => {
     it('returns standard 60s timeout by default, and 5s when fastRankedDelay is active', () => {
-      const globalTarget = typeof window !== 'undefined' ? window : (globalThis as unknown as Window);
+      const globalTarget =
+        typeof window !== 'undefined' ? window : (globalThis as unknown as Window);
       if (!globalTarget.__VITE_DEBUG__) globalTarget.__VITE_DEBUG__ = {};
       globalTarget.__VITE_DEBUG__.fastRankedDelay = false;
 
@@ -361,7 +367,8 @@ describe('Ranked Matchmaking & Passive Fallback (No Team Preview, Strict ELO, Ze
     it('toggles fastRankedDelay through debug store and updates window proxy', () => {
       const authStore = useAuthStore();
       authStore.sessionMode = 'offline';
-      const globalTarget = typeof window !== 'undefined' ? window : (globalThis as unknown as Window);
+      const globalTarget =
+        typeof window !== 'undefined' ? window : (globalThis as unknown as Window);
       const debugStore = useDebugStore();
       debugStore.updateGlobalProxy();
       debugStore.fastRankedDelay = false;

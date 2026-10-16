@@ -1,36 +1,41 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { ResolvedSubCompetition, SubCompetitionConfig } from '@/logic/events/eventCompetitions'
+import { computed } from 'vue';
+import type {
+  ResolvedSubCompetition,
+  SubCompetitionConfig,
+  SubCompetitionMetric
+} from '@/logic/events/eventCompetitions';
 
 const props = defineProps<{
-  subCompetition: ResolvedSubCompetition | SubCompetitionConfig
-  displayValue: string | number
-}>()
+  subCompetition: ResolvedSubCompetition | SubCompetitionConfig;
+  displayValue: string | number;
+}>();
 
-const METRIC_ICONS: Record<string, string> = {
+const METRIC_ICONS: Record<SubCompetitionMetric, string> = {
   total_ivs: '🧬',
   stat_iv: '🧬',
   weight: '⚖️',
   height: '📏',
   level: '📈',
   friendship: '💖'
-}
+};
 
 const competitionMetricIcon = computed(() => {
-  return METRIC_ICONS[props.subCompetition.metric] || '🏆'
-})
+  return METRIC_ICONS[props.subCompetition.metric] || '🏆';
+});
 
 const competitionLabel = computed(() => {
-  const dirLabel = props.subCompetition.order === 'min' ? 'Menor' : 'Mayor'
-  const m = props.subCompetition.metric
-  if (m === 'weight') return `${dirLabel} Peso`
-  if (m === 'height') return `${dirLabel} Altura`
-  if (m === 'total_ivs') return 'IVs Totales'
-  if (m === 'stat_iv' && props.subCompetition.targetStat) return `IV ${props.subCompetition.targetStat.toUpperCase()}`
-  if (m === 'level') return `${dirLabel} Nivel`
-  if (m === 'friendship') return `${dirLabel} Amistad`
-  return props.subCompetition.name || 'Torneo'
-})
+  const dirLabel = props.subCompetition.order === 'min' ? 'Menor' : 'Mayor';
+  const m = props.subCompetition.metric;
+  if (m === 'weight') return `${dirLabel} Peso`;
+  if (m === 'height') return `${dirLabel} Altura`;
+  if (m === 'total_ivs') return 'IVs Totales';
+  if (m === 'stat_iv' && props.subCompetition.targetStat)
+    return `IV ${props.subCompetition.targetStat.toUpperCase()}`;
+  if (m === 'level') return `${dirLabel} Nivel`;
+  if (m === 'friendship') return `${dirLabel} Amistad`;
+  return props.subCompetition.name || 'Torneo';
+});
 </script>
 
 <template>

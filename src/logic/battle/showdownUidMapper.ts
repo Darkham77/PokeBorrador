@@ -17,7 +17,10 @@ export function getShowdownNickname(uid: string): string {
 /**
  * Compares two UIDs (full or 8-character Showdown prefixes) to determine if they match.
  */
-export function isMatchingUid(uidA: string | undefined | null, uidB: string | undefined | null): boolean {
+export function isMatchingUid(
+  uidA: string | undefined | null,
+  uidB: string | undefined | null
+): boolean {
   if (!uidA || !uidB) return false;
   const a = uidA.toLowerCase(); // text-ok: UI text display localization string
   const b = uidB.toLowerCase(); // text-ok: UI text display localization string
@@ -35,7 +38,7 @@ export function findMatchingPokemon<T extends { uid?: string }>(
   pokemonList: Array<T | null | undefined>
 ): T | undefined {
   if (!targetUid || !Array.isArray(pokemonList)) return undefined;
-  return pokemonList.find(p => p && p.uid && isMatchingUid(p.uid, targetUid)) as T | undefined;
+  return pokemonList.find((p) => p && p.uid && isMatchingUid(p.uid, targetUid)) as T | undefined;
 }
 
 /**
@@ -51,10 +54,8 @@ export function findPokemonByShowdownName<T extends { uid?: string }>(
 /**
  * Finds a value in a Record<string, T> map where keys may be full or Showdown UIDs.
  */
-export function findMatchingValue<T>(
-  targetUid: string,
-  map: Record<string, T>
-): T | undefined {
+// open-record: Generic UID-indexed dictionary lookup
+export function findMatchingValue<T>(targetUid: string, map: Record<string, T>): T | undefined {
   if (!targetUid || !map) return undefined;
   if (map[targetUid] !== undefined) return map[targetUid];
   for (const k in map) {

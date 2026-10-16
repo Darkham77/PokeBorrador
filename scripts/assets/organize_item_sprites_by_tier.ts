@@ -32,7 +32,14 @@ async function main() {
   }
 
   const rawDb = readFileSync(ITEMS_JSON_PATH, 'utf-8');
-  const db = JSON.parse(rawDb) as { SHOP_ITEMS: Array<{ id: string; craftingTier?: number; sprite?: string; [key: string]: unknown }> };
+  const db = JSON.parse(rawDb) as {
+    SHOP_ITEMS: Array<{
+      id: string;
+      craftingTier?: number;
+      sprite?: string;
+      [key: string]: unknown;
+    }>;
+  };
 
   let movedRaw = 0;
   let convertedWebp = 0;
@@ -86,14 +93,20 @@ async function main() {
   }
 
   console.log(styleText('green', `✅ Reubicación y conversión completada con éxito:`));
-  console.log(`   - ${styleText('bold', String(movedRaw))} archivos RAW ubicados en _raw-assets/public/assets/sprites/crafting/tier[0-3]/`);
-  console.log(`   - ${styleText('bold', String(convertedWebp))} archivos WebP generados en public/assets/sprites/crafting/tier[0-3]/`);
-  console.log(`   - ${styleText('bold', String(updatedJson))} ítems actualizados en items.json a 'crafting/tierX/<id>'`);
+  console.log(
+    `   - ${styleText('bold', String(movedRaw))} archivos RAW ubicados en _raw-assets/public/assets/sprites/crafting/tier[0-3]/`
+  );
+  console.log(
+    `   - ${styleText('bold', String(convertedWebp))} archivos WebP generados en public/assets/sprites/crafting/tier[0-3]/`
+  );
+  console.log(
+    `   - ${styleText('bold', String(updatedJson))} ítems actualizados en items.json a 'crafting/tierX/<id>'`
+  );
   console.log(`   - Carpeta temporal 'items/' eliminada correctamente.\n`);
   console.log(styleText('cyan', '═══════════════════════════════════════════════════════\n'));
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
   process.exit(1);
 });

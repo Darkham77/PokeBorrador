@@ -1,7 +1,7 @@
-import {Protocol} from '@pkmn/protocol';
-import {ID} from '@pkmn/types';
+import { Protocol } from '@pkmn/protocol';
+import { ID } from '@pkmn/types';
 
-import {toID} from './common';
+import { toID } from './common';
 
 type Choice = MoveChoice | SwitchChoice | ShiftChoice;
 
@@ -26,7 +26,7 @@ interface ShiftChoice {
 }
 
 export interface Data {
-  getSpecies(species?: string): Readonly<{baseSpecies?: string}> | undefined;
+  getSpecies(species?: string): Readonly<{ baseSpecies?: string }> | undefined;
 }
 
 export class ChoiceBuilder {
@@ -42,7 +42,7 @@ export class ChoiceBuilder {
     ultra: false,
     z: false,
     max: false,
-    tera: false,
+    tera: false
   };
   alreadySwitchingIn: number[] = [];
   alreadyMega = false;
@@ -59,9 +59,10 @@ export class ChoiceBuilder {
     const r = this.request;
     switch (r.requestType) {
       case 'move':
-        while (this.choices.length < r.active.length &&
-					!r.active[this.choices.length] ||
-					r.side?.pokemon[this.choices.length]?.commanding) {
+        while (
+          (this.choices.length < r.active.length && !r.active[this.choices.length]) ||
+          r.side?.pokemon[this.choices.length]?.commanding
+        ) {
           this.choices.push('pass');
         }
         break;
@@ -115,8 +116,13 @@ export class ChoiceBuilder {
     if (!choice) return 'The client handles passes for you automatically already';
     if (choice.choiceType === 'move') {
       if (!choice.targetLoc && this.requestLength() > 1) {
-        const choosableTargets =
-          ['normal', 'any', 'adjacentAlly', 'adjacentAllyOrSelf', 'adjacentFoe'];
+        const choosableTargets = [
+          'normal',
+          'any',
+          'adjacentAlly',
+          'adjacentAllyOrSelf',
+          'adjacentFoe'
+        ];
         const move = this.getChosenMove(choice, this.index());
         if ('target' in move && choosableTargets.includes(move.target)) {
           this.current.move = choice.move;
@@ -141,7 +147,7 @@ export class ChoiceBuilder {
     } else if (choice.choiceType === 'switch' || choice.choiceType === 'team') {
       if (this.alreadySwitchingIn.includes(choice.targetPokemon)) {
         if (choice.choiceType === 'switch') {
-          return 'You\'ve already chosen to switch that Pokémon in';
+          return "You've already chosen to switch that Pokémon in";
         }
         // remove choice instead
         for (let i = 0; i < this.alreadySwitchingIn.length; i++) {
@@ -166,11 +172,11 @@ export class ChoiceBuilder {
 
   private parseChoice(choice: string, data?: Data): Choice | undefined {
     const request = this.request;
-    if (request.requestType === 'wait') throw new Error('It\'s not your turn to choose anything');
+    if (request.requestType === 'wait') throw new Error("It's not your turn to choose anything");
 
     const index = this.choices.length;
 
-    if (choice === 'shift') return {choiceType: 'shift'};
+    if (choice === 'shift') return { choiceType: 'shift' };
 
     if (choice.startsWith('move ')) {
       if (request.requestType !== 'move') {
@@ -186,7 +192,7 @@ export class ChoiceBuilder {
         ultra: false,
         z: false,
         max: false,
-        tera: false,
+        tera: false
       };
       while (true) {
         // If data ends with a number, treat it as a target location.
@@ -266,7 +272,7 @@ export class ChoiceBuilder {
       const isTeamPreview = request.requestType === 'team';
       const current: SwitchChoice = {
         choiceType: isTeamPreview ? 'team' : 'switch',
-        targetPokemon: 0,
+        targetPokemon: 0
       };
       if (choice === 'notMine') throw new Error('You cannot decide for your partner!');
       if (/^[0-9]+$/.test(choice)) {
@@ -335,10 +341,12 @@ export class ChoiceBuilder {
     if (!choice) return 'pass';
     switch (choice.choiceType) {
       case 'move': {
-        const target =
-          choice.targetLoc ? ` ${choice.targetLoc > 0 ? '+' : ''}${choice.targetLoc}` : '';
-        const boost = `${choice.max ? ' max' : ''}${choice.mega ? ' mega' : ''}${choice.z
-          ? ' zmove' : ''}${choice.tera ? ' terastallize' : ''}`;
+        const target = choice.targetLoc
+          ? ` ${choice.targetLoc > 0 ? '+' : ''}${choice.targetLoc}`
+          : '';
+        const boost = `${choice.max ? ' max' : ''}${choice.mega ? ' mega' : ''}${
+          choice.z ? ' zmove' : ''
+        }${choice.tera ? ' terastallize' : ''}`;
         return `move ${choice.move}${boost}${target}`;
       }
       case 'switch':

@@ -64,9 +64,10 @@ function resolveNatureAndGender(
   rand: () => number
 ): { natureOverride: NatureId | null; genderOverride: PokemonGender | null } {
   const natureOverride = resolveSynchronizeNature(leader, gen, rand);
-  const targetSpeciesForGender = (ctx.loc.wild?.day?.[0] && isPokemonSpeciesId(ctx.loc.wild.day[0]))
-    ? ctx.loc.wild.day[0]
-    : requirePokemonSpeciesId(PIDGEY_SPECIES_KEY);
+  const targetSpeciesForGender =
+    ctx.loc.wild?.day?.[0] && isPokemonSpeciesId(ctx.loc.wild.day[0])
+      ? ctx.loc.wild.day[0]
+      : requirePokemonSpeciesId(PIDGEY_SPECIES_KEY);
   const genderOverride = resolveCuteCharmGender(leader, targetSpeciesForGender, gen, rand);
   return { natureOverride, genderOverride };
 }
@@ -75,7 +76,10 @@ function calculateIvFloor(ctx: FieldEncounterContext, isDominant: boolean): numb
   let ivFloor: number = DEFAULT_IV_FLOOR;
   if (ctx.playerClass === 'cazabichos') {
     const streak = ctx.classData?.captureStreak || 0;
-    ivFloor = Math.max(ivFloor, Math.min(MAX_CAZABICHOS_IV_FLOOR, streak * CAZABICHOS_IV_FLOOR_PER_STREAK));
+    ivFloor = Math.max(
+      ivFloor,
+      Math.min(MAX_CAZABICHOS_IV_FLOOR, streak * CAZABICHOS_IV_FLOOR_PER_STREAK)
+    );
   }
   if (isDominant) {
     ivFloor = Math.max(ivFloor, DOMINANCE_IV_FLOOR);
@@ -87,10 +91,13 @@ function calculateShinyMultiplier(ctx: FieldEncounterContext, isDominant: boolea
   let totalShinyBonus = ctx.options?.shinyMultiplier ?? DEFAULT_SHINY_BONUS;
   const activeEvents = ctx.activeEvents || [];
   const globalMults = getGlobalMultipliers(activeEvents);
-  totalShinyBonus *= (globalMults.shiny || DEFAULT_GLOBAL_SHINY);
+  totalShinyBonus *= globalMults.shiny || DEFAULT_GLOBAL_SHINY;
   if (ctx.playerClass === 'cazabichos') {
-    const streak = Math.max(MIN_CAZABICHOS_SHINY_STREAK, Math.min(MAX_CAZABICHOS_SHINY_STREAK, ctx.classData?.captureStreak || 0));
-    totalShinyBonus *= (DEFAULT_SHINY_BONUS + CAZABICHOS_STREAK_SHINY_STEP * streak);
+    const streak = Math.max(
+      MIN_CAZABICHOS_SHINY_STREAK,
+      Math.min(MAX_CAZABICHOS_SHINY_STREAK, ctx.classData?.captureStreak || 0)
+    );
+    totalShinyBonus *= DEFAULT_SHINY_BONUS + CAZABICHOS_STREAK_SHINY_STEP * streak;
   }
   if (isDominant) {
     totalShinyBonus *= DOMINANCE_SHINY_MULT;
@@ -115,7 +122,10 @@ export interface FieldEncounterContext {
   playerClass?: PlayerClassId | null;
   classData?: { captureStreak?: number; criminality?: number };
   faction?: FactionId | null;
-  dominanceData?: Partial<Record<MapRouteId, DominanceInfo>> | Record<MapRouteId, DominanceInfo> | null;
+  dominanceData?:
+    | Partial<Record<MapRouteId, DominanceInfo>>
+    | Record<MapRouteId, DominanceInfo>
+    | null;
   activeEvents?: GameEvent[];
   options?: EncounterOptions;
   generation?: number;
@@ -140,7 +150,9 @@ export interface ResolvedEncounterModifiers {
 /**
  * Resolves all field encounter modifiers in one coordinated pass.
  */
-export function resolveFieldEncounterModifiers(ctx: FieldEncounterContext): ResolvedEncounterModifiers {
+export function resolveFieldEncounterModifiers(
+  ctx: FieldEncounterContext
+): ResolvedEncounterModifiers {
   const gen = ctx.generation ?? ACTIVE_GENERATION;
   const rand = ctx.randomFn ?? Math.random;
   const leader = ctx.team && ctx.team.length > 0 ? ctx.team[0] : null;
@@ -160,15 +172,19 @@ export function resolveFieldEncounterModifiers(ctx: FieldEncounterContext): Reso
 
   // 5. Fishing & Archaeology Multipliers (Abilities + Tools)
   const fishingWeightMultiplier = getFishingWeightMultiplier(leaderAbility);
-  const archaeologyWeightMultiplier = ((ctx.pickaxeSecs || 0) > 0 || (ctx.brushSecs || 0) > 0)
-    ? ARCHAEOLOGY_EQUIPPED_TOOL_MULTIPLIER
-    : DEFAULT_TOOL_MULTIPLIER;
+  const archaeologyWeightMultiplier =
+    (ctx.pickaxeSecs || 0) > 0 || (ctx.brushSecs || 0) > 0
+      ? ARCHAEOLOGY_EQUIPPED_TOOL_MULTIPLIER
+      : DEFAULT_TOOL_MULTIPLIER;
 
   // 6. Level Filtering (Intimidate / Keen Eye vs Pressure / Vital Spirit / Hustle)
   const forceMaxLevel = shouldForceMaxRouteLevel(leaderAbility, rand);
-  const shouldAvoidLowLevel = (wildLv: number) => shouldAvoidLowLevelWild(leader, wildLv, gen, rand);
+  const shouldAvoidLowLevel = (wildLv: number) =>
+    shouldAvoidLowLevelWild(leader, wildLv, gen, rand);
 
-  const isDominant = Boolean(ctx.faction && ctx.dominanceData && ctx.dominanceData[ctx.mapId]?.winner === ctx.faction);
+  const isDominant = Boolean(
+    ctx.faction && ctx.dominanceData && ctx.dominanceData[ctx.mapId]?.winner === ctx.faction
+  );
 
   // 7. IV Floor (Cazabichos class + Dominance)
   const ivFloor = calculateIvFloor(ctx, isDominant);
@@ -213,7 +229,9 @@ export interface ResolvedBreedingModifiers {
 /**
  * Resolves all breeding and egg hatching modifiers.
  */
-export function resolveFieldBreedingModifiers(ctx: FieldBreedingContext): ResolvedBreedingModifiers {
+export function resolveFieldBreedingModifiers(
+  ctx: FieldBreedingContext
+): ResolvedBreedingModifiers {
   const hatchSpeedMultiplier = getHatchSpeedMultiplier(ctx.team);
 
   // Power Items mapping
@@ -228,7 +246,8 @@ export function resolveFieldBreedingModifiers(ctx: FieldBreedingContext): Resolv
 
   const itemA = ctx.parentA.heldItem;
   const itemB = ctx.parentB.heldItem;
-  const forcedStatFromItem = (itemA && POWER_ITEMS_TO_STAT[itemA]) || (itemB && POWER_ITEMS_TO_STAT[itemB]) || null;
+  const forcedStatFromItem =
+    (itemA && POWER_ITEMS_TO_STAT[itemA]) || (itemB && POWER_ITEMS_TO_STAT[itemB]) || null;
 
   // Everstone Nature Inheritance
   let natureFromItem: NatureId | null = null;
@@ -292,7 +311,7 @@ export function resolveFieldBattleRewards(ctx: FieldBattleRewardContext): Resolv
 
   // 1. Pickup (independent roll per member)
   if (ctx.team) {
-    ctx.team.forEach(p => {
+    ctx.team.forEach((p) => {
       if (p && p.ability === 'pickup' && p.hp > 0) {
         const item = resolvePickupLoot(p, rand);
         if (item) {
@@ -304,7 +323,7 @@ export function resolveFieldBattleRewards(ctx: FieldBattleRewardContext): Resolv
 
   // 2. Honey Gather (independent roll per member)
   if (ctx.team) {
-    ctx.team.forEach(p => {
+    ctx.team.forEach((p) => {
       if (p && p.ability === 'honeygather' && p.hp > 0) {
         const gathered = resolveHoneyGather(p, rand);
         if (gathered) {
@@ -321,13 +340,17 @@ export function resolveFieldBattleRewards(ctx: FieldBattleRewardContext): Resolv
   let moneyMult = 1.0;
   let expMult = 1.0;
 
-  const hasAmuletCoin = ctx.team?.some(p => p != null && p.hp > 0 && p.heldItem === 'amuletcoin');
+  const hasAmuletCoin = ctx.team?.some((p) => p != null && p.hp > 0 && p.heldItem === 'amuletcoin');
   if (hasAmuletCoin) {
     moneyMult *= 2.0;
   }
 
   const FACTION_DOMINANCE_REWARD_MULTIPLIER = 1.2 as const;
-  const isDominant = ctx.faction && ctx.dominanceData && ctx.mapId && ctx.dominanceData[ctx.mapId]?.winner === ctx.faction;
+  const isDominant =
+    ctx.faction &&
+    ctx.dominanceData &&
+    ctx.mapId &&
+    ctx.dominanceData[ctx.mapId]?.winner === ctx.faction;
   if (isDominant) {
     moneyMult *= FACTION_DOMINANCE_REWARD_MULTIPLIER;
     expMult *= FACTION_DOMINANCE_REWARD_MULTIPLIER;

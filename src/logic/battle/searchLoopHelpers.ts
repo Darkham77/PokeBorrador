@@ -36,7 +36,9 @@ export async function handleExitToMap(ctx: BattleContext): Promise<void> {
 export function initSearchBattleState(ctx: BattleContext): MapRouteId {
   const rawLoc = ctx.activeBattle.value?.locationId || ctx.gs.state.map?.currentMap;
   if (!rawLoc) {
-    throw new Error('[Battle] locationId or gameStore.state.map.currentMap is required for search loop');
+    throw new Error(
+      '[Battle] locationId or gameStore.state.map.currentMap is required for search loop'
+    );
   }
   const defaultLoc = requireMapRouteId(rawLoc);
 
@@ -96,9 +98,15 @@ export function resetBattleStateForSearch(ctx: BattleContext): void {
   b.cannotEscape = false;
 }
 
-export async function applyTrainerEncounter(ctx: BattleContext, locId: MapRouteId): Promise<Pokemon | null> {
+export async function applyTrainerEncounter(
+  ctx: BattleContext,
+  locId: MapRouteId
+): Promise<Pokemon | null> {
   const b = ctx.activeBattle.value!;
-  const { name, sprite, quote, archetype, enemyTeam } = await buildTrainerEncounter(ctx.gs.state, locId);
+  const { name, sprite, quote, archetype, enemyTeam } = await buildTrainerEncounter(
+    ctx.gs.state,
+    locId
+  );
   if (enemyTeam.length > 0 && enemyTeam[0]) {
     b.isTrainer = true;
     b.enemyTeam = enemyTeam;
@@ -176,7 +184,9 @@ export function populateEnemyState(ctx: BattleContext, generatedPoke: Pokemon | 
   if (!b || !generatedPoke) return;
 
   b._initialEnemy = cloneReactive(generatedPoke);
-  b._initialEnemies = generatedPoke.uid ? { [generatedPoke.uid]: cloneReactive(generatedPoke) } : {};
+  b._initialEnemies = generatedPoke.uid
+    ? { [generatedPoke.uid]: cloneReactive(generatedPoke) }
+    : {};
 
   if (!b.isTrainer && !b.isGym && !b.isPvP) {
     b.enemy = generatedPoke;
@@ -226,7 +236,7 @@ export async function executeSearchPhaseTransitions(
   await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REORDER_TEAM);
 
   if (ctx.activeBattle.value?.trainerArchetype === 'policeman') {
-    ctx.audio.play('siren');
+    void ctx.audio.play('siren');
   }
 
   await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE);
@@ -236,7 +246,10 @@ export async function executeSearchPhaseTransitions(
   emitBattleFlowCompleted('search');
 }
 
-export function resolveInitialCombatants(ctx: BattleContext, enemyPoke: Pokemon | null): {
+export function resolveInitialCombatants(
+  ctx: BattleContext,
+  enemyPoke: Pokemon | null
+): {
   initialPlayer: Pokemon | null;
   initialEnemy: Pokemon | null;
 } {

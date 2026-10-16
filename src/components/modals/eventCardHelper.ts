@@ -1,4 +1,8 @@
-import type { Event as GameEvent, EventConfig, UpcomingEventOccurrence } from '@/logic/events/eventEngine';
+import type {
+  Event as GameEvent,
+  EventConfig,
+  UpcomingEventOccurrence
+} from '@/logic/events/eventEngine';
 import { getEventCurrentWindow } from '@/logic/events/eventEngine';
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { SECONDS_PER_MINUTE, SECONDS_PER_HOUR } from '@/logic/constants/gameplay';
@@ -6,6 +10,7 @@ import { SECONDS_PER_MINUTE, SECONDS_PER_HOUR } from '@/logic/constants/gameplay
 const MILLIS_PER_SECOND = 1000 as const;
 
 export const EVENT_BANNER_FALLBACKS: Record<string, string> = {
+  // open-record: Event identifier to banner asset filename mapping
   dia_pesca: 'dia_pesca_full',
   torneo_pesca: 'pesca_exotica_full',
   dia_crianza: 'huevos_full',
@@ -81,22 +86,36 @@ export function formatEventRemainingTime(
   return 'Indefinido';
 }
 
-export function extractCardSpeciesList(rotationSpecies?: string, configSpecies?: string): PokemonSpeciesId[] {
+export function extractCardSpeciesList(
+  rotationSpecies?: string,
+  configSpecies?: string
+): PokemonSpeciesId[] {
   const raw = rotationSpecies ?? configSpecies;
   if (raw && raw !== '*') {
-    const list = raw.split(',').map(s => s.trim().toLowerCase()).filter(isPokemonSpeciesId);
+    const list = raw
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(isPokemonSpeciesId);
     if (list.length > 0) return list;
   }
   return [];
 }
 
-export function resolveEventBannerKey(eventId: string, rotationBanner?: string, configBanner?: string): string {
+export function resolveEventBannerKey(
+  eventId: string,
+  rotationBanner?: string,
+  configBanner?: string
+): string {
   if (rotationBanner) return rotationBanner;
   if (configBanner) return configBanner;
   return EVENT_BANNER_FALLBACKS[eventId] || '';
 }
 
-export function resolveCardElementId(prefix?: string, eventId?: string, startInstantMs?: number): string {
+export function resolveCardElementId(
+  prefix?: string,
+  eventId?: string,
+  startInstantMs?: number
+): string {
   const basePrefix = prefix || '';
   const idStr = eventId || '';
   const timeSuffix = startInstantMs ? `-${startInstantMs}` : '';
@@ -109,6 +128,7 @@ export interface EventCardClassesOptions {
 }
 
 export function resolveEventCardClasses(options: EventCardClassesOptions): Record<string, boolean> {
+  // open-record: CSS class boolean toggle map
   const { hasBanner, isUpcoming } = options;
   return {
     'has-banner': hasBanner,

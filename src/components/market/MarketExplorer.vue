@@ -1,64 +1,53 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useGTSStore } from '@/stores/gts'
-import { useGameStore } from '@/stores/game'
-import { useAuthStore } from '@/stores/auth'
-import { type MarketListing, GTS_ITEMS_PER_PAGE } from '@/logic/economy/market'
-import MarketExplorerListingCard from './MarketExplorerListingCard.vue'
+import { computed, ref, watch } from 'vue';
+import { useGTSStore } from '@/stores/gts';
+import { useGameStore } from '@/stores/game';
+import { useAuthStore } from '@/stores/auth';
+import { type MarketListing, GTS_ITEMS_PER_PAGE } from '@/logic/economy/market';
+import MarketExplorerListingCard from './MarketExplorerListingCard.vue';
 
-const game = useGameStore()
-const gtsStore = useGTSStore()
-const auth = useAuthStore()
+const game = useGameStore();
+const gtsStore = useGTSStore();
+const auth = useAuthStore();
 
-const listings = computed(() => gtsStore.filteredListings)
+const listings = computed(() => gtsStore.filteredListings);
 
-const currentPage = ref(1)
-const itemsPerPage = GTS_ITEMS_PER_PAGE
+const currentPage = ref(1);
+const itemsPerPage = GTS_ITEMS_PER_PAGE;
 
-const totalPages = computed(() => Math.ceil(listings.value.length / itemsPerPage))
+const totalPages = computed(() => Math.ceil(listings.value.length / itemsPerPage));
 
 const paginatedListings = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return listings.value.slice(start, end)
-})
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return listings.value.slice(start, end);
+});
 
-watch(() => listings.value.length, () => {
-  currentPage.value = 1
-})
+watch(
+  () => listings.value.length,
+  () => {
+    currentPage.value = 1;
+  }
+);
 
 function handleBuy(listing: MarketListing) {
-  gtsStore.buyListing(listing)
+  gtsStore.buyListing(listing);
 }
 </script>
 
 <template>
   <div class="market-explorer">
-    <div
-      v-if="gtsStore.loading"
-      class="loading-state"
-    >
-      <div
-        v-gsap-loop="'spin'"
-        class="loader"
-      />
+    <div v-if="gtsStore.loading" class="loading-state">
+      <div v-gsap-loop="'spin'" class="loader" />
       <p>Sincronizando ofertas...</p>
     </div>
 
-    <div
-      v-else-if="listings.length === 0"
-      class="empty-state"
-    >
-      <div class="empty-icon emoji">
-        📂
-      </div>
+    <div v-else-if="listings.length === 0" class="empty-state">
+      <div class="empty-icon emoji">📂</div>
       <p>No se encontraron ofertas que coincidan con los filtros.</p>
     </div>
 
-    <div
-      v-else
-      class="listings-grid-wrapper"
-    >
+    <div v-else class="listings-grid-wrapper">
       <div class="listings-grid-unified custom-scrollbar">
         <MarketExplorerListingCard
           v-for="item in paginatedListings"
@@ -71,27 +60,22 @@ function handleBuy(listing: MarketListing) {
       </div>
 
       <!-- Pagination controls -->
-      <div
-        v-if="totalPages > 1"
-        id="gts-explorer-pagination"
-        class="gts-pagination"
-      >
-        <button 
+      <div v-if="totalPages > 1" id="gts-explorer-pagination" class="gts-pagination">
+        <button
           id="gts-explorer-prev-btn"
-          class="btn-vicio-secondary btn-vicio-xs prev-page-btn" 
-          :disabled="currentPage === 1" 
+          class="btn-vicio-secondary btn-vicio-xs prev-page-btn"
+          :disabled="currentPage === 1"
           @click="currentPage--"
         >
           ANTERIOR
         </button>
-        <span
-          id="gts-explorer-page-info"
-          class="page-info"
-        >PÁGINA {{ currentPage }} DE {{ totalPages }}</span>
-        <button 
+        <span id="gts-explorer-page-info" class="page-info"
+          >PÁGINA {{ currentPage }} DE {{ totalPages }}</span
+        >
+        <button
           id="gts-explorer-next-btn"
-          class="btn-vicio-secondary btn-vicio-xs next-page-btn" 
-          :disabled="currentPage === totalPages" 
+          class="btn-vicio-secondary btn-vicio-xs next-page-btn"
+          :disabled="currentPage === totalPages"
           @click="currentPage++"
         >
           SIGUIENTE
@@ -102,7 +86,7 @@ function handleBuy(listing: MarketListing) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .market-explorer {
   display: flex;
@@ -121,7 +105,8 @@ function handleBuy(listing: MarketListing) {
   grid-auto-rows: min-content;
 }
 
-.loading-state, .empty-state {
+.loading-state,
+.empty-state {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -130,9 +115,15 @@ function handleBuy(listing: MarketListing) {
   color: $muted;
   text-align: center;
   flex: 1;
-  
-  .empty-icon { font-size: var(--font-48); opacity: 0.2; margin-bottom: 16px; }
-  p { font-size: var(--font-13); }
+
+  .empty-icon {
+    font-size: var(--font-48);
+    opacity: 0.2;
+    margin-bottom: 16px;
+  }
+  p {
+    font-size: var(--font-13);
+  }
 }
 
 .loader {

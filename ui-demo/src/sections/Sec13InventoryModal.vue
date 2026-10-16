@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { ItemId } from '@/data/inventory/itemIds'
-import { logToInspector } from '../logic/useLiveInspector.ts'
+import { ref, computed } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { ItemId } from '@/data/inventory/itemIds';
+import { logToInspector } from '../logic/useLiveInspector.ts';
 
 interface Props {
-  isFloating?: boolean
+  isFloating?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isFloating: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'open-floating'): void
-}>()
+  (e: 'close'): void;
+  (e: 'open-floating'): void;
+}>();
 
 interface CanonicalBagItem {
-  id: ItemId
-  name: string
-  qty: number
-  category: string
-  borderColorClass?: string
+  id: ItemId;
+  name: string;
+  qty: number;
+  category: string;
+  borderColorClass?: string;
 }
 
-const activeMainTab = ref<'productos' | 'materiales'>('productos')
-const activeCategory = ref<string>('todos')
-const searchQuery = ref('')
-const selectedItemId = ref<ItemId>('focussash')
+const activeMainTab = ref<'productos' | 'materiales'>('productos');
+const activeCategory = ref<string>('todos');
+const searchQuery = ref('');
+const selectedItemId = ref<ItemId>('focussash');
 
 const categories = [
   { id: 'todos', label: 'TODOS', icon: '📦', count: 232 },
@@ -42,25 +42,55 @@ const categories = [
   { id: 'herramientas', label: 'HERRAMIENTAS', icon: '🔧', count: 15 },
   { id: 'mts', label: 'MTS', icon: '💿', count: 30 },
   { id: 'otros', label: 'OTROS', icon: '✨', count: 20 }
-] as const
+] as const;
 
 // 32 ÍTEMS EXACTOS DE LA CAPTURA CANÓNICA MEDIA_1789002324882.PNG (8 COLUMNAS X 4 FILAS)
 const canonicalItems: CanonicalBagItem[] = [
   // Fila 1
-  { id: 'mysticwater', name: 'Agua Mística', qty: 1, category: 'combate', borderColorClass: 'is-blue-border' },
-  { id: 'oldamber', name: 'Ámbar Viejo', qty: 3, category: 'otros', borderColorClass: 'is-blue-border' },
+  {
+    id: 'mysticwater',
+    name: 'Agua Mística',
+    qty: 1,
+    category: 'combate',
+    borderColorClass: 'is-blue-border'
+  },
+  {
+    id: 'oldamber',
+    name: 'Ámbar Viejo',
+    qty: 3,
+    category: 'otros',
+    borderColorClass: 'is-blue-border'
+  },
   { id: 'iceheal', name: 'Anticongelante', qty: 3, category: 'curativos' },
   { id: 'antidote', name: 'Antídoto', qty: 3, category: 'curativos' },
   { id: 'paralyzeheal', name: 'Antiparaliz.', qty: 2, category: 'curativos' },
-  { id: 'focussash', name: 'Banda Focus', qty: 1, category: 'combate', borderColorClass: 'is-gold-border' },
+  {
+    id: 'focussash',
+    name: 'Banda Focus',
+    qty: 1,
+    category: 'combate',
+    borderColorClass: 'is-gold-border'
+  },
   { id: 'oranberry', name: 'Baya de Oro', qty: 2, category: 'utilizables' },
   { id: 'sitrusberry', name: 'Baya de Plata', qty: 2, category: 'utilizables' },
 
   // Fila 2
-  { id: 'fullheal', name: 'Cura Total', qty: 7, category: 'curativos', borderColorClass: 'is-blue-border' },
+  {
+    id: 'fullheal',
+    name: 'Cura Total',
+    qty: 7,
+    category: 'curativos',
+    borderColorClass: 'is-blue-border'
+  },
   { id: 'awakening', name: 'Despertar', qty: 3, category: 'curativos' },
   { id: 'elixir', name: 'Elixir', qty: 3, category: 'curativos' },
-  { id: 'dragonscale', name: 'Escama Dragón', qty: 1, category: 'piedras', borderColorClass: 'is-purple-border' },
+  {
+    id: 'dragonscale',
+    name: 'Escama Dragón',
+    qty: 1,
+    category: 'piedras',
+    borderColorClass: 'is-purple-border'
+  },
   { id: 'ether', name: 'Éter', qty: 2, category: 'curativos' },
   { id: 'domefossil', name: 'Fósil Domo', qty: 4, category: 'otros' },
   { id: 'helixfossil', name: 'Fósil Hélix', qty: 1, category: 'otros' },
@@ -74,39 +104,64 @@ const canonicalItems: CanonicalBagItem[] = [
   { id: 'tm06', name: 'MT06 Tóxico', qty: 1, category: 'mts' },
   { id: 'tm19', name: 'MT19 Gigadrenado', qty: 1, category: 'mts' },
   { id: 'tm24', name: 'MT24 Rayo', qty: 1, category: 'mts' },
-  { id: 'tm26', name: 'MT26 Terremoto', qty: 2, category: 'mts', borderColorClass: 'is-gold-border' },
+  {
+    id: 'tm26',
+    name: 'MT26 Terremoto',
+    qty: 2,
+    category: 'mts',
+    borderColorClass: 'is-gold-border'
+  },
 
   // Fila 4
-  { id: 'tm29', name: 'MT29 Psíquico', qty: 2, category: 'mts', borderColorClass: 'is-gold-border' },
+  {
+    id: 'tm29',
+    name: 'MT29 Psíquico',
+    qty: 2,
+    category: 'mts',
+    borderColorClass: 'is-gold-border'
+  },
   { id: 'tm38', name: 'MT38 Llamarada', qty: 1, category: 'mts' },
   { id: 'heavyball', name: 'Peso Ball', qty: 20, category: 'pokeballs' },
   { id: 'stick', name: 'Puerro', qty: 1, category: 'combate' },
-  { id: 'potion', name: 'Poción', qty: 1, category: 'curativos', borderColorClass: 'is-purple-border' },
-  { id: 'waterstone', name: 'Piedra Agua', qty: 1, category: 'piedras', borderColorClass: 'is-purple-border' },
+  {
+    id: 'potion',
+    name: 'Poción',
+    qty: 1,
+    category: 'curativos',
+    borderColorClass: 'is-purple-border'
+  },
+  {
+    id: 'waterstone',
+    name: 'Piedra Agua',
+    qty: 1,
+    category: 'piedras',
+    borderColorClass: 'is-purple-border'
+  },
   { id: 'moonstone', name: 'Piedra Lunar', qty: 1, category: 'piedras' },
   { id: 'leafstone', name: 'Piedra Hoja', qty: 1, category: 'piedras' }
-]
+];
 
 const filteredItems = computed(() => {
-  return canonicalItems.filter(item => {
-    const matchesCategory = activeCategory.value === 'todos' || item.category === activeCategory.value
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
-})
+  return canonicalItems.filter((item) => {
+    const matchesCategory =
+      activeCategory.value === 'todos' || item.category === activeCategory.value;
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.value.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+});
 
 function selectItem(item: CanonicalBagItem) {
-  selectedItemId.value = item.id
-  logToInspector(`Mochila: Seleccionado "${item.name}" (x${item.qty})`)
+  selectedItemId.value = item.id;
+  logToInspector(`Mochila: Seleccionado "${item.name}" (x${item.qty})`);
 }
 
 function onCategorySelect(categoryId: string) {
-  activeCategory.value = categoryId
-  logToInspector(`Mochila: Categoría cambiada a "${categoryId}"`)
+  activeCategory.value = categoryId;
+  logToInspector(`Mochila: Categoría cambiada a "${categoryId}"`);
 }
 
 function onActionClick(action: string) {
-  logToInspector(`Mochila: Acción "${action}" activada`)
+  logToInspector(`Mochila: Acción "${action}" activada`);
 }
 </script>
 
@@ -126,7 +181,8 @@ function onActionClick(action: string) {
           class="pv-frame-btn pv-btn pv-btn-primary pv-btn-sm"
           @click="emit('open-floating')"
         >
-          <span class="emoji">🎒</span> <span>PROBAR COMO MODAL FLOTANTE (CON BACKDROP Y SOMBRA BRESENHAM)</span>
+          <span class="emoji">🎒</span>
+          <span>PROBAR COMO MODAL FLOTANTE (CON BACKDROP Y SOMBRA BRESENHAM)</span>
         </button>
       </div>
     </template>
@@ -195,15 +251,10 @@ function onActionClick(action: string) {
                 type="text"
                 placeholder="Buscar objeto..."
                 class="search-input"
-              >
+              />
             </div>
 
-            <button
-              type="button"
-              class="pv-curve-xs inv-sort-btn"
-            >
-              ABC ↑
-            </button>
+            <button type="button" class="pv-curve-xs inv-sort-btn">ABC ↑</button>
 
             <button
               type="button"
@@ -250,10 +301,7 @@ function onActionClick(action: string) {
               :key="item.id"
               v-gsap-hover="{ scale: 1.05, y: -2 }"
               class="pv-curve-xs inv-card-item"
-              :class="[
-                item.borderColorClass || '',
-                { 'is-selected': selectedItemId === item.id }
-              ]"
+              :class="[item.borderColorClass || '', { 'is-selected': selectedItemId === item.id }]"
               @click="selectItem(item)"
             >
               <div class="inv-card-visual">
@@ -261,11 +309,13 @@ function onActionClick(action: string) {
                   :src="getAssetUrl(ASSET_TYPES.ITEM, item.id)"
                   :alt="item.name"
                   class="item-sprite"
-                  @error="e => { (e.target as HTMLImageElement).src = '/assets/items/pokeball.png' }"
-                >
-                <div class="inv-card-qty-pill">
-                  x{{ item.qty }}
-                </div>
+                  @error="
+                    (e) => {
+                      (e.target as HTMLImageElement).src = '/assets/items/pokeball.png';
+                    }
+                  "
+                />
+                <div class="inv-card-qty-pill">x{{ item.qty }}</div>
               </div>
               <span class="inv-card-name">{{ item.name }}</span>
             </div>

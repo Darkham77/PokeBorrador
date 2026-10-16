@@ -1,8 +1,8 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { 
-  validateAuthLogin, 
-  validateAuthRegister, 
+import {
+  validateAuthLogin,
+  validateAuthRegister,
   validateAuthPasswordReset,
   validateTrainerName,
   validateUserProfile
@@ -69,7 +69,10 @@ describe('Auth & User Profiles Strict Validation', () => {
   it('validates trainer name with length bounds', () => {
     assert.strictEqual(validateTrainerName('Red').success, true);
     assert.strictEqual(validateTrainerName('A').success, false);
-    assert.strictEqual(validateTrainerName('SuperLongTrainerNameExceedingLimit12345').success, false);
+    assert.strictEqual(
+      validateTrainerName('SuperLongTrainerNameExceedingLimit12345').success,
+      false
+    );
   });
 
   it('validates user profile and rejects negative coins', () => {

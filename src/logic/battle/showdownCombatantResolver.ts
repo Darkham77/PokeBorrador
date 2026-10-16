@@ -17,32 +17,37 @@ export function parseBattleSide(rawId: string): BattleSide | null {
 
 function resolveSideTeam(battle: BattleState, side: BattleSide): Pokemon[] {
   if (side === 'player') {
-    return (battle.playerTeam && battle.playerTeam.length > 0)
+    return battle.playerTeam && battle.playerTeam.length > 0
       ? battle.playerTeam
-      : (useGameStore().state?.team || (battle.player ? [battle.player] : []));
+      : useGameStore().state?.team || (battle.player ? [battle.player] : []);
   }
-  return (battle.enemyTeam && battle.enemyTeam.length > 0)
+  return battle.enemyTeam && battle.enemyTeam.length > 0
     ? battle.enemyTeam
-    : (battle.enemy ? [battle.enemy] : []);
+    : battle.enemy
+      ? [battle.enemy]
+      : [];
 }
 
 function extractUidFromLogLine(line: string, rawId: string): string | undefined {
   if (!line || !line.includes('|[uids]')) return undefined;
   const lineParts = line.split('|');
-  const uidsPart = lineParts.find(p => p.startsWith('[uids]'));
+  const uidsPart = lineParts.find((p) => p.startsWith('[uids]'));
   if (!uidsPart) return undefined;
   const mappings = uidsPart.substring(6).split(',');
   const targetIdent = rawId.replace(/\s+/g, '');
-  const match = mappings.find(m => m.startsWith(`${targetIdent}=`));
+  const match = mappings.find((m) => m.startsWith(`${targetIdent}=`));
   return match ? match.split('=')[1] : undefined;
 }
 
-function locateActiveBattlePokemonByUid(battle: BattleState, side: BattleSide, targetUid: string): Pokemon | null {
+function locateActiveBattlePokemonByUid(
+  battle: BattleState,
+  side: BattleSide,
+  targetUid: string
+): Pokemon | null {
   const keys = Object.keys(battle);
   for (const key of keys) {
-    const matchesSide = side === 'player'
-      ? (key.startsWith('player') || key === 'ally')
-      : key.startsWith('enemy');
+    const matchesSide =
+      side === 'player' ? key.startsWith('player') || key === 'ally' : key.startsWith('enemy');
     if (matchesSide) {
       const val = Reflect.get(battle, key) as Pokemon | null | undefined;
       if (val && typeof val === 'object' && val.uid === targetUid) {
@@ -56,16 +61,26 @@ function locateActiveBattlePokemonByUid(battle: BattleState, side: BattleSide, t
 function matchPokemonBySuffixOrIdentity(team: Pokemon[], rawId: string): Pokemon | null {
   const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
   if (namePart) {
-    const suffixMon = (team.find(mon => mon && (isMatchingUid(mon.uid, namePart) || mon.name?.toLowerCase() === namePart.toLowerCase() || mon.id === namePart)) ?? null) as Pokemon | null; // text-ok: UI text display localization string
+    const suffixMon = (team.find(
+      (mon) =>
+        mon &&
+        (isMatchingUid(mon.uid, namePart) ||
+          mon.name?.toLowerCase() === namePart.toLowerCase() ||
+          mon.id === namePart)
+    ) ?? null) as Pokemon | null; // text-ok: UI text display localization string
     if (suffixMon) {
-      console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${suffixMon.uid}" via name/UID`);
+      console.debug(
+        `[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${suffixMon.uid}" via name/UID`
+      );
       return suffixMon;
     }
   }
 
   const matchMon = findMatchingPokemon(rawId, team) ?? null;
   if (matchMon) {
-    console.debug(`[E2E-GETPOKE-MATCHMON] Resolved rawId "${rawId}" to team UID "${matchMon.uid}" name "${matchMon.name}"`);
+    console.debug(
+      `[E2E-GETPOKE-MATCHMON] Resolved rawId "${rawId}" to team UID "${matchMon.uid}" name "${matchMon.name}"`
+    );
     return matchMon;
   }
   return null;
@@ -75,13 +90,15 @@ export function determineCombatantFromLog(
   rawId: string,
   line: string,
   battle: BattleState | null,
-  fallbackMon: Pokemon | null,
+  fallbackMon: Pokemon | null
 ): Pokemon | null {
   const side = parseBattleSide(rawId);
   if (!side) return null;
 
   if (!battle) {
-    console.debug(`[E2E-GETPOKE] No active battle. rawId: "${rawId}", side: "${side}". Returning default.`);
+    console.debug(
+      `[E2E-GETPOKE] No active battle. rawId: "${rawId}", side: "${side}". Returning default.`
+    );
     return fallbackMon;
   }
 
@@ -91,16 +108,22 @@ export function determineCombatantFromLog(
   const foundUid = extractUidFromLogLine(line, rawId);
 
   if (foundUid) {
-    const foundInTeam = team.find(mon => mon && mon.uid === foundUid);
+    const foundInTeam = team.find((mon) => mon && mon.uid === foundUid);
     if (!foundInTeam) {
-      throw new Error(`[showdownBridge.ts] Resolved UID "${foundUid}" for "${rawId}" but it was not found in the reactively tracked team list.`);
+      throw new Error(
+        `[showdownBridge.ts] Resolved UID "${foundUid}" for "${rawId}" but it was not found in the reactively tracked team list.`
+      );
     }
     const activeMon = locateActiveBattlePokemonByUid(battle, side, foundUid);
     if (activeMon) {
-      console.debug(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${foundInTeam.uid}" matches`);
+      console.debug(
+        `[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${foundInTeam.uid}" matches`
+      );
       return activeMon;
     }
-    console.debug(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${foundInTeam.uid}" name "${foundInTeam.name}"`);
+    console.debug(
+      `[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${foundInTeam.uid}" name "${foundInTeam.name}"`
+    );
     return foundInTeam;
   }
 
@@ -109,7 +132,7 @@ export function determineCombatantFromLog(
 
   throw new Error(
     `[ShowdownBridge] UID resolution failed for "${rawId}". ` +
-    `This indicates a synchronization bug — UID must be present in the tracked team. ` +
-    `Aborting to expose the desync at its source.`
+      `This indicates a synchronization bug — UID must be present in the tracked team. ` +
+      `Aborting to expose the desync at its source.`
   );
 }

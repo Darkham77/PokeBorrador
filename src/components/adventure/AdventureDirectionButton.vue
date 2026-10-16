@@ -1,33 +1,41 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { gsapHover as vGsapHover } from '@/directives/gsapHover'
-import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
-import type { CardinalDirection } from '@/types/system/game'
-import type { DirectionConnectionItem } from './adventureDirectionTypes'
+import { computed } from 'vue';
+import { gsapHover as vGsapHover } from '@/directives/gsapHover';
+import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
+import type { CardinalDirection } from '@/types/system/game';
+import type { DirectionConnectionItem } from './adventureDirectionTypes';
 
-const props = withDefaults(defineProps<{
-  direction: CardinalDirection
-  conn: DirectionConnectionItem
-  disabled?: boolean
-  isMoMissing?: boolean
-}>(), {
-  disabled: false,
-  isMoMissing: false
-})
+const props = withDefaults(
+  defineProps<{
+    direction: CardinalDirection;
+    conn: DirectionConnectionItem;
+    disabled?: boolean;
+    isMoMissing?: boolean;
+  }>(),
+  {
+    disabled: false,
+    isMoMissing: false
+  }
+);
 
 const emit = defineEmits<{
-  (e: 'travel', target: AdventureNodeId): void
-}>()
+  (e: 'travel', target: AdventureNodeId): void;
+}>();
 
 const dirIcon = computed(() => {
   switch (props.direction) {
-    case 'left': return '⬅️'
-    case 'top': return '⬆️'
-    case 'bottom': return '⬇️'
-    case 'right': return '➡️'
-    default: return '➡️'
+    case 'left':
+      return '⬅️';
+    case 'top':
+      return '⬆️';
+    case 'bottom':
+      return '⬇️';
+    case 'right':
+      return '➡️';
+    default:
+      return '➡️';
   }
-})
+});
 </script>
 
 <template>
@@ -40,11 +48,7 @@ const dirIcon = computed(() => {
   >
     <span class="emoji dir-icon">{{ dirIcon }}</span>
     <span class="dir-label">{{ conn.label }}</span>
-    <span
-      v-if="conn.mo"
-      class="dir-mo"
-      :class="{ 'mo-missing': isMoMissing }"
-    >
+    <span v-if="conn.mo" class="dir-mo" :class="{ 'mo-missing': isMoMissing }">
       {{ conn.mo }}
     </span>
   </button>

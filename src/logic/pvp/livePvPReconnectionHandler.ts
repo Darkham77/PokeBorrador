@@ -8,8 +8,10 @@
 import { gsap } from 'gsap';
 import type { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts';
 import type { PvpReconnectPayload } from '@/types/battle/pvp';
-import type { PvpSpectateSyncPayload } from '@/logic/pvp/pvpSpectatorHelper';
-import { buildHostSpectateBroadcast } from '@/logic/pvp/pvpRoomActionsHelper';
+import {
+  buildSpectateSyncPayload,
+  type PvpSpectateSyncPayload
+} from '@/logic/pvp/pvpSpectatorHelper';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleOptions } from '@/types/system/stores';
@@ -67,7 +69,8 @@ export function executeReconnectBattle(
   ctx.battleState.active = true;
   ctx.battleState.inviteId = matchId;
   ctx.battleState.isHost = Boolean(b.isHost ?? b.pvpIsHost);
-  ctx.battleState.opponentId = (b.opponentId !== undefined ? b.opponentId : b.pvpOpponentId) || null;
+  ctx.battleState.opponentId =
+    (b.opponentId !== undefined ? b.opponentId : b.pvpOpponentId) || null;
   if (b.opponentName) {
     ctx.battleState.opponentName = b.opponentName;
   }
@@ -108,10 +111,7 @@ export interface SpectatorHandlerContext {
   hasDb: boolean;
 }
 
-export function executeSpectateMatch(
-  matchId: string,
-  ctx: SpectatorHandlerContext
-): void {
+export function executeSpectateMatch(matchId: string, ctx: SpectatorHandlerContext): void {
   if (!ctx.hasDb) return;
   ctx.isSpectator.value = true;
   ctx.battleState.active = true;
@@ -128,21 +128,19 @@ export function executeSpectateMatch(
   }
 }
 
-export function executeHandleSpectateJoin(
-  ctx: {
-    battleState: {
-      isHost: boolean;
-      inviteId: string | null;
-      opponentName: string;
-      ch: PvpChannelSender | null;
-    };
-    battleStore: { getContext: () => unknown };
-  }
-): void {
+export function executeHandleSpectateJoin(ctx: {
+  battleState: {
+    isHost: boolean;
+    inviteId: string | null;
+    opponentName: string;
+    ch: PvpChannelSender | null;
+  };
+  battleStore: { getContext: () => unknown };
+}): void {
   if (!ctx.battleState.isHost) return;
-  const snapshot = buildHostSpectateBroadcast(
+  const snapshot = buildSpectateSyncPayload(
     ctx.battleState.inviteId || '',
-    ctx.battleStore.getContext() as Parameters<typeof buildHostSpectateBroadcast>[1],
+    ctx.battleStore.getContext() as Parameters<typeof buildSpectateSyncPayload>[1],
     ctx.battleState.opponentName
   );
   if (snapshot && ctx.battleState.ch) {
@@ -162,7 +160,7 @@ export function executeHandleSpectateSync(
   if (!isSpectator) return;
   const enemyLeader = payload.guestTeam[0];
   if (enemyLeader) {
-    battleStore.startBattle(enemyLeader, {
+    void battleStore.startBattle(enemyLeader, {
       isPvP: true,
       pvpMatchId: payload.matchId,
       isTrainer: true,
@@ -189,4 +187,3 @@ export function executeHandleOpponentReconnect(
   ctx.timerManager.stopReconnectCountdown();
   ctx.isReconnecting.value = false;
 }
-

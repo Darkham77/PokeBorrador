@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { POKEMON_SPRITE_IDS } from '@/logic/services/assetService'
-import IndividualPokemonEditor from './IndividualPokemonEditor.vue'
-import DebugIllegalModal from './DebugIllegalModal.vue'
-import DebugTrainerGenSettings from './DebugTrainerGenSettings.vue'
-import DebugTrainerMetaCard from './DebugTrainerMetaCard.vue'
-import DebugTrainerBattleLauncher from './DebugTrainerBattleLauncher.vue'
-import { useDebugTrainers } from './useDebugTrainers.ts'
+import { computed, onMounted, ref } from 'vue';
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { POKEMON_SPRITE_IDS } from '@/logic/services/assetService';
+import IndividualPokemonEditor from './IndividualPokemonEditor.vue';
+import DebugIllegalModal from './DebugIllegalModal.vue';
+import DebugTrainerGenSettings from './DebugTrainerGenSettings.vue';
+import DebugTrainerMetaCard from './DebugTrainerMetaCard.vue';
+import DebugTrainerBattleLauncher from './DebugTrainerBattleLauncher.vue';
+import { useDebugTrainers } from './useDebugTrainers.ts';
 
 const emit = defineEmits<{
-  close: []
-}>()
+  close: [];
+}>();
 
-const showIllegalModal = ref(false)
-const illegalIssues = ref<string[]>([])
+const showIllegalModal = ref(false);
+const illegalIssues = ref<string[]>([]);
 
 const {
   trainerName,
@@ -47,48 +47,45 @@ const {
   startCombat: startDebugCombat,
   validateTeamLegality,
   availableSpriteList
-} = useDebugTrainers()
+} = useDebugTrainers();
 
-const canAddMorePokemon = computed(() => enemyTeam.value.length < MAX_POKEMON_TEAM_SIZE)
+const canAddMorePokemon = computed(() => enemyTeam.value.length < MAX_POKEMON_TEAM_SIZE);
 
 async function startCombat() {
-  const validation = validateTeamLegality()
+  const validation = validateTeamLegality();
   if (!validation.valid) {
-    illegalIssues.value = validation.issues
-    showIllegalModal.value = true
-    return
+    illegalIssues.value = validation.issues;
+    showIllegalModal.value = true;
+    return;
   }
-  emit('close')
-  await startDebugCombat()
+  emit('close');
+  await startDebugCombat();
 }
 
 function handleSpriteError(e: Event, id: string, isShiny = false) {
-  const target = e.target as HTMLImageElement
-  const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[id.toLowerCase()] || 1 // open-record: Generic key-value data dictionary container
-  const folder = isShiny ? 'shiny/' : ''
-  target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${folder}${num}.png`
+  const target = e.target as HTMLImageElement;
+  const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[id.toLowerCase()] || 1; // open-record: Generic key-value data dictionary container
+  const folder = isShiny ? 'shiny/' : '';
+  target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${folder}${num}.png`;
 }
 
 function getPokeSpriteUrl(id: string, isShiny?: boolean) {
-  return pokemonDataProvider.getSpriteUrl(id, isShiny)
+  return pokemonDataProvider.getSpriteUrl(id, isShiny);
 }
 
 onMounted(() => {
-  generateRandomTeam()
-})
+  generateRandomTeam();
+});
 </script>
 
 <template>
   <div class="pokemon-debug-creator debug-grid trainer-debug-tab scrollbar">
     <!-- Acceso Rápido para Iniciar Combate -->
-    <div
-      class="debug-card"
-      style="margin-bottom: -6px;"
-    >
-      <button 
+    <div class="debug-card" style="margin-bottom: -6px">
+      <button
         id="debug-battle-start-btn"
         class="battle-start-btn-debug"
-        style="width: 100%; height: 36px; font-weight: bold;"
+        style="width: 100%; height: 36px; font-weight: bold"
         @click.stop="startCombat"
       >
         <span class="emoji">⚔️</span> INICIAR COMBATE
@@ -128,8 +125,8 @@ onMounted(() => {
       <div class="section-header-row flex-between">
         <label>EQUIPO DEL ENTRENADOR ({{ enemyTeam.length }}/{{ MAX_POKEMON_TEAM_SIZE }})</label>
         <button
-          v-if="canAddMorePokemon" 
-          id="debug-trainers-tab-btn-a-adir-pok-mon" 
+          v-if="canAddMorePokemon"
+          id="debug-trainers-tab-btn-a-adir-pok-mon"
           class="btn-vicio-primary sm"
           @click.stop="addPokemonToTeam"
         >
@@ -139,25 +136,27 @@ onMounted(() => {
 
       <div class="team-grid-layout">
         <div
-          v-for="(p, index) in enemyTeam" 
-          id="debug-trainers-tab-div-1" 
+          v-for="(p, index) in enemyTeam"
+          id="debug-trainers-tab-div-1"
           :key="index"
           class="team-poke-card"
           :class="{ active: selectedPokeIndex === index }"
+          role="button"
+          tabindex="0"
           @click.stop="selectedPokeIndex = index"
         >
           <div class="card-top">
-            <img 
-              :src="getPokeSpriteUrl(p.id, p.isShiny)" 
+            <img
+              :src="getPokeSpriteUrl(p.id, p.isShiny)"
               :alt="p.name || p.id"
               class="poke-sprite"
               width="96"
               height="96"
               @error="(e) => handleSpriteError(e, p.id, p.isShiny)"
-            >
+            />
             <button
-              id="debug-trainers-tab-btn-2" 
-              class="btn-delete-poke" 
+              id="debug-trainers-tab-btn-2"
+              class="btn-delete-poke"
               @click.stop="removePokemonFromTeam(index)"
             >
               ×
@@ -171,10 +170,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <div
-      v-if="activePoke && selectedPokeIndex !== null"
-      class="debug-divider"
-    />
+    <div v-if="activePoke && selectedPokeIndex !== null" class="debug-divider" />
 
     <!-- Section 4: Individual Pokemon Editor (Subcomponent) -->
     <IndividualPokemonEditor

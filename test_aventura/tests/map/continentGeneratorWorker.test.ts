@@ -62,15 +62,16 @@ describe('continentGenerator.worker pipeline', () => {
   it('recalculates A* strictly for incident edges when a POI is moved (Directive 3)', () => {
     const genResult = executeRegionalGenerationJob(baseOptions);
     // Find a node that has both incident and non-incident edges to verify isolation
-    const targetNode = genResult.pois.find((node) => {
-      const inc = genResult.routeNetwork.edges.some(
-        (e) => e.fromNodeId === node.id || e.toNodeId === node.id
-      );
-      const nonInc = genResult.routeNetwork.edges.some(
-        (e) => e.fromNodeId !== node.id && e.toNodeId !== node.id
-      );
-      return inc && nonInc;
-    }) ?? genResult.pois[1]!;
+    const targetNode =
+      genResult.pois.find((node) => {
+        const inc = genResult.routeNetwork.edges.some(
+          (e) => e.fromNodeId === node.id || e.toNodeId === node.id
+        );
+        const nonInc = genResult.routeNetwork.edges.some(
+          (e) => e.fromNodeId !== node.id && e.toNodeId !== node.id
+        );
+        return inc && nonInc;
+      }) ?? genResult.pois[1]!;
 
     const incidentBefore = genResult.routeNetwork.edges.filter(
       (e) => e.fromNodeId === targetNode.id || e.toNodeId === targetNode.id

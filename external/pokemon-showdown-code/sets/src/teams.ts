@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/parameter-properties */
-import {GenerationNum, ID, PokemonSet} from '@pkmn/types';
+import { GenerationNum, ID, PokemonSet } from '@pkmn/types';
 
-import {Data, Sets, _import, _unpack} from './sets';
+import { Data, Sets, _import, _unpack } from './sets';
 
 const CURRENT = 9;
 
@@ -90,7 +90,7 @@ export class Team<S extends Partial<PokemonSet> = Partial<PokemonSet>> {
   }
 }
 
-export const Teams = new class {
+export const Teams = new (class {
   packTeam<S extends Partial<PokemonSet>>(team: Team<S>): string {
     let buf = '';
     for (const s of team.team) {
@@ -107,7 +107,8 @@ export const Teams = new class {
     }
 
     const team: PokemonSet[] = [];
-    let i = 0, j = 0;
+    let i = 0,
+      j = 0;
 
     for (let k = 0; k < 24; k++) {
       const r = _unpack(buf, i, j, data);
@@ -129,12 +130,7 @@ export const Teams = new class {
     return teams.length ? teams[0] : undefined;
   }
 
-  importTeams(
-    buf: string,
-    data?: Data,
-    one?: boolean,
-    builder?: boolean,
-  ): Readonly<Team[]> {
+  importTeams(buf: string, data?: Data, one?: boolean, builder?: boolean): Readonly<Team[]> {
     const lines = buf.split('\n');
     if (lines.length === 1 || (lines.length === 2 && !lines[1])) {
       const team: Team<PokemonSet> | undefined = builder
@@ -199,9 +195,12 @@ export const Teams = new class {
 
     let i = 0;
     for (const team of teams) {
-      buf += '=== ' + (team.format ? '[' + team.format.toString() + '] ' : '') +
-          (team.folder ? '' + team.folder + '/' : '') +
-          (team.name || 'Untitled ' + ++i) + ' ===\n\n';
+      buf +=
+        '=== ' +
+        (team.format ? '[' + team.format.toString() + '] ' : '') +
+        (team.folder ? '' + team.folder + '/' : '') +
+        (team.name || 'Untitled ' + ++i) +
+        ' ===\n\n';
       buf += team.export(data);
       buf += '\n';
     }
@@ -215,7 +214,7 @@ export const Teams = new class {
   fromString(str: string, data?: Data): Readonly<Team[]> {
     return Teams.importTeams(str, data, false, true);
   }
-};
+})();
 
 function unpackLine(line: string, data?: Data): Team<PokemonSet> | undefined {
   const pipeIndex = line.indexOf('|');
@@ -233,12 +232,10 @@ function unpackLine(line: string, data?: Data): Team<PokemonSet> | undefined {
   return !team
     ? team
     : new Team<PokemonSet>(
-      team.team,
-      data,
-      format,
-      line.slice(slashIndex + 1, pipeIndex),
-      line.slice(
-        bracketIndex + 1, slashIndex > 0 ? slashIndex : bracketIndex + 1
-      ),
-    );
+        team.team,
+        data,
+        format,
+        line.slice(slashIndex + 1, pipeIndex),
+        line.slice(bracketIndex + 1, slashIndex > 0 ? slashIndex : bracketIndex + 1)
+      );
 }

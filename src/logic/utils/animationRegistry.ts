@@ -21,33 +21,33 @@ export const ANIM_TIMINGS = {
   BALL_FLY: 0.6,
   BALL_WOBBLE: 0.4,
   CATCH_SUCCESS: 1.5,
-  
+
   // Effects
   DAMAGE_SHAKE: 0.4,
   STAT_CHANGE: 0.8,
   TEXT_TYPING: TEXT_TYPING_SPEED_SEC // Seconds per character
-} as const
+} as const;
 
-const BACK_EASE_OVERSHOOT = 1.7
-const ELASTIC_EASE_AMPLITUDE = 1
-const ELASTIC_EASE_PERIOD = 0.3
+const BACK_EASE_OVERSHOOT = 1.7;
+const ELASTIC_EASE_AMPLITUDE = 1;
+const ELASTIC_EASE_PERIOD = 0.3;
 
 export const ANIM_EASES = {
   // Smooth entries
   OUT_SOFT: 'power2.out',
   OUT_BACK: `back.out(${BACK_EASE_OVERSHOOT})`,
   OUT_EXPO: 'expo.out',
-  
+
   // Snappy retro feels
   PIXEL_JUMP: 'steps(4)',
   PIXEL_SLIDE: 'steps(8)',
-  
+
   // Linear for loops/proyectiles
   LINEAR: 'none',
-  
+
   // Elastic for hits
   HIT_ELASTIC: `elastic.out(${ELASTIC_EASE_AMPLITUDE}, ${ELASTIC_EASE_PERIOD})`
-} as const
+} as const;
 
-export type AnimTimingKey = keyof typeof ANIM_TIMINGS
-export type AnimEaseKey = keyof typeof ANIM_EASES
+export type AnimTimingKey = keyof typeof ANIM_TIMINGS;
+export type AnimEaseKey = keyof typeof ANIM_EASES;

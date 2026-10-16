@@ -11,48 +11,52 @@ class PvpCasualSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupCasualPvpBattle(): Promise<void> {
-    await this.page.evaluate(async ({ initialElo, lowHp }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useLivePvPStore } = await import('../../../src/stores/livePvP.ts');
-      const { usePvPStore } = await import('../../../src/stores/pvp.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+    await this.page.evaluate(
+      async ({ initialElo, lowHp }) => {
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { useLivePvPStore } = await import('../../../src/stores/livePvP.ts');
+        const { usePvPStore } = await import('../../../src/stores/pvp.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
 
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
-      const livePvPStore = useLivePvPStore();
-      const pvpStore = usePvPStore();
+        const gameStore = useGameStore();
+        const battleStore = useBattleStore();
+        const livePvPStore = useLivePvPStore();
+        const pvpStore = usePvPStore();
 
-      pvpStore.elo = initialElo;
+        pvpStore.elo = initialElo;
 
-      const pvpPikachu = pokemonDebugService.generate({ id: 'pikachu', level: 50 });
-      const pvpCharizard = pokemonDebugService.generate({ id: 'charizard', level: 50 });
+        const pvpPikachu = pokemonDebugService.generate({ id: 'pikachu', level: 50 });
+        const pvpCharizard = pokemonDebugService.generate({ id: 'charizard', level: 50 });
 
-      gameStore.state.team = [pvpPikachu];
-      gameStore.state.box = [pvpCharizard];
-      gameStore.state.pvpTeam = [pvpPikachu.uid, pvpCharizard.uid];
-      gameStore.state.starterChosen = true;
+        gameStore.state.team = [pvpPikachu];
+        gameStore.state.box = [pvpCharizard];
+        gameStore.state.pvpTeam = [pvpPikachu.uid, pvpCharizard.uid];
+        gameStore.state.starterChosen = true;
 
-      const enemyGengar = pokemonDebugService.generate({ id: 'gengar', level: 50 });
-      enemyGengar.hp = lowHp;
+        const enemyGengar = pokemonDebugService.generate({ id: 'gengar', level: 50 });
+        enemyGengar.hp = lowHp;
 
-      livePvPStore.battleState.isRanked = false;
-      livePvPStore.battleState.active = true;
+        livePvPStore.battleState.isRanked = false;
+        livePvPStore.battleState.active = true;
 
-      await battleStore.startBattle(enemyGengar, {
-        isPvP: true,
-        isRanked: false,
-        pvpMatchId: 'sim-casual-match-1',
-        pvpIsHost: true,
-        pvpOpponentName: 'Friendly Rival',
-        enemyTeam: [enemyGengar],
-        playerTeam: [pvpPikachu, pvpCharizard],
-        isTrainer: true,
-        trainerName: 'Friendly Rival',
-        trainerSprite: 'blue',
-        locationId: 'gym'
-      });
-    }, { initialElo: SIM_CASUAL_INITIAL_ELO, lowHp: SIM_LOW_HP_VALUE });
+        await battleStore.startBattle(enemyGengar, {
+          isPvP: true,
+          isRanked: false,
+          pvpMatchId: 'sim-casual-match-1',
+          pvpIsHost: true,
+          pvpOpponentName: 'Friendly Rival',
+          enemyTeam: [enemyGengar],
+          playerTeam: [pvpPikachu, pvpCharizard],
+          isTrainer: true,
+          trainerName: 'Friendly Rival',
+          trainerSprite: 'blue',
+          locationId: 'gym'
+        });
+      },
+      { initialElo: SIM_CASUAL_INITIAL_ELO, lowHp: SIM_LOW_HP_VALUE }
+    );
     await awaitBattleReadyForInput(this.page);
   }
 }
@@ -60,7 +64,9 @@ class PvpCasualSimWrapper extends BaseBattleSimulation {
 test.describe('PvP Casual Battle Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('executes casual friendly match and verifies zero ELO rating delta on victory', async ({ page }) => {
+  test('executes casual friendly match and verifies zero ELO rating delta on victory', async ({
+    page
+  }) => {
     const sim = new PvpCasualSimWrapper(page, 'PvpCasualSim');
     await sim.setup();
     await sim.setupCasualPvpBattle();

@@ -91,8 +91,10 @@ export function generateSettlementLayout(
     if (!context) return true;
     if (context.width !== undefined && (x < 0 || x >= context.width)) return false;
     if (context.height !== undefined && (y < 0 || y >= context.height)) return false;
-    if (context.heightmap && (context.heightmap[y]?.[x] ?? node.elevation) !== node.elevation) return false;
-    if (context.terrainMatrix && (context.terrainMatrix[y]?.[x] ?? 'grass') !== 'grass') return false;
+    if (context.heightmap && (context.heightmap[y]?.[x] ?? node.elevation) !== node.elevation)
+      return false;
+    if (context.terrainMatrix && (context.terrainMatrix[y]?.[x] ?? 'grass') !== 'grass')
+      return false;
     if (context.occupiedFootCells && (context.occupiedFootCells[y]?.[x] ?? false)) return false;
     return true;
   };
@@ -190,8 +192,15 @@ export function generateSettlementLayout(
     // so the palace entrance door seam aligns 100% coaxially with the 2-cell ceremonial avenue.
     const palaceX = bx + Math.floor((W - palaceMeta.width) / 2);
     const palaceY = by + 1;
-    const palacePixelOffsetX = (W % 2 === 0 && palaceMeta.width % 2 !== 0) ? 16 : 0;
-    placeBuilding(`${node.id}_palace`, 'pokemon_league', palaceX, palaceY, palaceMeta, palacePixelOffsetX);
+    const palacePixelOffsetX = W % 2 === 0 && palaceMeta.width % 2 !== 0 ? 16 : 0;
+    placeBuilding(
+      `${node.id}_palace`,
+      'pokemon_league',
+      palaceX,
+      palaceY,
+      palaceMeta,
+      palacePixelOffsetX
+    );
 
     // 2. Central 2-Cell Wide Ceremonial Avenue & Paved Concourse:
     // Centered at midX - 1 and midX, running down the plateau to the south edge
@@ -204,16 +213,56 @@ export function generateSettlementLayout(
 
     // 4. Symmetrical Ceremonial Street Lamps & Planters dynamically flanking the ceremonial avenue:
     // Upper Plateau:
-    addProp('lamp', bx + midX - 2, by + LEAGUE_UPPER_LAMP_ROW, getAssetFilename('poke_street_lamp'));
-    addProp('lamp', bx + midX + 1, by + LEAGUE_UPPER_LAMP_ROW, getAssetFilename('poke_street_lamp_left'));
-    addProp('flower', bx + midX - 3, by + LEAGUE_UPPER_FLOWER_ROW, getAssetFilename('poke_flower_pot_circular'));
-    addProp('flower', bx + midX + 2, by + LEAGUE_UPPER_FLOWER_ROW, getAssetFilename('poke_flower_pot_circular'));
+    addProp(
+      'lamp',
+      bx + midX - 2,
+      by + LEAGUE_UPPER_LAMP_ROW,
+      getAssetFilename('poke_street_lamp')
+    );
+    addProp(
+      'lamp',
+      bx + midX + 1,
+      by + LEAGUE_UPPER_LAMP_ROW,
+      getAssetFilename('poke_street_lamp_left')
+    );
+    addProp(
+      'flower',
+      bx + midX - 3,
+      by + LEAGUE_UPPER_FLOWER_ROW,
+      getAssetFilename('poke_flower_pot_circular')
+    );
+    addProp(
+      'flower',
+      bx + midX + 2,
+      by + LEAGUE_UPPER_FLOWER_ROW,
+      getAssetFilename('poke_flower_pot_circular')
+    );
 
     // Mid Plateau / Approach:
-    addProp('lamp', bx + midX - 2, by + LEAGUE_APPROACH_LAMP_ROW, getAssetFilename('poke_street_lamp'));
-    addProp('lamp', bx + midX + 1, by + LEAGUE_APPROACH_LAMP_ROW, getAssetFilename('poke_street_lamp_left'));
-    addProp('flower', bx + midX - 3, by + LEAGUE_APPROACH_FLOWER_ROW, getAssetFilename('poke_flower_pot_circular'));
-    addProp('flower', bx + midX + 2, by + LEAGUE_APPROACH_FLOWER_ROW, getAssetFilename('poke_flower_pot_circular'));
+    addProp(
+      'lamp',
+      bx + midX - 2,
+      by + LEAGUE_APPROACH_LAMP_ROW,
+      getAssetFilename('poke_street_lamp')
+    );
+    addProp(
+      'lamp',
+      bx + midX + 1,
+      by + LEAGUE_APPROACH_LAMP_ROW,
+      getAssetFilename('poke_street_lamp_left')
+    );
+    addProp(
+      'flower',
+      bx + midX - 3,
+      by + LEAGUE_APPROACH_FLOWER_ROW,
+      getAssetFilename('poke_flower_pot_circular')
+    );
+    addProp(
+      'flower',
+      bx + midX + 2,
+      by + LEAGUE_APPROACH_FLOWER_ROW,
+      getAssetFilename('poke_flower_pot_circular')
+    );
   } else if (node.type === 'route_gate') {
     // ------------------------------------------------------------------------
     // ROUTE GATE CHECKPOINT: 6x6 to 8x8 Cells
@@ -221,7 +270,9 @@ export function generateSettlementLayout(
     // 2-cell path running through gate, flanked by wooden barrier fences
     // ------------------------------------------------------------------------
     const isHorizontal = node.facing === 'east' || node.facing === 'west';
-    const gateMeta = getBuildingPrefabMeta(isHorizontal ? 'gatehouse_route_horizontal' : 'gatehouse_route');
+    const gateMeta = getBuildingPrefabMeta(
+      isHorizontal ? 'gatehouse_route_horizontal' : 'gatehouse_route'
+    );
     const midX = Math.floor(W / 2);
     const gx = bx + Math.floor((W - gateMeta.width) / 2);
     const gy = by + Math.floor((H - gateMeta.height) / 2);
@@ -246,10 +297,14 @@ export function generateSettlementLayout(
     }
 
     // Biome-aware lateral barrier fences and scenery props:
-    const isMountain = node.terrainPreference === 'mountain_plateau' || /mountain|desfiladero|rock|pass/i.test(node.id);
+    const isMountain =
+      node.terrainPreference === 'mountain_plateau' ||
+      /mountain|desfiladero|rock|pass/i.test(node.id);
     const isMetropolis = /metro|frontera|city/i.test(node.id);
 
-    const fenceAsset = getAssetFilename(isMountain ? 'poke_fence_wood_h' : 'poke_fence_white_h_mid');
+    const fenceAsset = getAssetFilename(
+      isMountain ? 'poke_fence_wood_h' : 'poke_fence_white_h_mid'
+    );
     const lateralReach = 8;
     const isPassableFenceCell = (x: number, y: number): boolean => {
       const Wmax = context?.width ?? 9999;
@@ -270,7 +325,11 @@ export function generateSettlementLayout(
           if (context?.heightmap && (context.heightmap[ny]?.[nx] ?? 0) > 0) return false;
           if (context?.occupiedFootCells?.[ny]?.[nx]) return false;
           const role = context?.mountainCellRoles?.[ny]?.[nx];
-          if (role && (role.includes('stairs') || role.includes('cliff') || role.includes('edge_south'))) return false;
+          if (
+            role &&
+            (role.includes('stairs') || role.includes('cliff') || role.includes('edge_south'))
+          )
+            return false;
         }
       }
       return true;
@@ -305,10 +364,25 @@ export function generateSettlementLayout(
     if (isMountain) {
       // Mountain Gorge: Boulders reinforcing the choke point
       if (isHorizontal) {
-        addProp('rock', gx + Math.floor(gateMeta.width / 2), gy - 1 >= by ? gy - 1 : by, getAssetFilename('poke_cave_boulder_rock'));
+        addProp(
+          'rock',
+          gx + Math.floor(gateMeta.width / 2),
+          gy - 1 >= by ? gy - 1 : by,
+          getAssetFilename('poke_cave_boulder_rock')
+        );
       } else {
-        addProp('rock', gx - 1 >= bx ? gx - 1 : bx, gy + gateMeta.height - 1, getAssetFilename('poke_cave_boulder_rock'));
-        addProp('rock', gx + gateMeta.width < bx + W ? gx + gateMeta.width : bx + W - 1, gy + gateMeta.height - 1, getAssetFilename('poke_cave_rubble_stones'));
+        addProp(
+          'rock',
+          gx - 1 >= bx ? gx - 1 : bx,
+          gy + gateMeta.height - 1,
+          getAssetFilename('poke_cave_boulder_rock')
+        );
+        addProp(
+          'rock',
+          gx + gateMeta.width < bx + W ? gx + gateMeta.width : bx + W - 1,
+          gy + gateMeta.height - 1,
+          getAssetFilename('poke_cave_rubble_stones')
+        );
       }
     } else if (isMetropolis) {
       // Symmetrical street lamps north for vertical gatehouses
@@ -321,9 +395,19 @@ export function generateSettlementLayout(
     // Official route signpost and flowers outside gate entrance
     if (isHorizontal) {
       addProp('signpost', gx + 2, gy + gateMeta.height, getAssetFilename('poke_signpost'));
-      addProp('flower', gx + GATE_HORIZONTAL_FLOWER_OFFSET_X, gy + gateMeta.height, getAssetFilename('poke_flowers_red'));
+      addProp(
+        'flower',
+        gx + GATE_HORIZONTAL_FLOWER_OFFSET_X,
+        gy + gateMeta.height,
+        getAssetFilename('poke_flowers_red')
+      );
     } else {
-      addProp('signpost', gx - 1 >= bx ? gx - 1 : gx + gateMeta.width, gy + gateMeta.height, getAssetFilename('poke_signpost'));
+      addProp(
+        'signpost',
+        gx - 1 >= bx ? gx - 1 : gx + gateMeta.width,
+        gy + gateMeta.height,
+        getAssetFilename('poke_signpost')
+      );
       addProp('flower', gx, gy + gateMeta.height, getAssetFilename('poke_flowers_red'));
     }
   } else if (node.type === 'dungeon_forest') {
@@ -425,12 +509,32 @@ export function generateSettlementLayout(
       addContinuousFenceRun(southGateY + 2, southGateX + gateMeta.width, actualSRight);
 
       // Forest Props: Trainer tips sign outside south and north gates
-      addProp('signpost', bx + midX + 2, southGateY - 1, getAssetFilename('poke_trainer_tips_sign'));
-      addProp('signpost', bx + midX + 2, northGateY + gateMeta.height + 1, getAssetFilename('poke_signpost'));
+      addProp(
+        'signpost',
+        bx + midX + 2,
+        southGateY - 1,
+        getAssetFilename('poke_trainer_tips_sign')
+      );
+      addProp(
+        'signpost',
+        bx + midX + 2,
+        northGateY + gateMeta.height + 1,
+        getAssetFilename('poke_signpost')
+      );
 
       // Natural mossy boulders in the trail elbows justifying directional turns
-      addProp('flower', bx + midX + 2, by + southTurnY - 2, getAssetFilename('poke_rock_boulder_mossy_1'));
-      addProp('flower', bx + westX + 2, by + northTurnY + 2, getAssetFilename('poke_rock_boulder_mossy_2'));
+      addProp(
+        'flower',
+        bx + midX + 2,
+        by + southTurnY - 2,
+        getAssetFilename('poke_rock_boulder_mossy_1')
+      );
+      addProp(
+        'flower',
+        bx + westX + 2,
+        by + northTurnY + 2,
+        getAssetFilename('poke_rock_boulder_mossy_2')
+      );
     }
   }
 
@@ -466,7 +570,7 @@ export function generateSettlementLayout(
       if (overlapX && overlapY) {
         throw new Error(
           `[cityLayoutEngine] Destructive building collision in settlement '${node.id}': ` +
-          `'${a.id}' (${a.width}x${a.height} at ${a.x},${a.y}) overlaps '${b.id}' (${b.width}x${b.height} at ${b.x},${b.y})`
+            `'${a.id}' (${a.width}x${a.height} at ${a.x},${a.y}) overlaps '${b.id}' (${b.width}x${b.height} at ${b.x},${b.y})`
         );
       }
     }
@@ -474,9 +578,10 @@ export function generateSettlementLayout(
 
   // Route gates are walkthrough checkpoint buildings: their central 2-cell corridor passes directly
   // through the archway and must be preserved as internal streets rather than filtered out by buildingMask.
-  const safeInternalStreets = node.type === 'route_gate'
-    ? internalStreets
-    : internalStreets.filter((s) => !buildingMask.has(`${s.x}_${s.y}`));
+  const safeInternalStreets =
+    node.type === 'route_gate'
+      ? internalStreets
+      : internalStreets.filter((s) => !buildingMask.has(`${s.x}_${s.y}`));
   const safePavedPlazaCells = pavedPlazaCells.filter((p) => !buildingMask.has(`${p.x}_${p.y}`));
   const safeProps = props.filter((p) => !buildingMask.has(`${p.x}_${p.y}`));
 

@@ -1,16 +1,16 @@
 /**
  * src/logic/validation/schemas.ts
- * 
+ *
  * Lightweight, tree-shakable, zero-fallback validation schemas using Valibot.
  * Secures data boundaries at network, state, and local DB layers.
  * Follows strict Domain-Type-First governance and fail-fast validation.
  */
 
-import { 
-  object, 
-  string, 
-  number, 
-  safeParse, 
+import {
+  object,
+  string,
+  number,
+  safeParse,
   union,
   array,
   record,
@@ -26,7 +26,13 @@ import {
 
 import { pokemonSchema, pokemonEggSchema, daycareEggSchema } from './subschemas/pokemonSchemas.ts';
 import { activeBattleSchema } from './subschemas/battleSchemas.ts';
-import { daycareMissionSchema, claimItemSchema, notificationItemSchema, tradeOfferSchema, gtsListingSchema } from './subschemas/socialSchemas.ts';
+import {
+  daycareMissionSchema,
+  claimItemSchema,
+  notificationItemSchema,
+  tradeOfferSchema,
+  gtsListingSchema
+} from './subschemas/socialSchemas.ts';
 import {
   userProfileSchema,
   trainerNameSchema,
@@ -104,11 +110,13 @@ export const classDataSchema = object({
   reputation: number(),
   blackMarketSales: number(),
   criminality: number(),
-  blackMarketDaily: optional(object({
-    date: string(),
-    items: array(string()),
-    purchased: array(string())
-  })),
+  blackMarketDaily: optional(
+    object({
+      date: string(),
+      items: array(string()),
+      purchased: array(string())
+    })
+  ),
   activeMission: optional(nullable(activeMissionSchema)),
   extortedRouteId: optional(nullable(string())),
   extortedRouteTimestamp: optional(nullable(string())),
@@ -132,11 +140,13 @@ export const saveDataSchema = object({
   trainerExpNeeded: number(),
   trainerChance: optional(number()),
   inventory: record(string(), number()),
-  map: optional(object({
-    currentMap: string(),
-    region: string(),
-    lastNavigateAt: number()
-  })),
+  map: optional(
+    object({
+      currentMap: string(),
+      region: string(),
+      lastNavigateAt: number()
+    })
+  ),
   team: array(pokemonSchema),
   box: array(nullable(pokemonSchema)),
   pokedex: array(string()),
@@ -186,7 +196,11 @@ export const saveDataSchema = object({
   daycareWarehouse: optional(array(union([daycareEggSchema, pokemonSchema]))),
   boxCount: number(),
   chats: optional(record(string(), unknown())),
-  playerClass: optional(nullable(union([literal('cazabichos'), literal('criador'), literal('rocket'), literal('entrenador')]))),
+  playerClass: optional(
+    nullable(
+      union([literal('cazabichos'), literal('criador'), literal('rocket'), literal('entrenador')])
+    )
+  ),
   classLevel: number(),
   classXP: number(),
   classData: classDataSchema,
@@ -206,7 +220,9 @@ export const saveDataSchema = object({
   dailyGymRematches: optional(record(string(), string())),
   warTeam: optional(array(string())),
   warSlots: optional(number()),
-  notificationHistory: optional(array(union([notificationItemSchema, string(), record(string(), unknown())]))),
+  notificationHistory: optional(
+    array(union([notificationItemSchema, string(), record(string(), unknown())]))
+  ),
   marketSoldSeenIds: optional(array(union([string(), number()]))),
   lastPokemonCenterHeal: number(),
   playtime: number(),
@@ -262,9 +278,8 @@ export type SaveDataDto = InferOutput<typeof saveDataSchema>;
 export type SaveDataInputDto = InferInput<typeof saveDataSchema>;
 
 // Compile-time persistence assertion: SaveDataDto must cover 100% of PersistedGameState keys
-type AssertSaveSchemaParity<TActual, TExpected> =
-  [keyof TExpected] extends [keyof TActual]
-    ? true
-    : { missingInSchema: Exclude<keyof TExpected, keyof TActual> };
+type AssertSaveSchemaParity<TActual, TExpected> = [keyof TExpected] extends [keyof TActual]
+  ? true
+  : { missingInSchema: Exclude<keyof TExpected, keyof TActual> };
 
 export type _VerifySaveDataSchemaParity = AssertSaveSchemaParity<SaveDataDto, PersistedGameState>;

@@ -45,9 +45,7 @@ describe('Pokemon Topology Graph Generator (Phase 1)', () => {
     const starterEdges = graph.edges.filter(
       (e) => e.fromId === starter.id || e.toId === starter.id
     );
-    const leagueEdges = graph.edges.filter(
-      (e) => e.fromId === league.id || e.toId === league.id
-    );
+    const leagueEdges = graph.edges.filter((e) => e.fromId === league.id || e.toId === league.id);
 
     expect(starterEdges.length).toBe(1);
     expect(leagueEdges.length).toBe(1);
@@ -67,9 +65,7 @@ describe('Pokemon Topology Graph Generator (Phase 1)', () => {
 
   it('contains between 3 and 5 cycles, including at least 1 surf route', () => {
     const graph = generatePokemonTopology({ seed: 999 });
-    const cycleEdges = graph.edges.filter(
-      (e) => e.kind === 'cycle' || e.kind === 'surf_route'
-    );
+    const cycleEdges = graph.edges.filter((e) => e.kind === 'cycle' || e.kind === 'surf_route');
     const surfEdges = graph.edges.filter((e) => e.kind === 'surf_route');
 
     expect(cycleEdges.length).toBeGreaterThanOrEqual(3);

@@ -8,17 +8,21 @@
   .base-modal-card.battle-arena-modal {
     border: 1px solid Rgb(255 255 255 / 15%) !important;
     background: var(--slate-900, #1c2135) !important;
-    overflow: hidden !important; 
-    background-image: Radial-Gradient(circle at 0% 0%, Rgb(255 255 255 / 12%) 0%, transparent 70%) !important;
+    overflow: hidden !important;
+    background-image: Radial-Gradient(
+      circle at 0% 0%,
+      Rgb(255 255 255 / 12%) 0%,
+      transparent 70%
+    ) !important;
     box-shadow: var(--shadow-2xl);
-    
+
     .modal-scrollable-content.padding-raw {
       display: flex !important;
       flex-direction: column !important;
       width: 100% !important;
       max-width: 100dvw !important;
       height: 100% !important;
-      min-height: 0 !important; 
+      min-height: 0 !important;
       max-height: 100% !important;
       padding: 0 !important;
       flex: 1 !important;

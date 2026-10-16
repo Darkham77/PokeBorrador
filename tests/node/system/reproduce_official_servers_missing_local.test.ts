@@ -6,12 +6,16 @@
  * cleanly even on clean clones where servers.local.json has not yet been generated.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 import { execSync } from 'node:child_process';
-import { OFFICIAL_SERVERS, DEFAULT_SERVER, OFFICIAL_SERVERS_BY_ID } from '../../../src/data/system/official_servers.ts';
+import {
+  OFFICIAL_SERVERS,
+  DEFAULT_SERVER,
+  OFFICIAL_SERVERS_BY_ID
+} from '../../../src/data/system/official_servers.ts';
 
 describe('Official Servers Missing Local Reproduction', () => {
   const localJsonPath = path.resolve(process.cwd(), 'src/data/system/servers.local.json');
@@ -42,12 +46,14 @@ describe('Official Servers Missing Local Reproduction', () => {
         parsedConfig.options
       );
 
-      const sourceFile = program.getSourceFile(path.resolve(process.cwd(), 'src/data/system/official_servers.ts'));
+      const sourceFile = program.getSourceFile(
+        path.resolve(process.cwd(), 'src/data/system/official_servers.ts')
+      );
       expect(sourceFile).toBeDefined();
 
       const diagnostics = ts.getPreEmitDiagnostics(program, sourceFile);
-      const errors = diagnostics.filter(d => d.category === ts.DiagnosticCategory.Error);
-      const ts2306 = errors.find(e => e.code === 2306);
+      const errors = diagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error);
+      const ts2306 = errors.find((e) => e.code === 2306);
 
       expect(ts2306).toBeUndefined();
       expect(errors).toHaveLength(0);
@@ -78,7 +84,8 @@ describe('Official Servers Missing Local Reproduction', () => {
   });
 
   it('compiles servers strictly from environment profiles and preserves official_prod as default', async () => {
-    const { configureOfficialServers } = await import('../../../scripts/maintenance/configure_official_servers.ts');
+    const { configureOfficialServers } =
+      await import('../../../scripts/maintenance/configure_official_servers.ts');
     process.env['SERVER_ci_extra_ID'] = 'ci_extra_server';
     process.env['SERVER_ci_extra_NAME'] = 'CI Extra Server';
     process.env['SERVER_ci_extra_SUPABASE_PUBLIC_URL'] = 'https://extra.supabase.co';
@@ -86,10 +93,13 @@ describe('Official Servers Missing Local Reproduction', () => {
 
     try {
       await configureOfficialServers();
-      const generated = JSON.parse(fs.readFileSync(localJsonPath, 'utf-8')) as Array<{ id: string; isDefault?: boolean }>;
-      const officialProd = generated.find(s => s.id === 'official_prod');
-      const ciExtra = generated.find(s => s.id === 'ci_extra_server');
-      
+      const generated = JSON.parse(fs.readFileSync(localJsonPath, 'utf-8')) as Array<{
+        id: string;
+        isDefault?: boolean;
+      }>;
+      const officialProd = generated.find((s) => s.id === 'official_prod');
+      const ciExtra = generated.find((s) => s.id === 'ci_extra_server');
+
       expect(officialProd).toBeDefined();
       expect(officialProd?.isDefault).toBe(true);
       expect(ciExtra).toBeDefined();
@@ -105,7 +115,8 @@ describe('Official Servers Missing Local Reproduction', () => {
   });
 
   it('throws a loud critical error when no profiles exist in env or process.env', async () => {
-    const { configureOfficialServers } = await import('../../../scripts/maintenance/configure_official_servers.ts');
+    const { configureOfficialServers } =
+      await import('../../../scripts/maintenance/configure_official_servers.ts');
     const savedEnv: Record<string, string | undefined> = {};
     for (const key of Object.keys(process.env)) {
       if (key.startsWith('SERVER_')) {
@@ -140,10 +151,13 @@ describe('Official Servers Missing Local Reproduction', () => {
       fs.writeFileSync(localJsonPath, '[]', 'utf-8');
       let errorThrown = false;
       try {
-        execSync('node --experimental-strip-types -e "import(\'./src/data/system/official_servers.ts\')"', {
-          cwd: process.cwd(),
-          stdio: 'pipe'
-        });
+        execSync(
+          'node --experimental-strip-types -e "import(\'./src/data/system/official_servers.ts\')"',
+          {
+            cwd: process.cwd(),
+            stdio: 'pipe'
+          }
+        );
       } catch (err: unknown) {
         errorThrown = true;
         const stderr = String((err as { stderr?: Buffer }).stderr ?? '');

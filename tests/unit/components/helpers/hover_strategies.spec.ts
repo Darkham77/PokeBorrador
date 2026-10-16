@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { getHoverEnterStrategy, getHoverLeaveStrategy } from '@/logic/hover/hoverStrategies';
 
 describe('Hover Strategies Domain Suite (Tier 1)', () => {
@@ -202,7 +202,9 @@ describe('Hover Strategies Domain Suite (Tier 1)', () => {
 
       const trainerPending = document.createElement('div');
       trainerPending.className = 'trainer-card pending';
-      expect(getHoverLeaveStrategy(trainerPending).targetBorderColor).toBe('rgba(157, 78, 221, 0.25)');
+      expect(getHoverLeaveStrategy(trainerPending).targetBorderColor).toBe(
+        'rgba(157, 78, 221, 0.25)'
+      );
     });
 
     it('handles display cards leave borders (pokemon-display-card, shop-item-card, box-pokemon-card)', () => {
@@ -234,7 +236,9 @@ describe('Hover Strategies Domain Suite (Tier 1)', () => {
 
       const eggNotReady = document.createElement('div');
       eggNotReady.className = 'egg-card';
-      expect(getHoverLeaveStrategy(eggNotReady).targetBorderColor).toBe('rgba(255, 255, 255, 0.08)');
+      expect(getHoverLeaveStrategy(eggNotReady).targetBorderColor).toBe(
+        'rgba(255, 255, 255, 0.08)'
+      );
 
       const pcBanner = document.createElement('div');
       pcBanner.className = 'pokecenter-banner';

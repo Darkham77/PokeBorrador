@@ -1,42 +1,39 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
+import { computed } from 'vue';
+import { useGameStore } from '@/stores/game';
 
 interface Props {
-  context: string
-  canEvolveStone?: boolean
-  extra?: { offerId?: string; price?: number; type?: string } | null
+  context: string;
+  canEvolveStone?: boolean;
+  extra?: { offerId?: string; price?: number; type?: string } | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   canEvolveStone: false,
   extra: null
-})
+});
 
 const emit = defineEmits<{
-  (e: 'buy'): void
-  (e: 'evolve'): void
-}>()
+  (e: 'buy'): void;
+  (e: 'evolve'): void;
+}>();
 
-const gameStore = useGameStore()
+const gameStore = useGameStore();
 
 const canBuy = computed(() => {
-  if (!props.extra || props.extra.price === undefined) return false
-  return gameStore.state.money >= props.extra.price
-})
+  if (!props.extra || props.extra.price === undefined) return false;
+  return gameStore.state.money >= props.extra.price;
+});
 
 const hasActions = computed(() => {
-  if (props.context === 'team' || props.context === 'box') return props.canEvolveStone
-  if (props.context === 'market') return !!props.extra
-  return false
-})
+  if (props.context === 'team' || props.context === 'box') return props.canEvolveStone;
+  if (props.context === 'market') return !!props.extra;
+  return false;
+});
 </script>
 
 <template>
-  <footer
-    v-if="hasActions"
-    class="modal-footer"
-  >
+  <footer v-if="hasActions" class="modal-footer">
     <!-- Evolution Action -->
     <button
       v-if="(context === 'team' || context === 'box') && canEvolveStone"
@@ -48,16 +45,11 @@ const hasActions = computed(() => {
     </button>
 
     <!-- Market Purchase Action -->
-    <div
-      v-if="context === 'market' && extra"
-      class="purchase-zone"
-    >
-      <div class="price">
-        ₽{{ extra.price }}
-      </div>
+    <div v-if="context === 'market' && extra" class="purchase-zone">
+      <div class="price">₽{{ extra.price }}</div>
       <button
-        id="pokemon-action-footer-btn-1" 
-        class="buy-btn" 
+        id="pokemon-action-footer-btn-1"
+        class="buy-btn"
         :disabled="!canBuy"
         @click.stop="emit('buy')"
       >
@@ -69,7 +61,7 @@ const hasActions = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .modal-footer {
   padding: 24px 32px;

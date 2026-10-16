@@ -1,49 +1,44 @@
 <script setup lang="ts">
-
-import { ref, computed } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { GAME_UI_EVENTS } from '@/types/system/gameEvents.ts'
-import { useWindowListener } from '@/composables/ui/useWindowListener'
+import { ref, computed } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { GAME_UI_EVENTS } from '@/types/system/gameEvents.ts';
+import { useWindowListener } from '@/composables/ui/useWindowListener';
 
 // Sub-components
-import LocalDebugTabContent from './LocalDebugTabContent.vue'
-import { DEBUG_PANEL_CATEGORIES } from './debug/debugPanelCategories.ts'
+import LocalDebugTabContent from './LocalDebugTabContent.vue';
+import { DEBUG_PANEL_CATEGORIES } from './debug/debugPanelCategories.ts';
 
-import BaseModal from '@/components/common/BaseModal.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import BaseModal from '@/components/common/BaseModal.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
-import { useDebugStore } from '@/stores/debug'
+import { useDebugStore } from '@/stores/debug';
 
-const auth = useAuthStore()
-const debugStore = useDebugStore()
-const canAccess = computed(() => debugStore.canAccess)
+const auth = useAuthStore();
+const debugStore = useDebugStore();
+const canAccess = computed(() => debugStore.canAccess);
 
-const isOpen = ref(false)
-const selectedCategory = ref('stats')
+const isOpen = ref(false);
+const selectedCategory = ref('stats');
 
 const openShadowEditor = () => {
-  isOpen.value = false
-  window.open('/dev/shadow-editor', '_blank')
-}
+  isOpen.value = false;
+  window.open('/dev/shadow-editor', '_blank');
+};
 
 const openAdventureSuite = () => {
-  isOpen.value = false
-  window.open('/test_aventura/index.html', '_blank')
-}
+  isOpen.value = false;
+  window.open('/test_aventura/index.html', '_blank');
+};
 
 const closeForBattleEntry = () => {
-  isOpen.value = false
-}
+  isOpen.value = false;
+};
 
-useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
+useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry);
 </script>
 
 <template>
-  <div
-    v-if="canAccess"
-    id="debug-trigger"
-    class="debug-trigger"
-  >
+  <div v-if="canAccess" id="debug-trigger" class="debug-trigger">
     <button
       id="debug-trigger-btn"
       class="trigger-btn"
@@ -77,18 +72,8 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
         @mousedown.stop
       >
         <div class="debug-status-bar">
-          <span
-            v-if="auth.sessionMode === 'offline'"
-            class="badge offline"
-          >
-            MODO LOCAL
-          </span>
-          <span
-            v-else
-            class="badge admin"
-          >
-            ADMIN ONLINE
-          </span>
+          <span v-if="auth.sessionMode === 'offline'" class="badge offline"> MODO LOCAL </span>
+          <span v-else class="badge admin"> ADMIN ONLINE </span>
           <button
             id="debug-shadow-editor-btn"
             class="badge shadow-btn"
@@ -109,16 +94,9 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
           </button>
         </div>
 
-        <nav
-          id="debug-nav"
-          class="debug-nav"
-        >
-          <PVTooltip
-            v-for="cat in DEBUG_PANEL_CATEGORIES" 
-            :key="cat.id"
-            :title="cat.desc"
-          >
-            <button 
+        <nav id="debug-nav" class="debug-nav">
+          <PVTooltip v-for="cat in DEBUG_PANEL_CATEGORIES" :key="cat.id" :title="cat.desc">
+            <button
               :id="'debug-tab-' + cat.id"
               :class="{ active: selectedCategory === cat.id }"
               @click.stop="selectedCategory = cat.id"
@@ -128,22 +106,18 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
           </PVTooltip>
         </nav>
 
-        <LocalDebugTabContent
-          :selected-category="selectedCategory"
-          @close="isOpen = false"
-        />
+        <LocalDebugTabContent :selected-category="selectedCategory" @close="isOpen = false" />
       </div>
     </BaseModal>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .debug-trigger {
   position: relative;
   z-index: var(--z-max);
-  
 }
 
 .trigger-btn {
@@ -201,8 +175,16 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
   line-height: 1;
   text-transform: uppercase;
 
-  &.offline { border: 1px solid Rgb(52 211 153 / 20%); background: Rgb(52 211 153 / 10%); color: $green; }
-  &.admin { border: 1px solid Rgb(248 113 113 / 20%); background: Rgb(248 113 113 / 10%); color: $red; }
+  &.offline {
+    border: 1px solid Rgb(52 211 153 / 20%);
+    background: Rgb(52 211 153 / 10%);
+    color: $green;
+  }
+  &.admin {
+    border: 1px solid Rgb(248 113 113 / 20%);
+    background: Rgb(248 113 113 / 10%);
+    color: $red;
+  }
   &.shadow-btn {
     border: 1px solid Rgb(168 85 247 / 30%);
     background: Rgb(168 85 247 / 15%);
@@ -254,9 +236,11 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
     font-size: var(--font-8);
     flex: 1;
     cursor: pointer;
-    
 
-    &:hover { background: Rgb(255 255 255 / 5%); color: $white; }
+    &:hover {
+      background: Rgb(255 255 255 / 5%);
+      color: $white;
+    }
     &.active {
       background: Rgb(124 58 237 / 15%);
       color: $purple;
@@ -264,11 +248,10 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
     }
   }
 }
-
 </style>
 
 <style lang="scss">
-@use "@/styles/components/debug" as *;
+@use '@/styles/components/debug' as *;
 
 /* Global overrides for debug panel scrollbar (fix scoped violation) */
 .debug-content {
@@ -281,7 +264,9 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
   &::-webkit-scrollbar-thumb {
     border-radius: $radius-lg-alt;
     background: Rgb(255 255 255 / 5%);
-    &:hover { background: Rgb(255 255 255 / 10%); }
+    &:hover {
+      background: Rgb(255 255 255 / 10%);
+    }
   }
 }
 

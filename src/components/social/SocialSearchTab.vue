@@ -1,48 +1,49 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue'
-import { useSocialStore } from '@/stores/social/social'
-import { useUIStore } from '@/stores/ui'
-import TrainerCard from './TrainerCard.vue'
-import SocialSearchResultActions from './SocialSearchResultActions.vue'
-import { gsap } from 'gsap'
+import { ref, onMounted, watch, nextTick } from 'vue';
+import { useSocialStore } from '@/stores/social/social';
+import { useUIStore } from '@/stores/ui';
+import TrainerCard from './TrainerCard.vue';
+import SocialSearchResultActions from './SocialSearchResultActions.vue';
+import { gsap } from 'gsap';
 
-const socialStore = useSocialStore()
-const uiStore = useUIStore()
-const searchQuery = ref('')
-const filterClass = ref('')
-const filterFaction = ref('')
-const listRef = ref<HTMLElement | null>(null)
+import { MIN_SEARCH_QUERY_LENGTH } from '@/logic/constants/gameplay';
 
-const MIN_SEARCH_QUERY_LENGTH = 2
-const SEARCH_CARD_AVATAR_SIZE_PX = 40
-const LOADER_SPINNER_ROTATION_DEG = 360
-const CARD_ANIM_X_OFFSET = -20
-const CARD_ANIM_SCALE_MIN = 0.95
-const CARD_ANIM_DURATION_SEC = 0.45
-const CARD_ANIM_STAGGER_SEC = 0.06
+const socialStore = useSocialStore();
+const uiStore = useUIStore();
+const searchQuery = ref('');
+const filterClass = ref('');
+const filterFaction = ref('');
+const listRef = ref<HTMLElement | null>(null);
+
+const SEARCH_CARD_AVATAR_SIZE_PX = 40;
+const LOADER_SPINNER_ROTATION_DEG = 360;
+const CARD_ANIM_X_OFFSET = -20;
+const CARD_ANIM_SCALE_MIN = 0.95;
+const CARD_ANIM_DURATION_SEC = 0.45;
+const CARD_ANIM_STAGGER_SEC = 0.06;
 
 function openTrainerProfile(userId: string) {
-  uiStore.open('TrainerProfile', { userId })
+  uiStore.open('TrainerProfile', { userId });
 }
 
 async function handleSearch() {
   if (searchQuery.value.length < MIN_SEARCH_QUERY_LENGTH) {
-    socialStore.searchResults = []
-    return
+    socialStore.searchResults = [];
+    return;
   }
   await socialStore.searchPlayers(searchQuery.value, {
     playerClass: filterClass.value || undefined,
     faction: filterFaction.value || undefined
-  })
+  });
 }
 
 function animateCards() {
   nextTick(() => {
-    if (!listRef.value) return
-    const cards = listRef.value.querySelectorAll('.trainer-card')
+    if (!listRef.value) return;
+    const cards = listRef.value.querySelectorAll('.trainer-card');
     if (cards.length > 0) {
-      listRef.value.classList.add('tab-mounting')
-      gsap.killTweensOf(cards)
+      listRef.value.classList.add('tab-mounting');
+      gsap.killTweensOf(cards);
       gsap.from(cards, {
         opacity: 0,
         x: CARD_ANIM_X_OFFSET,
@@ -52,71 +53,75 @@ function animateCards() {
         ease: 'back.out(1.2)',
         clearProps: 'all',
         onComplete: () => {
-          listRef.value?.classList.remove('tab-mounting')
+          listRef.value?.classList.remove('tab-mounting');
         }
-      })
+      });
     }
-  })
+  });
 }
 
-const loaderTween = ref<gsap.core.Tween | null>(null)
-const loaderMiniRef = ref<HTMLElement | null>(null)
+const loaderTween = ref<gsap.core.Tween | null>(null);
+const loaderMiniRef = ref<HTMLElement | null>(null);
 
-watch(() => socialStore.searchLoading, (loading) => {
-  nextTick(() => {
-    if (loading) {
-      if (!loaderTween.value && loaderMiniRef.value) {
-        loaderTween.value = gsap.to(loaderMiniRef.value, {
-          rotation: LOADER_SPINNER_ROTATION_DEG,
-          duration: 0.8,
-          repeat: -1,
-          ease: 'none'
-        })
+watch(
+  () => socialStore.searchLoading,
+  (loading) => {
+    nextTick(() => {
+      if (loading) {
+        if (!loaderTween.value && loaderMiniRef.value) {
+          loaderTween.value = gsap.to(loaderMiniRef.value, {
+            rotation: LOADER_SPINNER_ROTATION_DEG,
+            duration: 0.8,
+            repeat: -1,
+            ease: 'none'
+          });
+        }
+      } else {
+        if (loaderTween.value) {
+          loaderTween.value.kill();
+          loaderTween.value = null;
+        }
       }
-    } else {
-      if (loaderTween.value) {
-        loaderTween.value.kill()
-        loaderTween.value = null
-      }
-    }
-  })
-}, { immediate: true })
+    });
+  },
+  { immediate: true }
+);
 
-import { onUnmounted } from 'vue'
+import { onUnmounted } from 'vue';
 onUnmounted(() => {
   if (loaderTween.value) {
-    loaderTween.value.kill()
+    loaderTween.value.kill();
   }
-})
+});
 
 onMounted(() => {
-  animateCards()
-})
+  animateCards();
+});
 
 watch([filterClass, filterFaction], () => {
-  handleSearch()
-})
+  handleSearch();
+});
 
-watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
-  animateCards()
-})
+watch(
+  () => socialStore.searchResults.map((p) => p.id).join(','),
+  () => {
+    animateCards();
+  }
+);
 </script>
 
 <template>
   <div class="social-tab-content">
     <div class="search-bar">
-      <input 
+      <input
         id="social-search-input"
-        v-model="searchQuery" 
-        type="text" 
-        placeholder="Nombre del entrenador o usuario..." 
+        v-model="searchQuery"
+        type="text"
+        placeholder="Nombre del entrenador o usuario..."
+        aria-label="Buscar entrenadores"
         @input="handleSearch"
-      >
-      <span
-        v-if="socialStore.searchLoading"
-        ref="loaderMiniRef"
-        class="loader-mini"
       />
+      <span v-if="socialStore.searchLoading" ref="loaderMiniRef" class="loader-mini" />
     </div>
 
     <div class="search-filters">
@@ -126,16 +131,11 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
           id="social-search-faction-select"
           v-model="filterFaction"
           class="filter-select"
+          aria-label="Filtrar por facción"
         >
-          <option value="">
-            Todas
-          </option>
-          <option value="union">
-            Team Unión
-          </option>
-          <option value="poder">
-            Team Poder
-          </option>
+          <option value="">Todas</option>
+          <option value="union">Team Unión</option>
+          <option value="poder">Team Poder</option>
         </select>
       </div>
 
@@ -145,38 +145,29 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
           id="social-search-class-select"
           v-model="filterClass"
           class="filter-select"
+          aria-label="Filtrar por clase"
         >
-          <option value="">
-            Todas
-          </option>
-          <option value="entrenador">
-            Entrenador
-          </option>
-          <option value="rocket">
-            Rocket
-          </option>
-          <option value="cazador">
-            Cazador
-          </option>
-          <option value="profesor">
-            Profesor
-          </option>
+          <option value="">Todas</option>
+          <option value="entrenador">Entrenador</option>
+          <option value="rocket">Rocket</option>
+          <option value="cazador">Cazador</option>
+          <option value="profesor">Profesor</option>
         </select>
       </div>
     </div>
 
     <div
-      v-if="socialStore.searchResults.length === 0 && searchQuery.length >= MIN_SEARCH_QUERY_LENGTH && !socialStore.searchLoading"
+      v-if="
+        socialStore.searchResults.length === 0 &&
+        searchQuery.length >= MIN_SEARCH_QUERY_LENGTH &&
+        !socialStore.searchLoading
+      "
       class="no-results"
     >
       No se encontraron entrenadores.
     </div>
 
-    <div
-      v-else
-      ref="listRef"
-      class="search-results"
-    >
+    <div v-else ref="listRef" class="search-results">
       <TrainerCard
         v-for="player in socialStore.searchResults"
         id="social-search-tab-trainercard-1"
@@ -198,7 +189,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .search-filters {
   display: flex;
@@ -241,7 +232,8 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
   background-position: right 10px center;
   padding-right: 28px;
 
-  &:focus, &:hover {
+  &:focus,
+  &:hover {
     border-color: var(--purple-light);
     box-shadow: var(--shadow-glow-amber);
   }
@@ -266,12 +258,12 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
     font-size: var(--font-14);
     outline: none;
 
-    &:focus { 
-      border-color: var(--purple-light); 
+    &:focus {
+      border-color: var(--purple-light);
       box-shadow: var(--shadow-glow-amber);
     }
   }
-  
+
   .loader-mini {
     position: absolute;
     top: 50%;

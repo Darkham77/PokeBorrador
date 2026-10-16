@@ -1,4 +1,4 @@
-import type { PokemonType } from '@/data/battle/types'
+import type { PokemonType } from '@/data/battle/types';
 
 export interface SpeciesSummaryData {
   nationalId?: string; // domain-ok: Formatted national dex display string "#001"
@@ -14,4 +14,3 @@ export interface DetailSpeciesHeaderData {
   name: string;
   type: PokemonType[];
 }
-

@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import MapCard from './MapCard.vue'
-import { useEventStore } from '@/stores/events'
-import { getGuardianData } from '@/logic/war/guardianEngine'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { getRouteWeather } from '@/logic/weather/weatherUtils'
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
-import { requireWeatherSeasonId } from '@/data/world/weather-tables'
-import { useMapStore } from '@/stores/map'
-import { type MapRouteId } from '@/data/world/map-assets'
-import { type DayPhase } from '@/logic/utils/timeUtils'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { MapLocation } from '@/types/pokemon/encounters'
-import { getMapSpawnPoolData, isMapVisibleInWorld } from '@/logic/encounters/encounterHelpers'
+import { computed } from 'vue';
+import MapCard from './MapCard.vue';
+import { useEventStore } from '@/stores/events';
+import { getGuardianData } from '@/logic/war/guardianEngine';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getRouteWeather } from '@/logic/weather/weatherUtils';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { useMapStore } from '@/stores/map';
+import { type MapRouteId } from '@/data/world/map-assets';
+import { type DayPhase } from '@/logic/utils/timeUtils';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { MapLocation } from '@/types/pokemon/encounters';
+import { getMapSpawnPoolData, isMapVisibleInWorld } from '@/logic/encounters/encounterHelpers';
 
-const ROCKET_EXTORT_DURATION_MS = 24 * 3600 * 1000
-const TRAINER_OFFICIAL_DURATION_MS = 30 * 60 * 1000
+const ROCKET_EXTORT_DURATION_MS = 24 * 3600 * 1000;
+const TRAINER_OFFICIAL_DURATION_MS = 30 * 60 * 1000;
 
 interface Props {
-  maps: MapLocation[]
-  badgeCount?: number
-  cycle?: DayPhase
-  weather?: WeatherId
-  playerClass?: string
-  classData?: Record<string, unknown>
-  safariTicketSecs?: number
-  ceruleanTicketSecs?: number
-  dominanceData?: Partial<Record<MapRouteId, import('@/types/system/stores').DominanceInfo>>
-  dailyGuardianCaptures?: MapRouteId[]
+  maps: MapLocation[];
+  badgeCount?: number;
+  cycle?: DayPhase;
+  weather?: WeatherId;
+  playerClass?: string;
+  classData?: Record<string, unknown>;
+  safariTicketSecs?: number;
+  ceruleanTicketSecs?: number;
+  dominanceData?: Partial<Record<MapRouteId, import('@/types/system/stores').DominanceInfo>>;
+  dailyGuardianCaptures?: MapRouteId[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -40,82 +40,89 @@ const props = withDefaults(defineProps<Props>(), {
   ceruleanTicketSecs: 0,
   dominanceData: () => ({}),
   dailyGuardianCaptures: () => []
-})
+});
 
 const emit = defineEmits<{
-  (e: 'navigate', loc: MapLocation): void
-}>()
+  (e: 'navigate', loc: MapLocation): void;
+}>();
 
-const eventStore = useEventStore()
-const mapStore = useMapStore()
+const eventStore = useEventStore();
+const mapStore = useMapStore();
 
 interface SpawnPoolData {
-  generic: PokemonSpeciesId[]
-  specific: PokemonSpeciesId[]
-  rates: Partial<Record<PokemonSpeciesId, number>>
-  weather: WeatherId | null | undefined
+  generic: PokemonSpeciesId[];
+  specific: PokemonSpeciesId[];
+  rates: Partial<Record<PokemonSpeciesId, number>>;
+  weather: WeatherId | null | undefined;
 }
 
-const visibleMaps = computed(() => props.maps.filter(isMapVisibleInWorld))
+const visibleMaps = computed(() => props.maps.filter(isMapVisibleInWorld));
 
 const getMapData = (loc: MapLocation): SpawnPoolData => {
-  if (!loc.wild) return { generic: [], specific: [], rates: {}, weather: 'clear' }
+  if (!loc.wild) return { generic: [], specific: [], rates: {}, weather: 'clear' };
 
-  const activeEvents = eventStore.activeEvents || []
-  
+  const activeEvents = eventStore.activeEvents || [];
+
   // Determine weather: Forced weather (props.weather) takes absolute priority if not undefined
-  const activeWeather = (props.weather !== undefined)
-    ? requireWeatherId(props.weather)
-    : getRouteWeather(loc.id, requireWeatherSeasonId(mapStore.currentSeason.id), mapStore.currentEpochHour, props.cycle)
-  
-  const { generic, specific, rates: ratesMap } = getMapSpawnPoolData(
-    loc,
-    props.cycle || 'day',
-    activeWeather || 'clear',
-    activeEvents
-  )
+  const activeWeather =
+    props.weather !== undefined
+      ? requireWeatherId(props.weather)
+      : getRouteWeather(
+          loc.id,
+          requireWeatherSeasonId(mapStore.currentSeason.id),
+          mapStore.currentEpochHour,
+          props.cycle
+        );
 
-  return { generic, specific, rates: ratesMap, weather: activeWeather }
-}
+  const {
+    generic,
+    specific,
+    rates: ratesMap
+  } = getMapSpawnPoolData(loc, props.cycle || 'day', activeWeather || 'clear', activeEvents);
 
+  return { generic, specific, rates: ratesMap, weather: activeWeather };
+};
 
 const isMapLocked = (loc: MapLocation) => {
-  if (loc.id === 'safari_zone') return props.safariTicketSecs <= 0
-  if (loc.id === 'cerulean_cave' && (props.ceruleanTicketSecs || 0) > 0) return false
-  return (props.badgeCount || 0) < (loc.badges || 0)
-}
+  if (loc.id === 'safari_zone') return props.safariTicketSecs <= 0;
+  if (loc.id === 'cerulean_cave' && (props.ceruleanTicketSecs || 0) > 0) return false;
+  return (props.badgeCount || 0) < (loc.badges || 0);
+};
 
 const getDominanceForMap = (mapId: MapRouteId) => {
-  const data = props.dominanceData?.[mapId]
-  const captured = (props.dailyGuardianCaptures || []).includes(mapId)
-  
-  const allMaps = pokemonDataProvider.getMaps()
-  const guardianData = getGuardianData(mapId, allMaps.map(m => m.id))
-  
-  let guardian = null
+  const data = props.dominanceData?.[mapId];
+  const captured = (props.dailyGuardianCaptures || []).includes(mapId);
+
+  const allMaps = pokemonDataProvider.getMaps();
+  const guardianData = getGuardianData(
+    mapId,
+    allMaps.map((m) => m.id)
+  );
+
+  let guardian = null;
   if (guardianData) {
-    guardian = { id: guardianData.id, captured }
+    guardian = { id: guardianData.id, captured };
   }
 
   return {
     winner: data?.winner || null,
     guardian
-  }
-}
+  };
+};
 
 const isRocketExtorted = (loc: MapLocation): boolean => {
-  if (!props.classData) return false
-  const now = Temporal.Now.instant().epochMilliseconds
+  if (!props.classData) return false;
+  const now = Temporal.Now.instant().epochMilliseconds;
   if (props.playerClass === 'rocket' && props.classData.extortedRouteId === loc.id) {
-    const timestamp = Number(props.classData.extortedRouteTimestamp || 0)
-    return (now - timestamp) <= ROCKET_EXTORT_DURATION_MS
+    const timestamp = Number(props.classData.extortedRouteTimestamp || 0);
+    return now - timestamp <= ROCKET_EXTORT_DURATION_MS;
   }
   if (props.playerClass === 'entrenador' && props.classData.officialRouteId === loc.id) {
-    const timestamp = Number(props.classData.officialRouteTimestamp || 0)
-    return (now - timestamp) <= TRAINER_OFFICIAL_DURATION_MS
+    const timestamp = Number(props.classData.officialRouteTimestamp || 0);
+    return now - timestamp <= TRAINER_OFFICIAL_DURATION_MS;
   }
-  return false
-}
+  return false;
+};
 </script>
 
 <template>
@@ -139,7 +146,7 @@ const isRocketExtorted = (loc: MapLocation): boolean => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .map-grid {
   display: grid;

@@ -1,17 +1,17 @@
 {
   "name": "@pkmn/types",
   "version": "4.0.0",
-  "types": "index.d.ts",
   "description": "Type definitions common across Pokemon Showdown",
-  "repository": "github:pkmn/ps",
   "license": "MIT",
-  "sideEffects": false,
-  "publishConfig": {
-    "access": "public"
-  },
+  "repository": "github:pkmn/ps",
   "files": [
     "index.d.ts"
   ],
+  "sideEffects": false,
+  "types": "index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "compile": "tsc -p .",
     "build": "npm run compile",

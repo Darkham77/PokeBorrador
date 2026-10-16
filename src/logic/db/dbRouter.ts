@@ -2,7 +2,13 @@ import type { SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery.ts';
 import { initSQLite } from './sqliteEngine.ts';
 import { logger } from '../utils/logger.ts';
-import type { DBConfig, SessionMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/system/database';
+import type {
+  DBConfig,
+  SessionMode,
+  DBRouterOptions,
+  DBCompatibilityResponse,
+  DBResponse
+} from '@/types/system/database';
 import { createOfflineAuthApi } from './dbOfflineAuth.ts';
 import { createOfflineRealtimeChannel, createNoopRealtimeChannel } from './dbOfflineRealtime.ts';
 import { DBTimeCoordinator } from './dbTimeCoordinator.ts';
@@ -25,7 +31,11 @@ export class DBRouter {
   private _timeCoord = new DBTimeCoordinator();
   private _sessionCoord = new DBSessionCoordinator();
 
-  constructor(config: DBConfig = { url: '', key: '' }, mode: SessionMode = 'online', options: DBRouterOptions = {}) {
+  constructor(
+    config: DBConfig = { url: '', key: '' },
+    mode: SessionMode = 'online',
+    options: DBRouterOptions = {}
+  ) {
     this.options = options;
     const initial = resolveInitialDbSession(config, mode, options);
     this.config = initial.config;
@@ -120,7 +130,7 @@ export class DBRouter {
     this.mode = mode;
 
     if (mode === 'offline') {
-      initSQLite(this.options);
+      void initSQLite(this.options);
     }
   }
 
@@ -141,11 +151,13 @@ export class DBRouter {
   }
 
   get auth() {
-    const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
-                  (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
-    const e2eDriver = (typeof window !== 'undefined' && window.__E2E_DRIVER__) ||
-                      (typeof process !== 'undefined' && process.env.SIM_DB_DRIVER) ||
-                      'sqlite';
+    const isE2E =
+      (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
+      (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
+    const e2eDriver =
+      (typeof window !== 'undefined' && window.__E2E_DRIVER__) ||
+      (typeof process !== 'undefined' && process.env.SIM_DB_DRIVER) ||
+      'sqlite';
     const isE2EPostgres = isE2E && e2eDriver === 'postgres';
 
     if (this.mode === 'offline' || isE2EPostgres) {
@@ -154,7 +166,9 @@ export class DBRouter {
 
     const client = this.realClient;
     if (!client) {
-      throw new Error('[DBRouter] Attempted to access Auth while online client is not initialized.');
+      throw new Error(
+        '[DBRouter] Attempted to access Auth while online client is not initialized.'
+      );
     }
 
     return client.auth;

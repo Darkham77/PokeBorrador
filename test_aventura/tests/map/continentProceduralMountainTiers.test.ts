@@ -32,14 +32,17 @@ describe('Procedural Multi-Tier Mountains (1 to 4 Floors)', () => {
     }
     // 1. Must produce higher tiers (at least Tier 3 on a 128x128 map)
     const maxElev = Math.max(...elevSet);
-    expect(maxElev, 'Continent must generate elevated mountains with tier >= 3').toBeGreaterThanOrEqual(3);
+    expect(
+      maxElev,
+      'Continent must generate elevated mountains with tier >= 3'
+    ).toBeGreaterThanOrEqual(3);
 
     // 2. Mass scaling: Small massifs must have fewer tiers than large cordilleras
     const massifs = continent.geologicalClusters!.massifs;
     expect(massifs.length, 'Must detect multiple discrete massifs').toBeGreaterThan(1);
 
     // Get max elevation within each massif
-    const massifTiers = massifs.map(m => {
+    const massifTiers = massifs.map((m) => {
       let maxMtnTier = 0;
       for (const c of m.cells) {
         const e = continent.cells[c.y]?.[c.x]?.elevation ?? 0;
@@ -49,7 +52,7 @@ describe('Procedural Multi-Tier Mountains (1 to 4 Floors)', () => {
     });
 
     // Small massifs (< 60 cells) should not exceed tier 2
-    const smallMassifs = massifTiers.filter(m => m.cellCount < 60);
+    const smallMassifs = massifTiers.filter((m) => m.cellCount < 60);
     for (const sm of smallMassifs) {
       expect(
         sm.maxTier,
@@ -58,7 +61,10 @@ describe('Procedural Multi-Tier Mountains (1 to 4 Floors)', () => {
     }
 
     // The largest cordillera should have the highest tier
-    const largestMassif = massifTiers.reduce((max, m) => m.cellCount > max.cellCount ? m : max, massifTiers[0]!);
+    const largestMassif = massifTiers.reduce(
+      (max, m) => (m.cellCount > max.cellCount ? m : max),
+      massifTiers[0]!
+    );
     expect(
       largestMassif.maxTier,
       `Largest cordillera (${largestMassif.cellCount} cells) must have at least 3 tiers`
@@ -71,7 +77,12 @@ describe('Procedural Multi-Tier Mountains (1 to 4 Floors)', () => {
         if (curElev <= 1) continue;
 
         // Check cardinal neighbors
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        for (const [dx, dy] of [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1]
+        ] as const) {
           const nx = x + dx;
           const ny = y + dy;
           if (nx >= 0 && nx < continent.width && ny >= 0 && ny < continent.height) {
@@ -92,8 +103,14 @@ describe('Procedural Multi-Tier Mountains (1 to 4 Floors)', () => {
       for (let dy = 0; dy <= 1; dy++) {
         for (let dx = 0; dx <= 1; dx++) {
           const cell = continent.cells[stair.y + dy]?.[stair.x + dx];
-          expect(cell?.isWalkable, `Stair cell at (${stair.x + dx}, ${stair.y + dy}) must be walkable`).toBe(true);
-          expect(cell?.isStair, `Stair cell at (${stair.x + dx}, ${stair.y + dy}) must have isStair=true`).toBe(true);
+          expect(
+            cell?.isWalkable,
+            `Stair cell at (${stair.x + dx}, ${stair.y + dy}) must be walkable`
+          ).toBe(true);
+          expect(
+            cell?.isStair,
+            `Stair cell at (${stair.x + dx}, ${stair.y + dy}) must have isStair=true`
+          ).toBe(true);
         }
       }
     }
@@ -108,7 +125,7 @@ describe('Procedural Multi-Tier Mountains (1 to 4 Floors)', () => {
       withStairs: true
     });
 
-    const maxElev = Math.max(...continent.cells.flatMap(row => row.map(c => c.elevation)));
+    const maxElev = Math.max(...continent.cells.flatMap((row) => row.map((c) => c.elevation)));
     expect(maxElev, 'Expansive cordillera must reach 4 floors (Z=4)').toBe(4);
 
     // Verify 0 drops > 1 across the entire 4-tier map
@@ -117,7 +134,12 @@ describe('Procedural Multi-Tier Mountains (1 to 4 Floors)', () => {
         const curElev = continent.cells[y]![x]!.elevation;
         if (curElev <= 1) continue;
 
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        for (const [dx, dy] of [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1]
+        ] as const) {
           const nx = x + dx;
           const ny = y + dy;
           if (nx >= 0 && nx < continent.width && ny >= 0 && ny < continent.height) {
@@ -134,9 +156,8 @@ describe('Procedural Multi-Tier Mountains (1 to 4 Floors)', () => {
 
     // Verify stairs exist and connect all tiers
     expect(continent.placedStairs.length).toBeGreaterThan(0);
-    const stairTiers = new Set(continent.placedStairs.map(s => s.tier));
+    const stairTiers = new Set(continent.placedStairs.map((s) => s.tier));
     expect(stairTiers.has(1), 'Must have Tier 1 stairs').toBe(true);
     expect(stairTiers.has(2), 'Must have Tier 2 stairs').toBe(true);
   });
 });
-

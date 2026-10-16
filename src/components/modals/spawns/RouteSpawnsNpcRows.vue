@@ -10,11 +10,7 @@ defineProps<Props>();
 </script>
 
 <template>
-  <RouteSpawnsNpcRow
-    v-for="npc in npcItems"
-    :key="npc.type"
-    :npc="npc"
-  />
+  <RouteSpawnsNpcRow v-for="npc in npcItems" :key="npc.type" :npc="npc" />
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_route-spawns-tables.scss"></style>

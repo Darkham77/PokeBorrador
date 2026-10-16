@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui'
-import SpawnDebugControls from './shared/SpawnDebugControls.vue'
+import { useUIStore } from '@/stores/ui';
+import SpawnDebugControls from './shared/SpawnDebugControls.vue';
 
-const ui = useUIStore()
+const ui = useUIStore();
 
-interface ViteDebug extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
-  toggleGrid: () => void
-  togglePerf: () => void
+interface ViteDebug extends Record<string, unknown> {
+  // open-record: Generic key-value data dictionary container
+  toggleGrid: () => void;
+  togglePerf: () => void;
 }
 
-const getDebug = () => window.__VITE_DEBUG__ as ViteDebug
+const getDebug = () => window.__VITE_DEBUG__ as ViteDebug;
 
-const toggleGrid = () => getDebug().toggleGrid()
-const togglePerf = () => getDebug().togglePerf()
+const toggleGrid = () => getDebug().toggleGrid();
+const togglePerf = () => getDebug().togglePerf();
 </script>
 
 <template>
@@ -20,7 +21,9 @@ const togglePerf = () => getDebug().togglePerf()
     <div class="debug-card">
       <label>Visualización de Grilla (Rutas)</label>
       <div class="button-row">
-        <PVTooltip title="Muestra los límites de cada celda de la grilla NxN en las rutas del mapa.">
+        <PVTooltip
+          title="Muestra los límites de cada celda de la grilla NxN en las rutas del mapa."
+        >
           <button
             id="debug-map-tab-btn-mostrar-bordes-rosa"
             class="small-btn"
@@ -55,7 +58,7 @@ const togglePerf = () => getDebug().togglePerf()
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/debug";
+@use '@/styles/components/debug';
 
 .field-label {
   font-family: inherit;

@@ -28,10 +28,22 @@ const IGNORED_DIRS = new Set([
   'scratch'
 ]);
 
-const CODE_EXTENSIONS = new Set(['.ts', '.vue', '.js', '.cjs', '.mjs', '.jsx', '.tsx', '.scss', '.css']);
+const CODE_EXTENSIONS = new Set([
+  '.ts',
+  '.vue',
+  '.js',
+  '.cjs',
+  '.mjs',
+  '.jsx',
+  '.tsx',
+  '.scss',
+  '.css'
+]);
 
 function isTestFile(fileName: string): boolean {
-  return fileName.includes('.spec.') || fileName.includes('.test.') || fileName.includes('.simulation.');
+  return (
+    fileName.includes('.spec.') || fileName.includes('.test.') || fileName.includes('.simulation.')
+  );
 }
 
 // walker-ok: Maintenance script collecting AGENTS.md files across repository
@@ -49,7 +61,7 @@ function collectAgentsFiles(dir: string): string[] {
       const parent = entry.parentPath ?? dir;
       const rel = path.relative(dir, parent).replace(/\\/g, '/');
       const parts = rel.split('/');
-      const isIgnored = parts.some(p => IGNORED_DIRS.has(p) || (p.startsWith('.') && p !== '.'));
+      const isIgnored = parts.some((p) => IGNORED_DIRS.has(p) || (p.startsWith('.') && p !== '.'));
       if (!isIgnored) {
         list.push(path.join(parent, entry.name));
       }
@@ -94,7 +106,8 @@ function listCodeFilesInDir(dir: string): string[] {
   const codeFiles: string[] = [];
   for (const entry of entries) {
     if (!entry.isFile()) continue;
-    if (entry.name === 'AGENTS.md' || entry.name.endsWith('.d.ts') || entry.name.endsWith('.map')) continue;
+    if (entry.name === 'AGENTS.md' || entry.name.endsWith('.d.ts') || entry.name.endsWith('.map'))
+      continue;
     if (isTestFile(entry.name)) continue;
 
     const ext = path.extname(entry.name).toLowerCase();
@@ -188,7 +201,11 @@ function assignCanonicalSection(s: ParsedSection, body: string, data: DoxData): 
     if (body) data.contractChunks.push(body);
     return true;
   }
-  if (norm === 'key files' || norm === 'directory structure & files' || norm.startsWith('key files &')) {
+  if (
+    norm === 'key files' ||
+    norm === 'directory structure & files' ||
+    norm.startsWith('key files &')
+  ) {
     data.keyFilesText = body;
     return true;
   }
@@ -200,7 +217,11 @@ function assignCanonicalSection(s: ParsedSection, body: string, data: DoxData): 
     data.verificationText = body;
     return true;
   }
-  if (norm === 'child dox index' || norm === 'dox directory navigation index' || norm === 'child index') {
+  if (
+    norm === 'child dox index' ||
+    norm === 'dox directory navigation index' ||
+    norm === 'child index'
+  ) {
     data.childIndexText = body;
     return true;
   }
@@ -232,9 +253,21 @@ function classifySections(sections: readonly ParsedSection[]): DoxData {
 function classifyNonCanonicalSection(s: ParsedSection, body: string, data: DoxData): void {
   const norm = s.normalizedTitle;
   const chunk = `### ${s.title}\n\n${body}`.trim();
-  if (norm.includes('contract') || norm.includes('mandate') || norm.includes('invariant') || norm.includes('rule') || norm.includes('architecture') || norm.includes('governance')) {
+  if (
+    norm.includes('contract') ||
+    norm.includes('mandate') ||
+    norm.includes('invariant') ||
+    norm.includes('rule') ||
+    norm.includes('architecture') ||
+    norm.includes('governance')
+  ) {
     data.contractChunks.push(chunk);
-  } else if (norm.includes('guid') || norm.includes('workflow') || norm.includes('instruction') || norm.includes('convention')) {
+  } else if (
+    norm.includes('guid') ||
+    norm.includes('workflow') ||
+    norm.includes('instruction') ||
+    norm.includes('convention')
+  ) {
     data.guidanceChunks.push(chunk);
   } else if (!data.purposeText && s.level === 1) {
     data.purposeText = body;
@@ -252,22 +285,29 @@ function applySectionFallbacks(data: DoxData, dir: string): void {
     data.ownershipText = 'Poké Vicio Development Team.';
   }
   if (data.contractChunks.length === 0) {
-    data.contractChunks.push('- Follow repository architecture, clean code standards, and strict domain typing.\n- Ensure strict module decoupling and zero side-effects.');
+    data.contractChunks.push(
+      '- Follow repository architecture, clean code standards, and strict domain typing.\n- Ensure strict module decoupling and zero side-effects.'
+    );
   }
   if (data.guidanceChunks.length === 0) {
-    data.guidanceChunks.push('- Adhere to domain-type-first contracts without loose any/unknown or naked strings.\n- Maintain high cohesion, low complexity, and test coverage across all module modifications.');
+    data.guidanceChunks.push(
+      '- Adhere to domain-type-first contracts without loose any/unknown or naked strings.\n- Maintain high cohesion, low complexity, and test coverage across all module modifications.'
+    );
   }
   if (!data.verificationText || data.verificationText.length < 10) {
-    data.verificationText = '- Run fast lint suite: `npm run lint`\n- Run automated tests: `npm run test`';
+    data.verificationText =
+      '- Run fast lint suite: `npm run lint`\n- Run automated tests: `npm run test`';
   }
 }
 
 function resolveKeyFiles(dir: string, existing: string): string {
   const codeFiles = listCodeFilesInDir(dir);
   if (codeFiles.length === 0) return existing;
-  const missingFiles = codeFiles.filter(cf => !existing.includes(cf));
+  const missingFiles = codeFiles.filter((cf) => !existing.includes(cf));
   if (missingFiles.length === 0) return existing;
-  const extraList = missingFiles.map(cf => `- [\`${cf}\`](./${cf}): Module implementation.`).join('\n');
+  const extraList = missingFiles
+    .map((cf) => `- [\`${cf}\`](./${cf}): Module implementation.`)
+    .join('\n');
   return existing ? `${existing}\n${extraList}` : extraList;
 }
 
@@ -276,7 +316,9 @@ function resolveChildIndex(dir: string, existing: string, allAgents: readonly st
   if (directChildren.length === 0) {
     return `- *This directory contains specialized domain logic and files with no subdirectories.*`;
   }
-  const links = directChildren.map(c => `- [\`${c}\`](${c}): Subsystem index for ${path.dirname(c).replace(/^\.\//, '')}.`);
+  const links = directChildren.map(
+    (c) => `- [\`${c}\`](${c}): Subsystem index for ${path.dirname(c).replace(/^\.\//, '')}.`
+  );
   if (!existing || !existing.includes('AGENTS.md')) {
     return links.join('\n');
   }
@@ -329,7 +371,9 @@ function main(): void {
     }
   }
 
-  console.log(`DOX migration complete. Total AGENTS.md files: ${allAgents.length}. Updated: ${updatedCount}.`);
+  console.log(
+    `DOX migration complete. Total AGENTS.md files: ${allAgents.length}. Updated: ${updatedCount}.`
+  );
 }
 
 main();

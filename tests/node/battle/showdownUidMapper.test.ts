@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { getShowdownNickname, findPokemonByShowdownName, isMatchingUid, findMatchingValue } from '../../../src/logic/battle/showdownUidMapper.ts';
+import { describe, it, expect } from 'vite-plus/test';
+import {
+  getShowdownNickname,
+  findPokemonByShowdownName,
+  isMatchingUid,
+  findMatchingValue
+} from '../../../src/logic/battle/showdownUidMapper.ts';
 
 describe('Showdown UID Mapper - Unit Tests', () => {
-  
   describe('getShowdownNickname', () => {
     it('debería retornar los primeros 8 caracteres de un UID estándar UUID v4', () => {
       const uid = 'aba755ed-9c60-48b9-8400-da73ab30619b';
@@ -113,7 +117,12 @@ describe('Showdown UID Mapper - Unit Tests', () => {
 
   describe('isMatchingUid', () => {
     it('debería retornar true cuando ambos UIDs son idénticos', () => {
-      expect(isMatchingUid('abb25813-9207-400a-af96-b665584cd717', 'abb25813-9207-400a-af96-b665584cd717')).toBe(true);
+      expect(
+        isMatchingUid(
+          'abb25813-9207-400a-af96-b665584cd717',
+          'abb25813-9207-400a-af96-b665584cd717'
+        )
+      ).toBe(true);
     });
 
     it('debería retornar true cuando uno es el prefijo de 8 caracteres del otro', () => {

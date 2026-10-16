@@ -1,21 +1,21 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { logger } from '@/logic/utils/logger'
-import { useAuthStore } from '@/stores/auth.ts'
-import { useUIStore } from '@/stores/ui.ts'
-import { useGameStore } from '@/stores/game.ts'
-import { gameBus } from '@/logic/events/gameBus.ts'
-import { setEventExpMultiplier } from '@/logic/events/eventMultipliers.ts'
-import { 
-  isEventActiveNow, 
-  getGlobalMultipliers, 
-  getSpeciesBoosts, 
-  type Event as GameEvent 
-} from '@/logic/events/eventEngine'
-import type { PendingAward, CompetitionEntry, PastEventHistoryItem } from '@/types/system/stores'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { getServerTime } from '@/logic/utils/timeUtils'
-import { healStuckEventPokemon } from '@/logic/player/eventRecovery'
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { logger } from '@/logic/utils/logger';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { gameBus } from '@/logic/events/gameBus.ts';
+import { setEventExpMultiplier } from '@/logic/events/eventMultipliers.ts';
+import {
+  isEventActiveNow,
+  getGlobalMultipliers,
+  getSpeciesBoosts,
+  type Event as GameEvent
+} from '@/logic/events/eventEngine';
+import type { PendingAward, CompetitionEntry, PastEventHistoryItem } from '@/types/system/stores';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { getServerTime } from '@/logic/utils/timeUtils';
+import { healStuckEventPokemon } from '@/logic/player/eventRecovery';
 import {
   fetchPastEvents as fetchPastEventsAction,
   checkPendingAwards as checkPendingAwardsAction,
@@ -23,48 +23,48 @@ import {
   claimAllEventAwards as claimAllEventAwardsAction,
   discardAward as discardAwardAction,
   type EventAwardsContext
-} from './events/eventAwardsActions.ts'
+} from './events/eventAwardsActions.ts';
 import {
   fetchUserEntries as fetchUserEntriesAction,
   submitCompetitionEntry as submitCompetitionEntryAction,
   removeCompetitionEntry as removeCompetitionEntryAction,
   type EventEnrollmentContext
-} from './events/eventEnrollmentActions.ts'
-import { useModalStore } from '@/stores/modals'
+} from './events/eventEnrollmentActions.ts';
+import { useModalStore } from '@/stores/modals';
 import {
   evaluateCapturedPokemonForEvents,
   computeOptimalAutoFillAssignments
-} from '@/logic/events/eventAutoEnrollHelper'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+} from '@/logic/events/eventAutoEnrollHelper';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export const useEventStore = defineStore('events', () => {
-  const gameStore = useGameStore()
-  const authStore = useAuthStore()
-  const uiStore = useUIStore()
+  const gameStore = useGameStore();
+  const authStore = useAuthStore();
+  const uiStore = useUIStore();
 
-  const allEvents = ref<GameEvent[]>([])
-  const activeEvents = ref<GameEvent[]>([])
-  const pastEvents = ref<PastEventHistoryItem[]>([])
-  const pendingAwards = ref<PendingAward[]>([])
-  const userEntries = ref<Record<string, CompetitionEntry>>({})
-  const isLoading = ref(false)
-  const isLoaded = ref(false)
-  const simEventsEnabled = ref(true)
-  let inFlightPromise: Promise<void> | null = null
+  const allEvents = ref<GameEvent[]>([]);
+  const activeEvents = ref<GameEvent[]>([]);
+  const pastEvents = ref<PastEventHistoryItem[]>([]);
+  const pendingAwards = ref<PendingAward[]>([]);
+  const userEntries = ref<Record<string, CompetitionEntry>>({}); // open-record: Composite event_id:catId index
+  const isLoading = ref(false);
+  const isLoaded = ref(false);
+  const simEventsEnabled = ref(true);
+  let inFlightPromise: Promise<void> | null = null;
 
   // Watch for game cycle ticks to re-evaluate active events
   const handleGameCycleTick = () => {
-    logger.info('Events', 'Game cycle ticked. Refreshing active events...')
-    void fetchEvents(true)
-  }
-  gameBus.on('GAME_CYCLE_TICK', handleGameCycleTick)
+    logger.info('Events', 'Game cycle ticked. Refreshing active events...');
+    void fetchEvents(true);
+  };
+  gameBus.on('GAME_CYCLE_TICK', handleGameCycleTick);
 
   // Computed multipliers derived from active events
   const globalMultipliers = computed(() => {
-    const mults = getGlobalMultipliers(activeEvents.value)
-    setEventExpMultiplier(mults?.exp || 1)
-    return mults
-  })
+    const mults = getGlobalMultipliers(activeEvents.value);
+    setEventExpMultiplier(mults?.exp || 1);
+    return mults;
+  });
 
   const awardsContext = computed<EventAwardsContext>(() => ({
     gameStore,
@@ -74,7 +74,7 @@ export const useEventStore = defineStore('events', () => {
     pastEvents,
     pendingAwards,
     userEntries
-  }))
+  }));
 
   const enrollmentContext = computed<EventEnrollmentContext>(() => ({
     gameStore,
@@ -82,165 +82,195 @@ export const useEventStore = defineStore('events', () => {
     uiStore,
     allEvents,
     userEntries
-  }))
+  }));
 
   /**
    * Fetches the full event configuration and filters based on Engine logic.
    */
   async function fetchEvents(force = false) {
-    if (!force && isLoaded.value) return
-    if (inFlightPromise) return inFlightPromise
+    if (!force && isLoaded.value) return;
+    if (inFlightPromise) return inFlightPromise;
 
-    isLoading.value = true
-    
+    isLoading.value = true;
+
     inFlightPromise = (async () => {
-      const db = gameStore.db
+      const db = gameStore.db;
       if (!db) {
-        isLoading.value = false
-        return
+        isLoading.value = false;
+        return;
       }
       try {
         // 1. Fetch from config (DBRouter handles source)
-        const res = await db.from('events_config').select('id, name, description, type, icon, active, manual, start_at, end_at, schedule, config').limit(100)
-        const events = res.data as GameEvent[] | null // domain-ok: Open dynamic text or non-domain string payload
-        allEvents.value = events || []
-        
+        const res = await db
+          .from('events_config')
+          .select(
+            'id, name, description, type, icon, active, manual, start_at, end_at, schedule, config'
+          )
+          .limit(100);
+        const events = res.data as GameEvent[] | null; // domain-ok: Open dynamic text or non-domain string payload
+        allEvents.value = events || [];
+
         // 2. Filter using Engine logic with synchronized time
-        const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
-        activeEvents.value = (events || []).filter((ev: GameEvent) => isEventActiveNow(ev, synchronizedDate))
+        const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime());
+        activeEvents.value = (events || []).filter((ev: GameEvent) =>
+          isEventActiveNow(ev, synchronizedDate)
+        );
 
         // 3. Check for concluded competition events with pending entries and award them automatically
-        await autoAwardConcludedEvents(db, events || [], synchronizedDate)
+        await autoAwardConcludedEvents(db, events || [], synchronizedDate);
 
         // 4. Fetch user competition entries, pending awards, and past event history
-        await fetchUserEntries()
-        await checkPendingAwards(false)
-        await fetchPastEvents()
+        await fetchUserEntries();
+        await checkPendingAwards(false);
+        await fetchPastEvents();
 
         // 5. Automatically liberate any Pokémon stuck in concluded/legacy events
-        const healed = healStuckEventPokemon(gameStore.state.team, gameStore.state.box, activeEvents.value, userEntries.value)
+        const healed = healStuckEventPokemon(
+          gameStore.state.team,
+          gameStore.state.box,
+          activeEvents.value,
+          userEntries.value
+        );
         if (healed) {
-          logger.info('Events', 'Rehabilitated Pokémon stuck in concluded event(s).')
-          gameStore.scheduleSave()
+          logger.info('Events', 'Rehabilitated Pokémon stuck in concluded event(s).');
+          void gameStore.scheduleSave();
         }
-        isLoaded.value = true
+        isLoaded.value = true;
       } catch (e) {
-        logger.error('Events', `Error fetching events: ${(e as Error).message}`)
+        logger.error('Events', `Error fetching events: ${(e as Error).message}`);
       } finally {
-        isLoading.value = false
-        inFlightPromise = null
+        isLoading.value = false;
+        inFlightPromise = null;
       }
-    })()
-    return inFlightPromise
+    })();
+    return inFlightPromise;
   }
 
   const activeEventIdsSet = computed<ReadonlySet<string>>(() => {
-    return new Set(activeEvents.value.map(e => e.id))
-  })
+    return new Set(activeEvents.value.map((e) => e.id));
+  });
 
   function isEventActive(eventId: string): boolean {
-    return activeEventIdsSet.value.has(eventId)
+    return activeEventIdsSet.value.has(eventId);
   }
 
   async function fetchUserEntries() {
-    return fetchUserEntriesAction(enrollmentContext.value)
+    return fetchUserEntriesAction(enrollmentContext.value);
   }
 
-  async function submitCompetitionEntry(eventId: string, categoryIdOrUid: string, maybeUid?: string) {
-    return submitCompetitionEntryAction(enrollmentContext.value, eventId, categoryIdOrUid, maybeUid)
+  async function submitCompetitionEntry(
+    eventId: string,
+    categoryIdOrUid: string,
+    maybeUid?: string
+  ) {
+    return submitCompetitionEntryAction(
+      enrollmentContext.value,
+      eventId,
+      categoryIdOrUid,
+      maybeUid
+    );
   }
 
   async function removeCompetitionEntry(eventId: string, categoryId?: string): Promise<boolean> {
-    return removeCompetitionEntryAction(enrollmentContext.value, eventId, categoryId)
+    return removeCompetitionEntryAction(enrollmentContext.value, eventId, categoryId);
   }
 
   async function checkPendingAwards(notifyOnPending = false) {
-    return checkPendingAwardsAction(awardsContext.value, notifyOnPending)
+    return checkPendingAwardsAction(awardsContext.value, notifyOnPending);
   }
 
   async function fetchPastEvents() {
-    return fetchPastEventsAction(awardsContext.value)
+    return fetchPastEventsAction(awardsContext.value);
   }
 
-  async function claimAward(awardId: string, options: { autoSave?: boolean; silent?: boolean } = {}): Promise<string | null> {
-    return claimAwardAction(awardsContext.value, awardId, options)
+  async function claimAward(
+    awardId: string,
+    options: { autoSave?: boolean; silent?: boolean } = {}
+  ): Promise<string | null> {
+    return claimAwardAction(awardsContext.value, awardId, options);
   }
 
-  async function claimAllEventAwards(eventId: string): Promise<{ success: boolean; claimedCount: number }> {
-    return claimAllEventAwardsAction(awardsContext.value, eventId)
+  async function claimAllEventAwards(
+    eventId: string
+  ): Promise<{ success: boolean; claimedCount: number }> {
+    return claimAllEventAwardsAction(awardsContext.value, eventId);
   }
 
   async function discardAward(awardId: string): Promise<boolean> {
-    return discardAwardAction(awardsContext.value, awardId)
+    return discardAwardAction(awardsContext.value, awardId);
   }
 
   function getSpeciesBonuses(speciesId: PokemonSpeciesId) {
-    return getSpeciesBoosts(activeEvents.value, speciesId)
+    return getSpeciesBoosts(activeEvents.value, speciesId);
   }
 
   async function checkCaptureAndPrompt(pokemon: Pokemon): Promise<void> {
-    if (!simEventsEnabled.value || !pokemon) return
+    if (!simEventsEnabled.value || !pokemon) return;
 
     if (!isLoaded.value) {
-      await fetchEvents()
+      await fetchEvents();
     }
     if (Object.keys(userEntries.value).length === 0 && authStore.user) {
-      await fetchUserEntries()
+      await fetchUserEntries();
     }
 
-    const synchronizedInstant = Temporal.Instant.fromEpochMilliseconds(getServerTime())
+    const synchronizedInstant = Temporal.Instant.fromEpochMilliseconds(getServerTime());
     const candidates = evaluateCapturedPokemonForEvents(
       pokemon,
       activeEvents.value,
       userEntries.value,
       synchronizedInstant
-    )
+    );
 
     if (candidates.length > 0) {
-      const modalStore = useModalStore()
+      const modalStore = useModalStore();
       modalStore.open('EventAutoEnroll', {
         pokemon,
         candidates
-      })
+      });
     }
   }
 
   async function autoFillBestEntries(eventId: string): Promise<number> {
-    const event = allEvents.value.find(e => e.id === eventId)
-    if (!event) return 0
+    const event = allEvents.value.find((e) => e.id === eventId);
+    if (!event) return 0;
 
-    const synchronizedInstant = Temporal.Instant.fromEpochMilliseconds(getServerTime())
-    const allUserPokemon: Pokemon[] = [...gameStore.allPokemonList] as Pokemon[]
+    const synchronizedInstant = Temporal.Instant.fromEpochMilliseconds(getServerTime());
+    const allUserPokemon: Pokemon[] = [...gameStore.allPokemonList] as Pokemon[];
 
     const assignments = computeOptimalAutoFillAssignments(
       event,
       allUserPokemon,
       userEntries.value,
       synchronizedInstant
-    )
+    );
 
-    if (assignments.length === 0) return 0
+    if (assignments.length === 0) return 0;
 
-    let enrolledCount = 0
+    let enrolledCount = 0;
     for (const assignment of assignments) {
-      if (!assignment.isImprovement) continue
+      if (!assignment.isImprovement) continue;
       try {
-        await submitCompetitionEntry(event.id, assignment.subComp.id, assignment.pokemon.uid)
-        enrolledCount++
+        await submitCompetitionEntry(event.id, assignment.subComp.id, assignment.pokemon.uid);
+        enrolledCount++;
       } catch (err) {
-        logger.error('Events', `Failed to auto-fill assignment for category ${assignment.subComp.id}`, err)
+        logger.error(
+          'Events',
+          `Failed to auto-fill assignment for category ${assignment.subComp.id}`,
+          err
+        );
       }
     }
 
-    return enrolledCount
+    return enrolledCount;
   }
 
   // Listen for time-sync updates from DBRouter (Debug mode)
   if (typeof window !== 'undefined') {
     window.addEventListener('time-sync-update', () => {
-      logger.info('Events', 'Time sync update received, refreshing events...')
-      fetchEvents()
-    })
+      logger.info('Events', 'Time sync update received, refreshing events...');
+      void fetchEvents();
+    });
   }
 
   return {
@@ -268,22 +298,26 @@ export const useEventStore = defineStore('events', () => {
     isEventActive,
     checkCaptureAndPrompt,
     autoFillBestEntries
-  }
-})
+  };
+});
 
-type EventsGameStore = ReturnType<typeof useGameStore>
-type EventsDb = NonNullable<EventsGameStore['db']>
+type EventsGameStore = ReturnType<typeof useGameStore>;
+type EventsDb = NonNullable<EventsGameStore['db']>;
 
-async function awardSingleConcludedEvent(db: EventsDb, endedEventId: string): Promise<void> { // infra-id-ok: Dynamic DB event identifier
-  logger.info('Events', `Auto-awarding concluded event '${endedEventId}'...`)
-  const awardRes = await db.rpc('fn_award_event_automated', { target_event_id: endedEventId })
+async function awardSingleConcludedEvent(db: EventsDb, endedEventId: string): Promise<void> {
+  // infra-id-ok: Dynamic DB event identifier
+  logger.info('Events', `Auto-awarding concluded event '${endedEventId}'...`);
+  const awardRes = await db.rpc('fn_award_event_automated', { target_event_id: endedEventId });
   if (awardRes?.error) {
-    const errMsg = typeof awardRes.error === 'object' && awardRes.error !== null
-      ? ((awardRes.error as { message?: string }).message || JSON.stringify(awardRes.error))
-      : String(awardRes.error)
-    logger.error('Events', `Failed to award concluded event '${endedEventId}': ${errMsg}`)
+    const errMsg =
+      typeof awardRes.error === 'object' && awardRes.error !== null
+        ? (awardRes.error as { message?: string }).message || JSON.stringify(awardRes.error)
+        : typeof awardRes.error === 'string'
+          ? awardRes.error
+          : JSON.stringify(awardRes.error);
+    logger.error('Events', `Failed to award concluded event '${endedEventId}': ${errMsg}`);
   } else {
-    logger.info('Events', `Successfully awarded concluded event '${endedEventId}'`)
+    logger.info('Events', `Successfully awarded concluded event '${endedEventId}'`);
   }
 }
 
@@ -293,23 +327,30 @@ async function autoAwardConcludedEvents(
   synchronizedDate: Temporal.Instant
 ): Promise<void> {
   try {
-    const { data: rawEntries } = await db.from('competition_entries').select('event_id').limit(1000)
-    if (!rawEntries || !Array.isArray(rawEntries) || rawEntries.length === 0) return
+    const { data: rawEntries } = await db
+      .from('competition_entries')
+      .select('event_id')
+      .limit(1000);
+    if (!rawEntries || !Array.isArray(rawEntries) || rawEntries.length === 0) return;
 
-    const unAwardedEventIds = new Set<string>()
+    const unAwardedEventIds = new Set<string>();
     for (const entry of rawEntries as { event_id?: string }[]) {
       if (entry.event_id) {
-        const evCfg = events.find((e: GameEvent) => e.id === entry.event_id)
+        const evCfg = events.find((e: GameEvent) => e.id === entry.event_id);
         if (!evCfg || !isEventActiveNow(evCfg, synchronizedDate)) {
-          unAwardedEventIds.add(entry.event_id)
+          unAwardedEventIds.add(entry.event_id);
         }
       }
     }
 
     for (const endedEventId of unAwardedEventIds) {
-      await awardSingleConcludedEvent(db, endedEventId)
+      await awardSingleConcludedEvent(db, endedEventId);
     }
   } catch (awardErr) {
-    logger.error('Events', `Failed to check or auto-award concluded events: ${(awardErr as Error).message}`, awardErr)
+    logger.error(
+      'Events',
+      `Failed to check or auto-award concluded events: ${(awardErr as Error).message}`,
+      awardErr
+    );
   }
 }

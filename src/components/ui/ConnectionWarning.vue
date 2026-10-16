@@ -56,11 +56,7 @@ onUnmounted(() => {
 
 <template>
   <Teleport to="body">
-    <Transition
-      :css="false"
-      @enter="onEnter"
-      @leave="onLeave"
-    >
+    <Transition :css="false" @enter="onEnter" @leave="onLeave">
       <div
         v-if="authStore.connectionLost"
         id="connection-lost-warning-pill"
@@ -74,7 +70,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .connection-lost-banner {
   position: fixed;

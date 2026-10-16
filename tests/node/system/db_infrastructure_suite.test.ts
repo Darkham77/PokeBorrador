@@ -1,4 +1,4 @@
-import { describe, it, test, expect } from 'vitest';
+import { describe, it, test, expect } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
@@ -14,22 +14,28 @@ describe('Database Infrastructure & Schema Integrity Suite', () => {
       using db1 = new DatabaseSync(':memory:');
       using db2 = new DatabaseSync(':memory:');
 
-      TABLES_SCHEMA.forEach(schema => {
+      TABLES_SCHEMA.forEach((schema) => {
         db1.exec(`CREATE TABLE IF NOT EXISTS ${schema}`);
         db2.exec(`CREATE TABLE IF NOT EXISTS ${schema}`);
       });
 
-      db1.prepare('INSERT INTO profiles (id, username, email) VALUES (?, ?, ?)')
+      db1
+        .prepare('INSERT INTO profiles (id, username, email) VALUES (?, ?, ?)')
         .run('user_1', 'TrainerOne', 'one@pkv.io');
 
-      db2.prepare('INSERT INTO profiles (id, username, email) VALUES (?, ?, ?)')
+      db2
+        .prepare('INSERT INTO profiles (id, username, email) VALUES (?, ?, ?)')
         .run('user_2', 'TrainerTwo', 'two@pkv.io');
 
-      const profiles1 = db1.prepare('SELECT username FROM profiles').all() as { username: string }[];
+      const profiles1 = db1.prepare('SELECT username FROM profiles').all() as {
+        username: string;
+      }[];
       assert.strictEqual(profiles1.length, 1);
       assert.strictEqual(profiles1[0]?.username, 'TrainerOne');
 
-      const profiles2 = db2.prepare('SELECT username FROM profiles').all() as { username: string }[];
+      const profiles2 = db2.prepare('SELECT username FROM profiles').all() as {
+        username: string;
+      }[];
       assert.strictEqual(profiles2.length, 1);
       assert.strictEqual(profiles2[0]?.username, 'TrainerTwo');
 
@@ -67,8 +73,8 @@ describe('Database Infrastructure & Schema Integrity Suite', () => {
   describe('sqliteSchemaIntegrity quote and comma parsing', () => {
     it('should not treat commas inside string literals as column separators (e.g. initial_seed in battle_replays)', async () => {
       using dbSync = new DatabaseSync(':memory:');
-      
-      TABLES_SCHEMA.forEach(schema => {
+
+      TABLES_SCHEMA.forEach((schema) => {
         dbSync.exec(`CREATE TABLE IF NOT EXISTS ${schema}`);
       });
 
@@ -77,10 +83,12 @@ describe('Database Infrastructure & Schema Integrity Suite', () => {
       const mockDb = {
         exec: (sql: string, params?: unknown[]) => {
           const stmt = dbSync.prepare(sql);
-          const rows = stmt.all(...((params || []) as Array<string | number | bigint | Uint8Array | null>)) as Record<string, unknown>[];
+          const rows = stmt.all(
+            ...((params || []) as Array<string | number | bigint | Uint8Array | null>)
+          ) as Record<string, unknown>[];
           if (rows.length === 0) return [];
           const columns = Object.keys(rows[0]!);
-          const values = rows.map(r => columns.map(c => r[c]));
+          const values = rows.map((r) => columns.map((c) => r[c]));
           return [{ columns, values }];
         },
         run: (sql: string, params?: unknown[]) => {
@@ -94,32 +102,43 @@ describe('Database Infrastructure & Schema Integrity Suite', () => {
 
       await ensureSchemaIntegrity(mockDb as unknown as Parameters<typeof ensureSchemaIntegrity>[0]);
 
-      const invalidAlters = attemptedAlters.filter(sql => 
-        sql.includes('battle_replays ADD COLUMN 0') || 
-        sql.includes("battle_replays ADD COLUMN 0]'") ||
-        sql.includes('battle_replays ADD COLUMN "0"')
+      const invalidAlters = attemptedAlters.filter(
+        (sql) =>
+          sql.includes('battle_replays ADD COLUMN 0') ||
+          sql.includes("battle_replays ADD COLUMN 0]'") ||
+          sql.includes('battle_replays ADD COLUMN "0"')
       );
 
-      assert.deepEqual(invalidAlters, [], `Auto-repair erroneously tried to alter battle_replays with split comma pieces: ${invalidAlters.join(', ')}`);
-      assert.equal(attemptedAlters.length, 0, `Auto-repair should not run ALTER TABLE on a freshly initialized schema, but ran: ${attemptedAlters.join(', ')}`);
+      assert.deepEqual(
+        invalidAlters,
+        [],
+        `Auto-repair erroneously tried to alter battle_replays with split comma pieces: ${invalidAlters.join(', ')}`
+      );
+      assert.equal(
+        attemptedAlters.length,
+        0,
+        `Auto-repair should not run ALTER TABLE on a freshly initialized schema, but ran: ${attemptedAlters.join(', ')}`
+      );
     });
   });
 
   describe('sqliteSchemaIntegrity legacy chat migration', () => {
     it('should not throw an error when global_chat_messages does not contain legacy sender_id or sender_name columns', async () => {
       using dbSync = new DatabaseSync(':memory:');
-      
-      TABLES_SCHEMA.forEach(schema => {
+
+      TABLES_SCHEMA.forEach((schema) => {
         dbSync.exec(`CREATE TABLE IF NOT EXISTS ${schema}`);
       });
 
       const mockDb = {
         exec: (sql: string, params?: unknown[]) => {
           const stmt = dbSync.prepare(sql);
-          const rows = stmt.all(...((params || []) as Array<string | number | bigint | Uint8Array | null>)) as Record<string, unknown>[];
+          const rows = stmt.all(
+            ...((params || []) as Array<string | number | bigint | Uint8Array | null>)
+          ) as Record<string, unknown>[];
           if (rows.length === 0) return [];
           const columns = Object.keys(rows[0]!);
-          const values = rows.map(r => columns.map(c => r[c]));
+          const values = rows.map((r) => columns.map((c) => r[c]));
           return [{ columns, values }];
         },
         run: (sql: string, params?: unknown[]) => {
@@ -129,7 +148,9 @@ describe('Database Infrastructure & Schema Integrity Suite', () => {
       };
 
       await assert.doesNotReject(async () => {
-        await ensureSchemaIntegrity(mockDb as unknown as Parameters<typeof ensureSchemaIntegrity>[0]);
+        await ensureSchemaIntegrity(
+          mockDb as unknown as Parameters<typeof ensureSchemaIntegrity>[0]
+        );
       });
     });
   });
@@ -155,14 +176,35 @@ describe('Database Infrastructure & Schema Integrity Suite', () => {
     });
 
     test('should skip PostgreSQL-only REVOKE, GRANT, and ALTER FUNCTION statements', () => {
-      assert.strictEqual(translatePostgresToSqlite('REVOKE EXECUTE ON FUNCTION public.accept_trade_v2(uuid) FROM PUBLIC, anon;'), '');
-      assert.strictEqual(translatePostgresToSqlite('GRANT EXECUTE ON FUNCTION public.accept_trade_v2(uuid) TO authenticated;'), '');
-      assert.strictEqual(translatePostgresToSqlite('ALTER FUNCTION public.validate_game_save() SET search_path = public, pg_catalog;'), '');
+      assert.strictEqual(
+        translatePostgresToSqlite(
+          'REVOKE EXECUTE ON FUNCTION public.accept_trade_v2(uuid) FROM PUBLIC, anon;'
+        ),
+        ''
+      );
+      assert.strictEqual(
+        translatePostgresToSqlite(
+          'GRANT EXECUTE ON FUNCTION public.accept_trade_v2(uuid) TO authenticated;'
+        ),
+        ''
+      );
+      assert.strictEqual(
+        translatePostgresToSqlite(
+          'ALTER FUNCTION public.validate_game_save() SET search_path = public, pg_catalog;'
+        ),
+        ''
+      );
     });
 
     test('should skip PostgreSQL-only RLS alter table statements', () => {
-      assert.strictEqual(translatePostgresToSqlite('ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;'), '');
-      assert.strictEqual(translatePostgresToSqlite('ALTER TABLE public.game_saves FORCE ROW LEVEL SECURITY;'), '');
+      assert.strictEqual(
+        translatePostgresToSqlite('ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;'),
+        ''
+      );
+      assert.strictEqual(
+        translatePostgresToSqlite('ALTER TABLE public.game_saves FORCE ROW LEVEL SECURITY;'),
+        ''
+      );
     });
   });
 
@@ -170,17 +212,27 @@ describe('Database Infrastructure & Schema Integrity Suite', () => {
     const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 
     it('guarantees war_dominance has explicit INSERT and UPDATE policies in migrations for authenticated users', () => {
-      const files = fs.readdirSync(MIGRATIONS_DIR).filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql'));
+      const files = fs
+        .readdirSync(MIGRATIONS_DIR)
+        .filter((f) => f.endsWith('.sql') && !f.endsWith('.sqlite.sql'));
       let hasInsertPolicy = false;
       let hasUpdatePolicy = false;
 
       for (const file of files) {
         const content = fs.readFileSync(path.join(MIGRATIONS_DIR, file), 'utf-8');
         if (content.includes('war_dominance')) {
-          if (/CREATE\s+POLICY\s+["'].*?["']\s+ON\s+(?:public\.)?war_dominance\s+FOR\s+INSERT/i.test(content)) {
+          if (
+            /CREATE\s+POLICY\s+["'].*?["']\s+ON\s+(?:public\.)?war_dominance\s+FOR\s+INSERT/i.test(
+              content
+            )
+          ) {
             hasInsertPolicy = true;
           }
-          if (/CREATE\s+POLICY\s+["'].*?["']\s+ON\s+(?:public\.)?war_dominance\s+FOR\s+UPDATE/i.test(content)) {
+          if (
+            /CREATE\s+POLICY\s+["'].*?["']\s+ON\s+(?:public\.)?war_dominance\s+FOR\s+UPDATE/i.test(
+              content
+            )
+          ) {
             hasUpdatePolicy = true;
           }
         }

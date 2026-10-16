@@ -1,78 +1,67 @@
 <script setup lang="ts">
-import type { BattleReplayRecord } from '@/types/battle/pvp.ts'
-import { useStatHover } from '@/composables/ui/useStatHover'
+import type { BattleReplayRecord } from '@/types/battle/pvp.ts';
+import { useStatHover } from '@/composables/ui/useStatHover';
 
 interface Props {
-  pinnedReplays?: BattleReplayRecord[]
-  isOwnProfile?: boolean
-  userId?: string
+  pinnedReplays?: BattleReplayRecord[];
+  isOwnProfile?: boolean;
+  userId?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   pinnedReplays: () => [],
   isOwnProfile: false,
   userId: undefined
-})
+});
 
 const emit = defineEmits<{
-  (e: 'watch-replay', replay: BattleReplayRecord): void
-  (e: 'unpin-replay', replayUid: string): void // uuid-ok: Dynamic replay record UUID
-}>()
+  (e: 'watch-replay', replay: BattleReplayRecord): void;
+  (e: 'unpin-replay', replayUid: string): void; // uuid-ok: Dynamic replay record UUID
+}>();
 
-const { handleStatEnter, handleStatLeave } = useStatHover()
+const { handleStatEnter, handleStatLeave } = useStatHover();
 
 function isUserP1(replay: BattleReplayRecord): boolean {
   if (props.userId && replay.p2.userId === props.userId) {
-    return false
+    return false;
   }
-  return true
+  return true;
 }
 
 function getRival(replay: BattleReplayRecord) {
-  return isUserP1(replay) ? replay.p2 : replay.p1
+  return isUserP1(replay) ? replay.p2 : replay.p1;
 }
 
 function getResultText(replay: BattleReplayRecord) {
-  const isP1 = isUserP1(replay)
-  const won = (isP1 && replay.winnerSide === 'p1') || (!isP1 && replay.winnerSide === 'p2')
-  return won ? 'VICTORIA' : 'DERROTA'
+  const isP1 = isUserP1(replay);
+  const won = (isP1 && replay.winnerSide === 'p1') || (!isP1 && replay.winnerSide === 'p2');
+  return won ? 'VICTORIA' : 'DERROTA';
 }
 
 function getResultIcon(replay: BattleReplayRecord) {
-  const isP1 = isUserP1(replay)
-  const won = (isP1 && replay.winnerSide === 'p1') || (!isP1 && replay.winnerSide === 'p2')
-  return won ? '🏆' : '💀'
+  const isP1 = isUserP1(replay);
+  const won = (isP1 && replay.winnerSide === 'p1') || (!isP1 && replay.winnerSide === 'p2');
+  return won ? '🏆' : '💀';
 }
 </script>
 
 <template>
   <div class="profile-section-card pinned-replays-card">
-    <div class="section-label">
-      REPETICIONES FIJADAS ({{ props.pinnedReplays.length }} / 5)
-    </div>
+    <div class="section-label">REPETICIONES FIJADAS ({{ props.pinnedReplays.length }} / 5)</div>
 
     <!-- Empty State -->
-    <div
-      v-if="props.pinnedReplays.length === 0"
-      class="empty-pinned-replays"
-    >
+    <div v-if="props.pinnedReplays.length === 0" class="empty-pinned-replays">
       <span class="emoji empty-icon">🎬</span>
       <div class="empty-content">
         <span class="empty-text">Sin combates fijados en el perfil.</span>
-        <span
-          v-if="props.isOwnProfile"
-          class="empty-sub"
-        >
+        <span v-if="props.isOwnProfile" class="empty-sub">
           Fija tus victorias más épicas desde la pantalla de resultados PvP.
         </span>
       </div>
     </div>
 
     <!-- Replays List -->
-    <div
-      v-else
-      class="pinned-replays-list"
-    >
+    <div v-else class="pinned-replays-list">
       <div
         v-for="replay in props.pinnedReplays"
         :key="replay.id"
@@ -81,16 +70,15 @@ function getResultIcon(replay: BattleReplayRecord) {
         @mouseleave="handleStatLeave"
       >
         <div class="replay-main-info">
-          <div
-            class="result-badge"
-            :class="getResultText(replay).toLowerCase()"
-          >
+          <div class="result-badge" :class="getResultText(replay).toLowerCase()">
             <span class="emoji">{{ getResultIcon(replay) }}</span>
             <span class="result-txt">{{ getResultText(replay) }}</span>
           </div>
 
           <div class="matchup-text">
-            <span class="rival-txt">vs {{ getRival(replay).username }} ({{ getRival(replay).elo }} LP)</span>
+            <span class="rival-txt"
+              >vs {{ getRival(replay).username }} ({{ getRival(replay).elo }} LP)</span
+            >
             <span class="meta-txt">{{ replay.battleCode }} · {{ replay.turnsCount }}T</span>
           </div>
         </div>
@@ -122,9 +110,9 @@ function getResultIcon(replay: BattleReplayRecord) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/_profile-shared.scss" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/_profile-shared.scss' as *;
 
 .pinned-replays-card {
   margin-top: 10px;

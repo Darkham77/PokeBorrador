@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   calculateArchaeologyDifficulty,
   generateArchaeologyGrid,
@@ -27,19 +27,20 @@ describe('archaeologyGameHelper', () => {
     it('generates grid with correct dimensions and fossil part count', () => {
       const grid = generateArchaeologyGrid(5, 3);
       expect(grid.length).toBe(25);
-      const fossilCount = grid.filter(t => t.isFossil).length;
+      const fossilCount = grid.filter((t) => t.isFossil).length;
       expect(fossilCount).toBe(3);
     });
 
     it('generates contiguous fossil parts', () => {
       const grid = generateArchaeologyGrid(6, 4);
-      const fossilTiles = grid.filter(t => t.isFossil);
+      const fossilTiles = grid.filter((t) => t.isFossil);
       expect(fossilTiles.length).toBe(4);
 
       // Check that every fossil piece is adjacent to at least one other fossil piece
       for (const piece of fossilTiles) {
         const hasNeighbor = fossilTiles.some(
-          other => other !== piece && Math.abs(other.r - piece.r) + Math.abs(other.c - piece.c) === 1
+          (other) =>
+            other !== piece && Math.abs(other.r - piece.r) + Math.abs(other.c - piece.c) === 1
         );
         expect(hasNeighbor).toBe(true);
       }
@@ -64,10 +65,16 @@ describe('archaeologyGameHelper', () => {
   describe('fossil sprite asset resolution', () => {
     it('resolves valid asset URLs for all canonical fossil species and items', async () => {
       const { getAssetUrl, ASSET_TYPES } = await import('@/logic/services/assetService');
-      
-      expect(getAssetUrl(ASSET_TYPES.ITEM, 'domefossil')).toContain('/assets/sprites/crafting/tier0/domefossil.webp');
-      expect(getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil')).toContain('/assets/sprites/crafting/tier0/helixfossil.webp');
-      expect(getAssetUrl(ASSET_TYPES.ITEM, 'oldamber')).toContain('/assets/sprites/crafting/tier0/oldamber.webp');
+
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'domefossil')).toContain(
+        '/assets/sprites/crafting/tier0/domefossil.webp'
+      );
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil')).toContain(
+        '/assets/sprites/crafting/tier0/helixfossil.webp'
+      );
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'oldamber')).toContain(
+        '/assets/sprites/crafting/tier0/oldamber.webp'
+      );
     });
   });
 });

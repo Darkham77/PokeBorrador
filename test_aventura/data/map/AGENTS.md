@@ -12,8 +12,8 @@ Poké Vicio Development Team.
 
 - **Pure Declarations**: These datasets contain strictly frozen coordinate geometry and connection graphs; no business logic, reactive stores, or pathfinding algorithms belong here.
 - **English ID Compliance**: All node and route keys must use canonical lowercase alphanumeric identifiers (
-ewbark,
-oute29, goldenrod).
+  ewbark,
+  oute29, goldenrod).
 - **O(1) Data Structures**: Graph lookup tables must be exposed as typed key-value maps (Record<string, AdventureProjectNode>) to support constant time indexing.
 - **Dual Prefabs Manifest Parity Mandate**: Whenever a canonical building prefab or structure is re-extracted, cropped, or resized to match authentic GBA geometry, both [`./canonical_assets_manifest.json`](./canonical_assets_manifest.json) and `public/assets/essentials/manifest.json` MUST be updated synchronously with matching pixel dimensions (`width`, `height`), tile bounds (`w`, `h`), and centered door offsets (`dx`, `dy`).
 
@@ -37,4 +37,4 @@ oute29, goldenrod).
 
 ## Child DOX Index
 
-- *This directory contains specialized domain logic and files with no subdirectories.*
+- _This directory contains specialized domain logic and files with no subdirectories._

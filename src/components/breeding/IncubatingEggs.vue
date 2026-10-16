@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useModalStore } from '@/stores/modals'
-import type { PokemonEgg } from '@/types/pokemon/pokemon'
-import IncubatingEggCard from './IncubatingEggCard.vue'
+import { computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import type { PokemonEgg } from '@/types/pokemon/pokemon';
+import IncubatingEggCard from './IncubatingEggCard.vue';
 
-const gameStore = useGameStore()
-const modalStore = useModalStore()
+const gameStore = useGameStore();
+const modalStore = useModalStore();
 
-const eggs = computed<PokemonEgg[]>(() => gameStore.state.eggs || [])
-const regularEggs = computed(() => eggs.value.filter(e => !e.isNpc))
-const npcEggs = computed(() => eggs.value.filter(e => e.isNpc))
+const eggs = computed<PokemonEgg[]>(() => gameStore.state.eggs || []);
+const regularEggs = computed(() => eggs.value.filter((e) => !e.isNpc));
+const npcEggs = computed(() => eggs.value.filter((e) => e.isNpc));
 
 const hatchEgg = (egg: PokemonEgg) => {
-  modalStore.open('HatchAnimation', { egg })
-}
+  modalStore.open('HatchAnimation', { egg });
+};
 </script>
 
 <template>
@@ -25,10 +25,7 @@ const hatchEgg = (egg: PokemonEgg) => {
         <p>Huevos que llevas contigo en tu mochila (camina o gana batallas para eclosionarlos)</p>
       </div>
       <div class="actions">
-        <div
-          class="count-badge"
-          :class="{ empty: regularEggs.length === 0 }"
-        >
+        <div class="count-badge" :class="{ empty: regularEggs.length === 0 }">
           {{ regularEggs.length }} / 6
           <template v-if="npcEggs.length > 0">
             <span class="npc-badge">+{{ npcEggs.length }} NPC</span>
@@ -37,32 +34,19 @@ const hatchEgg = (egg: PokemonEgg) => {
       </div>
     </header>
 
-    <div
-      v-if="eggs.length === 0"
-      class="empty-state"
-    >
-      <div class="emoji icon">
-        🎒
-      </div>
+    <div v-if="eggs.length === 0" class="empty-state">
+      <div class="emoji icon">🎒</div>
       <p>No tienes huevos en tu mochila. ¡Recoge huevos del almacén de la guardería!</p>
     </div>
 
-    <div
-      v-else
-      class="egg-grid"
-    >
-      <IncubatingEggCard
-        v-for="egg in eggs"
-        :key="egg.uid"
-        :egg="egg"
-        @hatch="hatchEgg"
-      />
+    <div v-else class="egg-grid">
+      <IncubatingEggCard v-for="egg in eggs" :key="egg.uid" :egg="egg" @hatch="hatchEgg" />
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .incubating-eggs {
   padding: 10px 0;

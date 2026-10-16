@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { ref } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
-const activeTab = ref<'resumen' | 'stats' | 'ataques' | 'evol'>('resumen')
-const isFloatingModalOpen = ref(false)
+const activeTab = ref<'resumen' | 'stats' | 'ataques' | 'evol'>('resumen');
+const isFloatingModalOpen = ref(false);
 
 import {
   type PokemonSummaryItem,
@@ -11,9 +11,9 @@ import {
   MOCK_DETAIL_PIKACHU,
   MOCK_DETAIL_CHARIZARD,
   MOCK_DETAIL_GENGAR
-} from '../data/mockDetailPokemon.ts'
+} from '../data/mockDetailPokemon.ts';
 
-const currentPokemon = ref<DetailPokemon>({ ...MOCK_DETAIL_PIKACHU })
+const currentPokemon = ref<DetailPokemon>({ ...MOCK_DETAIL_PIKACHU });
 
 const POKEDEX_PIKACHU = 25 as const;
 const POKEDEX_CHARIZARD = 6 as const;
@@ -21,33 +21,44 @@ const POKEDEX_GENGAR = 94 as const;
 
 function openDetailFor(p: PokemonSummaryItem) {
   if (p.id === POKEDEX_PIKACHU) {
-    currentPokemon.value = { ...MOCK_DETAIL_PIKACHU }
+    currentPokemon.value = { ...MOCK_DETAIL_PIKACHU };
   } else if (p.id === POKEDEX_CHARIZARD) {
-    currentPokemon.value = { ...MOCK_DETAIL_CHARIZARD }
+    currentPokemon.value = { ...MOCK_DETAIL_CHARIZARD };
   } else if (p.id === POKEDEX_GENGAR) {
-    currentPokemon.value = { ...MOCK_DETAIL_GENGAR }
+    currentPokemon.value = { ...MOCK_DETAIL_GENGAR };
   }
-  isFloatingModalOpen.value = true
+  isFloatingModalOpen.value = true;
 }
 
 defineExpose({
   openDetailFor
-})
+});
 </script>
 
 <template>
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">🔍</span>
-      <span>12. Modal de Información / Detalle (Canónico 1:1 con Media &amp; UnifiedPokemonDetailModal)</span>
+      <span
+        >12. Modal de Información / Detalle (Canónico 1:1 con Media &amp;
+        UnifiedPokemonDetailModal)</span
+      >
     </h2>
 
     <!-- Selector de Muestra de Pokémon -->
     <div
       class="pv-frame-panel pv-panel-surface"
-      style="padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;"
+      style="
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      "
     >
-      <div style="font-size: var(--font-8); color: var(--color-text-gold); font-weight: bold;">
+      <div style="font-size: var(--font-8); color: var(--color-text-gold); font-weight: bold">
         FICHA TÉCNICA PIXELADA GBA (1:1 CON MEDIA_1788978462035.PNG):
       </div>
       <button
@@ -64,7 +75,7 @@ defineExpose({
 
     <div
       class="pv-panel-wrap has-cast-shadow shadow-curve-xl"
-      style="display: flex; justify-content: center;"
+      style="display: flex; justify-content: center"
     >
       <!-- VISTA DEL DETALLE (1:1 CON MEDIA_1788978462035.PNG) -->
       <div class="pv-curve-xl detail-modal-container">
@@ -74,14 +85,11 @@ defineExpose({
             <span class="pv-curve-xs dex-num-badge">
               {{ currentPokemon.dexNum }}
             </span>
-            <span
-              class="edit-nick-icon"
-              title="Editar Mote"
-            >✏️</span>
+            <span class="edit-nick-icon" title="Editar Mote">✏️</span>
             <span
               class="emoji"
               :class="currentPokemon.gender === 'm' ? 'gender-male' : 'gender-female'"
-              style="font-size: var(--font-9);"
+              style="font-size: var(--font-9)"
             >
               {{ currentPokemon.gender === 'm' ? '♂' : '♀' }}
             </span>
@@ -110,18 +118,8 @@ defineExpose({
                 stroke-width="3.5"
                 stroke-linecap="square"
               >
-                <line
-                  x1="18"
-                  y1="6"
-                  x2="6"
-                  y2="18"
-                />
-                <line
-                  x1="6"
-                  y1="6"
-                  x2="18"
-                  y2="18"
-                />
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
           </div>
@@ -135,27 +133,15 @@ defineExpose({
               :src="getAssetUrl(ASSET_TYPES.POKEMON, currentPokemon.id)"
               :alt="currentPokemon.name"
               class="hero-sprite-img"
-            >
+            />
             <span class="hero-sparkle-2">✨</span>
           </div>
 
           <div class="pv-frame-control hero-bottom-badges">
-            <span
-              class="hero-badge-icon"
-              title="Favorito"
-            >⭐</span>
-            <span
-              class="hero-badge-icon"
-              title="Genética Especial / Shiny"
-            >🧬</span>
-            <span
-              class="hero-badge-icon"
-              title="Concursos Ganados"
-            >🏆</span>
-            <span
-              class="hero-badge-icon"
-              title="Defensa de Gimnasio"
-            >🛡️</span>
+            <span class="hero-badge-icon" title="Favorito">⭐</span>
+            <span class="hero-badge-icon" title="Genética Especial / Shiny">🧬</span>
+            <span class="hero-badge-icon" title="Concursos Ganados">🏆</span>
+            <span class="hero-badge-icon" title="Defensa de Gimnasio">🛡️</span>
           </div>
         </div>
 
@@ -208,10 +194,7 @@ defineExpose({
         </div>
 
         <!-- TAB BODY 1: RESUMEN -->
-        <div
-          v-if="activeTab === 'resumen'"
-          class="detail-tab-body"
-        >
+        <div v-if="activeTab === 'resumen'" class="detail-tab-body">
           <!-- Grid 2x3 de Información -->
           <div class="detail-info-grid">
             <div class="pv-frame-control detail-info-cell">
@@ -220,11 +203,15 @@ defineExpose({
             </div>
             <div class="pv-frame-control detail-info-cell">
               <span class="cell-label">ALTURA</span>
-              <span class="cell-value">{{ currentPokemon.height }} <span class="val-bracket">M</span></span>
+              <span class="cell-value"
+                >{{ currentPokemon.height }} <span class="val-bracket">M</span></span
+              >
             </div>
             <div class="pv-frame-control detail-info-cell">
               <span class="cell-label">PESO</span>
-              <span class="cell-value">{{ currentPokemon.weight }} <span class="val-bracket">M</span></span>
+              <span class="cell-value"
+                >{{ currentPokemon.weight }} <span class="val-bracket">M</span></span
+              >
             </div>
             <div class="pv-frame-control detail-info-cell">
               <span class="cell-label">NATURALEZA</span>
@@ -236,7 +223,9 @@ defineExpose({
             </div>
             <div class="pv-frame-control detail-info-cell">
               <span class="cell-label">VIGOR</span>
-              <span class="cell-value"><span style="color: var(--yellow);">⚡</span> {{ currentPokemon.vigor }}</span>
+              <span class="cell-value"
+                ><span style="color: var(--yellow)">⚡</span> {{ currentPokemon.vigor }}</span
+              >
             </div>
           </div>
 
@@ -260,10 +249,9 @@ defineExpose({
             <div class="detail-bar-row">
               <div class="bar-header">
                 <span class="bar-title">NIVEL</span>
-                <span
-                  class="bar-value"
-                  style="color: var(--sky);"
-                >Nv. {{ currentPokemon.level }} / {{ currentPokemon.maxLevel }}</span>
+                <span class="bar-value" style="color: var(--sky)"
+                  >Nv. {{ currentPokemon.level }} / {{ currentPokemon.maxLevel }}</span
+                >
               </div>
               <div class="bar-track">
                 <div
@@ -277,16 +265,12 @@ defineExpose({
             <div class="detail-bar-row">
               <div class="bar-header">
                 <span class="bar-title">EXPERIENCIA</span>
-                <span
-                  class="bar-value"
-                  style="color: var(--purple-400);"
-                >{{ currentPokemon.exp }} / {{ currentPokemon.expNext }}</span>
+                <span class="bar-value" style="color: var(--purple-400)"
+                  >{{ currentPokemon.exp }} / {{ currentPokemon.expNext }}</span
+                >
               </div>
               <div class="bar-track">
-                <div
-                  class="bar-fill fill-exp"
-                  style="width: 85%;"
-                />
+                <div class="bar-fill fill-exp" style="width: 85%" />
               </div>
             </div>
 
@@ -294,15 +278,16 @@ defineExpose({
             <div class="detail-bar-row">
               <div class="bar-header">
                 <span class="bar-title">AMISTAD ({{ currentPokemon.friendshipTitle }})</span>
-                <span
-                  class="bar-value"
-                  style="color: var(--yellow);"
-                >🎀 {{ currentPokemon.friendship }} / {{ currentPokemon.maxFriendship }}</span>
+                <span class="bar-value" style="color: var(--yellow)"
+                  >🎀 {{ currentPokemon.friendship }} / {{ currentPokemon.maxFriendship }}</span
+                >
               </div>
               <div class="bar-track">
                 <div
                   class="bar-fill fill-friend"
-                  :style="{ width: `${(currentPokemon.friendship / currentPokemon.maxFriendship) * 100}%` }"
+                  :style="{
+                    width: `${(currentPokemon.friendship / currentPokemon.maxFriendship) * 100}%`
+                  }"
                 />
               </div>
             </div>
@@ -310,15 +295,22 @@ defineExpose({
 
           <!-- Caja de Lore / Pokédex -->
           <div class="pv-frame-control detail-lore-box">
-            <p class="lore-quote">
-              "{{ currentPokemon.lore }}"
-            </p>
+            <p class="lore-quote">"{{ currentPokemon.lore }}"</p>
           </div>
 
           <!-- Historial de Competencias -->
           <div
             class="pv-frame-control"
-            style="padding: 6px 12px; font-size: var(--font-8); color: var(--color-text-gold); font-weight: bold; display: flex; align-items: center; gap: 4px; border-bottom: 1px dashed var(--color-control-border);"
+            style="
+              padding: 6px 12px;
+              font-size: var(--font-8);
+              color: var(--color-text-gold);
+              font-weight: bold;
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              border-bottom: 1px dashed var(--color-control-border);
+            "
           >
             <span>🏆</span> <span>HISTORIAL DE COMPETENCIAS</span>
           </div>
@@ -337,22 +329,12 @@ defineExpose({
         </div>
 
         <!-- TAB BODY 2: STATS+ -->
-        <div
-          v-else-if="activeTab === 'stats'"
-          class="detail-tab-body"
-        >
+        <div v-else-if="activeTab === 'stats'" class="detail-tab-body">
           <div class="pv-frame-control detail-stats-grid">
-            <div
-              v-for="s in currentPokemon.stats"
-              :key="s.name"
-              class="stat-row-item"
-            >
+            <div v-for="s in currentPokemon.stats" :key="s.name" class="stat-row-item">
               <span class="stat-name">{{ s.name }}</span>
               <div class="stat-bar-track">
-                <div
-                  class="stat-bar-fill"
-                  :style="{ width: `${(s.value / s.max) * 100}%` }"
-                />
+                <div class="stat-bar-fill" :style="{ width: `${(s.value / s.max) * 100}%` }" />
               </div>
               <span class="stat-numbers">{{ s.value }} / {{ s.max }}</span>
             </div>
@@ -360,10 +342,7 @@ defineExpose({
         </div>
 
         <!-- TAB BODY 3: ATAQUES -->
-        <div
-          v-else-if="activeTab === 'ataques'"
-          class="detail-tab-body"
-        >
+        <div v-else-if="activeTab === 'ataques'" class="detail-tab-body">
           <div class="detail-moves-list">
             <div
               v-for="mv in currentPokemon.moves"
@@ -372,10 +351,9 @@ defineExpose({
             >
               <div class="dock-move-header">
                 <span class="dock-move-name">{{ mv.name }}</span>
-                <span
-                  class="pv-frame-pill pv-type-pill pv-type-sm"
-                  :class="`type-${mv.type}`"
-                >{{ mv.typeLabel }}</span>
+                <span class="pv-frame-pill pv-type-pill pv-type-sm" :class="`type-${mv.type}`">{{
+                  mv.typeLabel
+                }}</span>
               </div>
               <div class="dock-move-stats">
                 <span>POT: {{ mv.pot }}</span>
@@ -388,28 +366,19 @@ defineExpose({
         </div>
 
         <!-- TAB BODY 4: EVOLUCIÓN -->
-        <div
-          v-else-if="activeTab === 'evol'"
-          class="detail-tab-body"
-        >
+        <div v-else-if="activeTab === 'evol'" class="detail-tab-body">
           <div class="pv-frame-control detail-evol-chain">
-            <template
-              v-for="(node, nIdx) in currentPokemon.evolChain"
-              :key="node.id"
-            >
+            <template v-for="(node, nIdx) in currentPokemon.evolChain" :key="node.id">
               <div class="evol-node">
                 <img
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, node.id)"
                   :alt="node.name"
                   class="evol-sprite"
-                >
+                />
                 <span class="evol-name">{{ node.name }}</span>
                 <span class="evol-req">{{ node.req }}</span>
               </div>
-              <span
-                v-if="nIdx < currentPokemon.evolChain.length - 1"
-                class="evol-arrow"
-              >➔</span>
+              <span v-if="nIdx < currentPokemon.evolChain.length - 1" class="evol-arrow">➔</span>
             </template>
           </div>
         </div>
@@ -438,19 +407,19 @@ defineExpose({
               ✕
             </button>
           </div>
-          <div style="padding: 12px; text-align: center;">
+          <div style="padding: 12px; text-align: center">
             <img
               :src="getAssetUrl(ASSET_TYPES.POKEMON, currentPokemon.id)"
               :alt="currentPokemon.name"
-              style="width: 72px; height: 72px; image-rendering: pixelated;"
-            >
-            <p style="font-size: var(--font-8); color: var(--color-text-main); margin-top: 8px;">
+              style="width: 72px; height: 72px; image-rendering: pixelated"
+            />
+            <p style="font-size: var(--font-8); color: var(--color-text-main); margin-top: 8px">
               {{ currentPokemon.lore }}
             </p>
             <button
               type="button"
               class="pv-curve-sm pv-btn pv-btn-secondary pv-btn-md"
-              style="width: 100%; margin-top: 12px;"
+              style="width: 100%; margin-top: 12px"
               @click="isFloatingModalOpen = false"
             >
               <span>CERRAR MODAL FLOTANTE</span>

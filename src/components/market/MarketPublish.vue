@@ -1,70 +1,65 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useGTSStore } from '@/stores/gts'
-import { useUIStore } from '@/stores/ui'
-import MarketPublishSelector from './MarketPublishSelector.vue'
-import MarketPublishForm from './MarketPublishForm.vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { MarketListingType } from '@/logic/economy/market'
-import { useMarketPublishActions } from './useMarketPublishActions.ts'
+import { ref, computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useGTSStore } from '@/stores/gts';
+import { useUIStore } from '@/stores/ui';
+import MarketPublishSelector from './MarketPublishSelector.vue';
+import MarketPublishForm from './MarketPublishForm.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MarketListingType } from '@/logic/economy/market';
+import { useMarketPublishActions } from './useMarketPublishActions.ts';
 
-const game = useGameStore()
-const gtsStore = useGTSStore()
-const ui = useUIStore()
-const isSmallScreen = computed(() => ui.isSmallScreen)
+const game = useGameStore();
+const gtsStore = useGTSStore();
+const ui = useUIStore();
+const isSmallScreen = computed(() => ui.isSmallScreen);
 
-const activeMode = ref<MarketListingType>('pokemon')
+const activeMode = ref<MarketListingType>('pokemon');
 
-const {
-  selection,
-  price,
-  itemQty,
-  selectItem,
-  handlePublish,
-  fee,
-  net
-} = useMarketPublishActions(gtsStore, activeMode)
+const { selection, price, itemQty, selectItem, handlePublish, fee, net } = useMarketPublishActions(
+  gtsStore,
+  activeMode
+);
 
 const selectedPokemon = computed<Pokemon | null>(() => {
   if (activeMode.value === 'pokemon' && selection.value && 'uid' in selection.value) {
-    return selection.value as Pokemon
+    return selection.value as Pokemon;
   }
-  return null
-})
+  return null;
+});
 
 const itemSpriteUrl = computed<string>(() => {
   if (activeMode.value === 'item' && selection.value && 'id' in selection.value) {
-    return getAssetUrl(ASSET_TYPES.ITEM, selection.value.id)
+    return getAssetUrl(ASSET_TYPES.ITEM, selection.value.id);
   }
-  return ''
-})
+  return '';
+});
 
-const formattedFee = computed(() => `-₱${fee.value.toLocaleString()}`)
-const formattedNet = computed(() => `₱${net.value.toLocaleString()}`)
+const formattedFee = computed(() => `-₱${fee.value.toLocaleString()}`);
+const formattedNet = computed(() => `₱${net.value.toLocaleString()}`);
 
 const selectedItemUid = computed(() => {
   if (selection.value) {
-    if ('uid' in selection.value) return selection.value.uid
-    if ('id' in selection.value) return selection.value.id
+    if ('uid' in selection.value) return selection.value.uid;
+    if ('id' in selection.value) return selection.value.id;
   }
-  return null
-})
+  return null;
+});
 
 function handleOpenDetail() {
-  if (!selectedPokemon.value) return
-  const teamIdx = (game.state.team || []).findIndex(p => p?.uid === selectedPokemon.value?.uid)
+  if (!selectedPokemon.value) return;
+  const teamIdx = (game.state.team || []).findIndex((p) => p?.uid === selectedPokemon.value?.uid);
   if (teamIdx !== -1) {
-    ui.openPokemonDetail(selectedPokemon.value, teamIdx, 'team', { source: 'selection' })
-    return
+    ui.openPokemonDetail(selectedPokemon.value, teamIdx, 'team', { source: 'selection' });
+    return;
   }
-  const boxIdx = (game.state.box || []).findIndex(p => p?.uid === selectedPokemon.value?.uid)
+  const boxIdx = (game.state.box || []).findIndex((p) => p?.uid === selectedPokemon.value?.uid);
   if (boxIdx !== -1) {
-    ui.openPokemonDetail(selectedPokemon.value, boxIdx, 'box', { source: 'selection' })
-    return
+    ui.openPokemonDetail(selectedPokemon.value, boxIdx, 'box', { source: 'selection' });
+    return;
   }
-  ui.openPokemonDetail(selectedPokemon.value, -1, 'selection', { source: 'selection' })
+  ui.openPokemonDetail(selectedPokemon.value, -1, 'selection', { source: 'selection' });
 }
 </script>
 
@@ -73,16 +68,22 @@ function handleOpenDetail() {
     <div class="publish-header">
       <div class="mode-selector">
         <button
-          id="market-publish-btn-pok-mon" 
+          id="market-publish-btn-pok-mon"
           :class="{ active: activeMode === 'pokemon' }"
-          @click.stop="activeMode = 'pokemon'; selection = null"
+          @click.stop="
+            activeMode = 'pokemon';
+            selection = null;
+          "
         >
           POKÉMON
         </button>
         <button
-          id="market-publish-btn-objetos" 
+          id="market-publish-btn-objetos"
           :class="{ active: activeMode === 'item' }"
-          @click.stop="activeMode = 'item'; selection = null"
+          @click.stop="
+            activeMode = 'item';
+            selection = null;
+          "
         >
           OBJETOS
         </button>
@@ -92,10 +93,7 @@ function handleOpenDetail() {
       </p>
     </div>
 
-    <div
-      class="main-split"
-      :class="{ 'is-mobile-view': isSmallScreen }"
-    >
+    <div class="main-split" :class="{ 'is-mobile-view': isSmallScreen }">
       <!-- Selector List -->
       <MarketPublishSelector
         v-if="!isSmallScreen || !selection"
@@ -126,4 +124,3 @@ function handleOpenDetail() {
 </template>
 
 <style src="./MarketPublish.styles.scss" lang="scss"></style>
-

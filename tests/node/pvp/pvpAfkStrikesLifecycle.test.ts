@@ -1,5 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
-import { executeCommitPick, executeHandleTurnTimeout } from '@/logic/pvp/livePvPTurnExecutionHandler';
+import { describe, it, expect, vi } from 'vite-plus/test';
+import {
+  executeCommitPick,
+  executeHandleTurnTimeout
+} from '@/logic/pvp/livePvPTurnExecutionHandler';
 import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper';
 import type { PvPAction } from '@/types/battle/pvp';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -15,13 +18,17 @@ describe('PvP AFK 2-Strike Lifecycle & Manual Reset', () => {
     const autoPick: PvPAction = { type: 'move', moveIndex: 0, choiceString: 'move 1' };
 
     // When committing an auto pick (isManual = false), strikes MUST NOT be reset
-    await executeCommitPick(autoPick, {
-      battleState,
-      timerManager,
-      afkStrikes,
-      battleStore: {} as any,
-      resolveTurn
-    }, false);
+    await executeCommitPick(
+      autoPick,
+      {
+        battleState,
+        timerManager,
+        afkStrikes,
+        battleStore: {} as any,
+        resolveTurn
+      },
+      false
+    );
 
     expect(timerManager.state.afkStrikes).toBe(1);
     expect(afkStrikes.value).toBe(1);
@@ -69,7 +76,9 @@ describe('PvP AFK 2-Strike Lifecycle & Manual Reset', () => {
     executeHandleTurnTimeout(false, {
       uiStore: { notify } as any,
       forfeit,
-      battleStore: { state: { playerRequest: { active: [{ moves: [{ id: 'thunderbolt' }] }] } } } as any,
+      battleStore: {
+        state: { playerRequest: { active: [{ moves: [{ id: 'thunderbolt' }] }] } }
+      } as any,
       battleState: { myTeam: [dummyPoke] },
       commitPick
     });
@@ -125,16 +134,22 @@ describe('PvP AFK 2-Strike Lifecycle & Manual Reset', () => {
         executeHandleTurnTimeout(isForfeit, {
           uiStore: { notify } as any,
           forfeit,
-          battleStore: { state: { playerRequest: { active: [{ moves: [{ id: 'thunderbolt' }] }] } } } as any,
+          battleStore: {
+            state: { playerRequest: { active: [{ moves: [{ id: 'thunderbolt' }] }] } }
+          } as any,
           battleState: { myTeam: [dummyPoke] },
           commitPick: (pick: PvPAction, isManual = true) => {
-            void executeCommitPick(pick, {
-              battleState,
-              timerManager,
-              afkStrikes,
-              battleStore: {} as any,
-              resolveTurn
-            }, isManual);
+            void executeCommitPick(
+              pick,
+              {
+                battleState,
+                timerManager,
+                afkStrikes,
+                battleStore: {} as any,
+                resolveTurn
+              },
+              isManual
+            );
           }
         });
       }

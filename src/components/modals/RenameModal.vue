@@ -1,122 +1,137 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import { useProfileStore } from '@/stores/player/profile'
-import { useGameStore } from '@/stores/game'
-import { useAuthStore } from '@/stores/auth'
-import BaseModal from '@/components/common/BaseModal.vue'
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import { getDaysUntilIdentityChange, canChangeIdentity } from '@/logic/player/identityCooldown'
-import { validateRenameRequest, syncRemoteUsernameChange, updateLocalUserStorage } from './renameHelpers'
-import type { GenderId } from '@/types/system/game'
+import { ref, computed, onMounted, watch } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import { useProfileStore } from '@/stores/player/profile';
+import { useGameStore } from '@/stores/game';
+import { useAuthStore } from '@/stores/auth';
+import BaseModal from '@/components/common/BaseModal.vue';
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import { getDaysUntilIdentityChange, canChangeIdentity } from '@/logic/player/identityCooldown';
+import {
+  validateRenameRequest,
+  syncRemoteUsernameChange,
+  updateLocalUserStorage
+} from './renameHelpers';
+import type { GenderId } from '@/types/system/game';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const uiStore = useUIStore()
-const profileStore = useProfileStore()
-const gameStore = useGameStore()
-const authStore = useAuthStore()
+const uiStore = useUIStore();
+const profileStore = useProfileStore();
+const gameStore = useGameStore();
+const authStore = useAuthStore();
 
-const newUsername = ref('')
-const isRenaming = ref(false)
-const selectedGender = ref<GenderId>('h')
+const newUsername = ref('');
+const isRenaming = ref(false);
+const selectedGender = ref<GenderId>('h');
 
-const SCALE_GENDER_CLICK = 0.85
+const SCALE_GENDER_CLICK = 0.85;
 
 const setGender = (newGender: GenderId, event: MouseEvent) => {
-  gsap.fromTo(event.currentTarget, 
+  gsap.fromTo(
+    event.currentTarget,
     { scale: SCALE_GENDER_CLICK },
     { scale: 1, duration: 0.3, ease: 'back.out(2)' }
-  )
-  selectedGender.value = newGender
-}
+  );
+  selectedGender.value = newGender;
+};
 
 const syncState = () => {
-  newUsername.value = profileStore.profileData.username || gameStore.state.trainer || ''
-  selectedGender.value = gameStore.state.gender || 'h'
-}
+  newUsername.value = profileStore.profileData.username || gameStore.state.trainer || '';
+  selectedGender.value = gameStore.state.gender || 'h';
+};
 
 onMounted(() => {
-  syncState()
-})
+  syncState();
+});
 
-watch(() => props.show, (isOpen) => {
-  if (isOpen) {
-    syncState()
+watch(
+  () => props.show,
+  (isOpen) => {
+    if (isOpen) {
+      syncState();
+    }
   }
-})
+);
 
-watch(() => gameStore.state.gender, (newGender) => {
-  if (newGender) {
-    selectedGender.value = newGender
+watch(
+  () => gameStore.state.gender,
+  (newGender) => {
+    if (newGender) {
+      selectedGender.value = newGender;
+    }
   }
-})
+);
 
 const daysUntilRename = computed(() => {
-  return getDaysUntilIdentityChange(gameStore.state.last_renamed_at || profileStore.profileData.last_renamed_at)
-})
+  return getDaysUntilIdentityChange(
+    gameStore.state.last_renamed_at || profileStore.profileData.last_renamed_at
+  );
+});
 
-const canRename = computed(() => canChangeIdentity(gameStore.state.last_renamed_at || profileStore.profileData.last_renamed_at))
+const canRename = computed(() =>
+  canChangeIdentity(gameStore.state.last_renamed_at || profileStore.profileData.last_renamed_at)
+);
 
 const nameChanged = computed(() => {
-  const targetName = newUsername.value.trim()
-  const currentName = profileStore.profileData.username || gameStore.state.trainer
-  return targetName !== currentName
-})
+  const targetName = newUsername.value.trim();
+  const currentName = profileStore.profileData.username || gameStore.state.trainer;
+  return targetName !== currentName;
+});
 
 const submitRename = async () => {
-  const targetName = newUsername.value.trim()
-  const genderChanged = selectedGender.value !== gameStore.state.gender
+  const targetName = newUsername.value.trim();
+  const genderChanged = selectedGender.value !== gameStore.state.gender;
 
   const validationError = validateRenameRequest(
     targetName,
     { genderChanged, nameChanged: nameChanged.value, canRename: canRename.value },
     daysUntilRename.value
-  )
+  );
   if (validationError) {
-    uiStore.notify(validationError.message, validationError.icon)
-    return
+    uiStore.notify(validationError.message, validationError.icon);
+    return;
   }
 
-  isRenaming.value = true
-  
+  isRenaming.value = true;
+
   try {
-    const isLocal = authStore.sessionMode === 'offline' || authStore.user?.id.startsWith('local_')
-    const nowStr = Temporal.Now.instant().toString()
+    const isLocal = authStore.sessionMode === 'offline' || authStore.user?.id.startsWith('local_');
+    const nowStr = Temporal.Now.instant().toString();
 
     if (nameChanged.value) {
       if (!isLocal) {
-        const res = await syncRemoteUsernameChange(gameStore, targetName)
+        const res = await syncRemoteUsernameChange(gameStore, targetName);
         if (!res.success) {
-          uiStore.notify(res.error || 'Error al cambiar el nombre', '⚠️')
-          isRenaming.value = false
-          return
+          uiStore.notify(res.error || 'Error al cambiar el nombre', '⚠️');
+          isRenaming.value = false;
+          return;
         }
       }
-      gameStore.state.trainer = targetName
+      gameStore.state.trainer = targetName;
     }
 
     if (genderChanged) {
-      gameStore.state.gender = selectedGender.value
+      gameStore.state.gender = selectedGender.value;
     }
 
-    gameStore.state.last_renamed_at = nowStr
-    profileStore.updateProfile({ 
+    gameStore.state.last_renamed_at = nowStr;
+    profileStore.updateProfile({
       ...(nameChanged.value ? { username: targetName } : {}),
       gender: selectedGender.value,
-      last_renamed_at: nowStr 
-    })
-    
+      last_renamed_at: nowStr
+    });
+
     if (authStore.user?.id.startsWith('local_')) {
       updateLocalUserStorage(
         authStore.user.id,
@@ -125,22 +140,22 @@ const submitRename = async () => {
         selectedGender.value,
         nowStr,
         nameChanged.value
-      )
+      );
     }
 
-    gameStore.save(false)
+    gameStore.save(false);
     if (authStore.user) {
-      profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
+      profileStore.syncProfileFromAuth(authStore.user, gameStore.state);
     }
 
-    uiStore.notify('Cambios guardados con éxito.', '✨')
-    emit('close')
+    uiStore.notify('Cambios guardados con éxito.', '✨');
+    emit('close');
   } catch (_e: unknown) {
-    uiStore.notify('Error al guardar los cambios.', '⚠️')
+    uiStore.notify('Error al guardar los cambios.', '⚠️');
   } finally {
-    isRenaming.value = false
+    isRenaming.value = false;
   }
-}
+};
 </script>
 
 <template>
@@ -156,21 +171,23 @@ const submitRename = async () => {
     <div class="rename-modal-container">
       <div class="info-box">
         <p class="desc-text">
-          Ingresa tu nuevo nombre de entrenador. Recuerda que solo se permite un cambio cada 30 días.
+          Ingresa tu nuevo nombre de entrenador. Recuerda que solo se permite un cambio cada 30
+          días.
         </p>
       </div>
 
       <div class="input-section">
         <div class="input-row">
           <input
-            id="rename-modal-input-newusername" 
+            id="rename-modal-input-newusername"
             v-model="newUsername"
-            type="text" 
+            type="text"
             class="vicio-input"
+            aria-label="Nuevo nombre de entrenador"
             :disabled="!canRename || isRenaming"
             placeholder="Ej: Red..."
             maxlength="15"
-          >
+          />
         </div>
 
         <div class="gender-selection-row">
@@ -180,11 +197,7 @@ const submitRename = async () => {
             :class="{ active: selectedGender === 'h' }"
             @click.prevent.stop="setGender('h', $event)"
           >
-            <PVGenderBadge
-              gender="h"
-              is-trainer
-              size="sm"
-            /> MASCULINO
+            <PVGenderBadge gender="h" is-trainer size="sm" /> MASCULINO
           </button>
           <button
             id="rename-modal-btn-2"
@@ -192,25 +205,19 @@ const submitRename = async () => {
             :class="{ active: selectedGender === 'm' }"
             @click.prevent.stop="setGender('m', $event)"
           >
-            <PVGenderBadge
-              gender="m"
-              is-trainer
-              size="sm"
-            /> FEMENINO
+            <PVGenderBadge gender="m" is-trainer size="sm" /> FEMENINO
           </button>
         </div>
 
-        <div
-          v-if="!canRename"
-          class="cooldown-notice"
-        >
-          <span class="emoji">⏳</span> Cooldown activo: Faltan <span class="days-highlight">{{ daysUntilRename }} días</span>.
+        <div v-if="!canRename" class="cooldown-notice">
+          <span class="emoji">⏳</span> Cooldown activo: Faltan
+          <span class="days-highlight">{{ daysUntilRename }} días</span>.
         </div>
       </div>
 
       <div class="action-buttons">
         <button
-          id="rename-modal-btn-cancelar" 
+          id="rename-modal-btn-cancelar"
           class="btn-vicio-secondary cancel-btn"
           :disabled="isRenaming"
           @click="emit('close')"
@@ -218,7 +225,7 @@ const submitRename = async () => {
           CANCELAR
         </button>
         <button
-          id="rename-modal-btn-isrenaming-guardando-confirmar" 
+          id="rename-modal-btn-isrenaming-guardando-confirmar"
           class="btn-vicio-primary apply-btn"
           :disabled="isRenaming || !newUsername.trim() || (nameChanged && !canRename)"
           @click="submitRename"
@@ -231,8 +238,8 @@ const submitRename = async () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .rename-modal-container {
   display: flex;
@@ -278,7 +285,6 @@ const submitRename = async () => {
       text-align: center;
       flex: 1;
       outline: none;
-      
 
       &:focus {
         border-color: var(--yellow);
@@ -295,8 +301,6 @@ const submitRename = async () => {
     @include gender-select-buttons(6px);
   }
 }
-
-
 
 .cooldown-notice {
   @include pixelated;

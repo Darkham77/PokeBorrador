@@ -1,8 +1,11 @@
-import { STARTER_POKEMON_IDS, STARTER_POKEMON_IDS_SET, type StarterPokemonId } from '../system/constants.ts'
-
+import {
+  STARTER_POKEMON_IDS,
+  STARTER_POKEMON_IDS_SET,
+  type StarterPokemonId
+} from '../system/constants.ts';
 
 export interface StarterPokemonConfig {
-  id: StarterPokemonId
+  id: StarterPokemonId;
 }
 
 function isStarterPokemonId(raw: string): raw is StarterPokemonId {

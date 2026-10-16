@@ -15,12 +15,15 @@ import {
 } from './waterAutotileEngine.ts';
 import { sanitizePathGridWidth } from './pathAutotileEngine.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
-import {
-  pruneOrphanPathFragments,
-  pruneDeadEndStubs
-} from './routePathPruning.ts';
+import { pruneOrphanPathFragments, pruneDeadEndStubs } from './routePathPruning.ts';
 
-function cleanseBridgeAndSandGrids({ continentMap, pathGrid, bridgeGrid, W, H }: FinalizeRouteGridsContext): void {
+function cleanseBridgeAndSandGrids({
+  continentMap,
+  pathGrid,
+  bridgeGrid,
+  W,
+  H
+}: FinalizeRouteGridsContext): void {
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       if (continentMap.cells[y]?.[x]?.terrain !== 'water') {
@@ -42,7 +45,9 @@ function sanitizeAndStampStairs(
   const sanitized = sanitizePathGridWidth(pathGrid, continentMap.terrainMatrix);
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const isLand = continentMap.terrainMatrix[y]?.[x] !== 'sand' && continentMap.cells[y]?.[x]?.terrain !== 'water';
+      const isLand =
+        continentMap.terrainMatrix[y]?.[x] !== 'sand' &&
+        continentMap.cells[y]?.[x]?.terrain !== 'water';
       pathGrid[y]![x] = isLand ? Boolean(sanitized[y]?.[x]) : false;
     }
   }
@@ -50,10 +55,14 @@ function sanitizeAndStampStairs(
   if (!continentMap.placedStairs) return;
   for (const st of continentMap.placedStairs) {
     const isConnected = Boolean(
-      pathGrid[st.y - 1]?.[st.x] || pathGrid[st.y - 1]?.[st.x + 1] ||
-      pathGrid[st.y]?.[st.x] || pathGrid[st.y]?.[st.x + 1] ||
-      pathGrid[st.y + 1]?.[st.x] || pathGrid[st.y + 1]?.[st.x + 1] ||
-      pathGrid[st.y + 2]?.[st.x] || pathGrid[st.y + 2]?.[st.x + 1]
+      pathGrid[st.y - 1]?.[st.x] ||
+      pathGrid[st.y - 1]?.[st.x + 1] ||
+      pathGrid[st.y]?.[st.x] ||
+      pathGrid[st.y]?.[st.x + 1] ||
+      pathGrid[st.y + 1]?.[st.x] ||
+      pathGrid[st.y + 1]?.[st.x + 1] ||
+      pathGrid[st.y + 2]?.[st.x] ||
+      pathGrid[st.y + 2]?.[st.x + 1]
     );
     if (isConnected) {
       pathGrid[st.y]![st.x] = true;
@@ -64,7 +73,13 @@ function sanitizeAndStampStairs(
   }
 }
 
-function reResolveWaterAutotiles({ continentMap, pathGrid, bridgeGrid, W, H }: FinalizeRouteGridsContext): void {
+function reResolveWaterAutotiles({
+  continentMap,
+  pathGrid,
+  bridgeGrid,
+  W,
+  H
+}: FinalizeRouteGridsContext): void {
   (continentMap as { resolvedWater: ResolvedWaterMapResult }).resolvedWater = resolveWaterCoastGrid(
     continentMap.terrainMatrix,
     bridgeGrid

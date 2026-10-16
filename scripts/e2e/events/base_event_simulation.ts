@@ -2,7 +2,6 @@ import { type Page, expect } from '@playwright/test';
 import { BaseE2ESimulation, type SimulationOptions } from '../base_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-
 /**
  * scripts/e2e/events/base_event_simulation.ts
  *
@@ -30,7 +29,9 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
     await super.setup();
     if (this.driver === 'postgres') {
       await this.queryTestDb('DELETE FROM awards WHERE winner_name = ?', [this.username]);
-      await this.queryTestDb('DELETE FROM competition_entries WHERE player_name = ?', [this.username]);
+      await this.queryTestDb('DELETE FROM competition_entries WHERE player_name = ?', [
+        this.username
+      ]);
     } else {
       await this.page.evaluate(async (user) => {
         const { queryLocal, persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
@@ -99,7 +100,9 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    */
   public async isolateEvent(targetEventId: string): Promise<void> {
     if (this.driver === 'postgres') {
-      await this.queryTestDb('UPDATE events_config SET active = false WHERE id != ?', [targetEventId]);
+      await this.queryTestDb('UPDATE events_config SET active = false WHERE id != ?', [
+        targetEventId
+      ]);
     } else {
       await this.page.evaluate(async (eventId) => {
         const { queryLocal, persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
@@ -120,7 +123,9 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
       await this.queryTestDb('DELETE FROM competition_entries WHERE event_id = ?', [eventId]);
       await this.queryTestDb('DELETE FROM competition_results WHERE event_id = ?', [eventId]);
       await this.queryTestDb('DELETE FROM awards WHERE event_id = ?', [eventId]);
-      await this.queryTestDb('UPDATE events_config SET last_awarded_at = NULL WHERE id = ?', [eventId]);
+      await this.queryTestDb('UPDATE events_config SET last_awarded_at = NULL WHERE id = ?', [
+        eventId
+      ]);
     } else {
       await this.page.evaluate(async (id) => {
         const { queryLocal, persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
@@ -177,7 +182,9 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    */
   public async triggerEventAwarding(eventId: string): Promise<void> {
     if (this.driver === 'postgres') {
-      await this.queryTestDb('UPDATE events_config SET last_awarded_at = NULL WHERE id = ?', [eventId]);
+      await this.queryTestDb('UPDATE events_config SET last_awarded_at = NULL WHERE id = ?', [
+        eventId
+      ]);
     }
     await this.page.evaluate(async (id) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
@@ -221,7 +228,9 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
 
     // In autoConfirm mode (single-select competition slot), clicking confirms immediately.
     // Verify selection modal unmounts completely within the timeout limit.
-    await expect(this.page.locator('.selection-container')).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await expect(this.page.locator('.selection-container')).toHaveCount(0, {
+      timeout: MAX_PER_ACTION_TIMEOUT_MS
+    });
 
     await this.page.evaluate(async () => {
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
@@ -257,10 +266,14 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
       await confirmBtn.click();
     }
 
-    await this.page.waitForFunction(async () => {
-      const { useModalStore } = await import('../../../src/stores/modals.ts');
-      return !useModalStore().isOpen('PokemonSelection');
-    }, null, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await this.page.waitForFunction(
+      async () => {
+        const { useModalStore } = await import('../../../src/stores/modals.ts');
+        return !useModalStore().isOpen('PokemonSelection');
+      },
+      null,
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+    );
 
     await this.page.evaluate(async () => {
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
@@ -284,7 +297,9 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    * Claims the first available pending award in the awards banner.
    */
   public async claimFirstPendingAward(): Promise<void> {
-    const firstClaimBtn = this.page.locator('[id^="claim-pending-award-btn-"], [id^="claim-pending-reward-btn-"]').first();
+    const firstClaimBtn = this.page
+      .locator('[id^="claim-pending-award-btn-"], [id^="claim-pending-reward-btn-"]')
+      .first();
     await expect(firstClaimBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await firstClaimBtn.click();
   }
@@ -293,7 +308,9 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    * Discards the first available pending award via ConfirmModal.
    */
   public async discardFirstPendingAward(): Promise<void> {
-    const discardBtn = this.page.locator('[id^="discard-pending-award-btn-"], [id^="discard-pending-reward-btn-"]').first();
+    const discardBtn = this.page
+      .locator('[id^="discard-pending-award-btn-"], [id^="discard-pending-reward-btn-"]')
+      .first();
     await expect(discardBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await discardBtn.click();
 
@@ -360,7 +377,9 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    * Claims an award directly through the UI banner button.
    */
   public async claimPendingAward(awardId: string): Promise<void> {
-    const claimBtn = this.page.locator(`#claim-pending-award-btn-${awardId}, #claim-pending-reward-btn-event-${awardId}`);
+    const claimBtn = this.page.locator(
+      `#claim-pending-award-btn-${awardId}, #claim-pending-reward-btn-event-${awardId}`
+    );
     await claimBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await claimBtn.click();
     await expect(claimBtn).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
@@ -370,11 +389,15 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    * Discards an award through the UI banner button with confirmation dialog.
    */
   public async discardPendingAward(awardId: string): Promise<void> {
-    const discardBtn = this.page.locator(`#discard-pending-award-btn-${awardId}, #discard-pending-reward-btn-event-${awardId}`);
+    const discardBtn = this.page.locator(
+      `#discard-pending-award-btn-${awardId}, #discard-pending-reward-btn-event-${awardId}`
+    );
     await discardBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await discardBtn.click();
 
-    const confirmModal = this.page.locator('.modal-overlay').filter({ hasText: '¿DESCARTAR RECOMPENSA?' });
+    const confirmModal = this.page
+      .locator('.modal-overlay')
+      .filter({ hasText: '¿DESCARTAR RECOMPENSA?' });
     await confirmModal.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     const confirmBtn = confirmModal.locator('#confirm-modal-btn, .btn-confirm').first();

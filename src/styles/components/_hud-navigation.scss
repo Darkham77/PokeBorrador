@@ -1,10 +1,10 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .hud-nav {
   display: flex;
   align-items: center;
   gap: $spacing-sm;
-  
+
   &.pos-bottom {
     // PREMIUM SHELL ENHANCED
     @include shell-premium(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
@@ -18,11 +18,10 @@
     padding: 10px 24px;
     border-radius: $radius-3xl $radius-3xl 0 0;
     box-sizing: border-box;
-    
+
     // MULTI-LAYER REFLECTIONS & CONTRAST
     box-shadow: var(--shadow-card);
 
-    
     // Reflection parent is handled by position: fixed in parent/mobile class
 
     /* CRITICAL: Ensure submenus are NOT clipped */
@@ -77,17 +76,17 @@
     white-space: nowrap;
     text-transform: uppercase;
   }
-  
+
   &.active {
     z-index: var(--z-base);
     background: Rgb(255 204 0 / 15%);
     border-color: var(--yellow);
     box-shadow: var(--shadow-card);
 
-    .nav-item-label { 
-      color: var(--yellow); 
-      opacity: 1; 
-      text-shadow: 0 0 8px Rgb(255 214 10 / 50%); 
+    .nav-item-label {
+      color: var(--yellow);
+      opacity: 1;
+      text-shadow: 0 0 8px Rgb(255 214 10 / 50%);
     }
   }
 }
@@ -109,7 +108,11 @@
   padding: 6px !important;
   border: 1px solid Rgb(255 255 255 / 15%);
   border-radius: $radius-xl-alt;
-  background: linear-gradient(180deg, var(--bg-modal-top, #161a2e) 0%, var(--bg-modal-bottom, #0a0c14) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--bg-modal-top, #161a2e) 0%,
+    var(--bg-modal-bottom, #0a0c14) 100%
+  );
   box-shadow: var(--shadow-2xl);
   overflow: visible !important;
 
@@ -128,8 +131,10 @@
   bottom: auto !important;
   left: 50%;
   transform: Translatex(-50%);
-  
-  &::before { top: -15px; }
+
+  &::before {
+    top: -15px;
+  }
 }
 
 .pos-bottom .hud-submenu {
@@ -137,8 +142,10 @@
   bottom: calc(100% + 5px);
   left: 50%;
   transform: Translatex(-50%);
-  
-  &::before { bottom: -15px; }
+
+  &::before {
+    bottom: -15px;
+  }
 }
 
 .hud-submenu .hud-nav-btn {
@@ -156,18 +163,16 @@
   white-space: nowrap;
 
   &:hover {
-    z-index: var(--z-base); 
-    background: Rgb(255 255 255 / 10%) !important; 
+    z-index: var(--z-base);
+    background: Rgb(255 255 255 / 10%) !important;
     border-color: var(--yellow) !important;
     box-shadow: var(--shadow-card);
-
   }
-  
+
   &.active {
     background: Rgb(255 204 0 / 12%);
     border-color: var(--yellow) !important;
     box-shadow: var(--shadow-card);
-
   }
 
   .icon {
@@ -186,19 +191,23 @@
     @include pixelated;
 
     margin: 0 !important;
-    padding: 0 !important; 
-    color: $white; 
+    padding: 0 !important;
+    color: $white;
     font-size: var(--font-8);
     white-space: nowrap;
   }
-  
-  &.active .nav-item-label { color: var(--yellow); }
+
+  &.active .nav-item-label {
+    color: var(--yellow);
+  }
 
   &.war-shop-nav-btn:hover {
     border-color: var(--red) !important;
     box-shadow: var(--shadow-card);
 
-    .nav-item-label { color: var(--red); }
+    .nav-item-label {
+      color: var(--red);
+    }
   }
 
   .hud-notification-badge {
@@ -226,14 +235,16 @@
   box-shadow: var(--shadow-subtle);
 }
 
-.relative-box { position: relative; }
+.relative-box {
+  position: relative;
+}
 
 @media (width <= 768px) {
   .hud-nav-btn {
     min-width: 50px;
     padding: 6px 4px;
-    .nav-item-label { 
-      @include pixelated; 
+    .nav-item-label {
+      @include pixelated;
 
       font-size: var(--font-8);
     }

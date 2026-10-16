@@ -16,11 +16,15 @@ class FieldAbilitiesDaycareSimulation extends BaseE2ESimulation {
     await this.page.evaluate(
       async ({ magmarLevel, eggSteps, ivVal }) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
         const gameStore = useGameStore();
 
-        const magmar = pokemonDebugService.generate({ id: requirePokemonSpeciesId('magmar'), level: magmarLevel });
+        const magmar = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('magmar'),
+          level: magmarLevel
+        });
         magmar.ability = 'flamebody';
         magmar.hp = magmar.maxHp;
 
@@ -48,17 +52,15 @@ class FieldAbilitiesDaycareSimulation extends BaseE2ESimulation {
   }
 
   public async stepBreedingReduction(): Promise<number> {
-    return await this.page.evaluate(
-      async () => {
-        const { useBreedingStore } = await import('../../../src/stores/breeding.ts');
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const breedingStore = useBreedingStore();
-        const gameStore = useGameStore();
+    return await this.page.evaluate(async () => {
+      const { useBreedingStore } = await import('../../../src/stores/breeding.ts');
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const breedingStore = useBreedingStore();
+      const gameStore = useGameStore();
 
-        breedingStore.reduceHatchTimers('battle');
-        return gameStore.state.eggs[0]?.steps ?? -1;
-      }
-    );
+      breedingStore.reduceHatchTimers('battle');
+      return gameStore.state.eggs[0]?.steps ?? -1;
+    });
   }
 }
 

@@ -4,5 +4,5 @@ import { runAbilitiesFuzzer } from '../core/fuzzer_engine.ts';
 
 await runFuzzerSuite({
   suiteName: 'Fuzzer — Habilidades (Gen 9)',
-  run: runAbilitiesFuzzer,
+  run: runAbilitiesFuzzer
 });

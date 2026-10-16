@@ -205,15 +205,17 @@ export function useAssetAtlas() {
     if (overrideSheetUrl.value && selectedAssetId.value) {
       const match = allManifestEntries.value.find((e) => e.id === selectedAssetId.value);
       if (match) {
-        return [{
-          ...match,
-          sourceRect: {
-            x: 0,
-            y: 0,
-            w: match.pixelDimensions.w,
-            h: match.pixelDimensions.h
+        return [
+          {
+            ...match,
+            sourceRect: {
+              x: 0,
+              y: 0,
+              w: match.pixelDimensions.w,
+              h: match.pixelDimensions.h
+            }
           }
-        }];
+        ];
       }
     }
     const currentFn = activeSheet.value.filename;

@@ -13,7 +13,10 @@ export function getFilesRecursively(dir: string): string[] {
   return results;
 }
 
-export function safeScanDirectoryFiles(targetDir: string, extensions: string[] = ['.ts', '.vue']): string[] {
+export function safeScanDirectoryFiles(
+  targetDir: string,
+  extensions: string[] = ['.ts', '.vue']
+): string[] {
   if (!existsSync(targetDir)) return [];
-  return getFilesRecursively(targetDir).filter(f => extensions.some(ext => f.endsWith(ext)));
+  return getFilesRecursively(targetDir).filter((f) => extensions.some((ext) => f.endsWith(ext)));
 }

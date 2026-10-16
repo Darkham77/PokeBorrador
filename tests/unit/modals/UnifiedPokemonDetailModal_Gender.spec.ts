@@ -1,21 +1,21 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { setActivePinia, createPinia } from 'pinia'
-import UnifiedPokemonDetailModal from '@/components/modals/UnifiedPokemonDetailModal.vue'
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import { useGameStore } from '@/stores/game'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
+import UnifiedPokemonDetailModal from '@/components/modals/UnifiedPokemonDetailModal.vue';
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import { useGameStore } from '@/stores/game';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/services/assetService', () => ({
   getAssetUrl: vi.fn(() => '/assets/mock-sprite.png'),
   ASSET_TYPES: { POKEMON: 'pokemon', ITEM: 'item' }
-}))
+}));
 
 describe('UnifiedPokemonDetailModal - Gender Badge', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-  })
+    setActivePinia(createPinia());
+  });
 
   it('renders gender badge between edit button and name for male pokemon instance', () => {
     const malePokemon = {
@@ -30,10 +30,10 @@ describe('UnifiedPokemonDetailModal - Gender Badge', () => {
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       moves: ['watergun'],
       isShiny: false
-    } as unknown as Pokemon
+    } as unknown as Pokemon;
 
-    const gameStore = useGameStore()
-    gameStore.state.team = [malePokemon]
+    const gameStore = useGameStore();
+    gameStore.state.team = [malePokemon];
 
     const wrapper = mount(UnifiedPokemonDetailModal, {
       props: {
@@ -56,27 +56,27 @@ describe('UnifiedPokemonDetailModal - Gender Badge', () => {
           PVSpriteFX: true
         }
       }
-    })
+    });
 
-    const nameWithEdit = wrapper.find('.name-with-edit')
-    expect(nameWithEdit.exists()).toBe(true)
+    const nameWithEdit = wrapper.find('.name-with-edit');
+    expect(nameWithEdit.exists()).toBe(true);
 
     // Edit button exists
-    const editBtn = nameWithEdit.find('.edit-nick-btn')
-    expect(editBtn.exists()).toBe(true)
+    const editBtn = nameWithEdit.find('.edit-nick-btn');
+    expect(editBtn.exists()).toBe(true);
 
     // Gender badge exists and has male class
-    const genderBadge = nameWithEdit.findComponent(PVGenderBadge)
-    expect(genderBadge.exists()).toBe(true)
-    expect(genderBadge.classes()).toContain('male')
-    expect(genderBadge.classes()).toContain('sm')
+    const genderBadge = nameWithEdit.findComponent(PVGenderBadge);
+    expect(genderBadge.exists()).toBe(true);
+    expect(genderBadge.classes()).toContain('male');
+    expect(genderBadge.classes()).toContain('sm');
 
     // Verify ordering: edit-btn before gender-badge before name-container
-    const children = nameWithEdit.element.children
-    expect(children[0]?.classList.contains('edit-nick-btn')).toBe(true)
-    expect(children[1]?.classList.contains('pv-gender-badge')).toBe(true)
-    expect(children[2]?.classList.contains('name-container')).toBe(true)
-  })
+    const children = nameWithEdit.element.children;
+    expect(children[0]?.classList.contains('edit-nick-btn')).toBe(true);
+    expect(children[1]?.classList.contains('pv-gender-badge')).toBe(true);
+    expect(children[2]?.classList.contains('name-container')).toBe(true);
+  });
 
   it('renders female badge when pokemon is female', () => {
     const femalePokemon = {
@@ -91,10 +91,10 @@ describe('UnifiedPokemonDetailModal - Gender Badge', () => {
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       moves: ['watergun'],
       isShiny: false
-    } as unknown as Pokemon
+    } as unknown as Pokemon;
 
-    const gameStore = useGameStore()
-    gameStore.state.team = [femalePokemon]
+    const gameStore = useGameStore();
+    gameStore.state.team = [femalePokemon];
 
     const wrapper = mount(UnifiedPokemonDetailModal, {
       props: {
@@ -117,10 +117,10 @@ describe('UnifiedPokemonDetailModal - Gender Badge', () => {
           PVSpriteFX: true
         }
       }
-    })
+    });
 
-    const genderBadge = wrapper.findComponent(PVGenderBadge)
-    expect(genderBadge.exists()).toBe(true)
-    expect(genderBadge.classes()).toContain('female')
-  })
-})
+    const genderBadge = wrapper.findComponent(PVGenderBadge);
+    expect(genderBadge.exists()).toBe(true);
+    expect(genderBadge.classes()).toContain('female');
+  });
+});

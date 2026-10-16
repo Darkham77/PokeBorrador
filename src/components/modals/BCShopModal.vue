@@ -1,52 +1,45 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui'
-import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import BaseModal from '@/components/common/BaseModal.vue'
-import { formatCurrency } from '@/logic/utils/formatters'
-import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
+import { useUIStore } from '@/stores/ui';
+import { computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { formatCurrency } from '@/logic/utils/formatters';
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
 
-import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
-import BCShopItemCard from './bc-shop/BCShopItemCard.vue'
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
+import BCShopItemCard from './bc-shop/BCShopItemCard.vue';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const gameStore = useGameStore()
+const gameStore = useGameStore();
 
-const ui = useUIStore()
-const isSmallScreen = computed(() => ui.isSmallScreen)
+const ui = useUIStore();
+const isSmallScreen = computed(() => ui.isSmallScreen);
 
-import { useShopLogic } from '@/composables/inventory/useShopLogic'
-import { toRef } from 'vue'
+import { useShopLogic } from '@/composables/inventory/useShopLogic';
+import { toRef } from 'vue';
 
-const {
-  activeMainTab,
-  activeTab,
-  search,
-  sortKey,
-  sortOrder,
-  filteredItems,
-  availableCategories
-} = useShopLogic({
-  isBCShop: true,
-  initialCategory: 'todos',
-  show: toRef(props, 'show'),
-  cardSelector: '.bc-shop-item-card'
-})
+const { activeMainTab, activeTab, search, sortKey, sortOrder, filteredItems, availableCategories } =
+  useShopLogic({
+    isBCShop: true,
+    initialCategory: 'todos',
+    show: toRef(props, 'show'),
+    cardSelector: '.bc-shop-item-card'
+  });
 
 const close = () => {
-  emit('close')
-}
+  emit('close');
+};
 </script>
 
 <template>
@@ -102,16 +95,16 @@ const close = () => {
       <div class="shop-main">
         <!-- Pestañas Principales en el modal de Tienda BC -->
         <div class="modal-main-tabs">
-          <button 
-            class="modal-tab-btn" 
-            :class="{ active: activeMainTab === 'productos' }" 
+          <button
+            class="modal-tab-btn"
+            :class="{ active: activeMainTab === 'productos' }"
             @click.stop="activeMainTab = 'productos'"
           >
             Productos
           </button>
-          <button 
-            class="modal-tab-btn" 
-            :class="{ active: activeMainTab === 'materiales' }" 
+          <button
+            class="modal-tab-btn"
+            :class="{ active: activeMainTab === 'materiales' }"
             @click.stop="activeMainTab = 'materiales'"
           >
             Materiales
@@ -135,58 +128,25 @@ const close = () => {
               xmlns="http://www.w3.org/2000/svg"
             >
               <!-- Bottom coin -->
-              <ellipse
-                cx="12"
-                cy="17"
-                rx="8"
-                ry="3"
-                opacity="0.7"
-              />
+              <ellipse cx="12" cy="17" rx="8" ry="3" opacity="0.7" />
               <!-- Middle coin -->
-              <ellipse
-                cx="12"
-                cy="13"
-                rx="8"
-                ry="3"
-                opacity="0.85"
-              />
+              <ellipse cx="12" cy="13" rx="8" ry="3" opacity="0.85" />
               <!-- Top coin -->
-              <ellipse
-                cx="12"
-                cy="9"
-                rx="8"
-                ry="3"
-              />
+              <ellipse cx="12" cy="9" rx="8" ry="3" />
               <!-- Vertical sides connecting coins -->
-              <rect
-                x="4"
-                y="9"
-                width="16"
-                height="4"
-                opacity="0"
-              />
+              <rect x="4" y="9" width="16" height="4" opacity="0" />
             </svg>
           </template>
         </ShopSearchControls>
 
         <!-- Items Grid -->
         <div class="bc-shop-grid-wrapper custom-scrollbar">
-          <div 
-            v-if="filteredItems.length > 0"
-            class="bc-shop-premium-grid"
-          >
-            <BCShopItemCard
-              v-for="item in filteredItems"
-              :key="item.id"
-              :item="item"
-            />
+          <div v-if="filteredItems.length > 0" class="bc-shop-premium-grid">
+            <BCShopItemCard v-for="item in filteredItems" :key="item.id" :item="item" />
           </div>
 
           <!-- Empty State -->
-          <div
-            v-else
-            class="shop-empty-state"
-          >
+          <div v-else class="shop-empty-state">
             <span class="emoji empty-icon">🔍</span>
             <div class="empty-text">
               <h3>Sin resultados</h3>
@@ -200,8 +160,8 @@ const close = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/components/shop" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/components/shop' as *;
 
 .modal-main-tabs {
   display: flex;
@@ -231,7 +191,11 @@ const close = () => {
     color: var(--white);
     border-color: var(--purple-light);
     box-shadow: var(--shadow-glow-yellow-sm);
-    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    text-shadow:
+      1px 1px 0 #000,
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000;
   }
 }
 </style>

@@ -3,8 +3,8 @@ import path from 'node:path';
 import { ENABLED_POKEMON_IDS } from '../../src/data/system/constants.ts';
 
 export function generateSpeciesPurgeMigration() {
-  const enabledListSql = ENABLED_POKEMON_IDS.map(id => `'${id}'`).join(',');
-  const enabledArrayPg = `ARRAY[\n    ${ENABLED_POKEMON_IDS.map(id => `'${id}'`).join(', ')}\n  ]`;
+  const enabledListSql = ENABLED_POKEMON_IDS.map((id) => `'${id}'`).join(',');
+  const enabledArrayPg = `ARRAY[\n    ${ENABLED_POKEMON_IDS.map((id) => `'${id}'`).join(', ')}\n  ]`;
 
   // Build PostgreSQL migration
   const pgSql = `-- =====================================================
@@ -298,12 +298,20 @@ INSERT INTO system_config (key, value) VALUES ('db_version', '"20260831010000"')
 ON CONFLICT(key) DO UPDATE SET value = '"20260831010000"';
 `;
 
-  const pgPath = path.resolve(process.cwd(), 'database/migrations/20260831010000_purge_disabled_species_and_eggs.sql');
-  const sqlitePath = path.resolve(process.cwd(), 'database/migrations/20260831010000_purge_disabled_species_and_eggs.sqlite.sql');
+  const pgPath = path.resolve(
+    process.cwd(),
+    'database/migrations/20260831010000_purge_disabled_species_and_eggs.sql'
+  );
+  const sqlitePath = path.resolve(
+    process.cwd(),
+    'database/migrations/20260831010000_purge_disabled_species_and_eggs.sqlite.sql'
+  );
 
   fs.writeFileSync(pgPath, pgSql, 'utf8');
   fs.writeFileSync(sqlitePath, sqliteSql, 'utf8');
-  console.log(`✨ Migración de purga de especies generada desde ENABLED_POKEMON_IDS (${ENABLED_POKEMON_IDS.length} especies habilitadas).`);
+  console.log(
+    `✨ Migración de purga de especies generada desde ENABLED_POKEMON_IDS (${ENABLED_POKEMON_IDS.length} especies habilitadas).`
+  );
 }
 
 if (process.argv[1]?.includes('generate_species_purge_migration')) {

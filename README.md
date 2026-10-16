@@ -8,11 +8,11 @@ Poké Vicio is a hybrid retro-modern web video game built with **Vue 3**, **Pini
 - **Package Manager**: **npm >=12**.
 
 > [!IMPORTANT]
-> The project leverages modern V8 engine features and strictly enforces versions declared in `package.json` (`engines`) and `.nvmrc`. Running `npm install` or `npm ci` automatically validates the runtime environment via `preinstall` (`check_environment.ts`), aborting with clear actionable instructions if prerequisites are not met.
+> The project leverages modern V8 engine features and strictly enforces versions declared in `package.json` (`engines`) and `.node-version` (with fallback to `.nvmrc`). Running `npm install` or `npm ci` automatically validates the runtime environment via `preinstall` (`check_environment.ts`), aborting with clear actionable instructions if prerequisites are not met.
 
 ### 🌐 Environment Setup and Synchronization (Node.js & npm)
 
-To automatically initialize or update your working environment (NVM configuration, `.nvmrc` alignment, isolated npm security policies, cache cleanup, and deterministic installation via `npm ci`), execute the Single Source of Truth (SSoT) script for your operating system:
+To automatically initialize or update your working environment (NVM configuration, `.node-version` / `.nvmrc` alignment, isolated npm security policies, cache cleanup, and deterministic installation via `npm ci`), execute the Single Source of Truth (SSoT) script for your operating system:
 
 - **On Windows (PowerShell as Administrator / Terminal)**:
 
@@ -27,7 +27,7 @@ To automatically initialize or update your working environment (NVM configuratio
   ```
 
 > [!TIP]
-> By default in development workstations, scripts query `nodejs.org`, synchronize `.nvmrc` and `package.json` with the latest Current stable Node.js release, update `npm@latest` globally, and run `npm ci`.
+> By default in development workstations, scripts query `nodejs.org`, synchronize `.node-version` (with fallback to `.nvmrc`) and `package.json` with the latest Current stable Node.js release, update `npm@latest` globally, and run `npm ci`.
 > In CI/CD pipelines, servers, or when you wish to freeze installation strictly to versions declared in the commit without network queries or file mutations, pass `--declared-versions` (Linux/macOS) or `-DeclaredVersions` (Windows).
 > Both modes operate non-destructively: they never remove other Node versions on your machine nor overwrite your `default` NVM alias.
 
@@ -44,7 +44,7 @@ registry=https://registry.npmjs.org/
 audit-level=high
 ```
 
->[!NOTE]
+> [!NOTE]
 > **Note on `ignore-scripts`**: With this setting enabled, legitimate packages that compile native binaries (such as `node-gyp` or profiling tools) may fail during installation. If you trust a specific package and need to run its build scripts, compile it manually using `npm rebuild` or run it once in isolation with `npm run <script> --ignore-scripts=false`.
 
 ### 🛡️ Antivirus & Windows Defender Exclusions (Fallow)
@@ -53,11 +53,11 @@ The project relies on high-performance native binaries distributed via npm (`fal
 
 Because these native binaries use cryptographic signatures (Ed25519 and SHA-256 digests) rather than commercial Microsoft Authenticode certificates, **Windows Defender** or **Smart App Control** might raise false positive notices when running in the background.
 
->[!TIP]
+> [!TIP]
 > **Developer Recommendation**: Add the project root folder to your antivirus exclusions list:
 >
 > 1. Open **Windows Security**.
-> 2. Navigate to **Virus & threat protection** > **Virus & threat protection settings** (*Manage settings*).
+> 2. Navigate to **Virus & threat protection** > **Virus & threat protection settings** (_Manage settings_).
 > 3. Under **Exclusions**, select **Add or remove exclusions**.
 > 4. Click **Add an exclusion** > **Folder** and select the repository root directory (`PokeBorrador`).
 
@@ -65,7 +65,7 @@ Because these native binaries use cryptographic signatures (Ed25519 and SHA-256 
 
 `package-lock.json` is your primary security baseline because it locks cryptographic hashes (integrity SHA-512) for every dependency.
 
->[!IMPORTANT]
+> [!IMPORTANT]
 > **Strict Rule**: In development, CI/CD, and production environments, never run bare `npm install` if you want reproducible and safe builds. Always use `npm ci`.
 
 Follow these steps to configure and launch your development environment:
@@ -101,7 +101,7 @@ The application will be available at `https://localhost:5173` (HTTPS / Secure Co
 Poké Vicio implements a **dual persistence** architecture with total isolation governed by `DBRouter`:
 
 - **Online Mode (Supabase / PostgreSQL)**: Authenticated remote connection via `@supabase/supabase-js` with Row Level Security (RLS) and transactional migrations.
-- **Offline / Local Mode (SQLite + OPFS)**: Embedded WebAssembly SQLite database running directly in the browser via the *Origin Private File System* (`node:sqlite` / OPFS), enabling 100% offline play without external servers.
+- **Offline / Local Mode (SQLite + OPFS)**: Embedded WebAssembly SQLite database running directly in the browser via the _Origin Private File System_ (`node:sqlite` / OPFS), enabling 100% offline play without external servers.
 
 ### Database Initialization and Updates (Supabase)
 
@@ -117,7 +117,7 @@ npm run database:update all
 
 ### 💾 Importing Local Database into Browser (Offline Mode / QA)
 
-This workflow enables converting and loading production or staging database backups directly into the developer/tester web browser, running Poké Vicio **100% offline** via WebAssembly SQLite (`node:sqlite` + OPFS - *Origin Private File System*).
+This workflow enables converting and loading production or staging database backups directly into the developer/tester web browser, running Poké Vicio **100% offline** via WebAssembly SQLite (`node:sqlite` + OPFS - _Origin Private File System_).
 
 #### Purpose
 
@@ -223,34 +223,34 @@ The repository features a unified static/dynamic audit ecosystem, domain validat
 
 #### 🔄 Recommended Verification Flow
 
-- **During Active Development**: Run `npm run lint` (~10 seconds) for fast verification executing 10 core sub-auditors in parallel (`npm run auditor:lint`): domain types, $O(1)$, component styles, Fallow intelligence, Vue SFC hygiene, console cleanliness, audit headers, TypeScript type check (`vue-tsc`), markdownlint, and ESLint.
+- **During Active Development**: Run `npm run lint` (~10 seconds) for fast verification executing 10 core sub-auditors in parallel (`npm run auditor:lint`): domain types, $O(1)$, component styles, Fallow intelligence, Vue SFC hygiene, console cleanliness, audit headers, TypeScript type check (`vue-tsc`), markdownlint, and Oxlint / Vite+ (`validate_oxlint`).
 - **Documentation & DOX Audit**: Run `npm run auditor:md` (~2 seconds) to validate `AGENTS.md` hierarchy, relative links, Markdown syntax, and Markdownlint rules.
 - **Safe-Commit Workflow**: The safe-commit pipeline internally uses the warning ratchet in `npm run auditor` against the baseline in `.auditor/audit-baseline.json`.
 
-| Command | Description |
-| :-- | :-- |
-| `npm run lint` | **Fast Developer Lint**: Runs 10 essential quality suites in parallel via `npm run auditor:lint`. |
-| `npm run lint:fix` | **Linter Auto-Fix**: Automatically resolves formatting and syntax issues with ESLint and Markdownlint (`auditor preset=lint fix`). |
-| `npm run auditor` | **Unified Global Audit**: Executes 100% of discovered sub-auditors with bounded concurrency, outputs Box-Drawing console tables, and writes structured JSON to `scratch/audits/latest_audit.json`. |
-| `npm run auditor:lint` | **Linting Preset**: Executes the parallel 10-suite source code preset. |
-| `npm run auditor:md` | **Documentation & DOX Audit**: Fast suite (~2s) validating `AGENTS.md` hierarchy, relative links, Markdown syntax, and Markdownlint rules (preset `md`). |
-| `npm run auditor:changed` | **Changed Files Audit**: Runs audit suites exclusively against files modified since `main`. |
-| `npm run auditor:fix` | **Architecture Auto-Fix**: Automatically fixes timers, SASS syntax, render layers, and import directives. |
-| `npm run auditor:project` | **Architecture & Style Rules**: Evaluates 43 static code rules across `.ts`, `.vue`, and `.scss` files. |
-| `npm run auditor:findings` | **Consolidated Findings Report**: Displays Box-Drawing tables of findings grouped by category (`audit:errors`, `audit:warnings`, `audit:summary`, `audit:files`). |
-| `npm run auditor:family:domain` | **Domain Audit**: Validates domain types, canonical unions, and $O(1)$ data structures. |
-| `npm run auditor:fsm-implementation` | **FSM Audit**: Validates diagrams, dynamic implementation, and battle flow parity. |
-| `npm run auditor:family:persistence` | **Persistence Audit**: Validates SQL schemas, migrations, and game save serialization. |
-| `npm run auditor:sprites` | **Assets Audit**: Validates sprite collisions, canonical names, and texture atlases. |
-| `npm run auditor:family:architecture` | **Architecture Audit**: Validates Fallow modularity, complexity, SCSS tokens, Pinia reactivity, and Vue SFCs. |
-| `npm run auditor:fallow` | **Codebase Intelligence (Fallow)**: Consolidated dashboard for metrics, circular dependencies, duplication, orphan exports, and CWE vulnerabilities. |
-| `npm run auditor:complexity` | **Complexity Hotspots**: Reports functions with highest cyclomatic and cognitive complexity (`npm run auditor:complexity`). |
-| `npm run auditor:stylelint` | **Styles & Classes Audit**: Audits SCSS stylesheets and Vue `<style>` blocks via in-memory Stylelint. |
-| `npm run auditor:similar` | **Semantic Discovery**: Detects semantically similar functions or blocks via Fallow AST embeddings. |
-| `npm run auditor:review` | **Intelligent Review Brief**: Generates graph-grounded report with blast radius and structural risk for code reviews. |
-| `npm run auditor:post-build` | **Bundle Budget**: Audits production chunk sizes and client decoupling. |
-| `npm run auditor:critical` | **Critical Rules Audit**: Executes high-priority verification rules that bypass speed ceilings. |
-| `npm run build:analyze` | **Interactive Bundle Treemap**: Triggers production build with visual bundle map in `scratch/bundle_stats.html`. |
+| Command                               | Description                                                                                                                                                                                        |
+| :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run lint`                        | **Fast Developer Lint**: Runs 10 essential quality suites in parallel via `npm run auditor:lint`.                                                                                                  |
+| `npm run lint:fix`                    | **Linter Auto-Fix**: Automatically resolves formatting and syntax issues with Oxlint / Vite+ and Markdownlint (`auditor preset=lint fix`).                                                         |
+| `npm run auditor`                     | **Unified Global Audit**: Executes 100% of discovered sub-auditors with bounded concurrency, outputs Box-Drawing console tables, and writes structured JSON to `scratch/audits/latest_audit.json`. |
+| `npm run auditor:lint`                | **Linting Preset**: Executes the parallel 10-suite source code preset.                                                                                                                             |
+| `npm run auditor:md`                  | **Documentation & DOX Audit**: Fast suite (~2s) validating `AGENTS.md` hierarchy, relative links, Markdown syntax, and Markdownlint rules (preset `md`).                                           |
+| `npm run auditor:changed`             | **Changed Files Audit**: Runs audit suites exclusively against files modified since `main`.                                                                                                        |
+| `npm run auditor:fix`                 | **Architecture Auto-Fix**: Automatically fixes timers, SASS syntax, render layers, and import directives.                                                                                          |
+| `npm run auditor:project`             | **Architecture & Style Rules**: Evaluates 43 static code rules across `.ts`, `.vue`, and `.scss` files.                                                                                            |
+| `npm run auditor:findings`            | **Consolidated Findings Report**: Displays Box-Drawing tables of findings grouped by category (`audit:errors`, `audit:warnings`, `audit:summary`, `audit:files`).                                  |
+| `npm run auditor:family:domain`       | **Domain Audit**: Validates domain types, canonical unions, and $O(1)$ data structures.                                                                                                            |
+| `npm run auditor:fsm-implementation`  | **FSM Audit**: Validates diagrams, dynamic implementation, and battle flow parity.                                                                                                                 |
+| `npm run auditor:family:persistence`  | **Persistence Audit**: Validates SQL schemas, migrations, and game save serialization.                                                                                                             |
+| `npm run auditor:sprites`             | **Assets Audit**: Validates sprite collisions, canonical names, and texture atlases.                                                                                                               |
+| `npm run auditor:family:architecture` | **Architecture Audit**: Validates Fallow modularity, complexity, SCSS tokens, Pinia reactivity, and Vue SFCs.                                                                                      |
+| `npm run auditor:fallow`              | **Codebase Intelligence (Fallow)**: Consolidated dashboard for metrics, circular dependencies, duplication, orphan exports, and CWE vulnerabilities.                                               |
+| `npm run auditor:complexity`          | **Complexity Hotspots**: Reports functions with highest cyclomatic and cognitive complexity (`npm run auditor:complexity`).                                                                        |
+| `npm run auditor:stylelint`           | **Styles & Classes Audit**: Audits SCSS stylesheets and Vue `<style>` blocks via in-memory Stylelint.                                                                                              |
+| `npm run auditor:similar`             | **Semantic Discovery**: Detects semantically similar functions or blocks via Fallow AST embeddings.                                                                                                |
+| `npm run auditor:review`              | **Intelligent Review Brief**: Generates graph-grounded report with blast radius and structural risk for code reviews.                                                                              |
+| `npm run auditor:post-build`          | **Bundle Budget**: Audits production chunk sizes and client decoupling.                                                                                                                            |
+| `npm run auditor:critical`            | **Critical Rules Audit**: Executes high-priority verification rules that bypass speed ceilings.                                                                                                    |
+| `npm run build:analyze`               | **Interactive Bundle Treemap**: Triggers production build with visual bundle map in `scratch/bundle_stats.html`.                                                                                   |
 
 ---
 
@@ -260,61 +260,61 @@ Every architectural and domain standard has its own dedicated sub-auditor execut
 
 #### 🏛️ Architecture, Performance & Reactivity
 
-| Command | Description |
-| :-- | :-- |
-| `npm run auditor:type-check` | Strict TypeScript and Vue SFC type verification with `vue-tsc --noEmit`. |
-| `npm run auditor:z-index` | Strict 1:1 parity between `Z_LAYERS` (TypeScript) and `--z-*` CSS variables in `_base.scss` (supports `fix=true`). |
-| `npm run auditor:duplicate-constants` | Identifies duplicate or divergent constant declarations across modules via shared AST. |
-| `npm run auditor:stylelint` | Audits SCSS rules, mixins, and selectors across stylesheets and Vue components via Stylelint. |
-| `npm run auditor:pinia-reactivity` | Audits Pinia stores against improper reactive destructuring and unwrapped state access. |
-| `npm run auditor:reactive-leaks` | Detects memory leaks, uncleaned watchers, and orphan listeners. |
-| `npm run auditor:reactive-purity` | Guarantees purity and absence of side effects in reactive mutations and getters. |
-| `npm run auditor:client-sim-decoupling` | Enforces 100% strict decoupling between web client and `@pkmn/sim` runtime. |
-| `npm run auditor:component-styles` | Validates style imports, standardized SCSS mixins, and absence of orphan sheets. |
-| `npm run auditor:typography-line-height` | Prevents font descender clipping and validates vertical rhythm. |
-| `npm run auditor:vue-sfc-hygiene` | Vue component hygiene: `<script setup>`, `scoped` styles, and SFC structure. |
-| `npm run auditor:vue-sfc-hygiene` | Enforces deterministic, unique IDs in Vue templates for E2E automation. |
-| `npm run auditor:accessibility` | Audits touch targets and mobile responsiveness. |
-| `npm run auditor:console-cleanliness` | Bars `console.log` statements or debugging traces in production paths. |
-| `npm run auditor:error-suppression` | Eradicates empty `catch` blocks, silenced promises, and swallowed errors. |
-| `npm run auditor:audit-headers` | Bars file-level escape hatches (`fallow-ignore-file`, `@ts-nocheck`, etc.). |
-| `npm run auditor:test-hygiene` | Audits test suites against tautological assertions and excessive mocking. |
-| `npm run auditor:test-fragmentation` | Prevents micro-files (<60 LOC) and encourages cohesive test suites (300-800 LOC). |
-| `npm run auditor:script-commands` | Validates that all npm run scripts, npx binaries, and npm commands executed across code and scripts exist in package.json.scripts. |
+| Command                                  | Description                                                                                                                        |
+| :--------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run auditor:type-check`             | Strict TypeScript and Vue SFC type verification with `vue-tsc --noEmit`.                                                           |
+| `npm run auditor:z-index`                | Strict 1:1 parity between `Z_LAYERS` (TypeScript) and `--z-*` CSS variables in `_base.scss` (supports `fix=true`).                 |
+| `npm run auditor:duplicate-constants`    | Identifies duplicate or divergent constant declarations across modules via shared AST.                                             |
+| `npm run auditor:stylelint`              | Audits SCSS rules, mixins, and selectors across stylesheets and Vue components via Stylelint.                                      |
+| `npm run auditor:pinia-reactivity`       | Audits Pinia stores against improper reactive destructuring and unwrapped state access.                                            |
+| `npm run auditor:reactive-leaks`         | Detects memory leaks, uncleaned watchers, and orphan listeners.                                                                    |
+| `npm run auditor:reactive-purity`        | Guarantees purity and absence of side effects in reactive mutations and getters.                                                   |
+| `npm run auditor:client-sim-decoupling`  | Enforces 100% strict decoupling between web client and `@pkmn/sim` runtime.                                                        |
+| `npm run auditor:component-styles`       | Validates style imports, standardized SCSS mixins, and absence of orphan sheets.                                                   |
+| `npm run auditor:typography-line-height` | Prevents font descender clipping and validates vertical rhythm.                                                                    |
+| `npm run auditor:vue-sfc-hygiene`        | Vue component hygiene: `<script setup>`, `scoped` styles, and SFC structure.                                                       |
+| `npm run auditor:vue-sfc-hygiene`        | Enforces deterministic, unique IDs in Vue templates for E2E automation.                                                            |
+| `npm run auditor:accessibility`          | Audits touch targets and mobile responsiveness.                                                                                    |
+| `npm run auditor:console-cleanliness`    | Bars `console.log` statements or debugging traces in production paths.                                                             |
+| `npm run auditor:error-suppression`      | Eradicates empty `catch` blocks, silenced promises, and swallowed errors.                                                          |
+| `npm run auditor:audit-headers`          | Bars file-level escape hatches (`fallow-ignore-file`, `@ts-nocheck`, etc.).                                                        |
+| `npm run auditor:test-hygiene`           | Audits test suites against tautological assertions and excessive mocking.                                                          |
+| `npm run auditor:test-fragmentation`     | Prevents micro-files (<60 LOC) and encourages cohesive test suites (300-800 LOC).                                                  |
+| `npm run auditor:script-commands`        | Validates that all npm run scripts, npx binaries, and npm commands executed across code and scripts exist in package.json.scripts. |
 
 #### 📚 Documentation & Links
 
-| Command | Description |
-| :-- | :-- |
-| `npm run auditor:dox-integrity` | Validates structural `AGENTS.md` hierarchy, required sections, and `.gitignore` coverage. |
-| `npm run auditor:markdown-links` | Validates relative links, cross references, and bars absolute or environment paths. |
-| `npm run auditor:markdown-syntax` | Validates headings, tables, and Markdown syntax adhering to CommonMark. |
+| Command                           | Description                                                                               |
+| :-------------------------------- | :---------------------------------------------------------------------------------------- |
+| `npm run auditor:dox-integrity`   | Validates structural `AGENTS.md` hierarchy, required sections, and `.gitignore` coverage. |
+| `npm run auditor:markdown-links`  | Validates relative links, cross references, and bars absolute or environment paths.       |
+| `npm run auditor:markdown-syntax` | Validates headings, tables, and Markdown syntax adhering to CommonMark.                   |
 
 #### 🎮 Domain & Game Data
 
-| Command | Description |
-| :-- | :-- |
-| `npm run auditor:domain-types` | Strict domain type and canonical union compliance (no `any` or loose strings). |
-| `npm run auditor:o1-data-structures` | $O(1)$ optimization: typed dictionaries and sets in critical execution paths. |
-| `npm run auditor:pokemon` | Base stats, types, and evolution tables verified against official Showdown Dex. |
-| `npm run auditor:moves` | Move integrity, secondary effects, and canonical learnsets. |
-| `npm run auditor:abilities` | Passive and field abilities checked against canonical engine. |
-| `npm run auditor:items` | Item catalog, categories, tiers, and sprites. |
-| `npm run auditor:sprites` | Physical presence of animated sprites, thumbnails, and collision-free icons. |
-| `npm run auditor:spanish-ids` | Canonical parity and mapping of Spanish localized IDs. |
-| `npm run auditor:spawns-whitelist` | Wild Pokémon spawn areas and encounter whitelists. |
+| Command                              | Description                                                                     |
+| :----------------------------------- | :------------------------------------------------------------------------------ |
+| `npm run auditor:domain-types`       | Strict domain type and canonical union compliance (no `any` or loose strings).  |
+| `npm run auditor:o1-data-structures` | $O(1)$ optimization: typed dictionaries and sets in critical execution paths.   |
+| `npm run auditor:pokemon`            | Base stats, types, and evolution tables verified against official Showdown Dex. |
+| `npm run auditor:moves`              | Move integrity, secondary effects, and canonical learnsets.                     |
+| `npm run auditor:abilities`          | Passive and field abilities checked against canonical engine.                   |
+| `npm run auditor:items`              | Item catalog, categories, tiers, and sprites.                                   |
+| `npm run auditor:sprites`            | Physical presence of animated sprites, thumbnails, and collision-free icons.    |
+| `npm run auditor:spanish-ids`        | Canonical parity and mapping of Spanish localized IDs.                          |
+| `npm run auditor:spawns-whitelist`   | Wild Pokémon spawn areas and encounter whitelists.                              |
 
 #### 🗄️ Persistence, Migrations & State Machines (FSM)
 
-| Command | Description |
-| :-- | :-- |
-| `npm run auditor:sql-migrations` | Incremental execution of 96 SQL migrations in in-memory SQLite (`node:sqlite`). |
-| `npm run auditor:schema-parity` | 100% structural parity between SQLite and PostgreSQL schemas. |
+| Command                              | Description                                                                         |
+| :----------------------------------- | :---------------------------------------------------------------------------------- |
+| `npm run auditor:sql-migrations`     | Incremental execution of 96 SQL migrations in in-memory SQLite (`node:sqlite`).     |
+| `npm run auditor:schema-parity`      | 100% structural parity between SQLite and PostgreSQL schemas.                       |
 | `npm run auditor:family:persistence` | 1:1 parity between in-memory state (`GameState`) and persisted schema (`SaveData`). |
-| `npm run auditor:sql-anti-patterns` | Detects non-transactional queries and SQL anti-patterns. |
-| `npm run auditor:fsm-implementation` | Unified FSM suite: Mermaid diagram parity, implementation, and execution flow. |
-| `npm run auditor:showdown-parity` | Protocol coverage and canonical Showdown combat tokens. |
-| `npm run auditor:combat-invariants` | Turn-based combat invariants, seat isolation, and command idempotency. |
+| `npm run auditor:sql-anti-patterns`  | Detects non-transactional queries and SQL anti-patterns.                            |
+| `npm run auditor:fsm-implementation` | Unified FSM suite: Mermaid diagram parity, implementation, and execution flow.      |
+| `npm run auditor:showdown-parity`    | Protocol coverage and canonical Showdown combat tokens.                             |
+| `npm run auditor:combat-invariants`  | Turn-based combat invariants, seat isolation, and command idempotency.              |
 
 ---
 
@@ -407,22 +407,22 @@ npm run sim:e2e:system         # Version upgrades, locks, and lifecycle
 
 The project supports dual persistence with total isolation between local mode (native SQLite) and remote servers (Supabase / PostgreSQL on Docker or Cloud):
 
-| Command | Description |
-| :-- | :-- |
-| `npm run database:repair-account` | **Illegal Account Repair**: Fixes illegal Pokémon (levels, moves, or invalid abilities) across accounts in local SQLite and Supabase. |
-| `npm run database:diagnose-account` | **Account Diagnostics**: Checks integrity, inventory, illegal Pokémon, and locks for an account (`database:diagnose-accounts` for all). |
-| `npm run admin:rename` | **Administrative Rename**: Updates a user's trainer name in Supabase directly from CLI. |
-| `npm run servers:configure` | **Server Synchronization**: Parses master `.env` or CI secrets and generates decoupled catalog at `src/data/system/servers.local.json` with zero fallbacks. |
-| `npm run database:update` | **Migration Manager**: Applies initial schemas and incremental SQL migrations to selected Supabase server (`server=<profile>`) or all (`all`). |
-| `npm run database:backup` | **Backup Generator**: Connects to Supabase and dumps all tables into a structured JSON file. |
-| `npm run database:upgrade-backup` | **Backup Upgrader**: Applies migrations and Showdown legality to an exported JSON backup. |
-| `npm run database:restore` | **Transactional Restore**: Restores a JSON backup transactionally to the selected Supabase server. |
-| `npm run database:local-import` | **SQLite Importer**: Imports the latest Supabase JSON backup into local SQLite for offline testing. |
-| `npm run database:admin` | **User Administration**: Unban, change passwords, update emails, or promote users to admin from CLI. |
-| `npm run supabase:manage` | **Docker/CLI Manager**: Local orchestrator for Supabase containers and Docker image compilation. |
-| `npm run database:generate-migrations` | **Migration Compiler**: Scans `database/migrations/` and compiles the production TypeScript manifest. |
-| `npm run database:recompile-feet` | **Footprint Compiler**: Recompiles and syncs the Pokémon footprint atlas and database. |
-| `npm run sync:test` | **Sync to Sibling Repo**: Synchronizes source tree with sibling QA repository `pokevicio-test`. |
+| Command                                | Description                                                                                                                                                 |
+| :------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run database:repair-account`      | **Illegal Account Repair**: Fixes illegal Pokémon (levels, moves, or invalid abilities) across accounts in local SQLite and Supabase.                       |
+| `npm run database:diagnose-account`    | **Account Diagnostics**: Checks integrity, inventory, illegal Pokémon, and locks for an account (`database:diagnose-accounts` for all).                     |
+| `npm run admin:rename`                 | **Administrative Rename**: Updates a user's trainer name in Supabase directly from CLI.                                                                     |
+| `npm run servers:configure`            | **Server Synchronization**: Parses master `.env` or CI secrets and generates decoupled catalog at `src/data/system/servers.local.json` with zero fallbacks. |
+| `npm run database:update`              | **Migration Manager**: Applies initial schemas and incremental SQL migrations to selected Supabase server (`server=<profile>`) or all (`all`).              |
+| `npm run database:backup`              | **Backup Generator**: Connects to Supabase and dumps all tables into a structured JSON file.                                                                |
+| `npm run database:upgrade-backup`      | **Backup Upgrader**: Applies migrations and Showdown legality to an exported JSON backup.                                                                   |
+| `npm run database:restore`             | **Transactional Restore**: Restores a JSON backup transactionally to the selected Supabase server.                                                          |
+| `npm run database:local-import`        | **SQLite Importer**: Imports the latest Supabase JSON backup into local SQLite for offline testing.                                                         |
+| `npm run database:admin`               | **User Administration**: Unban, change passwords, update emails, or promote users to admin from CLI.                                                        |
+| `npm run supabase:manage`              | **Docker/CLI Manager**: Local orchestrator for Supabase containers and Docker image compilation.                                                            |
+| `npm run database:generate-migrations` | **Migration Compiler**: Scans `database/migrations/` and compiles the production TypeScript manifest.                                                       |
+| `npm run database:recompile-feet`      | **Footprint Compiler**: Recompiles and syncs the Pokémon footprint atlas and database.                                                                      |
+| `npm run sync:test`                    | **Sync to Sibling Repo**: Synchronizes source tree with sibling QA repository `pokevicio-test`.                                                             |
 
 ---
 
@@ -503,7 +503,7 @@ Summary of MikroTik commands (Winbox / SSH) to resolve asymmetric routing issues
 ```bash
 npm run dev               # Start development environment (Vite)
 npm run auditor:type-check    # Strict TypeScript type check
-npm run test              # UI and component unit tests (Vitest)
+npm run test              # UI and component unit tests (Vite+)
 npm run build             # Production compilation
 npm run assets:download   # Download external sprites and assets (Gen 1-9, Items, Trainers)
 npm run sync:test         # Sync source code to sibling QA repo pokevicio-test
@@ -558,7 +558,7 @@ npm run assets:convert
 - `/database`: Incremental SQL migrations (`.sql` PostgreSQL and `.sqlite.sql` SQLite), backups, and schemas.
 - `/supabase`: Docker orchestrator and automation for Supabase microservices (`setup_supabase.ts`).
 - `/scripts`: Multi-threaded fuzzers, Playwright E2E simulations, data compilers, and maintenance utilities.
-- `/tests`: Unit testing suites (JSDOM) and node test suites (multi-engine Vitest SQLite/PostgreSQL).
+- `/tests`: Unit testing suites (JSDOM) and node test suites (multi-engine Vite+ SQLite/PostgreSQL).
 - `/.agents`: DOX hierarchy containing agent skills, architectural standards, and reference manuals.
 - `/_raw-assets`: Working directory for source images prior to WebP optimization (`npm run assets:convert`).
 - `/scratch`: Unified ephemeral storage (JSON audit reports, temporary SQLite databases, simulation logs).

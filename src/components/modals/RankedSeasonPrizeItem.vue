@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 interface Props {
-  prize: Record<string, unknown>
+  prize: Record<string, unknown>;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 function formatTierName(tier?: unknown): string {
-  if (typeof tier !== 'string' || !tier) return ''
-  return tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase()
+  if (typeof tier !== 'string' || !tier) return '';
+  return tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase();
 }
 
-const prizeType = computed(() => String(props.prize.type || ''))
+const prizeType = computed(() => String(props.prize.type || ''));
 </script>
 
 <template>
@@ -23,9 +23,7 @@ const prizeType = computed(() => String(props.prize.type || ''))
       <div class="prize-info">
         <span class="prize-title">
           {{ String(prize.species || '').toUpperCase() }}
-          <template v-if="prize.shiny">
-            <span class="emoji">✨</span> SHINY
-          </template>
+          <template v-if="prize.shiny"> <span class="emoji">✨</span> SHINY </template>
         </span>
         <span class="prize-sub">Nivel {{ prize.level }} • Genética Competitiva</span>
       </div>
@@ -44,7 +42,9 @@ const prizeType = computed(() => String(props.prize.type || ''))
     <template v-else-if="prizeType === 'bc' || prizeType === 'battle_coins'">
       <span class="emoji prize-icon">🪙</span>
       <div class="prize-info">
-        <span class="prize-title">{{ prize.amount }} Battle Coins ({{ prize.amount }} Monedas de Batalla)</span>
+        <span class="prize-title"
+          >{{ prize.amount }} Battle Coins ({{ prize.amount }} Monedas de Batalla)</span
+        >
         <span class="prize-sub">Moneda de Torneo y Tienda BC</span>
       </div>
     </template>
@@ -53,7 +53,9 @@ const prizeType = computed(() => String(props.prize.type || ''))
     <template v-else-if="prizeType === 'ranked_medal'">
       <span class="emoji prize-icon">🎖️</span>
       <div class="prize-info">
-        <span class="prize-title">Medalla {{ formatTierName(prize.tier) }} (Medalla de Temporada {{ prize.season }})</span>
+        <span class="prize-title"
+          >Medalla {{ formatTierName(prize.tier) }} (Medalla de Temporada {{ prize.season }})</span
+        >
         <span class="prize-sub">Rango {{ String(prize.tier).toUpperCase() }}</span>
       </div>
     </template>

@@ -1,31 +1,35 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 const props = defineProps<{
-  showGuides: boolean
-  naturalSize: { w: number; h: number }
-  isAnimated: boolean
-  displaySize: number
-  debugShowPokeRadius: boolean
-  fxRadius: number
-}>()
+  showGuides: boolean;
+  naturalSize: { w: number; h: number };
+  isAnimated: boolean;
+  displaySize: number;
+  debugShowPokeRadius: boolean;
+  fxRadius: number;
+}>();
 
-const DIAMETER_SCALE_FACTOR = 2
-const pokeDiameterPercent = computed(() => `${props.fxRadius * DIAMETER_SCALE_FACTOR}%`)
+const DIAMETER_SCALE_FACTOR = 2;
+const pokeDiameterPercent = computed(() => `${props.fxRadius * DIAMETER_SCALE_FACTOR}%`);
 </script>
 
 <template>
   <!-- Guía de tamaño real (Debug) -->
-  <div 
-    v-if="showGuides && naturalSize.w > 0" 
+  <div
+    v-if="showGuides && naturalSize.w > 0"
     class="guide-real-size"
-    :style="isAnimated ? {
-      width: '100%',
-      height: '100%'
-    } : {
-      width: naturalSize.w + 'px',
-      height: naturalSize.h + 'px'
-    }"
+    :style="
+      isAnimated
+        ? {
+            width: '100%',
+            height: '100%'
+          }
+        : {
+            width: naturalSize.w + 'px',
+            height: naturalSize.h + 'px'
+          }
+    "
   >
     <span v-if="isAnimated">{{ Math.round(displaySize) }}x{{ Math.round(displaySize) }}</span>
     <span v-else>{{ naturalSize.w }}x{{ naturalSize.h }}</span>
@@ -45,7 +49,7 @@ const pokeDiameterPercent = computed(() => `${props.fxRadius * DIAMETER_SCALE_FA
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .guide-real-size {
   position: absolute;

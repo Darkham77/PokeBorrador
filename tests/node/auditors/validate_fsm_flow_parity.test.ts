@@ -7,7 +7,7 @@
  * - Asserts clean execution on repository data
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   FsmFlowParityAuditor,
   FSM_FLOW_PARITY_RULES,
@@ -25,9 +25,7 @@ describe('FsmFlowParityAuditor', () => {
     });
 
     it('declares all expected canonical rules in FSM_FLOW_PARITY_RULES', () => {
-      const expectedRules: FsmFlowParityRuleId[] = [
-        'fsm-flow-sequence-missing'
-      ];
+      const expectedRules: FsmFlowParityRuleId[] = ['fsm-flow-sequence-missing'];
 
       for (const rule of expectedRules) {
         expect(FSM_FLOW_PARITY_RULES).toContain(rule);
@@ -48,7 +46,11 @@ stateDiagram-v2
       const sequences = parseMermaidSequences(mermaidContent);
       expect(sequences.length).toBe(1);
       expect(sequences[0]![0]).toEqual({ from: 'INTRO', to: 'ACTION_SELECT', isLoop: false });
-      expect(sequences[0]![1]).toEqual({ from: 'ACTION_SELECT', to: 'ACTION_SELECT', isLoop: true });
+      expect(sequences[0]![1]).toEqual({
+        from: 'ACTION_SELECT',
+        to: 'ACTION_SELECT',
+        isLoop: true
+      });
     });
   });
 

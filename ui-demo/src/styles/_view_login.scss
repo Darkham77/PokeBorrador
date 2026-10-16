@@ -31,7 +31,12 @@
   font-size: var(--font-28);
   font-weight: 900;
   color: var(--blue-400);
-  text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 4px 0 #1d4ed8;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 4px 0 #1d4ed8;
   letter-spacing: 2px;
   padding: 10px 20px;
   display: none;

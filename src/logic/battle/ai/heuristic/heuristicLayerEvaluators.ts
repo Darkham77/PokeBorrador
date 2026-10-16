@@ -5,7 +5,7 @@ import type {
   StrategicState,
   HeuristicMoveInfo,
   HeuristicPokemonState,
-  HeuristicDecision,
+  HeuristicDecision
 } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
@@ -18,7 +18,7 @@ import {
   findMoveIndex,
   hazardsThreatenTeam,
   shouldConsiderSwitching,
-  pickBestSwitch,
+  pickBestSwitch
 } from './heuristicHelpers.ts';
 
 const HAZARD_MOVES_LIST = ['stealthrock', 'spikes', 'toxicspikes', 'stickyweb'] as const;
@@ -37,14 +37,14 @@ export function evaluatePriorityKOLayer(
   oppSpeed: number,
   oppActive: HeuristicPokemonState
 ): HeuristicDecision | null {
-  const priorityKO = matchup.myAttacking.find(d => d.isOHKO && d.priority > DEFAULT_ZERO);
+  const priorityKO = matchup.myAttacking.find((d) => d.isOHKO && d.priority > DEFAULT_ZERO);
   if (!priorityKO) return null;
 
-  const oppPriorityKO = matchup.oppAttacking.find(d => d.isOHKO && d.priority > DEFAULT_ZERO);
-  const oppOutprioritizes = oppPriorityKO !== undefined && (
-    oppPriorityKO.priority > priorityKO.priority ||
-    (oppPriorityKO.priority === priorityKO.priority && oppSpeed > mySpeed)
-  );
+  const oppPriorityKO = matchup.oppAttacking.find((d) => d.isOHKO && d.priority > DEFAULT_ZERO);
+  const oppOutprioritizes =
+    oppPriorityKO !== undefined &&
+    (oppPriorityKO.priority > priorityKO.priority ||
+      (oppPriorityKO.priority === priorityKO.priority && oppSpeed > mySpeed));
 
   if (oppOutprioritizes) return null;
 
@@ -57,7 +57,7 @@ export function evaluatePriorityKOLayer(
     moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.HIGH_PRIORITY_KO,
-    reasoning: `Priority KO on ${oppActive.name} at ${oppActive.hpPercent.toFixed(0)}%`,
+    reasoning: `Priority KO on ${oppActive.name} at ${oppActive.hpPercent.toFixed(0)}%`
   };
 }
 
@@ -66,12 +66,12 @@ export function evaluateGuaranteedKOLayer(
   availableMoves: HeuristicMoveInfo[],
   iOutspeed: boolean
 ): HeuristicDecision | null {
-  const guaranteedKO = matchup.myAttacking.find(d => d.isOHKO);
+  const guaranteedKO = matchup.myAttacking.find((d) => d.isOHKO);
   if (!guaranteedKO) return null;
 
-  const theyCanKOFirst = !iOutspeed && matchup.oppAttacking.some(d => d.isOHKO);
+  const theyCanKOFirst = !iOutspeed && matchup.oppAttacking.some((d) => d.isOHKO);
   if (theyCanKOFirst) {
-    const priorityKO = matchup.myAttacking.find(d => d.isOHKO && d.priority > DEFAULT_ZERO);
+    const priorityKO = matchup.myAttacking.find((d) => d.isOHKO && d.priority > DEFAULT_ZERO);
     if (priorityKO) {
       const moveIdx = findMoveIndex(availableMoves, priorityKO.move);
       if (moveIdx !== INVALID_MOVE_INDEX) {
@@ -81,7 +81,7 @@ export function evaluateGuaranteedKOLayer(
           moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
           source: 'heuristic',
           confidence: HEURISTIC_CONFIDENCE_SCORES.RESCUE_PRIORITY_KO,
-          reasoning: 'Priority KO — opponent outspeeds and threatens KO',
+          reasoning: 'Priority KO — opponent outspeeds and threatens KO'
         };
       }
     }
@@ -97,7 +97,7 @@ export function evaluateGuaranteedKOLayer(
     moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.GUARANTEED_OHKO,
-    reasoning: `Guaranteed OHKO with ${guaranteedKO.move} (${guaranteedKO.minPercent.toFixed(0)}-${guaranteedKO.maxPercent.toFixed(0)}%)`,
+    reasoning: `Guaranteed OHKO with ${guaranteedKO.move} (${guaranteedKO.minPercent.toFixed(0)}-${guaranteedKO.maxPercent.toFixed(0)}%)`
   };
 }
 
@@ -113,10 +113,10 @@ export function evaluateSurvivalLayer(
   myActive: HeuristicPokemonState,
   oppActive: HeuristicPokemonState
 ): HeuristicDecision | null {
-  const theyCanKO = matchup.oppAttacking.find(d => d.isOHKO);
+  const theyCanKO = matchup.oppAttacking.find((d) => d.isOHKO);
   if (!theyCanKO) return null;
 
-  const ourPriorityKO = matchup.myAttacking.find(d => d.isOHKO && d.priority > DEFAULT_ZERO);
+  const ourPriorityKO = matchup.myAttacking.find((d) => d.isOHKO && d.priority > DEFAULT_ZERO);
   if (ourPriorityKO !== undefined) {
     const moveIdx = findMoveIndex(availableMoves, ourPriorityKO.move);
     if (moveIdx !== INVALID_MOVE_INDEX) {
@@ -126,14 +126,16 @@ export function evaluateSurvivalLayer(
         moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
         source: 'heuristic',
         confidence: HEURISTIC_CONFIDENCE_SCORES.RESCUE_PRIORITY_KO,
-        reasoning: 'Priority KO before we go down',
+        reasoning: 'Priority KO before we go down'
       };
     }
   }
 
-  const isWinCondition = strategic.winConditions.length > DEFAULT_ZERO &&
+  const isWinCondition =
+    strategic.winConditions.length > DEFAULT_ZERO &&
     strategic.winConditions[DEFAULT_ZERO]?.pokemon === myActive.name &&
-    (strategic.winConditions[DEFAULT_ZERO]?.score ?? DEFAULT_ZERO) > HEURISTIC_THRESHOLDS.WIN_CONDITION_SCORE;
+    (strategic.winConditions[DEFAULT_ZERO]?.score ?? DEFAULT_ZERO) >
+      HEURISTIC_THRESHOLDS.WIN_CONDITION_SCORE;
 
   if (isWinCondition && switchOptions.length > DEFAULT_ZERO && !isTrapped) {
     return pickBestSwitch(snapshot, switchOptions, strategic, calc, inference, oppActive);
@@ -151,8 +153,12 @@ export function evaluateHazardLayers(
   hasGuaranteedKO: boolean
 ): HeuristicDecision | null {
   if (snapshot.mySide.sideConditions.size > 0 && !hasGuaranteedKO) {
-    const removalMove = availableMoves.find(m => HAZARD_REMOVAL_MOVES.has(toID(m.id)));
-    if (removalMove && myActive.hpPercent > HEURISTIC_THRESHOLDS.HAZARD_REMOVAL_MIN_HP && hazardsThreatenTeam(snapshot, strategic)) {
+    const removalMove = availableMoves.find((m) => HAZARD_REMOVAL_MOVES.has(toID(m.id)));
+    if (
+      removalMove &&
+      myActive.hpPercent > HEURISTIC_THRESHOLDS.HAZARD_REMOVAL_MIN_HP &&
+      hazardsThreatenTeam(snapshot, strategic)
+    ) {
       const moveIdx = findMoveIndex(availableMoves, removalMove.id);
       if (moveIdx !== INVALID_MOVE_INDEX) {
         return {
@@ -161,14 +167,17 @@ export function evaluateHazardLayers(
           moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
           source: 'heuristic',
           confidence: HEURISTIC_CONFIDENCE_SCORES.HAZARD_REMOVAL,
-          reasoning: 'Remove hazards threatening win condition',
+          reasoning: 'Remove hazards threatening win condition'
         };
       }
     }
   }
 
-  if (!snapshot.opponentSide.sideConditions.has('stealthrock') && myActive.hpPercent > HEURISTIC_THRESHOLDS.HAZARD_SET_MIN_HP) {
-    const hazardMove = availableMoves.find(m => HAZARD_MOVES.has(toID(m.id)));
+  if (
+    !snapshot.opponentSide.sideConditions.has('stealthrock') &&
+    myActive.hpPercent > HEURISTIC_THRESHOLDS.HAZARD_SET_MIN_HP
+  ) {
+    const hazardMove = availableMoves.find((m) => HAZARD_MOVES.has(toID(m.id)));
     if (hazardMove) {
       const worstOppDmg = matchup.oppAttacking[DEFAULT_ZERO]?.maxPercent ?? DEFAULT_ZERO;
       if (worstOppDmg < HEURISTIC_THRESHOLDS.HAZARD_SET_MAX_OPP_DAMAGE) {
@@ -180,7 +189,7 @@ export function evaluateHazardLayers(
             moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
             source: 'heuristic',
             confidence: HEURISTIC_CONFIDENCE_SCORES.HAZARD_SET,
-            reasoning: 'Set up hazards',
+            reasoning: 'Set up hazards'
           };
         }
       }
@@ -198,15 +207,17 @@ function evaluateSetupLayer(
   oppActive: HeuristicPokemonState,
   iOutspeed: boolean
 ): HeuristicDecision | null {
-  const setupMove = availableMoves.find(m => SETUP_MOVES.has(toID(m.id)));
+  const setupMove = availableMoves.find((m) => SETUP_MOVES.has(toID(m.id)));
   if (!setupMove || myActive.hpPercent <= HEURISTIC_THRESHOLDS.SETUP_MOVE_MIN_HP) {
     return null;
   }
 
   const worstOppDmg = matchup.oppAttacking[DEFAULT_ZERO]?.maxPercent ?? DEFAULT_ZERO;
-  const isWinCond = strategic.winConditions.length > DEFAULT_ZERO &&
+  const isWinCond =
+    strategic.winConditions.length > DEFAULT_ZERO &&
     strategic.winConditions[DEFAULT_ZERO]?.pokemon === myActive.name;
-  const oppLocked = oppActive.volatiles.has('choicelock') || oppActive.volatiles.has('mustrecharge');
+  const oppLocked =
+    oppActive.volatiles.has('choicelock') || oppActive.volatiles.has('mustrecharge');
   const oppCantThreaten = worstOppDmg < HEURISTIC_THRESHOLDS.SETUP_MOVE_MAX_OPP_DAMAGE;
   const oppLowHp = oppActive.hpPercent < HEURISTIC_THRESHOLDS.SETUP_MOVE_OPP_LOW_HP;
   const isSafe = oppCantThreaten || oppLocked || (iOutspeed && oppLowHp);
@@ -220,14 +231,18 @@ function evaluateSetupLayer(
     return null;
   }
 
-  const reason = oppLocked ? 'opponent locked' : oppLowHp ? 'opponent likely switching' : 'opponent can\'t threaten';
+  const reason = oppLocked
+    ? 'opponent locked'
+    : oppLowHp
+      ? 'opponent likely switching'
+      : "opponent can't threaten";
   return {
     type: 'move',
     moveId: setupMove.id,
     moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.SETUP_MOVE,
-    reasoning: `Safe setup: ${reason}`,
+    reasoning: `Safe setup: ${reason}`
   };
 }
 
@@ -242,7 +257,7 @@ function evaluatePivotLayer(
     return null;
   }
 
-  const pivotMove = availableMoves.find(m => PIVOT_MOVES.has(toID(m.id)));
+  const pivotMove = availableMoves.find((m) => PIVOT_MOVES.has(toID(m.id)));
   if (!pivotMove) {
     return null;
   }
@@ -268,13 +283,13 @@ function evaluatePivotLayer(
     moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.PIVOT_MOVE,
-    reasoning: `Pivot with ${pivotMove.id} — unfavorable matchup`,
+    reasoning: `Pivot with ${pivotMove.id} — unfavorable matchup`
   };
 }
 
 interface SetupAndPivotFlags {
-  iOutspeed: boolean
-  isTrapped: boolean
+  iOutspeed: boolean;
+  isTrapped: boolean;
 }
 
 export function evaluateSetupAndPivotLayers(
@@ -303,14 +318,19 @@ function evaluateBestAttackMove(
   if (matchup.myAttacking.length <= DEFAULT_ZERO) return null;
 
   const bestMove = matchup.myAttacking[DEFAULT_ZERO];
-  if (bestMove === undefined || bestMove.maxPercent <= HEURISTIC_THRESHOLDS.BEST_ATTACK_MIN_DAMAGE) {
+  if (
+    bestMove === undefined ||
+    bestMove.maxPercent <= HEURISTIC_THRESHOLDS.BEST_ATTACK_MIN_DAMAGE
+  ) {
     return null;
   }
 
   const moveIdx = findMoveIndex(availableMoves, bestMove.move);
   if (moveIdx === INVALID_MOVE_INDEX) return null;
 
-  const shouldSwitch = !isTrapped && shouldConsiderSwitching(matchup, strategic, switchOptions, snapshot.mySide.activePokemon);
+  const shouldSwitch =
+    !isTrapped &&
+    shouldConsiderSwitching(matchup, strategic, switchOptions, snapshot.mySide.activePokemon);
   if (shouldSwitch) return null;
 
   return {
@@ -319,7 +339,7 @@ function evaluateBestAttackMove(
     moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.BEST_ATTACK,
-    reasoning: `Best damage: ${bestMove.move} (${bestMove.minPercent.toFixed(0)}-${bestMove.maxPercent.toFixed(0)}%)`,
+    reasoning: `Best damage: ${bestMove.move} (${bestMove.minPercent.toFixed(0)}-${bestMove.maxPercent.toFixed(0)}%)`
   };
 }
 
@@ -337,7 +357,10 @@ function evaluateBadMatchupSwitch(
 
   const bestOppDmg = matchup.oppAttacking[DEFAULT_ZERO]?.maxPercent ?? DEFAULT_ZERO;
   const bestMyDmg = matchup.myAttacking[DEFAULT_ZERO]?.maxPercent ?? DEFAULT_ZERO;
-  if (bestOppDmg > HEURISTIC_THRESHOLDS.BAD_MATCHUP_OPP_DAMAGE && bestMyDmg < HEURISTIC_THRESHOLDS.BAD_MATCHUP_MY_DAMAGE) {
+  if (
+    bestOppDmg > HEURISTIC_THRESHOLDS.BAD_MATCHUP_OPP_DAMAGE &&
+    bestMyDmg < HEURISTIC_THRESHOLDS.BAD_MATCHUP_MY_DAMAGE
+  ) {
     return pickBestSwitch(snapshot, switchOptions, strategic, calc, inference, oppActive);
   }
 
@@ -356,7 +379,23 @@ export function evaluateAttackAndSwitchLayers(
   oppActive: HeuristicPokemonState
 ): HeuristicDecision | null {
   return (
-    evaluateBestAttackMove(snapshot, matchup, strategic, availableMoves, switchOptions, isTrapped) ??
-    evaluateBadMatchupSwitch(snapshot, matchup, strategic, switchOptions, isTrapped, calc, inference, oppActive)
+    evaluateBestAttackMove(
+      snapshot,
+      matchup,
+      strategic,
+      availableMoves,
+      switchOptions,
+      isTrapped
+    ) ??
+    evaluateBadMatchupSwitch(
+      snapshot,
+      matchup,
+      strategic,
+      switchOptions,
+      isTrapped,
+      calc,
+      inference,
+      oppActive
+    )
   );
 }

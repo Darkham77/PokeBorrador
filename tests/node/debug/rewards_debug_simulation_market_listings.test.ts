@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { queryLocal, resetSQLite } from '@/logic/db/sqliteEngine.ts';
 import { DBRouter } from '@/logic/db/dbRouter.ts';
 import { injectSimulatedGtsClaimsAndListings } from '@/logic/debug/rewardsDebugSimulationHelpers.ts';
@@ -25,12 +25,7 @@ describe('Rewards Debug Simulation Market Listings DB Insertion', () => {
       inMemory: true
     });
 
-    await injectSimulatedGtsClaimsAndListings(
-      state,
-      router,
-      user,
-      false
-    );
+    await injectSimulatedGtsClaimsAndListings(state, router, user, false);
 
     // Verify row was inserted into market_listings via queryLocal
     const rows = await queryLocal('SELECT * FROM market_listings');
@@ -63,9 +58,10 @@ describe('Rewards Debug Simulation Market Listings DB Insertion', () => {
 
     await injectSimulatedGtsClaimsAndListings(state, router, user, false);
 
-    const rows = await queryLocal('SELECT * FROM market_listings WHERE seller_id = ?', ['local_seller_2']);
+    const rows = await queryLocal('SELECT * FROM market_listings WHERE seller_id = ?', [
+      'local_seller_2'
+    ]);
     expect(rows.length).toBeGreaterThan(0);
     expect(rows[0]?.seller_id).toBe('local_seller_2');
   });
 });
-

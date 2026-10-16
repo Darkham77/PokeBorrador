@@ -33,7 +33,7 @@ export async function executeCanonicalTurn(
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION);
 
   const result = await executeTurnInWorker(p1Choice, p2Choice, p1Skip, p2Skip);
-  const turnCount = ((store.activeBattle.value?.turnCount) || 0) + 1;
+  const turnCount = (store.activeBattle.value?.turnCount || 0) + 1;
 
   const active = store.activeBattle.value;
   if (active) {

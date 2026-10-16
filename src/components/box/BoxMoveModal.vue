@@ -1,64 +1,70 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useBoxStore } from '@/stores/box'
-import { useUIStore } from '@/stores/ui'
-import { useModalStore } from '@/stores/modals'
-import BaseModal from '@/components/common/BaseModal.vue'
+import { computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useBoxStore } from '@/stores/box';
+import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
+import BaseModal from '@/components/common/BaseModal.vue';
 
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
-  pokemon: Pokemon
-  boxIndex: number
+  pokemon: Pokemon;
+  boxIndex: number;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const gameStore = useGameStore()
-const boxStore = useBoxStore()
-const uiStore = useUIStore()
-const modalStore = useModalStore()
+const gameStore = useGameStore();
+const boxStore = useBoxStore();
+const uiStore = useUIStore();
+const modalStore = useModalStore();
 
-const currentBox = computed(() => Math.floor(props.boxIndex / BOX_CAPACITY_SLOTS))
+const currentBox = computed(() => Math.floor(props.boxIndex / BOX_CAPACITY_SLOTS));
 
-const BOX_CAPACITY_SLOTS = 50
+const BOX_CAPACITY_SLOTS = 50;
 
 const boxesOccupation = computed(() => {
-  const result: Array<{ index: number; number: number; count: number; isFull: boolean; isCurrent: boolean }> = []
-  const boxArray = (gameStore.state.box || []) as (Pokemon | null)[]
-  const totalBoxes = gameStore.state.boxCount || 4
-  
+  const result: Array<{
+    index: number;
+    number: number;
+    count: number;
+    isFull: boolean;
+    isCurrent: boolean;
+  }> = [];
+  const boxArray = (gameStore.state.box || []) as (Pokemon | null)[];
+  const totalBoxes = gameStore.state.boxCount || 4;
+
   for (let i = 0; i < totalBoxes; i++) {
-    const start = i * BOX_CAPACITY_SLOTS
-    const end = start + BOX_CAPACITY_SLOTS
-    const slice = boxArray.slice(start, end)
-    const count = slice.filter((p) => p != null).length
-    result.push({ 
-      index: i, 
-      number: i + 1, 
-      count, 
+    const start = i * BOX_CAPACITY_SLOTS;
+    const end = start + BOX_CAPACITY_SLOTS;
+    const slice = boxArray.slice(start, end);
+    const count = slice.filter((p) => p != null).length;
+    result.push({
+      index: i,
+      number: i + 1,
+      count,
       isFull: count >= BOX_CAPACITY_SLOTS,
       isCurrent: i === currentBox.value
-    })
+    });
   }
-  return result
-})
+  return result;
+});
 
 const handleMove = (targetBoxIndex: number) => {
-  const target = boxesOccupation.value[targetBoxIndex]
+  const target = boxesOccupation.value[targetBoxIndex];
   if (target?.isFull) {
-    uiStore.notify('Esa caja está llena.', '⚠️')
-    return
+    uiStore.notify('Esa caja está llena.', '⚠️');
+    return;
   }
-  
-  const res = boxStore.movePokemonToBox(props.boxIndex, targetBoxIndex)
+
+  const res = boxStore.movePokemonToBox(props.boxIndex, targetBoxIndex);
   if (res.success) {
-    uiStore.notify(res.msg, '📦')
-    modalStore.close('BoxMove')
-    modalStore.close('BoxPokemonMenu')
+    uiStore.notify(res.msg, '📦');
+    modalStore.close('BoxMove');
+    modalStore.close('BoxPokemonMenu');
   }
-}
+};
 </script>
 
 <template>
@@ -71,7 +77,8 @@ const handleMove = (targetBoxIndex: number) => {
   >
     <div class="box-move-container">
       <p class="move-message">
-        ¿A qué caja querés mover a <span class="p-name">{{ pokemon.name }}</span>?
+        ¿A qué caja querés mover a <span class="p-name">{{ pokemon.name }}</span
+        >?
       </p>
 
       <div class="boxes-grid">
@@ -81,36 +88,25 @@ const handleMove = (targetBoxIndex: number) => {
           :key="box.index"
           :class="[
             'box-select-btn',
-            { 
-              'is-full': box.isFull, 
-              'is-current': box.isCurrent 
+            {
+              'is-full': box.isFull,
+              'is-current': box.isCurrent
             }
           ]"
           :disabled="box.isFull || box.isCurrent"
           @click.stop="handleMove(box.index)"
         >
           <span class="btn-inner">
-            <span class="box-number">
-              CAJA {{ box.number }}
-            </span>
+            <span class="box-number"> CAJA {{ box.number }} </span>
             <span class="box-stats">
               <span class="count">{{ box.count }}</span>
               <span class="max">/ 50</span>
             </span>
 
             <span class="status-tags">
-              <span
-                v-if="box.isCurrent"
-                class="tag current"
-              >ACTUAL</span>
-              <span
-                v-else-if="box.isFull"
-                class="tag full"
-              >LLENA</span>
-              <span
-                v-else
-                class="tag available"
-              >DISPONIBLE</span>
+              <span v-if="box.isCurrent" class="tag current">ACTUAL</span>
+              <span v-else-if="box.isFull" class="tag full">LLENA</span>
+              <span v-else class="tag available">DISPONIBLE</span>
             </span>
           </span>
           <span class="border-glow" />
@@ -131,11 +127,11 @@ const handleMove = (targetBoxIndex: number) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .box-move-container {
   padding: 15px;
-  
+
   .move-message {
     @include pixelated;
 
@@ -165,7 +161,7 @@ const handleMove = (targetBoxIndex: number) => {
 
   position: relative;
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   padding: 1px;
   border-radius: $radius-xl;
   cursor: pointer;
@@ -175,16 +171,20 @@ const handleMove = (targetBoxIndex: number) => {
     transform: Translatey(-4px);
     border-color: var(--yellow) !important;
     box-shadow: var(--shadow-xl);
-    
-    .border-glow { opacity: 1; }
-    .box-number { color: var(--yellow); }
+
+    .border-glow {
+      opacity: 1;
+    }
+    .box-number {
+      color: var(--yellow);
+    }
   }
 
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
     will-change: transform, filter, opacity;
-  filter: Grayscale(1);
+    filter: Grayscale(1);
   }
 
   .btn-inner {
@@ -209,12 +209,16 @@ const handleMove = (targetBoxIndex: number) => {
 
   &.is-current {
     border-color: var(--blue) !important;
-    .box-number { color: var(--blue); }
+    .box-number {
+      color: var(--blue);
+    }
   }
 
   &.is-full {
     border-color: var(--red) !important;
-    .box-number { color: var(--red); }
+    .box-number {
+      color: var(--red);
+    }
   }
 
   .box-number {
@@ -222,14 +226,13 @@ const handleMove = (targetBoxIndex: number) => {
 
     color: var(--white);
     font-size: var(--font-10);
-    
   }
 
   .box-stats {
     display: flex;
     align-items: baseline;
     gap: $spacing-xs-alt;
-    
+
     .count {
       @include pixelated;
 
@@ -245,7 +248,7 @@ const handleMove = (targetBoxIndex: number) => {
 
   .status-tags {
     margin-top: 5px;
-    
+
     .tag {
       @include pixelated;
 
@@ -254,16 +257,25 @@ const handleMove = (targetBoxIndex: number) => {
       font-size: var(--font-6);
       text-transform: uppercase;
 
-      &.current { background: var(--blue); color: var(--white); }
-      &.full { background: var(--red); color: var(--white); }
-      &.available { background: Rgb(255 255 255 / 5%); color: var(--gray); }
+      &.current {
+        background: var(--blue);
+        color: var(--white);
+      }
+      &.full {
+        background: var(--red);
+        color: var(--white);
+      }
+      &.available {
+        background: Rgb(255 255 255 / 5%);
+        color: var(--gray);
+      }
     }
   }
 }
 
 .modal-footer {
   margin-top: 10px;
-  
+
   .btn-cancel {
     @include btn-vicio('neutral', 'lg', true);
     @include pixelated;

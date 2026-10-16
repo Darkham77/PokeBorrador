@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { FogOfWarSideState } from '@/logic/battle/replay/tacticalReplayEngine.ts'
+import type { FogOfWarSideState } from '@/logic/battle/replay/tacticalReplayEngine.ts';
 
 defineProps<{
-  pokemon?: FogOfWarSideState['activePokemon'] | null
-  isPlayer?: boolean
-}>()
+  pokemon?: FogOfWarSideState['activePokemon'] | null;
+  isPlayer?: boolean;
+}>();
 </script>
 
 <template>
@@ -15,14 +15,10 @@ defineProps<{
       :alt="pokemon.name || 'Pokemon'"
       class="combatant-sprite"
       :class="isPlayer ? 'player-sprite' : 'enemy-sprite'"
-    
       width="96"
       height="96"
-    >
-    <span
-      v-else
-      class="sprite-placeholder emoji"
-    >❓</span>
+    />
+    <span v-else class="sprite-placeholder emoji">❓</span>
   </div>
 </template>
 

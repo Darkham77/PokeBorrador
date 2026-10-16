@@ -61,4 +61,3 @@ describe('coastBridgeCornerIntegrity', () => {
     expect(continent.resolvedWater.cellDetails[bridgeY]?.[bridgeX]?.terrain).toBe('water');
   });
 });
-

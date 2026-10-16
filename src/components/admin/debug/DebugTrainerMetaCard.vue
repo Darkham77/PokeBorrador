@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
-  isRocketClass: boolean
-  availableSpriteList: Array<{ id: string; label: string }>
+  isRocketClass: boolean;
+  availableSpriteList: Array<{ id: string; label: string }>;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
-const trainerName = defineModel<string>('trainerName', { required: true })
-const trainerSprite = defineModel<string>('trainerSprite', { required: true })
-const criminality = defineModel<number>('criminality', { required: true })
+const trainerName = defineModel<string>('trainerName', { required: true });
+const trainerSprite = defineModel<string>('trainerSprite', { required: true });
+const criminality = defineModel<number>('criminality', { required: true });
 
 const emit = defineEmits<{
-  (e: 'randomizeTrainer'): void
-  (e: 'randomizeName'): void
-  (e: 'randomizeSprite'): void
-  (e: 'loadPolice'): void
-}>()
+  (e: 'randomizeTrainer'): void;
+  (e: 'randomizeName'): void;
+  (e: 'randomizeSprite'): void;
+  (e: 'loadPolice'): void;
+}>();
 
 function onTrainerImgError(e: Event): void {
-  const target = e.target as HTMLImageElement | null
+  const target = e.target as HTMLImageElement | null;
   if (target) {
-    target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')
+    target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador');
   }
 }
 </script>
@@ -32,7 +32,7 @@ function onTrainerImgError(e: Event): void {
     <div class="section-header-row flex-between">
       <label>DATOS DEL ENTRENADOR</label>
       <button
-        id="debug-trainer-meta-card-btn-aleatorio" 
+        id="debug-trainer-meta-card-btn-aleatorio"
         class="btn-vicio-secondary sm"
         @click.stop="emit('randomizeTrainer')"
       >
@@ -40,28 +40,24 @@ function onTrainerImgError(e: Event): void {
       </button>
     </div>
 
-    <div style="display: flex; align-items: center; gap: $spacing-md; margin-top: 8px;">
+    <div style="display: flex; align-items: center; gap: $spacing-md; margin-top: 8px">
       <div class="trainer-sprite-preview">
-        <img 
-          :src="getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite)" 
+        <img
+          :src="getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite)"
           :alt="trainerName || 'Entrenador'"
           class="trainer-sprite-img"
           width="64"
-        
           height="64"
           @error="onTrainerImgError"
-        >
+        />
       </div>
-      <div style=" display: flex; flex-direction: column; gap: $spacing-sm;flex: 1;">
+      <div style="display: flex; flex-direction: column; gap: $spacing-sm; flex: 1">
         <div class="input-group vertical">
           <div
             class="label-row"
-            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%"
           >
-            <span
-              class="field-label"
-              style="margin-bottom: 0;"
-            >Nombre del Entrenador</span>
+            <span class="field-label" style="margin-bottom: 0">Nombre del Entrenador</span>
             <button
               id="debug-trainer-meta-card-btn-1"
               class="btn-magic-fill btn-random-fill"
@@ -70,23 +66,21 @@ function onTrainerImgError(e: Event): void {
               <span class="emoji">🎲</span>
             </button>
           </div>
-          <input 
+          <input
             id="debug-input-trainer-name"
-            v-model="trainerName" 
-            type="text" 
+            v-model="trainerName"
+            type="text"
             placeholder="Nombre..."
-          >
+            aria-label="Nombre del Entrenador"
+          />
         </div>
 
         <div class="input-group vertical">
           <div
             class="label-row"
-            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%"
           >
-            <span
-              class="field-label"
-              style="margin-bottom: 0;"
-            >Sprite del Entrenador</span>
+            <span class="field-label" style="margin-bottom: 0">Sprite del Entrenador</span>
             <button
               id="debug-trainer-meta-card-btn-2"
               class="btn-magic-fill btn-random-fill"
@@ -98,12 +92,9 @@ function onTrainerImgError(e: Event): void {
           <select
             id="debug-trainer-meta-card-select-trainersprite"
             v-model="trainerSprite"
+            aria-label="Sprite del Entrenador"
           >
-            <option 
-              v-for="s in availableSpriteList" 
-              :key="s.id" 
-              :value="s.id"
-            >
+            <option v-for="s in availableSpriteList" :key="s.id" :value="s.id">
               {{ s.label }}
             </option>
           </select>
@@ -111,43 +102,36 @@ function onTrainerImgError(e: Event): void {
       </div>
     </div>
 
-    <div
-      class="input-group vertical"
-      style="margin-top: 12px;"
-    >
+    <div class="input-group vertical" style="margin-top: 12px">
       <div class="label-row flex-between">
         <span class="field-label">Criminalidad (Team Rocket)</span>
         <span class="crime-pct danger-text">{{ criminality }}%</span>
       </div>
-      <div
-        v-if="isRocketClass"
-        class="crime-sim-slider-row"
-      >
+      <div v-if="isRocketClass" class="crime-sim-slider-row">
         <input
-          id="debug-trainer-meta-card-input-criminality" 
-          v-model.number="criminality" 
-          type="range" 
-          min="0" 
+          id="debug-trainer-meta-card-input-criminality"
+          v-model.number="criminality"
+          type="range"
+          min="0"
           max="100"
+          aria-label="Criminalidad"
           class="slider-crime"
-        >
+        />
       </div>
-      <div
-        v-else
-        class="crime-info-fallback"
-      >
+      <div v-else class="crime-info-fallback">
         <span>Requiere clase TEAM ROCKET activa para testear criminalidad.</span>
       </div>
     </div>
 
-    <div
-      class="button-row"
-      style="margin-top: 12px;"
-    >
+    <div class="button-row" style="margin-top: 12px">
       <button
-        id="debug-trainer-meta-card-btn-cargar-oficial-de-polic-a" 
+        id="debug-trainer-meta-card-btn-cargar-oficial-de-polic-a"
         class="btn-vicio-secondary sm"
-        style="background: rgb(59 139 255 / 15%); color: var(--blue-400); border-color: rgb(59 139 255 / 30%);"
+        style="
+          background: rgb(59 139 255 / 15%);
+          color: var(--blue-400);
+          border-color: rgb(59 139 255 / 30%);
+        "
         @click.stop="emit('loadPolice')"
       >
         <span class="emoji">🚨</span> CARGAR OFICIAL DE POLICÍA

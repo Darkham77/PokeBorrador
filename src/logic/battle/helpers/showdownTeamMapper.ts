@@ -11,6 +11,7 @@ export interface ShowdownRequestPokemon {
   reviving?: boolean;
   commanding?: boolean;
   canTerastallize?: boolean;
+  // open-record: External Pokémon Showdown protocol stat payload dictionary
   stats?: Record<string, number>;
   moves?: unknown[];
   baseAbility?: string;
@@ -27,6 +28,7 @@ export interface ShowdownRequest {
 export interface CustomPokemonSet {
   name: string;
   species: string;
+  // open-record: Pokémon Showdown set stat record dictionary
   stats?: Record<string, number>;
   uid?: string;
 }
@@ -36,13 +38,17 @@ export class ShowdownTeamMapper {
    * Populates statsMap from sets to ensure Showdown patches can access pre-calculated stats.
    */
   static populateStatsMap(
-    team: Array<{ name?: string; species: string; stats?: Record<string, number> | null } | null> | null | undefined
+    team:
+      // open-record: Pokémon Showdown custom team set stats dictionary
+      | Array<{ name?: string; species: string; stats?: Record<string, number> | null } | null>
+      | null
+      | undefined
   ): void {
     if (!team) return;
-    team.forEach(set => {
+    team.forEach((set) => {
       if (set && set.stats) {
         const baseKey = set.species ? set.species.split('-')[0] : '';
-        const key = (set.name && set.name.length > 0) ? set.name : (baseKey || set.species); // domain-ok: Showdown team set identifier lookup
+        const key = set.name && set.name.length > 0 ? set.name : baseKey || set.species; // domain-ok: Showdown team set identifier lookup
         statsMap.set(key, set.stats);
       }
     });
@@ -60,19 +66,29 @@ export class ShowdownTeamMapper {
     if (!req) return null;
     if (req.side && Array.isArray(req.side.pokemon)) {
       const sideObj = battle ? battle[player] : null;
-      const simulatorPokemon = (sideObj ? Reflect.get(sideObj, 'pokemon') as Array<{ uid?: string }> | undefined : undefined) || [];
+      const simulatorPokemon =
+        (sideObj
+          ? (Reflect.get(sideObj, 'pokemon') as Array<{ uid?: string }> | undefined)
+          : undefined) || [];
       const assignedUids = new Set<string>();
 
       req.side.pokemon.forEach((reqMon) => {
         if (reqMon && reqMon.ident) {
-          const cleanIdent = reqMon.ident.replace(/^p[1-4][a-d]?:?\s*/, '').trim().toLowerCase();
-          const availableMons = simulatorPokemon.filter(p => p && p.uid && !assignedUids.has(p.uid));
+          const cleanIdent = reqMon.ident
+            .replace(/^p[1-4][a-d]?:?\s*/, '')
+            .trim()
+            .toLowerCase();
+          const availableMons = simulatorPokemon.filter(
+            (p) => p && p.uid && !assignedUids.has(p.uid)
+          );
           const matched = findPokemonByShowdownName(cleanIdent, availableMons);
           if (matched && matched.uid) {
             reqMon.uid = matched.uid;
             assignedUids.add(reqMon.uid);
           } else {
-            throw new Error(`[ShowdownTeamMapper] No UID found on simulator Pokemon instance: ${reqMon.ident}`);
+            throw new Error(
+              `[ShowdownTeamMapper] No UID found on simulator Pokemon instance: ${reqMon.ident}`
+            );
           }
         }
       });

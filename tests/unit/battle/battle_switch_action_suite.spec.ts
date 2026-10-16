@@ -5,7 +5,7 @@
  * volatile status cleanup and stat stage reset on switch.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { executeSwitch } from '@/logic/battle/actions/switchAction';
@@ -63,7 +63,8 @@ vi.mock('@/stores/ui', () => ({
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
     getMoveData: vi.fn((id: string) => {
-      if (id === 'bubble') return { name: 'Burbuja', type: 'water', cat: 'special', power: 20, acc: 100 };
+      if (id === 'bubble')
+        return { name: 'Burbuja', type: 'water', cat: 'special', power: 20, acc: 100 };
       return { name: 'Placaje', type: 'normal', cat: 'physical', power: 35, acc: 95 };
     })
   }
@@ -98,7 +99,7 @@ describe('Battle Switch Bench Guard', () => {
 
     const team = gameStore.state.team;
     const activeUid = 'active-poke-1';
-    const hasBenchPokemon = team.some(p => p && p.hp > 0 && p.uid !== activeUid);
+    const hasBenchPokemon = team.some((p) => p && p.hp > 0 && p.uid !== activeUid);
 
     expect(hasBenchPokemon).toBe(false);
   });
@@ -129,7 +130,7 @@ describe('Battle Switch Bench Guard', () => {
 
     const team = gameStore.state.team;
     const activeUid = 'active-poke-1';
-    const hasBenchPokemon = team.some(p => p && p.hp > 0 && p.uid !== activeUid);
+    const hasBenchPokemon = team.some((p) => p && p.hp > 0 && p.uid !== activeUid);
 
     expect(hasBenchPokemon).toBe(true);
   });
@@ -158,9 +159,33 @@ describe('Switch Sync & Showdown Worker Protocol', () => {
   });
 
   function createMockContext() {
-    const p1 = { uid: 'p1', name: 'Charmeleon', hp: 50, maxHp: 100, atk: 15, spa: 12, moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 }] } as unknown as Pokemon;
-    const p2 = { uid: 'p2', name: 'Charizard', hp: 100, maxHp: 100, atk: 25, spa: 22, moves: [{ id: 'wingattack', name: 'Ala de Acero', pp: 35, maxPP: 35 }] } as unknown as Pokemon;
-    const enemy = { uid: 'e1', name: 'Pidgey', hp: 40, maxHp: 40, def: 10, spd: 10, moves: [{ id: 'peck', name: 'Picotazo', pp: 35, maxPP: 35 }] } as unknown as Pokemon;
+    const p1 = {
+      uid: 'p1',
+      name: 'Charmeleon',
+      hp: 50,
+      maxHp: 100,
+      atk: 15,
+      spa: 12,
+      moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 }]
+    } as unknown as Pokemon;
+    const p2 = {
+      uid: 'p2',
+      name: 'Charizard',
+      hp: 100,
+      maxHp: 100,
+      atk: 25,
+      spa: 22,
+      moves: [{ id: 'wingattack', name: 'Ala de Acero', pp: 35, maxPP: 35 }]
+    } as unknown as Pokemon;
+    const enemy = {
+      uid: 'e1',
+      name: 'Pidgey',
+      hp: 40,
+      maxHp: 40,
+      def: 10,
+      spd: 10,
+      moves: [{ id: 'peck', name: 'Picotazo', pp: 35, maxPP: 35 }]
+    } as unknown as Pokemon;
 
     const activeBattle = ref({
       player: p1,
@@ -174,20 +199,52 @@ describe('Switch Sync & Showdown Worker Protocol', () => {
       playerRequest: {
         side: {
           pokemon: [
-            { ident: 'p1: Charmeleon', details: 'Charmeleon', condition: '50/100', active: true, uid: p1.uid },
-            { ident: 'p1: Charizard', details: 'Charizard', condition: '100/100', active: false, uid: p2.uid }
+            {
+              ident: 'p1: Charmeleon',
+              details: 'Charmeleon',
+              condition: '50/100',
+              active: true,
+              uid: p1.uid
+            },
+            {
+              ident: 'p1: Charizard',
+              details: 'Charizard',
+              condition: '100/100',
+              active: false,
+              uid: p2.uid
+            }
           ]
         }
       }
     });
 
     const playerStages = ref<BattleStages>({
-      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0,
-      reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
+      atk: 0,
+      def: 0,
+      spa: 0,
+      spd: 0,
+      spe: 0,
+      accuracy: 0,
+      evasion: 0,
+      reflect: 0,
+      lightScreen: 0,
+      safeguard: 0,
+      mist: 0,
+      spikes: 0
     });
     const enemyStages = ref<BattleStages>({
-      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0,
-      reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
+      atk: 0,
+      def: 0,
+      spa: 0,
+      spd: 0,
+      spe: 0,
+      accuracy: 0,
+      evasion: 0,
+      reflect: 0,
+      lightScreen: 0,
+      safeguard: 0,
+      mist: 0,
+      spikes: 0
     });
 
     const ctx = {
@@ -256,7 +313,7 @@ describe('Switch Sync & Showdown Worker Protocol', () => {
 
   it('should restore player active pokemon and index if worker throws error during switch', async () => {
     const { ctx, p1 } = createMockContext();
-    
+
     const { executeTurnInWorker } = await import('@/logic/battle/showdownWorkerClient');
     vi.mocked(executeTurnInWorker).mockRejectedValueOnce(new Error('INVALID_CHOICE'));
 
@@ -358,7 +415,13 @@ describe('Battle Switch Out State Cleanup Tests', () => {
 
     const activeBattle = ref({
       player: oldPoke,
-      enemy: { uid: 'e1', name: 'Charmander', hp: 100, maxHp: 100, moves: [] } as unknown as Pokemon,
+      enemy: {
+        uid: 'e1',
+        name: 'Charmander',
+        hp: 100,
+        maxHp: 100,
+        moves: []
+      } as unknown as Pokemon,
       playerTeamIndex: 0,
       participants: ['p1'],
       isTrainer: false,
@@ -374,13 +437,33 @@ describe('Battle Switch Out State Cleanup Tests', () => {
     });
 
     const playerStages = ref<BattleStages>({
-      atk: 2, def: -1, spa: 0, spd: 0, spe: 1, accuracy: 0, evasion: 0,
-      reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
+      atk: 2,
+      def: -1,
+      spa: 0,
+      spd: 0,
+      spe: 1,
+      accuracy: 0,
+      evasion: 0,
+      reflect: 0,
+      lightScreen: 0,
+      safeguard: 0,
+      mist: 0,
+      spikes: 0
     });
 
     const enemyStages = ref<BattleStages>({
-      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0,
-      reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
+      atk: 0,
+      def: 0,
+      spa: 0,
+      spd: 0,
+      spe: 0,
+      accuracy: 0,
+      evasion: 0,
+      reflect: 0,
+      lightScreen: 0,
+      safeguard: 0,
+      mist: 0,
+      spikes: 0
     });
 
     const ctx: BattleContext = {

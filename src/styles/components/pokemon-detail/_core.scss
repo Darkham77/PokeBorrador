@@ -1,37 +1,43 @@
 // src/styles/components/pokemon-detail/_core.scss
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
-@mixin pokemon-main-display($height: 80px, $margin-bottom: -40px, $sprite-translate: -20%, $sprite-size: 210px) {
+@mixin pokemon-main-display(
+  $height: 80px,
+  $margin-bottom: -40px,
+  $sprite-translate: -20%,
+  $sprite-size: 210px
+) {
   position: relative;
-  z-index: var(--z-base); 
+  z-index: var(--z-base);
   display: flex;
   justify-content: center;
   height: $height;
-  padding: 0; 
-  margin-bottom: $margin-bottom; 
+  padding: 0;
+  margin-bottom: $margin-bottom;
   pointer-events: none;
-  
+
   & .sprite-container {
     position: relative;
     z-index: var(--z-base);
     border-radius: 50%;
     background: Radial-Gradient(circle, Rgb(255 255 255 / 12%) 0%, transparent 80%);
-    
-        & .main-sprite { 
+
+    & .main-sprite {
       @include pixelated;
 
-      position: relative; 
-      z-index: var(--z-base); 
-      width: $sprite-size; 
+      position: relative;
+      z-index: var(--z-base);
+      width: $sprite-size;
       height: $sprite-size;
       transform: Translatey($sprite-translate);
       will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 20px 40px Rgb(0 0 0 / 70%)); 
+      filter: Drop-Shadow(0 20px 40px Rgb(0 0 0 / 70%));
     }
-    
+
     .sprite-glow {
       position: absolute;
-      top: 50%; left: 50%;
+      top: 50%;
+      left: 50%;
       z-index: var(--z-base);
       width: calc($sprite-size * 0.66);
       height: calc($sprite-size * 0.66);
@@ -39,7 +45,7 @@
       opacity: 0.25;
       transform: Translate(-50%, -50%);
       will-change: transform, filter, opacity;
-  filter: Blur(50px);
+      filter: Blur(50px);
     }
   }
 }
@@ -73,18 +79,31 @@
     color: Rgb(255 255 255 / 30%);
     flex: 1;
     cursor: pointer;
-    
-    .emoji { font-size: var(--font-18); line-height: 1; }
-    .tab-label { font-size: var(--font-9); font-weight: 800; letter-spacing: 0.5px; }
-    
+
+    .emoji {
+      font-size: var(--font-18);
+      line-height: 1;
+    }
+    .tab-label {
+      font-size: var(--font-9);
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
     &.active {
-      background: Radial-Gradient(circle at bottom, Rgb(from var(--type-color, #ffd60a) r g b / 15%) 0%, transparent 70%);
+      background: Radial-Gradient(
+        circle at bottom,
+        Rgb(from var(--type-color, #ffd60a) r g b / 15%) 0%,
+        transparent 70%
+      );
       color: var(--yellow);
       transform: Translatey(-2px);
-      
+
       &::after {
-        position: absolute; right: 10%;
-        bottom: 0; left: 10%;
+        position: absolute;
+        right: 10%;
+        bottom: 0;
+        left: 10%;
         height: 3px;
         border-radius: $radius-xs-alt $radius-xs-alt 0 0;
         background: var(--yellow);
@@ -106,13 +125,19 @@
   flex: 1;
   pointer-events: auto !important;
   overflow-y: auto; // Required for content scrolling when it exceeds modal height
-  
-  &::-webkit-scrollbar { width: 8px; }
-  &::-webkit-scrollbar-track { background: Rgb(255 255 255 / 5%); }
-  &::-webkit-scrollbar-thumb { 
-    border-radius: $radius-sm; 
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: Rgb(255 255 255 / 5%);
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: $radius-sm;
     background: Rgb(255 255 255 / 10%);
-    &:hover { background: Rgb(255 255 255 / 15%); }
+    &:hover {
+      background: Rgb(255 255 255 / 15%);
+    }
   }
 
   @media (width <= 480px) {

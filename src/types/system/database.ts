@@ -1,7 +1,13 @@
-
 import type { PokemonType } from '@/data/battle/types';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { PokemonMoveId, PokemonStatus, MoveEffect, MoveEffectBoosts, ShowdownSecondaryEffect, PokemonStatKey } from '@/types/pokemon/pokemon';
+import type {
+  PokemonMoveId,
+  PokemonStatus,
+  MoveEffect,
+  MoveEffectBoosts,
+  ShowdownSecondaryEffect,
+  PokemonStatKey
+} from '@/types/pokemon/pokemon';
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { FactionId, GenderId } from '@/types/system/game';
 export type { SessionMode } from '../auth/auth.ts';
@@ -42,7 +48,6 @@ export interface PokemonBaseData {
   isFloating?: boolean;
 }
 
-
 export interface PokemonData extends PokemonBaseData {
   id: PokemonSpeciesId;
   category: string; // domain-ok: Open dynamic text or non-domain string payload
@@ -78,7 +83,7 @@ export interface MoveBaseData {
   recoil?: number | boolean;
   selfKO?: boolean;
   drain?: number | boolean;
-  hits?: number | [number, number] | '2-5';
+  hits?: number | [number, number] | readonly number[] | number[] | '2-5';
   fixedDmg?: number;
   ohko?: boolean;
   halfHP?: boolean;
@@ -136,28 +141,28 @@ export interface ProxyQueryChainItem {
 
 /** Shared Supabase row shape used across leaderboard, playerSearch and social stores. */
 export interface ProfileRow {
-  id: string // domain-ok: Open dynamic text or non-domain string payload
-  username: string // domain-ok: Open dynamic text or non-domain string payload
-  elo_rating?: number
-  trainer_level?: number
-  badges?: number
-  player_class?: PlayerClassId | null
-  faction?: FactionId | null
-  nick_style?: string | null // domain-ok: Open dynamic text or non-domain string payload
-  avatar_style?: string | null // domain-ok: Open dynamic text or non-domain string payload
-  gender?: GenderId | null
-  last_played_at?: string | null // domain-ok: ISO timestamp string
-  pokedex_caught?: number | null
-  pokedex_seen?: number | null
-  trainers_defeated?: number | null
-  wild_wins?: number | null
-  war_coins?: number | null
-  defeated_gyms?: string[] | null // domain-ok: Array of gym IDs
+  id: string; // domain-ok: Open dynamic text or non-domain string payload
+  username: string; // domain-ok: Open dynamic text or non-domain string payload
+  elo_rating?: number;
+  trainer_level?: number;
+  badges?: number;
+  player_class?: PlayerClassId | null;
+  faction?: FactionId | null;
+  nick_style?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  avatar_style?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  gender?: GenderId | null;
+  last_played_at?: string | null; // domain-ok: ISO timestamp string
+  pokedex_caught?: number | null;
+  pokedex_seen?: number | null;
+  trainers_defeated?: number | null;
+  wild_wins?: number | null;
+  war_coins?: number | null;
+  defeated_gyms?: string[] | null; // domain-ok: Array of gym IDs
 }
 
 /** Shared Supabase row shape for game_saves table. */
 export interface GameSaveRow {
-  user_id: string // domain-ok: Open dynamic text or non-domain string payload
-  save_data: Record<string, unknown> // open-record: Generic key-value data dictionary container
-  updated_at: string // domain-ok: Open dynamic text or non-domain string payload
+  user_id: string; // domain-ok: Open dynamic text or non-domain string payload
+  save_data: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  updated_at: string; // domain-ok: Open dynamic text or non-domain string payload
 }

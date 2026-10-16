@@ -1,9 +1,12 @@
-import pkmn from "@pkmn/eslint-config";
+import pkmn from '@pkmn/eslint-config';
 
-export default [...pkmn, {
-  rules: {
-    "no-redeclare": "off",
-    "@typescript-eslint/no-shadow": "off",
-    "@typescript-eslint/no-unnecessary-type-assertion": "off",
+export default [
+  ...pkmn,
+  {
+    rules: {
+      'no-redeclare': 'off',
+      '@typescript-eslint/no-shadow': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off'
+    }
   }
-}];
+];

@@ -90,6 +90,7 @@ interface JohtoBuildingBlueprint {
 }
 
 const JOHTO_CANONICAL_BUILDINGS: Record<string, readonly JohtoBuildingBlueprint[]> = {
+  // open-record: Canonical buildings configuration for Johto nodes
   newbark: [
     { style: 'lab_oak', dx: 20, dy: -30, ...BUILDING_DIMENSIONS.LAB_OAK },
     { style: 'house_red', dx: -90, dy: -40, ...BUILDING_DIMENSIONS.HOUSE_SMALL },
@@ -115,14 +116,18 @@ const JOHTO_CANONICAL_BUILDINGS: Record<string, readonly JohtoBuildingBlueprint[
 
 export class JohtoRegionalWorldGenerator extends KantoRegionalWorldGenerator {
   override generate(
-    nodes: Record<string, KantoNodeCoordinate>, // domain-ok: Dynamic adventure project map
+    nodes: Record<string, KantoNodeCoordinate>, // open-record: Dynamic adventure project map
     connections: readonly (readonly [string, string])[],
     seed = JOHTO_DEFAULT_SEED,
     config?: ProceduralGenerationConfig
   ): void {
     this.seed = seed;
-    this.grid = Array.from({ length: KANTO_GRID_H }, () => new Uint8Array(KANTO_GRID_W).fill(CELL_BIOME.GRASS));
-    this.elevation = Array.from({ length: KANTO_GRID_H }, () => new Uint8Array(KANTO_GRID_W).fill(JOHTO_BASE_ELEVATION));
+    this.grid = Array.from({ length: KANTO_GRID_H }, () =>
+      new Uint8Array(KANTO_GRID_W).fill(CELL_BIOME.GRASS)
+    );
+    this.elevation = Array.from({ length: KANTO_GRID_H }, () =>
+      new Uint8Array(KANTO_GRID_W).fill(JOHTO_BASE_ELEVATION)
+    );
     this.occupancy = new OccupancyGrid(KANTO_GRID_W, KANTO_GRID_H);
     this.trees = [];
     this.buildings = [];
@@ -153,7 +158,8 @@ export class JohtoRegionalWorldGenerator extends KantoRegionalWorldGenerator {
       // B. Western Ocean & Whirl Islands Bay
       for (let y = WESTERN_OCEAN_BOUNDS.MIN_Y; y < KANTO_GRID_H; y++) {
         for (let x = 0; x < WESTERN_OCEAN_BOUNDS.MAX_X; x++) {
-          const wave = Math.sin(y * WESTERN_OCEAN_BOUNDS.WAVE_FREQUENCY) * WESTERN_OCEAN_BOUNDS.WAVE_AMPLITUDE;
+          const wave =
+            Math.sin(y * WESTERN_OCEAN_BOUNDS.WAVE_FREQUENCY) * WESTERN_OCEAN_BOUNDS.WAVE_AMPLITUDE;
           if (x < WESTERN_OCEAN_BOUNDS.BASE_X + wave) {
             const row = this.grid[y];
             if (row) {
@@ -225,7 +231,13 @@ export class JohtoRegionalWorldGenerator extends KantoRegionalWorldGenerator {
     }
   }
 
-  private rasterizePathLocal(x0: number, y0: number, x1: number, y1: number, width: number = JOHTO_DEFAULT_ROAD_WIDTH): void {
+  private rasterizePathLocal(
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    width: number = JOHTO_DEFAULT_ROAD_WIDTH
+  ): void {
     const dx = Math.abs(x1 - x0);
     const sx = x0 < x1 ? 1 : -1;
     const dy = -Math.abs(y1 - y0);
@@ -267,7 +279,8 @@ export class JohtoRegionalWorldGenerator extends KantoRegionalWorldGenerator {
     }
   }
 
-  private placeJohtoBuildings(nodes: Record<string, KantoNodeCoordinate>): void { // domain-ok: Dynamic adventure project map
+  private placeJohtoBuildings(nodes: Record<string, KantoNodeCoordinate>): void {
+    // open-record: Dynamic adventure project map nodes
     const T = JOHTO_CANONICAL_TILE_SIZE;
     const addBldg = (style: string, px: number, py: number, w: number, h: number): void => {
       this.buildings.push({ style, x: px, y: py, w, h });

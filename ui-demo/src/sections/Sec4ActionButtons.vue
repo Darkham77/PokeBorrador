@@ -11,9 +11,7 @@
 
     <div class="pv-panel-wrap has-cast-shadow">
       <div class="pv-frame-panel pv-panel-surface">
-        <div class="sub-label">
-          VARIANTES DE COLOR SEMÁNTICAS (CON CONTORNO OSCURO 360°):
-        </div>
+        <div class="sub-label">VARIANTES DE COLOR SEMÁNTICAS (CON CONTORNO OSCURO 360°):</div>
         <div class="pill-cluster mb-16">
           <button
             v-gsap-hover="'button'"
@@ -66,9 +64,7 @@
           </button>
         </div>
 
-        <div class="sub-label">
-          ESCALAS XS, SM, MD, LG &amp; BOTÓN DESHABILITADO:
-        </div>
+        <div class="sub-label">ESCALAS XS, SM, MD, LG &amp; BOTÓN DESHABILITADO:</div>
         <div class="pill-cluster mb-16">
           <button
             v-gsap-hover="'button'"
@@ -98,18 +94,12 @@
           >
             LG INICIAR BATALLA
           </button>
-          <button
-            type="button"
-            class="pv-frame-btn pv-btn pv-btn-primary pv-btn-md"
-            disabled
-          >
+          <button type="button" class="pv-frame-btn pv-btn pv-btn-primary pv-btn-md" disabled>
             DESHABILITADO
           </button>
         </div>
 
-        <div class="sub-label">
-          BOTONES DE ICONO CUADRADOS RETRO (HUD &amp; MODALES):
-        </div>
+        <div class="sub-label">BOTONES DE ICONO CUADRADOS RETRO (HUD &amp; MODALES):</div>
         <div class="pill-cluster">
           <button
             v-gsap-hover="'button'"
@@ -149,12 +139,7 @@
             class="pv-frame-btn pv-btn pv-btn-danger pv-icon-btn"
             title="Cerrar"
           >
-            <svg
-              viewBox="0 0 12 12"
-              width="12"
-              height="12"
-              aria-hidden="true"
-            >
+            <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
               <line
                 x1="2"
                 y1="2"

@@ -1,43 +1,26 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import { getEloTier } from '@/logic/pvp/rankedEngine'
-import type { LeaderboardEntry } from '@/stores/social/social'
+import { computed } from 'vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import { getEloTier } from '@/logic/pvp/rankedEngine';
+import type { LeaderboardEntry } from '@/stores/social/social';
+
+import { isFactionId, FACTION_LABELS, FACTION_COLORS, PODIUM_MEDALS } from '@/types/system/game';
 
 const props = defineProps<{
-  player: LeaderboardEntry
-  index: number
-  currentPlayerUid: string
-}>()
+  player: LeaderboardEntry;
+  index: number;
+  currentPlayerUid: string;
+}>();
 
-const PODIUM_MEDALS = ['🥇', '🥈', '🥉'] as const
-const podiumMedal = computed(() => PODIUM_MEDALS[props.index] || null)
-const displayRankNumber = computed(() => Number(props.index) + 1)
-const rankCardClass = computed(() => `rank-${displayRankNumber.value}`)
+const podiumMedal = computed(() => PODIUM_MEDALS[props.index] || null);
+const displayRankNumber = computed(() => Number(props.index) + 1);
+const rankCardClass = computed(() => `rank-${displayRankNumber.value}`);
 
 const emit = defineEmits<{
-  (e: 'challenge', player: LeaderboardEntry): void
-}>()
+  (e: 'challenge', player: LeaderboardEntry): void;
+}>();
 
-const DEFAULT_FACTION_COLOR = 'rgba(156, 163, 175, 1)'
-
-const FACTION_COLORS: Readonly<Record<string, string>> = {
-  union: 'rgba(59, 130, 246, 1)',
-  poder: 'rgba(239, 68, 68, 1)',
-  rocket: 'rgba(148, 163, 184, 1)',
-  magma: 'rgba(239, 68, 68, 1)',
-  aqua: 'rgba(59, 130, 246, 1)',
-  galactic: 'rgba(167, 139, 250, 1)'
-}
-
-const FACTION_LABELS: Readonly<Record<string, string>> = {
-  union: 'Unión',
-  poder: 'Poder',
-  rocket: 'Rocket',
-  magma: 'Magma',
-  aqua: 'Aqua',
-  galactic: 'Galactic'
-}
+const DEFAULT_FACTION_COLOR = 'rgba(156, 163, 175, 1)';
 
 const normalizeFactionKey = (faction: string | undefined | null): string => {
   if (!faction || faction === 'null' || faction === 'NULL' || faction === 'undefined') return '';
@@ -46,19 +29,17 @@ const normalizeFactionKey = (faction: string | undefined | null): string => {
 
 const getFactionColor = (faction: string | undefined | null) => {
   const key = normalizeFactionKey(faction);
-  if (!key) return DEFAULT_FACTION_COLOR;
-  return FACTION_COLORS[key] ?? DEFAULT_FACTION_COLOR;
+  return isFactionId(key) ? FACTION_COLORS[key] : DEFAULT_FACTION_COLOR;
 };
 
 const getFactionLabel = (faction: string | undefined | null) => {
   const key = normalizeFactionKey(faction);
-  if (!key) return '';
-  return FACTION_LABELS[key] ?? (faction ?? '');
+  return isFactionId(key) ? FACTION_LABELS[key] : (faction ?? '');
 };
 
 const isFactionValid = (faction: string | undefined | null) => {
   const key = normalizeFactionKey(faction);
-  return Boolean(key && key !== 'none');
+  return isFactionId(key);
 };
 </script>
 
@@ -68,40 +49,21 @@ const isFactionValid = (faction: string | undefined | null) => {
     :class="[rankCardClass, { 'is-me': props.player.id === props.currentPlayerUid }]"
   >
     <div class="rank-number">
-      <span
-        v-if="podiumMedal"
-        class="medal-icon emoji"
-      >{{ podiumMedal }}</span>
-      <span
-        v-else
-        class="rank-digits"
-      >{{ displayRankNumber }}</span>
+      <span v-if="podiumMedal" class="medal-icon emoji">{{ podiumMedal }}</span>
+      <span v-else class="rank-digits">{{ displayRankNumber }}</span>
     </div>
 
     <div class="rank-avatar">
-      <TrainerAvatar
-        :profile="props.player"
-        :size="34"
-      />
-      <div
-        v-if="props.player.isOnline"
-        class="online-dot"
-        title="Online"
-      />
+      <TrainerAvatar :profile="props.player" :size="34" />
+      <div v-if="props.player.isOnline" class="online-dot" title="Online" />
     </div>
 
     <div class="rank-info">
       <div class="player-name-row">
-        <span
-          v-gsap-nick="props.player.nick_style || 'normal'"
-          class="player-name"
-        >
+        <span v-gsap-nick="props.player.nick_style || 'normal'" class="player-name">
           {{ props.player.username }}
         </span>
-        <span
-          v-if="props.player.id === props.currentPlayerUid"
-          class="me-tag"
-        >(TÚ)</span>
+        <span v-if="props.player.id === props.currentPlayerUid" class="me-tag">(TÚ)</span>
         <span
           v-if="isFactionValid(props.player.faction)"
           class="faction-tag"

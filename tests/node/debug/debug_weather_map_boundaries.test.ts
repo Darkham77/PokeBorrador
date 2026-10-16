@@ -1,5 +1,5 @@
 // test-fragmentation-ok: Isolated single-purpose regression test for debug weather map boundaries
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
 import { requireWeatherId } from '@/logic/weather/weatherRegistry.ts';
 import { requireMapRouteId } from '@/data/world/map-assets.ts';

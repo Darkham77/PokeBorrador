@@ -1,9 +1,9 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { logger } from '@/logic/utils/logger'
-import { safeStorage, safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage'
-import { resilientRouteComponent } from '@/logic/utils/resilientComponent'
-import LoginView from '@/views/auth/LoginView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import { logger } from '@/logic/utils/logger';
+import { safeStorage, safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage';
+import { resilientRouteComponent } from '@/logic/utils/resilientComponent';
+import LoginView from '@/views/auth/LoginView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,9 +11,8 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: LoginView,
+      component: LoginView
     },
-
 
     {
       path: '/',
@@ -24,7 +23,7 @@ const router = createRouter({
         {
           path: '',
           name: 'map',
-          component: resilientRouteComponent(() => import('@/views/game/MapView.vue')),
+          component: resilientRouteComponent(() => import('@/views/game/MapView.vue'))
         },
         // {
         //   path: 'team',
@@ -34,17 +33,17 @@ const router = createRouter({
         {
           path: 'pokedex',
           name: 'pokedex',
-          component: resilientRouteComponent(() => import('@/views/pokemon/PokedexView.vue')),
+          component: resilientRouteComponent(() => import('@/views/pokemon/PokedexView.vue'))
         },
         {
           path: 'social',
           name: 'social',
-          component: resilientRouteComponent(() => import('@/views/social/SocialView.vue')),
+          component: resilientRouteComponent(() => import('@/views/social/SocialView.vue'))
         },
         {
           path: 'bag',
           name: 'bag',
-          component: resilientRouteComponent(() => import('@/views/inventory/BagView.vue')),
+          component: resilientRouteComponent(() => import('@/views/inventory/BagView.vue'))
         }
       ]
     },
@@ -53,81 +52,108 @@ const router = createRouter({
       name: 'test-aventura',
       component: resilientRouteComponent(() => import('@/views/adventure/AdventureTestView.vue'))
     },
-    ...(import.meta.env.DEV ? [
-      {
-        path: '/dev/shadow-editor',
-        name: 'dev-shadow-editor',
-        component: resilientRouteComponent(() => import('@/views/dev/DevShadowEditorView.vue'))
-      }
-    ] : [])
-  ],
-})
+    ...(import.meta.env.DEV
+      ? [
+          {
+            path: '/dev/shadow-editor',
+            name: 'dev-shadow-editor',
+            component: resilientRouteComponent(() => import('@/views/dev/DevShadowEditorView.vue'))
+          }
+        ]
+      : [])
+  ]
+});
 
 router.beforeEach(async (to, _from) => {
-  const authStore = useAuthStore()
-  
+  const authStore = useAuthStore();
+
   // 1. Initial auth check
-  if (authStore.loading) await authStore.checkSession()
-  
+  if (authStore.loading) await authStore.checkSession();
+
   // 2. Handle DB import reload
   const isImportReload = safeSessionStorage.getItem(SESSION_STORAGE_KEYS.IMPORT_RELOAD) === 'true';
   if (isImportReload) {
-    const importOriginalPath = safeSessionStorage.getItem(SESSION_STORAGE_KEYS.IMPORT_ORIGINAL_PATH);
+    const importOriginalPath = safeSessionStorage.getItem(
+      SESSION_STORAGE_KEYS.IMPORT_ORIGINAL_PATH
+    );
     safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.IMPORT_RELOAD);
     safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.IMPORT_ORIGINAL_PATH);
-    
+
     if (authStore.user && importOriginalPath !== '/login') {
-      logger.info('Router', `Importación de DB completada. Redirigiendo a original: ${importOriginalPath}`);
+      logger.info(
+        'Router',
+        `Importación de DB completada. Redirigiendo a original: ${importOriginalPath}`
+      );
       return importOriginalPath || '/';
     }
-    
-    logger.info('Router', 'Importación de DB completada. Limpiando sesión para inicio limpio en login.');
-    authStore.logout(); // Deep logout handles clean redirect via page reload
+
+    logger.info(
+      'Router',
+      'Importación de DB completada. Limpiando sesión para inicio limpio en login.'
+    );
+    void authStore.logout(); // Deep logout handles clean redirect via page reload
     return false;
   }
-  
+
   // 3. Preventative cleaning for direct access to /login
   if (to.path === '/login') {
     if (authStore.user) {
       if (_from.name) {
-        logger.info('Router', 'Usuario logueado intentando entrar a /login vía gestos/historial. Redirigiendo al juego.');
+        logger.info(
+          'Router',
+          'Usuario logueado intentando entrar a /login vía gestos/historial. Redirigiendo al juego.'
+        );
         return '/';
       }
-      logger.warn('Router', 'Usuario logueado intentando entrar a /login de forma directa. Forzando logout limpio.');
-      authStore.logout(); // Deep logout handles clean redirect via page reload
+      logger.warn(
+        'Router',
+        'Usuario logueado intentando entrar a /login de forma directa. Forzando logout limpio.'
+      );
+      void authStore.logout(); // Deep logout handles clean redirect via page reload
       return true;
     }
     safeStorage.removeItem('pokevicio_local_user');
     safeStorage.removeItem('pokevicio_session_mode');
   }
-  
+
   // 4. Auth guard for protected routes
   if (to.meta.requiresAuth && !authStore.user) {
     return '/login';
   }
-  
+
   return true;
-})
+});
 
 router.onError((error, to) => {
-  const msg = (error && typeof error === 'object' && 'message' in error) ? String(error.message) : String(error);
-  const isChunkError = /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Loading chunk|Couldn't resolve component/i.test(msg);
+  const msg =
+    error && typeof error === 'object' && 'message' in error
+      ? String(error.message)
+      : String(error);
+  const isChunkError =
+    /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Loading chunk|Couldn't resolve component/i.test(
+      msg
+    );
   if (isChunkError) {
-    logger.warn('Router', `Fallo al cargar módulo/chunk dinámico hacia ${to?.fullPath || 'ruta'}. Emitiendo actualización...`);
-    import('@/stores/update').then(({ useUpdateStore }) => {
-      try {
-        useUpdateStore().notifyChunkLoadError(error);
-      } catch {
-        import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
+    logger.warn(
+      'Router',
+      `Fallo al cargar módulo/chunk dinámico hacia ${to?.fullPath || 'ruta'}. Emitiendo actualización...`
+    );
+    void import('@/stores/update')
+      .then(({ useUpdateStore }) => {
+        try {
+          useUpdateStore().notifyChunkLoadError(error);
+        } catch {
+          void import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
+            gameBus.emit('PWA_NEED_REFRESH');
+          });
+        }
+      })
+      .catch(() => {
+        void import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
           gameBus.emit('PWA_NEED_REFRESH');
         });
-      }
-    }).catch(() => {
-      import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
-        gameBus.emit('PWA_NEED_REFRESH');
       });
-    });
   }
-})
+});
 
-export default router
+export default router;

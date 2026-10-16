@@ -111,10 +111,10 @@ function openTeamManagement() {
       <div class="title-wrap">
         <span class="emoji card-icon">🛡️</span>
         <div class="title-text-group">
-          <h3 class="card-title">
-            DEFENSA PASIVA
-          </h3>
-          <span class="card-subtitle">Tu equipo actual defenderá tu posición mientras no estés en línea.</span>
+          <h3 class="card-title">DEFENSA PASIVA</h3>
+          <span class="card-subtitle"
+            >Tu equipo actual defenderá tu posición mientras no estés en línea.</span
+          >
         </div>
       </div>
 
@@ -129,33 +129,22 @@ function openTeamManagement() {
         >
           {{ pvp.passiveTeamActive ? 'ACTIVADO' : 'DESACTIVADO' }}
         </button>
-        <HomeWidgetMinimizeBtn
-          v-if="!props.inModal"
-          widget-id="defense"
-        />
+        <HomeWidgetMinimizeBtn v-if="!props.inModal" widget-id="defense" />
       </div>
     </div>
 
     <!-- Status Banner -->
-    <div
-      v-if="pvp.passiveTeamActive"
-      class="def-status active text-outline"
-    >
+    <div v-if="pvp.passiveTeamActive" class="def-status active text-outline">
       ¡Tu equipo de defensa está protegiendo tu ELO en la Arena!
     </div>
-    <div
-      v-else
-      class="def-status inactive text-outline"
-    >
+    <div v-else class="def-status inactive text-outline">
       Advertencia: Sin defensa pasiva, tu ELO bajará más rápido si te derrotan.
     </div>
 
     <!-- Defending Team Preview -->
     <div class="defense-team-preview">
       <div class="team-preview-header">
-        <h4 class="team-label text-outline">
-          EQUIPO DEFENSOR ACTUAL
-        </h4>
+        <h4 class="team-label text-outline">EQUIPO DEFENSOR ACTUAL</h4>
         <button
           id="home-passive-defense-widget-btn-cambiar-equipo"
           v-gsap-hover
@@ -193,35 +182,21 @@ function openTeamManagement() {
           </div>
         </div>
       </div>
-      <div
-        v-else
-        class="empty-team-msg"
-      >
+      <div v-else class="empty-team-msg">
         No hay Pokémon disponibles en tu equipo para defender.
       </div>
     </div>
 
     <!-- Recent Defense History -->
     <div class="defense-history-section">
-      <h4 class="history-label text-outline">
-        HISTORIAL DE DEFENSAS RECIENTES
-      </h4>
+      <h4 class="history-label text-outline">HISTORIAL DE DEFENSAS RECIENTES</h4>
       <div
         v-if="pvp.defenseReports && pvp.defenseReports.length > 0"
         class="history-list custom-scrollbar"
       >
-        <PassiveDefenseHistoryRow
-          v-for="rep in pvp.defenseReports"
-          :key="rep.id"
-          :report="rep"
-        />
+        <PassiveDefenseHistoryRow v-for="rep in pvp.defenseReports" :key="rep.id" :report="rep" />
       </div>
-      <div
-        v-else
-        class="empty-history"
-      >
-        Sin combates defensivos registrados aún.
-      </div>
+      <div v-else class="empty-history">Sin combates defensivos registrados aún.</div>
     </div>
   </div>
 </template>

@@ -112,7 +112,9 @@ describe('organicMountainGenerator', () => {
         });
 
         expect(manualRes.placedStairs).toEqual([targetStair]);
-        expect(manualRes.autotileResult.cellDetails[targetStair.y]?.[targetStair.x]?.role).toBe('stairs_l');
+        expect(manualRes.autotileResult.cellDetails[targetStair.y]?.[targetStair.x]?.role).toBe(
+          'stairs_l'
+        );
       }
     });
   });

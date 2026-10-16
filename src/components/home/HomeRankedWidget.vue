@@ -1,21 +1,16 @@
 <script setup lang="ts">
-import ArenaRankedOverview from "@/components/modals/ArenaRankedOverview.vue";
-import HomeWidgetMinimizeBtn from "./HomeWidgetMinimizeBtn.vue";
+import ArenaRankedOverview from '@/components/modals/ArenaRankedOverview.vue';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 </script>
 
 <template>
-  <div
-    id="widget-ranked"
-    class="home-ranked-widget home-section-card"
-  >
+  <div id="widget-ranked" class="home-ranked-widget home-section-card">
     <!-- Card Header -->
     <div class="card-header-bar">
       <div class="title-wrap">
         <span class="emoji card-icon">🏆</span>
         <div class="title-text-group">
-          <h3 class="card-title">
-            ARENA CLASIFICATORIA
-          </h3>
+          <h3 class="card-title">ARENA CLASIFICATORIA</h3>
           <span class="card-subtitle">Temporada competitiva activa y emparejamiento ELO</span>
         </div>
       </div>
@@ -31,8 +26,8 @@ import HomeWidgetMinimizeBtn from "./HomeWidgetMinimizeBtn.vue";
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/core/mixins' as *;
 
 .home-ranked-widget {
   display: flex;

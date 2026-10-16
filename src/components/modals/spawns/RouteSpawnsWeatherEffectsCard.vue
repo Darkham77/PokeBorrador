@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/modals/spawns/RouteSpawnsWeatherEffectsCard.vue
- * 
+ *
  * Modular card showing combat weather effects, type modifiers, terrain details, and class actions.
  */
 
@@ -98,4 +98,3 @@ const emit = defineEmits<{
 
 <style src="../RouteSpawnsModal.styles.scss" scoped lang="scss"></style>
 <style src="@/styles/components/_route-spawns-tables.scss" scoped lang="scss"></style>
-

@@ -1,4 +1,4 @@
-import { describe, test } from 'vitest';
+import { describe, test } from 'vite-plus/test';
 import assert from 'node:assert';
 import {
   resolveSynchronizeNature,
@@ -70,14 +70,14 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
 
     test('Gen 9: No sincroniza si el líder está debilitado', () => {
       const leader = createMockPokemon({ ability: 'synchronize', nature: 'adamant', hp: 0 });
-      const nature = resolveSynchronizeNature(leader, 9, () => 0.10);
+      const nature = resolveSynchronizeNature(leader, 9, () => 0.1);
       assert.strictEqual(nature, null, 'Fainted leader must not sync in Gen 9');
     });
 
     test('Gen 4 (Legacy): Sincroniza al 50% incluso si está debilitado', () => {
       const leader = createMockPokemon({ ability: 'synchronize', nature: 'jolly', hp: 0 });
-      const successNature = resolveSynchronizeNature(leader, 4, () => 0.40);
-      const failedNature = resolveSynchronizeNature(leader, 4, () => 0.60);
+      const successNature = resolveSynchronizeNature(leader, 4, () => 0.4);
+      const failedNature = resolveSynchronizeNature(leader, 4, () => 0.6);
       assert.strictEqual(successNature, 'jolly', 'Gen 4 must sync at 50% even if fainted');
       assert.strictEqual(failedNature, null, 'Must return null when random roll >= 0.50');
     });
@@ -86,20 +86,48 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
   // 2. Gran Encanto (cutecharm)
   describe('2. cutecharm', () => {
     test('Fuerza género opuesto (66.7% probabilidad) en especies con género binario', () => {
-      const maleLeader = createMockPokemon({ id: requirePokemonSpeciesId('clefairy'), ability: 'cutecharm', gender: 'm' });
-      const forcedFemale = resolveCuteCharmGender(maleLeader, requirePokemonSpeciesId('pidgey'), 9, () => 0.50);
-      const notForced = resolveCuteCharmGender(maleLeader, requirePokemonSpeciesId('pidgey'), 9, () => 0.90);
+      const maleLeader = createMockPokemon({
+        id: requirePokemonSpeciesId('clefairy'),
+        ability: 'cutecharm',
+        gender: 'm'
+      });
+      const forcedFemale = resolveCuteCharmGender(
+        maleLeader,
+        requirePokemonSpeciesId('pidgey'),
+        9,
+        () => 0.5
+      );
+      const notForced = resolveCuteCharmGender(
+        maleLeader,
+        requirePokemonSpeciesId('pidgey'),
+        9,
+        () => 0.9
+      );
       assert.strictEqual(forcedFemale, 'f', 'Male leader must attract Female wild');
       assert.strictEqual(notForced, null, 'Roll above 2/3 must not force gender');
 
-      const femaleLeader = createMockPokemon({ id: requirePokemonSpeciesId('clefairy'), ability: 'cutecharm', gender: 'f' });
-      const forcedMale = resolveCuteCharmGender(femaleLeader, requirePokemonSpeciesId('pidgey'), 9, () => 0.50);
+      const femaleLeader = createMockPokemon({
+        id: requirePokemonSpeciesId('clefairy'),
+        ability: 'cutecharm',
+        gender: 'f'
+      });
+      const forcedMale = resolveCuteCharmGender(
+        femaleLeader,
+        requirePokemonSpeciesId('pidgey'),
+        9,
+        () => 0.5
+      );
       assert.strictEqual(forcedMale, 'm', 'Female leader must attract Male wild');
     });
 
     test('No afecta a especies asexuales (Magnemite, Voltorb)', () => {
       const maleLeader = createMockPokemon({ ability: 'cutecharm', gender: 'm' });
-      const result = resolveCuteCharmGender(maleLeader, requirePokemonSpeciesId('magnemite'), 9, () => 0.10);
+      const result = resolveCuteCharmGender(
+        maleLeader,
+        requirePokemonSpeciesId('magnemite'),
+        9,
+        () => 0.1
+      );
       assert.strictEqual(result, null, 'Cute charm must not affect genderless Pokemon');
     });
   });
@@ -119,7 +147,7 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
 
     test('frisk otorga 50% de probabilidad de forzar held item', () => {
       const frisk = getWildHeldItemRates('frisk');
-      assert.strictEqual(frisk.forceHeldChance, 0.50);
+      assert.strictEqual(frisk.forceHeldChance, 0.5);
     });
   });
 
@@ -149,10 +177,18 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
   describe('9. pickup (Level Brackets & 10% Chance)', () => {
     test('Devuelve null si el roll supera el 10% o el Pokémon está debilitado', () => {
       const meowth = createMockPokemon({ ability: 'pickup', level: 15, hp: 30 });
-      assert.strictEqual(resolvePickupLoot(meowth, () => 0.15), null, 'Roll above 10% must return null');
+      assert.strictEqual(
+        resolvePickupLoot(meowth, () => 0.15),
+        null,
+        'Roll above 10% must return null'
+      );
 
       const deadMeowth = createMockPokemon({ ability: 'pickup', level: 15, hp: 0 });
-      assert.strictEqual(resolvePickupLoot(deadMeowth, () => 0.05), null, 'Fainted Pokemon cannot pickup');
+      assert.strictEqual(
+        resolvePickupLoot(deadMeowth, () => 0.05),
+        null,
+        'Fainted Pokemon cannot pickup'
+      );
     });
 
     test('Escala correctamente en los 5 rangos de nivel', () => {
@@ -187,12 +223,24 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
   describe('10. honeygather', () => {
     test('Calcula probabilidad según nivel (5% base hasta 50% max)', () => {
       const combeeLv1 = createMockPokemon({ ability: 'honeygather', level: 1 });
-      assert.strictEqual(resolveHoneyGather(combeeLv1, () => 0.04), true);
-      assert.strictEqual(resolveHoneyGather(combeeLv1, () => 0.06), false);
+      assert.strictEqual(
+        resolveHoneyGather(combeeLv1, () => 0.04),
+        true
+      );
+      assert.strictEqual(
+        resolveHoneyGather(combeeLv1, () => 0.06),
+        false
+      );
 
       const combeeLv100 = createMockPokemon({ ability: 'honeygather', level: 100 });
-      assert.strictEqual(resolveHoneyGather(combeeLv100, () => 0.49), true);
-      assert.strictEqual(resolveHoneyGather(combeeLv100, () => 0.51), false);
+      assert.strictEqual(
+        resolveHoneyGather(combeeLv100, () => 0.49),
+        true
+      );
+      assert.strictEqual(
+        resolveHoneyGather(combeeLv100, () => 0.51),
+        false
+      );
     });
   });
 
@@ -213,17 +261,39 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
   // 12, 13, 14, 15, 16, 17. Atracción Elemental
   describe('12-17. Elemental Type Attraction Abilities', () => {
     test('magnetpull y static atraen Acero y Eléctrico (50%) en todas las generaciones', () => {
-      assert.strictEqual(resolveElementalAttractionType('magnetpull', 4, () => 0.40), 'steel');
-      assert.strictEqual(resolveElementalAttractionType('static', 4, () => 0.40), 'electric');
+      assert.strictEqual(
+        resolveElementalAttractionType('magnetpull', 4, () => 0.4),
+        'steel'
+      );
+      assert.strictEqual(
+        resolveElementalAttractionType('static', 4, () => 0.4),
+        'electric'
+      );
     });
 
     test('lightningrod, flashfire, stormdrain y harvest atraen tipos en Gen 8+, pero no en Gen 4', () => {
-      assert.strictEqual(resolveElementalAttractionType('flashfire', 9, () => 0.40), 'fire');
-      assert.strictEqual(resolveElementalAttractionType('flashfire', 4, () => 0.40), null, 'Must be inactive in Gen 4');
+      assert.strictEqual(
+        resolveElementalAttractionType('flashfire', 9, () => 0.4),
+        'fire'
+      );
+      assert.strictEqual(
+        resolveElementalAttractionType('flashfire', 4, () => 0.4),
+        null,
+        'Must be inactive in Gen 4'
+      );
 
-      assert.strictEqual(resolveElementalAttractionType('stormdrain', 9, () => 0.40), 'water');
-      assert.strictEqual(resolveElementalAttractionType('harvest', 9, () => 0.40), 'grass');
-      assert.strictEqual(resolveElementalAttractionType('lightningrod', 9, () => 0.40), 'electric');
+      assert.strictEqual(
+        resolveElementalAttractionType('stormdrain', 9, () => 0.4),
+        'water'
+      );
+      assert.strictEqual(
+        resolveElementalAttractionType('harvest', 9, () => 0.4),
+        'grass'
+      );
+      assert.strictEqual(
+        resolveElementalAttractionType('lightningrod', 9, () => 0.4),
+        'electric'
+      );
     });
   });
 
@@ -240,20 +310,44 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
   describe('20, 21. intimidate, keeneye (Level Filtering)', () => {
     test('Descarta salvajes de 5+ niveles menores con 50% de probabilidad', () => {
       const leaderLv50 = createMockPokemon({ ability: 'intimidate', level: 50 });
-      assert.strictEqual(shouldAvoidLowLevelWild(leaderLv50, 44, 9, () => 0.40), true);
-      assert.strictEqual(shouldAvoidLowLevelWild(leaderLv50, 46, 9, () => 0.40), false);
-      assert.strictEqual(shouldAvoidLowLevelWild(leaderLv50, 20, 9, () => 0.60), false);
+      assert.strictEqual(
+        shouldAvoidLowLevelWild(leaderLv50, 44, 9, () => 0.4),
+        true
+      );
+      assert.strictEqual(
+        shouldAvoidLowLevelWild(leaderLv50, 46, 9, () => 0.4),
+        false
+      );
+      assert.strictEqual(
+        shouldAvoidLowLevelWild(leaderLv50, 20, 9, () => 0.6),
+        false
+      );
     });
   });
 
   // 22, 23, 24. Presión (pressure), Espíritu Vital (vitalspirit), Entusiasmo (hustle)
   describe('22, 23, 24. pressure, vitalspirit, hustle (Force Max Level)', () => {
     test('50% de probabilidad de forzar el nivel máximo de la ruta', () => {
-      assert.strictEqual(shouldForceMaxRouteLevel('pressure', () => 0.40), true);
-      assert.strictEqual(shouldForceMaxRouteLevel('vitalspirit', () => 0.40), true);
-      assert.strictEqual(shouldForceMaxRouteLevel('hustle', () => 0.40), true);
-      assert.strictEqual(shouldForceMaxRouteLevel('pressure', () => 0.60), false);
-      assert.strictEqual(shouldForceMaxRouteLevel('blaze', () => 0.10), false);
+      assert.strictEqual(
+        shouldForceMaxRouteLevel('pressure', () => 0.4),
+        true
+      );
+      assert.strictEqual(
+        shouldForceMaxRouteLevel('vitalspirit', () => 0.4),
+        true
+      );
+      assert.strictEqual(
+        shouldForceMaxRouteLevel('hustle', () => 0.4),
+        true
+      );
+      assert.strictEqual(
+        shouldForceMaxRouteLevel('pressure', () => 0.6),
+        false
+      );
+      assert.strictEqual(
+        shouldForceMaxRouteLevel('blaze', () => 0.1),
+        false
+      );
     });
   });
 
@@ -299,7 +393,10 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
     });
 
     test('Staryu con illuminate resuelve badge con label y desc completa de la SSoT', () => {
-      const staryu = createMockPokemon({ id: requirePokemonSpeciesId('staryu'), ability: 'illuminate' });
+      const staryu = createMockPokemon({
+        id: requirePokemonSpeciesId('staryu'),
+        ability: 'illuminate'
+      });
       const badge = getFieldPassiveBadges(staryu);
       assert.ok(badge);
       assert.strictEqual(badge.label, 'Iluminación');
@@ -308,32 +405,70 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
     });
 
     test('Magmar con flamebody resuelve badge con label y desc completa (combate + campo) de la SSoT', () => {
-      const magmar = createMockPokemon({ id: requirePokemonSpeciesId('magmar'), ability: 'flamebody' });
+      const magmar = createMockPokemon({
+        id: requirePokemonSpeciesId('magmar'),
+        ability: 'flamebody'
+      });
       const badge = getFieldPassiveBadges(magmar);
       assert.ok(badge);
       assert.strictEqual(badge.label, 'Cuerpo Llama');
-      assert.strictEqual(badge.desc, '• Combate: 30% de quemar al atacante tras recibir contacto físico.\n• Campo: x2 Velocidad de eclosión de Huevos en el equipo.');
+      assert.strictEqual(
+        badge.desc,
+        '• Combate: 30% de quemar al atacante tras recibir contacto físico.\n• Campo: x2 Velocidad de eclosión de Huevos en el equipo.'
+      );
       assert.strictEqual(badge.icon, '🔥');
     });
 
     test('Pidgeot con keeneye resuelve badge con label y desc completa (combate + campo) de la SSoT', () => {
-      const pidgeot = createMockPokemon({ id: requirePokemonSpeciesId('pidgeot'), ability: 'keeneye' });
+      const pidgeot = createMockPokemon({
+        id: requirePokemonSpeciesId('pidgeot'),
+        ability: 'keeneye'
+      });
       const badge = getFieldPassiveBadges(pidgeot);
       assert.ok(badge);
       assert.strictEqual(badge.label, 'Vista Lince');
-      assert.strictEqual(badge.desc, '• Combate: 🚫 Evita que el rival baje la Precisión e ignora los aumentos de Evasión del rival.\n• Campo: 50% de evitar encuentros salvajes de nivel inferior al líder (delta ≥ 5).');
+      assert.strictEqual(
+        badge.desc,
+        '• Combate: 🚫 Evita que el rival baje la Precisión e ignora los aumentos de Evasión del rival.\n• Campo: 50% de evitar encuentros salvajes de nivel inferior al líder (delta ≥ 5).'
+      );
       assert.strictEqual(badge.icon, '🦅');
     });
 
     test('Todas las 33 pasivas de campo resuelven un badge válido y consistente', () => {
       const allFieldAbilities = [
-        'synchronize', 'cutecharm', 'compoundeyes', 'superluck', 'frisk',
-        'flamebody', 'magmaarmor', 'steamengine', 'pickup', 'honeygather',
-        'naturalcure', 'magnetpull', 'static', 'lightningrod', 'flashfire',
-        'stormdrain', 'harvest', 'suctioncups', 'stickyhold', 'intimidate',
-        'keeneye', 'pressure', 'vitalspirit', 'hustle', 'arenatrap',
-        'illuminate', 'noguard', 'stench', 'whitesmoke', 'quickfeet',
-        'infiltrator', 'sandveil', 'snowcloak'
+        'synchronize',
+        'cutecharm',
+        'compoundeyes',
+        'superluck',
+        'frisk',
+        'flamebody',
+        'magmaarmor',
+        'steamengine',
+        'pickup',
+        'honeygather',
+        'naturalcure',
+        'magnetpull',
+        'static',
+        'lightningrod',
+        'flashfire',
+        'stormdrain',
+        'harvest',
+        'suctioncups',
+        'stickyhold',
+        'intimidate',
+        'keeneye',
+        'pressure',
+        'vitalspirit',
+        'hustle',
+        'arenatrap',
+        'illuminate',
+        'noguard',
+        'stench',
+        'whitesmoke',
+        'quickfeet',
+        'infiltrator',
+        'sandveil',
+        'snowcloak'
       ] as const;
 
       for (const abilityId of allFieldAbilities) {
@@ -341,9 +476,18 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
         const badge = getFieldPassiveBadges(pkmn);
         assert.ok(badge, `Ability ${abilityId} must return a valid badge`);
         assert.strictEqual(badge.id, abilityId);
-        assert.ok(badge.label && badge.label.length > 0, `Badge for ${abilityId} must have non-empty label`);
-        assert.ok(badge.desc && badge.desc.length > 0, `Badge for ${abilityId} must have non-empty desc`);
-        assert.ok(badge.icon && badge.icon.length > 0, `Badge for ${abilityId} must have non-empty icon`);
+        assert.ok(
+          badge.label && badge.label.length > 0,
+          `Badge for ${abilityId} must have non-empty label`
+        );
+        assert.ok(
+          badge.desc && badge.desc.length > 0,
+          `Badge for ${abilityId} must have non-empty desc`
+        );
+        assert.ok(
+          badge.icon && badge.icon.length > 0,
+          `Badge for ${abilityId} must have non-empty icon`
+        );
       }
     });
   });

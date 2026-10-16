@@ -1,73 +1,73 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { PastCompetitionWinner } from '@/types/system/stores'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { useUIStore } from '@/stores/ui'
-import { useAuthStore } from '@/stores/auth'
-import { useGameStore } from '@/stores/game'
-import { useModalStore } from '@/stores/modals'
-import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import PastEventPodiumBadge from './PastEventPodiumBadge.vue'
+import { computed } from 'vue';
+import type { PastCompetitionWinner } from '@/types/system/stores';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { useUIStore } from '@/stores/ui';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import PastEventPodiumBadge from './PastEventPodiumBadge.vue';
 import {
   formatWinnerMetric,
   getWinnerSpeciesId,
   resolveWinnerProfile,
   resolveWinnerName,
   resolveWinnerNickStyle
-} from './pastEventMetricFormatter.ts'
+} from './pastEventMetricFormatter.ts';
 
 interface Props {
-  winner: PastCompetitionWinner
-  categoryId: string
-  rankIndex: number
+  winner: PastCompetitionWinner;
+  categoryId: string;
+  rankIndex: number;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const uiStore = useUIStore()
-const authStore = useAuthStore()
-const gameStore = useGameStore()
-const modalStore = useModalStore()
-const chatCosmetics = useChatCosmeticsStore()
+const uiStore = useUIStore();
+const authStore = useAuthStore();
+const gameStore = useGameStore();
+const modalStore = useModalStore();
+const chatCosmetics = useChatCosmeticsStore();
 
 const openTrainerProfile = (userId?: string) => {
   if (userId) {
-    uiStore.open('TrainerProfile', { userId })
+    uiStore.open('TrainerProfile', { userId });
   }
-}
+};
 
 const getWinnerSpeciesName = (w: PastCompetitionWinner): string => {
-  const speciesId = getWinnerSpeciesId(w)
+  const speciesId = getWinnerSpeciesId(w);
   if (speciesId) {
-    const data = pokemonDataProvider.getPokemonData(speciesId, true)
-    if (data?.name) return data.name
+    const data = pokemonDataProvider.getPokemonData(speciesId, true);
+    if (data?.name) return data.name;
   }
-  return w.entry_data?.name || 'Pokémon'
-}
+  return w.entry_data?.name || 'Pokémon';
+};
 
 const formatPokemonDisplayName = (w: PastCompetitionWinner): string => {
-  const speciesName = getWinnerSpeciesName(w)
-  const nickname = w.entry_data?.nickname
+  const speciesName = getWinnerSpeciesName(w);
+  const nickname = w.entry_data?.nickname;
   if (nickname && nickname.trim().toLowerCase() !== speciesName.trim().toLowerCase()) {
-    return `${nickname} (${speciesName})`
+    return `${nickname} (${speciesName})`;
   }
-  return speciesName
-}
+  return speciesName;
+};
 
-const winnerSpeciesId = computed<PokemonSpeciesId | null>(() => getWinnerSpeciesId(props.winner))
-const winnerSpeciesName = computed<string>(() => getWinnerSpeciesName(props.winner))
-const pokemonDisplayName = computed<string>(() => formatPokemonDisplayName(props.winner))
+const winnerSpeciesId = computed<PokemonSpeciesId | null>(() => getWinnerSpeciesId(props.winner));
+const winnerSpeciesName = computed<string>(() => getWinnerSpeciesName(props.winner));
+const pokemonDisplayName = computed<string>(() => formatPokemonDisplayName(props.winner));
 
 const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
   modalStore.open('PokedexDetail', {
     speciesId,
     context: 'pokedex'
-  })
-}
+  });
+};
 
 const winnerProfile = computed(() => {
   return resolveWinnerProfile(
@@ -75,8 +75,8 @@ const winnerProfile = computed(() => {
     authStore.user?.id,
     gameStore.state,
     chatCosmetics.profileCosmetics[props.winner.player_id]
-  )
-})
+  );
+});
 
 const winnerName = computed(() => {
   return resolveWinnerName(
@@ -84,8 +84,8 @@ const winnerName = computed(() => {
     authStore.user?.id,
     gameStore.state.trainer,
     chatCosmetics.profileCosmetics[props.winner.player_id]?.username
-  )
-})
+  );
+});
 
 const winnerNickStyle = computed(() => {
   return resolveWinnerNickStyle(
@@ -93,29 +93,31 @@ const winnerNickStyle = computed(() => {
     authStore.user?.id,
     gameStore.state.nick_style,
     chatCosmetics.profileCosmetics[props.winner.player_id]?.nick_style
-  )
-})
+  );
+});
 
-const rank = computed(() => props.winner.rank || props.rankIndex + 1)
-const rankClass = computed(() => `rank-${rank.value}`)
-const isShiny = computed(() => Boolean(props.winner.entry_data?.is_shiny))
-const hasDetails = computed(() => Boolean(props.winner.entry_data?.name || props.winner.score !== undefined))
-const hasScore = computed(() => props.winner.score !== undefined || Boolean(props.winner.entry_data?.display_value))
-const showMetricSep = computed(() => Boolean(props.winner.entry_data?.name && hasScore.value))
-const metricText = computed(() => formatWinnerMetric(props.winner, props.categoryId))
+const rank = computed(() => props.winner.rank || props.rankIndex + 1);
+const rankClass = computed(() => `rank-${rank.value}`);
+const isShiny = computed(() => Boolean(props.winner.entry_data?.is_shiny));
+const hasDetails = computed(() =>
+  Boolean(props.winner.entry_data?.name || props.winner.score !== undefined)
+);
+const hasScore = computed(
+  () => props.winner.score !== undefined || Boolean(props.winner.entry_data?.display_value)
+);
+const showMetricSep = computed(() => Boolean(props.winner.entry_data?.name && hasScore.value));
+const metricText = computed(() => formatWinnerMetric(props.winner, props.categoryId));
 const spriteUrl = computed(() => {
-  if (!winnerSpeciesId.value) return ''
-  return getAssetUrl(ASSET_TYPES.POKEMON, winnerSpeciesId.value, { isShiny: isShiny.value })
-})
-const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || props.winner.entry_data?.name || '')
-
+  if (!winnerSpeciesId.value) return '';
+  return getAssetUrl(ASSET_TYPES.POKEMON, winnerSpeciesId.value, { isShiny: isShiny.value });
+});
+const fallbackPokeName = computed(
+  () => props.winner.entry_data?.nickname || props.winner.entry_data?.name || ''
+);
 </script>
 
 <template>
-  <div
-    class="winner-item"
-    :class="rankClass"
-  >
+  <div class="winner-item" :class="rankClass">
     <!-- Column 1: Rank Badge / Medal (Standalone) -->
     <PastEventPodiumBadge :rank="rank" />
 
@@ -123,10 +125,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
     <div class="winner-content-wrap">
       <!-- Trainer Profile -->
       <div class="winner-trainer-group">
-        <PVTooltip
-          :title="`Ver perfil de ${winnerName}`"
-          position="top"
-        >
+        <PVTooltip :title="`Ver perfil de ${winnerName}`" position="top">
           <div
             id="past-event-winner-item-div-1"
             class="winner-avatar-wrap"
@@ -135,17 +134,11 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
             @click.stop="openTrainerProfile(winner.player_id)"
             @keydown.enter.stop="openTrainerProfile(winner.player_id)"
           >
-            <TrainerAvatar
-              :profile="winnerProfile"
-              :size="26"
-            />
+            <TrainerAvatar :profile="winnerProfile" :size="26" />
           </div>
         </PVTooltip>
 
-        <PVTooltip
-          :title="`Ver perfil de ${winnerName}`"
-          position="top"
-        >
+        <PVTooltip :title="`Ver perfil de ${winnerName}`" position="top">
           <div
             id="past-event-winner-item-div-2"
             class="winner-player-wrap"
@@ -154,11 +147,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
             @click.stop="openTrainerProfile(winner.player_id)"
             @keydown.enter.stop="openTrainerProfile(winner.player_id)"
           >
-            <span
-              v-gsap-nick="winnerNickStyle"
-              class="player-name"
-              :class="winnerNickStyle"
-            >
+            <span v-gsap-nick="winnerNickStyle" class="player-name" :class="winnerNickStyle">
               {{ winnerName }}
             </span>
           </div>
@@ -166,16 +155,10 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
       </div>
 
       <!-- Divider (visible when inline on same row) -->
-      <span
-        v-if="hasDetails"
-        class="entry-divider-dot"
-      >•</span>
+      <span v-if="hasDetails" class="entry-divider-dot">•</span>
 
       <!-- Pokemon & Metric Details -->
-      <div
-        v-if="hasDetails"
-        class="winner-details-group"
-      >
+      <div v-if="hasDetails" class="winner-details-group">
         <!-- Pokemon Sprite & Name Pill -->
         <div class="winner-poke-pill">
           <PVTooltip
@@ -196,43 +179,23 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
                 :alt="winnerSpeciesName"
                 draggable="false"
                 class="winner-poke-sprite pixelated"
-              
                 width="96"
                 height="96"
-              >
-              <span
-                class="entry-poke"
-                :class="{ shiny: isShiny }"
-              >
-                <span
-                  v-if="isShiny"
-                  class="emoji"
-                >✨</span> {{ pokemonDisplayName }}
+              />
+              <span class="entry-poke" :class="{ shiny: isShiny }">
+                <span v-if="isShiny" class="emoji">✨</span> {{ pokemonDisplayName }}
               </span>
             </div>
           </PVTooltip>
 
-          <span
-            v-else-if="winner.entry_data?.name"
-            class="entry-poke"
-            :class="{ shiny: isShiny }"
-          >
-            <span
-              v-if="isShiny"
-              class="emoji"
-            >✨</span> {{ fallbackPokeName }}
+          <span v-else-if="winner.entry_data?.name" class="entry-poke" :class="{ shiny: isShiny }">
+            <span v-if="isShiny" class="emoji">✨</span> {{ fallbackPokeName }}
           </span>
         </div>
 
-        <span
-          v-if="showMetricSep"
-          class="entry-metric-sep"
-        >·</span>
+        <span v-if="showMetricSep" class="entry-metric-sep">·</span>
 
-        <span
-          v-if="hasScore"
-          class="score-val"
-        >
+        <span v-if="hasScore" class="score-val">
           {{ metricText }}
         </span>
       </div>
@@ -241,7 +204,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
 </template>
 
 <style lang="scss" scoped>
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .winner-item {
   display: flex;
@@ -308,7 +271,7 @@ const fallbackPokeName = computed(() => props.winner.entry_data?.nickname || pro
     font-weight: bold;
     white-space: nowrap;
 
-    &:hover:not([class*="custom-"]) {
+    &:hover:not([class*='custom-']) {
       color: var(--yellow);
       text-shadow: 0 0 6px Rgb(250 204 21 / 30%);
     }

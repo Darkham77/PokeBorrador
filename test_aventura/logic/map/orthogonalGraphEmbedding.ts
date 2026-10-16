@@ -79,11 +79,7 @@ interface BandGridConfig {
 // Step 1: Compute Band Grid (T2.1)
 // ---------------------------------------------------------------------------
 
-export function computeBandGrid(
-  nodeCount: number,
-  width: number,
-  height: number
-): BandGridConfig {
+export function computeBandGrid(nodeCount: number, width: number, height: number): BandGridConfig {
   // Determine grid dimensions: 4x4 for <= 16 nodes, 5x4 for up to 20 nodes
   let cols = 4;
   let rows = 4;
@@ -98,7 +94,12 @@ export function computeBandGrid(
     rows = Math.max(5, rows);
   }
 
-  const margin = Math.max(DEFAULT_MARGIN, Math.round(Math.min(width, height) * (isLarge ? LARGE_MAP_MARGIN_RATIO : STANDARD_MAP_MARGIN_RATIO)));
+  const margin = Math.max(
+    DEFAULT_MARGIN,
+    Math.round(
+      Math.min(width, height) * (isLarge ? LARGE_MAP_MARGIN_RATIO : STANDARD_MAP_MARGIN_RATIO)
+    )
+  );
   const usableWidth = width - 2 * margin;
   const usableHeight = height - 2 * margin;
 
@@ -541,17 +542,28 @@ function traceCorridor(
     return count;
   }
 
-  const chosenCorner = countNodeCollisions(cornerA) <= countNodeCollisions(cornerB) ? cornerA : cornerB;
+  const chosenCorner =
+    countNodeCollisions(cornerA) <= countNodeCollisions(cornerB) ? cornerA : cornerB;
 
-  const waypoints: EmbeddedCorridorWaypoint[] = [
-    { x: x1, y: y1 },
-    chosenCorner,
-    { x: x2, y: y2 }
-  ];
+  const waypoints: EmbeddedCorridorWaypoint[] = [{ x: x1, y: y1 }, chosenCorner, { x: x2, y: y2 }];
 
   // Rasterize two orthogonal segments
-  const seg1 = rasterizeOrthogonalSegment(x1, y1, chosenCorner.x, chosenCorner.y, jogBase + 1, forbiddenBoxes);
-  const seg2 = rasterizeOrthogonalSegment(chosenCorner.x, chosenCorner.y, x2, y2, jogBase + 2, forbiddenBoxes);
+  const seg1 = rasterizeOrthogonalSegment(
+    x1,
+    y1,
+    chosenCorner.x,
+    chosenCorner.y,
+    jogBase + 1,
+    forbiddenBoxes
+  );
+  const seg2 = rasterizeOrthogonalSegment(
+    chosenCorner.x,
+    chosenCorner.y,
+    x2,
+    y2,
+    jogBase + 2,
+    forbiddenBoxes
+  );
 
   // Combine cells avoiding duplicate corner
   const pathCells: EmbeddedCorridorWaypoint[] = [...seg1];

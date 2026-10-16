@@ -1,35 +1,30 @@
 <script setup lang="ts">
 interface ClassStat {
-  label: string
-  value: string | number
-  class?: string
+  label: string;
+  value: string | number;
+  class?: string;
 }
 
 interface ActivityStat {
-  label: string
-  value: string | number
-  class?: string
+  label: string;
+  value: string | number;
+  class?: string;
 }
 
 defineProps<{
-  playerClass?: string | null
-  classStats: ClassStat[]
-  activityStats: ActivityStat[]
-  handleStatEnter: (e: MouseEvent) => void
-  handleStatLeave: (e: MouseEvent) => void
-}>()
+  playerClass?: string | null;
+  classStats: ClassStat[];
+  activityStats: ActivityStat[];
+  handleStatEnter: (e: MouseEvent) => void;
+  handleStatLeave: (e: MouseEvent) => void;
+}>();
 </script>
 
 <template>
   <div class="profile-stats-extra">
     <!-- Class Custom Details -->
-    <div
-      v-if="playerClass"
-      class="profile-section-card class-details-card"
-    >
-      <div class="section-label">
-        ESPECIALIZACIÓN DE CLASE
-      </div>
+    <div v-if="playerClass" class="profile-section-card class-details-card">
+      <div class="section-label">ESPECIALIZACIÓN DE CLASE</div>
       <div class="stats-grid">
         <div
           v-for="stat in classStats"
@@ -46,9 +41,7 @@ defineProps<{
 
     <!-- Historial de Actividad -->
     <div class="profile-section-card activity-card">
-      <div class="section-label">
-        HISTORIAL DE ACTIVIDAD
-      </div>
+      <div class="section-label">HISTORIAL DE ACTIVIDAD</div>
       <div class="stats-grid">
         <div
           v-for="stat in activityStats"
@@ -66,8 +59,8 @@ defineProps<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/cosmetics" as *;
-@use "@/styles/components/_profile-shared.scss" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/cosmetics' as *;
+@use '@/styles/components/_profile-shared.scss' as *;
 </style>

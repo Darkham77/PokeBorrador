@@ -21,104 +21,141 @@ import { isAbilityId } from '../../src/data/battle/abilities.ts';
 import { isItemId } from '../../src/data/inventory/items.ts';
 import { isWeatherId } from '../../src/logic/weather/weatherRegistry.ts';
 import { calculateDamagePure, getMoveCategory } from '../../src/logic/battle/battleMath.ts';
-import type { PurePokemon, PureMove, PureBattleWeather, PureDamageOptions } from '../../src/logic/battle/battleMathTypes.ts';
+import type {
+  PurePokemon,
+  PureMove,
+  PureBattleWeather,
+  PureDamageOptions
+} from '../../src/logic/battle/battleMathTypes.ts';
 
 // Diccionario para traducir habilidades de nuestro motor (Español) a Showdown (Inglés)
 const ABILITY_MAP_ES_TO_EN: Record<string, string> = {
-  'Espesura': 'overgrow',
-  'Clorofila': 'chlorophyll',
+  Espesura: 'overgrow',
+  Clorofila: 'chlorophyll',
   'Mar llamas': 'blaze',
   'Poder solar': 'solarpower',
-  'Torrente': 'torrent',
+  Torrente: 'torrent',
   'Lluvia Ligera': 'raindish',
-  'Agallas': 'guts',
-  'Robustez': 'sturdy',
-  'Aclimatación': 'cloudnine',
+  Agallas: 'guts',
+  Robustez: 'sturdy',
+  Aclimatación: 'cloudnine',
   'Nado rápido': 'swiftswim',
-  'Ráfaga': 'speedboost',
-  'Adaptable': 'adaptability',
+  Ráfaga: 'speedboost',
+  Adaptable: 'adaptability',
   'Cura Natural': 'naturalcure',
   'Velo húmedo': 'waterveil',
-  'Sebo': 'thickfat',
-  'Caparazón': 'shellarmor',
+  Sebo: 'thickfat',
+  Caparazón: 'shellarmor',
   'Armadura Batalla': 'battlearmor',
-  'Francotirador': 'sniper',
-  'Intrépido': 'scrappy',
+  Francotirador: 'sniper',
+  Intrépido: 'scrappy',
   'Ojo Compuesto': 'compoundeyes',
   'Velo arena': 'sandveil',
-  'Insonorizar': 'soundproof',
-  'Intimidación': 'intimidate',
+  Insonorizar: 'soundproof',
+  Intimidación: 'intimidate',
   'Absorbe Fuego': 'flashfire',
   'Absorbe Agua': 'waterabsorb',
   'Efecto Espora': 'effectspore',
   'Trampa Arena': 'arenatrap',
   'Espíritu Vital': 'vitalspirit',
-  'Sincronía': 'synchronize',
+  Sincronía: 'synchronize',
   'Cuerpo Puro': 'clearbody',
-  'Despiste': 'oblivious',
-  'Imán': 'magnetpull',
-  'Fuga': 'runaway',
-  'Levitación': 'levitate',
+  Despiste: 'oblivious',
+  Imán: 'magnetpull',
+  Fuga: 'runaway',
+  Levitación: 'levitate',
   'Cabeza Roca': 'rockhead',
-  'Insomnio': 'insomnia',
+  Insomnio: 'insomnia',
   'Corte Fuerte': 'hypercutter',
-  'Flexibilidad': 'limber',
-  'Madrugar': 'earlybird',
-  'Enjambre': 'swarm',
+  Flexibilidad: 'limber',
+  Madrugar: 'earlybird',
+  Enjambre: 'swarm',
   'Cuerpo Llama': 'flamebody',
-  'Rastro': 'trace',
-  'Inmunidad': 'immunity',
+  Rastro: 'trace',
+  Inmunidad: 'immunity',
   'Punto tóxico': 'poisonpoint',
-  'Experto': 'technician',
+  Experto: 'technician',
   'Absorbe Voltio': 'voltabsorb',
   'Foco interno': 'innerfocus',
-  'Rivalidad': 'rivalry',
+  Rivalidad: 'rivalry',
   'Muro Mágico': 'magicguard',
-  'Viscosidad': 'stickyhold',
-  'Dicha': 'serenegrace',
+  Viscosidad: 'stickyhold',
+  Dicha: 'serenegrace',
   'Sombra Trampa': 'shadowtag',
   'Bucle Aire': 'airlock',
   'Gran Encanto': 'cutecharm',
-  'Potencia': 'hugepower',
+  Potencia: 'hugepower',
   'Energía pura': 'purepower',
-  'Llovizna': 'drizzle',
-  'Sequía': 'drought',
+  Llovizna: 'drizzle',
+  Sequía: 'drought',
   'Chorro Arena': 'sandstream'
 };
 
 const COMPARE_COMBAT_WEATHER_MAP: Record<string, string> = {
-  'clear': 'clear',
-  'sun': 'sunnyday',
-  'rain': 'raindance',
-  'sandstorm': 'sandstorm',
-  'hail': 'hail',
-  'snow': 'hail'
+  clear: 'clear',
+  sun: 'sunnyday',
+  rain: 'raindance',
+  sandstorm: 'sandstorm',
+  hail: 'hail',
+  snow: 'hail'
 };
 
 const ITEMS_MAP: Record<string, string> = {
-  'charcoal': 'charcoal',
-  'magnet': 'magnet',
-  'mysticwater': 'mysticwater',
-  'miracleseed': 'miracleseed',
-  'black_belt': 'blackbelt',
-  'twistedspoon': 'twistedspoon',
-  'spelltag': 'spelltag',
-  'silverpowder': 'silverpowder',
-  'poisonbarb': 'poisonbarb',
-  'choiceband': 'choiceband',
-  'scopelens': 'scopelens'
+  charcoal: 'charcoal',
+  magnet: 'magnet',
+  mysticwater: 'mysticwater',
+  miracleseed: 'miracleseed',
+  black_belt: 'blackbelt',
+  twistedspoon: 'twistedspoon',
+  spelltag: 'spelltag',
+  silverpowder: 'silverpowder',
+  poisonbarb: 'poisonbarb',
+  choiceband: 'choiceband',
+  scopelens: 'scopelens'
 };
 
 const gen3Dex = Dex.forGen(ACTIVE_GENERATION);
-const allPokemon = gen3Dex.species.all().filter(p => !p.isNonstandard && p.num > 0);
-const allMoves = gen3Dex.moves.all().filter(m => 
-  !m.isNonstandard && 
-  m.category !== 'Status' && 
-  m.basePower > 0 &&
-  !m.multihit &&
-  m.id !== 'struggle' &&
-  !['beatup', 'bide', 'counter', 'mirrorcoat', 'seismictoss', 'nightshade', 'psywave', 'superfang', 'endeavor', 'sonicboom', 'dragonrage', 'magnitude', 'present', 'triplekick', 'doublekick', 'doublehit', 'bonerush', 'bulletseed', 'cometpunch', 'doubleslap', 'furyattack', 'furyswipes', 'iciclespear', 'pinmissile', 'rockblast', 'spikecannon', 'selfdestruct', 'explosion'].includes(m.id)
-);
+const allPokemon = gen3Dex.species.all().filter((p) => !p.isNonstandard && p.num > 0);
+const allMoves = gen3Dex.moves
+  .all()
+  .filter(
+    (m) =>
+      !m.isNonstandard &&
+      m.category !== 'Status' &&
+      m.basePower > 0 &&
+      !m.multihit &&
+      m.id !== 'struggle' &&
+      ![
+        'beatup',
+        'bide',
+        'counter',
+        'mirrorcoat',
+        'seismictoss',
+        'nightshade',
+        'psywave',
+        'superfang',
+        'endeavor',
+        'sonicboom',
+        'dragonrage',
+        'magnitude',
+        'present',
+        'triplekick',
+        'doublekick',
+        'doublehit',
+        'bonerush',
+        'bulletseed',
+        'cometpunch',
+        'doubleslap',
+        'furyattack',
+        'furyswipes',
+        'iciclespear',
+        'pinmissile',
+        'rockblast',
+        'spikecannon',
+        'selfdestruct',
+        'explosion'
+      ].includes(m.id)
+  );
 
 function getRandomElement<T>(arr: T[]): T {
   const element = arr[Math.floor(Math.random() * arr.length)];
@@ -155,47 +192,84 @@ function initShowdownBattle(
   atkStages: number,
   defStages: number,
   isPhysical: boolean
-): { act1: NonNullable<Battle['p1']['active'][0]>; act2: NonNullable<Battle['p2']['active'][0]>; showdownDamage: number } | null {
+): {
+  act1: NonNullable<Battle['p1']['active'][0]>;
+  act2: NonNullable<Battle['p2']['active'][0]>;
+  showdownDamage: number;
+} | null {
   const battle = new Battle({ formatid: 'gen3customgame' as never });
   if (battle.actions) {
     (battle.actions as { checkAccuracy?: () => boolean }).checkAccuracy = () => true;
   }
   const originalRandom = battle.prng.random;
-  battle.prng.random = function(from, to) {
-    if (from === SHOWDOWN_DAMAGE_VARIANCE_MIN && to === SHOWDOWN_DAMAGE_VARIANCE_MAX_EXCLUSIVE) return MAXIMUM_POKEMON_LEVEL;
+  battle.prng.random = function (from, to) {
+    if (from === SHOWDOWN_DAMAGE_VARIANCE_MIN && to === SHOWDOWN_DAMAGE_VARIANCE_MAX_EXCLUSIVE)
+      return MAXIMUM_POKEMON_LEVEL;
     return originalRandom.call(this, from, to);
   };
 
   battle.setPlayer('p1', {
     name: 'Player',
-    team: [{
-      name: 'Attacker',
-      species: p1Spec.id,
-      level,
-      ability: p1AbilityEn,
-      item: p1ItemEn,
-      nature: '',
-      gender: '',
-      moves: [moveSpec.id],
-      evs: { hp: 0, atk: E2E_EV_BALANCED_VALUE, def: E2E_EV_BALANCED_VALUE, spa: E2E_EV_BALANCED_VALUE, spd: E2E_EV_BALANCED_VALUE, spe: E2E_EV_BALANCED_VALUE },
-      ivs: { hp: E2E_MAX_IV_VALUE, atk: E2E_MAX_IV_VALUE, def: E2E_MAX_IV_VALUE, spa: E2E_MAX_IV_VALUE, spd: E2E_MAX_IV_VALUE, spe: E2E_MAX_IV_VALUE }
-    }]
+    team: [
+      {
+        name: 'Attacker',
+        species: p1Spec.id,
+        level,
+        ability: p1AbilityEn,
+        item: p1ItemEn,
+        nature: '',
+        gender: '',
+        moves: [moveSpec.id],
+        evs: {
+          hp: 0,
+          atk: E2E_EV_BALANCED_VALUE,
+          def: E2E_EV_BALANCED_VALUE,
+          spa: E2E_EV_BALANCED_VALUE,
+          spd: E2E_EV_BALANCED_VALUE,
+          spe: E2E_EV_BALANCED_VALUE
+        },
+        ivs: {
+          hp: E2E_MAX_IV_VALUE,
+          atk: E2E_MAX_IV_VALUE,
+          def: E2E_MAX_IV_VALUE,
+          spa: E2E_MAX_IV_VALUE,
+          spd: E2E_MAX_IV_VALUE,
+          spe: E2E_MAX_IV_VALUE
+        }
+      }
+    ]
   });
 
   battle.setPlayer('p2', {
     name: 'Enemy',
-    team: [{
-      name: 'Defender',
-      species: p2Spec.id,
-      level,
-      ability: p2AbilityEn,
-      item: p2ItemEn,
-      nature: '',
-      gender: '',
-      moves: ['splash'],
-      evs: { hp: 0, atk: E2E_EV_BALANCED_VALUE, def: E2E_EV_BALANCED_VALUE, spa: E2E_EV_BALANCED_VALUE, spd: E2E_EV_BALANCED_VALUE, spe: E2E_EV_BALANCED_VALUE },
-      ivs: { hp: E2E_MAX_IV_VALUE, atk: E2E_MAX_IV_VALUE, def: E2E_MAX_IV_VALUE, spa: E2E_MAX_IV_VALUE, spd: E2E_MAX_IV_VALUE, spe: E2E_MAX_IV_VALUE }
-    }]
+    team: [
+      {
+        name: 'Defender',
+        species: p2Spec.id,
+        level,
+        ability: p2AbilityEn,
+        item: p2ItemEn,
+        nature: '',
+        gender: '',
+        moves: ['splash'],
+        evs: {
+          hp: 0,
+          atk: E2E_EV_BALANCED_VALUE,
+          def: E2E_EV_BALANCED_VALUE,
+          spa: E2E_EV_BALANCED_VALUE,
+          spd: E2E_EV_BALANCED_VALUE,
+          spe: E2E_EV_BALANCED_VALUE
+        },
+        ivs: {
+          hp: E2E_MAX_IV_VALUE,
+          atk: E2E_MAX_IV_VALUE,
+          def: E2E_MAX_IV_VALUE,
+          spa: E2E_MAX_IV_VALUE,
+          spd: E2E_MAX_IV_VALUE,
+          spe: E2E_MAX_IV_VALUE
+        }
+      }
+    ]
   });
 
   const act1 = battle.p1.active[0];
@@ -235,7 +309,12 @@ function buildPureSimulationEntities(
   weatherType: string,
   atkStages: number,
   defStages: number
-): { ourAttacker: PurePokemon; ourDefender: PurePokemon; ourMove: PureMove; ctx: PureDamageOptions } {
+): {
+  ourAttacker: PurePokemon;
+  ourDefender: PurePokemon;
+  ourMove: PureMove;
+  ctx: PureDamageOptions;
+} {
   const ourAttacker: PurePokemon = {
     level,
     atk: act1.storedStats.atk,
@@ -268,10 +347,17 @@ function buildPureSimulationEntities(
     name: moveSpec.name,
     type: toPokemonType(moveSpec.type.toLowerCase()),
     power: moveSpec.basePower,
-    cat: getMoveCategory({ id: cleanMoveId, type: toPokemonType(moveSpec.type.toLowerCase()), power: moveSpec.basePower })
+    cat: getMoveCategory({
+      id: cleanMoveId,
+      type: toPokemonType(moveSpec.type.toLowerCase()),
+      power: moveSpec.basePower
+    })
   };
 
-  const weatherObj: PureBattleWeather | null = isWeatherId(weatherType) && weatherType !== 'clear' ? { type: weatherType, turns: DEFAULT_WEATHER_TURNS_COUNT } : null;
+  const weatherObj: PureBattleWeather | null =
+    isWeatherId(weatherType) && weatherType !== 'clear'
+      ? { type: weatherType, turns: DEFAULT_WEATHER_TURNS_COUNT }
+      : null;
   const ctx: PureDamageOptions = {
     atkStages,
     defStages,
@@ -287,19 +373,45 @@ function executeComparison(options: RunOptions): ComparisonResult {
   const moveSpec = getRandomElement(allMoves);
   const level = Math.floor(Math.random() * MAXIMUM_POKEMON_LEVEL) + 1;
 
-  const p1AbilityEs = options.enableAbilitiesAndItems ? getRandomElement(Object.keys(ABILITY_MAP_ES_TO_EN)) : null;
-  const p2AbilityEs = options.enableAbilitiesAndItems ? getRandomElement(Object.keys(ABILITY_MAP_ES_TO_EN)) : null;
+  const p1AbilityEs = options.enableAbilitiesAndItems
+    ? getRandomElement(Object.keys(ABILITY_MAP_ES_TO_EN))
+    : null;
+  const p2AbilityEs = options.enableAbilitiesAndItems
+    ? getRandomElement(Object.keys(ABILITY_MAP_ES_TO_EN))
+    : null;
 
-  const p1Item = options.enableAbilitiesAndItems ? getRandomElement([undefined, ...Object.keys(ITEMS_MAP)]) : undefined;
-  const p2Item = options.enableAbilitiesAndItems ? getRandomElement([undefined, ...Object.keys(ITEMS_MAP)]) : undefined;
+  const p1Item = options.enableAbilitiesAndItems
+    ? getRandomElement([undefined, ...Object.keys(ITEMS_MAP)])
+    : undefined;
+  const p2Item = options.enableAbilitiesAndItems
+    ? getRandomElement([undefined, ...Object.keys(ITEMS_MAP)])
+    : undefined;
 
-  const weatherType = options.enableWeather ? getRandomElement(['clear', 'sun', 'rain', 'sandstorm', 'hail']) : 'clear';
-  const dayCycle = options.enableCustomFeatures ? getRandomElement(['morning', 'day', 'dusk', 'night'] as const) : 'day';
+  const weatherType = options.enableWeather
+    ? getRandomElement(['clear', 'sun', 'rain', 'sandstorm', 'hail'])
+    : 'clear';
+  const dayCycle = options.enableCustomFeatures
+    ? getRandomElement(['morning', 'day', 'dusk', 'night'] as const)
+    : 'day';
 
-  const atkStages = options.enableStages ? Math.floor(Math.random() * BATTLE_TOTAL_STAGES_COUNT) - BATTLE_MAX_STAGE_OFFSET : 0;
-  const defStages = options.enableStages ? Math.floor(Math.random() * BATTLE_TOTAL_STAGES_COUNT) - BATTLE_MAX_STAGE_OFFSET : 0;
+  const atkStages = options.enableStages
+    ? Math.floor(Math.random() * BATTLE_TOTAL_STAGES_COUNT) - BATTLE_MAX_STAGE_OFFSET
+    : 0;
+  const defStages = options.enableStages
+    ? Math.floor(Math.random() * BATTLE_TOTAL_STAGES_COUNT) - BATTLE_MAX_STAGE_OFFSET
+    : 0;
 
-  const physicalTypes = ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel'];
+  const physicalTypes = [
+    'normal',
+    'fighting',
+    'flying',
+    'poison',
+    'ground',
+    'rock',
+    'bug',
+    'ghost',
+    'steel'
+  ];
   const isPhysical = physicalTypes.includes(moveSpec.type.toLowerCase());
 
   const p1AbilityEn = p1AbilityEs ? (ABILITY_MAP_ES_TO_EN[p1AbilityEs] ?? '') : '';
@@ -308,19 +420,42 @@ function executeComparison(options: RunOptions): ComparisonResult {
   const p2ItemEn = p2Item ? (ITEMS_MAP[p2Item] ?? '') : '';
 
   const sdResult = initShowdownBattle(
-    p1Spec, p2Spec, moveSpec, level,
-    p1AbilityEn, p2AbilityEn, p1ItemEn, p2ItemEn,
-    weatherType, atkStages, defStages, isPhysical
+    p1Spec,
+    p2Spec,
+    moveSpec,
+    level,
+    p1AbilityEn,
+    p2AbilityEn,
+    p1ItemEn,
+    p2ItemEn,
+    weatherType,
+    atkStages,
+    defStages,
+    isPhysical
   );
   if (!sdResult) {
-    return { passed: false, ourDamage: 0, showdownDamage: 0, details: 'Error al inicializar combatientes' };
+    return {
+      passed: false,
+      ourDamage: 0,
+      showdownDamage: 0,
+      details: 'Error al inicializar combatientes'
+    };
   }
 
   const { ourAttacker, ourDefender, ourMove, ctx } = buildPureSimulationEntities(
-    p1Spec, p2Spec, moveSpec, level,
-    sdResult.act1, sdResult.act2,
-    p1AbilityEs, p2AbilityEs, p1Item, p2Item,
-    weatherType, atkStages, defStages
+    p1Spec,
+    p2Spec,
+    moveSpec,
+    level,
+    sdResult.act1,
+    sdResult.act2,
+    p1AbilityEs,
+    p2AbilityEs,
+    p1Item,
+    p2Item,
+    weatherType,
+    atkStages,
+    defStages
   );
 
   const ourRes = calculateDamagePure(ourAttacker, ourDefender, ourMove, ctx, dayCycle, 1.0, false);
@@ -344,23 +479,48 @@ Clima: ${weatherType}, Ciclo: ${dayCycle}.`;
 const PHASES = [
   {
     name: 'Fase 1: Matemática Pura (Sin stages, climas, habilidades u objetos)',
-    options: { enableStages: false, enableWeather: false, enableAbilitiesAndItems: false, enableCustomFeatures: false }
+    options: {
+      enableStages: false,
+      enableWeather: false,
+      enableAbilitiesAndItems: false,
+      enableCustomFeatures: false
+    }
   },
   {
     name: 'Fase 2: Matemática + Modificadores de Nivel (Stages)',
-    options: { enableStages: true, enableWeather: false, enableAbilitiesAndItems: false, enableCustomFeatures: false }
+    options: {
+      enableStages: true,
+      enableWeather: false,
+      enableAbilitiesAndItems: false,
+      enableCustomFeatures: false
+    }
   },
   {
     name: 'Fase 3: Matemática + Clima Estándar',
-    options: { enableStages: false, enableWeather: true, enableAbilitiesAndItems: false, enableCustomFeatures: false }
+    options: {
+      enableStages: false,
+      enableWeather: true,
+      enableAbilitiesAndItems: false,
+      enableCustomFeatures: false
+    }
   },
   {
     name: 'Fase 4: Matemática + Habilidades y Objetos Estándar',
-    options: { enableStages: false, enableWeather: false, enableAbilitiesAndItems: true, enableCustomFeatures: false }
+    options: {
+      enableStages: false,
+      enableWeather: false,
+      enableAbilitiesAndItems: true,
+      enableCustomFeatures: false
+    }
   },
   {
     name: 'Fase 5: Combate Completo (Todo habilitado)',
-    options: { enableStages: true, enableWeather: true, enableAbilitiesAndItems: true, enableCustomFeatures: true }
+    options: {
+      enableStages: true,
+      enableWeather: true,
+      enableAbilitiesAndItems: true,
+      enableCustomFeatures: true
+    }
   }
 ];
 
@@ -375,7 +535,7 @@ const reports: string[] = []; // no-domain: Non-domain utility collection or dat
 
 console.log('Iniciando comparación por fases...');
 
-PHASES.forEach(phase => {
+PHASES.forEach((phase) => {
   let passedCount = 0;
   const fails: ReturnType<typeof executeComparison>[] = [];
 
@@ -391,7 +551,9 @@ PHASES.forEach(phase => {
   const accuracy = (passedCount / iterations) * 100;
   const reportLine = `* **${phase.name}**: ${passedCount}/${iterations} (${accuracy.toFixed(2)}% de coincidencia)`;
   console.log(reportLine);
-  reports.push(`## ${phase.name}\nCoincidencia: ${passedCount}/${iterations} (${accuracy.toFixed(2)}%)\n`);
+  reports.push(
+    `## ${phase.name}\nCoincidencia: ${passedCount}/${iterations} (${accuracy.toFixed(2)}%)\n`
+  );
 
   if (fails.length > 0) {
     reports.push('### Muestra de Fallos:\n');

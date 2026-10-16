@@ -31,28 +31,36 @@ export function useDebugBattleActions() {
   const enemyVariant = ref('');
   const enemyGender = ref('');
 
-  watch(() => battleStore.state?.player?.id, (newId) => {
-    if (newId) {
-      const { baseId, variant, gender } = deconstructPokemonId(newId);
-      playerBaseId.value = baseId;
-      playerVariant.value = variant;
-      playerGender.value = gender;
-    }
-  }, { immediate: true });
+  watch(
+    () => battleStore.state?.player?.id,
+    (newId) => {
+      if (newId) {
+        const { baseId, variant, gender } = deconstructPokemonId(newId);
+        playerBaseId.value = baseId;
+        playerVariant.value = variant;
+        playerGender.value = gender;
+      }
+    },
+    { immediate: true }
+  );
 
   const activeEnemyId = computed(() => {
     const poke = battleStore.state?.enemy;
     return poke?.id || null;
   });
 
-  watch(activeEnemyId, (newId) => {
-    if (newId) {
-      const { baseId, variant, gender } = deconstructPokemonId(newId);
-      enemyBaseId.value = baseId;
-      enemyVariant.value = variant;
-      enemyGender.value = gender;
-    }
-  }, { immediate: true });
+  watch(
+    activeEnemyId,
+    (newId) => {
+      if (newId) {
+        const { baseId, variant, gender } = deconstructPokemonId(newId);
+        enemyBaseId.value = baseId;
+        enemyVariant.value = variant;
+        enemyGender.value = gender;
+      }
+    },
+    { immediate: true }
+  );
 
   const debugCapture = () => {
     if (!battleStore.state?.enemy) return;
@@ -70,13 +78,19 @@ export function useDebugBattleActions() {
 
   const toggleSearchMode = async () => {
     const { BATTLE_STATES } = await import('@/logic/battle/battleStateMachine.ts');
-    const nextState = battleStore.isSearching ? BATTLE_STATES.INITIALIZING : BATTLE_STATES.SEARCH_PHASE;
-    battleStore.fsm.transition(nextState);
+    const nextState = battleStore.isSearching
+      ? BATTLE_STATES.INITIALIZING
+      : BATTLE_STATES.SEARCH_PHASE;
+    void battleStore.fsm.transition(nextState);
   };
 
   const getSideSwapRef = (isPlayer: boolean) => {
     if (isPlayer) {
-      return { baseId: playerBaseId.value, variant: playerVariant.value, gender: playerGender.value };
+      return {
+        baseId: playerBaseId.value,
+        variant: playerVariant.value,
+        gender: playerGender.value
+      };
     }
     return { baseId: enemyBaseId.value, variant: enemyVariant.value, gender: enemyGender.value };
   };

@@ -88,9 +88,7 @@ describe('Orthogonal Graph Embedding Engine (Phase 2)', () => {
       const wormholes = graph.edges.filter((e) => e.kind === 'wormhole_tunnel');
       if (wormholes.length > 0) {
         const embedded = embedPokemonTopology(graph, { seed: s });
-        const embeddedWormholes = embedded.corridors.filter(
-          (c) => c.kind === 'wormhole_tunnel'
-        );
+        const embeddedWormholes = embedded.corridors.filter((c) => c.kind === 'wormhole_tunnel');
         expect(embeddedWormholes.length).toBe(wormholes.length);
         for (const ew of embeddedWormholes) {
           expect(ew.waypoints.length).toBe(0);

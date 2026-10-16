@@ -15,13 +15,6 @@ export const Formats = [
       'VGC Timer',
       '!! Timer Starting = 900'
     ],
-    banlist: [
-      'Mega',
-      'Custap Berry',
-      'Enigma Berry',
-      'Jaboca Berry',
-      'Micle Berry',
-      'Rowap Berry'
-    ]
+    banlist: ['Mega', 'Custap Berry', 'Enigma Berry', 'Jaboca Berry', 'Micle Berry', 'Rowap Berry']
   }
 ];

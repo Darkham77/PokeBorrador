@@ -14,6 +14,7 @@ const DEFAULT_FORCED_EXIT_CONFIG: ForcedExitConfig = {
   getExpulsionLog: (name: string) => `¡${name} fue expulsado del combate!`
 };
 
+// open-record: Forced switch triggers registry (moves, items, abilities)
 const FORCED_SWITCH_REGISTRY: Record<string, ForcedExitConfig> = {
   whirlwind: {
     escapeType: 'whirlwind',
@@ -80,13 +81,20 @@ const FORCED_SWITCH_REGISTRY: Record<string, ForcedExitConfig> = {
 /**
  * Resolves the visual exit animation and localized combat log for a forced switch trigger.
  */
-export function getForcedExitConfig(triggerId?: PokemonMoveId | AbilityId | ItemId | null): ForcedExitConfig {
+export function getForcedExitConfig(
+  triggerId?: PokemonMoveId | AbilityId | ItemId | null
+): ForcedExitConfig {
   if (!triggerId) return DEFAULT_FORCED_EXIT_CONFIG;
   const cleanId = toID(triggerId);
   return FORCED_SWITCH_REGISTRY[cleanId] || DEFAULT_FORCED_EXIT_CONFIG;
 }
 
-const FORCED_SWITCH_MOVES_SET: ReadonlySet<string> = new Set(['whirlwind', 'roar', 'dragontail', 'circlethrow']); // runtime-set: Fast O(1) membership lookup set
+const FORCED_SWITCH_MOVES_SET: ReadonlySet<string> = new Set([
+  'whirlwind',
+  'roar',
+  'dragontail',
+  'circlethrow'
+]); // runtime-set: Fast O(1) membership lookup set
 
 export function isForcedSwitchMove(moveId?: PokemonMoveId | null): boolean {
   if (!moveId) return false;

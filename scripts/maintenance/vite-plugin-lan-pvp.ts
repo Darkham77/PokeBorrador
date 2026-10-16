@@ -3,7 +3,7 @@
  * Provides in-memory shared matchmaking queue, battle invites, and real-time WebSocket channel relay
  * across local network (LAN) clients during `npm run dev`.
  */
-import type { Plugin, ViteDevServer } from 'vite';
+import type { Plugin, ViteDevServer } from 'vite-plus';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { WebSocketServer, type WebSocket } from 'ws';
@@ -30,12 +30,16 @@ function isSqlSafe(sql: string): boolean {
   const normalized = sql.trim().toLowerCase();
   // Ensure query only references allowed tables
   const words = normalized.split(/[^a-z0-9_]+/);
-  const mentionsAllowed = words.some(w => ALLOWED_TABLE_SET.has(w));
+  const mentionsAllowed = words.some((w) => ALLOWED_TABLE_SET.has(w));
   if (!mentionsAllowed && !normalized.startsWith('select last_insert_rowid()')) {
     return false;
   }
   // Disallow schema drops, attach, or pragma injections
-  if (normalized.includes('drop table') || normalized.includes('attach') || normalized.includes('sqlite_master')) {
+  if (
+    normalized.includes('drop table') ||
+    normalized.includes('attach') ||
+    normalized.includes('sqlite_master')
+  ) {
     return false;
   }
   return true;
@@ -73,7 +77,7 @@ export function lanPvPPlugin(): Plugin {
       server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
         if (req.url?.startsWith('/api/dev-lan-pvp') && req.method === 'POST') {
           const chunks: Buffer[] = [];
-          req.on('data', chunk => chunks.push(chunk as Buffer));
+          req.on('data', (chunk) => chunks.push(chunk as Buffer));
           req.on('end', () => {
             try {
               const bodyStr = Buffer.concat(chunks).toString('utf-8');
@@ -85,7 +89,9 @@ export function lanPvPPlugin(): Plugin {
                 return;
               }
 
-              const params: SQLInputValue[] = (body.params || []).map(p => (p === undefined ? null : p) as SQLInputValue);
+              const params: SQLInputValue[] = (body.params || []).map(
+                (p) => (p === undefined ? null : p) as SQLInputValue
+              );
 
               if (body.type === 'query') {
                 const stmt = db.prepare(body.sql);
@@ -99,12 +105,14 @@ export function lanPvPPlugin(): Plugin {
                 const stmt = db.prepare(body.sql);
                 const result = stmt.run(...params);
                 res.writeHead(HTTP_STATUS_OK, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({
-                  data: result,
-                  lastInsertRowid: Number(result.lastInsertRowid),
-                  changes: Number(result.changes),
-                  error: null
-                }));
+                res.end(
+                  JSON.stringify({
+                    data: result,
+                    lastInsertRowid: Number(result.lastInsertRowid),
+                    changes: Number(result.changes),
+                    error: null
+                  })
+                );
                 return;
               }
 
@@ -112,7 +120,9 @@ export function lanPvPPlugin(): Plugin {
               res.end(JSON.stringify({ data: null, error: 'Invalid operation type' }));
             } catch (err: unknown) {
               const message = err instanceof Error ? err.message : String(err);
-              res.writeHead(HTTP_STATUS_INTERNAL_SERVER_ERROR, { 'Content-Type': 'application/json' });
+              res.writeHead(HTTP_STATUS_INTERNAL_SERVER_ERROR, {
+                'Content-Type': 'application/json'
+              });
               res.end(JSON.stringify({ data: null, error: message }));
             }
           });
@@ -131,7 +141,7 @@ export function lanPvPPlugin(): Plugin {
 
       server.httpServer.on('upgrade', (req: IncomingMessage, socket, head) => {
         if (req.url?.startsWith('/api/dev-lan-relay')) {
-          wss.handleUpgrade(req, socket, head, ws => {
+          wss.handleUpgrade(req, socket, head, (ws) => {
             wss.emit('connection', ws, req);
           });
         }
@@ -187,7 +197,8 @@ export function lanPvPPlugin(): Plugin {
                 }
               }
             }
-          } catch { // catch-ok: ignore malformed payloads safely
+          } catch {
+            // catch-ok: ignore malformed payloads safely
             // Ignore malformed payloads safely
           }
         });

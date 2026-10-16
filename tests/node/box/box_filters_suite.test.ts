@@ -4,7 +4,7 @@
  * Tier 1 Unit Test Suite for Box Filters (EVs and Friendship Range) in useBoxFilters.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { ref } from 'vue';
 import { useBoxFilters } from '@/composables/pokemon/useBoxFilters';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -35,12 +35,12 @@ function createMockPokemonWithEVs(
       def: evs.def || 0,
       spa: evs.spa || 0,
       spd: evs.spd || 0,
-      spe: evs.spe || 0,
+      spe: evs.spe || 0
     },
     moves: [],
     ability: 'waterabsorb',
     isIllegal: false,
-    friendship: 70,
+    friendship: 70
   } as unknown as Pokemon;
 }
 
@@ -62,7 +62,7 @@ function createMockPokemon(id: string, name: string, friendship: number, uid = n
     moves: [],
     ability: 'waterabsorb',
     isIllegal: false,
-    friendship,
+    friendship
   } as unknown as Pokemon;
 }
 

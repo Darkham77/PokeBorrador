@@ -1,11 +1,7 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { hasMaxIV } from '@/logic/pokemon/statsMath.ts';
 import { getItemById } from '@/data/inventory/items.ts';
-import type {
-  MarketListing,
-  MarketFilters,
-  MarketViewContext
-} from './market.ts';
+import type { MarketListing, MarketFilters, MarketViewContext } from './market.ts';
 
 function matchesExploreListingTypeAndPrice(
   item: MarketListing,
@@ -26,9 +22,19 @@ function matchesPokemonSearch(poke: Pokemon, search: string): boolean {
   return Boolean(nameMatch || nickMatch);
 }
 
-function matchesPokemonIVs(ivs: Pokemon['ivs'], totalMin: number, totalMax: number, any31: boolean): boolean {
-  const total = (Number(ivs?.hp) || 0) + (Number(ivs?.atk) || 0) + (Number(ivs?.def) || 0) +
-    (Number(ivs?.spa) || 0) + (Number(ivs?.spd) || 0) + (Number(ivs?.spe) || 0);
+function matchesPokemonIVs(
+  ivs: Pokemon['ivs'],
+  totalMin: number,
+  totalMax: number,
+  any31: boolean
+): boolean {
+  const total =
+    (Number(ivs?.hp) || 0) +
+    (Number(ivs?.atk) || 0) +
+    (Number(ivs?.def) || 0) +
+    (Number(ivs?.spa) || 0) +
+    (Number(ivs?.spd) || 0) +
+    (Number(ivs?.spe) || 0);
   if (total < totalMin || total > totalMax) return false;
   if (any31 && !hasMaxIV(ivs)) return false;
   return true;
@@ -64,7 +70,7 @@ function matchesItemFilters(
   }
 
   if (filters.itemCat !== 'all') {
-    const key = itemData.id ? String(itemData.id) : (itemData.name || null); // domain-ok: Open dynamic text or non-domain string payload
+    const key = itemData.id ? String(itemData.id) : itemData.name || null; // domain-ok: Open dynamic text or non-domain string payload
     try {
       const shopItem = key ? getItemById(key) : null;
       if (shopItem?.cat !== filters.itemCat) return false;
@@ -77,14 +83,14 @@ function matchesItemFilters(
 }
 
 export function applyMarketFilters(
-  list: MarketListing[], 
-  filters: MarketFilters, 
-  context: MarketViewContext, 
+  list: MarketListing[],
+  filters: MarketFilters,
+  context: MarketViewContext,
   options: { getPokemonTier?: (offer: Pokemon) => { tier: string } } = {}
 ): MarketListing[] {
   const { getPokemonTier } = options;
 
-  return list.filter(item => {
+  return list.filter((item) => {
     if (!matchesExploreListingTypeAndPrice(item, filters, context)) return false;
 
     if (item.listing_type === 'pokemon') {

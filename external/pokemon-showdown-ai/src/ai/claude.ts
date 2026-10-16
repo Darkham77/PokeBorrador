@@ -6,7 +6,7 @@ import {
   MoveInfo,
   PokemonState,
   StrategicState,
-  DamageMatchup,
+  DamageMatchup
 } from '../types';
 import { InferenceEngine } from '../inference/engine';
 import { formatStrategicSummary } from '../strategy/evaluation';
@@ -31,7 +31,14 @@ export class ClaudeEngine {
     switchOptions: PokemonState[],
     inference: InferenceEngine
   ): Promise<Decision | null> {
-    const prompt = this.buildPrompt(state, strategic, matchup, availableMoves, switchOptions, inference);
+    const prompt = this.buildPrompt(
+      state,
+      strategic,
+      matchup,
+      availableMoves,
+      switchOptions,
+      inference
+    );
 
     try {
       logDebug('Calling Claude for decision...');
@@ -40,8 +47,9 @@ export class ClaudeEngine {
       const apiCall = this.client.messages.create({
         model: CONFIG.claude.model,
         max_tokens: CONFIG.claude.maxTokens,
-        system: 'You are a competitive Pokemon battle AI. Respond with EXACTLY one line: either "MOVE: movename" or "SWITCH: pokemonname". No explanations.',
-        messages: [{ role: 'user', content: prompt }],
+        system:
+          'You are a competitive Pokemon battle AI. Respond with EXACTLY one line: either "MOVE: movename" or "SWITCH: pokemonname". No explanations.',
+        messages: [{ role: 'user', content: prompt }]
       });
       const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000));
       const response = await Promise.race([apiCall, timeout]);
@@ -51,9 +59,7 @@ export class ClaudeEngine {
         return null;
       }
 
-      const text = response.content[0]?.type === 'text'
-        ? response.content[0].text.trim()
-        : '';
+      const text = response.content[0]?.type === 'text' ? response.content[0].text.trim() : '';
 
       logDebug(`Claude response: ${text}`);
       return this.parseResponse(text, availableMoves, switchOptions, state);
@@ -145,7 +151,9 @@ export class ClaudeEngine {
     // Sack order (so Claude knows which Pokemon to preserve)
     if (strategic.sackOrder.length > 1) {
       lines.push('Sack Priority (sacrifice first → preserve):');
-      lines.push(`  ${strategic.sackOrder.map(s => `${s.pokemon}(${s.preservationScore.toFixed(2)})`).join(' → ')}`);
+      lines.push(
+        `  ${strategic.sackOrder.map((s) => `${s.pokemon}(${s.preservationScore.toFixed(2)})`).join(' → ')}`
+      );
     }
 
     // Field conditions
@@ -181,7 +189,7 @@ export class ClaudeEngine {
     if (moveMatch) {
       const moveName = moveMatch[1].toLowerCase().replace(/[^a-z0-9]/g, '');
       const moveIdx = availableMoves.findIndex(
-        m => m.id.replace(/[^a-z0-9]/g, '') === moveName && !m.disabled && m.pp > 0
+        (m) => m.id.replace(/[^a-z0-9]/g, '') === moveName && !m.disabled && m.pp > 0
       );
       if (moveIdx !== -1) {
         return {
@@ -190,7 +198,7 @@ export class ClaudeEngine {
           moveIndex: moveIdx + 1,
           source: 'claude',
           confidence: 0.85,
-          reasoning: `Claude chose ${availableMoves[moveIdx].id}`,
+          reasoning: `Claude chose ${availableMoves[moveIdx].id}`
         };
       }
     }
@@ -200,18 +208,18 @@ export class ClaudeEngine {
     if (switchMatch) {
       const pokeName = switchMatch[1].toLowerCase().replace(/[^a-z0-9]/g, '');
       const switchMon = switchOptions.find(
-        p => p.name.toLowerCase().replace(/[^a-z0-9]/g, '') === pokeName ||
-             p.species === pokeName
+        (p) => p.name.toLowerCase().replace(/[^a-z0-9]/g, '') === pokeName || p.species === pokeName
       );
       if (switchMon) {
-        const switchIdx = state.mySide.pokemon.findIndex(p => p.species === switchMon.species) + 1;
+        const switchIdx =
+          state.mySide.pokemon.findIndex((p) => p.species === switchMon.species) + 1;
         return {
           type: 'switch',
           choice: switchMon.name.toLowerCase(),
           switchIndex: switchIdx,
           source: 'claude',
           confidence: 0.85,
-          reasoning: `Claude chose to switch to ${switchMon.name}`,
+          reasoning: `Claude chose to switch to ${switchMon.name}`
         };
       }
     }

@@ -48,18 +48,28 @@ import {
 } from '../../config/patchExtractorConfig.ts';
 
 const FALLBACK_PREFAB_DIMS: Record<string, { readonly w: number; readonly h: number }> = {
+  // open-record: Fallback prefab dimensions dictionary indexed by prefab id
   tree_viridian_forest: { w: FALLBACK_TALL_TREE_WIDTH, h: FALLBACK_TALL_TREE_HEIGHT },
   poke_tree_poke: { w: FALLBACK_TALL_TREE_WIDTH, h: FALLBACK_TALL_TREE_HEIGHT },
   tree_poke: { w: FALLBACK_TALL_TREE_WIDTH, h: FALLBACK_TALL_TREE_HEIGHT },
   poke_tree_cuttable: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION },
   poke_signpost: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION },
-  poke_cave_boulder_rock: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION },
-  poke_cave_rubble_stones: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION },
+  poke_cave_boulder_rock: {
+    w: FALLBACK_STANDARD_PROP_DIMENSION,
+    h: FALLBACK_STANDARD_PROP_DIMENSION
+  },
+  poke_cave_rubble_stones: {
+    w: FALLBACK_STANDARD_PROP_DIMENSION,
+    h: FALLBACK_STANDARD_PROP_DIMENSION
+  },
   poke_rock_boulder: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION },
   poke_rock_rubble: { w: FALLBACK_STANDARD_PROP_DIMENSION, h: FALLBACK_STANDARD_PROP_DIMENSION }
 };
 
-export function getInstructionDimensions(filename: string): { readonly w: number; readonly h: number } {
+export function getInstructionDimensions(filename: string): {
+  readonly w: number;
+  readonly h: number;
+} {
   const baseId = filename.replace(/\.png$/, '');
   const canon = CANONICAL_ASSETS_BY_ID[baseId];
   if (canon?.pixelDimensions) {
@@ -107,7 +117,8 @@ export function extractRealContinentPatches(
   );
 
   // 2. Compile an O(1) 2D grid of layered tile stacks: [y][x] => string[]
-  const blitGrid: string[][][] = Array.from({ length: H }, () => // no-domain: Estructura o identificador procedural de aventura
+  const blitGrid: string[][][] = Array.from({ length: H }, () =>
+    // no-domain: Estructura o identificador procedural de aventura
     Array.from({ length: W }, () => [])
   );
 
@@ -134,19 +145,72 @@ export function extractRealContinentPatches(
   const patches: RealContinentPatch[] = [];
 
   for (const pt of waterPoints) {
-    patches.push(buildPatch(continent, blitGrid, instructions, pt.x, pt.y, radius, 'water_coast', pt.title, pt.desc, seed));
+    patches.push(
+      buildPatch(
+        continent,
+        blitGrid,
+        instructions,
+        pt.x,
+        pt.y,
+        radius,
+        'water_coast',
+        pt.title,
+        pt.desc,
+        seed
+      )
+    );
   }
 
   for (const pt of mountainPoints) {
-    patches.push(buildPatch(continent, blitGrid, instructions, pt.x, pt.y, radius, 'mountain_cliff', pt.title, pt.desc, seed, pt.mountainSubtype));
+    patches.push(
+      buildPatch(
+        continent,
+        blitGrid,
+        instructions,
+        pt.x,
+        pt.y,
+        radius,
+        'mountain_cliff',
+        pt.title,
+        pt.desc,
+        seed,
+        pt.mountainSubtype
+      )
+    );
   }
 
   for (const pt of pathPoints) {
-    patches.push(buildPatch(continent, blitGrid, instructions, pt.x, pt.y, radius, 'path', pt.title, pt.desc, seed));
+    patches.push(
+      buildPatch(
+        continent,
+        blitGrid,
+        instructions,
+        pt.x,
+        pt.y,
+        radius,
+        'path',
+        pt.title,
+        pt.desc,
+        seed
+      )
+    );
   }
 
   for (const pt of macroBiomePoints) {
-    patches.push(buildPatch(continent, blitGrid, instructions, pt.x, pt.y, radius, 'macro_biome', pt.title, pt.desc, seed));
+    patches.push(
+      buildPatch(
+        continent,
+        blitGrid,
+        instructions,
+        pt.x,
+        pt.y,
+        radius,
+        'macro_biome',
+        pt.title,
+        pt.desc,
+        seed
+      )
+    );
   }
 
   return patches;
@@ -160,8 +224,12 @@ interface CandidatePoint {
   readonly mountainSubtype?: MountainPatchSubtype;
 }
 
-
-function isFarEnough(candidates: readonly CandidatePoint[], x: number, y: number, minDist = 4): boolean {
+function isFarEnough(
+  candidates: readonly CandidatePoint[],
+  x: number,
+  y: number,
+  minDist = 4
+): boolean {
   for (const c of candidates) {
     const distSq = (c.x - x) ** 2 + (c.y - y) ** 2;
     if (distSq < minDist ** 2) return false;
@@ -169,7 +237,11 @@ function isFarEnough(candidates: readonly CandidatePoint[], x: number, y: number
   return true;
 }
 
-function findWaterCoastCandidates(continent: ContinentMapResult, radius: number, max: number): readonly CandidatePoint[] {
+function findWaterCoastCandidates(
+  continent: ContinentMapResult,
+  radius: number,
+  max: number
+): readonly CandidatePoint[] {
   const points: CandidatePoint[] = [];
   const W = continent.width;
   const H = continent.height;
@@ -194,8 +266,14 @@ function findWaterCoastCandidates(continent: ContinentMapResult, radius: number,
 
       if ((cur === 'sand' && hasGrass) || (cur === 'water' && (hasSand || hasGrass))) {
         if (isFarEnough(points, x, y, 5)) {
-          const title = cur === 'sand' ? `Playa y Césped (X: ${x}, Y: ${y})` : `Orilla Costera (X: ${x}, Y: ${y})`;
-          const desc = cur === 'sand' ? 'Transición de arena costera con tierra' : 'Borde de agua marina con costa';
+          const title =
+            cur === 'sand'
+              ? `Playa y Césped (X: ${x}, Y: ${y})`
+              : `Orilla Costera (X: ${x}, Y: ${y})`;
+          const desc =
+            cur === 'sand'
+              ? 'Transición de arena costera con tierra'
+              : 'Borde de agua marina con costa';
           points.push({ x, y, title, desc });
         }
       }
@@ -211,7 +289,11 @@ interface ScoredMountainCandidate extends CandidatePoint {
   readonly elev: number;
 }
 
-function findMountainCandidates(continent: ContinentMapResult, radius: number, max: number): readonly CandidatePoint[] {
+function findMountainCandidates(
+  continent: ContinentMapResult,
+  radius: number,
+  max: number
+): readonly CandidatePoint[] {
   const W = continent.width;
   const H = continent.height;
   const heights = continent.heightmap;
@@ -225,7 +307,12 @@ function findMountainCandidates(continent: ContinentMapResult, radius: number, m
   // 1. Placed Stairs & Stair Cells
   if (continent.placedStairs) {
     for (const st of continent.placedStairs) {
-      if (st.x >= radius + 1 && st.x < W - radius - 1 && st.y >= radius + 1 && st.y < H - radius - 1) {
+      if (
+        st.x >= radius + 1 &&
+        st.x < W - radius - 1 &&
+        st.y >= radius + 1 &&
+        st.y < H - radius - 1
+      ) {
         const curH = heights[st.y]?.[st.x] ?? 0;
         stairs.push({
           x: st.x,
@@ -447,7 +534,11 @@ function findPathCandidates(
   return points;
 }
 
-function findMacroBiomeCandidates(continent: ContinentMapResult, radius: number, max: number): readonly CandidatePoint[] {
+function findMacroBiomeCandidates(
+  continent: ContinentMapResult,
+  radius: number,
+  max: number
+): readonly CandidatePoint[] {
   const points: CandidatePoint[] = [];
   if (!continent.macroBiomes) return points;
 
@@ -623,9 +714,12 @@ export function extractCellNeighborhood(
       if (gx >= 0 && gx < W && gy >= 0 && gy < H) {
         const cell = continent.cells[gy]?.[gx];
         const terrain = cell?.terrain ?? continent.terrainMatrix[gy]?.[gx] ?? 'unknown';
-        const topTile = cell?.layerStack && cell.layerStack.length > 0
-          ? cell.layerStack[cell.layerStack.length - 1]!
-          : (terrain === 'water' ? 'water.png' : 'grass.png');
+        const topTile =
+          cell?.layerStack && cell.layerStack.length > 0
+            ? cell.layerStack[cell.layerStack.length - 1]!
+            : terrain === 'water'
+              ? 'water.png'
+              : 'grass.png';
         row.push({
           dir,
           x: gx,
@@ -650,7 +744,7 @@ export function extractCellNeighborhood(
   const asciiLines: string[] = []; // no-domain: dynamic formatted text lines
   for (const row of grid) {
     const line = row
-      .map(c => `[${c.dir.padEnd(2)}: ${(c.dir === 'C' ? '*ERROR*' : c.terrain).padEnd(7)}]`)
+      .map((c) => `[${c.dir.padEnd(2)}: ${(c.dir === 'C' ? '*ERROR*' : c.terrain).padEnd(7)}]`)
       .join(' ');
     asciiLines.push(line);
   }

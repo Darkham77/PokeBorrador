@@ -4,7 +4,7 @@
  * Unit tests for BattleUiBranchingAuditor.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { BattleUiBranchingAuditor } from '../../../scripts/auditors/architecture/validate_battle_ui_branching.ts';
 
 interface ScannableAuditor {
@@ -97,4 +97,3 @@ describe('BattleUiBranchingAuditor', () => {
     expect(auditor.getErrorsByRule().get('ui-branching-escape')).toBe(1);
   });
 });
-

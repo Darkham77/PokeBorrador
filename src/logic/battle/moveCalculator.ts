@@ -1,16 +1,16 @@
-import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
-import { getDayCycle } from '@/logic/utils/timeUtils'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { PokemonType } from '@/data/battle/types'
-import type { PokemonMoveId, MoveCategory } from '@/data/battle/moves'
-import type { PureBattleWeather } from '@/logic/battle/battleMathTypes'
-import type { StatModifierStatusClass } from '@/types/battle/tooltip'
+import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
+import { getDayCycle } from '@/logic/utils/timeUtils';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PokemonType } from '@/data/battle/types';
+import type { PokemonMoveId, MoveCategory } from '@/data/battle/moves';
+import type { PureBattleWeather } from '@/logic/battle/battleMathTypes';
+import type { StatModifierStatusClass } from '@/types/battle/tooltip';
 import {
   calculateStabMultiplier,
   calculateWeatherAndCyclePowerMultiplier,
   calculateAbilityPowerMultiplier,
-  calculateItemPowerMultiplier,
-} from './movePowerMultipliers.ts'
+  calculateItemPowerMultiplier
+} from './movePowerMultipliers.ts';
 
 export interface CombatEnvState {
   isSunActive: boolean;
@@ -31,7 +31,7 @@ const SUPPRESSED_COMBAT_ENV: CombatEnvState = Object.freeze({
   isSunny: false,
   mechWeather: WEATHER_MECHANICAL.CLEAR,
   weatherType: undefined,
-  isThunderstorm: false,
+  isThunderstorm: false
 });
 
 function isWeatherSuppressed(
@@ -73,15 +73,15 @@ export function getCombatEnvState(
     isSunny,
     mechWeather,
     weatherType: wType,
-    isThunderstorm: wType === 'thunderstorm',
+    isThunderstorm: wType === 'thunderstorm'
   };
 }
 
 export interface MoveCalculationData {
-  type: PokemonType
-  power?: number
-  id?: PokemonMoveId
-  cat?: MoveCategory
+  type: PokemonType;
+  power?: number;
+  id?: PokemonMoveId;
+  cat?: MoveCategory;
 }
 
 /**
@@ -94,36 +94,44 @@ export function calculateFinalPower(
   weatherState: PureBattleWeather | null | undefined,
   isGym: boolean
 ): number {
-  if (!md || md.power === undefined || md.power === 0) return md?.power || 0
-  let power = md.power
-  if (!attacker) return power
+  if (!md || md.power === undefined || md.power === 0) return md?.power || 0;
+  let power = md.power;
+  if (!attacker) return power;
 
-  const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine'
-  const weather = isGym || isAclimatacion ? null : weatherState
-  const mechWeather = isGym || isAclimatacion ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather?.type)
-  const cycle = getDayCycle()
-  const moveType = md.type
+  const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine';
+  const weather = isGym || isAclimatacion ? null : weatherState;
+  const mechWeather =
+    isGym || isAclimatacion ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather?.type);
+  const cycle = getDayCycle();
+  const moveType = md.type;
 
   // 1. STAB
-  power *= calculateStabMultiplier(moveType, attacker)
+  power *= calculateStabMultiplier(moveType, attacker);
 
   // 2. Weather & Day cycle
-  power *= calculateWeatherAndCyclePowerMultiplier(moveType, md.id, weather, mechWeather, cycle)
+  power *= calculateWeatherAndCyclePowerMultiplier(moveType, md.id, weather, mechWeather, cycle);
 
   // 3. Abilities (Attacker & Defender)
-  power *= calculateAbilityPowerMultiplier(moveType, md.power, attacker, defender, weather, mechWeather)
+  power *= calculateAbilityPowerMultiplier(
+    moveType,
+    md.power,
+    attacker,
+    defender,
+    weather,
+    mechWeather
+  );
 
   // 4. Item
-  power *= calculateItemPowerMultiplier(moveType, md.cat, attacker.heldItem)
+  power *= calculateItemPowerMultiplier(moveType, md.cat, attacker.heldItem);
 
-  return Math.max(0, Math.round(power))
+  return Math.max(0, Math.round(power));
 }
 
 /**
  * Calculates final move accuracy applying stages, weather, and specific move/environment rules.
  */
-const NEVER_MISS_ACCURACY_THRESHOLD = 1000
-const SUN_ACCURACY_PENALIZED_THUNDER_HURRICANE = 50
+const NEVER_MISS_ACCURACY_THRESHOLD = 1000;
+const SUN_ACCURACY_PENALIZED_THUNDER_HURRICANE = 50;
 const FOG_ACCURACY_MULTIPLIER_MIST = 0.8 as const;
 const FOG_ACCURACY_MULTIPLIER_DEFAULT = 0.6 as const;
 
@@ -139,29 +147,34 @@ function applyWeatherAccuracyModifier(
   mechWeather: string,
   options: WeatherAccuracyOptions
 ): number {
-  const { isSunActive, isRainActive } = options
-  const isThunderstorm = weather === 'thunderstorm'
+  const { isSunActive, isRainActive } = options;
+  const isThunderstorm = weather === 'thunderstorm';
   if ((isRainActive || isThunderstorm) && (moveId === 'thunder' || moveId === 'hurricane')) {
-    return 100
+    return 100;
   }
   if (isSunActive && (moveId === 'thunder' || moveId === 'hurricane')) {
-    return SUN_ACCURACY_PENALIZED_THUNDER_HURRICANE
+    return SUN_ACCURACY_PENALIZED_THUNDER_HURRICANE;
   }
-  if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && moveId === 'blizzard') {
-    return 100
+  if (
+    (mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) &&
+    moveId === 'blizzard'
+  ) {
+    return 100;
   }
   if (mechWeather === WEATHER_MECHANICAL.FOG) {
-    const isMist = weather === 'mist' || weather === 'mist_visual'
-    return Math.floor(baseAcc * (isMist ? FOG_ACCURACY_MULTIPLIER_MIST : FOG_ACCURACY_MULTIPLIER_DEFAULT))
+    const isMist = weather === 'mist' || weather === 'mist_visual';
+    return Math.floor(
+      baseAcc * (isMist ? FOG_ACCURACY_MULTIPLIER_MIST : FOG_ACCURACY_MULTIPLIER_DEFAULT)
+    );
   }
-  return baseAcc
+  return baseAcc;
 }
 
 function calculateNetAccuracyStageMultiplier(accStage: number, evaStage: number): number {
-  const clampedAccStage = Math.max(-6, Math.min(6, accStage))
-  const clampedEvaStage = Math.max(-6, Math.min(6, evaStage))
-  const netStage = Math.max(-6, Math.min(6, clampedAccStage - clampedEvaStage))
-  return netStage >= 0 ? (3 + netStage) / 3 : 3 / (3 - netStage)
+  const clampedAccStage = Math.max(-6, Math.min(6, accStage));
+  const clampedEvaStage = Math.max(-6, Math.min(6, evaStage));
+  const netStage = Math.max(-6, Math.min(6, clampedAccStage - clampedEvaStage));
+  return netStage >= 0 ? (3 + netStage) / 3 : 3 / (3 - netStage);
 }
 
 export function calculateFinalAccuracy(
@@ -173,52 +186,70 @@ export function calculateFinalAccuracy(
   accStage: number,
   evaStage: number
 ): number {
-  if (!md || md.acc === undefined || md.acc === NEVER_MISS_ACCURACY_THRESHOLD) return md?.acc || 0
+  if (!md || md.acc === undefined || md.acc === NEVER_MISS_ACCURACY_THRESHOLD) return md?.acc || 0;
 
-  const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine'
-  const weather = isGym || isAclimatacion ? null : weatherState?.type
-  const mechWeather = isGym || isAclimatacion ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather)
-  const cycle = getDayCycle()
-  const isSunActive = !isGym && !isAclimatacion && (mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning')))
-  const isRainActive = !isGym && !isAclimatacion && (mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk')))
+  const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine';
+  const weather = isGym || isAclimatacion ? null : weatherState?.type;
+  const mechWeather =
+    isGym || isAclimatacion ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather);
+  const cycle = getDayCycle();
+  const isSunActive =
+    !isGym &&
+    !isAclimatacion &&
+    (mechWeather === WEATHER_MECHANICAL.SUN ||
+      (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning')));
+  const isRainActive =
+    !isGym &&
+    !isAclimatacion &&
+    (mechWeather === WEATHER_MECHANICAL.RAIN ||
+      (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk')));
 
   const weatherAcc = md.id
-    ? applyWeatherAccuracyModifier(md.acc, md.id, weather, mechWeather, { isSunActive, isRainActive })
-    : md.acc
-  const multiplier = calculateNetAccuracyStageMultiplier(accStage, evaStage)
-  const finalAcc = weatherAcc * multiplier
+    ? applyWeatherAccuracyModifier(md.acc, md.id, weather, mechWeather, {
+        isSunActive,
+        isRainActive
+      })
+    : md.acc;
+  const multiplier = calculateNetAccuracyStageMultiplier(accStage, evaStage);
+  const finalAcc = weatherAcc * multiplier;
 
-  return Math.max(0, Math.min(100, Math.round(finalAcc)))
+  return Math.max(0, Math.min(100, Math.round(finalAcc)));
 }
 
-function checkMoveSpecificModifier(moveId: PokemonMoveId, env: CombatEnvState): StatModifierStatusClass | null {
+function checkMoveSpecificModifier(
+  moveId: PokemonMoveId,
+  env: CombatEnvState
+): StatModifierStatusClass | null {
   if (moveId === 'thunder' || moveId === 'hurricane') {
-    if (env.isSunny) return 'penalized'
-    if (env.isRaining) return 'boosted'
+    if (env.isSunny) return 'penalized';
+    if (env.isRaining) return 'boosted';
   }
   if (moveId === 'blizzard') {
-    if (env.isSnowing) return 'boosted'
+    if (env.isSnowing) return 'boosted';
   }
   if (moveId === 'solarbeam' || moveId === 'solarblade') {
-    if (env.mechWeather !== WEATHER_MECHANICAL.CLEAR && !env.isSunActive) return 'penalized'
-    if (env.isSunActive) return 'boosted'
+    if (env.mechWeather !== WEATHER_MECHANICAL.CLEAR && !env.isSunActive) return 'penalized';
+    if (env.isSunActive) return 'boosted';
   }
   if (moveId === 'weatherball') {
-    if (env.mechWeather !== WEATHER_MECHANICAL.CLEAR) return 'boosted'
+    if (env.mechWeather !== WEATHER_MECHANICAL.CLEAR) return 'boosted';
   }
-  return null
+  return null;
 }
 
-function checkTypeWeatherModifier(moveType: string, env: CombatEnvState): StatModifierStatusClass | null {
+function checkTypeWeatherModifier(
+  moveType: string,
+  env: CombatEnvState
+): StatModifierStatusClass | null {
   if (moveType === 'fire') {
-    if (env.isRaining) return 'penalized'
-    if (env.isSunActive) return 'boosted'
+    if (env.isRaining) return 'penalized';
+    if (env.isSunActive) return 'boosted';
   }
   if (moveType === 'water') {
-    if (env.isSunny) return 'penalized'
-    if (env.isRainActive) return 'boosted'
+    if (env.isSunny) return 'penalized';
+    if (env.isRainActive) return 'boosted';
   }
-  return null
+  return null;
 }
 
 /**
@@ -229,16 +260,16 @@ export function calculateMoveModifier(
   isBattleActive: boolean,
   env: CombatEnvState
 ): StatModifierStatusClass | null {
-  if (!md || !isBattleActive) return null
+  if (!md || !isBattleActive) return null;
 
-  const specific = md.id ? checkMoveSpecificModifier(md.id, env) : null
-  if (specific) return specific
+  const specific = md.id ? checkMoveSpecificModifier(md.id, env) : null;
+  if (specific) return specific;
 
   if (env.mechWeather === WEATHER_MECHANICAL.FOG) {
-    return 'penalized'
+    return 'penalized';
   }
 
-  if (md.cat === 'status') return null
+  if (md.cat === 'status') return null;
 
-  return checkTypeWeatherModifier(md.type, env)
+  return checkTypeWeatherModifier(md.type, env);
 }

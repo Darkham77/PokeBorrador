@@ -1,10 +1,10 @@
 // src/styles/core/mixins/_buttons.scss
-@use "sass:color";
-@use "../variables" as *;
-@use "layout" as *;
-@use "../gpu" as *;
-@use "shell" as *;
-@forward "buttons_special";
+@use 'sass:color';
+@use '../variables' as *;
+@use 'layout' as *;
+@use '../gpu' as *;
+@use 'shell' as *;
+@forward 'buttons_special';
 
 $btn-shadow-blur: 1.5px;
 $btn-active-glow-blur: 15px;
@@ -37,15 +37,18 @@ $btn-hover-glow-blur: 20px;
   }
 
   // Icon Standardization
-  .icon, i, .fas, .far {
+  .icon,
+  i,
+  .fas,
+  .far {
     display: inline-flex;
     justify-content: center;
     align-items: center;
     font-size: var(--font-22);
     line-height: 1;
-    
+
     // Fine-tune vertical alignment for pixel fonts/emojis
-    transform: Translatey(-1px); 
+    transform: Translatey(-1px);
   }
 
   // Handle multi-line stacks (e.g. Price + Label)
@@ -141,7 +144,11 @@ $btn-hover-glow-blur: 20px;
   box-shadow: $btn-variant-shadow;
 
   @if $text == #fff {
-    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    text-shadow:
+      1px 1px 0 #000,
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000;
   }
 
   &:hover:not(:disabled) {
@@ -155,7 +162,7 @@ $btn-hover-glow-blur: 20px;
   }
 
   &.active {
-    $btn-active-shadow: 
+    $btn-active-shadow:
       0 $depth $btn-shadow-blur $shadow,
       0 0 $btn-active-glow-blur color.change($base-color, $alpha: 0.4);
 
@@ -163,9 +170,11 @@ $btn-hover-glow-blur: 20px;
     background: color.scale($base-color, $lightness: 15%);
     transform: none;
     box-shadow: $btn-active-shadow;
-    
+
     &:hover:not(:disabled) {
-      $btn-hover-active-shadow: 0 ($depth + 1px) $btn-shadow-blur $shadow, 0 0 $btn-hover-glow-blur color.change($base-color, $alpha: 0.6);
+      $btn-hover-active-shadow:
+        0 ($depth + 1px) $btn-shadow-blur $shadow,
+        0 0 $btn-hover-glow-blur color.change($base-color, $alpha: 0.6);
 
       background: color.scale($base-color, $lightness: 20%);
       transform: Translatey(-1px);
@@ -180,17 +189,29 @@ $btn-hover-glow-blur: 20px;
   @include btn-vicio-size($size);
   @include btn-vicio-variant($variant, $size);
 
-  @if $fullWidth { width: 100%; } @else { width: auto; }
+  @if $fullWidth {
+    width: 100%;
+  } @else {
+    width: auto;
+  }
 }
 
 // Legacy aliases for backward compatibility
-@mixin btn-vicio-primary($size: 'md', $fullWidth: false) { @include btn-vicio('primary', $size, $fullWidth); }
+@mixin btn-vicio-primary($size: 'md', $fullWidth: false) {
+  @include btn-vicio('primary', $size, $fullWidth);
+}
 
-@mixin btn-vicio-secondary($size: 'md', $fullWidth: false) { @include btn-vicio('secondary', $size, $fullWidth); }
+@mixin btn-vicio-secondary($size: 'md', $fullWidth: false) {
+  @include btn-vicio('secondary', $size, $fullWidth);
+}
 
-@mixin btn-vicio-danger($size: 'md', $fullWidth: false) { @include btn-vicio('danger', $size, $fullWidth); }
+@mixin btn-vicio-danger($size: 'md', $fullWidth: false) {
+  @include btn-vicio('danger', $size, $fullWidth);
+}
 
-@mixin btn-vicio-success($size: 'md', $fullWidth: false) { @include btn-vicio('success', $size, $fullWidth); }
+@mixin btn-vicio-success($size: 'md', $fullWidth: false) {
+  @include btn-vicio('success', $size, $fullWidth);
+}
 
 @mixin btn-close-premium {
   z-index: var(--z-low);
@@ -204,7 +225,7 @@ $btn-hover-glow-blur: 20px;
   background: none;
   cursor: pointer;
   pointer-events: auto;
-  
+
   &:hover {
     // Scale and parent wrapper transitions are handled by GSAP
     & .close-icon-wrapper {
@@ -237,7 +258,8 @@ $btn-hover-glow-blur: 20px;
       transform: Translate(-50%, -50%);
       content: '';
       transform-origin: center center;
-      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect x='0' y='0' width='2' height='2'/%3E%3Crect x='8' y='0' width='2' height='2'/%3E%3Crect x='2' y='2' width='2' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='4' y='4' width='2' height='2'/%3E%3Crect x='2' y='6' width='2' height='2'/%3E%3Crect x='6' y='6' width='2' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='8' y='8' width='2' height='2'/%3E%3C/svg%3E") no-repeat center;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect x='0' y='0' width='2' height='2'/%3E%3Crect x='8' y='0' width='2' height='2'/%3E%3Crect x='2' y='2' width='2' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='4' y='4' width='2' height='2'/%3E%3Crect x='2' y='6' width='2' height='2'/%3E%3Crect x='6' y='6' width='2' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='8' y='8' width='2' height='2'/%3E%3C/svg%3E")
+        no-repeat center;
       mask-size: contain;
     }
   }
@@ -247,19 +269,25 @@ $btn-hover-glow-blur: 20px;
   &.tier-rare {
     border-color: Rgb(59 130 246 / 55%);
     box-shadow: var(--shadow-glow-blue);
-    .item-bg-glow { background: Radial-Gradient(circle, Rgb(59 130 246 / 18%) 0%, transparent 70%); }
+    .item-bg-glow {
+      background: Radial-Gradient(circle, Rgb(59 130 246 / 18%) 0%, transparent 70%);
+    }
   }
 
   &.tier-epic {
     border-color: Rgb(168 85 247 / 55%);
     box-shadow: var(--shadow-glow-amber);
-    .item-bg-glow { background: Radial-Gradient(circle, Rgb(168 85 247 / 18%) 0%, transparent 70%); }
+    .item-bg-glow {
+      background: Radial-Gradient(circle, Rgb(168 85 247 / 18%) 0%, transparent 70%);
+    }
   }
 
   &.tier-legend {
     border-color: Rgb(245 158 11 / 65%);
     box-shadow: var(--shadow-glow-amber);
-    .item-bg-glow { background: Radial-Gradient(circle, Rgb(245 158 11 / 20%) 0%, transparent 70%); }
+    .item-bg-glow {
+      background: Radial-Gradient(circle, Rgb(245 158 11 / 20%) 0%, transparent 70%);
+    }
   }
 }
 
@@ -273,7 +301,6 @@ $btn-hover-glow-blur: 20px;
   margin-bottom: 0;
 
   .header-layout {
-
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -338,7 +365,9 @@ $btn-hover-glow-blur: 20px;
     transform: Translatey(-50%);
     cursor: pointer;
 
-    &:hover { color: var(--white); }
+    &:hover {
+      color: var(--white);
+    }
   }
 }
 

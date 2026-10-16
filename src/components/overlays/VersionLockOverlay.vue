@@ -1,44 +1,43 @@
 <script setup lang="ts">
-import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
+import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue';
 
-const _VERSION_LOCK_TYPES = ['database', 'server'] as const
-type VersionLockType = (typeof _VERSION_LOCK_TYPES)[number]
+const _VERSION_LOCK_TYPES = ['database', 'server'] as const;
+type VersionLockType = (typeof _VERSION_LOCK_TYPES)[number];
 
 defineProps<{
-  clientVersion?: string | number
-  targetVersion?: string | number
-  lockType: VersionLockType
-}>()
+  clientVersion?: string | number;
+  targetVersion?: string | number;
+  lockType: VersionLockType;
+}>();
 
 const emit = defineEmits<{
-  retry: []
-  logout: []
-}>()
+  retry: [];
+  logout: [];
+}>();
 </script>
 
 <template>
   <PVLoadingOverlay
     theme="error"
     :title="lockType === 'server' ? 'COMPILACIÓN DEL SERVIDOR ANTIGUA' : 'SERVIDOR DESACTUALIZADO'"
-    :message="lockType === 'server' 
-      ? `Tu cliente (compilación ${clientVersion || 'N/A'}) es más moderno que el servidor (compilación ${targetVersion || 'N/A'}).`
-      : `Tu cliente (v${clientVersion || 0}) es más moderno que el servidor (v${targetVersion || 0}).`"
+    :message="
+      lockType === 'server'
+        ? `Tu cliente (compilación ${clientVersion || 'N/A'}) es más moderno que el servidor (compilación ${targetVersion || 'N/A'}).`
+        : `Tu cliente (v${clientVersion || 0}) es más moderno que el servidor (v${targetVersion || 0}).`
+    "
     icon="⚠️"
     :show-spinner="false"
   >
     <p class="admin-note">
-      {{ lockType === 'server'
-        ? 'Por favor, espera a que el servidor web sea actualizado con la última compilación.'
-        : 'Por favor, contacta al administrador para actualizar la base de datos.'
+      {{
+        lockType === 'server'
+          ? 'Por favor, espera a que el servidor web sea actualizado con la última compilación.'
+          : 'Por favor, contacta al administrador para actualizar la base de datos.'
       }}
     </p>
 
     <template #actions>
-      <button
-        id="version-lock-retry-btn"
-        class="action-btn"
-        @click.stop="emit('retry')"
-      >
+      <button id="version-lock-retry-btn" class="action-btn" @click.stop="emit('retry')">
         REINTENTAR
       </button>
       <button
@@ -53,7 +52,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .admin-note {
   color: var(--yellow);
@@ -75,7 +74,6 @@ const emit = defineEmits<{
   font-weight: bold;
   box-shadow: $shadow-retro-btn;
   cursor: pointer;
-  
 
   &:hover {
     background: $white;

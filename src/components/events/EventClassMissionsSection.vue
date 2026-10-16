@@ -5,8 +5,18 @@ import { useModalStore } from '@/stores/modals';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { CLASS_MISSIONS, CLASS_MISSIONS_BY_ID, isMissionId, type MissionId, isPlayerClassId, type PlayerClassId } from '@/data/player/playerClasses';
-import { getClassMissionDetails, type DetailedMissionReward } from '@/logic/player/classMissionsData';
+import {
+  CLASS_MISSIONS,
+  CLASS_MISSIONS_BY_ID,
+  isMissionId,
+  type MissionId,
+  isPlayerClassId,
+  type PlayerClassId
+} from '@/data/player/playerClasses';
+import {
+  getClassMissionDetails,
+  type DetailedMissionReward
+} from '@/logic/player/classMissionsData';
 import { formatRemainingDuration } from '@/logic/utils/timeUtils';
 import MissionCard from './MissionCard.vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -59,7 +69,7 @@ const remainingTimeFormatted = computed(() => {
 });
 
 const hasPoisonPokemonAvailable = computed(() => {
-  return gameStore.allPokemonList.some(p => {
+  return gameStore.allPokemonList.some((p) => {
     if (p.onMission || p.inDaycare || p.onDefense || p.isIllegal) return false;
     return p.type === 'poison' || p.type2 === 'poison';
   });
@@ -85,7 +95,8 @@ const getClassMissionBtnText = (m: (typeof CLASS_MISSIONS)[number]) => {
   }
   if (activeMission.value) return 'EN ESPERA';
   if (trainerLevel.value < m.reqLv) return 'BLOQUEADO';
-  if (classStore.currentClassDef?.id === 'rocket' && !hasPoisonPokemonAvailable.value) return 'SIN POKÉMON';
+  if (classStore.currentClassDef?.id === 'rocket' && !hasPoisonPokemonAvailable.value)
+    return 'SIN POKÉMON';
   return 'DESPLEGAR';
 };
 
@@ -123,7 +134,7 @@ const activeMissionPokemon = computed<Pokemon | null>(() => {
 const activePokemonInfo = computed(() => {
   if (!activeMissionPokemon.value) return '';
   const p = activeMissionPokemon.value;
-  const totalIvs = p.ivs ? (p.ivs.hp + p.ivs.atk + p.ivs.def + p.ivs.spa + p.ivs.spd + p.ivs.spe) : 0;
+  const totalIvs = p.ivs ? p.ivs.hp + p.ivs.atk + p.ivs.def + p.ivs.spa + p.ivs.spd + p.ivs.spe : 0;
   return `${p.name} (Nv. ${p.level || 1}, ${totalIvs} IVs)`;
 });
 
@@ -138,12 +149,13 @@ const getClassMissionRewards = (mId: MissionId): readonly DetailedMissionReward[
 
   if (activeMission.value?.id === mId && activeMission.value?.projectedReward) {
     const fixedMoney = `₽${Number(activeMission.value.projectedReward).toLocaleString()}`;
-    return details.rewards.map(r => {
-      const isMoneyReward = r.icon === '₽' || 
-        r.label.toLowerCase().includes('dinero') || 
-        r.label.toLowerCase().includes('dividendo') || 
+    return details.rewards.map((r) => {
+      const isMoneyReward =
+        r.icon === '₽' ||
+        r.label.toLowerCase().includes('dinero') ||
+        r.label.toLowerCase().includes('dividendo') ||
         r.label.toLowerCase().includes('fortuna');
-      
+
       if (isMoneyReward) {
         return {
           ...r,
@@ -206,43 +218,45 @@ async function startClassMission(missionId: MissionId) {
   const m = CLASS_MISSIONS_BY_ID[missionId];
   if (!m) return;
   const cls = classStore.playerClass;
-  
+
   if (cls === 'cazabichos') {
     classStore.startMission(missionId);
   } else {
     const allPokes = gameStore.allPokemonList;
     const isRocket = cls === 'rocket';
-    const filtered = allPokes.filter(p => {
+    const filtered = allPokes.filter((p) => {
       if (p.onMission || p.inDaycare || p.onDefense || p.isIllegal) return false;
       if (isRocket) {
         return p.type === 'poison' || p.type2 === 'poison';
       }
       return true;
     });
-    
+
     if (filtered.length === 0) {
       uiStore.notify(
-        isRocket 
-          ? 'No tienes ningún Pokémon tipo VENENO disponible.' 
-          : 'No tienes ningún Pokémon disponible para esta misión.', 
+        isRocket
+          ? 'No tienes ningún Pokémon tipo VENENO disponible.'
+          : 'No tienes ningún Pokémon disponible para esta misión.',
         '⚠️'
       );
       return;
     }
 
-    const allowedIds = filtered.map(p => p.uid);
+    const allowedIds = filtered.map((p) => p.uid);
 
     modalStore.open('PokemonSelection', {
       title: isRocket ? '💀 SACRIFICIO ROCKET' : '⚡ ENVIAR POKÉMON',
-      subtitle: isRocket 
-        ? 'Selecciona 1 Pokémon tipo VENENO para el mercado negro.' 
+      subtitle: isRocket
+        ? 'Selecciona 1 Pokémon tipo VENENO para el mercado negro.'
         : 'Selecciona al Pokémon que realizará la misión.',
       allowedIds,
       autoConfirm: true,
       onConfirm: (selected: Pokemon[]) => {
         const p = selected?.[0];
         if (p) {
-          const teamIdx = gameStore.state.team.findIndex((tp: Pokemon | null) => tp && tp.uid === p.uid);
+          const teamIdx = gameStore.state.team.findIndex(
+            (tp: Pokemon | null) => tp && tp.uid === p.uid
+          );
           if (teamIdx !== -1) {
             if (gameStore.state.team.length <= 1) {
               uiStore.notify('No puedes enviar a tu único Pokémon del equipo.', '⚠️');
@@ -264,8 +278,8 @@ async function startClassMission(missionId: MissionId) {
 </script>
 
 <template>
-  <div 
-    v-if="classStore.currentClassDef" 
+  <div
+    v-if="classStore.currentClassDef"
     class="class-missions-container"
     :style="{ '--class-color': classStore.currentClassDef.color || '#3b82f6' }"
   >
@@ -304,7 +318,7 @@ async function startClassMission(missionId: MissionId) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .class-missions-container {
   margin-top: 24px;
@@ -337,7 +351,11 @@ async function startClassMission(missionId: MissionId) {
       color: var(--white);
       font-size: var(--font-9);
       font-weight: 800;
-      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+      text-shadow:
+        1px 1px 0 #000,
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000;
     }
   }
 }
@@ -346,11 +364,11 @@ async function startClassMission(missionId: MissionId) {
   display: grid;
   gap: $spacing-lg;
   grid-template-columns: 1fr;
-  
+
   @media (width >= 600px) {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   @media (width >= 950px) {
     grid-template-columns: 1fr 1fr 1fr;
   }

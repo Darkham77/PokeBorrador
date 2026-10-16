@@ -13,10 +13,7 @@ import {
   loadTilesRegistry,
   type TilesRegistryJson
 } from '../../logic/map/tilesRegistry';
-import {
-  STRUCTURE_TEMPLATES,
-  getStructureTemplate
-} from '../../config/mapStructures';
+import { STRUCTURE_TEMPLATES, getStructureTemplate } from '../../config/mapStructures';
 import {
   STUDIO_TILE_SIZE,
   TILE_CENTER_OFFSET,
@@ -301,8 +298,14 @@ async function generateAndRender(): Promise<void> {
 
     const t0 = performance.now();
     const map = generateProceduralMap({
-      width: Math.max(MIN_MAP_DIMENSION, Math.min(MAX_MAP_DIMENSION, Number(mapWidth.value) || DEFAULT_VIEWER_MAP_WIDTH)),
-      height: Math.max(MIN_MAP_DIMENSION, Math.min(MAX_MAP_DIMENSION, Number(mapHeight.value) || DEFAULT_VIEWER_MAP_HEIGHT)),
+      width: Math.max(
+        MIN_MAP_DIMENSION,
+        Math.min(MAX_MAP_DIMENSION, Number(mapWidth.value) || DEFAULT_VIEWER_MAP_WIDTH)
+      ),
+      height: Math.max(
+        MIN_MAP_DIMENSION,
+        Math.min(MAX_MAP_DIMENSION, Number(mapHeight.value) || DEFAULT_VIEWER_MAP_HEIGHT)
+      ),
       seed: Number(seed.value) || CONTINENT_DEFAULT_SEED,
       theme: theme.value,
       type: mapType.value,
@@ -374,14 +377,9 @@ onMounted(() => {
     <div class="viewer-header">
       <div class="title-group">
         <span class="icon">🗺️</span>
-        <h3 class="viewer-title">
-          VISOR PROCEDURAL DE MAPAS GBA (v2.1)
-        </h3>
+        <h3 class="viewer-title">VISOR PROCEDURAL DE MAPAS GBA (v2.1)</h3>
       </div>
-      <div
-        class="badge-status"
-        :class="{ ready: !isGenerating && !isLoadingRegistry }"
-      >
+      <div class="badge-status" :class="{ ready: !isGenerating && !isLoadingRegistry }">
         {{ isLoadingRegistry ? 'CARGANDO REGISTRO...' : isGenerating ? 'GENERANDO...' : 'LISTO' }}
       </div>
     </div>
@@ -391,21 +389,10 @@ onMounted(() => {
       <!-- Theme Selector -->
       <div class="control-item">
         <label for="theme-select">Tema:</label>
-        <select
-          id="theme-select"
-          v-model="theme"
-          class="retro-select"
-          @change="generateAndRender"
-        >
-          <option value="firered">
-            Rojo Fuego (Kanto)
-          </option>
-          <option value="emerald">
-            Esmeralda (Hoenn)
-          </option>
-          <option value="ruby_sapphire">
-            Rubí / Zafiro
-          </option>
+        <select id="theme-select" v-model="theme" class="retro-select" @change="generateAndRender">
+          <option value="firered">Rojo Fuego (Kanto)</option>
+          <option value="emerald">Esmeralda (Hoenn)</option>
+          <option value="ruby_sapphire">Rubí / Zafiro</option>
         </select>
       </div>
 
@@ -419,7 +406,7 @@ onMounted(() => {
             type="number"
             class="retro-input"
             @keyup.enter="generateAndRender"
-          >
+          />
           <button
             id="btn-rnd-seed"
             class="small-btn btn-rnd"
@@ -441,8 +428,9 @@ onMounted(() => {
             type="number"
             min="16"
             max="60"
+            aria-label="Ancho del mapa"
             class="retro-input-sm"
-          >
+          />
           <span>x</span>
           <input
             id="input-map-height"
@@ -450,8 +438,9 @@ onMounted(() => {
             type="number"
             min="16"
             max="60"
+            aria-label="Alto del mapa"
             class="retro-input-sm"
-          >
+          />
         </div>
       </div>
 
@@ -468,18 +457,9 @@ onMounted(() => {
       <!-- Map Mode Selector -->
       <div class="control-item">
         <label for="type-select">Modo:</label>
-        <select
-          id="type-select"
-          v-model="mapType"
-          class="retro-select"
-          @change="onMapTypeChange"
-        >
-          <option value="town">
-            Pueblo (Town)
-          </option>
-          <option value="route">
-            Ruta (Route)
-          </option>
+        <select id="type-select" v-model="mapType" class="retro-select" @change="onMapTypeChange">
+          <option value="town">Pueblo (Town)</option>
+          <option value="route">Ruta (Route)</option>
         </select>
       </div>
 
@@ -489,7 +469,8 @@ onMounted(() => {
           id="chk-collisions"
           v-model="showCollisions"
           type="checkbox"
-        >
+          aria-label="Mostrar colisiones"
+        />
         <span class="toggle-label">Colisiones</span>
       </label>
 
@@ -499,21 +480,20 @@ onMounted(() => {
           id="chk-entities"
           v-model="showEntities"
           type="checkbox"
-        >
+          aria-label="Mostrar entidades"
+        />
         <span class="toggle-label">Warps &amp; Spawns</span>
       </label>
 
       <!-- Town Pass Toggle (Town mode only) -->
-      <label
-        v-if="mapType === 'town'"
-        class="collision-toggle"
-      >
+      <label v-if="mapType === 'town'" class="collision-toggle">
         <input
           id="chk-town-pass"
           v-model="withTown"
           type="checkbox"
+          aria-label="Estructuras urbanas"
           @change="generateAndRender"
-        >
+        />
         <span class="toggle-label">Estructuras Urbanas</span>
       </label>
     </div>
@@ -528,12 +508,9 @@ onMounted(() => {
           id="select-structure"
           v-model="selectedStructureId"
           class="retro-select"
+          aria-label="Estructura a estampar"
         >
-          <option
-            v-for="s in Object.values(STRUCTURE_TEMPLATES)"
-            :key="s.id"
-            :value="s.id"
-          >
+          <option v-for="s in Object.values(STRUCTURE_TEMPLATES)" :key="s.id" :value="s.id">
             {{ s.name }} ({{ s.footprint.width }}x{{ s.footprint.height }})
           </option>
         </select>
@@ -545,8 +522,9 @@ onMounted(() => {
             type="number"
             min="0"
             max="60"
+            aria-label="Coordenada X de estampado"
             class="retro-input-sm"
-          >
+          />
           <span>Y:</span>
           <input
             id="input-stamp-y"
@@ -554,8 +532,9 @@ onMounted(() => {
             type="number"
             min="0"
             max="60"
+            aria-label="Coordenada Y de estampado"
             class="retro-input-sm"
-          >
+          />
         </div>
         <button
           id="btn-stamp-structure"
@@ -566,20 +545,14 @@ onMounted(() => {
           ESTAMPAR
         </button>
       </div>
-      <div
-        v-if="structureMessage"
-        class="stamp-feedback"
-      >
+      <div v-if="structureMessage" class="stamp-feedback">
         {{ structureMessage }}
       </div>
     </div>
 
     <!-- Canvas Viewport -->
     <div class="canvas-viewport">
-      <canvas
-        ref="canvasRef"
-        class="map-canvas"
-      />
+      <canvas ref="canvasRef" class="map-canvas" />
     </div>
 
     <!-- Telemetry & Diagnostics Bar -->
@@ -604,19 +577,13 @@ onMounted(() => {
         <span class="diag-label">Impactos Caché:</span>
         <span class="diag-value text-cyan">{{ cacheHits }}</span>
       </div>
-      <div
-        v-if="showCollisions"
-        class="legend-group"
-      >
+      <div v-if="showCollisions" class="legend-group">
         <span class="legend-badge leg-walkable">0: Libre</span>
         <span class="legend-badge leg-solid">1: Sólido</span>
         <span class="legend-badge leg-water">2: Agua</span>
         <span class="legend-badge leg-ledge">3: Salto ▼</span>
       </div>
-      <div
-        v-if="showEntities"
-        class="legend-group"
-      >
+      <div v-if="showEntities" class="legend-group">
         <span class="legend-badge leg-warp">W: Warp</span>
         <span class="legend-badge leg-spawn"><span class="icon">★</span>/S: Spawn</span>
       </div>
@@ -625,7 +592,7 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .procedural-viewer-card {
   display: flex;
@@ -780,7 +747,7 @@ onMounted(() => {
   user-select: none;
   margin-left: auto;
 
-  input[type="checkbox"] {
+  input[type='checkbox'] {
     accent-color: var(--emerald);
   }
 

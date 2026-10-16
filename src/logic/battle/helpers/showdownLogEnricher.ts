@@ -10,16 +10,16 @@ export class ShowdownLogEnricher {
    * Overrides battle.add and battle.addMove to inject UIDs in real-time.
    */
   static setupRealtimeEnrichment(battle: Battle): void {
-    const originalAdd = battle.add;
+    const originalAdd = battle.add.bind(battle);
     battle.add = function (...parts: unknown[]) {
-      originalAdd.apply(this, parts as Parameters<typeof originalAdd>); // domain-ok: Open dynamic text or non-domain string payload
+      originalAdd(...(parts as Parameters<typeof originalAdd>)); // domain-ok: Open dynamic text or non-domain string payload
       const lastIndex = battle.log.length - 1;
       if (lastIndex >= 0) {
         const line = battle.log[lastIndex];
         const uidMappings: string[] = []; // no-domain: Non-domain utility collection or data structure
-        parts.forEach(part => {
+        parts.forEach((part) => {
           if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
-            const ident = part.toString();
+            const ident = (part as { toString(): string }).toString();
             if (ident) {
               const cleanIdent = ident.replace(/\s+/g, '');
               uidMappings.push(`${cleanIdent}=${(part as { uid: string }).uid}`);
@@ -32,16 +32,16 @@ export class ShowdownLogEnricher {
       }
     };
 
-    const originalAddMove = battle.addMove;
+    const originalAddMove = battle.addMove.bind(battle);
     battle.addMove = function (...parts: unknown[]) {
-      originalAddMove.apply(this, parts as Parameters<typeof originalAddMove>); // domain-ok: Open dynamic text or non-domain string payload
+      originalAddMove(...(parts as Parameters<typeof originalAddMove>)); // domain-ok: Open dynamic text or non-domain string payload
       const lastIndex = battle.log.length - 1;
       if (lastIndex >= 0) {
         const line = battle.log[lastIndex];
         const uidMappings: string[] = []; // no-domain: Non-domain utility collection or data structure
-        parts.forEach(part => {
+        parts.forEach((part) => {
           if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
-            const ident = part.toString();
+            const ident = (part as { toString(): string }).toString();
             if (ident) {
               const cleanIdent = ident.replace(/\s+/g, '');
               uidMappings.push(`${cleanIdent}=${(part as { uid: string }).uid}`);
@@ -59,7 +59,7 @@ export class ShowdownLogEnricher {
    * Retroactively enriches early logs (e.g. initial lead switch/drag lines).
    */
   static enrichRetroactiveLeads(battle: Battle): void {
-    const enriched = battle.log.map(line => {
+    const enriched = battle.log.map((line) => {
       if (line.startsWith('|switch|') || line.startsWith('|drag|')) {
         const parts = line.split('|');
         const rawId = parts[2] || '';

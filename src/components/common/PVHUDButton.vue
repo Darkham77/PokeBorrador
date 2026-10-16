@@ -1,16 +1,14 @@
 <script setup lang="ts">
-
-
 defineProps({
   id: { type: String, default: undefined },
   active: { type: Boolean, default: false },
   badgeValue: { type: Number, default: 0 },
   customClass: { type: String, default: '' }
-})
+});
 
 const emit = defineEmits<{
-  (e: 'click', event: MouseEvent): void
-}>()
+  (e: 'click', event: MouseEvent): void;
+}>();
 </script>
 
 <template>
@@ -26,15 +24,12 @@ const emit = defineEmits<{
     <span class="nav-item-label">
       <slot />
     </span>
-    <span
-      v-if="badgeValue > 0"
-      class="hud-notification-badge"
-    >
+    <span v-if="badgeValue > 0" class="hud-notification-badge">
       {{ badgeValue }}
     </span>
   </button>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/layouts/hud/pills";
+@use '@/styles/layouts/hud/pills';
 </style>

@@ -1,7 +1,7 @@
-import {Generations, ID} from '@pkmn/data';
-import {Dex} from '@pkmn/dex';
+import { Generations, ID } from '@pkmn/data';
+import { Dex } from '@pkmn/dex';
 
-import {Battle, Field, Pokemon} from '../index';
+import { Battle, Field, Pokemon } from '../index';
 
 const gens = new Generations(Dex);
 const gen = gens.get(8);
@@ -19,8 +19,8 @@ describe('Field', () => {
     battle.upkeep();
 
     expect(field.pseudoWeather).toEqual({
-      trickroom: {id: 'trickroom', minDuration: 2, maxDuration: 4},
-      gravity: {id: 'gravity', minDuration: 0, maxDuration: 2},
+      trickroom: { id: 'trickroom', minDuration: 2, maxDuration: 4 },
+      gravity: { id: 'gravity', minDuration: 0, maxDuration: 2 }
     });
     field.removePseudoWeather('gravity' as ID);
     expect(field.hasPseudoWeather('gravity' as ID)).toBe(false);
@@ -28,7 +28,7 @@ describe('Field', () => {
   });
 
   it('#setWeather', () => {
-    const field = new Field({gen} as unknown as Battle);
+    const field = new Field({ gen } as unknown as Battle);
 
     field.setWeather('');
     expect(field.weather).toBeUndefined();
@@ -38,43 +38,43 @@ describe('Field', () => {
 
     field.setWeather('sunnyday' as ID, {} as Pokemon);
     expect(field.weather).toBe('Sun');
-    expect(field.weatherState).toEqual({id: 'sun', minDuration: 5, maxDuration: 8});
+    expect(field.weatherState).toEqual({ id: 'sun', minDuration: 5, maxDuration: 8 });
 
     field.setWeather('sunnyday' as ID, undefined, true);
     expect(field.weather).toBe('Sun');
-    expect(field.weatherState).toEqual({id: 'sun', minDuration: 4, maxDuration: 7});
+    expect(field.weatherState).toEqual({ id: 'sun', minDuration: 4, maxDuration: 7 });
 
     field.setWeather('desolateland' as ID, {} as Pokemon);
     expect(field.weather).toBe('Harsh Sunshine');
-    expect(field.weatherState).toEqual({id: 'harshsunshine', minDuration: 0, maxDuration: 0});
+    expect(field.weatherState).toEqual({ id: 'harshsunshine', minDuration: 0, maxDuration: 0 });
 
     field.setWeather('deltastream' as ID);
     expect(field.weather).toBe('Strong Winds');
-    expect(field.weatherState).toEqual({id: 'strongwinds', minDuration: 0, maxDuration: 0});
+    expect(field.weatherState).toEqual({ id: 'strongwinds', minDuration: 0, maxDuration: 0 });
 
     field.setWeather('raindance' as ID);
     expect(field.weather).toBe('Rain');
-    expect(field.weatherState).toEqual({id: 'rain', minDuration: 5, maxDuration: 8});
+    expect(field.weatherState).toEqual({ id: 'rain', minDuration: 5, maxDuration: 8 });
   });
 
   it('#setTerrain', () => {
-    const field = new Field({gen} as unknown as Battle);
+    const field = new Field({ gen } as unknown as Battle);
 
     field.setTerrain('electricterrain' as ID);
     expect(field.terrain).toBe('Electric');
-    expect(field.terrainState).toEqual({id: 'electric', minDuration: 5, maxDuration: 8});
+    expect(field.terrainState).toEqual({ id: 'electric', minDuration: 5, maxDuration: 8 });
 
     field.setTerrain('');
     expect(field.terrain).toBeUndefined();
-    expect(field.terrainState).toEqual({id: '', minDuration: 0, maxDuration: 0});
+    expect(field.terrainState).toEqual({ id: '', minDuration: 0, maxDuration: 0 });
 
     field.setTerrain('mistyterrain' as ID);
     expect(field.terrain).toBe('Misty');
-    expect(field.terrainState).toEqual({id: 'misty', minDuration: 5, maxDuration: 8});
+    expect(field.terrainState).toEqual({ id: 'misty', minDuration: 5, maxDuration: 8 });
   });
 
   it('#reset', () => {
-    const field = new Field({gen} as Battle);
+    const field = new Field({ gen } as Battle);
     field.setWeather('raindance' as ID);
     field.weatherState.minDuration = 3;
     field.weatherState.maxDuration = 5;
@@ -83,7 +83,7 @@ describe('Field', () => {
     field.reset();
 
     expect(field.weather).toBeUndefined();
-    expect(field.weatherState).toEqual({id: '', minDuration: 0, maxDuration: 0});
+    expect(field.weatherState).toEqual({ id: '', minDuration: 0, maxDuration: 0 });
     expect(field.hasPseudoWeather('trickroom' as ID)).toBe(false);
   });
 

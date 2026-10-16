@@ -4,7 +4,7 @@
  * Unit tests for ValidateClientSimDecouplingAuditor & Client Showdown Decoupling.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   ValidateClientSimDecouplingAuditor,
   isWorkerBoundaryFile,
@@ -147,7 +147,8 @@ describe('ValidateClientSimDecouplingAuditor', () => {
 
   describe('checkDistAssetsForSimChunks', () => {
     it('returns empty array when directory does not exist', () => {
-      const nonExistentDir = '/tmp/non-existent-dist-assets-dir-' + Temporal.Now.instant().epochMilliseconds;
+      const nonExistentDir =
+        '/tmp/non-existent-dist-assets-dir-' + Temporal.Now.instant().epochMilliseconds;
       expect(checkDistAssetsForSimChunks(nonExistentDir)).toEqual([]);
     });
 
@@ -190,4 +191,3 @@ describe('ValidateClientSimDecouplingAuditor', () => {
     });
   });
 });
-

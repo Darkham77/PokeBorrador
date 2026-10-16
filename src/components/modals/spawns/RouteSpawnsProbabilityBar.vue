@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/modals/spawns/RouteSpawnsProbabilityBar.vue
- * 
+ *
  * Visual probability and progress bar for route spawn items.
  */
 
@@ -27,15 +27,13 @@ const baseFillWidth = computed(() => {
 
 const extraFillWidth = computed(() => `${props.poke.diff * PROBABILITY_BAR_SCALE_FACTOR}%`);
 const reducedFillWidth = computed(() => `${props.poke.percentage * PROBABILITY_BAR_SCALE_FACTOR}%`);
-const lostFillWidth = computed(() => `${Math.abs(props.poke.diff) * PROBABILITY_BAR_SCALE_FACTOR}%`);
+const lostFillWidth = computed(
+  () => `${Math.abs(props.poke.diff) * PROBABILITY_BAR_SCALE_FACTOR}%`
+);
 </script>
 
 <template>
-  <PVTooltip
-    v-bind="getSpawnTooltip(poke)"
-    tag="div"
-    style="width: 100%;"
-  >
+  <PVTooltip v-bind="getSpawnTooltip(poke)" tag="div" style="width: 100%">
     <div class="prob-bar-wrapper">
       <div class="prob-numerical">
         <span class="active-prob">
@@ -50,32 +48,17 @@ const lostFillWidth = computed(() => `${Math.abs(props.poke.diff) * PROBABILITY_
       </div>
       <div class="prob-visual-progress">
         <template v-if="poke.spawnType === 'Común'">
-          <div
-            class="fill base-fill"
-            :style="{ width: baseFillWidth }"
-          />
+          <div class="fill base-fill" :style="{ width: baseFillWidth }" />
         </template>
         <template v-else>
-          <div
-            v-if="poke.diff >= 0"
-            class="fill base-fill"
-            :style="{ width: baseFillWidth }"
-          />
-          <div
-            v-if="diffPositive"
-            class="fill extra-fill"
-            :style="{ width: extraFillWidth }"
-          />
+          <div v-if="poke.diff >= 0" class="fill base-fill" :style="{ width: baseFillWidth }" />
+          <div v-if="diffPositive" class="fill extra-fill" :style="{ width: extraFillWidth }" />
           <div
             v-if="diffNegative"
             class="fill base-fill-reduced"
             :style="{ width: reducedFillWidth }"
           />
-          <div
-            v-if="diffNegative"
-            class="fill lost-fill"
-            :style="{ width: lostFillWidth }"
-          />
+          <div v-if="diffNegative" class="fill lost-fill" :style="{ width: lostFillWidth }" />
         </template>
       </div>
     </div>

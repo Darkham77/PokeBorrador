@@ -1,6 +1,6 @@
 /**
  * src/data/inventory/items.ts
- * 
+ *
  * Wrapper to export item configurations loaded from JSON.
  */
 import dbJson from './items.json' with { type: 'json' };
@@ -69,21 +69,21 @@ export const SHOP_ITEMS = dbJson.SHOP_ITEMS.map((item): Item => {
     cat: requireItemCategory(item.cat),
     tier: item.tier ? requireItemTier(item.tier) : undefined,
     kind: rawKind ? requireItemKind(rawKind) : undefined,
-    stoneType: item.stoneType ? requireEvolutionStoneKind(item.stoneType) : undefined,
+    stoneType: item.stoneType ? requireEvolutionStoneKind(item.stoneType) : undefined
   };
 });
 export type ShopItemData = (typeof SHOP_ITEMS)[number];
 
 export const ITEMS_BY_ID: Record<ItemId, Item> = Object.freeze(
-  Object.fromEntries(SHOP_ITEMS.map(item => [item.id, item])) as Record<ItemId, Item>
+  Object.fromEntries(SHOP_ITEMS.map((item) => [item.id, item])) as Record<ItemId, Item>
 );
 
 export const BC_SHOP_ITEMS: readonly ShopItemData[] = Object.freeze(
-  SHOP_ITEMS.filter(i => i.showInBCShop === true && (i.bcPrice || 0) > 0)
+  SHOP_ITEMS.filter((i) => i.showInBCShop === true && (i.bcPrice || 0) > 0)
 );
 
 export const getItemById = (id: string): ShopItemData => {
-  if (!id) throw new Error("ID de objeto no proporcionado");
+  if (!id) throw new Error('ID de objeto no proporcionado');
 
   const cleanId = requireItemId(id);
   const item = ITEMS_BY_ID[cleanId];
@@ -98,7 +98,6 @@ export const getItemName = (id: string): string => {
   return getItemById(id).name;
 };
 
-
 export const BUFF_FIELDS = [
   'repelSecs',
   'luckyEggSecs',
@@ -112,7 +111,7 @@ export const BUFF_FIELDS = [
   'articunoTicketSecs',
   'mewtwoTicketSecs',
   'ivScannerSecs',
-  'incenseSecs',
+  'incenseSecs'
 ] as const;
 export type BuffField = (typeof BUFF_FIELDS)[number];
 
@@ -130,8 +129,12 @@ export const BUFF_FIELD_TO_ITEM_IDS: Record<BuffField, readonly ItemId[]> = {
   mewtwoTicketSecs: ['ticketmewtwo'],
   ivScannerSecs: ['ivscanner'],
   incenseSecs: [
-    'incensefire', 'incensewater', 'incensegrass',
-    'incensenormal', 'incenseghost', 'incensepsychic'
+    'incensefire',
+    'incensewater',
+    'incensegrass',
+    'incensenormal',
+    'incenseghost',
+    'incensepsychic'
   ]
 };
 
@@ -139,15 +142,17 @@ export function getMaxBuffDuration(field: BuffField): number {
   const itemIds = BUFF_FIELD_TO_ITEM_IDS[field];
   let maxAllowedSecs = 3600;
 
-  const matchingItems = itemIds.map(id => ITEMS_BY_ID[id]).filter((item): item is Item => !!item);
+  const matchingItems = itemIds.map((id) => ITEMS_BY_ID[id]).filter((item): item is Item => !!item);
   if (matchingItems.length > 0) {
-    const maxItemDuration = Math.max(...matchingItems.map(item => {
-      if (!item.desc) return 1800;
-      const hourMatch = item.desc.match(/(\d+)\s*hora/i);
-      if (hourMatch) return parseInt(hourMatch[1] || '0', 10) * 3600;
-      const minMatch = item.desc.match(/(\d+)\s*min/i);
-      return minMatch ? parseInt(minMatch[1] || '0', 10) * 60 : 1800;
-    }));
+    const maxItemDuration = Math.max(
+      ...matchingItems.map((item) => {
+        if (!item.desc) return 1800;
+        const hourMatch = item.desc.match(/(\d+)\s*hora/i);
+        if (hourMatch) return parseInt(hourMatch[1] || '0', 10) * 3600;
+        const minMatch = item.desc.match(/(\d+)\s*min/i);
+        return minMatch ? parseInt(minMatch[1] || '0', 10) * 60 : 1800;
+      })
+    );
     if (maxItemDuration > 0) {
       maxAllowedSecs = maxItemDuration;
     }

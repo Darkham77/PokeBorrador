@@ -26,25 +26,25 @@ Battle Engine Developers.
 
 ### Difficulty Tiers
 
-| Preset | errorRate | switchAggressiveness | switchCooldownTurns | useInference | useStrategicEval |
-| --- | --- | --- | --- | --- | --- |
-| `wild` | 50% | 0% | 2 | false | false |
-| `novice` | 20% | 15% | 2 | false | false |
-| `intermediate` | 10% | 30% | 2 | true | true |
-| `tactical` | 5% | 55% | 2 | true | true |
-| `elite` | 2% | 75% | 2 | true | true |
-| `gym` | 0% | 70% | 1 | true | true |
-| `rival` (apex / PvP passive) | 0% | 85% | 1 | true | true |
+| Preset                       | errorRate | switchAggressiveness | switchCooldownTurns | useInference | useStrategicEval |
+| ---------------------------- | --------- | -------------------- | ------------------- | ------------ | ---------------- |
+| `wild`                       | 50%       | 0%                   | 2                   | false        | false            |
+| `novice`                     | 20%       | 15%                  | 2                   | false        | false            |
+| `intermediate`               | 10%       | 30%                  | 2                   | true         | true             |
+| `tactical`                   | 5%        | 55%                  | 2                   | true         | true             |
+| `elite`                      | 2%        | 75%                  | 2                   | true         | true             |
+| `gym`                        | 0%        | 70%                  | 1                   | true         | true             |
+| `rival` (apex / PvP passive) | 0%        | 85%                  | 1                   | true         | true             |
 
 ### Module Map
 
-| File | Role |
-| --- | --- |
-| `combatAI.ts` | `CombatAI` interface (contract) |
-| `heuristicAI.ts` | Main AI — implements `CombatAI`, delegates to the heuristic sub-engine |
-| `scriptedAI.ts` | E2E mock AI that replays choices from `window.__VITE_DEBUG__` |
-| `battleAI.ts` | Public facade — re-exports `decideEnemyMove`, `shouldEnemySwitch`, etc. |
-| `heuristic/` | 9-layer heuristic engine (see child AGENTS.md) |
+| File                           | Role                                                                                |
+| ------------------------------ | ----------------------------------------------------------------------------------- |
+| `combatAI.ts`                  | `CombatAI` interface (contract)                                                     |
+| `heuristicAI.ts`               | Main AI — implements `CombatAI`, delegates to the heuristic sub-engine              |
+| `scriptedAI.ts`                | E2E mock AI that replays choices from `window.__VITE_DEBUG__`                       |
+| `battleAI.ts`                  | Public facade — re-exports `decideEnemyMove`, `shouldEnemySwitch`, etc.             |
+| `heuristic/`                   | 9-layer heuristic engine (see child AGENTS.md)                                      |
 | `heuristic/aiItemEvaluator.ts` | Evaluator for NPC trainer item usage during battle (revives, status cures, potions) |
 
 ### HeuristicAI — No-Store Fallback
@@ -64,7 +64,7 @@ The fallback only applies during initialization edge cases (turn 1, forced switc
 
 Never use `.id ?? m.name` or `.id || p.name` anywhere in `src/logic/`.
 If a Move or Pokemon is missing `.id`, throw immediately:
-  `if (!m.id) throw new Error(\`[HeuristicAI] Move missing id: ${JSON.stringify(m)}\`);`
+`if (!m.id) throw new Error(\`[HeuristicAI] Move missing id: ${JSON.stringify(m)}\`);`
 
 The project auditor detects these patterns and blocks the commit gate.
 Moves and Pokemon always have a canonical `.id` in this codebase — a missing id

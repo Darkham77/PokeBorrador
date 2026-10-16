@@ -11,31 +11,50 @@ import {
   RANDOM_STRING_SUBSTRING_END
 } from '@/logic/constants/gameplay.ts';
 
+import { isItemId, type ItemId } from '@/data/inventory/items';
+import type { Inventory } from '@/types/inventory/items';
+
 interface OfflineSaveData {
   box?: Pokemon[];
   team?: Pokemon[];
-  inventory?: Record<string, number>;
+  inventory?: Inventory;
   money?: number;
   [key: string]: unknown;
 }
 
 function generateClaimId(): string {
-  return 'claim_' + Math.random().toString(ALPHANUMERIC_RADIX).substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END);
+  return (
+    'claim_' +
+    Math.random()
+      .toString(ALPHANUMERIC_RADIX)
+      .substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END)
+  );
 }
 
 function validateTradeOfferPokemon(poke: Pokemon | null): DBResponse | null {
   if (!poke) return null;
   if (isPokemonBusy(poke)) {
-    return { data: null, error: { message: 'No puedes ofrecer un Pokémon que está en misión, evento o guardería.' } };
+    return {
+      data: null,
+      error: { message: 'No puedes ofrecer un Pokémon que está en misión, evento o guardería.' }
+    };
   }
   const legality = checkPokemonLegality(poke);
   if (poke.isIllegal || !legality.isLegal) {
-    return { data: null, error: { message: `No puedes ofrecer un Pokémon ilegal en el intercambio: ${legality.issues[0] || 'datos no válidos'}.` } };
+    return {
+      data: null,
+      error: {
+        message: `No puedes ofrecer un Pokémon ilegal en el intercambio: ${legality.issues[0] || 'datos no válidos'}.`
+      }
+    };
   }
   return null;
 }
 
-function deductOfferedPokemon(senderSave: OfflineSaveData, poke: Pokemon | null): DBResponse | null {
+function deductOfferedPokemon(
+  senderSave: OfflineSaveData,
+  poke: Pokemon | null
+): DBResponse | null {
   if (!poke) return null;
   const uid = poke.uid as string;
   const teamLenBefore = senderSave.team?.length || 0;
@@ -50,17 +69,22 @@ function deductOfferedPokemon(senderSave: OfflineSaveData, poke: Pokemon | null)
   return null;
 }
 
-function deductOfferedItems(senderSave: OfflineSaveData, items: Record<string, number> | null): DBResponse | null {
+function deductOfferedItems(
+  senderSave: OfflineSaveData,
+  items: Record<ItemId, number> | null
+): DBResponse | null {
   if (!items) return null;
-  senderSave.inventory = senderSave.inventory || {};
+  if (!senderSave.inventory) senderSave.inventory = {};
+  const inventory = senderSave.inventory;
   for (const [itemName, qty] of Object.entries(items)) {
-    const currentQty = senderSave.inventory[itemName] || 0;
+    if (!isItemId(itemName)) continue;
+    const currentQty = inventory[itemName] || 0;
     if (currentQty < qty) {
       return { data: null, error: { message: `Cantidad insuficiente de ${itemName}.` } };
     }
-    senderSave.inventory[itemName] = currentQty - qty;
-    if (senderSave.inventory[itemName]! <= 0) {
-      delete senderSave.inventory[itemName];
+    inventory[itemName] = currentQty - qty;
+    if (inventory[itemName]! <= 0) {
+      delete inventory[itemName];
     }
   }
   return null;
@@ -78,7 +102,7 @@ function deductOfferedMoney(senderSave: OfflineSaveData, money: number): DBRespo
 
 export async function emulateSendTradeOffer(
   sqliteDb: SQLiteDatabase,
-  params: Record<string, unknown>,
+  params: Record<string, unknown>, // open-record: Dynamic RPC payload
   context: { userId: string }
 ): Promise<DBResponse> {
   const {
@@ -93,10 +117,10 @@ export async function emulateSendTradeOffer(
   } = params as {
     p_receiver_id: string;
     p_offer_pokemon: Pokemon | null;
-    p_offer_items: Record<string, number> | null;
+    p_offer_items: Record<ItemId, number> | null;
     p_offer_money: number;
     p_request_pokemon: Pokemon | null;
-    p_request_items: Record<string, number> | null;
+    p_request_items: Record<ItemId, number> | null;
     p_request_money: number;
     p_message: string;
   };
@@ -105,9 +129,15 @@ export async function emulateSendTradeOffer(
   const pokeValError = validateTradeOfferPokemon(p_offer_pokemon);
   if (pokeValError) return pokeValError;
 
-  const senderSaves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
+  const senderSaves = await queryLocal('SELECT save_data FROM game_saves WHERE user_id = ?', [
+    userId
+  ]);
   if (senderSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
-  const senderSave = (typeof senderSaves[0]!.save_data === 'string' ? JSON.parse(senderSaves[0]!.save_data as string) : senderSaves[0]!.save_data) as OfflineSaveData;
+  const senderSave = (
+    typeof senderSaves[0]!.save_data === 'string'
+      ? JSON.parse(senderSaves[0]!.save_data as string)
+      : senderSaves[0]!.save_data
+  ) as OfflineSaveData;
 
   const pokeDeductError = deductOfferedPokemon(senderSave, p_offer_pokemon);
   if (pokeDeductError) return pokeDeductError;
@@ -138,7 +168,7 @@ export async function emulateSendTradeOffer(
       p_request_pokemon ? JSON.stringify(p_request_pokemon) : null,
       p_request_items ? JSON.stringify(p_request_items) : null,
       p_request_money,
-      p_message || '',
+      p_message || ''
     ]
   );
 
@@ -147,16 +177,16 @@ export async function emulateSendTradeOffer(
 }
 
 interface EmulatedTradeOffer extends Record<string, unknown> {
-  id: number
-  sender_id: string
-  receiver_id: string
-  offer_pokemon: string | null
-  offer_items: string | null
-  offer_money: number
-  request_pokemon: string | null
-  request_items: string | null
-  request_money: number
-  status: string
+  id: number;
+  sender_id: string;
+  receiver_id: string;
+  offer_pokemon: string | null;
+  offer_items: string | null;
+  offer_money: number;
+  request_pokemon: string | null;
+  request_items: string | null;
+  request_money: number;
+  status: string;
 }
 
 function validateTradeLegality(
@@ -166,72 +196,92 @@ function validateTradeLegality(
   requestPokeObj: Pokemon | null
 ): DBResponse | null {
   if (trade.status !== 'pending') {
-    return { data: null, error: { message: 'Oferta no válida o ya procesada.' } }
+    return { data: null, error: { message: 'Oferta no válida o ya procesada.' } };
   }
   if (trade.receiver_id !== userId) {
-    return { data: null, error: { message: 'No autorizado.' } }
+    return { data: null, error: { message: 'No autorizado.' } };
   }
   if (offerPokeObj && (offerPokeObj.isIllegal || !checkPokemonLegality(offerPokeObj).isLegal)) {
-    return { data: null, error: { message: 'La oferta contiene un Pokémon ilegal y no puede ser aceptada.' } }
+    return {
+      data: null,
+      error: { message: 'La oferta contiene un Pokémon ilegal y no puede ser aceptada.' }
+    };
   }
   if (requestPokeObj && isPokemonBusy(requestPokeObj)) {
-    return { data: null, error: { message: 'El Pokémon solicitado está ocupado en una misión o evento.' } }
+    return {
+      data: null,
+      error: { message: 'El Pokémon solicitado está ocupado en una misión o evento.' }
+    };
   }
-  if (requestPokeObj && (requestPokeObj.isIllegal || !checkPokemonLegality(requestPokeObj).isLegal)) {
-    return { data: null, error: { message: 'El Pokémon solicitado es ilegal y no puede ser transferido.' } }
+  if (
+    requestPokeObj &&
+    (requestPokeObj.isIllegal || !checkPokemonLegality(requestPokeObj).isLegal)
+  ) {
+    return {
+      data: null,
+      error: { message: 'El Pokémon solicitado es ilegal y no puede ser transferido.' }
+    };
   }
-  return null
+  return null;
 }
 
 function removePokemonFromReceiverSave(receiverSave: OfflineSaveData, uid: string): boolean {
-  const teamLenBefore = receiverSave.team?.length || 0
-  receiverSave.team = (receiverSave.team || []).filter(p => p.uid !== uid)
-  if (receiverSave.team.length < teamLenBefore) return true
+  const teamLenBefore = receiverSave.team?.length || 0;
+  receiverSave.team = (receiverSave.team || []).filter((p) => p.uid !== uid);
+  if (receiverSave.team.length < teamLenBefore) return true;
 
-  const boxLenBefore = receiverSave.box?.length || 0
-  receiverSave.box = (receiverSave.box || []).filter(p => p.uid !== uid)
-  return receiverSave.box.length < boxLenBefore
+  const boxLenBefore = receiverSave.box?.length || 0;
+  receiverSave.box = (receiverSave.box || []).filter((p) => p.uid !== uid);
+  return receiverSave.box.length < boxLenBefore;
 }
 
-function deductItemsFromReceiverSave(receiverSave: OfflineSaveData, requestItemsObj: Record<string, number>): string | null {
-  receiverSave.inventory = receiverSave.inventory || {}
+function deductItemsFromReceiverSave(
+  receiverSave: OfflineSaveData,
+  requestItemsObj: Record<ItemId, number>
+): string | null {
+  if (!receiverSave.inventory) receiverSave.inventory = {};
+  const inventory = receiverSave.inventory;
   for (const [itemName, qty] of Object.entries(requestItemsObj)) {
-    const currentQty = receiverSave.inventory[itemName] || 0
+    if (!isItemId(itemName)) continue;
+    const currentQty = inventory[itemName] || 0;
     if (currentQty < qty) {
-      return `Cantidad insuficiente de ${itemName}.`
+      return `Cantidad insuficiente de ${itemName}.`;
     }
-    receiverSave.inventory[itemName] = currentQty - qty
-    if (receiverSave.inventory[itemName]! <= 0) {
-      delete receiverSave.inventory[itemName]
+    inventory[itemName] = currentQty - qty;
+    if (inventory[itemName]! <= 0) {
+      delete inventory[itemName];
     }
   }
-  return null
+  return null;
 }
 
 function deductReceiverTradeCost(
   receiverSave: OfflineSaveData,
   requestPokeObj: Pokemon | null,
   requestMoney: number,
-  requestItemsObj: Record<string, number> | null
+  requestItemsObj: Record<ItemId, number> | null
 ): string | null {
-  if (requestPokeObj && !removePokemonFromReceiverSave(receiverSave, requestPokeObj.uid as string)) {
-    return 'Pokémon solicitado no encontrado en tu inventario.'
+  if (
+    requestPokeObj &&
+    !removePokemonFromReceiverSave(receiverSave, requestPokeObj.uid as string)
+  ) {
+    return 'Pokémon solicitado no encontrado en tu inventario.';
   }
 
   if (requestMoney > 0) {
-    const currentMoney = receiverSave.money || 0
+    const currentMoney = receiverSave.money || 0;
     if (currentMoney < requestMoney) {
-      return 'Dinero insuficiente para aceptar el intercambio.'
+      return 'Dinero insuficiente para aceptar el intercambio.';
     }
-    receiverSave.money = currentMoney - requestMoney
+    receiverSave.money = currentMoney - requestMoney;
   }
 
   if (requestItemsObj) {
-    const itemError = deductItemsFromReceiverSave(receiverSave, requestItemsObj)
-    if (itemError) return itemError
+    const itemError = deductItemsFromReceiverSave(receiverSave, requestItemsObj);
+    if (itemError) return itemError;
   }
 
-  return null
+  return null;
 }
 
 function enqueueTradeClaims(
@@ -240,30 +290,40 @@ function enqueueTradeClaims(
   recipientUserId: string, // uuid-ok: User account UUID identifier
   pokeObj: Pokemon | null,
   money: number,
-  itemsObj: Record<string, number> | null
+  itemsObj: Record<ItemId, number> | null
 ): void {
   if (pokeObj) {
-    const claimId = generateClaimId()
+    const claimId = generateClaimId();
     sqliteDb.run(
       "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
-      [claimId, recipientUserId, String(tradeId), JSON.stringify({ type: 'pokemon', data: pokeObj })]
-    )
+      [
+        claimId,
+        recipientUserId,
+        String(tradeId),
+        JSON.stringify({ type: 'pokemon', data: pokeObj })
+      ]
+    );
   }
   if (money > 0) {
-    const claimId = generateClaimId()
+    const claimId = generateClaimId();
     sqliteDb.run(
       "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
       [claimId, recipientUserId, String(tradeId), JSON.stringify({ type: 'money', data: money })]
-    )
+    );
   }
   if (itemsObj) {
     for (const [itemName, qty] of Object.entries(itemsObj)) {
       if (qty > 0) {
-        const claimId = generateClaimId()
+        const claimId = generateClaimId();
         sqliteDb.run(
           "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
-          [claimId, recipientUserId, String(tradeId), JSON.stringify({ type: 'item', data: { name: itemName, qty } })]
-        )
+          [
+            claimId,
+            recipientUserId,
+            String(tradeId),
+            JSON.stringify({ type: 'item', data: { name: itemName, qty } })
+          ]
+        );
       }
     }
   }
@@ -274,44 +334,69 @@ export async function emulateAcceptTrade(
   params: Record<string, unknown>,
   context: { userId: string }
 ): Promise<DBResponse> {
-  const { p_trade_id } = params as { p_trade_id: string | number }
-  const { userId } = context
+  const { p_trade_id } = params as { p_trade_id: string | number };
+  const { userId } = context;
 
-  const trades = await queryLocal("SELECT * FROM trade_offers WHERE id = ?", [p_trade_id])
-  if (trades.length === 0) return { data: null, error: { message: 'Oferta no válida o ya procesada.' } }
-  const trade = trades[0] as EmulatedTradeOffer
+  const trades = await queryLocal('SELECT * FROM trade_offers WHERE id = ?', [p_trade_id]);
+  if (trades.length === 0)
+    return { data: null, error: { message: 'Oferta no válida o ya procesada.' } };
+  const trade = trades[0] as EmulatedTradeOffer;
 
-  const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null
-  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null // open-record: Generic key-value data dictionary container
-  const requestPokeObj = trade.request_pokemon ? (JSON.parse(trade.request_pokemon) as Pokemon) : null
-  const requestItemsObj = trade.request_items ? (JSON.parse(trade.request_items) as Record<string, number>) : null // open-record: Generic key-value data dictionary container
+  const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null;
+  const offerItemsObj = trade.offer_items
+    ? (JSON.parse(trade.offer_items) as Record<ItemId, number>)
+    : null;
+  const requestPokeObj = trade.request_pokemon
+    ? (JSON.parse(trade.request_pokemon) as Pokemon)
+    : null;
+  const requestItemsObj = trade.request_items
+    ? (JSON.parse(trade.request_items) as Record<ItemId, number>)
+    : null;
 
-  const validationError = validateTradeLegality(trade, userId, offerPokeObj, requestPokeObj)
-  if (validationError) return validationError
+  const validationError = validateTradeLegality(trade, userId, offerPokeObj, requestPokeObj);
+  if (validationError) return validationError;
 
-  const receiverSaves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId])
-  if (receiverSaves.length === 0) return { data: null, error: { message: 'Save not found' } }
-  const receiverSave = (typeof receiverSaves[0]!.save_data === 'string' ? JSON.parse(receiverSaves[0]!.save_data as string) : receiverSaves[0]!.save_data) as OfflineSaveData
+  const receiverSaves = await queryLocal('SELECT save_data FROM game_saves WHERE user_id = ?', [
+    userId
+  ]);
+  if (receiverSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
+  const receiverSave = (
+    typeof receiverSaves[0]!.save_data === 'string'
+      ? JSON.parse(receiverSaves[0]!.save_data as string)
+      : receiverSaves[0]!.save_data
+  ) as OfflineSaveData;
 
-  const deductionError = deductReceiverTradeCost(receiverSave, requestPokeObj, trade.request_money, requestItemsObj)
-  if (deductionError) return { data: null, error: { message: deductionError } }
+  const deductionError = deductReceiverTradeCost(
+    receiverSave,
+    requestPokeObj,
+    trade.request_money,
+    requestItemsObj
+  );
+  if (deductionError) return { data: null, error: { message: deductionError } };
 
-  const newAcceptSaveId = crypto.randomUUID()
+  const newAcceptSaveId = crypto.randomUUID();
   sqliteDb.run(
     "UPDATE game_saves SET save_data = ?, last_save_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
     [JSON.stringify(receiverSave), newAcceptSaveId, userId]
-  )
+  );
 
-  enqueueTradeClaims(sqliteDb, p_trade_id, userId, offerPokeObj, trade.offer_money, offerItemsObj)
-  enqueueTradeClaims(sqliteDb, p_trade_id, trade.sender_id, requestPokeObj, trade.request_money, requestItemsObj)
+  enqueueTradeClaims(sqliteDb, p_trade_id, userId, offerPokeObj, trade.offer_money, offerItemsObj);
+  enqueueTradeClaims(
+    sqliteDb,
+    p_trade_id,
+    trade.sender_id,
+    requestPokeObj,
+    trade.request_money,
+    requestItemsObj
+  );
 
   sqliteDb.run(
     "UPDATE trade_offers SET status = 'accepted', created_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?",
     [p_trade_id]
-  )
+  );
 
-  await persistSQLite()
-  return { data: true, error: null }
+  await persistSQLite();
+  return { data: true, error: null };
 }
 
 export async function emulateRejectTrade(
@@ -322,7 +407,7 @@ export async function emulateRejectTrade(
   const { p_trade_id } = params as { p_trade_id: string | number };
   const { userId } = context;
 
-  const trades = await queryLocal("SELECT * FROM trade_offers WHERE id = ?", [p_trade_id]);
+  const trades = await queryLocal('SELECT * FROM trade_offers WHERE id = ?', [p_trade_id]);
   if (trades.length === 0) return { data: null, error: { message: 'Oferta no encontrada.' } };
   const trade = trades[0] as {
     id: number;
@@ -335,7 +420,10 @@ export async function emulateRejectTrade(
   };
 
   if (trade.status !== 'pending') {
-    return { data: null, error: { message: 'Solo se pueden rechazar u ocultar ofertas pendientes.' } };
+    return {
+      data: null,
+      error: { message: 'Solo se pueden rechazar u ocultar ofertas pendientes.' }
+    };
   }
   if (trade.sender_id !== userId && trade.receiver_id !== userId) {
     return { data: null, error: { message: 'No autorizado.' } };
@@ -343,29 +431,46 @@ export async function emulateRejectTrade(
 
   // Return assets to sender (trade.sender_id) in their claim_queue
   const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null;
-  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null; // open-record: Generic key-value data dictionary container
+  const offerItemsObj = trade.offer_items
+    ? (JSON.parse(trade.offer_items) as Record<ItemId, number>)
+    : null;
 
   if (offerPokeObj) {
     const claimId = generateClaimId();
     sqliteDb.run(
       "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade_refund', ?, ?)",
-      [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'pokemon', data: offerPokeObj })]
+      [
+        claimId,
+        trade.sender_id,
+        String(p_trade_id),
+        JSON.stringify({ type: 'pokemon', data: offerPokeObj })
+      ]
     );
   }
   if (trade.offer_money > 0) {
     const claimId = generateClaimId();
     sqliteDb.run(
       "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade_refund', ?, ?)",
-      [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'money', data: trade.offer_money })]
+      [
+        claimId,
+        trade.sender_id,
+        String(p_trade_id),
+        JSON.stringify({ type: 'money', data: trade.offer_money })
+      ]
     );
   }
   if (offerItemsObj) {
-    for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) { // open-record: Generic key-value data dictionary container
+    for (const [itemName, qty] of Object.entries(offerItemsObj)) {
       if (qty > 0) {
         const claimId = generateClaimId();
         sqliteDb.run(
           "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade_refund', ?, ?)",
-          [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'item', data: { name: itemName, qty } })]
+          [
+            claimId,
+            trade.sender_id,
+            String(p_trade_id),
+            JSON.stringify({ type: 'item', data: { name: itemName, qty } })
+          ]
         );
       }
     }

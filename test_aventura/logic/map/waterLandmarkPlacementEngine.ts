@@ -9,7 +9,11 @@
 
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
-import { resolveWaterCoastGrid, type ResolvedWaterMapResult, type WaterTerrainKind } from './waterAutotileEngine.ts';
+import {
+  resolveWaterCoastGrid,
+  type ResolvedWaterMapResult,
+  type WaterTerrainKind
+} from './waterAutotileEngine.ts';
 import { computeOceanGrid } from './routePathfinding.ts';
 import type { RegionalPOITemplate } from './regionalPoiCatalog.ts';
 import {
@@ -37,7 +41,14 @@ export interface WaterLandmarkPlacementContext {
  * Places water landmarks (Shrines in lakes, Lighthouses in coastal bays).
  */
 export function placeWaterLandmarks(ctx: WaterLandmarkPlacementContext): void {
-  const { continentMap, activeCatalog, placedNodes, isAreaFree, markAreaOccupied, getMinDistanceToPlaced } = ctx;
+  const {
+    continentMap,
+    activeCatalog,
+    placedNodes,
+    isAreaFree,
+    markAreaOccupied,
+    getMinDistanceToPlaced
+  } = ctx;
   const W = continentMap.width;
   const H = continentMap.height;
 
@@ -52,7 +63,16 @@ export function placeWaterLandmarks(ctx: WaterLandmarkPlacementContext): void {
 
     for (let y = isletMargin + 3; y < H - tmpl.height - isletMargin - 3; y += 1) {
       for (let x = isletMargin + 3; x < W - tmpl.width - isletMargin - 3; x += 1) {
-        if (!isAreaFree(x - isletMargin, y - isletMargin, tmpl.width + isletMargin * 2, tmpl.height + isletMargin * 2, 1)) continue;
+        if (
+          !isAreaFree(
+            x - isletMargin,
+            y - isletMargin,
+            tmpl.width + isletMargin * 2,
+            tmpl.height + isletMargin * 2,
+            1
+          )
+        )
+          continue;
 
         let allWater = true;
         for (let dy = -isletMargin; dy < tmpl.height + isletMargin; dy++) {
@@ -74,15 +94,33 @@ export function placeWaterLandmarks(ctx: WaterLandmarkPlacementContext): void {
 
           // Measure distance from candidate perimeter to nearest continental shore (grass or sand)
           let edgeDistToShore = Infinity;
-          for (let dy = -MAX_SHORE_SEARCH_RADIUS; dy <= tmpl.height + MAX_SHORE_SEARCH_RADIUS; dy++) {
-            for (let dx = -MAX_SHORE_SEARCH_RADIUS; dx <= tmpl.width + MAX_SHORE_SEARCH_RADIUS; dx++) {
+          for (
+            let dy = -MAX_SHORE_SEARCH_RADIUS;
+            dy <= tmpl.height + MAX_SHORE_SEARCH_RADIUS;
+            dy++
+          ) {
+            for (
+              let dx = -MAX_SHORE_SEARCH_RADIUS;
+              dx <= tmpl.width + MAX_SHORE_SEARCH_RADIUS;
+              dx++
+            ) {
               const ny = y + dy;
               const nx = x + dx;
               if (ny < 0 || ny >= H || nx < 0 || nx >= W) continue;
               const terr = continentMap.terrainMatrix[ny]![nx]!;
               if (terr !== 'grass' && terr !== 'sand') continue;
-              const cdx = nx < x - isletMargin ? (x - isletMargin) - nx : nx > x + tmpl.width - 1 + isletMargin ? nx - (x + tmpl.width - 1 + isletMargin) : 0;
-              const cdy = ny < y - isletMargin ? (y - isletMargin) - ny : ny > y + tmpl.height - 1 + isletMargin ? ny - (y + tmpl.height - 1 + isletMargin) : 0;
+              const cdx =
+                nx < x - isletMargin
+                  ? x - isletMargin - nx
+                  : nx > x + tmpl.width - 1 + isletMargin
+                    ? nx - (x + tmpl.width - 1 + isletMargin)
+                    : 0;
+              const cdy =
+                ny < y - isletMargin
+                  ? y - isletMargin - ny
+                  : ny > y + tmpl.height - 1 + isletMargin
+                    ? ny - (y + tmpl.height - 1 + isletMargin)
+                    : 0;
               const dist = Math.hypot(cdx, cdy);
               if (dist < edgeDistToShore) edgeDistToShore = dist;
             }
@@ -92,12 +130,21 @@ export function placeWaterLandmarks(ctx: WaterLandmarkPlacementContext): void {
 
           // For lake landmarks: prefer inland freshwater lakes with 1 to 10 cells of water to shore
           const minShoreDist = isLakeLandmark ? 1 : 2;
-          const maxShoreDist = isLakeLandmark ? LAKE_SHORE_SEARCH_MAX_RADIUS : COASTAL_SHORE_SEARCH_MAX_RADIUS;
+          const maxShoreDist = isLakeLandmark
+            ? LAKE_SHORE_SEARCH_MAX_RADIUS
+            : COASTAL_SHORE_SEARCH_MAX_RADIUS;
           const idealDist = isLakeLandmark ? 2.0 : 6.0;
-          const minLandmarkDist = W <= COMPACT_MAP_THRESHOLD ? COMPACT_MIN_LANDMARK_DIST : STANDARD_MIN_LANDMARK_DIST;
+          const minLandmarkDist =
+            W <= COMPACT_MAP_THRESHOLD ? COMPACT_MIN_LANDMARK_DIST : STANDARD_MIN_LANDMARK_DIST;
 
-          if (edgeDistToShore >= minShoreDist && edgeDistToShore <= maxShoreDist && d >= minLandmarkDist) {
-            let score = -Math.abs(edgeDistToShore - idealDist) * 3.0 + Math.min(d, WATER_LANDMARK_MAX_DIST_CLAMP);
+          if (
+            edgeDistToShore >= minShoreDist &&
+            edgeDistToShore <= maxShoreDist &&
+            d >= minLandmarkDist
+          ) {
+            let score =
+              -Math.abs(edgeDistToShore - idealDist) * 3.0 +
+              Math.min(d, WATER_LANDMARK_MAX_DIST_CLAMP);
             if (isLakeLandmark && !isCandidateOcean) {
               score += WATER_LANDMARK_SCORE_BONUS;
             } else if (!isLakeLandmark && isCandidateOcean) {
@@ -142,11 +189,13 @@ export function placeWaterLandmarks(ctx: WaterLandmarkPlacementContext): void {
           const isGrassCorner =
             !isLakeLandmark &&
             ((ix === grassX1 && iy === grassY1) ||
-             (ix === grassX2 && iy === grassY1) ||
-             (ix === grassX1 && iy === grassY2) ||
-             (ix === grassX2 && iy === grassY2));
+              (ix === grassX2 && iy === grassY1) ||
+              (ix === grassX1 && iy === grassY2) ||
+              (ix === grassX2 && iy === grassY2));
 
-          const isGrass = isLakeLandmark || (!isGrassCorner && ix >= grassX1 && ix <= grassX2 && iy >= grassY1 && iy <= grassY2);
+          const isGrass =
+            isLakeLandmark ||
+            (!isGrassCorner && ix >= grassX1 && ix <= grassX2 && iy >= grassY1 && iy <= grassY2);
           const terr: WaterTerrainKind = isGrass ? 'grass' : 'sand';
           (continentMap.terrainMatrix as WaterTerrainKind[][])[iy]![ix] = terr;
           const cell = continentMap.cells[iy]![ix]!;
@@ -157,9 +206,8 @@ export function placeWaterLandmarks(ctx: WaterLandmarkPlacementContext): void {
       }
 
       // Re-resolve water & coast autotiles so the new islet and surrounding water have canonical shore autotiles
-      (continentMap as { resolvedWater: ResolvedWaterMapResult }).resolvedWater = resolveWaterCoastGrid(
-        continentMap.terrainMatrix
-      );
+      (continentMap as { resolvedWater: ResolvedWaterMapResult }).resolvedWater =
+        resolveWaterCoastGrid(continentMap.terrainMatrix);
       for (let iy = Math.max(0, isletY1 - 2); iy <= Math.min(H - 1, isletY2 + 2); iy++) {
         for (let ix = Math.max(0, isletX1 - 2); ix <= Math.min(W - 1, isletX2 + 2); ix++) {
           const cell = continentMap.cells[iy]![ix]!;

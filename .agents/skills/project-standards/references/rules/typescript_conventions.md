@@ -14,7 +14,7 @@
 
 - **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
 - **Mandatory Technical Justifications on 100% of Escape Hatches (`unjustified-escape-hatch`)**: Any localized escape hatch (such as `// domain-ok`, `// singleton-ok`, `// uuid-ok`, `// infra-id-ok`, `// open-record`, `// runtime-set`) MUST include a colon followed by an explicit technical rationale (`// <hatch-name>: <detailed rationale>`). Naked, generic, or unexplained ignore directives trigger immediate critical failures in `npm run auditor:audit-headers`.
-- **Absolute Prohibition on File-Level Audit Ignores (`noFileLevelAuditIgnores`)**: It is STRICTLY FORBIDDEN to bypass, hide, or suppress auditor rules, security scanners, or compiler errors by placing file-wide ignore directives (such as `// fallow-ignore-file <rule>`, `/* eslint-disable */`, or `@ts-nocheck`) across an entire file. Enforced automatically by `npm run auditor:audit-headers`. Only localized, line-by-line Fallow annotations (`// fallow-ignore-next-line <rule>`, `// singleton-ok: <reason>`, `// domain-ok: <reason>`) are permitted in strictly justified edge cases.
+- **Absolute Prohibition on File-Level Audit Ignores (`noFileLevelAuditIgnores`)**: It is STRICTLY FORBIDDEN to bypass, hide, or suppress auditor rules, security scanners, or compiler errors by placing file-wide ignore directives (such as `// fallow-ignore-file <rule>`, `/* eslint-disable */`, `// oxlint-disable`, or `@ts-nocheck`) across an entire file. Enforced automatically by `npm run auditor:audit-headers`. Only localized, line-by-line Fallow annotations (`// fallow-ignore-next-line <rule>`, `// singleton-ok: <reason>`, `// domain-ok: <reason>`) are permitted in strictly justified edge cases.
 - **Prohibition on Blanket Directory Ignores (`noBlanketDirectoryIgnores`)**: It is STRICTLY FORBIDDEN to suppress auditor warnings by adding whole directory wildcards (such as `scripts/**`, `tests/**`, or bulk folder lists) to `.fallowrc.json` `ignorePatterns`. Doing so blindfolds the static analysis engine from detecting dead code, duplicate blocks, cognitive complexity, and import graph breaks. All issues MUST be resolved cleanly at the code level.
 - **Zero-Any Policy**: The use of `any` is STRICTLY FORBIDDEN. This integrity is absolute: no `any` is allowed anywhere, including Web Workers (`showdown.worker.ts`), orchestrators, and E2E simulation files. All payloads, window objects, and intermediate states must have dedicated interfaces or be imported from their respective packages (such as `@pkmn/sim`).
 - **No Type Assertions (`as ...`) Bypasses**: Using type assertions (`as Type`, `as PokemonStatus`, `as Move`, `as unknown as T`) to bypass compiler checks, evade strict schema validation, or force invalid objects into interfaces is STRICTLY PROHIBITED. Creating helper functions, getters, or composables solely to wrap and hide double casts (e.g., `const toPokemon = (d: unknown) => d as unknown as Pokemon // domain-ok`) is considered a severe anti-pattern — types MUST be properly declared using Discriminated Unions or explicit interfaces instead. All data boundaries (Web Workers, DB Router, Showdown Bridge) MUST use explicit boundary adapter functions instead of type casts.
@@ -43,6 +43,7 @@
   - Sleep/delay durations in application code: `await sleep(1000)` ➔ `const TRANSITION_DELAY_MS = 1_000`
   - Stat floor/ceiling business values: `ivFloor: 5` ➔ `const MISSION_6H_IV_FLOOR = 5`
   - Clamping bounds from game design: `Math.min(STAGE_MAX_BOUND, ...)` with undeclared bounds
+
 - **Strict Data Schema & Zero-Ambiguity Rule**: It is STRICTLY FORBIDDEN to define ambiguous union types that mix multiple representations of missing or default data (e.g. mixing `''` and `null` in the same type definition for the same context). All domain types MUST follow single canonical representations.
 - **Java-Style Strict Typing Mandate**:
   1. **Canonical Return Types (`mandatoryExplicitReturnTypes`)**: Exported functions, composables, and store methods MUST declare an explicit return type annotation (`: ReturnType`).
@@ -93,7 +94,7 @@
 ## 7. External Repositories Exclusion
 
 - External reference codebases live under `external/` (e.g. `external/pokemon-showdown-code/`, `external/pokemon-showdown-ai/`).
-- This entire directory MUST be completely excluded from project code audits, type-checking scopes, linting, and DOX documentation requirements. The `external/` entry is configured in `IGNORE_DIRS` in audit scripts and in ESLint/Fallow ignore patterns.
+- This entire directory MUST be completely excluded from project code audits, type-checking scopes, linting, and DOX documentation requirements. The `external/` entry is configured in `IGNORE_DIRS` in audit scripts and in Oxlint/Fallow ignore patterns.
 
 ## 8. Node.js 26+ Modernization & Script Rules
 
@@ -102,7 +103,7 @@
 - **CLI Flag Parsing**: All utility, database, and maintenance scripts accepting arguments MUST use `import { parseArgs } from 'node:util'` with explicit option dictionaries. Positional arguments without flag names are strictly prohibited.
 - **Permission Model**: Utility scripts must use the Node.js 26 Permission Model (`--permission`). All maintenance scripts in `package.json` like `audit:fix` MUST use `--allow-fs-read=*` to allow reading `node_modules` and external dependencies across the filesystem.
 - **Explicit Resource Management**: Mandatory use of `using` for file handles and database connections in Node scripts.
-- **Vitest Exclusivity & Timer Promises**: All automated unit, node, and integration tests run exclusively under Vitest via `vitest.workspace.ts` (governed by `tests/AGENTS.md`); importing from `node:test` is strictly forbidden. Prefer `node:timers/promises` for delays in utility/maintenance scripts (Note: 0 timers remain strictly enforced in client/game logic).
+- **Vite+ / Vitest Exclusivity & Timer Promises**: All automated unit, node, and integration tests run exclusively under Vite+ via `vite.config.ts` (governed by `tests/AGENTS.md`); importing from `node:test` is strictly forbidden. Prefer `node:timers/promises` for delays in utility/maintenance scripts (Note: 0 timers remain strictly enforced in client/game logic).
 - **Node.js 26 Native TypeScript Extension Standards**: When importing relative TypeScript modules within `scripts/` or `database/` executed directly via Node.js 26 (`--experimental-strip-types`), import paths MUST explicitly use the `.ts` extension (e.g., `import { foo } from './helpers.ts'`). Never use legacy `.js` aliases or omitted extensions in direct script execution.
 
 ## 9. Cross-Platform Path Standard
@@ -136,7 +137,7 @@ Naked tags (e.g. `// domain-ok` without `: reason`) are flagged as critical erro
 
 ## 13. Canonical Domain IDs in Test Fixtures & Mocks
 
-- **Strict Domain ID Mandate**: In accordance with the *Absolute Prohibition on Runtime Auto-Heal & In-Memory Entity Translation Mandate*, unit and integration test fixtures MUST pass canonical domain IDs (e.g. `'tm39'`, `'potion'`, `'charcoal'`), NEVER localized display strings (e.g. `'MT39 Tumba Rocas'`, `'Poción'`).
+- **Strict Domain ID Mandate**: In accordance with the _Absolute Prohibition on Runtime Auto-Heal & In-Memory Entity Translation Mandate_, unit and integration test fixtures MUST pass canonical domain IDs (e.g. `'tm39'`, `'potion'`, `'charcoal'`), NEVER localized display strings (e.g. `'MT39 Tumba Rocas'`, `'Poción'`).
 - **Fail-Fast Parity**: Application code in `src/` fails fast on non-canonical IDs. Tests must pass canonical IDs to functions like `requireItemId()`, and test localization solely by asserting against `getItemById(id).name`.
 
 ## 14. Modern Date & Timestamp APIs (Zero `Date.now()`, Zero `new Date()`)

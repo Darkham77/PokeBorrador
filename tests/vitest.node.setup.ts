@@ -1,21 +1,21 @@
-import { setupTestTeamGenerators, setupTemporalMock } from './helpers/setupTestEnvironment.ts'
+import { setupTestTeamGenerators, setupTemporalMock } from './helpers/setupTestEnvironment.ts';
 
-setupTestTeamGenerators()
+setupTestTeamGenerators();
 
 /**
  * tests/vitest.node.setup.ts
  * Global setup for Node.js environment Vitest tests.
  */
-process.removeAllListeners('warning')
+process.removeAllListeners('warning');
 process.on('warning', (warning) => {
   if (warning.name === 'ExperimentalWarning' || warning.message?.includes('--localstorage-file')) {
-    return
+    return;
   }
-  console.warn(warning.name, warning.message)
-})
+  console.warn(warning.name, warning.message);
+});
 
 // Mock Temporal.Now to work with Vitest fake timers (which mock Date.now)
-setupTemporalMock()
+setupTemporalMock();
 
 // Provide in-memory WebStorage fallback for Node test runner (with --no-experimental-webstorage)
 function createMemoryStorage(): Storage {
@@ -26,7 +26,9 @@ function createMemoryStorage(): Storage {
     removeItem: (key: string) => store.delete(key),
     clear: () => store.clear(),
     key: (index: number) => Array.from(store.keys())[index] ?? null,
-    get length() { return store.size; }
+    get length() {
+      return store.size;
+    }
   } as Storage;
 }
 
@@ -36,4 +38,3 @@ if (typeof globalThis.sessionStorage === 'undefined') {
 if (typeof globalThis.localStorage === 'undefined') {
   globalThis.localStorage = createMemoryStorage();
 }
-

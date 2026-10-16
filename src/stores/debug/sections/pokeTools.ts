@@ -1,24 +1,24 @@
-import type { DebugSystem } from '@/types/system/debug.ts'
+import type { DebugSystem } from '@/types/system/debug.ts';
 
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { useMapStore } from '@/stores/map'
-import { useBreedingStore } from '@/stores/breeding'
-import { useBattleStore } from '@/stores/battle/battle'
-import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon'
-import type { Pokemon, PokedexStatus } from '@/types/pokemon/pokemon'
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
-import { EVOLUTION_TABLE, TRADE_EVOLUTIONS, getStoneEvolution } from '@/data/pokemon/evolutionData'
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { requireItemId } from '@/data/inventory/items'
-import { requireMapRouteId } from '@/data/world/map-assets'
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { useMapStore } from '@/stores/map';
+import { useBreedingStore } from '@/stores/breeding';
+import { useBattleStore } from '@/stores/battle/battle';
+import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokedexStatus } from '@/types/pokemon/pokemon';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { EVOLUTION_TABLE, TRADE_EVOLUTIONS, getStoneEvolution } from '@/data/pokemon/evolutionData';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { requireItemId } from '@/data/inventory/items';
+import { requireMapRouteId } from '@/data/world/map-assets';
 
 export function registerPokeTools(debug: DebugSystem) {
-  const game = useGameStore()
-  const ui = useUIStore()
-  const mapStore = useMapStore()
-  const breedingStore = useBreedingStore()
-  const battleStore = useBattleStore()
+  const game = useGameStore();
+  const ui = useUIStore();
+  const mapStore = useMapStore();
+  const breedingStore = useBreedingStore();
+  const battleStore = useBattleStore();
 
   debug.register({
     id: 'poke-set-pokedex-mode',
@@ -27,16 +27,16 @@ export function registerPokeTools(debug: DebugSystem) {
     category: 'pokes',
     action: async (mode: string) => {
       if (mode === 'real') {
-        ui.debugPokedexMode = null
-        await game.loadGame()
-        ui.notify('Pokedex REAL RESTAURADA', '✅')
+        ui.debugPokedexMode = null;
+        await game.loadGame();
+        ui.notify('Pokedex REAL RESTAURADA', '✅');
       } else {
-        ui.debugPokedexMode = mode as PokedexStatus | null
-        ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️') // text-ok: UI text display localization string
+        ui.debugPokedexMode = mode as PokedexStatus | null;
+        ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️'); // text-ok: UI text display localization string
       }
     },
     description: 'Cambia el modo de visualización de la pokedex (none, seen, caught, real).'
-  })
+  });
 
   debug.register({
     id: 'poke-sync-pokedex',
@@ -44,21 +44,31 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'syncPokedex',
     category: 'pokes',
     action: async (force = false) => {
-      if (!force && !confirm('¿Sincronizar pokedex con colección actual?')) return
-      
-      const caughtIds = new Set<PokemonSpeciesId>()
-      const seenIds = new Set<PokemonSpeciesId>()
-      game.state.team.forEach((p: Pokemon) => { if (p?.id) { caughtIds.add(p.id); seenIds.add(p.id) } })
+      if (!force && !confirm('¿Sincronizar pokedex con colección actual?')) return;
+
+      const caughtIds = new Set<PokemonSpeciesId>();
+      const seenIds = new Set<PokemonSpeciesId>();
+      game.state.team.forEach((p: Pokemon) => {
+        if (p?.id) {
+          caughtIds.add(p.id);
+          seenIds.add(p.id);
+        }
+      });
       if (game.state.box) {
-        game.state.box.forEach(p => { if (p?.id) { caughtIds.add(p.id); seenIds.add(p.id) } })
+        game.state.box.forEach((p) => {
+          if (p?.id) {
+            caughtIds.add(p.id);
+            seenIds.add(p.id);
+          }
+        });
       }
-      game.state.pokedex = Array.from(caughtIds)
-      game.state.seenPokedex = Array.from(seenIds)
-      await game.saveGame(false)
-      ui.notify('Pokedex sincronizada', '🔄')
+      game.state.pokedex = Array.from(caughtIds);
+      game.state.seenPokedex = Array.from(seenIds);
+      await game.saveGame(false);
+      ui.notify('Pokedex sincronizada', '🔄');
     },
     description: 'Recalcula la pokedex según los pokemon poseídos.'
-  })
+  });
 
   debug.register({
     id: 'poke-reset-db',
@@ -66,14 +76,20 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'resetPokedexDB',
     category: 'pokes',
     action: async (force = false) => {
-      if (!force && !confirm('⚠️ PELIGRO: Esto borrará TODO el progreso de tu Pokedex (Avistados y Capturados) de forma PERMANENTE. ¿Continuar?')) return
-      game.state.pokedex = []
-      game.state.seenPokedex = []
-      await game.saveGame(false)
-      ui.notify('Pokedex reseteada en la base de datos', '🧹')
+      if (
+        !force &&
+        !confirm(
+          '⚠️ PELIGRO: Esto borrará TODO el progreso de tu Pokedex (Avistados y Capturados) de forma PERMANENTE. ¿Continuar?'
+        )
+      )
+        return;
+      game.state.pokedex = [];
+      game.state.seenPokedex = [];
+      await game.saveGame(false);
+      ui.notify('Pokedex reseteada en la base de datos', '🧹');
     },
     description: 'Borra todo el progreso persistente de la pokedex.'
-  })
+  });
 
   debug.register({
     id: 'poke-create',
@@ -81,13 +97,14 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'createPokemon',
     category: 'pokes',
     action: async (params: Record<string, unknown> = {}) => {
-      const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
-      const p = pokemonDebugService.generate(params)
-      await pokemonDebugService.executeProtocol(p, (params.protocol as string) || 'catch')
-      return p
+      const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService');
+      const p = pokemonDebugService.generate(params);
+      await pokemonDebugService.executeProtocol(p, (params.protocol as string) || 'catch');
+      return p;
     },
-    description: 'Construye e inyecta un pokemon personalizado (protocolos: catch, hatch, hatch_anim).'
-  })
+    description:
+      'Construye e inyecta un pokemon personalizado (protocolos: catch, hatch, hatch_anim).'
+  });
 
   debug.register({
     id: 'poke-encounter',
@@ -95,15 +112,18 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'spawnEncounter',
     category: 'pokes',
     action: async (params: Record<string, unknown> = {}) => {
-      const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
-      const { requireMapRouteId } = await import('@/data/world/map-assets')
-      const rawMapId = typeof params.mapId === 'string' && params.mapId ? params.mapId : (mapStore.currentMap || 'route1')
-      const routeId = requireMapRouteId(rawMapId)
-      const p = pokemonDebugService.generate(params)
-      await pokemonDebugService.triggerEncounter(p, routeId)
+      const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService');
+      const { requireMapRouteId } = await import('@/data/world/map-assets');
+      const rawMapId =
+        typeof params.mapId === 'string' && params.mapId
+          ? params.mapId
+          : mapStore.currentMap || 'route1';
+      const routeId = requireMapRouteId(rawMapId);
+      const p = pokemonDebugService.generate(params);
+      await pokemonDebugService.triggerEncounter(p, routeId);
     },
     description: 'Inicia un combate contra un pokemon personalizado en la ruta especificada.'
-  })
+  });
 
   debug.register({
     id: 'poke-start-battle',
@@ -111,32 +131,43 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'startBattle',
     category: 'pokes',
     action: async (id: string = 'pikachu', level: number = 5, shiny: boolean = false) => {
-      const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
-      
+      const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService');
+
       if (id === 'wild') {
-        const { generateEncounter } = await import('@/logic/encounters/encounters')
-        const { requireMapRouteId } = await import('@/data/world/map-assets')
-        const activeMap = mapStore.currentMap
+        const { generateEncounter } = await import('@/logic/encounters/encounters');
+        const { requireMapRouteId } = await import('@/data/world/map-assets');
+        const activeMap = mapStore.currentMap;
         if (!activeMap) {
-          throw new Error('[pokeTools] Cannot trigger random encounter: mapStore.currentMap is null or empty')
+          throw new Error(
+            '[pokeTools] Cannot trigger random encounter: mapStore.currentMap is null or empty'
+          );
         }
-        const routeId = requireMapRouteId(activeMap)
-        const encounter = await generateEncounter(routeId, game.state)
+        const routeId = requireMapRouteId(activeMap);
+        const encounter = await generateEncounter(routeId, game.state);
         if (encounter && (encounter as { pokemon: Pokemon }).pokemon) {
-          await pokemonDebugService.triggerEncounter((encounter as { pokemon: Pokemon }).pokemon, routeId)
+          await pokemonDebugService.triggerEncounter(
+            (encounter as { pokemon: Pokemon }).pokemon,
+            routeId
+          );
         }
-        return
+        return;
       }
 
       if (!mapStore.currentMap) {
-        throw new Error('[pokeTools] Cannot trigger encounter: mapStore.currentMap is null or empty')
+        throw new Error(
+          '[pokeTools] Cannot trigger encounter: mapStore.currentMap is null or empty'
+        );
       }
-      const routeId = requireMapRouteId(mapStore.currentMap)
-      const p = pokemonDebugService.generate({ id: id ? requirePokemonSpeciesId(id) : undefined, level, isShiny: shiny })
-      await pokemonDebugService.triggerEncounter(p, routeId)
+      const routeId = requireMapRouteId(mapStore.currentMap);
+      const p = pokemonDebugService.generate({
+        id: id ? requirePokemonSpeciesId(id) : undefined,
+        level,
+        isShiny: shiny
+      });
+      await pokemonDebugService.triggerEncounter(p, routeId);
     },
     description: 'Inicia un combate rápido contra un pokemon específico.'
-  })
+  });
 
   debug.register({
     id: 'poke-clear-pvp',
@@ -144,14 +175,14 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'clearPvpTeam',
     category: 'pokes',
     action: async (force: boolean = false) => {
-      if (!force && !confirm('¿Limpiar equipo PVP de forma permanente?')) return
-      ui.pvpAutoFillDisabled = true
-      game.state.pvpTeam = []
-      await game.saveGame(false)
-      ui.notify('Equipo PVP limpiado y auto-rellenado desactivado', '🧹')
+      if (!force && !confirm('¿Limpiar equipo PVP de forma permanente?')) return;
+      ui.pvpAutoFillDisabled = true;
+      game.state.pvpTeam = [];
+      await game.saveGame(false);
+      ui.notify('Equipo PVP limpiado y auto-rellenado desactivado', '🧹');
     },
     description: 'Limpia los slots del equipo PVP y desactiva el auto-rellenado.'
-  })
+  });
 
   debug.register({
     id: 'poke-clear-war',
@@ -159,14 +190,14 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'clearWarTeam',
     category: 'pokes',
     action: async (force = false) => {
-      if (!force && !confirm('¿Limpiar equipo de Guerra de forma permanente?')) return
-      ui.warAutoFillDisabled = true
-      game.state.warTeam = []
-      await game.saveGame(false)
-      ui.notify('Equipo de Guerra limpiado y auto-rellenado desactivado', '🧹')
+      if (!force && !confirm('¿Limpiar equipo de Guerra de forma permanente?')) return;
+      ui.warAutoFillDisabled = true;
+      game.state.warTeam = [];
+      await game.saveGame(false);
+      ui.notify('Equipo de Guerra limpiado y auto-rellenado desactivado', '🧹');
     },
     description: 'Limpia los slots del equipo de Guerra y desactiva el auto-rellenado.'
-  })
+  });
 
   debug.register({
     id: 'poke-force-starter',
@@ -174,11 +205,11 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'forceStarterScreen',
     category: 'pokes',
     action: () => {
-      game.state.starterChosen = false
-      ui.notify('Debug: Pantalla de Iniciales forzada', '🛡️')
+      game.state.starterChosen = false;
+      ui.notify('Debug: Pantalla de Iniciales forzada', '🛡️');
     },
     description: 'Fuerza la aparición de la pantalla de selección de Pokémon inicial.'
-  })
+  });
 
   debug.register({
     id: 'poke-heal-all',
@@ -188,15 +219,18 @@ export function registerPokeTools(debug: DebugSystem) {
     action: () => {
       game.state.team.forEach((p: Pokemon) => {
         if (p) {
-          p.hp = p.maxHp
-          if (p.moves) p.moves.forEach((m) => { if (m) m.pp = m.maxPP })
-          p.status = ''
+          p.hp = p.maxHp;
+          if (p.moves)
+            p.moves.forEach((m) => {
+              if (m) m.pp = m.maxPP;
+            });
+          p.status = '';
         }
-      })
-      ui.notify('Equipo curado', '💊')
+      });
+      ui.notify('Equipo curado', '💊');
     },
     description: 'Cura completamente a todos los Pokémon del equipo.'
-  })
+  });
 
   debug.register({
     id: 'poke-test-evolution',
@@ -204,46 +238,47 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'testEvolution',
     category: 'pokes',
     action: (slotIndex: number = 0, targetSpeciesId?: PokemonSpeciesId, itemName?: string) => {
-      const pokemon = game.state.team[slotIndex]
+      const pokemon = game.state.team[slotIndex];
       if (!pokemon) {
-        ui.notify('No hay un Pokémon en la ranura especificada', '❌')
-        return
+        ui.notify('No hay un Pokémon en la ranura especificada', '❌');
+        return;
       }
 
-      let target = targetSpeciesId
-      let item = itemName ? requireItemId(itemName) : '' // text-ok: UI text display localization string
+      let target = targetSpeciesId;
+      let item = itemName ? requireItemId(itemName) : ''; // text-ok: UI text display localization string
 
       if (!target) {
         // 1. Search level evolution table
-        const levelEvo = (EVOLUTION_TABLE as Record<string, { to: string }>)[pokemon.id] // open-record: Generic key-value data dictionary container
+        const levelEvo = (EVOLUTION_TABLE as Record<string, { to: string }>)[pokemon.id]; // open-record: Generic key-value data dictionary container
         if (levelEvo) {
-          target = requirePokemonSpeciesId(levelEvo.to)
+          target = requirePokemonSpeciesId(levelEvo.to);
         } else {
           // 2. Search stone evolution table (eevee and multiple variant forms use {species}_{disambiguator} pattern)
-          const stoneEvo = getStoneEvolution(pokemon.id)
+          const stoneEvo = getStoneEvolution(pokemon.id);
           if (stoneEvo) {
-            target = stoneEvo.to
-            item = stoneEvo.stone
+            target = stoneEvo.to;
+            item = stoneEvo.stone;
           } else {
             // 3. Search trade evolution table
-            const tradeEvo = (TRADE_EVOLUTIONS as Record<string, string>)[pokemon.id] // open-record: Generic key-value data dictionary container
+            const tradeEvo = (TRADE_EVOLUTIONS as Record<string, string>)[pokemon.id]; // open-record: Generic key-value data dictionary container
             if (tradeEvo) {
-              target = requirePokemonSpeciesId(tradeEvo)
+              target = requirePokemonSpeciesId(tradeEvo);
             }
           }
         }
       }
 
       if (!target) {
-        ui.notify(`${pokemon.name} no tiene una evolución debug resoluble.`, '❌')
-        return
+        ui.notify(`${pokemon.name} no tiene una evolución debug resoluble.`, '❌');
+        return;
       }
 
-      ui.notify(`Iniciando evolución de ${pokemon.name} a ${target}...`, '✨')
-      ui.startEvolution(pokemon, target, item)
+      ui.notify(`Iniciando evolución de ${pokemon.name} a ${target}...`, '✨');
+      ui.startEvolution(pokemon, target, item);
     },
-    description: 'Dispara la escena de evolución animada para el Pokémon en la ranura indicada (índice 0-5), autodetectando la evolución natural por defecto.'
-  })
+    description:
+      'Dispara la escena de evolución animada para el Pokémon en la ranura indicada (índice 0-5), autodetectando la evolución natural por defecto.'
+  });
 
   debug.register({
     id: 'breeding-debug-eggs',
@@ -251,9 +286,9 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'debugEggs',
     category: 'pokes',
     action: () => {
-      const db = POKEMON_DB
-      
-      const warehouse = breedingStore.warehouseEggs.map(e => ({
+      const db = POKEMON_DB;
+
+      const warehouse = breedingStore.warehouseEggs.map((e) => ({
         id: e.id,
         especie: db[e.species]?.name ?? e.species, // text-ok: UI text display localization string
         nivel: e.level,
@@ -262,40 +297,43 @@ export function registerPokeTools(debug: DebugSystem) {
         ivs: `HP: ${e.ivs.hp}, ATK: ${e.ivs.atk}, DEF: ${e.ivs.def}, SPA: ${e.ivs.spa}, SPD: ${e.ivs.spd}, SPE: ${e.ivs.spe}`,
         costo: `₽${e.inherited_ivs?._cost || e.cost || 0}`,
         escaneado: e.inherited_ivs?._scanned ? 'SÍ' : 'NO'
-      }))
+      }));
 
-      const backpack = (game.state.eggs || []).map(e => ({
+      const backpack = (game.state.eggs || []).map((e) => ({
         uid: e.uid,
         especie: db[e.id]?.name ?? e.id, // text-ok: UI text display localization string
         pasosRestantes: e.steps,
         listo: e.ready ? '🐣 SÍ' : 'NO',
         shiny: e.isShiny ? '✨ SÍ' : 'NO',
         naturaleza: e.nature || 'N/A',
-        ivs: e.ivs ? `HP: ${e.ivs.hp || 0}, ATK: ${e.ivs.atk || 0}, DEF: ${e.ivs.def || 0}, SPA: ${e.ivs.spa || 0}, SPD: ${e.ivs.spd || 0}, SPE: ${e.ivs.spe || 0}` : 'Desconocido',
+        ivs: e.ivs
+          ? `HP: ${e.ivs.hp || 0}, ATK: ${e.ivs.atk || 0}, DEF: ${e.ivs.def || 0}, SPA: ${e.ivs.spa || 0}, SPD: ${e.ivs.spd || 0}, SPE: ${e.ivs.spe || 0}`
+          : 'Desconocido',
         escaneado: e.scanned ? 'SÍ' : 'NO'
-      }))
+      }));
 
-      console.group('🥚 [DEBUG] DETALLES DE HUEVOS ACTIVOS')
-      console.debug('--- EN ALMACÉN DE GUARDERÍA ---')
+      console.group('🥚 [DEBUG] DETALLES DE HUEVOS ACTIVOS');
+      console.debug('--- EN ALMACÉN DE GUARDERÍA ---');
       if (warehouse.length > 0) {
-        console.table(warehouse)
+        console.table(warehouse);
       } else {
-        console.debug('No hay huevos en el almacén de la guardería.')
+        console.debug('No hay huevos en el almacén de la guardería.');
       }
 
-      console.debug('--- EN LA MOCHILA ---')
+      console.debug('--- EN LA MOCHILA ---');
       if (backpack.length > 0) {
-        console.table(backpack)
+        console.table(backpack);
       } else {
-        console.debug('No hay huevos en la mochila.')
+        console.debug('No hay huevos en la mochila.');
       }
-      console.groupEnd()
+      console.groupEnd();
 
-      ui.notify('Detalles de huevos impresos en consola', '🥚')
-      return { warehouseEggs: breedingStore.warehouseEggs, backpackEggs: game.state.eggs }
+      ui.notify('Detalles de huevos impresos en consola', '🥚');
+      return { warehouseEggs: breedingStore.warehouseEggs, backpackEggs: game.state.eggs };
     },
-    description: 'Imprime en la consola de desarrollo la lista detallada y las propiedades secretas de todos los huevos.'
-  })
+    description:
+      'Imprime en la consola de desarrollo la lista detallada y las propiedades secretas de todos los huevos.'
+  });
 
   debug.register({
     id: 'breeding-scan-egg',
@@ -303,54 +341,55 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'scanEgg',
     category: 'pokes',
     action: (idOrAll?: string) => {
-      const db = POKEMON_DB
-      let scannedCount = 0
+      const db = POKEMON_DB;
+      let scannedCount = 0;
 
-      const scanAll = !idOrAll || idOrAll.toLowerCase() === 'all' // text-ok: UI text display localization string
+      const scanAll = !idOrAll || idOrAll.toLowerCase() === 'all'; // text-ok: UI text display localization string
 
       // Scan warehouse eggs
-      breedingStore.warehouseEggs.forEach(e => {
+      breedingStore.warehouseEggs.forEach((e) => {
         if (scanAll || e.id === idOrAll) {
-          if (!e.inherited_ivs) e.inherited_ivs = {}
-          e.inherited_ivs._scanned = true
-          scannedCount++
+          if (!e.inherited_ivs) e.inherited_ivs = {};
+          e.inherited_ivs._scanned = true;
+          scannedCount++;
         }
-      })
+      });
       if (breedingStore.saveWarehouseEggs) {
-        breedingStore.saveWarehouseEggs()
+        breedingStore.saveWarehouseEggs();
       }
 
       // Scan backpack eggs
       if (game.state.eggs) {
-        game.state.eggs.forEach(e => {
+        game.state.eggs.forEach((e) => {
           if (scanAll || e.uid === idOrAll || e.id === idOrAll) {
-            e.scanned = true
-            
+            e.scanned = true;
+
             // Calculate total IV
-            const eggIvs = e.ivs || {}
+            const eggIvs = e.ivs || {};
             const totalIv = POKEMON_STAT_KEYS.reduce((acc, key) => {
-              const val = eggIvs[key]
-              return acc + (typeof val === 'number' ? val : 0)
-            }, 0)
+              const val = eggIvs[key];
+              return acc + (typeof val === 'number' ? val : 0);
+            }, 0);
 
             e.predictedInfo = {
               name: db[e.id]?.name || 'Huevo Pokémon',
               ivTotal: totalIv
-            }
-            scannedCount++
+            };
+            scannedCount++;
           }
-        })
+        });
       }
 
       if (scannedCount > 0) {
-        ui.notify(`Se han escaneado ${scannedCount} huevo(s)`, '🔍')
-        game.saveGame(false)
+        ui.notify(`Se han escaneado ${scannedCount} huevo(s)`, '🔍');
+        void game.saveGame(false);
       } else {
-        ui.notify('No se encontró ningún huevo para escanear', '❌')
+        ui.notify('No se encontró ningún huevo para escanear', '❌');
       }
     },
-    description: 'Escanea un huevo por ID/UID en almacén o mochila, o todos si se omite el argumento.'
-  })
+    description:
+      'Escanea un huevo por ID/UID en almacén o mochila, o todos si se omite el argumento.'
+  });
 
   debug.register({
     id: 'breeding-walk-eggs',
@@ -358,20 +397,21 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'walkEggs',
     category: 'pokes',
     action: () => {
-      const eggs = game.state.eggs || []
+      const eggs = game.state.eggs || [];
       if (eggs.length === 0) {
-        ui.notify('No hay huevos en la mochila para caminar', '❌')
-        return
+        ui.notify('No hay huevos en la mochila para caminar', '❌');
+        return;
       }
-      eggs.forEach(e => {
-        e.steps = 0
-        e.ready = true
-      })
-      ui.notify('¡Huevos en la mochila listos para eclosionar!', '🚶')
-      game.saveGame(false)
+      eggs.forEach((e) => {
+        e.steps = 0;
+        e.ready = true;
+      });
+      ui.notify('¡Huevos en la mochila listos para eclosionar!', '🚶');
+      void game.saveGame(false);
     },
-    description: 'Reduce a 0 los pasos de todos los huevos en la mochila y los deja listos para abrir.'
-  })
+    description:
+      'Reduce a 0 los pasos de todos los huevos en la mochila y los deja listos para abrir.'
+  });
 
   debug.register({
     id: 'poke-repair-moves',
@@ -379,22 +419,23 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'repairTeamMoves',
     category: 'pokes',
     action: async () => {
-      const { getMovesAtLevel } = await import('@/logic/pokemon/pokemonUtils')
-      let count = 0
+      const { getMovesAtLevel } = await import('@/logic/pokemon/pokemonUtils');
+      let count = 0;
       game.state.team.forEach((p: Pokemon) => {
         if (p?.id) {
-          const freshMoves = getMovesAtLevel(p.id, p.level || 5, true)
+          const freshMoves = getMovesAtLevel(p.id, p.level || 5, true);
           if (freshMoves.length > 0) {
-            p.moves = freshMoves
-            count++
+            p.moves = freshMoves;
+            count++;
           }
         }
-      })
-      await game.saveGame(false)
-      ui.notify(`Movimientos restaurados para ${count} Pokémon del equipo`, '⚔️')
+      });
+      await game.saveGame(false);
+      ui.notify(`Movimientos restaurados para ${count} Pokémon del equipo`, '⚔️');
     },
-    description: 'Restaura y recalcula los movimientos oficiales por nivel de todos los Pokémon del equipo actual.'
-  })
+    description:
+      'Restaura y recalcula los movimientos oficiales por nivel de todos los Pokémon del equipo actual.'
+  });
 
   debug.register({
     id: 'poke-repair-all-illegal',
@@ -402,44 +443,48 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'repairAllIllegal',
     category: 'pokes',
     action: async () => {
-      const { repairPokemonLegality } = await import('@/logic/pokemon/pokemonLegality')
-      let repairedCount = 0
-      
+      const { repairPokemonLegality } = await import('@/logic/pokemon/pokemonLegality');
+      let repairedCount = 0;
+
       game.state.team.forEach((p: Pokemon) => {
         if (p?.id) {
-          const report = repairPokemonLegality(p)
-          if (report.repaired) repairedCount++
+          const report = repairPokemonLegality(p);
+          if (report.repaired) repairedCount++;
         }
-      })
+      });
 
       if (game.state.box) {
         game.state.box.forEach((p) => {
           if (p && p.id) {
-            const report = repairPokemonLegality(p as Pokemon)
-            if (report.repaired) repairedCount++
+            const report = repairPokemonLegality(p as Pokemon);
+            if (report.repaired) repairedCount++;
           }
-        })
+        });
       }
 
       if (breedingStore.slots) {
-        breedingStore.slots.forEach(slot => {
+        breedingStore.slots.forEach((slot) => {
           if (slot.pokemon?.id) {
-            const report = repairPokemonLegality(slot.pokemon)
-            if (report.repaired) repairedCount++
+            const report = repairPokemonLegality(slot.pokemon);
+            if (report.repaired) repairedCount++;
           }
-        })
+        });
       }
 
       if (battleStore.state?.player?.id) {
-        const report = repairPokemonLegality(battleStore.state.player)
-        if (report.repaired) repairedCount++
+        const report = repairPokemonLegality(battleStore.state.player);
+        if (report.repaired) repairedCount++;
       }
 
-      await game.saveGame(false)
-      ui.notify(`Se repararon ${repairedCount} Pokémon ilegales (Equipo, Caja y Guardería). ¡Cuenta lista para combatir!`, '🛠️')
+      await game.saveGame(false);
+      ui.notify(
+        `Se repararon ${repairedCount} Pokémon ilegales (Equipo, Caja y Guardería). ¡Cuenta lista para combatir!`,
+        '🛠️'
+      );
     },
-    description: 'Repara exhaustivamente movimientos, habilidades, niveles y stats de todos los Pokémon ilegales de la cuenta.'
-  })
+    description:
+      'Repara exhaustivamente movimientos, habilidades, niveles y stats de todos los Pokémon ilegales de la cuenta.'
+  });
 
   debug.register({
     id: 'poke-repair-one',
@@ -447,27 +492,32 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'repairPokemon',
     category: 'pokes',
     action: async (uidOrTarget?: string) => {
-      const { repairPokemonLegality } = await import('@/logic/pokemon/pokemonLegality')
-      const allPokes = [...game.state.team, ...(game.state.box || [])].filter((p): p is Pokemon => p != null)
-      
-      const targetPoke = uidOrTarget 
-        ? allPokes.find(p => p.uid === uidOrTarget || p.name?.toLowerCase() === uidOrTarget.toLowerCase()) // domain-ok: Debug tool flexible name/UID lookup
-        : (game.state.team[0] || null)
+      const { repairPokemonLegality } = await import('@/logic/pokemon/pokemonLegality');
+      const allPokes = [...game.state.team, ...(game.state.box || [])].filter(
+        (p): p is Pokemon => p != null
+      );
+
+      const targetPoke = uidOrTarget
+        ? allPokes.find(
+            (p) => p.uid === uidOrTarget || p.name?.toLowerCase() === uidOrTarget.toLowerCase()
+          ) // domain-ok: Debug tool flexible name/UID lookup
+        : game.state.team[0] || null;
 
       if (!targetPoke) {
-        ui.notify(`No se encontró el Pokémon "${uidOrTarget || 'activo'}"`, '❌')
-        return { success: false }
+        ui.notify(`No se encontró el Pokémon "${uidOrTarget || 'activo'}"`, '❌');
+        return { success: false };
       }
 
-      const report = repairPokemonLegality(targetPoke)
-      await game.saveGame(false)
+      const report = repairPokemonLegality(targetPoke);
+      await game.saveGame(false);
       if (report.repaired) {
-        ui.notify(`¡${targetPoke.name} reparado exitosamente según las reglas de Showdown!`, '🛠️')
+        ui.notify(`¡${targetPoke.name} reparado exitosamente según las reglas de Showdown!`, '🛠️');
       } else {
-        ui.notify(`${targetPoke.name} ya era 100% legal.`, '✅')
+        ui.notify(`${targetPoke.name} ya era 100% legal.`, '✅');
       }
-      return { success: true, report }
+      return { success: true, report };
     },
-    description: 'Repara un Pokémon específico por su UID o nombre (o el primer Pokémon del equipo si no se pasa argumento).'
-  })
+    description:
+      'Repara un Pokémon específico por su UID o nombre (o el primer Pokémon del equipo si no se pasa argumento).'
+  });
 }

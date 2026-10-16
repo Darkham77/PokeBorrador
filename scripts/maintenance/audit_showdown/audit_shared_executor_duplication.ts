@@ -13,7 +13,9 @@ export function auditSharedExecutorDuplication(testsDir: string): ExecutorDuplic
   const duplicatedExecutorFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(testsDir)) return { duplicatedExecutorFiles };
 
-  const files = getFilesRecursively(testsDir).filter(f => f.endsWith('.ts') && (f.includes('replayer') || f.includes('simulation')));
+  const files = getFilesRecursively(testsDir).filter(
+    (f) => f.endsWith('.ts') && (f.includes('replayer') || f.includes('simulation'))
+  );
 
   for (const file of files) {
     const content = readFileSync(file, 'utf-8');

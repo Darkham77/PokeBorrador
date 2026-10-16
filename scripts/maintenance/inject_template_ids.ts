@@ -17,9 +17,15 @@ interface InjectionOptions {
   dryRun: boolean;
 }
 
-const INHERENT_INTERACTIVE_TAGS: ReadonlySet<string> = new Set(['input', 'select', 'textarea', 'button']);
+const INHERENT_INTERACTIVE_TAGS: ReadonlySet<string> = new Set([
+  'input',
+  'select',
+  'textarea',
+  'button'
+]);
 const INTERACTIVE_TAG_REGEX = /<([\w-]+)\b/g;
-const INTERACTIVE_EVENT_REGEX = /@(?:click|change|submit|input|keydown\.enter)\b|v-on:(?:click|change|submit|input)/i;
+const INTERACTIVE_EVENT_REGEX =
+  /@(?:click|change|submit|input|keydown\.enter)\b|v-on:(?:click|change|submit|input)/i;
 
 function kebabCase(str: string): string {
   return str
@@ -37,7 +43,10 @@ function sanitizeSlug(str: string): string {
     .slice(0, 30);
 }
 
-function extractFullTag(content: string, startIndex: number): { tag: string; endIndex: number } | null {
+function extractFullTag(
+  content: string,
+  startIndex: number
+): { tag: string; endIndex: number } | null {
   let inQuote: string | null = null;
   for (let i = startIndex; i < content.length; i++) {
     const char = content[i];
@@ -57,7 +66,11 @@ function extractFullTag(content: string, startIndex: number): { tag: string; end
   return null;
 }
 
-function findClosingTagOrText(templateContent: string, tagEndIndex: number, tagName: string): string {
+function findClosingTagOrText(
+  templateContent: string,
+  tagEndIndex: number,
+  tagName: string
+): string {
   if (tagName !== 'button') return '';
   const searchSlice = templateContent.slice(tagEndIndex, tagEndIndex + 120);
   const closingIdx = searchSlice.indexOf('</button>');
@@ -97,7 +110,9 @@ function getAllVueFiles(dir: string): string[] {
 
 export function runInjection(opts: InjectionOptions): void {
   console.log(`🔧 Iniciando inyector de Template IDs en: ${opts.cwd}`);
-  console.log(`   Modo: ${opts.dryRun ? 'DRY-RUN (Simulación sin escribir)' : 'ESCRITURA DIRECTA'}`);
+  console.log(
+    `   Modo: ${opts.dryRun ? 'DRY-RUN (Simulación sin escribir)' : 'ESCRITURA DIRECTA'}`
+  );
 
   const targetDirs = [
     path.join(opts.cwd, 'src', 'components'),
@@ -162,7 +177,8 @@ export function runInjection(opts: InjectionOptions): void {
       if (!tagInfo) continue;
 
       const tagFull = tagInfo.tag;
-      const isInteractive = INHERENT_INTERACTIVE_TAGS.has(tagType) || INTERACTIVE_EVENT_REGEX.test(tagFull);
+      const isInteractive =
+        INHERENT_INTERACTIVE_TAGS.has(tagType) || INTERACTIVE_EVENT_REGEX.test(tagFull);
       if (!isInteractive) continue;
 
       if (tagType === 'input' && /\btype\s*=\s*["']hidden["']/i.test(tagFull)) {
@@ -214,7 +230,9 @@ export function runInjection(opts: InjectionOptions): void {
 
       // 5. Check placeholder, title, or aria-label
       if (!descriptor) {
-        const labelMatch = /\b(?:aria-label|title|placeholder)\s*=\s*["']([^"']+)["']/i.exec(tagFull);
+        const labelMatch = /\b(?:aria-label|title|placeholder)\s*=\s*["']([^"']+)["']/i.exec(
+          tagFull
+        );
         if (labelMatch && labelMatch[1]) {
           descriptor = sanitizeSlug(labelMatch[1]);
         }
@@ -268,7 +286,8 @@ export function runInjection(opts: InjectionOptions): void {
 
     let newContent = content;
     for (const ins of insertions) {
-      newContent = newContent.slice(0, ins.insertOffset) + ins.idAttr + newContent.slice(ins.insertOffset);
+      newContent =
+        newContent.slice(0, ins.insertOffset) + ins.idAttr + newContent.slice(ins.insertOffset);
     }
 
     totalInjected += insertions.length;

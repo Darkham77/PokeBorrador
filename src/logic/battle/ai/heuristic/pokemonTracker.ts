@@ -4,13 +4,12 @@
 // ============================================================
 
 import { toID } from '@/logic/utils/strings.ts';
-import type { ItemId } from '@/data/inventory/items';
+import { isItemId, type ItemId } from '@/data/inventory/items';
+import { CANONICAL_CHOICE_ITEMS_SET } from '@/logic/constants/gameplay';
 import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
 import type { AbilityId } from '@/data/battle/abilities';
 import type { TrackedActionSource } from '@/types/battle/battle';
 import type { InferredInfo, InferredSet, RandomBattleSetEntry } from './types.ts';
-
-const CHOICE_ITEMS: readonly ItemId[] = ['choiceband', 'choicescarf', 'choicespecs'];
 
 export class PokemonTracker {
   readonly species: string;
@@ -26,10 +25,12 @@ export class PokemonTracker {
   constructor(species: string, baseSets: RandomBattleSetEntry[]) {
     this.species = toID(species);
     if (baseSets.length === 0) {
-      this.sets = [{ moves: [], ability: 'unknown', item: 'unknown', role: 'unknown', probability: 1.0 }];
+      this.sets = [
+        { moves: [], ability: 'unknown', item: 'unknown', role: 'unknown', probability: 1.0 }
+      ];
     } else {
       const prob = 1.0 / baseSets.length;
-      this.sets = baseSets.map(s => ({ ...s, probability: prob }));
+      this.sets = baseSets.map((s) => ({ ...s, probability: prob }));
     }
   }
 
@@ -51,7 +52,9 @@ export class PokemonTracker {
     if (this.revealedItem) this.eliminateSetsWithout('item', this.revealedItem);
   }
 
-  observeItemConsumed(): void { this.itemConsumed = true; }
+  observeItemConsumed(): void {
+    this.itemConsumed = true;
+  }
 
   observeNoHazardDamage(): void {
     this.adjustItemProbability('heavydutyboots', 2.0);
@@ -80,10 +83,10 @@ export class PokemonTracker {
   getInferredInfo(): InferredInfo {
     return {
       pokemon: this.species,
-      possibleSets: this.sets.filter(s => s.probability > 0),
+      possibleSets: this.sets.filter((s) => s.probability > 0),
       likelyMoves: this.computeMoveProbabilities(),
       likelyAbility: this.computeAbilityProbabilities(),
-      likelyItem: this.computeItemProbabilities(),
+      likelyItem: this.computeItemProbabilities()
     };
   }
 
@@ -110,11 +113,16 @@ export class PokemonTracker {
     let changed = false;
     for (const set of this.sets) {
       if (set.probability <= 0) continue;
-      const matches = field === 'move'
-        ? set.moves.some(m => toID(m) === value)
-        : field === 'ability' ? toID(set.ability) === value
-        : toID(set.item) === value;
-      if (!matches) { set.probability = 0; changed = true; }
+      const matches =
+        field === 'move'
+          ? set.moves.some((m) => toID(m) === value)
+          : field === 'ability'
+            ? toID(set.ability) === value
+            : toID(set.item) === value;
+      if (!matches) {
+        set.probability = 0;
+        changed = true;
+      }
     }
     if (changed) this.renormalize();
   }
@@ -155,7 +163,11 @@ export class PokemonTracker {
       for (const set of this.sets) {
         if (set.probability <= 0) continue;
         const iid = toID(set.item);
-        probs.set(iid, (probs.get(iid) ?? 0) + set.probability * (CHOICE_ITEMS.some(id => id === iid) ? 3.0 : 1.0));
+        probs.set(
+          iid,
+          (probs.get(iid) ?? 0) +
+            set.probability * (isItemId(iid) && CANONICAL_CHOICE_ITEMS_SET.has(iid) ? 3.0 : 1.0)
+        );
       }
       const total = [...probs.values()].reduce((a, b) => a + b, 0);
       if (total > 0) for (const [k, v] of probs) probs.set(k, v / total);

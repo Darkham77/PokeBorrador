@@ -3,7 +3,7 @@
  * @description Unified test database helper supporting both in-memory SQLite and isolated PostgreSQL schemas.
  */
 
-import { vi, describe, beforeAll, afterAll } from 'vitest';
+import { vi, describe, beforeAll, afterAll } from 'vite-plus/test';
 import { DBRouter } from '@/logic/db/dbRouter.ts';
 import { resetSQLite } from '@/logic/db/sqliteEngine.ts';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -11,9 +11,9 @@ import postgres from 'postgres';
 
 export type DBEngine = 'sqlite' | 'postgres';
 
-export const ACTIVE_DB_ENGINES: DBEngine[] = 
-  typeof process !== 'undefined' && process.env.TEST_POSTGRES_URL 
-    ? ['sqlite', 'postgres'] 
+export const ACTIVE_DB_ENGINES: DBEngine[] =
+  typeof process !== 'undefined' && process.env.TEST_POSTGRES_URL
+    ? ['sqlite', 'postgres']
     : ['sqlite'];
 
 export interface TestDatabaseContext {
@@ -27,14 +27,22 @@ export interface TestDatabaseContext {
 /**
  * Creates an isolated database context for testing against SQLite or PostgreSQL.
  */
-export async function initTestDatabaseContext(engine: DBEngine, suiteName: string): Promise<TestDatabaseContext> {
+export async function initTestDatabaseContext(
+  engine: DBEngine,
+  suiteName: string
+): Promise<TestDatabaseContext> {
   if (engine === 'postgres') {
     const dbUrl = process.env.TEST_POSTGRES_URL;
     if (!dbUrl) {
-      throw new Error('[dbTestHelper] TEST_POSTGRES_URL environment variable is required for postgres test context.');
+      throw new Error(
+        '[dbTestHelper] TEST_POSTGRES_URL environment variable is required for postgres test context.'
+      );
     }
 
-    const cleanSuite = suiteName.toLowerCase().replace(/[^a-z0-9_]/g, '_').slice(0, 30);
+    const cleanSuite = suiteName
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, '_')
+      .slice(0, 30);
     const uniqueId = Math.random().toString(36).substring(2, 8);
     const schema = `test_${cleanSuite}_${uniqueId}`;
 
@@ -53,7 +61,9 @@ export async function initTestDatabaseContext(engine: DBEngine, suiteName: strin
     for (const t of publicTables) {
       const tName = t.table_name as string;
       if (tName !== '_migrations') {
-        await sql.unsafe(`CREATE TABLE IF NOT EXISTS ${schema}.${tName} (LIKE public.${tName} INCLUDING ALL)`);
+        await sql.unsafe(
+          `CREATE TABLE IF NOT EXISTS ${schema}.${tName} (LIKE public.${tName} INCLUDING ALL)`
+        );
       }
     }
 
@@ -76,7 +86,10 @@ export async function initTestDatabaseContext(engine: DBEngine, suiteName: strin
         transformedSql = transformedSql.replace(/\?/g, () => `$${pIndex++}`);
         await schemaSql.unsafe(transformedSql, params as any);
       },
-      async query<T = Record<string, unknown>>(queryText: string, params: unknown[] = []): Promise<T[]> {
+      async query<T = Record<string, unknown>>(
+        queryText: string,
+        params: unknown[] = []
+      ): Promise<T[]> {
         let transformedSql = queryText;
         let pIndex = 1;
         transformedSql = transformedSql.replace(/\?/g, () => `$${pIndex++}`);
@@ -100,13 +113,19 @@ export async function initTestDatabaseContext(engine: DBEngine, suiteName: strin
   resetSQLite();
   const mockStorage: Record<string, Record<string, unknown>[]> = {};
 
-  function handleInsertGameSaves(storage: Record<string, Record<string, unknown>[]>, params: unknown[]): void {
+  function handleInsertGameSaves(
+    storage: Record<string, Record<string, unknown>[]>,
+    params: unknown[]
+  ): void {
     const p = params as [string, string, string];
     storage.game_saves = storage.game_saves || [];
     storage.game_saves.push({ user_id: p[0], save_data: JSON.parse(p[1]), last_save_id: p[2] });
   }
 
-  function handleInsertMarketListings(storage: Record<string, Record<string, unknown>[]>, params: unknown[]): void {
+  function handleInsertMarketListings(
+    storage: Record<string, Record<string, unknown>[]>,
+    params: unknown[]
+  ): void {
     const p = params as [string, string, string, string, number, string, string];
     storage.market_listings = storage.market_listings || [];
     storage.market_listings.push({
@@ -120,7 +139,10 @@ export async function initTestDatabaseContext(engine: DBEngine, suiteName: strin
     });
   }
 
-  function handleInsertClaimQueue(storage: Record<string, Record<string, unknown>[]>, params: unknown[]): void {
+  function handleInsertClaimQueue(
+    storage: Record<string, Record<string, unknown>[]>,
+    params: unknown[]
+  ): void {
     const p = params as [string, string, string, string];
     storage.claim_queue = storage.claim_queue || [];
     storage.claim_queue.push({
@@ -131,10 +153,13 @@ export async function initTestDatabaseContext(engine: DBEngine, suiteName: strin
     });
   }
 
-  function handleUpdateMarketListings(storage: Record<string, Record<string, unknown>[]>, params: unknown[]): void {
+  function handleUpdateMarketListings(
+    storage: Record<string, Record<string, unknown>[]>,
+    params: unknown[]
+  ): void {
     const p = params as [string, string];
     const listings = storage.market_listings || [];
-    const listing = listings.find(l => l.id === p[1]);
+    const listing = listings.find((l) => l.id === p[1]);
     if (listing) listing.status = p[0];
   }
 
@@ -146,11 +171,11 @@ export async function initTestDatabaseContext(engine: DBEngine, suiteName: strin
     const saves = storage.game_saves || [];
     if (sql.includes('last_save_id = ?')) {
       const p = params as [string, string];
-      const save = saves.find(s => s.user_id === p[1]);
+      const save = saves.find((s) => s.user_id === p[1]);
       if (save) save.last_save_id = p[0];
     } else if (sql.includes('save_data = ?')) {
       const p = params as [string, string];
-      const save = saves.find(s => s.user_id === p[1]);
+      const save = saves.find((s) => s.user_id === p[1]);
       if (save) save.save_data = typeof p[0] === 'string' ? JSON.parse(p[0]) : p[0];
     }
   }
@@ -173,12 +198,12 @@ export async function initTestDatabaseContext(engine: DBEngine, suiteName: strin
     async query<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {
       if (sql.includes('FROM game_saves')) {
         const p = params as [string];
-        const saves = (mockStorage.game_saves || []).filter(s => s.user_id === p[0]);
+        const saves = (mockStorage.game_saves || []).filter((s) => s.user_id === p[0]);
         return saves as unknown as T[];
       }
       if (sql.includes('FROM market_listings')) {
         const p = params as [string];
-        const listings = (mockStorage.market_listings || []).filter(l => l.id === p[0]);
+        const listings = (mockStorage.market_listings || []).filter((l) => l.id === p[0]);
         return listings as unknown as T[];
       }
       if (sql.includes('FROM claim_queue')) {
@@ -196,7 +221,7 @@ export async function initTestDatabaseContext(engine: DBEngine, suiteName: strin
  * Executes a test suite across all active database engines (SQLite and/or PostgreSQL).
  */
 export function describeWithDatabase(
-  suiteName: string, 
+  suiteName: string,
   testFn: (engine: DBEngine, getDb: () => TestDatabaseContext) => void
 ) {
   for (const engine of ACTIVE_DB_ENGINES) {
@@ -224,7 +249,7 @@ export function describeWithDatabase(
  */
 export async function createTestDBRouter() {
   resetSQLite();
-  
+
   const mockProfile = {
     username: 'ash',
     last_renamed_at: null as string | null
@@ -247,23 +272,34 @@ export async function createTestDBRouter() {
             mockProfile.last_renamed_at = params[1] as string;
             return [{ columns: [], values: [] }];
           }
-          if (sql.includes('SELECT username, last_renamed_at') || sql.includes('SELECT last_renamed_at')) {
-            return [{
-              columns: ['username', 'last_renamed_at'],
-              values: [[mockProfile.username, mockProfile.last_renamed_at]]
-            }];
+          if (
+            sql.includes('SELECT username, last_renamed_at') ||
+            sql.includes('SELECT last_renamed_at')
+          ) {
+            return [
+              {
+                columns: ['username', 'last_renamed_at'],
+                values: [[mockProfile.username, mockProfile.last_renamed_at]]
+              }
+            ];
           }
           return [{ columns: [], values: [] }];
         }
-        prepare() { return { bind: () => {}, step: () => false, free: () => {} }; }
-        export() { return new Uint8Array(); }
+        prepare() {
+          return { bind: () => {}, step: () => false, free: () => {} };
+        }
+        export() {
+          return new Uint8Array();
+        }
       }
     });
   }
 
   const mockSupabase = {
     auth: { getSession: async () => ({ data: { session: null }, error: null }) },
-    from: () => ({ select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }) })
+    from: () => ({
+      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) })
+    })
   };
 
   const router = new DBRouter({ url: 'http://localhost', key: 'mock' }, 'offline', {

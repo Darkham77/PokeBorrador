@@ -23,4 +23,3 @@ export function isE2EEnvironment(): boolean {
   if (typeof window !== 'undefined' && Boolean(window.__E2E__)) return true;
   return typeof process !== 'undefined' && process.env.VITE_E2E === 'true';
 }
-

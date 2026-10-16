@@ -1,4 +1,3 @@
-
 /**
  * gameBus.ts
  * A simple global event bus to decouple logic from visual components.
@@ -6,22 +5,22 @@
  */
 class GameBus extends EventTarget {
   emit(event: string, detail: unknown = {}): void {
-    this.dispatchEvent(new CustomEvent(event, { detail }))
+    this.dispatchEvent(new CustomEvent(event, { detail }));
   }
 
   on(event: string, callback: EventListenerOrEventListenerObject): void {
-    this.addEventListener(event, callback)
+    this.addEventListener(event, callback);
   }
 
   off(event: string, callback: EventListenerOrEventListenerObject): void {
-    this.removeEventListener(event, callback)
+    this.removeEventListener(event, callback);
   }
 
   // Compatibility method for the old bridge
   sendCommand(_scene: string, command: string, payload: unknown): void {
     // For now, we just emit the command as a global event
-    this.emit(command, payload)
+    this.emit(command, payload);
   }
 }
 
-export const gameBus = new GameBus()
+export const gameBus = new GameBus();

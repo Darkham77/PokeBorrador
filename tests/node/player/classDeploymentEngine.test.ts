@@ -11,7 +11,7 @@
  * - Full rewards resolution across all 4 classes
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import {
@@ -26,30 +26,65 @@ import {
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 describe('Class Deployment Engine — Tier 1 Unit Tests', () => {
-
   describe('Deployment Costs', () => {
     it('returns correct costs for Cazabichos (money ₽5k, ₽10k, ₽20k)', () => {
-      assert.deepStrictEqual(getDeploymentCost('cazabichos', 'mission_6h'), { type: 'money', amount: 5000 });
-      assert.deepStrictEqual(getDeploymentCost('cazabichos', 'mission_12h'), { type: 'money', amount: 10000 });
-      assert.deepStrictEqual(getDeploymentCost('cazabichos', 'mission_24h'), { type: 'money', amount: 20000 });
+      assert.deepStrictEqual(getDeploymentCost('cazabichos', 'mission_6h'), {
+        type: 'money',
+        amount: 5000
+      });
+      assert.deepStrictEqual(getDeploymentCost('cazabichos', 'mission_12h'), {
+        type: 'money',
+        amount: 10000
+      });
+      assert.deepStrictEqual(getDeploymentCost('cazabichos', 'mission_24h'), {
+        type: 'money',
+        amount: 20000
+      });
     });
 
     it('returns correct costs for Entrenador (money ₽5k, ₽10k, ₽20k)', () => {
-      assert.deepStrictEqual(getDeploymentCost('entrenador', 'mission_6h'), { type: 'money', amount: 5000 });
-      assert.deepStrictEqual(getDeploymentCost('entrenador', 'mission_12h'), { type: 'money', amount: 10000 });
-      assert.deepStrictEqual(getDeploymentCost('entrenador', 'mission_24h'), { type: 'money', amount: 20000 });
+      assert.deepStrictEqual(getDeploymentCost('entrenador', 'mission_6h'), {
+        type: 'money',
+        amount: 5000
+      });
+      assert.deepStrictEqual(getDeploymentCost('entrenador', 'mission_12h'), {
+        type: 'money',
+        amount: 10000
+      });
+      assert.deepStrictEqual(getDeploymentCost('entrenador', 'mission_24h'), {
+        type: 'money',
+        amount: 20000
+      });
     });
 
     it('returns correct costs for Criador (Battle Coins 300, 600, 1000 BC)', () => {
-      assert.deepStrictEqual(getDeploymentCost('criador', 'mission_6h'), { type: 'battleCoins', amount: 300 });
-      assert.deepStrictEqual(getDeploymentCost('criador', 'mission_12h'), { type: 'battleCoins', amount: 600 });
-      assert.deepStrictEqual(getDeploymentCost('criador', 'mission_24h'), { type: 'battleCoins', amount: 1000 });
+      assert.deepStrictEqual(getDeploymentCost('criador', 'mission_6h'), {
+        type: 'battleCoins',
+        amount: 300
+      });
+      assert.deepStrictEqual(getDeploymentCost('criador', 'mission_12h'), {
+        type: 'battleCoins',
+        amount: 600
+      });
+      assert.deepStrictEqual(getDeploymentCost('criador', 'mission_24h'), {
+        type: 'battleCoins',
+        amount: 1000
+      });
     });
 
     it('returns sacrifice cost for Rocket (no monetary cost, requires sacrifice)', () => {
-      assert.deepStrictEqual(getDeploymentCost('rocket', 'mission_6h'), { type: 'sacrifice', amount: 0 });
-      assert.deepStrictEqual(getDeploymentCost('rocket', 'mission_12h'), { type: 'sacrifice', amount: 0 });
-      assert.deepStrictEqual(getDeploymentCost('rocket', 'mission_24h'), { type: 'sacrifice', amount: 0 });
+      assert.deepStrictEqual(getDeploymentCost('rocket', 'mission_6h'), {
+        type: 'sacrifice',
+        amount: 0
+      });
+      assert.deepStrictEqual(getDeploymentCost('rocket', 'mission_12h'), {
+        type: 'sacrifice',
+        amount: 0
+      });
+      assert.deepStrictEqual(getDeploymentCost('rocket', 'mission_24h'), {
+        type: 'sacrifice',
+        amount: 0
+      });
     });
   });
 
@@ -111,17 +146,17 @@ describe('Class Deployment Engine — Tier 1 Unit Tests', () => {
     it('generates exactly 3 Bug-type pokemon with IV floors', () => {
       const bugs6h = generateBugExpeditionPokemon('mission_6h', 8);
       assert.strictEqual(bugs6h.length, 3);
-      bugs6h.forEach(p => {
+      bugs6h.forEach((p) => {
         assert.ok(p.type === 'bug' || p.type2 === 'bug', `Pokemon ${p.id} must be Bug type`);
-        ['hp', 'atk', 'def', 'spa', 'spd', 'spe'].forEach(stat => {
+        ['hp', 'atk', 'def', 'spa', 'spd', 'spe'].forEach((stat) => {
           assert.ok((p.ivs?.[stat as keyof typeof p.ivs] ?? 0) >= 5, `IV ${stat} must be >= 5`);
         });
       });
 
       const bugs24h = generateBugExpeditionPokemon('mission_24h', 8);
       assert.strictEqual(bugs24h.length, 3);
-      bugs24h.forEach(p => {
-        ['hp', 'atk', 'def', 'spa', 'spd', 'spe'].forEach(stat => {
+      bugs24h.forEach((p) => {
+        ['hp', 'atk', 'def', 'spa', 'spd', 'spe'].forEach((stat) => {
           assert.ok((p.ivs?.[stat as keyof typeof p.ivs] ?? 0) >= 15, `IV ${stat} must be >= 15`);
         });
       });
@@ -129,7 +164,11 @@ describe('Class Deployment Engine — Tier 1 Unit Tests', () => {
       for (let i = 0; i < 1000; i++) {
         const bCount = Math.floor(Math.random() * 9);
         const bugs = generateBugExpeditionPokemon('mission_6h', bCount);
-        assert.strictEqual(bugs.length, 3, `BadgeCount ${bCount} iteration ${i} generated ${bugs.length} pokemon instead of 3`);
+        assert.strictEqual(
+          bugs.length,
+          3,
+          `BadgeCount ${bCount} iteration ${i} generated ${bugs.length} pokemon instead of 3`
+        );
       }
     });
   });
@@ -155,9 +194,9 @@ describe('Class Deployment Engine — Tier 1 Unit Tests', () => {
     it('computes correct IV floor and shiny multipliers for streak levels', () => {
       assert.deepStrictEqual(getCazabichosStreakMultipliers(0), { ivFloor: 0, shinyMult: 1.0 });
       assert.deepStrictEqual(getCazabichosStreakMultipliers(1), { ivFloor: 5, shinyMult: 1.75 });
-      assert.deepStrictEqual(getCazabichosStreakMultipliers(2), { ivFloor: 10, shinyMult: 2.50 });
+      assert.deepStrictEqual(getCazabichosStreakMultipliers(2), { ivFloor: 10, shinyMult: 2.5 });
       assert.deepStrictEqual(getCazabichosStreakMultipliers(3), { ivFloor: 15, shinyMult: 3.25 });
-      assert.deepStrictEqual(getCazabichosStreakMultipliers(4), { ivFloor: 20, shinyMult: 4.00 });
+      assert.deepStrictEqual(getCazabichosStreakMultipliers(4), { ivFloor: 20, shinyMult: 4.0 });
     });
 
     it('awards 1 Pokéball every 10 captures at classLevel >= 10', () => {
@@ -185,7 +224,9 @@ describe('Class Deployment Engine — Tier 1 Unit Tests', () => {
         type: 'poison'
       } as unknown as Pokemon;
 
-      const res6h = resolveDeploymentRewards('rocket', 'mission_6h', poke, { projectedReward: 22000 });
+      const res6h = resolveDeploymentRewards('rocket', 'mission_6h', poke, {
+        projectedReward: 22000
+      });
       assert.strictEqual(res6h.money, 22000);
       assert.strictEqual(res6h.items[0]?.id, 'nugget');
       assert.strictEqual(res6h.items[0]?.qty, 1);
@@ -193,7 +234,9 @@ describe('Class Deployment Engine — Tier 1 Unit Tests', () => {
       assert.strictEqual(res6h.criminality, 5);
       assert.strictEqual(res6h.shouldSacrifice, true);
 
-      const res24h = resolveDeploymentRewards('rocket', 'mission_24h', poke, { projectedReward: 180000 });
+      const res24h = resolveDeploymentRewards('rocket', 'mission_24h', poke, {
+        projectedReward: 180000
+      });
       assert.strictEqual(res24h.money, 180000);
       assert.strictEqual(res24h.items[0]?.id, 'masterball');
       assert.strictEqual(res24h.classXP, 600);
@@ -260,5 +303,4 @@ describe('Class Deployment Engine — Tier 1 Unit Tests', () => {
       assert.strictEqual(HATCH_STEP_REDUCTION_CRIADOR, 0.25);
     });
   });
-
 });

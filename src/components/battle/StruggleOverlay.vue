@@ -1,33 +1,38 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useBattleStore } from '@/stores/battle/battle'
-import BattleMoveSlot from './BattleMoveSlot.vue'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
-import { toPokemonType } from '@/data/battle/types'
-import type { Move } from '@/types/pokemon/pokemon'
+import { computed } from 'vue';
+import { useBattleStore } from '@/stores/battle/battle';
+import BattleMoveSlot from './BattleMoveSlot.vue';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+import { toPokemonType } from '@/data/battle/types';
+import type { Move } from '@/types/pokemon/pokemon';
 
-const battleStore = useBattleStore()
-const player = computed(() => battleStore.player)
+const battleStore = useBattleStore();
+const player = computed(() => battleStore.player);
 
 /** True when all PP are 0 and the Pokémon is not in a locked/forced cycle. */
 const isStruggleMode = computed(() => {
-  const p = player.value
-  if (!p || !p.moves) return false
-  const isLocked = isPokemonLocked(p)
-  if (isLocked) return false
-  return p.moves.every(m => !m || m.pp <= 0)
-})
+  const p = player.value;
+  if (!p || !p.moves) return false;
+  const isLocked = isPokemonLocked(p);
+  if (isLocked) return false;
+  return p.moves.every((m) => !m || m.pp <= 0);
+});
 
-const STRUGGLE_BASE_POWER = 50
-const STRUGGLE_RECOIL_RATIO = 0.25
+const STRUGGLE_BASE_POWER = 50;
+const STRUGGLE_RECOIL_RATIO = 0.25;
 
 /** Struggle Move object built with real Showdown data. */
 const struggleMoveData = computed<Move>(() => {
-  const raw = pokemonDataProvider.getMoveData('struggle') as { type?: string; power?: number; acc?: number; cat?: string } | null
-  const cat = raw?.cat
+  const raw = pokemonDataProvider.getMoveData('struggle') as {
+    type?: string;
+    power?: number;
+    acc?: number;
+    cat?: string;
+  } | null;
+  const cat = raw?.cat;
   if (cat !== undefined && cat !== 'physical' && cat !== 'special' && cat !== 'status') {
-    throw new Error(`Invalid Struggle move category: ${cat}`)
+    throw new Error(`Invalid Struggle move category: ${cat}`);
   }
   return {
     id: 'struggle',
@@ -39,9 +44,9 @@ const struggleMoveData = computed<Move>(() => {
     pp: 1,
     maxPP: 1,
     recoil: STRUGGLE_RECOIL_RATIO,
-    desc: 'Sin PP disponibles. Ataque sin tipo que hace rebotar al usuario.',
-  }
-})
+    desc: 'Sin PP disponibles. Ataque sin tipo que hace rebotar al usuario.'
+  };
+});
 </script>
 
 <template>
@@ -61,7 +66,7 @@ const struggleMoveData = computed<Move>(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 // Forcejeo: se superpone al grid sin alterar el tamaño del HUD
 .struggle-overlay {
@@ -70,9 +75,9 @@ const struggleMoveData = computed<Move>(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgb(var(--dark-rgb, 10, 10, 20), 0.82);
+  background: Rgb(var(--dark-rgb, 10, 10, 20), 0.82);
   inset: 0;
-  backdrop-filter: blur(2px);
+  backdrop-filter: Blur(2px);
   pointer-events: all;
 
   :deep(.move-slot-wrapper) {

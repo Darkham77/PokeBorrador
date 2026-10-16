@@ -13,19 +13,19 @@
 
 SQLite uses dynamic type affinity with 5 storage classes (`NULL`, `INTEGER`, `REAL`, `TEXT`, `BLOB`). The translation pipeline maps PostgreSQL types as follows:
 
-| PostgreSQL Data Type | SQLite Storage Affinity | Implementation & Translation Notes |
-| :--- | :--- | :--- |
-| **`SMALLINT`**, **`INT`**, **`INTEGER`** | `INTEGER` | Direct mapping; dynamic 1 to 8 bytes. |
-| **`BIGINT`** | `INTEGER` | Handled natively up to 64-bit signed integers. |
-| **`SERIAL PRIMARY KEY`** / **`BIGSERIAL PRIMARY KEY`** | `INTEGER PRIMARY KEY AUTOINCREMENT` | Strict syntactic replacement required for rowid sequence binding. |
-| **`SERIAL`** / **`BIGSERIAL`** (non-PK) | `INTEGER` | Monotonic increment removed; handled by column defaults. |
-| **`BOOLEAN`** | `INTEGER` | `TRUE` / `FALSE` literals translated to `1` / `0`. |
-| **`NUMERIC`**, **`DECIMAL`**, **`REAL`**, **`DOUBLE PRECISION`** | `REAL` | Standard IEEE floating point representation. |
-| **`VARCHAR(n)`**, **`CHAR(n)`**, **`TEXT`**, **`CITEXT`** | `TEXT` | Length constraints ignored; full variable length supported. |
-| **`DATE`**, **`TIMESTAMP`**, **`TIMESTAMPTZ`** | `TEXT` | Persisted as ISO-8601 strings; functions mapped to `datetime('now')`. |
-| **`JSON`**, **`JSONB`** | `TEXT` | Stored as plain text strings. Operations mapped to `json_*` / `json_extract`. |
-| **`UUID`** | `TEXT` | Defaults mapped to `DEFAULT (hex(randomblob(16)))`. |
-| **`BYTEA`**, **`BIT`**, **`BLOB`** | `BLOB` | Unstructured binary information. |
+| PostgreSQL Data Type                                             | SQLite Storage Affinity             | Implementation & Translation Notes                                            |
+| :--------------------------------------------------------------- | :---------------------------------- | :---------------------------------------------------------------------------- |
+| **`SMALLINT`**, **`INT`**, **`INTEGER`**                         | `INTEGER`                           | Direct mapping; dynamic 1 to 8 bytes.                                         |
+| **`BIGINT`**                                                     | `INTEGER`                           | Handled natively up to 64-bit signed integers.                                |
+| **`SERIAL PRIMARY KEY`** / **`BIGSERIAL PRIMARY KEY`**           | `INTEGER PRIMARY KEY AUTOINCREMENT` | Strict syntactic replacement required for rowid sequence binding.             |
+| **`SERIAL`** / **`BIGSERIAL`** (non-PK)                          | `INTEGER`                           | Monotonic increment removed; handled by column defaults.                      |
+| **`BOOLEAN`**                                                    | `INTEGER`                           | `TRUE` / `FALSE` literals translated to `1` / `0`.                            |
+| **`NUMERIC`**, **`DECIMAL`**, **`REAL`**, **`DOUBLE PRECISION`** | `REAL`                              | Standard IEEE floating point representation.                                  |
+| **`VARCHAR(n)`**, **`CHAR(n)`**, **`TEXT`**, **`CITEXT`**        | `TEXT`                              | Length constraints ignored; full variable length supported.                   |
+| **`DATE`**, **`TIMESTAMP`**, **`TIMESTAMPTZ`**                   | `TEXT`                              | Persisted as ISO-8601 strings; functions mapped to `datetime('now')`.         |
+| **`JSON`**, **`JSONB`**                                          | `TEXT`                              | Stored as plain text strings. Operations mapped to `json_*` / `json_extract`. |
+| **`UUID`**                                                       | `TEXT`                              | Defaults mapped to `DEFAULT (hex(randomblob(16)))`.                           |
+| **`BYTEA`**, **`BIT`**, **`BLOB`**                               | `BLOB`                              | Unstructured binary information.                                              |
 
 ---
 
@@ -36,7 +36,7 @@ The `translatePostgresToSqlite` parser applies deterministic regex and token tra
 ### 1. Function Mapping
 
 - **`NOW()`** $\rightarrow$ `datetime('now')`
-- **`gen_random_uuid()`** $\rightarrow$ `hex(randomblob(16))` *(Mandate: function-based `DEFAULT` values MUST be enclosed in parentheses `DEFAULT (hex(randomblob(16)))`)*.
+- **`gen_random_uuid()`** $\rightarrow$ `hex(randomblob(16))` _(Mandate: function-based `DEFAULT` values MUST be enclosed in parentheses `DEFAULT (hex(randomblob(16)))`)_.
 - **`jsonb_*`** $\rightarrow$ `json_*` (e.g., `jsonb_build_object` $\rightarrow$ `json_object`, `jsonb_agg` $\rightarrow$ `json_group_array`, `jsonb_array_elements` $\rightarrow$ `json_each`).
 - **`to_jsonb`** $\rightarrow$ `json`
 - **`ARRAY_AGG`** $\rightarrow$ `json_group_array`

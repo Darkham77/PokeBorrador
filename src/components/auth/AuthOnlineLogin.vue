@@ -1,86 +1,80 @@
 <script setup lang="ts">
-import { useInputAnimations } from '@/composables/ui/useInputAnimations'
-import type { ServerConnectionStatus } from '@/types/auth/auth'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { useInputAnimations } from '@/composables/ui/useInputAnimations';
+import type { ServerConnectionStatus } from '@/types/auth/auth';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Server {
-  id: string
-  name: string
-  region: string
-  url: string
-  anonKey: string
+  id: string;
+  name: string;
+  region: string;
+  url: string;
+  anonKey: string;
 }
 
 interface Props {
-  loading: boolean
-  isOnline: boolean
-  serverStatus: ServerConnectionStatus
-  serverStatusDetail: string
-  selectedServerId: string
-  officialServers: Server[]
-  emailValue: string
-  passwordValue: string
+  loading: boolean;
+  isOnline: boolean;
+  serverStatus: ServerConnectionStatus;
+  serverStatusDetail: string;
+  selectedServerId: string;
+  officialServers: Server[];
+  emailValue: string;
+  passwordValue: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'update:selectedServerId', val: string): void
-  (e: 'update:emailValue', val: string): void
-  (e: 'update:passwordValue', val: string): void
-  (e: 'serverChange'): void
-  (e: 'login'): void
-}>()
+  (e: 'update:selectedServerId', val: string): void;
+  (e: 'update:emailValue', val: string): void;
+  (e: 'update:passwordValue', val: string): void;
+  (e: 'serverChange'): void;
+  (e: 'login'): void;
+}>();
 
-const {
-  handleInputEnter,
-  handleInputLeave,
-  handleInputFocus,
-  handleInputBlur
-} = useInputAnimations()
+const { handleInputEnter, handleInputLeave, handleInputFocus, handleInputBlur } =
+  useInputAnimations();
 
 const handleServerSelect = (e: Event) => {
-  const target = e.target as HTMLSelectElement
-  emit('update:selectedServerId', target.value)
-  emit('serverChange')
-}
+  const target = e.target as HTMLSelectElement;
+  emit('update:selectedServerId', target.value);
+  emit('serverChange');
+};
 </script>
 
 <template>
   <div class="online-login-form">
     <!-- Alerta de Internet -->
-    <div 
-      v-if="!isOnline" 
-      class="internet-alert"
-    >
+    <div v-if="!isOnline" class="internet-alert">
       <span class="emoji">⚠️</span> SIN CONEXIÓN A INTERNET
     </div>
 
     <div class="server-list-container">
       <div class="label-row">
         <label class="server-label">Seleccionar Servidor</label>
-        <div 
-          class="status-indicator"
-          :class="serverStatus"
-        >
-          {{ serverStatusDetail || (serverStatus === 'checking' ? '...' : serverStatus === 'online' ? 'EN LÍNEA' : 'OFFLINE') }}
+        <div class="status-indicator" :class="serverStatus">
+          {{
+            serverStatusDetail ||
+            (serverStatus === 'checking'
+              ? '...'
+              : serverStatus === 'online'
+                ? 'EN LÍNEA'
+                : 'OFFLINE')
+          }}
         </div>
       </div>
       <select
-        id="auth-online-login-select-serverselect" 
-        :value="selectedServerId" 
+        id="auth-online-login-select-serverselect"
+        :value="selectedServerId"
         class="auth-input server-select"
+        aria-label="Servidor"
         @change="handleServerSelect"
         @focus="handleInputFocus"
         @blur="handleInputBlur"
         @mouseenter="handleInputEnter"
         @mouseleave="handleInputLeave"
       >
-        <option 
-          v-for="server in officialServers" 
-          :key="server.id" 
-          :value="server.id"
-        >
+        <option v-for="server in officialServers" :key="server.id" :value="server.id">
           {{ server.name }} [{{ server.region }}]
         </option>
       </select>
@@ -92,19 +86,21 @@ const handleServerSelect = (e: Event) => {
       class="auth-input"
       type="email"
       placeholder="Email"
+      aria-label="Email"
       @input="emit('update:emailValue', ($event.target as HTMLInputElement).value)"
       @keyup.enter="emit('login')"
       @focus="handleInputFocus"
       @blur="handleInputBlur"
       @mouseenter="handleInputEnter"
       @mouseleave="handleInputLeave"
-    >
+    />
     <input
       id="auth-online-login-input-contrase-a"
       :value="passwordValue"
       class="auth-input"
       type="password"
       placeholder="Contraseña"
+      aria-label="Contraseña"
       autocomplete="current-password"
       @input="emit('update:passwordValue', ($event.target as HTMLInputElement).value)"
       @keyup.enter="emit('login')"
@@ -112,7 +108,7 @@ const handleServerSelect = (e: Event) => {
       @blur="handleInputBlur"
       @mouseenter="handleInputEnter"
       @mouseleave="handleInputLeave"
-    >
+    />
     <button
       id="auth-online-login-btn-1"
       class="auth-btn"
@@ -125,17 +121,16 @@ const handleServerSelect = (e: Event) => {
         class="auth-btn-icon"
         draggable="false"
         aria-hidden="true"
-      
         width="16"
         height="16"
-      >
+      />
       <span>ENTRAR</span>
     </button>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/views/login" as *;
+@use '@/styles/views/login' as *;
 
 .online-login-form {
   width: 100%;

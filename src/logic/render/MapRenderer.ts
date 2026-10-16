@@ -1,6 +1,6 @@
 /**
  * src/logic/render/MapRenderer.ts
- * 
+ *
  * Main thread orchestrator for the OffscreenCanvas map rendering.
  * Spawns the worker, transfers canvas control, and sends state updates.
  */
@@ -32,10 +32,7 @@ export class MapRenderer {
 
     // Spawn the Web Worker
     // Note: We use Vite's native worker import syntax or new URL pattern
-    this.worker = new Worker(
-      new URL('./render.worker.ts', import.meta.url),
-      { type: 'module' }
-    );
+    this.worker = new Worker(new URL('./render.worker.ts', import.meta.url), { type: 'module' });
 
     // Initialize the worker with the offscreen canvas
     this.worker.postMessage(

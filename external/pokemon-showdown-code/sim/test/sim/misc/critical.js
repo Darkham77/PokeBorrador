@@ -6,19 +6,18 @@ const common = require('./../../common');
 let battle;
 
 describe('Critical hits', () => {
-	afterEach(() => {
-		battle.destroy();
-	});
+  afterEach(() => {
+    battle.destroy();
+  });
 
-	it(`should not happen on self-hits`, () => {
-		battle = common.createBattle({ forceRandomChance: true }, [[
-			{ species: 'Zubat', moves: ['confuseray'] },
-		], [
-			{ species: 'Chansey', item: 'luckypunch', ability: 'superluck', moves: ['softboiled'] },
-		]]);
+  it(`should not happen on self-hits`, () => {
+    battle = common.createBattle({ forceRandomChance: true }, [
+      [{ species: 'Zubat', moves: ['confuseray'] }],
+      [{ species: 'Chansey', item: 'luckypunch', ability: 'superluck', moves: ['softboiled'] }]
+    ]);
 
-		battle.makeChoices('move confuseray', 'move softboiled');
-		assert(battle.log.some(line => line.includes('[from] confusion')));
-		assert(battle.log.every(line => !line.startsWith('|-crit')));
-	});
+    battle.makeChoices('move confuseray', 'move softboiled');
+    assert(battle.log.some((line) => line.includes('[from] confusion')));
+    assert(battle.log.every((line) => !line.startsWith('|-crit')));
+  });
 });

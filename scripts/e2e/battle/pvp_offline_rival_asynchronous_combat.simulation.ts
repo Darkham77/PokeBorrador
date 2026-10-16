@@ -13,68 +13,82 @@ class PvpOfflineRivalSimWrapper extends BaseBattleSimulation {
 
   public async setupAsynchronousBattle(): Promise<void> {
     if (this.driver === 'postgres') {
-      await this.queryTestDb(`
+      await this.queryTestDb(
+        `
         INSERT INTO auth.users (id, email, created_at)
         VALUES ($1, 'rival_blue@test.local', NOW())
         ON CONFLICT (id) DO NOTHING;
-      `, [SIM_OFFLINE_RIVAL_ID]);
-      await this.queryTestDb(`
+      `,
+        [SIM_OFFLINE_RIVAL_ID]
+      );
+      await this.queryTestDb(
+        `
         INSERT INTO public.profiles (id, username, elo_rating, created_at)
         VALUES ($1, 'Offline Rival Blue', 1500, NOW())
         ON CONFLICT (id) DO NOTHING;
-      `, [SIM_OFFLINE_RIVAL_ID]);
+      `,
+        [SIM_OFFLINE_RIVAL_ID]
+      );
     }
 
-    await this.page.evaluate(async ({ initialElo, lowHp, rivalId }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useLivePvPStore } = await import('../../../src/stores/livePvP.ts');
-      const { usePvPStore } = await import('../../../src/stores/pvp.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+    await this.page.evaluate(
+      async ({ initialElo, lowHp, rivalId }) => {
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { useLivePvPStore } = await import('../../../src/stores/livePvP.ts');
+        const { usePvPStore } = await import('../../../src/stores/pvp.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
 
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
-      const livePvPStore = useLivePvPStore();
-      const pvpStore = usePvPStore();
+        const gameStore = useGameStore();
+        const battleStore = useBattleStore();
+        const livePvPStore = useLivePvPStore();
+        const pvpStore = usePvPStore();
 
-      pvpStore.elo = initialElo;
+        pvpStore.elo = initialElo;
 
-      const pvpPikachu = pokemonDebugService.generate({ id: 'pikachu', level: 50 });
-      const pvpCharizard = pokemonDebugService.generate({ id: 'charizard', level: 50 });
+        const pvpPikachu = pokemonDebugService.generate({ id: 'pikachu', level: 50 });
+        const pvpCharizard = pokemonDebugService.generate({ id: 'charizard', level: 50 });
 
-      gameStore.state.team = [pvpPikachu];
-      gameStore.state.box = [pvpCharizard];
-      gameStore.state.pvpTeam = [pvpPikachu.uid, pvpCharizard.uid];
-      gameStore.state.starterChosen = true;
+        gameStore.state.team = [pvpPikachu];
+        gameStore.state.box = [pvpCharizard];
+        gameStore.state.pvpTeam = [pvpPikachu.uid, pvpCharizard.uid];
+        gameStore.state.starterChosen = true;
 
-      const rivalGengar = pokemonDebugService.generate({ id: 'gengar', level: 50 });
-      rivalGengar.hp = lowHp;
+        const rivalGengar = pokemonDebugService.generate({ id: 'gengar', level: 50 });
+        rivalGengar.hp = lowHp;
 
-      livePvPStore.battleState.active = true;
-      livePvPStore.battleState.isRanked = true;
-      livePvPStore.battleState.opponentId = rivalId;
-      livePvPStore.battleState.config = {
-        format: '3v3',
-        levelRule: 'flat50',
-        arena: { gymId: 'celadon' },
-        mode: 'ranked',
-        isAsynchronous: true
-      };
+        livePvPStore.battleState.active = true;
+        livePvPStore.battleState.isRanked = true;
+        livePvPStore.battleState.opponentId = rivalId;
+        livePvPStore.battleState.config = {
+          format: '3v3',
+          levelRule: 'flat50',
+          arena: { gymId: 'celadon' },
+          mode: 'ranked',
+          isAsynchronous: true
+        };
 
-      await battleStore.startBattle(rivalGengar, {
-        isPvP: true,
-        isRanked: true,
-        pvpMatchId: 'sim-async-pvp-1',
-        pvpIsHost: true,
-        pvpOpponentName: 'Offline Rival Blue',
-        enemyTeam: [rivalGengar],
-        playerTeam: [pvpPikachu, pvpCharizard],
-        isTrainer: true,
-        trainerName: 'Offline Rival Blue',
-        trainerSprite: 'blue',
-        locationId: 'gym'
-      });
-    }, { initialElo: SIM_OFFLINE_RIVAL_INITIAL_ELO, lowHp: SIM_LOW_HP_VALUE, rivalId: SIM_OFFLINE_RIVAL_ID });
+        await battleStore.startBattle(rivalGengar, {
+          isPvP: true,
+          isRanked: true,
+          pvpMatchId: 'sim-async-pvp-1',
+          pvpIsHost: true,
+          pvpOpponentName: 'Offline Rival Blue',
+          enemyTeam: [rivalGengar],
+          playerTeam: [pvpPikachu, pvpCharizard],
+          isTrainer: true,
+          trainerName: 'Offline Rival Blue',
+          trainerSprite: 'blue',
+          locationId: 'gym'
+        });
+      },
+      {
+        initialElo: SIM_OFFLINE_RIVAL_INITIAL_ELO,
+        lowHp: SIM_LOW_HP_VALUE,
+        rivalId: SIM_OFFLINE_RIVAL_ID
+      }
+    );
     await awaitBattleReadyForInput(this.page);
   }
 }
@@ -82,7 +96,9 @@ class PvpOfflineRivalSimWrapper extends BaseBattleSimulation {
 test.describe('PvP Offline Rival Asynchronous Combat Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('executes asynchronous combat against offline rival team and records passive battle report', async ({ page }) => {
+  test('executes asynchronous combat against offline rival team and records passive battle report', async ({
+    page
+  }) => {
     const sim = new PvpOfflineRivalSimWrapper(page, 'PvpAsyncSim');
     await sim.setup();
     await sim.setupAsynchronousBattle();
@@ -97,23 +113,26 @@ test.describe('PvP Offline Rival Asynchronous Combat Simulation', () => {
     await clickResilient(move0);
 
     // 3. Conclude battle and verify passive report recording
-    const reportRecorded = await page.evaluate(async ({ rivalId }) => {
-      const { useLivePvPStore } = await import('../../../src/stores/livePvP.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const livePvPStore = useLivePvPStore();
-      const gameStore = useGameStore();
+    const reportRecorded = await page.evaluate(
+      async ({ rivalId }) => {
+        const { useLivePvPStore } = await import('../../../src/stores/livePvP.ts');
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const livePvPStore = useLivePvPStore();
+        const gameStore = useGameStore();
 
-      await livePvPStore.endBattle(true, '¡Victoria sobre el rival asíncrono!');
+        await livePvPStore.endBattle(true, '¡Victoria sobre el rival asíncrono!');
 
-      if (gameStore.db) {
-        const { data } = await gameStore.db
-          .from('passive_battle_reports')
-          .select('*')
-          .eq('user_id', rivalId) as { data: unknown[] | null };
-        return Boolean(data && data.length > 0);
-      }
-      return true;
-    }, { rivalId: SIM_OFFLINE_RIVAL_ID });
+        if (gameStore.db) {
+          const { data } = (await gameStore.db
+            .from('passive_battle_reports')
+            .select('*')
+            .eq('user_id', rivalId)) as { data: unknown[] | null };
+          return Boolean(data && data.length > 0);
+        }
+        return true;
+      },
+      { rivalId: SIM_OFFLINE_RIVAL_ID }
+    );
 
     expect(reportRecorded).toBe(true);
   });

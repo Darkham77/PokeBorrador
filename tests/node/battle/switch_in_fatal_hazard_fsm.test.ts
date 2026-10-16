@@ -1,17 +1,21 @@
-import { describe, it } from "vitest";
-import assert from "node:assert";
-import { createBattleStateMachine, BATTLE_STATES, BATTLE_SUBSTATES } from "@/logic/battle/battleStateMachine.ts";
-import type { Pokemon } from "@/types/pokemon/pokemon";
+import { describe, it } from 'vite-plus/test';
+import assert from 'node:assert';
+import {
+  createBattleStateMachine,
+  BATTLE_STATES,
+  BATTLE_SUBSTATES
+} from '@/logic/battle/battleStateMachine.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
-describe("Switch-In Fatal Hazard FSM Integrity", () => {
-  it("preserves SWITCH_MENU and isBattleSwitchForced when entering Pokémon faints from hazards", async () => {
+describe('Switch-In Fatal Hazard FSM Integrity', () => {
+  it('preserves SWITCH_MENU and isBattleSwitchForced when entering Pokémon faints from hazards', async () => {
     const fsm = createBattleStateMachine();
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
 
     const enteringPoke = {
-      uid: "pkm-dead-entry-001",
-      id: "mew",
-      name: "Mew",
+      uid: 'pkm-dead-entry-001',
+      id: 'mew',
+      name: 'Mew',
       hp: 0,
       maxHp: 100,
       fainted: true
@@ -33,23 +37,23 @@ describe("Switch-In Fatal Hazard FSM Integrity", () => {
     assert.strictEqual(
       fsm.currentSubState.value,
       BATTLE_SUBSTATES.SWITCH_MENU,
-      "FSM subState must remain SWITCH_MENU when entering Pokémon is fainted"
+      'FSM subState must remain SWITCH_MENU when entering Pokémon is fainted'
     );
     assert.strictEqual(
       isBattleSwitchForced,
       true,
-      "isBattleSwitchForced must remain true to keep replacement menu active"
+      'isBattleSwitchForced must remain true to keep replacement menu active'
     );
   });
 
-  it("transitions to WAIT_INPUT when entering Pokémon survives entry hazards", async () => {
+  it('transitions to WAIT_INPUT when entering Pokémon survives entry hazards', async () => {
     const fsm = createBattleStateMachine();
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
 
     const enteringPoke = {
-      uid: "pkm-alive-entry-001",
-      id: "mew",
-      name: "Mew",
+      uid: 'pkm-alive-entry-001',
+      id: 'mew',
+      name: 'Mew',
       hp: 75,
       maxHp: 100,
       fainted: false
@@ -67,12 +71,12 @@ describe("Switch-In Fatal Hazard FSM Integrity", () => {
     assert.strictEqual(
       fsm.currentSubState.value,
       BATTLE_SUBSTATES.WAIT_INPUT,
-      "FSM subState must transition to WAIT_INPUT when entering Pokémon is alive"
+      'FSM subState must transition to WAIT_INPUT when entering Pokémon is alive'
     );
     assert.strictEqual(
       isBattleSwitchForced,
       false,
-      "isBattleSwitchForced must be cleared when Pokémon successfully enters combat"
+      'isBattleSwitchForced must be cleared when Pokémon successfully enters combat'
     );
   });
 });

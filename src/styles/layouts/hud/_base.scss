@@ -14,7 +14,7 @@
   margin: 0 auto;
   transform: Translate3d(0, 0, 0);
   pointer-events: none;
-  contain: layout; 
+  contain: layout;
   overflow: visible !important;
 
   &.hud-hidden {
@@ -25,7 +25,7 @@
     // Eliminado visibility: hidden para mantener la capa GPU "caliente" y evitar re-paints secuenciales
   }
 
-  .hud { 
+  .hud {
     @include shell-premium(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
     @include will-animate(transform, opacity);
 
@@ -43,16 +43,18 @@
     box-sizing: border-box;
     box-shadow: var(--shadow-card-elevated);
     white-space: nowrap;
-    backface-visibility: hidden; 
+    backface-visibility: hidden;
 
     &::after {
       position: absolute;
       padding: 1px;
       border-radius: inherit;
-    background: Linear-Gradient(180deg, Rgb(255 255 255 / 10%), Rgb(255 255 255 / 2%));
+      background: Linear-Gradient(180deg, Rgb(255 255 255 / 10%), Rgb(255 255 255 / 2%));
       content: '';
       inset: 0;
-    mask: Linear-Gradient($white 0 0) content-box, Linear-Gradient($white 0 0);
+      mask:
+        Linear-Gradient($white 0 0) content-box,
+        Linear-Gradient($white 0 0);
       mask-composite: xor;
       mask-composite: exclude;
       pointer-events: none;
@@ -72,35 +74,50 @@
       padding: 12px 20px;
       white-space: normal;
 
-      & .hud-left { grid-column: 1; grid-row: 1; }
-      & .hud-actions { display: flex; justify-content: flex-end; grid-column: 2; grid-row: 1; }
-      
-      .hud-center { display: none !important; }
-      
-      & .hud-right { 
-        display: flex; 
-        flex-wrap: wrap; 
-        justify-content: center !important; 
-        gap: $spacing-md-alt; 
-        width: 100%; 
-        padding: 4px 0; 
-        grid-column: 1 / -1; 
-        grid-row: 2; 
-        margin-left: 0; 
-        
+      & .hud-left {
+        grid-column: 1;
+        grid-row: 1;
+      }
+      & .hud-actions {
+        display: flex;
+        justify-content: flex-end;
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .hud-center {
+        display: none !important;
+      }
+
+      & .hud-right {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center !important;
+        gap: $spacing-md-alt;
+        width: 100%;
+        padding: 4px 0;
+        grid-column: 1 / -1;
+        grid-row: 2;
+        margin-left: 0;
+
         & .hud-pill {
           gap: $spacing-2xs;
           min-width: 58px;
           height: 58px;
           padding: 6px 8px;
           border-radius: $radius-xl-alt;
-          
-          i, span:first-child { 
-            height: 22px; 
-            font-size: var(--font-16); 
+
+          i,
+          span:first-child {
+            height: 22px;
+            font-size: var(--font-16);
           }
-          .currency-icon-money { font-size: var(--font-20); }
-          .pill-value { font-size: var(--font-9); }
+          .currency-icon-money {
+            font-size: var(--font-20);
+          }
+          .pill-value {
+            font-size: var(--font-9);
+          }
         }
       }
     }
@@ -116,10 +133,12 @@
 }
 
 @include responsive(hud-mobile) {
-  .hud-container .hud { 
-    justify-content: flex-start; 
-    padding: 10px 20px; 
-    
-    & .hud-right { margin-left: auto; }
+  .hud-container .hud {
+    justify-content: flex-start;
+    padding: 10px 20px;
+
+    & .hud-right {
+      margin-left: auto;
+    }
   }
 }

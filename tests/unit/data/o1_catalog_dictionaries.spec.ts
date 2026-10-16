@@ -1,24 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { 
-  SHOP_ITEMS, 
-  ITEMS_BY_ID, 
-  requireItemId, 
-  getMaxBuffDuration 
-} from '@/data/inventory/items';
-import { 
-  NICK_STYLES, 
-  AVATAR_STYLES, 
-  NICK_STYLES_BY_ID, 
-  AVATAR_STYLES_BY_ID 
+import { describe, it, expect } from 'vite-plus/test';
+import { SHOP_ITEMS, ITEMS_BY_ID, requireItemId, getMaxBuffDuration } from '@/data/inventory/items';
+import {
+  NICK_STYLES,
+  AVATAR_STYLES,
+  NICK_STYLES_BY_ID,
+  AVATAR_STYLES_BY_ID
 } from '@/data/player/cosmeticsData';
-import { 
-  CLASS_MISSIONS, 
-  CLASS_MISSIONS_BY_ID 
-} from '@/data/player/playerClasses';
-import { 
-  RANKED_REWARD_MILESTONES, 
-  RANKED_REWARD_MILESTONES_BY_ID 
-} from '@/data/system/rankedData';
+import { CLASS_MISSIONS, CLASS_MISSIONS_BY_ID } from '@/data/player/playerClasses';
+import { RANKED_REWARD_MILESTONES, RANKED_REWARD_MILESTONES_BY_ID } from '@/data/system/rankedData';
 
 describe('O(1) Data Structure Dictionaries Integrity', () => {
   describe('Items Catalog (items.ts)', () => {

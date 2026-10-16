@@ -1,7 +1,6 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/variables" as *;
-@use "@/styles/components/_badges.scss" as badges;
-
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/variables' as *;
+@use '@/styles/components/_badges.scss' as badges;
 
 .daycare-slot-legacy {
   position: relative;
@@ -42,13 +41,17 @@
 
 .slot-empty {
   text-align: center;
-  .plus-icon { 
-    color: Rgb(51 65 85 / 100%); 
-    font-size: var(--font-30); 
-    margin-bottom: 10px; 
+  .plus-icon {
+    color: Rgb(51 65 85 / 100%);
+    font-size: var(--font-30);
+    margin-bottom: 10px;
     will-change: transform;
   }
-  .hint { @include pixelated; color: Rgb(71 85 105 / 100%); font-size: var(--font-7); }
+  .hint {
+    @include pixelated;
+    color: Rgb(71 85 105 / 100%);
+    font-size: var(--font-7);
+  }
 }
 
 .slot-filled {
@@ -66,12 +69,19 @@
 }
 
 .sprite-box {
-  display: flex; justify-content: center; align-items: center;
-  width: 80px; height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
   filter: Drop-Shadow(0 4px 6px Rgb(0 0 0 / 35%));
   will-change: transform, filter;
-  
-  .pixel-sprite { @include pixelated; width: 76px; height: 76px; }
+
+  .pixel-sprite {
+    @include pixelated;
+    width: 76px;
+    height: 76px;
+  }
 }
 
 .poke-info {
@@ -114,7 +124,6 @@
     align-items: center;
     gap: $spacing-sm-alt;
     margin-bottom: 6px;
-
   }
 
   .iv-grid-daycare {
@@ -162,7 +171,7 @@
     color: $coin-gold;
     font-size: var(--font-8);
     font-weight: bold;
-    
+
     .nature-text {
       border-bottom: 1px dashed Rgba($coin-gold, 0.5);
       cursor: help;
@@ -173,9 +182,21 @@
 
 .vigor-status {
   margin-bottom: 15px;
-  .label { color: $muted; font-size: var(--font-9); font-weight: bold; margin-bottom: 6px; }
-  .vigor-bar-bg { height: 4px; border-radius: $radius-xs; background: Rgb(0 0 0 / 40%); overflow: hidden; }
-  .vigor-fill { height: 100%; }
+  .label {
+    color: $muted;
+    font-size: var(--font-9);
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+  .vigor-bar-bg {
+    height: 4px;
+    border-radius: $radius-xs;
+    background: Rgb(0 0 0 / 40%);
+    overflow: hidden;
+  }
+  .vigor-fill {
+    height: 100%;
+  }
 }
 
 .item-status {
@@ -185,25 +206,30 @@
   will-change: transform, filter;
   filter: Brightness(1);
 
-
-
   .item-badge {
     @include pixelated;
 
-    padding: 8px 12px; border-radius: $radius-lg-alt; font-size: var(--font-10);
+    padding: 8px 12px;
+    border-radius: $radius-lg-alt;
+    font-size: var(--font-10);
     text-align: center;
     text-transform: uppercase;
     &.active {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: $spacing-sm-alt; 
-      border: 1px solid Rgba($pokecenter-pink, 0.2); 
-      background: Rgba($pokecenter-pink, 0.08); 
+      gap: $spacing-sm-alt;
+      border: 1px solid Rgba($pokecenter-pink, 0.2);
+      background: Rgba($pokecenter-pink, 0.08);
       color: $white;
       white-space: nowrap;
     }
-    &.none { border: 1px dashed Rgb(255 255 255 / 8%); background: Rgb(0 0 0 / 20%); color: Rgb(148 163 184 / 60%); font-style: italic; }
+    &.none {
+      border: 1px dashed Rgb(255 255 255 / 8%);
+      background: Rgb(0 0 0 / 20%);
+      color: Rgb(148 163 184 / 60%);
+      font-style: italic;
+    }
   }
 
   .item-mini-sprite {

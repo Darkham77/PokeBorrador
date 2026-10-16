@@ -7,6 +7,7 @@
 
 import { POKEMON_STAT_KEYS, type PokemonEVs, type PokemonStatKey } from '@/types/pokemon/pokemon';
 import type { EvYield } from '@/data/pokemon/evYields';
+import type { ItemId } from '@/data/inventory/items';
 import { MAXIMUM_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
 
 export const MAX_TOTAL_EVS = 510;
@@ -22,55 +23,49 @@ export const POWER_ITEM_EV_BONUS = 8;
 export const MACHO_BRACE_EV_MULTIPLIER = 2;
 export const POKERUS_EV_MULTIPLIER = 2;
 
-export const POWER_ITEMS: Record<string, PokemonStatKey> = {
+export const POWER_ITEMS: Partial<Record<ItemId, PokemonStatKey>> = {
   powerweight: 'hp',
   powerbracer: 'atk',
   powerbelt: 'def',
   powerlens: 'spa',
   powerband: 'spd',
-  poweranklet: 'spe',
+  poweranklet: 'spe'
 };
 
-export const MOCHIS: Record<string, PokemonStatKey> = {
+export const MOCHIS: Partial<Record<ItemId, PokemonStatKey>> = {
   healthmochi: 'hp',
   musclemochi: 'atk',
   resistmochi: 'def',
   geniusmochi: 'spa',
   clevermochi: 'spd',
-  swiftmochi: 'spe',
+  swiftmochi: 'spe'
 };
 
-export const EV_BERRIES: Record<string, PokemonStatKey> = {
+export const EV_BERRIES: Partial<Record<ItemId, PokemonStatKey>> = {
   pomegberry: 'hp',
   kelpsyberry: 'atk',
   qualotberry: 'def',
   hondewberry: 'spa',
   grepaberry: 'spd',
-  tamatoberry: 'spe',
+  tamatoberry: 'spe'
 };
 
-export const VITAMINS: Record<string, PokemonStatKey> = {
+export const VITAMINS: Partial<Record<ItemId, PokemonStatKey>> = {
   hpup: 'hp',
   protein: 'atk',
   iron: 'def',
   calcium: 'spa',
   zinc: 'spd',
-  carbos: 'spe',
+  carbos: 'spe'
 };
 
-export const FEATHERS: Record<string, PokemonStatKey> = {
+export const FEATHERS: Partial<Record<ItemId, PokemonStatKey>> = {
   healthfeather: 'hp',
   musclefeather: 'atk',
   resistfeather: 'def',
   geniusfeather: 'spa',
   cleverfeather: 'spd',
-  swiftfeather: 'spe',
-  healthwing: 'hp',
-  musclewing: 'atk',
-  resistwing: 'def',
-  geniuswing: 'spa',
-  cleverwing: 'spd',
-  swiftwing: 'spe',
+  swiftfeather: 'spe'
 };
 
 export function createDefaultEvs(): PokemonEVs {
@@ -80,7 +75,7 @@ export function createDefaultEvs(): PokemonEVs {
     def: MIN_STAT_EVS,
     spa: MIN_STAT_EVS,
     spd: MIN_STAT_EVS,
-    spe: MIN_STAT_EVS,
+    spe: MIN_STAT_EVS
   };
 }
 
@@ -134,7 +129,7 @@ export function applyEvGains(
       updatedEvs: current,
       totalGained: 0,
       reachedMax: true,
-      statGains: {},
+      statGains: {}
     };
   }
 
@@ -142,7 +137,9 @@ export function applyEvGains(
   let totalGained = 0;
 
   const isMachoBrace = heldItem === 'machobrace';
-  const powerItemStat = heldItem ? POWER_ITEMS[heldItem] : null;
+  const powerItemStat = heldItem
+    ? ((POWER_ITEMS as Record<string, PokemonStatKey | undefined>)[heldItem] ?? null) // open-record: Held item power item lookup
+    : null;
 
   for (const stat of POKEMON_STAT_KEYS) {
     let rawGain = baseYield[stat] || 0;
@@ -159,7 +156,11 @@ export function applyEvGains(
     if (rawGain > 0) {
       const currentStatEv = current[stat];
       const maxStatCanGain = Math.max(0, MAX_STAT_EVS - currentStatEv);
-      const allowedGain = Math.min(rawGain, maxStatCanGain, MAX_TOTAL_EVS - (currentTotal + totalGained));
+      const allowedGain = Math.min(
+        rawGain,
+        maxStatCanGain,
+        MAX_TOTAL_EVS - (currentTotal + totalGained)
+      );
 
       if (allowedGain > 0) {
         current[stat] = currentStatEv + allowedGain;
@@ -175,11 +176,14 @@ export function applyEvGains(
     updatedEvs: current,
     totalGained,
     reachedMax: currentTotal >= MAX_TOTAL_EVS,
-    statGains,
+    statGains
   };
 }
 
-export function canUseVitamin(currentEvs: PokemonEVs | undefined | null, stat: PokemonStatKey): boolean {
+export function canUseVitamin(
+  currentEvs: PokemonEVs | undefined | null,
+  stat: PokemonStatKey
+): boolean {
   const evs = currentEvs || createDefaultEvs();
   const total = calculateTotalEvs(evs);
   if (total >= MAX_TOTAL_EVS) return false;
@@ -258,22 +262,23 @@ export function applyMochi(
   return applyStatEvIncrement(currentEvs, stat, MOCHI_EV_GAIN);
 }
 
-export function resetAllEvs(
-  currentEvs: PokemonEVs | undefined | null
-): { updatedEvs: PokemonEVs; success: boolean; totalCleared: number } {
+export function resetAllEvs(currentEvs: PokemonEVs | undefined | null): {
+  updatedEvs: PokemonEVs;
+  success: boolean;
+  totalCleared: number;
+} {
   const total = calculateTotalEvs(currentEvs);
   if (total <= 0) {
     return {
       updatedEvs: currentEvs ? { ...currentEvs } : createDefaultEvs(),
       success: false,
-      totalCleared: 0,
+      totalCleared: 0
     };
   }
 
   return {
     updatedEvs: createDefaultEvs(),
     success: true,
-    totalCleared: total,
+    totalCleared: total
   };
 }
-

@@ -50,11 +50,13 @@ export function formatStrategicSummary(strategic: StrategicState): string {
   }
 
   // Position
-  lines.push(`Position Score: ${strategic.position.score >= 0 ? '+' : ''}${strategic.position.score.toFixed(2)}`);
+  lines.push(
+    `Position Score: ${strategic.position.score >= 0 ? '+' : ''}${strategic.position.score.toFixed(2)}`
+  );
 
   // Sack order
   if (strategic.sackOrder.length > 1) {
-    lines.push(`Sack Order: ${strategic.sackOrder.map(s => s.pokemon).join(' → ')}`);
+    lines.push(`Sack Order: ${strategic.sackOrder.map((s) => s.pokemon).join(' → ')}`);
   }
 
   return lines.join('\n');

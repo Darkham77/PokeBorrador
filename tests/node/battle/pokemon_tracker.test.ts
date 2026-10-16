@@ -1,4 +1,4 @@
-import { describe, it, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { PokemonTracker } from '../../../src/logic/battle/ai/heuristic/pokemonTracker.ts';
 import type { RandomBattleSetEntry } from '../../../src/logic/battle/ai/heuristic/types.ts';
@@ -62,9 +62,9 @@ describe('HeuristicAI - PokemonTracker Unit Tests', () => {
     const sets = info.possibleSets;
 
     // El segundo set que lleva 'Life Orb' debe tener mayor probabilidad que los otros
-    const specialAttackerSet = sets.find(s => s.role === 'Special Attacker')!;
-    const otherSet = sets.find(s => s.role === 'Nasty Plot Utility')!;
-    
+    const specialAttackerSet = sets.find((s) => s.role === 'Special Attacker')!;
+    const otherSet = sets.find((s) => s.role === 'Nasty Plot Utility')!;
+
     assert.ok(specialAttackerSet.probability > otherSet.probability);
   });
 
@@ -77,8 +77,8 @@ describe('HeuristicAI - PokemonTracker Unit Tests', () => {
     tracker.observeNoHazardDamage();
 
     const info = tracker.getInferredInfo();
-    const bootsSet = info.possibleSets.find(s => s.role === 'Nasty Plot Utility')!;
-    const normalSet = info.possibleSets.find(s => s.role === 'Special Attacker')!;
+    const bootsSet = info.possibleSets.find((s) => s.role === 'Nasty Plot Utility')!;
+    const normalSet = info.possibleSets.find((s) => s.role === 'Special Attacker')!;
 
     // El set con Heavy-Duty Boots debe ganar peso de probabilidad
     assert.ok(bootsSet.probability > normalSet.probability);
@@ -86,7 +86,7 @@ describe('HeuristicAI - PokemonTracker Unit Tests', () => {
 
   it('should fall back to uniform distribution if all sets are eliminated (Zero-Sets protection)', () => {
     // Observamos una combinación imposible de movimientos que ningún set tiene en común
-    tracker.observeMove('volttackle');  // Descarta sets 2 y 3 (deja sólo el set 1)
+    tracker.observeMove('volttackle'); // Descarta sets 2 y 3 (deja sólo el set 1)
     tracker.observeMove('thunderbolt'); // Thunderbolt no está en el set 1, esto descarta el set 1
 
     const info = tracker.getInferredInfo();

@@ -37,8 +37,8 @@ export const MAX_SHADOW_WIDTH_RATIO = 1.5;
 export const SHADOW_WIDTH_RATIO_STEP = 0.05;
 
 export const DEFAULT_SHADOW_HEIGHT_RATIO = 0.28;
-export const MIN_SHADOW_HEIGHT_RATIO = 0.10;
-export const MAX_SHADOW_HEIGHT_RATIO = 0.50;
+export const MIN_SHADOW_HEIGHT_RATIO = 0.1;
+export const MAX_SHADOW_HEIGHT_RATIO = 0.5;
 export const SHADOW_HEIGHT_RATIO_STEP = 0.01;
 
 export const DEFAULT_SHADOW_PIXELATION = 14;
@@ -56,7 +56,12 @@ export type ShadowSliderField = (typeof SHADOW_SLIDER_FIELDS)[number];
 
 export type SpriteShadowOverridesMap = Record<string, SpriteShadowOverride>; // open-record: Generic key-value data dictionary container
 
-export type PackedFeetTuple = readonly [feetY: number, feetX: number, isFlying?: number, shadowScale?: number];
+export type PackedFeetTuple = readonly [
+  feetY: number,
+  feetX: number,
+  isFlying?: number,
+  shadowScale?: number
+];
 
 export const SHADOW_ENTITY_CATEGORIES = ['all', 'pokemon', 'npc', 'trainer'] as const;
 export type ShadowEntityCategory = (typeof SHADOW_ENTITY_CATEGORIES)[number];
@@ -130,4 +135,3 @@ export function parseTrainerSpriteKey(name: string): {
     view: viewPart
   };
 }
-

@@ -1,32 +1,29 @@
 <script setup lang="ts">
-import { useMoveTooltip } from '@/composables/battle/useMoveTooltip'
-import MoveTooltipDamage from './MoveTooltipDamage.vue'
-import MoveTooltipStatus from './MoveTooltipStatus.vue'
-import MoveTooltipStatsGrid from './MoveTooltipStatsGrid.vue'
-import MoveTooltipDetails from './MoveTooltipDetails.vue'
-import MoveTooltipTactical from './MoveTooltipTactical.vue'
-import MoveTooltipModifiers from './MoveTooltipModifiers.vue'
-import MoveTooltipFieldEffects from './MoveTooltipFieldEffects.vue'
-import { useBattleStore } from '@/stores/battle/battle'
-import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import { useMoveTooltip } from '@/composables/battle/useMoveTooltip';
+import MoveTooltipDamage from './MoveTooltipDamage.vue';
+import MoveTooltipStatus from './MoveTooltipStatus.vue';
+import MoveTooltipStatsGrid from './MoveTooltipStatsGrid.vue';
+import MoveTooltipDetails from './MoveTooltipDetails.vue';
+import MoveTooltipTactical from './MoveTooltipTactical.vue';
+import MoveTooltipModifiers from './MoveTooltipModifiers.vue';
+import MoveTooltipFieldEffects from './MoveTooltipFieldEffects.vue';
+import { useBattleStore } from '@/stores/battle/battle';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 interface Props {
-  move: Move
-  playerInfo?: Pokemon | null
+  move: Move;
+  playerInfo?: Pokemon | null;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const battleStore = useBattleStore()
+const battleStore = useBattleStore();
 
-const {
-  activeDetails,
-  parsedStatusEffect,
-  moveDescriptionText
-} = useMoveTooltip(() => props.move, () => props.playerInfo)
-
+const { activeDetails, parsedStatusEffect, moveDescriptionText } = useMoveTooltip(
+  () => props.move,
+  () => props.playerInfo
+);
 </script>
-
 
 <template>
   <div class="move-tooltip-rich">
@@ -35,21 +32,13 @@ const {
     </div>
 
     <!-- Advanced Combat Calculations Dashboard -->
-    <div
-      v-if="battleStore.isBattleActive && activeDetails"
-      class="move-details-calc"
-    >
-      <div class="calc-section-title">
-        ESTADÍSTICAS EN COMBATE
-      </div>
+    <div v-if="battleStore.isBattleActive && activeDetails" class="move-details-calc">
+      <div class="calc-section-title">ESTADÍSTICAS EN COMBATE</div>
       <!-- Premium Grid Layout for Stats -->
       <MoveTooltipStatsGrid :active-details="activeDetails" />
 
       <!-- Speed & Special Mechanics Section -->
-      <MoveTooltipDetails
-        :active-details="activeDetails"
-        :move-id="props.move.id"
-      />
+      <MoveTooltipDetails :active-details="activeDetails" :move-id="props.move.id" />
 
       <!-- Tactical Modifiers Section (Assault Vest, Eviolite, Leech Seed, Foresight, Tera) -->
       <MoveTooltipTactical :active-details="activeDetails" />
@@ -73,8 +62,8 @@ const {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/_move-tooltip-shared.scss" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/_move-tooltip-shared.scss' as *;
 
 .move-tooltip-rich {
   @include pixelated;

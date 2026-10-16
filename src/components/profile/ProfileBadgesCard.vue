@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/profile/ProfileBadgesCard.vue
- * 
+ *
  * Gym badge showcase shelf for trainer profile modal.
  */
 
@@ -27,25 +27,17 @@ defineProps<{
 
 <template>
   <div class="profile-section-card badges-card">
-    <div class="section-label">
-      MEDALLAS DE KANTO ({{ badgesCount }}/8)
-    </div>
+    <div class="section-label">MEDALLAS DE KANTO ({{ badgesCount }}/8)</div>
     <div class="badges-shelf">
-      <div 
-        v-for="badge in GYM_BADGES" 
-        :key="badge.id"
-        class="badge-item"
-        :title="badge.name"
-      >
-        <img 
-          :src="getAssetUrl(ASSET_TYPES.BADGE, badge.id)" 
+      <div v-for="badge in GYM_BADGES" :key="badge.id" class="badge-item" :title="badge.name">
+        <img
+          :src="getAssetUrl(ASSET_TYPES.BADGE, badge.id)"
           :alt="badge.name"
           class="badge-img"
           :class="{ 'locked-badge': !isGymDefeated(badge.id) }"
-        
           width="32"
           height="32"
-        >
+        />
         <span class="badge-title">{{ badge.name }}</span>
       </div>
     </div>
@@ -82,7 +74,6 @@ defineProps<{
   border-radius: $radius-xl;
   background: Linear-Gradient(180deg, Rgb(82 53 31 / 80%) 0%, Rgb(56 36 21 / 90%) 100%);
   box-shadow: var(--shadow-card);
-
 }
 
 .badge-item {

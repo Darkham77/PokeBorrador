@@ -41,7 +41,8 @@ class AntiCheatRefreshSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(
       async (opts) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { requireMapRouteId } = await import('../../../src/data/world/map-assets.ts');
 
         useGameStore().state.map.currentMap = requireMapRouteId('route1');
@@ -140,20 +141,24 @@ class AntiCheatRefreshSimWrapper extends BaseBattleSimulation {
     });
   }
 
-  public override async playBattle(
-    finalState?: CertifiedTestBatch['finalState']
-  ): Promise<void> {
+  public override async playBattle(finalState?: CertifiedTestBatch['finalState']): Promise<void> {
     await super.playBattle(finalState);
     try {
-      await this.page.waitForFunction(() => {
-        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-        if (!store || store.isProcessing) return false;
-        const fsmState = store.currentFsmState;
-        const fsmSubState = store.currentSubState;
-        return fsmState === 'SEARCH_PHASE' ||
-               (fsmState === 'INITIALIZING' && fsmSubState === 'MINIGAME_CHECK') ||
-               fsmState === 'EXIT_BATTLE';
-      }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await this.page.waitForFunction(
+        () => {
+          const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+          if (!store || store.isProcessing) return false;
+          const fsmState = store.currentFsmState;
+          const fsmSubState = store.currentSubState;
+          return (
+            fsmState === 'SEARCH_PHASE' ||
+            (fsmState === 'INITIALIZING' && fsmSubState === 'MINIGAME_CHECK') ||
+            fsmState === 'EXIT_BATTLE'
+          );
+        },
+        undefined,
+        { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+      );
     } catch (err: unknown) {
       const debugInfo = await this.page.evaluate(() => {
         const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.() as any; // any-ok: Playwright window debug store evaluation
@@ -168,53 +173,82 @@ class AntiCheatRefreshSimWrapper extends BaseBattleSimulation {
           isTrainer: active?.isTrainer,
           isRival: active?.isRival,
           wasSearching: active?.wasSearching,
-          enemy: active?.enemy ? { name: active.enemy.name, hp: active.enemy.hp, fainted: active.enemy.fainted } : null,
-          enemyTeam: active?.enemyTeam?.map((p: any) => ({ name: p.name, hp: p.hp, fainted: p.fainted })),
+          enemy: active?.enemy
+            ? { name: active.enemy.name, hp: active.enemy.hp, fainted: active.enemy.fainted }
+            : null,
+          enemyTeam: active?.enemyTeam?.map((p: any) => ({
+            name: p.name,
+            hp: p.hp,
+            fainted: p.fainted
+          })),
           recentLogs: store?.battleLogs?.slice(-10)?.map((l: any) => l.text ?? l.message),
-          recentShowdownLogs: active?.rawShowdownLogs?.slice(-15),
+          recentShowdownLogs: active?.rawShowdownLogs?.slice(-15)
         };
       });
-      console.error('[E2E-DEBUG] playBattle waitForFunction failed. State:', JSON.stringify(debugInfo, null, 2));
+      console.error(
+        '[E2E-DEBUG] playBattle waitForFunction failed. State:',
+        JSON.stringify(debugInfo, null, 2)
+      );
       throw err;
     }
   }
 
   public async startEncounterFromUi(type: SearchEncounterType): Promise<void> {
-    await this.page.waitForFunction((encounterType) => {
-      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      if (!store || store.isProcessing) return false;
-      const fsmState = store.currentFsmState;
-      const fsmSubState = store.currentSubState;
-      const isSearchConfirmation = fsmState === 'SEARCH_PHASE'
-        && (fsmSubState === 'COMBAT_OR_FLEE' || fsmSubState === 'WAIT_FOR_SELECTION');
-      const isBattleInput = fsmState === 'ACTIVE_BATTLE'
-        && fsmSubState === 'WAIT_INPUT';
-      const isExpectedMinigame = (encounterType === 'fishing' || encounterType === 'archaeology')
-        && fsmState === 'INITIALIZING'
-        && fsmSubState === 'MINIGAME_CHECK';
-      return isSearchConfirmation || isBattleInput || isExpectedMinigame;
-    }, type, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await this.page.waitForFunction(
+      (encounterType) => {
+        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        if (!store || store.isProcessing) return false;
+        const fsmState = store.currentFsmState;
+        const fsmSubState = store.currentSubState;
+        const isSearchConfirmation =
+          fsmState === 'SEARCH_PHASE' &&
+          (fsmSubState === 'COMBAT_OR_FLEE' || fsmSubState === 'WAIT_FOR_SELECTION');
+        const isBattleInput = fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT';
+        const isExpectedMinigame =
+          (encounterType === 'fishing' || encounterType === 'archaeology') &&
+          fsmState === 'INITIALIZING' &&
+          fsmSubState === 'MINIGAME_CHECK';
+        return isSearchConfirmation || isBattleInput || isExpectedMinigame;
+      },
+      type,
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+    );
 
     const startButton = this.page.locator('#start-encounter-btn').first();
     if (await startButton.isVisible()) await confirmAndStartBattle(this.page);
   }
 
   public async awaitMinigameCheck(type: SearchMinigameType): Promise<void> {
-    const selector = type === 'fishing'
-      ? '#fishing-modal, .fishing-modal, .fishing-container, .fishing-minigame-overlay, #fishing-minigame-modal, .rhythm-game-modal'
-      : '#archaeology-modal, .archaeology-modal, .archaeology-container, .archaeology-minigame-overlay, #archaeology-minigame-modal, .fossil-game-modal';
+    const selector =
+      type === 'fishing'
+        ? '#fishing-modal, .fishing-modal, .fishing-container, .fishing-minigame-overlay, #fishing-minigame-modal, .rhythm-game-modal'
+        : '#archaeology-modal, .archaeology-modal, .archaeology-container, .archaeology-minigame-overlay, #archaeology-minigame-modal, .fossil-game-modal';
 
     await Promise.race([
-      this.page.locator(selector).first().waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS }),
-      this.page.waitForFunction((minigameType) => {
-        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-        const store = resolver?.();
-        if (!store) return false;
-        const isExpectedMinigame = minigameType === 'fishing'
-          ? (store.state?.minigame === 'fishing' || !!document.querySelector('#fishing-modal, .fishing-modal, .fishing-container, .fishing-minigame-overlay, #fishing-minigame-modal, .rhythm-game-modal'))
-          : (store.state?.minigame === 'archaeology' || !!document.querySelector('#archaeology-modal, .archaeology-modal, .archaeology-container, .archaeology-minigame-overlay, #archaeology-minigame-modal, .fossil-game-modal'));
-        return isExpectedMinigame;
-      }, type, { timeout: MAX_PER_ACTION_TIMEOUT_MS })
+      this.page
+        .locator(selector)
+        .first()
+        .waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS }),
+      this.page.waitForFunction(
+        (minigameType) => {
+          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+          const store = resolver?.();
+          if (!store) return false;
+          const isExpectedMinigame =
+            minigameType === 'fishing'
+              ? store.state?.minigame === 'fishing' ||
+                !!document.querySelector(
+                  '#fishing-modal, .fishing-modal, .fishing-container, .fishing-minigame-overlay, #fishing-minigame-modal, .rhythm-game-modal'
+                )
+              : store.state?.minigame === 'archaeology' ||
+                !!document.querySelector(
+                  '#archaeology-modal, .archaeology-modal, .archaeology-container, .archaeology-minigame-overlay, #archaeology-minigame-modal, .fossil-game-modal'
+                );
+          return isExpectedMinigame;
+        },
+        type,
+        { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+      )
     ]);
   }
 }
@@ -222,7 +256,9 @@ class AntiCheatRefreshSimWrapper extends BaseBattleSimulation {
 test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('should faithfully restore wild battle (same Pokemon, UID, HP, turn) after F5 in 3rd encounter', async ({ page }) => {
+  test('should faithfully restore wild battle (same Pokemon, UID, HP, turn) after F5 in 3rd encounter', async ({
+    page
+  }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
     const sim = new AntiCheatRefreshSimWrapper(page, 'AntiCheatWild');
@@ -246,7 +282,9 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     await sim.playBattle();
 
     // 3. Initiate Encounter 3 (Wild)
-    console.debug('[E2E-TEST] --- Iniciando Encuentro 3 (Salvaje) para prueba de F5 Anti-Cheat ---');
+    console.debug(
+      '[E2E-TEST] --- Iniciando Encuentro 3 (Salvaje) para prueba de F5 Anti-Cheat ---'
+    );
     await sim.forceHealAll();
     await sim.startEncounterFromUi('wild');
     await waitForWaitInput(page);
@@ -260,7 +298,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
         enemyUid: store.state?.enemy?.uid,
         enemyHp: store.state?.enemy?.hp,
         turnCount: store.state?.turnCount,
-        locationId: store.state?.locationId,
+        locationId: store.state?.locationId
       };
     });
 
@@ -288,7 +326,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
         enemyHp: store.state?.enemy?.hp,
         turnCount: store.state?.turnCount,
         locationId: store.state?.locationId,
-        minigame: store.state?.minigame,
+        minigame: store.state?.minigame
       };
     });
 
@@ -305,7 +343,9 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     console.debug('[E2E-TEST] Combate 3 finalizado con éxito tras restauración F5.');
   });
 
-  test('should faithfully restore trainer encounter (same trainer, team, UID) after F5 in 3rd encounter', async ({ page }) => {
+  test('should faithfully restore trainer encounter (same trainer, team, UID) after F5 in 3rd encounter', async ({
+    page
+  }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
     const sim = new AntiCheatRefreshSimWrapper(page, 'AntiCheatTrainer');
@@ -322,7 +362,9 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     await sim.playBattle();
 
     // 2. Complete Battle 2 (Wild, prepare Encounter 3 to be Trainer)
-    console.debug('[E2E-TEST] --- Completando Combate 2 (preparando Entrenador para Combate 3) ---');
+    console.debug(
+      '[E2E-TEST] --- Completando Combate 2 (preparando Entrenador para Combate 3) ---'
+    );
     await sim.forceHealAll();
     await sim.startEncounterFromUi('wild');
     await sim.forceEncounterType('trainer');
@@ -330,31 +372,45 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
 
     // 3. Initiate Encounter 3 (Trainer)
     console.debug('[E2E-TEST] --- Esperando generación de Entrenador para Encuentro 3 ---');
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      if (!store || store.isProcessing) return false;
-      const fsmState = store.currentFsmState;
-      const fsmSubState = store.currentSubState;
-      return Boolean(store.state?.isTrainer === true
-        && fsmState === 'SEARCH_PHASE'
-        && fsmSubState === 'COMBAT_OR_FLEE');
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS * 2 });
+    await page.waitForFunction(
+      () => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        const store = resolver?.();
+        if (!store || store.isProcessing) return false;
+        const fsmState = store.currentFsmState;
+        const fsmSubState = store.currentSubState;
+        return Boolean(
+          store.state?.isTrainer === true &&
+          fsmState === 'SEARCH_PHASE' &&
+          fsmSubState === 'COMBAT_OR_FLEE'
+        );
+      },
+      undefined,
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS * 2 }
+    );
 
-    console.debug('[E2E-TEST] --- Iniciando Encuentro 3 (Entrenador) para prueba de F5 Anti-Cheat ---');
+    console.debug(
+      '[E2E-TEST] --- Iniciando Encuentro 3 (Entrenador) para prueba de F5 Anti-Cheat ---'
+    );
     await sim.forceHealAll();
     await confirmAndStartBattle(page);
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      if (!store || store.isProcessing) return false;
-      const fsmState = store.currentFsmState;
-      const fsmSubState = store.currentSubState;
-      return Boolean(store.state?.isTrainer === true
-        && store.state?.over === false
-        && fsmState === 'ACTIVE_BATTLE'
-        && fsmSubState === 'WAIT_INPUT');
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS * 2 });
+    await page.waitForFunction(
+      () => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        const store = resolver?.();
+        if (!store || store.isProcessing) return false;
+        const fsmState = store.currentFsmState;
+        const fsmSubState = store.currentSubState;
+        return Boolean(
+          store.state?.isTrainer === true &&
+          store.state?.over === false &&
+          fsmState === 'ACTIVE_BATTLE' &&
+          fsmSubState === 'WAIT_INPUT'
+        );
+      },
+      undefined,
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS * 2 }
+    );
 
     // Capture pre-reload trainer battle state
     const preReloadState = await page.evaluate(async () => {
@@ -365,7 +421,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
         trainerName: store.state?.trainerName,
         enemyUid: store.state?.enemy?.uid,
         enemyTeamLength: store.state?.enemyTeam?.length,
-        turnCount: store.state?.turnCount,
+        turnCount: store.state?.turnCount
       };
     });
 
@@ -376,7 +432,9 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     await sim.persistBattleAndSave();
 
     // 4. Cheat attempt: Player refreshes (F5) during trainer battle
-    console.debug('[E2E-TEST] --- Intentando F5 para evadir o reiniciar combate con entrenador ---');
+    console.debug(
+      '[E2E-TEST] --- Intentando F5 para evadir o reiniciar combate con entrenador ---'
+    );
     await page.reload();
     await waitForStoreReady(page);
     await sim.speedUpAnimations();
@@ -392,7 +450,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
         trainerName: store.state?.trainerName,
         enemyUid: store.state?.enemy?.uid,
         enemyTeamLength: store.state?.enemyTeam?.length,
-        turnCount: store.state?.turnCount,
+        turnCount: store.state?.turnCount
       };
     });
 
@@ -408,7 +466,9 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     console.debug('[E2E-TEST] Combate con entrenador finalizado con éxito tras restauración F5.');
   });
 
-  test('should discard fishing minigame and return to search loop upon F5 without persisting minigame', async ({ page }) => {
+  test('should discard fishing minigame and return to search loop upon F5 without persisting minigame', async ({
+    page
+  }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
     const sim = new AntiCheatRefreshSimWrapper(page, 'AntiCheatFishing');
@@ -458,7 +518,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
       const { useModalStore } = await import('../../../src/stores/modals.ts');
       return {
         hasActiveBattle: !!useGameStore().state.activeBattle,
-        isFishingModalOpen: useModalStore().isOpen('Fishing'),
+        isFishingModalOpen: useModalStore().isOpen('Fishing')
       };
     });
 
@@ -471,10 +531,14 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     await sim.navigateToRoute1();
     await sim.startEncounterFromUi('wild');
     await sim.playBattle();
-    console.debug('[E2E-TEST] Minijuego de pesca ignorado correctamente por Anti-Cheat y búsqueda continuada.');
+    console.debug(
+      '[E2E-TEST] Minijuego de pesca ignorado correctamente por Anti-Cheat y búsqueda continuada.'
+    );
   });
 
-  test('should discard archaeology minigame and return to search loop upon F5 without persisting minigame', async ({ page }) => {
+  test('should discard archaeology minigame and return to search loop upon F5 without persisting minigame', async ({
+    page
+  }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
     const sim = new AntiCheatRefreshSimWrapper(page, 'AntiCheatArchaeology');
@@ -491,14 +555,18 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     await sim.playBattle();
 
     // 2. Complete Battle 2 (prepare Encounter 3 to be 'archaeology')
-    console.debug('[E2E-TEST] --- Completando Combate 2 (preparando Arqueología para Encuentro 3) ---');
+    console.debug(
+      '[E2E-TEST] --- Completando Combate 2 (preparando Arqueología para Encuentro 3) ---'
+    );
     await sim.forceHealAll();
     await sim.startEncounterFromUi('wild');
     await sim.forceEncounterType('archaeology');
     await sim.playBattle();
 
     // 3. Initiate Encounter 3 (Archaeology Minigame opens immediately)
-    console.debug('[E2E-TEST] --- Esperando Minijuego de Arqueología para prueba de F5 Anti-Cheat ---');
+    console.debug(
+      '[E2E-TEST] --- Esperando Minijuego de Arqueología para prueba de F5 Anti-Cheat ---'
+    );
     await sim.forceHealAll();
     await sim.awaitMinigameCheck('archaeology');
 
@@ -524,7 +592,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
       const { useModalStore } = await import('../../../src/stores/modals.ts');
       return {
         hasActiveBattle: !!useGameStore().state.activeBattle,
-        isArchaeologyModalOpen: useModalStore().isOpen('Archaeology'),
+        isArchaeologyModalOpen: useModalStore().isOpen('Archaeology')
       };
     });
 
@@ -537,10 +605,14 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     await sim.navigateToRoute1();
     await sim.startEncounterFromUi('wild');
     await sim.playBattle();
-    console.debug('[E2E-TEST] Minijuego de arqueología ignorado correctamente por Anti-Cheat y búsqueda continuada.');
+    console.debug(
+      '[E2E-TEST] Minijuego de arqueología ignorado correctamente por Anti-Cheat y búsqueda continuada.'
+    );
   });
 
-  test('should faithfully restore rival encounter (same rival, team, UID) after F5 in 3rd encounter', async ({ page }) => {
+  test('should faithfully restore rival encounter (same rival, team, UID) after F5 in 3rd encounter', async ({
+    page
+  }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
     const sim = new AntiCheatRefreshSimWrapper(page, 'AntiCheatRival');
@@ -565,31 +637,43 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
 
     // 3. Initiate Encounter 3 (Rival)
     console.debug('[E2E-TEST] --- Esperando generación de Rival para Encuentro 3 ---');
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      if (!store || store.isProcessing) return false;
-      const fsmState = store.currentFsmState;
-      const fsmSubState = store.currentSubState;
-      return Boolean(store.state?.isTrainer === true
-        && fsmState === 'SEARCH_PHASE'
-        && fsmSubState === 'COMBAT_OR_FLEE');
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS * 2 });
+    await page.waitForFunction(
+      () => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        const store = resolver?.();
+        if (!store || store.isProcessing) return false;
+        const fsmState = store.currentFsmState;
+        const fsmSubState = store.currentSubState;
+        return Boolean(
+          store.state?.isTrainer === true &&
+          fsmState === 'SEARCH_PHASE' &&
+          fsmSubState === 'COMBAT_OR_FLEE'
+        );
+      },
+      undefined,
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS * 2 }
+    );
 
     console.debug('[E2E-TEST] --- Iniciando Encuentro 3 (Rival) para prueba de F5 Anti-Cheat ---');
     await sim.forceHealAll();
     await confirmAndStartBattle(page);
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      if (!store || store.isProcessing) return false;
-      const fsmState = store.currentFsmState;
-      const fsmSubState = store.currentSubState;
-      return Boolean(store.state?.isTrainer === true
-        && store.state?.over === false
-        && fsmState === 'ACTIVE_BATTLE'
-        && fsmSubState === 'WAIT_INPUT');
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS * 2 });
+    await page.waitForFunction(
+      () => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        const store = resolver?.();
+        if (!store || store.isProcessing) return false;
+        const fsmState = store.currentFsmState;
+        const fsmSubState = store.currentSubState;
+        return Boolean(
+          store.state?.isTrainer === true &&
+          store.state?.over === false &&
+          fsmState === 'ACTIVE_BATTLE' &&
+          fsmSubState === 'WAIT_INPUT'
+        );
+      },
+      undefined,
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS * 2 }
+    );
 
     // Capture pre-reload rival battle state
     const preReloadState = await page.evaluate(async () => {
@@ -600,7 +684,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
         trainerName: store.state?.trainerName,
         enemyUid: store.state?.enemy?.uid,
         enemyTeamLength: store.state?.enemyTeam?.length,
-        turnCount: store.state?.turnCount,
+        turnCount: store.state?.turnCount
       };
     });
 
@@ -626,7 +710,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
         trainerName: store.state?.trainerName,
         enemyUid: store.state?.enemy?.uid,
         enemyTeamLength: store.state?.enemyTeam?.length,
-        turnCount: store.state?.turnCount,
+        turnCount: store.state?.turnCount
       };
     });
 

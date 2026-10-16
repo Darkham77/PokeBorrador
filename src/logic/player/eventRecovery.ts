@@ -12,7 +12,7 @@ export function healStuckEventPokemon(
   team: (Pokemon | null)[],
   box: (Pokemon | null)[],
   activeEvents: GameEvent[] | undefined,
-  userEntries: Record<string, CompetitionEntry> | undefined,
+  userEntries: Record<string, CompetitionEntry> | undefined, // open-record: Composite event_id:catId index
   currentInstant?: Temporal.Instant
 ): boolean {
   const activeEventIds = new Set<string>();

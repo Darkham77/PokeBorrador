@@ -6,14 +6,14 @@ import { log, logError, logDebug } from '../logging/logger';
 import { EventEmitter } from 'events';
 
 export interface ShowdownEvents {
-  'challstr': (challstr: string) => void;
-  'login': () => void;
+  challstr: (challstr: string) => void;
+  login: () => void;
   'battle-start': (battleId: string) => void;
   'battle-message': (battleId: string, messages: string[]) => void;
   'battle-end': (battleId: string) => void;
-  'pm': (from: string, message: string) => void;
-  'error': (error: Error) => void;
-  'disconnect': () => void;
+  pm: (from: string, message: string) => void;
+  error: (error: Error) => void;
+  disconnect: () => void;
 }
 
 export class ShowdownClient extends EventEmitter {
@@ -37,7 +37,12 @@ export class ShowdownClient extends EventEmitter {
       log(`Connecting to ${CONFIG.ps.server}...`);
       // Clean up any existing connection
       if (this.ws) {
-        try { this.ws.removeAllListeners(); this.ws.close(); } catch { /* ignore */ }
+        try {
+          this.ws.removeAllListeners();
+          this.ws.close();
+        } catch {
+          /* ignore */
+        }
         this.ws = null;
       }
       this.ws = new WebSocket(CONFIG.ps.server);
@@ -215,13 +220,15 @@ export class ShowdownClient extends EventEmitter {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Content-Length': Buffer.byteLength(postData),
-        },
+          'Content-Length': Buffer.byteLength(postData)
+        }
       };
 
       const req = https.request(options, (res) => {
         let data = '';
-        res.on('data', (chunk) => { data += chunk; });
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
         res.on('end', () => {
           // Response starts with ']' followed by JSON
           const jsonStr = data.startsWith(']') ? data.substring(1) : data;

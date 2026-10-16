@@ -1,8 +1,8 @@
-import type {ModdedSpeciesFormatsDataTable} from '@pkmn/sim';
+import type { ModdedSpeciesFormatsDataTable } from '@pkmn/sim';
 
 export const FormatsData: ModdedSpeciesFormatsDataTable = {
-	pichuspikyeared: {
-		isNonstandard: "Future",
-		tier: "Illegal",
-	},
+  pichuspikyeared: {
+    isNonstandard: 'Future',
+    tier: 'Illegal'
+  }
 };

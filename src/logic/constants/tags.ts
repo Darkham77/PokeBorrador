@@ -1,19 +1,40 @@
+import { getItemById, isItemId, type ItemId } from '@/data/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { hasMaxIV } from '@/logic/pokemon/statsMath.ts';
+import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic.ts';
+import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship.ts';
 
-import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { hasMaxIV } from '@/logic/pokemon/statsMath.ts'
-import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic.ts'
-import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship.ts'
-
-export const POKEMON_MANUAL_TAG_IDS = ['fav', 'breed', 'competitive', 'trade', 'iv31', 'hatched'] as const;
+export const POKEMON_MANUAL_TAG_IDS = [
+  'fav',
+  'breed',
+  'competitive',
+  'trade',
+  'iv31',
+  'hatched'
+] as const;
 export type PokemonManualTagId = (typeof POKEMON_MANUAL_TAG_IDS)[number];
-export const POKEMON_MANUAL_TAG_ID_SET: ReadonlySet<string> = new Set<string>(POKEMON_MANUAL_TAG_IDS);
+export const POKEMON_MANUAL_TAG_ID_SET: ReadonlySet<string> = new Set<string>(
+  POKEMON_MANUAL_TAG_IDS
+);
 
 export function isPokemonManualTagId(value: unknown): value is PokemonManualTagId {
   return typeof value === 'string' && POKEMON_MANUAL_TAG_ID_SET.has(value);
 }
 
-export const POKEMON_TAG_IDS = ['fav', 'breed', 'competitive', 'trade', 'iv31', 'hatched', 'friendship-evo', 'friendship-max', 'shiny', 'item', 'mission', 'event'] as const;
+export const POKEMON_TAG_IDS = [
+  'fav',
+  'breed',
+  'competitive',
+  'trade',
+  'iv31',
+  'hatched',
+  'friendship-evo',
+  'friendship-max',
+  'shiny',
+  'item',
+  'mission',
+  'event'
+] as const;
 export type PokemonTagId = (typeof POKEMON_TAG_IDS)[number];
 export const POKEMON_TAG_ID_SET: ReadonlySet<string> = new Set<string>(POKEMON_TAG_IDS); // runtime-set: Fast O(1) tag validation set
 
@@ -37,7 +58,9 @@ export const POKEMON_FILTER_TAG_IDS = [
   'shy'
 ] as const;
 export type PokemonFilterTagId = (typeof POKEMON_FILTER_TAG_IDS)[number];
-export const POKEMON_FILTER_TAG_ID_SET: ReadonlySet<string> = new Set<string>(POKEMON_FILTER_TAG_IDS); // runtime-set: Fast O(1) filter tag validation set
+export const POKEMON_FILTER_TAG_ID_SET: ReadonlySet<string> = new Set<string>(
+  POKEMON_FILTER_TAG_IDS
+); // runtime-set: Fast O(1) filter tag validation set
 
 export function isPokemonFilterTagId(value: unknown): value is PokemonFilterTagId {
   return typeof value === 'string' && POKEMON_FILTER_TAG_ID_SET.has(value);
@@ -64,45 +87,45 @@ export interface TagDefinition {
 }
 
 export const TAG_DEFINITIONS: Record<PokemonManualTagId, TagDefinition> = {
-  fav: { 
-    id: 'fav', 
-    label: 'FAVORITO', 
+  fav: {
+    id: 'fav',
+    label: 'FAVORITO',
     shortLabel: 'FAV',
-    icon: '⭐', 
-    color: '#FFD93D', 
-    desc: 'Pokémon marcado como favorito para evitar liberaciones accidentales.' 
+    icon: '⭐',
+    color: '#FFD93D',
+    desc: 'Pokémon marcado como favorito para evitar liberaciones accidentales.'
   },
-  breed: { 
-    id: 'breed', 
-    label: 'GENÉTICA', 
+  breed: {
+    id: 'breed',
+    label: 'GENÉTICA',
     shortLabel: 'GEN',
-    icon: '🧬', 
-    color: '#FF4D4D', 
-    desc: 'Marcado para breeding en la guardería o crianza selectiva.' 
+    icon: '🧬',
+    color: '#FF4D4D',
+    desc: 'Marcado para breeding en la guardería o crianza selectiva.'
   },
-  competitive: { 
-    id: 'competitive', 
+  competitive: {
+    id: 'competitive',
     label: 'COMPETITIVO', // spanish-ok: UI Spanish text localization label
     shortLabel: 'CMP',
-    icon: '🏆', 
-    color: '#34C759', 
-    desc: 'Pokémon entrenado y listo para torneos y duelos de alto nivel.' 
+    icon: '🏆',
+    color: '#34C759',
+    desc: 'Pokémon entrenado y listo para torneos y duelos de alto nivel.'
   },
-  trade: { 
-    id: 'trade', 
+  trade: {
+    id: 'trade',
     label: 'INTERCAMBIO', // spanish-ok: UI Spanish text localization label
     shortLabel: 'TRD',
-    icon: '🔄', 
-    color: '#AF52DE', 
-    desc: 'Disponible para intercambio con otros entrenadores.' 
+    icon: '🔄',
+    color: '#AF52DE',
+    desc: 'Disponible para intercambio con otros entrenadores.'
   },
-  iv31: { 
-    id: 'iv31', 
-    label: 'IV PERFECTO', 
+  iv31: {
+    id: 'iv31',
+    label: 'IV PERFECTO',
     shortLabel: 'IV',
-    icon: '31', 
-    color: '#FFD93D', 
-    desc: 'Tiene al menos una estadística con potencial individual máximo (31).' 
+    icon: '31',
+    color: '#FFD93D',
+    desc: 'Tiene al menos una estadística con potencial individual máximo (31).'
   },
   hatched: {
     id: 'hatched',
@@ -112,122 +135,125 @@ export const TAG_DEFINITIONS: Record<PokemonManualTagId, TagDefinition> = {
     color: '#FF9500',
     desc: 'Pokémon nacido de un huevo.'
   }
-}
+};
 
 // Export as array for v-for compatibility
-export const POKEMON_TAGS = Object.values(TAG_DEFINITIONS)
+export const POKEMON_TAGS = Object.values(TAG_DEFINITIONS);
+
+const POKEMON_BADGE_TYPES = ['shiny', 'item', 'mission', 'event'] as const;
+export type PokemonBadgeType = (typeof POKEMON_BADGE_TYPES)[number];
 
 /**
  * POKEMON_BADGES - Metadata for non-tag indicators (Shiny, Held Items, etc.)
  */
-export const POKEMON_BADGES: Record<string, TagDefinition> = {
-  shiny: { 
-    id: 'shiny', 
-    label: 'VARIOPINTO', 
+export const POKEMON_BADGES: Record<PokemonBadgeType, TagDefinition> = {
+  shiny: {
+    id: 'shiny',
+    label: 'VARIOPINTO',
     shortLabel: 'SHY',
-    icon: '✨', 
-    color: '#FFD93D', 
-    desc: 'Este Pokémon tiene una coloración especial extremadamente rara.' 
+    icon: '✨',
+    color: '#FFD93D',
+    desc: 'Este Pokémon tiene una coloración especial extremadamente rara.'
   },
-  item: { 
-    id: 'item', 
-    label: 'OBJETO EQUIPADO', 
+  item: {
+    id: 'item',
+    label: 'OBJETO EQUIPADO',
     shortLabel: 'ITEM',
-    icon: '🎒', 
-    color: '#32D74B', 
-    desc: 'Este Pokémon lleva un objeto que puede tener efectos en combate.' 
+    icon: '🎒',
+    color: '#32D74B',
+    desc: 'Este Pokémon lleva un objeto que puede tener efectos en combate.'
   },
-  mission: { 
-    id: 'mission', 
-    label: 'EN MISIÓN', 
+  mission: {
+    id: 'mission',
+    label: 'EN MISIÓN',
     shortLabel: 'MIS',
-    icon: '🧭', 
-    color: '#38BDF8', 
-    desc: 'Este Pokémon está participando en una misión activa.' 
+    icon: '🧭',
+    color: '#38BDF8',
+    desc: 'Este Pokémon está participando en una misión activa.'
   },
-  event: { 
-    id: 'event', 
-    label: 'EN EVENTO', 
+  event: {
+    id: 'event',
+    label: 'EN EVENTO',
     shortLabel: 'EVE',
-    icon: '🏆', 
-    color: '#F59E0B', 
-    desc: 'Este Pokémon está inscrito en un concurso o evento competitivo activo.' 
+    icon: '🏆',
+    color: '#F59E0B',
+    desc: 'Este Pokémon está inscrito en un concurso o evento competitivo activo.'
   }
-}
+};
 
 /**
  * Returns a unified array of all visual indicators for a pokemon.
  * This is the SINGLE SOURCE OF TRUTH for badge rendering.
- * @param {Object} pokemon 
+ * @param {Object} pokemon
  * @returns {Array} Array of badge/tag objects
  */
 export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDefinition[] {
-  if (!pokemon) return []
-  const badges: TagDefinition[] = []
+  if (!pokemon) return [];
+  const badges: TagDefinition[] = [];
 
   // 1. Automatic: Shiny
   const shinyBadge = POKEMON_BADGES['shiny'];
   if (pokemon.isShiny && shinyBadge) {
-    badges.push({ ...shinyBadge, isAutomatic: true })
+    badges.push({ ...shinyBadge, isAutomatic: true });
   }
 
   // 1b. Automatic: Mission
   const missionBadge = POKEMON_BADGES['mission'];
   if (pokemon.onMission && missionBadge) {
-    badges.push({ ...missionBadge, isAutomatic: true })
+    badges.push({ ...missionBadge, isAutomatic: true });
   }
 
   // 1c. Automatic: Event
   const eventBadge = POKEMON_BADGES['event'];
   if (pokemon.onEvent && eventBadge) {
-    badges.push({ ...eventBadge, isAutomatic: true })
+    badges.push({ ...eventBadge, isAutomatic: true });
   }
 
   // 2. Automatic: IV 31 (Perfect)
   const iv31Badge = TAG_DEFINITIONS['iv31'];
   if (hasMaxIV(pokemon.ivs) && iv31Badge) {
-    badges.push({ ...iv31Badge, isAutomatic: true })
+    badges.push({ ...iv31Badge, isAutomatic: true });
   }
 
   // 2b. Automatic: Hatched
   const hatchedBadge = TAG_DEFINITIONS['hatched'];
   if (pokemon.obtainedMethod === 'egg' && hatchedBadge) {
-    badges.push({ ...hatchedBadge, isAutomatic: true })
+    badges.push({ ...hatchedBadge, isAutomatic: true });
   }
 
   // 3. Automatic: Held Item
-  const heldItem = pokemon.heldItem || pokemon.item || null
+  const heldItem = pokemon.heldItem || pokemon.item || null;
   const itemBadge = POKEMON_BADGES['item'];
   if (heldItem && isItemId(heldItem) && itemBadge) {
     const itemData = getItemById(heldItem);
 
-    badges.push({ 
-      ...itemBadge, 
+    badges.push({
+      ...itemBadge,
       id: 'item',
       label: itemData.name.toUpperCase(), // text-ok: UI text display localization string
       shortLabel: itemBadge.shortLabel,
       desc: itemData.desc ?? itemBadge.desc ?? '',
       isAutomatic: true,
       itemId: heldItem
-    })
+    });
   }
 
   // 4. Manual Tags (From pokemon.tags array)
-  const tags = pokemon.tags
+  const tags = pokemon.tags;
   if (tags && Array.isArray(tags)) {
     tags.forEach((tagId) => {
       // Avoid duplicating iv31 or hatched if already added automatically
       // Also ignore 'box' tag as it's being deprecated/replaced
-      if (tagId === 'iv31' || tagId === 'hatched' || tagId === 'box') return 
-      
+      if (tagId === 'iv31' || tagId === 'hatched' || tagId === 'box') return;
+
       if (isPokemonManualTagId(tagId)) {
-        const def = TAG_DEFINITIONS[tagId]
-        if (def) badges.push({ ...def, isAutomatic: false })
+        const def = TAG_DEFINITIONS[tagId];
+        if (def) badges.push({ ...def, isAutomatic: false });
       }
-    })
+    });
   }
 
-  return badges
+  return badges;
 }
 
 /**
@@ -235,22 +261,22 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
  * Used for the tag editor/detail view.
  */
 export function getPokemonEditorBadges(pokemon: Partial<Pokemon> | null): TagDefinition[] {
-  const pokemonTags = pokemon?.tags || []
-  const badges: TagDefinition[] = []
+  const pokemonTags = pokemon?.tags || [];
+  const badges: TagDefinition[] = [];
 
   // ONLY add manual definitions for the editor
-  Object.values(TAG_DEFINITIONS).forEach(def => {
+  Object.values(TAG_DEFINITIONS).forEach((def) => {
     // We skip 'iv31', 'hatched', and any other automatic-only tags in the editor
-    if (def.id === 'iv31' || def.id === 'hatched') return
+    if (def.id === 'iv31' || def.id === 'hatched') return;
 
     badges.push({
       ...def,
       isActive: pokemonTags.includes(def.id),
       isLocked: false
-    })
-  })
+    });
+  });
 
-  return badges
+  return badges;
 }
 
 export interface FilterTagDefinition {
@@ -262,51 +288,119 @@ export interface FilterTagDefinition {
 }
 
 export const CANONICAL_FILTER_TAGS: readonly FilterTagDefinition[] = [
-  { id: 'fav', label: 'FAVORITO', shortLabel: 'FAV', icon: '⭐', desc: 'Pokémon marcados como favoritos.' },
-  { id: 'breed', label: 'GENÉTICA', shortLabel: 'GEN', icon: '🧬', desc: 'Marcado para breeding en la guardería o crianza selectiva.' },
-  { id: 'comp', label: 'COMPETITIVO', shortLabel: 'CMP', icon: '🏆', desc: 'Pokémon entrenados y listos para torneos y duelos.' },
-  { id: 'trade', label: 'INTERCAMBIO', shortLabel: 'TRD', icon: '🔄', desc: 'Disponible para intercambio con otros entrenadores.' },
-  { id: 'iv31', label: 'IV PERFECTO', shortLabel: 'IV', icon: '31', desc: 'Tiene al menos una estadística con potencial individual máximo (31).' },
-  { id: 'shiny', label: 'VARIOPINTO', shortLabel: 'SHY', icon: '✨', desc: 'Este Pokémon tiene una coloración especial extremadamente rara.' },
-  { id: 'team', label: 'EQUIPO', shortLabel: 'TEM', icon: '👥', desc: 'Pokémon asignados a tu equipo actual.' },
-  { id: 'hatched', label: 'CRÍA', shortLabel: 'CRI', icon: '🥚', desc: 'Pokémon nacido de un huevo.' },
-  { id: 'friendship-evo', label: 'LISTO P/ EVOLUCIONAR', shortLabel: 'EVO', icon: '💎', desc: 'Pokémon listo para evolucionar por amistad.' },
-  { id: 'friendship-max', label: 'VÍNCULO MÁXIMO', shortLabel: 'MAX', icon: '🎀', desc: 'Pokémon con amistad y vínculo al máximo (220+).' }
+  {
+    id: 'fav',
+    label: 'FAVORITO',
+    shortLabel: 'FAV',
+    icon: '⭐',
+    desc: 'Pokémon marcados como favoritos.'
+  },
+  {
+    id: 'breed',
+    label: 'GENÉTICA',
+    shortLabel: 'GEN',
+    icon: '🧬',
+    desc: 'Marcado para breeding en la guardería o crianza selectiva.'
+  },
+  {
+    id: 'comp',
+    label: 'COMPETITIVO',
+    shortLabel: 'CMP',
+    icon: '🏆',
+    desc: 'Pokémon entrenados y listos para torneos y duelos.'
+  },
+  {
+    id: 'trade',
+    label: 'INTERCAMBIO',
+    shortLabel: 'TRD',
+    icon: '🔄',
+    desc: 'Disponible para intercambio con otros entrenadores.'
+  },
+  {
+    id: 'iv31',
+    label: 'IV PERFECTO',
+    shortLabel: 'IV',
+    icon: '31',
+    desc: 'Tiene al menos una estadística con potencial individual máximo (31).'
+  },
+  {
+    id: 'shiny',
+    label: 'VARIOPINTO',
+    shortLabel: 'SHY',
+    icon: '✨',
+    desc: 'Este Pokémon tiene una coloración especial extremadamente rara.'
+  },
+  {
+    id: 'team',
+    label: 'EQUIPO',
+    shortLabel: 'TEM',
+    icon: '👥',
+    desc: 'Pokémon asignados a tu equipo actual.'
+  },
+  {
+    id: 'hatched',
+    label: 'CRÍA',
+    shortLabel: 'CRI',
+    icon: '🥚',
+    desc: 'Pokémon nacido de un huevo.'
+  },
+  {
+    id: 'friendship-evo',
+    label: 'LISTO P/ EVOLUCIONAR',
+    shortLabel: 'EVO',
+    icon: '💎',
+    desc: 'Pokémon listo para evolucionar por amistad.'
+  },
+  {
+    id: 'friendship-max',
+    label: 'VÍNCULO MÁXIMO',
+    shortLabel: 'MAX',
+    icon: '🎀',
+    desc: 'Pokémon con amistad y vínculo al máximo (220+).'
+  }
 ] as const;
 
 /**
  * Standardized helper to check if a pokemon possesses a specific tag.
  */
-export const hasPokemonTag = (pokemon: Partial<Pokemon> | null, tagId: PokemonFilterTagId): boolean => {
-  if (!pokemon) return false
-  const tags = pokemon.tags || []
-  
+export const hasPokemonTag = (
+  pokemon: Partial<Pokemon> | null,
+  tagId: PokemonFilterTagId
+): boolean => {
+  if (!pokemon) return false;
+  const tags = pokemon.tags || [];
+
   switch (tagId) {
     case 'comp':
     case 'competitive':
-      return tags.includes('comp') || tags.includes('competitive')
+      return tags.includes('comp') || tags.includes('competitive');
     case 'iv31':
-      return tags.includes('iv31') || hasMaxIV(pokemon.ivs)
+      return tags.includes('iv31') || hasMaxIV(pokemon.ivs);
     case 'hatched':
-      return tags.includes('hatched') || pokemon.obtainedMethod === 'egg'
+      return tags.includes('hatched') || pokemon.obtainedMethod === 'egg';
     case 'fav':
     case 'favorite':
-      return tags.includes('fav') || tags.includes('favorite')
+      return tags.includes('fav') || tags.includes('favorite');
     case 'shy':
     case 'shiny':
-      return Boolean(pokemon.isShiny)
+      return Boolean(pokemon.isShiny);
     case 'friendship-evo':
-      return isReadyForFriendshipEvolution(pokemon)
+      return isReadyForFriendshipEvolution(pokemon);
     case 'friendship-max':
-      return (pokemon.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE) >= FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD
+      return (
+        (pokemon.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE) >=
+        FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD
+      );
     default:
-      return tags.includes(tagId)
+      return tags.includes(tagId);
   }
-}
+};
 
 /**
  * Standardized helper to check if a pokemon is currently busy (mission, event, daycare, defense).
  */
 export function isPokemonBusy(pokemon: Partial<Pokemon> | null | undefined): boolean {
-  return Boolean(pokemon && (pokemon.onMission || pokemon.onEvent || pokemon.inDaycare || pokemon.onDefense))
+  return Boolean(
+    pokemon && (pokemon.onMission || pokemon.onEvent || pokemon.inDaycare || pokemon.onDefense)
+  );
 }

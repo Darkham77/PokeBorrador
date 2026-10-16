@@ -1,5 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
-import { executeCheckBothTeamsConfirmed, executeHandleOpponentTeam } from '@/logic/pvp/livePvPBattleSetupHandler';
+import { describe, it, expect, vi } from 'vite-plus/test';
+import {
+  executeCheckBothTeamsConfirmed,
+  executeHandleOpponentTeam
+} from '@/logic/pvp/livePvPBattleSetupHandler';
 import { executeStartPassiveBattle } from '@/logic/pvp/livePvPPassiveFallbackHandler';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
@@ -119,10 +122,14 @@ describe('PvP Turn Timer Delayed Start (Wait until WAIT_INPUT)', () => {
       battleStore: { startBattle } as any
     };
 
-    executeHandleOpponentTeam({
-      team: [dummyPoke],
-      trainerName: 'Rival 2'
-    }, battleState, ctx);
+    executeHandleOpponentTeam(
+      {
+        team: [dummyPoke],
+        trainerName: 'Rival 2'
+      },
+      battleState,
+      ctx
+    );
 
     // Timer must not start immediately
     expect(startBattle).toHaveBeenCalledTimes(1);

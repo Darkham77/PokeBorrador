@@ -16,16 +16,10 @@ export {
 } from './parametricContinentGenerator.ts';
 import { generatePokemonTopology } from '../pokemonGraphTopology.ts';
 import { embedPokemonTopology } from '../orthogonalGraphEmbedding.ts';
-import {
-  type ContinentGeneratorOptions,
-  type ContinentMapResult
-} from '../continentGenerator.ts';
+import { type ContinentGeneratorOptions, type ContinentMapResult } from '../continentGenerator.ts';
 import { sculptContinentFromGraph } from '../continentSculptingEngine.ts';
 import { enrichCorridorProperties } from '../corridorPropertyEngine.ts';
-import {
-  applyProgressionBarriers,
-  type ProgressionResult
-} from '../progressionBarrierEngine.ts';
+import { applyProgressionBarriers, type ProgressionResult } from '../progressionBarrierEngine.ts';
 import { exportPokemonTopologyToSvg } from './svgRouteAdapter.ts';
 import type {
   PokemonTopologyGraph,
@@ -35,10 +29,20 @@ import type {
 import type { POINode } from '../../../types/map/poiTypes.ts';
 import type { SettlementTerrainContext } from '../cityLayoutEngine.ts';
 import { computeTransitableGrid } from '../transitableGridEngine.ts';
-import { generateWildernessLayer, type WildernessLayerResult } from '../wildernessVegetationEngine.ts';
+import {
+  generateWildernessLayer,
+  type WildernessLayerResult
+} from '../wildernessVegetationEngine.ts';
 import { generateRouteLedges, type LedgeRun } from '../routeLedgeEngine.ts';
-import { generateProgressionObstacles, type ProgressionObstacle } from '../progressionObstacleEngine.ts';
-import { generateMicroVignettes, sweepStrayPathTiles, type MicroVignette } from '../microVignetteEngine.ts';
+import {
+  generateProgressionObstacles,
+  type ProgressionObstacle
+} from '../progressionObstacleEngine.ts';
+import {
+  generateMicroVignettes,
+  sweepStrayPathTiles,
+  type MicroVignette
+} from '../microVignetteEngine.ts';
 import {
   DEFAULT_PROCEDURAL_SEED,
   STANDARD_GBA_TILE_SIZE
@@ -49,7 +53,6 @@ import {
 } from '../../../config/continentalEngineConfig.ts';
 import { compileContinentalSettlementPois } from './continentalSettlementCompiler.ts';
 import { carveContinentalCorridorsAndPaths } from './continentalCorridorCarver.ts';
-
 
 // ---------------------------------------------------------------------------
 // Master Graph-First Pipeline Integration (T6.1)
@@ -142,7 +145,8 @@ function compileWildernessAndFramingLayer(
   }
 
   const transitableGrid = computeTransitableGrid(continent, pathGrid, bridgeGrid, pois);
-  (continent as { transitableGrid?: readonly (readonly boolean[])[] }).transitableGrid = transitableGrid;
+  (continent as { transitableGrid?: readonly (readonly boolean[])[] }).transitableGrid =
+    transitableGrid;
   const wilderness = generateWildernessLayer(continent, pois, pathGrid, {
     seed,
     transitableGrid,

@@ -15,7 +15,7 @@ export function auditSilentFallbackPatterns(srcDir: string): SilentFallbackResul
   const fallbackViolations: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(srcDir)) return { fallbackViolations };
 
-  const files = getFilesRecursively(srcDir).filter(f => f.endsWith('.ts') || f.endsWith('.vue'));
+  const files = getFilesRecursively(srcDir).filter((f) => f.endsWith('.ts') || f.endsWith('.vue'));
 
   for (const file of files) {
     const content = readFileSync(file, 'utf-8');

@@ -7,7 +7,7 @@
  * - Asserts clean execution on repository data
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   SpanishIdAuditor,
   SPANISH_ID_RULES,
@@ -30,9 +30,7 @@ describe('SpanishIdAuditor', () => {
     });
 
     it('declares all expected canonical rules in SPANISH_ID_RULES', () => {
-      const expectedRules: SpanishIdRuleId[] = [
-        'spanish-logic-id'
-      ];
+      const expectedRules: SpanishIdRuleId[] = ['spanish-logic-id'];
 
       for (const rule of expectedRules) {
         expect(SPANISH_ID_RULES).toContain(rule);

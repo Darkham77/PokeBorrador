@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ref } from 'vue'
-import { isAwardClaimable } from '@/logic/events/eventValidators'
-import { discardAward, checkPendingAwards } from '@/stores/events/eventAwardsActions'
-import type { EventAwardsContext } from '@/stores/events/eventAwardsActions'
-import type { PendingAward, PastEventHistoryItem } from '@/types/system/stores'
-import type { Event as GameEvent } from '@/logic/events/eventEngine'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { ref } from 'vue';
+import { isAwardClaimable } from '@/logic/events/eventValidators';
+import { discardAward, checkPendingAwards } from '@/stores/events/eventAwardsActions';
+import type { EventAwardsContext } from '@/stores/events/eventAwardsActions';
+import type { PendingAward, PastEventHistoryItem } from '@/types/system/stores';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 
 describe('Event Awards Validation and Discard System', () => {
   const mockAllEvents: GameEvent[] = [
@@ -26,9 +26,24 @@ describe('Event Awards Validation and Discard System', () => {
             metric: 'total_ivs',
             order: 'max',
             prizes: {
-              first: { type: 'mixed', money: 25000, battleCoins: 150, items: { goldbottlecap: 1, rarecandy: 5 } },
-              second: { type: 'mixed', money: 15000, battleCoins: 100, items: { bottlecap: 2, rarecandy: 3 } },
-              third: { type: 'mixed', money: 8000, battleCoins: 50, items: { bottlecap: 1, rarecandy: 1 } }
+              first: {
+                type: 'mixed',
+                money: 25000,
+                battleCoins: 150,
+                items: { goldbottlecap: 1, rarecandy: 5 }
+              },
+              second: {
+                type: 'mixed',
+                money: 15000,
+                battleCoins: 100,
+                items: { bottlecap: 2, rarecandy: 3 }
+              },
+              third: {
+                type: 'mixed',
+                money: 8000,
+                battleCoins: 50,
+                items: { bottlecap: 1, rarecandy: 1 }
+              }
             }
           }
         ]
@@ -54,7 +69,7 @@ describe('Event Awards Validation and Discard System', () => {
       },
       description: 'Concurso oficial de IVs'
     }
-  ]
+  ];
 
   describe('isAwardClaimable (Validation)', () => {
     it('returns false for legacy/missing events not in allEvents', () => {
@@ -64,10 +79,10 @@ describe('Event Awards Validation and Discard System', () => {
         event_id: 'antiguo_evento_inexistente',
         prize: JSON.stringify({ type: 'pokemon', species: 'magikarp', shiny: true, level: 5 }),
         received_at: null
-      }
+      };
 
-      expect(isAwardClaimable(legacyAward, mockAllEvents)).toBe(false)
-    })
+      expect(isAwardClaimable(legacyAward, mockAllEvents)).toBe(false);
+    });
 
     it('returns false for hora_magikarp awards with deprecated legacy structure (e.g. direct Shiny Magikarp)', () => {
       const legacyPokeAward: PendingAward = {
@@ -83,10 +98,10 @@ describe('Event Awards Validation and Discard System', () => {
           ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
         }),
         received_at: null
-      }
+      };
 
-      expect(isAwardClaimable(legacyPokeAward, mockAllEvents)).toBe(false)
-    })
+      expect(isAwardClaimable(legacyPokeAward, mockAllEvents)).toBe(false);
+    });
 
     it('returns false for hora_magikarp awards with deprecated arbitrary money (e.g. ₽1 or ₽23)', () => {
       const legacyMoneyAward1: PendingAward = {
@@ -95,7 +110,7 @@ describe('Event Awards Validation and Discard System', () => {
         event_id: 'hora_magikarp',
         prize: JSON.stringify({ type: 'money', amount: 1 }),
         received_at: null
-      }
+      };
 
       const legacyMoneyAward23: PendingAward = {
         id: 'award-legacy-money-23',
@@ -103,11 +118,11 @@ describe('Event Awards Validation and Discard System', () => {
         event_id: 'hora_magikarp',
         prize: JSON.stringify({ type: 'money', amount: 23 }),
         received_at: null
-      }
+      };
 
-      expect(isAwardClaimable(legacyMoneyAward1, mockAllEvents)).toBe(false)
-      expect(isAwardClaimable(legacyMoneyAward23, mockAllEvents)).toBe(false)
-    })
+      expect(isAwardClaimable(legacyMoneyAward1, mockAllEvents)).toBe(false);
+      expect(isAwardClaimable(legacyMoneyAward23, mockAllEvents)).toBe(false);
+    });
 
     it('returns false for corrupted or empty prize payloads', () => {
       const corruptAward: PendingAward = {
@@ -116,10 +131,10 @@ describe('Event Awards Validation and Discard System', () => {
         event_id: 'hora_magikarp',
         prize: 'invalid-json-string{',
         received_at: null
-      }
+      };
 
-      expect(isAwardClaimable(corruptAward, mockAllEvents)).toBe(false)
-    })
+      expect(isAwardClaimable(corruptAward, mockAllEvents)).toBe(false);
+    });
 
     it('returns true for official hora_magikarp configured prizes (1st place package)', () => {
       const validFirstPlaceAward: PendingAward = {
@@ -133,10 +148,10 @@ describe('Event Awards Validation and Discard System', () => {
           items: { goldbottlecap: 1, rarecandy: 5 }
         }),
         received_at: null
-      }
+      };
 
-      expect(isAwardClaimable(validFirstPlaceAward, mockAllEvents)).toBe(true)
-    })
+      expect(isAwardClaimable(validFirstPlaceAward, mockAllEvents)).toBe(true);
+    });
 
     it('returns true for official hora_magikarp configured prizes (2nd place package)', () => {
       const validSecondPlaceAward: PendingAward = {
@@ -150,10 +165,10 @@ describe('Event Awards Validation and Discard System', () => {
           items: { bottlecap: 2, rarecandy: 3 }
         }),
         received_at: null
-      }
+      };
 
-      expect(isAwardClaimable(validSecondPlaceAward, mockAllEvents)).toBe(true)
-    })
+      expect(isAwardClaimable(validSecondPlaceAward, mockAllEvents)).toBe(true);
+    });
 
     it('returns true for official event-level configured prizes in gran_concurso_sabado', () => {
       const validMoneyAward: PendingAward = {
@@ -162,7 +177,7 @@ describe('Event Awards Validation and Discard System', () => {
         event_id: 'gran_concurso_sabado',
         prize: JSON.stringify({ type: 'money', money: 50000 }),
         received_at: null
-      }
+      };
 
       const validBcAward: PendingAward = {
         id: 'award-bc',
@@ -170,7 +185,7 @@ describe('Event Awards Validation and Discard System', () => {
         event_id: 'gran_concurso_sabado',
         prize: JSON.stringify({ type: 'bc', battleCoins: 250 }),
         received_at: null
-      }
+      };
 
       const validItemAward: PendingAward = {
         id: 'award-item',
@@ -178,33 +193,33 @@ describe('Event Awards Validation and Discard System', () => {
         event_id: 'gran_concurso_sabado',
         prize: JSON.stringify({ type: 'item', item: 'masterball', qty: 2 }),
         received_at: null
-      }
+      };
 
-      expect(isAwardClaimable(validMoneyAward, mockAllEvents)).toBe(true)
-      expect(isAwardClaimable(validBcAward, mockAllEvents)).toBe(true)
-      expect(isAwardClaimable(validItemAward, mockAllEvents)).toBe(true)
-    })
-  })
+      expect(isAwardClaimable(validMoneyAward, mockAllEvents)).toBe(true);
+      expect(isAwardClaimable(validBcAward, mockAllEvents)).toBe(true);
+      expect(isAwardClaimable(validItemAward, mockAllEvents)).toBe(true);
+    });
+  });
 
   describe('discardAward (Action)', () => {
-    let mockDeleteFn: ReturnType<typeof vi.fn>
-    let mockEqFn: ReturnType<typeof vi.fn>
-    let ctx: EventAwardsContext
+    let mockDeleteFn: ReturnType<typeof vi.fn>;
+    let mockEqFn: ReturnType<typeof vi.fn>;
+    let ctx: EventAwardsContext;
 
     beforeEach(() => {
-      mockEqFn = vi.fn().mockResolvedValue({ data: true, error: null })
-      mockDeleteFn = vi.fn().mockReturnValue({ eq: mockEqFn })
+      mockEqFn = vi.fn().mockResolvedValue({ data: true, error: null });
+      mockDeleteFn = vi.fn().mockReturnValue({ eq: mockEqFn });
 
       const mockDb = {
         from: vi.fn((table: string) => {
           if (table === 'awards') {
             return {
               delete: mockDeleteFn
-            }
+            };
           }
-          return {}
+          return {};
         })
-      }
+      };
 
       const pendingAwards = ref<PendingAward[]>([
         {
@@ -221,7 +236,7 @@ describe('Event Awards Validation and Discard System', () => {
           prize: JSON.stringify({ type: 'money', money: 50000 }),
           received_at: null
         }
-      ])
+      ]);
 
       const pastEvents = ref<PastEventHistoryItem[]>([
         {
@@ -237,7 +252,7 @@ describe('Event Awards Validation and Discard System', () => {
           hasUnclaimedAward: true,
           isClaimed: false
         }
-      ])
+      ]);
 
       ctx = {
         gameStore: {
@@ -253,24 +268,21 @@ describe('Event Awards Validation and Discard System', () => {
         pastEvents,
         pendingAwards,
         userEntries: ref({})
-      }
-    })
+      };
+    });
 
     it('successfully discards an award from DB and updates reactive state', async () => {
-      const result = await discardAward(ctx, 'award-to-discard')
+      const result = await discardAward(ctx, 'award-to-discard');
 
-      expect(result).toBe(true)
-      expect(mockDeleteFn).toHaveBeenCalled()
-      expect(mockEqFn).toHaveBeenCalledWith('id', 'award-to-discard')
-      expect(ctx.pendingAwards.value.map(a => a.id)).toEqual(['award-keep'])
-      expect(ctx.pastEvents.value[0]?.myAward).toBeNull()
-      expect(ctx.pastEvents.value[0]?.hasUnclaimedAward).toBe(false)
-      expect(ctx.uiStore.notify).toHaveBeenCalledWith(
-        'Recompensa descartada correctamente.',
-        '🗑️'
-      )
-    })
-  })
+      expect(result).toBe(true);
+      expect(mockDeleteFn).toHaveBeenCalled();
+      expect(mockEqFn).toHaveBeenCalledWith('id', 'award-to-discard');
+      expect(ctx.pendingAwards.value.map((a) => a.id)).toEqual(['award-keep']);
+      expect(ctx.pastEvents.value[0]?.myAward).toBeNull();
+      expect(ctx.pastEvents.value[0]?.hasUnclaimedAward).toBe(false);
+      expect(ctx.uiStore.notify).toHaveBeenCalledWith('Recompensa descartada correctamente.', '🗑️');
+    });
+  });
 
   describe('Multi-SubCompetition Awards & Claims', () => {
     it('correctly loads and processes 2 awards from distinct sub-competitions of the same event', async () => {
@@ -289,7 +301,7 @@ describe('Event Awards Validation and Discard System', () => {
           prize: JSON.stringify({ type: 'mixed', money: 25000, battleCoins: 150, rank: 'first' }),
           received_at: null
         }
-      ]
+      ];
 
       const mockDb = {
         from: vi.fn((table: string) => {
@@ -299,7 +311,7 @@ describe('Event Awards Validation and Discard System', () => {
               eq: vi.fn().mockReturnThis(),
               is: vi.fn().mockReturnThis(),
               limit: vi.fn().mockResolvedValue({ data: userAwards, error: null })
-            }
+            };
           }
           if (table === 'competition_results') {
             return {
@@ -333,14 +345,14 @@ describe('Event Awards Validation and Discard System', () => {
                 ],
                 error: null
               })
-            }
+            };
           }
-          return {}
+          return {};
         })
-      }
+      };
 
-      const pendingAwards = ref<PendingAward[]>([])
-      const pastEvents = ref<PastEventHistoryItem[]>([])
+      const pendingAwards = ref<PendingAward[]>([]);
+      const pastEvents = ref<PastEventHistoryItem[]>([]);
       const userEntries = ref({
         'torneo_pesca:ivs': {
           id: 'e1',
@@ -362,7 +374,7 @@ describe('Event Awards Validation and Discard System', () => {
           data: {},
           submitted_at: '2026-08-31T18:05:00Z'
         }
-      })
+      });
 
       const ctx: EventAwardsContext = {
         gameStore: {
@@ -394,15 +406,15 @@ describe('Event Awards Validation and Discard System', () => {
         pastEvents,
         pendingAwards,
         userEntries
-      }
+      };
 
       // 1. Check pending awards -> Both awards should be loaded
-      await checkPendingAwards(ctx, true)
-      expect(ctx.pendingAwards.value.length).toBe(2)
+      await checkPendingAwards(ctx, true);
+      expect(ctx.pendingAwards.value.length).toBe(2);
       expect(ctx.uiStore.notify).toHaveBeenCalledWith(
         '¡Tienes 2 recompensas de eventos pendientes por reclamar!',
         '🎁'
-      )
-    })
-  })
-})
+      );
+    });
+  });
+});

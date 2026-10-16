@@ -5,13 +5,16 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, normalizePosixPath , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, normalizePosixPath, createRuleCapabilities } from '@francogp/auditor';
 import { collectFsmFiles } from './_fsmParityParser.ts';
 
 enableCompileCache();
 
 const PARITY_SRC_ROOT = path.resolve(process.cwd(), 'src');
-const PARITY_MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+const PARITY_MANUAL_PATH = path.resolve(
+  process.cwd(),
+  '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md'
+);
 
 export interface TransitionStep {
   from: string;
@@ -21,7 +24,7 @@ export interface TransitionStep {
 
 export async function getExecutionSequence(): Promise<string[]> {
   const allFiles = collectFsmFiles(PARITY_SRC_ROOT);
-  const sequence: { file: string, state: string, index: number }[] = [];
+  const sequence: { file: string; state: string; index: number }[] = [];
 
   for (const file of allFiles) {
     const content = await fs.readFile(file, 'utf-8');
@@ -29,16 +32,16 @@ export async function getExecutionSequence(): Promise<string[]> {
     let m: RegExpExecArray | null;
     while ((m = transRx.exec(content)) !== null) {
       if (m[1]) {
-        sequence.push({ 
-          file: path.basename(file), 
-          state: m[1], 
-          index: m.index 
+        sequence.push({
+          file: path.basename(file),
+          state: m[1],
+          index: m.index
         });
       }
     }
   }
-  
-  return sequence.map(s => s.state);
+
+  return sequence.map((s) => s.state);
 }
 
 export function parseMermaidSequences(content: string) {
@@ -48,17 +51,20 @@ export function parseMermaidSequences(content: string) {
   while ((m = blockRx.exec(content)) !== null) {
     const block = m[1] || '';
     if (!block.includes('stateDiagram-v2')) continue;
-    
+
     const seq: TransitionStep[] = [];
-    block.split('\n').forEach(line => {
+    block.split('\n').forEach((line) => {
       const clean = line.trim();
       const trans = clean.match(/^([A-Za-z0-9_]+)\s+-->\s+([A-Za-z0-9_]+)(?:\s*:\s*([^%]+))?/);
       if (trans?.[1] && trans[2] && trans[1] !== '[*]' && trans[2] !== '[*]') {
         const label = trans[3] || '';
-        seq.push({ 
-          from: trans[1], 
+        seq.push({
+          from: trans[1],
           to: trans[2],
-          isLoop: label.includes('↺') || label.toLowerCase().includes('loop') || label.toLowerCase().includes('circular')
+          isLoop:
+            label.includes('↺') ||
+            label.toLowerCase().includes('loop') ||
+            label.toLowerCase().includes('circular')
         });
       }
     });
@@ -102,17 +108,23 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
         'fsm-flow-sequence-missing': 'Secuencia FSM ausente en código'
       },
       ruleRemediations: {
-        'fsm-flow-sequence-missing': 'Align battle execution sequence order with documented Mermaid sequence in manual'
+        'fsm-flow-sequence-missing':
+          'Align battle execution sequence order with documented Mermaid sequence in manual'
       },
       requiredFiles: [PARITY_MANUAL_PATH],
       coverage: {
-        include: ['src/**/*.{ts,vue}', '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md']
+        include: [
+          'src/**/*.{ts,vue}',
+          '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md'
+        ]
       }
     });
   }
 
   public override async runAudit(): Promise<void> {
-    this.recordScanned('.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+    this.recordScanned(
+      '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md'
+    );
     const allFiles = collectFsmFiles(PARITY_SRC_ROOT);
     for (const f of allFiles) {
       this.recordScanned(normalizePosixPath(path.relative(this.projectRoot, f)));
@@ -128,12 +140,18 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
 
       mermaidSeqs.forEach((seq, idx) => {
         seq.forEach((step: TransitionStep) => {
-          const allFromIndices = executionSequence.map((s, i) => s === step.from ? i : -1).filter(i => i !== -1);
-          const allToIndices = executionSequence.map((s, i) => s === step.to ? i : -1).filter(i => i !== -1);
+          const allFromIndices = executionSequence
+            .map((s, i) => (s === step.from ? i : -1))
+            .filter((i) => i !== -1);
+          const allToIndices = executionSequence
+            .map((s, i) => (s === step.to ? i : -1))
+            .filter((i) => i !== -1);
 
           if (allFromIndices.length === 0 || allToIndices.length === 0) return;
 
-          const hasValidSequence = allFromIndices.some(fIdx => allToIndices.some(tIdx => tIdx > fIdx));
+          const hasValidSequence = allFromIndices.some((fIdx) =>
+            allToIndices.some((tIdx) => tIdx > fIdx)
+          );
 
           if (!hasValidSequence && !step.isLoop) {
             this.addViolation({
@@ -161,6 +179,10 @@ export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new FsmFlowParityAuditor());
 }

@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { computed, ref, useId } from 'vue'
-import { useGTSStore } from '@/stores/gts'
-import type { MarketFilters } from '@/logic/economy/market'
-import MarketPokemonFiltersGroup from './MarketPokemonFiltersGroup.vue'
+import { computed, ref, useId } from 'vue';
+import { useGTSStore } from '@/stores/gts';
+import type { MarketFilters } from '@/logic/economy/market';
+import MarketPokemonFiltersGroup from './MarketPokemonFiltersGroup.vue';
 
 interface Props {
-  context: string // 'explore' or 'my-inventory'
+  context: string; // 'explore' or 'my-inventory'
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
-const gtsStore = useGTSStore()
-const priceGroupId = useId()
+const gtsStore = useGTSStore();
+const priceGroupId = useId();
 
-const isExpanded = ref(false)
+const isExpanded = ref(false);
 
-const filters = computed(() => gtsStore.filters)
+const filters = computed(() => gtsStore.filters);
 
 const categories = [
   { value: 'all', label: 'Todo' },
@@ -31,20 +31,23 @@ const categories = [
   { value: 'refined_material', label: 'M. Refinado' },
   { value: 'component', label: 'Componente' },
   { value: 'otros', label: 'Otros' }
-]
+];
 
 const setFilter = <K extends keyof MarketFilters>(key: K, value: MarketFilters[K]) => {
-  gtsStore.filters[key] = value
-}
+  gtsStore.filters[key] = value;
+};
 
-const MARKET_FILTER_PRICE_MAX_LIMIT = 1000000
-const MARKET_FILTER_IV_TOTAL_MAX_LIMIT = 186
+const MARKET_FILTER_PRICE_MAX_LIMIT = 1000000;
+const MARKET_FILTER_IV_TOTAL_MAX_LIMIT = 186;
 
 const formattedPriceRange = computed(() => {
-  const minText = `₽${filters.value.priceMin.toLocaleString()}`
-  const maxText = filters.value.priceMax === MARKET_FILTER_PRICE_MAX_LIMIT ? 'Máx' : `₽${filters.value.priceMax.toLocaleString()}`
-  return `${minText} - ${maxText}`
-})
+  const minText = `₽${filters.value.priceMin.toLocaleString()}`;
+  const maxText =
+    filters.value.priceMax === MARKET_FILTER_PRICE_MAX_LIMIT
+      ? 'Máx'
+      : `₽${filters.value.priceMax.toLocaleString()}`;
+  return `${minText} - ${maxText}`;
+});
 
 const resetFilters = () => {
   gtsStore.filters = {
@@ -60,8 +63,8 @@ const resetFilters = () => {
     ivTotalMax: MARKET_FILTER_IV_TOTAL_MAX_LIMIT,
     ivAny31: false,
     itemCat: 'all'
-  }
-}
+  };
+};
 </script>
 
 <template>
@@ -70,16 +73,15 @@ const resetFilters = () => {
       <div
         id="market-filters-toggle-btn"
         class="toggle-btn"
+        role="button"
+        tabindex="0"
         @click.stop="isExpanded = !isExpanded"
       >
         <span class="label"><span class="emoji">🔍</span><span>FILTROS GTS</span></span>
         <span class="emoji arrow">{{ isExpanded ? '▲' : '▼' }}</span>
       </div>
 
-      <div
-        v-if="context === 'explore'"
-        class="mode-switch"
-      >
+      <div v-if="context === 'explore'" class="mode-switch">
         <button
           id="market-filters-mode-pokemon-btn"
           :class="{ active: filters.mode === 'pokemon' }"
@@ -97,10 +99,7 @@ const resetFilters = () => {
           <span>Objetos</span>
         </button>
       </div>
-      <span
-        v-else
-        class="context-label"
-      >Filtrando tu inventario</span>
+      <span v-else class="context-label">Filtrando tu inventario</span>
     </div>
 
     <div class="search-row">
@@ -109,24 +108,15 @@ const resetFilters = () => {
         v-model="gtsStore.filters.search"
         type="text"
         :placeholder="filters.mode === 'pokemon' ? 'Buscar Pokémon...' : 'Buscar objetos...'"
+        :aria-label="filters.mode === 'pokemon' ? 'Buscar Pokémon' : 'Buscar objetos'"
         class="search-input"
-      >
+      />
     </div>
 
-    <div
-      v-show="isExpanded"
-      class="filter-body"
-    >
+    <div v-show="isExpanded" class="filter-body">
       <!-- Price Range -->
-      <div
-        class="filter-group"
-        role="group"
-        :aria-labelledby="priceGroupId"
-      >
-        <div
-          :id="priceGroupId"
-          class="group-header"
-        >
+      <div class="filter-group" role="group" :aria-labelledby="priceGroupId">
+        <div :id="priceGroupId" class="group-header">
           <span class="price-title"><span>Precio</span> <span class="emoji">💰</span></span>
           <span class="range-val">{{ formattedPriceRange }}</span>
         </div>
@@ -137,8 +127,9 @@ const resetFilters = () => {
           min="0"
           max="50000"
           step="500"
+          aria-label="Precio mínimo"
           class="range-input"
-        >
+        />
         <input
           id="market-filters-price-max-input"
           v-model.number="gtsStore.filters.priceMax"
@@ -146,8 +137,9 @@ const resetFilters = () => {
           min="0"
           max="1000000"
           step="1000"
+          aria-label="Precio máximo"
           class="range-input"
-        >
+        />
       </div>
 
       <!-- Pokemon Specific -->
@@ -163,9 +155,7 @@ const resetFilters = () => {
       <!-- Item Specific -->
       <template v-else>
         <div class="filter-group">
-          <div class="group-label">
-            Categoría
-          </div>
+          <div class="group-label">Categoría</div>
           <div class="tags-grid">
             <button
               v-for="c in categories"
@@ -181,11 +171,7 @@ const resetFilters = () => {
         </div>
       </template>
 
-      <button
-        id="market-filters-reset-btn"
-        class="reset-btn"
-        @click.stop="resetFilters"
-      >
+      <button id="market-filters-reset-btn" class="reset-btn" @click.stop="resetFilters">
         Limpiar filtros
       </button>
     </div>
@@ -193,7 +179,7 @@ const resetFilters = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .market-filters {
   margin: 20px;
@@ -281,7 +267,11 @@ const resetFilters = () => {
   background: var(--blue);
   color: $white;
   border-color: var(--black);
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000;
 }
 
 .context-label {
@@ -303,7 +293,6 @@ const resetFilters = () => {
   color: $white;
   font-size: var(--font-10);
   outline: none;
-  
 }
 
 .search-input:focus {
@@ -355,7 +344,8 @@ const resetFilters = () => {
   margin-bottom: 8px;
 }
 
-.tags-grid, .tags-row {
+.tags-grid,
+.tags-row {
   display: flex;
   flex-wrap: wrap;
   gap: $spacing-sm-alt;

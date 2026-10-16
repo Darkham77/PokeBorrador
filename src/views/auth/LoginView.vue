@@ -1,133 +1,127 @@
 <script setup lang="ts">
-declare const __APP_VERSION__: string
-
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import { gsap } from 'gsap'
-import { LOGIN_LOGO_FLOAT_Y_PX, LOGIN_CARD_ENTER_Y_PX } from '@/logic/constants/animations.ts'
-import { useAuthStore } from '@/stores/auth'
-import { usePWA } from '@/composables/system/usePWA'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { logger } from '@/logic/utils/logger'
-import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/system/official_servers'
-import { switchServer } from '@/logic/db/supabase'
-import { safeStorage, safeSessionStorage, LOCAL_STORAGE_KEYS, SESSION_STORAGE_KEYS } from '@/logic/utils/storage'
-import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors'
-import { useLoginHandlers } from '@/views/auth/useLoginHandlers'
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+import { gsap } from 'gsap';
+import { LOGIN_LOGO_FLOAT_Y_PX, LOGIN_CARD_ENTER_Y_PX } from '@/logic/constants/animations.ts';
+import { useAuthStore } from '@/stores/auth';
+import { usePWA } from '@/composables/system/usePWA';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { logger } from '@/logic/utils/logger';
+import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/system/official_servers';
+import { switchServer } from '@/logic/db/supabase';
+import {
+  safeStorage,
+  safeSessionStorage,
+  LOCAL_STORAGE_KEYS,
+  SESSION_STORAGE_KEYS
+} from '@/logic/utils/storage';
+import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors';
+import { useLoginHandlers } from '@/views/auth/useLoginHandlers';
 import {
   resolveActiveAuthForm,
   parseBanStatus,
   resolveStandardErrorMessage
-} from '@/views/auth/authFormHelper'
+} from '@/views/auth/authFormHelper';
 
-import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
-import AuthOnlineLogin from '@/components/auth/AuthOnlineLogin.vue'
-import AuthOnlineSignup from '@/components/auth/AuthOnlineSignup.vue'
-import AuthLocalLogin from '@/components/auth/AuthLocalLogin.vue'
-import AuthLocalSignup from '@/components/auth/AuthLocalSignup.vue'
-import LoginExpiredNotice from '@/components/auth/LoginExpiredNotice.vue'
-import LoginPwaUpdateBanner from '@/components/auth/LoginPwaUpdateBanner.vue'
+import AuthServerSelector from '@/components/auth/AuthServerSelector.vue';
+import AuthOnlineLogin from '@/components/auth/AuthOnlineLogin.vue';
+import AuthOnlineSignup from '@/components/auth/AuthOnlineSignup.vue';
+import AuthLocalLogin from '@/components/auth/AuthLocalLogin.vue';
+import AuthLocalSignup from '@/components/auth/AuthLocalSignup.vue';
+import LoginExpiredNotice from '@/components/auth/LoginExpiredNotice.vue';
+import LoginPwaUpdateBanner from '@/components/auth/LoginPwaUpdateBanner.vue';
 
-const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`)
-const logoUrl = computed(() => getAssetUrl(ASSET_TYPES.UI, '../fondo/logo 1'))
+const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`);
+const logoUrl = computed(() => getAssetUrl(ASSET_TYPES.UI, '../fondo/logo 1'));
 
-const authStore = useAuthStore()
-const router = useRouter()
+const authStore = useAuthStore();
+const router = useRouter();
 
-const authTab = ref('login') // 'login' | 'signup'
-const serverMode = ref('online') // 'online' | 'local'
-const { 
-  canInstall, 
-  installApp, 
-  needRefresh, 
-  isUpdating, 
-  progress, 
-  progressText, 
-  handleUpdate 
-} = usePWA()
+const authTab = ref('login'); // 'login' | 'signup'
+const serverMode = ref('online'); // 'online' | 'local'
+const { canInstall, installApp, needRefresh, isUpdating, progress, progressText, handleUpdate } =
+  usePWA();
 
 const handleInstallApp = async () => {
-  await installApp()
-}
+  await installApp();
+};
 
-const username = ref('')
-const email = ref('')
-const password = ref('')
-const gender = ref<'h' | 'm'>('h')
-const error = ref<string | null>(null)
-const success = ref<string | null>(null)
-const loading = ref(false)
-const serverStatus = ref<'checking' | 'online' | 'offline'>('checking')
-const serverStatusDetail = ref('')
-const selectedServerId = ref('')
-const isOnline = computed(() => authStore.isOnline)
-const sessionExpired = ref(false)
-const activeAuthForm = computed(() => resolveActiveAuthForm(serverMode.value, authTab.value))
-const banStatus = computed(() => parseBanStatus(error.value))
-const standardError = computed(() => resolveStandardErrorMessage(error.value))
+const username = ref('');
+const email = ref('');
+const password = ref('');
+const gender = ref<'h' | 'm'>('h');
+const error = ref<string | null>(null);
+const success = ref<string | null>(null);
+const loading = ref(false);
+const serverStatus = ref<'checking' | 'online' | 'offline'>('checking');
+const serverStatusDetail = ref('');
+const selectedServerId = ref('');
+const isOnline = computed(() => authStore.isOnline);
+const sessionExpired = ref(false);
+const activeAuthForm = computed(() => resolveActiveAuthForm(serverMode.value, authTab.value));
+const banStatus = computed(() => parseBanStatus(error.value));
+const standardError = computed(() => resolveStandardErrorMessage(error.value));
 
-const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.6.0'
+const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.6.0';
 
 const switchAuthTab = (tab: string) => {
-  authTab.value = tab
-  error.value = null
-  success.value = null
-  gsap.set('.auth-tab', { clearProps: 'all' })
-}
+  authTab.value = tab;
+  error.value = null;
+  success.value = null;
+  gsap.set('.auth-tab', { clearProps: 'all' });
+};
 
-const {
-  handleLogin,
-  handleSignup,
-  handleLocalLogin,
-  handleLocalSignup,
-  checkServerHealth
-} = useLoginHandlers({
-  authStore,
-  router,
-  email,
-  password,
-  username,
-  gender,
-  selectedServerId,
-  serverStatus,
-  serverStatusDetail,
-  error,
-  success,
-  loading,
-  authTab,
-  getFriendlyErrorMessage
-})
+const { handleLogin, handleSignup, handleLocalLogin, handleLocalSignup, checkServerHealth } =
+  useLoginHandlers({
+    authStore,
+    router,
+    email,
+    password,
+    username,
+    gender,
+    selectedServerId,
+    serverStatus,
+    serverStatusDetail,
+    error,
+    success,
+    loading,
+    authTab,
+    getFriendlyErrorMessage
+  });
 
-const logoRef = ref<HTMLElement | null>(null)
-const logoImgRef = ref<HTMLImageElement | null>(null)
-const authCardRef = ref<HTMLElement | null>(null)
+const logoRef = ref<HTMLElement | null>(null);
+const logoImgRef = ref<HTMLImageElement | null>(null);
+const authCardRef = ref<HTMLElement | null>(null);
 
 // Corregir bucle infinito si ya se está logueado
 onMounted(() => {
   // Sincronizar servidor seleccionado
-  const storedServer = safeStorage.getItem(LOCAL_STORAGE_KEYS.SELECTED_SERVER_ID)
-  selectedServerId.value = storedServer || DEFAULT_SERVER.id
-  switchServer(selectedServerId.value)
-  checkServerHealth()
+  const storedServer = safeStorage.getItem(LOCAL_STORAGE_KEYS.SELECTED_SERVER_ID);
+  selectedServerId.value = storedServer || DEFAULT_SERVER.id;
+  switchServer(selectedServerId.value);
+  checkServerHealth();
 
   // CHECK LOGOUT REASON
-  const logoutReason = safeSessionStorage.getItem(SESSION_STORAGE_KEYS.LOGOUT_REASON)
+  const logoutReason = safeSessionStorage.getItem(SESSION_STORAGE_KEYS.LOGOUT_REASON);
   if (logoutReason) {
-    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.LOGOUT_REASON)
+    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.LOGOUT_REASON);
     if (logoutReason === 'session_invalidated') {
-      sessionExpired.value = true
+      sessionExpired.value = true;
     }
   }
 
   if (authStore.user) {
-    logger.warn('Login', 'Usuario ya logueado detectado en ruta /login. Forzando logout para resetear estado.')
-    authStore.logout()
+    logger.warn(
+      'Login',
+      'Usuario ya logueado detectado en ruta /login. Forzando logout para resetear estado.'
+    );
+    authStore.logout();
   }
 
   if (typeof window !== 'undefined' && window.__E2E__) {
     // Skip intro animations in E2E to prevent elements from staying at opacity:0
     // under high CPU congestion when requestAnimationFrame is throttled by Chromium.
-    return
+    return;
   }
 
   if (logoRef.value) {
@@ -138,9 +132,9 @@ onMounted(() => {
       duration: 1.5,
       ease: 'back.out(1.2)',
       onComplete: () => {
-        if (logoRef.value) gsap.set(logoRef.value, { clearProps: 'transform' })
+        if (logoRef.value) gsap.set(logoRef.value, { clearProps: 'transform' });
       }
-    })
+    });
   }
 
   if (logoImgRef.value) {
@@ -150,7 +144,7 @@ onMounted(() => {
       repeat: -1,
       yoyo: true,
       ease: 'sine.inOut'
-    })
+    });
   }
 
   if (authCardRef.value) {
@@ -160,147 +154,132 @@ onMounted(() => {
       duration: 1,
       delay: 0.5,
       ease: 'power3.out'
-    })
+    });
   }
-})
+});
 
 function handleTabEnter(e: MouseEvent) {
-  const tab = e.currentTarget as HTMLElement
+  const tab = e.currentTarget as HTMLElement;
   if (!tab.classList.contains('active')) {
     gsap.to(tab, {
       color: 'var(--white)',
       duration: 0.2
-    })
+    });
   }
 }
 
 function handleTabLeave(e: MouseEvent) {
-  const tab = e.currentTarget as HTMLElement
+  const tab = e.currentTarget as HTMLElement;
   if (!tab.classList.contains('active')) {
     gsap.to(tab, {
       color: 'var(--gray)',
       duration: 0.2
-    })
+    });
   }
 }
 
-
-
-watch(authTab, (newTab) => {
-  nextTick(() => {
-    const tabs = document.querySelectorAll('.auth-tab')
-    tabs.forEach(tab => {
-      const tabText = tab.textContent?.trim().toLowerCase().replace(/\s+/g, '')
-      const expectedText = newTab === 'login' ? 'iniciarsesión' : 'registrarse'
-      const isTabActive = tabText === expectedText
-      if (isTabActive) {
-        gsap.to(tab, {
-          color: '#ffffff',
-          backgroundColor: '#bf5af2',
-          duration: 0.3
-        })
-      } else {
-        gsap.to(tab, {
-          color: '#86868b',
-          backgroundColor: 'transparent',
-          duration: 0.3
-        })
-      }
-    })
-  })
-}, { immediate: true })
+watch(
+  authTab,
+  (newTab) => {
+    nextTick(() => {
+      const tabs = document.querySelectorAll('.auth-tab');
+      tabs.forEach((tab) => {
+        const tabText = tab.textContent?.trim().toLowerCase().replace(/\s+/g, '');
+        const expectedText = newTab === 'login' ? 'iniciarsesión' : 'registrarse';
+        const isTabActive = tabText === expectedText;
+        if (isTabActive) {
+          gsap.to(tab, {
+            color: '#ffffff',
+            backgroundColor: '#bf5af2',
+            duration: 0.3
+          });
+        } else {
+          gsap.to(tab, {
+            color: '#86868b',
+            backgroundColor: 'transparent',
+            duration: 0.3
+          });
+        }
+      });
+    });
+  },
+  { immediate: true }
+);
 
 watch(error, (newVal) => {
   if (newVal && newVal.startsWith('BAN:')) {
     nextTick(() => {
-      const card = document.querySelector('.auth-ban-card')
+      const card = document.querySelector('.auth-ban-card');
       if (card) {
-        gsap.killTweensOf(card)
+        gsap.killTweensOf(card);
         const BAN_SHAKE_STEP_SEC = 0.05;
         const BAN_SHAKE_LARGE_PX = 4;
         const BAN_SHAKE_SMALL_PX = 2;
-        const tl = gsap.timeline()
+        const tl = gsap.timeline();
         tl.to(card, { x: -BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
           .to(card, { x: BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
           .to(card, { x: -BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
           .to(card, { x: BAN_SHAKE_LARGE_PX, duration: BAN_SHAKE_STEP_SEC })
           .to(card, { x: -BAN_SHAKE_SMALL_PX, duration: BAN_SHAKE_STEP_SEC })
           .to(card, { x: BAN_SHAKE_SMALL_PX, duration: BAN_SHAKE_STEP_SEC })
-          .to(card, { x: 0, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: 0, duration: BAN_SHAKE_STEP_SEC });
       }
-    })
+    });
   }
-})
+});
 
-watch(isOnline, (online) => {
-  if (!online) {
-    nextTick(() => {
-      const alert = document.querySelector('.internet-alert')
-      if (alert) {
-        gsap.killTweensOf(alert)
-        gsap.to(alert, {
-          opacity: 0.6,
-          duration: 1,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut'
-        })
-      }
-    })
-  } else {
-    gsap.killTweensOf('.internet-alert')
-  }
-}, { immediate: true })
+watch(
+  isOnline,
+  (online) => {
+    if (!online) {
+      nextTick(() => {
+        const alert = document.querySelector('.internet-alert');
+        if (alert) {
+          gsap.killTweensOf(alert);
+          gsap.to(alert, {
+            opacity: 0.6,
+            duration: 1,
+            yoyo: true,
+            repeat: -1,
+            ease: 'sine.inOut'
+          });
+        }
+      });
+    } else {
+      gsap.killTweensOf('.internet-alert');
+    }
+  },
+  { immediate: true }
+);
 
-const animatedProgress = ref(0)
+const animatedProgress = ref(0);
 watch(progress, (newVal) => {
   gsap.to(animatedProgress, {
     value: newVal,
     duration: 0.3,
     overwrite: 'auto'
-  })
-})
+  });
+});
 
 const handleServerChange = () => {
-  switchServer(selectedServerId.value)
-  checkServerHealth()
-}
+  switchServer(selectedServerId.value);
+  checkServerHealth();
+};
 </script>
 
 <template>
-  <div
-    id="auth-screen"
-    :style="{ backgroundImage: wallpaperUrl }"
-  >
+  <div id="auth-screen" :style="{ backgroundImage: wallpaperUrl }">
     <div class="login-background-stars" />
 
-    <div
-      ref="logoRef"
-      class="login-header-logo"
-    >
-      <img
-        ref="logoImgRef"
-        :src="logoUrl"
-        alt="Poké Vicio Logo"
-      
-        width="32"
-        height="32"
-      >
+    <div ref="logoRef" class="login-header-logo">
+      <img ref="logoImgRef" :src="logoUrl" alt="Poké Vicio Logo" width="32" height="32" />
     </div>
 
-    <div
-      ref="authCardRef"
-      class="auth-card"
-    >
-      <div class="auth-sub">
-        Te reto a dejar de jugarlo
-      </div>
+    <div ref="authCardRef" class="auth-card">
+      <div class="auth-sub">Te reto a dejar de jugarlo</div>
 
       <!-- CARTEL DE SESIÓN EXPIRADA / RESTAURADA -->
-      <LoginExpiredNotice
-        v-if="sessionExpired"
-        @dismiss="sessionExpired = false"
-      />
+      <LoginExpiredNotice v-if="sessionExpired" @dismiss="sessionExpired = false" />
 
       <!-- CARTEL DE ACTUALIZACIÓN MANUAL EN LOGIN -->
       <LoginPwaUpdateBanner
@@ -335,39 +314,23 @@ const handleServerChange = () => {
           </button>
         </div>
 
-        <div
-          v-if="standardError"
-          class="auth-error show"
-        >
+        <div v-if="standardError" class="auth-error show">
           {{ standardError }}
         </div>
 
-        <div
-          v-if="banStatus.isBanned"
-          class="auth-ban-card show"
-        >
-          <div class="ban-title">
-            <span class="emoji">🚫</span> ACCESO DENEGADO
-          </div>
+        <div v-if="banStatus.isBanned" class="auth-ban-card show">
+          <div class="ban-title"><span class="emoji">🚫</span> ACCESO DENEGADO</div>
           <div class="ban-reason">
             {{ banStatus.reason }}
           </div>
-          <div class="ban-hint">
-            Si crees que esto es un error, contacta al soporte.
-          </div>
+          <div class="ban-hint">Si crees que esto es un error, contacta al soporte.</div>
         </div>
 
-        <div
-          v-if="success"
-          class="auth-success show"
-        >
+        <div v-if="success" class="auth-success show">
           {{ success }}
         </div>
 
-        <AuthServerSelector
-          v-model="serverMode"
-          @update:model-value="error = null"
-        />
+        <AuthServerSelector v-model="serverMode" @update:model-value="error = null" />
 
         <div class="auth-forms">
           <!-- ONLINE LOGIN -->
@@ -413,25 +376,15 @@ const handleServerChange = () => {
             @signup="handleSignup"
           />
 
-          <div
-            v-if="loading"
-            class="auth-loading-text"
-          >
+          <div v-if="loading" class="auth-loading-text">
             Cargando partida... <span class="emoji">⌛</span>
           </div>
         </div>
       </template>
 
       <div class="auth-version-footer">
-        <div
-          v-if="canInstall"
-          class="auth-pwa-install"
-        >
-          <button
-            id="login-pwa-install-btn"
-            class="pwa-install-btn"
-            @click.stop="handleInstallApp"
-          >
+        <div v-if="canInstall" class="auth-pwa-install">
+          <button id="login-pwa-install-btn" class="pwa-install-btn" @click.stop="handleInstallApp">
             <span class="emoji">📲</span> INSTALAR APP (FULLSCREEN)
           </button>
         </div>
@@ -442,7 +395,6 @@ const handleServerChange = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-@use "@/styles/views/login";
-
+@use '@/styles/core/tools' as *;
+@use '@/styles/views/login';
 </style>

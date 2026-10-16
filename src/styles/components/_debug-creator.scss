@@ -1,4 +1,4 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pokemon-debug-creator {
   @include pixelated;
@@ -23,11 +23,11 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
-    
+
     & .debug-section-title {
       margin-bottom: 0;
     }
-    
+
     button {
       @include btn-vicio-secondary('sm', true);
 
@@ -46,7 +46,7 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-md;
-    
+
     .section-header-row {
       display: flex;
       justify-content: space-between;
@@ -78,7 +78,7 @@
     align-items: center;
     width: 100%;
     margin-bottom: 4px;
-    
+
     label {
       margin-bottom: 0 !important;
     }
@@ -170,7 +170,7 @@
       color: var(--white);
       font-size: var(--font-11);
       outline: none;
-      
+
       &:focus {
         background: Rgb(124 58 237 / 10%);
         border-color: var(--vicio-primary);
@@ -201,7 +201,7 @@
 
   .search-select-container {
     position: relative;
-    
+
     .options-dropdown {
       @include shell-premium(Rgba(10, 12, 16, 0.98));
 
@@ -213,7 +213,7 @@
       max-height: 200px;
       border-radius: $radius-xl;
       overflow-y: auto;
-      
+
       .option-item {
         display: flex;
         align-items: center;
@@ -222,10 +222,19 @@
         font-size: var(--font-11);
         cursor: pointer;
 
-        &:hover { background: Rgb(255 255 255 / 5%); }
-        &.active { background: Rgb(124 58 237 / 10%); border-left: 3px solid var(--vicio-primary); }
-        
-        .item-icon { width: 24px; height: 24px; object-fit: contain; }
+        &:hover {
+          background: Rgb(255 255 255 / 5%);
+        }
+        &.active {
+          background: Rgb(124 58 237 / 10%);
+          border-left: 3px solid var(--vicio-primary);
+        }
+
+        .item-icon {
+          width: 24px;
+          height: 24px;
+          object-fit: contain;
+        }
       }
     }
   }
@@ -247,9 +256,18 @@
         @include btn-vicio('primary', 'sm', true);
 
         height: 32px;
-        &.secondary, &.btn-vicio-secondary { @include btn-vicio('secondary', 'sm', true); }
-        &.btn-vicio-danger, &.danger { @include btn-vicio('danger', 'sm', true); }
-        &.btn-vicio-success, &.success { @include btn-vicio('success', 'sm', true); }
+        &.secondary,
+        &.btn-vicio-secondary {
+          @include btn-vicio('secondary', 'sm', true);
+        }
+        &.btn-vicio-danger,
+        &.danger {
+          @include btn-vicio('danger', 'sm', true);
+        }
+        &.btn-vicio-success,
+        &.success {
+          @include btn-vicio('success', 'sm', true);
+        }
       }
     }
 
@@ -260,7 +278,6 @@
       color: Rgb(255 255 255 / 50%);
       font-size: var(--font-10);
       cursor: pointer;
-      
 
       .toggle-box {
         position: relative;
@@ -268,7 +285,6 @@
         height: 16px;
         border-radius: $radius-lg;
         background: Rgb(255 255 255 / 10%);
-        
 
         &::after {
           position: absolute;
@@ -279,7 +295,6 @@
           border-radius: 50%;
           background: var(--white);
           content: '';
-          
         }
 
         .anim-toggle.active & {

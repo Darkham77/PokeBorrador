@@ -1,14 +1,10 @@
 /**
  * src/components/common/atmosphereSnowHelper.ts
- * 
+ *
  * Kinematic calculations and configuration helpers for atmospheric snow, blizzard, and hail effects.
  */
 
-
-import {
-  WEATHER_TILE_SNOW_L1_PX,
-  WEATHER_TILE_SNOW_L2_PX
-} from '@/logic/constants/visuals';
+import { WEATHER_TILE_SNOW_L1_PX, WEATHER_TILE_SNOW_L2_PX } from '@/logic/constants/visuals';
 
 const SNOW_L1_SEED_X_MULT = 1500;
 const SNOW_L1_SEED_Y_MULT = 2500;
@@ -45,7 +41,11 @@ export interface SnowLayerConfig {
   boundary: number;
 }
 
-export function computeSnowLayer1Config(seed1: number, isBlizzard: boolean, speedVar: number): SnowLayerConfig {
+export function computeSnowLayer1Config(
+  seed1: number,
+  isBlizzard: boolean,
+  speedVar: number
+): SnowLayerConfig {
   const sX = (seed1 * SNOW_L1_SEED_X_MULT) % SNOW_L1_MOD;
   const sY = (seed1 * SNOW_L1_SEED_Y_MULT) % SNOW_L1_MOD;
   const driftX = isBlizzard ? SNOW_L1_BLIZZARD_DRIFT_X : 0;
@@ -62,7 +62,11 @@ export function computeSnowLayer1Config(seed1: number, isBlizzard: boolean, spee
   };
 }
 
-export function computeSnowLayer2Config(seed2: number, isBlizzard: boolean, speedVar: number): SnowLayerConfig {
+export function computeSnowLayer2Config(
+  seed2: number,
+  isBlizzard: boolean,
+  speedVar: number
+): SnowLayerConfig {
   const sX = (seed2 * SNOW_L2_SEED_X_MULT) % SNOW_L2_MOD;
   const sY = (seed2 * SNOW_L2_SEED_Y_MULT) % SNOW_L2_MOD;
   const driftX = isBlizzard ? SNOW_L2_BLIZZARD_DRIFT_X : 0;
@@ -79,7 +83,10 @@ export function computeSnowLayer2Config(seed2: number, isBlizzard: boolean, spee
   };
 }
 
-export function computeHailLayer1Config(seed1: number, speedVar: number): { sX: number; sY: number; duration: number } {
+export function computeHailLayer1Config(
+  seed1: number,
+  speedVar: number
+): { sX: number; sY: number; duration: number } {
   return {
     sX: (seed1 * HAIL_L1_SEED_X_MULT) % HAIL_L1_MOD,
     sY: (seed1 * HAIL_L1_SEED_Y_MULT) % HAIL_L1_MOD,
@@ -87,8 +94,11 @@ export function computeHailLayer1Config(seed1: number, speedVar: number): { sX: 
   };
 }
 
-export function computeHailLayer2Config(seed2: number, animSeed: number): { sX: number; sY: number; duration: number } {
-  const speedVar2 = HAIL_L2_SPEED_BASE + (animSeed * HAIL_L2_SPEED_ANIM_FACTOR);
+export function computeHailLayer2Config(
+  seed2: number,
+  animSeed: number
+): { sX: number; sY: number; duration: number } {
+  const speedVar2 = HAIL_L2_SPEED_BASE + animSeed * HAIL_L2_SPEED_ANIM_FACTOR;
   return {
     sX: (seed2 * HAIL_L2_SEED_X_MULT) % HAIL_L2_MOD,
     sY: (seed2 * HAIL_L2_SEED_Y_MULT) % HAIL_L2_MOD,
@@ -102,16 +112,18 @@ export function applySnowLayerAnimation(
   config: SnowLayerConfig,
   seed: number = 0
 ): void {
-  weatherTimeline.fromTo(
-    layerEl,
-    { x: 0, y: -config.driftY },
-    {
-      x: config.driftX,
-      y: 0,
-      duration: config.duration,
-      repeat: -1,
-      ease: 'none'
-    },
-    0
-  ).progress(seed % 1);
+  weatherTimeline
+    .fromTo(
+      layerEl,
+      { x: 0, y: -config.driftY },
+      {
+        x: config.driftX,
+        y: 0,
+        duration: config.duration,
+        repeat: -1,
+        ease: 'none'
+      },
+      0
+    )
+    .progress(seed % 1);
 }

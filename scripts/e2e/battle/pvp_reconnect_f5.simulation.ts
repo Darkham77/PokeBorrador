@@ -11,7 +11,8 @@ class PvpReconnectSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
 
       const gameStore = useGameStore();
       const battleStore = useBattleStore();
@@ -49,7 +50,9 @@ class PvpReconnectSimWrapper extends BaseBattleSimulation {
 test.describe('PvP Reconnection & Persistence (F5) Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('preserves PvP battle state and dedicated team across page refresh (F5)', async ({ page }) => {
+  test('preserves PvP battle state and dedicated team across page refresh (F5)', async ({
+    page
+  }) => {
     const sim = new PvpReconnectSimWrapper(page, 'PvpF5Sim');
     await sim.setup();
     await sim.setupAndPersistPvpBattle();

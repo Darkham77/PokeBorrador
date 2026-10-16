@@ -2,14 +2,14 @@
 /**
  * TrainerAvatar.vue
  */
-const CONTAINER_BORDER_WIDTH_PX = 2
-const AVATAR_BOX_SHADOW_DIVISOR = 4
-const AVATAR_FONT_SIZE_DIVISOR = 2
-const BORDER_WHITE_OPACITY_LOW = 0.2
-const HEX_ALPHA_OPAQUE_SUFFIX = 'ff'
-const SHADOW_WHITE_OPACITY_SUBTLE = 0.25
-const BORDER_RADIUS_CIRCLE_PCT = '50%'
-const SQUARE_FRAME_BORDER_RADIUS_PX = 6
+const CONTAINER_BORDER_WIDTH_PX = 2;
+const AVATAR_BOX_SHADOW_DIVISOR = 4;
+const AVATAR_FONT_SIZE_DIVISOR = 2;
+const BORDER_WHITE_OPACITY_LOW = 0.2;
+const HEX_ALPHA_OPAQUE_SUFFIX = 'ff';
+const SHADOW_WHITE_OPACITY_SUBTLE = 0.25;
+const BORDER_RADIUS_CIRCLE_PCT = '50%';
+const SQUARE_FRAME_BORDER_RADIUS_PX = 6;
 import { computed, type CSSProperties, ref } from 'vue';
 import { PLAYER_CLASSES, isPlayerClassId } from '@/data/player/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
@@ -19,21 +19,21 @@ import { useTrainerAvatarAnim } from './useTrainerAvatarAnim.ts';
 import type { GenderId } from '@/types/system/game';
 
 interface Props {
-  playerClass?: string | null
-  level?: number
-  size?: number
-  avatarStyle?: string
-  borderOverride?: string | null
-  gender?: string | null
+  playerClass?: string | null;
+  level?: number;
+  size?: number;
+  avatarStyle?: string;
+  borderOverride?: string | null;
+  gender?: string | null;
   profile?: {
-    playerClass?: string | null
-    player_class?: string | null
-    level?: number | null
-    trainer_level?: number | null
-    avatarStyle?: string | null
-    avatar_style?: string | null
-    gender?: string | null
-  } | null
+    playerClass?: string | null;
+    player_class?: string | null;
+    level?: number | null;
+    trainer_level?: number | null;
+    avatarStyle?: string | null;
+    avatar_style?: string | null;
+    gender?: string | null;
+  } | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -70,9 +70,9 @@ const resolvedAvatarStyle = computed(() => {
 const resolvedGender = computed((): GenderId | undefined => {
   if (props.profile) {
     const g = props.profile.gender || props.gender;
-    return g === 'm' ? 'm' : (g === 'h' ? 'h' : undefined);
+    return g === 'm' ? 'm' : g === 'h' ? 'h' : undefined;
   }
-  return props.gender === 'm' ? 'm' : (props.gender === 'h' ? 'h' : undefined);
+  return props.gender === 'm' ? 'm' : props.gender === 'h' ? 'h' : undefined;
 });
 
 const cls = computed(() => {
@@ -93,13 +93,15 @@ const shadowColor = computed(() => {
 
 const avatarClass = computed(() => {
   const style = resolvedAvatarStyle.value;
-  if (!style || 
-      style === 'null' || 
-      style === 'undefined' || 
-      style === 'none' || 
-      style === 'default' || 
-      style === 'sin-marco' || 
-      !style.trim()) {
+  if (
+    !style ||
+    style === 'null' ||
+    style === 'undefined' ||
+    style === 'none' ||
+    style === 'default' ||
+    style === 'sin-marco' ||
+    !style.trim()
+  ) {
     return '';
   }
   return ` ${style}`;
@@ -107,13 +109,15 @@ const avatarClass = computed(() => {
 
 const hasFrame = computed(() => {
   const style = resolvedAvatarStyle.value;
-  return !!(style && 
-         style !== 'null' && 
-         style !== 'undefined' && 
-         style !== 'none' && 
-         style !== 'default' && 
-         style !== 'sin-marco' && 
-         style.trim());
+  return !!(
+    style &&
+    style !== 'null' &&
+    style !== 'undefined' &&
+    style !== 'none' &&
+    style !== 'default' &&
+    style !== 'sin-marco' &&
+    style.trim()
+  );
 });
 
 const isSquare = computed(() => {
@@ -127,7 +131,7 @@ const containerStyles = computed((): CSSProperties => {
   const sizePx = props.size;
   const bColor = borderColor.value;
   const sColor = shadowColor.value;
-  
+
   return {
     width: `${sizePx}px`,
     height: `${sizePx}px`,
@@ -139,11 +143,13 @@ const containerStyles = computed((): CSSProperties => {
     borderStyle: 'solid',
     borderWidth: `${CONTAINER_BORDER_WIDTH_PX}px`,
     background: 'transparent',
-    ...(hasFrame.value ? {} : {
-      borderRadius: BORDER_RADIUS_CIRCLE_PCT,
-      borderColor: bColor,
-      boxShadow: `0 0 ${sizePx / AVATAR_BOX_SHADOW_DIVISOR}px ${sColor}`
-    })
+    ...(hasFrame.value
+      ? {}
+      : {
+          borderRadius: BORDER_RADIUS_CIRCLE_PCT,
+          borderColor: bColor,
+          boxShadow: `0 0 ${sizePx / AVATAR_BOX_SHADOW_DIVISOR}px ${sColor}`
+        })
   };
 });
 
@@ -151,7 +157,7 @@ const containerStyles = computed((): CSSProperties => {
 const faceStyles = computed((): CSSProperties => {
   const sizePx = props.size;
   const rad = isSquare.value ? `${SQUARE_FRAME_BORDER_RADIUS_PX}px` : BORDER_RADIUS_CIRCLE_PCT;
-  
+
   const baseStyles: CSSProperties = {
     width: '100%',
     height: '100%',
@@ -173,7 +179,7 @@ const faceStyles = computed((): CSSProperties => {
 
   const bgSize = 'cover';
   const bgPos = 'center';
-  const displayUrl = getAssetUrl(ASSET_TYPES.TRAINER, cls.value.avatarSpriteId, { 
+  const displayUrl = getAssetUrl(ASSET_TYPES.TRAINER, cls.value.avatarSpriteId, {
     trainerSuffix: 'avatar',
     gender: resolvedGender.value || 'h'
   });
@@ -195,7 +201,8 @@ const faceStyles = computed((): CSSProperties => {
 const containerRef = ref<HTMLElement | null>(null);
 const frameRef = ref<HTMLElement | null>(null);
 
-const ELEMENT_COLORS: Record<string, { base: string, light: string, frame: string }> = {
+const ELEMENT_COLORS: Record<string, { base: string; light: string; frame: string }> = {
+  // open-record: Dynamic element colors dictionary
   normal: { base: '#9ca3af', light: '#cbd5e1', frame: '#9ca3af' },
   fire: { base: '#ef4444', light: '#f87171', frame: '#ef4444' },
   water: { base: '#3b82f6', light: '#60a5fa', frame: '#3b82f6' },
@@ -231,21 +238,14 @@ defineExpose({
 </script>
 
 <template>
-  <div 
+  <div
     ref="containerRef"
-    class="trainer-avatar-container" 
-    :class="avatarClass" 
+    class="trainer-avatar-container"
+    :class="avatarClass"
     :style="containerStyles"
   >
-    <div
-      v-if="hasFrame"
-      ref="frameRef"
-      class="avatar-frame-bg"
-    />
-    <div 
-      class="avatar-face-wrapper" 
-      :style="faceStyles"
-    >
+    <div v-if="hasFrame" ref="frameRef" class="avatar-frame-bg" />
+    <div class="avatar-face-wrapper" :style="faceStyles">
       <template v-if="!cls">
         <span class="emoji">🧢</span>
       </template>

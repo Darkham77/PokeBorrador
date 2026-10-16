@@ -6,9 +6,7 @@
  * for the Developer Shadow Calibration View.
  */
 
-import {
-  type ShadowEntityCategory
-} from '@/types/pokemon/spriteShadows';
+import { type ShadowEntityCategory } from '@/types/pokemon/spriteShadows';
 import {
   VIEW_OPTIONS,
   GENERATION_OPTIONS,
@@ -129,61 +127,47 @@ const handleClearSearch = () => {
     <!-- Contextual Filters Row -->
     <div class="sub-filters">
       <!-- Pokémon Generations (Only if pokemon) -->
-      <div
-        v-if="selectedCategory === 'pokemon'"
-        class="gen-filter-group"
-      >
+      <div v-if="selectedCategory === 'pokemon'" class="gen-filter-group">
         <label class="filter-label">Gen:</label>
         <select
           id="dev-shadow-filter-bar-select-genchange"
           :value="selectedGen"
+          aria-label="Generación"
           class="filter-select"
           @change="handleGenChange"
         >
-          <option
-            v-for="opt in GENERATION_OPTIONS"
-            :key="opt.value"
-            :value="opt.value"
-          >
+          <option v-for="opt in GENERATION_OPTIONS" :key="opt.value" :value="opt.value">
             {{ opt.label }}
           </option>
         </select>
       </div>
 
       <!-- Pokémon Gender Filter (Only if pokemon) -->
-      <div
-        v-if="selectedCategory === 'pokemon'"
-        class="gen-filter-group"
-      >
+      <div v-if="selectedCategory === 'pokemon'" class="gen-filter-group">
         <label class="filter-label">Género:</label>
         <select
           id="dev-shadow-filter-bar-select-genderchange"
           :value="selectedGender"
+          aria-label="Género"
           class="filter-select"
           @change="handleGenderChange"
         >
-          <option
-            v-for="opt in GENDER_OPTIONS"
-            :key="opt.value"
-            :value="opt.value"
-          >
+          <option v-for="opt in GENDER_OPTIONS" :key="opt.value" :value="opt.value">
             {{ opt.label }}
           </option>
         </select>
       </div>
 
       <!-- Shiny Switch (Pokémon) -->
-      <label
-        v-if="selectedCategory === 'pokemon'"
-        class="checkbox-label"
-      >
+      <label v-if="selectedCategory === 'pokemon'" class="checkbox-label">
         <input
           id="dev-shadow-filter-bar-input-shinychange"
           :checked="isShiny"
           type="checkbox"
+          aria-label="Variocolor (Shiny)"
           class="filter-checkbox"
           @change="handleShinyChange"
-        >
+        />
         <span><span class="emoji">✨</span> Shiny</span>
       </label>
 
@@ -193,14 +177,11 @@ const handleClearSearch = () => {
         <select
           id="dev-shadow-filter-bar-select-viewchange"
           :value="selectedView"
+          aria-label="Vista"
           class="filter-select"
           @change="handleViewChange"
         >
-          <option
-            v-for="opt in VIEW_OPTIONS"
-            :key="opt.value"
-            :value="opt.value"
-          >
+          <option v-for="opt in VIEW_OPTIONS" :key="opt.value" :value="opt.value">
             {{ opt.label }}
           </option>
         </select>
@@ -212,9 +193,10 @@ const handleClearSearch = () => {
           id="dev-shadow-filter-bar-input-onlymodifiedchange"
           :checked="onlyModified"
           type="checkbox"
+          aria-label="Solo Modificados"
           class="filter-checkbox"
           @change="handleOnlyModifiedChange"
-        >
+        />
         <span>Solo Modificados</span>
       </label>
 
@@ -226,8 +208,9 @@ const handleClearSearch = () => {
           type="text"
           class="search-input"
           placeholder="Buscar por nombre o archivo..."
+          aria-label="Buscar por nombre o archivo"
           @input="handleSearchInput"
-        >
+        />
         <button
           v-if="searchQuery"
           id="dev-shadow-filter-bar-btn-clearsearch"

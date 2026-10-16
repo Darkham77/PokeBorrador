@@ -1,48 +1,48 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useShopStore } from '@/stores/inventory/shop'
-import { useModalStore } from '@/stores/modals'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { formatCurrency } from '@/logic/utils/formatters'
-import { getItemTierColor } from '@/logic/utils/itemTierResolver'
-import { isItemId, type ItemId } from '@/data/inventory/items'
-import { PLAYER_CLASSES } from '@/data/player/playerClasses'
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import { computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useModalStore } from '@/stores/modals';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { getItemTierColor } from '@/logic/utils/itemTierResolver';
+import { isItemId, type ItemId } from '@/data/inventory/items';
+import { PLAYER_CLASSES } from '@/data/player/playerClasses';
+import {
+  BLACK_MARKET_BC_TO_MONEY_RATE,
+  ROCKET_SHOP_DISCOUNT_RATIO
+} from '@/logic/constants/gameplay';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
-const gameStore = useGameStore()
-const shopStore = useShopStore()
-const modalStore = useModalStore()
+const gameStore = useGameStore();
+const shopStore = useShopStore();
+const modalStore = useModalStore();
 
-const DISCOUNT = PLAYER_CLASSES.rocket.modifiers?.shopDiscount || 0.20
-const BC_TO_MONEY_RATE = 50
+const blackMarketDiscount =
+  PLAYER_CLASSES.rocket.modifiers?.shopDiscount || ROCKET_SHOP_DISCOUNT_RATIO;
 
 const blackMarketItems = computed(() => {
-  return shopStore.getBlackMarketItems()
-})
+  return shopStore.getBlackMarketItems();
+});
 
-const purchasedItemIds = computed<ItemId[]>(() => {
-  const list = gameStore.state.classData?.blackMarketDaily?.purchased || []
-  return list.filter(isItemId)
-})
+const purchasedItemIds = computed<ReadonlySet<ItemId>>(() => {
+  const list = gameStore.state.classData?.blackMarketDaily?.purchased || [];
+  return new Set(list.filter(isItemId));
+});
 
 function getItemPrice(bcPrice: number = 0): number {
-  const baseMoney = bcPrice * BC_TO_MONEY_RATE
-  return Math.floor(baseMoney * (1 - DISCOUNT))
-}
-
-function isPurchased(itemId: ItemId): boolean {
-  return purchasedItemIds.value.includes(itemId)
+  const baseMoney = bcPrice * BLACK_MARKET_BC_TO_MONEY_RATE;
+  return Math.floor(baseMoney * (1 - blackMarketDiscount));
 }
 
 function openBlackMarketModal() {
-  modalStore.open('BlackMarket')
+  modalStore.open('BlackMarket');
 }
 
 function handleImageError(e: Event) {
   if (e.target) {
-    (e.target as HTMLImageElement).style.display = 'none'
+    (e.target as HTMLImageElement).style.display = 'none';
   }
 }
 </script>
@@ -51,49 +51,33 @@ function handleImageError(e: Event) {
   <div
     id="home-black-market-widget-div-openblackmarketmodal"
     class="home-black-market-widget home-section-card"
+    role="button"
+    tabindex="0"
     @click="openBlackMarketModal"
+    @keydown.enter="openBlackMarketModal"
   >
     <!-- Header -->
     <div class="widget-header-row">
       <div class="header-left">
         <span class="emoji widget-icon">🚀</span>
         <div class="title-wrap">
-          <h3 class="widget-title">
-            MERCADO NEGRO
-          </h3>
-          <span class="widget-sub">
-            Stock exclusivo Team Rocket (-20%)
-          </span>
+          <h3 class="widget-title">MERCADO NEGRO</h3>
+          <span class="widget-sub"> Stock exclusivo Team Rocket (-20%) </span>
         </div>
       </div>
-      <div
-        id="home-black-market-widget-div-1"
-        class="header-actions"
-        @click.stop
-      >
+      <div id="home-black-market-widget-div-1" class="header-actions" tabindex="-1" @click.stop>
         <HomeWidgetMinimizeBtn widget-id="black_market" />
       </div>
     </div>
 
     <!-- 3 Items Mini Grid -->
-    <div
-      v-if="blackMarketItems.length > 0"
-      class="bm-mini-grid"
-    >
-      <div
-        v-for="item in blackMarketItems"
-        :key="item.id"
-        class="bm-mini-card-wrapper"
-      >
-        <PVTooltip
-          :title="item.name"
-          :description="item.desc"
-          position="top"
-        >
+    <div v-if="blackMarketItems.length > 0" class="bm-mini-grid">
+      <div v-for="item in blackMarketItems" :key="item.id" class="bm-mini-card-wrapper">
+        <PVTooltip :title="item.name" :description="item.desc" position="top">
           <div
             v-gsap-hover="'widget'"
             class="bm-mini-card"
-            :class="{ 'is-sold': isPurchased(item.id) }"
+            :class="{ 'is-sold': purchasedItemIds.has(item.id) }"
             :style="{ '--tier-color': getItemTierColor(item.tier) }"
           >
             <div class="bm-mini-visual">
@@ -103,31 +87,19 @@ function handleImageError(e: Event) {
                 :alt="item.name"
                 class="bm-mini-sprite"
                 width="32"
-              
                 height="32"
                 @error="handleImageError"
-              >
-              <div
-                v-if="isPurchased(item.id)"
-                class="bm-mini-sold-badge"
-              >
-                VENDIDO
-              </div>
+              />
+              <div v-if="purchasedItemIds.has(item.id)" class="bm-mini-sold-badge">VENDIDO</div>
             </div>
 
             <span class="bm-mini-name">{{ item.name }}</span>
 
             <div class="bm-mini-price-row">
-              <span
-                v-if="isPurchased(item.id)"
-                class="bm-mini-status-sold"
-              >
+              <span v-if="purchasedItemIds.has(item.id)" class="bm-mini-status-sold">
                 Vendido
               </span>
-              <span
-                v-else
-                class="bm-mini-price"
-              >
+              <span v-else class="bm-mini-price">
                 ₽{{ formatCurrency(getItemPrice(item.bcPrice)) }}
               </span>
             </div>
@@ -137,10 +109,7 @@ function handleImageError(e: Event) {
     </div>
 
     <!-- Empty / Fallback state -->
-    <div
-      v-else
-      class="bm-mini-empty"
-    >
+    <div v-else class="bm-mini-empty">
       <span class="emoji">💼</span>
       <span>Sin ofertas activas registradas en el mercado negro.</span>
     </div>
@@ -158,8 +127,8 @@ function handleImageError(e: Event) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/core/mixins' as *;
 
 .home-black-market-widget {
   display: flex;

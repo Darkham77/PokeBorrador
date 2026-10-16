@@ -1,61 +1,76 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useModalStore } from '@/stores/modals'
-import { useUIStore } from '@/stores/ui'
-import { useEventStore } from '@/stores/events'
-import { useGameStore } from '@/stores/game'
-import { useAuthStore } from '@/stores/auth'
-import { useGTSStore } from '@/stores/gts'
-import { usePvPStore } from '@/stores/pvp'
-import { simulatePastEventAndMissionsReward, clearDebugSimulatedRewards } from '@/logic/debug/rewardsDebugSimulation'
+import { ref } from 'vue';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import { useAuthStore } from '@/stores/auth';
+import { useGTSStore } from '@/stores/gts';
+import { usePvPStore } from '@/stores/pvp';
+import {
+  simulatePastEventAndMissionsReward,
+  clearDebugSimulatedRewards
+} from '@/logic/debug/rewardsDebugSimulation';
 
-const modalStore = useModalStore()
-const uiStore = useUIStore()
-const eventStore = useEventStore()
-const gameStore = useGameStore()
-const authStore = useAuthStore()
-const gtsStore = useGTSStore()
-const pvpStore = usePvPStore()
+const modalStore = useModalStore();
+const uiStore = useUIStore();
+const eventStore = useEventStore();
+const gameStore = useGameStore();
+const authStore = useAuthStore();
+const gtsStore = useGTSStore();
+const pvpStore = usePvPStore();
 
-const modalCount = ref(5)
-const isTesting = ref(false)
-const isSimulatingRewards = ref(false)
-const isClearingRewards = ref(false)
-const lastSimulationSummary = ref('')
+const modalCount = ref(5);
+const isTesting = ref(false);
+const isSimulatingRewards = ref(false);
+const isClearingRewards = ref(false);
+const lastSimulationSummary = ref('');
 
 async function handleSimulateRewards() {
-  if (isSimulatingRewards.value) return
-  isSimulatingRewards.value = true
+  if (isSimulatingRewards.value) return;
+  isSimulatingRewards.value = true;
   try {
-    const summary = await simulatePastEventAndMissionsReward(eventStore, gameStore, authStore, uiStore, modalStore, gtsStore, pvpStore)
-    lastSimulationSummary.value = summary
+    const summary = await simulatePastEventAndMissionsReward(
+      eventStore,
+      gameStore,
+      authStore,
+      uiStore,
+      modalStore,
+      gtsStore,
+      pvpStore
+    );
+    lastSimulationSummary.value = summary;
   } finally {
-    isSimulatingRewards.value = false
+    isSimulatingRewards.value = false;
   }
 }
 
 async function handleClearRewards() {
-  if (isClearingRewards.value) return
-  isClearingRewards.value = true
+  if (isClearingRewards.value) return;
+  isClearingRewards.value = true;
   try {
-    await clearDebugSimulatedRewards(eventStore, gameStore, uiStore, gtsStore, pvpStore)
-    lastSimulationSummary.value = ''
+    await clearDebugSimulatedRewards(eventStore, gameStore, uiStore, gtsStore, pvpStore);
+    lastSimulationSummary.value = '';
   } finally {
-    isClearingRewards.value = false
+    isClearingRewards.value = false;
   }
 }
 
 async function startTest() {
-  if (isTesting.value) return
-  isTesting.value = true
-  const bridge = Reflect.get(window, '__VITE_DEBUG__') as { testModalStack: (count: number) => Promise<void> } | undefined // domain-ok: Open dynamic text or non-domain string payload
-  await bridge?.testModalStack(modalCount.value)
-  isTesting.value = false
+  if (isTesting.value) return;
+  isTesting.value = true;
+  const bridge = Reflect.get(window, '__VITE_DEBUG__') as
+    | { testModalStack: (count: number) => Promise<void> }
+    | undefined; // domain-ok: Open dynamic text or non-domain string payload
+  await bridge?.testModalStack(modalCount.value);
+  isTesting.value = false;
 }
 
 function triggerSampleError() {
-  const bridge = Reflect.get(window, '__VITE_DEBUG__') as { triggerTestError: () => void } | undefined // domain-ok: Open dynamic text or non-domain string payload
-  bridge?.triggerTestError()
+  const bridge = Reflect.get(window, '__VITE_DEBUG__') as
+    | { triggerTestError: () => void }
+    | undefined; // domain-ok: Open dynamic text or non-domain string payload
+  bridge?.triggerTestError();
 }
 </script>
 
@@ -65,16 +80,17 @@ function triggerSampleError() {
       <label>CANTIDAD DE MODALS</label>
       <div class="input-row">
         <input
-          id="debug-modals-tab-input-modalcount" 
-          v-model.number="modalCount" 
-          type="number" 
-          min="1" 
+          id="debug-modals-tab-input-modalcount"
+          v-model.number="modalCount"
+          type="number"
+          min="1"
           max="20"
-        >
+          aria-label="Cantidad de Modals"
+        />
         <PVTooltip :title="`Se abrirán ${modalCount} ventanas con 1s de desfase.`">
           <button
-            id="debug-modals-tab-btn-istesting-procesando-iniciar-t" 
-            class="btn-vicio-primary btn-vicio-sm" 
+            id="debug-modals-tab-btn-istesting-procesando-iniciar-t"
+            class="btn-vicio-primary btn-vicio-sm"
             :disabled="isTesting"
             @click.stop="startTest"
           >
@@ -112,42 +128,37 @@ function triggerSampleError() {
     <div class="debug-group">
       <label>TESTING RECOMPENSAS &amp; BADGES</label>
       <div class="button-row">
-        <PVTooltip title="Busca el último torneo o evento pasado, simula ganarlo (puesto aleatorio), inyecta misión y cobro GTS, y redirige a Inicio.">
+        <PVTooltip
+          title="Busca el último torneo o evento pasado, simula ganarlo (puesto aleatorio), inyecta misión y cobro GTS, y redirige a Inicio."
+        >
           <button
             id="btn-debug-simulate-rewards"
             class="btn-vicio-primary btn-vicio-sm"
             :disabled="isSimulatingRewards"
             @click.stop="handleSimulateRewards"
           >
-            <template v-if="isSimulatingRewards">
-              SIMULANDO...
-            </template>
+            <template v-if="isSimulatingRewards"> SIMULANDO... </template>
             <template v-else>
               <span class="emoji">🎯</span> SIMULAR RECOMPENSAS COMPLETAS
             </template>
           </button>
         </PVTooltip>
 
-        <PVTooltip title="Elimina las recompensas, misiones y cobros GTS generados por la simulación de pruebas.">
+        <PVTooltip
+          title="Elimina las recompensas, misiones y cobros GTS generados por la simulación de pruebas."
+        >
           <button
             id="btn-debug-clear-rewards"
             class="btn-vicio-danger btn-vicio-sm"
             :disabled="isClearingRewards"
             @click.stop="handleClearRewards"
           >
-            <template v-if="isClearingRewards">
-              LIMPIANDO...
-            </template>
-            <template v-else>
-              <span class="emoji">🧹</span> LIMPIAR PREMIOS
-            </template>
+            <template v-if="isClearingRewards"> LIMPIANDO... </template>
+            <template v-else> <span class="emoji">🧹</span> LIMPIAR PREMIOS </template>
           </button>
         </PVTooltip>
       </div>
-      <div
-        v-if="lastSimulationSummary"
-        class="simulation-summary-box"
-      >
+      <div v-if="lastSimulationSummary" class="simulation-summary-box">
         {{ lastSimulationSummary }}
       </div>
     </div>
@@ -157,19 +168,31 @@ function triggerSampleError() {
       <div class="button-column">
         <PVTooltip title="Simula el renderizado ligero en el MAPA (suspende spawns y climas).">
           <button
-            :class="uiStore.isDebugFastMode ? 'btn-vicio-danger btn-vicio-sm' : 'btn-vicio-primary btn-vicio-sm'"
+            :class="
+              uiStore.isDebugFastMode
+                ? 'btn-vicio-danger btn-vicio-sm'
+                : 'btn-vicio-primary btn-vicio-sm'
+            "
             @click.stop="uiStore.isDebugFastMode = !uiStore.isDebugFastMode"
           >
             {{ uiStore.isDebugFastMode ? 'DESACTIVAR MODO RÁPIDO' : 'ACTIVAR MODO RÁPIDO' }}
           </button>
         </PVTooltip>
 
-        <PVTooltip title="Fuerza el modo simplificado en TODOS los MODALS (esconde FX de Pokémon, brillos y auras).">
+        <PVTooltip
+          title="Fuerza el modo simplificado en TODOS los MODALS (esconde FX de Pokémon, brillos y auras)."
+        >
           <button
-            :class="uiStore.isSimplifiedModalsMode ? 'btn-vicio-danger btn-vicio-sm' : 'btn-vicio-primary btn-vicio-sm'"
+            :class="
+              uiStore.isSimplifiedModalsMode
+                ? 'btn-vicio-danger btn-vicio-sm'
+                : 'btn-vicio-primary btn-vicio-sm'
+            "
             @click.stop="uiStore.isSimplifiedModalsMode = !uiStore.isSimplifiedModalsMode"
           >
-            {{ uiStore.isSimplifiedModalsMode ? 'DESACTIVAR PERF. MODALS' : 'ACTIVAR PERF. MODALS' }}
+            {{
+              uiStore.isSimplifiedModalsMode ? 'DESACTIVAR PERF. MODALS' : 'ACTIVAR PERF. MODALS'
+            }}
           </button>
         </PVTooltip>
       </div>
@@ -178,8 +201,8 @@ function triggerSampleError() {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .debug-tab {
   display: flex;
@@ -232,11 +255,11 @@ function triggerSampleError() {
     flex: 1;
     outline: none;
 
-    &:focus { border-color: var(--purple); }
+    &:focus {
+      border-color: var(--purple);
+    }
   }
 }
-
-
 
 .hint {
   margin: 0;

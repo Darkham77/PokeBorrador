@@ -92,7 +92,9 @@ function fixShowdownDescriptions() {
   }
 
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf-8');
-  console.log(`¡ÉXITO! Se han reparado ${fixedCount} descripciones obsoletas en la base de datos de Showdown.`);
+  console.log(
+    `¡ÉXITO! Se han reparado ${fixedCount} descripciones obsoletas en la base de datos de Showdown.`
+  );
 }
 
 fixShowdownDescriptions();

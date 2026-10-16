@@ -29,7 +29,7 @@
  *   if (!isLocked && props.move.pp <= 0) return true  // disable
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 // ── Pure helpers (mirror of battleTurn.ts decision logic) ──────────────────
@@ -51,8 +51,10 @@ interface MockPokemon {
  * Mirrors the isLocked determination from battleTurn.ts lines 42.
  */
 function isLocked(p: MockPokemon): boolean {
-  return !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0) ||
-         !!(p.thrashTurns && p.thrashTurns > 0);
+  return (
+    !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0) ||
+    !!(p.thrashTurns && p.thrashTurns > 0)
+  );
 }
 
 /**
@@ -149,15 +151,13 @@ function tickLockedMove(p: MockPokemon): boolean {
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
-
   // ── Thrash PP logic (engine layer) ──────────────────────────────────────
 
   describe('Thrash (effect: thrash) – PP deduction rules', () => {
-
     it('Turn 1: PP IS deducted when thrashTurns is 0 (not yet locked)', () => {
       const p: MockPokemon = {
         moves: [{ id: 'thrash', pp: 10 }],
-        thrashTurns: 0,
+        thrashTurns: 0
       };
       const move = p.moves[0];
       assert.ok(move);
@@ -173,7 +173,7 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
     it('Turn 2+: PP is NOT deducted when thrashTurns > 0 (locked)', () => {
       const p: MockPokemon = {
         moves: [{ id: 'thrash', pp: 9 }],
-        thrashTurns: 2,
+        thrashTurns: 2
       };
       const move = p.moves[0];
       assert.ok(move);
@@ -186,7 +186,7 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
     it('No soft-lock: Move executes normally even with 0 PP when locked', () => {
       const p: MockPokemon = {
         moves: [{ id: 'thrash', pp: 0 }], // PP already exhausted
-        thrashTurns: 1,                    // Still has 1 turn remaining
+        thrashTurns: 1 // Still has 1 turn remaining
       };
       const move = p.moves[0];
       assert.ok(move);
@@ -201,17 +201,21 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
     it('After cycle ends: 0 PP move is unselectable (blocked) when player has control', () => {
       const p: MockPokemon = {
         moves: [{ id: 'thrash', pp: 0 }],
-        thrashTurns: 0, // cycle just ended, confusion applied by battleStatus
+        thrashTurns: 0 // cycle just ended, confusion applied by battleStatus
       };
       assert.strictEqual(isLocked(p), false, 'Should NOT be locked after cycle ends');
       // This is the correct behavior: blocked because pp=0, NOT a soft-lock
-      assert.strictEqual(shouldAbortTurn(p, 0), true, 'Should block selection of 0-PP move after cycle');
+      assert.strictEqual(
+        shouldAbortTurn(p, 0),
+        true,
+        'Should block selection of 0-PP move after cycle'
+      );
     });
 
     it('Full 3-turn Thrash cycle: only deducts PP once', () => {
       const p: MockPokemon = {
         moves: [{ id: 'thrash', pp: 5 }],
-        thrashTurns: 0,
+        thrashTurns: 0
       };
       const move = p.moves[0];
       assert.ok(move);
@@ -247,7 +251,7 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
     it('Full cycle when PP hits 0 on turn 1: subsequent turns still execute (no soft-lock)', () => {
       const p: MockPokemon = {
         moves: [{ id: 'thrash', pp: 1 }], // Only 1 PP left
-        thrashTurns: 0,
+        thrashTurns: 0
       };
       const move = p.moves[0];
       assert.ok(move);
@@ -262,7 +266,11 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
       // Turn 2: PP=0, but locked → no soft-lock!
       assert.strictEqual(move.pp, 0);
       assert.strictEqual(isLocked(p), true);
-      assert.strictEqual(shouldAbortTurn(p, 0), false, 'CRITICAL: must NOT abort at 0 PP when locked');
+      assert.strictEqual(
+        shouldAbortTurn(p, 0),
+        false,
+        'CRITICAL: must NOT abort at 0 PP when locked'
+      );
       deductPP(p, 0);
       assert.strictEqual(move.pp, 0, 'PP stays at 0 (no deduction when locked)');
       const confused = tickThrash(p); // cycle ends
@@ -273,39 +281,53 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
   // ── UI layer: isDisabled logic (BattleMoveSlot.vue after fix) ──────────
 
   describe('UI isDisabled – buttons enabled during locked cycles', () => {
-
     it('Button ENABLED at 0 PP when thrashTurns > 0', () => {
       const p: MockPokemon = {
         moves: [{ id: 'thrash', pp: 0 }],
-        thrashTurns: 1,
+        thrashTurns: 1
       };
       // Bug was: isDisabled returned true unconditionally at pp=0
       // Fixed: skip pp check when locked
-      assert.strictEqual(isUiDisabled(p, 0), false, 'Button must NOT be disabled when locked at 0 PP');
+      assert.strictEqual(
+        isUiDisabled(p, 0),
+        false,
+        'Button must NOT be disabled when locked at 0 PP'
+      );
     });
 
     it('Button DISABLED at 0 PP when NOT locked (correct behavior)', () => {
       const p: MockPokemon = {
         moves: [{ id: 'thrash', pp: 0 }],
-        thrashTurns: 0,
+        thrashTurns: 0
       };
-      assert.strictEqual(isUiDisabled(p, 0), true, 'Button must be disabled when pp=0 and not locked');
+      assert.strictEqual(
+        isUiDisabled(p, 0),
+        true,
+        'Button must be disabled when pp=0 and not locked'
+      );
     });
 
     it('Button ENABLED at 0 PP with lockedmove volatile', () => {
       const p: MockPokemon = {
         moves: [{ id: 'outrage', pp: 0 }],
         volatileCounters: { lockedmove: 1 },
-        lastMove: { id: 'outrage', pp: 0 },
+        lastMove: { id: 'outrage', pp: 0 }
       };
-      assert.strictEqual(isUiDisabled(p, 0), false, 'Button must NOT be disabled for forced lockedmove at 0 PP');
+      assert.strictEqual(
+        isUiDisabled(p, 0),
+        false,
+        'Button must NOT be disabled for forced lockedmove at 0 PP'
+      );
     });
 
     it('Button DISABLED for non-forced moves when locked (only forced move is clickable)', () => {
       const p: MockPokemon = {
-        moves: [{ id: 'outrage', pp: 0 }, { id: 'splash', pp: 5 }],
+        moves: [
+          { id: 'outrage', pp: 0 },
+          { id: 'splash', pp: 5 }
+        ],
         volatileCounters: { lockedmove: 1 },
-        lastMove: { id: 'outrage', pp: 0 },
+        lastMove: { id: 'outrage', pp: 0 }
       };
       // splash is NOT the forced move → should be disabled
       assert.strictEqual(isUiDisabled(p, 1), true, 'Non-forced move must be disabled when locked');
@@ -317,11 +339,10 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
   // ── lockedmove volatile (e.g. Outrage via Showdown bridge) ───────────────
 
   describe('lockedmove volatile – PP deduction rules', () => {
-
     it('Turn 1: PP deducted when no lockedmove volatile is set', () => {
       const p: MockPokemon = {
         moves: [{ id: 'outrage', pp: 8 }],
-        volatileCounters: {},
+        volatileCounters: {}
       };
       const move = p.moves[0];
       assert.ok(move);
@@ -335,7 +356,7 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
     it('Turn 2+: PP NOT deducted when lockedmove volatile > 0', () => {
       const p: MockPokemon = {
         moves: [{ id: 'outrage', pp: 7 }],
-        volatileCounters: { lockedmove: 2 },
+        volatileCounters: { lockedmove: 2 }
       };
       const move = p.moves[0];
       assert.ok(move);
@@ -347,7 +368,7 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
     it('0 PP with active lockedmove volatile: executes without abort', () => {
       const p: MockPokemon = {
         moves: [{ id: 'outrage', pp: 0 }],
-        volatileCounters: { lockedmove: 1 },
+        volatileCounters: { lockedmove: 1 }
       };
       assert.strictEqual(shouldAbortTurn(p, 0), false, 'Must NOT abort at 0 PP when locked');
     });
@@ -355,7 +376,7 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
     it('lockedmove volatile cleared after cycle: 0-PP move blocked (correct, not soft-lock)', () => {
       const p: MockPokemon = {
         moves: [{ id: 'outrage', pp: 0 }],
-        volatileCounters: { lockedmove: 1 },
+        volatileCounters: { lockedmove: 1 }
       };
       const cycleEnded = tickLockedMove(p); // counter → 0, volatile deleted
       assert.strictEqual(cycleEnded, true);
@@ -369,7 +390,6 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
   // ── Struggle fallback ─────────────────────────────────────────────────────
 
   describe('Struggle fallback (moveIndex = -1)', () => {
-
     it('Struggle is never aborted regardless of PP or lock state', () => {
       const p: MockPokemon = { moves: [{ id: 'splash', pp: 0 }] };
       // moveIndex = -1 signals struggle
@@ -388,7 +408,6 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
   // ── Edge cases ────────────────────────────────────────────────────────────
 
   describe('Edge cases', () => {
-
     it('PP does not go negative when deducted at pp=1', () => {
       const p: MockPokemon = { moves: [{ id: 'splash', pp: 1 }] };
       const move = p.moves[0];
@@ -418,7 +437,10 @@ describe('PP Soft-lock Prevention – Thrash / Locked-move Mechanics', () => {
     });
 
     it('lockedmove=0 is treated as falsy (not locked)', () => {
-      const p: MockPokemon = { moves: [{ id: 'outrage', pp: 5 }], volatileCounters: { lockedmove: 0 } };
+      const p: MockPokemon = {
+        moves: [{ id: 'outrage', pp: 5 }],
+        volatileCounters: { lockedmove: 0 }
+      };
       assert.strictEqual(isLocked(p), false);
     });
   });

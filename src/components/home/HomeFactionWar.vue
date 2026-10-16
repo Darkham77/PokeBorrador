@@ -1,32 +1,32 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useWarStore } from '@/stores/war'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
+import { computed, onMounted } from 'vue';
+import { useWarStore } from '@/stores/war';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
-const warStore = useWarStore()
+const warStore = useWarStore();
 
-const isDispute = computed(() => warStore.isDisputeActive)
-const faction = computed(() => warStore.faction)
+const isDispute = computed(() => warStore.isDisputeActive);
+const faction = computed(() => warStore.faction);
 
 const globalScore = computed(() => {
-  let union = 0
-  let poder = 0
+  let union = 0;
+  let poder = 0;
   Object.values(warStore.mapDominance).forEach((m) => {
-    if (m.winner === 'union') union++
-    else if (m.winner === 'poder') poder++
-    else if ((m.union ?? 0) > (m.poder ?? 0)) union++
-    else if ((m.poder ?? 0) > (m.union ?? 0)) poder++
-  })
-  const total = Math.max(1, union + poder)
-  const unionPercent = Math.round((union / total) * 100)
-  const poderPercent = 100 - unionPercent
-  return { union, poder, unionPercent, poderPercent }
-})
+    if (m.winner === 'union') union++;
+    else if (m.winner === 'poder') poder++;
+    else if ((m.union ?? 0) > (m.poder ?? 0)) union++;
+    else if ((m.poder ?? 0) > (m.union ?? 0)) poder++;
+  });
+  const total = Math.max(1, union + poder);
+  const unionPercent = Math.round((union / total) * 100);
+  const poderPercent = 100 - unionPercent;
+  return { union, poder, unionPercent, poderPercent };
+});
 
 onMounted(() => {
-  void warStore.loadWarData()
-})
+  void warStore.loadWarData();
+});
 </script>
 
 <template>
@@ -35,14 +35,10 @@ onMounted(() => {
       <div class="title-wrap">
         <span class="emoji">⚔️</span>
         <div class="title-text-group">
-          <h3 class="card-title">
-            GUERRA TERRITORIAL DE FACCIONES
-          </h3>
-          <span
-            class="phase-pill"
-            :class="isDispute ? 'is-dispute' : 'is-dominance'"
-          >
-            <span class="emoji">{{ isDispute ? '⚔️' : '🏆' }}</span> {{ isDispute ? 'FASE DE DISPUTA' : 'FASE DE DOMINANCIA' }}
+          <h3 class="card-title">GUERRA TERRITORIAL DE FACCIONES</h3>
+          <span class="phase-pill" :class="isDispute ? 'is-dispute' : 'is-dominance'">
+            <span class="emoji">{{ isDispute ? '⚔️' : '🏆' }}</span>
+            {{ isDispute ? 'FASE DE DISPUTA' : 'FASE DE DOMINANCIA' }}
           </span>
         </div>
       </div>
@@ -62,7 +58,7 @@ onMounted(() => {
             class="faction-logo"
             width="32"
             height="32"
-          >
+          />
           <div class="score-data">
             <span class="team-name">UNIÓN</span>
             <span class="team-count">{{ globalScore.union }} Rutas</span>
@@ -76,14 +72,8 @@ onMounted(() => {
             <span class="percent-label poder">{{ globalScore.poderPercent }}%</span>
           </div>
           <div class="dual-progress-bar">
-            <div
-              class="union-fill"
-              :style="{ width: globalScore.unionPercent + '%' }"
-            />
-            <div
-              class="poder-fill"
-              :style="{ width: globalScore.poderPercent + '%' }"
-            />
+            <div class="union-fill" :style="{ width: globalScore.unionPercent + '%' }" />
+            <div class="poder-fill" :style="{ width: globalScore.poderPercent + '%' }" />
           </div>
         </div>
 
@@ -98,7 +88,7 @@ onMounted(() => {
             class="faction-logo"
             width="32"
             height="32"
-          >
+          />
         </div>
       </div>
 
@@ -106,19 +96,12 @@ onMounted(() => {
       <div class="user-war-summary">
         <div class="summary-chip">
           <span class="chip-label">TU FACCIÓN:</span>
-          <span
-            class="chip-value"
-            :class="faction"
-          >
-            <template v-if="faction === 'union'">
-              <span class="emoji">⭐</span> Unión
-            </template>
+          <span class="chip-value" :class="faction">
+            <template v-if="faction === 'union'"> <span class="emoji">⭐</span> Unión </template>
             <template v-else-if="faction === 'poder'">
               <span class="emoji">✊</span> Poder
             </template>
-            <template v-else>
-              Sin afiliar
-            </template>
+            <template v-else> Sin afiliar </template>
           </span>
         </div>
         <div class="summary-chip">
@@ -127,7 +110,9 @@ onMounted(() => {
         </div>
         <div class="summary-chip">
           <span class="chip-label">MONEDAS DE GUERRA:</span>
-          <span class="chip-value coins">{{ warStore.warCoins }} <span class="emoji">🪙</span></span>
+          <span class="chip-value coins"
+            >{{ warStore.warCoins }} <span class="emoji">🪙</span></span
+          >
         </div>
       </div>
     </div>
@@ -135,7 +120,7 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .home-faction-war {
   display: flex;

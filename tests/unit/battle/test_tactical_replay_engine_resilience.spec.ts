@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { TacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine.ts'
-import type { BattleReplayRecord } from '@/types/battle/pvp.ts'
+import { describe, it, expect } from 'vite-plus/test';
+import { TacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine.ts';
+import type { BattleReplayRecord } from '@/types/battle/pvp.ts';
 
 describe('TacticalReplayEngine Fog-of-War Resilience', () => {
   it('handles pokemon without explicit name or with speciesId gracefully without throwing TypeError', () => {
@@ -43,23 +43,20 @@ describe('TacticalReplayEngine Fog-of-War Resilience', () => {
           turnNumber: 1,
           p1Choice: 'move 1',
           p2Choice: 'move 1',
-          logLines: [
-            '|move|p1a: Pikachu|Thunderbolt|p2a: Eevee',
-            '|-damage|p2a: Eevee|40/100'
-          ]
+          logLines: ['|move|p1a: Pikachu|Thunderbolt|p2a: Eevee', '|-damage|p2a: Eevee|40/100']
         }
       ],
       initialSeed: [1, 2, 3, 4],
       isTop10Archived: true,
       viewsCount: 0,
       createdAt: '2026-09-08T00:00:00Z'
-    }
+    };
 
-    const engine = new TacticalReplayEngine(mockReplay as BattleReplayRecord)
-    const p1State = engine.getFogOfWarState('p1')
+    const engine = new TacticalReplayEngine(mockReplay as BattleReplayRecord);
+    const p1State = engine.getFogOfWarState('p1');
 
-    expect(p1State).toBeDefined()
-    expect(p1State.pokemonList.length).toBe(1)
-    expect(p1State.pokemonList[0]!.name).toBe('pikachu')
-  })
-})
+    expect(p1State).toBeDefined();
+    expect(p1State.pokemonList.length).toBe(1);
+    expect(p1State.pokemonList[0]!.name).toBe('pikachu');
+  });
+});

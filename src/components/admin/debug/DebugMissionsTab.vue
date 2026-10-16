@@ -1,41 +1,41 @@
 <script setup lang="ts">
-import { useGameStore } from '@/stores/game'
-import { useDebugStore } from '@/stores/debug'
-import { logger } from '@/logic/utils/logger'
+import { useGameStore } from '@/stores/game';
+import { useDebugStore } from '@/stores/debug';
+import { logger } from '@/logic/utils/logger';
 
 interface ViteDebugBridge {
   regenerateMissions?: () => void;
   clearMissions?: () => void;
 }
 
-const game = useGameStore()
-const debug = useDebugStore()
+const game = useGameStore();
+const debug = useDebugStore();
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge // domain-ok: Open dynamic text or non-domain string payload
+const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge; // domain-ok: Open dynamic text or non-domain string payload
 
 const regenerate = () => {
-  const bridge = getDebugBridge()
+  const bridge = getDebugBridge();
   if (bridge?.regenerateMissions) {
-    bridge.regenerateMissions()
+    bridge.regenerateMissions();
   } else {
-    logger.warn('Debug', 'Fallback: regenerateMissions from store directly')
-    const tool = debug.tools.find(t => t.command === 'regenerateMissions')
-    if (tool) tool.action()
+    logger.warn('Debug', 'Fallback: regenerateMissions from store directly');
+    const tool = debug.tools.find((t) => t.command === 'regenerateMissions');
+    if (tool) tool.action();
   }
-}
+};
 
 const clear = () => {
-  if (!confirm('¿Seguro que quieres borrar todas las misiones actuales?')) return
+  if (!confirm('¿Seguro que quieres borrar todas las misiones actuales?')) return;
 
-  const bridge = getDebugBridge()
+  const bridge = getDebugBridge();
   if (bridge?.clearMissions) {
-    bridge.clearMissions()
+    bridge.clearMissions();
   } else {
-    logger.warn('Debug', 'Fallback: clearMissions from store directly')
-    const tool = debug.tools.find(t => t.command === 'clearMissions')
-    if (tool) tool.action()
+    logger.warn('Debug', 'Fallback: clearMissions from store directly');
+    const tool = debug.tools.find((t) => t.command === 'clearMissions');
+    if (tool) tool.action();
   }
-}
+};
 </script>
 
 <template>
@@ -49,7 +49,7 @@ const clear = () => {
       <div class="button-row">
         <PVTooltip title="Fuerza la regeneración de nuevas misiones de guardería.">
           <button
-            id="debug-missions-tab-btn-regenerar-ahora" 
+            id="debug-missions-tab-btn-regenerar-ahora"
             class="small-btn primary"
             @click.stop="regenerate"
           >
@@ -58,7 +58,7 @@ const clear = () => {
         </PVTooltip>
         <PVTooltip title="Borra todas las misiones activas de la base de datos local.">
           <button
-            id="debug-missions-tab-btn-limpiar-todo" 
+            id="debug-missions-tab-btn-limpiar-todo"
             class="small-btn danger"
             @click.stop="clear"
           >
@@ -76,13 +76,16 @@ const clear = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/debug";
+@use '@/styles/components/debug';
 
 .mission-status {
   margin: 10px 0;
   color: $muted;
   font-size: var(--font-8);
-  span { color: var(--yellow); font-weight: bold; }
+  span {
+    color: var(--yellow);
+    font-weight: bold;
+  }
 }
 
 .debug-json {
@@ -102,7 +105,13 @@ const clear = () => {
 }
 
 .small-btn {
-  &.primary { color: $purple; border-color: $purple; }
-  &.danger { color: $red; border-color: $red; }
+  &.primary {
+    color: $purple;
+    border-color: $purple;
+  }
+  &.danger {
+    color: $red;
+    border-color: $red;
+  }
 }
 </style>

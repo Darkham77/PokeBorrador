@@ -7,7 +7,9 @@
   width: 100%;
   max-width: 860px;
   margin: 0 auto;
-  filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85)));
+  filter: Drop-Shadow(
+    calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85))
+  );
 }
 
 .inventory-window-frame {
@@ -17,7 +19,9 @@
   font-family: var(--font-pixel);
   box-sizing: border-box;
   --frame-border: var(--red-light); // Borde rojo/coral canónico de la mochila 1:1
-  box-shadow: 0 40px 100px Rgba(0, 0, 0, 0.9), inset 0 0 20px Rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 40px 100px Rgba(0, 0, 0, 0.9),
+    inset 0 0 20px Rgba(0, 0, 0, 0.5);
 }
 
 // HEADER: MOCHILA, CRÉDITOS Y CERRAR
@@ -83,7 +87,9 @@
         line-height: 1;
         letter-spacing: 0.5px;
 
-        &.totals { color: var(--white); }
+        &.totals {
+          color: var(--white);
+        }
         &.credits {
           color: var(--emerald);
           text-shadow: 0 0 10px Rgba(34, 197, 94, 0.4);
@@ -103,7 +109,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      &:hover { color: var(--white); background: Rgba(255, 255, 255, 0.12); }
+      &:hover {
+        color: var(--white);
+        background: Rgba(255, 255, 255, 0.12);
+      }
     }
   }
 }
@@ -157,7 +166,11 @@
       height: 28px;
       width: 180px;
 
-      .search-icon { font-size: var(--font-9); margin-right: 6px; opacity: 0.6; }
+      .search-icon {
+        font-size: var(--font-9);
+        margin-right: 6px;
+        opacity: 0.6;
+      }
       .search-input {
         width: 100%;
         background: none;
@@ -165,7 +178,9 @@
         color: var(--white);
         font-family: var(--font-pixel);
         font-size: var(--font-8);
-        &::placeholder { color: Rgba(255, 255, 255, 0.3); }
+        &::placeholder {
+          color: Rgba(255, 255, 255, 0.3);
+        }
       }
     }
 
@@ -196,7 +211,9 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      &:hover { background: Rgba(168, 85, 247, 0.35); }
+      &:hover {
+        background: Rgba(168, 85, 247, 0.35);
+      }
     }
 
     .inv-btn-trash {
@@ -213,7 +230,9 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      &:hover { background: Rgba(239, 68, 68, 0.4); }
+      &:hover {
+        background: Rgba(239, 68, 68, 0.4);
+      }
     }
   }
 }
@@ -254,7 +273,7 @@
 
       .cat-icon {
         font-size: var(--font-9);
-        font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+        font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
       }
 
       &:hover:not(.active) {

@@ -1,8 +1,8 @@
 /**
  * scripts/migrate_temporal.ts
- * 
+ *
  * Script de migración masiva: Date -> Temporal API
- * 
+ *
  * Basado en los estándares del proyecto (Regla 7).
  */
 
@@ -14,8 +14,11 @@ const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', '_raw-assets', 'scr
 async function getFilesToMigrate(dir: string): Promise<string[]> {
   const files: string[] = []; // no-domain: Non-domain utility collection or data structure
   const pattern = '**/*.{ts,js,vue}';
-  
-  for await (const entry of fs.glob(pattern, { cwd: dir, exclude: (p) => Array.from(IGNORE_DIRS).some(d => p.includes(d)) })) {
+
+  for await (const entry of fs.glob(pattern, {
+    cwd: dir,
+    exclude: (p) => Array.from(IGNORE_DIRS).some((d) => p.includes(d))
+  })) {
     files.push(path.resolve(dir, entry));
   }
   return files;
@@ -50,11 +53,14 @@ async function migrate(filePath: string) {
   content = content.replace(/\.toDateString\(\)/g, ".toString().split('T')[0]");
 
   // 7. date.toTemporalInstant() -> Temporal.Instant.fromEpochMilliseconds(date.epochMilliseconds || date.getTime())
-  content = content.replace(/(\w+)\.toTemporalInstant\(\)/g, 'Temporal.Instant.fromEpochMilliseconds($1.epochMilliseconds || $1.getTime())');
+  content = content.replace(
+    /(\w+)\.toTemporalInstant\(\)/g,
+    'Temporal.Instant.fromEpochMilliseconds($1.epochMilliseconds || $1.getTime())'
+  );
 
   // 7. Inyectar import si se usa Temporal y no está presente
   if (content.includes('Temporal') && !content.includes("'@js-temporal/polyfill'")) {
-    const importStmt = "\n";
+    const importStmt = '\n';
     if (content.includes('<script')) {
       // Para archivos .vue
       content = content.replace(/(<script[^>]*>)/, `$1\n${importStmt}`);

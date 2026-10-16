@@ -1,8 +1,8 @@
-import {Generations, ID} from '@pkmn/data';
-import {Dex} from '@pkmn/dex';
-import {DetailedPokemon, PokemonIdent, Username} from '@pkmn/protocol';
+import { Generations, ID } from '@pkmn/data';
+import { Dex } from '@pkmn/dex';
+import { DetailedPokemon, PokemonIdent, Username } from '@pkmn/protocol';
 
-import {Battle} from '../index';
+import { Battle } from '../index';
 
 const GENS = new Generations(Dex);
 
@@ -75,7 +75,7 @@ describe('Battle', () => {
     expect(battle.getSide('Foo')).toBe(battle.p1);
     expect(battle.getSide('bar')).toBe(battle.p2);
 
-    expect(battle.getSide('What The F')).toEqual({name: 'What The F', id: 'WhatTheF'}); // WTF?
+    expect(battle.getSide('What The F')).toEqual({ name: 'What The F', id: 'WhatTheF' }); // WTF?
   });
 
   it.todo('#getPokemon');
@@ -85,7 +85,7 @@ describe('Battle', () => {
     const battle = new Battle(GENS);
     expect(battle.pokemonAt('p1', 0)).toBeUndefined();
 
-    const pokemon = battle.p1.addPokemon({ident: 'p1: Gengar'} as DetailedPokemon);
+    const pokemon = battle.p1.addPokemon({ ident: 'p1: Gengar' } as DetailedPokemon);
     battle.p1.active[0] = pokemon;
     expect(battle.pokemonAt('p1', 0)).toBe('p1: Gengar');
     expect(battle.pokemonAt('p1', 2)).toBeUndefined();

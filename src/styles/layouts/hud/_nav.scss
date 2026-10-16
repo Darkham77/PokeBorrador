@@ -4,7 +4,6 @@
 
 /* ===== HUD NAVIGATION (SINGLE SOURCE OF TRUTH) ===== */
 .hud-container .hud-nav {
-
   display: flex;
   justify-content: center;
   align-items: center;
@@ -25,7 +24,7 @@
   height: auto;
   padding: spacing(2) spacing(3.5);
   border: 1px solid Rgb(255 255 255 / 8%);
-  border-radius: $radius-xl; 
+  border-radius: $radius-xl;
   background: Rgb(26 26 32 / 100%);
   color: $white;
   font-family: $font-ui;
@@ -34,7 +33,8 @@
   white-space: nowrap;
   box-shadow: var(--shadow-card-elevated);
 
-  i, span:first-child {
+  i,
+  span:first-child {
     font-size: var(--font-16);
     margin-bottom: 0;
   }
@@ -48,7 +48,10 @@
     color: $yellow;
     border-color: $yellow;
     box-shadow: var(--shadow-xl);
-    i, span:first-child { color: $yellow; }
+    i,
+    span:first-child {
+      color: $yellow;
+    }
   }
 
   /* COMPACT MODE FOR NAVIGATION */
@@ -57,15 +60,22 @@
     gap: $spacing-2xs !important;
     min-width: 55px;
     padding: 6px 4px !important;
-    
-    i, span:first-child { font-size: var(--font-14); }
-    & .nav-item-label { font-size: var(--font-10); }
+
+    i,
+    span:first-child {
+      font-size: var(--font-14);
+    }
+    & .nav-item-label {
+      font-size: var(--font-10);
+    }
   }
 }
 
 /* Container query for hud-nav gap */
 @container (max-width: 1775px) {
-  .hud-nav { gap: $spacing-sm-alt; }
+  .hud-nav {
+    gap: $spacing-sm-alt;
+  }
 }
 
 /* ===== HUD ACTIONS & ITEMS ===== */

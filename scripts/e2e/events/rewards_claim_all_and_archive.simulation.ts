@@ -49,7 +49,9 @@ export class RewardsClaimAllAndArchiveSimulation extends BaseE2ESimulation {
 test.describe('Rewards Claim All & Legacy Archive E2E Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('claims all eligible rewards, leaves only unclaimable legacy rewards, and persists across reload', async ({ page }) => {
+  test('claims all eligible rewards, leaves only unclaimable legacy rewards, and persists across reload', async ({
+    page
+  }) => {
     // Enable SQLite persistence across reloads via the dev simulation bridge
     await page.addInitScript(() => {
       (window as Window & { __GTS_SIMULATION__?: boolean }).__GTS_SIMULATION__ = true;
@@ -102,8 +104,10 @@ test.describe('Rewards Claim All & Legacy Archive E2E Simulation', () => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
         const state = useGameStore().state;
         const allPokemon = [...(state.team || []), ...(state.box || [])];
-        const eevee = allPokemon.find(p => p && p.id === 'eevee');
-        return eevee ? { hasEevee: true, obtainedAt: eevee.obtainedAt, obtainedMethod: eevee.obtainedMethod } : { hasEevee: false };
+        const eevee = allPokemon.find((p) => p && p.id === 'eevee');
+        return eevee
+          ? { hasEevee: true, obtainedAt: eevee.obtainedAt, obtainedMethod: eevee.obtainedMethod }
+          : { hasEevee: false };
       });
       expect(eeveeData.hasEevee).toBe(true);
       expect(eeveeData.obtainedAt).toBeGreaterThan(0);

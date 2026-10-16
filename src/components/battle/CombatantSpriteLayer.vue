@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import CombatantSpriteAnimated from './CombatantSpriteAnimated.vue'
-import CombatantSpriteDebugGuides from './CombatantSpriteDebugGuides.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { AnimatedSpriteData } from '@/data/pokemon/animatedSpriteDatabase'
-import type { CombatantSpriteMode } from '@/types/battle/battle'
+import CombatantSpriteAnimated from './CombatantSpriteAnimated.vue';
+import CombatantSpriteDebugGuides from './CombatantSpriteDebugGuides.vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { AnimatedSpriteData } from '@/data/pokemon/animatedSpriteDatabase';
+import type { CombatantSpriteMode } from '@/types/battle/battle';
 
 interface Props {
-  pokemon: Pokemon | null
-  isAnimated: boolean
-  isSilhouette: boolean
-  currentMode: CombatantSpriteMode
-  idleImageUrl: string
-  variationImageUrl: string
-  imageUrl: string
-  frames: number
-  variationMeta: AnimatedSpriteData | null
-  showGuides: boolean
-  naturalSize: { w: number; h: number }
-  displaySize: number
-  debugShowPokeRadius: boolean
-  fxRadius: number
+  pokemon: Pokemon | null;
+  isAnimated: boolean;
+  isSilhouette: boolean;
+  currentMode: CombatantSpriteMode;
+  idleImageUrl: string;
+  variationImageUrl: string;
+  imageUrl: string;
+  frames: number;
+  variationMeta: AnimatedSpriteData | null;
+  showGuides: boolean;
+  naturalSize: { w: number; h: number };
+  displaySize: number;
+  debugShowPokeRadius: boolean;
+  fxRadius: number;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'load', event: Event): void
-  (e: 'error', event: Event): void
-}>()
+  (e: 'load', event: Event): void;
+  (e: 'error', event: Event): void;
+}>();
 </script>
 
 <template>
@@ -35,10 +35,7 @@ const emit = defineEmits<{
     <!-- Wrapper para estados alterados y auras (recibe filtros en PVSpriteFX) con overflow visible -->
     <div class="pokemon-sprite-status-wrapper">
       <!-- Contenedor con overflow hidden que recorta exactamente un solo frame del spritesheet -->
-      <div 
-        v-if="props.isAnimated"
-        class="pokemon-combat-image-wrapper"
-      >
+      <div v-if="props.isAnimated" class="pokemon-combat-image-wrapper">
         <CombatantSpriteAnimated
           :pokemon="props.pokemon"
           :is-silhouette="props.isSilhouette"
@@ -62,10 +59,9 @@ const emit = defineEmits<{
         :style="{ filter: props.isSilhouette ? undefined : 'var(--atmosphere-filter)' }"
         width="96"
         height="96"
-      
         @load="emit('load', $event)"
         @error="emit('error', $event)"
-      >
+      />
     </div>
 
     <!-- Guías de Depuración y Tamaño Real -->
@@ -81,7 +77,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .pokemon-atmosphere-wrapper {
   display: flex;
@@ -123,7 +119,7 @@ const emit = defineEmits<{
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
 
-  &.is-silhouette { 
+  &.is-silhouette {
     @include pokemon-silhouette;
   }
 

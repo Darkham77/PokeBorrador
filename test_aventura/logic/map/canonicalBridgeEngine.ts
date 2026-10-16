@@ -80,18 +80,30 @@ export function resolveCanonicalBridges(
       // Compute total span along horizontal and vertical lines through (c, r) including land shore connections
       let hSpan = 1;
       let curX = c - 1;
-      while (isBridge(curX, r)) { hSpan++; curX--; }
+      while (isBridge(curX, r)) {
+        hSpan++;
+        curX--;
+      }
       if (!isWater(curX, r)) hSpan++; // connects to West shore
       curX = c + 1;
-      while (isBridge(curX, r)) { hSpan++; curX++; }
+      while (isBridge(curX, r)) {
+        hSpan++;
+        curX++;
+      }
       if (!isWater(curX, r)) hSpan++; // connects to East shore
 
       let vSpan = 1;
       let curY = r - 1;
-      while (isBridge(c, curY)) { vSpan++; curY--; }
+      while (isBridge(c, curY)) {
+        vSpan++;
+        curY--;
+      }
       if (!isWater(c, curY)) vSpan++; // connects to North shore
       curY = r + 1;
-      while (isBridge(c, curY)) { vSpan++; curY++; }
+      while (isBridge(c, curY)) {
+        vSpan++;
+        curY++;
+      }
       if (!isWater(c, curY)) vSpan++; // connects to South shore
 
       // Canonical Vermilion Port Stone Pier (Authentic 3-cell wide corridor)

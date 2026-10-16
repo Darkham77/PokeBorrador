@@ -1,6 +1,6 @@
 /**
  * src/components/profile/trainerAvatarAnimHelper.ts
- * 
+ *
  * Modular helper utilities for TrainerAvatar animations and configurations.
  */
 
@@ -28,15 +28,22 @@ interface SpinConfig {
 }
 
 const SPIN_CONFIGS: Record<string, SpinConfig> = {
+  // open-record: Trainer avatar class and element spin configs
   fire: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.cazabichos! },
   water: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.criador! },
-  electric: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.rocket!, rotationDir: REVERSE_ROTATION_DEG },
+  electric: {
+    duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.rocket!,
+    rotationDir: REVERSE_ROTATION_DEG
+  },
   psychic: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.entrenador! },
   dark: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.union! },
   ghost: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.poder! },
   ice: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.admin! },
   dragon: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.master! },
-  legend: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.cazabichos!, rotationDir: REVERSE_ROTATION_DEG },
+  legend: {
+    duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.cazabichos!,
+    rotationDir: REVERSE_ROTATION_DEG
+  },
   master: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.master! },
   cazabichos: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.cazabichos! },
   criador: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.criador! },
@@ -55,6 +62,7 @@ export interface ShadowConfig {
 }
 
 export const SHADOW_CONFIGS: Record<string, ShadowConfig> = {
+  // open-record: Trainer avatar class and element shadow configs
   fire: {
     from: '0 0 0 3px #ff4400, 0 0 12px rgba(255, 68, 0, 0.4), inset 0 0 6px rgba(255, 68, 0, 0.2)',
     to: '0 0 0 3px #ff8800, 0 0 24px rgba(255, 68, 0, 0.8), inset 0 0 12px rgba(255, 68, 0, 0.4)',
@@ -145,11 +153,14 @@ export const SHADOW_CONFIGS: Record<string, ShadowConfig> = {
 
 export function hexToRgb(hex: string): string {
   const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-  const fullHex = hex.replace(shorthandRegex, (_, r: string, g: string, b: string) => r + r + g + g + b + b);
+  const fullHex = hex.replace(
+    shorthandRegex,
+    (_, r: string, g: string, b: string) => r + r + g + g + b + b
+  );
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
-  return result ? 
-    `${parseInt(result[1]!, HEX_PARSING_RADIX)}, ${parseInt(result[2]!, HEX_PARSING_RADIX)}, ${parseInt(result[3]!, HEX_PARSING_RADIX)}` : 
-    DEFAULT_WHITE_RGB_STRING;
+  return result
+    ? `${parseInt(result[1]!, HEX_PARSING_RADIX)}, ${parseInt(result[2]!, HEX_PARSING_RADIX)}, ${parseInt(result[3]!, HEX_PARSING_RADIX)}`
+    : DEFAULT_WHITE_RGB_STRING;
 }
 
 export function resolveSpinConfig(cleanStyle: string): { duration: number; rotationDir: number } {
@@ -166,8 +177,9 @@ export function resolveSpinConfig(cleanStyle: string): { duration: number; rotat
 
   if (cleanStyle.startsWith('type-')) {
     const typeName = cleanStyle.replace('type-', '');
-    if (AVATAR_TYPE_SPIN_DURATIONS_SEC[typeName] !== undefined) {
-      spinDuration = AVATAR_TYPE_SPIN_DURATIONS_SEC[typeName]!;
+    const typeSpinDurations = AVATAR_TYPE_SPIN_DURATIONS_SEC as Record<string, number>; // open-record: Elemental type map
+    if (typeSpinDurations[typeName] !== undefined) {
+      spinDuration = typeSpinDurations[typeName]!;
     }
   }
 
@@ -176,7 +188,7 @@ export function resolveSpinConfig(cleanStyle: string): { duration: number; rotat
 
 export function resolveShadowConfig(
   cleanStyle: string,
-  elementColors: Record<string, { base: string; light: string; frame: string }>
+  elementColors: Record<string, { base: string; light: string; frame: string }> // open-record: Dynamic element colors dictionary
 ): ShadowConfig | null {
   const directShadowConfig = (SHADOW_CONFIGS as Record<string, ShadowConfig>)[cleanStyle]; // open-record: Generic key-value data dictionary container
   if (directShadowConfig) {
@@ -198,28 +210,50 @@ export function resolveShadowConfig(
   return null;
 }
 
-export function applyFrameSpinAnimation(tl: GsapTimeline, frameEl: HTMLElement, cleanStyle: string): void {
+export function applyFrameSpinAnimation(
+  tl: GsapTimeline,
+  frameEl: HTMLElement,
+  cleanStyle: string
+): void {
   const { duration, rotationDir } = resolveSpinConfig(cleanStyle);
-  tl.to(frameEl, {
-    rotation: rotationDir,
-    duration,
-    repeat: -1,
-    ease: 'none'
-  }, 0);
+  tl.to(
+    frameEl,
+    {
+      rotation: rotationDir,
+      duration,
+      repeat: -1,
+      ease: 'none'
+    },
+    0
+  );
 }
 
 export function applyGhostAnimation(tl: GsapTimeline, containerEl: HTMLElement): void {
-  tl.fromTo(containerEl,
+  tl.fromTo(
+    containerEl,
     { opacity: GHOST_FADE_INITIAL_OPACITY },
-    { opacity: GHOST_MIN_OPACITY, duration: GHOST_FADE_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' },
+    {
+      opacity: GHOST_MIN_OPACITY,
+      duration: GHOST_FADE_DURATION_SEC,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    },
     0
   );
 }
 
 export function applyBlinkRedAnimation(tl: GsapTimeline, containerEl: HTMLElement): ShadowConfig {
-  tl.fromTo(containerEl,
+  tl.fromTo(
+    containerEl,
     { borderColor: 'var(--red)' },
-    { borderColor: 'var(--red-light)', duration: BLINK_RED_PULSE_DUR_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' },
+    {
+      borderColor: 'var(--red-light)',
+      duration: BLINK_RED_PULSE_DUR_SEC,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    },
     0
   );
 
@@ -230,11 +264,22 @@ export function applyBlinkRedAnimation(tl: GsapTimeline, containerEl: HTMLElemen
   };
 }
 
-export function applyShadowAnimation(tl: GsapTimeline, containerEl: HTMLElement, shadowAnim: ShadowConfig): void {
+export function applyShadowAnimation(
+  tl: GsapTimeline,
+  containerEl: HTMLElement,
+  shadowAnim: ShadowConfig
+): void {
   const easeVal = shadowAnim.steps ? 'steps(1)' : 'sine.inOut';
-  tl.fromTo(containerEl,
+  tl.fromTo(
+    containerEl,
     { boxShadow: shadowAnim.from },
-    { boxShadow: shadowAnim.to, duration: shadowAnim.duration, yoyo: true, repeat: -1, ease: easeVal },
+    {
+      boxShadow: shadowAnim.to,
+      duration: shadowAnim.duration,
+      yoyo: true,
+      repeat: -1,
+      ease: easeVal
+    },
     0
   );
 }

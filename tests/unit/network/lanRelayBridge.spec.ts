@@ -4,7 +4,7 @@
  * Unit tests for LAN WebSocket relay message schema validation.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import * as v from 'valibot';
 import { lanRelayMessageSchema, LAN_RELAY_ACTIONS } from '@/logic/db/lanRelayBridge';
 

@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { SelectionDemoPokemon } from '../data/mockSelectionPokemon.ts'
+import { computed } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { SelectionDemoPokemon } from '../data/mockSelectionPokemon.ts';
 
 const props = defineProps<{
-  poke: SelectionDemoPokemon
-  isSelected: boolean
-}>()
+  poke: SelectionDemoPokemon;
+  isSelected: boolean;
+}>();
 
 const emit = defineEmits<{
-  (e: 'select', item: SelectionDemoPokemon): void
-}>()
+  (e: 'select', item: SelectionDemoPokemon): void;
+}>();
 
 const hpPercent = computed(() => {
-  if (!props.poke.maxHp) return 0
-  return Math.min(100, Math.max(0, (props.poke.hp / props.poke.maxHp) * 100))
-})
+  if (!props.poke.maxHp) return 0;
+  return Math.min(100, Math.max(0, (props.poke.hp / props.poke.maxHp) * 100));
+});
 
 const getBadgeIcon = (b: string): string => {
-  if (b === 'star') return '⭐'
-  if (b === 'spider') return '🕸️'
-  if (b === '31') return '31'
-  return '🏆'
-}
+  if (b === 'star') return '⭐';
+  if (b === 'spider') return '🕸️';
+  if (b === '31') return '31';
+  return '🏆';
+};
 </script>
 
 <template>
@@ -39,19 +39,9 @@ const getBadgeIcon = (b: string): string => {
   >
     <!-- COLUMNA IZQUIERDA: BOTÓN '?' Y SPRITE -->
     <div class="poke-preview-container">
-      <button
-        type="button"
-        class="btn-info-detail-trigger"
-        title="Detalles"
-      >
-        ?
-      </button>
+      <button type="button" class="btn-info-detail-trigger" title="Detalles">?</button>
       <div class="poke-preview">
-        <img
-          :src="getAssetUrl(ASSET_TYPES.POKEMON, poke.id)"
-          :alt="poke.name"
-          class="pixelated"
-        >
+        <img :src="getAssetUrl(ASSET_TYPES.POKEMON, poke.id)" :alt="poke.name" class="pixelated" />
       </div>
     </div>
 
@@ -90,12 +80,7 @@ const getBadgeIcon = (b: string): string => {
       <!-- STATS LINE -->
       <div class="info-row stats-line">
         <div class="sel-types-row">
-          <span
-            v-for="t in poke.types"
-            :key="t.id"
-            class="m-type-tag sm"
-            :class="`type-${t.id}`"
-          >
+          <span v-for="t in poke.types" :key="t.id" class="m-type-tag sm" :class="`type-${t.id}`">
             {{ t.label }}
           </span>
         </div>
@@ -105,25 +90,16 @@ const getBadgeIcon = (b: string): string => {
       </div>
 
       <!-- HP BAR (CANÓNICO COMBATE) -->
-      <div
-        v-if="!poke.seasonViolation"
-        class="battle-hp-status"
-      >
+      <div v-if="!poke.seasonViolation" class="battle-hp-status">
         <span class="hp-label">HP</span>
         <div class="hp-bar-container">
-          <div
-            class="hp-bar-fill"
-            :style="{ width: `${hpPercent}%` }"
-          />
+          <div class="hp-bar-fill" :style="{ width: `${hpPercent}%` }" />
         </div>
         <span class="hp-text">{{ poke.hp }} / {{ poke.maxHp }}</span>
       </div>
 
       <!-- AVISO DE TEMPORADA (CANÓNICO TEMPORADA) -->
-      <div
-        v-else
-        class="pv-curve-xs sel-season-violation-badge"
-      >
+      <div v-else class="pv-curve-xs sel-season-violation-badge">
         <span class="emoji">⚠️</span>
         <span class="violation-label">{{ poke.seasonViolation }}</span>
       </div>

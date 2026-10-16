@@ -12,10 +12,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { resolveTileUrl } from '../../logic/map/canvasImageLoader.ts';
-import {
-  buildMapBlitInstructions,
-  CANVAS_TILE_SIZE
-} from '../../logic/map/canvasTileRenderer.ts';
+import { buildMapBlitInstructions, CANVAS_TILE_SIZE } from '../../logic/map/canvasTileRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
@@ -25,15 +22,25 @@ describe('canvasTileRenderer', () => {
   describe('resolveTileUrl', () => {
     it('resolves canonical and prefab filenames to appropriate asset directories', () => {
       expect(resolveTileUrl('house_blue.png')).toBe('/assets/canon/buildings/house_blue.png');
-      expect(resolveTileUrl('poke_boardwalk_planks.png')).toBe('/assets/tiles/poke_boardwalk_dark_center.png');
-      expect(resolveTileUrl('poke_street_lamp.png')).toBe('/assets/canon/props/poke_street_lamp.png');
-      expect(resolveTileUrl('poke_tree_oak_clean.png')).toBe('/assets/prefabs/vegetation/poke_tree_oak_clean.png');
+      expect(resolveTileUrl('poke_boardwalk_planks.png')).toBe(
+        '/assets/tiles/poke_boardwalk_dark_center.png'
+      );
+      expect(resolveTileUrl('poke_street_lamp.png')).toBe(
+        '/assets/canon/props/poke_street_lamp.png'
+      );
+      expect(resolveTileUrl('poke_tree_oak_clean.png')).toBe(
+        '/assets/prefabs/vegetation/poke_tree_oak_clean.png'
+      );
     });
 
     it('resolves autotile and ground filenames strictly to canonical directories', () => {
       expect(resolveTileUrl('poke_grass_plain.png')).toBe('/assets/tiles/poke_grass_plain.png');
-      expect(resolveTileUrl('poke_water_ocean_center.png')).toBe('/assets/tiles/water/poke_water_ocean_center.png');
-      expect(resolveTileUrl('poke_sand_center.png')).toBe('/assets/tiles/terrain/poke_sand_center.png');
+      expect(resolveTileUrl('poke_water_ocean_center.png')).toBe(
+        '/assets/tiles/water/poke_water_ocean_center.png'
+      );
+      expect(resolveTileUrl('poke_sand_center.png')).toBe(
+        '/assets/tiles/terrain/poke_sand_center.png'
+      );
     });
   });
 
@@ -98,7 +105,9 @@ describe('canvasTileRenderer', () => {
       };
 
       for (let i = 1; i < treeInstructions.length; i++) {
-        expect(getTreeBaseY(treeInstructions[i]!)).toBeGreaterThanOrEqual(getTreeBaseY(treeInstructions[i - 1]!));
+        expect(getTreeBaseY(treeInstructions[i]!)).toBeGreaterThanOrEqual(
+          getTreeBaseY(treeInstructions[i - 1]!)
+        );
       }
     });
 
@@ -112,7 +121,8 @@ describe('canvasTileRenderer', () => {
       );
 
       const urbanPavedTiles = instructions.filter(
-        (inst) => inst.filename === 'poke_road_paved.png' || inst.filename === 'poke_road_asphalt.png'
+        (inst) =>
+          inst.filename === 'poke_road_paved.png' || inst.filename === 'poke_road_asphalt.png'
       );
 
       expect(urbanPavedTiles.length).toBeGreaterThan(0);

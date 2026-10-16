@@ -1,202 +1,213 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { gsap } from 'gsap'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
-import { SHOP_SELLBACK_PRICE_RATIO } from '@/logic/constants/gameplay'
-import type { ItemTier } from '@/types/inventory/items'
+import { ref, computed, watch, onMounted } from 'vue';
+import { gsap } from 'gsap';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
+import { SHOP_SELLBACK_PRICE_RATIO } from '@/logic/constants/gameplay';
+import type { ItemTier } from '@/types/inventory/items';
 
 interface InventoryItem {
-  id: string
-  name: string
-  desc?: string
-  sprite?: string
-  icon?: string
-  qty: number
-  tier?: ItemTier
-  price?: number
+  id: string;
+  name: string;
+  desc?: string;
+  sprite?: string;
+  icon?: string;
+  qty: number;
+  tier?: ItemTier;
+  price?: number;
 }
 
 interface Props {
-  item: InventoryItem
-  isSelected?: boolean
-  multiSelectMode?: boolean
-  sellMode?: boolean
+  item: InventoryItem;
+  isSelected?: boolean;
+  multiSelectMode?: boolean;
+  sellMode?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   multiSelectMode: false,
   sellMode: false
-})
+});
 
 defineEmits<{
-  (e: 'click', event: MouseEvent): void
-}>()
+  (e: 'click', event: MouseEvent): void;
+}>();
 
-const hasError = ref(false)
-const cardRef = ref<HTMLElement | null>(null)
+const hasError = ref(false);
+const cardRef = ref<HTMLElement | null>(null);
 
-watch(() => props.item.sprite, () => {
-  hasError.value = false
-})
+watch(
+  () => props.item.sprite,
+  () => {
+    hasError.value = false;
+  }
+);
 
-const tierClass = computed(() => `tier-${props.item.tier || 'common'}`)
-const sellPrice = computed(() => Math.floor((props.item.price || 0) * SHOP_SELLBACK_PRICE_RATIO).toLocaleString())
-const tierLabel = computed(() => getItemTierLabel(props.item.tier))
+const tierClass = computed(() => `tier-${props.item.tier || 'common'}`);
+const sellPrice = computed(() =>
+  Math.floor((props.item.price || 0) * SHOP_SELLBACK_PRICE_RATIO).toLocaleString()
+);
+const tierLabel = computed(() => getItemTierLabel(props.item.tier));
 
 // Prepend tier label to tooltip description
 const tierTooltipDesc = computed(() => {
-  const tier = `• ${tierLabel.value}`
-  return props.item.desc ? `${tier}\n${props.item.desc}` : tier
-})
+  const tier = `• ${tierLabel.value}`;
+  return props.item.desc ? `${tier}\n${props.item.desc}` : tier;
+});
 
 const itemIcon = computed(() => {
-  if (props.item.sprite) return getAssetUrl(ASSET_TYPES.ITEM, props.item.sprite)
-  return null
-})
+  if (props.item.sprite) return getAssetUrl(ASSET_TYPES.ITEM, props.item.sprite);
+  return null;
+});
 
 const itemFontSize = computed(() => {
-  const name = props.item.name || ''
-  const words = name.split(/\s+/)
-  const maxWordLength = Math.max(...words.map(w => w.length))
-  const totalLength = name.length
-  
-  const divisor = Math.max(maxWordLength, totalLength / 1.7)
-  
-  const minFontSize = 7
-  const maxFontSize = 9.5
-  
-  return `clamp(${minFontSize}px, calc(80cqw / ${divisor}), ${maxFontSize}px)`
-})
+  const name = props.item.name || '';
+  const words = name.split(/\s+/);
+  const maxWordLength = Math.max(...words.map((w) => w.length));
+  const totalLength = name.length;
 
-const tierColor = computed(() => getItemTierColor(props.item.tier))
+  const divisor = Math.max(maxWordLength, totalLength / 1.7);
+
+  const minFontSize = 7;
+  const maxFontSize = 9.5;
+
+  return `clamp(${minFontSize}px, calc(80cqw / ${divisor}), ${maxFontSize}px)`;
+});
+
+const tierColor = computed(() => getItemTierColor(props.item.tier));
 
 // ── WATCHERS FOR SELECTION STATE ─────────────────────────────────────────────
 const getBaseColors = () => {
-  const tier = props.item.tier || 'common'
-  let baseBorderColor = 'rgba(148, 163, 184, 0.45)'
-  let baseBoxShadow = '0 0 10px rgba(148, 163, 184, 0.15), inset 0 0 6px rgba(148, 163, 184, 0.05)'
-  let baseGlow = 'radial-gradient(circle, rgba(148, 163, 184, 0.12) 0%, transparent 70%)'
-  
+  const tier = props.item.tier || 'common';
+  let baseBorderColor = 'rgba(148, 163, 184, 0.45)';
+  let baseBoxShadow = '0 0 10px rgba(148, 163, 184, 0.15), inset 0 0 6px rgba(148, 163, 184, 0.05)';
+  let baseGlow = 'radial-gradient(circle, rgba(148, 163, 184, 0.12) 0%, transparent 70%)';
+
   if (tier === 'rare') {
-    baseBorderColor = 'rgba(59, 130, 246, 0.55)'
-    baseBoxShadow = '0 0 10px rgba(59, 130, 246, 0.2), inset 0 0 6px rgba(59, 130, 246, 0.08)'
-    baseGlow = 'radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, transparent 70%)'
+    baseBorderColor = 'rgba(59, 130, 246, 0.55)';
+    baseBoxShadow = '0 0 10px rgba(59, 130, 246, 0.2), inset 0 0 6px rgba(59, 130, 246, 0.08)';
+    baseGlow = 'radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, transparent 70%)';
   } else if (tier === 'epic') {
-    baseBorderColor = 'rgba(168, 85, 247, 0.55)'
-    baseBoxShadow = '0 0 10px rgba(168, 85, 247, 0.2), inset 0 0 6px rgba(168, 85, 247, 0.08)'
-    baseGlow = 'radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, transparent 70%)'
+    baseBorderColor = 'rgba(168, 85, 247, 0.55)';
+    baseBoxShadow = '0 0 10px rgba(168, 85, 247, 0.2), inset 0 0 6px rgba(168, 85, 247, 0.08)';
+    baseGlow = 'radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, transparent 70%)';
   } else if (tier === 'legend') {
-    baseBorderColor = 'rgba(245, 158, 11, 0.65)'
-    baseBoxShadow = '0 0 12px rgba(245, 158, 11, 0.25), inset 0 0 8px rgba(245, 158, 11, 0.1)'
-    baseGlow = 'radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 70%)'
+    baseBorderColor = 'rgba(245, 158, 11, 0.65)';
+    baseBoxShadow = '0 0 12px rgba(245, 158, 11, 0.25), inset 0 0 8px rgba(245, 158, 11, 0.1)';
+    baseGlow = 'radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 70%)';
   }
-  return { baseBorderColor, baseBoxShadow, baseGlow }
-}
+  return { baseBorderColor, baseBoxShadow, baseGlow };
+};
 
-const CARD_SCALE_SELECTED = 0.98
+const CARD_SCALE_SELECTED = 0.98;
 
-watch(() => props.isSelected, (newVal) => {
-  if (!cardRef.value) return
-  const checkBox = cardRef.value.querySelector('.check-box')
-  
-  if (newVal) {
-    gsap.to(cardRef.value, {
-      scale: CARD_SCALE_SELECTED,
-      y: 0,
-      borderColor: 'var(--blue)',
-      boxShadow: 'inset 0 0 0 4px var(--blue), 0 0 20px Rgba(10, 132, 255, 0.4)',
-      duration: 0.2,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    })
-    if (checkBox) {
-      gsap.to(checkBox, {
-        backgroundColor: 'var(--yellow)',
-        borderColor: 'var(--yellow)',
-        boxShadow: '0 0 10px Rgba(255, 214, 10, 0.5)',
+watch(
+  () => props.isSelected,
+  (newVal) => {
+    if (!cardRef.value) return;
+    const checkBox = cardRef.value.querySelector('.check-box');
+
+    if (newVal) {
+      gsap.to(cardRef.value, {
+        scale: CARD_SCALE_SELECTED,
+        y: 0,
+        borderColor: 'var(--blue)',
+        boxShadow: 'inset 0 0 0 4px var(--blue), 0 0 20px Rgba(10, 132, 255, 0.4)',
         duration: 0.2,
         ease: 'power2.out',
         overwrite: 'auto'
-      })
-    }
-  } else {
-    // Reset to base state
-    const { baseBorderColor, baseBoxShadow } = getBaseColors()
+      });
+      if (checkBox) {
+        gsap.to(checkBox, {
+          backgroundColor: 'var(--yellow)',
+          borderColor: 'var(--yellow)',
+          boxShadow: '0 0 10px Rgba(255, 214, 10, 0.5)',
+          duration: 0.2,
+          ease: 'power2.out',
+          overwrite: 'auto'
+        });
+      }
+    } else {
+      // Reset to base state
+      const { baseBorderColor, baseBoxShadow } = getBaseColors();
 
-    gsap.to(cardRef.value, {
-      y: 0,
-      scale: 1,
-      borderColor: baseBorderColor,
-      boxShadow: baseBoxShadow,
-      duration: 0.2,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    })
-    if (checkBox) {
-      gsap.to(checkBox, {
-        backgroundColor: 'Rgba(0, 0, 0, 0.4)',
-        borderColor: 'Rgba(255, 255, 255, 0.2)',
-        boxShadow: 'none',
+      gsap.to(cardRef.value, {
+        y: 0,
+        scale: 1,
+        borderColor: baseBorderColor,
+        boxShadow: baseBoxShadow,
         duration: 0.2,
         ease: 'power2.out',
         overwrite: 'auto'
-      })
+      });
+      if (checkBox) {
+        gsap.to(checkBox, {
+          backgroundColor: 'Rgba(0, 0, 0, 0.4)',
+          borderColor: 'Rgba(255, 255, 255, 0.2)',
+          boxShadow: 'none',
+          duration: 0.2,
+          ease: 'power2.out',
+          overwrite: 'auto'
+        });
+      }
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+);
 
 onMounted(() => {
   // Apply initial states
   if (cardRef.value) {
-    const { baseBorderColor, baseBoxShadow, baseGlow } = getBaseColors()
-    
+    const { baseBorderColor, baseBoxShadow, baseGlow } = getBaseColors();
+
     if (props.isSelected) {
       gsap.set(cardRef.value, {
         scale: CARD_SCALE_SELECTED,
         borderColor: 'var(--blue)',
         boxShadow: 'inset 0 0 0 4px var(--blue), 0 0 20px rgba(10, 132, 255, 0.4)'
-      })
-      const checkBox = cardRef.value.querySelector('.check-box')
+      });
+      const checkBox = cardRef.value.querySelector('.check-box');
       if (checkBox) {
         gsap.set(checkBox, {
           backgroundColor: 'var(--yellow)',
           borderColor: 'var(--yellow)',
           boxShadow: '0 0 10px rgba(255, 214, 10, 0.5)'
-        })
+        });
       }
     } else {
       // Set precise initial style for the tier to prevent unstyled flash before hover
       gsap.set(cardRef.value, {
         borderColor: baseBorderColor,
         boxShadow: baseBoxShadow
-      })
-      const glow = cardRef.value.querySelector('.item-bg-glow')
+      });
+      const glow = cardRef.value.querySelector('.item-bg-glow');
       if (glow) {
         gsap.set(glow, {
           backgroundImage: baseGlow,
           scale: 0.8,
           opacity: 0.7
-        })
+        });
       }
     }
   }
-})
+});
 </script>
 
 <template>
-  <div 
+  <div
     :id="`inventory-item-${item.id}`"
     ref="cardRef"
     class="inventory-item-card"
-    :class="{ 
+    :class="{
       selected: isSelected,
       'multi-mode': multiSelectMode,
       [tierClass]: true
     }"
     :style="{ '--tier-color': tierColor }"
+    role="button"
+    tabindex="0"
     @click.stop="$emit('click', $event)"
   >
     <PVTooltip
@@ -215,14 +226,10 @@ onMounted(() => {
           :alt="item.name"
           class="item-sprite"
           width="32"
-        
           height="32"
           @error="hasError = true"
-        >
-        <span
-          v-else
-          class="fallback-icon"
-        ><span class="emoji">🚫</span></span>
+        />
+        <span v-else class="fallback-icon"><span class="emoji">🚫</span></span>
 
         <!-- QUANTITY PILL -->
         <div class="quantity-pill">
@@ -232,31 +239,19 @@ onMounted(() => {
       </div>
 
       <!-- ITEM NAME -->
-      <div 
-        class="item-footer"
-        :style="{ fontSize: itemFontSize }"
-      >
+      <div class="item-footer" :style="{ fontSize: itemFontSize }">
         <span class="item-name">{{ item.name }}</span>
       </div>
 
       <!-- SELL PRICE FLOATING PILL -->
-      <div
-        v-if="sellMode"
-        class="sell-price-pill"
-      >
+      <div v-if="sellMode" class="sell-price-pill">
         <span class="pill-icon">₱</span>
         <span class="pill-amount">{{ sellPrice }}</span>
       </div>
 
       <!-- SELECTION INDICATOR -->
-      <div
-        v-if="multiSelectMode"
-        class="selection-check"
-      >
-        <div
-          class="check-box"
-          :class="{ checked: isSelected }"
-        >
+      <div v-if="multiSelectMode" class="selection-check">
+        <div class="check-box" :class="{ checked: isSelected }">
           <svg
             v-if="isSelected"
             viewBox="0 0 24 24"
@@ -276,7 +271,7 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .inventory-item-card {
   @include card-premium(16px);
@@ -315,12 +310,14 @@ onMounted(() => {
     inset: 0;
     pointer-events: none;
   }
-  
+
   // TIER VARIANTS — borders always visible, no badge needed
   &.tier-common {
     border-color: Rgb(148 163 184 / 45%);
     box-shadow: var(--shadow-glow-amber);
-    .item-bg-glow { background: Radial-Gradient(circle, Rgb(148 163 184 / 12%) 0%, transparent 70%); }
+    .item-bg-glow {
+      background: Radial-Gradient(circle, Rgb(148 163 184 / 12%) 0%, transparent 70%);
+    }
   }
 
   .item-visual-wrap {
@@ -368,7 +365,7 @@ onMounted(() => {
       align-items: center;
       gap: $spacing-2xs;
       min-width: clamp(28px, 32cqw, 36px);
-      height: clamp(14px, 16cqw, 18px); 
+      height: clamp(14px, 16cqw, 18px);
       padding: clamp(1px, 2cqw, 2px) clamp(4px, 6cqw, 8px);
       border: 1px solid var(--yellow);
       border-radius: $radius-md;

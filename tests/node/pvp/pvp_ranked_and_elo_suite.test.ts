@@ -9,13 +9,13 @@
  * 5. Personal Match History: Append, LIFO ordering, MAX cap (20 items), duplicate avoidance.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   calculateExpectedScore,
   calculateEloDelta,
   applyEloDelta,
   calculateSoftResetElo,
-  MIN_INITIAL_ELO,
+  MIN_INITIAL_ELO
 } from '@/logic/pvp/eloRatingMath.ts';
 import {
   getEloTier,
@@ -23,11 +23,11 @@ import {
   validateTeamForRanked,
   normalizeRankedRules,
   RANKED_TIERS,
-  getSeasonalPrizesForTier,
+  getSeasonalPrizesForTier
 } from '@/logic/pvp/rankedEngine.ts';
 import {
   checkAndResolveSeasonEnd,
-  calculateEloSoftReset,
+  calculateEloSoftReset
 } from '@/logic/pvp/rankedSeasonRewardEngine.ts';
 import {
   SEASONAL_THEME_IDS,
@@ -37,7 +37,7 @@ import {
   getSeasonalThemeForMonth,
   getSeasonalThemeConfig,
   isSeasonalThemeId,
-  requireSeasonalThemeId,
+  requireSeasonalThemeId
 } from '@/data/system/rankedData.ts';
 import {
   isBattleCode,
@@ -45,7 +45,7 @@ import {
   type BattleCode,
   appendPersonalMatchHistory,
   MAX_PERSONAL_MATCH_HISTORY,
-  type PersonalPvPMatchSummary,
+  type PersonalPvPMatchSummary
 } from '@/types/battle/pvp.ts';
 import { INITIAL_STATE } from '@/stores/gameInitialState.ts';
 import type { GameState } from '@/types/system/game.ts';
@@ -166,7 +166,20 @@ describe('PvP Ranked & Elo Suite', () => {
 
       it('validates a compliant team', () => {
         const team: Pokemon[] = [
-          { id: 'pikachu', name: 'Pikachu', level: 50, type: 'electric', hp: 100, maxHp: 100, atk: 50, def: 50, spa: 50, spd: 50, spe: 50, moves: [] } as unknown as Pokemon
+          {
+            id: 'pikachu',
+            name: 'Pikachu',
+            level: 50,
+            type: 'electric',
+            hp: 100,
+            maxHp: 100,
+            atk: 50,
+            def: 50,
+            spa: 50,
+            spd: 50,
+            spe: 50,
+            moves: []
+          } as unknown as Pokemon
         ];
         const result = validateTeamForRanked(team, rules);
         expect(result.ok).toBe(true);
@@ -174,7 +187,18 @@ describe('PvP Ranked & Elo Suite', () => {
 
       it('rejects a team exceeding maxPokemon', () => {
         const team = new Array(7).fill(null).map((_, i) => ({
-          id: 'pikachu', name: `Pika${i}`, level: 50, type: 'electric', hp: 100, maxHp: 100, atk: 50, def: 50, spa: 50, spd: 50, spe: 50, moves: []
+          id: 'pikachu',
+          name: `Pika${i}`,
+          level: 50,
+          type: 'electric',
+          hp: 100,
+          maxHp: 100,
+          atk: 50,
+          def: 50,
+          spa: 50,
+          spd: 50,
+          spe: 50,
+          moves: []
         })) as unknown as Pokemon[];
 
         const result = validateTeamForRanked(team, rules);
@@ -184,7 +208,20 @@ describe('PvP Ranked & Elo Suite', () => {
 
       it('rejects a team with a banned pokemon', () => {
         const team: Pokemon[] = [
-          { id: 'mewtwo', name: 'Mewtwo', level: 50, type: 'psychic', hp: 100, maxHp: 100, atk: 50, def: 50, spa: 50, spd: 50, spe: 50, moves: [] } as unknown as Pokemon
+          {
+            id: 'mewtwo',
+            name: 'Mewtwo',
+            level: 50,
+            type: 'psychic',
+            hp: 100,
+            maxHp: 100,
+            atk: 50,
+            def: 50,
+            spa: 50,
+            spd: 50,
+            spe: 50,
+            moves: []
+          } as unknown as Pokemon
         ];
         const result = validateTeamForRanked(team, rules);
         expect(result.ok).toBe(false);
@@ -193,7 +230,20 @@ describe('PvP Ranked & Elo Suite', () => {
 
       it('rejects a pokemon exceeding levelCap', () => {
         const team: Pokemon[] = [
-          { id: 'pikachu', name: 'Pikachu', level: 55, type: 'electric', hp: 100, maxHp: 100, atk: 50, def: 50, spa: 50, spd: 50, spe: 50, moves: [] } as unknown as Pokemon
+          {
+            id: 'pikachu',
+            name: 'Pikachu',
+            level: 55,
+            type: 'electric',
+            hp: 100,
+            maxHp: 100,
+            atk: 50,
+            def: 50,
+            spa: 50,
+            spd: 50,
+            spe: 50,
+            moves: []
+          } as unknown as Pokemon
         ];
         const result = validateTeamForRanked(team, rules);
         expect(result.ok).toBe(false);
@@ -223,7 +273,7 @@ describe('PvP Ranked & Elo Suite', () => {
         expect(SEASONAL_ANNUAL_THEMES).toHaveLength(12);
         expect(SEASONAL_THEME_IDS).toHaveLength(12);
 
-        const months = SEASONAL_ANNUAL_THEMES.map(t => t.monthIndex);
+        const months = SEASONAL_ANNUAL_THEMES.map((t) => t.monthIndex);
         expect(months).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
       });
 
@@ -273,11 +323,19 @@ describe('PvP Ranked & Elo Suite', () => {
       });
 
       it('binds emblematic theme species correctly', () => {
-        expect(getSeasonalThemeConfig('kanto_classic').rewardPokemon.diamante.species).toBe('squirtle');
-        expect(getSeasonalThemeConfig('kanto_classic').rewardPokemon.maestro.species).toBe('blastoise');
-        expect(getSeasonalThemeConfig('halloween_spook').rewardPokemon.maestro.species).toBe('gengar');
+        expect(getSeasonalThemeConfig('kanto_classic').rewardPokemon.diamante.species).toBe(
+          'squirtle'
+        );
+        expect(getSeasonalThemeConfig('kanto_classic').rewardPokemon.maestro.species).toBe(
+          'blastoise'
+        );
+        expect(getSeasonalThemeConfig('halloween_spook').rewardPokemon.maestro.species).toBe(
+          'gengar'
+        );
         expect(getSeasonalThemeConfig('little_cup').rewardPokemon.diamante.species).toBe('pichu');
-        expect(getSeasonalThemeConfig('titan_clash').rewardPokemon.diamante.species).toBe('dratini');
+        expect(getSeasonalThemeConfig('titan_clash').rewardPokemon.diamante.species).toBe(
+          'dratini'
+        );
       });
     });
 
@@ -340,7 +398,7 @@ describe('PvP Ranked & Elo Suite', () => {
       expect(result.rewardPokemon?.isShiny).toBe(true);
 
       const ivValues = Object.values(result.rewardPokemon?.ivs || {});
-      const maxIvsCount = ivValues.filter(v => v === 31).length;
+      const maxIvsCount = ivValues.filter((v) => v === 31).length;
       expect(maxIvsCount).toBeGreaterThanOrEqual(3);
 
       expect(state.eloRating).toBe(1925);
@@ -366,7 +424,7 @@ describe('PvP Ranked & Elo Suite', () => {
       expect(result.rewardPokemon?.isShiny).toBe(true);
 
       const ivValues = Object.values(result.rewardPokemon?.ivs || {});
-      const maxIvsCount = ivValues.filter(v => v === 31).length;
+      const maxIvsCount = ivValues.filter((v) => v === 31).length;
       expect(maxIvsCount).toBeGreaterThanOrEqual(4);
 
       expect(state.eloRating).toBe(2250);
@@ -374,7 +432,10 @@ describe('PvP Ranked & Elo Suite', () => {
   });
 
   describe('Personal Match History Logic', () => {
-    const createMockMatch = (idx: number, result: 'victory' | 'defeat' = 'victory'): PersonalPvPMatchSummary => ({
+    const createMockMatch = (
+      idx: number,
+      result: 'victory' | 'defeat' = 'victory'
+    ): PersonalPvPMatchSummary => ({
       id: `match_${idx}`,
       battleCode: requireBattleCode(`BTL-TEST-${String(idx).padStart(3, '0')}`),
       opponentId: `opp_${idx}`,

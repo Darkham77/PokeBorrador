@@ -20,17 +20,11 @@ const emit = defineEmits<{
     <div class="title-wrap">
       <h3>Misiones Diarias</h3>
     </div>
-    <div
-      v-if="!props.hideRefresh"
-      class="missions-header-actions"
-    >
-      <span
-        class="refresh-count"
-        title="Refrescos disponibles"
-      >
+    <div v-if="!props.hideRefresh" class="missions-header-actions">
+      <span class="refresh-count" title="Refrescos disponibles">
         <span class="refresh-label">Refrescos: </span>{{ props.refreshCount }}/3
       </span>
-      <HomeWidgetRefreshBtn 
+      <HomeWidgetRefreshBtn
         id="missions-refresh-btn"
         :disabled="props.refreshCount <= 0"
         @click.stop="emit('refresh')"
@@ -40,7 +34,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .missions-header {
   display: flex;
@@ -53,14 +47,14 @@ const emit = defineEmits<{
     min-width: 0;
   }
 
-  h3 { 
-    @include pixelated; 
+  h3 {
+    @include pixelated;
 
-    margin: 0; 
-    color: var(--yellow, #facc15); 
-    font-size: var(--font-10); 
-    font-weight: 800; 
-    overflow-wrap: break-word; 
+    margin: 0;
+    color: var(--yellow, #facc15);
+    font-size: var(--font-10);
+    font-weight: 800;
+    overflow-wrap: break-word;
   }
 
   .missions-header-actions {
@@ -69,14 +63,14 @@ const emit = defineEmits<{
     gap: $spacing-sm;
     flex-shrink: 0;
 
-    .refresh-count { 
+    .refresh-count {
       @include pixelated;
 
       padding: 3px 8px;
       border: 1px solid Rgb(255 255 255 / 8%);
       border-radius: $radius-md;
-      background: Rgb(255 255 255 / 5%); 
-      color: var(--gray, var(--slate-400)); 
+      background: Rgb(255 255 255 / 5%);
+      color: var(--gray, var(--slate-400));
       font-size: var(--font-10);
       white-space: nowrap;
 

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import type { PokemonGender } from '@/types/pokemon/pokemon'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import type { PokemonGender } from '@/types/pokemon/pokemon';
 
 interface Props {
-  spriteUrl?: string
-  isShiny?: boolean
-  isGuardian?: boolean
-  gender?: PokemonGender
+  spriteUrl?: string;
+  isShiny?: boolean;
+  isGuardian?: boolean;
+  gender?: PokemonGender;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -16,28 +16,25 @@ withDefaults(defineProps<Props>(), {
   isShiny: false,
   isGuardian: false,
   gender: 'm'
-})
+});
 
 const emit = defineEmits<{
-  (e: 'toggleShiny'): void
-  (e: 'toggleGuardian'): void
-  (e: 'toggleGender'): void
-}>()
+  (e: 'toggleShiny'): void;
+  (e: 'toggleGuardian'): void;
+  (e: 'toggleGender'): void;
+}>();
 </script>
 
 <template>
   <div class="preview-box">
-    <PVSpriteFX
-      :is-shiny="isShiny"
-      :is-guardian="isGuardian"
-    >
+    <PVSpriteFX :is-shiny="isShiny" :is-guardian="isGuardian">
       <img
-        :src="spriteUrl" 
+        :src="spriteUrl"
         :alt="isShiny ? 'Pokémon Shiny' : 'Pokémon'"
         class="preview-sprite"
         width="96"
         height="96"
-      >
+      />
     </PVSpriteFX>
 
     <div class="preview-flags">
@@ -62,25 +59,21 @@ const emit = defineEmits<{
           id="pokemon-preview-btn-1"
           class="flag-btn guardian"
           :class="{ active: isGuardian }"
+          aria-label="Marcar como guardián"
           @click.stop="emit('toggleGuardian')"
         >
           <span class="emoji">🛡️</span>
         </button>
       </PVTooltip>
-      <PVTooltip
-        title="Género"
-        description="Cambia entre macho y hembra."
-      >
+      <PVTooltip title="Género" description="Cambia entre macho y hembra.">
         <button
           id="pokemon-preview-btn-2"
           class="flag-btn gender"
           :class="[gender === 'm' ? 'male' : 'female']"
+          aria-label="Cambiar género"
           @click.stop="emit('toggleGender')"
         >
-          <PVGenderBadge
-            :gender="gender"
-            size="sm"
-          />
+          <PVGenderBadge :gender="gender" size="sm" />
         </button>
       </PVTooltip>
     </div>
@@ -105,7 +98,7 @@ const emit = defineEmits<{
 
     height: 120px;
     will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 10px Rgb(0 0 0 / 50%));
+    filter: Drop-Shadow(0 0 10px Rgb(0 0 0 / 50%));
   }
 
   .preview-flags {
@@ -122,13 +115,21 @@ const emit = defineEmits<{
       border-radius: $radius-lg;
       background: Rgb(255 255 255 / 5%);
       cursor: pointer;
-      
 
-      &:hover { background: Rgb(255 255 255 / 10%); }
-      &.active { background: Rgb(124 58 237 / 10%); border-color: var(--vicio-primary); }
-      
-      &.male { color: $gender-male; }
-      &.female { color: $gender-female; }
+      &:hover {
+        background: Rgb(255 255 255 / 10%);
+      }
+      &.active {
+        background: Rgb(124 58 237 / 10%);
+        border-color: var(--vicio-primary);
+      }
+
+      &.male {
+        color: $gender-male;
+      }
+      &.female {
+        color: $gender-female;
+      }
     }
   }
 }

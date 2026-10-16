@@ -7,7 +7,7 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 import BattleInfoCard from '@/components/battle/BattleInfoCard.vue';
@@ -44,7 +44,13 @@ vi.mock('@/logic/utils/timeUtils', () => ({
 vi.mock('@/logic/weather/weatherRegistry', () => ({
   getMechanicalWeather: vi.fn(() => 'clear'),
   WEATHER_MECHANICAL: {
-    SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', CLEAR: 'clear'
+    SUN: 'sun',
+    RAIN: 'rain',
+    SANDSTORM: 'sandstorm',
+    SNOW: 'snow',
+    HAIL: 'hail',
+    FOG: 'fog',
+    CLEAR: 'clear'
   },
   WEATHER_UI_METADATA: {},
   WEATHER_VISUAL_METADATA: {}
@@ -85,14 +91,14 @@ describe('BattleInfoCard - Ability Tooltips', () => {
     });
 
     const badges = wrapper.findAll('.m-status-tag');
-    const abilityBadge = badges.find(b => b.text().includes('🧠'));
-    
+    const abilityBadge = badges.find((b) => b.text().includes('🧠'));
+
     expect(abilityBadge).toBeDefined();
-    
+
     const vm = wrapper.vm as unknown as BattleInfoCardInstance;
     const vs = vm.volatileStatuses;
-    const abilityStatus = vs.find(s => s.icon === '🧠');
-    
+    const abilityStatus = vs.find((s) => s.icon === '🧠');
+
     expect(abilityStatus).toBeDefined();
     expect(abilityStatus!.text).toContain('HABILIDAD - PUNTO TÓXICO:');
     expect(abilityStatus!.text).toContain('• El contacto físico puede envenenar al rival (30%).');
@@ -108,8 +114,8 @@ describe('BattleInfoCard - Ability Tooltips', () => {
 
     const vm = wrapper.vm as unknown as BattleInfoCardInstance;
     const vs = vm.volatileStatuses;
-    const abilityStatus = vs.find(s => s.icon === '🧠');
-    
+    const abilityStatus = vs.find((s) => s.icon === '🧠');
+
     expect(abilityStatus).toBeDefined();
     expect(abilityStatus!.text).toContain('HABILIDAD - PUNTO TÓXICO:');
     expect(abilityStatus!.text).toContain('• El contacto físico puede envenenar al rival (30%).');
@@ -125,8 +131,8 @@ describe('BattleInfoCard - Ability Tooltips', () => {
 
     const vm = wrapper.vm as unknown as BattleInfoCardInstance;
     const vs = vm.volatileStatuses;
-    const abilityStatus = vs.find(s => s.icon === '🧠');
-    
+    const abilityStatus = vs.find((s) => s.icon === '🧠');
+
     expect(abilityStatus).toBeDefined();
     expect(abilityStatus!.text).toContain('Sin descripción disponible');
   });

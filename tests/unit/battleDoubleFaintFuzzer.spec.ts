@@ -1,16 +1,16 @@
-import { describe, it, expect, vi } from 'vitest'
-import type { BattleContext } from '@/types/battle/battleContext'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { resolvePostTurnSwitchesAndFaints } from '@/logic/battle/helpers/turnActionResolver'
-import { processPlayerFaintSequence } from '@/logic/battle/battleFaintSequence'
+import { describe, it, expect, vi } from 'vite-plus/test';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { resolvePostTurnSwitchesAndFaints } from '@/logic/battle/helpers/turnActionResolver';
+import { processPlayerFaintSequence } from '@/logic/battle/battleFaintSequence';
 
 describe('battleDoubleFaintFuzzer (Perish Song / Double KO Resolution)', () => {
   it('calls handleFaint for enemy as well when both player and enemy faint simultaneously', async () => {
-    const handleFaint = vi.fn(async (_side: string) => {})
+    const handleFaint = vi.fn(async (_side: string) => {});
     const fsm = {
       currentState: { value: 'ACTIVE_BATTLE' },
       transition: vi.fn(async () => {})
-    }
+    };
 
     const playerMon: Pokemon = {
       id: 'articuno',
@@ -21,7 +21,7 @@ describe('battleDoubleFaintFuzzer (Perish Song / Double KO Resolution)', () => {
       level: 59,
       fainted: true,
       moves: []
-    } as unknown as Pokemon
+    } as unknown as Pokemon;
 
     const enemyMon: Pokemon = {
       id: 'lapras',
@@ -32,7 +32,7 @@ describe('battleDoubleFaintFuzzer (Perish Song / Double KO Resolution)', () => {
       level: 50,
       fainted: true,
       moves: []
-    } as unknown as Pokemon
+    } as unknown as Pokemon;
 
     const healthyBenchMon: Pokemon = {
       id: 'mewtwo',
@@ -43,7 +43,7 @@ describe('battleDoubleFaintFuzzer (Perish Song / Double KO Resolution)', () => {
       level: 63,
       fainted: false,
       moves: []
-    } as unknown as Pokemon
+    } as unknown as Pokemon;
 
     const store = {
       activeBattle: {
@@ -64,23 +64,23 @@ describe('battleDoubleFaintFuzzer (Perish Song / Double KO Resolution)', () => {
         ENEMY_REPLACEMENT_SEQ: 'ENEMY_REPLACEMENT_SEQ'
       },
       handleFaint
-    } as unknown as BattleContext
+    } as unknown as BattleContext;
 
-    await resolvePostTurnSwitchesAndFaints(store, { isOver: true })
+    await resolvePostTurnSwitchesAndFaints(store, { isOver: true });
 
-    expect(handleFaint).toHaveBeenCalledWith('player')
-    expect(handleFaint).toHaveBeenCalledWith('enemy')
-  })
+    expect(handleFaint).toHaveBeenCalledWith('player');
+    expect(handleFaint).toHaveBeenCalledWith('enemy');
+  });
 
   it('triggers terminateBattle when player faints but wild enemy is also down, even if active.over was already true', async () => {
-    const terminateBattle = vi.fn(async () => {})
-    const transitions: string[] = []
+    const terminateBattle = vi.fn(async () => {});
+    const transitions: string[] = [];
     const fsm = {
       currentState: { value: 'ACTIVE_BATTLE' },
       transition: vi.fn(async (state: string, substate?: string) => {
-        transitions.push(`${state}:${substate || ''}`)
+        transitions.push(`${state}:${substate || ''}`);
       })
-    }
+    };
 
     const playerMon: Pokemon = {
       id: 'articuno',
@@ -91,7 +91,7 @@ describe('battleDoubleFaintFuzzer (Perish Song / Double KO Resolution)', () => {
       level: 59,
       fainted: true,
       moves: []
-    } as unknown as Pokemon
+    } as unknown as Pokemon;
 
     const enemyMon: Pokemon = {
       id: 'lapras',
@@ -102,7 +102,7 @@ describe('battleDoubleFaintFuzzer (Perish Song / Double KO Resolution)', () => {
       level: 50,
       fainted: true,
       moves: []
-    } as unknown as Pokemon
+    } as unknown as Pokemon;
 
     const healthyBenchMon: Pokemon = {
       id: 'mewtwo',
@@ -113,7 +113,7 @@ describe('battleDoubleFaintFuzzer (Perish Song / Double KO Resolution)', () => {
       level: 63,
       fainted: false,
       moves: []
-    } as unknown as Pokemon
+    } as unknown as Pokemon;
 
     const ctx = {
       activeBattle: {
@@ -156,10 +156,10 @@ describe('battleDoubleFaintFuzzer (Perish Song / Double KO Resolution)', () => {
         HAS_HEALTHY: 'HAS_HEALTHY',
         SWITCH_MENU: 'SWITCH_MENU'
       }
-    } as unknown as BattleContext
+    } as unknown as BattleContext;
 
-    await processPlayerFaintSequence(ctx, playerMon, { terminateBattle })
+    await processPlayerFaintSequence(ctx, playerMon, { terminateBattle });
 
-    expect(terminateBattle).toHaveBeenCalledWith(ctx, true)
-  })
-})
+    expect(terminateBattle).toHaveBeenCalledWith(ctx, true);
+  });
+});

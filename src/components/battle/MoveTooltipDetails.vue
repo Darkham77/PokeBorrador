@@ -1,42 +1,33 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip'
-import type { PokemonMoveId } from '@/data/battle/moves'
-import {
-  resolveSpeedMatchup,
-  resolveTacticalRows
-} from './moveTooltipDetailsHelper.ts'
+import { computed } from 'vue';
+import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip';
+import type { PokemonMoveId } from '@/data/battle/moves';
+import { resolveSpeedMatchup, resolveTacticalRows } from './moveTooltipDetailsHelper.ts';
 
 const props = defineProps<{
-  activeDetails: ActiveMoveDetails
-  moveId?: PokemonMoveId
-}>()
+  activeDetails: ActiveMoveDetails;
+  moveId?: PokemonMoveId;
+}>();
 
-const speedMatchup = computed(() => resolveSpeedMatchup(props.activeDetails.speedInfo))
-const tacticalRows = computed(() => resolveTacticalRows(props.activeDetails.tacticalInfo, props.moveId))
+const speedMatchup = computed(() => resolveSpeedMatchup(props.activeDetails.speedInfo));
+const tacticalRows = computed(() =>
+  resolveTacticalRows(props.activeDetails.tacticalInfo, props.moveId)
+);
 </script>
 
 <template>
   <div class="move-tooltip-details-extra">
     <!-- Speed Matchup Section -->
-    <div
-      v-if="speedMatchup"
-      class="extra-effect-section speed-section"
-    >
-      <div class="calc-section-title">
-        ORDEN DE TURNO
-      </div>
+    <div v-if="speedMatchup" class="extra-effect-section speed-section">
+      <div class="calc-section-title">ORDEN DE TURNO</div>
       <div class="extra-effect-row">
         <span class="emoji">{{ speedMatchup.emoji }}</span>
-        <span
-          class="extra-effect-text"
-          :class="speedMatchup.boosted ? 'boosted' : 'penalized'"
-        >
+        <span class="extra-effect-text" :class="speedMatchup.boosted ? 'boosted' : 'penalized'">
           {{ speedMatchup.text }}
         </span>
         <span
           class="speed-values"
-          style="color: rgb(255 255 255 / 40%); font-size: var(--font-7); margin-left: 2px;"
+          style="color: rgb(255 255 255 / 40%); font-size: var(--font-7); margin-left: 2px"
         >
           ({{ speedMatchup.attackerSpeed }} vs {{ speedMatchup.defenderSpeed }} Vel)
         </span>
@@ -44,32 +35,22 @@ const tacticalRows = computed(() => resolveTacticalRows(props.activeDetails.tact
     </div>
 
     <!-- Special Mechanics & Weights Section -->
-    <div
-      v-if="tacticalRows.length > 0"
-      class="extra-effect-section mechanics-section"
-    >
-      <div class="calc-section-title">
-        PROPIEDADES ESPECIALES
-      </div>
+    <div v-if="tacticalRows.length > 0" class="extra-effect-section mechanics-section">
+      <div class="calc-section-title">PROPIEDADES ESPECIALES</div>
 
-      <div
-        v-for="(row, idx) in tacticalRows"
-        :key="idx"
-        class="field-condition-row"
-      >
+      <div v-for="(row, idx) in tacticalRows" :key="idx" class="field-condition-row">
         <span class="emoji">{{ row.emoji }}</span>
-        <span
-          class="field-condition-text"
-          :class="{ penalized: row.penalized }"
-        >{{ row.text }}</span>
+        <span class="field-condition-text" :class="{ penalized: row.penalized }">{{
+          row.text
+        }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/_move-tooltip-shared.scss" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/_move-tooltip-shared.scss' as *;
 
 .move-tooltip-details-extra {
   display: flex;

@@ -1,6 +1,6 @@
 /**
  * scripts/auditors/assets/validate_sprites.ts
- * 
+ *
  * SPRITE INTEGRITY VALIDATOR (Node.js 26+ Native)
  * Scans all 9 generations of Pokémon species to verify their sprite assets exist.
  */
@@ -8,7 +8,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 import { Dex } from '@pkmn/sim';
 
 enableCompileCache();
@@ -26,9 +26,7 @@ const SPECIAL_FORMS = [
 
 export type SpriteRuleId = 'sprite-missing-asset';
 
-export const SPRITE_RULES: readonly SpriteRuleId[] = [
-  'sprite-missing-asset'
-] as const;
+export const SPRITE_RULES: readonly SpriteRuleId[] = ['sprite-missing-asset'] as const;
 
 function buildSpritePaths(num: string): Record<string, string> {
   const match = num.match(/^(\d+)(.*)$/);
@@ -39,10 +37,22 @@ function buildSpritePaths(num: string): Record<string, string> {
   return {
     staticFront: path.join(STATIC_SPRITES_DIR, `${num}.webp`),
     staticFrontShiny: path.join(STATIC_SPRITES_DIR, `shiny/${num}.webp`),
-    animatedFront: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Front/${animFilename}`),
-    animatedBack: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Back/${animFilename}`),
-    animatedFrontShiny: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Front shiny/${animFilename}`),
-    animatedBackShiny: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Back shiny/${animFilename}`)
+    animatedFront: path.join(
+      process.cwd(),
+      `public/assets/sprites/pokemon/animated/Front/${animFilename}`
+    ),
+    animatedBack: path.join(
+      process.cwd(),
+      `public/assets/sprites/pokemon/animated/Back/${animFilename}`
+    ),
+    animatedFrontShiny: path.join(
+      process.cwd(),
+      `public/assets/sprites/pokemon/animated/Front shiny/${animFilename}`
+    ),
+    animatedBackShiny: path.join(
+      process.cwd(),
+      `public/assets/sprites/pokemon/animated/Back shiny/${animFilename}`
+    )
   };
 }
 
@@ -51,7 +61,8 @@ async function checkPathsExist(paths: Record<string, string>): Promise<string[]>
   for (const [key, filePath] of Object.entries(paths)) {
     try {
       await fs.access(filePath);
-    } catch { // catch-ok: file does not exist
+    } catch {
+      // catch-ok: file does not exist
       missing.push(key);
     }
   }
@@ -132,7 +143,8 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
         'sprite-missing-asset': 'Sprite no encontrado en Pokémon'
       },
       ruleRemediations: {
-        'sprite-missing-asset': 'Add required front/back/shiny sprites in public/assets/sprites/pokemon'
+        'sprite-missing-asset':
+          'Add required front/back/shiny sprites in public/assets/sprites/pokemon'
       },
       requiredFiles: [STATIC_SPRITES_DIR],
       coverage: {
@@ -159,6 +171,10 @@ export class SpriteAuditor extends BaseAuditor<SpriteRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new SpriteAuditor());
 }

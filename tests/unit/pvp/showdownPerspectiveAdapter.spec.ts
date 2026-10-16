@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { ShowdownPerspectiveAdapter } from '@/logic/battle/helpers/showdownPerspectiveAdapter';
 import type { ShowdownPlayerRequest } from '@/types/battle/battle';
 
@@ -22,7 +22,9 @@ describe('ShowdownPerspectiveAdapter', () => {
 
     it('inverts doubles seats between p1b and p2b', () => {
       const line = '|move|p1b: Raichu|Thunderbolt|p2b: Gyarados';
-      expect(ShowdownPerspectiveAdapter.invertLine(line)).toBe('|move|p2b: Raichu|Thunderbolt|p1b: Gyarados');
+      expect(ShowdownPerspectiveAdapter.invertLine(line)).toBe(
+        '|move|p2b: Raichu|Thunderbolt|p1b: Gyarados'
+      );
     });
   });
 
@@ -41,8 +43,20 @@ describe('ShowdownPerspectiveAdapter', () => {
         forceSwitch: [false],
         side: {
           pokemon: [
-            { ident: 'p2: Raichu', details: 'Raichu, L50, M', condition: '100/100', active: true, uid: 'uid-1' },
-            { ident: 'p2: Snorlax', details: 'Snorlax, L50, M', condition: '100/100', active: false, uid: 'uid-2' }
+            {
+              ident: 'p2: Raichu',
+              details: 'Raichu, L50, M',
+              condition: '100/100',
+              active: true,
+              uid: 'uid-1'
+            },
+            {
+              ident: 'p2: Snorlax',
+              details: 'Snorlax, L50, M',
+              condition: '100/100',
+              active: false,
+              uid: 'uid-2'
+            }
           ]
         }
       };

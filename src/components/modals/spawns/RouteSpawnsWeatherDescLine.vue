@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/modals/spawns/RouteSpawnsWeatherDescLine.vue
- * 
+ *
  * Subcomponent rendering a single line of combat weather effect with inline type tags.
  */
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
@@ -27,10 +27,7 @@ defineProps<{
 
 <template>
   <div :class="['weather-desc-line', line.typeClass]">
-    <div
-      v-if="line.label"
-      class="desc-line-label"
-    >
+    <div v-if="line.label" class="desc-line-label">
       <span class="emoji desc-line-icon">
         {{ line.icon === 'block' ? '🚫 ' : line.icon }}
       </span>
@@ -38,10 +35,7 @@ defineProps<{
     </div>
 
     <div :class="[line.label ? 'desc-line-value' : 'desc-line-full']">
-      <template
-        v-for="(segment, idx) in line.segments"
-        :key="idx"
-      >
+      <template v-for="(segment, idx) in line.segments" :key="idx">
         <PokemonTypeTag
           v-if="segment.isType"
           :type="toPokemonType(segment.type)"

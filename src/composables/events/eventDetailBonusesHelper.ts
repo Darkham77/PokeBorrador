@@ -26,11 +26,31 @@ interface CoreBonusDef {
 const CORE_BONUS_DEFS: readonly CoreBonusDef[] = [
   { key: 'expMult', label: '⭐ EXP ganada en cada combate', color: 'rgba(74, 222, 128, 1)' },
   { key: 'moneyMult', label: '💰 Dinero ganado por victoria', color: 'rgba(250, 204, 21, 1)' },
-  { key: 'bcMult', label: '🪙 Battle Coins por victoria en combate', color: 'rgba(96, 165, 250, 1)' },
-  { key: 'catchRateMult', label: '🔴 Mayor probabilidad de captura con cualquier Pokéball', color: 'rgba(244, 114, 182, 1)' },
-  { key: 'shinyMult', label: '✨ Más chances de encontrar Pokémon Variocolor (Shiny)', color: 'rgba(244, 114, 182, 1)' },
-  { key: 'eggShinyMult', label: '🥚 Más chances de que los Huevos eclosionen en Shiny', color: 'rgba(244, 114, 182, 1)' },
-  { key: 'hatchMult', label: '🏃 Los Huevos eclosionan más rápido (menos pasos)', color: 'rgba(56, 189, 248, 1)' }
+  {
+    key: 'bcMult',
+    label: '🪙 Battle Coins por victoria en combate',
+    color: 'rgba(96, 165, 250, 1)'
+  },
+  {
+    key: 'catchRateMult',
+    label: '🔴 Mayor probabilidad de captura con cualquier Pokéball',
+    color: 'rgba(244, 114, 182, 1)'
+  },
+  {
+    key: 'shinyMult',
+    label: '✨ Más chances de encontrar Pokémon Variocolor (Shiny)',
+    color: 'rgba(244, 114, 182, 1)'
+  },
+  {
+    key: 'eggShinyMult',
+    label: '🥚 Más chances de que los Huevos eclosionen en Shiny',
+    color: 'rgba(244, 114, 182, 1)'
+  },
+  {
+    key: 'hatchMult',
+    label: '🏃 Los Huevos eclosionan más rápido (menos pasos)',
+    color: 'rgba(56, 189, 248, 1)'
+  }
 ];
 
 export function buildCoreBonuses(c: ExtendedEventConfig): BonusItem[] {
@@ -69,9 +89,24 @@ interface ActivityBonusDef {
 }
 
 const ACTIVITY_BONUS_DEFS: readonly ActivityBonusDef[] = [
-  { key: 'fishingMult', minigameKey: 'fishing', label: '🎣 Pesca: Mayor frecuencia de encuentros y capturas', color: 'rgba(56, 189, 248, 1)' },
-  { key: 'archaeologyMult', minigameKey: 'archaeology', label: '⛏️ Arqueología: Mayor probabilidad de fósiles, gemas y tesoros', color: 'rgba(251, 146, 60, 1)' },
-  { key: 'bugCatchingMult', minigameKey: 'bug_catching', label: '🦗 Caza de Bichos: Mayor aparición de Pokémon insecto', color: 'rgba(163, 230, 53, 1)' }
+  {
+    key: 'fishingMult',
+    minigameKey: 'fishing',
+    label: '🎣 Pesca: Mayor frecuencia de encuentros y capturas',
+    color: 'rgba(56, 189, 248, 1)'
+  },
+  {
+    key: 'archaeologyMult',
+    minigameKey: 'archaeology',
+    label: '⛏️ Arqueología: Mayor probabilidad de fósiles, gemas y tesoros',
+    color: 'rgba(251, 146, 60, 1)'
+  },
+  {
+    key: 'bugCatchingMult',
+    minigameKey: 'bug_catching',
+    label: '🦗 Caza de Bichos: Mayor aparición de Pokémon insecto',
+    color: 'rgba(163, 230, 53, 1)'
+  }
 ];
 
 export function buildActivityBonuses(c: ExtendedEventConfig): BonusItem[] {
@@ -87,6 +122,7 @@ export function buildActivityBonuses(c: ExtendedEventConfig): BonusItem[] {
 }
 
 const MINIGAME_DISPLAY_NAMES: Record<string, string> = {
+  // open-record: Minigame identifier to Spanish display name mapping
   fishing: '🎣 Pesca',
   archaeology: '⛏️ Arqueología',
   bug_catching: '🦗 Caza de Bichos',
@@ -100,15 +136,38 @@ interface BuffTypeDef {
 }
 
 const MINIGAME_BUFF_DEFS: readonly BuffTypeDef[] = [
-  { key: 'encounterRateMult', template: 'Más Pokémon aparecen por sesión', color: 'rgba(56, 189, 248, 1)' },
-  { key: 'successRateMult', template: 'Mayor probabilidad de éxito por intento', color: 'rgba(74, 222, 128, 1)' },
-  { key: 'rareDropMult', template: 'Más objetos raros, gemas y tesoros', color: 'rgba(250, 204, 21, 1)' },
-  { key: 'shinyMult', template: 'Mayor probabilidad de hallar Pokémon Shiny', color: 'rgba(244, 114, 182, 1)' },
+  {
+    key: 'encounterRateMult',
+    template: 'Más Pokémon aparecen por sesión',
+    color: 'rgba(56, 189, 248, 1)'
+  },
+  {
+    key: 'successRateMult',
+    template: 'Mayor probabilidad de éxito por intento',
+    color: 'rgba(74, 222, 128, 1)'
+  },
+  {
+    key: 'rareDropMult',
+    template: 'Más objetos raros, gemas y tesoros',
+    color: 'rgba(250, 204, 21, 1)'
+  },
+  {
+    key: 'shinyMult',
+    template: 'Mayor probabilidad de hallar Pokémon Shiny',
+    color: 'rgba(244, 114, 182, 1)'
+  },
   { key: 'expMult', template: 'Más EXP ganada por actividad', color: 'rgba(168, 85, 247, 1)' },
-  { key: 'scoreMult', template: 'Puntaje más alto en la clasificación', color: 'rgba(234, 179, 8, 1)' }
+  {
+    key: 'scoreMult',
+    template: 'Puntaje más alto en la clasificación',
+    color: 'rgba(234, 179, 8, 1)'
+  }
 ];
 
-function extractMinigameBuffItems(mName: string, buffs: Record<string, number | undefined>): BonusItem[] {
+function extractMinigameBuffItems(
+  mName: string,
+  buffs: Record<string, number | undefined> // open-record: Dynamic minigame multiplier dictionary
+): BonusItem[] {
   const items: BonusItem[] = [];
   for (const def of MINIGAME_BUFF_DEFS) {
     const val = buffs[def.key];
@@ -119,7 +178,9 @@ function extractMinigameBuffItems(mName: string, buffs: Record<string, number | 
   return items;
 }
 
-export function buildMinigameBuffBonuses(minigameBuffs: ExtendedEventConfig['minigameBuffs']): BonusItem[] {
+export function buildMinigameBuffBonuses(
+  minigameBuffs: ExtendedEventConfig['minigameBuffs']
+): BonusItem[] {
   if (!minigameBuffs || typeof minigameBuffs !== 'object') return [];
   const bonuses: BonusItem[] = [];
 
@@ -147,9 +208,10 @@ function resolveScheduleHoursText(startHour?: number, endHour?: number): string 
 
 export function formatWeeklySchedule(sched: Schedule): string | null {
   if (sched.type !== 'weekly' || !sched.days) return null;
-  const days = sched.days.length === WEEK_DAYS_COUNT
-    ? 'Todos los días'
-    : sched.days.map((d: number) => DAY_NAMES[d]).join(', ');
+  const days =
+    sched.days.length === WEEK_DAYS_COUNT
+      ? 'Todos los días'
+      : sched.days.map((d: number) => DAY_NAMES[d]).join(', ');
   const hours = resolveScheduleHoursText(sched.startHour, sched.endHour);
   return `${days}${hours}`;
 }
@@ -164,7 +226,9 @@ function formatZdtTime(zdt: Temporal.ZonedDateTime): string {
 
 function isZdtAllDay(startZdt: Temporal.ZonedDateTime, endZdt: Temporal.ZonedDateTime): boolean {
   const isStart = startZdt.hour === 0 && startZdt.minute === 0;
-  const isEnd = (endZdt.hour === LAST_HOUR_OF_DAY && endZdt.minute >= LAST_MINUTE_OF_HOUR) || (endZdt.hour === 0 && endZdt.minute === 0);
+  const isEnd =
+    (endZdt.hour === LAST_HOUR_OF_DAY && endZdt.minute >= LAST_MINUTE_OF_HOUR) ||
+    (endZdt.hour === 0 && endZdt.minute === 0);
   return isStart && isEnd;
 }
 
@@ -173,14 +237,21 @@ export function formatDateRangeSchedule(startAt?: string, endAt?: string): strin
   try {
     const startZdt = normalizeZonedDateTime(Temporal.Instant.from(startAt));
     const endZdt = normalizeZonedDateTime(Temporal.Instant.from(endAt));
-    const isSameDay = startZdt.year === endZdt.year && startZdt.month === endZdt.month && startZdt.day === endZdt.day;
+    const isSameDay =
+      startZdt.year === endZdt.year &&
+      startZdt.month === endZdt.month &&
+      startZdt.day === endZdt.day;
     const isAllDay = isZdtAllDay(startZdt, endZdt);
 
     if (isSameDay) {
-      const timePart = isAllDay ? ' · Todo el día (ARG)' : ` · ${formatZdtTime(startZdt)} – ${formatZdtTime(endZdt)} hs (ARG)`;
+      const timePart = isAllDay
+        ? ' · Todo el día (ARG)'
+        : ` · ${formatZdtTime(startZdt)} – ${formatZdtTime(endZdt)} hs (ARG)`;
       return `${startZdt.day}/${startZdt.month}/${startZdt.year}${timePart}`;
     }
-    const timePart = isAllDay ? ' · Todo el día (ARG)' : ` · ${formatZdtTime(startZdt)} al ${formatZdtTime(endZdt)} hs (ARG)`;
+    const timePart = isAllDay
+      ? ' · Todo el día (ARG)'
+      : ` · ${formatZdtTime(startZdt)} al ${formatZdtTime(endZdt)} hs (ARG)`;
     return `Del ${startZdt.day}/${startZdt.month} al ${endZdt.day}/${endZdt.month}/${endZdt.year}${timePart}`;
   } catch {
     return null;
@@ -209,7 +280,10 @@ function extractSpeciesFromPrize(prize: unknown): string | null {
   return typeof candidate === 'string' ? candidate : null;
 }
 
-function collectPrizeSpecies(prizes?: { first?: Prize; second?: Prize; third?: Prize } | null): string[] { // domain-ok: Raw unvalidated prize species strings before domain validation
+function collectPrizeSpecies(
+  prizes?: { first?: Prize; second?: Prize; third?: Prize } | null
+): string[] {
+  // domain-ok: Raw unvalidated prize species strings before domain validation
   if (!prizes) return [];
   const species: string[] = []; // domain-ok: Raw unvalidated prize species string array before isPokemonSpeciesId filtering
   const s1 = extractSpeciesFromPrize(prizes.first);
@@ -245,9 +319,10 @@ export function resolveInvolvedSpecies(
   collectPrizeSpecies(prizes).forEach(add);
 
   for (const sub of subCompetitions) {
-    const subPrizes = (sub.prizes && (sub.prizes.first || sub.prizes.second || sub.prizes.third))
-      ? (sub.prizes as { first?: Prize; second?: Prize; third?: Prize })
-      : prizes;
+    const subPrizes =
+      sub.prizes && (sub.prizes.first || sub.prizes.second || sub.prizes.third)
+        ? (sub.prizes as { first?: Prize; second?: Prize; third?: Prize })
+        : prizes;
     collectPrizeSpecies(subPrizes).forEach(add);
   }
 

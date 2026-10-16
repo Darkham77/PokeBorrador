@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { ref } from 'vue';
 import { terminateBattle } from '@/logic/battle/resolution';
@@ -18,7 +18,7 @@ vi.mock('@/logic/events/gameBus', () => ({
   gameBus: {
     emit: vi.fn(),
     on: vi.fn(),
-    off: vi.fn(),
+    off: vi.fn()
   }
 }));
 
@@ -29,16 +29,23 @@ vi.mock('@/logic/battle/battleFlow', () => ({
 vi.mock('@/logic/encounters/encounters', () => ({
   generateEncounter: vi.fn(async () => ({
     type: 'wild',
-    pokemon: { id: 'pidgey', name: 'Pidgey', hp: 50, maxHp: 50, uid: 'pidgey-1', moves: [{ id: 'tackle', name: 'Placaje', pp: 35 }] }
+    pokemon: {
+      id: 'pidgey',
+      name: 'Pidgey',
+      hp: 50,
+      maxHp: 50,
+      uid: 'pidgey-1',
+      moves: [{ id: 'tackle', name: 'Placaje', pp: 35 }]
+    }
   }))
 }));
 
 // Mock day cycle for deterministic results in tests
 vi.mock('@/logic/utils/timeUtils', async () => {
-  const actual = await vi.importActual('@/logic/utils/timeUtils') as object;
+  const actual = (await vi.importActual('@/logic/utils/timeUtils')) as object;
   return {
     ...actual,
-    getDayCycle: vi.fn(() => 'day'),
+    getDayCycle: vi.fn(() => 'day')
   };
 });
 
@@ -112,17 +119,21 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
     });
 
     it('should cleanup _initialEnemy when terminating battle', async () => {
-      await terminateBattle(mockCtx as unknown as Parameters<typeof terminateBattle>[0], true, true);
-      
+      await terminateBattle(
+        mockCtx as unknown as Parameters<typeof terminateBattle>[0],
+        true,
+        true
+      );
+
       expect(mockCtx.activeBattle.value!._initialEnemy).toBeNull();
       expect(mockCtx.activeBattle.value!.enemy).toBeNull();
     });
 
     it('should handle missing activeBattle gracefully', async () => {
       mockCtx.activeBattle.value = null;
-      
+
       await terminateBattle(mockCtx as unknown as Parameters<typeof terminateBattle>[0], true);
-      
+
       expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.EXIT_BATTLE);
     });
   });
@@ -156,10 +167,16 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
     });
 
     it('Intrépido should hit Ghost types with Normal moves', () => {
-      const scramp = { id: 'miltank', type: 'normal', atk: 100, level: 50, ability: 'scrappy' } as unknown as Pokemon;
+      const scramp = {
+        id: 'miltank',
+        type: 'normal',
+        atk: 100,
+        level: 50,
+        ability: 'scrappy'
+      } as unknown as Pokemon;
       const ghost = { id: 'gastly', type: 'ghost', def: 50, level: 50 } as unknown as Pokemon;
       const normalMove = { name: 'Pisotón', type: 'normal', power: 65, cat: 'physical' } as const;
-      
+
       const result = calculateDamage(scramp, ghost, normalMove);
       expect(result.dmg).toBeGreaterThan(0);
       expect(result.eff).toBe(1);
@@ -167,12 +184,22 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
 
     it('Sebo should reduce Fire/Ice damage by 50%', () => {
       const fireAtk = { id: 'charmander', type: 'fire', spa: 100, level: 50 } as unknown as Pokemon;
-      const thickFatDef = { id: 'snarlax', type: 'normal', spd: 100, level: 50, ability: 'thickfat' } as unknown as Pokemon;
+      const thickFatDef = {
+        id: 'snarlax',
+        type: 'normal',
+        spd: 100,
+        level: 50,
+        ability: 'thickfat'
+      } as unknown as Pokemon;
       const flame = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' } as const;
-      
-      const noSeboResult = calculateDamage(fireAtk, { ...thickFatDef, ability: null } as unknown as Pokemon, flame);
+
+      const noSeboResult = calculateDamage(
+        fireAtk,
+        { ...thickFatDef, ability: null } as unknown as Pokemon,
+        flame
+      );
       const seboResult = calculateDamage(fireAtk, thickFatDef, flame);
-      
+
       expect(seboResult.dmg).toBe(Math.floor(noSeboResult.dmg * 0.5));
     });
 
@@ -184,7 +211,9 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
       const sun = calculateDamage(fireAtk, normDef, flame, { weather: { type: 'sun', turns: 5 } });
       expect(sun.dmg).toBe(91);
 
-      const rain = calculateDamage(fireAtk, normDef, flame, { weather: { type: 'rain', turns: 5 } });
+      const rain = calculateDamage(fireAtk, normDef, flame, {
+        weather: { type: 'rain', turns: 5 }
+      });
       expect(rain.dmg).toBe(30);
     });
 
@@ -199,9 +228,19 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
 
   describe('Turn Flow & Faint Handlers', () => {
     function createMockStore() {
-      const p = { id: '25', uid: 'p1', name: 'Pikachu', hp: 100, maxHp: 100, level: 50, atk: 100, spa: 100, moves: [{ id: 'tackle', name: 'Tackle', power: 40, pp: 10 }] };
+      const p = {
+        id: '25',
+        uid: 'p1',
+        name: 'Pikachu',
+        hp: 100,
+        maxHp: 100,
+        level: 50,
+        atk: 100,
+        spa: 100,
+        moves: [{ id: 'tackle', name: 'Tackle', power: 40, pp: 10 }]
+      };
       const e = { id: '16', name: 'Pidgey', hp: 100, maxHp: 100, level: 5, def: 50, spd: 50 };
-      
+
       const store = {
         activeBattle: {
           value: {
@@ -220,10 +259,10 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
           transition: vi.fn()
         },
         BATTLE_STATES: { ACTIVE_BATTLE: 'ACTIVE_BATTLE' },
-        BATTLE_SUBSTATES: { 
-          BUILD_QUEUE: 'BUILD_QUEUE', 
-          POP_ACTION: 'POP_ACTION', 
-          APPLY_MOVE: 'APPLY_MOVE', 
+        BATTLE_SUBSTATES: {
+          BUILD_QUEUE: 'BUILD_QUEUE',
+          POP_ACTION: 'POP_ACTION',
+          APPLY_MOVE: 'APPLY_MOVE',
           EVAL_HP: 'EVAL_HP',
           PLAYER_FAINT_SEQ: 'PLAYER_FAINT_SEQ',
           ENEMY_REPLACEMENT_SEQ: 'ENEMY_REPLACEMENT_SEQ'
@@ -241,7 +280,9 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
       store.handleFaint = vi.fn(async (side: string) => {
         gameBus.emit('PLAY_FAINT', { side });
         if (side === 'enemy' && store.activeBattle.value.isTrainer) {
-          const next = store.activeBattle.value.enemyTeam[0] as { name: string; hp: number } | undefined;
+          const next = store.activeBattle.value.enemyTeam[0] as
+            | { name: string; hp: number }
+            | undefined;
           if (next) {
             gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' });
             gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: next });
@@ -270,8 +311,15 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
       await mockStore.handleFaint('enemy');
 
       expect(gameBus.emit).toHaveBeenCalledWith('PLAY_WITHDRAW', { side: 'enemy' });
-      expect(gameBus.emit).toHaveBeenCalledWith('PLAY_SEND_OUT', expect.objectContaining({ side: 'enemy', pokemon: nextPokemon }));
-      expect(mockStore.addLog).toHaveBeenCalledWith(expect.stringContaining('¡Entrenador envía a Rattata!'), 'log-enemy', 'enemy_trainer');
+      expect(gameBus.emit).toHaveBeenCalledWith(
+        'PLAY_SEND_OUT',
+        expect.objectContaining({ side: 'enemy', pokemon: nextPokemon })
+      );
+      expect(mockStore.addLog).toHaveBeenCalledWith(
+        expect.stringContaining('¡Entrenador envía a Rattata!'),
+        'log-enemy',
+        'enemy_trainer'
+      );
     });
   });
 
@@ -375,7 +423,10 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
     it('should complete search flow and stop in stable COMBAT_OR_FLEE state', async () => {
       await handleBattleFlowCompletion(mockCtx, 'search');
 
-      expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE);
+      expect(mockCtx.fsm.transition).toHaveBeenCalledWith(
+        BATTLE_STATES.SEARCH_PHASE,
+        BATTLE_SUBSTATES.COMBAT_OR_FLEE
+      );
       expect(mockCtx.isProcessing.value).toBe(false);
     });
   });
@@ -384,7 +435,7 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
     function toMove(moveData: MoveBaseData): Move {
       return {
         ...moveData,
-        maxPP: moveData.pp,
+        maxPP: moveData.pp
       };
     }
 
@@ -394,7 +445,9 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
       const dummyTgt = { uid: 'tgt-uid', name: 'Pikachu' } as Pokemon;
       const srcStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } as BattleStages;
       const tgtStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } as BattleStages;
-      const addLogFn = (msg: string) => { logs.push(msg); };
+      const addLogFn = (msg: string) => {
+        logs.push(msg);
+      };
       const dummyCtx = {
         activeBattle: {
           value: {
@@ -431,14 +484,23 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
         'sunnyday'
       ];
 
-      const { dummySrc, dummyTgt, srcStages, tgtStages, addLogFn, dummyCtx } = createDispatchFixture();
+      const { dummySrc, dummyTgt, srcStages, tgtStages, addLogFn, dummyCtx } =
+        createDispatchFixture();
 
       for (const moveId of movesToTest) {
         const moveData = pokemonDataProvider.getMoveData(moveId);
         expect(moveData).not.toBeNull();
 
         await expect(
-          dispatchMoveEffect(toMove(moveData!), dummySrc, dummyTgt, srcStages, tgtStages, addLogFn, dummyCtx)
+          dispatchMoveEffect(
+            toMove(moveData!),
+            dummySrc,
+            dummyTgt,
+            srcStages,
+            tgtStages,
+            addLogFn,
+            dummyCtx
+          )
         ).resolves.not.toThrow();
       }
     });
@@ -457,7 +519,8 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
       const { POKEMON_DB } = await import('@/data/pokemon/pokemonDB');
       const { toID } = await import('@pkmn/sim');
       const { ENABLED_POKEMON_IDS } = await import('@/data/system/constants');
-      const { dummySrc, dummyTgt, srcStages, tgtStages, addLogFn, dummyCtx } = createDispatchFixture();
+      const { dummySrc, dummyTgt, srcStages, tgtStages, addLogFn, dummyCtx } =
+        createDispatchFixture();
 
       const learnsetMoves = new Set<ReturnType<typeof requirePokemonMoveId>>();
       for (const [speciesId, poke] of Object.entries(POKEMON_DB)) {
@@ -477,7 +540,15 @@ describe('Battle Resolution, Engine & Turn Flow Suite', () => {
         const moveData = pokemonDataProvider.getMoveData(moveId);
         if (!moveData) continue;
         try {
-          await dispatchMoveEffect(toMove(moveData), dummySrc, dummyTgt, srcStages, tgtStages, addLogFn, dummyCtx);
+          await dispatchMoveEffect(
+            toMove(moveData),
+            dummySrc,
+            dummyTgt,
+            srcStages,
+            tgtStages,
+            addLogFn,
+            dummyCtx
+          );
         } catch (error) {
           dispatchErrors.push(`Move: ${moveData.name} (${moveId}) -> ${(error as Error).message}`);
         }

@@ -21,37 +21,52 @@ class IllegalPokemonSecuritySimulation extends BaseE2ESimulation {
     await this.page.evaluate(
       async (opts) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
 
         const game = useGameStore();
         game.state.money = opts.MOCK_INITIAL_SECURITY_MONEY;
         game.state.playerClass = 'rocket';
 
         // 1 Legal Starter in team
-        const starter = pokemonDebugService.generate({ id: 'bulbasaur', level: opts.LEGAL_STARTER_LEVEL });
+        const starter = pokemonDebugService.generate({
+          id: 'bulbasaur',
+          level: opts.LEGAL_STARTER_LEVEL
+        });
         starter.uid = 'team-starter-legal';
         game.state.team = [starter];
 
         // 1 Legal in Box
-        const legalBox = pokemonDebugService.generate({ id: 'pidgey', level: opts.LEGAL_STARTER_LEVEL });
+        const legalBox = pokemonDebugService.generate({
+          id: 'pidgey',
+          level: opts.LEGAL_STARTER_LEVEL
+        });
         legalBox.uid = 'box-pidgey-legal';
 
         // 1 Illegal in Box: Caterpie with Hydro Pump (illegal move)
-        const illegalCaterpie = pokemonDebugService.generate({ id: 'caterpie', level: opts.ILLEGAL_CATERPIE_LEVEL });
+        const illegalCaterpie = pokemonDebugService.generate({
+          id: 'caterpie',
+          level: opts.ILLEGAL_CATERPIE_LEVEL
+        });
         illegalCaterpie.uid = 'box-caterpie-illegal-move';
-        illegalCaterpie.moves = [{
-          id: 'hydropump',
-          name: 'Hydro Pump',
-          type: 'water',
-          cat: 'special',
-          power: opts.HYDRO_PUMP_BASE_POWER,
-          acc: opts.HYDRO_PUMP_ACCURACY,
-          pp: opts.HYDRO_PUMP_PP,
-          maxPP: opts.HYDRO_PUMP_PP
-        }];
+        illegalCaterpie.moves = [
+          {
+            id: 'hydropump',
+            name: 'Hydro Pump',
+            type: 'water',
+            cat: 'special',
+            power: opts.HYDRO_PUMP_BASE_POWER,
+            acc: opts.HYDRO_PUMP_ACCURACY,
+            pp: opts.HYDRO_PUMP_PP,
+            maxPP: opts.HYDRO_PUMP_PP
+          }
+        ];
 
         // 1 Illegal in Box: Rayquaza with Wonder Guard (illegal ability)
-        const illegalRayquaza = pokemonDebugService.generate({ id: 'rayquaza', level: opts.ILLEGAL_RAYQUAZA_LEVEL });
+        const illegalRayquaza = pokemonDebugService.generate({
+          id: 'rayquaza',
+          level: opts.ILLEGAL_RAYQUAZA_LEVEL
+        });
         illegalRayquaza.uid = 'box-rayquaza-illegal-ability';
         illegalRayquaza.ability = 'wonderguard';
 
@@ -113,7 +128,8 @@ test.describe('Illegal Pokémon Security System E2E Simulation', () => {
     // Verify that available Pokémon for publish exclude illegal Pokémon
     const availableUids = await page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { checkPokemonLegality } = await import('../../../src/logic/pokemon/pokemonLegality.ts');
+      const { checkPokemonLegality } =
+        await import('../../../src/logic/pokemon/pokemonLegality.ts');
 
       const game = useGameStore();
       const allPokemon = [...(game.state.team || []), ...(game.state.box || [])].filter(
@@ -136,25 +152,24 @@ test.describe('Illegal Pokémon Security System E2E Simulation', () => {
     await sim.setup();
     await sim.setupTestInventoryWithIllegalPokemon();
 
-    const publishSuccess = await page.evaluate(
-      async (price) => {
-        const { useGTSStore } = await import('../../../src/stores/gts.ts');
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const gts = useGTSStore();
-        const game = useGameStore();
+    const publishSuccess = await page.evaluate(async (price) => {
+      const { useGTSStore } = await import('../../../src/stores/gts.ts');
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const gts = useGTSStore();
+      const game = useGameStore();
 
-        const illegalPoke = game.state.box[1];
-        if (!illegalPoke) throw new Error('Illegal pokemon not found in box');
-        return await gts.publishListing('pokemon', illegalPoke, price);
-      },
-      MOCK_ATTEMPT_LISTING_PRICE
-    );
+      const illegalPoke = game.state.box[1];
+      if (!illegalPoke) throw new Error('Illegal pokemon not found in box');
+      return await gts.publishListing('pokemon', illegalPoke, price);
+    }, MOCK_ATTEMPT_LISTING_PRICE);
 
     expect(publishSuccess).toBe(false);
     sim.finish('should reject direct GTS publish attempts of illegal Pokémon', 'passed');
   });
 
-  test('should block Black Market Rocket sale and yield $0 for illegal Pokémon', async ({ page }) => {
+  test('should block Black Market Rocket sale and yield $0 for illegal Pokémon', async ({
+    page
+  }) => {
     const sim = new IllegalPokemonSecuritySimulation(page, 'SecUserRocket');
     await sim.setup();
     await sim.setupTestInventoryWithIllegalPokemon();

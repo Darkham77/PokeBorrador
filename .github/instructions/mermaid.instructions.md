@@ -1,6 +1,7 @@
 ---
-applyTo: "**"
+applyTo: '**'
 ---
+
 # Mermaid AI Skills
 
 When the user asks to create, edit, or visualize any diagram, use the Mermaid
@@ -58,7 +59,7 @@ For diagrams updated by the Mermaid Chart GitHub Sync app (or pre-commit regener
 
 - **Review Mermaid Sync** (`mermaidChart.reviewAppCommits`) — start / open the review flow.
 - **Regenerate with Mermaid AI** (`mermaidChart.regenerateDiagramWithMermaidAI`) — regenerate from source references.
-Do not manually rewrite diagrams managed by this workflow. Accept/reject/diff UI actions stay in the extension UI.
+  Do not manually rewrite diagrams managed by this workflow. Accept/reject/diff UI actions stay in the extension UI.
 
 ### Install / update this pack
 
@@ -66,16 +67,16 @@ Do not manually rewrite diagrams managed by this workflow. Accept/reject/diff UI
 
 ## @mermaid-chart slash commands
 
-| Command | Purpose |
-|---|---|
-| `/generate_diagram_from_code` | General diagram from any source file |
-| `/generate_execution_sequence` | Sequence diagram from code flow |
-| `/generate_er_diagram` | ER diagram from schema / models |
-| `/generate_cloud_architecture_diagram` | Cloud / CI-CD architecture |
-| `/generate_docker_diagram` | Architecture from Dockerfiles |
-| `/generate_c4_topdown_architecture` | C4 top-down architecture |
-| `/analyze_code_ownership` | Code ownership diagram |
-| `/generate_dependency_diagram` | Dependency / security visualisation |
+| Command                                | Purpose                              |
+| -------------------------------------- | ------------------------------------ |
+| `/generate_diagram_from_code`          | General diagram from any source file |
+| `/generate_execution_sequence`         | Sequence diagram from code flow      |
+| `/generate_er_diagram`                 | ER diagram from schema / models      |
+| `/generate_cloud_architecture_diagram` | Cloud / CI-CD architecture           |
+| `/generate_docker_diagram`             | Architecture from Dockerfiles        |
+| `/generate_c4_topdown_architecture`    | C4 top-down architecture             |
+| `/analyze_code_ownership`              | Code ownership diagram               |
+| `/generate_dependency_diagram`         | Dependency / security visualisation  |
 
 ## Rules
 

@@ -1,4 +1,3 @@
-
 /**
  * Weather Mapper System (Unified Registry)
  * Centralizes the definition of all weather states: mechanical logic, visual representation, and UI metadata.
@@ -23,7 +22,7 @@ export const WEATHER_MECHANICAL = {
 
 import type { PokemonType } from '@/data/battle/types';
 
-export type WeatherMechanical = typeof WEATHER_MECHANICAL[keyof typeof WEATHER_MECHANICAL];
+export type WeatherMechanical = (typeof WEATHER_MECHANICAL)[keyof typeof WEATHER_MECHANICAL];
 
 /** All registered weather state IDs, including 'none' (no weather / gym default) */
 export const WEATHER_IDS = [
@@ -48,7 +47,7 @@ export const WEATHER_IDS = [
   'mist',
   'mist_visual',
   'wind',
-  'strong_winds',
+  'strong_winds'
 ] as const;
 export type WeatherId = (typeof WEATHER_IDS)[number];
 export const WEATHER_IDS_SET: ReadonlySet<string> = new Set(WEATHER_IDS);
@@ -92,7 +91,7 @@ const SHOWDOWN_WEATHER_TO_WEATHER_ID = {
   fog: 'fog',
   desolateland: 'intense_sun',
   primordialsea: 'heavy_rain',
-  deltastream: 'strong_winds',
+  deltastream: 'strong_winds'
 } as const satisfies Record<ShowdownWeatherId, WeatherId>;
 
 export function toRegisteredWeatherId(type: string): WeatherId | null {
@@ -102,17 +101,18 @@ export function toRegisteredWeatherId(type: string): WeatherId | null {
 }
 
 export interface WeatherDefinition {
-  id: WeatherId;               // Raw token used in map/atmosphere (e.g. 'storm')
-  mech: WeatherMechanical;    // Mechanical group (e.g. 'rain')
-  label: string;              // Human-readable name (e.g. 'TORMENTA')
-  icon: string;               // UI Icon
-  visual: string;             // AtmosphereLayer animation key
-  description: string;        // Tactical description for tooltips
-  modifiers?: {               // Mechanical multipliers for types
+  id: WeatherId; // Raw token used in map/atmosphere (e.g. 'storm')
+  mech: WeatherMechanical; // Mechanical group (e.g. 'rain')
+  label: string; // Human-readable name (e.g. 'TORMENTA')
+  icon: string; // UI Icon
+  visual: string; // AtmosphereLayer animation key
+  description: string; // Tactical description for tooltips
+  modifiers?: {
+    // Mechanical multipliers for types
     boost?: readonly PokemonType[];
     debuff?: readonly PokemonType[];
     block?: readonly PokemonType[];
-  }
+  };
 }
 
 const WEATHER_BOOST_MULT_LABEL = 1.5;
@@ -123,6 +123,7 @@ const FOG_ACCURACY_MULT_LABEL = 0.6;
 /**
  * THE SINGLE SOURCE OF TRUTH FOR WEATHER
  */
+// open-record: Weather definition registry keyed by weather identifiers
 export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   clear: WeatherDefinition;
   sun: WeatherDefinition;
@@ -134,7 +135,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   wind: WeatherDefinition;
 } = {
   // --- CLEAR ---
-  'clear': {
+  clear: {
     id: 'clear',
     mech: WEATHER_MECHANICAL.CLEAR,
     label: 'DESPEJADO',
@@ -142,7 +143,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     visual: 'clear',
     description: ''
   },
-  'null': {
+  null: {
     id: 'null',
     mech: WEATHER_MECHANICAL.CLEAR,
     label: 'DESPEJADO',
@@ -152,7 +153,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   },
 
   // --- SUN GROUP ---
-  'sun': {
+  sun: {
     id: 'sun',
     mech: WEATHER_MECHANICAL.SUN,
     label: 'SOL',
@@ -161,7 +162,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     description: `Potencia Fuego (x${WEATHER_BOOST_MULT_LABEL})\nDebilita Agua (x${WEATHER_DEBUFF_MULT_LABEL})\nEfecto: Rayo Solar sin carga`,
     modifiers: { boost: ['fire', 'grass', 'ground'], debuff: ['water', 'ice'] }
   },
-  'heatwave': {
+  heatwave: {
     id: 'heatwave',
     mech: WEATHER_MECHANICAL.SUN,
     label: 'OLA CALOR',
@@ -170,7 +171,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     description: `Potencia Fuego (x${WEATHER_BOOST_MULT_LABEL})\nDebilita Agua (x${WEATHER_DEBUFF_MULT_LABEL})\nEfecto: Rayo Solar sin carga`,
     modifiers: { boost: ['fire', 'ground'], block: ['ice', 'grass'], debuff: ['water'] }
   },
-  'intense_sun': {
+  intense_sun: {
     id: 'intense_sun',
     mech: WEATHER_MECHANICAL.SUN,
     label: 'SOL INTENSO',
@@ -181,7 +182,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   },
 
   // --- RAIN GROUP ---
-  'rain': {
+  rain: {
     id: 'rain',
     mech: WEATHER_MECHANICAL.RAIN,
     label: 'LLUVIA',
@@ -190,16 +191,20 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     description: `Potencia Agua (x${WEATHER_BOOST_MULT_LABEL})\nDebilita Fuego (x${WEATHER_DEBUFF_MULT_LABEL})\nEfecto: Trueno 100% precisión`,
     modifiers: { boost: ['water', 'bug', 'electric'], debuff: ['fire', 'rock', 'ground'] }
   },
-  'storm': {
+  storm: {
     id: 'storm',
     mech: WEATHER_MECHANICAL.RAIN,
     label: 'TORMENTA',
     icon: '⛈️',
     visual: 'storm',
     description: `Potencia Agua (x${WEATHER_BOOST_MULT_LABEL})\nDebilita Fuego (x${WEATHER_DEBUFF_MULT_LABEL})\nEfecto: Trueno 100% precisión`,
-    modifiers: { boost: ['water', 'electric', 'dragon'], block: ['fire', 'flying', 'bug'], debuff: ['rock', 'ground'] }
+    modifiers: {
+      boost: ['water', 'electric', 'dragon'],
+      block: ['fire', 'flying', 'bug'],
+      debuff: ['rock', 'ground']
+    }
   },
-  'thunderstorm': {
+  thunderstorm: {
     id: 'thunderstorm',
     mech: WEATHER_MECHANICAL.CLEAR,
     label: 'T. ELÉCTRICA',
@@ -208,7 +213,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     description: 'Sin efectos en combate.',
     modifiers: { boost: ['electric', 'dragon'], debuff: ['rock', 'ground'] }
   },
-  'heavy_rain': {
+  heavy_rain: {
     id: 'heavy_rain',
     mech: WEATHER_MECHANICAL.RAIN,
     label: 'LLUVIA FUERTE',
@@ -219,7 +224,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   },
 
   // --- SAND GROUP ---
-  'sandstorm': {
+  sandstorm: {
     id: 'sandstorm',
     mech: WEATHER_MECHANICAL.SANDSTORM,
     label: 'T. ARENA',
@@ -228,7 +233,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     description: `Debilita no Tierra/Roca/Acero (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)`,
     modifiers: { boost: ['rock', 'ground', 'steel'], debuff: ['flying', 'bug', 'fire'] }
   },
-  'dust_storm': {
+  dust_storm: {
     id: 'dust_storm',
     mech: WEATHER_MECHANICAL.SANDSTORM,
     label: 'T. POLVO',
@@ -239,7 +244,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   },
 
   // --- ICE GROUP ---
-  'snow': {
+  snow: {
     id: 'snow',
     mech: WEATHER_MECHANICAL.SNOW,
     label: 'NIEVE',
@@ -248,7 +253,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
     modifiers: { boost: ['ice', 'steel'], debuff: ['fire', 'bug', 'flying'] }
   },
-  'cold': {
+  cold: {
     id: 'cold',
     mech: WEATHER_MECHANICAL.SNOW,
     label: 'FRÍO',
@@ -257,7 +262,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
     modifiers: { boost: ['ice'], debuff: ['grass', 'bug'] }
   },
-  'hail': {
+  hail: {
     id: 'hail',
     mech: WEATHER_MECHANICAL.HAIL,
     label: 'GRANIZO', // spanish-ok: UI Spanish text localization label
@@ -266,16 +271,20 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
     modifiers: { boost: ['ice'], debuff: ['fire', 'bug', 'flying', 'grass'] }
   },
-  'blizzard': {
+  blizzard: {
     id: 'blizzard',
     mech: WEATHER_MECHANICAL.HAIL,
     label: 'VENTISCA', // spanish-ok: UI Spanish text localization label
     icon: '🌬️',
     visual: 'blizzard',
     description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
-    modifiers: { boost: ['ice'], block: ['fire', 'grass', 'bug', 'flying'], debuff: ['steel', 'rock'] }
+    modifiers: {
+      boost: ['ice'],
+      block: ['fire', 'grass', 'bug', 'flying'],
+      debuff: ['steel', 'rock']
+    }
   },
-  'coldwave': {
+  coldwave: {
     id: 'coldwave',
     mech: WEATHER_MECHANICAL.HAIL,
     label: 'OLA FRÍO',
@@ -286,7 +295,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   },
 
   // --- FOG GROUP ---
-  'fog': {
+  fog: {
     id: 'fog',
     mech: WEATHER_MECHANICAL.FOG,
     label: 'NIEBLA', // spanish-ok: UI Spanish text localization label
@@ -295,7 +304,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     description: `Reduce la precisión en Gen 4+ (x${FOG_ACCURACY_MULT_LABEL}).`,
     modifiers: { boost: ['ghost', 'psychic', 'dark'], debuff: ['flying'] }
   },
-  'mist': {
+  mist: {
     id: 'mist',
     mech: WEATHER_MECHANICAL.FOG,
     label: 'BRUMA',
@@ -306,7 +315,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   },
 
   // --- WIND GROUP ---
-  'wind': {
+  wind: {
     id: 'wind',
     mech: WEATHER_MECHANICAL.WIND,
     label: 'VIENTO',
@@ -315,7 +324,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     description: 'Sin efectos en combate.',
     modifiers: { boost: ['flying', 'bug', 'psychic'], debuff: ['ground'] }
   },
-  'strong_winds': {
+  strong_winds: {
     id: 'strong_winds',
     mech: WEATHER_MECHANICAL.WIND,
     label: 'V. FUERTES',
@@ -358,8 +367,16 @@ export function getVisualWeather(type: string | null | undefined): string {
  */
 
 // UI Metadata keyed by Mechanical type (Simplified view)
-export const WEATHER_UI_METADATA: Record<WeatherMechanical, { icon: string; label: string; visual: string; description: string }> = {
-  [WEATHER_MECHANICAL.UNKNOWN]: { icon: '⚠️', label: 'DESCONOCIDO', visual: 'clear', description: 'Clima no registrado.' },
+export const WEATHER_UI_METADATA: Record<
+  WeatherMechanical,
+  { icon: string; label: string; visual: string; description: string }
+> = {
+  [WEATHER_MECHANICAL.UNKNOWN]: {
+    icon: '⚠️',
+    label: 'DESCONOCIDO',
+    visual: 'clear',
+    description: 'Clima no registrado.'
+  },
   [WEATHER_MECHANICAL.CLEAR]: WEATHER_REGISTRY['clear'],
   [WEATHER_MECHANICAL.SUN]: WEATHER_REGISTRY['sun'],
   [WEATHER_MECHANICAL.RAIN]: WEATHER_REGISTRY['rain'],
@@ -371,10 +388,16 @@ export const WEATHER_UI_METADATA: Record<WeatherMechanical, { icon: string; labe
 };
 
 // Full Visual Metadata keyed by raw token (Detailed view)
-export const WEATHER_VISUAL_METADATA: Record<string, { icon: string; label: string; description: string }> = 
-  Object.fromEntries(
-    Object.entries(WEATHER_REGISTRY).map(([k, v]) => [k, { icon: v.icon, label: v.label, description: v.description }])
-  );
+// open-record: Weather visual metadata dictionary keyed by raw token
+export const WEATHER_VISUAL_METADATA: Record<
+  string,
+  { icon: string; label: string; description: string }
+> = Object.fromEntries(
+  Object.entries(WEATHER_REGISTRY).map(([k, v]) => [
+    k,
+    { icon: v.icon, label: v.label, description: v.description }
+  ])
+);
 
 let activeWeatherResolver: (() => WeatherId) | null = null;
 

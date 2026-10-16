@@ -33,9 +33,7 @@ export const MECHANICS_SCENARIOS: ScriptedScenario[] = [
         moves: ['splash', 'tackle', 'pound', 'scratch']
       }
     ],
-    actions: [
-      { p1: 'move 1', p2: 'move 1' }
-    ]
+    actions: [{ p1: 'move 1', p2: 'move 1' }]
   },
   {
     name: 'Double KO with Bench Scenario',
@@ -192,7 +190,7 @@ export const MECHANICS_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Dragon Tail fuerza a salir a E-Bench1
-      { p1: 'move 2', p2: 'move 1' }  // P-Tailer usa Tackle, E-Bench1 usa Splash
+      { p1: 'move 2', p2: 'move 1' } // P-Tailer usa Tackle, E-Bench1 usa Splash
     ]
   },
   {
@@ -228,7 +226,7 @@ export const MECHANICS_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 2' }, // Ditto se transforma en Blissey y copia Sunny Day
-      { p1: 'move 2', p2: 'move 1' }  // Ditto usa Sunny Day, Blissey usa Soft-Boiled
+      { p1: 'move 2', p2: 'move 1' } // Ditto usa Sunny Day, Blissey usa Soft-Boiled
     ]
   },
   {
@@ -276,8 +274,8 @@ export const MECHANICS_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey debilita a Mew nivel 1, FSM va a POKEMON_CALL
-      { p1: 'switch 2', p2: '' },    // P1 elige cambiar a P-Bench1
-      { p1: 'move 1', p2: 'move 1' }  // Turno normal
+      { p1: 'switch 2', p2: '' }, // P1 elige cambiar a P-Bench1
+      { p1: 'move 1', p2: 'move 1' } // Turno normal
     ]
   }
 ];

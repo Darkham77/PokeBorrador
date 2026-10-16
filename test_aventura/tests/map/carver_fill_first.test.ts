@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { KantoRegionalWorldGenerator } from '../../logic/map/kantoRegionalGenerator.ts';
 import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
-import {
-  CELL_BIOME,
-  KANTO_GRID_W,
-  KANTO_GRID_H
-} from '../../types/map/kantoGridModel.ts';
+import { CELL_BIOME, KANTO_GRID_W, KANTO_GRID_H } from '../../types/map/kantoGridModel.ts';
 
 describe('Fill-First Regional Map Generator & Carver Pipeline', () => {
   it('defines CELL_BIOME.FOREST_WALL as 8', () => {
@@ -21,9 +17,7 @@ describe('Fill-First Regional Map Generator & Carver Pipeline', () => {
       viridian: { id: 'viridian', name: 'Ciudad Verde', type: 'city', x: 500, y: 1100 }
     };
 
-    const testConnections: [string, string][] = [
-      ['pallet', 'viridian']
-    ];
+    const testConnections: [string, string][] = [['pallet', 'viridian']];
 
     generator.generate(testNodes, testConnections, 42);
 

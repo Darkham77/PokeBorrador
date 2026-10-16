@@ -1,5 +1,5 @@
-@use "@/styles/core/tools" as *;
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/core/mixins' as *;
 
 .arena-modal-header {
   @include shop-header;
@@ -14,9 +14,9 @@
 
     .stat-node {
       @include shop-header-stat(var(--blue-light));
-      
-      &.elo .value { 
-        @extend .colored; 
+
+      &.elo .value {
+        @extend .colored;
 
         color: var(--yellow);
         text-shadow: 0 0 15px Rgb(255 214 10 / 25%);
@@ -78,27 +78,27 @@
     text-align: center;
     box-shadow: var(--shadow-2xl);
 
-    .icon { 
-      display: block; 
-      font-size: var(--font-48); 
-      margin-bottom: 20px; 
+    .icon {
+      display: block;
+      font-size: var(--font-48);
+      margin-bottom: 20px;
       filter: Drop-Shadow(0 0 15px Rgb(59 130 246 / 40%));
       will-change: transform, filter;
     }
-    
-    h3 { 
-      @include pixelated; 
 
-      color: var(--white); 
-      font-size: var(--font-10); 
-      margin-bottom: 15px; 
+    h3 {
+      @include pixelated;
+
+      color: var(--white);
+      font-size: var(--font-10);
+      margin-bottom: 15px;
       letter-spacing: 0.5px;
     }
-    
+
     p {
-      margin: 0; 
-      color: Rgb(148 163 184 / 70%); 
-      font-size: var(--font-11); 
+      margin: 0;
+      color: Rgb(148 163 184 / 70%);
+      font-size: var(--font-11);
       line-height: 1.6;
     }
   }

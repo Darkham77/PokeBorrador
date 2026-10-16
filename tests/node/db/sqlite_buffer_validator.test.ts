@@ -1,5 +1,5 @@
 // test-fragmentation-ok: Isolated single-purpose regression test for SQLite buffer validation
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { isValidSqliteBuffer, SQLITE_MAGIC_HEADER } from '@/logic/db/sqliteBufferValidator.ts';
 

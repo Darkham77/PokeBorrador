@@ -1,12 +1,15 @@
 import { gsap } from 'gsap';
-import { createWallClockInterval, clearWallClockInterval, type WallClockTimerId } from '@/logic/utils/timeUtils';
+import {
+  createWallClockInterval,
+  clearWallClockInterval,
+  type WallClockTimerId
+} from '@/logic/utils/timeUtils';
 import {
   PVP_TURN_TIMEOUT_SEC,
   PVP_AFK_MAX_STRIKES,
   PVP_RECONNECT_WINDOW_SEC
 } from '@/types/battle/pvp';
-
-const MS_PER_SECOND = 1000;
+import { MILLISECONDS_PER_SECOND } from '@/logic/constants/visuals';
 
 export interface PvPTimerState {
   turnSecondsRemaining: number;
@@ -53,7 +56,7 @@ export class PvPTimerManager {
     if (!this.backgroundTickerId && (this.turnEndTime > 0 || this.reconnectEndTime > 0)) {
       this.backgroundTickerId = createWallClockInterval(() => {
         this.checkWallClockTick();
-      }, MS_PER_SECOND);
+      }, MILLISECONDS_PER_SECOND);
     }
   }
 
@@ -72,7 +75,7 @@ export class PvPTimerManager {
     const now = Temporal.Now.instant().epochMilliseconds;
 
     if (this.turnEndTime > 0) {
-      const remaining = Math.max(0, Math.ceil((this.turnEndTime - now) / MS_PER_SECOND));
+      const remaining = Math.max(0, Math.ceil((this.turnEndTime - now) / MILLISECONDS_PER_SECOND));
       if (remaining !== this.state.turnSecondsRemaining) {
         this.state.turnSecondsRemaining = remaining;
         this.callbacks.onTurnTick?.(remaining);
@@ -101,7 +104,8 @@ export class PvPTimerManager {
    */
   startTurnTimer(): void {
     this.stopTurnTimer();
-    this.turnEndTime = Temporal.Now.instant().epochMilliseconds + PVP_TURN_TIMEOUT_SEC * MS_PER_SECOND;
+    this.turnEndTime =
+      Temporal.Now.instant().epochMilliseconds + PVP_TURN_TIMEOUT_SEC * MILLISECONDS_PER_SECOND;
     this.state.turnSecondsRemaining = PVP_TURN_TIMEOUT_SEC;
     this.callbacks.onTurnTick?.(PVP_TURN_TIMEOUT_SEC);
     this.ensureBackgroundTicker();
@@ -159,7 +163,8 @@ export class PvPTimerManager {
     this.stopTurnTimer();
     this.stopReconnectCountdown();
     this.state.isReconnecting = true;
-    this.reconnectEndTime = Temporal.Now.instant().epochMilliseconds + PVP_RECONNECT_WINDOW_SEC * MS_PER_SECOND;
+    this.reconnectEndTime =
+      Temporal.Now.instant().epochMilliseconds + PVP_RECONNECT_WINDOW_SEC * MILLISECONDS_PER_SECOND;
     this.state.reconnectSecondsRemaining = PVP_RECONNECT_WINDOW_SEC;
     this.callbacks.onReconnectTick?.(PVP_RECONNECT_WINDOW_SEC);
     this.ensureBackgroundTicker();

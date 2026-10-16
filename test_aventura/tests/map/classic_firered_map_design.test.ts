@@ -18,16 +18,16 @@ import {
   loadTilesRegistry,
   type TilesRegistryJson
 } from '../../logic/map/tilesRegistry.ts';
-import {
-  ProceduralMapGenerator
-} from '../../logic/map/proceduralMapGenerator.ts';
+import { ProceduralMapGenerator } from '../../logic/map/proceduralMapGenerator.ts';
 
 describe('Classic FireRed Map Design Principles (GBA Aesthetic & Topology)', () => {
   let registryService: TilesRegistryService;
 
   beforeAll(() => {
     const registryPath = path.resolve('test_aventura/assets/tiles_registry.json');
-    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(true);
+    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(
+      true
+    );
     const raw = fs.readFileSync(registryPath, 'utf-8');
     const data = JSON.parse(raw) as TilesRegistryJson;
     registryService = new TilesRegistryService(data);
@@ -143,7 +143,9 @@ describe('Classic FireRed Map Design Principles (GBA Aesthetic & Topology)', () 
       }
     }
 
-    expect(ledgeCount, 'Route mode should have functional jumpable ledges').toBeGreaterThanOrEqual(3);
+    expect(ledgeCount, 'Route mode should have functional jumpable ledges').toBeGreaterThanOrEqual(
+      3
+    );
   });
 
   it('eliminates isolated 2x3 mountain cones on flat grass in favor of canonical cliff walls', () => {
@@ -169,7 +171,8 @@ describe('Classic FireRed Map Design Principles (GBA Aesthetic & Topology)', () 
   });
 
   it('generates micro-urbanism front yards with mailboxes, picket fences, and flowerbeds', async () => {
-    const { MAILBOX, FENCE_WHITE, FLOWERS_RED, FLOWERS_BLUE, FLOWERS_YELLOW } = await import('../../config/mapProps.ts');
+    const { MAILBOX, FENCE_WHITE, FLOWERS_RED, FLOWERS_BLUE, FLOWERS_YELLOW } =
+      await import('../../config/mapProps.ts');
     const generator = new ProceduralMapGenerator(registryService);
     const map = generator.generate({
       width: 32,
@@ -202,13 +205,17 @@ describe('Classic FireRed Map Design Principles (GBA Aesthetic & Topology)', () 
       }
     }
 
-    expect(mailboxCount, 'Town should place mailboxes near residential doors').toBeGreaterThanOrEqual(1);
+    expect(
+      mailboxCount,
+      'Town should place mailboxes near residential doors'
+    ).toBeGreaterThanOrEqual(1);
     expect(fenceCount, 'Town should place perimeter picket fences').toBeGreaterThanOrEqual(1);
     expect(flowerCount, 'Town should place orderly flowerbed rows').toBeGreaterThanOrEqual(1);
   });
 
   it('incorporates gatehouses and modular rectangular clearings in regional world generation', async () => {
-    const { KantoRegionalWorldGenerator } = await import('../../logic/map/kantoRegionalGenerator.ts');
+    const { KantoRegionalWorldGenerator } =
+      await import('../../logic/map/kantoRegionalGenerator.ts');
     const { DynamicCatalogLoader } = await import('../../logic/map/kantoTileEngine.ts');
     const { rawNodes, connections } = await import('../../logic/adventure/mapData.ts');
 
@@ -218,6 +225,9 @@ describe('Classic FireRed Map Design Principles (GBA Aesthetic & Topology)', () 
 
     // Verify gatehouse prefabs are placed at city/route borders
     const gatehouses = worldGen.buildings.filter((b) => b.style === 'gatehouse_route');
-    expect(gatehouses.length, 'Regional world must feature gatehouse_route checkpoints').toBeGreaterThanOrEqual(4);
+    expect(
+      gatehouses.length,
+      'Regional world must feature gatehouse_route checkpoints'
+    ).toBeGreaterThanOrEqual(4);
   });
 });

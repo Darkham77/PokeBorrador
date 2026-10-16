@@ -5,7 +5,10 @@ import { MAP_BIOME_KEYS, type MapBiomeKey } from '@/logic/constants/encounters';
 /**
  * Resolves the active biome and tags for a given location ID.
  */
-export function getMapBiomeAndTags(locationId: MapRouteId): { activeBiome: MapBiomeKey; mapTags: MapBiomeKey[] } {
+export function getMapBiomeAndTags(locationId: MapRouteId): {
+  activeBiome: MapBiomeKey;
+  mapTags: MapBiomeKey[];
+} {
   const map = isMapRouteId(locationId) ? MAPS_BY_ROUTE_ID[locationId] : undefined;
   let activeBiome: MapBiomeKey = 'isPlains';
   const mapTags: MapBiomeKey[] = [];

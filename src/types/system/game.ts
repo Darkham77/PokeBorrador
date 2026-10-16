@@ -93,7 +93,6 @@ export type GameStatKey =
   | 'trainersDefeated'
   | 'wins';
 
-
 export const FACTION_IDS = ['union', 'poder'] as const;
 export type FactionId = (typeof FACTION_IDS)[number];
 const FACTION_IDS_SET: ReadonlySet<string> = new Set(FACTION_IDS);
@@ -107,6 +106,18 @@ export function requireFactionId(value: string): FactionId {
   throw new Error(`Invalid faction id: ${value}`);
 }
 
+export const FACTION_LABELS: Readonly<Record<FactionId, string>> = Object.freeze({
+  union: 'Equipo Unión',
+  poder: 'Equipo Poder'
+});
+
+export const FACTION_COLORS: Readonly<Record<FactionId, string>> = Object.freeze({
+  union: 'rgba(59, 130, 246, 1)',
+  poder: 'rgba(239, 68, 68, 1)'
+});
+
+export const PODIUM_MEDALS = ['🥇', '🥈', '🥉'] as const;
+
 export type { PlayerClassId } from '@/data/player/playerClasses';
 
 const GENDER_IDS = ['h', 'm'] as const;
@@ -117,7 +128,11 @@ export function isGenderId(value: unknown): value is GenderId {
   return typeof value === 'string' && GENDER_IDS_SET.has(value);
 }
 
-export function requireGenderId(value: unknown, fallback: GenderId = 'h'): GenderId {
+export const DEFAULT_GENDER: GenderId = 'h';
+export const DEFAULT_TRAINER_NAME = 'Entrenador' as const;
+export const DEFAULT_TRAINER_LEVEL = 1 as const;
+
+export function requireGenderId(value: unknown, fallback: GenderId = DEFAULT_GENDER): GenderId {
   return isGenderId(value) ? value : fallback;
 }
 export type LowPowerModeSetting = 'auto' | 'enabled' | 'disabled';

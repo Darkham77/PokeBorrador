@@ -4,20 +4,20 @@ let activeTooltipHide: ((immediate?: boolean) => void) | null = null; // singlet
 </script>
 
 <script setup lang="ts">
-import { ref, nextTick, inject, watch, onUnmounted, computed } from 'vue'
-import { gsap } from 'gsap'
-import { useTooltipPosition } from '@/composables/ui/useTooltipPosition'
-import PVTooltipDescriptionLine from '@/components/common/PVTooltipDescriptionLine.vue'
+import { ref, nextTick, inject, watch, onUnmounted, computed } from 'vue';
+import { gsap } from 'gsap';
+import { useTooltipPosition } from '@/composables/ui/useTooltipPosition';
+import PVTooltipDescriptionLine from '@/components/common/PVTooltipDescriptionLine.vue';
 
-const DEFAULT_TOOLTIP_DELAY_MS = 500
-const TOUCH_DRAG_THRESHOLD_PX = 15
-const BLOCK_CLICK_DURATION_SEC = 5
-const TOUCH_HOVER_COOLDOWN_MS = 1000
-const SECS_PER_MS_FACTOR = 1000
-const ELLIPSIS_HEIGHT_PX = 16
-const TITLE_MARGIN_BOTTOM_PX = 8
-const LINE_MARGIN_BOTTOM_PX = 2
-const MIN_VISIBLE_LINES_COUNT = 1
+const DEFAULT_TOOLTIP_DELAY_MS = 500;
+const TOUCH_DRAG_THRESHOLD_PX = 15;
+const BLOCK_CLICK_DURATION_SEC = 5;
+const TOUCH_HOVER_COOLDOWN_MS = 1000;
+const SECS_PER_MS_FACTOR = 1000;
+const ELLIPSIS_HEIGHT_PX = 16;
+const TITLE_MARGIN_BOTTOM_PX = 8;
+const LINE_MARGIN_BOTTOM_PX = 2;
+const MIN_VISIBLE_LINES_COUNT = 1;
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -28,21 +28,16 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   hideOnClick: { type: Boolean, default: false },
   touchInstant: { type: Boolean, default: false }
-})
+});
 
-const isSimplified = inject('isModalFastMode', null) ?? inject('isModalPerformanceMode', ref(false))
-const isVisible = ref(false)
-const trigger = ref<HTMLElement | null>(null)
-const tooltip = ref<HTMLElement | null>(null)
+const isSimplified =
+  inject('isModalFastMode', null) ?? inject('isModalPerformanceMode', ref(false));
+const isVisible = ref(false);
+const trigger = ref<HTMLElement | null>(null);
+const tooltip = ref<HTMLElement | null>(null);
 
-const {
-  coords,
-  activePosition,
-  arrowOffset,
-  isRightSide,
-  maxHeight,
-  updatePosition
-} = useTooltipPosition(trigger, tooltip, props.position)
+const { coords, activePosition, arrowOffset, isRightSide, maxHeight, updatePosition } =
+  useTooltipPosition(trigger, tooltip, props.position);
 
 const tooltipState = {
   timeout: null as gsap.core.Tween | null,
@@ -51,169 +46,172 @@ const tooltipState = {
   lastTouchTime: 0,
   touchStartX: 0,
   touchStartY: 0,
-  clickBlockTimeout: null as gsap.core.Tween | null,
-}
+  clickBlockTimeout: null as gsap.core.Tween | null
+};
 
 const show = (immediate = false) => {
-  if (isSimplified.value || props.disabled || isBlockedByClick.value) return 
-  if (tooltipState.timeout) tooltipState.timeout.kill()
-  
-  const actualDelay = (immediate || props.touchInstant) ? 0 : Math.max(DEFAULT_TOOLTIP_DELAY_MS, props.delay)
-  
+  if (isSimplified.value || props.disabled || isBlockedByClick.value) return;
+  if (tooltipState.timeout) tooltipState.timeout.kill();
+
+  const actualDelay =
+    immediate || props.touchInstant ? 0 : Math.max(DEFAULT_TOOLTIP_DELAY_MS, props.delay);
+
   tooltipState.timeout = gsap.delayedCall(actualDelay / SECS_PER_MS_FACTOR, async () => {
     // Hide previous tooltip immediately before showing this one
     if (activeTooltipHide && activeTooltipHide !== hideInstanceLogic) {
-      activeTooltipHide(true)
+      activeTooltipHide(true);
     }
-    activeTooltipHide = hideInstanceLogic
+    activeTooltipHide = hideInstanceLogic;
 
     if (trigger.value) {
-      const rect = trigger.value.getBoundingClientRect()
-      isRightSide.value = (rect.left + rect.width / 2) > window.innerWidth / 2
+      const rect = trigger.value.getBoundingClientRect();
+      isRightSide.value = rect.left + rect.width / 2 > window.innerWidth / 2;
     }
-    
-    visibleLineCount.value = null
-    isSlotTruncated.value = false
 
-    isVisible.value = true
-    await nextTick()
-    updatePosition()
-    
-    calculateFittingLines()
-    await nextTick()
-    updatePosition()
-    
+    visibleLineCount.value = null;
+    isSlotTruncated.value = false;
+
+    isVisible.value = true;
+    await nextTick();
+    updatePosition();
+
+    calculateFittingLines();
+    await nextTick();
+    updatePosition();
+
     // Auto-hide on scroll/wheel/click-outside/resize to prevent floating artifacts
-    window.addEventListener('scroll', hideScroll, { passive: true, capture: true })
-    window.addEventListener('wheel', hideScroll, { passive: true })
-    window.addEventListener('resize', hideScroll, { passive: true })
-    window.addEventListener('click', hideClickOutside, { capture: true })
-    window.addEventListener('touchstart', hideClickOutside, { capture: true })
-  })
-}
+    window.addEventListener('scroll', hideScroll, { passive: true, capture: true });
+    window.addEventListener('wheel', hideScroll, { passive: true });
+    window.addEventListener('resize', hideScroll, { passive: true });
+    window.addEventListener('click', hideClickOutside, { capture: true });
+    window.addEventListener('touchstart', hideClickOutside, { capture: true });
+  });
+};
 
-const isBlockedByClick = ref(false)
+const isBlockedByClick = ref(false);
 
 const hide = (immediate = false) => {
-  if (tooltipState.timeout) tooltipState.timeout.kill()
+  if (tooltipState.timeout) tooltipState.timeout.kill();
   if (tooltipState.touchTimeout) {
-    tooltipState.touchTimeout.kill()
-    tooltipState.touchTimeout = null
+    tooltipState.touchTimeout.kill();
+    tooltipState.touchTimeout = null;
   }
-  
+
   if (activeTooltipHide === hideInstanceLogic) {
-    activeTooltipHide = null
+    activeTooltipHide = null;
   }
-  
+
   if (immediate) {
-    tooltipState.isImmediateLeave = true
+    tooltipState.isImmediateLeave = true;
   }
-  
-  isVisible.value = false
-  visibleLineCount.value = null
-  isSlotTruncated.value = false
-  window.removeEventListener('scroll', hideScroll, { capture: true })
-  window.removeEventListener('wheel', hideScroll)
-  window.removeEventListener('resize', hideScroll)
-  window.removeEventListener('click', hideClickOutside, { capture: true })
-  window.removeEventListener('touchstart', hideClickOutside, { capture: true })
-}
+
+  isVisible.value = false;
+  visibleLineCount.value = null;
+  isSlotTruncated.value = false;
+  window.removeEventListener('scroll', hideScroll, { capture: true });
+  window.removeEventListener('wheel', hideScroll);
+  window.removeEventListener('resize', hideScroll);
+  window.removeEventListener('click', hideClickOutside, { capture: true });
+  window.removeEventListener('touchstart', hideClickOutside, { capture: true });
+};
 
 const hideInstanceLogic = (immediate = false) => {
-  hide(immediate)
-}
+  hide(immediate);
+};
 
 const hideScroll = () => {
-  hide(false)
-}
+  hide(false);
+};
 
 const hideClickOutside = (event: Event) => {
-  const target = event.target as Node
+  const target = event.target as Node;
   if (
-    tooltip.value && !tooltip.value.contains(target) &&
-    trigger.value && !trigger.value.contains(target)
+    tooltip.value &&
+    !tooltip.value.contains(target) &&
+    trigger.value &&
+    !trigger.value.contains(target)
   ) {
-    hide(true)
+    hide(true);
   }
-}
+};
 
 const updateTouchTime = () => {
-  tooltipState.lastTouchTime = Temporal.Now.instant().epochMilliseconds
-}
+  tooltipState.lastTouchTime = Temporal.Now.instant().epochMilliseconds;
+};
 
 const handleTouchStart = (e: TouchEvent) => {
-  updateTouchTime()
-  const touch = e.touches?.[0]
+  updateTouchTime();
+  const touch = e.touches?.[0];
   if (touch) {
-    tooltipState.touchStartX = touch.clientX
-    tooltipState.touchStartY = touch.clientY
+    tooltipState.touchStartX = touch.clientX;
+    tooltipState.touchStartY = touch.clientY;
   }
   if (tooltipState.touchTimeout) {
-    tooltipState.touchTimeout.kill()
-    tooltipState.touchTimeout = null
+    tooltipState.touchTimeout.kill();
+    tooltipState.touchTimeout = null;
   }
-  
+
   const TOUCH_LONG_PRESS_DELAY_SEC = 0.5;
   if (props.touchInstant) {
-    show(true)
+    show(true);
   } else {
     tooltipState.touchTimeout = gsap.delayedCall(TOUCH_LONG_PRESS_DELAY_SEC, () => {
-      show(true)
-      tooltipState.touchTimeout = null
-    })
+      show(true);
+      tooltipState.touchTimeout = null;
+    });
   }
-}
+};
 
 const handleTouchEnd = () => {
-  updateTouchTime()
+  updateTouchTime();
   if (tooltipState.touchTimeout) {
-    tooltipState.touchTimeout.kill()
-    tooltipState.touchTimeout = null
+    tooltipState.touchTimeout.kill();
+    tooltipState.touchTimeout = null;
   }
   if (props.touchInstant) {
-    return // Let touchInstant tooltips stay open until a click outside
+    return; // Let touchInstant tooltips stay open until a click outside
   }
   if (!isVisible.value) {
-    hide()
+    hide();
   }
-}
+};
 
 const handleTouchMove = (e: TouchEvent) => {
-  updateTouchTime()
-  const touch = e.touches?.[0]
-  if (!touch) return
-  
-  const deltaX = Math.abs(touch.clientX - tooltipState.touchStartX)
-  const deltaY = Math.abs(touch.clientY - tooltipState.touchStartY)
-  
+  updateTouchTime();
+  const touch = e.touches?.[0];
+  if (!touch) return;
+
+  const deltaX = Math.abs(touch.clientX - tooltipState.touchStartX);
+  const deltaY = Math.abs(touch.clientY - tooltipState.touchStartY);
+
   if (deltaX > TOUCH_DRAG_THRESHOLD_PX || deltaY > TOUCH_DRAG_THRESHOLD_PX) {
     if (tooltipState.touchTimeout) {
-      tooltipState.touchTimeout.kill()
-      tooltipState.touchTimeout = null
+      tooltipState.touchTimeout.kill();
+      tooltipState.touchTimeout = null;
     }
     if (isVisible.value) {
-      hide()
+      hide();
     }
   }
-}
+};
 
 const handleTriggerClick = (event: MouseEvent) => {
-  hide(true)
-  
-  if (!props.hideOnClick) return
-  event.stopPropagation()
-  isBlockedByClick.value = true
-  
-  if (tooltipState.clickBlockTimeout) tooltipState.clickBlockTimeout.kill()
+  hide(true);
+
+  if (!props.hideOnClick) return;
+  event.stopPropagation();
+  isBlockedByClick.value = true;
+
+  if (tooltipState.clickBlockTimeout) tooltipState.clickBlockTimeout.kill();
   tooltipState.clickBlockTimeout = gsap.delayedCall(BLOCK_CLICK_DURATION_SEC, () => {
-    isBlockedByClick.value = false
-  })
-}
+    isBlockedByClick.value = false;
+  });
+};
 
 const descriptionLines = computed(() => {
-  if (!props.description) return []
-  return props.description.split('\n').map(line => {
-    const trimmed = line.trim()
+  if (!props.description) return [];
+  return props.description.split('\n').map((line) => {
+    const trimmed = line.trim();
     if (trimmed.startsWith('---')) {
       return {
         hasBullet: false,
@@ -224,10 +222,10 @@ const descriptionLines = computed(() => {
         isNeutral: false,
         isDivider: true,
         isQuote: false
-      }
+      };
     }
-    const isQuote = trimmed.startsWith('«') || trimmed.startsWith('"') || trimmed.startsWith('“')
-    const match = trimmed.match(/^([▲▼⚡🚫•])\s*(.*)$/u)
+    const isQuote = trimmed.startsWith('«') || trimmed.startsWith('"') || trimmed.startsWith('“');
+    const match = trimmed.match(/^([▲▼⚡🚫•])\s*(.*)$/u);
     if (match) {
       return {
         hasBullet: true,
@@ -238,7 +236,7 @@ const descriptionLines = computed(() => {
         isNeutral: match[1] === '•' || match[1] === '⚡' || match[1] === '🚫',
         isDivider: false,
         isQuote: false
-      }
+      };
     }
     return {
       hasBullet: false,
@@ -249,121 +247,131 @@ const descriptionLines = computed(() => {
       isNeutral: false,
       isDivider: false,
       isQuote
-    }
-  })
-})
+    };
+  });
+});
 
-const visibleLineCount = ref<number | null>(null)
-const isSlotTruncated = ref(false)
+const visibleLineCount = ref<number | null>(null);
+const isSlotTruncated = ref(false);
 
 const displayedLines = computed(() => {
   if (visibleLineCount.value === null) {
-    return descriptionLines.value
+    return descriptionLines.value;
   }
-  return descriptionLines.value.slice(0, visibleLineCount.value)
-})
+  return descriptionLines.value.slice(0, visibleLineCount.value);
+});
 
 const isTruncated = computed(() => {
-  return visibleLineCount.value !== null && visibleLineCount.value < descriptionLines.value.length
-})
+  return visibleLineCount.value !== null && visibleLineCount.value < descriptionLines.value.length;
+});
 
 const calculateFittingLines = () => {
-  if (!tooltip.value || maxHeight.value === null) return
+  if (!tooltip.value || maxHeight.value === null) return;
 
-  const contentEl = tooltip.value.querySelector('.tooltip-content') as HTMLElement | null
-  if (!contentEl) return
+  const contentEl = tooltip.value.querySelector('.tooltip-content') as HTMLElement | null;
+  if (!contentEl) return;
 
   if (descriptionLines.value.length === 0) {
-    isSlotTruncated.value = contentEl.scrollHeight > maxHeight.value
-    return
+    isSlotTruncated.value = contentEl.scrollHeight > maxHeight.value;
+    return;
   }
 
   if (contentEl.scrollHeight <= maxHeight.value) {
-    visibleLineCount.value = null
-    return
+    visibleLineCount.value = null;
+    return;
   }
 
-  const titleEl = contentEl.querySelector('.pv-tooltip-title') as HTMLElement | null
-  const titleHeight = titleEl ? titleEl.offsetHeight + TITLE_MARGIN_BOTTOM_PX : 0
-  const availableForLines = maxHeight.value - titleHeight - ELLIPSIS_HEIGHT_PX
+  const titleEl = contentEl.querySelector('.pv-tooltip-title') as HTMLElement | null;
+  const titleHeight = titleEl ? titleEl.offsetHeight + TITLE_MARGIN_BOTTOM_PX : 0;
+  const availableForLines = maxHeight.value - titleHeight - ELLIPSIS_HEIGHT_PX;
 
   if (availableForLines <= 0) {
-    visibleLineCount.value = MIN_VISIBLE_LINES_COUNT
-    return
+    visibleLineCount.value = MIN_VISIBLE_LINES_COUNT;
+    return;
   }
 
-  const lineElements = contentEl.querySelectorAll('.tooltip-line, .tooltip-divider-line')
-  if (lineElements.length === 0) return
+  const lineElements = contentEl.querySelectorAll('.tooltip-line, .tooltip-divider-line');
+  if (lineElements.length === 0) return;
 
-  let accumulatedHeight = 0
-  let count = 0
+  let accumulatedHeight = 0;
+  let count = 0;
   for (let i = 0; i < lineElements.length; i++) {
-    const el = lineElements[i] as HTMLElement
-    const lineH = el.offsetHeight + LINE_MARGIN_BOTTOM_PX
+    const el = lineElements[i] as HTMLElement;
+    const lineH = el.offsetHeight + LINE_MARGIN_BOTTOM_PX;
     if (accumulatedHeight + lineH <= availableForLines) {
-      accumulatedHeight += lineH
-      count++
+      accumulatedHeight += lineH;
+      count++;
     } else {
-      break
+      break;
     }
   }
 
-  visibleLineCount.value = Math.max(MIN_VISIBLE_LINES_COUNT, count)
-}
+  visibleLineCount.value = Math.max(MIN_VISIBLE_LINES_COUNT, count);
+};
 
-watch(() => props.description, async () => {
-  if (isVisible.value) {
-    visibleLineCount.value = null
-    await nextTick()
-    updatePosition()
-    calculateFittingLines()
-    await nextTick()
-    updatePosition()
+watch(
+  () => props.description,
+  async () => {
+    if (isVisible.value) {
+      visibleLineCount.value = null;
+      await nextTick();
+      updatePosition();
+      calculateFittingLines();
+      await nextTick();
+      updatePosition();
+    }
   }
-})
+);
 
 const handleMouseEnter = () => {
-  if (Temporal.Now.instant().epochMilliseconds - tooltipState.lastTouchTime < TOUCH_HOVER_COOLDOWN_MS) return
+  if (
+    Temporal.Now.instant().epochMilliseconds - tooltipState.lastTouchTime <
+    TOUCH_HOVER_COOLDOWN_MS
+  )
+    return;
   if (window.matchMedia('(hover: hover)').matches) {
-    show(false)
+    show(false);
   }
-}
+};
 
 const handleContextMenu = (event: Event) => {
-  event.preventDefault()
-}
+  event.preventDefault();
+};
 
-watch(() => props.disabled, (newVal) => {
-  if (newVal) hide(true)
-})
+watch(
+  () => props.disabled,
+  (newVal) => {
+    if (newVal) hide(true);
+  }
+);
 
 // GSAP Hooks for custom animation on .tooltip-animate-wrapper
 const beforeEnter = (el: Element) => {
-  const wrapper = el.querySelector('.tooltip-animate-wrapper') as HTMLElement
-  if (!wrapper) return
+  const wrapper = el.querySelector('.tooltip-animate-wrapper') as HTMLElement;
+  if (!wrapper) return;
 
-  const activePos = activePosition.value
-  let startY = 6
-  if (activePos === 'bottom') startY = -6
-  let startX = 0
-  if (activePos === 'left') startX = 6
-  else if (activePos === 'right') startX = -6
+  const activePos = activePosition.value;
+  let startY = 6;
+  if (activePos === 'bottom') startY = -6;
+  let startX = 0;
+  if (activePos === 'left') startX = 6;
+  else if (activePos === 'right') startX = -6;
 
   gsap.set(wrapper, {
     opacity: 0,
     y: startY,
     x: startX
-  })
-}
+  });
+};
 
-const GSAP_TOOLTIP_ENTER_DURATION_SEC = 0.15
-const GSAP_TOOLTIP_LEAVE_DURATION_SEC = 0.08
+const GSAP_TOOLTIP_ENTER_DURATION_SEC = 0.15;
+const GSAP_TOOLTIP_LEAVE_DURATION_SEC = 0.08;
 
 const enter = (el: Element, done: () => void) => {
-  const wrapper = el.querySelector('.tooltip-animate-wrapper') as HTMLElement
+  const wrapper = el.querySelector('.tooltip-animate-wrapper') as HTMLElement;
   if (!wrapper) {
-    done()
-    return
+    done();
+    return;
   }
 
   gsap.to(wrapper, {
@@ -373,28 +381,28 @@ const enter = (el: Element, done: () => void) => {
     duration: GSAP_TOOLTIP_ENTER_DURATION_SEC,
     ease: 'power2.out',
     onComplete: done
-  })
-}
+  });
+};
 
 const leave = (el: Element, done: () => void) => {
   if (tooltipState.isImmediateLeave) {
-    done()
-    tooltipState.isImmediateLeave = false
-    return
+    done();
+    tooltipState.isImmediateLeave = false;
+    return;
   }
 
-  const wrapper = el.querySelector('.tooltip-animate-wrapper') as HTMLElement
+  const wrapper = el.querySelector('.tooltip-animate-wrapper') as HTMLElement;
   if (!wrapper) {
-    done()
-    return
+    done();
+    return;
   }
 
-  const activePos = activePosition.value
-  let endY = 4
-  if (activePos === 'bottom') endY = -4
-  let endX = 0
-  if (activePos === 'left') endX = 4
-  else if (activePos === 'right') endX = -4
+  const activePos = activePosition.value;
+  let endY = 4;
+  if (activePos === 'bottom') endY = -4;
+  let endX = 0;
+  if (activePos === 'left') endX = 4;
+  else if (activePos === 'right') endX = -4;
 
   gsap.to(wrapper, {
     opacity: 0,
@@ -403,22 +411,22 @@ const leave = (el: Element, done: () => void) => {
     duration: GSAP_TOOLTIP_LEAVE_DURATION_SEC,
     ease: 'power2.in',
     onComplete: done
-  })
-}
+  });
+};
 
 onUnmounted(() => {
-  hide(true)
-  if (tooltipState.clickBlockTimeout) tooltipState.clickBlockTimeout.kill()
-})
+  hide(true);
+  if (tooltipState.clickBlockTimeout) tooltipState.clickBlockTimeout.kill();
+});
 </script>
 
 <template>
   <component
-    :is="tag" 
+    :is="tag"
     id="pvtooltip-component-triggerclick"
-    ref="trigger" 
+    ref="trigger"
     class="pv-tooltip-wrapper"
-    audit-ignore="[PureVue-Ignore]" 
+    audit-ignore="[PureVue-Ignore]"
     @mouseenter="handleMouseEnter"
     @mouseleave="() => hide(false)"
     @touchstart="handleTouchStart"
@@ -431,62 +439,38 @@ onUnmounted(() => {
     <slot />
 
     <Teleport to="body">
-      <Transition
-        :css="false"
-        @before-enter="beforeEnter"
-        @enter="enter"
-        @leave="leave"
-      >
-        <div 
+      <Transition :css="false" @before-enter="beforeEnter" @enter="enter" @leave="leave">
+        <div
           v-if="isVisible"
           ref="tooltip"
-          :class="[
-            'pv-tooltip-teleported', 
-            `pos-${activePosition}`
-          ]"
-          :style="{ 
-            top: coords.top + 'px', 
+          :class="['pv-tooltip-teleported', `pos-${activePosition}`]"
+          :style="{
+            top: coords.top + 'px',
             left: coords.left + 'px'
           }"
         >
-          <div 
+          <div
             class="tooltip-animate-wrapper"
             :style="{
               '--arrow-x': arrowOffset.x + 'px',
               '--arrow-y': arrowOffset.y + 'px'
             }"
           >
-            <div 
+            <div
               class="tooltip-content"
               :style="maxHeight ? { maxHeight: maxHeight + 'px', overflow: 'hidden' } : {}"
             >
-              <span
-                v-if="title"
-                class="pv-tooltip-title"
-              >{{ title }}</span>
-              <span
-                v-if="description"
-                class="pv-tooltip-desc"
-              >
+              <span v-if="title" class="pv-tooltip-title">{{ title }}</span>
+              <span v-if="description" class="pv-tooltip-desc">
                 <PVTooltipDescriptionLine
                   v-for="(line, idx) in displayedLines"
                   :key="idx"
                   :line="line"
                 />
-                <span
-                  v-if="isTruncated"
-                  class="pv-tooltip-ellipsis"
-                >
-                  ...
-                </span>
+                <span v-if="isTruncated" class="pv-tooltip-ellipsis"> ... </span>
               </span>
               <slot name="content" />
-              <div
-                v-if="isSlotTruncated"
-                class="pv-tooltip-ellipsis"
-              >
-                ...
-              </div>
+              <div v-if="isSlotTruncated" class="pv-tooltip-ellipsis">...</div>
             </div>
             <div class="tooltip-arrow" />
           </div>

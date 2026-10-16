@@ -1,6 +1,6 @@
 import type { PokemonSet } from '@pkmn/sim';
 import { toID } from '@/logic/utils/strings.ts';
-import type { Pokemon as GamePokemon } from '../../types/pokemon/pokemon.ts';
+import type { Pokemon as GamePokemon, PokemonStatKey } from '../../types/pokemon/pokemon.ts';
 import { POKEMON_SPRITE_IDS } from '../../data/pokemon/spriteMapping.ts';
 import { getShowdownNickname } from './showdownUidMapper.ts';
 import { hasMoveData } from '../../data/battle/movesData.ts';
@@ -10,6 +10,7 @@ const DEFAULT_PERFECT_IV = 31 as const;
 const DEFAULT_ZERO_EV = 0 as const;
 
 // Inverse map: number → Showdown name (built once)
+// open-record: Sprite index string mapped to Showdown species name
 const _numericToSpecies: Record<string, string> = Object.fromEntries(
   Object.entries(POKEMON_SPRITE_IDS).map(([name, num]) => [String(num), name])
 );
@@ -20,7 +21,7 @@ const _numericToSpecies: Record<string, string> = Object.fromEntries(
  */
 function resolveShowdownSpecies(raw: string | undefined): string {
   if (!raw) {
-    throw new Error("[resolveShowdownSpecies] ID de especie inválido o indefinido.");
+    throw new Error('[resolveShowdownSpecies] ID de especie inválido o indefinido.');
   }
   // If purely numeric, lookup in inverse map
   if (/^\d+$/.test(raw)) return _numericToSpecies[raw] ?? raw;
@@ -31,11 +32,13 @@ function resolveShowdownSpecies(raw: string | undefined): string {
 function resolveValidShowdownMoves(poke: GamePokemon): string[] {
   const moves = poke.moves
     .filter((m): m is NonNullable<typeof m> => !!m && !!m.id)
-    .map(m => toID(m.id as string))
-    .filter(id => hasMoveData(id));
+    .map((m) => toID(m.id as string))
+    .filter((id) => hasMoveData(id));
 
   if (moves.length === 0) {
-    throw new Error(`[mapToShowdownSet] El Pokémon "${poke.name}" no tiene ningún movimiento válido cargado.`);
+    throw new Error(
+      `[mapToShowdownSet] El Pokémon "${poke.name}" no tiene ningún movimiento válido cargado.`
+    );
   }
   return moves;
 }
@@ -62,8 +65,8 @@ function mapShowdownEvs(poke: GamePokemon) {
   };
 }
 
-function mapShowdownStats(poke: GamePokemon): Record<string, number> {
-  const customStats = (poke as { stats?: Record<string, number> }).stats;
+function mapShowdownStats(poke: GamePokemon): Record<PokemonStatKey, number> {
+  const customStats = (poke as { stats?: Record<PokemonStatKey, number> }).stats;
   if (customStats) {
     return { ...customStats };
   }
@@ -82,10 +85,14 @@ function mapShowdownStats(poke: GamePokemon): Record<string, number> {
  */
 export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
   if (!poke.ability) {
-    throw new Error(`[mapToShowdownSet] El Pokémon "${poke.name}" no tiene una habilidad definida (ability ID requerida).`);
+    throw new Error(
+      `[mapToShowdownSet] El Pokémon "${poke.name}" no tiene una habilidad definida (ability ID requerida).`
+    );
   }
   if (!poke.nature) {
-    throw new Error(`[mapToShowdownSet] El Pokémon "${poke.name}" no tiene una naturaleza definida (nature ID requerida).`);
+    throw new Error(
+      `[mapToShowdownSet] El Pokémon "${poke.name}" no tiene una naturaleza definida (nature ID requerida).`
+    );
   }
 
   const moves = resolveValidShowdownMoves(poke);
@@ -93,7 +100,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
   const showdownName = getShowdownNickname(poke.uid);
   const rawNature = (poke.nature || 'serious').trim();
 
-  const showdownSet: PokemonSet & { uid?: string; stats?: Record<string, number> } = {
+  const showdownSet: PokemonSet & { uid?: string; stats?: Record<PokemonStatKey, number> } = {
     name: showdownName,
     species: speciesName,
     level: poke.level,

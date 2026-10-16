@@ -1,5 +1,5 @@
 // src/styles/components/_buttons.scss
-@use "../core/tools" as *;
+@use '../core/tools' as *;
 
 /**
  * Vicio Design System - Standardized Buttons
@@ -64,7 +64,8 @@
 }
 
 // Legacy Aliases
-.close-btn-primary, .action-btn-primary {
+.close-btn-primary,
+.action-btn-primary {
   @include btn-vicio('primary', 'md', true);
 }
 
@@ -91,5 +92,3 @@
 .minimize-widget-btn {
   @include widget-minimize-btn;
 }
-
-

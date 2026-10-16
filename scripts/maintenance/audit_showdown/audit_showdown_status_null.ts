@@ -15,12 +15,15 @@ export function auditShowdownStatusNull(targetDir: string): StatusNullAuditResul
   const statusNullViolations: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(targetDir)) return { statusNullViolations };
 
-  const files = getFilesRecursively(targetDir).filter(f => f.endsWith('.ts'));
+  const files = getFilesRecursively(targetDir).filter((f) => f.endsWith('.ts'));
 
   for (const file of files) {
     const content = readFileSync(file, 'utf-8');
     // Detecta asignaciones de status = null en cualquier referencia a objeto de tipo Pokemon/Sim/Showdown
-    if (/\.status\s*=\s*null/i.test(content) && (file.includes('showdown') || file.includes('sim') || file.includes('executor'))) {
+    if (
+      /\.status\s*=\s*null/i.test(content) &&
+      (file.includes('showdown') || file.includes('sim') || file.includes('executor'))
+    ) {
       statusNullViolations.push(file);
     }
   }

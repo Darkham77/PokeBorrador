@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { computed } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
-  tint?: string
-  size?: number | string
+  tint?: string;
+  size?: number | string;
 }
 
-const DEFAULT_EGG_SPRITE_SIZE_PX = 48
+const DEFAULT_EGG_SPRITE_SIZE_PX = 48;
 
 const props = withDefaults(defineProps<Props>(), {
   tint: '',
   size: DEFAULT_EGG_SPRITE_SIZE_PX
-})
+});
 
-const eggUrl = computed(() => getAssetUrl(ASSET_TYPES.POKEMON, 'egg'))
+const eggUrl = computed(() => getAssetUrl(ASSET_TYPES.POKEMON, 'egg'));
 
 const containerStyle = computed(() => {
-  let finalSize = props.size
+  let finalSize = props.size;
   if (typeof props.size === 'number') {
-    finalSize = `${props.size}px`
+    finalSize = `${props.size}px`;
   } else if (typeof props.size === 'string' && !isNaN(Number(props.size))) {
-    finalSize = `${props.size}px`
+    finalSize = `${props.size}px`;
   }
   return {
     width: finalSize,
@@ -30,25 +30,25 @@ const containerStyle = computed(() => {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center'
-  }
-})
+  };
+});
 
 const imgStyle = computed(() => ({
   width: '100%',
   height: '100%',
   objectFit: 'contain' as const,
   imageRendering: 'pixelated' as const
-}))
+}));
 
 const resolveTintColor = (tint: string): string => {
-  if (tint === 'violet') return 'rgba(168, 85, 247, 0.65)'
-  if (tint === 'red' || tint === 'npc') return 'rgba(239, 68, 68, 0.75)'
-  return tint
-}
+  if (tint === 'violet') return 'rgba(168, 85, 247, 0.65)';
+  if (tint === 'red' || tint === 'npc') return 'rgba(239, 68, 68, 0.75)';
+  return tint;
+};
 
 const tintStyle = computed(() => {
-  if (!props.tint) return {}
-  const tintColor = resolveTintColor(props.tint)
+  if (!props.tint) return {};
+  const tintColor = resolveTintColor(props.tint);
   return {
     position: 'absolute' as const,
     top: 0,
@@ -66,28 +66,14 @@ const tintStyle = computed(() => {
     webkitMaskRepeat: 'no-repeat',
     webkitMaskPosition: 'center',
     pointerEvents: 'none' as const
-  }
-})
+  };
+});
 </script>
 
 <template>
-  <div
-    class="egg-sprite-container"
-    :style="containerStyle"
-  >
-    <img
-      :src="eggUrl"
-      alt="Huevo Pokémon"
-      :style="imgStyle"
-    
-      width="32"
-      height="32"
-    >
-    <div
-      v-if="tint"
-      class="egg-tint-overlay"
-      :style="tintStyle"
-    />
+  <div class="egg-sprite-container" :style="containerStyle">
+    <img :src="eggUrl" alt="Huevo Pokémon" :style="imgStyle" width="32" height="32" />
+    <div v-if="tint" class="egg-tint-overlay" :style="tintStyle" />
   </div>
 </template>
 
@@ -96,4 +82,3 @@ const tintStyle = computed(() => {
   display: inline-flex;
 }
 </style>
-

@@ -3,7 +3,6 @@ import { generateContinent } from '../../logic/map/continent/continentalEngine.t
 import { CELL_BIOME } from '../../types/map/kantoGridModel.ts';
 
 describe('Procedural Mountain Cliffs & Autotiling Integrity', () => {
-
   it('verifies that procedural mountain massifs have cohesive geometry and 0 invalid 1-tile cutoffs', () => {
     const config = {
       seed: 867,

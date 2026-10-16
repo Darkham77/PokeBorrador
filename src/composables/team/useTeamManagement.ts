@@ -45,11 +45,14 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
 
   const activeTab = ref<TeamManagementTab>(options.initialTab || 'adventure');
 
-  watch(() => options.initialTab, (newTab) => {
-    if (newTab) {
-      activeTab.value = newTab;
+  watch(
+    () => options.initialTab,
+    (newTab) => {
+      if (newTab) {
+        activeTab.value = newTab;
+      }
     }
-  });
+  );
 
   const adventureTeam = computed(() => {
     const team = gameStore.state.team || [];
@@ -69,7 +72,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     const slots: (Pokemon | null)[] = [];
     for (let i = 0; i < MAX_PVP_SLOTS; i++) {
       const uid = pvpUids[i];
-      slots.push(allPokes.find(p => p.uid === uid) || null);
+      slots.push(allPokes.find((p) => p.uid === uid) || null);
     }
     return slots;
   });
@@ -83,7 +86,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     const slots: (Pokemon | null)[] = [];
     for (let i = 0; i < MAX_PVP6_SLOTS; i++) {
       const uid = pvpUids[i];
-      slots.push(allPokes.find(p => p.uid === uid) || null);
+      slots.push(allPokes.find((p) => p.uid === uid) || null);
     }
     return slots;
   });
@@ -98,7 +101,7 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
     const slots: (Pokemon | null)[] = [];
     for (let i = 0; i < maxSlots; i++) {
       const uid = warUids[i];
-      slots.push(allPokes.find(p => p.uid === uid) || null);
+      slots.push(allPokes.find((p) => p.uid === uid) || null);
     }
     return slots;
   });
@@ -134,7 +137,12 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
 
   const tournamentAllowedTypes = computed<string | null>(() => {
     const r = currentRules.value;
-    if ('allowedTypes' in r && Array.isArray(r.allowedTypes) && r.allowedTypes.length > 0 && r.allowedTypes.length < TOTAL_POKEMON_TYPES) {
+    if (
+      'allowedTypes' in r &&
+      Array.isArray(r.allowedTypes) &&
+      r.allowedTypes.length > 0 &&
+      r.allowedTypes.length < TOTAL_POKEMON_TYPES
+    ) {
       return (r.allowedTypes as readonly string[]).join(', '); // no-domain: Non-domain utility collection or data structure
     }
     return null;
@@ -172,9 +180,13 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
       return;
     }
 
-    gameStore.setRankedTeam(tab, autoTeam.map(p => p.uid));
+    gameStore.setRankedTeam(
+      tab,
+      autoTeam.map((p) => p.uid)
+    );
 
-    gsap.fromTo('.slots-grid .team-slot',
+    gsap.fromTo(
+      '.slots-grid .team-slot',
       { scale: 0.9, opacity: 0.6 },
       { scale: 1, opacity: 1, duration: 0.35, stagger: 0.05, ease: 'back.out(1.7)' }
     );
@@ -278,8 +290,13 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
 
   function selectPvp(slotIndex: number) {
     const pvpTeamUids = (gameStore.state.pvpTeam || []) as string[]; // no-domain: Non-domain utility collection or data structure
-    const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])];
-    const available = allPokes.filter((p): p is Pokemon => p !== null && !pvpTeamUids.includes(p.uid));
+    const allPokes = [
+      ...((gameStore.state.team || []) as (Pokemon | null)[]),
+      ...((gameStore.state.box || []) as (Pokemon | null)[])
+    ];
+    const available = allPokes.filter(
+      (p): p is Pokemon => p !== null && !pvpTeamUids.includes(p.uid)
+    );
 
     if (available.length === 0) {
       uiStore.notify('No tienes más Pokémon disponibles para asignar al equipo PVP.', '⚠️');
@@ -301,8 +318,13 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
 
   function selectPvp6(slotIndex: number) {
     const currentPvpTeam6 = (gameStore.state.pvpTeam6 || []) as string[]; // no-domain: Non-domain utility collection or data structure
-    const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])];
-    const available = allPokes.filter((p): p is Pokemon => p !== null && !currentPvpTeam6.includes(p.uid));
+    const allPokes = [
+      ...((gameStore.state.team || []) as (Pokemon | null)[]),
+      ...((gameStore.state.box || []) as (Pokemon | null)[])
+    ];
+    const available = allPokes.filter(
+      (p): p is Pokemon => p !== null && !currentPvpTeam6.includes(p.uid)
+    );
 
     if (available.length === 0) {
       uiStore.notify('No tienes más Pokémon disponibles para asignar al equipo PVP 6v6.', '⚠️');
@@ -324,8 +346,13 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
 
   function selectWar(slotIndex: number) {
     const warTeamUids = (gameStore.state.warTeam || []) as string[]; // no-domain: Non-domain utility collection or data structure
-    const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])];
-    const available = allPokes.filter((p): p is Pokemon => p !== null && !warTeamUids.includes(p.uid));
+    const allPokes = [
+      ...((gameStore.state.team || []) as (Pokemon | null)[]),
+      ...((gameStore.state.box || []) as (Pokemon | null)[])
+    ];
+    const available = allPokes.filter(
+      (p): p is Pokemon => p !== null && !warTeamUids.includes(p.uid)
+    );
 
     if (available.length === 0) {
       uiStore.notify('No tienes más Pokémon disponibles para asignar al equipo de Guerra.', '⚠️');
@@ -345,7 +372,9 @@ export function useTeamManagement(options: UseTeamManagementOptions = {}) {
   }
 
   function selectAdventure(_slotIndex: number) {
-    const currentTeamUids = (gameStore.state.team || []).map((p: Pokemon | null) => p?.uid).filter(Boolean) as string[]; // no-domain: Non-domain utility collection or data structure
+    const currentTeamUids = (gameStore.state.team || [])
+      .map((p: Pokemon | null) => p?.uid)
+      .filter(Boolean) as string[]; // no-domain: Non-domain utility collection or data structure
 
     uiStore.open('PokemonSelection', {
       title: '⚡ SELECCIONAR POKÉMON',

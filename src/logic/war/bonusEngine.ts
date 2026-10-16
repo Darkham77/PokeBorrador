@@ -1,13 +1,12 @@
+import { calculateMapBonuses } from './warEngine.ts';
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon';
+import type { DominanceInfo } from '@/types/system/stores';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { FactionId } from '@/types/system/game';
 
-import { calculateMapBonuses } from './warEngine.ts'
-import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
-import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon'
-import type { DominanceInfo } from '@/types/system/stores'
-import type { MapRouteId } from '@/data/world/map-assets'
-import type { FactionId } from '@/types/system/game'
-
-const DOMINANCE_MIN_IV_BOOST = 15
-const DOMINANCE_MONEY_BOOST_MULT = 1.2
+const DOMINANCE_MIN_IV_BOOST = 15;
+const DOMINANCE_MONEY_BOOST_MULT = 1.2;
 const BASE_DOMINANCE_SHINY_CHANCE = 0.001;
 
 /**
@@ -17,32 +16,35 @@ export function applyEncounterBonuses(
   pokemon: Pokemon,
   mapId: MapRouteId,
   faction: FactionId | null,
-  dominanceData?: Partial<Record<MapRouteId, DominanceInfo>> | Record<MapRouteId, DominanceInfo> | null
+  dominanceData?:
+    | Partial<Record<MapRouteId, DominanceInfo>>
+    | Record<MapRouteId, DominanceInfo>
+    | null
 ): Pokemon {
-  if (!faction || !dominanceData) return pokemon
+  if (!faction || !dominanceData) return pokemon;
 
-  const winner = dominanceData[mapId]?.winner
-  const isDominant = winner === faction
-  const bonuses = calculateMapBonuses(isDominant)
+  const winner = dominanceData[mapId]?.winner;
+  const isDominant = winner === faction;
+  const bonuses = calculateMapBonuses(isDominant);
 
   // 1. Shiny Multiplier (Legacy 1.3x)
   if (isDominant && !pokemon.isShiny) {
-    if (Math.random() < (BASE_DOMINANCE_SHINY_CHANCE * (bonuses.shinyMult - 1))) {
-       pokemon.isShiny = true
+    if (Math.random() < BASE_DOMINANCE_SHINY_CHANCE * (bonuses.shinyMult - 1)) {
+      pokemon.isShiny = true;
     }
   }
 
   // 2. IV Boost (Legacy rule: Guaranteed higher IVs)
   if (isDominant && bonuses.ivBoost > 0) {
-    POKEMON_STAT_KEYS.forEach(stat => {
-      pokemon.ivs[stat] = Math.max(Number(pokemon.ivs[stat]) || 0, DOMINANCE_MIN_IV_BOOST) // Boost to at least 15
-    })
-    
+    POKEMON_STAT_KEYS.forEach((stat) => {
+      pokemon.ivs[stat] = Math.max(Number(pokemon.ivs[stat]) || 0, DOMINANCE_MIN_IV_BOOST); // Boost to at least 15
+    });
+
     // CRITICAL: Recalculate stats after IV changes
-    recalcPokemonStats(pokemon)
+    recalcPokemonStats(pokemon);
   }
 
-  return pokemon
+  return pokemon;
 }
 
 export function getBattleRewardModifiers(
@@ -50,14 +52,14 @@ export function getBattleRewardModifiers(
   faction: FactionId | null,
   dominanceData: Partial<Record<MapRouteId, DominanceInfo>> | Record<MapRouteId, DominanceInfo>
 ): { expMult: number; moneyMult: number } {
-  if (!faction || !dominanceData) return { expMult: 1, moneyMult: 1 }
+  if (!faction || !dominanceData) return { expMult: 1, moneyMult: 1 };
 
-  const winner = dominanceData[mapId]?.winner
-  const isDominant = winner === faction
-  const bonuses = calculateMapBonuses(isDominant)
+  const winner = dominanceData[mapId]?.winner;
+  const isDominant = winner === faction;
+  const bonuses = calculateMapBonuses(isDominant);
 
   return {
     expMult: bonuses.expMult,
     moneyMult: isDominant ? DOMINANCE_MONEY_BOOST_MULT : 1 // Legacy rule: 20% extra money
-  }
+  };
 }

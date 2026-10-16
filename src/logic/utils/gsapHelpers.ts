@@ -1,4 +1,4 @@
-import { gsap } from 'gsap'
+import { gsap } from 'gsap';
 
 /**
  * Utility to convert a GSAP animation or timeline into a Promise.
@@ -6,16 +6,16 @@ import { gsap } from 'gsap'
  */
 export const awaitAnimation = (anim: gsap.core.Animation): Promise<void> => {
   return new Promise((resolve) => {
-    anim.eventCallback('onComplete', resolve)
-  })
-}
+    anim.eventCallback('onComplete', resolve);
+  });
+};
 
 /**
  * Kill all active tweens on a specific target to prevent memory leaks.
  */
 export const killTweens = (target: string | object) => {
-  gsap.killTweensOf(target)
-}
+  gsap.killTweensOf(target);
+};
 
 /**
  * Creates a standard timeline with common defaults.
@@ -28,16 +28,16 @@ export const createTimeline = (vars?: gsap.TimelineVars) => {
       duration: 0.4,
       ...vars?.defaults
     }
-  })
-}
+  });
+};
 
 /**
  * Asynchronous pause tied to the GSAP clock.
  * Responds to gsap.globalTimeline.timeScale().
  */
 export const gsapSleep = (ms: number): Promise<void> => {
-  const MS_PER_SECOND = 1000
+  const MS_PER_SECOND = 1000;
   return new Promise((resolve) => {
-    gsap.delayedCall(ms / MS_PER_SECOND, resolve)
-  })
-}
+    gsap.delayedCall(ms / MS_PER_SECOND, resolve);
+  });
+};

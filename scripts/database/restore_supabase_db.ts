@@ -2,12 +2,12 @@
  * @file restore_supabase_db.ts
  * @description Script automático para restaurar un respaldo completo (backup) en formato JSON
  * hacia la base de datos Supabase elegida (nube o NAS), extrayendo credenciales y Tenant ID del .env maestro.
- * 
+ *
  * UTILIDAD:
  * Permite al usuario elegir un servidor (--server=<perfil>) y un archivo de respaldo opcional (--file=<ruta>).
  * Si no se especifica --file, detecta automáticamente el respaldo más reciente para ese servidor en database/backups/.
  * Realiza una limpieza limpia en orden inverso y restaura transaccionalmente todas las filas.
- * 
+ *
  * CUMPLE CON:
  * - Regla de Aislamiento y Parseo Multi-Servidor (env-multi-server-parser).
  * - Estándares Node.js 26+ (Explicit Resource Management con 'using', prefijos node:).
@@ -18,7 +18,11 @@ import fsPromises from 'node:fs/promises';
 import { parseArgs, styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
-import { buildDatabaseUrl, getValidatedServerConfigs, parseServerArguments } from '../lib/supabaseClient.ts';
+import {
+  buildDatabaseUrl,
+  getValidatedServerConfigs,
+  parseServerArguments
+} from '../lib/supabaseClient.ts';
 import { safeResolve, safeJoin } from '@francogp/auditor';
 
 // Optimizar ejecución en ejecuciones sucesivas
@@ -28,12 +32,17 @@ const BACKUPS_DIR = safeResolve(process.cwd(), 'database/backups');
 const RESTORE_TARGET_NODE_VERSION_LABEL = '26';
 
 export async function restoreSupabaseDb() {
-  console.log(styleText('bold', `\n--- 🔄 SUPABASE DATABASE RESTORE MANAGER (Node.js ${RESTORE_TARGET_NODE_VERSION_LABEL}+) ---`));
+  console.log(
+    styleText(
+      'bold',
+      `\n--- 🔄 SUPABASE DATABASE RESTORE MANAGER (Node.js ${RESTORE_TARGET_NODE_VERSION_LABEL}+) ---`
+    )
+  );
 
   const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
 
   const args = process.argv.slice(2);
-  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
+  const normalized = args.map((a) => (a.includes('=') && !a.startsWith('-') ? `--${a}` : a));
   const { values, positionals } = parseArgs({
     args: normalized,
     options: {
@@ -46,13 +55,21 @@ export async function restoreSupabaseDb() {
 
   const targetProfiles = parseServerArguments(args, baseProfiles, allAvailable);
   const serverArg = targetProfiles[0];
-  const fileArg = typeof values.file === 'string' ? values.file : positionals.find(p => p.endsWith('.json'));
+  const fileArg =
+    typeof values.file === 'string' ? values.file : positionals.find((p) => p.endsWith('.json'));
 
   if (!serverArg) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas restaurar indicando server=<perfil>.'));
+    console.log(
+      styleText('yellow', '⚠️  Especifica qué servidor deseas restaurar indicando server=<perfil>.')
+    );
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
     console.log(styleText('gray', 'Ejemplo: npm run database:restore server=server_franco'));
-    console.log(styleText('gray', 'Ejemplo con archivo: npm run database:restore server=server_franco file=database/backups/server_franco/backup_...json'));
+    console.log(
+      styleText(
+        'gray',
+        'Ejemplo con archivo: npm run database:restore server=server_franco file=database/backups/server_franco/backup_...json'
+      )
+    );
     process.exit(1);
   }
 
@@ -60,25 +77,46 @@ export async function restoreSupabaseDb() {
   const { findServerConfig } = await import('../lib/supabaseClient.ts');
   const conf = findServerConfig(serverConfigs, profile);
   if (!conf) {
-    console.error(styleText('red', `❌ Error: El perfil o ID "${profile}" no existe en el archivo .env.`));
+    console.error(
+      styleText('red', `❌ Error: El perfil o ID "${profile}" no existe en el archivo .env.`)
+    );
     process.exit(1);
   }
 
   const canonicalName = conf.ID || profile;
 
-  console.log(styleText('bold', styleText('blue', `\n==================================================`)));
-  console.log(styleText('bold', styleText('cyan', `🔄 INICIANDO RESTAURACIÓN DE BASE DE DATOS: [${canonicalName}]`)));
-  console.log(styleText('bold', styleText('blue', `==================================================`)));
+  console.log(
+    styleText('bold', styleText('blue', `\n==================================================`))
+  );
+  console.log(
+    styleText(
+      'bold',
+      styleText('cyan', `🔄 INICIANDO RESTAURACIÓN DE BASE DE DATOS: [${canonicalName}]`)
+    )
+  );
+  console.log(
+    styleText('bold', styleText('blue', `==================================================`))
+  );
 
   const targetBackupPath = await resolveTargetBackupPath(canonicalName, fileArg);
   const backupObj = await loadBackupObject(targetBackupPath);
   const backupData = backupObj.data || {};
   const tableNames = Object.keys(backupData);
-  console.log(styleText('cyan', `📦 Respaldo cargado en memoria: ${tableNames.length} tablas detectadas (Fecha de origen: ${backupObj.metadata?.timestamp || 'Desconocida'}).`));
+  console.log(
+    styleText(
+      'cyan',
+      `📦 Respaldo cargado en memoria: ${tableNames.length} tablas detectadas (Fecha de origen: ${backupObj.metadata?.timestamp || 'Desconocida'}).`
+    )
+  );
 
   const dbUrl = buildDatabaseUrl(conf, canonicalName);
   if (!dbUrl || dbUrl.includes('placeholder')) {
-    console.error(styleText('red', `❌ Error: URL de Postgres inválida o contraseña placeholder para "${canonicalName}".`));
+    console.error(
+      styleText(
+        'red',
+        `❌ Error: URL de Postgres inválida o contraseña placeholder para "${canonicalName}".`
+      )
+    );
     process.exit(1);
   }
 
@@ -93,9 +131,16 @@ export async function restoreSupabaseDb() {
     const reverseOrderedTables = [...orderedTables].reverse();
 
     const authBackup = backupObj.auth;
-    const hasAuthBackup = Boolean(authBackup && Array.isArray(authBackup.users) && authBackup.users.length > 0);
+    const hasAuthBackup = Boolean(
+      authBackup && Array.isArray(authBackup.users) && authBackup.users.length > 0
+    );
 
-    console.log(styleText('yellow', `⚠️  Iniciando transacción de restauración. Se limpiarán las tablas existentes y se reinsertarán los datos del respaldo.`));
+    console.log(
+      styleText(
+        'yellow',
+        `⚠️  Iniciando transacción de restauración. Se limpiarán las tablas existentes y se reinsertarán los datos del respaldo.`
+      )
+    );
 
     await sql.begin(async (tx) => {
       await cleanDestinationTables(tx, reverseOrderedTables, existingTables);
@@ -111,17 +156,46 @@ export async function restoreSupabaseDb() {
         await restoreAuthIdentities(tx, authBackup.identities, authTableColumns.get('identities')!);
       }
 
-      console.log(styleText('green', `\n✨ Limpieza completada. Iniciando inserción de datos en orden jerárquico...`));
-      const totalRestoredRows = await restoreTableData(tx, orderedTables, backupData, existingTables, tableColumns);
+      console.log(
+        styleText(
+          'green',
+          `\n✨ Limpieza completada. Iniciando inserción de datos en orden jerárquico...`
+        )
+      );
+      const totalRestoredRows = await restoreTableData(
+        tx,
+        orderedTables,
+        backupData,
+        existingTables,
+        tableColumns
+      );
       await restoreRolePrivileges(tx);
 
-      console.log(styleText('bold', styleText('green', `\n🎉 Transacción completada con éxito. ${totalRestoredRows} filas totales restauradas en [${canonicalName}].`)));
+      console.log(
+        styleText(
+          'bold',
+          styleText(
+            'green',
+            `\n🎉 Transacción completada con éxito. ${totalRestoredRows} filas totales restauradas en [${canonicalName}].`
+          )
+        )
+      );
     });
 
     await sql.end();
   } catch (restErr: unknown) {
-    console.error(styleText('red', `\n❌ Error fatal durante la restauración en [${canonicalName}]: ${(restErr as Error).message}`));
-    console.error(styleText('yellow', `🔄 La transacción ha sido revertida (ROLLBACK automático). La base de datos mantiene su estado anterior.`));
+    console.error(
+      styleText(
+        'red',
+        `\n❌ Error fatal durante la restauración en [${canonicalName}]: ${(restErr as Error).message}`
+      )
+    );
+    console.error(
+      styleText(
+        'yellow',
+        `🔄 La transacción ha sido revertida (ROLLBACK automático). La base de datos mantiene su estado anterior.`
+      )
+    );
     try {
       await sql.end();
     } catch {
@@ -153,21 +227,35 @@ async function resolveTargetBackupPath(canonicalName: string, fileArg?: string):
   }
 
   const serverBackupDir = safeJoin(BACKUPS_DIR, canonicalName);
-  console.log(styleText('cyan', `🔍 Buscando archivo de respaldo más reciente para [${canonicalName}] en database/backups/${canonicalName}/...`));
+  console.log(
+    styleText(
+      'cyan',
+      `🔍 Buscando archivo de respaldo más reciente para [${canonicalName}] en database/backups/${canonicalName}/...`
+    )
+  );
   try {
     const files = await fsPromises.readdir(serverBackupDir);
     const matching = files
-      .filter(f => f.startsWith(`${canonicalName}_backup_`) && f.endsWith('.json'))
+      .filter((f) => f.startsWith(`${canonicalName}_backup_`) && f.endsWith('.json'))
       .sort()
       .reverse();
 
     if (matching.length === 0 || matching[0] === undefined) {
-      throw new Error(`No se encontraron archivos de respaldo automáticos para "${canonicalName}" en ${serverBackupDir}.`);
+      throw new Error(
+        `No se encontraron archivos de respaldo automáticos para "${canonicalName}" en ${serverBackupDir}.`
+      );
     }
-    console.log(styleText('green', `🏷️  Archivo de respaldo detectado automáticamente: ${matching[0]}`));
+    console.log(
+      styleText('green', `🏷️  Archivo de respaldo detectado automáticamente: ${matching[0]}`)
+    );
     return safeJoin(serverBackupDir, matching[0]);
   } catch (rErr: unknown) {
-    console.error(styleText('red', `❌ Error al inspeccionar el directorio de respaldos: ${(rErr as Error).message}`));
+    console.error(
+      styleText(
+        'red',
+        `❌ Error al inspeccionar el directorio de respaldos: ${(rErr as Error).message}`
+      )
+    );
     process.exit(1);
   }
 }
@@ -182,20 +270,30 @@ async function loadBackupObject(targetBackupPath: string): Promise<BackupObject>
     }
     return backupObj;
   } catch (jErr: unknown) {
-    console.error(styleText('red', `❌ Error: Archivo de respaldo JSON inválido o corrupto: ${(jErr as Error).message}`));
+    console.error(
+      styleText(
+        'red',
+        `❌ Error: Archivo de respaldo JSON inválido o corrupto: ${(jErr as Error).message}`
+      )
+    );
     process.exit(1);
   }
 }
 
 async function fetchDestinationMetadata(sql: postgres.Sql): Promise<DestinationDbMetadata> {
-  interface TableRow { table_name: string }
+  interface TableRow {
+    table_name: string;
+  }
   const tables = await sql<TableRow[]>`
     SELECT table_name FROM information_schema.tables 
     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
   `;
-  const existingTables = new Set(tables.map(t => t.table_name));
+  const existingTables = new Set(tables.map((t) => t.table_name));
 
-  interface ColumnRow { table_name: string; column_name: string }
+  interface ColumnRow {
+    table_name: string;
+    column_name: string;
+  }
   const cols = await sql<ColumnRow[]>`
     SELECT table_name, column_name FROM information_schema.columns WHERE table_schema = 'public'
   `;
@@ -205,7 +303,12 @@ async function fetchDestinationMetadata(sql: postgres.Sql): Promise<DestinationD
     tableColumns.get(col.table_name)?.add(col.column_name);
   }
 
-  interface AuthColumnRow { table_name: string; column_name: string; is_generated?: string; is_updatable?: string }
+  interface AuthColumnRow {
+    table_name: string;
+    column_name: string;
+    is_generated?: string;
+    is_updatable?: string;
+  }
   const authCols = await sql<AuthColumnRow[]>`
     SELECT table_name, column_name, is_generated, is_updatable FROM information_schema.columns WHERE table_schema = 'auth'
   `;
@@ -221,9 +324,20 @@ async function fetchDestinationMetadata(sql: postgres.Sql): Promise<DestinationD
 }
 
 const UUID_STRING_LENGTH_EXPECTED = 36;
-const USER_ID_KEYS = ['user_id', 'requester_id', 'addressee_id', 'sender_id', 'opponent_id', 'player_id', 'winner_id'] as const;
+const USER_ID_KEYS = [
+  'user_id',
+  'requester_id',
+  'addressee_id',
+  'sender_id',
+  'opponent_id',
+  'player_id',
+  'winner_id'
+] as const;
 
-function collectBackupUserIds(backupData: Record<string, Record<string, unknown>[]>, tableNames: readonly string[]): Map<string, string> {
+function collectBackupUserIds(
+  backupData: Record<string, Record<string, unknown>[]>,
+  tableNames: readonly string[]
+): Map<string, string> {
   const backupUserIds = new Map<string, string>();
   const profileRows = backupData['profiles'] || [];
   for (const r of profileRows) {
@@ -249,7 +363,7 @@ function collectBackupUserIds(backupData: Record<string, Record<string, unknown>
 
 const TABLE_PRIORITY_ORDER = ['system_config', '_migrations', 'events_config', 'profiles'] as const;
 const TABLE_PRIORITY_INDEX_MAP: ReadonlyMap<string, number> = new Map(
-  TABLE_PRIORITY_ORDER.map((name, idx) => [name, idx]),
+  TABLE_PRIORITY_ORDER.map((name, idx) => [name, idx])
 );
 
 function orderTablesByDependency(tableNames: readonly string[]): string[] {
@@ -263,15 +377,26 @@ function orderTablesByDependency(tableNames: readonly string[]): string[] {
   });
 }
 
-async function cleanDestinationTables(tx: postgres.TransactionSql, reverseOrderedTables: readonly string[], existingTables: ReadonlySet<string>): Promise<void> {
+async function cleanDestinationTables(
+  tx: postgres.TransactionSql,
+  reverseOrderedTables: readonly string[],
+  existingTables: ReadonlySet<string>
+): Promise<void> {
   for (const tableName of reverseOrderedTables) {
     if (!existingTables.has(tableName)) {
       if (tableName === 'passive_battle_results' && existingTables.has('passive_battle_reports')) {
         try {
           await tx.unsafe(`DELETE FROM public.passive_battle_reports`);
-          console.log(styleText('gray', `   🧹 Tabla passive_battle_reports limpiada correctamente.`));
+          console.log(
+            styleText('gray', `   🧹 Tabla passive_battle_reports limpiada correctamente.`)
+          );
         } catch (dErr: unknown) {
-          console.error(styleText('yellow', `   ⚠️ Advertencia al limpiar tabla passive_battle_reports: ${(dErr as Error).message}`));
+          console.error(
+            styleText(
+              'yellow',
+              `   ⚠️ Advertencia al limpiar tabla passive_battle_reports: ${(dErr as Error).message}`
+            )
+          );
         }
       }
       continue;
@@ -280,7 +405,12 @@ async function cleanDestinationTables(tx: postgres.TransactionSql, reverseOrdere
       await tx.unsafe(`DELETE FROM public."${tableName}"`);
       console.log(styleText('gray', `   🧹 Tabla ${tableName} limpiada correctamente.`));
     } catch (dErr: unknown) {
-      console.error(styleText('yellow', `   ⚠️ Advertencia al limpiar tabla ${tableName}: ${(dErr as Error).message}`));
+      console.error(
+        styleText(
+          'yellow',
+          `   ⚠️ Advertencia al limpiar tabla ${tableName}: ${(dErr as Error).message}`
+        )
+      );
     }
   }
 }
@@ -294,14 +424,24 @@ async function cleanAuthTables(tx: postgres.TransactionSql, hasAuthBackup: boole
     await tx`DELETE FROM auth.users`;
     console.log(styleText('gray', `   🧹 Tabla auth.users limpiada correctamente.`));
   } catch (cleanAuthErr: unknown) {
-    console.error(styleText('yellow', `   ⚠️ Advertencia al limpiar tablas de auth: ${(cleanAuthErr as Error).message}`));
+    console.error(
+      styleText(
+        'yellow',
+        `   ⚠️ Advertencia al limpiar tablas de auth: ${(cleanAuthErr as Error).message}`
+      )
+    );
   }
 }
 
 const EMPTY_STRING_COLUMNS = [
-  'confirmation_token', 'recovery_token', 'email_change_token_new',
-  'email_change', 'email_change_token_current', 'phone_change',
-  'phone_change_token', 'reauthentication_token'
+  'confirmation_token',
+  'recovery_token',
+  'email_change_token_new',
+  'email_change',
+  'email_change_token_current',
+  'phone_change',
+  'phone_change_token',
+  'reauthentication_token'
 ] as const;
 type EmptyStringColumn = (typeof EMPTY_STRING_COLUMNS)[number];
 const EMPTY_STRING_COLS: ReadonlySet<EmptyStringColumn> = new Set(EMPTY_STRING_COLUMNS);
@@ -316,14 +456,21 @@ function parseJsonColumnSafe(val: unknown): unknown {
   }
 }
 
-function cleanAuthUserRow(u: Record<string, unknown>, usersCols: ReadonlySet<string>): Record<string, unknown> {
+function cleanAuthUserRow(
+  u: Record<string, unknown>,
+  usersCols: ReadonlySet<string>
+): Record<string, unknown> {
   const cleanUser: Record<string, unknown> = {};
   for (const col of usersCols) {
     const val = u[col];
-    if ((col === 'raw_app_meta_data' || col === 'raw_user_meta_data') && val !== null && val !== undefined) {
+    if (
+      (col === 'raw_app_meta_data' || col === 'raw_user_meta_data') &&
+      val !== null &&
+      val !== undefined
+    ) {
       cleanUser[col] = parseJsonColumnSafe(val);
     } else if (EMPTY_STRING_COLS.has(col as EmptyStringColumn)) {
-      cleanUser[col] = (val === null || val === undefined) ? '' : val;
+      cleanUser[col] = val === null || val === undefined ? '' : val;
     } else {
       cleanUser[col] = val !== undefined ? val : null;
     }
@@ -331,7 +478,10 @@ function cleanAuthUserRow(u: Record<string, unknown>, usersCols: ReadonlySet<str
   return cleanUser;
 }
 
-function cleanAuthIdentityRow(iden: Record<string, unknown>, idenCols: ReadonlySet<string>): Record<string, unknown> {
+function cleanAuthIdentityRow(
+  iden: Record<string, unknown>,
+  idenCols: ReadonlySet<string>
+): Record<string, unknown> {
   const cleanIden: Record<string, unknown> = {};
   for (const col of idenCols) {
     const val = iden[col];
@@ -344,21 +494,40 @@ function cleanAuthIdentityRow(iden: Record<string, unknown>, idenCols: ReadonlyS
   return cleanIden;
 }
 
-async function restoreAuthUsers(tx: postgres.TransactionSql, users: Record<string, unknown>[], usersCols: ReadonlySet<string>): Promise<void> {
-  console.log(styleText('cyan', `\n👤 Restaurando ${users.length} usuarios auténticos en auth.users...`));
+async function restoreAuthUsers(
+  tx: postgres.TransactionSql,
+  users: Record<string, unknown>[],
+  usersCols: ReadonlySet<string>
+): Promise<void> {
+  console.log(
+    styleText('cyan', `\n👤 Restaurando ${users.length} usuarios auténticos en auth.users...`)
+  );
   for (const u of users) {
     try {
       const cleanUser = cleanAuthUserRow(u, usersCols);
-      const updateCols = Object.keys(cleanUser).filter(k => k !== 'id');
-      await tx`INSERT INTO auth.users ${ tx(cleanUser) } ON CONFLICT (id) DO UPDATE SET ${ tx(cleanUser, ...updateCols) }`;
+      const updateCols = Object.keys(cleanUser).filter((k) => k !== 'id');
+      await tx`INSERT INTO auth.users ${tx(cleanUser)} ON CONFLICT (id) DO UPDATE SET ${tx(cleanUser, ...updateCols)}`;
     } catch (authErr: unknown) {
-      console.error(styleText('yellow', `   ⚠️ Advertencia al restaurar usuario ${u.id}: ${(authErr as Error).message}`));
+      console.error(
+        styleText(
+          'yellow',
+          `   ⚠️ Advertencia al restaurar usuario ${u.id}: ${(authErr as Error).message}`
+        )
+      );
     }
   }
 }
 
-async function ensureFallbackAuthUsers(tx: postgres.TransactionSql, backupUserIds: ReadonlyMap<string, string>): Promise<void> {
-  console.log(styleText('cyan', `\n👤 Asegurando que todos los usuarios del respaldo (${backupUserIds.size}) existan en auth.users...`));
+async function ensureFallbackAuthUsers(
+  tx: postgres.TransactionSql,
+  backupUserIds: ReadonlyMap<string, string>
+): Promise<void> {
+  console.log(
+    styleText(
+      'cyan',
+      `\n👤 Asegurando que todos los usuarios del respaldo (${backupUserIds.size}) existan en auth.users...`
+    )
+  );
   for (const [userId, email] of backupUserIds.entries()) {
     try {
       await tx`
@@ -367,20 +536,39 @@ async function ensureFallbackAuthUsers(tx: postgres.TransactionSql, backupUserId
         ON CONFLICT (id) DO NOTHING
       `;
     } catch (authErr: unknown) {
-      console.error(styleText('yellow', `   ⚠️ Advertencia al asegurar usuario ${userId}: ${(authErr as Error).message}`));
+      console.error(
+        styleText(
+          'yellow',
+          `   ⚠️ Advertencia al asegurar usuario ${userId}: ${(authErr as Error).message}`
+        )
+      );
     }
   }
 }
 
-async function restoreAuthIdentities(tx: postgres.TransactionSql, identities: Record<string, unknown>[], idenCols: ReadonlySet<string>): Promise<void> {
-  console.log(styleText('cyan', `👤 Restaurando ${identities.length} identidades de usuario en auth.identities...`));
+async function restoreAuthIdentities(
+  tx: postgres.TransactionSql,
+  identities: Record<string, unknown>[],
+  idenCols: ReadonlySet<string>
+): Promise<void> {
+  console.log(
+    styleText(
+      'cyan',
+      `👤 Restaurando ${identities.length} identidades de usuario en auth.identities...`
+    )
+  );
   for (const iden of identities) {
     try {
       const cleanIden = cleanAuthIdentityRow(iden, idenCols);
-      const updateCols = Object.keys(cleanIden).filter(k => k !== 'id');
-      await tx`INSERT INTO auth.identities ${ tx(cleanIden) } ON CONFLICT (id) DO UPDATE SET ${ tx(cleanIden, ...updateCols) }`;
+      const updateCols = Object.keys(cleanIden).filter((k) => k !== 'id');
+      await tx`INSERT INTO auth.identities ${tx(cleanIden)} ON CONFLICT (id) DO UPDATE SET ${tx(cleanIden, ...updateCols)}`;
     } catch (idenErr: unknown) {
-      console.error(styleText('yellow', `   ⚠️ Advertencia al restaurar identidad ${iden.id}: ${(idenErr as Error).message}`));
+      console.error(
+        styleText(
+          'yellow',
+          `   ⚠️ Advertencia al restaurar identidad ${iden.id}: ${(idenErr as Error).message}`
+        )
+      );
     }
   }
 }
@@ -406,16 +594,23 @@ async function restoreTableData(
 
     const validCols = tableColumns.get(tableName);
     const cleanedRows = validCols
-      ? rows.map(r => {
+      ? rows.map((r) => {
           const c: Record<string, unknown> = {};
-          for (const k of Object.keys(r)) { if (validCols.has(k)) c[k] = r[k]; }
+          for (const k of Object.keys(r)) {
+            if (validCols.has(k)) c[k] = r[k];
+          }
           return c;
         })
       : rows;
 
     await tx`INSERT INTO public.${tx(tableName)} ${tx(cleanedRows)}`;
     totalRestored += cleanedRows.length;
-    console.log(styleText('green', `   ✔️ ${tableName}: ${cleanedRows.length} filas restauradas exitosamente.`));
+    console.log(
+      styleText(
+        'green',
+        `   ✔️ ${tableName}: ${cleanedRows.length} filas restauradas exitosamente.`
+      )
+    );
   }
   return totalRestored;
 }
@@ -433,8 +628,12 @@ interface PassiveBattleReportRow {
   [key: string]: unknown;
 }
 
-async function restoreMappedPassiveBattle(tx: postgres.TransactionSql, rows: Record<string, unknown>[], tableColumns: Map<string, Set<string>>): Promise<number> {
-  const mapped: PassiveBattleReportRow[] = rows.map(r => ({
+async function restoreMappedPassiveBattle(
+  tx: postgres.TransactionSql,
+  rows: Record<string, unknown>[],
+  tableColumns: Map<string, Set<string>>
+): Promise<number> {
+  const mapped: PassiveBattleReportRow[] = rows.map((r) => ({
     id: r.id as string,
     user_id: r.attacker_id as string,
     opponent_id: r.defender_id as string,
@@ -456,12 +655,19 @@ async function restoreMappedPassiveBattle(tx: postgres.TransactionSql, rows: Rec
   }
 
   await tx`INSERT INTO public.passive_battle_reports ${tx(mapped)}`;
-  console.log(styleText('green', `   ✔️ passive_battle_reports: ${mapped.length} filas restauradas exitosamente.`));
+  console.log(
+    styleText(
+      'green',
+      `   ✔️ passive_battle_reports: ${mapped.length} filas restauradas exitosamente.`
+    )
+  );
   return mapped.length;
 }
 
 async function restoreRolePrivileges(tx: postgres.TransactionSql): Promise<void> {
-  console.log(styleText('cyan', `\n🛡️ Asegurando privilegios de roles estándar en el esquema public...`));
+  console.log(
+    styleText('cyan', `\n🛡️ Asegurando privilegios de roles estándar en el esquema public...`)
+  );
   await tx`GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;`;
   await tx`GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres, service_role;`;
   await tx`GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;`;
@@ -473,10 +679,10 @@ async function restoreRolePrivileges(tx: postgres.TransactionSql): Promise<void>
 }
 
 // Permitir ejecución directa
-const isDirectRun = process.argv[1] && (
-  process.argv[1].endsWith('restore_supabase_db.ts') ||
-  process.argv[1].includes('restore_supabase_db.ts')
-);
+const isDirectRun =
+  process.argv[1] &&
+  (process.argv[1].endsWith('restore_supabase_db.ts') ||
+    process.argv[1].includes('restore_supabase_db.ts'));
 
 if (isDirectRun) {
   restoreSupabaseDb().catch((err) => {

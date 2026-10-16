@@ -9,7 +9,7 @@
  * - GameStore O(1) reactive lookups (pokemonByUid, getPokemonByUid, pokedex seen/caught).
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { usePlayerSearchStore } from '@/stores/player/playerSearch';
 import { useLeaderboardStore } from '@/stores/leaderboard';
@@ -18,7 +18,10 @@ import { useSocialStore } from '@/stores/social/social';
 import { useAuthStore } from '@/stores/auth';
 import { enrichAuthUser, type VerifiedProfileData } from '@/stores/auth/authSessionVerifier';
 import type { AuthUser } from '@/types/auth/auth';
-import { buildActivePlayerItemBuffs, formatEventBonusDescription } from '@/stores/battle/buffsHelper';
+import {
+  buildActivePlayerItemBuffs,
+  formatEventBonusDescription
+} from '@/stores/battle/buffsHelper';
 import type { GameState } from '@/types/system/game';
 import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
 import { useGameStore } from '@/stores/game';
@@ -92,7 +95,7 @@ describe('Stores Domain Suite', () => {
       const rawUser = {
         id: 'test-user-123',
         email: 'ash@kanto.com',
-        user_metadata: {},
+        user_metadata: {}
       } as unknown as AuthUser;
 
       const profileData: VerifiedProfileData = {
@@ -101,7 +104,7 @@ describe('Stores Domain Suite', () => {
         userRole: 'admin',
         isUserBanned: false,
         banMsg: '',
-        sessionValid: true,
+        sessionValid: true
       };
 
       const enriched = enrichAuthUser(rawUser, profileData);
@@ -128,26 +131,26 @@ describe('Stores Domain Suite', () => {
         ivScannerSecs: 0,
         pickaxeSecs: 0,
         brushSecs: 0,
-        incenseSecs: 0,
+        incenseSecs: 0
       } as unknown as GameState;
 
       const buffs = buildActivePlayerItemBuffs(dummyState);
       expect(buffs.length).toBe(3);
-      expect(buffs.map(b => b.id)).toEqual(['repel', 'fishing-rod', 'shiny']);
+      expect(buffs.map((b) => b.id)).toEqual(['repel', 'fishing-rod', 'shiny']);
     });
 
     it('formats event bonus description with multiple multipliers', () => {
       const mockConfig: EventConfig = {
         shinyMult: 2,
         expMult: 1.5,
-        moneyMult: 2,
+        moneyMult: 2
       };
       const mockRow: GameEvent = {
         id: 'test_event',
         name: 'Super Event',
         type: 'general',
         icon: '🎉',
-        config: JSON.stringify(mockConfig),
+        config: JSON.stringify(mockConfig)
       } as unknown as GameEvent;
 
       const desc = formatEventBonusDescription(mockConfig, mockRow, null);

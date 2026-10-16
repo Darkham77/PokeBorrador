@@ -35,7 +35,12 @@ export function areBuffersSimilar(
     const db = Math.abs(buf1[i + 2]! - buf2[i + 2]!);
     const da = Math.abs(buf1[i + 3]! - buf2[i + 3]!);
 
-    if (dr > maxDiffPerPixel || dg > maxDiffPerPixel || db > maxDiffPerPixel || da > maxDiffPerPixel) {
+    if (
+      dr > maxDiffPerPixel ||
+      dg > maxDiffPerPixel ||
+      db > maxDiffPerPixel ||
+      da > maxDiffPerPixel
+    ) {
       mismatches++;
       if (mismatches > maxAllowedMismatches) {
         return false;
@@ -57,7 +62,12 @@ interface CandidateCycle {
   score?: number;
 }
 
-function matchesSegment(transitions: readonly TransitionInfo[], startA: number, startB: number, length: number): boolean {
+function matchesSegment(
+  transitions: readonly TransitionInfo[],
+  startA: number,
+  startB: number,
+  length: number
+): boolean {
   for (let i = 0; i < length; i++) {
     if (transitions[startA + i]!.frameId !== transitions[startB + i]!.frameId) {
       return false;
@@ -66,7 +76,12 @@ function matchesSegment(transitions: readonly TransitionInfo[], startA: number, 
   return true;
 }
 
-function countCycleRepeats(transitions: readonly TransitionInfo[], startIdx: number, period: number, total: number): number {
+function countCycleRepeats(
+  transitions: readonly TransitionInfo[],
+  startIdx: number,
+  period: number,
+  total: number
+): number {
   let repeats = 2;
   while (startIdx + (repeats + 1) * period <= total) {
     if (!matchesSegment(transitions, startIdx, startIdx + repeats * period, period)) {
@@ -113,12 +128,15 @@ async function extractFramesFromSpritesheet(varSourcePath: string): Promise<Buff
   return frames;
 }
 
-function computeFrameTransitions(frames: Buffer[]): { frameToUniqueId: number[]; transitions: TransitionInfo[] } {
+function computeFrameTransitions(frames: Buffer[]): {
+  frameToUniqueId: number[];
+  transitions: TransitionInfo[];
+} {
   const uniqueFrames: Buffer[] = [];
   const frameToUniqueId: number[] = [];
 
   for (const currentFrame of frames) {
-    let uniqueId = uniqueFrames.findIndex(uf => areBuffersSimilar(uf, currentFrame));
+    let uniqueId = uniqueFrames.findIndex((uf) => areBuffersSimilar(uf, currentFrame));
     if (uniqueId === -1) {
       uniqueId = uniqueFrames.length;
       uniqueFrames.push(currentFrame);
@@ -154,9 +172,17 @@ function resolveCandidateAttackRange(
   candidate: CandidateCycle,
   transitions: TransitionInfo[],
   frameToUniqueId: number[]
-): { firstCycleEnd: number; attackRange: [number, number] | null; warning?: string; fallbackFullIdle?: boolean } {
+): {
+  firstCycleEnd: number;
+  attackRange: [number, number] | null;
+  warning?: string;
+  fallbackFullIdle?: boolean;
+} {
   const firstCycleEndTransIdx = candidate.firstOccurrenceIndex + candidate.length - 1;
-  const firstCycleEnd = transitions[firstCycleEndTransIdx]!.originalIndices[transitions[firstCycleEndTransIdx]!.originalIndices.length - 1]!;
+  const firstCycleEnd =
+    transitions[firstCycleEndTransIdx]!.originalIndices[
+      transitions[firstCycleEndTransIdx]!.originalIndices.length - 1
+    ]!;
 
   const idleFramesSet = new Set<number>();
   for (let i = 0; i < candidate.length; i++) {
@@ -177,7 +203,11 @@ function resolveCandidateAttackRange(
     return { firstCycleEnd, attackRange: null, fallbackFullIdle: true };
   }
   if (attackLength === 3) {
-    return { firstCycleEnd, attackRange: [s, e], warning: `Posible ataque falso corto de 3 frames (rango: ${s} a ${e})` };
+    return {
+      firstCycleEnd,
+      attackRange: [s, e],
+      warning: `Posible ataque falso corto de 3 frames (rango: ${s} a ${e})`
+    };
   }
   return { firstCycleEnd, attackRange: [s, e] };
 }
@@ -200,7 +230,11 @@ export async function analyzeVariantImage(
       hasIdle: true,
       idleRange: [0, totalFrames - 1],
       attackRange: null,
-      ...(hasDupes ? { warning: `No se pudo detectar el ciclo de animación en ${varSourcePath}, pero existen frames no adyacentes duplicados. Se asume Idle completo.` } : {})
+      ...(hasDupes
+        ? {
+            warning: `No se pudo detectar el ciclo de animación en ${varSourcePath}, pero existen frames no adyacentes duplicados. Se asume Idle completo.`
+          }
+        : {})
     };
   }
 
@@ -213,10 +247,16 @@ export async function analyzeVariantImage(
     c.score = totalFramesInCycle;
   }
 
-  candidates.sort((a, b) => ((b.score ?? 0) - (a.score ?? 0)) || b.repeats - a.repeats || b.length - a.length);
+  candidates.sort(
+    (a, b) => (b.score ?? 0) - (a.score ?? 0) || b.repeats - a.repeats || b.length - a.length
+  );
   const idleCandidate = candidates[0]!;
 
-  const { firstCycleEnd, attackRange, warning, fallbackFullIdle } = resolveCandidateAttackRange(idleCandidate, transitions, frameToUniqueId);
+  const { firstCycleEnd, attackRange, warning, fallbackFullIdle } = resolveCandidateAttackRange(
+    idleCandidate,
+    transitions,
+    frameToUniqueId
+  );
 
   if (fallbackFullIdle) {
     return {

@@ -53,12 +53,14 @@ export interface ITacticalReplayEngine {
   getFogOfWarState(side: SideID): FogOfWarSideState;
 }
 
-function createInitialFogOfWarPokemonStates(summary: ReplayCombatantSummary): FogOfWarPokemonState[] {
+function createInitialFogOfWarPokemonStates(
+  summary: ReplayCombatantSummary
+): FogOfWarPokemonState[] {
   return summary.team.map((poke, index) => {
     const legacyPoke = poke as { id?: PokemonSpeciesId; speciesId?: PokemonSpeciesId };
     const resolvedId = legacyPoke.id ?? legacyPoke.speciesId;
     return {
-      id: (resolvedId ?? poke.id),
+      id: resolvedId ?? poke.id,
       name: poke.name || resolvedId || '',
       level: poke.level,
       sprite: poke.sprite || (resolvedId ? getAssetUrl(ASSET_TYPES.POKEMON, resolvedId) : ''),
@@ -71,7 +73,9 @@ function createInitialFogOfWarPokemonStates(summary: ReplayCombatantSummary): Fo
   });
 }
 
-function buildPokeLookupMap(pokemonStates: FogOfWarPokemonState[]): Map<string, FogOfWarPokemonState> {
+function buildPokeLookupMap(
+  pokemonStates: FogOfWarPokemonState[]
+): Map<string, FogOfWarPokemonState> {
   const map = new Map<string, FogOfWarPokemonState>();
   for (const p of pokemonStates) {
     if (p.name) map.set(p.name.toLowerCase(), p);
@@ -276,7 +280,7 @@ export class TacticalReplayEngine implements ITacticalReplayEngine {
       applyFogOfWarLogLine(line.trim(), sideNum, pokeByName, pokemonStates);
     }
 
-    const activePoke = pokemonStates.find(p => p.isActive && !p.isFainted) ?? null;
+    const activePoke = pokemonStates.find((p) => p.isActive && !p.isFainted) ?? null;
 
     return {
       userId: summary.userId,

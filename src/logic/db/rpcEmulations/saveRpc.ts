@@ -7,15 +7,23 @@ export async function emulateSaveGameTrusted(
   params: Record<string, unknown>,
   context: { userId: string }
 ): Promise<DBResponse> {
-  const { p_save_data, p_expected_id } = params as { p_save_data: Record<string, unknown>, p_expected_id: string | null };
+  const { p_save_data, p_expected_id } = params as {
+    p_save_data: Record<string, unknown>;
+    p_expected_id: string | null;
+  };
   const { userId } = context;
   const newSaveId = crypto.randomUUID();
-  
+
   // 1. Verificar concurrencia (optimistic lock)
   if (p_expected_id) {
-    const current = await queryLocal("SELECT last_save_id FROM game_saves WHERE user_id = ?", [userId]);
+    const current = await queryLocal('SELECT last_save_id FROM game_saves WHERE user_id = ?', [
+      userId
+    ]);
     if (current.length > 0 && current[0]!.last_save_id !== p_expected_id) {
-      return { data: { success: false, error: 'OUT_OF_SYNC', current_id: current[0]!.last_save_id }, error: null };
+      return {
+        data: { success: false, error: 'OUT_OF_SYNC', current_id: current[0]!.last_save_id },
+        error: null
+      };
     }
   }
 

@@ -18,10 +18,7 @@ import type {
   PlacedStructure,
   IRegionalWorldRendererSource
 } from '../../types/map/kantoTileEngineTypes.ts';
-import type {
-  UniversalAutotiler,
-  SemanticPrefabRenderer
-} from './kantoTileEngine.ts';
+import type { UniversalAutotiler, SemanticPrefabRenderer } from './kantoTileEngine.ts';
 
 class Chunk {
   readonly cx: number;
@@ -112,22 +109,55 @@ class Chunk {
 
     // Layer 4: Buildings, Trees, and Props (Y-Sorted for Realistic Depth)
     const renderables: { kind: 'bldg' | 'tree' | 'prop'; ySort: number; obj: PlacedStructure }[] = [
-      ...world.buildings.map((b) => ({ kind: 'bldg' as const, ySort: b.y + (b.h ?? CHUNK_BAKE_CONFIG.buildingYSortOffset), obj: b })),
-      ...world.trees.map((t) => ({ kind: 'tree' as const, ySort: t.y + CHUNK_BAKE_CONFIG.treeYSortOffset, obj: t })),
-      ...world.props.map((p) => ({ kind: 'prop' as const, ySort: p.y + (p.h ?? CHUNK_BAKE_CONFIG.propYSortOffset), obj: p }))
+      ...world.buildings.map((b) => ({
+        kind: 'bldg' as const,
+        ySort: b.y + (b.h ?? CHUNK_BAKE_CONFIG.buildingYSortOffset),
+        obj: b
+      })),
+      ...world.trees.map((t) => ({
+        kind: 'tree' as const,
+        ySort: t.y + CHUNK_BAKE_CONFIG.treeYSortOffset,
+        obj: t
+      })),
+      ...world.props.map((p) => ({
+        kind: 'prop' as const,
+        ySort: p.y + (p.h ?? CHUNK_BAKE_CONFIG.propYSortOffset),
+        obj: p
+      }))
     ].sort((a, b) => a.ySort - b.ySort);
 
     renderables.forEach((r) => {
       if (r.kind === 'bldg') {
-        if (inBounds(r.obj.x, r.obj.y, r.obj.w ?? CHUNK_BAKE_CONFIG.buildingBoundsWidth, r.obj.h ?? CHUNK_BAKE_CONFIG.buildingBoundsHeight)) {
+        if (
+          inBounds(
+            r.obj.x,
+            r.obj.y,
+            r.obj.w ?? CHUNK_BAKE_CONFIG.buildingBoundsWidth,
+            r.obj.h ?? CHUNK_BAKE_CONFIG.buildingBoundsHeight
+          )
+        ) {
           prefabRenderer.drawBuilding(ctx, r.obj.style, r.obj.x - cL, r.obj.y - cT);
         }
       } else if (r.kind === 'tree') {
-        if (inBounds(r.obj.x, r.obj.y - CHUNK_BAKE_CONFIG.treeBoundsOffsetY, CHUNK_BAKE_CONFIG.treeBoundsWidth, CHUNK_BAKE_CONFIG.treeBoundsHeight)) {
+        if (
+          inBounds(
+            r.obj.x,
+            r.obj.y - CHUNK_BAKE_CONFIG.treeBoundsOffsetY,
+            CHUNK_BAKE_CONFIG.treeBoundsWidth,
+            CHUNK_BAKE_CONFIG.treeBoundsHeight
+          )
+        ) {
           prefabRenderer.drawTree(ctx, r.obj.style, r.obj.x - cL, r.obj.y - cT);
         }
       } else {
-        if (inBounds(r.obj.x, r.obj.y, r.obj.w ?? CHUNK_BAKE_CONFIG.propBoundsDefault, r.obj.h ?? CHUNK_BAKE_CONFIG.propBoundsDefault)) {
+        if (
+          inBounds(
+            r.obj.x,
+            r.obj.y,
+            r.obj.w ?? CHUNK_BAKE_CONFIG.propBoundsDefault,
+            r.obj.h ?? CHUNK_BAKE_CONFIG.propBoundsDefault
+          )
+        ) {
           prefabRenderer.drawProp(ctx, r.obj.style, r.obj.x - cL, r.obj.y - cT);
         }
       }

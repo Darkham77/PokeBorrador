@@ -3,7 +3,7 @@ import {
   PokemonState,
   SackOrderEntry,
   WinCondition,
-  ThreatAssessment,
+  ThreatAssessment
 } from '../types';
 import { DamageCalculator } from '../calculator/damage';
 
@@ -11,13 +11,16 @@ function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-const HAZARD_REMOVAL_MOVES = new Set([
-  'rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin',
-]);
+const HAZARD_REMOVAL_MOVES = new Set(['rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin']);
 
 const SPEED_CONTROL_MOVES = new Set([
-  'thunderwave', 'glaciate', 'icywind', 'stickyweb', 'tailwind',
-  'trickroom', 'electroweb',
+  'thunderwave',
+  'glaciate',
+  'icywind',
+  'stickyweb',
+  'tailwind',
+  'trickroom',
+  'electroweb'
 ]);
 
 /**
@@ -31,14 +34,14 @@ export function calculateSackOrder(
   winConditions: WinCondition[],
   threats: ThreatAssessment[]
 ): SackOrderEntry[] {
-  const myAlive = state.mySide.pokemon.filter(p => !p.fainted);
+  const myAlive = state.mySide.pokemon.filter((p) => !p.fainted);
   if (myAlive.length === 0) return [];
 
   const winCondMap = new Map<string, number>();
   for (const wc of winConditions) winCondMap.set(wc.pokemon, wc.score);
 
-  const oppAlive = state.opponentSide.pokemon.filter(p => !p.fainted);
-  const oppSide = state.myPlayer === 'p1' ? 'p2' as const : 'p1' as const;
+  const oppAlive = state.opponentSide.pokemon.filter((p) => !p.fainted);
+  const oppSide = state.myPlayer === 'p1' ? ('p2' as const) : ('p1' as const);
 
   const entries: SackOrderEntry[] = [];
 
@@ -53,31 +56,33 @@ export function calculateSackOrder(
     if (pokemon.hpPercent > 50) defensiveUtil += 0.05;
     // Can take hits from top threats?
     for (const threat of threats.slice(0, 2)) {
-      const oppMon = oppAlive.find(o => o.name === threat.pokemon);
+      const oppMon = oppAlive.find((o) => o.name === threat.pokemon);
       if (oppMon) {
         let bestOppDmg = 0;
         for (const move of oppMon.knownMoves) {
           try {
             const dmg = calc.calcDamage(oppMon, pokemon, move, state.field);
             bestOppDmg = Math.max(bestOppDmg, dmg.maxPercent);
-          } catch { /* skip */ }
+          } catch {
+            /* skip */
+          }
         }
         if (bestOppDmg < 50) defensiveUtil += 0.075;
       }
     }
-    defensiveUtil = Math.min(0.20, defensiveUtil);
+    defensiveUtil = Math.min(0.2, defensiveUtil);
 
     // 3. Speed control value (0 - 0.15)
-    const oppSpeed = oppAlive.length > 0
-      ? calc.getEffectiveSpeed(oppAlive[0], state.field, oppSide) : 0;
+    const oppSpeed =
+      oppAlive.length > 0 ? calc.getEffectiveSpeed(oppAlive[0], state.field, oppSide) : 0;
     const mySpeed = calc.getEffectiveSpeed(pokemon, state.field, state.myPlayer);
-    const speedControl = mySpeed > oppSpeed ? 0.10 : 0;
-    const hasSpeedControl = moveIds.some(m => SPEED_CONTROL_MOVES.has(m)) ? 0.05 : 0;
+    const speedControl = mySpeed > oppSpeed ? 0.1 : 0;
+    const hasSpeedControl = moveIds.some((m) => SPEED_CONTROL_MOVES.has(m)) ? 0.05 : 0;
 
     // 4. Hazard removal (0 - 0.15)
-    const hasHazardRemoval = moveIds.some(m => HAZARD_REMOVAL_MOVES.has(m));
+    const hasHazardRemoval = moveIds.some((m) => HAZARD_REMOVAL_MOVES.has(m));
     const myHazardsUp = state.mySide.sideConditions.size > 0;
-    const hazardValue = (hasHazardRemoval && myHazardsUp) ? 0.15 : hasHazardRemoval ? 0.05 : 0;
+    const hazardValue = hasHazardRemoval && myHazardsUp ? 0.15 : hasHazardRemoval ? 0.05 : 0;
 
     // 5. Matchup usefulness (0 - 0.15)
     let matchupScore = 0;
@@ -86,23 +91,24 @@ export function calculateSackOrder(
       for (const move of pokemon.moves) {
         try {
           const dmg = calc.calcDamage(pokemon, opp, move, state.field);
-          if (dmg.maxPercent > 30) { canHit = true; break; }
-        } catch { /* skip */ }
+          if (dmg.maxPercent > 30) {
+            canHit = true;
+            break;
+          }
+        } catch {
+          /* skip */
+        }
       }
       if (canHit) matchupScore += 0.05;
     }
     matchupScore = Math.min(0.15, matchupScore);
 
     const preservationScore =
-      winScore +
-      defensiveUtil +
-      speedControl + hasSpeedControl +
-      hazardValue +
-      matchupScore;
+      winScore + defensiveUtil + speedControl + hasSpeedControl + hazardValue + matchupScore;
 
     entries.push({
       pokemon: pokemon.name,
-      preservationScore: Math.min(1.0, preservationScore),
+      preservationScore: Math.min(1.0, preservationScore)
     });
   }
 
@@ -113,7 +119,7 @@ export function calculateSackOrder(
   // unless it is literally the last Pokemon alive
   if (winConditions.length > 0 && entries.length > 1) {
     const topWC = winConditions[0].pokemon;
-    const wcIdx = entries.findIndex(e => e.pokemon === topWC);
+    const wcIdx = entries.findIndex((e) => e.pokemon === topWC);
     if (wcIdx === 0) {
       // Move win condition to at least second-to-last position
       const [wc] = entries.splice(wcIdx, 1);

@@ -137,7 +137,7 @@ class PartyRewardsSimWrapper extends BaseBattleSimulation {
           def: p.evs?.def ?? 0,
           spa: p.evs?.spa ?? 0,
           spd: p.evs?.spd ?? 0,
-          spe: p.evs?.spe ?? 0,
+          spe: p.evs?.spe ?? 0
         },
         heldItem: p.heldItem ?? null
       }));
@@ -150,7 +150,9 @@ test.describe('Battle Party Rewards & EV Distribution Simulation (Gen VI–IX Pa
     test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
   });
 
-  test('should distribute 100% undivided EVs and shared Exp to living party members upon defeating foe, strictly excluding fainted members', async ({ page }) => {
+  test('should distribute 100% undivided EVs and shared Exp to living party members upon defeating foe, strictly excluding fainted members', async ({
+    page
+  }) => {
     const sim = new PartyRewardsSimWrapper(page, 'PartyRewardsCombatUser');
     await sim.setup();
 
@@ -208,7 +210,9 @@ test.describe('Battle Party Rewards & EV Distribution Simulation (Gen VI–IX Pa
     sim.finish('Defeat Party Rewards E2E Verified');
   });
 
-  test('should distribute EVs and Exp upon capturing a wild Pokemon, while the newly captured Pokemon receives none from its own capture', async ({ page }) => {
+  test('should distribute EVs and Exp upon capturing a wild Pokemon, while the newly captured Pokemon receives none from its own capture', async ({
+    page
+  }) => {
     const sim = new PartyRewardsSimWrapper(page, 'PartyRewardsCaptureUser');
     await sim.setup();
 

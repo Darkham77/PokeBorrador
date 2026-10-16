@@ -47,38 +47,52 @@ function openTrainerProfile(userId?: string) {
   uiStore.open('TrainerProfile', { userId });
 }
 
-watch(() => chat.value?.messages.length, () => {
-  if (chat.value && !chat.value.isCollapsed) {
-    nextTick(scrollToBottom);
-    chatStore.fetchMissingCosmetics();
+watch(
+  () => chat.value?.messages.length,
+  () => {
+    if (chat.value && !chat.value.isCollapsed) {
+      nextTick(scrollToBottom);
+      chatStore.fetchMissingCosmetics();
+    }
   }
-});
+);
 
-watch(() => chat.value?.isCollapsed, (collapsed) => {
-  if (collapsed === false) {
-    nextTick(() => {
-      scrollToBottom();
-      inputField.value?.focus();
-    });
-    // Synchronize bottom scroll with side modal slide-in animation
-    const SCROLL_SYNC_STEP_1_SEC = 0.1;
-    const SCROLL_SYNC_STEP_2_SEC = 0.3;
-    const SCROLL_SYNC_STEP_3_SEC = 0.5;
-    gsap.delayedCall(SCROLL_SYNC_STEP_1_SEC, scrollToBottom);
-    gsap.delayedCall(SCROLL_SYNC_STEP_2_SEC, scrollToBottom);
-    gsap.delayedCall(SCROLL_SYNC_STEP_3_SEC, scrollToBottom);
-    chatStore.fetchMissingCosmetics();
-  }
-}, { immediate: true });
+watch(
+  () => chat.value?.isCollapsed,
+  (collapsed) => {
+    if (collapsed === false) {
+      nextTick(() => {
+        scrollToBottom();
+        inputField.value?.focus();
+      });
+      // Synchronize bottom scroll with side modal slide-in animation
+      const SCROLL_SYNC_STEP_1_SEC = 0.1;
+      const SCROLL_SYNC_STEP_2_SEC = 0.3;
+      const SCROLL_SYNC_STEP_3_SEC = 0.5;
+      gsap.delayedCall(SCROLL_SYNC_STEP_1_SEC, scrollToBottom);
+      gsap.delayedCall(SCROLL_SYNC_STEP_2_SEC, scrollToBottom);
+      gsap.delayedCall(SCROLL_SYNC_STEP_3_SEC, scrollToBottom);
+      chatStore.fetchMissingCosmetics();
+    }
+  },
+  { immediate: true }
+);
 
 import { MESSAGE_ANIM_DURATION_SEC, MESSAGE_ANIM_OVERSHOOT } from '@/logic/constants/visuals';
 
 const onMessageEnter = (el: Element, done: () => void) => {
-  gsap.fromTo(el,
+  gsap.fromTo(
+    el,
     { scale: 0.9, opacity: 0 },
-    { scale: 1.0, opacity: 1, duration: MESSAGE_ANIM_DURATION_SEC, ease: `back.out(${MESSAGE_ANIM_OVERSHOOT})`, onComplete: done }
-  )
-}
+    {
+      scale: 1.0,
+      opacity: 1,
+      duration: MESSAGE_ANIM_DURATION_SEC,
+      ease: `back.out(${MESSAGE_ANIM_OVERSHOOT})`,
+      onComplete: done
+    }
+  );
+};
 
 onMounted(() => {
   nextTick(scrollToBottom);
@@ -99,25 +113,12 @@ onMounted(() => {
     @close="closeChat"
   >
     <section class="chat-panel">
-      <div
-        ref="messagesContainer"
-        class="messages-list custom-scrollbar-vicio"
-      >
-        <div class="chat-start-hint">
-          Comienzo de la conversación con {{ chat?.username }}
-        </div>
+      <div ref="messagesContainer" class="messages-list custom-scrollbar-vicio">
+        <div class="chat-start-hint">Comienzo de la conversación con {{ chat?.username }}</div>
 
-        <div
-          v-if="!chat?.messages?.length"
-          class="empty-state"
-        >
-          No hay mensajes aún...
-        </div>
+        <div v-if="!chat?.messages?.length" class="empty-state">No hay mensajes aún...</div>
 
-        <TransitionGroup
-          :css="false"
-          @enter="onMessageEnter"
-        >
+        <TransitionGroup :css="false" @enter="onMessageEnter">
           <DirectChatMessageRow
             v-for="(msg, idx) in chat?.messages"
             :key="idx"
@@ -132,34 +133,33 @@ onMounted(() => {
       <footer class="chat-footer">
         <div class="input-container">
           <input
-            id="direct-chat-window-input-newmessage" 
+            id="direct-chat-window-input-newmessage"
             ref="inputField"
             v-model="newMessage"
-            type="text" 
-            :placeholder="`Escribe a ${chat?.username}...`"
+            type="text"
+            placeholder="Escribe un mensaje..."
+            aria-label="Mensaje directo"
             :maxlength="250"
             @keydown.enter="handleSendMessage"
-          >
+          />
           <button
-            id="direct-chat-window-btn-1" 
-            class="send-btn" 
+            id="direct-chat-window-btn-1"
+            class="send-btn"
             :disabled="!newMessage.trim()"
             @click.stop="handleSendMessage"
           >
             <span class="emoji">➤</span>
           </button>
         </div>
-        <p class="hint">
-          {{ newMessage.length }}/250
-        </p>
+        <p class="hint">{{ newMessage.length }}/250</p>
       </footer>
     </section>
   </BaseModal>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "sass:string";
+@use '@/styles/core/_mixins' as *;
+@use 'sass:string';
 
 .chat-panel {
   display: flex;
@@ -242,7 +242,9 @@ onMounted(() => {
     flex: 1;
     outline: none;
 
-    &:focus { border-color: var(--purple-light); }
+    &:focus {
+      border-color: var(--purple-light);
+    }
   }
 
   .send-btn {
@@ -254,8 +256,13 @@ onMounted(() => {
     color: var(--white);
     cursor: pointer;
 
-    &:hover:not(:disabled) { background: Rgb(157 78 221 / 100%); transform: Scale(1.05); }
-    &:disabled { opacity: 0.3; }
+    &:hover:not(:disabled) {
+      background: Rgb(157 78 221 / 100%);
+      transform: Scale(1.05);
+    }
+    &:disabled {
+      opacity: 0.3;
+    }
   }
 
   .hint {

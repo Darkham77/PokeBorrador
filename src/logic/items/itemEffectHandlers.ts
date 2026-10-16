@@ -1,28 +1,28 @@
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { ItemEffectResult } from '@/types/inventory/items'
-import type { ItemId } from '@/data/inventory/items'
-import { checkStoneEvolution } from '../evolution/evolutionLogic.ts'
-import { DEFAULT_MAX_PP_FALLBACK } from '../constants/gameplay.ts'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { ItemEffectResult } from '@/types/inventory/items';
+import type { ItemId } from '@/data/inventory/items';
+import { checkStoneEvolution } from '../evolution/evolutionLogic.ts';
+import { DEFAULT_MAX_PP_FALLBACK } from '../constants/gameplay.ts';
 
 export function healHp(p: Pokemon, amount: number): ItemEffectResult {
-  const currentHp = Number(p.hp || 0)
-  const maxHp = Number(p.maxHp || 0)
-  const healAmount = Number(amount || 0)
+  const currentHp = Number(p.hp || 0);
+  const maxHp = Number(p.maxHp || 0);
+  const healAmount = Number(amount || 0);
 
-  if (currentHp <= 0) return { success: false, message: 'El Pokémon está debilitado.' }
-  if (currentHp >= maxHp) return { success: false, message: 'No tendrá ningún efecto.' }
+  if (currentHp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
+  if (currentHp >= maxHp) return { success: false, message: 'No tendrá ningún efecto.' };
 
-  const prev = currentHp
-  p.hp = Math.min(maxHp, currentHp + healAmount)
-  const healed = p.hp - prev
-  return { success: true, message: `restauró ${healed} HP` }
+  const prev = currentHp;
+  p.hp = Math.min(maxHp, currentHp + healAmount);
+  const healed = p.hp - prev;
+  return { success: true, message: `restauró ${healed} HP` };
 }
 
 export function revive(p: Pokemon, amount: number): ItemEffectResult {
-  if (p.hp > 0) return { success: false, message: 'No tendrá ningún efecto.' }
-  p.hp = amount
-  p.status = ''
-  return { success: true, message: `revivió con ${p.hp} HP` }
+  if (p.hp > 0) return { success: false, message: 'No tendrá ningún efecto.' };
+  p.hp = amount;
+  p.status = '';
+  return { success: true, message: `revivió con ${p.hp} HP` };
 }
 
 import type { StatusClearTarget } from '@/types/pokemon/pokemon';
@@ -31,9 +31,10 @@ export function clearStatus(p: Pokemon, type: StatusClearTarget): ItemEffectResu
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
   if (!p.status) return { success: false, message: 'No tiene problemas de estado.' };
 
-  const isMatch = type === 'any'
-    || p.status === type
-    || (type === 'poison' && (p.status === 'psn' || p.status === 'tox'));
+  const isMatch =
+    type === 'any' ||
+    p.status === type ||
+    (type === 'poison' && (p.status === 'psn' || p.status === 'tox'));
 
   if (!isMatch) return { success: false, message: 'No tiene ese estado.' };
 
@@ -45,7 +46,8 @@ export function clearStatus(p: Pokemon, type: StatusClearTarget): ItemEffectResu
 
 export function curaTotal(p: Pokemon): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
-  if (!p.status && Number(p.hp) === Number(p.maxHp)) return { success: false, message: 'No tiene efecto.' };
+  if (!p.status && Number(p.hp) === Number(p.maxHp))
+    return { success: false, message: 'No tiene efecto.' };
   p.hp = Number(p.maxHp);
   p.status = '';
   p.sleepTurns = 0;
@@ -54,7 +56,7 @@ export function curaTotal(p: Pokemon): ItemEffectResult {
 
 export function restorePP(p: Pokemon, amount: number): ItemEffectResult {
   let changed = false;
-  p.moves.forEach(m => {
+  p.moves.forEach((m) => {
     if (!m) return;
     const max = m.maxPP || DEFAULT_MAX_PP_FALLBACK; // Fallback
     if (m.pp < max) {
@@ -65,7 +67,7 @@ export function restorePP(p: Pokemon, amount: number): ItemEffectResult {
       changed = true;
     }
   });
-  return changed 
+  return changed
     ? { success: true, message: 'recuperó PP' }
     : { success: false, message: 'Los PP ya están al máximo.' };
 }
@@ -73,15 +75,21 @@ export function restorePP(p: Pokemon, amount: number): ItemEffectResult {
 export function handleStone(p: Pokemon, stoneId: ItemId): ItemEffectResult {
   const nextId = checkStoneEvolution(p, stoneId);
   if (!nextId) return { success: false, message: 'No tiene efecto sobre este Pokémon.' };
-  return { 
-    success: true, 
-    message: '¡Está evolucionando!', 
-    resultType: 'evolution', 
-    targetId: nextId 
+  return {
+    success: true,
+    message: '¡Está evolucionando!',
+    resultType: 'evolution',
+    targetId: nextId
   };
 }
 
-import { applyVitamin, applyFeather, applyEvBerry, applyMochi, resetAllEvs } from '@/logic/pokemon/evMath';
+import {
+  applyVitamin,
+  applyFeather,
+  applyEvBerry,
+  applyMochi,
+  resetAllEvs
+} from '@/logic/pokemon/evMath';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { PokemonStatKey } from '@/types/pokemon/pokemon';
 
@@ -90,7 +98,11 @@ import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship.ts';
 const BERRY_FRIENDSHIP_INCREASE = 10;
 const VITAMIN_FRIENDSHIP_INCREASE = 5;
 
-export function handleVitamin(p: Pokemon, stat: PokemonStatKey, statNameEs: string): ItemEffectResult {
+export function handleVitamin(
+  p: Pokemon,
+  stat: PokemonStatKey,
+  statNameEs: string
+): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
 
   const res = applyVitamin(p.evs, stat);
@@ -104,14 +116,21 @@ export function handleVitamin(p: Pokemon, stat: PokemonStatKey, statNameEs: stri
   // Increase friendship with optional Soothe Bell multiplier
   const curF = p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE;
   if (curF < FRIENDSHIP_BOUNDS.MAX) {
-    const boost = p.heldItem === 'soothebell' ? Math.floor(VITAMIN_FRIENDSHIP_INCREASE * 1.5) : VITAMIN_FRIENDSHIP_INCREASE;
+    const boost =
+      p.heldItem === 'soothebell'
+        ? Math.floor(VITAMIN_FRIENDSHIP_INCREASE * 1.5)
+        : VITAMIN_FRIENDSHIP_INCREASE;
     p.friendship = Math.min(FRIENDSHIP_BOUNDS.MAX, curF + boost);
   }
 
   return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
 }
 
-export function handleMochi(p: Pokemon, stat: PokemonStatKey, statNameEs: string): ItemEffectResult {
+export function handleMochi(
+  p: Pokemon,
+  stat: PokemonStatKey,
+  statNameEs: string
+): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
 
   const res = applyMochi(p.evs, stat);
@@ -124,7 +143,10 @@ export function handleMochi(p: Pokemon, stat: PokemonStatKey, statNameEs: string
 
   const curF = p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE;
   if (curF < FRIENDSHIP_BOUNDS.MAX) {
-    const boost = p.heldItem === 'soothebell' ? Math.floor(VITAMIN_FRIENDSHIP_INCREASE * 1.5) : VITAMIN_FRIENDSHIP_INCREASE;
+    const boost =
+      p.heldItem === 'soothebell'
+        ? Math.floor(VITAMIN_FRIENDSHIP_INCREASE * 1.5)
+        : VITAMIN_FRIENDSHIP_INCREASE;
     p.friendship = Math.min(FRIENDSHIP_BOUNDS.MAX, curF + boost);
   }
 
@@ -141,10 +163,17 @@ export function handleFreshStartMochi(p: Pokemon): ItemEffectResult {
 
   p.evs = res.updatedEvs;
   recalcPokemonStats(p);
-  return { success: true, message: `reseteó todos sus EVs a 0 (se eliminaron ${res.totalCleared} EVs)` };
+  return {
+    success: true,
+    message: `reseteó todos sus EVs a 0 (se eliminaron ${res.totalCleared} EVs)`
+  };
 }
 
-export function handleFeather(p: Pokemon, stat: PokemonStatKey, statNameEs: string): ItemEffectResult {
+export function handleFeather(
+  p: Pokemon,
+  stat: PokemonStatKey,
+  statNameEs: string
+): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
 
   const res = applyFeather(p.evs, stat);
@@ -163,7 +192,11 @@ export function handleFeather(p: Pokemon, stat: PokemonStatKey, statNameEs: stri
   return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
 }
 
-export function handleEvBerry(p: Pokemon, stat: PokemonStatKey, statNameEs: string): ItemEffectResult {
+export function handleEvBerry(
+  p: Pokemon,
+  stat: PokemonStatKey,
+  statNameEs: string
+): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
 
   const evRes = applyEvBerry(p.evs, stat);
@@ -171,7 +204,10 @@ export function handleEvBerry(p: Pokemon, stat: PokemonStatKey, statNameEs: stri
 
   const currentFriendship = p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE;
   if (currentFriendship < FRIENDSHIP_BOUNDS.MAX) {
-    const boost = p.heldItem === 'soothebell' ? Math.floor(BERRY_FRIENDSHIP_INCREASE * 1.5) : BERRY_FRIENDSHIP_INCREASE;
+    const boost =
+      p.heldItem === 'soothebell'
+        ? Math.floor(BERRY_FRIENDSHIP_INCREASE * 1.5)
+        : BERRY_FRIENDSHIP_INCREASE;
     p.friendship = Math.min(FRIENDSHIP_BOUNDS.MAX, currentFriendship + boost);
     friendshipGained = true;
   }
@@ -186,12 +222,13 @@ export function handleEvBerry(p: Pokemon, stat: PokemonStatKey, statNameEs: stri
   }
 
   if (evRes.success && friendshipGained) {
-    return { success: true, message: `se volvió más amigable y sus EVs de ${statNameEs} disminuyeron` };
+    return {
+      success: true,
+      message: `se volvió más amigable y sus EVs de ${statNameEs} disminuyeron`
+    };
   }
   if (evRes.success) {
     return { success: true, message: `sus EVs de ${statNameEs} disminuyeron` };
   }
   return { success: true, message: 'se volvió más amigable' };
 }
-
-

@@ -11,7 +11,8 @@ class GymProgressionSimulation extends BaseBattleSimulation {
   public async setupMewtwoTeam(): Promise<void> {
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const gameStore = useGameStore();
 
       const mewtwo = pokemonDebugService.generate({
@@ -35,8 +36,18 @@ class GymProgressionSimulation extends BaseBattleSimulation {
         const battleStore = useBattleStore();
         console.log('[E2E-CHALLENGE] Starting challengeGym pewter easy');
         await gymsStore.challengeGym('pewter', 'easy');
-        console.log('[E2E-CHALLENGE] challengeGym finished. ActiveBattle:', Boolean(battleStore.state), 'FSM:', battleStore.currentFsmState, battleStore.currentSubState);
-        return { success: true, activeBattle: Boolean(battleStore.state), fsm: battleStore.currentFsmState };
+        console.log(
+          '[E2E-CHALLENGE] challengeGym finished. ActiveBattle:',
+          Boolean(battleStore.state),
+          'FSM:',
+          battleStore.currentFsmState,
+          battleStore.currentSubState
+        );
+        return {
+          success: true,
+          activeBattle: Boolean(battleStore.state),
+          fsm: battleStore.currentFsmState
+        };
       } catch (err: unknown) {
         console.error('[E2E-CHALLENGE] Error in challengeGym:', err);
         return { success: false, error: String(err) };

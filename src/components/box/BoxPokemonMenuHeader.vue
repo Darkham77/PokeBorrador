@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue';
 
 interface Props {
-  pokemon: Pokemon
-  tierInfo: { tier: string; color: string; bg: string } | null
-  totalIvs: number
-  totalPower: number
-  fieldPassive: { label: string; desc: string; icon: string } | null
+  pokemon: Pokemon;
+  tierInfo: { tier: string; color: string; bg: string } | null;
+  totalIvs: number;
+  totalPower: number;
+  fieldPassive: { label: string; desc: string; icon: string } | null;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 </script>
 
 <template>
@@ -32,20 +32,13 @@ defineProps<Props>()
         <h3 class="p-name">
           {{ pokemon.nickname || pokemon.name }}
         </h3>
-        <span
-          v-if="pokemon.nickname"
-          class="box-species-subtitle"
-        >
+        <span v-if="pokemon.nickname" class="box-species-subtitle">
           {{ pokemon.name }}
         </span>
       </div>
 
       <div class="header-badges">
-        <PVGenderBadge
-          v-if="pokemon.gender"
-          :gender="pokemon.gender"
-          size="mini"
-        />
+        <PVGenderBadge v-if="pokemon.gender" :gender="pokemon.gender" size="mini" />
         <span class="m-badge-level">Nv. {{ pokemon.level }}</span>
         <span class="m-badge-iv">IV {{ totalIvs }}</span>
         <PVTooltip
@@ -55,10 +48,7 @@ defineProps<Props>()
         >
           <span class="m-badge-tot">TOT {{ totalPower }}</span>
         </PVTooltip>
-        <FriendshipSealBadge
-          :friendship="pokemon.friendship"
-          size="sm"
-        />
+        <FriendshipSealBadge :friendship="pokemon.friendship" size="sm" />
         <PVTooltip
           v-if="fieldPassive"
           :title="`Pasiva: ${fieldPassive.label}`"
@@ -78,5 +68,5 @@ defineProps<Props>()
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/box-menu" as *;
+@use '@/styles/components/box-menu' as *;
 </style>

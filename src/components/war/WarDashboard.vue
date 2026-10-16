@@ -1,98 +1,80 @@
 <script setup lang="ts">
+import { useWarStore } from '@/stores/war';
+import { computed, onMounted } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { WEEKLY_REWARD_MILESTONES } from '@/logic/war/warEngine';
+import MapControlList from './MapControlList.vue';
 
-import { useWarStore } from '@/stores/war'
-import { computed, onMounted } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { formatCurrency } from '@/logic/utils/formatters'
-import { WEEKLY_REWARD_MILESTONES } from '@/logic/war/warEngine'
-import MapControlList from './MapControlList.vue'
-
-const warStore = useWarStore()
+const warStore = useWarStore();
 
 interface Milestone {
-  pt: number
-  coins: number
+  pt: number;
+  coins: number;
 }
 
-const dispute = computed(() => warStore.isDisputeActive)
+const dispute = computed(() => warStore.isDisputeActive);
 
 // Calculate score (Maps controlled)
 const globalScore = computed(() => {
-  let union = 0
-  let poder = 0
+  let union = 0;
+  let poder = 0;
   Object.values(warStore.mapDominance).forEach((m) => {
-    if (m.winner === 'union') union++
-    else if (m.winner === 'poder') poder++
-    else if ((m.union ?? 0) > (m.poder ?? 0)) union++
-    else if ((m.poder ?? 0) > (m.union ?? 0)) poder++
-  })
-  return { union, poder }
-})
+    if (m.winner === 'union') union++;
+    else if (m.winner === 'poder') poder++;
+    else if ((m.union ?? 0) > (m.poder ?? 0)) union++;
+    else if ((m.poder ?? 0) > (m.union ?? 0)) poder++;
+  });
+  return { union, poder };
+});
 
 const nextReward = computed(() => {
-  const milestones: readonly Milestone[] = WEEKLY_REWARD_MILESTONES
-  return milestones.find(m => warStore.weeklyPoints < m.pt) || 
-         milestones[milestones.length - 1]
-})
+  const milestones: readonly Milestone[] = WEEKLY_REWARD_MILESTONES;
+  return milestones.find((m) => warStore.weeklyPoints < m.pt) || milestones[milestones.length - 1];
+});
 
 const progressPercent = computed(() => {
-  const current = warStore.weeklyPoints
-  const target = nextReward.value?.pt || 100
-  return Math.min(100, (current / target) * 100)
-})
+  const current = warStore.weeklyPoints;
+  const target = nextReward.value?.pt || 100;
+  return Math.min(100, (current / target) * 100);
+});
 
 onMounted(async () => {
-  await warStore.loadWarData()
-})
+  await warStore.loadWarData();
+});
 </script>
 
 <template>
   <div class="war-dashboard">
     <!-- Faction Banner -->
-    <div
-      class="phase-banner"
-      :class="dispute ? 'dispute' : 'dominance'"
-    >
+    <div class="phase-banner" :class="dispute ? 'dispute' : 'dominance'">
       <div class="phase-title">
-        <span class="emoji">{{ dispute ? '⚔️' : '🏆' }}</span> {{ dispute ? 'FASE DE DISPUTA' : 'FASE DE DOMINANCIA' }}
+        <span class="emoji">{{ dispute ? '⚔️' : '🏆' }}</span>
+        {{ dispute ? 'FASE DE DISPUTA' : 'FASE DE DOMINANCIA' }}
       </div>
       <div class="phase-desc">
-        {{ dispute ? 'Suma puntos capturando y venciendo en mapas' : 'Gana bonos en mapas dominados' }}
+        {{
+          dispute ? 'Suma puntos capturando y venciendo en mapas' : 'Gana bonos en mapas dominados'
+        }}
       </div>
     </div>
 
     <!-- Global Score -->
     <div class="score-card">
       <div class="team union">
-        <img
-          :src="getAssetUrl(ASSET_TYPES.FACTION, 'union')"
-          alt="Union"
-          width="32"
-          height="32"
-        >
+        <img :src="getAssetUrl(ASSET_TYPES.FACTION, 'union')" alt="Union" width="32" height="32" />
         <div class="count">
           {{ globalScore.union }}
         </div>
-        <div class="label">
-          MAPAS
-        </div>
+        <div class="label">MAPAS</div>
       </div>
-      <div class="vs">
-        VS
-      </div>
+      <div class="vs">VS</div>
       <div class="team poder">
-        <img
-          :src="getAssetUrl(ASSET_TYPES.FACTION, 'poder')"
-          alt="Poder"
-          width="32"
-          height="32"
-        >
+        <img :src="getAssetUrl(ASSET_TYPES.FACTION, 'poder')" alt="Poder" width="32" height="32" />
         <div class="count">
           {{ globalScore.poder }}
         </div>
-        <div class="label">
-          MAPAS
-        </div>
+        <div class="label">MAPAS</div>
       </div>
     </div>
 
@@ -105,14 +87,11 @@ onMounted(async () => {
 
       <div class="progress-container">
         <div class="progress-bar">
-          <div
-            class="fill"
-            :style="{ width: progressPercent + '%' }"
-          />
+          <div class="fill" :style="{ width: progressPercent + '%' }" />
         </div>
         <div class="milestones">
-          <div 
-            v-for="m in WEEKLY_REWARD_MILESTONES" 
+          <div
+            v-for="m in WEEKLY_REWARD_MILESTONES"
             :key="m.pt"
             class="milestone"
             :class="{ achieved: warStore.weeklyPoints >= m.pt }"
@@ -126,7 +105,8 @@ onMounted(async () => {
       <div class="reward-preview">
         Próximo premio:
         <span class="highlight">
-          <span class="emoji">⚡</span>{{ formatCurrency(nextReward?.coins || 0) }} Monedas de Guerra
+          <span class="emoji">⚡</span>{{ formatCurrency(nextReward?.coins || 0) }} Monedas de
+          Guerra
         </span>
         al llegar a {{ formatCurrency(nextReward?.pt || 0) }} PT
       </div>
@@ -135,20 +115,14 @@ onMounted(async () => {
     <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-item">
-        <div class="label">
-          Saldo de Guerra
-        </div>
+        <div class="label">Saldo de Guerra</div>
         <div class="value">
           <span class="emoji">⚡</span>{{ formatCurrency(warStore.warCoins) }}
         </div>
       </div>
       <div class="stat-item">
-        <div class="label">
-          Capturas de Guardianes
-        </div>
-        <div class="value">
-          {{ warStore.dailyGuardianCaptures.length }}/5
-        </div>
+        <div class="label">Capturas de Guardianes</div>
+        <div class="value">{{ warStore.dailyGuardianCaptures.length }}/5</div>
       </div>
     </div>
 
@@ -158,7 +132,7 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .war-dashboard {
   display: flex;
@@ -173,17 +147,21 @@ onMounted(async () => {
   text-align: center;
   border-width: 2px;
   border-style: solid;
-  
+
   &.dispute {
     background: Rgb(255 136 0 / 10%);
     border-color: Rgb(255 136 0 / 100%);
-    .phase-title { color: Rgb(255 136 0 / 100%); }
+    .phase-title {
+      color: Rgb(255 136 0 / 100%);
+    }
   }
-  
+
   &.dominance {
     background: Rgb(68 255 68 / 10%);
     border-color: Rgb(68 255 68 / 100%);
-    .phase-title { color: Rgb(68 255 68 / 100%); }
+    .phase-title {
+      color: Rgb(68 255 68 / 100%);
+    }
   }
 
   .phase-title {
@@ -192,7 +170,7 @@ onMounted(async () => {
     font-size: var(--font-11);
     margin-bottom: 8px;
   }
-  
+
   .phase-desc {
     font-size: var(--font-10);
     opacity: 0.8;
@@ -212,27 +190,31 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    
+
     img {
       width: 48px;
       height: 48px;
       margin-bottom: 8px;
     }
-    
+
     .count {
       @include pixelated;
 
       font-size: var(--font-20);
     }
-    
+
     .label {
       font-size: var(--font-9);
       opacity: 0.5;
       margin-top: 4px;
     }
 
-    &.union { color: Rgb(59 130 246 / 100%); }
-    &.poder { color: Rgb(239 68 68 / 100%); }
+    &.union {
+      color: Rgb(59 130 246 / 100%);
+    }
+    &.poder {
+      color: Rgb(239 68 68 / 100%);
+    }
   }
 
   .vs {
@@ -253,14 +235,14 @@ onMounted(async () => {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
-    
+
     .title {
       @include pixelated;
 
       color: var(--yellow, #facc15);
       font-size: var(--font-10);
     }
-    
+
     .pts {
       @include pixelated;
 
@@ -279,7 +261,7 @@ onMounted(async () => {
     border-radius: $radius-md;
     background: $black;
     overflow: hidden;
-    
+
     .fill {
       height: 100%;
       background: Linear-Gradient(90deg, Rgb(59 130 246 / 100%), Rgb(96 165 250 / 100%));
@@ -300,7 +282,7 @@ onMounted(async () => {
       display: flex;
       flex-direction: column;
       align-items: center;
-      
+
       .dot {
         width: 20px;
         height: 20px;
@@ -308,9 +290,8 @@ onMounted(async () => {
         border-radius: 50%;
         background: Rgb(51 51 51 / 100%);
         margin-bottom: 4px;
-        
       }
-      
+
       .pt-label {
         @include pixelated;
 
@@ -324,7 +305,9 @@ onMounted(async () => {
           border-color: var(--white);
           box-shadow: var(--shadow-glow-yellow-sm);
         }
-        .pt-label { color: var(--white); }
+        .pt-label {
+          color: var(--white);
+        }
       }
     }
   }
@@ -338,7 +321,7 @@ onMounted(async () => {
   font-size: var(--font-11);
   line-height: 1.6; /* Generous spacing between wrapped lines */
   text-align: center;
-  
+
   .highlight {
     display: inline-flex;
     align-items: center;
@@ -374,7 +357,7 @@ onMounted(async () => {
       line-height: 1.4;
       margin-bottom: 8px;
     }
-    
+
     .value {
       @include pixelated;
 

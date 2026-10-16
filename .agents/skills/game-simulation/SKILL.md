@@ -26,7 +26,7 @@ Orchestrates the game simulation, E2E pipeline, and Showdown 1:1 parity source c
 
 ## 🚦 Step 0: State Diagnostics & Resumption Protocol (Physical First)
 
-Whenever instructed to start, resume, or continue a simulation workflow (e.g. *"continua"*, *"sigue"*, *"reanudar"*, or after a context refresh):
+Whenever instructed to start, resume, or continue a simulation workflow (e.g. _"continua"_, _"sigue"_, _"reanudar"_, or after a context refresh):
 
 ### 1. Physical Log Synchronization First
 
@@ -44,12 +44,12 @@ Whenever instructed to start, resume, or continue a simulation workflow (e.g. *"
 
 ### 3. Delimitation of Invocation Commands (Strict Semantics)
 
-| Scenario | Command | Meaning & Rules |
-|---|---|---|
-| **A. Ordinary Resume** | `npm run sim:e2e` | Resumes from master cursor in `e2e_checkpoints.json`. **NEVER use `clean=true`**. |
-| **B. Active Suite Resume** | `npm run sim:e2e filter=<suite>` | Resumes failing suite from `failedBatchIndex` (Step 6A). |
-| **C. Suite Clean Pass (Paso 6B)** | `npm run sim:e2e filter=<suite> clean=true` | **STRICTLY RESERVED FOR REPAIRED SUITE**. Runs clean from case 1 in dual mode. |
-| **D. Full Scratch Run** | `npm run sim:e2e clean=true` | Clears all checkpoints. **ONLY on explicit user request to start from zero**. |
+| Scenario                          | Command                                     | Meaning & Rules                                                                   |
+| --------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------- |
+| **A. Ordinary Resume**            | `npm run sim:e2e`                           | Resumes from master cursor in `e2e_checkpoints.json`. **NEVER use `clean=true`**. |
+| **B. Active Suite Resume**        | `npm run sim:e2e filter=<suite>`            | Resumes failing suite from `failedBatchIndex` (Step 6A).                          |
+| **C. Suite Clean Pass (Paso 6B)** | `npm run sim:e2e filter=<suite> clean=true` | **STRICTLY RESERVED FOR REPAIRED SUITE**. Runs clean from case 1 in dual mode.    |
+| **D. Full Scratch Run**           | `npm run sim:e2e clean=true`                | Clears all checkpoints. **ONLY on explicit user request to start from zero**.     |
 
 > [!CAUTION]
 > **PROHIBITION ON AD-HOC SUITE SELECTION DURING RESUME:**
@@ -155,8 +155,8 @@ The parity audit compares canonical Pokémon Showdown source code in `external/p
 
 - **Diagnostic Suite**: Run `npm run sim:audit` (`scripts/maintenance/audit_showdown/run_audit_suite.ts`) to scan automated violations in tokens, FSM states, boosts, and formulas.
 - **Two-Stage Mandate**:
-  1. *Stage 1 (Investigation)*: Line-by-line inspection until listing ≥20 concrete suspects (*"Showdown does X but src/ does Y"*).
-  2. *Stage 2 (RED Confirmation)*: Write and run a test for each suspect in `tests/unit/battle/parity/`. If it passes in GREEN on the first run, it is NOT a bug (discard). If it fails in **RED**, catalog in the 1:1 Master Table.
+  1. _Stage 1 (Investigation)_: Line-by-line inspection until listing ≥20 concrete suspects (_"Showdown does X but src/ does Y"_).
+  2. _Stage 2 (RED Confirmation)_: Write and run a test for each suspect in `tests/unit/battle/parity/`. If it passes in GREEN on the first run, it is NOT a bug (discard). If it fails in **RED**, catalog in the 1:1 Master Table.
 - **Absolute Prohibitions**: Zero cataloging without prior RED failure, strict prohibition on inventing bugs to fill quotas, prohibition on fallbacks (`||`, `??`), and zero naked strings for finite domains.
 - Consult the full guide in [showdown_parity_audit_guide.md](./references/showdown_parity_audit_guide.md).
 
@@ -180,10 +180,10 @@ The parity audit compares canonical Pokémon Showdown source code in `external/p
 
 To consult complete technical schemas, command tables, and in-depth architectures without abbreviation or mechanical loss:
 
-| Reference Module | Content & Governance | Link |
-|---|---|---|
-| **Directives & Invariants** | Timeout caps, passive joystick, `#id`/UID locators, `history` schema, Showdown legality, PP conservation, flee rules, visual `.toBeVisible()` assertions. | [simulation_directives_and_invariants.md](./references/simulation_directives_and_invariants.md) |
-| **Fuzzer Architecture** | Layer 0 fuzzer, dependency tree, IPB lifecycle, cooperative heuristics, per-worker page pool, and 7-pillar reset standard (`WorkerSessionPool`). | [fuzzer_architecture_and_heuristics.md](./references/fuzzer_architecture_and_heuristics.md) |
-| **CLI & Troubleshooting** | Complete NPM scripts dictionary (Layers 0–3), case filters (`TEST_CASE_ID`, `TEST_BATCH`), headless fast path, mass debugging, Docker auto-start, port 5174. | [cli_and_troubleshooting.md](./references/cli_and_troubleshooting.md) |
-| **Testing Standards** | 3-tier protocol, anti-tautological mocking law, no-test mandate for docs, adaptive concurrency, test taxonomy, anti-fragmentation law, de-JSDOMization, GSAP kinematics. | [simulation_testing_standards.md](./references/simulation_testing_standards.md) |
-| **Showdown Parity Audit** | Line-by-line comparison methodology with `external/pokemon-showdown-code/`, two-stage mandate (≥20 suspects -> RED confirmation), `npm run sim:audit` diagnostic suite, master bug table, and checklist. | [showdown_parity_audit_guide.md](./references/showdown_parity_audit_guide.md) |
+| Reference Module            | Content & Governance                                                                                                                                                                                     | Link                                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **Directives & Invariants** | Timeout caps, passive joystick, `#id`/UID locators, `history` schema, Showdown legality, PP conservation, flee rules, visual `.toBeVisible()` assertions.                                                | [simulation_directives_and_invariants.md](./references/simulation_directives_and_invariants.md) |
+| **Fuzzer Architecture**     | Layer 0 fuzzer, dependency tree, IPB lifecycle, cooperative heuristics, per-worker page pool, and 7-pillar reset standard (`WorkerSessionPool`).                                                         | [fuzzer_architecture_and_heuristics.md](./references/fuzzer_architecture_and_heuristics.md)     |
+| **CLI & Troubleshooting**   | Complete NPM scripts dictionary (Layers 0–3), case filters (`TEST_CASE_ID`, `TEST_BATCH`), headless fast path, mass debugging, Docker auto-start, port 5174.                                             | [cli_and_troubleshooting.md](./references/cli_and_troubleshooting.md)                           |
+| **Testing Standards**       | 3-tier protocol, anti-tautological mocking law, no-test mandate for docs, adaptive concurrency, test taxonomy, anti-fragmentation law, de-JSDOMization, GSAP kinematics.                                 | [simulation_testing_standards.md](./references/simulation_testing_standards.md)                 |
+| **Showdown Parity Audit**   | Line-by-line comparison methodology with `external/pokemon-showdown-code/`, two-stage mandate (≥20 suspects -> RED confirmation), `npm run sim:audit` diagnostic suite, master bug table, and checklist. | [showdown_parity_audit_guide.md](./references/showdown_parity_audit_guide.md)                   |

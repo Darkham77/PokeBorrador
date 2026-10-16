@@ -1,10 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';
 import { useBattleCombatants } from '@/composables/battle/useBattleCombatants';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
-import { BATTLE_STATES, BATTLE_SUBSTATES, type BattleStateName, type BattleSubStateName } from '@/logic/battle/battleStateMachine';
+import {
+  BATTLE_STATES,
+  BATTLE_SUBSTATES,
+  type BattleStateName,
+  type BattleSubStateName
+} from '@/logic/battle/battleStateMachine';
 import { computed, ref } from 'vue';
 import { gameBus } from '@/logic/events/gameBus';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -58,7 +63,11 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
 
     // Track FSM transitions
     const origTransition = battleStore.fsm.transition.bind(battleStore.fsm);
-    battleStore.fsm.transition = async (state: BattleStateName | BattleSubStateName, subState: BattleSubStateName | null = null, delayMs: number = 0) => {
+    battleStore.fsm.transition = async (
+      state: BattleStateName | BattleSubStateName,
+      subState: BattleSubStateName | null = null,
+      delayMs: number = 0
+    ) => {
       eventStream.push(`fsm:${state}:${subState || 'none'}`);
       return origTransition(state, subState, delayMs);
     };
@@ -78,8 +87,14 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
 
     // Listen to bus events
     const escapeListener = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { side?: string; type?: string; pokemon?: Pokemon };
-      eventStream.push(`bus:PLAY_ESCAPE_ANIM:${detail.side}:${detail.type}:${detail.pokemon?.name}`);
+      const detail = (e as CustomEvent).detail as {
+        side?: string;
+        type?: string;
+        pokemon?: Pokemon;
+      };
+      eventStream.push(
+        `bus:PLAY_ESCAPE_ANIM:${detail.side}:${detail.type}:${detail.pokemon?.name}`
+      );
     };
     gameBus.on('PLAY_ESCAPE_ANIM', escapeListener);
 
@@ -94,8 +109,20 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
       enemyRequest: {
         side: {
           pokemon: [
-            { ident: 'p2: enemy-machop-1', details: 'Machop, L10, M', condition: '100/100', active: true, uid: machop.uid },
-            { ident: 'p2: enemy-mankey-2', details: 'Mankey, L10, M', condition: '100/100', active: false, uid: mankey.uid }
+            {
+              ident: 'p2: enemy-machop-1',
+              details: 'Machop, L10, M',
+              condition: '100/100',
+              active: true,
+              uid: machop.uid
+            },
+            {
+              ident: 'p2: enemy-mankey-2',
+              details: 'Mankey, L10, M',
+              condition: '100/100',
+              active: false,
+              uid: mankey.uid
+            }
           ]
         }
       },
@@ -137,21 +164,33 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
     } as unknown as BattleContext;
 
     // Simulate Showdown turn logs
-    await parseShowdownLogLine(ctx, '|move|p1a: player-pidgeot-1|Whirlwind|p2a: enemy-machop-1|[uids]p1a:player-pidgeot-1=player-pidgeot-1,p2a:enemy-machop-1=enemy-machop-1');
-    await parseShowdownLogLine(ctx, '|drag|p2a: enemy-mankey-2|Mankey, L10, M|100/100|[uids]p2a:enemy-mankey-2=enemy-mankey-2');
+    await parseShowdownLogLine(
+      ctx,
+      '|move|p1a: player-pidgeot-1|Whirlwind|p2a: enemy-machop-1|[uids]p1a:player-pidgeot-1=player-pidgeot-1,p2a:enemy-machop-1=enemy-machop-1'
+    );
+    await parseShowdownLogLine(
+      ctx,
+      '|drag|p2a: enemy-mankey-2|Mankey, L10, M|100/100|[uids]p2a:enemy-mankey-2=enemy-mankey-2'
+    );
 
     gameBus.off('PLAY_ESCAPE_ANIM', escapeListener);
 
     // Verify exact event ordering
-    const moveLogIdx = eventStream.findIndex(e => e.includes('¡Pidgeot usó Remolino!'));
-    const expulsionLogIdx = eventStream.findIndex(e => e.includes('¡Machop fue expulsado por el remolino!'));
-    const fsmEscapeIdx = eventStream.findIndex(e => e === 'fsm:ACTIVE_BATTLE:PLAY_ESCAPE_ANIM');
-    const busEscapeIdx = eventStream.findIndex(e => e === 'bus:PLAY_ESCAPE_ANIM:enemy:whirlwind:Machop');
-    const awaitEscapeIdx = eventStream.findIndex(e => e === 'anim:awaitTween:escape-enemy');
-    const fsmVacateIdx = eventStream.findIndex(e => e === 'fsm:ACTIVE_BATTLE:VACATE_SEAT');
-    const dragLogIdx = eventStream.findIndex(e => e.includes('¡Mankey fue arrastrado al campo!'));
-    const fsmCallIdx = eventStream.findIndex(e => e === 'fsm:ACTIVE_BATTLE:POKEMON_CALL');
-    const releaseAnimIdx = eventStream.findIndex(e => e === 'anim:handleReleaseRequest:enemy:Mankey');
+    const moveLogIdx = eventStream.findIndex((e) => e.includes('¡Pidgeot usó Remolino!'));
+    const expulsionLogIdx = eventStream.findIndex((e) =>
+      e.includes('¡Machop fue expulsado por el remolino!')
+    );
+    const fsmEscapeIdx = eventStream.findIndex((e) => e === 'fsm:ACTIVE_BATTLE:PLAY_ESCAPE_ANIM');
+    const busEscapeIdx = eventStream.findIndex(
+      (e) => e === 'bus:PLAY_ESCAPE_ANIM:enemy:whirlwind:Machop'
+    );
+    const awaitEscapeIdx = eventStream.findIndex((e) => e === 'anim:awaitTween:escape-enemy');
+    const fsmVacateIdx = eventStream.findIndex((e) => e === 'fsm:ACTIVE_BATTLE:VACATE_SEAT');
+    const dragLogIdx = eventStream.findIndex((e) => e.includes('¡Mankey fue arrastrado al campo!'));
+    const fsmCallIdx = eventStream.findIndex((e) => e === 'fsm:ACTIVE_BATTLE:POKEMON_CALL');
+    const releaseAnimIdx = eventStream.findIndex(
+      (e) => e === 'anim:handleReleaseRequest:enemy:Mankey'
+    );
 
     expect(moveLogIdx).toBeGreaterThan(-1);
     expect(expulsionLogIdx).toBeGreaterThan(moveLogIdx);
@@ -194,8 +233,14 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
     };
 
     const escapeListener = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { side?: string; type?: string; pokemon?: Pokemon };
-      eventStream.push(`bus:PLAY_ESCAPE_ANIM:${detail.side}:${detail.type}:${detail.pokemon?.name}`);
+      const detail = (e as CustomEvent).detail as {
+        side?: string;
+        type?: string;
+        pokemon?: Pokemon;
+      };
+      eventStream.push(
+        `bus:PLAY_ESCAPE_ANIM:${detail.side}:${detail.type}:${detail.pokemon?.name}`
+      );
     };
     gameBus.on('PLAY_ESCAPE_ANIM', escapeListener);
 
@@ -235,16 +280,24 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
       }
     } as unknown as BattleContext;
 
-    await parseShowdownLogLine(ctx, '|move|p1a: player-dragonite-1|Dragon Tail|p2a: enemy-machop-1|[uids]p1a:player-dragonite-1=player-dragonite-1,p2a:enemy-machop-1=enemy-machop-1');
-    await parseShowdownLogLine(ctx, '|drag|p2a: enemy-mankey-2|Mankey, L10, M|100/100|[uids]p2a:enemy-mankey-2=enemy-mankey-2');
+    await parseShowdownLogLine(
+      ctx,
+      '|move|p1a: player-dragonite-1|Dragon Tail|p2a: enemy-machop-1|[uids]p1a:player-dragonite-1=player-dragonite-1,p2a:enemy-machop-1=enemy-machop-1'
+    );
+    await parseShowdownLogLine(
+      ctx,
+      '|drag|p2a: enemy-mankey-2|Mankey, L10, M|100/100|[uids]p2a:enemy-mankey-2=enemy-mankey-2'
+    );
 
     gameBus.off('PLAY_ESCAPE_ANIM', escapeListener);
 
     // Verify Knockback type and log
-    expect(eventStream.some(e => e.includes('¡Machop fue arrojado fuera por la cola dragón!'))).toBe(true);
-    expect(eventStream.some(e => e === 'bus:PLAY_ESCAPE_ANIM:enemy:knockback:Machop')).toBe(true);
-    expect(eventStream.some(e => e === 'anim:awaitTween:escape-enemy')).toBe(true);
-    expect(eventStream.some(e => e === 'anim:handleReleaseRequest:enemy:Mankey')).toBe(true);
+    expect(
+      eventStream.some((e) => e.includes('¡Machop fue arrojado fuera por la cola dragón!'))
+    ).toBe(true);
+    expect(eventStream.some((e) => e === 'bus:PLAY_ESCAPE_ANIM:enemy:knockback:Machop')).toBe(true);
+    expect(eventStream.some((e) => e === 'anim:awaitTween:escape-enemy')).toBe(true);
+    expect(eventStream.some((e) => e === 'anim:handleReleaseRequest:enemy:Mankey')).toBe(true);
   });
 
   it('executes player flee expulsion and automatic recall when Roar is used on player', async () => {
@@ -271,8 +324,14 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
     };
 
     const escapeListener = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { side?: string; type?: string; pokemon?: Pokemon };
-      eventStream.push(`bus:PLAY_ESCAPE_ANIM:${detail.side}:${detail.type}:${detail.pokemon?.name}`);
+      const detail = (e as CustomEvent).detail as {
+        side?: string;
+        type?: string;
+        pokemon?: Pokemon;
+      };
+      eventStream.push(
+        `bus:PLAY_ESCAPE_ANIM:${detail.side}:${detail.type}:${detail.pokemon?.name}`
+      );
     };
     gameBus.on('PLAY_ESCAPE_ANIM', escapeListener);
 
@@ -312,17 +371,23 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
       }
     } as unknown as BattleContext;
 
-    await parseShowdownLogLine(ctx, '|move|p2a: enemy-houndoom-1|Roar|p1a: player-pika-1|[uids]p2a:enemy-houndoom-1=enemy-houndoom-1,p1a:player-pika-1=player-pika-1');
-    await parseShowdownLogLine(ctx, '|drag|p1a: player-lapras-2|Lapras, L10, F|100/100|[uids]p1a:player-lapras-2=player-lapras-2');
+    await parseShowdownLogLine(
+      ctx,
+      '|move|p2a: enemy-houndoom-1|Roar|p1a: player-pika-1|[uids]p2a:enemy-houndoom-1=enemy-houndoom-1,p1a:player-pika-1=player-pika-1'
+    );
+    await parseShowdownLogLine(
+      ctx,
+      '|drag|p1a: player-lapras-2|Lapras, L10, F|100/100|[uids]p1a:player-lapras-2=player-lapras-2'
+    );
 
     gameBus.off('PLAY_ESCAPE_ANIM', escapeListener);
 
     // Verify Player Flee escape and Lapras send out
-    expect(eventStream.some(e => e.includes('¡Pikachu huyó asustado por el rugido!'))).toBe(true);
-    expect(eventStream.some(e => e === 'bus:PLAY_ESCAPE_ANIM:player:flee:Pikachu')).toBe(true);
-    expect(eventStream.some(e => e === 'anim:awaitTween:escape-player')).toBe(true);
-    expect(eventStream.some(e => e.includes('¡Lapras fue arrastrado al campo!'))).toBe(true);
-    expect(eventStream.some(e => e === 'anim:handleReleaseRequest:player:Lapras')).toBe(true);
+    expect(eventStream.some((e) => e.includes('¡Pikachu huyó asustado por el rugido!'))).toBe(true);
+    expect(eventStream.some((e) => e === 'bus:PLAY_ESCAPE_ANIM:player:flee:Pikachu')).toBe(true);
+    expect(eventStream.some((e) => e === 'anim:awaitTween:escape-player')).toBe(true);
+    expect(eventStream.some((e) => e.includes('¡Lapras fue arrastrado al campo!'))).toBe(true);
+    expect(eventStream.some((e) => e === 'anim:handleReleaseRequest:player:Lapras')).toBe(true);
     expect(activeBattleRef.value?.player?.uid).toBe('player-lapras-2');
   });
 
@@ -349,8 +414,14 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
     };
 
     const escapeListener = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { side?: string; type?: string; pokemon?: Pokemon };
-      eventStream.push(`bus:PLAY_ESCAPE_ANIM:${detail.side}:${detail.type}:${detail.pokemon?.name}`);
+      const detail = (e as CustomEvent).detail as {
+        side?: string;
+        type?: string;
+        pokemon?: Pokemon;
+      };
+      eventStream.push(
+        `bus:PLAY_ESCAPE_ANIM:${detail.side}:${detail.type}:${detail.pokemon?.name}`
+      );
     };
     gameBus.on('PLAY_ESCAPE_ANIM', escapeListener);
 
@@ -391,17 +462,26 @@ describe('Forced Switch Animation & Sequence Parity (Whirlwind, Dragon Tail, Roa
     } as unknown as BattleContext;
 
     // Move is executed, but Showdown returns -fail (no bench)
-    await parseShowdownLogLine(ctx, '|move|p1a: player-pidgeot-1|Whirlwind|p2a: enemy-machop-1|[uids]p1a:player-pidgeot-1=player-pidgeot-1,p2a:enemy-machop-1=enemy-machop-1');
+    await parseShowdownLogLine(
+      ctx,
+      '|move|p1a: player-pidgeot-1|Whirlwind|p2a: enemy-machop-1|[uids]p1a:player-pidgeot-1=player-pidgeot-1,p2a:enemy-machop-1=enemy-machop-1'
+    );
     await parseShowdownLogLine(ctx, '|-fail|p1a: player-pidgeot-1');
 
     gameBus.off('PLAY_ESCAPE_ANIM', escapeListener);
 
     // Verify move logged, fail logged with explicit reason, but NO escape or release animation
-    expect(eventStream.some(e => e.includes('¡Pidgeot usó Remolino!'))).toBe(true);
-    expect(eventStream.some(e => e.includes('¡El movimiento de Pidgeot falló porque no hay ningún Pokémon en la banca para cambiar!'))).toBe(true);
-    expect(eventStream.some(e => e.startsWith('bus:PLAY_ESCAPE_ANIM'))).toBe(false);
-    expect(eventStream.some(e => e.startsWith('anim:awaitTween:escape'))).toBe(false);
-    expect(eventStream.some(e => e.startsWith('anim:handleReleaseRequest'))).toBe(false);
+    expect(eventStream.some((e) => e.includes('¡Pidgeot usó Remolino!'))).toBe(true);
+    expect(
+      eventStream.some((e) =>
+        e.includes(
+          '¡El movimiento de Pidgeot falló porque no hay ningún Pokémon en la banca para cambiar!'
+        )
+      )
+    ).toBe(true);
+    expect(eventStream.some((e) => e.startsWith('bus:PLAY_ESCAPE_ANIM'))).toBe(false);
+    expect(eventStream.some((e) => e.startsWith('anim:awaitTween:escape'))).toBe(false);
+    expect(eventStream.some((e) => e.startsWith('anim:handleReleaseRequest'))).toBe(false);
     expect(activeBattleRef.value?.enemy?.uid).toBe('enemy-machop-1');
   });
 });

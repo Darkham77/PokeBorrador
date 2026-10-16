@@ -1,6 +1,6 @@
 /**
  * scripts/auditors/domain_data/validate_spanish_ids.ts
- * 
+ *
  * SPANISH LOGIC STRINGS & LEAKS AUDITOR (Node.js 26+ Native)
  * Scans code files for potential hardcoded Spanish names used as logic IDs.
  */
@@ -8,14 +8,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, FileScanAuditor, createRuleCapabilities } from '@francogp/auditor';
 
 enableCompileCache();
 
 // Load translation names
-const abilitiesJson = JSON.parse(fs.readFileSync('src/data/battle/abilities.json', 'utf-8')) as Record<string, { name?: string }>;
-const movesJson = JSON.parse(fs.readFileSync('src/data/battle/moves.json', 'utf-8')) as Record<string, { name?: string }>;
-const itemsJson = JSON.parse(fs.readFileSync('src/data/inventory/items.json', 'utf-8')) as { SHOP_ITEMS?: Array<{ name?: string }> };
+const abilitiesJson = JSON.parse(
+  fs.readFileSync('src/data/battle/abilities.json', 'utf-8')
+) as Record<string, { name?: string }>;
+const movesJson = JSON.parse(fs.readFileSync('src/data/battle/moves.json', 'utf-8')) as Record<
+  string,
+  { name?: string }
+>;
+const itemsJson = JSON.parse(fs.readFileSync('src/data/inventory/items.json', 'utf-8')) as {
+  SHOP_ITEMS?: Array<{ name?: string }>;
+};
 
 const spanishNames = new Set<string>();
 
@@ -32,30 +39,51 @@ if (itemsJson.SHOP_ITEMS) {
 }
 
 const natureNames = [
-  'Firme', 'Tímido', 'Osado', 'Audaz', 'Sereno', 'Cauto', 'Dócil', 'Amable', 
-  'Fuerte', 'Activa', 'Agitada', 'Alegre', 'Floja', 'Huraña', 'Afable', 
-  'Modesta', 'Ingenua', 'Pícara', 'Mansa', 'Rara', 'Alocada', 'Plácida', 
-  'Grosera', 'Seria', 'Miedosa'
+  'Firme',
+  'Tímido',
+  'Osado',
+  'Audaz',
+  'Sereno',
+  'Cauto',
+  'Dócil',
+  'Amable',
+  'Fuerte',
+  'Activa',
+  'Agitada',
+  'Alegre',
+  'Floja',
+  'Huraña',
+  'Afable',
+  'Modesta',
+  'Ingenua',
+  'Pícara',
+  'Mansa',
+  'Rara',
+  'Alocada',
+  'Plácida',
+  'Grosera',
+  'Seria',
+  'Miedosa'
 ];
 natureNames.forEach(addName);
 
 export type SpanishIdRuleId = 'spanish-logic-id';
 
-export const SPANISH_ID_RULES: readonly SpanishIdRuleId[] = [
-  'spanish-logic-id'
-] as const;
+export const SPANISH_ID_RULES: readonly SpanishIdRuleId[] = ['spanish-logic-id'] as const;
 
 export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
   private readonly criticalPatterns: readonly RegExp[];
 
-  constructor(roots: readonly string[] = [
-    'src/logic',
-    'src/stores',
-    'src/composables',
-    'src/components',
-    'src/views',
-    'database'
-  ]) {
+  constructor(
+    roots: readonly string[] = [
+      'src/logic',
+      'src/stores',
+      'src/composables',
+      'src/components',
+      'src/views',
+      'database'
+    ]
+  ) {
     super({
       ruleCapabilities: createRuleCapabilities(SPANISH_ID_RULES, {
         speed: 'light',
@@ -83,7 +111,8 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
         'spanish-logic-id': 'ID en español en vez del inglés'
       },
       ruleRemediations: {
-        'spanish-logic-id': 'Use English canonical IDs in code logic, keeping Spanish text strictly for UI display'
+        'spanish-logic-id':
+          'Use English canonical IDs in code logic, keeping Spanish text strictly for UI display'
       },
       roots,
       allowedExtensions: new Set(['.ts', '.vue'])
@@ -115,7 +144,13 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
           while ((match = pattern.exec(lineText)) !== null) {
             const word = match[1]?.trim().toLowerCase();
             if (word && (spanishNames.has(word) || word === 'move_relearner')) {
-              if (lineText.includes('toThrow') || lineText.includes('expect(') || lineText.includes('name:') || lineText.includes('MOVE_TRANSLATIONS_ES') || lineText.includes('ABILITY_TRANSLATIONS_ES')) {
+              if (
+                lineText.includes('toThrow') ||
+                lineText.includes('expect(') ||
+                lineText.includes('name:') ||
+                lineText.includes('MOVE_TRANSLATIONS_ES') ||
+                lineText.includes('ABILITY_TRANSLATIONS_ES')
+              ) {
                 continue;
               }
 
@@ -136,6 +171,10 @@ export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new SpanishIdAuditor());
 }

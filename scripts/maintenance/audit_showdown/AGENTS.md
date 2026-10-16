@@ -49,4 +49,4 @@ Poké Vicio Development Team.
 
 ## Child DOX Index
 
-- [__tests__/AGENTS.md](./__tests__/AGENTS.md)
+- [**tests**/AGENTS.md](./__tests__/AGENTS.md)

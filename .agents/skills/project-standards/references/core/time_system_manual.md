@@ -36,15 +36,15 @@ The system uses a hierarchical approach to determine the active weather and ensu
 
 The system organizes weather into levels of intensity. High-level weather (Extremes) typically includes **Block** mechanics.
 
-|Family|Level 1 (Normal)|Level 2 (Enhanced)|Level 3 (Extreme)|Level 4 (Catastrophic)|Biome Restrictions|
-|:--|:--|:--|:--|:--|:--|
-|**Heat**|Sun (☀️)|Intense Sun (🔆)|Heatwave (🔥)|--|L1, L2: `isIndoors`, `isCave` (Banned)|
-|**Cold**|Cold (🧊)|Coldwave (🥶)|--|--|None (Allowed in all biomes)|
-|**Rain**|Rain (🌧️)|Heavy Rain (☔)|Storm (⛈️)|Thunderstorm (🌩️)|L1-L4: `isIndoors`, `isCave` (Banned)|
-|**Ice**|Snow (❄️)|Hail (🌨️)|Blizzard (🌬️)|--|L1-L3: `isIndoors`, `isCave` (Banned)|
-|**Wind**|Wind (🍃)|Strong Winds (🌀)|--|--|L1, L2: `isIndoors`, `isCave` (Banned)|
-|**Atmos.**|Mist (💨)|Fog (🌫️)|--|--|None (Allowed in all biomes)|
-|**Earth**|Sandstorm (🏜️)|Dust Storm (🌪️)|--|--|L1, L2: `isIndoors`, `isCave` (Banned)|
+| Family     | Level 1 (Normal) | Level 2 (Enhanced) | Level 3 (Extreme) | Level 4 (Catastrophic) | Biome Restrictions                     |
+| :--------- | :--------------- | :----------------- | :---------------- | :--------------------- | :------------------------------------- |
+| **Heat**   | Sun (☀️)         | Intense Sun (🔆)   | Heatwave (🔥)     | --                     | L1, L2: `isIndoors`, `isCave` (Banned) |
+| **Cold**   | Cold (🧊)        | Coldwave (🥶)      | --                | --                     | None (Allowed in all biomes)           |
+| **Rain**   | Rain (🌧️)        | Heavy Rain (☔)    | Storm (⛈️)        | Thunderstorm (🌩️)      | L1-L4: `isIndoors`, `isCave` (Banned)  |
+| **Ice**    | Snow (❄️)        | Hail (🌨️)          | Blizzard (🌬️)     | --                     | L1-L3: `isIndoors`, `isCave` (Banned)  |
+| **Wind**   | Wind (🍃)        | Strong Winds (🌀)  | --                | --                     | L1, L2: `isIndoors`, `isCave` (Banned) |
+| **Atmos.** | Mist (💨)        | Fog (🌫️)           | --                | --                     | None (Allowed in all biomes)           |
+| **Earth**  | Sandstorm (🏜️)   | Dust Storm (🌪️)    | --                | --                     | L1, L2: `isIndoors`, `isCave` (Banned) |
 
 ---
 
@@ -92,12 +92,12 @@ For families NOT favored by the current season:
 
 The current season shifts the rarity curve of its "favored" families, making extreme levels significantly more likely.
 
-|Season|Favored Families|Amplified Curve (L1 / L2 / L3 / L4)|
-|:--|:--|:--|
-|**Spring**|Atmosphere (Mist/Fog)|60% / 30% / 9% / 1%|
-|**Summer**|Heat (Sun/Heatwave)|**50% / 35% / 14%** / 1%|
-|**Autumn**|Rain, Wind|60% / 25% / 14% / 1%|
-|**Winter**|Cold, Ice|**50% / 30% / 19%** / 1%|
+| Season     | Favored Families      | Amplified Curve (L1 / L2 / L3 / L4) |
+| :--------- | :-------------------- | :---------------------------------- |
+| **Spring** | Atmosphere (Mist/Fog) | 60% / 30% / 9% / 1%                 |
+| **Summer** | Heat (Sun/Heatwave)   | **50% / 35% / 14%** / 1%            |
+| **Autumn** | Rain, Wind            | 60% / 25% / 14% / 1%                |
+| **Winter** | Cold, Ice             | **50% / 30% / 19%** / 1%            |
 
 #### 🧮 Calculation Example (Summer Heatwave)
 
@@ -135,37 +135,37 @@ It is **STRICTLY FORBIDDEN** to use light-based weather states during the night 
 
 ### 🗃️ Cycle-Weather Matrix
 
-|Cycle|Prohibited Weather|Rationale|
-|:--|:--|:--|
-|**Morning**|None|All atmospheric states possible during sunrise.|
-|**Day**|None|Full visibility allow all states.|
-|**Dusk**|None|Sunset allows all atmospheric states.|
-|**Night**|`sun`, `intense_sun`|No direct solar radiation available after 20:00.|
+| Cycle       | Prohibited Weather   | Rationale                                        |
+| :---------- | :------------------- | :----------------------------------------------- |
+| **Morning** | None                 | All atmospheric states possible during sunrise.  |
+| **Day**     | None                 | Full visibility allow all states.                |
+| **Dusk**    | None                 | Sunset allows all atmospheric states.            |
+| **Night**   | `sun`, `intense_sun` | No direct solar radiation available after 20:00. |
 
 ---
 
 ## 8. Combat & Spawn Modifiers (Full Matrix)
 
-|Family|Weather|Icon|Mechanical Effects (Combat)|Spawn Modifiers (Boost/Block)|
-|:--|:--|:--|:--|:--|
-|**Heat**|Sun|☀️|🔼 Fire/Grass. 🔽 Water/Ice.|🔼 Fire, Grass, Ground. 🔽 Water, Ice.|
-||Intense Sun|🔆|🚫 Water, Ice. 🔼 Grass/Fire (2x).|🔼 Fire, Grass. 🚫 Water, Ice.|
-||Heatwave|🔥|🚫 Ice, Grass. 🔼 Fire/Ground.|🔼 Fire, Ground. 🚫 Ice, Grass.|
-|**Cold**|Cold|🧊|🔼 Ice. 🔽 Bug, Grass.|🔼 Ice. 🔽 Bug, Grass.|
-||Coldwave|🥶|**Speed -50%** (Non-Ice). 🚫 Bug, Grass.|🔼 Ice. 🚫 Bug, Grass.|
-|**Water**|Rain|🌧️|🔼 Water/Elec. 🔽 Fire/Rock/Ground.|🔼 Water, Bug, Electric. 🔽 Fire, Rock, Ground.|
-||Heavy Rain|☔|🚫 Fire. 🔼 Water (2x).|🔼 Water. 🚫 Fire. 🔽 Rock, Ground.|
-||Storm|⛈️|🚫 Fire, Flying, Bug.|🔼 Water, Electric, Dragon. 🚫 Fire, Flying.|
-||Thunderstorm|🌩️|**Sin efectos en combate** (Mapea a Clima Neutro/Despejado).|🔼 Electric (2x), Dragon. 🚫 Flying.|
-|**Ice**|Snow|❄️|🔼 Physical Def Ice (+50%).|🔼 Ice, Steel. 🔽 Fire, Bug, Flying.|
-||Hail|🌨️|**Residual Damage**.|🔼 Ice. 🔽 Grass, Fire, Bug, Flying.|
-||Blizzard|🌬️|🚫 Fire, Grass, Bug, Flying.|🔼 Ice. 🚫 Fire, Grass, Bug, Flying.|
-|**Atmos.**|Fog|🌫️|🔼 Ghost/Dark. 🔽 Flying. Acc 60%.|🔼 Ghost, Dark. 🔽 Flying.|
-||Mist|💨|🔼 Fairy, Water. 🔽 Fire.|🔼 Fairy, Water. 🔽 Fire.|
-|**Wind**|Wind|🍃|🔼 Flying, Bug. 🔽 Ground.|🔼 Flying, Bug, Psychic. 🔽 Ground.|
-||Strong Winds|🌀|**No Fly Weakness**. 🔼 Flying/Dragon.|🔼 Flying, Dragon. 🚫 Bug, Ground.|
-|**Earth**|Sandstorm|🏜️|🔼 Special Def Rock (+50%). Damage.|🔼 Rock, Ground, Steel. 🔽 Fire, Flying, Bug.|
-||Dust Storm|🌪️|🚫 Flying. 🔼 Rock/Ground.|🔼 Rock, Ground. 🚫 Flying. 🔽 Bug.|
+| Family     | Weather      | Icon | Mechanical Effects (Combat)                                  | Spawn Modifiers (Boost/Block)                   |
+| :--------- | :----------- | :--- | :----------------------------------------------------------- | :---------------------------------------------- |
+| **Heat**   | Sun          | ☀️   | 🔼 Fire/Grass. 🔽 Water/Ice.                                 | 🔼 Fire, Grass, Ground. 🔽 Water, Ice.          |
+|            | Intense Sun  | 🔆   | 🚫 Water, Ice. 🔼 Grass/Fire (2x).                           | 🔼 Fire, Grass. 🚫 Water, Ice.                  |
+|            | Heatwave     | 🔥   | 🚫 Ice, Grass. 🔼 Fire/Ground.                               | 🔼 Fire, Ground. 🚫 Ice, Grass.                 |
+| **Cold**   | Cold         | 🧊   | 🔼 Ice. 🔽 Bug, Grass.                                       | 🔼 Ice. 🔽 Bug, Grass.                          |
+|            | Coldwave     | 🥶   | **Speed -50%** (Non-Ice). 🚫 Bug, Grass.                     | 🔼 Ice. 🚫 Bug, Grass.                          |
+| **Water**  | Rain         | 🌧️   | 🔼 Water/Elec. 🔽 Fire/Rock/Ground.                          | 🔼 Water, Bug, Electric. 🔽 Fire, Rock, Ground. |
+|            | Heavy Rain   | ☔   | 🚫 Fire. 🔼 Water (2x).                                      | 🔼 Water. 🚫 Fire. 🔽 Rock, Ground.             |
+|            | Storm        | ⛈️   | 🚫 Fire, Flying, Bug.                                        | 🔼 Water, Electric, Dragon. 🚫 Fire, Flying.    |
+|            | Thunderstorm | 🌩️   | **Sin efectos en combate** (Mapea a Clima Neutro/Despejado). | 🔼 Electric (2x), Dragon. 🚫 Flying.            |
+| **Ice**    | Snow         | ❄️   | 🔼 Physical Def Ice (+50%).                                  | 🔼 Ice, Steel. 🔽 Fire, Bug, Flying.            |
+|            | Hail         | 🌨️   | **Residual Damage**.                                         | 🔼 Ice. 🔽 Grass, Fire, Bug, Flying.            |
+|            | Blizzard     | 🌬️   | 🚫 Fire, Grass, Bug, Flying.                                 | 🔼 Ice. 🚫 Fire, Grass, Bug, Flying.            |
+| **Atmos.** | Fog          | 🌫️   | 🔼 Ghost/Dark. 🔽 Flying. Acc 60%.                           | 🔼 Ghost, Dark. 🔽 Flying.                      |
+|            | Mist         | 💨   | 🔼 Fairy, Water. 🔽 Fire.                                    | 🔼 Fairy, Water. 🔽 Fire.                       |
+| **Wind**   | Wind         | 🍃   | 🔼 Flying, Bug. 🔽 Ground.                                   | 🔼 Flying, Bug, Psychic. 🔽 Ground.             |
+|            | Strong Winds | 🌀   | **No Fly Weakness**. 🔼 Flying/Dragon.                       | 🔼 Flying, Dragon. 🚫 Bug, Ground.              |
+| **Earth**  | Sandstorm    | 🏜️   | 🔼 Special Def Rock (+50%). Damage.                          | 🔼 Rock, Ground, Steel. 🔽 Fire, Flying, Bug.   |
+|            | Dust Storm   | 🌪️   | 🚫 Flying. 🔼 Rock/Ground.                                   | 🔼 Rock, Ground. 🚫 Flying. 🔽 Bug.             |
 
 ---
 
@@ -212,13 +212,13 @@ To preserve the artistic integrity of the original pixel-art backgrounds, the sy
 
 ### 9.1 Segregation Matrix
 
-|Target Element|Cycle Filter (Brightness/Hue)|Weather Filter (Rain/Arena)|Implementation Detail|
-|:--|:-:|:-:|:--|
-|**Map Backgrounds**|❌|✅|Relies on dedicated textures (e.g., `_noche`).|
-|**Map Spawns (Pokémon)**|❌|❌|Isolated from climate filters to preserve color integrity.|
-|**Battle Backgrounds**|❌|✅|Uses cycle-specific battle arena assets.|
-|**Battle Combatants**|✅|✅|Pokémon sprites must tint to integrate with the hour.|
-|**Battle Deco (Bushes/Rocks)**|✅|✅|Environmental objects must match lighting.|
+| Target Element                 | Cycle Filter (Brightness/Hue) | Weather Filter (Rain/Arena) | Implementation Detail                                      |
+| :----------------------------- | :---------------------------: | :-------------------------: | :--------------------------------------------------------- |
+| **Map Backgrounds**            |              ❌               |             ✅              | Relies on dedicated textures (e.g., `_noche`).             |
+| **Map Spawns (Pokémon)**       |              ❌               |             ❌              | Isolated from climate filters to preserve color integrity. |
+| **Battle Backgrounds**         |              ❌               |             ✅              | Uses cycle-specific battle arena assets.                   |
+| **Battle Combatants**          |              ✅               |             ✅              | Pokémon sprites must tint to integrate with the hour.      |
+| **Battle Deco (Bushes/Rocks)** |              ✅               |             ✅              | Environmental objects must match lighting.                 |
 
 1. **`weatherOnlyFilter`**: strictly isolates weather post-processing. It ignores cycle base values (e.g., it will NOT apply `Brightness(0.6)` during night).
 2. **`atmosphereFilter` (Full)**: the combined mix of Cycle + Weather. Used for mobile actors and dynamic objects.
@@ -242,17 +242,17 @@ In battle views (e.g. `BattleArenaView`), if the active battle location is a cav
 
 To ensure atmospheric variety and geographical consistency, all maps must be tagged with a primary biome. These tags dictate default weather weights and specialized restrictions.
 
-|Biome Tag|Description|Favored Weather|Forbidden Weather|
-|:--|:--|:--|:--|
-|**`isPlains`**|Standard routes, meadows.|`clear`, `sun`, `rain` (L1).|None.|
-|**`isCoastal`**|Beaches, islands, sea routes.|`mist`, `fog`, `heavy_rain`.|`sandstorm`, `snow`.|
-|**`isForest`**|Woods, jungles, thickets.|`mist`, `rain`, `thunderstorm`.|`sandstorm`, `dust_storm`.|
-|**`isMountain`**|High altitude, peaks, cliffs.|`wind`, `snow`, `blizzard`, `hail`.|`heatwave` (Summer only).|
-|**`isDesert`**|Arid zones, ruins, dunes.|`sun`, `sandstorm`, `dust_storm`.|`rain`, `snow`, `hail`.|
-|**`isUrban`**|Cities, towns, villages.|`clear`, `heatwave` (L3).|`blizzard`, `dust_storm`.|
-|**`isVolcanic`**|Magma chambers, fire mountains.|`heatwave`, `fog` (ash), `dust_storm`.|`snow`, `hail`, `rain`.|
-|**`isSwamp`**|Marshes, mires, bogs.|`fog`, `heavy_rain`, `storm`.|`clear` (Rare).|
-|**`isArctic`**|Frozen wastelands, ice caves.|`coldwave`, `snow`, `blizzard`.|`sun`, `heatwave`.|
+| Biome Tag        | Description                     | Favored Weather                        | Forbidden Weather          |
+| :--------------- | :------------------------------ | :------------------------------------- | :------------------------- |
+| **`isPlains`**   | Standard routes, meadows.       | `clear`, `sun`, `rain` (L1).           | None.                      |
+| **`isCoastal`**  | Beaches, islands, sea routes.   | `mist`, `fog`, `heavy_rain`.           | `sandstorm`, `snow`.       |
+| **`isForest`**   | Woods, jungles, thickets.       | `mist`, `rain`, `thunderstorm`.        | `sandstorm`, `dust_storm`. |
+| **`isMountain`** | High altitude, peaks, cliffs.   | `wind`, `snow`, `blizzard`, `hail`.    | `heatwave` (Summer only).  |
+| **`isDesert`**   | Arid zones, ruins, dunes.       | `sun`, `sandstorm`, `dust_storm`.      | `rain`, `snow`, `hail`.    |
+| **`isUrban`**    | Cities, towns, villages.        | `clear`, `heatwave` (L3).              | `blizzard`, `dust_storm`.  |
+| **`isVolcanic`** | Magma chambers, fire mountains. | `heatwave`, `fog` (ash), `dust_storm`. | `snow`, `hail`, `rain`.    |
+| **`isSwamp`**    | Marshes, mires, bogs.           | `fog`, `heavy_rain`, `storm`.          | `clear` (Rare).            |
+| **`isArctic`**   | Frozen wastelands, ice caves.   | `coldwave`, `snow`, `blizzard`.        | `sun`, `heatwave`.         |
 
 ### Implementation Rules
 

@@ -1,42 +1,39 @@
 <script setup lang="ts">
-import type { SortOrder, ItemSortKey } from '@/types/system/game'
-type SortKey = ItemSortKey
+import type { SortOrder, ItemSortKey } from '@/types/system/game';
+type SortKey = ItemSortKey;
 
 interface Props {
-  modelValue: SortKey
-  sortOrder: SortOrder
+  modelValue: SortKey;
+  sortOrder: SortOrder;
   /**
    * Active color for the price and rarity buttons when selected.
    * Defaults to yellow (inventory / normal shop).
    * Pass a CSS color string, e.g. '#c084fc' for BC Shop purple.
    */
-  accentColor?: string
+  accentColor?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   accentColor: ''
-})
+});
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', val: SortKey): void
-  (e: 'update:sortOrder', val: SortOrder): void
-}>()
+  (e: 'update:modelValue', val: SortKey): void;
+  (e: 'update:sortOrder', val: SortOrder): void;
+}>();
 
 const setSort = (key: SortKey) => {
   if (props.modelValue === key) {
-    emit('update:sortOrder', props.sortOrder === 'asc' ? 'desc' : 'asc')
+    emit('update:sortOrder', props.sortOrder === 'asc' ? 'desc' : 'asc');
   } else {
-    emit('update:modelValue', key)
-    emit('update:sortOrder', 'asc')
+    emit('update:modelValue', key);
+    emit('update:sortOrder', 'asc');
   }
-}
+};
 </script>
 
 <template>
-  <div
-    class="sort-controls"
-    :style="accentColor ? { '--sort-accent': accentColor } : {}"
-  >
+  <div class="sort-controls" :style="accentColor ? { '--sort-accent': accentColor } : {}">
     <!-- NAME -->
     <button
       id="sort-controls-btn-ordenar-por-nombre"
@@ -46,10 +43,7 @@ const setSort = (key: SortKey) => {
       @click.stop="setSort('name')"
     >
       <span class="sort-label">ABC</span>
-      <span
-        v-if="modelValue === 'name'"
-        class="emoji sort-arrow"
-      >
+      <span v-if="modelValue === 'name'" class="emoji sort-arrow">
         {{ sortOrder === 'asc' ? '↑' : '↓' }}
       </span>
     </button>
@@ -65,10 +59,7 @@ const setSort = (key: SortKey) => {
       <slot name="price-icon">
         <span class="sort-label">₱</span>
       </slot>
-      <span
-        v-if="modelValue === 'price'"
-        class="emoji sort-arrow"
-      >
+      <span v-if="modelValue === 'price'" class="emoji sort-arrow">
         {{ sortOrder === 'asc' ? '↑' : '↓' }}
       </span>
     </button>
@@ -82,18 +73,11 @@ const setSort = (key: SortKey) => {
       @click.stop="setSort('rarity')"
     >
       <slot name="rarity-icon">
-        <svg
-          viewBox="0 0 24 24"
-          class="star-icon"
-          fill="currentColor"
-        >
+        <svg viewBox="0 0 24 24" class="star-icon" fill="currentColor">
           <polygon points="12,2 22,12 12,22 2,12" />
         </svg>
       </slot>
-      <span
-        v-if="modelValue === 'rarity'"
-        class="emoji sort-arrow"
-      >
+      <span v-if="modelValue === 'rarity'" class="emoji sort-arrow">
         {{ sortOrder === 'asc' ? '↑' : '↓' }}
       </span>
     </button>
@@ -101,7 +85,7 @@ const setSort = (key: SortKey) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 // Default accent = yellow; can be overridden via accentColor prop → CSS var
 .sort-controls {

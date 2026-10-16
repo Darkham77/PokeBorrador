@@ -36,7 +36,7 @@ export function generateDebugTeamPokemon(params: DebugGeneratePokemonParams): Po
 
 export interface DebugGenerateTeamParams {
   size: number;
-  speciesPool: readonly (string | PokemonSpeciesId)[];
+  speciesPool: readonly PokemonSpeciesId[];
   minLevel: number;
   maxLevel: number;
   forceShiny: boolean;
@@ -49,7 +49,8 @@ export function generateDebugTeamList(params: DebugGenerateTeamParams): Pokemon[
   if (params.speciesPool.length === 0) return team;
 
   for (let i = 0; i < clampedSize; i++) {
-    const raw = params.speciesPool[Math.floor(Math.random() * params.speciesPool.length)] || 'rattata';
+    const raw =
+      params.speciesPool[Math.floor(Math.random() * params.speciesPool.length)] || 'rattata';
     const speciesId = requirePokemonSpeciesId(raw);
     const p = generateDebugTeamPokemon({
       speciesId,

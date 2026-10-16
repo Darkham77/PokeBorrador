@@ -35,16 +35,11 @@ function isTrainerMode(state: TrainerModeCheckable | null | undefined): boolean 
  * Centralizes suppression logic to prevent cross-side interference.
  */
 export function useBattleHud(
-  animations: ReturnType<typeof useBattleAnimations>, 
-  battleStore: ReturnType<typeof useBattleStore>, 
+  animations: ReturnType<typeof useBattleAnimations>,
+  battleStore: ReturnType<typeof useBattleStore>,
   enemyRef: MaybeRefOrGetter<Pokemon | null | undefined>
 ) {
-  const {
-    isFaintInProgress,
-    faintedPokemonSnapshot,
-    caughtPokemonSnapshot,
-    seats
-  } = animations;
+  const { isFaintInProgress, faintedPokemonSnapshot, caughtPokemonSnapshot, seats } = animations;
 
   const isTrainer = computed(() => isTrainerMode(toValue(battleStore.state)));
 
@@ -52,7 +47,9 @@ export function useBattleHud(
     const s = toValue(battleStore.state);
     const fsmState = toValue(battleStore.fsm?.currentState);
     const fsmSub = toValue(battleStore.fsm?.currentSubState);
-    const faintedSide = faintedPokemonSnapshot.value ? faintedPokemonSnapshot.value.side : undefined;
+    const faintedSide = faintedPokemonSnapshot.value
+      ? faintedPokemonSnapshot.value.side
+      : undefined;
 
     return isEnemyHudSuppressedCheck(
       s ? s.minigame : undefined,
@@ -70,7 +67,9 @@ export function useBattleHud(
     if (toValue(battleStore.fsm?.currentState) === 'CONTEXT_SETUP') return true;
 
     const player = s ? s.player : undefined;
-    const faintedSide = faintedPokemonSnapshot.value ? faintedPokemonSnapshot.value.side : undefined;
+    const faintedSide = faintedPokemonSnapshot.value
+      ? faintedPokemonSnapshot.value.side
+      : undefined;
 
     const isFaintedOrCapturing = isCombatantFaintedOrCapturing(
       seats.value.seat1,
@@ -96,7 +95,8 @@ export function useBattleHud(
   });
 
   const activePlayerHudData = computed(() => {
-    if (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'player') return faintedPokemonSnapshot.value;
+    if (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'player')
+      return faintedPokemonSnapshot.value;
     const s = toValue(battleStore.state);
     return s ? s.player : null;
   });
@@ -104,10 +104,10 @@ export function useBattleHud(
   const activePlayerData = computed(() => activePlayerHudData.value);
 
   const gs = useGameStore();
-  
+
   const isWildEncounter = computed(() => {
     const state = toValue(battleStore.state);
-    return state ? (!state.isTrainer && !state.isGym) : Boolean(toValue(battleStore.isSearching));
+    return state ? !state.isTrainer && !state.isGym : Boolean(toValue(battleStore.isSearching));
   });
 
   const shouldScrambleEnemyData = computed(() => {
@@ -152,13 +152,26 @@ export function useBattleHud(
   });
 
   const bushIsBehind = computed(() => {
-    const state = toValue(battleStore.currentFsmState) || (battleStore.fsm?.currentState ? toValue(battleStore.fsm.currentState) : null);
-    const sub = toValue(battleStore.currentSubState) || (battleStore.fsm?.currentSubState ? toValue(battleStore.fsm.currentSubState) : null);
-    return isBushBehindCheck({ isEmerging: animations.isEmerging.value, isWildEntryAnimation: animations.isWildEntryAnimation.value }, state, sub ? String(sub) : null);
+    const state =
+      toValue(battleStore.currentFsmState) ||
+      (battleStore.fsm?.currentState ? toValue(battleStore.fsm.currentState) : null);
+    const sub =
+      toValue(battleStore.currentSubState) ||
+      (battleStore.fsm?.currentSubState ? toValue(battleStore.fsm.currentSubState) : null);
+    return isBushBehindCheck(
+      {
+        isEmerging: animations.isEmerging.value,
+        isWildEntryAnimation: animations.isWildEntryAnimation.value
+      },
+      state,
+      sub ? String(sub) : null
+    );
   });
 
   const enemyIsJumping = computed(() => {
-    const sub = toValue(battleStore.currentSubState) || (battleStore.fsm?.currentSubState ? toValue(battleStore.fsm.currentSubState) : null);
+    const sub =
+      toValue(battleStore.currentSubState) ||
+      (battleStore.fsm?.currentSubState ? toValue(battleStore.fsm.currentSubState) : null);
     return isEnemyJumpingCheck(animations.isEmerging.value, sub);
   });
 

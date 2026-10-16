@@ -26,4 +26,4 @@ System & Core Architecture Developers.
 
 ## Child DOX Index
 
-- *This directory contains specialized domain logic and files with no subdirectories.*
+- _This directory contains specialized domain logic and files with no subdirectories._

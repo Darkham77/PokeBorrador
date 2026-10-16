@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards'
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
-import HomePendingRewardItem from './HomePendingRewardItem.vue'
+import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
+import HomePendingRewardItem from './HomePendingRewardItem.vue';
 
 const {
   unifiedRewards,
@@ -10,7 +10,7 @@ const {
   claimReward,
   claimAllRewards,
   confirmDiscardReward
-} = useUnifiedRewards()
+} = useUnifiedRewards();
 </script>
 
 <template>
@@ -56,7 +56,7 @@ const {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .awards-box {
   padding: 4px;

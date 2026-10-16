@@ -1,51 +1,53 @@
 <script setup lang="ts">
-import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine'
-import { gsap } from 'gsap'
-import { Z_LAYERS } from '@/logic/constants/visuals'
-import type { ItemId } from '@/data/inventory/items'
+import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine';
+import { gsap } from 'gsap';
+import { Z_LAYERS } from '@/logic/constants/visuals';
+import type { ItemId } from '@/data/inventory/items';
 
 const props = defineProps<{
-  item: { id: ItemId; name: string; qty: number | string }
-  isSelected: boolean
-  sellMode: boolean
-  sellQty?: number
-}>()
+  item: { id: ItemId; name: string; qty: number | string };
+  isSelected: boolean;
+  sellMode: boolean;
+  sellQty?: number;
+}>();
 
 const emit = defineEmits<{
-  (e: 'use', itemId: ItemId): void
-  (e: 'click', event: MouseEvent): void
-  (e: 'qtyClick'): void
-  (e: 'updateQty', val: number | string): void
-}>()
+  (e: 'use', itemId: ItemId): void;
+  (e: 'click', event: MouseEvent): void;
+  (e: 'qtyClick'): void;
+  (e: 'updateQty', val: number | string): void;
+}>();
 
 // GSAP animations for cards
 const onItemMouseEnter = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
+  const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
     y: -2,
     duration: 0.2,
     ease: 'power2.out',
     overwrite: 'auto'
-  })
-}
+  });
+};
 
 const onItemMouseLeave = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
+  const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: props.isSelected ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255, 255, 255, 0.03)',
     y: 0,
     duration: 0.2,
     ease: 'power2.out',
     overwrite: 'auto'
-  })
-}
+  });
+};
 </script>
 
 <template>
   <div
-    id="bag-item-card-div-1" 
+    id="bag-item-card-div-1"
     :class="['item-card', { selected: isSelected }]"
+    role="button"
+    tabindex="0"
     @mouseenter="onItemMouseEnter"
     @mouseleave="onItemMouseLeave"
     @click.stop="emit('click', $event)"
@@ -54,6 +56,8 @@ const onItemMouseLeave = (event: MouseEvent) => {
       <div
         id="bag-item-card-div-2"
         class="bag-item-qty"
+        role="button"
+        tabindex="0"
         @click.stop="emit('qtyClick')"
       >
         {{ item.qty }}
@@ -64,7 +68,7 @@ const onItemMouseLeave = (event: MouseEvent) => {
         class="item-sprite"
         width="32"
         height="32"
-      >
+      />
     </div>
 
     <div class="item-details">
@@ -73,64 +77,35 @@ const onItemMouseLeave = (event: MouseEvent) => {
       </div>
     </div>
 
-    <div
-      v-if="!sellMode"
-      class="item-footer"
-    >
-      <button
-        id="bag-item-card-btn-usar"
-        class="use-btn"
-        @click.stop="emit('use', item.id)"
-      >
+    <div v-if="!sellMode" class="item-footer">
+      <button id="bag-item-card-btn-usar" class="use-btn" @click.stop="emit('use', item.id)">
         USAR
       </button>
     </div>
 
     <!-- Sell Qty Selector -->
-    <div
-      v-else-if="sellQty !== undefined"
-      class="sell-qty-selector"
-    >
+    <div v-else-if="sellQty !== undefined" class="sell-qty-selector">
       <div class="qty-controls">
-        <button
-          id="bag-item-card-btn-3"
-          @click.stop="emit('updateQty', sellQty - 1)"
-        >
-          -
-        </button>
+        <button id="bag-item-card-btn-3" @click.stop="emit('updateQty', sellQty - 1)">-</button>
         <input
-          id="bag-item-card-input-4" 
-          type="number" 
-          min="1" 
+          id="bag-item-card-input-4"
+          type="number"
+          min="1"
           :max="Number(item.qty)"
-          :value="sellQty" 
+          :value="sellQty"
+          aria-label="Cantidad a vender"
           @input="(e: Event) => emit('updateQty', (e.target as HTMLInputElement).value)"
-        >
-        <button
-          id="bag-item-card-btn-min"
-          @click="emit('updateQty', 1)"
-        >
-          MIN
-        </button>
-        <button
-          id="bag-item-card-btn-max"
-          @click="emit('updateQty', Number(item.qty))"
-        >
-          MAX
-        </button>
-        <button
-          id="bag-item-card-btn-5"
-          @click.stop="emit('updateQty', sellQty + 1)"
-        >
-          +
-        </button>
+        />
+        <button id="bag-item-card-btn-min" @click="emit('updateQty', 1)">MIN</button>
+        <button id="bag-item-card-btn-max" @click="emit('updateQty', Number(item.qty))">MAX</button>
+        <button id="bag-item-card-btn-5" @click.stop="emit('updateQty', sellQty + 1)">+</button>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .item-card {
   position: relative;

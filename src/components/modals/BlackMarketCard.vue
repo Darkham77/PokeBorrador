@@ -1,43 +1,49 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { formatCurrency } from '@/logic/utils/formatters'
-import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
-import type { Item } from '@/types/inventory/items'
-import type { ItemId } from '@/data/inventory/items'
-import { BLACK_MARKET_DEFAULT_DISCOUNT, BATTLE_COIN_TO_MONEY_RATE, PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay'
+import { computed } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
+import type { Item } from '@/types/inventory/items';
+import type { ItemId } from '@/data/inventory/items';
+import {
+  BLACK_MARKET_DEFAULT_DISCOUNT,
+  BATTLE_COIN_TO_MONEY_RATE,
+  PERCENT_BASE_MULTIPLIER
+} from '@/logic/constants/gameplay';
 
 interface Props {
-  item: Item
-  isPurchased: boolean
-  userMoney: number
-  discount?: number
-  bcToMoneyRate?: number
+  item: Item;
+  isPurchased: boolean;
+  userMoney: number;
+  discount?: number;
+  bcToMoneyRate?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   discount: BLACK_MARKET_DEFAULT_DISCOUNT,
   bcToMoneyRate: BATTLE_COIN_TO_MONEY_RATE
-})
+});
 
 const emit = defineEmits<{
-  (e: 'buy', itemId: ItemId): void
-}>()
+  (e: 'buy', itemId: ItemId): void;
+}>();
 
 const prices = computed(() => {
-  const baseMoney = (props.item.bcPrice || 0) * props.bcToMoneyRate
-  const discounted = Math.floor(baseMoney * (1 - props.discount))
-  return { original: baseMoney, discounted }
-})
+  const baseMoney = (props.item.bcPrice || 0) * props.bcToMoneyRate;
+  const discounted = Math.floor(baseMoney * (1 - props.discount));
+  return { original: baseMoney, discounted };
+});
 
-const canAfford = computed(() => props.userMoney >= prices.value.discounted)
-const tierColor = computed(() => getItemTierColor(props.item.tier))
-const tierLabel = computed(() => getItemTierLabel(props.item.tier))
-const discountPercentageText = computed(() => `-${Math.round((props.discount ?? 0) * PERCENT_BASE_MULTIPLIER)}%`)
+const canAfford = computed(() => props.userMoney >= prices.value.discounted);
+const tierColor = computed(() => getItemTierColor(props.item.tier));
+const tierLabel = computed(() => getItemTierLabel(props.item.tier));
+const discountPercentageText = computed(
+  () => `-${Math.round((props.discount ?? 0) * PERCENT_BASE_MULTIPLIER)}%`
+);
 
 function handleImageError(e: Event) {
   if (e.target) {
-    (e.target as HTMLImageElement).style.display = 'none'
+    (e.target as HTMLImageElement).style.display = 'none';
   }
 }
 </script>
@@ -50,11 +56,7 @@ function handleImageError(e: Event) {
     :style="{ '--tier-color': tierColor }"
   >
     <!-- Tier Badge -->
-    <span
-      v-if="item.tier"
-      class="bm-tier-tag"
-      :class="'tier-' + item.tier"
-    >
+    <span v-if="item.tier" class="bm-tier-tag" :class="'tier-' + item.tier">
       {{ tierLabel }}
     </span>
 
@@ -65,16 +67,10 @@ function handleImageError(e: Event) {
         :alt="item.name"
         class="bm-item-sprite"
         width="32"
-      
         height="32"
         @error="handleImageError"
-      >
-      <div
-        v-if="isPurchased"
-        class="bm-sold-stamp"
-      >
-        VENDIDO
-      </div>
+      />
+      <div v-if="isPurchased" class="bm-sold-stamp">VENDIDO</div>
     </div>
 
     <div class="bm-card-info">
@@ -86,13 +82,9 @@ function handleImageError(e: Event) {
       </p>
 
       <div class="bm-price-row">
-        <span class="bm-original-price">
-          ₽ {{ formatCurrency(prices.original) }}
-        </span>
+        <span class="bm-original-price"> ₽ {{ formatCurrency(prices.original) }} </span>
         <span class="bm-discount-tag">{{ discountPercentageText }}</span>
-        <span class="bm-final-price">
-          ₽ {{ formatCurrency(prices.discounted) }}
-        </span>
+        <span class="bm-final-price"> ₽ {{ formatCurrency(prices.discounted) }} </span>
       </div>
 
       <button

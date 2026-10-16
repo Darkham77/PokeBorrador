@@ -13,28 +13,21 @@ const emit = defineEmits<{
 <template>
   <div
     id="studio-modal-shell-div-1"
+    role="button"
+    tabindex="-1"
+    aria-label="Cerrar ventana modal"
     class="modal-backdrop"
     @click.self="emit('close')"
   >
-    <div
-      class="modal-card"
-      :style="maxWidth ? { maxWidth } : undefined"
-    >
+    <div class="modal-card" :style="maxWidth ? { maxWidth } : undefined">
       <header class="modal-header">
         <div class="flex items-center gap-2">
-          <span
-            v-if="icon"
-            class="icon text-xl"
-          >{{ icon }}</span>
+          <span v-if="icon" class="icon text-xl">{{ icon }}</span>
           <h3 class="modal-title">
             {{ title }}
           </h3>
         </div>
-        <button
-          id="studio-modal-shell-btn-emit"
-          class="btn-close"
-          @click="emit('close')"
-        >
+        <button id="studio-modal-shell-btn-emit" class="btn-close" @click="emit('close')">
           <span class="emoji-inline">✕</span>
         </button>
       </header>
@@ -43,10 +36,7 @@ const emit = defineEmits<{
         <slot />
       </div>
 
-      <footer
-        v-if="$slots.footer"
-        class="modal-footer"
-      >
+      <footer v-if="$slots.footer" class="modal-footer">
         <slot name="footer" />
       </footer>
     </div>

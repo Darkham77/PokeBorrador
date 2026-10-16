@@ -35,9 +35,15 @@ describe('settlementPlacementHelper', () => {
       }
     ];
 
-    expect(checkBuildingCollision(existing, { id: 'b2', x: 12, y: 12, width: 4, height: 4 })).toBe(true);
-    expect(checkBuildingCollision(existing, { id: 'b1', x: 10, y: 10, width: 5, height: 5 })).toBe(false);
-    expect(checkBuildingCollision(existing, { id: 'b3', x: 20, y: 20, width: 4, height: 4 })).toBe(false);
+    expect(checkBuildingCollision(existing, { id: 'b2', x: 12, y: 12, width: 4, height: 4 })).toBe(
+      true
+    );
+    expect(checkBuildingCollision(existing, { id: 'b1', x: 10, y: 10, width: 5, height: 5 })).toBe(
+      false
+    );
+    expect(checkBuildingCollision(existing, { id: 'b3', x: 20, y: 20, width: 4, height: 4 })).toBe(
+      false
+    );
   });
 
   it('finds a non-overlapping free placement spot for a new structure', () => {

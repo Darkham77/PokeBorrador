@@ -20,7 +20,7 @@ UI / Frontend Developers.
 - **Prohibition on Naked Class Names in Global Stylesheets**: Global stylesheets and cosmetic mixins (like nickname styles or badge glows in `_cosmetics.scss`) must **NEVER** declare un-prefixed generic class selectors such as `.normal`, `.bold`, `.dark`, or `.light`. These naked selectors leak across the entire application and override unrelated components (e.g. stripping background colors or borders from difficulty chips or tags). All cosmetic typography selectors MUST use scoped prefixes (`.nt-normal`, `.nick-style-normal`, `.username.normal`).
 - **Global Overscroll Navigation Prevention Mandate (`overscroll-behavior: none`)**:
   - Global stylesheets (`html`, `body`, `#app`, `#vue-app`) MUST declare `overscroll-behavior: none !important; overscroll-behavior-x: none !important; overscroll-behavior-y: none !important;`.
-  - This prevents browser engines (Chrome, Edge, Safari, Firefox) on precision trackpads, touch screens, and horizontal gesture mice from triggering native history navigation animations (*Swipe to Navigate* / Go Back) when performing rapid horizontal movements.
+  - This prevents browser engines (Chrome, Edge, Safari, Firefox) on precision trackpads, touch screens, and horizontal gesture mice from triggering native history navigation animations (_Swipe to Navigate_ / Go Back) when performing rapid horizontal movements.
 
 ### Reference Manuals
 

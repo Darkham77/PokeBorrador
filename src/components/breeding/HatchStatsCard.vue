@@ -3,33 +3,33 @@
  * HatchStatsCard.vue
  * Premium stats card for hatched Pokémon.
  */
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { getNatureInfo } from '@/data/battle/natures'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getNatureInfo } from '@/data/battle/natures';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
-import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { computed } from 'vue'
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { computed } from 'vue';
 
 interface Props {
-  pokemon: Pokemon
+  pokemon: Pokemon;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const tierInfo = computed(() => getPokemonTier(props.pokemon))
+const tierInfo = computed(() => getPokemonTier(props.pokemon));
 
 const getAbilityDesc = (ability: string) => {
-  if (!ability) return 'Habilidad especial de este Pokémon.'
-  const data = pokemonDataProvider.getAbilityData(ability)
-  return data ? data.desc : 'Habilidad especial de este Pokémon.'
-}
+  if (!ability) return 'Habilidad especial de este Pokémon.';
+  const data = pokemonDataProvider.getAbilityData(ability);
+  return data ? data.desc : 'Habilidad especial de este Pokémon.';
+};
 
 const getAbilityName = (ability: string) => {
-  if (!ability) return 'Común'
-  const data = pokemonDataProvider.getAbilityData(ability)
-  return data ? data.name : ability
-}
+  if (!ability) return 'Común';
+  const data = pokemonDataProvider.getAbilityData(ability);
+  return data ? data.name : ability;
+};
 </script>
 
 <template>
@@ -41,7 +41,9 @@ const getAbilityName = (ability: string) => {
         :description="getNatureInfo(pokemon.nature).desc"
         position="top"
       >
-        <span class="val interactive-val m-interactive-label">{{ getNatureInfo(pokemon.nature).name }}</span>
+        <span class="val interactive-val m-interactive-label">{{
+          getNatureInfo(pokemon.nature).name
+        }}</span>
       </PVTooltip>
     </div>
     <div class="stat-row">
@@ -51,7 +53,9 @@ const getAbilityName = (ability: string) => {
         :description="getAbilityDesc(pokemon.ability || '')"
         position="top"
       >
-        <span class="val interactive-val m-interactive-label">{{ getAbilityName(pokemon.ability || '') }}</span>
+        <span class="val interactive-val m-interactive-label">{{
+          getAbilityName(pokemon.ability || '')
+        }}</span>
       </PVTooltip>
     </div>
     <div class="stat-row ivs-row">
@@ -67,10 +71,7 @@ const getAbilityName = (ability: string) => {
     </div>
     <div class="stat-row">
       <span class="label">Grado IVs:</span>
-      <span
-        class="val tier-badge"
-        :style="{ color: tierInfo.color }"
-      >
+      <span class="val tier-badge" :style="{ color: tierInfo.color }">
         {{ tierInfo.tier }} ({{ tierInfo.total }}/186)
       </span>
     </div>
@@ -78,5 +79,5 @@ const getAbilityName = (ability: string) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_hatch-animation-modal";
+@use '@/styles/components/_hatch-animation-modal';
 </style>

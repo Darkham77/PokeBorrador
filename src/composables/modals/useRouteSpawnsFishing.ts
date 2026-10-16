@@ -1,11 +1,11 @@
-import { computed } from 'vue'
-import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
-import { useGameStore } from '@/stores/game'
-import { useEventStore } from '@/stores/events'
-import { useUIStore } from '@/stores/ui'
-import { getSpeciesEntries } from '@/logic/encounters/encounters'
-import { type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { safeParse, type EventConfig } from '@/logic/events/eventEngine'
+import { computed } from 'vue';
+import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
+import { useGameStore } from '@/stores/game';
+import { useEventStore } from '@/stores/events';
+import { useUIStore } from '@/stores/ui';
+import { getSpeciesEntries } from '@/logic/encounters/encounters';
+import { type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { safeParse, type EventConfig } from '@/logic/events/eventEngine';
 import {
   getSpawnStatus,
   getSharedShinyEventLines,
@@ -14,161 +14,197 @@ import {
   applyFishingRodBudget,
   createPopulatedRouteSpawnItem,
   type RouteSpawnMappedItem
-} from '@/logic/utils/routeSpawnHelpers'
+} from '@/logic/utils/routeSpawnHelpers';
 
-import { DEFAULT_EXCLUSIVE_SPAWN_WEIGHT } from '@/logic/constants/encounters'
-import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation'
+import {
+  DEFAULT_EXCLUSIVE_SPAWN_WEIGHT,
+  DEFAULT_FISHING_RATE_WEIGHT
+} from '@/logic/constants/encounters';
+import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation';
 
-const DEFAULT_FISHING_RATE_WEIGHT = 10;
 const ROD_GOOD_BONUS_POINTS = 500;
 const ROD_SUPER_BONUS_POINTS = 1000;
 
 export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
-  const gameStore = useGameStore()
-  const eventStore = useEventStore()
-  const uiStore = useUIStore()
+  const gameStore = useGameStore();
+  const eventStore = useEventStore();
+  const uiStore = useUIStore();
 
   const fishingSpawns = computed(() => {
-    if (!props.map.fishing?.pool) return []
+    if (!props.map.fishing?.pool) return [];
 
-    const pool: PokemonSpeciesId[] = [...props.map.fishing.pool]
-    const rates = [...props.map.fishing.rates]
-    while (rates.length < pool.length) rates.push(DEFAULT_FISHING_RATE_WEIGHT)
+    const pool: PokemonSpeciesId[] = [...props.map.fishing.pool];
+    const rates = [...props.map.fishing.rates];
+    while (rates.length < pool.length) rates.push(DEFAULT_FISHING_RATE_WEIGHT);
 
-    const weatherCfg = props.map.weather?.[props.weather]
+    const weatherCfg = props.map.weather?.[props.weather];
     if (props.weather && props.weather !== 'clear' && weatherCfg) {
       if (weatherCfg.fishingExclusive) {
-        const exclusives = getSpeciesEntries(weatherCfg.fishingExclusive)
+        const exclusives = getSpeciesEntries(weatherCfg.fishingExclusive);
         exclusives.forEach(({ id, weight }) => {
           if (!pool.includes(id)) {
-            pool.push(id)
-            rates.push(weight ?? DEFAULT_EXCLUSIVE_SPAWN_WEIGHT)
+            pool.push(id);
+            rates.push(weight ?? DEFAULT_EXCLUSIVE_SPAWN_WEIGHT);
           }
-        })
+        });
       }
       if (weatherCfg.fishingVisitors) {
-        const visitors = getSpeciesEntries(weatherCfg.fishingVisitors)
+        const visitors = getSpeciesEntries(weatherCfg.fishingVisitors);
         visitors.forEach(({ id, weight }) => {
           if (!pool.includes(id)) {
-            pool.push(id)
-            rates.push(weight !== undefined ? -weight : -DEFAULT_FISHING_RATE_WEIGHT)
+            pool.push(id);
+            rates.push(weight !== undefined ? -weight : -DEFAULT_FISHING_RATE_WEIGHT);
           }
-        })
+        });
       }
     }
 
     if (props.weather && props.weather !== 'clear') {
-      const exclusives = weatherCfg?.fishingExclusive ? getSpeciesEntries(weatherCfg.fishingExclusive).map(entry => entry.id) : []
-      redistributeWeatherSpawns(rates, pool, props.weather, exclusives)
+      const exclusives = weatherCfg?.fishingExclusive
+        ? getSpeciesEntries(weatherCfg.fishingExclusive).map((entry) => entry.id)
+        : [];
+      redistributeWeatherSpawns(rates, pool, props.weather, exclusives);
     }
 
-    const fishingType = (gameStore.state.fishingRodSecs || 0) > 0 ? (gameStore.state.fishingRodType || 'standard') : 'standard'
-    applyFishingRodBudget(rates, pool, fishingType)
+    const fishingType =
+      (gameStore.state.fishingRodSecs || 0) > 0
+        ? gameStore.state.fishingRodType || 'standard'
+        : 'standard';
+    applyFishingRodBudget(rates, pool, fishingType);
 
     // Apply Event Species Boosts (e.g. Magikarp Spawn Boost during Magikarp event)
     pool.forEach((id, idx) => {
-      const spBonus = eventStore.getSpeciesBonuses(id)
+      const spBonus = eventStore.getSpeciesBonuses(id);
       if (spBonus && spBonus.rate > 1) {
-        rates[idx] = (rates[idx] || DEFAULT_FISHING_RATE_WEIGHT) * spBonus.rate
+        rates[idx] = (rates[idx] || DEFAULT_FISHING_RATE_WEIGHT) * spBonus.rate;
       }
-    })
+    });
 
-    const totalRate = rates.reduce((sum, r) => sum + r, 0)
-    const seenPokedex = gameStore.state.seenPokedex || []
-    const caughtPokedex = gameStore.state.pokedex || []
+    const totalRate = rates.reduce((sum, r) => sum + r, 0);
+    const seenPokedex = gameStore.state.seenPokedex || [];
+    const caughtPokedex = gameStore.state.pokedex || [];
 
-    return pool.map((id, index) => {
-      const rateVal = rates[index] || 0
-      const percentage = totalRate > 0 ? (rateVal / totalRate) * 100 : 0
+    return pool
+      .map((id, index) => {
+        const rateVal = rates[index] || 0;
+        const percentage = totalRate > 0 ? (rateVal / totalRate) * 100 : 0;
 
-      const baseIndex = props.map.fishing!.pool.indexOf(id)
-      let baseRate = 0
-      let basePercentage = 0
-      if (baseIndex !== -1) {
-        baseRate = props.map.fishing!.rates[baseIndex] !== undefined ? props.map.fishing!.rates[baseIndex] : DEFAULT_FISHING_RATE_WEIGHT
-        const totalBase = props.map.fishing!.rates.reduce((sum, r) => sum + r, 0)
-        basePercentage = totalBase > 0 ? (baseRate / totalBase) * 100 : 0
-      }
+        const baseIndex = props.map.fishing!.pool.indexOf(id);
+        let baseRate = 0;
+        let basePercentage = 0;
+        if (baseIndex !== -1) {
+          baseRate =
+            props.map.fishing!.rates[baseIndex] !== undefined
+              ? props.map.fishing!.rates[baseIndex]
+              : DEFAULT_FISHING_RATE_WEIGHT;
+          const totalBase = props.map.fishing!.rates.reduce((sum, r) => sum + r, 0);
+          basePercentage = totalBase > 0 ? (baseRate / totalBase) * 100 : 0;
+        }
 
-      const diff = percentage - basePercentage
+        const diff = percentage - basePercentage;
 
-      const isVisitor = !!weatherCfg?.fishingVisitors && getSpeciesEntries(weatherCfg.fishingVisitors).some(entry => entry.id === id)
-      const isExclusive = !!weatherCfg?.fishingExclusive && getSpeciesEntries(weatherCfg.fishingExclusive).some(entry => entry.id === id)
+        const isVisitor =
+          !!weatherCfg?.fishingVisitors &&
+          getSpeciesEntries(weatherCfg.fishingVisitors).some((entry) => entry.id === id);
+        const isExclusive =
+          !!weatherCfg?.fishingExclusive &&
+          getSpeciesEntries(weatherCfg.fishingExclusive).some((entry) => entry.id === id);
 
-      const multiplier = getWeatherMultiplier(id, props.weather)
-      const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0
-      const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0
-      const isBlocked = multiplier === 0
+        const multiplier = getWeatherMultiplier(id, props.weather);
+        const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0;
+        const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0;
+        const isBlocked = multiplier === 0;
 
-      const { spawnType: initialSpawnType, statusClass } = getSpawnStatus({ isVisitor, isExclusive, isBlocked, isInCurrentCycle: true, isBuffed, isDebuffed })
-      const spawnType = initialSpawnType === 'Común' ? 'Pesca' : initialSpawnType
+        const { spawnType: initialSpawnType, statusClass } = getSpawnStatus({
+          isVisitor,
+          isExclusive,
+          isBlocked,
+          isInCurrentCycle: true,
+          isBuffed,
+          isDebuffed
+        });
+        const spawnType = initialSpawnType === 'Común' ? 'Pesca' : initialSpawnType;
 
-      const speciesBonuses = eventStore.getSpeciesBonuses(id)
+        const speciesBonuses = eventStore.getSpeciesBonuses(id);
 
-      return createPopulatedRouteSpawnItem({
-        id,
-        percentage,
-        baseRate,
-        basePercentage,
-        diff,
-        spawnType,
-        statusClass,
-        multiplier,
-        debugPokedexMode: uiStore.debugPokedexMode,
-        seenPokedex,
-        caughtPokedex,
-        speciesBonuses
+        return createPopulatedRouteSpawnItem({
+          id,
+          percentage,
+          baseRate,
+          basePercentage,
+          diff,
+          spawnType,
+          statusClass,
+          multiplier,
+          debugPokedexMode: uiStore.debugPokedexMode,
+          seenPokedex,
+          caughtPokedex,
+          speciesBonuses
+        });
       })
-    }).sort((a, b) => {
-      if (a.percentage > 0 && b.percentage === 0) return -1
-      if (a.percentage === 0 && b.percentage > 0) return 1
-      if (a.percentage > 0 && b.percentage > 0) return b.percentage - a.percentage
-      return b.totalStats - a.totalStats
-    })
-  })
+      .sort((a, b) => {
+        if (a.percentage > 0 && b.percentage === 0) return -1;
+        if (a.percentage === 0 && b.percentage > 0) return 1;
+        if (a.percentage > 0 && b.percentage > 0) return b.percentage - a.percentage;
+        return b.totalStats - a.totalStats;
+      });
+  });
 
   function getFishingSpawnTooltip(poke: RouteSpawnMappedItem) {
-    const lines: string[] = [] // no-domain: Non-domain utility collection or data structure
-    lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`)
-    const rodType = gameStore.state.fishingRodType
-    const rodSecs = gameStore.state.fishingRodSecs || 0
+    const lines: string[] = []; // no-domain: Non-domain utility collection or data structure
+    lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`);
+    const rodType = gameStore.state.fishingRodType;
+    const rodSecs = gameStore.state.fishingRodSecs || 0;
     if (rodType && rodSecs > 0) {
-      const names: Record<string, string> = { standard: 'Caña de pescar', good: 'Caña Buena', super: 'Supercaña' }
-      const rodName = names[rodType] || 'Caña de pescar'
+      // open-record: Fishing rod type display names mapping
+      const names: Record<string, string> = {
+        standard: 'Caña de pescar',
+        good: 'Caña Buena',
+        super: 'Supercaña'
+      };
+      const rodName = names[rodType] || 'Caña de pescar';
       if (rodType === 'good') {
-        lines.push(`• ${rodName} activa: +${ROD_GOOD_BONUS_POINTS} pts distribuidos (más peso a comunes/raros)`)
+        lines.push(
+          `• ${rodName} activa: +${ROD_GOOD_BONUS_POINTS} pts distribuidos (más peso a comunes/raros)`
+        );
       } else if (rodType === 'super') {
-        lines.push(`• ${rodName} activa: +${ROD_SUPER_BONUS_POINTS} pts distribuidos (más peso a comunes/raros) y aumenta la chance de Shiny x1.5`)
+        lines.push(
+          `• ${rodName} activa: +${ROD_SUPER_BONUS_POINTS} pts distribuidos (más peso a comunes/raros) y aumenta la chance de Shiny x1.5`
+        );
       } else {
-        lines.push(`• ${rodName} activa.`)
+        lines.push(`• ${rodName} activa.`);
       }
     }
-    const weather = props.weather || 'clear'
-    const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok: UI text display localization string
+    const weather = props.weather || 'clear';
+    const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes(
+      (weather as string).toLowerCase() as never
+    ); // text-ok: UI text display localization string
     if (isRainy) {
-      lines.push(`• Clima (Lluvia): x1.20 a la tasa de pesca general`)
+      lines.push(`• Clima (Lluvia): x1.20 a la tasa de pesca general`);
     }
-    lines.push(...getSpawnCommonTooltipLines(poke, props.weather))
-    const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1
+    lines.push(...getSpawnCommonTooltipLines(poke, props.weather));
+    const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1;
     if (eventFishingBonus !== 1) {
-      const activeFishingEvents = eventStore.activeEvents.filter(e => {
-        const cfg = safeParse(e.config) as EventConfig
-        return Boolean(cfg?.fishingMult)
-      })
-      const eventNames = activeFishingEvents.map(e => e.name).join(', ')
-      lines.push(`• Evento Semanal (${eventNames}): x${eventFishingBonus.toFixed(1)} de probabilidad general`)
+      const activeFishingEvents = eventStore.activeEvents.filter((e) => {
+        const cfg = safeParse(e.config) as EventConfig;
+        return Boolean(cfg?.fishingMult);
+      });
+      const eventNames = activeFishingEvents.map((e) => e.name).join(', ');
+      lines.push(
+        `• Evento Semanal (${eventNames}): x${eventFishingBonus.toFixed(1)} de probabilidad general`
+      );
     }
 
-    lines.push(...getSharedShinyEventLines(poke.id, eventStore))
+    lines.push(...getSharedShinyEventLines(poke.id, eventStore));
 
     return {
       title: `DETALLES DE PESCA`,
       description: lines.join('\n')
-    }
+    };
   }
 
   return {
     fishingSpawns,
     getFishingSpawnTooltip
-  }
+  };
 }

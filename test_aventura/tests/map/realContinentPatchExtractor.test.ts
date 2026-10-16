@@ -13,14 +13,10 @@ describe('realContinentPatchExtractor', () => {
       seed: 42
     });
 
-    const patches = extractRealContinentPatches(
-      continent,
-      [],
-      [],
-      undefined,
-      null,
-      { radius: 2, maxPerCategory: 5 }
-    );
+    const patches = extractRealContinentPatches(continent, [], [], undefined, null, {
+      radius: 2,
+      maxPerCategory: 5
+    });
 
     expect(patches.length).toBeGreaterThan(0);
 
@@ -46,14 +42,10 @@ describe('realContinentPatchExtractor', () => {
       seed: 123
     });
 
-    const patches = extractRealContinentPatches(
-      continent,
-      [],
-      [],
-      undefined,
-      null,
-      { radius: 1, maxPerCategory: 3 }
-    );
+    const patches = extractRealContinentPatches(continent, [], [], undefined, null, {
+      radius: 1,
+      maxPerCategory: 3
+    });
 
     expect(patches.length).toBeGreaterThan(0);
     const first = patches[0]!;
@@ -86,14 +78,10 @@ describe('realContinentPatchExtractor', () => {
       seed: 42
     });
 
-    const patches = extractRealContinentPatches(
-      continent,
-      [],
-      [],
-      undefined,
-      null,
-      { radius: 3, maxPerCategory: 2 }
-    );
+    const patches = extractRealContinentPatches(continent, [], [], undefined, null, {
+      radius: 3,
+      maxPerCategory: 2
+    });
 
     expect(patches.length).toBeGreaterThan(0);
     const first = patches[0]!;
@@ -112,14 +100,11 @@ describe('realContinentPatchExtractor', () => {
       seed: 16
     });
 
-    const patches = extractRealContinentPatches(
-      continent,
-      [],
-      [],
-      undefined,
-      null,
-      { radius: 2, maxPerCategory: 16, mountainLimit: 48 }
-    );
+    const patches = extractRealContinentPatches(continent, [], [], undefined, null, {
+      radius: 2,
+      maxPerCategory: 16,
+      mountainLimit: 48
+    });
 
     const mountainPatches = patches.filter((p) => p.category === 'mountain_cliff');
     // Expanded mountain limit must yield significantly more than the legacy 16 points
@@ -140,4 +125,3 @@ describe('realContinentPatchExtractor', () => {
     expect(southWalls.length).toBeGreaterThan(0);
   });
 });
-

@@ -6,7 +6,7 @@ export const SHOP_MODAL_REGISTRY = {
   BCShop: defineAsyncComponent(() => import('@/components/modals/BCShopModal.vue')),
   ReputationShop: defineAsyncComponent(() => import('@/components/modals/ReputationShopModal.vue')),
   BlackMarket: defineAsyncComponent(() => import('@/components/modals/BlackMarketModal.vue')),
-  WarShop: defineAsyncComponent(() => import('@/components/modals/war-shop/WarShopModal.vue')),
+  WarShop: defineAsyncComponent(() => import('@/components/modals/war-shop/WarShopModal.vue'))
 };
 
 export type ShopModalKey = keyof typeof SHOP_MODAL_REGISTRY;

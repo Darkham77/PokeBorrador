@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { type PlayerClassDefinition } from '@/data/player/playerClasses'
-import { useModalStore } from '@/stores/modals'
-import { useGameStore } from '@/stores/game'
-import { useAuthStore } from '@/stores/auth'
-import { useProfileStore } from '@/stores/player/profile'
-import { useUIStore } from '@/stores/ui'
-import type { GenderId } from '@/types/system/game'
-import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage'
-import ClassDashboardSidebar from './ClassDashboardSidebar.vue'
-import ClassDashboardAbilityItem from './ClassDashboardAbilityItem.vue'
-import ClassDashboardPenaltyItem from './ClassDashboardPenaltyItem.vue'
+import { computed } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { type PlayerClassDefinition } from '@/data/player/playerClasses';
+import { useModalStore } from '@/stores/modals';
+import { useGameStore } from '@/stores/game';
+import { useAuthStore } from '@/stores/auth';
+import { useProfileStore } from '@/stores/player/profile';
+import { useUIStore } from '@/stores/ui';
+import type { GenderId } from '@/types/system/game';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
+import ClassDashboardSidebar from './ClassDashboardSidebar.vue';
+import ClassDashboardAbilityItem from './ClassDashboardAbilityItem.vue';
+import ClassDashboardPenaltyItem from './ClassDashboardPenaltyItem.vue';
 
 interface Props {
-  currentClass?: PlayerClassDefinition | null
-  trainerLevel?: number
-  trainerRank?: string
-  classLevel?: number
+  currentClass?: PlayerClassDefinition | null;
+  trainerLevel?: number;
+  trainerRank?: string;
+  classLevel?: number;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -25,40 +25,50 @@ withDefaults(defineProps<Props>(), {
   trainerLevel: 1,
   trainerRank: 'Novato',
   classLevel: 1
-})
+});
 
-const modalStore = useModalStore()
-const gameStore = useGameStore()
-const authStore = useAuthStore()
-const profileStore = useProfileStore()
-const uiStore = useUIStore()
+const modalStore = useModalStore();
+const gameStore = useGameStore();
+const authStore = useAuthStore();
+const profileStore = useProfileStore();
+const uiStore = useUIStore();
 
-import { getDaysUntilIdentityChange, canChangeIdentity } from '@/logic/player/identityCooldown'
+import { getDaysUntilIdentityChange, canChangeIdentity } from '@/logic/player/identityCooldown';
 
 const currentGender = computed<GenderId>(() => {
-  return gameStore.state.gender === 'm' ? 'm' : 'h'
-})
+  return gameStore.state.gender === 'm' ? 'm' : 'h';
+});
 
 const daysUntilIdentityChange = computed(() => {
-  return getDaysUntilIdentityChange(gameStore.state.last_renamed_at || profileStore.profileData.last_renamed_at)
-})
+  return getDaysUntilIdentityChange(
+    gameStore.state.last_renamed_at || profileStore.profileData.last_renamed_at
+  );
+});
 
 const canChangeGender = computed(() => {
-  return canChangeIdentity(gameStore.state.last_renamed_at || profileStore.profileData.last_renamed_at)
-})
+  return canChangeIdentity(
+    gameStore.state.last_renamed_at || profileStore.profileData.last_renamed_at
+  );
+});
 
 const handleSelectGender = (targetGender: GenderId) => {
   if (currentGender.value === targetGender) {
-    uiStore.notify(`Ya tienes seleccionado el género ${targetGender === 'm' ? 'Femenino ♀️' : 'Masculino ♂️'}.`, 'ℹ️')
-    return
+    uiStore.notify(
+      `Ya tienes seleccionado el género ${targetGender === 'm' ? 'Femenino ♀️' : 'Masculino ♂️'}.`,
+      'ℹ️'
+    );
+    return;
   }
 
   if (!canChangeGender.value) {
-    uiStore.notify(`Cooldown activo: Faltan ${daysUntilIdentityChange.value} días para poder cambiar de identidad.`, '⏳')
-    return
+    uiStore.notify(
+      `Cooldown activo: Faltan ${daysUntilIdentityChange.value} días para poder cambiar de identidad.`,
+      '⏳'
+    );
+    return;
   }
 
-  const genderName = targetGender === 'm' ? 'Femenino ♀️' : 'Masculino ♂️'
+  const genderName = targetGender === 'm' ? 'Femenino ♀️' : 'Masculino ♂️';
 
   uiStore.openConfirm({
     title: '¿CAMBIAR DE GÉNERO?',
@@ -68,16 +78,16 @@ const handleSelectGender = (targetGender: GenderId) => {
     type: 'primary',
     variant: 'retro',
     onConfirm: () => {
-      const nowStr = Temporal.Now.instant().toString()
-      gameStore.state.gender = targetGender
-      gameStore.state.last_renamed_at = nowStr
-      profileStore.updateProfile({ 
+      const nowStr = Temporal.Now.instant().toString();
+      gameStore.state.gender = targetGender;
+      gameStore.state.last_renamed_at = nowStr;
+      profileStore.updateProfile({
         gender: targetGender,
-        last_renamed_at: nowStr 
-      })
+        last_renamed_at: nowStr
+      });
 
       if (authStore.user?.id.startsWith('local_')) {
-        const localUserStr = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER)
+        const localUserStr = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER);
         if (localUserStr) {
           interface LocalUser {
             user_metadata?: {
@@ -94,40 +104,46 @@ const handleSelectGender = (targetGender: GenderId) => {
           lu.user_metadata.last_renamed_at = nowStr;
           safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(lu));
         } else {
-          safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify({
-            id: authStore.user.id,
-            email: authStore.user?.email || 'entrenador@local',
-            user_metadata: { 
-              username: gameStore.state.trainer,
-              gender: targetGender,
-              last_renamed_at: nowStr 
-            }
-          }))
+          safeStorage.setItem(
+            LOCAL_STORAGE_KEYS.LOCAL_USER,
+            JSON.stringify({
+              id: authStore.user.id,
+              email: authStore.user?.email || 'entrenador@local',
+              user_metadata: {
+                username: gameStore.state.trainer,
+                gender: targetGender,
+                last_renamed_at: nowStr
+              }
+            })
+          );
         }
       }
 
-      gameStore.save(false)
+      gameStore.save(false);
       if (authStore.user) {
-        profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
+        profileStore.syncProfileFromAuth(authStore.user, gameStore.state);
       }
-      uiStore.notify(`Género de entrenador cambiado a ${targetGender === 'm' ? 'Femenino' : 'Masculino'}.`, '✨')
+      uiStore.notify(
+        `Género de entrenador cambiado a ${targetGender === 'm' ? 'Femenino' : 'Masculino'}.`,
+        '✨'
+      );
     }
-  })
-}
+  });
+};
 
 const emit = defineEmits<{
-  (e: 'changeClass'): void
-  (e: 'close'): void
-}>()
+  (e: 'changeClass'): void;
+  (e: 'close'): void;
+}>();
 
 const openMissionsModal = () => {
-  modalStore.close('ClassMissions')
-  modalStore.open('EventMissions')
-}
+  modalStore.close('ClassMissions');
+  modalStore.open('EventMissions');
+};
 
 const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h') => {
   return getAssetUrl(ASSET_TYPES.TRAINER, id as string, { trainerSuffix: 'front', gender });
-}
+};
 </script>
 
 <template>
@@ -184,7 +200,7 @@ const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h
       <!-- Bottom Actions -->
       <div class="dashboard-actions">
         <button
-          id="class-dashboard-btn-misiones-de-clase" 
+          id="class-dashboard-btn-misiones-de-clase"
           class="missions-btn-wide"
           @click.stop="openMissionsModal"
         >

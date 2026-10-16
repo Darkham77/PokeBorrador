@@ -3,7 +3,11 @@ import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
-import { POKEMON_DB, isPokemonDbSpeciesId, type PokemonDbSpeciesId } from '@/data/pokemon/pokemonDB';
+import {
+  POKEMON_DB,
+  isPokemonDbSpeciesId,
+  type PokemonDbSpeciesId
+} from '@/data/pokemon/pokemonDB';
 import { getSpeciesEggMoves } from '@/data/pokemon/eggMoves';
 
 const MAX_LEGAL_RANDOM_MOVE_SLOTS = 4 as const;
@@ -14,7 +18,11 @@ const MAX_LEGAL_RANDOM_MOVE_SLOTS = 4 as const;
  * If `level` is specified, level-up moves require `learnLevel <= level`.
  * Compatible moves (TM, Tutor, Egg, Special, past transfers) are legal at any level.
  */
-export function canLearnMove(speciesId: PokemonSpeciesId, moveId: PokemonMoveId, level?: number): boolean {
+export function canLearnMove(
+  speciesId: PokemonSpeciesId,
+  moveId: PokemonMoveId,
+  level?: number
+): boolean {
   if (!speciesId || !moveId) return false;
 
   const history = getSpeciesHistory(speciesId);
@@ -36,7 +44,7 @@ export function canLearnMove(speciesId: PokemonSpeciesId, moveId: PokemonMoveId,
 
     // 2. Level-up moves
     if (staticData.learnset) {
-      const found = staticData.learnset.find(m => m.id === moveId);
+      const found = staticData.learnset.find((m) => m.id === moveId);
       if (found && (level === undefined || found.lv <= level)) {
         return true;
       }
@@ -79,7 +87,8 @@ function collectSpeciesStaticMoves(
 export function getLegalSpeciesMoves(speciesId: PokemonSpeciesId, level?: number): PokemonMoveId[] {
   if (!speciesId) return [];
   const legalMoveIds = new Set<PokemonMoveId>(); // runtime-set: Legal moves accumulator set
-  const targetLevel = level !== undefined ? Math.max(1, Math.min(MAX_POKEMON_LEVEL, level)) : undefined;
+  const targetLevel =
+    level !== undefined ? Math.max(1, Math.min(MAX_POKEMON_LEVEL, level)) : undefined;
 
   const history = getSpeciesHistory(speciesId);
   const targetSpecies = history.length > 0 ? history : [speciesId];

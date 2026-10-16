@@ -1,30 +1,30 @@
 <script setup lang="ts">
 /**
  * src/components/admin/debug/shared/DebugNumericControlRow.vue
- * 
+ *
  * Generic modular row for debug numeric settings.
  * Includes label with explanatory tooltip, numeric input with prefix/suffix,
  * quick preset buttons, and a dedicated default button that restores the original game value.
  */
 
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import type { DebugPresetOption } from './debugControlTypes.ts'
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import type { DebugPresetOption } from './debugControlTypes.ts';
 
 interface Props {
-  id?: string
-  label: string
-  icon?: string
-  tooltip?: string
-  defaultLabel?: string
-  defaultValue?: number | null
-  modelValue: number | null
-  min?: number
-  max?: number
-  step?: number
-  placeholder?: string
-  prefix?: string
-  suffix?: string
-  presets?: readonly DebugPresetOption[]
+  id?: string;
+  label: string;
+  icon?: string;
+  tooltip?: string;
+  defaultLabel?: string;
+  defaultValue?: number | null;
+  modelValue: number | null;
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+  prefix?: string;
+  suffix?: string;
+  presets?: readonly DebugPresetOption[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -40,37 +40,37 @@ const props = withDefaults(defineProps<Props>(), {
   prefix: '',
   suffix: '',
   presets: () => []
-})
+});
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', val: number | null): void
-}>()
+  (e: 'update:modelValue', val: number | null): void;
+}>();
 
 function onInput(e: Event) {
-  const target = e.target as HTMLInputElement
-  const raw = target.value.trim()
+  const target = e.target as HTMLInputElement;
+  const raw = target.value.trim();
   if (raw === '') {
-    emit('update:modelValue', null)
+    emit('update:modelValue', null);
   } else {
-    const num = Number(raw)
-    emit('update:modelValue', isNaN(num) ? null : num)
+    const num = Number(raw);
+    emit('update:modelValue', isNaN(num) ? null : num);
   }
 }
 
 function setPreset(val: number) {
-  emit('update:modelValue', val)
+  emit('update:modelValue', val);
 }
 
 function restoreDefault() {
-  emit('update:modelValue', props.defaultValue ?? null)
+  emit('update:modelValue', props.defaultValue ?? null);
 }
 
 const isDefaultActive = () => {
   if (props.defaultValue === null || props.defaultValue === undefined) {
-    return props.modelValue === null || props.modelValue === undefined
+    return props.modelValue === null || props.modelValue === undefined;
   }
-  return props.modelValue === props.defaultValue
-}
+  return props.modelValue === props.defaultValue;
+};
 </script>
 
 <template>
@@ -78,26 +78,17 @@ const isDefaultActive = () => {
     <div class="row-header">
       <PVTooltip :title="tooltip || label">
         <div class="label-group">
-          <span
-            v-if="icon"
-            class="emoji row-icon"
-          >{{ icon }}</span>
+          <span v-if="icon" class="emoji row-icon">{{ icon }}</span>
           <span class="row-label">{{ label }}</span>
           <span class="emoji info-badge">ℹ️</span>
         </div>
       </PVTooltip>
-      <span
-        v-if="defaultLabel"
-        class="default-tag"
-      >{{ defaultLabel }}</span>
+      <span v-if="defaultLabel" class="default-tag">{{ defaultLabel }}</span>
     </div>
 
     <div class="row-controls">
       <div class="input-wrapper">
-        <span
-          v-if="prefix"
-          class="affix prefix"
-        >{{ prefix }}</span>
+        <span v-if="prefix" class="affix prefix">{{ prefix }}</span>
         <input
           :id="id ? `${id}-input` : undefined"
           :value="modelValue ?? ''"
@@ -106,13 +97,11 @@ const isDefaultActive = () => {
           :max="max"
           :step="step"
           :placeholder="placeholder"
+          :aria-label="label || placeholder || 'Valor'"
           class="numeric-input"
           @input="onInput"
-        >
-        <span
-          v-if="suffix"
-          class="affix suffix"
-        >{{ suffix }}</span>
+        />
+        <span v-if="suffix" class="affix suffix">{{ suffix }}</span>
       </div>
 
       <div class="presets-row">
@@ -147,7 +136,7 @@ const isDefaultActive = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .debug-numeric-row {
   display: flex;
@@ -260,7 +249,8 @@ const isDefaultActive = () => {
         flex: 1.1;
         border-color: Rgb(59 130 246 / 40%);
 
-        &:hover, &.active {
+        &:hover,
+        &.active {
           background: Rgb(59 130 246 / 30%);
           color: var(--white);
         }

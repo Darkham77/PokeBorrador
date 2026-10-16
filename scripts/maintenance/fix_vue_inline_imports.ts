@@ -3,10 +3,10 @@
  *
  * Removes spurious `import { setTimeout } from 'node:timers/promises'`
  * that was injected INLINE into `<script setup lang="ts">` tags.
- * 
+ *
  * Pattern to fix:
  *   <script setup lang="ts">import { setTimeout } from 'node:timers/promises';
- *   
+ *
  * Expected result:
  *   <script setup lang="ts">
  *
@@ -33,7 +33,7 @@ for (const file of collectRepositoryFiles(srcDir, root, [], TARGET_EXTENSIONS)) 
     /(<script[^>]*>)import \{ setTimeout \} from ['"]node:timers\/promises['"];?\r?\n/g,
     '$1\n'
   );
-  
+
   // Pattern 2: standalone line inside vue files (fallback)
   updated = updated.replace(
     /^import \{ setTimeout \} from ['"]node:timers\/promises['"];?\r?\n/gm,

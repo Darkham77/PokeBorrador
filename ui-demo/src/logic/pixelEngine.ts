@@ -23,7 +23,7 @@ interface PolygonPaths {
 }
 
 const _CORNER_MODELS = ['bresenham', 'chamfer', 'wide'] as const;
-export type CornerModelId = typeof _CORNER_MODELS[number];
+export type CornerModelId = (typeof _CORNER_MODELS)[number];
 
 const ARC_START_DEG = 270;
 const ARC_END_DEG = 225;
@@ -53,8 +53,14 @@ function generatePoints(radius: number, pixelSize: number, offset = 0): RawCoord
   const coords: RawCoord[] = [];
   const lastCoords = { x: -1, y: -1 };
   for (let i = ARC_START_DEG; i > ARC_END_DEG; i--) {
-    const x = Math.trunc(radius * Math.sin((2 * Math.PI * i) / FULL_CIRCLE_DEG) + radius + ROUNDING_OFFSET) * pixelSize;
-    const y = Math.trunc(radius * Math.cos((2 * Math.PI * i) / FULL_CIRCLE_DEG) + radius + ROUNDING_OFFSET) * pixelSize;
+    const x =
+      Math.trunc(
+        radius * Math.sin((2 * Math.PI * i) / FULL_CIRCLE_DEG) + radius + ROUNDING_OFFSET
+      ) * pixelSize;
+    const y =
+      Math.trunc(
+        radius * Math.cos((2 * Math.PI * i) / FULL_CIRCLE_DEG) + radius + ROUNDING_OFFSET
+      ) * pixelSize;
     if (x !== lastCoords.x || y !== lastCoords.y) {
       lastCoords.x = x;
       lastCoords.y = y;
@@ -75,7 +81,7 @@ function insetCoords(coords: RawCoord[], pixelSize: number, offset: number): Raw
   return coords
     .map(({ x, y }) => ({
       x: x + pixelSize * offset,
-      y: y + pixelSize * Math.floor(offset / 2),
+      y: y + pixelSize * Math.floor(offset / 2)
     }))
     .reduce<RawCoord[]>((ret, item) => {
       if (ret.length > 0 && ret[ret.length - 1]?.x === ret[ret.length - 1]?.y) return ret;
@@ -123,29 +129,33 @@ function mirrorCoords(coords: RawCoord[], offset = 0): { x: string; y: string }[
   return [
     ...coords.map(({ x, y }) => ({
       x: offset ? `${x + offset}px` : `${x}px`,
-      y: offset ? `${y + offset}px` : `${y}px`,
+      y: offset ? `${y + offset}px` : `${y}px`
     })),
     ...coords.map(({ x, y }) => ({
       x: edgeCoord(y, offset),
-      y: offset ? `${x + offset}px` : `${x}px`,
+      y: offset ? `${x + offset}px` : `${x}px`
     })),
     ...coords.map(({ x, y }) => ({
       x: edgeCoord(x, offset),
-      y: edgeCoord(y, offset),
+      y: edgeCoord(y, offset)
     })),
     ...coords.map(({ x, y }) => ({
       x: offset ? `${y + offset}px` : `${y}px`,
-      y: edgeCoord(x, offset),
-    })),
+      y: edgeCoord(x, offset)
+    }))
   ];
 }
 
 function generatePath(coords: RawCoord[], reverse = false): string {
   const mirrored = mirrorCoords(coords);
-  return (reverse ? mirrored : mirrored.reverse()).map(p => `${p.x} ${p.y}`).join(', ');
+  return (reverse ? mirrored : mirrored.reverse()).map((p) => `${p.x} ${p.y}`).join(', ');
 }
 
-function getPixelFramePolygons(radius: number, pixelSize: number, borderWidth = DEFAULT_FRAME_BORDER_WIDTH): PolygonPaths {
+function getPixelFramePolygons(
+  radius: number,
+  pixelSize: number,
+  borderWidth = DEFAULT_FRAME_BORDER_WIDTH
+): PolygonPaths {
   const outerCoords = flipCoords(generatePoints(radius, pixelSize));
   const outerPath = generatePath(outerCoords);
   const innerCoords = addCorners(
@@ -160,27 +170,53 @@ function getPixelFramePolygons(radius: number, pixelSize: number, borderWidth = 
   return { outerPath, innerPath, borderPath };
 }
 
-function getChamferFramePolygons(blocks: number, pixelSize: number, borderWidth = DEFAULT_FRAME_BORDER_WIDTH): PolygonPaths {
+function getChamferFramePolygons(
+  blocks: number,
+  pixelSize: number,
+  borderWidth = DEFAULT_FRAME_BORDER_WIDTH
+): PolygonPaths {
   const outerCut = blocks * pixelSize;
-  const outerCoords = [{ x: 0, y: outerCut }, { x: outerCut, y: 0 }];
-  const outerPath = mirrorCoords(outerCoords).map(p => `${p.x} ${p.y}`).join(', ');
+  const outerCoords = [
+    { x: 0, y: outerCut },
+    { x: outerCut, y: 0 }
+  ];
+  const outerPath = mirrorCoords(outerCoords)
+    .map((p) => `${p.x} ${p.y}`)
+    .join(', ');
 
   const b = borderWidth * pixelSize;
   const innerCut = Math.max(b, outerCut);
-  const innerCoords = [{ x: b, y: innerCut }, { x: innerCut, y: b }];
-  const innerPath = mirrorCoords(innerCoords).reverse().map(p => `${p.x} ${p.y}`).join(', ');
+  const innerCoords = [
+    { x: b, y: innerCut },
+    { x: innerCut, y: b }
+  ];
+  const innerPath = mirrorCoords(innerCoords)
+    .reverse()
+    .map((p) => `${p.x} ${p.y}`)
+    .join(', ');
   const borderPath = `${outerPath}, 0px 50%, ${b}px 50%, ${innerPath}, ${b}px 50%, 0px 50%`;
   return { outerPath, innerPath, borderPath };
 }
 
 function applyPolygonVars(prefix: string, polygons: PolygonPaths): void {
-  document.documentElement.style.setProperty(`--clip-${prefix}-outer`, `polygon(${polygons.outerPath})`);
-  document.documentElement.style.setProperty(`--clip-${prefix}-border`, `polygon(${polygons.borderPath})`);
-  document.documentElement.style.setProperty(`--clip-${prefix}-inner`, `polygon(${polygons.innerPath})`);
+  document.documentElement.style.setProperty(
+    `--clip-${prefix}-outer`,
+    `polygon(${polygons.outerPath})`
+  );
+  document.documentElement.style.setProperty(
+    `--clip-${prefix}-border`,
+    `polygon(${polygons.borderPath})`
+  );
+  document.documentElement.style.setProperty(
+    `--clip-${prefix}-inner`,
+    `polygon(${polygons.innerPath})`
+  );
   document.documentElement.style.setProperty(`--clip-${prefix}`, `polygon(${polygons.outerPath})`);
 }
 
-function applyBresenhamCurves(pixelSize: number): Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl', PolygonPaths> {
+function applyBresenhamCurves(
+  pixelSize: number
+): Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl', PolygonPaths> {
   const curves = {
     xs: getPixelFramePolygons(RADIUS_XS, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
     sm: getPixelFramePolygons(RADIUS_SM, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
@@ -198,7 +234,9 @@ function applyBresenhamCurves(pixelSize: number): Record<'xs' | 'sm' | 'md' | 'l
   return curves;
 }
 
-function applyChamferCurves(pixelSize: number): Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', PolygonPaths> {
+function applyChamferCurves(
+  pixelSize: number
+): Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', PolygonPaths> {
   const chamfers = {
     xs: getChamferFramePolygons(RADIUS_XS, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),
     sm: getChamferFramePolygons(RADIUS_SM, pixelSize, DEFAULT_FRAME_BORDER_WIDTH),

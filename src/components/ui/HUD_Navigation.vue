@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { onClickOutside } from "@vueuse/core";
-import { useNavigationState } from "@/composables/navigation/useNavigationState";
-import HUD_NavPokemonGroup from "./navigation/HUD_NavPokemonGroup.vue";
-import HUD_NavMarketGroup from "./navigation/HUD_NavMarketGroup.vue";
-import HUD_NavSocialGroup from "./navigation/HUD_NavSocialGroup.vue";
-import EggSprite from "@/components/common/EggSprite.vue";
-import PVHUDButton from "@/components/common/PVHUDButton.vue";
-import PVTooltip from "@/components/common/PVTooltip.vue";
+import { ref } from 'vue';
+import { onClickOutside } from '@vueuse/core';
+import { useNavigationState } from '@/composables/navigation/useNavigationState';
+import HUD_NavPokemonGroup from './navigation/HUD_NavPokemonGroup.vue';
+import HUD_NavMarketGroup from './navigation/HUD_NavMarketGroup.vue';
+import HUD_NavSocialGroup from './navigation/HUD_NavSocialGroup.vue';
+import EggSprite from '@/components/common/EggSprite.vue';
+import PVHUDButton from '@/components/common/PVHUDButton.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
 interface Props {
   position?: string;
 }
 
 withDefaults(defineProps<Props>(), {
-  position: "top"
+  position: 'top'
 });
 
 const {
@@ -33,25 +33,21 @@ const {
 
 const navRef = ref<HTMLElement | null>(null);
 
-onClickOutside(navRef, () => {
-  uiStore.openHudGroup = null;
-}, {
-  ignore: ['.hud-submenu', '.hud-group']
-});
+onClickOutside(
+  navRef,
+  () => {
+    uiStore.openHudGroup = null;
+  },
+  {
+    ignore: ['.hud-submenu', '.hud-group']
+  }
+);
 </script>
 
 <template>
-  <div
-    ref="navRef"
-    class="hud-nav"
-    :class="[`pos-${position}`]"
-  >
+  <div ref="navRef" class="hud-nav" :class="[`pos-${position}`]">
     <!-- 0. INICIO -->
-    <PVTooltip
-      title="INICIO"
-      :description="homeTooltipDescription"
-      position="top"
-    >
+    <PVTooltip title="INICIO" :description="homeTooltipDescription" position="top">
       <PVHUDButton
         id="nav-home-btn"
         custom-class="home-btn"
@@ -85,11 +81,7 @@ onClickOutside(navRef, () => {
     <HUD_NavPokemonGroup :position="position" />
 
     <!-- 3. MOCHILA -->
-    <PVTooltip
-      title="MOCHILA"
-      :description="mochilaTooltipDescription"
-      position="top"
-    >
+    <PVTooltip title="MOCHILA" :description="mochilaTooltipDescription" position="top">
       <PVHUDButton
         id="nav-bag-btn"
         :active="modalStore.isOpen('Inventory')"
@@ -103,11 +95,7 @@ onClickOutside(navRef, () => {
     </PVTooltip>
 
     <!-- 4. GIMS -->
-    <PVTooltip
-      title="GIMNASIOS"
-      :description="medalsBreakdown"
-      position="top"
-    >
+    <PVTooltip title="GIMNASIOS" :description="medalsBreakdown" position="top">
       <PVHUDButton
         id="nav-gyms-btn"
         :active="activeTab === 'gyms'"
@@ -122,11 +110,7 @@ onClickOutside(navRef, () => {
     </PVTooltip>
 
     <!-- 5. CRIANZA -->
-    <PVTooltip
-      title="CRIANZA"
-      :description="eggsBreakdown"
-      position="top"
-    >
+    <PVTooltip title="CRIANZA" :description="eggsBreakdown" position="top">
       <PVHUDButton
         id="nav-crianza-btn"
         :active="activeTab === 'daycare'"
@@ -134,7 +118,9 @@ onClickOutside(navRef, () => {
         @click.stop="handleTabChange('daycare')"
       >
         <template #icon>
-          <span style="display: inline-flex; justify-content: center; align-items: center; width: 100%;">
+          <span
+            style="display: inline-flex; justify-content: center; align-items: center; width: 100%"
+          >
             <EggSprite size="20" />
           </span>
         </template>

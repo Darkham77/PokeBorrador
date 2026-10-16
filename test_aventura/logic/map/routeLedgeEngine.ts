@@ -89,7 +89,12 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
     if (continent.resolvedMountain.occupiedFootCells[y]?.[x]) return false;
 
     // Check water distance: must not be adjacent to water
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]] as const) {
+    for (const [dx, dy] of [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0]
+    ] as const) {
       const terr = continent.terrainMatrix[y + dy]?.[x + dx];
       if (terr === 'water' || terr === 'water_deep') return false;
     }
@@ -129,7 +134,9 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
     if (placedRuns.length >= maxLedgeRuns) break;
 
     // Desired ledge run length (2 to 4 cells)
-    const runLength = MIN_LEDGE_RUN_LENGTH + Math.floor(nextRng() * (MAX_LEDGE_RUN_LENGTH - MIN_LEDGE_RUN_LENGTH + 1));
+    const runLength =
+      MIN_LEDGE_RUN_LENGTH +
+      Math.floor(nextRng() * (MAX_LEDGE_RUN_LENGTH - MIN_LEDGE_RUN_LENGTH + 1));
     const startX = anchor.x - Math.floor(runLength / 2);
     const y = anchor.y;
 
@@ -159,7 +166,8 @@ export function generateRouteLedges(options: GenerateLedgesOptions): readonly Le
     // 2-cell bypass corridor. Floating ledges with both ends in open grass are rejected.
     // ------------------------------------------------------------------------
     const leftFlankOpen = isPassableCorridor(startX - 1, y) && isPassableCorridor(startX - 2, y);
-    const rightFlankOpen = isPassableCorridor(startX + runLength, y) && isPassableCorridor(startX + runLength + 1, y);
+    const rightFlankOpen =
+      isPassableCorridor(startX + runLength, y) && isPassableCorridor(startX + runLength + 1, y);
 
     // Strict Anti-Softlock Guarantee:
     // Every ledge MUST preserve an unobstructed lateral bypass corridor (>= 2 cells)

@@ -19,8 +19,8 @@ import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts'
 const GRASS_PALETTE_COLORS = [
   '112,200,160', // base green
   '184,224,160', // light grass
-  '64,176,136',  // grass shadow
-  '160,224,192'  // grass highlight
+  '64,176,136', // grass shadow
+  '160,224,192' // grass highlight
 ];
 
 const CLIFF_EDGE_TILES = [
@@ -67,21 +67,27 @@ describe('mountainCliffEdgeAlphaIntegrity (Pattern C)', () => {
 
     const pois = placeRegionalPOIs(continent, { targetCount: 18, seed: 615856 });
     const routes = generateRouteNetwork(continent, pois, { allowBridges: true });
-    const { instructions } = buildMapBlitInstructions(continent, pois, routes.pathGrid, routes.bridgeGrid, null);
+    const { instructions } = buildMapBlitInstructions(
+      continent,
+      pois,
+      routes.pathGrid,
+      routes.bridgeGrid,
+      null
+    );
 
     const cellInsts = instructions.filter(
       (inst) => Math.floor(inst.px / 32) === 59 && Math.floor(inst.py / 32) === 35
     );
 
     const filenames = cellInsts.map((i) => i.filename);
-    const hasFace = filenames.some(f => f.includes('face') && !f.includes('bottom'));
-    const hasRightWall = filenames.some(f => f.includes('right'));
+    const hasFace = filenames.some((f) => f.includes('face') && !f.includes('bottom'));
+    const hasRightWall = filenames.some((f) => f.includes('right'));
     expect(hasFace, 'Must contain face underlay').toBe(true);
     expect(hasRightWall, 'Must contain vertical edge right wall').toBe(true);
 
     // Face must be blitted BEFORE the transparent side wall
-    const faceIdx = filenames.findIndex(f => f.includes('face') && !f.includes('bottom'));
-    const wallIdx = filenames.findIndex(f => f.includes('right'));
+    const faceIdx = filenames.findIndex((f) => f.includes('face') && !f.includes('bottom'));
+    const wallIdx = filenames.findIndex((f) => f.includes('right'));
     expect(faceIdx).toBeLessThan(wallIdx);
   });
 });

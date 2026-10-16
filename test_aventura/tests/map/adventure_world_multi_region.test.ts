@@ -6,11 +6,7 @@ import {
   getBlankDefaultProject
 } from '../../logic/map/adventureProjectFactory.ts';
 import { JohtoRegionalWorldGenerator } from '../../logic/map/johtoRegionalGenerator.ts';
-import {
-  CELL_BIOME,
-  OCCUPANCY_FLAGS,
-  OccupancyGrid
-} from '../../types/map/kantoGridModel.ts';
+import { CELL_BIOME, OCCUPANCY_FLAGS, OccupancyGrid } from '../../types/map/kantoGridModel.ts';
 import { DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
 
 describe('Multi-Region World Projects & Regional Registry', () => {
@@ -138,8 +134,8 @@ describe('Multi-Region World Projects & Regional Registry', () => {
     // Place custom Pokecenter at px (500, 600) with size 80x70
     const tx = Math.floor(500 / 32); // 15
     const ty = Math.floor(600 / 32); // 18
-    const bw = Math.ceil(80 / 32);  // 3
-    const bh = Math.ceil(70 / 32);  // 3
+    const bw = Math.ceil(80 / 32); // 3
+    const bh = Math.ceil(70 / 32); // 3
 
     generator.buildings.push({ style: 'pokecenter', x: 500, y: 600, w: 80, h: 70 });
     generator.occupancy.reserveRect(tx, ty, bw, bh, OCCUPANCY_FLAGS.BUILDING);

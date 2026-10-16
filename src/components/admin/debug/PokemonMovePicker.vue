@@ -1,63 +1,68 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { type PokemonMoveId, isPokemonMoveId, requirePokemonMoveId, MOVE_TRANSLATIONS_ES } from '@/data/battle/moves'
+import { ref, computed } from 'vue';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import {
+  type PokemonMoveId,
+  isPokemonMoveId,
+  requirePokemonMoveId,
+  MOVE_TRANSLATIONS_ES
+} from '@/data/battle/moves';
 
 interface Props {
-  modelValue: (PokemonMoveId | null)[]
-  speciesMoves: PokemonMoveId[]
+  modelValue: (PokemonMoveId | null)[];
+  speciesMoves: PokemonMoveId[];
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: (PokemonMoveId | null)[]): void
-  (e: 'autoFill'): void
-  (e: 'randomFill'): void
-}>()
-const moveSearch = ref('')
-const activeMoveSlot = ref<number | null>(null)
+  (e: 'update:modelValue', value: (PokemonMoveId | null)[]): void;
+  (e: 'autoFill'): void;
+  (e: 'randomFill'): void;
+}>();
+const moveSearch = ref('');
+const activeMoveSlot = ref<number | null>(null);
 
 // Pre-map all moves with their Spanish translation for fast search (search bar only)
-const allMovesList = Object.keys(MOVE_TRANSLATIONS_ES).map(rawId => {
-  const id = requirePokemonMoveId(rawId)
-  const moveData = pokemonDataProvider.getMoveData(id)
+const allMovesList = Object.keys(MOVE_TRANSLATIONS_ES).map((rawId) => {
+  const id = requirePokemonMoveId(rawId);
+  const moveData = pokemonDataProvider.getMoveData(id);
   return {
     id,
     nameEs: moveData.name
-  }
-})
+  };
+});
 
 const filteredMoves = computed<PokemonMoveId[]>(() => {
-  const s = moveSearch.value.toLowerCase().trim()
-  if (!s) return props.speciesMoves
-  
+  const s = moveSearch.value.toLowerCase().trim();
+  if (!s) return props.speciesMoves;
+
   const MOVE_SEARCH_MAX_RESULTS = 30;
   return allMovesList
-    .filter(m => m.id.toLowerCase().includes(s) || m.nameEs.toLowerCase().includes(s))
-    .map(m => m.id)
-    .slice(0, MOVE_SEARCH_MAX_RESULTS)
-})
+    .filter((m) => m.id.toLowerCase().includes(s) || m.nameEs.toLowerCase().includes(s))
+    .map((m) => m.id)
+    .slice(0, MOVE_SEARCH_MAX_RESULTS);
+});
 
 function getMoveDisplayName(id: PokemonMoveId | null | undefined): string {
-  if (!id || !isPokemonMoveId(id)) return ''
-  const md = pokemonDataProvider.getMoveData(id)
-  return md ? md.name.toUpperCase() : id.toUpperCase()
+  if (!id || !isPokemonMoveId(id)) return '';
+  const md = pokemonDataProvider.getMoveData(id);
+  return md ? md.name.toUpperCase() : id.toUpperCase();
 }
 
 function addMove(m: PokemonMoveId, slotIndex: number) {
-  const newMoves = [...props.modelValue]
-  newMoves[slotIndex] = m
-  emit('update:modelValue', newMoves)
-  activeMoveSlot.value = null
-  moveSearch.value = ''
+  const newMoves = [...props.modelValue];
+  newMoves[slotIndex] = m;
+  emit('update:modelValue', newMoves);
+  activeMoveSlot.value = null;
+  moveSearch.value = '';
 }
 
 function removeMove(slotIndex: number) {
-  const newMoves = [...props.modelValue]
-  newMoves.splice(slotIndex, 1)
-  newMoves.push(null)
-  emit('update:modelValue', newMoves)
+  const newMoves = [...props.modelValue];
+  newMoves.splice(slotIndex, 1);
+  newMoves.push(null);
+  emit('update:modelValue', newMoves);
 }
 </script>
 
@@ -70,11 +75,7 @@ function removeMove(slotIndex: number) {
           title="Autocompletar ataques"
           description="Asigna automáticamente los últimos 4 ataques aprendidos por nivel."
         >
-          <button
-            id="debug-btn-auto-moves"
-            class="btn-magic-fill"
-            @click.stop="$emit('autoFill')"
-          >
+          <button id="debug-btn-auto-moves" class="btn-magic-fill" @click.stop="$emit('autoFill')">
             <span class="emoji">🪄</span>
           </button>
         </PVTooltip>
@@ -93,23 +94,20 @@ function removeMove(slotIndex: number) {
       </div>
     </div>
     <div class="move-slots">
-      <div
-        v-for="i in 4"
-        :id="`debug-move-slot-${i}`"
-        :key="i"
-        class="move-slot"
-      >
+      <div v-for="i in 4" :id="`debug-move-slot-${i}`" :key="i" class="move-slot">
         <div
-          v-if="modelValue[i-1]"
+          v-if="modelValue[i - 1]"
           id="pokemon-move-picker-div-2"
           class="move-pill"
+          role="button"
+          tabindex="0"
           @click.stop="activeMoveSlot = i"
         >
-          <span class="mv-name">{{ getMoveDisplayName(modelValue[i-1]) }}</span>
+          <span class="mv-name">{{ getMoveDisplayName(modelValue[i - 1]) }}</span>
           <button
             :id="`debug-move-remove-${i}`"
             class="remove-move"
-            @click.stop="removeMove(i-1)"
+            @click.stop="removeMove(i - 1)"
           >
             ×
           </button>
@@ -118,38 +116,37 @@ function removeMove(slotIndex: number) {
           v-else
           id="pokemon-move-picker-div-3"
           class="move-pill empty"
+          role="button"
+          tabindex="0"
           @click.stop="activeMoveSlot = i"
         >
           + SELECCIONAR
         </div>
 
-        <div
-          v-if="activeMoveSlot === i"
-          class="move-picker custom-scrollbar"
-        >
+        <div v-if="activeMoveSlot === i" class="move-picker custom-scrollbar">
           <input
             id="debug-move-search-input"
             v-model="moveSearch"
             type="text"
             placeholder="BUSCAR..."
+            aria-label="Buscar movimiento"
             class="move-search-input"
             autofocus
             @click.stop
-          >
+          />
 
           <div class="move-list">
-            <div
-              v-if="speciesMoves.length > 0 && !moveSearch"
-              class="move-group-label"
-            >
+            <div v-if="speciesMoves.length > 0 && !moveSearch" class="move-group-label">
               LEARNSET
             </div>
-            <div 
-              v-for="m in filteredMoves" 
-              :id="`debug-move-option-${m}`" 
+            <div
+              v-for="m in filteredMoves"
+              :id="`debug-move-option-${m}`"
               :key="m"
               class="move-item"
-              @click.stop="addMove(m, i-1)"
+              role="button"
+              tabindex="0"
+              @click.stop="addMove(m, i - 1)"
             >
               {{ getMoveDisplayName(m) }}
             </div>
@@ -177,9 +174,12 @@ function removeMove(slotIndex: number) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
-    label { color: Rgb(255 255 255 / 40%); font-size: var(--font-10); }
-    
+
+    label {
+      color: Rgb(255 255 255 / 40%);
+      font-size: var(--font-10);
+    }
+
     .header-actions {
       display: flex;
       gap: $spacing-sm-alt;
@@ -196,20 +196,22 @@ function removeMove(slotIndex: number) {
       background: Rgb(124 58 237 / 10%);
       color: var(--vicio-primary);
       cursor: pointer;
-      
+
       &:hover {
         background: var(--vicio-primary);
         color: var(--white);
         transform: Scale(1.1);
       }
-      
 
       &.btn-random-fill {
         background: Rgb(255 170 0 / 10%);
         color: var(--yellow);
         border-color: Rgb(255 170 0 / 20%);
-        
-        &:hover { background: var(--yellow); color: $black; }
+
+        &:hover {
+          background: var(--yellow);
+          color: $black;
+        }
       }
     }
   }
@@ -234,12 +236,17 @@ function removeMove(slotIndex: number) {
     border-radius: $radius-lg;
     background: Rgb(255 255 255 / 5%);
     cursor: pointer;
-    
 
-    &:hover { background: Rgb(255 255 255 / 10%); }
-    
-    .mv-name { color: var(--white); font-size: var(--font-11); font-weight: bold; }
-    
+    &:hover {
+      background: Rgb(255 255 255 / 10%);
+    }
+
+    .mv-name {
+      color: var(--white);
+      font-size: var(--font-11);
+      font-weight: bold;
+    }
+
     .remove-move {
       display: flex;
       justify-content: center;
@@ -252,8 +259,11 @@ function removeMove(slotIndex: number) {
       color: Rgb(239 68 68 / 100%);
       font-size: var(--font-14);
       cursor: pointer;
-      
-      &:hover { background: Rgb(239 68 68 / 100%); color: var(--white); }
+
+      &:hover {
+        background: Rgb(239 68 68 / 100%);
+        color: var(--white);
+      }
     }
 
     &.empty {
@@ -261,8 +271,11 @@ function removeMove(slotIndex: number) {
       color: Rgb(255 255 255 / 30%);
       font-size: var(--font-8);
       border-style: dashed;
-      
-      &:hover { color: var(--white); border-color: var(--vicio-primary); }
+
+      &:hover {
+        color: var(--white);
+        border-color: var(--vicio-primary);
+      }
     }
   }
 
@@ -281,8 +294,8 @@ function removeMove(slotIndex: number) {
     background: Rgb(10 12 16 / 98%);
     margin-bottom: 12px;
     -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(20px);
+    will-change: transform, filter, opacity;
+    backdrop-filter: Blur(20px);
     box-shadow: var(--shadow-2xl);
 
     .move-search-input {
@@ -295,8 +308,10 @@ function removeMove(slotIndex: number) {
       font-size: var(--font-11);
       margin-bottom: 12px;
       outline: none;
-      
-      &:focus { border-color: var(--vicio-primary); }
+
+      &:focus {
+        border-color: var(--vicio-primary);
+      }
     }
 
     .move-list {
@@ -320,9 +335,11 @@ function removeMove(slotIndex: number) {
         border-radius: $radius-md;
         font-size: var(--font-11);
         cursor: pointer;
-        
-        
-        &:hover { background: Rgb(124 58 237 / 10%); color: var(--vicio-primary); }
+
+        &:hover {
+          background: Rgb(124 58 237 / 10%);
+          color: var(--vicio-primary);
+        }
       }
     }
 
@@ -335,8 +352,11 @@ function removeMove(slotIndex: number) {
       color: Rgb(255 255 255 / 50%);
       font-size: var(--font-9);
       cursor: pointer;
-      
-      &:hover { background: Rgb(255 255 255 / 10%); color: var(--white); }
+
+      &:hover {
+        background: Rgb(255 255 255 / 10%);
+        color: var(--white);
+      }
     }
   }
 }

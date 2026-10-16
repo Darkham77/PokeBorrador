@@ -6,7 +6,8 @@ export class FuzzerRunnerLogger extends BaseRunnerLogger {
   }
 
   protected isProgressLog(message: string): boolean {
-    const progressPatterns = [ // no-domain: Non-domain utility collection or data structure
+    const progressPatterns = [
+      // no-domain: Non-domain utility collection or data structure
       '🚀 [FUZZER]',
       '✨ [FUZZER]',
       '[WORKER-',

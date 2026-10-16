@@ -4,7 +4,15 @@ import { getServerInstant } from '@/logic/utils/timeUtils.ts';
 import type { DBResponse } from '@/types/system/database';
 import type { CompetitionEntryData } from '@/types/system/stores';
 import { POKEMON_COMPETITION_RANKS, type PokemonCompetitionRank } from '@/types/pokemon/pokemon.ts';
-import { resolveSubCompetitionDirection, resolveEventSubCompetitions, getSubCompTitle, type SubCompetitionConfig, type ResolvedSubCompetition, type Event as GameEvent, type ResolvedSubCompetitionOrder } from '@/logic/events/eventEngine.ts';
+import {
+  resolveSubCompetitionDirection,
+  resolveEventSubCompetitions,
+  getSubCompTitle,
+  type SubCompetitionConfig,
+  type ResolvedSubCompetition,
+  type Event as GameEvent,
+  type ResolvedSubCompetitionOrder
+} from '@/logic/events/eventEngine.ts';
 
 const MAX_STORED_COMPETITION_RESULTS = 100;
 const DEFAULT_PRIZE_AMOUNT = 10000 as const;
@@ -54,7 +62,9 @@ interface ParsedCompetitionEntry {
   data: CompetitionEntryData;
 }
 
-function parseCompetitionEntryData(raw: string | CompetitionEntryData | undefined): CompetitionEntryData {
+function parseCompetitionEntryData(
+  raw: string | CompetitionEntryData | undefined
+): CompetitionEntryData {
   if (!raw) return {};
   if (typeof raw === 'string') {
     try {
@@ -75,7 +85,10 @@ function parseAndSortCompetitionEntries(
     const score = Number(dataObj.score ?? dataObj.total_ivs ?? 0);
     const isShiny = Boolean(dataObj.is_shiny);
     const rawObtainedAt = dataObj.obtained_at;
-    const obtainedAt = typeof rawObtainedAt === 'number' && !isNaN(rawObtainedAt) && rawObtainedAt > 0 ? rawObtainedAt : Infinity;
+    const obtainedAt =
+      typeof rawObtainedAt === 'number' && !isNaN(rawObtainedAt) && rawObtainedAt > 0
+        ? rawObtainedAt
+        : Infinity;
     return {
       player_id: e.player_id,
       player_name: e.player_name,
@@ -110,17 +123,22 @@ async function resolveAllEvaluationSubComps(
   gameEvent: GameEvent
 ): Promise<(ResolvedSubCompetition | SubCompetitionConfig)[]> {
   const subComps = resolveEventSubCompetitions(gameEvent, getServerInstant());
-  const distinctCatRows = await queryLocal(`
+  const distinctCatRows = await queryLocal(
+    `
     SELECT DISTINCT COALESCE(category_id, 'ivs') as cat_id
     FROM competition_entries
     WHERE event_id = ?
-  `, [targetEventKey]);
+  `,
+    [targetEventKey]
+  );
 
-  const presentCatKeys = new Set(distinctCatRows.map(r => String(r.cat_id || 'ivs')));
+  const presentCatKeys = new Set(
+    distinctCatRows.map((r) => (typeof r.cat_id === 'string' && r.cat_id ? r.cat_id : 'ivs'))
+  );
   const allEvaluationSubComps: (ResolvedSubCompetition | SubCompetitionConfig)[] = [...subComps];
   for (const catKey of presentCatKeys) {
-    if (!allEvaluationSubComps.some(s => s.id === catKey)) {
-      const matchingBase = subComps.find(s => catKey.startsWith(s.id)) || subComps[0]!;
+    if (!allEvaluationSubComps.some((s) => s.id === catKey)) {
+      const matchingBase = subComps.find((s) => catKey.startsWith(s.id)) || subComps[0]!;
       allEvaluationSubComps.push({
         ...matchingBase,
         id: catKey,
@@ -137,18 +155,41 @@ async function evaluateSubCompetitionWinners(
   cfg: EventConfigWithPrizes,
   nowIso: string
 ): Promise<RankedWinner[]> {
-  const rawRows = await queryLocal(`
+  const rawRows = await queryLocal(
+    `
     SELECT player_id, player_name, player_email, data, pokemon_uid
     FROM competition_entries
     WHERE event_id = ? AND (category_id = ? OR (category_id IS NULL AND ? = 'ivs'))
-  `, [targetEventKey, sub.id, sub.id]);
+  `,
+    [targetEventKey, sub.id, sub.id]
+  );
 
-  const rawEntries: StoredCompetitionEntry[] = rawRows.map(r => ({
-    player_id: String(r.player_id || ''),
-    player_name: String(r.player_name || ''),
-    player_email: String(r.player_email || ''),
-    data: (typeof r.data === 'string' ? r.data : ((r.data || {}) as CompetitionEntryData)),
-    pokemon_uid: String(r.pokemon_uid || '')
+  const rawEntries: StoredCompetitionEntry[] = rawRows.map((r) => ({
+    player_id:
+      typeof r.player_id === 'string'
+        ? r.player_id
+        : typeof r.player_id === 'number'
+          ? String(r.player_id)
+          : '',
+    player_name:
+      typeof r.player_name === 'string'
+        ? r.player_name
+        : typeof r.player_name === 'number'
+          ? String(r.player_name)
+          : '',
+    player_email:
+      typeof r.player_email === 'string'
+        ? r.player_email
+        : typeof r.player_email === 'number'
+          ? String(r.player_email)
+          : '',
+    data: typeof r.data === 'string' ? r.data : ((r.data || {}) as CompetitionEntryData),
+    pokemon_uid:
+      typeof r.pokemon_uid === 'string'
+        ? r.pokemon_uid
+        : typeof r.pokemon_uid === 'number'
+          ? String(r.pokemon_uid)
+          : ''
   }));
 
   if (rawEntries.length === 0) return [];
@@ -164,23 +205,27 @@ async function evaluateSubCompetitionWinners(
     const rank = POKEMON_COMPETITION_RANKS[i]!;
     const rawPrize = prizes[rank] || { type: 'money', amount: DEFAULT_PRIZE_AMOUNT };
     const resolvedCategoryName = getSubCompTitle(targetEventKey, sub);
-    const prize = typeof rawPrize === 'object' && rawPrize !== null
-      ? { ...rawPrize, rank }
-      : { rank, type: 'money', amount: DEFAULT_PRIZE_AMOUNT };
+    const prize =
+      typeof rawPrize === 'object' && rawPrize !== null
+        ? { ...rawPrize, rank }
+        : { rank, type: 'money', amount: DEFAULT_PRIZE_AMOUNT };
     const awardId = `award_${targetEventKey}_${sub.id}_${entry.player_id}_${getServerInstant().epochMilliseconds}_${i}`;
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO awards (id, event_id, winner_id, winner_name, winner_email, prize, awarded_at, claimed, received_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL)
-    `, [
-      awardId,
-      targetEventKey,
-      entry.player_id,
-      entry.player_name,
-      entry.player_email || '',
-      JSON.stringify(prize),
-      nowIso
-    ]);
+    `,
+      [
+        awardId,
+        targetEventKey,
+        entry.player_id,
+        entry.player_name,
+        entry.player_email || '',
+        JSON.stringify(prize),
+        nowIso
+      ]
+    );
 
     winners.push({
       rank,
@@ -207,23 +252,32 @@ async function recordCompetitionResults(
   nowIso: string
 ): Promise<void> {
   const resultId = `result_${targetEventKey}_${getServerInstant().epochMilliseconds}`;
-  await queryLocal(`
+  await queryLocal(
+    `
     INSERT INTO competition_results (id, event_id, winners, ended_at)
     VALUES (?, ?, ?, ?)
-  `, [resultId, targetEventKey, JSON.stringify(allWinners), nowIso]);
+  `,
+    [resultId, targetEventKey, JSON.stringify(allWinners), nowIso]
+  );
 
   // Prune older results to keep at most MAX_STORED_COMPETITION_RESULTS in database
-  await queryLocal(`
+  await queryLocal(
+    `
     DELETE FROM competition_results
     WHERE id NOT IN (
       SELECT id FROM competition_results
       ORDER BY ended_at DESC
       LIMIT ?
     )
-  `, [MAX_STORED_COMPETITION_RESULTS]);
+  `,
+    [MAX_STORED_COMPETITION_RESULTS]
+  );
 
   // Update events_config and clean up competition entries
-  await queryLocal('UPDATE events_config SET last_awarded_at = ? WHERE id = ?', [nowIso, targetEventKey]);
+  await queryLocal('UPDATE events_config SET last_awarded_at = ? WHERE id = ?', [
+    nowIso,
+    targetEventKey
+  ]);
   await queryLocal('DELETE FROM competition_entries WHERE event_id = ?', [targetEventKey]);
   await persistSQLite();
 }
@@ -243,22 +297,25 @@ export async function emulateAwardEventAutomated(
 
   try {
     const eventRows = await queryLocal('SELECT * FROM events_config WHERE id = ?', [targetEventId]);
-    const eventRow = eventRows[0] as {
-      id: string;
-      name?: string;
-      description?: string;
-      active?: boolean | number;
-      config: string | Record<string, unknown>; // open-record: Generic key-value data dictionary container
-      last_awarded_at: string | null;
-    } | undefined;
+    const eventRow = eventRows[0] as
+      | {
+          id: string;
+          name?: string;
+          description?: string;
+          active?: boolean | number;
+          config: string | Record<string, unknown>; // open-record: Generic key-value data dictionary container
+          last_awarded_at: string | null;
+        }
+      | undefined;
 
     if (!eventRow) {
       return { data: { ok: false, error: 'No se encontró el evento.' }, error: null };
     }
 
-    const cfg: EventConfigWithPrizes = typeof eventRow.config === 'string'
-      ? (JSON.parse(eventRow.config) as EventConfigWithPrizes)
-      : (eventRow.config as EventConfigWithPrizes) || {};
+    const cfg: EventConfigWithPrizes =
+      typeof eventRow.config === 'string'
+        ? (JSON.parse(eventRow.config) as EventConfigWithPrizes)
+        : (eventRow.config as EventConfigWithPrizes) || {};
 
     const gameEvent: GameEvent = {
       id: targetEventId,
@@ -278,14 +335,20 @@ export async function emulateAwardEventAutomated(
     }
 
     if (allWinners.length === 0) {
-      await queryLocal('UPDATE events_config SET last_awarded_at = ? WHERE id = ?', [nowIso, targetEventId]);
+      await queryLocal('UPDATE events_config SET last_awarded_at = ? WHERE id = ?', [
+        nowIso,
+        targetEventId
+      ]);
       await persistSQLite();
       return { data: { ok: false, error: 'Sin participantes.' }, error: null };
     }
 
     await recordCompetitionResults(targetEventId, allWinners, nowIso);
 
-    logger.info('DBRouter', `[EventRPC] Successfully awarded competition "${targetEventId}" to ${allWinners.length} category winners.`);
+    logger.info(
+      'DBRouter',
+      `[EventRPC] Successfully awarded competition "${targetEventId}" to ${allWinners.length} category winners.`
+    );
     return { data: { ok: true, success: true, winners: allWinners }, error: null };
   } catch (err) {
     logger.error('DBRouter', `[EventRPC] Error awarding event: ${(err as Error).message}`);
@@ -308,12 +371,14 @@ export async function emulateClaimAward(
 
   try {
     const awardRows = await queryLocal('SELECT * FROM awards WHERE id = ?', [awardId]);
-    const awardRow = awardRows[0] as {
-      id: string;
-      prize: string | Record<string, unknown>; // open-record: Generic key-value data dictionary container
-      claimed: number | boolean;
-      received_at: string | null;
-    } | undefined;
+    const awardRow = awardRows[0] as
+      | {
+          id: string;
+          prize: string | Record<string, unknown>; // open-record: Generic key-value data dictionary container
+          claimed: number | boolean;
+          received_at: string | null;
+        }
+      | undefined;
 
     if (!awardRow) {
       return { data: { ok: false, error: 'Recompensa no encontrada' }, error: null };
@@ -324,12 +389,16 @@ export async function emulateClaimAward(
     }
 
     const nowIso = getServerInstant().toString();
-    await queryLocal('UPDATE awards SET claimed = 1, received_at = ? WHERE id = ?', [nowIso, awardId]);
+    await queryLocal('UPDATE awards SET claimed = 1, received_at = ? WHERE id = ?', [
+      nowIso,
+      awardId
+    ]);
     await persistSQLite();
 
-    const prizeObj = typeof awardRow.prize === 'string'
-      ? (JSON.parse(awardRow.prize) as Record<string, unknown>) // open-record: Arbitrary award prize JSON payload
-      : awardRow.prize;
+    const prizeObj =
+      typeof awardRow.prize === 'string'
+        ? (JSON.parse(awardRow.prize) as Record<string, unknown>) // open-record: Arbitrary award prize JSON payload
+        : awardRow.prize;
 
     return {
       data: {

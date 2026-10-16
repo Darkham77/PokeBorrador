@@ -23,13 +23,17 @@ export class ShowdownSlotResolver {
     if (!request || !request.side || !Array.isArray(request.side.pokemon)) {
       const found = team[slotNum - 1];
       if (!found) {
-        throw new Error(`[ShowdownSlotResolver] Pokémon no encontrado en slot posicional ${slotNum}.`);
+        throw new Error(
+          `[ShowdownSlotResolver] Pokémon no encontrado en slot posicional ${slotNum}.`
+        );
       }
       return found;
     }
     const reqMon = request.side.pokemon[slotNum - 1] as RequestPokemonWithUid | null | undefined;
     if (!reqMon || !reqMon.uid) {
-      throw new Error(`[ShowdownSlotResolver] Slot de Showdown ${slotNum} no tiene un Pokémon válido.`);
+      throw new Error(
+        `[ShowdownSlotResolver] Slot de Showdown ${slotNum} no tiene un Pokémon válido.`
+      );
     }
     return getPokemonByUid(team, reqMon.uid);
   }
@@ -37,15 +41,22 @@ export class ShowdownSlotResolver {
   /**
    * Gets the Showdown slot (1-based index) for a Pokémon by its UID.
    */
-  static getShowdownSlotForUid(request: ShowdownPlayerRequest | null | undefined, uid: string): number {
+  static getShowdownSlotForUid(
+    request: ShowdownPlayerRequest | null | undefined,
+    uid: string
+  ): number {
     if (!request || !request.side || !Array.isArray(request.side.pokemon)) {
-      throw new Error(`[ShowdownSlotResolver] No se puede obtener slot para UID "${uid}" porque el request de Showdown está ausente.`);
+      throw new Error(
+        `[ShowdownSlotResolver] No se puede obtener slot para UID "${uid}" porque el request de Showdown está ausente.`
+      );
     }
     const list = request.side.pokemon as Array<{ uid?: string } | null | undefined>;
     const idx = list.findIndex((p) => p && isMatchingUid(p.uid, uid));
     if (idx === -1) {
       const availableUids = list.map((p) => p?.uid || 'null');
-      throw new Error(`[ShowdownSlotResolver] UID "${uid}" no encontrado en los UIDs del request: ${JSON.stringify(availableUids)}`);
+      throw new Error(
+        `[ShowdownSlotResolver] UID "${uid}" no encontrado en los UIDs del request: ${JSON.stringify(availableUids)}`
+      );
     }
     return idx + 1;
   }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useGameStore } from '@/stores/game';
 import { usePvPStore } from '@/stores/pvp';
@@ -6,10 +6,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useUIStore } from '@/stores/ui';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { DBRouter } from '@/logic/db/dbRouter';
-import {
-  resolveDefendingTeam,
-  createPassiveTeamSnapshot
-} from '@/logic/pvp/pvpTeamHelper';
+import { resolveDefendingTeam, createPassiveTeamSnapshot } from '@/logic/pvp/pvpTeamHelper';
 import { executePassiveMatchmakingFallback } from '@/logic/pvp/passiveMatchmakingHelper';
 
 describe('Passive Defense Eligibility & Matchmaking', () => {
@@ -101,7 +98,12 @@ describe('Passive Defense Eligibility & Matchmaking', () => {
     }
   });
 
-  const createPoke = (id: string, species: string, level: number, type: string = 'electric'): Pokemon => {
+  const createPoke = (
+    id: string,
+    species: string,
+    level: number,
+    type: string = 'electric'
+  ): Pokemon => {
     return {
       uid: id,
       id: species,

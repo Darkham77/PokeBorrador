@@ -49,24 +49,24 @@ HeuristicAI (heuristicAI.ts)
 
 ### Module Map
 
-| File | Role |
-| --- | --- |
-| `types.ts` | All heuristic-domain types + `AIConfig` + `AI_CONFIG_PRESETS` |
-| `damageCalculator.ts` | `@smogon/calc` wrapper — accurate damage % with item awareness |
-| `snapshotBuilder.ts` | `BattleContext` → `HeuristicBattleSnapshot` adapter |
-| `setsDatabase.ts` | Loads `random-sets.json` for inference (lazy singleton) |
-| `pokemonTracker.ts` | Per-Pokémon probabilistic set distribution tracker |
-| `inferenceEngine.ts` | Coordinates all trackers; provides move/item probabilities |
-| `winConditions.ts` | Scores each of our Pokémon's win condition potential |
-| `threats.ts` | Scores each opponent Pokémon's threat level |
-| `position.ts` | Board position score: −1.0 (losing) → +1.0 (winning) |
-| `sackOrder.ts` | Ranks our Pokémon by preservation priority |
-| `strategyEvaluator.ts` | Aggregates all four strategy modules → `StrategicState` |
-| `heuristicEngine.ts` | 9-layer heuristic decision function |
+| File                   | Role                                                           |
+| ---------------------- | -------------------------------------------------------------- |
+| `types.ts`             | All heuristic-domain types + `AIConfig` + `AI_CONFIG_PRESETS`  |
+| `damageCalculator.ts`  | `@smogon/calc` wrapper — accurate damage % with item awareness |
+| `snapshotBuilder.ts`   | `BattleContext` → `HeuristicBattleSnapshot` adapter            |
+| `setsDatabase.ts`      | Loads `random-sets.json` for inference (lazy singleton)        |
+| `pokemonTracker.ts`    | Per-Pokémon probabilistic set distribution tracker             |
+| `inferenceEngine.ts`   | Coordinates all trackers; provides move/item probabilities     |
+| `winConditions.ts`     | Scores each of our Pokémon's win condition potential           |
+| `threats.ts`           | Scores each opponent Pokémon's threat level                    |
+| `position.ts`          | Board position score: −1.0 (losing) → +1.0 (winning)           |
+| `sackOrder.ts`         | Ranks our Pokémon by preservation priority                     |
+| `strategyEvaluator.ts` | Aggregates all four strategy modules → `StrategicState`        |
+| `heuristicEngine.ts`   | 9-layer heuristic decision function                            |
 
 ### Tests
 
-- `tests/unit/battle/heuristicEngine.spec.ts` — layer regression coverage (vitest)
+- `tests/unit/battle/heuristicEngine.spec.ts` — layer regression coverage (Vite+)
 
 ## Key Files
 
@@ -99,4 +99,4 @@ HeuristicAI (heuristicAI.ts)
 
 ## Child DOX Index
 
-- *This directory contains specialized domain logic and files with no subdirectories.*
+- _This directory contains specialized domain logic and files with no subdirectories._

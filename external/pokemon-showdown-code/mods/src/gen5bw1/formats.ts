@@ -5,8 +5,8 @@ export const Formats = [
     name: '[Gen 5] BW1 OU',
     mod: 'gen5bw1',
     searchShow: false,
-    ruleset: [ 'Standard', 'Sleep Clause Mod', 'Baton Pass Stat Clause' ],
-    banlist: [ 'Uber', 'Drizzle ++ Swift Swim', "King's Rock", 'Razor Fang', 'Soul Dew', 'Swagger' ]
+    ruleset: ['Standard', 'Sleep Clause Mod', 'Baton Pass Stat Clause'],
+    banlist: ['Uber', 'Drizzle ++ Swift Swim', "King's Rock", 'Razor Fang', 'Soul Dew', 'Swagger']
   },
   {
     name: '[Gen 5] VGC 2012',
@@ -14,8 +14,8 @@ export const Formats = [
     gameType: 'doubles',
     searchShow: false,
     bestOfDefault: true,
-    ruleset: [ 'Flat Rules' ],
-    banlist: [ 'Dark Void', 'Sky Drop' ]
+    ruleset: ['Flat Rules'],
+    banlist: ['Dark Void', 'Sky Drop']
   },
   {
     name: '[Gen 5] VGC 2011',
@@ -23,7 +23,7 @@ export const Formats = [
     gameType: 'doubles',
     searchShow: false,
     bestOfDefault: true,
-    ruleset: [ 'Flat Rules', 'Old Unova Pokedex' ],
+    ruleset: ['Flat Rules', 'Old Unova Pokedex'],
     banlist: [
       'Sky Drop',
       'Belue Berry',

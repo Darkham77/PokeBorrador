@@ -1,181 +1,219 @@
-import { defineStore } from 'pinia'
-import { ref, reactive, computed } from 'vue'
-import { useAuthStore } from '@/stores/auth.ts'
-import { useGameStore } from '@/stores/game.ts'
-import { useUIStore } from '@/stores/ui.ts'
-import { useSocialStore } from '@/stores/social/social.ts'
-import { useAudioStore } from '@/stores/audio.ts'
-import { useLoadingStore } from '@/stores/loading.ts'
-import { logger } from '@/logic/utils/logger'
-import { validateTradeOffer } from '@/logic/validation/schemas'
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
-import type { 
-  TradeOffer
-} from '@/types/system/stores'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { GameState } from '@/types/system/game'
+import { defineStore } from 'pinia';
+import { ref, reactive, computed } from 'vue';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useSocialStore } from '@/stores/social/social.ts';
+import { useAudioStore } from '@/stores/audio.ts';
+import { useLoadingStore } from '@/stores/loading.ts';
+import { logger } from '@/logic/utils/logger';
+import { validateTradeOffer } from '@/logic/validation/schemas';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
+import type { TradeOffer } from '@/types/system/stores';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
 
-import type { ItemId } from '@/data/inventory/itemIds.ts'
-import { isItemId } from '@/data/inventory/items.ts'
-import { isPokemonBusy } from '@/logic/constants/tags'
+import type { ItemId } from '@/data/inventory/itemIds.ts';
+import { isItemId } from '@/data/inventory/items.ts';
+import { isPokemonBusy } from '@/logic/constants/tags';
 
 export const useTradeStore = defineStore('trade', () => {
-  const authStore = useAuthStore()
-  const gameStore = useGameStore()
-  const uiStore = useUIStore()
-  const socialStore = useSocialStore()
-  const audioStore = useAudioStore()
-  const loadingStore = useLoadingStore()
+  const authStore = useAuthStore();
+  const gameStore = useGameStore();
+  const uiStore = useUIStore();
+  const socialStore = useSocialStore();
+  const audioStore = useAudioStore();
+  const loadingStore = useLoadingStore();
 
-  const tradeTarget = ref<{ id: string; username: string } | null>(null) // uuid-ok: Supabase user UUID identifier
-  const tradeFriendSave = ref<GameState | null>(null)
-  
-  const tradeOfferPoke = ref<Pokemon | null>(null)
-  const tradeRequestPoke = ref<Pokemon | null>(null)
-  const tradeOfferItems = reactive<Partial<Record<ItemId, number>>>({})
-  const tradeRequestItems = reactive<Partial<Record<ItemId, number>>>({})
-  
-  const pendingIncoming = ref<TradeOffer[]>([])
-  const pendingOutgoing = ref<TradeOffer[]>([])
-  const pendingAccepted = ref<TradeOffer[]>([])
+  const tradeTarget = ref<{ id: string; username: string } | null>(null); // uuid-ok: Supabase user UUID identifier
+  const tradeFriendSave = ref<GameState | null>(null);
 
-  const TRADE_OFFER_COLUMNS = 'id, sender_id, receiver_id, offer_pokemon, offer_items, offer_money, request_pokemon, request_items, request_money, message, status, created_at'
-  const TRADE_QUERY_LIMIT = 100
+  const tradeOfferPoke = ref<Pokemon | null>(null);
+  const tradeRequestPoke = ref<Pokemon | null>(null);
+  const tradeOfferItems = reactive<Partial<Record<ItemId, number>>>({});
+  const tradeRequestItems = reactive<Partial<Record<ItemId, number>>>({});
+
+  const pendingIncoming = ref<TradeOffer[]>([]);
+  const pendingOutgoing = ref<TradeOffer[]>([]);
+  const pendingAccepted = ref<TradeOffer[]>([]);
+
+  const TRADE_OFFER_COLUMNS =
+    'id, sender_id, receiver_id, offer_pokemon, offer_items, offer_money, request_pokemon, request_items, request_money, message, status, created_at';
+  const TRADE_QUERY_LIMIT = 100;
 
   async function refreshPendingTrades() {
-    if (!authStore.user) return
+    if (!authStore.user) return;
 
-    const db = gameStore.db
+    const db = gameStore.db;
     const [incRes, outRes, accRes] = await Promise.all([
-      db.from('trade_offers').select(TRADE_OFFER_COLUMNS).eq('receiver_id', authStore.user.id).eq('status', 'pending').limit(TRADE_QUERY_LIMIT),
-      db.from('trade_offers').select(TRADE_OFFER_COLUMNS).eq('sender_id', authStore.user.id).eq('status', 'pending').limit(TRADE_QUERY_LIMIT),
-      db.from('trade_offers').select(TRADE_OFFER_COLUMNS).eq('sender_id', authStore.user.id).eq('status', 'accepted').limit(TRADE_QUERY_LIMIT)
-    ])
+      db
+        .from('trade_offers')
+        .select(TRADE_OFFER_COLUMNS)
+        .eq('receiver_id', authStore.user.id)
+        .eq('status', 'pending')
+        .limit(TRADE_QUERY_LIMIT),
+      db
+        .from('trade_offers')
+        .select(TRADE_OFFER_COLUMNS)
+        .eq('sender_id', authStore.user.id)
+        .eq('status', 'pending')
+        .limit(TRADE_QUERY_LIMIT),
+      db
+        .from('trade_offers')
+        .select(TRADE_OFFER_COLUMNS)
+        .eq('sender_id', authStore.user.id)
+        .eq('status', 'accepted')
+        .limit(TRADE_QUERY_LIMIT)
+    ]);
 
-    const incomingRes = { data: incRes.data as TradeOffer[] | null } // domain-ok: Open dynamic text or non-domain string payload
-    const outgoingRes = { data: outRes.data as TradeOffer[] | null } // domain-ok: Open dynamic text or non-domain string payload
-    const acceptedRes = { data: accRes.data as TradeOffer[] | null } // domain-ok: Open dynamic text or non-domain string payload
+    const incomingRes = { data: incRes.data as TradeOffer[] | null }; // domain-ok: Open dynamic text or non-domain string payload
+    const outgoingRes = { data: outRes.data as TradeOffer[] | null }; // domain-ok: Open dynamic text or non-domain string payload
+    const acceptedRes = { data: accRes.data as TradeOffer[] | null }; // domain-ok: Open dynamic text or non-domain string payload
 
     const validateOffers = (offers: TradeOffer[] | null): TradeOffer[] => {
-      if (!offers) return []
-      return offers.filter(o => {
-        const v = validateTradeOffer(o)
+      if (!offers) return [];
+      return offers.filter((o) => {
+        const v = validateTradeOffer(o);
         if (!v.success) {
-          logger.error('TRADE', 'Oferta de intercambio inválida omitida de la lista:', v.issues)
-          return false
+          logger.error('TRADE', 'Oferta de intercambio inválida omitida de la lista:', v.issues);
+          return false;
         }
-        return true
-      })
-    }
+        return true;
+      });
+    };
 
-    pendingIncoming.value = validateOffers(incomingRes.data)
-    pendingOutgoing.value = validateOffers(outgoingRes.data)
-    pendingAccepted.value = validateOffers(acceptedRes.data)
-    
+    pendingIncoming.value = validateOffers(incomingRes.data);
+    pendingOutgoing.value = validateOffers(outgoingRes.data);
+    pendingAccepted.value = validateOffers(acceptedRes.data);
+
     // Sincronizar contador en socialStore
-    await socialStore.refreshNotificationCount()
+    await socialStore.refreshNotificationCount();
   }
 
   async function openTradeModal(friendId: string, friendUsername: string) {
-    tradeTarget.value = { id: friendId, username: friendUsername }
-    tradeOfferPoke.value = null
-    tradeRequestPoke.value = null
-    Object.keys(tradeOfferItems).forEach(k => {
-      if (isItemId(k)) delete tradeOfferItems[k]
-    })
-    Object.keys(tradeRequestItems).forEach(k => {
-      if (isItemId(k)) delete tradeRequestItems[k]
-    })
+    tradeTarget.value = { id: friendId, username: friendUsername };
+    tradeOfferPoke.value = null;
+    tradeRequestPoke.value = null;
+    Object.keys(tradeOfferItems).forEach((k) => {
+      if (isItemId(k)) delete tradeOfferItems[k];
+    });
+    Object.keys(tradeRequestItems).forEach((k) => {
+      if (isItemId(k)) delete tradeRequestItems[k];
+    });
 
-    const saveRes = await gameStore.db.from('game_saves').select('save_data').eq('user_id', friendId).single()
-    const data = saveRes.data as { save_data: GameState } | null // domain-ok: Open dynamic text or non-domain string payload
-    const error = saveRes.error
-    
+    const saveRes = await gameStore.db
+      .from('game_saves')
+      .select('save_data')
+      .eq('user_id', friendId)
+      .single();
+    const data = saveRes.data as { save_data: GameState } | null; // domain-ok: Open dynamic text or non-domain string payload
+    const error = saveRes.error;
+
     if (error || !data) {
-      tradeFriendSave.value = null
-      uiStore.notify('No se pudo cargar el inventario del amigo.', '⚠️')
+      tradeFriendSave.value = null;
+      uiStore.notify('No se pudo cargar el inventario del amigo.', '⚠️');
     } else {
-      tradeFriendSave.value = data.save_data
+      tradeFriendSave.value = data.save_data;
     }
-    uiStore.open('Trade')
+    uiStore.open('Trade');
   }
 
-function validateTradeOfferInputs(
-  target: { id: string; username: string } | null,
-  offerPoke: Pokemon | null,
-  offerItems: Partial<Record<ItemId, number>>,
-  offerMoney: number,
-  currentMoney: number,
-  lockedUids: Set<string>
-): { isValid: boolean; errorMsg?: string; icon?: string } {
-  if (!target) return { isValid: false }
+  function validateTradeOfferInputs(
+    target: { id: string; username: string } | null,
+    offerPoke: Pokemon | null,
+    offerItems: Partial<Record<ItemId, number>>,
+    offerMoney: number,
+    currentMoney: number,
+    lockedUids: Set<string>
+  ): { isValid: boolean; errorMsg?: string; icon?: string } {
+    if (!target) return { isValid: false };
 
-  const hasOffer = offerPoke !== null || Object.keys(offerItems).length > 0 || offerMoney > 0
-  if (!hasOffer) {
-    return { isValid: false, errorMsg: 'Tenés que ofrecer algo.', icon: '⚠️' }
-  }
-
-  if (offerMoney > currentMoney) {
-    return { isValid: false, errorMsg: 'No tenés suficiente dinero.', icon: '💸' }
-  }
-
-  if (offerPoke) {
-    if (isPokemonBusy(offerPoke)) {
-      return { isValid: false, errorMsg: 'No puedes comerciar o intercambiar un Pokémon en misión, evento o guardería.', icon: '⚠️' }
+    const hasOffer = offerPoke !== null || Object.keys(offerItems).length > 0 || offerMoney > 0;
+    if (!hasOffer) {
+      return { isValid: false, errorMsg: 'Tenés que ofrecer algo.', icon: '⚠️' };
     }
-    const isIllegal = offerPoke.isIllegal || (
-      offerPoke.id && offerPoke.moves
-        ? !checkPokemonLegality(offerPoke).isLegal
-        : false
-    )
-    if (isIllegal) {
-      return { isValid: false, errorMsg: 'No puedes comerciar o intercambiar un Pokémon ilegal.', icon: '⚠️' }
-    }
-    if (lockedUids.has(offerPoke.uid)) {
-      return { isValid: false, errorMsg: 'Este Pokémon ya está en otra oferta pendiente.', icon: '⚠️' }
-    }
-  }
 
-  return { isValid: true }
-}
+    if (offerMoney > currentMoney) {
+      return { isValid: false, errorMsg: 'No tenés suficiente dinero.', icon: '💸' };
+    }
 
-function deductTradeEscrow(
-  inventory: Partial<Record<ItemId, number>>,
-  items: Partial<Record<ItemId, number>>,
-  money: number,
-  state: { money: number }
-): void {
-  for (const [itemName, qty] of Object.entries(items)) {
-    if (isItemId(itemName) && typeof qty === 'number' && inventory[itemName]) {
-      inventory[itemName] -= qty
-      if (inventory[itemName] <= 0) {
-        delete inventory[itemName]
+    if (offerPoke) {
+      if (isPokemonBusy(offerPoke)) {
+        return {
+          isValid: false,
+          errorMsg: 'No puedes comerciar o intercambiar un Pokémon en misión, evento o guardería.',
+          icon: '⚠️'
+        };
+      }
+      const isIllegal =
+        offerPoke.isIllegal ||
+        (offerPoke.id && offerPoke.moves ? !checkPokemonLegality(offerPoke).isLegal : false);
+      if (isIllegal) {
+        return {
+          isValid: false,
+          errorMsg: 'No puedes comerciar o intercambiar un Pokémon ilegal.',
+          icon: '⚠️'
+        };
+      }
+      if (lockedUids.has(offerPoke.uid)) {
+        return {
+          isValid: false,
+          errorMsg: 'Este Pokémon ya está en otra oferta pendiente.',
+          icon: '⚠️'
+        };
       }
     }
-  }
-  if (money > 0) {
-    state.money -= money
-  }
-}
 
-function rollbackTradeEscrow(
-  inventory: Partial<Record<ItemId, number>>,
-  items: Partial<Record<ItemId, number>>,
-  money: number,
-  state: { money: number }
-): void {
-  for (const [itemName, qty] of Object.entries(items)) {
-    if (isItemId(itemName) && typeof qty === 'number') {
-      inventory[itemName] = (inventory[itemName] || 0) + qty
+    return { isValid: true };
+  }
+
+  function deductTradeEscrow(
+    inventory: Partial<Record<ItemId, number>>,
+    items: Partial<Record<ItemId, number>>,
+    money: number,
+    state: { money: number }
+  ): void {
+    for (const [itemName, qty] of Object.entries(items)) {
+      if (isItemId(itemName) && typeof qty === 'number' && inventory[itemName]) {
+        inventory[itemName] -= qty;
+        if (inventory[itemName] <= 0) {
+          delete inventory[itemName];
+        }
+      }
+    }
+    if (money > 0) {
+      state.money -= money;
     }
   }
-  if (money > 0) {
-    state.money += money
-  }
-}
 
-  async function sendTradeOffer({ isGift, offerMoney, requestMoney, message }: { isGift: boolean; offerMoney: number; requestMoney: number; message: string }) {
-    if (!tradeTarget.value) return false
+  function rollbackTradeEscrow(
+    inventory: Partial<Record<ItemId, number>>,
+    items: Partial<Record<ItemId, number>>,
+    money: number,
+    state: { money: number }
+  ): void {
+    for (const [itemName, qty] of Object.entries(items)) {
+      if (isItemId(itemName) && typeof qty === 'number') {
+        inventory[itemName] = (inventory[itemName] || 0) + qty;
+      }
+    }
+    if (money > 0) {
+      state.money += money;
+    }
+  }
+
+  async function sendTradeOffer({
+    isGift,
+    offerMoney,
+    requestMoney,
+    message
+  }: {
+    isGift: boolean;
+    offerMoney: number;
+    requestMoney: number;
+    message: string;
+  }) {
+    if (!tradeTarget.value) return false;
 
     const validation = validateTradeOfferInputs(
       tradeTarget.value,
@@ -184,20 +222,20 @@ function rollbackTradeEscrow(
       offerMoney,
       gameStore.state.money,
       lockedUids.value
-    )
+    );
     if (!validation.isValid) {
       if (validation.errorMsg) {
-        uiStore.notify(validation.errorMsg, validation.icon || '⚠️')
+        uiStore.notify(validation.errorMsg, validation.icon || '⚠️');
       }
-      return false
+      return false;
     }
 
     // MANDATORY: Deduct items locally before saving to SQLite so DBs match
-    deductTradeEscrow(gameStore.state.inventory, tradeOfferItems, offerMoney, gameStore.state)
+    deductTradeEscrow(gameStore.state.inventory, tradeOfferItems, offerMoney, gameStore.state);
 
     // MANDATORY: Pre-Action Flush (Always save before social actions with assets)
-    uiStore.notify('Sincronizando inventario...', '🔄')
-    await gameStore.save(false)
+    uiStore.notify('Sincronizando inventario...', '🔄');
+    await gameStore.save(false);
 
     const { data: tradeId, error } = await gameStore.db.rpc('send_trade_offer_v2', {
       p_receiver_id: tradeTarget.value.id,
@@ -208,115 +246,133 @@ function rollbackTradeEscrow(
       p_request_items: isGift ? {} : { ...tradeRequestItems },
       p_request_money: isGift ? 0 : requestMoney,
       p_message: message || ''
-    })
+    });
 
     if (!error && tradeId) {
-      uiStore.notify(`¡Oferta enviada a ${tradeTarget.value.username}!`, '🔄')
-      audioStore.play('sentMsg') 
-      await gameStore.loadGame() // <-- MANDATORY: Refresh client post-escrow
-      refreshPendingTrades()
-      return true
-    } else {
-      // LOCAL ROLLBACK: If it fails, refund items
-      rollbackTradeEscrow(gameStore.state.inventory, tradeOfferItems, offerMoney, gameStore.state)
-      logger.error('TRADE', `Error al enviar oferta: ${(error as Error).message}`)
-      uiStore.notify('Error al enviar oferta: ' + (error as { message: string }).message, '❌')
-      return false
+      uiStore.notify(`¡Oferta enviada a ${tradeTarget.value.username}!`, '🔄');
+      void audioStore.play('sentMsg');
+      await gameStore.loadGame(); // <-- MANDATORY: Refresh client post-escrow
+      void refreshPendingTrades();
+      return true;
     }
+
+    // LOCAL ROLLBACK: If it fails, refund items
+    rollbackTradeEscrow(gameStore.state.inventory, tradeOfferItems, offerMoney, gameStore.state);
+    logger.error('TRADE', `Error al enviar oferta: ${(error as Error).message}`);
+    uiStore.notify('Error al enviar oferta: ' + (error as { message: string }).message, '❌');
+    return false;
   }
 
   async function acceptTrade(tradeId: string | number) {
-    
     try {
-      loadingStore.start('accept_trade', 'Procesando intercambio...', 'Sincronizando con el servidor', true, '🔄')
-      
-      // MANDATORY: Pre-Action Flush
-      uiStore.notify('Sincronizando inventario...', '🔄')
-      await gameStore.save(false)
+      loadingStore.start(
+        'accept_trade',
+        'Procesando intercambio...',
+        'Sincronizando con el servidor',
+        true,
+        '🔄'
+      );
 
-      const db = gameStore.db
+      // MANDATORY: Pre-Action Flush
+      uiStore.notify('Sincronizando inventario...', '🔄');
+      await gameStore.save(false);
+
+      const db = gameStore.db;
       const { error: rpcErr } = await db.rpc('accept_trade_v2', {
         p_trade_id: tradeId
-      })
-    
-      if (rpcErr) throw new Error((rpcErr as { message: string }).message)
+      });
+
+      if (rpcErr) throw new Error((rpcErr as { message: string }).message);
 
       if (authStore.user) {
-        const { data: saveRow } = await db.from('game_saves').select('save_data, last_save_id').eq('user_id', authStore.user.id).single() as { data: { save_data: GameState; last_save_id?: string } | null }
+        const { data: saveRow } = (await db
+          .from('game_saves')
+          .select('save_data, last_save_id')
+          .eq('user_id', authStore.user.id)
+          .single()) as { data: { save_data: GameState; last_save_id?: string } | null };
         if (saveRow?.save_data) {
-          gameStore.updateState(saveRow.save_data)
+          gameStore.updateState(saveRow.save_data);
         }
         if (saveRow?.last_save_id) {
-          authStore.user.last_save_id = saveRow.last_save_id
-          const { setLatestCommittedSaveId } = await import('@/logic/auth/saveService.ts')
-          setLatestCommittedSaveId(saveRow.last_save_id)
+          authStore.user.last_save_id = saveRow.last_save_id;
+          const { setLatestCommittedSaveId } = await import('@/logic/auth/saveService.ts');
+          setLatestCommittedSaveId(saveRow.last_save_id);
         }
       }
 
-      uiStore.notify('¡Intercambio aceptado! Los activos están en tu cola de reclamo.', '🎉')
-      await gameStore.fetchClaimQueue()
-      
-      loadingStore.finish('accept_trade')
-      await refreshPendingTrades()
-      return true
+      uiStore.notify('¡Intercambio aceptado! Los activos están en tu cola de reclamo.', '🎉');
+      await gameStore.fetchClaimQueue();
+
+      loadingStore.finish('accept_trade');
+      await refreshPendingTrades();
+      return true;
     } catch (err) {
-      loadingStore.finish('accept_trade')
-      logger.error('TRADE', `Error en el intercambio: ${(err as Error).message}`)
-      uiStore.notify('Error en el intercambio: ' + (err as { message: string }).message, '❌')
-      return false
+      loadingStore.finish('accept_trade');
+      logger.error('TRADE', `Error en el intercambio: ${(err as Error).message}`);
+      uiStore.notify('Error en el intercambio: ' + (err as { message: string }).message, '❌');
+      return false;
     }
   }
 
   async function rejectTrade(tradeId: string | number) {
     try {
-      loadingStore.start('reject_trade', 'Cancelando intercambio...', 'Sincronizando con el servidor', true, '🔄')
-      
+      loadingStore.start(
+        'reject_trade',
+        'Cancelando intercambio...',
+        'Sincronizando con el servidor',
+        true,
+        '🔄'
+      );
+
       // MANDATORY: Pre-Action Flush
-      uiStore.notify('Sincronizando inventario...', '🔄')
-      await gameStore.save(false)
+      uiStore.notify('Sincronizando inventario...', '🔄');
+      await gameStore.save(false);
 
       const { error } = await gameStore.db.rpc('reject_trade_v2', {
         p_trade_id: tradeId
-      })
-      if (error) throw new Error((error as { message: string }).message)
-      
-      uiStore.notify('Oferta cancelada/rechazada. Reembolso enviado a Reclamos.', '👋')
-      await gameStore.fetchClaimQueue()
-      await gameStore.loadGame() // <-- MANDATORY: Refresh client after escrow changes
-      await refreshPendingTrades()
-      
-      loadingStore.finish('reject_trade')
+      });
+      if (error) throw new Error((error as { message: string }).message);
+
+      uiStore.notify('Oferta cancelada/rechazada. Reembolso enviado a Reclamos.', '👋');
+      await gameStore.fetchClaimQueue();
+      await gameStore.loadGame(); // <-- MANDATORY: Refresh client after escrow changes
+      await refreshPendingTrades();
+
+      loadingStore.finish('reject_trade');
     } catch (err) {
-      loadingStore.finish('reject_trade')
-      logger.error('TRADE', `Error al cancelar/rechazar intercambio: ${(err as Error).message}`)
-      uiStore.notify('Error al procesar: ' + (err as { message: string }).message, '❌')
+      loadingStore.finish('reject_trade');
+      logger.error('TRADE', `Error al cancelar/rechazar intercambio: ${(err as Error).message}`);
+      uiStore.notify('Error al procesar: ' + (err as { message: string }).message, '❌');
     }
   }
 
   async function claimTrade(tradeId: string | number) {
     try {
-      const { error } = await gameStore.db.from('trade_offers').update({ status: 'claimed' }).eq('id', tradeId)
-      if (error) throw new Error((error as { message: string }).message)
-      await refreshPendingTrades()
+      const { error } = await gameStore.db
+        .from('trade_offers')
+        .update({ status: 'claimed' })
+        .eq('id', tradeId);
+      if (error) throw new Error((error as { message: string }).message);
+      await refreshPendingTrades();
     } catch (err) {
-      logger.error('TRADE', `Error al confirmar intercambio: ${(err as Error).message}`)
-      uiStore.notify('Error al confirmar: ' + (err as { message: string }).message, '❌')
+      logger.error('TRADE', `Error al confirmar intercambio: ${(err as Error).message}`);
+      uiStore.notify('Error al confirmar: ' + (err as { message: string }).message, '❌');
     }
   }
 
   const lockedUids = computed(() => {
-    const locked = new Set<string>()
+    const locked = new Set<string>();
     pendingIncoming.value.forEach((t: TradeOffer) => {
-      if (t.request_pokemon?.uid) locked.add(t.request_pokemon.uid)
-    })
+      if (t.request_pokemon?.uid) locked.add(t.request_pokemon.uid);
+    });
     pendingOutgoing.value.forEach((t: TradeOffer) => {
-      if (t.offer_pokemon?.uid) locked.add(t.offer_pokemon.uid)
-    })
-    return locked
-  })
+      if (t.offer_pokemon?.uid) locked.add(t.offer_pokemon.uid);
+    });
+    return locked;
+  });
 
-  const pendingCount = computed(() => pendingIncoming.value.length)
-  
+  const pendingCount = computed(() => pendingIncoming.value.length);
+
   return {
     tradeTarget,
     tradeFriendSave,
@@ -335,5 +391,5 @@ function rollbackTradeEscrow(
     acceptTrade,
     rejectTrade,
     claimTrade
-  }
-})
+  };
+});

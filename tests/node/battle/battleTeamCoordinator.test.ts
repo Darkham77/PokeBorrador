@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   resolveGameBattleMode,
   resolveBattleFormat,
@@ -82,7 +82,11 @@ describe('BattleTeamCoordinator - Unit Tests', () => {
       isGuardian: true,
       volatileCounters: { curse: 1, flinch: 1 }
     });
-    const dirtyP2 = createMockPokemon('uid-2', 'Gengar', { hp: 0, fainted: true, isGuardian: true });
+    const dirtyP2 = createMockPokemon('uid-2', 'Gengar', {
+      hp: 0,
+      fainted: true,
+      isGuardian: true
+    });
     const dirtyP3 = createMockPokemon('uid-3', 'Machamp', { hp: 50, maxHp: 150 });
     const p4 = createMockPokemon('uid-4', 'Marowak');
 
@@ -148,31 +152,58 @@ describe('BattleTeamCoordinator - Unit Tests', () => {
     expect(isNaturalWeatherAllowedInLocation('gym', null, null, null)).toBe(false);
     expect(isNaturalWeatherAllowedInLocation('route1', null, { isGym: true }, null)).toBe(false);
     expect(isNaturalWeatherAllowedInLocation('route1', { isGym: true }, null, null)).toBe(false);
-    expect(isNaturalWeatherAllowedInLocation('route1', null, null, { isGym: true } as any)).toBe(false);
+    expect(isNaturalWeatherAllowedInLocation('route1', null, null, { isGym: true } as any)).toBe(
+      false
+    );
 
     // Caves and indoors forbid natural weather
     expect(isNaturalWeatherAllowedInLocation('route1', { isCave: true }, null, null)).toBe(false);
-    expect(isNaturalWeatherAllowedInLocation('route1', { isIndoors: true }, null, null)).toBe(false);
-    expect(isNaturalWeatherAllowedInLocation('route1', { isCrystalCave: true }, null, null)).toBe(false);
-    expect(isNaturalWeatherAllowedInLocation('route1', null, null, { isCave: true } as any)).toBe(false);
-    expect(isNaturalWeatherAllowedInLocation('route1', { weatherEnabled: false }, null, null)).toBe(false);
+    expect(isNaturalWeatherAllowedInLocation('route1', { isIndoors: true }, null, null)).toBe(
+      false
+    );
+    expect(isNaturalWeatherAllowedInLocation('route1', { isCrystalCave: true }, null, null)).toBe(
+      false
+    );
+    expect(isNaturalWeatherAllowedInLocation('route1', null, null, { isCave: true } as any)).toBe(
+      false
+    );
+    expect(isNaturalWeatherAllowedInLocation('route1', { weatherEnabled: false }, null, null)).toBe(
+      false
+    );
 
     // Outdoor routes allow natural weather
-    expect(isNaturalWeatherAllowedInLocation('route1', { isIndoors: false, weatherEnabled: true }, null, null)).toBe(true);
+    expect(
+      isNaturalWeatherAllowedInLocation(
+        'route1',
+        { isIndoors: false, weatherEnabled: true },
+        null,
+        null
+      )
+    ).toBe(true);
   });
 
   it('resolves effective lighting cycle based on physical scenario', () => {
     // Explicit fixed cycle has highest priority
-    expect(resolveEffectiveCycleForLocation('route1', null, null, { fixedCycle: 'dusk' } as any, 'day')).toBe('dusk');
-    expect(resolveEffectiveCycleForLocation('route1', null, { fixedCycle: 'night' } as any, null, 'day')).toBe('night');
+    expect(
+      resolveEffectiveCycleForLocation('route1', null, null, { fixedCycle: 'dusk' } as any, 'day')
+    ).toBe('dusk');
+    expect(
+      resolveEffectiveCycleForLocation('route1', null, { fixedCycle: 'night' } as any, null, 'day')
+    ).toBe('night');
 
     // Gyms and Indoors have fixed daytime lighting
     expect(resolveEffectiveCycleForLocation('gym', null, null, null, 'night')).toBe('day');
-    expect(resolveEffectiveCycleForLocation('power_plant', { isIndoors: true }, null, null, 'night')).toBe('day');
+    expect(
+      resolveEffectiveCycleForLocation('power_plant', { isIndoors: true }, null, null, 'night')
+    ).toBe('day');
 
     // Caves without cycle sprites have fixed dark/night lighting
-    expect(resolveEffectiveCycleForLocation('diglett_cave', { isCave: true }, null, null, 'day')).toBe('night');
-    expect(resolveEffectiveCycleForLocation('cerulean_cave', null, null, { isCave: true } as any, 'day')).toBe('night');
+    expect(
+      resolveEffectiveCycleForLocation('diglett_cave', { isCave: true }, null, null, 'day')
+    ).toBe('night');
+    expect(
+      resolveEffectiveCycleForLocation('cerulean_cave', null, null, { isCave: true } as any, 'day')
+    ).toBe('night');
 
     // Outdoor routes use the real-time map cycle
     expect(resolveEffectiveCycleForLocation('route1', null, null, null, 'dusk')).toBe('dusk');

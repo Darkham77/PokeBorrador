@@ -8,10 +8,14 @@
  * Tests PostgREST upsert, RPC awarding, and results selection.
  */
 
-import { it, expect } from 'vitest';
+import { it, expect } from 'vite-plus/test';
 import { describeWithDatabase } from '../../dbTestHelper.ts';
 import { createClient } from '@supabase/supabase-js';
-import { createSignedJwt, POSTGREST_URL, SUPABASE_TEST_ANON_KEY } from '../../../scripts/testing/postgres_test_container.ts';
+import {
+  createSignedJwt,
+  POSTGREST_URL,
+  SUPABASE_TEST_ANON_KEY
+} from '../../../scripts/testing/postgres_test_container.ts';
 
 describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
   it('tests client-side upsert, rpc, and awarding via PostgREST', async () => {
@@ -27,25 +31,31 @@ describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
         )
       `);
       // Seed older result
-      await queryLocal(`
+      await queryLocal(
+        `
         INSERT INTO competition_results (id, event_id, winners, ended_at)
         VALUES (?, ?, ?, ?)
-      `, [
-        'res_old',
-        'torneo_pesca',
-        JSON.stringify([{ rank: 'first', player_name: 'AwardsChampion', score: 99 }]),
-        '2026-09-01T00:00:00.000Z'
-      ]);
+      `,
+        [
+          'res_old',
+          'torneo_pesca',
+          JSON.stringify([{ rank: 'first', player_name: 'AwardsChampion', score: 99 }]),
+          '2026-09-01T00:00:00.000Z'
+        ]
+      );
       // Seed newer result
-      await queryLocal(`
+      await queryLocal(
+        `
         INSERT INTO competition_results (id, event_id, winners, ended_at)
         VALUES (?, ?, ?, ?)
-      `, [
-        'res_new',
-        'torneo_pesca',
-        JSON.stringify([{ rank: 'first', player_name: 'ContestChampion', score: 180 }]),
-        '2026-09-04T12:00:00.000Z'
-      ]);
+      `,
+        [
+          'res_new',
+          'torneo_pesca',
+          JSON.stringify([{ rank: 'first', player_name: 'ContestChampion', score: 180 }]),
+          '2026-09-04T12:00:00.000Z'
+        ]
+      );
 
       // Ordered query
       const ordered = (await queryLocal(
@@ -53,7 +63,11 @@ describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
         ['torneo_pesca']
       )) as Array<{ id: string; event_id: string; winners: string; ended_at: string }>;
       expect(ordered.length).toBe(2);
-      const latestParsed = JSON.parse(ordered[0]!.winners) as Array<{ rank: string; player_name: string; score: number }>;
+      const latestParsed = JSON.parse(ordered[0]!.winners) as Array<{
+        rank: string;
+        player_name: string;
+        score: number;
+      }>;
       expect(latestParsed[0]!.player_name).toBe('ContestChampion');
       expect(latestParsed[0]!.score).toBe(180);
       return;
@@ -133,9 +147,13 @@ describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
         submitted_at: Temporal.Now.instant().toString()
       };
 
-      const res = await client.from('competition_entries').upsert(entryData, {
-        onConflict: 'event_id, category_id, player_id'
-      }).select().single();
+      const res = await client
+        .from('competition_entries')
+        .upsert(entryData, {
+          onConflict: 'event_id, category_id, player_id'
+        })
+        .select()
+        .single();
 
       expect(res.error).toBeNull();
 
@@ -188,22 +206,33 @@ describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
       // 3. Trigger awarding RPC via client
       await sql`UPDATE public.events_config SET last_awarded_at = NULL WHERE id = 'torneo_pesca'`;
 
-      const rpcRes = await client.rpc('fn_award_event_automated', { target_event_id: 'torneo_pesca' });
+      const rpcRes = await client.rpc('fn_award_event_automated', {
+        target_event_id: 'torneo_pesca'
+      });
       expect(rpcRes.error).toBeNull();
 
       // 4A. RED REPRODUCTION: Query WITHOUT .order('ended_at', { ascending: false })
       // Returns rows in creation/heap order, so rows[0] is the older result (AwardsChampion).
-      const unOrderedSelect = await client.from('competition_results').select('*').eq('event_id', 'torneo_pesca');
+      const unOrderedSelect = await client
+        .from('competition_results')
+        .select('*')
+        .eq('event_id', 'torneo_pesca');
       expect(unOrderedSelect.error).toBeNull();
       const unorderedRows = (unOrderedSelect.data || []) as Array<{ winners?: unknown }>;
       expect(unorderedRows.length).toBe(2);
       const staleResult = unorderedRows[0];
-      const staleWinners = (typeof staleResult?.winners === 'string' ? JSON.parse(staleResult.winners) : staleResult?.winners) as Array<{
+      const staleWinners = (
+        typeof staleResult?.winners === 'string'
+          ? JSON.parse(staleResult.winners)
+          : staleResult?.winners
+      ) as Array<{
         rank: string;
         player_name: string;
         score: number;
       }>;
-      const staleFirstPlace = staleWinners.find(w => w.rank === 'first' && w.player_name === 'ContestChampion');
+      const staleFirstPlace = staleWinners.find(
+        (w) => w.rank === 'first' && w.player_name === 'ContestChampion'
+      );
       // Proves the bug: without .order('ended_at', { ascending: false }), rows[0] is stale and ContestChampion is undefined!
       expect(staleFirstPlace).toBeUndefined();
 
@@ -218,12 +247,18 @@ describeWithDatabase('Magikarp Contest Awarding Parity', (engine) => {
       const orderedRows = (orderedSelect.data || []) as Array<{ winners?: unknown }>;
       expect(orderedRows.length).toBe(2);
       const latestResult = orderedRows[0];
-      const latestWinners = (typeof latestResult?.winners === 'string' ? JSON.parse(latestResult.winners) : latestResult?.winners) as Array<{
+      const latestWinners = (
+        typeof latestResult?.winners === 'string'
+          ? JSON.parse(latestResult.winners)
+          : latestResult?.winners
+      ) as Array<{
         rank: string;
         player_name: string;
         score: number;
       }>;
-      const firstPlace = latestWinners.find(w => w.rank === 'first' && w.player_name === 'ContestChampion');
+      const firstPlace = latestWinners.find(
+        (w) => w.rank === 'first' && w.player_name === 'ContestChampion'
+      );
       expect(firstPlace).toBeDefined();
       expect(firstPlace?.score).toBe(180);
     } finally {

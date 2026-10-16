@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useGameStore } from '@/stores/game';
 import { useBattleStore } from '@/stores/battle/battle';
@@ -127,16 +127,22 @@ describe('PvP Combat Resolution & Rewards Isolation (Tier 1)', () => {
         winnerSide: 'p1'
       };
 
-      const battleState: { winnerResult?: 'player' | 'enemy' | 'tie'; playerNames?: Record<string, string> } = {
+      const battleState: {
+        winnerResult?: 'player' | 'enemy' | 'tie';
+        playerNames?: Record<string, string>;
+      } = {
         winnerResult: 'player',
         playerNames: { Player: 'player', Rival: 'enemy' }
       };
 
-      const won = battleState.winnerResult === 'player' ||
+      const won =
+        battleState.winnerResult === 'player' ||
         result.winnerSide === 'p1' ||
         result.winner === 'p1' ||
         result.winner === 'Player' ||
-        Boolean(battleState.playerNames && battleState.playerNames[result.winner || ''] === 'player');
+        Boolean(
+          battleState.playerNames && battleState.playerNames[result.winner || ''] === 'player'
+        );
 
       expect(won).toBe(true);
     });
@@ -148,16 +154,22 @@ describe('PvP Combat Resolution & Rewards Isolation (Tier 1)', () => {
         winnerSide: 'p2'
       };
 
-      const battleState: { winnerResult?: 'player' | 'enemy' | 'tie'; playerNames?: Record<string, string> } = {
+      const battleState: {
+        winnerResult?: 'player' | 'enemy' | 'tie';
+        playerNames?: Record<string, string>;
+      } = {
         winnerResult: 'enemy',
         playerNames: { Player: 'player', Rival: 'enemy' }
       };
 
-      const won = battleState.winnerResult === 'player' ||
+      const won =
+        battleState.winnerResult === 'player' ||
         result.winnerSide === 'p1' ||
         result.winner === 'p1' ||
         result.winner === 'Player' ||
-        Boolean(battleState.playerNames && battleState.playerNames[result.winner || ''] === 'player');
+        Boolean(
+          battleState.playerNames && battleState.playerNames[result.winner || ''] === 'player'
+        );
 
       expect(won).toBe(false);
     });

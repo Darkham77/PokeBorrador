@@ -21,22 +21,29 @@ const JSON_COLUMNS = [
   'defeated_gyms'
 ] as const;
 
-function hydrateLocalRow(table: string, row: Record<string, unknown>): void {
+function hydrateLocalRow(
+  table: string,
+  row: Record<string, unknown> // open-record: Dynamic SQLite row payload
+): void {
   if (table === 'battle_invites' && row.id !== undefined && row.id !== null) {
-    row.id = String(row.id);
+    row.id = typeof row.id === 'string' ? row.id : String(row.id as string | number);
   }
   for (const col of JSON_COLUMNS) {
     const val = row[col];
     if (typeof val === 'string') {
       try {
         row[col] = JSON.parse(val);
-      } catch (_e) { // catch-ok: Fallback to raw string if JSON parsing fails
+      } catch {
+        // catch-ok: Fallback to raw string if JSON parsing fails
       }
     }
   }
 }
 
-export function hydrateLocalRows(table: string, rows: Record<string, unknown>[]): void {
+export function hydrateLocalRows(
+  table: string,
+  rows: Record<string, unknown>[] // open-record: Dynamic SQLite rows payload
+): void {
   for (const row of rows) {
     hydrateLocalRow(table, row);
   }
@@ -101,6 +108,7 @@ function parseOrFilterClause(filterStr: string, params: unknown[]): string {
 }
 
 const COMPARISON_OPERATORS: Record<string, string> = {
+  // open-record: SQL operator translation dictionary
   eq: '=',
   neq: '!=',
   gt: '>',
@@ -112,15 +120,15 @@ const COMPARISON_OPERATORS: Record<string, string> = {
 function handleInFilter(args: unknown[], where: string[], params: unknown[]): void {
   const arr = Array.isArray(args[1]) ? args[1] : [];
   const marks = arr.map(() => '?').join(',');
-  where.push(`${args[0]} IN (${marks})`);
+  where.push(`${String(args[0])} IN (${marks})`);
   params.push(...arr);
 }
 
 function handleIsFilter(args: unknown[], where: string[], params: unknown[]): void {
   if (args[1] === null) {
-    where.push(`${args[0]} IS NULL`);
+    where.push(`${String(args[0])} IS NULL`);
   } else {
-    where.push(`${args[0]} IS ?`);
+    where.push(`${String(args[0])} IS ?`);
     params.push(args[1]);
   }
 }
@@ -136,14 +144,15 @@ function handleNotFilter(args: unknown[], where: string[], params: unknown[]): v
 }
 
 function handleMatchFilter(args: unknown[], where: string[], params: unknown[]): void {
-  for (const [k, v] of Object.entries(args[0] as Record<string, unknown>)) { // open-record: Generic key-value data dictionary container
+  for (const [k, v] of Object.entries(args[0] as Record<string, unknown>)) {
+    // open-record: Generic key-value data dictionary container
     where.push(`${k} = ?`);
     params.push(v);
   }
 }
 
 function handleIlikeFilter(args: unknown[], where: string[], params: unknown[]): void {
-  where.push(`${args[0]} LIKE ?`);
+  where.push(`${String(args[0])} LIKE ?`);
   params.push((args[1] as string).replace(/\*/g, '%'));
 }
 
@@ -155,6 +164,7 @@ function handleOrFilter(args: unknown[], where: string[], params: unknown[]): vo
 type FilterHandler = (args: unknown[], where: string[], params: unknown[]) => void;
 
 const COMPLEX_FILTER_HANDLERS: Record<string, FilterHandler> = {
+  // open-record: SQL filter handler dispatch table
   in: handleInFilter,
   is: handleIsFilter,
   not: handleNotFilter,
@@ -166,7 +176,7 @@ const COMPLEX_FILTER_HANDLERS: Record<string, FilterHandler> = {
 function applyStepFilter(step: ProxyQueryChainItem, where: string[], params: unknown[]): void {
   const compOp = COMPARISON_OPERATORS[step.type];
   if (compOp) {
-    where.push(`${step.args[0]} ${compOp} ?`);
+    where.push(`${String(step.args[0])} ${compOp} ?`);
     params.push(step.args[1]);
     return;
   }
@@ -176,7 +186,10 @@ function applyStepFilter(step: ProxyQueryChainItem, where: string[], params: unk
   }
 }
 
-export function buildSelectWhereAndParams(chain: ProxyQueryChainItem[]): { where: string[]; params: unknown[] } {
+export function buildSelectWhereAndParams(chain: ProxyQueryChainItem[]): {
+  where: string[];
+  params: unknown[];
+} {
   const where: string[] = []; // no-domain: Non-domain utility collection or data structure
   const params: unknown[] = [];
   for (const step of chain) {
@@ -192,9 +205,9 @@ export function buildOrderAndLimit(chain: ProxyQueryChainItem[]): string {
   for (const s of chain) {
     if (s.type === 'order') {
       const opts = s.args[1] as { ascending?: boolean } | undefined;
-      sql += ` ORDER BY ${s.args[0]} ${opts?.ascending ? 'ASC' : 'DESC'}`;
+      sql += ` ORDER BY ${String(s.args[0])} ${opts?.ascending ? 'ASC' : 'DESC'}`;
     } else if (s.type === 'limit') {
-      sql += ` LIMIT ${s.args[0]}`;
+      sql += ` LIMIT ${String(s.args[0])}`;
     }
   }
   return sql;
@@ -206,12 +219,12 @@ export interface LocalSelectOptions {
 }
 
 export function extractSelectOptions(chain: ProxyQueryChainItem[]): LocalSelectOptions {
-  const selectItem = chain.find(s => s.type === 'select');
+  const selectItem = chain.find((s) => s.type === 'select');
   return (selectItem?.args[1] as LocalSelectOptions) || {};
 }
 
 export function formatLocalResult(
-  data: Record<string, unknown>[],
+  data: Record<string, unknown>[], // open-record: Dynamic SQLite rows result
   final: DBQueryResultShape | null,
   count?: number
 ): DBResponse {
@@ -243,7 +256,7 @@ function executeSqliteUpsertRow(
 ): unknown {
   const cols = Object.keys(row);
   const marks = cols.map(() => '?').join(',');
-  const vals = cols.map(c => serializeSqliteValue(row[c]));
+  const vals = cols.map((c) => serializeSqliteValue(row[c]));
   sqliteDb.run(`INSERT OR REPLACE INTO ${table} (${cols.join(',')}) VALUES (${marks})`, vals);
   const idRes = sqliteDb.exec('SELECT last_insert_rowid()');
   return idRes[0]?.values[0]?.[0] ?? null;
@@ -270,12 +283,14 @@ export async function resolveUpsertSelectResult(
   final: DBQueryResultShape | null,
   actionData: unknown
 ): Promise<DBResponse> {
-  const rows = lastInsertedRowId !== null && lastInsertedRowId !== undefined
-    ? await queryLocal(`SELECT * FROM ${table} WHERE rowid = ?`, [lastInsertedRowId])
-    : [];
+  const rows =
+    lastInsertedRowId !== null && lastInsertedRowId !== undefined
+      ? await queryLocal(`SELECT * FROM ${table} WHERE rowid = ?`, [lastInsertedRowId])
+      : [];
   hydrateLocalRows(table, rows);
 
-  if (final === 'single') return { data: rows[0] || null, error: rows.length === 0 ? { message: 'Not found' } : null };
+  if (final === 'single')
+    return { data: rows[0] || null, error: rows.length === 0 ? { message: 'Not found' } : null };
   if (final === 'maybeSingle') return { data: rows[0] || null, error: null };
-  return { data: Array.isArray(actionData) ? rows : (rows[0] || null), error: null };
+  return { data: Array.isArray(actionData) ? rows : rows[0] || null, error: null };
 }

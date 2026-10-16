@@ -1,28 +1,27 @@
+import { defineStore } from 'pinia';
+import { ref, computed, watch } from 'vue';
+import { logger } from '@/logic/utils/logger.ts';
+import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts';
+import { incrementRecordKey } from '@/logic/utils/mapUtils';
 
-import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
-import { logger } from '@/logic/utils/logger.ts'
-import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts'
-import { incrementRecordKey } from '@/logic/utils/mapUtils'
-
-import { useAuthStore } from '@/stores/auth.ts'
-import { useGameStore } from '@/stores/game.ts'
-import { useUIStore } from '@/stores/ui.ts'
-import { useModalStore } from '@/stores/modals'
-import { checkAndResolveSeasonEnd } from '@/logic/pvp/rankedSeasonRewardEngine'
-import { 
-  RANKED_REWARD_MILESTONES, 
-  RANKED_REWARD_MILESTONES_BY_ID, 
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useModalStore } from '@/stores/modals';
+import { checkAndResolveSeasonEnd } from '@/logic/pvp/rankedSeasonRewardEngine';
+import {
+  RANKED_REWARD_MILESTONES,
+  RANKED_REWARD_MILESTONES_BY_ID,
   isRankedRewardMilestoneId,
   type RankedRewardMilestoneId
-} from '@/data/system/rankedData'
-export { RANKED_REWARD_MILESTONES }
-import { getEloTier } from '@/logic/pvp/rankedEngine'
-import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
-import { DEFAULT_INITIAL_ELO, SEASON_DURATION_MONTHS } from '@/logic/constants/gameplay.ts'
-import { calculateEloDelta, applyEloDelta } from '@/logic/pvp/eloRatingMath.ts'
-import { resolveDefendingTeam, createPassiveTeamSnapshot } from '@/logic/pvp/pvpTeamHelper'
-import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter'
+} from '@/data/system/rankedData';
+export { RANKED_REWARD_MILESTONES };
+import { getEloTier } from '@/logic/pvp/rankedEngine';
+import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils';
+import { DEFAULT_INITIAL_ELO, SEASON_DURATION_MONTHS } from '@/logic/constants/gameplay.ts';
+import { calculateEloDelta, applyEloDelta } from '@/logic/pvp/eloRatingMath.ts';
+import { resolveDefendingTeam, createPassiveTeamSnapshot } from '@/logic/pvp/pvpTeamHelper';
+import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter';
 
 const PVP_WIN_BATTLE_COINS = 15 as const;
 const PVP_LOSS_BATTLE_COINS = 5 as const;
@@ -33,165 +32,193 @@ export const RANKED_REWARD_TIER_MARKS = [
   { name: 'Platino', elo: 2100, color: '#E5C100' },
   { name: 'Diamante', elo: 2700, color: '#89CFF0' },
   { name: 'Maestro', elo: 3400, color: '#FFD700' }
-]
+];
 
 import type {
   PersonalPvPMatchSummary,
   PassiveBattleReport,
   PvPStats,
   SeasonRules
-} from '@/types/battle/pvp'
-import { recordLocalMatch } from '@/logic/pvp/pvpMatchHistoryHelper'
-import { fetchAndFormatDefenseReports } from '@/logic/pvp/pvpDefenseReportsHelper'
+} from '@/types/battle/pvp';
+import { recordLocalMatch } from '@/logic/pvp/pvpMatchHistoryHelper';
+import { fetchAndFormatDefenseReports } from '@/logic/pvp/pvpDefenseReportsHelper';
 import {
   fetchProfilePvPData,
   fetchActiveSeasonRules,
   findInvalidDefendingPokemon,
   syncPvPPersonalHistory
-} from './pvpDataHelper.ts'
+} from './pvpDataHelper.ts';
 
 /**
  * usePvPStore - Ranked Arena and Passive Defense manager.
  * Centralizes ELO, seasons, and competitive team registration.
  */
 export const usePvPStore = defineStore('pvp', () => {
-  const authStore = useAuthStore()
-  const gameStore = useGameStore()
-  const uiStore = useUIStore()
+  const authStore = useAuthStore();
+  const gameStore = useGameStore();
+  const uiStore = useUIStore();
 
-  const elo = ref(DEFAULT_INITIAL_ELO)
-  const stats = ref<PvPStats>({ wins: 0, losses: 0, draws: 0 })
-  const maxElo = ref(DEFAULT_INITIAL_ELO)
-  const rewardsClaimed = ref<string[]>([])
-  const passiveTeamActive = ref(false)
-  const defenseReports = ref<PassiveBattleReport[]>([])
-  const currentSeasonRules = ref<SeasonRules | null>(null)
+  const elo = ref(DEFAULT_INITIAL_ELO);
+  const stats = ref<PvPStats>({ wins: 0, losses: 0, draws: 0 });
+  const maxElo = ref(DEFAULT_INITIAL_ELO);
+  const rewardsClaimed = ref<string[]>([]);
+  const passiveTeamActive = ref(false);
+  const defenseReports = ref<PassiveBattleReport[]>([]);
+  const currentSeasonRules = ref<SeasonRules | null>(null);
 
   // Sync ELO with game state
-  watch(() => gameStore.state.eloRating, (newElo) => {
-    if (newElo !== undefined) elo.value = newElo
-  }, { immediate: true })
+  watch(
+    () => gameStore.state.eloRating,
+    (newElo) => {
+      if (newElo !== undefined) elo.value = newElo;
+    },
+    { immediate: true }
+  );
 
   // Sync Max ELO with game state
-  watch(() => gameStore.state.rankedMaxElo, (newMax) => {
-    if (newMax !== undefined) {
-      maxElo.value = Math.max(maxElo.value, newMax)
-    }
-  }, { immediate: true })
+  watch(
+    () => gameStore.state.rankedMaxElo,
+    (newMax) => {
+      if (newMax !== undefined) {
+        maxElo.value = Math.max(maxElo.value, newMax);
+      }
+    },
+    { immediate: true }
+  );
 
   // Sync claimed rewards with game state
-  watch(() => gameStore.state.rankedRewardsClaimed, (claimed) => {
-    if (Array.isArray(claimed)) {
-      rewardsClaimed.value = [...claimed]
-    }
-  }, { immediate: true })
+  watch(
+    () => gameStore.state.rankedRewardsClaimed,
+    (claimed) => {
+      if (Array.isArray(claimed)) {
+        rewardsClaimed.value = [...claimed];
+      }
+    },
+    { immediate: true }
+  );
 
   // Sync passive defense active state with game state
-  watch(() => gameStore.state.passiveTeamActive, (active) => {
-    if (active !== undefined) {
-      passiveTeamActive.value = Boolean(active)
-    }
-  }, { immediate: true })
+  watch(
+    () => gameStore.state.passiveTeamActive,
+    (active) => {
+      if (active !== undefined) {
+        passiveTeamActive.value = Boolean(active);
+      }
+    },
+    { immediate: true }
+  );
 
-  const eloTier = computed(() => getEloTier(elo.value))
+  const eloTier = computed(() => getEloTier(elo.value));
 
-  let inFlightPromise: Promise<void> | null = null
-  const isLoaded = ref(false)
+  let inFlightPromise: Promise<void> | null = null;
+  const isLoaded = ref(false);
 
   function consumeLoginReminderIfNeeded(): void {
-    if (!passiveTeamActive.value && safeSessionStorage.getItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING) === 'true') {
-      safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING)
-      uiStore.notify('Recuerda activar tu Defensa Pasiva en el Home para proteger tu ELO.', '🛡️')
+    if (
+      !passiveTeamActive.value &&
+      safeSessionStorage.getItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING) === 'true'
+    ) {
+      safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING);
+      uiStore.notify('Recuerda activar tu Defensa Pasiva en el Home para proteger tu ELO.', '🛡️');
     }
   }
 
   async function loadPvPData(force = false): Promise<void> {
     if (isLoaded.value && !force) {
-      consumeLoginReminderIfNeeded()
-      return
+      consumeLoginReminderIfNeeded();
+      return;
     }
-    if (inFlightPromise) return inFlightPromise
+    if (inFlightPromise) return inFlightPromise;
 
     inFlightPromise = (async () => {
       try {
-        if (!authStore.user || !gameStore.db) return
+        if (!authStore.user || !gameStore.db) return;
 
-        const profileData = await fetchProfilePvPData(gameStore.db, authStore.user.id)
+        const profileData = await fetchProfilePvPData(gameStore.db, authStore.user.id);
         if (profileData) {
-          elo.value = profileData.elo
-          stats.value = profileData.stats
-          maxElo.value = Math.max(maxElo.value, elo.value)
+          elo.value = profileData.elo;
+          stats.value = profileData.stats;
+          maxElo.value = Math.max(maxElo.value, elo.value);
         }
 
-        const rules = await fetchActiveSeasonRules(gameStore.db)
+        const rules = await fetchActiveSeasonRules(gameStore.db);
         if (rules) {
-          currentSeasonRules.value = rules
+          currentSeasonRules.value = rules;
         }
 
-        maxElo.value = (gameStore.state.rankedMaxElo as number) || elo.value
-        rewardsClaimed.value = gameStore.state.rankedRewardsClaimed ?? []
+        maxElo.value = (gameStore.state.rankedMaxElo as number) || elo.value;
+        rewardsClaimed.value = gameStore.state.rankedRewardsClaimed ?? [];
 
-        const { data: passive } = await gameStore.db.from('passive_teams')
+        const { data: passive } = (await gameStore.db
+          .from('passive_teams')
           .select('is_active')
           .eq('user_id', authStore.user.id)
-          .maybeSingle() as { data: { is_active: boolean } | null }
-        
-        passiveTeamActive.value = Boolean(passive?.is_active)
-        gameStore.state.passiveTeamActive = passiveTeamActive.value
+          .maybeSingle()) as { data: { is_active: boolean } | null };
 
-        const defendingTeam = resolveDefendingTeam(gameStore.state)
+        passiveTeamActive.value = Boolean(passive?.is_active);
+        gameStore.state.passiveTeamActive = passiveTeamActive.value;
+
+        const defendingTeam = resolveDefendingTeam(gameStore.state);
         if (passiveTeamActive.value && currentSeasonRules.value && defendingTeam.length > 0) {
-          const firstInvalid = findInvalidDefendingPokemon(defendingTeam, currentSeasonRules.value)
+          const firstInvalid = findInvalidDefendingPokemon(defendingTeam, currentSeasonRules.value);
           if (firstInvalid) {
             await deactivatePassiveDefense(
               `Defensa Pasiva desactivada: ${firstInvalid.mon.name} no cumple las reglas de la temporada (${firstInvalid.reason}).`
-            )
+            );
           }
         }
 
-        consumeLoginReminderIfNeeded()
+        consumeLoginReminderIfNeeded();
 
-        await fetchDefenseReports()
+        await fetchDefenseReports();
 
         if (gameStore.db && authStore.user) {
           gameStore.state.pvpMatchHistory = await syncPvPPersonalHistory(
             gameStore.db,
             authStore.user.id,
             gameStore.state.pvpMatchHistory || []
-          )
+          );
         }
 
-        await checkSeasonRollover()
-        isLoaded.value = true
+        await checkSeasonRollover();
+        isLoaded.value = true;
       } finally {
-        inFlightPromise = null
+        inFlightPromise = null;
       }
-    })()
+    })();
 
-    return inFlightPromise
+    return inFlightPromise;
   }
 
   async function checkSeasonRollover() {
     try {
-      const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE)
-      const prevResolvedId = gameStore.state.lastResolvedSeasonId
-      const resolution = checkAndResolveSeasonEnd(gameStore.state, now.month)
+      const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE);
+      const prevResolvedId = gameStore.state.lastResolvedSeasonId;
+      const resolution = checkAndResolveSeasonEnd(gameStore.state, now.month);
       if (resolution.resolved) {
         if (resolution.newElo !== undefined) {
-          elo.value = resolution.newElo
+          elo.value = resolution.newElo;
         }
         if (passiveTeamActive.value) {
-          void deactivatePassiveDefense('Defensa Pasiva desactivada por finalización de temporada.')
+          void deactivatePassiveDefense(
+            'Defensa Pasiva desactivada por finalización de temporada.'
+          );
         } else if (gameStore.db && authStore.user) {
-          void gameStore.db.from('passive_teams').update({ is_active: false }).eq('user_id', authStore.user.id)
+          void gameStore.db
+            .from('passive_teams')
+            .update({ is_active: false })
+            .eq('user_id', authStore.user.id);
         }
         if (gameStore.db && authStore.user && resolution.newElo !== undefined) {
-          void gameStore.db.from('profiles').update({ elo_rating: resolution.newElo }).eq('id', authStore.user.id)
+          void gameStore.db
+            .from('profiles')
+            .update({ elo_rating: resolution.newElo })
+            .eq('id', authStore.user.id);
         }
-        await gameStore.save(false)
+        await gameStore.save(false);
         if (resolution.rewardPokemon || resolution.medal) {
-          const modalStore = useModalStore()
-          const awards = []
+          const modalStore = useModalStore();
+          const awards = [];
           if (resolution.rewardPokemon) {
             awards.push({
               id: `local_poke_${Temporal.Now.instant().epochMilliseconds}`,
@@ -201,7 +228,7 @@ export const usePvPStore = defineStore('pvp', () => {
                 shiny: resolution.rewardPokemon.isShiny,
                 level: resolution.rewardPokemon.level
               }
-            })
+            });
           }
           if (resolution.medal) {
             awards.push({
@@ -211,236 +238,251 @@ export const usePvPStore = defineStore('pvp', () => {
                 season: resolution.medal.seasonName,
                 tier: resolution.tier
               }
-            })
+            });
           }
           modalStore.open('RankedSeasonReward', {
             seasonName: resolution.previousSeasonName,
             tier: resolution.tier,
             finalElo: resolution.previousElo,
             awards
-          })
+          });
         }
       } else if (!prevResolvedId && gameStore.state.lastResolvedSeasonId) {
-        await gameStore.save(false)
+        await gameStore.save(false);
       }
-      return resolution
+      return resolution;
     } catch (err) {
-      console.error('[checkSeasonRollover Error]', err)
-      return { resolved: false }
+      console.error('[checkSeasonRollover Error]', err);
+      return { resolved: false };
     }
   }
 
   async function fetchDefenseReports() {
-    if (!gameStore.db || !authStore.user) return
+    if (!gameStore.db || !authStore.user) return;
     defenseReports.value = await fetchAndFormatDefenseReports(
       gameStore.db,
       authStore.user.id,
       (msg, icon) => uiStore.notify(msg, icon)
-    )
+    );
   }
 
   const DEFENSE_SNAPSHOT_DEBOUNCE_MS = 1500;
 
-  let defenseSnapshotTimer: ReturnType<typeof setTimeout> | null = null // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
+  let defenseSnapshotTimer: ReturnType<typeof setTimeout> | null = null; // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
 
   function scheduleDefenseSnapshotSync(delayMs = DEFENSE_SNAPSHOT_DEBOUNCE_MS) {
     if (defenseSnapshotTimer) {
-      clearTimeout(defenseSnapshotTimer) // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
-      defenseSnapshotTimer = null
+      clearTimeout(defenseSnapshotTimer); // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
+      defenseSnapshotTimer = null;
     }
-    defenseSnapshotTimer = setTimeout(() => { // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
-      defenseSnapshotTimer = null
-      void syncDefendingTeamSnapshot()
-    }, delayMs)
+    defenseSnapshotTimer = setTimeout(() => {
+      // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
+      defenseSnapshotTimer = null;
+      void syncDefendingTeamSnapshot();
+    }, delayMs);
   }
 
   async function flushPendingDefenseSnapshotSync() {
     if (defenseSnapshotTimer) {
-      clearTimeout(defenseSnapshotTimer) // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
-      defenseSnapshotTimer = null
-      await syncDefendingTeamSnapshot()
+      clearTimeout(defenseSnapshotTimer); // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
+      defenseSnapshotTimer = null;
+      await syncDefendingTeamSnapshot();
     }
   }
 
   async function deactivatePassiveDefense(reason?: string) {
     if (defenseSnapshotTimer) {
-      clearTimeout(defenseSnapshotTimer) // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
-      defenseSnapshotTimer = null
+      clearTimeout(defenseSnapshotTimer); // timer-ok: Network debounce for defense team snapshot persistence with DEFENSE_SNAPSHOT_DEBOUNCE_MS
+      defenseSnapshotTimer = null;
     }
-    if (!gameStore.db || !authStore.user) return
+    if (!gameStore.db || !authStore.user) return;
     try {
-      await gameStore.db.from('passive_teams').update({ is_active: false }).eq('user_id', authStore.user.id)
+      await gameStore.db
+        .from('passive_teams')
+        .update({ is_active: false })
+        .eq('user_id', authStore.user.id);
     } catch (err) {
-      logger.error('PVP', 'Error al desactivar defensa pasiva en BD:', err)
+      logger.error('PVP', 'Error al desactivar defensa pasiva en BD:', err);
     }
-    passiveTeamActive.value = false
-    gameStore.state.passiveTeamActive = false
-    gameStore.scheduleSave()
+    passiveTeamActive.value = false;
+    gameStore.state.passiveTeamActive = false;
+    void gameStore.scheduleSave();
     if (reason) {
-      uiStore.notify(reason, '⚠️')
+      uiStore.notify(reason, '⚠️');
     }
-    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING)
+    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING);
   }
 
   async function syncDefendingTeamSnapshot() {
-    if (!passiveTeamActive.value || !gameStore.db || !authStore.user) return
-    const defendingTeam = resolveDefendingTeam(gameStore.state)
-    if (defendingTeam.length === 0) return
+    if (!passiveTeamActive.value || !gameStore.db || !authStore.user) return;
+    const defendingTeam = resolveDefendingTeam(gameStore.state);
+    if (defendingTeam.length === 0) return;
     if (currentSeasonRules.value) {
-      const hasIneligible = defendingTeam.some(p => !evaluatePokemonForSeason(p, currentSeasonRules.value!).eligible)
+      const hasIneligible = defendingTeam.some(
+        (p) => !evaluatePokemonForSeason(p, currentSeasonRules.value!).eligible
+      );
       if (hasIneligible) {
-        return
+        return;
       }
     }
-    const snapshotJson = createPassiveTeamSnapshot(defendingTeam)
+    const snapshotJson = createPassiveTeamSnapshot(defendingTeam);
     try {
       await gameStore.db.from('passive_teams').upsert({
         user_id: authStore.user.id,
         team_data: snapshotJson,
         is_active: true,
         updated_at: Temporal.Now.instant().toString()
-      })
+      });
     } catch (err) {
-      logger.error('PVP', 'Error al sincronizar snapshot de defensa pasiva:', err)
+      logger.error('PVP', 'Error al sincronizar snapshot de defensa pasiva:', err);
     }
   }
 
   async function togglePassiveTeam() {
-    const newState = !passiveTeamActive.value
-    
+    const newState = !passiveTeamActive.value;
+
     if (newState) {
-      if (!gameStore.db || !authStore.user) return
-      const defendingTeam = resolveDefendingTeam(gameStore.state)
+      if (!gameStore.db || !authStore.user) return;
+      const defendingTeam = resolveDefendingTeam(gameStore.state);
       if (defendingTeam.length === 0) {
-        uiStore.notify('No tienes Pokémon disponibles para defender.', '⚠️')
-        return
+        uiStore.notify('No tienes Pokémon disponibles para defender.', '⚠️');
+        return;
       }
 
       if (currentSeasonRules.value) {
         for (const mon of defendingTeam) {
-          const check = evaluatePokemonForSeason(mon, currentSeasonRules.value)
+          const check = evaluatePokemonForSeason(mon, currentSeasonRules.value);
           if (!check.eligible) {
-            const reason = check.reason || 'no cumple las reglas de la temporada'
-            uiStore.notify(`No puedes activar la Defensa Pasiva: ${mon.name} no cumple las reglas (${reason}).`, '⚠️')
-            return
+            const reason = check.reason || 'no cumple las reglas de la temporada';
+            uiStore.notify(
+              `No puedes activar la Defensa Pasiva: ${mon.name} no cumple las reglas (${reason}).`,
+              '⚠️'
+            );
+            return;
           }
         }
       }
 
-      const snapshotJson = createPassiveTeamSnapshot(defendingTeam)
+      const snapshotJson = createPassiveTeamSnapshot(defendingTeam);
 
       const { error } = await gameStore.db.from('passive_teams').upsert({
         user_id: authStore.user.id,
         team_data: snapshotJson,
         is_active: true,
         updated_at: Temporal.Now.instant().toString()
-      })
+      });
 
       if (!error) {
-        passiveTeamActive.value = true
-        gameStore.state.passiveTeamActive = true
-        gameStore.scheduleSave()
-        uiStore.notify('Equipo de Defensa Pasiva activado.', '🛡️')
+        passiveTeamActive.value = true;
+        gameStore.state.passiveTeamActive = true;
+        void gameStore.scheduleSave();
+        uiStore.notify('Equipo de Defensa Pasiva activado.', '🛡️');
       }
     } else {
-      await deactivatePassiveDefense()
-      uiStore.notify('Defensa Pasiva desactivada.', '⏸️')
+      await deactivatePassiveDefense();
+      uiStore.notify('Defensa Pasiva desactivada.', '⏸️');
     }
   }
 
-  async function claimReward(milestoneId: RankedRewardMilestoneId, options: { autoSave?: boolean; silent?: boolean } = {}) {
-    const autoSave = options.autoSave ?? true
-    const silent = options.silent ?? false
+  async function claimReward(
+    milestoneId: RankedRewardMilestoneId,
+    options: { autoSave?: boolean; silent?: boolean } = {}
+  ) {
+    const autoSave = options.autoSave ?? true;
+    const silent = options.silent ?? false;
 
-    if (rewardsClaimed.value.includes(milestoneId)) return
-    if (!isRankedRewardMilestoneId(milestoneId)) return
-    
-    const milestone = RANKED_REWARD_MILESTONES_BY_ID[milestoneId]
-    if (!milestone) return
+    if (rewardsClaimed.value.includes(milestoneId)) return;
+    if (!isRankedRewardMilestoneId(milestoneId)) return;
+
+    const milestone = RANKED_REWARD_MILESTONES_BY_ID[milestoneId];
+    if (!milestone) return;
 
     if (maxElo.value < milestone.elo) {
-      if (!silent) uiStore.notify('Hito no alcanzado', '⚠️')
-      return
+      if (!silent) uiStore.notify('Hito no alcanzado', '⚠️');
+      return;
     }
 
     // Add items to inventory
     Object.entries(milestone.rewards).forEach(([itemId, qty]) => {
-      incrementRecordKey(gameStore.state.inventory, itemId, qty as number)
-    })
+      incrementRecordKey(gameStore.state.inventory, itemId, qty as number);
+    });
 
-    rewardsClaimed.value.push(milestoneId)
-    gameStore.state.rankedRewardsClaimed = [...rewardsClaimed.value]
+    rewardsClaimed.value.push(milestoneId);
+    gameStore.state.rankedRewardsClaimed = [...rewardsClaimed.value];
     if (!silent) {
-      uiStore.notify('¡Recompensa reclamada!', '🎁')
+      uiStore.notify('¡Recompensa reclamada!', '🎁');
     }
     if (autoSave) {
-      await gameStore.save(true)
+      await gameStore.save(true);
     }
   }
 
   const seasonRange = computed(() => {
-    const defaultRules: SeasonRules = { name: 'Default', levelCap: 100, maxPokemon: 6 }
-    const rules = currentSeasonRules.value || defaultRules
-    
-    let start = parseZonedTime(rules.startDate || rules.seasonStartDate, '2026-04-01T00:00:00')
-    const defaultEndStr = start.add({ months: SEASON_DURATION_MONTHS }).toString()
-    let end = parseZonedTime(rules.endDate || rules.seasonEndDate, defaultEndStr)
-    
-    const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE)
+    const defaultRules: SeasonRules = { name: 'Default', levelCap: 100, maxPokemon: 6 };
+    const rules = currentSeasonRules.value || defaultRules;
+
+    let start = parseZonedTime(rules.startDate || rules.seasonStartDate, '2026-04-01T00:00:00');
+    const defaultEndStr = start.add({ months: SEASON_DURATION_MONTHS }).toString();
+    let end = parseZonedTime(rules.endDate || rules.seasonEndDate, defaultEndStr);
+
+    const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE);
     if (Temporal.ZonedDateTime.compare(end, now) <= 0) {
-      start = now.startOfDay()
-      end = start.add({ months: SEASON_DURATION_MONTHS })
+      start = now.startOfDay();
+      end = start.add({ months: SEASON_DURATION_MONTHS });
     }
 
-    const diff = end.since(now, { largestUnit: 'day' })
-    const daysLeft = Math.max(0, Math.ceil(diff.days))
-    
+    const diff = end.since(now, { largestUnit: 'day' });
+    const daysLeft = Math.max(0, Math.ceil(diff.days));
+
     return {
       start: start.toInstant(),
       end: end.toInstant(),
       daysLeft
-    }
-  })
+    };
+  });
 
   async function updateElo(won: boolean, opponentElo: number = DEFAULT_INITIAL_ELO) {
-    if (!authStore.user || !gameStore.db) return 0
-    
-    const delta = calculateEloDelta(elo.value, opponentElo, won)
-    elo.value = applyEloDelta(elo.value, delta)
-    gameStore.state.eloRating = elo.value
+    if (!authStore.user || !gameStore.db) return 0;
+
+    const delta = calculateEloDelta(elo.value, opponentElo, won);
+    elo.value = applyEloDelta(elo.value, delta);
+    gameStore.state.eloRating = elo.value;
 
     // Reward Battle Coins (15 for win, 5 for loss)
-    const bcEarned = won ? PVP_WIN_BATTLE_COINS : PVP_LOSS_BATTLE_COINS
-    gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + bcEarned
-    
+    const bcEarned = won ? PVP_WIN_BATTLE_COINS : PVP_LOSS_BATTLE_COINS;
+    gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + bcEarned;
+
     if (won) {
-      stats.value.wins++
+      stats.value.wins++;
       if (elo.value > maxElo.value) {
-        maxElo.value = elo.value
-        gameStore.state.rankedMaxElo = maxElo.value
+        maxElo.value = elo.value;
+        gameStore.state.rankedMaxElo = maxElo.value;
       }
     } else {
-      stats.value.losses++
+      stats.value.losses++;
     }
-    
+
     // Save to DB
-    await gameStore.db.from('profiles').update({
-      elo_rating: elo.value,
-      pvp_wins: stats.value.wins,
-      pvp_losses: stats.value.losses,
-      ranked_max_elo: maxElo.value
-    }).eq('id', authStore.user.id)
-    
-    gameStore.save(false)
-    return delta
+    await gameStore.db
+      .from('profiles')
+      .update({
+        elo_rating: elo.value,
+        pvp_wins: stats.value.wins,
+        pvp_losses: stats.value.losses,
+        ranked_max_elo: maxElo.value
+      })
+      .eq('id', authStore.user.id);
+
+    void gameStore.save(false);
+    return delta;
   }
 
   const personalMatchHistory = computed<PersonalPvPMatchSummary[]>(() => {
-    return (gameStore.state.pvpMatchHistory || []) as PersonalPvPMatchSummary[]
-  })
+    return (gameStore.state.pvpMatchHistory || []) as PersonalPvPMatchSummary[];
+  });
 
   function recordMatchResult(match: PersonalPvPMatchSummary) {
-    recordLocalMatch(gameStore, match)
+    recordLocalMatch(gameStore, match);
   }
 
   return {
@@ -466,5 +508,5 @@ export const usePvPStore = defineStore('pvp', () => {
     updateElo,
     rules: currentSeasonRules,
     currentTier: getEloTier
-  }
-})
+  };
+});

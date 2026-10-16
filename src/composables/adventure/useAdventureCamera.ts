@@ -1,83 +1,91 @@
-import { ref, computed, type Ref } from 'vue'
-import { gsap } from 'gsap'
+import { ref, computed, type Ref } from 'vue';
+import { gsap } from 'gsap';
 
 interface CameraOptions {
-  viewportRef: Ref<HTMLElement | null>
-  canvasRef: Ref<HTMLElement | null>
-  canvasWidth: number
-  canvasHeight: number
+  viewportRef: Ref<HTMLElement | null>;
+  canvasRef: Ref<HTMLElement | null>;
+  canvasWidth: number;
+  canvasHeight: number;
 }
 
-const CAMERA_ZOOM_STEP = 0.25 as const
-const CAMERA_MIN_SCALE = 0.25 as const
-const CAMERA_MAX_SCALE = 2 as const
-const CAMERA_ZOOM_DURATION_SEC = 0.3 as const
-const DEFAULT_CENTER_DURATION_SEC = 0.8 as const
+const CAMERA_ZOOM_STEP = 0.25 as const;
+const CAMERA_MIN_SCALE = 0.25 as const;
+const CAMERA_MAX_SCALE = 2 as const;
+const CAMERA_ZOOM_DURATION_SEC = 0.3 as const;
+const DEFAULT_CENTER_DURATION_SEC = 0.8 as const;
 
 /**
  * Composable that manages a GSAP-powered 2D camera for the adventure map canvas.
  * Provides smooth panning via `centerOnNode()` and manual drag-to-pan.
  */
 export function useAdventureCamera(options: CameraOptions) {
-  const { viewportRef, canvasWidth, canvasHeight } = options
+  const { viewportRef, canvasWidth, canvasHeight } = options;
 
-  const cameraX = ref(0)
-  const cameraY = ref(0)
-  const cameraScale = ref(1)
-  let cameraTween: gsap.core.Tween | null = null
+  const cameraX = ref(0);
+  const cameraY = ref(0);
+  const cameraScale = ref(1);
+  let cameraTween: gsap.core.Tween | null = null;
 
   // Drag state
-  const isDragging = ref(false)
-  let dragStartX = 0
-  let dragStartY = 0
-  let dragCamStartX = 0
-  let dragCamStartY = 0
+  const isDragging = ref(false);
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragCamStartX = 0;
+  let dragCamStartY = 0;
 
   const canvasTransform = computed(() => ({
     x: cameraX.value,
     y: cameraY.value,
-    scale: cameraScale.value,
-  }))
+    scale: cameraScale.value
+  }));
 
-  function clampCoordinates(targetX: number, targetY: number, vpW: number, vpH: number, scale: number) {
-    const scaledW = canvasWidth * scale
-    const scaledH = canvasHeight * scale
+  function clampCoordinates(
+    targetX: number,
+    targetY: number,
+    vpW: number,
+    vpH: number,
+    scale: number
+  ) {
+    const scaledW = canvasWidth * scale;
+    const scaledH = canvasHeight * scale;
 
-    const clampedX = scaledW <= vpW
-      ? (vpW - scaledW) / 2
-      : Math.max(-(scaledW - vpW), Math.min(0, targetX))
+    const clampedX =
+      scaledW <= vpW ? (vpW - scaledW) / 2 : Math.max(-(scaledW - vpW), Math.min(0, targetX));
 
-    const clampedY = scaledH <= vpH
-      ? (vpH - scaledH) / 2
-      : Math.max(-(scaledH - vpH), Math.min(0, targetY))
+    const clampedY =
+      scaledH <= vpH ? (vpH - scaledH) / 2 : Math.max(-(scaledH - vpH), Math.min(0, targetY));
 
-    return { clampedX, clampedY }
+    return { clampedX, clampedY };
   }
 
   /**
    * Center the camera on a specific pixel coordinate in canvas space.
    * Uses GSAP for smooth animation.
    */
-  function centerOnPoint(targetX: number, targetY: number, duration: number = DEFAULT_CENTER_DURATION_SEC) {
-    const vp = viewportRef.value
-    if (!vp) return
+  function centerOnPoint(
+    targetX: number,
+    targetY: number,
+    duration: number = DEFAULT_CENTER_DURATION_SEC
+  ) {
+    const vp = viewportRef.value;
+    if (!vp) return;
 
-    const vpW = vp.clientWidth
-    const vpH = vp.clientHeight
-    const scale = cameraScale.value
+    const vpW = vp.clientWidth;
+    const vpH = vp.clientHeight;
+    const scale = cameraScale.value;
 
     // Target camera position: center the scaled point in the viewport
-    const newX = -(targetX * scale - vpW / 2)
-    const newY = -(targetY * scale - vpH / 2)
+    const newX = -(targetX * scale - vpW / 2);
+    const newY = -(targetY * scale - vpH / 2);
 
     // Clamp to canvas bounds. If canvas is smaller than viewport, center it.
-    const { clampedX, clampedY } = clampCoordinates(newX, newY, vpW, vpH, scale)
+    const { clampedX, clampedY } = clampCoordinates(newX, newY, vpW, vpH, scale);
 
     if (cameraTween) {
-      cameraTween.kill()
+      cameraTween.kill();
     }
 
-    const state = { x: cameraX.value, y: cameraY.value }
+    const state = { x: cameraX.value, y: cameraY.value };
 
     cameraTween = gsap.to(state, {
       x: clampedX,
@@ -85,92 +93,98 @@ export function useAdventureCamera(options: CameraOptions) {
       duration,
       ease: 'power2.inOut',
       onUpdate: () => {
-        cameraX.value = state.x
-        cameraY.value = state.y
-      },
-    })
+        cameraX.value = state.x;
+        cameraY.value = state.y;
+      }
+    });
   }
 
   /**
    * Instantly set camera position without animation.
    */
   function jumpToPoint(targetX: number, targetY: number) {
-    const vp = viewportRef.value
-    if (!vp) return
+    const vp = viewportRef.value;
+    if (!vp) return;
 
-    const vpW = vp.clientWidth
-    const vpH = vp.clientHeight
-    const scale = cameraScale.value
+    const vpW = vp.clientWidth;
+    const vpH = vp.clientHeight;
+    const scale = cameraScale.value;
 
-    const newX = -(targetX * scale - vpW / 2)
-    const newY = -(targetY * scale - vpH / 2)
+    const newX = -(targetX * scale - vpW / 2);
+    const newY = -(targetY * scale - vpH / 2);
 
-    const { clampedX, clampedY } = clampCoordinates(newX, newY, vpW, vpH, scale)
+    const { clampedX, clampedY } = clampCoordinates(newX, newY, vpW, vpH, scale);
 
-    cameraX.value = clampedX
-    cameraY.value = clampedY
+    cameraX.value = clampedX;
+    cameraY.value = clampedY;
   }
 
   // ─── Drag-to-Pan ───
   function onPointerDown(e: PointerEvent) {
-    isDragging.value = true
-    dragStartX = e.clientX
-    dragStartY = e.clientY
-    dragCamStartX = cameraX.value
-    dragCamStartY = cameraY.value
+    isDragging.value = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    dragCamStartX = cameraX.value;
+    dragCamStartY = cameraY.value;
 
     if (cameraTween) {
-      cameraTween.kill()
-      cameraTween = null
+      cameraTween.kill();
+      cameraTween = null;
     }
   }
 
   function onPointerMove(e: PointerEvent) {
-    if (!isDragging.value) return
-    const vp = viewportRef.value
-    if (!vp) return
+    if (!isDragging.value) return;
+    const vp = viewportRef.value;
+    if (!vp) return;
 
-    const dx = e.clientX - dragStartX
-    const dy = e.clientY - dragStartY
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
 
-    const vpW = vp.clientWidth
-    const vpH = vp.clientHeight
-    const scale = cameraScale.value
-    
-    const { clampedX, clampedY } = clampCoordinates(dragCamStartX + dx, dragCamStartY + dy, vpW, vpH, scale)
+    const vpW = vp.clientWidth;
+    const vpH = vp.clientHeight;
+    const scale = cameraScale.value;
 
-    cameraX.value = clampedX
-    cameraY.value = clampedY
+    const { clampedX, clampedY } = clampCoordinates(
+      dragCamStartX + dx,
+      dragCamStartY + dy,
+      vpW,
+      vpH,
+      scale
+    );
+
+    cameraX.value = clampedX;
+    cameraY.value = clampedY;
   }
 
   function onPointerUp() {
-    isDragging.value = false
+    isDragging.value = false;
   }
 
-  function zoomIn(getTarget?: () => { x: number, y: number } | undefined) {
-    const targetScale = Math.min(cameraScale.value + CAMERA_ZOOM_STEP, CAMERA_MAX_SCALE)
-    if (cameraScale.value === targetScale) return
-    const target = getTarget ? getTarget() : null
+  function zoomIn(getTarget?: () => { x: number; y: number } | undefined) {
+    const targetScale = Math.min(cameraScale.value + CAMERA_ZOOM_STEP, CAMERA_MAX_SCALE);
+    if (cameraScale.value === targetScale) return;
+    const target = getTarget ? getTarget() : null;
     gsap.to(cameraScale, {
       value: targetScale,
       duration: CAMERA_ZOOM_DURATION_SEC,
       onUpdate: () => {
-        if (target) jumpToPoint(target.x, target.y)
+        if (target) jumpToPoint(target.x, target.y);
       }
-    })
+    });
   }
 
-  function zoomOut(getTarget?: () => { x: number, y: number } | undefined) {
-    const targetScale = Math.max(cameraScale.value - CAMERA_ZOOM_STEP, CAMERA_MIN_SCALE)
-    if (cameraScale.value === targetScale) return
-    const target = getTarget ? getTarget() : null
+  function zoomOut(getTarget?: () => { x: number; y: number } | undefined) {
+    const targetScale = Math.max(cameraScale.value - CAMERA_ZOOM_STEP, CAMERA_MIN_SCALE);
+    if (cameraScale.value === targetScale) return;
+    const target = getTarget ? getTarget() : null;
     gsap.to(cameraScale, {
       value: targetScale,
       duration: CAMERA_ZOOM_DURATION_SEC,
       onUpdate: () => {
-        if (target) jumpToPoint(target.x, target.y)
+        if (target) jumpToPoint(target.x, target.y);
       }
-    })
+    });
   }
 
   return {
@@ -186,5 +200,5 @@ export function useAdventureCamera(options: CameraOptions) {
     onPointerUp,
     zoomIn,
     zoomOut
-  }
+  };
 }

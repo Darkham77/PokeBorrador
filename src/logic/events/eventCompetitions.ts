@@ -27,20 +27,26 @@ import {
   resolveAwardCategoryDetails
 } from './eventCompetitionsHelper.ts';
 
-export {
-  resolveSubCompetitionDirection,
-  getSubCompIcon,
-  getSubCompTitle,
-  getSubCompDescription
-};
+export { resolveSubCompetitionDirection, getSubCompIcon, getSubCompTitle, getSubCompDescription };
 
 // Re-export eligibility functions and types
 export * from './eventEligibility.ts';
-import type { CompetitionEntry, PendingAward, PastCompetitionWinner } from '@/types/system/stores.ts';
+import type {
+  CompetitionEntry,
+  PendingAward,
+  PastCompetitionWinner
+} from '@/types/system/stores.ts';
 export type { CompetitionEntry, PendingAward, PastCompetitionWinner };
 
 // fallow-ignore-next-line unused-export
-export const SUB_COMPETITION_METRICS = ['total_ivs', 'weight', 'height', 'level', 'stat_iv', 'friendship'] as const;
+export const SUB_COMPETITION_METRICS = [
+  'total_ivs',
+  'weight',
+  'height',
+  'level',
+  'stat_iv',
+  'friendship'
+] as const;
 export type SubCompetitionMetric = (typeof SUB_COMPETITION_METRICS)[number];
 
 // fallow-ignore-next-line unused-export
@@ -203,18 +209,20 @@ export function resolveEventSubCompetitions(
   date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()
 ): ResolvedSubCompetition[] {
   const cfg = safeParse(event.config) as EventConfig | null;
-  const rawSubComps = (cfg?.subCompetitions && cfg.subCompetitions.length > 0)
-    ? cfg.subCompetitions
-    : (DEFAULT_SUB_COMPETITIONS as SubCompetitionConfig[]);
+  const rawSubComps =
+    cfg?.subCompetitions && cfg.subCompetitions.length > 0
+      ? cfg.subCompetitions
+      : (DEFAULT_SUB_COMPETITIONS as SubCompetitionConfig[]);
 
   const zdt = normalizeZonedDateTime(date);
   const activeRotation = cfg ? resolveWeeklyRotation(cfg, zdt) : null;
   const effectiveSpeciesString = activeRotation?.species || cfg?.species || null;
 
-  const isGlobalScope = cfg?.competitionScope === 'global' || effectiveSpeciesString === '*' || !effectiveSpeciesString;
+  const isGlobalScope =
+    cfg?.competitionScope === 'global' || effectiveSpeciesString === '*' || !effectiveSpeciesString;
 
   if (isGlobalScope) {
-    return rawSubComps.map(sub => ({
+    return rawSubComps.map((sub) => ({
       ...sub,
       speciesScope: 'global' as const,
       targetSpecies: undefined
@@ -223,15 +231,19 @@ export function resolveEventSubCompetitions(
 
   const speciesList = effectiveSpeciesString
     .split(',')
-    .map(s => s.trim().toLowerCase())
+    .map((s) => s.trim().toLowerCase())
     .filter(isPokemonSpeciesId);
 
   if (speciesList.length <= 1) {
     const singleSpecies = speciesList[0];
-    return rawSubComps.map(sub => ({
+    return rawSubComps.map((sub) => ({
       ...sub,
-      speciesScope: (sub.metric === 'total_ivs' || sub.metric === 'stat_iv') ? ('global' as const) : ('per_species' as const),
-      targetSpecies: (sub.metric === 'total_ivs' || sub.metric === 'stat_iv') ? undefined : singleSpecies
+      speciesScope:
+        sub.metric === 'total_ivs' || sub.metric === 'stat_iv'
+          ? ('global' as const)
+          : ('per_species' as const),
+      targetSpecies:
+        sub.metric === 'total_ivs' || sub.metric === 'stat_iv' ? undefined : singleSpecies
     }));
   }
 
@@ -271,7 +283,8 @@ export interface ResolvedAwardCategory {
  * Resolves the concrete category, title, and icon for an event award.
  * Inquires explicit award metadata, prize payloads, prize item match, and winner podio.
  */
-export function resolveAwardCategory( // result-ok: Operation result wrapper payload
+export function resolveAwardCategory(
+  // result-ok: Operation result wrapper payload
   award: PendingAward,
   event?: Event | null,
   winners?: PastCompetitionWinner[]
@@ -282,8 +295,7 @@ export function resolveAwardCategory( // result-ok: Operation result wrapper pay
   if (!catId) return null;
 
   const eventId = award.event_id || event?.id || '';
-  const subComp = subComps.find(s => s.id === catId || catId.startsWith(s.id)) || null;
+  const subComp = subComps.find((s) => s.id === catId || catId.startsWith(s.id)) || null;
 
   return resolveAwardCategoryDetails(catId, eventId, subComp);
 }
-

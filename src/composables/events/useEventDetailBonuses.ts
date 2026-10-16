@@ -8,7 +8,7 @@ import {
   type ResolvedSubCompetition,
   type UpcomingEventOccurrence
 } from '@/logic/events/eventEngine';
-import type { EventRewardType } from '@/types/system/stores';
+import type { DomainPrizeData } from '@/types/rewards/rewards';
 import {
   buildCoreBonuses,
   buildSpeciesBonuses,
@@ -20,25 +20,14 @@ import {
   resolveInvolvedSpecies
 } from './eventDetailBonusesHelper.ts';
 
-export interface Prize extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
-  type?: EventRewardType;
-  amount?: number;
-  qty?: number;
-  money?: number;
-  battleCoins?: number;
-  item?: string;
-  items?: Record<string, number>;
-  species?: string;
-  shiny?: boolean;
-  level?: number;
-}
+export type Prize = DomainPrizeData;
 
 export interface ExtendedEventConfig extends EventConfig {
   hasCompetition?: boolean;
   prizes?: {
-    first?: Prize;
-    second?: Prize;
-    third?: Prize;
+    first?: DomainPrizeData;
+    second?: DomainPrizeData;
+    third?: DomainPrizeData;
   };
   sortBy?: string;
 }
@@ -67,7 +56,7 @@ export function useEventDetailBonuses(
     if (typeof event.schedule === 'string') {
       try {
         return JSON.parse(event.schedule) as Schedule;
-      } catch (_e) {
+      } catch {
         return {};
       }
     } else if (event.schedule && typeof event.schedule === 'object') {
@@ -88,7 +77,11 @@ export function useEventDetailBonuses(
   });
 
   const involvedSpecies = computed<PokemonSpeciesId[]>(() => {
-    return resolveInvolvedSpecies(effectiveSpeciesString.value, prizes.value, subCompetitions.value);
+    return resolveInvolvedSpecies(
+      effectiveSpeciesString.value,
+      prizes.value,
+      subCompetitions.value
+    );
   });
 
   const activeBonuses = computed<BonusItem[]>(() => {
@@ -98,16 +91,23 @@ export function useEventDetailBonuses(
     bonuses.push(...buildCoreBonuses(c));
 
     const resolvedSpecies = involvedSpecies.value;
-    const spNames = resolvedSpecies.length > 0
-      ? resolvedSpecies.map(s => s.toUpperCase()).join(', ') // domain-ok: UI uppercase formatted species list string
-      : (effectiveSpeciesString.value && effectiveSpeciesString.value !== '*' ? effectiveSpeciesString.value.toUpperCase() : null); // domain-ok: Open dynamic text or non-domain string payload
+    const spNames =
+      resolvedSpecies.length > 0
+        ? resolvedSpecies.map((s) => s.toUpperCase()).join(', ') // domain-ok: UI uppercase formatted species list string
+        : effectiveSpeciesString.value && effectiveSpeciesString.value !== '*'
+          ? effectiveSpeciesString.value.toUpperCase()
+          : null; // domain-ok: Open dynamic text or non-domain string payload
 
     bonuses.push(...buildSpeciesBonuses(c, spNames));
     bonuses.push(...buildActivityBonuses(c));
     bonuses.push(...buildMinigameBuffBonuses(c.minigameBuffs));
 
     if (c.requireCaughtDuringEvent) {
-      bonuses.push({ label: '🕒 Solo se aceptan Pokémon capturados durante este evento', color: 'rgba(250, 204, 21, 1)', value: 'REGLA' });
+      bonuses.push({
+        label: '🕒 Solo se aceptan Pokémon capturados durante este evento',
+        color: 'rgba(250, 204, 21, 1)',
+        value: 'REGLA'
+      });
     }
 
     return bonuses;
@@ -116,9 +116,10 @@ export function useEventDetailBonuses(
   const scheduleText = computed(() => {
     if (occurrence) {
       const occ = occurrence;
-      const dayPrefix = occ.dateLabel === 'Hoy' || occ.dateLabel === 'Mañana'
-        ? `${occ.dateLabel} (${occ.dayName})`
-        : `${occ.dateLabel} · ${occ.dayName}`;
+      const dayPrefix =
+        occ.dateLabel === 'Hoy' || occ.dateLabel === 'Mañana'
+          ? `${occ.dateLabel} (${occ.dayName})`
+          : `${occ.dateLabel} · ${occ.dayName}`;
       return `${dayPrefix} · ${occ.timeLabel} (ARG)`;
     }
     if (event.manual) return '🟢 Evento activo ahora mismo';
@@ -129,7 +130,7 @@ export function useEventDetailBonuses(
     const range = formatDateRangeSchedule(event.start_at, event.end_at);
     if (range) return range;
 
-    const eventWithEndedAt = event as (GameEvent & { ended_at?: string });
+    const eventWithEndedAt = event as GameEvent & { ended_at?: string };
     return formatEndedAtSchedule(eventWithEndedAt.ended_at);
   });
 

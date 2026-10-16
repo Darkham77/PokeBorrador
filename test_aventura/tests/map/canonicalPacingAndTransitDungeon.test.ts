@@ -40,7 +40,9 @@ describe.skip('Canonical Level Design Adjustments', () => {
       targetUrbanSettlements: 12
     });
 
-    const placedMaritime = pois.filter((p) => p.type === 'port_dock' || p.type === 'water_landmark');
+    const placedMaritime = pois.filter(
+      (p) => p.type === 'port_dock' || p.type === 'water_landmark'
+    );
     expect(placedMaritime.length).toBeLessThanOrEqual(2);
 
     if (placedMaritime.length >= 2) {
@@ -67,7 +69,13 @@ describe.skip('Canonical Level Design Adjustments', () => {
     });
 
     const network = generateRouteNetwork(continent, pois);
-    const transitable = computeTransitableGrid(continent, network.pathGrid, network.bridgeGrid, pois, 2);
+    const transitable = computeTransitableGrid(
+      continent,
+      network.pathGrid,
+      network.bridgeGrid,
+      pois,
+      2
+    );
 
     const wilderness = generateWildernessLayer(continent, pois, network.pathGrid, {
       seed: 42,
@@ -79,7 +87,9 @@ describe.skip('Canonical Level Design Adjustments', () => {
     expect(wilderness.trees.length).toBeGreaterThan(150);
 
     // Invariant 2: Imperfect 1x1 cuttable saplings are NOT the primary infill of entire wilderness
-    const cuttableSaplings = wilderness.props.filter((p) => p.prefabFile === 'poke_tree_cuttable.png');
+    const cuttableSaplings = wilderness.props.filter(
+      (p) => p.prefabFile === 'poke_tree_cuttable.png'
+    );
     // Cuttable saplings must be significantly fewer than 2000 (previously was 8000+)
     expect(cuttableSaplings.length).toBeLessThan(1200);
 
@@ -95,7 +105,9 @@ describe.skip('Canonical Level Design Adjustments', () => {
     expect(pathTallGrassCount).toBeGreaterThanOrEqual(10);
 
     // Invariant 4: ZERO poke_hedge_wall_block as terrain infill (strictly 0 ledge artifacts)
-    const hedgeBlocks = wilderness.props.filter((p) => p.prefabFile === 'poke_hedge_wall_block.png');
+    const hedgeBlocks = wilderness.props.filter(
+      (p) => p.prefabFile === 'poke_hedge_wall_block.png'
+    );
     expect(hedgeBlocks.length).toBe(0);
   });
 
@@ -159,7 +171,13 @@ describe.skip('Canonical Level Design Adjustments', () => {
       });
 
       const network = generateRouteNetwork(continent, pois);
-      const transitable = computeTransitableGrid(continent, network.pathGrid, network.bridgeGrid, pois, 2);
+      const transitable = computeTransitableGrid(
+        continent,
+        network.pathGrid,
+        network.bridgeGrid,
+        pois,
+        2
+      );
 
       const wilderness = generateWildernessLayer(continent, pois, network.pathGrid, {
         seed: testSeed,
@@ -254,7 +272,7 @@ describe.skip('Canonical Level Design Adjustments', () => {
       expect(deepPrairieCells).toBeGreaterThan(100);
       const coverageRatio = coveredDeepPrairieCells / deepPrairieCells;
       // Coverage must scale dynamically to 70% - 95%, ensuring dense canopy without bare plains
-      expect(coverageRatio).toBeGreaterThanOrEqual(0.70);
+      expect(coverageRatio).toBeGreaterThanOrEqual(0.7);
     }
   });
 });

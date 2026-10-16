@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { logToInspector } from '../logic/useLiveInspector.ts'
-import type { TeamMember, TeamActiveMode } from './sec9TeamTypes'
-import Sec9TeamMemberCard from './Sec9TeamMemberCard.vue'
+import { ref } from 'vue';
+import { logToInspector } from '../logic/useLiveInspector.ts';
+import type { TeamMember, TeamActiveMode } from './sec9TeamTypes';
+import Sec9TeamMemberCard from './Sec9TeamMemberCard.vue';
 
-const activeMode = ref<TeamActiveMode>('aventura')
+const activeMode = ref<TeamActiveMode>('aventura');
 
 const emit = defineEmits<{
-  (e: 'select-pokemon', uid: string): void
-  (e: 'open-inventory'): void
-}>()
+  (e: 'select-pokemon', uid: string): void;
+  (e: 'open-inventory'): void;
+}>();
 
 // 6 POKÉMON EXACTOS DE LA CAPTURA CANÓNICA MEDIA_1789000545523.PNG (CUADRÍCULA 3X2)
 const team: TeamMember[] = [
@@ -114,15 +114,15 @@ const team: TeamMember[] = [
     badges: ['item'],
     types: [{ id: 'fire', label: 'FUEGO' }]
   }
-]
+];
 
 function onTabClick(mode: TeamActiveMode) {
-  activeMode.value = mode
-  logToInspector(`Equipo: Modo seleccionado "${mode}"`)
+  activeMode.value = mode;
+  logToInspector(`Equipo: Modo seleccionado "${mode}"`);
 }
 
 function onAction(action: string, poke: TeamMember) {
-  logToInspector(`Equipo: Acción "${action}" en ${poke.name}`)
+  logToInspector(`Equipo: Acción "${action}" en ${poke.name}`);
 }
 </script>
 
@@ -185,13 +185,7 @@ function onAction(action: string, poke: TeamMember) {
             </button>
           </div>
 
-          <button
-            type="button"
-            class="team-close-btn"
-            title="Cerrar Equipo"
-          >
-            ✕
-          </button>
+          <button type="button" class="team-close-btn" title="Cerrar Equipo">✕</button>
         </div>
 
         <!-- CUADRÍCULA 3X2 EXACTA DE 6 POKÉMON -->

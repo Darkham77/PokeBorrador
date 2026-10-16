@@ -4,5 +4,5 @@ import { runAIFuzzer } from '../core/fuzzer_ai_engine.ts';
 
 await runFuzzerSuite({
   suiteName: 'Fuzzer — IA vs. IA (Rival, Nivel 100)',
-  run: runAIFuzzer,
+  run: runAIFuzzer
 });

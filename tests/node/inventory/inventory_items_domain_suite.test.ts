@@ -9,38 +9,78 @@
  * - Item translations and localization integrity (SHOP_ITEMS Spanish names & descriptions, 0 English leak patterns).
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { reactive } from 'vue';
 import { useItemOnPokemon } from '../../../src/logic/providers/itemProvider.ts';
 import { isValidTarget } from '../../../src/logic/items/itemEffects.ts';
 import randomSets from '../../../src/data/ai/random-sets.json';
-import { getItemById, requireItemId, SHOP_ITEMS, type ItemId } from '../../../src/data/inventory/items.ts';
+import {
+  getItemById,
+  requireItemId,
+  SHOP_ITEMS,
+  type ItemId
+} from '../../../src/data/inventory/items.ts';
 import { calculateArchaeologyWeights } from '../../../src/logic/utils/archaeologyHelpers.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 
 function createToxicPokemon(): Pokemon {
   return {
-    uid: 'antidote-toxic-test', id: 'bulbasaur', name: 'Bulbasaur', level: 20,
-    exp: 0, expNeeded: 100, hp: 30, maxHp: 50, atk: 20, def: 20, spa: 20, spd: 20, spe: 20,
-    ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, nature: 'serious', type: 'grass',
-    ability: 'overgrow', status: 'tox', isShiny: false, volatileCounters: {}, moves: [],
+    uid: 'antidote-toxic-test',
+    id: 'bulbasaur',
+    name: 'Bulbasaur',
+    level: 20,
+    exp: 0,
+    expNeeded: 100,
+    hp: 30,
+    maxHp: 50,
+    atk: 20,
+    def: 20,
+    spa: 20,
+    spd: 20,
+    spe: 20,
+    ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+    nature: 'serious',
+    type: 'grass',
+    ability: 'overgrow',
+    status: 'tox',
+    isShiny: false,
+    volatileCounters: {},
+    moves: []
   };
 }
 
 function makeMon(overrides: Partial<Pokemon> = {}): Pokemon {
   return {
-    uid: 'test-uid', id: 'pikachu', name: 'Pikachu', level: 25,
-    hp: 30, maxHp: 60, status: null,
+    uid: 'test-uid',
+    id: 'pikachu',
+    name: 'Pikachu',
+    level: 25,
+    hp: 30,
+    maxHp: 60,
+    status: null,
     moves: [{ name: 'Placaje', pp: 10, maxPP: 35 }],
-    atk: 55, def: 40, spa: 50, spd: 50, spe: 90,
-    type: 'electric', nature: 'Fuerte', ability: 'Estática',
+    atk: 55,
+    def: 40,
+    spa: 50,
+    spd: 50,
+    spe: 90,
+    type: 'electric',
+    nature: 'Fuerte',
+    ability: 'Estática',
     ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
-    exp: 0, expNeeded: 1000, friendship: 70, vigor: 5, isShiny: false,
-    gender: 'M', nickname: null, heldItem: null,
-    obtainedAt: 0, sleepTurns: 0,
-    ...overrides,
+    exp: 0,
+    expNeeded: 1000,
+    friendship: 70,
+    vigor: 5,
+    isShiny: false,
+    gender: 'M',
+    nickname: null,
+    heldItem: null,
+    obtainedAt: 0,
+    sleepTurns: 0,
+    ...overrides
   } as unknown as Pokemon;
 }
 
@@ -58,9 +98,7 @@ interface RandomSetEntry {
 
 function redistributeFishingBudget(rates: number[], budget: number): number[] {
   const result = [...rates];
-  const indexedPool = rates
-    .map((rate, index) => ({ rate, index }))
-    .sort((a, b) => a.rate - b.rate);
+  const indexedPool = rates.map((rate, index) => ({ rate, index })).sort((a, b) => a.rate - b.rate);
 
   let remaining = budget;
   for (let i = 0; i < indexedPool.length; i++) {
@@ -218,7 +256,7 @@ describe('Inventory Items Domain Suite', () => {
       /\bwhen held\b/i,
       /\bis (calculated|raised|lowered)\b/i,
       /\bno competitive use\b/i,
-      /\bchanges its forme\b/i,
+      /\bchanges its forme\b/i
     ];
 
     const FORBIDDEN_NAME_PATTERNS = [
@@ -227,8 +265,14 @@ describe('Inventory Items Domain Suite', () => {
 
     it('all items in SHOP_ITEMS have non-empty Spanish name and desc', () => {
       for (const item of SHOP_ITEMS) {
-        assert.ok(item.name && item.name.trim().length > 0, `Item ${item.id} must have a non-empty name`);
-        assert.ok(item.desc && item.desc.trim().length > 0, `Item ${item.id} must have a non-empty desc`);
+        assert.ok(
+          item.name && item.name.trim().length > 0,
+          `Item ${item.id} must have a non-empty name`
+        );
+        assert.ok(
+          item.desc && item.desc.trim().length > 0,
+          `Item ${item.id} must have a non-empty desc`
+        );
       }
     });
 
@@ -244,7 +288,11 @@ describe('Inventory Items Domain Suite', () => {
         }
       }
 
-      assert.equal(leaks.length, 0, `Detected English leaks in item descriptions:\n${leaks.join('\n')}`);
+      assert.equal(
+        leaks.length,
+        0,
+        `Detected English leaks in item descriptions:\n${leaks.join('\n')}`
+      );
     });
 
     it('no item in SHOP_ITEMS has untranslated English suffixes in its name', () => {

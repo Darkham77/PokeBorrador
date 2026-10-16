@@ -1,67 +1,59 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { gsap } from 'gsap'
+import { ref, onMounted, onUnmounted } from 'vue';
+import { gsap } from 'gsap';
 
 interface Props {
-  cardTimerLabel: string
-  formattedRemainingTime: string
-  isUpcoming: boolean
-  isCompetition: boolean
-  rulesBtnElementId: string // infra-id-ok: DOM element identifier for testing and query selectors
+  cardTimerLabel: string;
+  formattedRemainingTime: string;
+  isUpcoming: boolean;
+  isCompetition: boolean;
+  rulesBtnElementId: string; // infra-id-ok: DOM element identifier for testing and query selectors
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  openDetail: []
-}>()
+  openDetail: [];
+}>();
 
-const badgeRef = ref<HTMLElement | null>(null)
-let badgeCtx: gsap.Context | null = null
+const badgeRef = ref<HTMLElement | null>(null);
+let badgeCtx: gsap.Context | null = null;
 
 onMounted(() => {
   if (badgeRef.value) {
     badgeCtx = gsap.context(() => {
-      gsap.fromTo(badgeRef.value, 
-        { boxShadow: "0 0 0 0 Rgba(74, 222, 128, 0.4)" },
-        { 
-          boxShadow: "0 0 0 6px Rgba(74, 222, 128, 0)",
+      gsap.fromTo(
+        badgeRef.value,
+        { boxShadow: '0 0 0 0 Rgba(74, 222, 128, 0.4)' },
+        {
+          boxShadow: '0 0 0 6px Rgba(74, 222, 128, 0)',
           duration: 1.4,
           repeat: -1,
-          ease: "sine.out"
+          ease: 'sine.out'
         }
-      )
-    }, badgeRef.value)
+      );
+    }, badgeRef.value);
   }
-})
+});
 
 onUnmounted(() => {
   if (badgeCtx) {
-    badgeCtx.revert()
+    badgeCtx.revert();
   }
-})
+});
 </script>
 
 <template>
   <footer class="card-footer">
     <div class="timer-box">
       <span class="label">{{ props.cardTimerLabel }}</span>
-      <span
-        class="value"
-        :class="{ 'upcoming-value': props.isUpcoming }"
-      >{{ props.formattedRemainingTime }}</span>
+      <span class="value" :class="{ 'upcoming-value': props.isUpcoming }">{{
+        props.formattedRemainingTime
+      }}</span>
     </div>
 
-    <div
-      v-if="props.isUpcoming"
-      class="upcoming-badge"
-    >
-      <span class="emoji">⏳</span> PRÓXIMO
-    </div>
-    <div
-      v-else-if="props.isCompetition"
-      class="comp-footer-actions"
-    >
+    <div v-if="props.isUpcoming" class="upcoming-badge"><span class="emoji">⏳</span> PRÓXIMO</div>
+    <div v-else-if="props.isCompetition" class="comp-footer-actions">
       <button
         :id="props.rulesBtnElementId"
         class="retro-btn rules-btn pixelated"
@@ -71,18 +63,12 @@ onUnmounted(() => {
         <span class="emoji">📋</span> REGLAS
       </button>
     </div>
-    <div 
-      v-else 
-      ref="badgeRef"
-      class="active-badge"
-    >
-      <span class="emoji">✨</span> ACTIVO
-    </div>
+    <div v-else ref="badgeRef" class="active-badge"><span class="emoji">✨</span> ACTIVO</div>
   </footer>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .retro-btn {
   @include pixelated;
@@ -135,7 +121,7 @@ onUnmounted(() => {
     align-items: center;
     gap: $spacing-sm-alt;
   }
-  
+
   .upcoming-badge {
     @include pixelated;
 

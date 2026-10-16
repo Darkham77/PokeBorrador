@@ -108,7 +108,8 @@
   font-weight: 700;
 }
 
-.form-input, .form-select {
+.form-input,
+.form-select {
   padding: 6px 8px;
   border: 1px solid var(--slate-700);
   border-radius: $radius-md;
@@ -187,13 +188,17 @@
 .btn-connect {
   background: var(--sky-dark);
   color: var(--white);
-  &:hover { background: var(--sky-dark); }
+  &:hover {
+    background: var(--sky-dark);
+  }
 }
 
 .btn-delete {
   background: var(--red-800, #991b1b);
   color: var(--red-300);
-  &:hover { background: var(--red-600); }
+  &:hover {
+    background: var(--red-600);
+  }
 }
 
 .empty-selection {
@@ -242,9 +247,15 @@
   font-size: var(--font-11);
 }
 
-.stat-label { color: var(--slate-500); }
+.stat-label {
+  color: var(--slate-500);
+}
 
-.stat-val { color: var(--sky); font-family: monospace; font-weight: 700; }
+.stat-val {
+  color: var(--sky);
+  font-family: monospace;
+  font-weight: 700;
+}
 
 .biomes-list {
   display: flex;
@@ -341,7 +352,9 @@
   font-size: var(--font-11);
   flex: 1;
   cursor: pointer;
-  &:hover { color: var(--slate-50); }
+  &:hover {
+    color: var(--slate-50);
+  }
   &.active {
     background: var(--sky-dark);
     color: var(--white);

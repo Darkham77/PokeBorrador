@@ -10,11 +10,11 @@
 
 ## 2. Decisiones Arquitectónicas (Decision Log)
 
-| Decisión | Alternativa Considerada | Rationale (Razón de la elección) |
-| :--- | :--- | :--- |
+| Decisión                                 | Alternativa Considerada                                      | Rationale (Razón de la elección)                                                                                                                                                                                                                                     |
+| :--------------------------------------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Opción 1: Exportación a JSON Maestro** | Exportación a base de datos SQLite o scraping puro en Python | La Opción 1 aprovecha el ecosistema NodeJS existente y el motor de TypeScript del proyecto. Generar un archivo JSON y descargar archivos locales es extremadamente simple (YAGNI), fácil de leer en Vue y rápido de implementar en una carpeta de pruebas (sandbox). |
-| **Soporte de Fallbacks en Sprites** | Detener el script al fallar una imagen | Algunos Pokémon personalizados o variaciones no tienen GIFs animados. Implementar un fallback automático a imágenes PNG estáticas asegura que el script termine de ejecutarse correctamente en lugar de romperse. |
-| **Aislamiento en carpeta `sandbox_db`** | Modificar la lógica actual del juego | Al aislar la base de datos y su clonador en un sandbox, podemos realizar pruebas A/B y comparar el rendimiento sin comprometer el juego jugable actual. |
+| **Soporte de Fallbacks en Sprites**      | Detener el script al fallar una imagen                       | Algunos Pokémon personalizados o variaciones no tienen GIFs animados. Implementar un fallback automático a imágenes PNG estáticas asegura que el script termine de ejecutarse correctamente en lugar de romperse.                                                    |
+| **Aislamiento en carpeta `sandbox_db`**  | Modificar la lógica actual del juego                         | Al aislar la base de datos y su clonador en un sandbox, podemos realizar pruebas A/B y comparar el rendimiento sin comprometer el juego jugable actual.                                                                                                              |
 
 ## 3. Especificación Técnica y Flujo de Datos
 

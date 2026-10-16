@@ -70,7 +70,7 @@ export abstract class BaseMapEnvironment {
     if (!this.isWeatherTypeAllowed(weatherId)) {
       throw new Error(
         `[MapEnvironment] Violación de límites: El clima "${weatherId}" no está permitido en el mapa "${this.id}" (${this.name}). ` +
-        `Clima habilitado: ${this.boundaries.weatherEnabled}. Climas permitidos: [${Array.from(this.boundaries.allowedWeathers).join(', ')}].`
+          `Clima habilitado: ${this.boundaries.weatherEnabled}. Climas permitidos: [${Array.from(this.boundaries.allowedWeathers).join(', ')}].`
       );
     }
   }
@@ -88,7 +88,12 @@ export abstract class BaseMapEnvironment {
     }
 
     if (!this.boundaries.weatherEnabled) {
-      if (incomingWeather && incomingWeather !== 'none' && incomingWeather !== 'clear' && incomingWeather !== 'null') {
+      if (
+        incomingWeather &&
+        incomingWeather !== 'none' &&
+        incomingWeather !== 'clear' &&
+        incomingWeather !== 'null'
+      ) {
         throw new Error(
           `[MapEnvironment] Violación de límites: El mapa "${this.id}" (${this.name}) tiene weatherEnabled: false, pero se intentó inyectar el clima "${incomingWeather}".`
         );
@@ -96,7 +101,12 @@ export abstract class BaseMapEnvironment {
       return { type: 'none', visual: 'clear', turns: -1 };
     }
 
-    if (!incomingWeather || incomingWeather === 'none' || incomingWeather === 'clear' || incomingWeather === 'null') {
+    if (
+      !incomingWeather ||
+      incomingWeather === 'none' ||
+      incomingWeather === 'clear' ||
+      incomingWeather === 'null'
+    ) {
       return { type: 'none', visual: 'clear', turns: -1 };
     }
 

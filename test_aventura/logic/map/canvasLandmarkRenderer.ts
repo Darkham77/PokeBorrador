@@ -91,7 +91,13 @@ function tryStampLighthouseBeacons(
   const topPostY = gy - 2;
   const btmPostY = gy + 5;
 
-  if (postX >= 0 && postX + 2 <= W && topPostY >= 0 && !unifiedPathGrid?.[gy + 1]?.[postX] && !unifiedPathGrid?.[gy + 1]?.[postX + 1]) {
+  if (
+    postX >= 0 &&
+    postX + 2 <= W &&
+    topPostY >= 0 &&
+    !unifiedPathGrid?.[gy + 1]?.[postX] &&
+    !unifiedPathGrid?.[gy + 1]?.[postX + 1]
+  ) {
     buildingsToStamp.push({
       file: 'poke_port_lighthouse_beacon.png',
       px: postX * tileSize,
@@ -99,7 +105,13 @@ function tryStampLighthouseBeacons(
       ySort: (gy + 2) * tileSize
     });
   }
-  if (postX >= 0 && postX + 2 <= W && btmPostY + 4 <= H && !unifiedPathGrid?.[btmPostY]?.[postX] && !unifiedPathGrid?.[btmPostY]?.[postX + 1]) {
+  if (
+    postX >= 0 &&
+    postX + 2 <= W &&
+    btmPostY + 4 <= H &&
+    !unifiedPathGrid?.[btmPostY]?.[postX] &&
+    !unifiedPathGrid?.[btmPostY]?.[postX + 1]
+  ) {
     buildingsToStamp.push({
       file: 'poke_port_lighthouse_beacon.png',
       px: postX * tileSize,
@@ -139,10 +151,12 @@ export function resolvePoiLandmarksAndBuildings(
       const px = poi.gridX * tileSize;
       const py = poi.gridY * tileSize;
       if (poi.type === 'cave_entrance') {
-        const mtnPal = continent.geologicalClusters?.paletteMatrix?.[poi.gridY]?.[poi.gridX] ?? continent.mountainPalette ?? 'brown';
-        const caveFile = mtnPal === 'gray'
-          ? 'poke_cave_entrance_gray.png'
-          : 'poke_cave_entrance_brown.png';
+        const mtnPal =
+          continent.geologicalClusters?.paletteMatrix?.[poi.gridY]?.[poi.gridX] ??
+          continent.mountainPalette ??
+          'brown';
+        const caveFile =
+          mtnPal === 'gray' ? 'poke_cave_entrance_gray.png' : 'poke_cave_entrance_brown.png';
 
         buildingsToStamp.push({
           file: caveFile,
@@ -217,7 +231,13 @@ export function resolvePoiLandmarksAndBuildings(
           const gx = poi.gridX;
           const gy = poi.gridY;
 
-          const isPureDryLand = (x: number, y: number, wTiles = 1, hTiles = 1, buffer = 1): boolean => {
+          const isPureDryLand = (
+            x: number,
+            y: number,
+            wTiles = 1,
+            hTiles = 1,
+            buffer = 1
+          ): boolean => {
             for (let dy = -buffer; dy < hTiles + buffer; dy++) {
               for (let dx = -buffer; dx < wTiles + buffer; dx++) {
                 const cx = x + dx;
@@ -230,7 +250,13 @@ export function resolvePoiLandmarksAndBuildings(
             return true;
           };
 
-          const isDryUnpavedLand = (x: number, y: number, wTiles = 1, hTiles = 1, buffer = 1): boolean => {
+          const isDryUnpavedLand = (
+            x: number,
+            y: number,
+            wTiles = 1,
+            hTiles = 1,
+            buffer = 1
+          ): boolean => {
             if (!isPureDryLand(x, y, wTiles, hTiles, buffer)) return false;
             for (let dy = 0; dy < hTiles; dy++) {
               for (let dx = 0; dx < wTiles; dx++) {
@@ -253,7 +279,11 @@ export function resolvePoiLandmarksAndBuildings(
             });
 
             // 2. Famous Vermilion Dock Truck (3x2 tiles) parked on dry beach next to the gate
-            if (gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W && gy + 2 < H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 2, PORT_TRUCK_WIDTH, 2, 1)) {
+            if (
+              gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W &&
+              gy + 2 < H &&
+              isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 2, PORT_TRUCK_WIDTH, 2, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_dock_truck.png',
                 px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
@@ -263,7 +293,17 @@ export function resolvePoiLandmarksAndBuildings(
             }
 
             // 3. Double Cargo Crates Stack (2x1 tiles) on left side of gate
-            if (gx >= 3 && gy + 2 < H && isDryUnpavedLand(gx - PORT_CARGO_DOUBLE_WIDTH - 1, gy + 2, PORT_CARGO_DOUBLE_WIDTH, 1, 1)) {
+            if (
+              gx >= 3 &&
+              gy + 2 < H &&
+              isDryUnpavedLand(
+                gx - PORT_CARGO_DOUBLE_WIDTH - 1,
+                gy + 2,
+                PORT_CARGO_DOUBLE_WIDTH,
+                1,
+                1
+              )
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_cargo_crates_double.png',
                 px: (gx - PORT_CARGO_DOUBLE_WIDTH - 1) * tileSize,
@@ -273,7 +313,11 @@ export function resolvePoiLandmarksAndBuildings(
             }
 
             // 4. Single Cargo Crates Stack (3x2 tiles) on right esplanade
-            if (gx + PORT_GATE_SIDE_OFFSET + PORT_CARGO_STACK_WIDTH <= W && gy >= 2 && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy - 1, PORT_CARGO_STACK_WIDTH, 2, 1)) {
+            if (
+              gx + PORT_GATE_SIDE_OFFSET + PORT_CARGO_STACK_WIDTH <= W &&
+              gy >= 2 &&
+              isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy - 1, PORT_CARGO_STACK_WIDTH, 2, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_cargo_crates_stack.png',
                 px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
@@ -291,7 +335,11 @@ export function resolvePoiLandmarksAndBuildings(
                 ySort: (gy + 5) * tileSize
               });
             }
-            if (gx + PORT_GATE_SIDE_OFFSET + 2 <= W && gy + 4 < H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 4, 2, 1, 1)) {
+            if (
+              gx + PORT_GATE_SIDE_OFFSET + 2 <= W &&
+              gy + 4 < H &&
+              isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + 4, 2, 1, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_bollard_chains.png',
                 px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
@@ -356,7 +404,11 @@ export function resolvePoiLandmarksAndBuildings(
                 ySort: gy * tileSize
               });
             }
-            if (gx >= 4 && gy + 5 < H && isDryUnpavedLand(gx - 4, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)) {
+            if (
+              gx >= 4 &&
+              gy + 5 < H &&
+              isDryUnpavedLand(gx - 4, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_cargo_crates_stack.png',
                 px: (gx - 4) * tileSize,
@@ -372,7 +424,11 @@ export function resolvePoiLandmarksAndBuildings(
                 ySort: (gy - 1) * tileSize
               });
             }
-            if (gx >= 2 && gy + PORT_BOLLARD_OFFSET_Y < H && isDryUnpavedLand(gx - 2, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)) {
+            if (
+              gx >= 2 &&
+              gy + PORT_BOLLARD_OFFSET_Y < H &&
+              isDryUnpavedLand(gx - 2, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_bollard_chains.png',
                 px: (gx - 2) * tileSize,
@@ -410,7 +466,11 @@ export function resolvePoiLandmarksAndBuildings(
 
             // 4. Shoreline props & bollards strictly on dry land with 1-tile clearance from water
             const inlandX = gx + poi.footprint.width + 1;
-            if (inlandX + PORT_TRUCK_WIDTH <= W && gy >= 2 && isDryUnpavedLand(inlandX, gy - 2, PORT_TRUCK_WIDTH, 2, 1)) {
+            if (
+              inlandX + PORT_TRUCK_WIDTH <= W &&
+              gy >= 2 &&
+              isDryUnpavedLand(inlandX, gy - 2, PORT_TRUCK_WIDTH, 2, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_dock_truck.png',
                 px: inlandX * tileSize,
@@ -418,7 +478,11 @@ export function resolvePoiLandmarksAndBuildings(
                 ySort: gy * tileSize
               });
             }
-            if (inlandX + PORT_CARGO_STACK_WIDTH <= W && gy + 5 < H && isDryUnpavedLand(inlandX, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)) {
+            if (
+              inlandX + PORT_CARGO_STACK_WIDTH <= W &&
+              gy + 5 < H &&
+              isDryUnpavedLand(inlandX, gy + 5, PORT_CARGO_STACK_WIDTH, 2, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_cargo_crates_stack.png',
                 px: inlandX * tileSize,
@@ -427,7 +491,11 @@ export function resolvePoiLandmarksAndBuildings(
               });
             }
             const bollardWestX = gx + poi.footprint.width;
-            if (bollardWestX + 2 <= W && gy >= 2 && isDryUnpavedLand(bollardWestX, gy - 2, 2, 1, 1)) {
+            if (
+              bollardWestX + 2 <= W &&
+              gy >= 2 &&
+              isDryUnpavedLand(bollardWestX, gy - 2, 2, 1, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_bollard_chains.png',
                 px: bollardWestX * tileSize,
@@ -435,7 +503,11 @@ export function resolvePoiLandmarksAndBuildings(
                 ySort: (gy - 1) * tileSize
               });
             }
-            if (bollardWestX + 2 <= W && gy + PORT_BOLLARD_OFFSET_Y < H && isDryUnpavedLand(bollardWestX, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)) {
+            if (
+              bollardWestX + 2 <= W &&
+              gy + PORT_BOLLARD_OFFSET_Y < H &&
+              isDryUnpavedLand(bollardWestX, gy + PORT_BOLLARD_OFFSET_Y, 2, 1, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_bollard_chains.png',
                 px: bollardWestX * tileSize,
@@ -501,7 +573,11 @@ export function resolvePoiLandmarksAndBuildings(
                 ySort: (gy + 5) * tileSize
               });
             }
-            if (gx + PORT_GATE_EAST_OFFSET + 2 <= W && gy + 4 < H && isDryUnpavedLand(gx + PORT_GATE_EAST_OFFSET, gy + 4, 2, 1, 1)) {
+            if (
+              gx + PORT_GATE_EAST_OFFSET + 2 <= W &&
+              gy + 4 < H &&
+              isDryUnpavedLand(gx + PORT_GATE_EAST_OFFSET, gy + 4, 2, 1, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_bollard_chains.png',
                 px: (gx + PORT_GATE_EAST_OFFSET) * tileSize,
@@ -509,7 +585,17 @@ export function resolvePoiLandmarksAndBuildings(
                 ySort: (gy + 5) * tileSize
               });
             }
-            if (gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W && gy + poi.footprint.height + 2 <= H && isDryUnpavedLand(gx + PORT_GATE_SIDE_OFFSET, gy + poi.footprint.height, PORT_TRUCK_WIDTH, 2, 1)) {
+            if (
+              gx + PORT_GATE_SIDE_OFFSET + PORT_TRUCK_WIDTH <= W &&
+              gy + poi.footprint.height + 2 <= H &&
+              isDryUnpavedLand(
+                gx + PORT_GATE_SIDE_OFFSET,
+                gy + poi.footprint.height,
+                PORT_TRUCK_WIDTH,
+                2,
+                1
+              )
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_dock_truck.png',
                 px: (gx + PORT_GATE_SIDE_OFFSET) * tileSize,
@@ -517,7 +603,11 @@ export function resolvePoiLandmarksAndBuildings(
                 ySort: (gy + poi.footprint.height + 2) * tileSize
               });
             }
-            if (gx >= 3 && gy + poi.footprint.height + 2 <= H && isDryUnpavedLand(gx - 3, gy + poi.footprint.height, PORT_CARGO_STACK_WIDTH, 2, 1)) {
+            if (
+              gx >= 3 &&
+              gy + poi.footprint.height + 2 <= H &&
+              isDryUnpavedLand(gx - 3, gy + poi.footprint.height, PORT_CARGO_STACK_WIDTH, 2, 1)
+            ) {
               buildingsToStamp.push({
                 file: 'poke_port_cargo_crates_stack.png',
                 px: (gx - 3) * tileSize,
@@ -561,7 +651,12 @@ export function resolvePoiLandmarksAndBuildings(
           if (file === 'poke_port_lighthouse_beacon.png') return;
           const signGx = poi.gridX + 1;
           const signGy = poi.gridY + poi.footprint.height - 1;
-          if (signGx < W && signGy < H && continent.terrainMatrix[signGy]?.[signGx] === 'grass' && !unifiedPathGrid[signGy]?.[signGx]) {
+          if (
+            signGx < W &&
+            signGy < H &&
+            continent.terrainMatrix[signGy]?.[signGx] === 'grass' &&
+            !unifiedPathGrid[signGy]?.[signGx]
+          ) {
             buildingsToStamp.push({
               file: 'poke_signpost.png',
               px: signGx * tileSize,
@@ -571,7 +666,12 @@ export function resolvePoiLandmarksAndBuildings(
           }
           const flowerGx = poi.gridX + poi.footprint.width - 2;
           const flowerGy = poi.gridY + poi.footprint.height - 1;
-          if (flowerGx < W && flowerGy < H && continent.terrainMatrix[flowerGy]?.[flowerGx] === 'grass' && !unifiedPathGrid[flowerGy]?.[flowerGx]) {
+          if (
+            flowerGx < W &&
+            flowerGy < H &&
+            continent.terrainMatrix[flowerGy]?.[flowerGx] === 'grass' &&
+            !unifiedPathGrid[flowerGy]?.[flowerGx]
+          ) {
             buildingsToStamp.push({
               file: 'poke_flowers_red.png',
               px: flowerGx * tileSize,

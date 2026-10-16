@@ -1,7 +1,7 @@
-import { ref } from 'vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { ItemId } from '@/data/inventory/items'
-import type { BattleSeatSpecialState } from '@/types/battle/battle'
+import { ref } from 'vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { ItemId } from '@/data/inventory/items';
+import type { BattleSeatSpecialState, BattleSeatId } from '@/types/battle/battle';
 
 export interface AnimSlotState {
   animState: BattleSeatSpecialState | null;
@@ -19,6 +19,9 @@ export interface SeatState {
   exit: AnimSlotState;
 }
 
+export type { BattleSeatId as BattleSeatKey };
+export type BattleSeatsMap = Record<BattleSeatId, SeatState>;
+
 /**
  * Composable dedicated exclusively to managing and querying battle seats.
  * Adheres to the 4-seat architecture defined in the battle mechanics manual.
@@ -33,48 +36,43 @@ export function useBattleSeats() {
     isBlinking: false,
     isHealing: false,
     pokemonUid: null
-  })
+  });
 
   const createDefaultSeat = (): SeatState => ({
     entry: createDefaultSlot(),
     exit: createDefaultSlot()
-  })
+  });
 
-  const seats = ref<{
-    seat1: SeatState;
-    seat2: SeatState;
-    seat3: SeatState;
-    seat4: SeatState;
-    [key: string]: SeatState;
-  }>({
+  const seats = ref<BattleSeatsMap>({
     seat1: createDefaultSeat(),
     seat2: createDefaultSeat(),
     seat3: createDefaultSeat(),
     seat4: createDefaultSeat()
-  })
+  });
 
   const resetSeats = () => {
-    seats.value.seat1 = createDefaultSeat()
-    seats.value.seat2 = createDefaultSeat()
-    seats.value.seat3 = createDefaultSeat()
-    seats.value.seat4 = createDefaultSeat()
-  }
+    seats.value.seat1 = createDefaultSeat();
+    seats.value.seat2 = createDefaultSeat();
+    seats.value.seat3 = createDefaultSeat();
+    seats.value.seat4 = createDefaultSeat();
+  };
 
-  const getSeatKey = (side: string): string => {
-    if (side === 'player') return 'seat1'
-    if (side === 'enemy') return 'seat2'
-    if (side === 'ally') return 'seat3'
-    if (side === 'enemy2') return 'seat4'
-    return side
-  }
+  const getSeatKey = (side: string): BattleSeatId => {
+    if (side === 'player') return 'seat1';
+    if (side === 'enemy') return 'seat2';
+    if (side === 'ally') return 'seat3';
+    if (side === 'enemy2') return 'seat4';
+    if (side === 'seat1' || side === 'seat2' || side === 'seat3' || side === 'seat4') return side;
+    return 'seat1';
+  };
 
   const getSeat = (side: string): SeatState => {
-    const key = getSeatKey(side)
+    const key = getSeatKey(side);
     if (!seats.value[key]) {
-      seats.value[key] = createDefaultSeat()
+      seats.value[key] = createDefaultSeat();
     }
-    return seats.value[key]
-  }
+    return seats.value[key];
+  };
 
   const getSeatProperty = <K extends keyof AnimSlotState>(
     side: string,
@@ -84,18 +82,17 @@ export function useBattleSeats() {
     activePlayerUid?: string | null,
     activeEnemyUid?: string | null
   ): AnimSlotState[K] => {
-    if (!pokemon) return fallback
-    const seat = getSeat(side)
-    if (pokemon.uid && seat.entry.pokemonUid === pokemon.uid) return seat.entry[prop]
-    if (pokemon.uid && seat.exit.pokemonUid === pokemon.uid) return seat.exit[prop]
-    
-    const isActive = side === 'player'
-      ? (activePlayerUid === pokemon.uid)
-      : (activeEnemyUid === pokemon.uid)
-      
-    const activeSlot = isActive ? seat.entry : seat.exit
-    return activeSlot[prop] !== undefined ? activeSlot[prop] : fallback
-  }
+    if (!pokemon) return fallback;
+    const seat = getSeat(side);
+    if (pokemon.uid && seat.entry.pokemonUid === pokemon.uid) return seat.entry[prop];
+    if (pokemon.uid && seat.exit.pokemonUid === pokemon.uid) return seat.exit[prop];
+
+    const isActive =
+      side === 'player' ? activePlayerUid === pokemon.uid : activeEnemyUid === pokemon.uid;
+
+    const activeSlot = isActive ? seat.entry : seat.exit;
+    return activeSlot[prop] !== undefined ? activeSlot[prop] : fallback;
+  };
 
   return {
     seats,
@@ -103,5 +100,5 @@ export function useBattleSeats() {
     getSeatKey,
     getSeat,
     getSeatProperty
-  }
+  };
 }

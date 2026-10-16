@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import type { PvpTeamTab } from '@/types/battle/pvp'
+import type { PvpTeamTab } from '@/types/battle/pvp';
 
 interface Props {
-  themeName: string
-  levelCap?: number | null
-  isLittleCup?: boolean
-  allowedTypes?: string | null
-  mode: PvpTeamTab
+  themeName: string;
+  levelCap?: number | null;
+  isLittleCup?: boolean;
+  allowedTypes?: string | null;
+  mode: PvpTeamTab;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'autoAdjust', mode: PvpTeamTab): void
-}>()
+  (e: 'autoAdjust', mode: PvpTeamTab): void;
+}>();
 </script>
 
 <template>
@@ -24,22 +24,11 @@ const emit = defineEmits<{
         <span class="theme-name text-outline">{{ themeName }}</span>
       </div>
       <div class="rules-badges">
-        <span
-          v-if="levelCap"
-          class="rule-badge text-outline"
-        >
-          Nv. Máx {{ levelCap }}
-        </span>
-        <span
-          v-if="isLittleCup"
-          class="rule-badge little-cup text-outline"
-        >
+        <span v-if="levelCap" class="rule-badge text-outline"> Nv. Máx {{ levelCap }} </span>
+        <span v-if="isLittleCup" class="rule-badge little-cup text-outline">
           <span class="emoji">🍼</span> Little Cup
         </span>
-        <span
-          v-if="allowedTypes"
-          class="rule-badge types text-outline"
-        >
+        <span v-if="allowedTypes" class="rule-badge types text-outline">
           Tipos: {{ allowedTypes }}
         </span>
       </div>
@@ -57,7 +46,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .tournament-rules-header {
   display: flex;

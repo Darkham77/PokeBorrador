@@ -1,4 +1,4 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 /* ─── Manual Travel Arena ─── */
 .adv-manual-travel-arena {
@@ -21,9 +21,15 @@
   min-width: 80px;
 }
 
-.adv-manual-left { align-items: flex-end; margin-right: 20px; }
+.adv-manual-left {
+  align-items: flex-end;
+  margin-right: 20px;
+}
 
-.adv-manual-right { align-items: flex-start; margin-left: 20px; }
+.adv-manual-right {
+  align-items: flex-start;
+  margin-left: 20px;
+}
 
 .adv-card-actions-overlay {
   position: absolute;
@@ -70,12 +76,20 @@
   &.heal-btn {
     color: var(--red-light);
     border-color: var(--red-light);
-    &:hover { color: var(--rose); border-color: var(--rose); box-shadow: $shadow-retro-rose; }
+    &:hover {
+      color: var(--rose);
+      border-color: var(--rose);
+      box-shadow: $shadow-retro-rose;
+    }
   }
   &.explore-btn {
     color: var(--tag-competitive);
     border-color: var(--tag-competitive);
-    &:hover { color: var(--emerald); border-color: var(--emerald); box-shadow: $shadow-retro-emerald; }
+    &:hover {
+      color: var(--emerald);
+      border-color: var(--emerald);
+      box-shadow: $shadow-retro-emerald;
+    }
   }
 }
 
@@ -139,9 +153,15 @@
     cursor: not-allowed;
     border-color: var(--slate-600);
   }
-  
-  .dir-icon { font-size: var(--font-16); margin-bottom: 4px; }
-  .dir-label { font-size: var(--font-8); text-align: center; }
+
+  .dir-icon {
+    font-size: var(--font-16);
+    margin-bottom: 4px;
+  }
+  .dir-label {
+    font-size: var(--font-8);
+    text-align: center;
+  }
   .dir-mo {
     padding: 2px 4px;
     border-radius: $radius-sm;

@@ -11,9 +11,13 @@ export interface ShowdownExecutorOptions {
   p1Skip?: boolean;
   p2Skip?: boolean;
   p1UsedBattleItem?: boolean;
+  // open-record: Dynamic Pokemon UID mapped to HP
   p1Hps?: Record<string, number>;
+  // open-record: Dynamic Pokemon UID mapped to HP
   p2Hps?: Record<string, number>;
+  // open-record: Dynamic Pokemon UID mapped to status ID
   p1Statuses?: Record<string, string>;
+  // open-record: Dynamic Pokemon UID mapped to status ID
   p2Statuses?: Record<string, string>;
   weather?: string;
   history?: CertifiedBattleHistoryEntry[];
@@ -42,7 +46,10 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
   });
   if (options.runner) {
     // Sync all seat indices from runner into the transient engine
-    for (const [sid, idx] of Array.from(options.runner.choicesBySeat.keys(), id => [id, options.runner!.indicesBySeat.get(id) ?? 0] as const)) {
+    for (const [sid, idx] of Array.from(
+      options.runner.choicesBySeat.keys(),
+      (id) => [id, options.runner!.indicesBySeat.get(id) ?? 0] as const
+    )) {
       engine.choiceIdx.set(sid, idx);
     }
   }
@@ -63,11 +70,16 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
     certifiedHistoryStep: (() => {
       const candidate = options.certifiedHistoryStep ?? options.currentStep;
       if (typeof candidate === 'object' && candidate !== null) return candidate;
-      if (Array.isArray(options.history) && typeof candidate === 'number' && candidate >= 1 && candidate <= options.history.length) {
+      if (
+        Array.isArray(options.history) &&
+        typeof candidate === 'number' &&
+        candidate >= 1 &&
+        candidate <= options.history.length
+      ) {
         return options.history[candidate - 1];
       }
       return candidate;
-    })(),
+    })()
   });
 
   if (options.runner) {

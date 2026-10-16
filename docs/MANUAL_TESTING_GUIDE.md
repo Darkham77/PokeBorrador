@@ -46,7 +46,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
      - **Expected**: Listing creates successfully, appears in "Mis Publicaciones" with status `active`, and returns a valid listing ID (`list_...`).
   4. **Security Test (Illegal Publish)**:
      - Attempt to publish a Pokémon with corrupted/illegal moves (e.g., a Lv 5 Pikachu with moves it cannot learn at that level) or unobtainable abilities.
-     - **Expected**: Operation is immediately blocked with an explicit warning toast/modal: *"No se puede publicar un Pokémon ilegal en el mercado..."*.
+     - **Expected**: Operation is immediately blocked with an explicit warning toast/modal: _"No se puede publicar un Pokémon ilegal en el mercado..."_.
   5. **Purchase & Escrow Test**:
      - Using another account or offline session, buy an active listing.
      - **Expected**: Buyer loses exact purchase funds, listing status updates to `sold`, and asset enters the `claim_queue` without data corruption.
@@ -160,7 +160,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
   1. Select an existing Pokémon from team or box to edit.
   2. Modify IVs (0-31), EVs (0-252, total <= 510), Nature, and Held Item.
   3. Verify the **Legality Indicator Badge**:
-     - If all stats, moves, and abilities are legal -> Green badge: *"100% Legal"*.
+     - If all stats, moves, and abilities are legal -> Green badge: _"100% Legal"_.
      - If an illegal move or impossible EV spread is entered -> Red warning banner with exact violation details.
   4. Save changes -> Verify updated stats reflect immediately in team summary.
 
@@ -314,7 +314,10 @@ useModalStore().open('PastEventsList');
 useModalStore().open('Daycare');
 
 // Open Archaeology minigame
-useModalStore().open('Archaeology', { pokemon: { id: 'aerodactyl', name: 'Aerodactyl' }, rarity: 50 });
+useModalStore().open('Archaeology', {
+  pokemon: { id: 'aerodactyl', name: 'Aerodactyl' },
+  rarity: 50
+});
 
 // Trigger Save serialization check
 useGameStore().scheduleSave();

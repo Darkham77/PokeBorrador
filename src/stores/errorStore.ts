@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { logger } from '@/logic/utils/logger'
-import { gameBus } from '@/logic/events/gameBus'
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { logger } from '@/logic/utils/logger';
+import { gameBus } from '@/logic/events/gameBus';
 
 export const useErrorStore = defineStore('error', () => {
   interface ErrorData {
@@ -15,8 +15,8 @@ export const useErrorStore = defineStore('error', () => {
     isUpdateOrNetworkError: boolean;
   }
 
-  const errors = ref<ErrorData[]>([])
-  const activeError = computed(() => errors.value[0] || null)
+  const errors = ref<ErrorData[]>([]);
+  const activeError = computed(() => errors.value[0] || null);
 
   interface ErrorContext {
     type?: string;
@@ -26,47 +26,53 @@ export const useErrorStore = defineStore('error', () => {
   }
 
   function setError(error: unknown, context: ErrorContext = {}) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    
-    const isUpdateOrNetwork = 
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    const isUpdateOrNetwork =
       errorMessage.includes('Failed to fetch dynamically imported module') ||
       errorMessage.includes('Unable to preload CSS') ||
       errorMessage.includes('chunk') ||
       errorMessage.includes('Load chunk') ||
-      errorMessage.includes('error loading dynamically imported module')
+      errorMessage.includes('error loading dynamically imported module');
 
     if (isUpdateOrNetwork) {
-      logger.warn('errorStore', 'Fallo de conexión o actualización detectado, activando pantalla de PWA/Relogin.', context)
-      import('@/stores/update').then(({ useUpdateStore }) => {
-        try {
-          useUpdateStore().notifyChunkLoadError(error)
-        } catch {
-          gameBus.emit('PWA_NEED_REFRESH')
-        }
-      }).catch(() => {
-        gameBus.emit('PWA_NEED_REFRESH')
-      })
-      return
+      logger.warn(
+        'errorStore',
+        'Fallo de conexión o actualización detectado, activando pantalla de PWA/Relogin.',
+        context
+      );
+      import('@/stores/update')
+        .then(({ useUpdateStore }) => {
+          try {
+            useUpdateStore().notifyChunkLoadError(error);
+          } catch {
+            gameBus.emit('PWA_NEED_REFRESH');
+          }
+        })
+        .catch(() => {
+          gameBus.emit('PWA_NEED_REFRESH');
+        });
+      return;
     }
 
-    Reflect.set(console, '__BYPASS_INTERCEPTOR__', true)
-    logger.error('CRITICAL', `Critical Game Error: ${errorMessage}`, context)
-    Reflect.set(console, '__BYPASS_INTERCEPTOR__', false)
+    Reflect.set(console, '__BYPASS_INTERCEPTOR__', true);
+    logger.error('CRITICAL', `Critical Game Error: ${errorMessage}`, context);
+    Reflect.set(console, '__BYPASS_INTERCEPTOR__', false);
 
-    const lastError = errors.value[errors.value.length - 1]
+    const lastError = errors.value[errors.value.length - 1];
     if (lastError && lastError.message === errorMessage) {
-      return
+      return;
     }
 
-    let errorStack: string
+    let errorStack: string;
     if (error instanceof Error && error.stack) {
-      errorStack = error.stack
+      errorStack = error.stack;
     } else {
-      const tempError = new Error()
+      const tempError = new Error();
       if (Error.captureStackTrace) {
-        Error.captureStackTrace(tempError, setError)
+        Error.captureStackTrace(tempError, setError);
       }
-      errorStack = tempError.stack || 'No stack trace available.'
+      errorStack = tempError.stack || 'No stack trace available.';
     }
 
     errors.value.push({
@@ -78,11 +84,11 @@ export const useErrorStore = defineStore('error', () => {
       colno: context.colno || 0,
       userAction: '',
       isUpdateOrNetworkError: false
-    })
+    });
   }
 
   function clearError() {
-    errors.value = []
+    errors.value = [];
   }
 
   return {
@@ -90,5 +96,5 @@ export const useErrorStore = defineStore('error', () => {
     activeError,
     setError,
     clearError
-  }
-})
+  };
+});

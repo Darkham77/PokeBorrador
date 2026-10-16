@@ -12,9 +12,10 @@ import {
   ROCKET_SELL_LEVEL_MULTIPLIER,
   MAX_TOTAL_IVS_STAT_SUM,
   ROCKET_SELL_IV_BONUS_CAP,
-  ROCKET_SELL_CUT_MULTIPLIER,
+  ROCKET_SELL_CUT_MULTIPLIER
 } from '../constants/gameplay.ts';
 import { POKEMON_STAT_KEYS, type PokemonStatKey } from '@/types/pokemon/pokemon.ts';
+import type { CoreBattleStatKey, BattleStages } from '@/types/battle/battle.ts';
 
 const MAX_SINGLE_STAT_EV = 252 as const;
 const HP_FORMULA_FLAT_ADDEND = 10 as const;
@@ -59,7 +60,7 @@ export const STAT_NAMES_ES: Record<PokemonStatKey, string> = {
   def: 'Defensa',
   spa: 'At. Especial',
   spd: 'Def. Especial',
-  spe: 'Velocidad',
+  spe: 'Velocidad'
 };
 
 export const STAT_SHORT_NAMES_ES: Record<PokemonStatKey, string> = {
@@ -68,7 +69,7 @@ export const STAT_SHORT_NAMES_ES: Record<PokemonStatKey, string> = {
   def: 'Defensa',
   spa: 'At. Esp',
   spd: 'Def. Esp',
-  spe: 'Velocidad',
+  spe: 'Velocidad'
 };
 
 export interface NatureData {
@@ -94,11 +95,24 @@ export function calcStatsPure(
   base: BaseStats,
   natureData: NatureData,
   isDittoMetalPowder: boolean = false,
-  evs?: { hp?: number; atk?: number; def?: number; spa?: number; spd?: number; spe?: number } | null,
+  evs?: {
+    hp?: number;
+    atk?: number;
+    def?: number;
+    spa?: number;
+    spd?: number;
+    spe?: number;
+  } | null,
   isDittoQuickPowder: boolean = false
 ): CalculatedStats {
-  const getStat = (baseVal: number, iv: number, ev: number, lvl: number, statId: PokemonStatKey) => {
-    let val = Math.floor(((baseVal * 2) + iv + Math.floor(ev / 4)) * lvl / 100 + 5);
+  const getStat = (
+    baseVal: number,
+    iv: number,
+    ev: number,
+    lvl: number,
+    statId: PokemonStatKey
+  ) => {
+    let val = Math.floor(((baseVal * 2 + iv + Math.floor(ev / 4)) * lvl) / 100 + 5);
     if (natureData.up === statId) val = Math.floor(val * 1.1);
     if (natureData.down === statId) val = Math.floor(val * 0.9);
     return val;
@@ -113,17 +127,24 @@ export function calcStatsPure(
   const spdEv = clampEv(evs?.spd ?? 0);
   const speEv = clampEv(evs?.spe ?? 0);
 
-  const maxHp = base.hp === 1 ? 1 : Math.floor(((base.hp * 2) + ivs.hp + Math.floor(hpEv / 4)) * level / 100 + level + HP_FORMULA_FLAT_ADDEND);
+  const maxHp =
+    base.hp === 1
+      ? 1
+      : Math.floor(
+          ((base.hp * 2 + ivs.hp + Math.floor(hpEv / 4)) * level) / 100 +
+            level +
+            HP_FORMULA_FLAT_ADDEND
+        );
   const atk = getStat(base.atk, ivs.atk, atkEv, level, 'atk');
   let def = getStat(base.def, ivs.def, defEv, level, 'def');
-  
+
   if (isDittoMetalPowder) {
     def = Math.floor(def * METAL_POWDER_STAT_MULTIPLIER);
   }
 
   const spa = getStat(base.spa ?? base.atk, ivs.spa, spaEv, level, 'spa');
   let spd = getStat(base.spd ?? base.def, ivs.spd, spdEv, level, 'spd');
-  
+
   if (isDittoMetalPowder) {
     spd = Math.floor(spd * METAL_POWDER_STAT_MULTIPLIER);
   }
@@ -147,14 +168,23 @@ export function isStatIdExceptHP(stat: string): stat is StatIDExceptHP {
 
 export function requireStatIdExceptHP(stat: string): StatIDExceptHP {
   if (!isStatIdExceptHP(stat)) {
-    throw new Error(`[Stats] Invalid StatIDExceptHP: "${stat}". Expected one of: ${COMBAT_STAT_IDS.join(', ')}`);
+    throw new Error(
+      `[Stats] Invalid StatIDExceptHP: "${stat}". Expected one of: ${COMBAT_STAT_IDS.join(', ')}`
+    );
   }
   return stat;
 }
 
 export function calculateTotalIVs(ivs?: Partial<Record<PokemonStatKey, number>> | null): number {
   if (!ivs) return 0;
-  return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
+  return (
+    (ivs.hp || 0) +
+    (ivs.atk || 0) +
+    (ivs.def || 0) +
+    (ivs.spa || 0) +
+    (ivs.spd || 0) +
+    (ivs.spe || 0)
+  );
 }
 
 export const MAX_IV_VALUE = 31 as const;
@@ -173,10 +203,21 @@ export function hasMaxIV(ivs?: Partial<Record<PokemonStatKey, number>> | null): 
 
 export function calculateTotalBaseStats(stats?: Partial<BaseStats> | null): number {
   if (!stats) return 0;
-  return (stats.hp || 0) + (stats.atk || 0) + (stats.def || 0) + (stats.spa || 0) + (stats.spd || 0) + (stats.spe || 0);
+  return (
+    (stats.hp || 0) +
+    (stats.atk || 0) +
+    (stats.def || 0) +
+    (stats.spa || 0) +
+    (stats.spd || 0) +
+    (stats.spe || 0)
+  );
 }
 
-export function modifyStatStage(stages: Record<string, number>, stat: string, delta: number): number {
+export function modifyStatStage(
+  stages: BattleStages,
+  stat: CoreBattleStatKey,
+  delta: number
+): number {
   const current = stages[stat] || 0;
   const next = Math.max(-6, Math.min(6, current + delta));
   stages[stat] = next;
@@ -188,9 +229,9 @@ export function modifyStatStage(stages: Record<string, number>, stat: string, de
  * Formula: floor((Level * 50 + (Total IVs / 186) * 500) * 0.8)
  */
 export function calculateRocketSellPriceRaw(level: number, totalIvs: number): number {
-  return Math.floor((level * ROCKET_SELL_LEVEL_MULTIPLIER + (totalIvs / MAX_TOTAL_IVS_STAT_SUM) * ROCKET_SELL_IV_BONUS_CAP) * ROCKET_SELL_CUT_MULTIPLIER);
+  return Math.floor(
+    (level * ROCKET_SELL_LEVEL_MULTIPLIER +
+      (totalIvs / MAX_TOTAL_IVS_STAT_SUM) * ROCKET_SELL_IV_BONUS_CAP) *
+      ROCKET_SELL_CUT_MULTIPLIER
+  );
 }
-
-
-
-

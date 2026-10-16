@@ -1,62 +1,60 @@
 <script setup lang="ts">
+import { useUIStore } from '@/stores/ui';
+import DebugPokemonCreator from './DebugPokemonCreator.vue';
 
-import { useUIStore } from '@/stores/ui'
-import DebugPokemonCreator from './DebugPokemonCreator.vue'
+const ui = useUIStore();
 
-const ui = useUIStore()
-
-interface ViteDebug extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
-  setPokedexMode: (mode: string) => void
-  resetPokedexDB: () => void
-  syncPokedex: () => void
-  clearPvpTeam: () => void
-  clearWarTeam: () => void
-  forceStarterScreen: () => void
-  walkEggs: () => void
-  repairAllIllegal: () => void
+interface ViteDebug extends Record<string, unknown> {
+  // open-record: Generic key-value data dictionary container
+  setPokedexMode: (mode: string) => void;
+  resetPokedexDB: () => void;
+  syncPokedex: () => void;
+  clearPvpTeam: () => void;
+  clearWarTeam: () => void;
+  forceStarterScreen: () => void;
+  walkEggs: () => void;
+  repairAllIllegal: () => void;
 }
 
-const getDebug = () => window.__VITE_DEBUG__ as ViteDebug
+const getDebug = () => window.__VITE_DEBUG__ as ViteDebug;
 
 // Direct store manipulation (avoids stale proxy closures from HMR)
 async function setDebugPokedex(mode: string) {
-  getDebug().setPokedexMode(mode)
+  getDebug().setPokedexMode(mode);
 }
 
 async function resetPokedexDB() {
-  getDebug().resetPokedexDB()
+  getDebug().resetPokedexDB();
 }
 
 async function syncPokedexFromCollection() {
-  getDebug().syncPokedex()
+  getDebug().syncPokedex();
 }
 
 async function clearPvpTeam() {
-  getDebug().clearPvpTeam()
+  getDebug().clearPvpTeam();
 }
 
 async function clearWarTeam() {
-  getDebug().clearWarTeam()
+  getDebug().clearWarTeam();
 }
 
 async function forceStarterScreen() {
-  getDebug().forceStarterScreen()
+  getDebug().forceStarterScreen();
 }
 
 async function walkEggs() {
-  getDebug().walkEggs()
+  getDebug().walkEggs();
 }
 
 async function repairAllIllegal() {
-  getDebug().repairAllIllegal?.()
+  getDebug().repairAllIllegal?.();
 }
 </script>
 
 <template>
   <div class="debug-tab-content">
-    <h3 class="debug-section-title">
-      POKEMON DEBUG
-    </h3>
+    <h3 class="debug-section-title">POKEMON DEBUG</h3>
 
     <!-- Pokedex Tools -->
     <div class="debug-card full-width">
@@ -107,7 +105,9 @@ async function repairAllIllegal() {
       <div class="debug-danger-zone">
         <label class="danger-label">Persistent Database Changes (SE GUARDA)</label>
         <div class="button-row wrap">
-          <PVTooltip title="Detecta y repara la legalidad de todos los Pokémon de la cuenta (equipo, caja y guardería)">
+          <PVTooltip
+            title="Detecta y repara la legalidad de todos los Pokémon de la cuenta (equipo, caja y guardería)"
+          >
             <button
               id="debug-pokemon-tab-btn-reparar-ilegales"
               class="btn-vicio-primary btn-vicio-sm"
@@ -188,7 +188,9 @@ async function repairAllIllegal() {
               ATRAPAR INICIAL
             </button>
           </PVTooltip>
-          <PVTooltip title="Caminar todos los huevos en la mochila hasta que estén listos para abrir">
+          <PVTooltip
+            title="Caminar todos los huevos en la mochila hasta que estén listos para abrir"
+          >
             <button
               id="debug-pokemon-tab-btn-caminar-huevos"
               class="btn-vicio-secondary btn-vicio-sm"
@@ -209,7 +211,7 @@ async function repairAllIllegal() {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .debug-tab-content {
   display: flex;
@@ -231,11 +233,13 @@ async function repairAllIllegal() {
   border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: $radius-xl;
   background: Rgb(255 255 255 / 3%);
-  
-  &.full-width { width: 100%; }
+
+  &.full-width {
+    width: 100%;
+  }
   &.empty {
     @include pixelated;
-    @include pixelated; 
+    @include pixelated;
 
     padding: 40px 20px;
     color: $muted;
@@ -260,7 +264,9 @@ async function repairAllIllegal() {
   padding-top: 12px;
   border-top: 1px dashed Rgb(124 58 237 / 30%);
 
-  &.no-border { border-top: none; }
+  &.no-border {
+    border-top: none;
+  }
 }
 
 .danger-label {
@@ -274,9 +280,11 @@ async function repairAllIllegal() {
 .button-row {
   display: flex;
   gap: $spacing-sm;
-  
-  &.wrap { flex-wrap: wrap; }
-  
+
+  &.wrap {
+    flex-wrap: wrap;
+  }
+
   button {
     min-width: 100px;
     flex: 1;

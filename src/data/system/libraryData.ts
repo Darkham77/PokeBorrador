@@ -164,7 +164,6 @@ export const libraryContent = {
     <p>Pokémon Alfa que otorgan grandes recompensas al ser derrotados.</p>
   `,
 
-
   eventos: `
     <h1>Sistema de Eventos</h1>
     <p>Concursos de captura automáticos y eventos que ignoran el ciclo horario.</p>
@@ -383,7 +382,7 @@ export const libraryContent = {
     <h3>6. Visualización en la Ficha del Pokémon</h3>
     <p>En el detalle de tu Pokémon (pestaña <strong>Stats</strong>), puedes consultar el contador en tiempo real de <strong>TOTAL: X / 510</strong>. Cuando el Pokémon alcance el límite máximo permitido, se activará el distintivo dorado <strong>✨ MAX</strong>.</p>
   `
-}
+};
 
 export const libraryCategories = [
   { id: 'gimnasios', icon: '🏆', label: 'Gimnasios' },
@@ -401,5 +400,5 @@ export const libraryCategories = [
   { id: 'arqueologia', icon: '⛏️', label: 'Arqueología' }
 ] as const;
 
-export type LibraryCategoryId = typeof libraryCategories[number]['id'];
-export type LibraryCategory = typeof libraryCategories[number];
+export type LibraryCategoryId = (typeof libraryCategories)[number]['id'];
+export type LibraryCategory = (typeof libraryCategories)[number];

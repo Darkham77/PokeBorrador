@@ -48,7 +48,10 @@ export function getItemQuantity(inventory: Inventory | undefined, itemId: ItemId
 export function mapInventoryItems(inventory?: Inventory): TradeItemEntry[] {
   if (!inventory) return [];
   return (Object.entries(inventory) as [string, number | undefined][])
-    .filter((entry): entry is [ItemId, number] => typeof entry[1] === 'number' && entry[1] > 0 && isItemId(entry[0]))
+    .filter(
+      (entry): entry is [ItemId, number] =>
+        typeof entry[1] === 'number' && entry[1] > 0 && isItemId(entry[0])
+    )
     .map(([id, qty]) => {
       const dbItem = getItemById(id);
       return {

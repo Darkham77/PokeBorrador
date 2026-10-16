@@ -45,13 +45,16 @@ body .nav {
   flex: 1;
   overflow: hidden;
 
-  &:hover { color: $white; }
-  
+  &:hover {
+    color: $white;
+  }
 
   span:first-child {
     font-size: var(--font-20);
 
-    @media (width <= 380px) { font-size: var(--font-16); }
+    @media (width <= 380px) {
+      font-size: var(--font-16);
+    }
   }
 
   span:last-child {
@@ -90,7 +93,7 @@ body .nav {
   border-radius: $radius-xl;
   transform: Translatez(0);
   box-shadow: var(--shadow-xl);
-  
+
   &.active,
   .hud-group.is-open &,
   .nav-group.is-open & {

@@ -1,4 +1,4 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .filters-expanded-premium {
   display: flex;
@@ -34,11 +34,15 @@
   border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: $radius-2xl;
   background: Rgb(0 0 0 / 20%);
-  
-  &.full-width { grid-column: span 2; }
-  
+
+  &.full-width {
+    grid-column: span 2;
+  }
+
   @media (width <= 900px) {
-    &.full-width { grid-column: span 1; }
+    &.full-width {
+      grid-column: span 1;
+    }
   }
 
   .box-section-label {
@@ -68,13 +72,15 @@
   gap: $spacing-sm-alt;
 }
 
-.slider-row-mini, .iv-slider-row-mini {
+.slider-row-mini,
+.iv-slider-row-mini {
   display: flex;
   align-items: center;
   gap: $spacing-md;
   padding: 2px 0;
 
-  .label, .stat-name {
+  .label,
+  .stat-name {
     @include pixelated;
 
     width: 70px;
@@ -84,7 +90,7 @@
     white-space: nowrap;
   }
 
-  input[type="range"] {
+  input[type='range'] {
     height: 4px;
     border-radius: $radius-xs;
     flex: 1;
@@ -103,7 +109,8 @@
     }
   }
 
-  .val, .stat-val {
+  .val,
+  .stat-val {
     @include pixelated;
 
     min-width: 25px;

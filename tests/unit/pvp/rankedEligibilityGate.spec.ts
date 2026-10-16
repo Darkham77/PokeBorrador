@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   validatePokemonForRanked,
   validateTeamForRanked,
@@ -7,27 +7,31 @@ import {
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('rankedEligibilityGate', () => {
-  const sampleRules = normalizeRankedRules({
-    levelCap: 50,
-    maxPokemon: 3,
-    allowedTypes: ['fire', 'electric'],
-    bannedPokemonIds: ['mewtwo', 'rayquaza']
-  }, 'Torneo Fuego y Trueno');
+  const sampleRules = normalizeRankedRules(
+    {
+      levelCap: 50,
+      maxPokemon: 3,
+      allowedTypes: ['fire', 'electric'],
+      bannedPokemonIds: ['mewtwo', 'rayquaza']
+    },
+    'Torneo Fuego y Trueno'
+  );
 
-  const createTestPokemon = (overrides: Partial<Pokemon>): Pokemon => ({
-    uid: 'poke_test_uid',
-    id: 'charmander',
-    name: 'Charmander',
-    level: 25,
-    type: 'fire',
-    type2: undefined,
-    hp: 100,
-    maxHp: 100,
-    moves: [{ id: 'ember', name: 'Ember', pp: 25, maxPP: 25 }],
-    heldItem: null,
-    isShiny: false,
-    ...overrides
-  } as Pokemon);
+  const createTestPokemon = (overrides: Partial<Pokemon>): Pokemon =>
+    ({
+      uid: 'poke_test_uid',
+      id: 'charmander',
+      name: 'Charmander',
+      level: 25,
+      type: 'fire',
+      type2: undefined,
+      hp: 100,
+      maxHp: 100,
+      moves: [{ id: 'ember', name: 'Ember', pp: 25, maxPP: 25 }],
+      heldItem: null,
+      isShiny: false,
+      ...overrides
+    }) as Pokemon;
 
   describe('validatePokemonForRanked', () => {
     it('approves a Pokemon matching all constraints', () => {
@@ -43,21 +47,37 @@ describe('rankedEligibilityGate', () => {
     });
 
     it('rejects a banned Pokemon', () => {
-      const bannedMon = createTestPokemon({ id: 'mewtwo', name: 'Mewtwo', level: 50, type: 'psychic' });
+      const bannedMon = createTestPokemon({
+        id: 'mewtwo',
+        name: 'Mewtwo',
+        level: 50,
+        type: 'psychic'
+      });
       const result = validatePokemonForRanked(bannedMon, sampleRules);
       expect(result.ok).toBe(false);
       expect(result.reason).toContain('está baneado');
     });
 
     it('rejects a Pokemon with an unallowed type', () => {
-      const waterMon = createTestPokemon({ id: 'squirtle', name: 'Squirtle', level: 40, type: 'water' });
+      const waterMon = createTestPokemon({
+        id: 'squirtle',
+        name: 'Squirtle',
+        level: 40,
+        type: 'water'
+      });
       const result = validatePokemonForRanked(waterMon, sampleRules);
       expect(result.ok).toBe(false);
       expect(result.reason).toContain('no tiene un tipo permitido');
     });
 
     it('accepts a dual-type Pokemon if at least one type matches allowedTypes', () => {
-      const dualType = createTestPokemon({ id: 'charizard', name: 'Charizard', level: 50, type: 'fire', type2: 'flying' });
+      const dualType = createTestPokemon({
+        id: 'charizard',
+        name: 'Charizard',
+        level: 50,
+        type: 'fire',
+        type2: 'flying'
+      });
       expect(validatePokemonForRanked(dualType, sampleRules)).toEqual({ ok: true });
     });
   });

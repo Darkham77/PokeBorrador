@@ -4,11 +4,10 @@ import { DURATION_24_HOURS_MS, ONE_HOUR_MS } from '@/logic/constants/items.ts';
 import { DAYS_PER_WEEK, DUSK_PHASE_END_HOUR } from '@/logic/constants/gameplay.ts';
 export type { DayPhase };
 
-export const GAME_TIMEZONE = (
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TIMEZONE) ||
+export const GAME_TIMEZONE = ((typeof import.meta !== 'undefined' &&
+  import.meta.env?.VITE_TIMEZONE) ||
   (typeof process !== 'undefined' && process.env?.VITE_TIMEZONE) ||
-  'America/Argentina/Buenos_Aires'
-) as string;
+  'America/Argentina/Buenos_Aires') as string;
 
 /**
  * Time Synchronization Utility (Temporal API version)
@@ -30,18 +29,16 @@ export function setServerTimeSynced(synced: boolean): void {
 }
 
 export function getServerInstant(): Temporal.Instant {
-  const getOffset = typeof window !== 'undefined'
-    ? window.__GET_DB_TIME_OFFSET__
-    : undefined;
+  const getOffset = typeof window !== 'undefined' ? window.__GET_DB_TIME_OFFSET__ : undefined;
   const routerOffsetMs = typeof getOffset === 'function' ? getOffset() : 0;
 
   if (!_timeSynced && routerOffsetMs === 0) return Temporal.Now.instant();
-    
+
   const now = Temporal.Now.instant();
-  const offsetDuration = Temporal.Duration.from({ 
-    nanoseconds: Number(_serverTimeOffsetNanoseconds) + (routerOffsetMs * 1_000_000) 
+  const offsetDuration = Temporal.Duration.from({
+    nanoseconds: Number(_serverTimeOffsetNanoseconds) + routerOffsetMs * 1_000_000
   });
-  
+
   return now.add(offsetDuration);
 }
 
@@ -57,7 +54,7 @@ export function getGMT3Date(): Temporal.ZonedDateTime {
 }
 
 function isDayPhase(value: string): value is DayPhase {
-  return DAY_PHASES.some(phase => phase === value);
+  return DAY_PHASES.some((phase) => phase === value);
 }
 
 export function requireDayPhase(value: string): DayPhase {
@@ -67,13 +64,11 @@ export function requireDayPhase(value: string): DayPhase {
 
 export function getDayCycle(now: Temporal.Instant | number = getServerInstant()): DayPhase {
   // Compatibility: Handle numeric timestamps (ms)
-  const instant = typeof now === 'number' 
-    ? Temporal.Instant.fromEpochMilliseconds(now) 
-    : now;
+  const instant = typeof now === 'number' ? Temporal.Instant.fromEpochMilliseconds(now) : now;
 
   const totalHours = Math.floor(instant.epochMilliseconds / ONE_HOUR_MS);
   const phase = totalHours % 8;
-  
+
   if (phase < 2) return 'morning';
   if (phase < 4) return 'day';
   if (phase < DUSK_PHASE_END_HOUR) return 'dusk';
@@ -91,23 +86,20 @@ const ONE_WEEK_MS = DAYS_PER_WEEK * DURATION_24_HOURS_MS;
 
 export function getSeason(now: Temporal.Instant | number = getServerInstant()): Season {
   // Compatibility: Handle numeric timestamps (ms)
-  const instant = typeof now === 'number' 
-    ? Temporal.Instant.fromEpochMilliseconds(now) 
-    : now;
+  const instant = typeof now === 'number' ? Temporal.Instant.fromEpochMilliseconds(now) : now;
 
   const totalWeeks = Math.floor(instant.epochMilliseconds / ONE_WEEK_MS);
   const seasonIndex = totalWeeks % TOTAL_SEASONS;
-  
+
   const seasons: Season[] = [
     { id: 'spring', label: 'Primavera', icon: '🌸' },
     { id: 'summer', label: 'Verano', icon: '🌻' },
     { id: 'autumn', label: 'Otoño', icon: '🍂' },
     { id: 'winter', label: 'Invierno', icon: '⛄' }
   ];
-  
+
   return seasons[seasonIndex] || (seasons[0] as Season);
 }
-
 
 /**
  * Formats a date string or number for UI display in GMT-3.
@@ -125,14 +117,19 @@ export function formatDisplayDate(ts: string | number | null | undefined): strin
     // Fix for SQLite datetime('now') missing 'Z' and 'T'
     if (typeof cleanTs === 'string') {
       // If it looks like YYYY-MM-DDTHH:MM:SS but lacks timezone, assume UTC (standard for our DB)
-      if (cleanTs.length === ISO_DATETIME_CHAR_LENGTH && !cleanTs.includes('Z') && !cleanTs.includes('+')) {
+      if (
+        cleanTs.length === ISO_DATETIME_CHAR_LENGTH &&
+        !cleanTs.includes('Z') &&
+        !cleanTs.includes('+')
+      ) {
         cleanTs += 'Z';
       }
     }
 
-    const instant = typeof cleanTs === 'string'
-      ? Temporal.Instant.from(cleanTs)
-      : Temporal.Instant.fromEpochMilliseconds(Number(cleanTs));
+    const instant =
+      typeof cleanTs === 'string'
+        ? Temporal.Instant.from(cleanTs)
+        : Temporal.Instant.fromEpochMilliseconds(Number(cleanTs));
 
     const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE);
 
@@ -161,15 +158,21 @@ export function formatTime(ts: string | number | Date | null | undefined): strin
     } else if (typeof ts === 'number') {
       instant = Temporal.Instant.fromEpochMilliseconds(ts);
     } else {
-      const normalized = ts.includes('Z') || ts.includes('+') || ts.includes('-', ISO_DATE_LENGTH)
-        ? ts
-        : ts.replace(' ', 'T') + 'Z';
+      const normalized =
+        ts.includes('Z') || ts.includes('+') || ts.includes('-', ISO_DATE_LENGTH)
+          ? ts
+          : ts.replace(' ', 'T') + 'Z';
       instant = Temporal.Instant.from(normalized);
     }
     const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE);
     return `${String(zdt.hour).padStart(2, '0')}:${String(zdt.minute).padStart(2, '0')}`;
   } catch (e) {
-    throw new Error(`[timeUtils] Error formatting time for timestamp '${ts}': ${String(e)}`, { cause: e });
+    throw new Error(
+      `[timeUtils] Error formatting time for timestamp '${String(ts)}': ${String(e)}`,
+      {
+        cause: e
+      }
+    );
   }
 }
 
@@ -192,7 +195,8 @@ function parseTimestampToInstant(ts: string | number | Date): Temporal.Instant |
   if (isoStr.includes(' ') && !isoStr.includes('T')) {
     isoStr = isoStr.replace(' ', 'T');
   }
-  const hasTimezoneOffset = isoStr.endsWith('Z') || isoStr.includes('+') || isoStr.includes('-', ISO_DATE_LENGTH);
+  const hasTimezoneOffset =
+    isoStr.endsWith('Z') || isoStr.includes('+') || isoStr.includes('-', ISO_DATE_LENGTH);
   if (!hasTimezoneOffset) {
     isoStr += 'Z';
   }
@@ -245,11 +249,10 @@ export function formatChatTimestamp(
 
     return `${day}/${month}/${year} ${hour}:${min}`;
   } catch (e) {
-    logger.warn('TIME', `Failed to format chat timestamp: ${ts}`, (e as Error).message);
+    logger.warn('TIME', `Failed to format chat timestamp: ${String(ts)}`, (e as Error).message);
     return '';
   }
 }
-
 
 /**
  * Safely parses any date/time string or number into a Temporal.ZonedDateTime in the configured GAME_TIMEZONE.
@@ -280,7 +283,9 @@ export function parseZonedTime(
 
     return Temporal.PlainDateTime.from(clean).toZonedDateTime(GAME_TIMEZONE);
   } catch (err) {
-    throw new Error(`[timeUtils] Error parsing zoned time for '${String(ts)}': ${String(err)}`, { cause: err });
+    throw new Error(`[timeUtils] Error parsing zoned time for '${String(ts)}': ${String(err)}`, {
+      cause: err
+    });
   }
 }
 
@@ -290,10 +295,11 @@ export function parseZonedTime(
 export function normalizeZonedDateTime(
   date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()
 ): Temporal.ZonedDateTime {
-  return (date instanceof Temporal.ZonedDateTime)
+  return date instanceof Temporal.ZonedDateTime
     ? date
-    : (date instanceof Temporal.Instant ? date : Temporal.Now.instant()
-      ).toZonedDateTimeISO(GAME_TIMEZONE);
+    : (date instanceof Temporal.Instant ? date : Temporal.Now.instant()).toZonedDateTimeISO(
+        GAME_TIMEZONE
+      );
 }
 
 export function getArgDateString(
@@ -302,34 +308,38 @@ export function getArgDateString(
   return normalizeZonedDateTime(date).toPlainDate().toString();
 }
 
-
 /**
  * Safely parses any date/time representation into a Temporal.Instant or returns null on failure.
  */
 export function parseInstantSafe(val: unknown): Temporal.Instant | null {
-  if (!val) return null
+  if (!val) return null;
   try {
     if (typeof val === 'number') {
-      return Temporal.Instant.fromEpochMilliseconds(val)
+      return Temporal.Instant.fromEpochMilliseconds(val);
     }
     if (typeof val === 'string') {
-      const trimmed = val.trim()
-      const num = Number(trimmed)
+      const trimmed = val.trim();
+      const num = Number(trimmed);
       if (!isNaN(num) && trimmed.length > MIN_TIMESTAMP_DIGIT_LENGTH) {
-        return Temporal.Instant.fromEpochMilliseconds(num)
+        return Temporal.Instant.fromEpochMilliseconds(num);
       }
-      let isoStr = trimmed
+      let isoStr = trimmed;
       if (isoStr.includes(' ') && !isoStr.includes('T')) {
-        isoStr = isoStr.replace(' ', 'T')
+        isoStr = isoStr.replace(' ', 'T');
       }
       if (!isoStr.endsWith('Z') && !isoStr.includes('+') && !isoStr.includes('-')) {
-        isoStr += 'Z'
+        isoStr += 'Z';
       }
-      return Temporal.Instant.from(isoStr)
+      return Temporal.Instant.from(isoStr);
     }
-    return null
+    return null;
   } catch (e) {
-    throw new Error(`[timeUtils] Error parsing instant for value '${String(val)}': ${String(e)}`, { cause: e });
+    const valDesc =
+      typeof val === 'string' ? val : typeof val === 'number' ? String(val) : JSON.stringify(val);
+    const errDesc = e instanceof Error ? e.message : String(e as string | number);
+    throw new Error(`[timeUtils] Error parsing instant for value '${valDesc}': ${errDesc}`, {
+      cause: e
+    });
   }
 }
 
@@ -339,7 +349,10 @@ export type WallClockTimerId = ReturnType<typeof setInterval>;
  * Creates a low-level wall-clock system interval immune to UI animation pausing.
  * Reserved strictly for background infrastructure (e.g. PvP timeout clocks).
  */
-export function createWallClockInterval(callback: () => void, intervalMs: number): WallClockTimerId {
+export function createWallClockInterval(
+  callback: () => void,
+  intervalMs: number
+): WallClockTimerId {
   return setInterval(callback, intervalMs);
 }
 
@@ -372,7 +385,3 @@ export function formatRemainingDuration(remainingMs: number): string {
 
   return duration.hours > 0 ? `${hh}h ${mm}m ${ss}s` : `${mm}m ${ss}s`;
 }
-
-
-
-

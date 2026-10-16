@@ -76,9 +76,7 @@ function resolveMassifPalette(
  * Clusters mountain elevation cells (Z >= 1) into discrete massifs using 8-connected CCL,
  * and assigns a single continuous geological palette to each massif.
  */
-export function clusterMountainMassifs(
-  options: GeologicalClusterOptions
-): GeologicalClusterResult {
+export function clusterMountainMassifs(options: GeologicalClusterOptions): GeologicalClusterResult {
   const matrix = options.elevationMatrix;
   const H = matrix.length;
   const W = matrix[0]?.length ?? 0;
@@ -86,7 +84,9 @@ export function clusterMountainMassifs(
 
   const visited: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
   const massifIdMatrix: (string | null)[][] = Array.from({ length: H }, () => Array(W).fill(null));
-  const paletteMatrix: MountainPalette[][] = Array.from({ length: H }, () => Array(W).fill(defaultPal));
+  const paletteMatrix: MountainPalette[][] = Array.from({ length: H }, () =>
+    Array(W).fill(defaultPal)
+  );
 
   const massifs: MountainMassif[] = [];
   const massifById = new Map<string, MountainMassif>();

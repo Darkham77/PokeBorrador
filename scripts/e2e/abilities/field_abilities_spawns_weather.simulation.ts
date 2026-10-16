@@ -8,42 +8,46 @@ class FieldAbilitiesSpawnsWeatherSimulation extends BaseE2ESimulation {
   }
 
   public async setupArenaTrapLeader(): Promise<void> {
-    await this.page.evaluate(
-      async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-        const gameStore = useGameStore();
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+      const gameStore = useGameStore();
 
-        const dugtrio = pokemonDebugService.generate({ id: requirePokemonSpeciesId('dugtrio'), level: 30 });
-        dugtrio.ability = 'arenatrap';
-        dugtrio.hp = dugtrio.maxHp;
+      const dugtrio = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('dugtrio'),
+        level: 30
+      });
+      dugtrio.ability = 'arenatrap';
+      dugtrio.hp = dugtrio.maxHp;
 
-        gameStore.state.starterChosen = true;
-        gameStore.state.team = [dugtrio];
-        gameStore.state.box = [];
-      }
-    );
+      gameStore.state.starterChosen = true;
+      gameStore.state.team = [dugtrio];
+      gameStore.state.box = [];
+    });
     await this.saveGameAndAwaitExport();
   }
 
   public async setupStenchLeader(): Promise<void> {
-    await this.page.evaluate(
-      async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-        const gameStore = useGameStore();
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+      const gameStore = useGameStore();
 
-        const grimer = pokemonDebugService.generate({ id: requirePokemonSpeciesId('grimer'), level: 25 });
-        grimer.ability = 'stench';
-        grimer.hp = grimer.maxHp;
+      const grimer = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('grimer'),
+        level: 25
+      });
+      grimer.ability = 'stench';
+      grimer.hp = grimer.maxHp;
 
-        gameStore.state.starterChosen = true;
-        gameStore.state.team = [grimer];
-        gameStore.state.box = [];
-      }
-    );
+      gameStore.state.starterChosen = true;
+      gameStore.state.team = [grimer];
+      gameStore.state.box = [];
+    });
     await this.saveGameAndAwaitExport();
   }
 
@@ -51,17 +55,24 @@ class FieldAbilitiesSpawnsWeatherSimulation extends BaseE2ESimulation {
     return await this.page.evaluate(
       async ({ expRate }) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { calculateEncounterTypeWeights } = await import('../../../src/logic/encounters/encounterHelpers.ts');
-        const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider.ts');
+        const { calculateEncounterTypeWeights } =
+          await import('../../../src/logic/encounters/encounterHelpers.ts');
+        const { pokemonDataProvider } =
+          await import('../../../src/logic/providers/pokemonDataProvider.ts');
         const gameStore = useGameStore();
 
         const maps = pokemonDataProvider.getMaps();
-        const loc = maps.find(m => m.id === 'route1')!;
+        const loc = maps.find((m) => m.id === 'route1')!;
 
-        const weights = calculateEncounterTypeWeights(loc, 'clear', {
-          faction: gameStore.state.faction,
-          team: gameStore.state.team
-        }, {});
+        const weights = calculateEncounterTypeWeights(
+          loc,
+          'clear',
+          {
+            faction: gameStore.state.faction,
+            team: gameStore.state.team
+          },
+          {}
+        );
 
         // Standard ground weight is 100. With 2.0x it is 200; with 0.5x it is 50.
         return weights.groundWeight === 100 * expRate;

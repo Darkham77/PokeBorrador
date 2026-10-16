@@ -1,33 +1,34 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useClipboard } from '@vueuse/core';
+import { useGsapTransition } from '@/composables/ui/useGsapTransition';
+import { useErrorStore } from '@/stores/errorStore';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { useAuthStore } from '@/stores/auth';
+import { logger } from '@/logic/utils/logger';
+import { CLIPBOARD_COPIED_DUR_MS } from '@/logic/constants/visuals';
 
-import { ref, computed } from 'vue'
-import { useClipboard } from '@vueuse/core'
-import { useGsapTransition } from '@/composables/ui/useGsapTransition'
-import { useErrorStore } from '@/stores/errorStore'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { useAuthStore } from '@/stores/auth'
-import { logger } from '@/logic/utils/logger'
-
-const CLIPBOARD_COPIED_DUR_MS = 2000 as const
-
-const errorStore = useErrorStore()
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const authStore = useAuthStore()
-const userAction = ref('')
-const { copy, copied } = useClipboard({ copiedDuring: CLIPBOARD_COPIED_DUR_MS })
+const errorStore = useErrorStore();
+const gameStore = useGameStore();
+const uiStore = useUIStore();
+const authStore = useAuthStore();
+const userAction = ref('');
+const { copy, copied } = useClipboard({ copiedDuring: CLIPBOARD_COPIED_DUR_MS });
 
 const accumulatedDetails = computed(() => {
-  return errorStore.errors.map((err, index) => {
-    return `[ERROR ${index + 1}/${errorStore.errors.length}] (${err.type || 'Uncaught'} - ${err.source || 'N/A'})\nMessage: ${err.message}\nStack:\n${err.stack}`
-  }).join('\n\n----------------------------------------\n\n')
-})
+  return errorStore.errors
+    .map((err, index) => {
+      return `[ERROR ${index + 1}/${errorStore.errors.length}] (${err.type || 'Uncaught'} - ${err.source || 'N/A'})\nMessage: ${err.message}\nStack:\n${err.stack}`;
+    })
+    .join('\n\n----------------------------------------\n\n');
+});
 
 const copyError = async () => {
-  if (errorStore.errors.length === 0) return
-  
-  const report = [ // no-domain: Non-domain utility collection or data structure
+  if (errorStore.errors.length === 0) return;
+
+  const report = [
+    // no-domain: Non-domain utility collection or data structure
     'POKEBORRADOR ERROR REPORT',
     '',
     `¿QUÉ ESTABA HACIENDO EL JUGADOR?`,
@@ -39,65 +40,57 @@ const copyError = async () => {
     '',
     'ERRORES DETECTADOS:',
     accumulatedDetails.value
-  ].join('\n')
+  ].join('\n');
 
   try {
-    await copy(report)
+    await copy(report);
   } catch (err) {
-    logger.error('ErrorOverlay', 'Failed to copy error report', err)
+    logger.error('ErrorOverlay', 'Failed to copy error report', err);
   }
-}
+};
 
 const reloadGame = () => {
-  window.location.reload()
-}
+  window.location.reload();
+};
 
 const closeError = () => {
-  userAction.value = ''
-  errorStore.clearError()
-  uiStore.closeAll() // Restore background block by clearing the stack
-}
+  userAction.value = '';
+  errorStore.clearError();
+  uiStore.closeAll(); // Restore background block by clearing the stack
+};
 
-const ERROR_OVERLAY_TRANSITION_Y_OFFSET_PX = 10
+const ERROR_OVERLAY_TRANSITION_Y_OFFSET_PX = 10;
 
 const transitionHooks = useGsapTransition({
   type: 'slide-up',
   yOffset: ERROR_OVERLAY_TRANSITION_Y_OFFSET_PX,
   duration: 0.3
-})
+});
 </script>
 
 <template>
   <Teleport to="body">
-    <Transition
-      :css="false"
-      v-on="transitionHooks"
-    >
-      <div
-        v-if="errorStore.activeError"
-        class="error-overlay"
-      >
+    <Transition :css="false" v-on="transitionHooks">
+      <div v-if="errorStore.activeError" class="error-overlay">
         <div class="error-card modal-scrollable-content">
           <div class="error-header">
             <span class="emoji error-icon">⚠️</span>
-            <div class="error-title">
-              ERROR EN EL JUEGO
-            </div>
+            <div class="error-title">ERROR EN EL JUEGO</div>
           </div>
 
           <div class="error-content custom-scrollbar modal-scrollable-content">
             <p class="error-intro">
-              ¡Uy! Algo salió mal. Pasale una captura de esto al desarrollador para que pueda arreglarlo.
+              ¡Uy! Algo salió mal. Pasale una captura de esto al desarrollador para que pueda
+              arreglarlo.
             </p>
 
             <div class="error-user-action-container">
-              <label
-                class="error-sub-title error-label-block"
-              >
+              <label for="error-overlay-user-action" class="error-sub-title error-label-block">
                 ¿QUÉ ESTABAS HACIENDO?
                 <textarea
                   id="error-overlay-user-action"
                   v-model="userAction"
+                  aria-label="Descripción de lo que estabas haciendo antes del error"
                   placeholder="Ej: Estaba por cambiar de Pokémon en batalla..."
                 />
               </label>
@@ -107,18 +100,16 @@ const transitionHooks = useGsapTransition({
             </div>
 
             <div class="error-stack-wrap">
-              <div class="error-sub-title">
-                DETALLES TÉCNICOS:
-              </div>
+              <div class="error-sub-title">DETALLES TÉCNICOS:</div>
               <pre class="error-stack modal-scrollable-content">{{ accumulatedDetails }}</pre>
             </div>
 
             <div class="error-game-context">
-              <div class="error-sub-title">
-                ESTADO DEL JUEGO:
-              </div>
+              <div class="error-sub-title">ESTADO DEL JUEGO:</div>
               <div class="error-context-item">
-                <strong>Entrenador:</strong> {{ gameStore.state.trainer || authStore.user?.user_metadata?.username || 'N/A' }} (Nv. {{ gameStore.state.trainerLevel || 0 }})
+                <strong>Entrenador:</strong>
+                {{ gameStore.state.trainer || authStore.user?.user_metadata?.username || 'N/A' }}
+                (Nv. {{ gameStore.state.trainerLevel || 0 }})
               </div>
               <div class="error-context-item">
                 <strong>Medallas:</strong> {{ gameStore.state.badges || 0 }}
@@ -132,10 +123,7 @@ const transitionHooks = useGsapTransition({
               class="btn-vicio-secondary btn-vicio-sm"
               @click.stop="copyError"
             >
-              <i
-                class="fas"
-                :class="copied ? 'fa-check' : 'fa-copy'"
-              />
+              <i class="fas" :class="copied ? 'fa-check' : 'fa-copy'" />
               {{ copied ? '¡COPIADO!' : 'COPIAR ERROR' }}
             </button>
             <button
@@ -160,7 +148,7 @@ const transitionHooks = useGsapTransition({
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 /* RESTORING EXACT LEGACY ERROR OVERLAY STYLES */
 .error-overlay {

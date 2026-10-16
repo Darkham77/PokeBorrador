@@ -1,70 +1,81 @@
 <script setup lang="ts">
-import { useBattleStore } from '@/stores/battle/battle'
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
-import BattleBallPicker from './BattleBallPicker.vue'
+import { useBattleStore } from '@/stores/battle/battle';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+import BattleBallPicker from './BattleBallPicker.vue';
 
-import type { ItemId } from '@/data/inventory/items'
+import type { ItemId } from '@/data/inventory/items';
 
 interface Props {
-  isFinishing?: boolean
+  isFinishing?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isFinishing: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'switch'): void
-  (e: 'bag'): void
-  (e: 'catch'): void
-  (e: 'select-ball', ballId: ItemId): void
-}>()
+  (e: 'switch'): void;
+  (e: 'bag'): void;
+  (e: 'catch'): void;
+  (e: 'select-ball', ballId: ItemId): void;
+}>();
 
-import { computed } from 'vue'
-import { useLivePvPStore } from '@/stores/livePvP'
+import { computed } from 'vue';
+import { useLivePvPStore } from '@/stores/livePvP';
 
-import { getHealthyBenchCombatants } from '@/logic/battle/battleTeamCoordinator.ts'
+import { getHealthyBenchCombatants } from '@/logic/battle/battleTeamCoordinator.ts';
 
-const battleStore = useBattleStore()
-const livePvP = useLivePvPStore()
+const battleStore = useBattleStore();
+const livePvP = useLivePvPStore();
 
 const isLocked = computed(() => {
-  return isPokemonLocked(battleStore.player)
-})
+  return isPokemonLocked(battleStore.player);
+});
 
 const hasAvailableBenchPokemon = computed(() => {
-  return getHealthyBenchCombatants(battleStore.getContext()).length > 0
-})
+  return getHealthyBenchCombatants(battleStore.getContext()).length > 0;
+});
 
 const isInputReady = computed(() => {
   if (battleStore.isPvP) {
-    return livePvP.battleState.phase === 'choosing' || battleStore.currentSubState === 'WAIT_INPUT'
+    return livePvP.battleState.phase === 'choosing' || battleStore.currentSubState === 'WAIT_INPUT';
   }
-  return battleStore.currentSubState === 'WAIT_INPUT'
-})
+  return battleStore.currentSubState === 'WAIT_INPUT';
+});
 
 // Remove manual onHoverBtn to rely on native btn-vicio mixin states
-
 </script>
 
 <template>
-  <div 
-    class="actions-container"
-    :class="{ 'intro-fade': battleStore.isIntroAnimating }"
-  >
+  <div class="actions-container" :class="{ 'intro-fade': battleStore.isIntroAnimating }">
     <div class="action-row-complex">
       <button
         id="battle-switch-btn"
         class="action-btn switch-btn"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || battleStore.isPlayerTrapped || isLocked || !hasAvailableBenchPokemon || battleStore.currentFsmState === 'REORDER_TEAM' || !isInputReady"
+        :disabled="
+          battleStore.isProcessing ||
+          props.isFinishing ||
+          battleStore.isIntroAnimating ||
+          battleStore.isPlayerTrapped ||
+          isLocked ||
+          !hasAvailableBenchPokemon ||
+          battleStore.currentFsmState === 'REORDER_TEAM' ||
+          !isInputReady
+        "
         @click.stop="emit('switch')"
       >
         <span class="emoji">🔄</span> <span class="text">CAMBIAR</span>
       </button>
 
-      <BattleBallPicker 
+      <BattleBallPicker
         :is-finishing="props.isFinishing"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked || !battleStore.uiConfig.allowCatch"
+        :disabled="
+          battleStore.isProcessing ||
+          props.isFinishing ||
+          battleStore.isIntroAnimating ||
+          isLocked ||
+          !battleStore.uiConfig.allowCatch
+        "
         @select-ball="(id: ItemId) => emit('select-ball', id)"
         @catch="emit('catch')"
       />
@@ -72,7 +83,13 @@ const isInputReady = computed(() => {
       <button
         id="battle-bag-btn"
         class="action-btn bag-btn"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked || !battleStore.uiConfig.allowBag"
+        :disabled="
+          battleStore.isProcessing ||
+          props.isFinishing ||
+          battleStore.isIntroAnimating ||
+          isLocked ||
+          !battleStore.uiConfig.allowBag
+        "
         @click.stop="emit('bag')"
       >
         <span class="emoji">🎒</span> <span class="text">MOCHILA</span>
@@ -82,8 +99,8 @@ const isInputReady = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .actions-container {
   position: relative;
@@ -108,7 +125,7 @@ const isInputReady = computed(() => {
 
   .action-btn {
     flex: 1;
-    
+
     .text {
       @include pixelated;
 

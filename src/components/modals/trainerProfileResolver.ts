@@ -5,113 +5,104 @@
  * cached cosmetics, friends list, and fetched profile/save data.
  */
 
-import type { RankedSeasonMedal, BattleReplayRecord, BattleCode } from '@/types/battle/pvp.ts'
-import type { SideID } from '@pkmn/sim'
-import { isRankedTierId, isSeasonalThemeId } from '@/data/system/rankedData.ts'
-import { POKEMON_COMPETITION_RANKS, type PokemonCompetitionRank } from '@/types/pokemon/pokemon.ts'
-import { isFactionId, type FactionId } from '@/types/system/game'
+import type { RankedSeasonMedal, BattleReplayRecord, BattleCode } from '@/types/battle/pvp.ts';
+import type { SideID } from '@pkmn/sim';
+import { isRankedTierId, isSeasonalThemeId } from '@/data/system/rankedData.ts';
+import { POKEMON_COMPETITION_RANKS, type PokemonCompetitionRank } from '@/types/pokemon/pokemon.ts';
+import { isFactionId, FACTION_LABELS, FACTION_COLORS } from '@/types/system/game';
+import type { MapRouteId } from '@/data/world/map-assets';
 
 export interface ProfileRow {
-  id: string
-  username?: string | null
-  email?: string | null
-  faction?: string | null
-  player_class?: string | null
-  trainer_level?: number | null
-  badges?: number | null
-  avatar_style?: string | null
-  nick_style?: string | null
-  pvp_wins?: number | null
-  pvp_losses?: number | null
-  elo_rating?: number | null
-  created_at?: string | null
-  gender?: string | null
-  playtime?: number | null
-  last_played_at?: string | null
-  ranked_max_elo?: number | null
-  class_level?: number | null
-  class_xp?: number | null
-  box_count?: number | null
-  pvp_draws?: number | null
-  longest_streak?: number | null
-  shiny_count?: number | null
-  max_damage?: number | null
-  total_battles?: number | null
-  trade_volume?: number | null
-  capture_attempts?: number | null
-  capture_successes?: number | null
-  pokedex_caught?: number | null
-  pokedex_seen?: number | null
-  trainers_defeated?: number | null
-  wild_wins?: number | null
-  war_coins?: number | null
-  defeated_gyms?: string[] | null
+  id: string;
+  username?: string | null;
+  email?: string | null;
+  faction?: string | null;
+  player_class?: string | null;
+  trainer_level?: number | null;
+  badges?: number | null;
+  avatar_style?: string | null;
+  nick_style?: string | null;
+  pvp_wins?: number | null;
+  pvp_losses?: number | null;
+  elo_rating?: number | null;
+  created_at?: string | null;
+  gender?: string | null;
+  playtime?: number | null;
+  last_played_at?: string | null;
+  ranked_max_elo?: number | null;
+  class_level?: number | null;
+  class_xp?: number | null;
+  box_count?: number | null;
+  pvp_draws?: number | null;
+  longest_streak?: number | null;
+  shiny_count?: number | null;
+  max_damage?: number | null;
+  total_battles?: number | null;
+  trade_volume?: number | null;
+  capture_attempts?: number | null;
+  capture_successes?: number | null;
+  pokedex_caught?: number | null;
+  pokedex_seen?: number | null;
+  trainers_defeated?: number | null;
+  wild_wins?: number | null;
+  war_coins?: number | null;
+  defeated_gyms?: string[] | null;
 }
 
 export interface SaveStateData {
-  trainer?: string
-  playtime?: number
-  classLevel?: number
-  classXP?: number
-  rankedMaxElo?: number
-  box?: unknown[]
-  team?: unknown[]
-  faction?: string | null
-  playerClass?: string | null
-  trainerLevel?: number
-  trainerExp?: number
-  trainerExpNeeded?: number
-  avatar_style?: string
-  nick_style?: string
-  badges?: number
-  gender?: string
-  defeatedGyms?: string[]
-  pokedex?: unknown[]
-  seenPokedex?: string[]
+  trainer?: string;
+  playtime?: number;
+  classLevel?: number;
+  classXP?: number;
+  rankedMaxElo?: number;
+  box?: unknown[];
+  team?: unknown[];
+  faction?: string | null;
+  playerClass?: string | null;
+  trainerLevel?: number;
+  trainerExp?: number;
+  trainerExpNeeded?: number;
+  avatar_style?: string;
+  nick_style?: string;
+  badges?: number;
+  gender?: string;
+  defeatedGyms?: string[];
+  pokedex?: unknown[];
+  seenPokedex?: string[];
   stats?: {
-    trainersDefeated?: number
-    wins?: number
-    losses?: number
-    maxDamage?: number
-    totalBattles?: number
-    tradeVolume?: number
-    captureAttempts?: number
-    captureSuccesses?: number
-    eventParticipations?: number
-    eventMedalsFirst?: number
-    eventMedalsSecond?: number
-    eventMedalsThird?: number
-    eventMedalsTotal?: number
-    longestStreak?: number
-    shinyCount?: number
-  }
+    trainersDefeated?: number;
+    wins?: number;
+    losses?: number;
+    maxDamage?: number;
+    totalBattles?: number;
+    tradeVolume?: number;
+    captureAttempts?: number;
+    captureSuccesses?: number;
+    eventParticipations?: number;
+    eventMedalsFirst?: number;
+    eventMedalsSecond?: number;
+    eventMedalsThird?: number;
+    eventMedalsTotal?: number;
+    longestStreak?: number;
+    shinyCount?: number;
+  };
   pvpStats?: {
-    wins?: number
-    losses?: number
-    draws?: number
-  }
-  eloRating?: number
-  warCoins?: number
-  money?: number
-  battleCoins?: number
+    wins?: number;
+    losses?: number;
+    draws?: number;
+  };
+  eloRating?: number;
+  warCoins?: number;
+  money?: number;
+  battleCoins?: number;
   classData?: {
-    criminality?: number
-    reputation?: number
-    longestStreak?: number
-  }
-  warMyPtsLocal?: Record<string, number>
-  rankedMedals?: RankedSeasonMedal[]
+    criminality?: number;
+    reputation?: number;
+    longestStreak?: number;
+  };
+  warMyPtsLocal?: Partial<Record<MapRouteId, number>>;
+  rankedMedals?: RankedSeasonMedal[];
 }
-
-const FACTION_LABELS: Record<FactionId, string> = {
-  union: 'Equipo Unión',
-  poder: 'Equipo Poder'
-};
-
-const FACTION_COLORS: Record<FactionId, string> = {
-  union: 'rgba(59, 130, 246, 1)',
-  poder: 'rgba(239, 68, 68, 1)'
-};
 
 export function resolveFactionLabel(f: string | null | undefined): string {
   if (f && isFactionId(f)) {
@@ -170,8 +161,16 @@ export function computeShiniesCount(
   if (!isOwn && profileShinyCount !== undefined && profileShinyCount !== null) {
     return profileShinyCount;
   }
-  const teamShinies = (team || []).filter(p => Boolean(typeof p === 'object' && p !== null && 'isShiny' in p && (p as { isShiny?: boolean }).isShiny)).length;
-  const boxShinies = (box || []).filter(p => Boolean(typeof p === 'object' && p !== null && 'isShiny' in p && (p as { isShiny?: boolean }).isShiny)).length;
+  const teamShinies = (team || []).filter((p) =>
+    Boolean(
+      typeof p === 'object' && p !== null && 'isShiny' in p && (p as { isShiny?: boolean }).isShiny
+    )
+  ).length;
+  const boxShinies = (box || []).filter((p) =>
+    Boolean(
+      typeof p === 'object' && p !== null && 'isShiny' in p && (p as { isShiny?: boolean }).isShiny
+    )
+  ).length;
   return teamShinies + boxShinies;
 }
 
@@ -182,7 +181,9 @@ export interface EventMedalCounts {
   total: number;
 }
 
-const TROPHY_RANKS_SET: ReadonlySet<PokemonCompetitionRank> = new Set<PokemonCompetitionRank>(POKEMON_COMPETITION_RANKS); // runtime-set: Fast O(1) membership lookup set
+const TROPHY_RANKS_SET: ReadonlySet<PokemonCompetitionRank> = new Set<PokemonCompetitionRank>(
+  POKEMON_COMPETITION_RANKS
+); // runtime-set: Fast O(1) membership lookup set
 
 function parseTrophyRank(t: unknown): PokemonCompetitionRank | null {
   if (t && typeof t === 'object' && 'rank' in t) {
@@ -194,7 +195,11 @@ function parseTrophyRank(t: unknown): PokemonCompetitionRank | null {
   return null;
 }
 
-function parsePokemonTrophies(entry: unknown, counts: Record<PokemonCompetitionRank, number>): void { // boundary-ok: External runtime boundary deserializer
+function parsePokemonTrophies(
+  entry: unknown,
+  counts: Record<PokemonCompetitionRank, number>
+): void {
+  // boundary-ok: External runtime boundary deserializer
   if (!entry || typeof entry !== 'object' || !('trophies' in entry)) return;
   const trophies = (entry as { trophies?: unknown[] }).trophies;
   if (!Array.isArray(trophies)) return;
@@ -207,7 +212,10 @@ function parsePokemonTrophies(entry: unknown, counts: Record<PokemonCompetitionR
   }
 }
 
-function countPokemonListTrophies(list: unknown[] | undefined, counts: { first: number; second: number; third: number }): void {
+function countPokemonListTrophies(
+  list: unknown[] | undefined,
+  counts: { first: number; second: number; third: number }
+): void {
   if (!Array.isArray(list)) return;
   for (const p of list) {
     parsePokemonTrophies(p, counts);
@@ -266,7 +274,7 @@ function parsePrizeObject(rawPrize: unknown): AwardPrizePayload | null {
   if (typeof rawPrize === 'string') {
     try {
       const parsed = JSON.parse(rawPrize);
-      return (parsed && typeof parsed === 'object') ? (parsed as AwardPrizePayload) : null;
+      return parsed && typeof parsed === 'object' ? (parsed as AwardPrizePayload) : null;
     } catch {
       return null;
     }
@@ -286,9 +294,12 @@ function parseRankedMedalFromAward(
 
   seenSeasons.add(season);
   const tierVal = pObj.tier;
-  const tournamentName = typeof pObj.tournamentName === 'string'
-    ? pObj.tournamentName
-    : (typeof pObj.tournament_name === 'string' ? pObj.tournament_name : undefined);
+  const tournamentName =
+    typeof pObj.tournamentName === 'string'
+      ? pObj.tournamentName
+      : typeof pObj.tournament_name === 'string'
+        ? pObj.tournament_name
+        : undefined;
   const rawTheme = pObj.themeId ?? pObj.theme_id;
   const themeId = isSeasonalThemeId(rawTheme) ? rawTheme : undefined;
 
@@ -314,7 +325,10 @@ export function extractRankedMedals(
   if (Array.isArray(awardsData)) {
     for (const a of awardsData) {
       if (!a || typeof a !== 'object') continue;
-      const medal = parseRankedMedalFromAward(a as { prize?: unknown; event_id?: string; awarded_at?: string; id?: string }, seenSeasons);
+      const medal = parseRankedMedalFromAward(
+        a as { prize?: unknown; event_id?: string; awarded_at?: string; id?: string },
+        seenSeasons
+      );
       if (medal) medals.push(medal);
     }
   }
@@ -331,7 +345,11 @@ export function extractRankedMedals(
   return medals;
 }
 
-export function parseAwardMedalCounts(awardsData: unknown): { first: number; second: number; third: number } {
+export function parseAwardMedalCounts(awardsData: unknown): {
+  first: number;
+  second: number;
+  third: number;
+} {
   let first = 0;
   let second = 0;
   let third = 0;
@@ -351,29 +369,52 @@ export function parseAwardMedalCounts(awardsData: unknown): { first: number; sec
 
 export function calculateDistinctEventCount(compEntryData: unknown): number {
   if (!Array.isArray(compEntryData)) return 0;
-  const distinctEvents = new Set((compEntryData as { event_id?: string }[]).map(e => e.event_id).filter(Boolean));
+  const distinctEvents = new Set(
+    (compEntryData as { event_id?: string }[]).map((e) => e.event_id).filter(Boolean)
+  );
   return distinctEvents.size;
 }
 
 export function mapReplayRows(replaysData: unknown): BattleReplayRecord[] {
   if (!Array.isArray(replaysData)) return [];
-  return replaysData.map(raw => {
+  return replaysData.map((raw) => {
     const r = raw as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     return {
       id: String(r.id),
       battleCode: String(r.battle_code || r.battleCode) as BattleCode,
-      seasonId: String(r.season_id || r.seasonId || ''),
-      themeId: isSeasonalThemeId(r.theme_id) ? r.theme_id : (isSeasonalThemeId(r.themeId) ? r.themeId : 'masters_allstars'),
-      p1: typeof r.p1_data === 'string' ? JSON.parse(r.p1_data) : (r.p1 || {}),
-      p2: typeof r.p2_data === 'string' ? JSON.parse(r.p2_data) : (r.p2 || {}),
+      seasonId:
+        typeof r.season_id === 'string'
+          ? r.season_id
+          : typeof r.seasonId === 'string'
+            ? r.seasonId
+            : '',
+      themeId: isSeasonalThemeId(r.theme_id)
+        ? r.theme_id
+        : isSeasonalThemeId(r.themeId)
+          ? r.themeId
+          : 'masters_allstars',
+      p1: typeof r.p1_data === 'string' ? JSON.parse(r.p1_data) : r.p1 || {},
+      p2: typeof r.p2_data === 'string' ? JSON.parse(r.p2_data) : r.p2 || {},
       turnsCount: Number(r.turns_count ?? r.turnsCount ?? 0),
-      winnerSide: String(r.winner_side || r.winnerSide || 'p1') as SideID,
-      choiceStream: typeof r.choice_stream === 'string' ? JSON.parse(r.choice_stream) : (r.choiceStream || []),
-      initialSeed: typeof r.initial_seed === 'string' ? JSON.parse(r.initial_seed) : (r.initialSeed || [0, 0, 0, 0]),
+      winnerSide: (typeof r.winner_side === 'string'
+        ? r.winner_side
+        : typeof r.winnerSide === 'string'
+          ? r.winnerSide
+          : 'p1') as SideID,
+      choiceStream:
+        typeof r.choice_stream === 'string' ? JSON.parse(r.choice_stream) : r.choiceStream || [],
+      initialSeed:
+        typeof r.initial_seed === 'string'
+          ? JSON.parse(r.initial_seed)
+          : r.initialSeed || [0, 0, 0, 0],
       isTop10Archived: Boolean(r.is_top10_archived ?? r.isTop10Archived),
       viewsCount: Number(r.views_count ?? r.viewsCount ?? 0),
-      createdAt: String(r.created_at || r.createdAt || '')
+      createdAt:
+        typeof r.created_at === 'string'
+          ? r.created_at
+          : typeof r.createdAt === 'string'
+            ? r.createdAt
+            : ''
     };
   });
 }
-

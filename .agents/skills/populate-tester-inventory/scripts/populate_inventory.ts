@@ -32,14 +32,16 @@ const TEST_INVENTORY: Record<ItemId, number> = {
   ppmax: 10,
   repel: 20,
   superrepel: 20,
-  maxrepel: 20,
+  maxrepel: 20
 };
 
 function generatePopulateSnippet(): void {
   console.log('='.repeat(70));
   console.log('  POKÉ VICIO - TESTER INVENTORY GENERATOR');
   console.log('='.repeat(70));
-  console.log(`Generated canonical testing payload for ${Object.keys(TEST_INVENTORY).length} item types.`);
+  console.log(
+    `Generated canonical testing payload for ${Object.keys(TEST_INVENTORY).length} item types.`
+  );
   console.log('\nCopy and paste this snippet into the browser DevTools console:\n');
 
   const snippet = `(() => {

@@ -1,6 +1,9 @@
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
-import type { DeploymentCost, ResolvedDeploymentRewards } from '@/logic/player/classDeploymentEngine';
+import type {
+  DeploymentCost,
+  ResolvedDeploymentRewards
+} from '@/logic/player/classDeploymentEngine';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { MAX_SINGLE_STAT_IV, MAX_POKEMON_VIGOR } from '@/logic/constants/gameplay.ts';
 import { AVATAR_STYLES_BY_ID, isAvatarStyleId } from '@/data/player/cosmeticsData';
@@ -9,10 +12,13 @@ const CLASS_TO_AVATAR_STYLE_MAP: Readonly<Record<PlayerClassId, string>> = Objec
   cazabichos: 'av-class-cazabichos',
   criador: 'av-class-criador',
   rocket: 'av-class-rocket',
-  entrenador: 'av-class-entrenador',
+  entrenador: 'av-class-entrenador'
 });
 
-export function resolveNewClassAvatarStyle(currentAvatar: string, newClassId: PlayerClassId): string | null {
+export function resolveNewClassAvatarStyle(
+  currentAvatar: string,
+  newClassId: PlayerClassId
+): string | null {
   if (!currentAvatar || !isAvatarStyleId(currentAvatar)) return null;
   const avatarDef = AVATAR_STYLES_BY_ID[currentAvatar];
   if (!avatarDef?.requiredClass) return null;
@@ -24,7 +30,10 @@ export function resolveNewClassAvatarStyle(currentAvatar: string, newClassId: Pl
   return isSquare ? newBaseStyle.replace('av-class-', 'av-sq-') : newBaseStyle;
 }
 
-export function releasePokemonFromMissions(team: readonly (Pokemon | null)[], box: readonly (Pokemon | null)[]): void {
+export function releasePokemonFromMissions(
+  team: readonly (Pokemon | null)[],
+  box: readonly (Pokemon | null)[]
+): void {
   for (const p of [...team, ...box]) {
     if (p && p.onMission) {
       p.onMission = false;
@@ -43,18 +52,24 @@ export interface LevelUpChecker {
 
 export function deductDeploymentCost(
   state: CurrencyState,
-  cost: DeploymentCost,
+  cost: DeploymentCost
 ): { success: boolean; errorMsg?: string } {
   if (cost.type === 'money') {
     if ((state.money || 0) < cost.amount) {
-      return { success: false, errorMsg: `Necesitas ₽${cost.amount.toLocaleString()} para esta misión.` };
+      return {
+        success: false,
+        errorMsg: `Necesitas ₽${cost.amount.toLocaleString()} para esta misión.`
+      };
     }
     state.money = (state.money || 0) - cost.amount;
     return { success: true };
   }
   if (cost.type === 'battleCoins') {
     if ((state.battleCoins || 0) < cost.amount) {
-      return { success: false, errorMsg: `Necesitas ${cost.amount} Battle Coins para esta misión.` };
+      return {
+        success: false,
+        errorMsg: `Necesitas ${cost.amount} Battle Coins para esta misión.`
+      };
     }
     state.battleCoins = (state.battleCoins || 0) - cost.amount;
     return { success: true };
@@ -65,7 +80,7 @@ export function deductDeploymentCost(
 export function applyPokemonGrowthOutcome(
   gStore: LevelUpChecker,
   rewards: ResolvedDeploymentRewards,
-  poke: Pokemon,
+  poke: Pokemon
 ): string {
   let outcomeMsg = '';
   if ((rewards.expGained > 0 || rewards.bonusLevels > 0) && poke.level < MAX_POKEMON_LEVEL) {

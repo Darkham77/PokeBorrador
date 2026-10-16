@@ -4,10 +4,14 @@
  * Consolidated Suite for Item Effects, Friendship Bonuses, Time Buffs, Matrix, and Multi-Step Flows.
  */
 
-import { describe, test, expect, beforeEach } from 'vitest';
+import { describe, test, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { mockLocalStorage } from '../../helpers/debugSetup.ts';
-import { handleEvBerry, handleVitamin, handleFeather } from '../../../src/logic/items/itemEffectHandlers.ts';
+import {
+  handleEvBerry,
+  handleVitamin,
+  handleFeather
+} from '../../../src/logic/items/itemEffectHandlers.ts';
 import { ITEM_FAMILIES_MATRIX } from '../../fixtures/items/itemFamiliesMatrix.ts';
 import { isValidTarget } from '@/logic/items/helpers/itemTargetValidator.ts';
 import { itemEffects } from '@/logic/items/itemEffects.ts';
@@ -55,7 +59,7 @@ function createMockFriendshipPokemon(partial: Partial<Pokemon>): Pokemon {
     evs: { hp: 40, atk: 40, def: 40, spa: 40, spd: 40, spe: 40 },
     nature: 'hardy',
     friendship: 70,
-    ...partial,
+    ...partial
   } as Pokemon;
 }
 
@@ -239,7 +243,15 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
       const gameStore = useGameStore();
       gameStore.state.starterChosen = true;
       gameStore.state.team = [
-        { uid: 'starter-pika', id: 'pikachu', name: 'Pikachu', level: 10, hp: 30, maxHp: 30, moves: [] } as never
+        {
+          uid: 'starter-pika',
+          id: 'pikachu',
+          name: 'Pikachu',
+          level: 10,
+          hp: 30,
+          maxHp: 30,
+          moves: []
+        } as never
       ];
     });
 
@@ -257,8 +269,8 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
       expect(gameStore.state.amuletCoinSecs).toBe(3600);
 
       const activeList = buffsStore.activeBuffs;
-      const eggBuff = activeList.find(b => b.id === 'lucky-egg');
-      const amuletBuff = activeList.find(b => b.id === 'amulet');
+      const eggBuff = activeList.find((b) => b.id === 'lucky-egg');
+      const amuletBuff = activeList.find((b) => b.id === 'amulet');
 
       expect(eggBuff).toBeDefined();
       expect(eggBuff?.secs).toBe(1800);
@@ -293,7 +305,7 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
       buffsStore.addBuff('repel', 300);
       expect(gameStore.state.fishingRodType).toBe('super');
 
-      const advanceCmd = debugStore.tools.find(t => t.command === 'advanceBuffSeconds');
+      const advanceCmd = debugStore.tools.find((t) => t.command === 'advanceBuffSeconds');
       expect(advanceCmd).toBeDefined();
 
       advanceCmd?.action(1200 as never);
@@ -312,13 +324,13 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
       buffsStore.addBuff('repel', 1800);
       expect(gameStore.state.repelSecs).toBe(1800);
 
-      const setDurationCmd = debugStore.tools.find(t => t.command === 'setBuffDuration');
+      const setDurationCmd = debugStore.tools.find((t) => t.command === 'setBuffDuration');
       expect(setDurationCmd).toBeDefined();
 
       setDurationCmd?.action('repelSecs' as never, 2 as never);
       expect(gameStore.state.repelSecs).toBe(2);
 
-      const advanceCmd = debugStore.tools.find(t => t.command === 'advanceBuffSeconds');
+      const advanceCmd = debugStore.tools.find((t) => t.command === 'advanceBuffSeconds');
       advanceCmd?.action(2 as never);
 
       expect(gameStore.state.repelSecs).toBe(0);
@@ -337,7 +349,9 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
     describe('Move Relearner (Family 5)', () => {
       test('backtracks evolution chain to discover pre-evolution forgotten moves', () => {
         const mon = createComplexMockPokemon({ id: 'raichu', level: 50 });
-        const currentMoveIds = new Set<string>(mon.moves.filter((m): m is Move & { id: string } => Boolean(m?.id)).map(m => m.id));
+        const currentMoveIds = new Set<string>(
+          mon.moves.filter((m): m is Move & { id: string } => Boolean(m?.id)).map((m) => m.id)
+        );
 
         const possibleMoves: Array<{ name: string; lv: number }> = [];
         const processedIds = new Set<string>();
@@ -345,7 +359,9 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
 
         while (currentId && isPokemonSpeciesId(currentId) && !processedIds.has(currentId)) {
           processedIds.add(currentId);
-          const dbEntry = (POKEMON_DB as Record<string, { learnset?: Array<{ name: string; lv: number }> }>)[currentId];
+          const dbEntry = (
+            POKEMON_DB as Record<string, { learnset?: Array<{ name: string; lv: number }> }>
+          )[currentId];
           if (dbEntry && dbEntry.learnset) {
             for (const m of dbEntry.learnset) {
               const normalizedName = m.name.toLowerCase().replace(/\s+/g, '');
@@ -370,7 +386,13 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
         const initialMoves = [...(gameStore.state.team[0] as Pokemon).moves];
 
         const mon = gameStore.state.team[0] as Pokemon;
-        const newMove: Move = { id: 'thunderwave', name: 'Onda Trueno', pp: 20, maxPP: 20, type: 'electric' };
+        const newMove: Move = {
+          id: 'thunderwave',
+          name: 'Onda Trueno',
+          pp: 20,
+          maxPP: 20,
+          type: 'electric'
+        };
 
         uiStore.addToLearnQueue({
           pokemon: mon,
@@ -469,7 +491,7 @@ describe('Items Domain: Lifecycle, Effects & Matrices Suite', () => {
         const speciesAbilities = pokemonDataProvider.getSpeciesAbilities('bulbasaur');
         expect(speciesAbilities.length).toBeGreaterThanOrEqual(1);
 
-        const altAbility = speciesAbilities.find(a => a !== 'overgrow') || 'chlorophyll';
+        const altAbility = speciesAbilities.find((a) => a !== 'overgrow') || 'chlorophyll';
         mon.ability = requireAbilityId(altAbility);
         inventoryStore.removeItem('abilitypill', 1);
 

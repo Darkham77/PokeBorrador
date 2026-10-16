@@ -189,7 +189,9 @@ async function handleImportTileset(): Promise<void> {
       mapStudio.activeTool = 'brush';
     }
 
-    alert(`¡Tileset importado con éxito!\n- Total celdas: ${res.totalSliced}\n- Nuevos tiles: ${res.addedCount}\n- Reutilizados: ${res.reusedCount}\n- Descartados: ${res.discardedCount}`);
+    alert(
+      `¡Tileset importado con éxito!\n- Total celdas: ${res.totalSliced}\n- Nuevos tiles: ${res.addedCount}\n- Reutilizados: ${res.reusedCount}\n- Descartados: ${res.discardedCount}`
+    );
     emit('close');
   } catch (_err) {
     alert('Ocurrió un error al procesar el tileset.');
@@ -222,7 +224,9 @@ async function handleImportStructure(): Promise<void> {
     mapStudio.selectedStructureId = res.template.id;
     mapStudio.activeTool = 'stamp';
 
-    alert(`¡Estructura "${res.template.name}" creada y registrada!\nHuella: ${res.footprint.width}x${res.footprint.height} tiles.\nHerramienta Estampador activada.`);
+    alert(
+      `¡Estructura "${res.template.name}" creada y registrada!\nHuella: ${res.footprint.width}x${res.footprint.height} tiles.\nHerramienta Estampador activada.`
+    );
     emit('close');
   } catch (_err) {
     alert('Ocurrió un error al procesar la estructura.');
@@ -235,6 +239,9 @@ async function handleImportStructure(): Promise<void> {
 <template>
   <div
     id="studio-asset-import-modal"
+    role="button"
+    tabindex="-1"
+    aria-label="Cerrar modal de importación"
     class="import-modal-backdrop"
     @click.self="emit('close')"
   >
@@ -242,9 +249,7 @@ async function handleImportStructure(): Promise<void> {
       <header class="import-modal-header">
         <div class="header-title-box">
           <span class="icon">📥</span>
-          <h3 class="modal-title">
-            Ingesta Universal de Tiles y Spritesheets
-          </h3>
+          <h3 class="modal-title">Ingesta Universal de Tiles y Spritesheets</h3>
         </div>
         <button
           id="btn-close-import-modal"
@@ -284,6 +289,8 @@ async function handleImportStructure(): Promise<void> {
         <!-- Drag and Drop Zone -->
         <div
           id="dropzone-asset-import"
+          role="button"
+          tabindex="0"
           class="import-dropzone"
           :class="{ 'is-dragover': isDragOver }"
           @dragover.prevent="isDragOver = true"
@@ -296,10 +303,11 @@ async function handleImportStructure(): Promise<void> {
             ref="fileInputRef"
             type="file"
             accept=".png"
+            aria-label="Seleccionar archivo de imagen PNG"
             class="hidden"
-            style="display: none;"
+            style="display: none"
             @change="handleFileSelect"
-          >
+          />
           <div class="dropzone-icon">
             <span class="icon">🖼️</span>
           </div>
@@ -312,49 +320,46 @@ async function handleImportStructure(): Promise<void> {
         </div>
 
         <!-- Image Specs Banner -->
-        <div
-          v-if="rawGrid"
-          class="source-specs-pill"
-        >
-          <span>Resolución: <strong class="specs-highlight">{{ rawGrid.width }} x {{ rawGrid.height }} px</strong></span>
-          <span>Huella estimada: <strong class="specs-highlight">{{ footprint.width }} x {{ footprint.height }} tiles</strong></span>
+        <div v-if="rawGrid" class="source-specs-pill">
+          <span
+            >Resolución:
+            <strong class="specs-highlight"
+              >{{ rawGrid.width }} x {{ rawGrid.height }} px</strong
+            ></span
+          >
+          <span
+            >Huella estimada:
+            <strong class="specs-highlight"
+              >{{ footprint.width }} x {{ footprint.height }} tiles</strong
+            ></span
+          >
         </div>
 
         <!-- MODO A: Tileset Form -->
         <template v-if="activeMode === 'tileset' && rawGrid">
           <div class="form-field-group">
-            <label
-              for="select-target-category"
-              class="field-label"
-            >Categoría Destino:</label>
-            <select
-              id="select-target-category"
-              v-model="targetCategory"
-              class="field-select"
-            >
-              <option value="terrain">
-                Terreno (terrain)
-              </option>
-              <option value="water">
-                Agua (water)
-              </option>
-              <option value="vegetation">
-                Vegetación (vegetation)
-              </option>
-              <option value="elevation">
-                Elevación / Roca (elevation)
-              </option>
-              <option value="objects_props">
-                Props / Objetos (objects_props)
-              </option>
+            <label for="select-target-category" class="field-label">Categoría Destino:</label>
+            <select id="select-target-category" v-model="targetCategory" class="field-select">
+              <option value="terrain">Terreno (terrain)</option>
+              <option value="water">Agua (water)</option>
+              <option value="vegetation">Vegetación (vegetation)</option>
+              <option value="elevation">Elevación / Roca (elevation)</option>
+              <option value="objects_props">Props / Objetos (objects_props)</option>
             </select>
           </div>
 
           <div class="tileset-preview-container">
             <div class="preview-stats-bar">
-              <span class="stat-badge stat-total">Total: {{ footprint.width * footprint.height }}</span>
-              <span class="stat-badge stat-kept">Aceptados: {{ preSlicedCells.flat().filter(c => !c.isDiscardable).length }}</span>
-              <span class="stat-badge stat-discarded">Descartables: {{ preSlicedCells.flat().filter(c => c.isDiscardable).length }}</span>
+              <span class="stat-badge stat-total"
+                >Total: {{ footprint.width * footprint.height }}</span
+              >
+              <span class="stat-badge stat-kept"
+                >Aceptados: {{ preSlicedCells.flat().filter((c) => !c.isDiscardable).length }}</span
+              >
+              <span class="stat-badge stat-discarded"
+                >Descartables:
+                {{ preSlicedCells.flat().filter((c) => c.isDiscardable).length }}</span
+              >
             </div>
             <div class="sliced-tiles-scroll">
               <div
@@ -364,13 +369,7 @@ async function handleImportStructure(): Promise<void> {
                 :style="{ opacity: cell.isDiscardable ? 0.3 : 1 }"
                 :title="cell.isDiscardable ? 'Tile descartable (vacío/chroma)' : 'Tile válido'"
               >
-                <img
-                  :src="cell.dataUrl"
-                  alt="Tile slice"
-                
-                  width="32"
-                  height="32"
-                >
+                <img :src="cell.dataUrl" alt="Tile slice" width="32" height="32" />
               </div>
             </div>
           </div>
@@ -379,40 +378,44 @@ async function handleImportStructure(): Promise<void> {
         <!-- MODO B: Structure Form & Collision Editor -->
         <template v-if="activeMode === 'structure' && rawGrid">
           <div class="form-field-group">
-            <label
-              for="input-structure-name"
-              class="field-label"
-            >Nombre del Edificio / Prefab:</label>
+            <label for="input-structure-name" class="field-label"
+              >Nombre del Edificio / Prefab:</label
+            >
             <input
               id="input-structure-name"
               v-model="structureName"
               type="text"
               class="field-input"
               placeholder="Ej. Gimnasio de Kanto"
-            >
+            />
           </div>
 
           <div class="form-field-group">
-            <label
-              for="input-structure-id"
-              class="field-label"
-            >ID Único (Template):</label>
+            <label for="input-structure-id" class="field-label">ID Único (Template):</label>
             <input
               id="input-structure-id"
               v-model="structureId"
               type="text"
               class="field-input"
               placeholder="Ej. struct_kanto_gym"
-            >
+            />
           </div>
 
           <!-- Collision Grid Editor -->
           <div class="collision-editor-wrapper">
-            <label class="field-label">Máscara de Colisión (Haz clic en cada celda para alternar):</label>
+            <label class="field-label"
+              >Máscara de Colisión (Haz clic en cada celda para alternar):</label
+            >
             <div class="editor-legend">
-              <span class="legend-item"><span class="dot dot-solid" /> <strong>🧱 Sólido (1)</strong></span>
-              <span class="legend-item"><span class="dot dot-walkable" /> <strong>🚪 Transitable (0)</strong></span>
-              <span class="legend-item"><span class="dot dot-water" /> <strong>🌊 Agua (2)</strong></span>
+              <span class="legend-item"
+                ><span class="dot dot-solid" /> <strong>🧱 Sólido (1)</strong></span
+              >
+              <span class="legend-item"
+                ><span class="dot dot-walkable" /> <strong>🚪 Transitable (0)</strong></span
+              >
+              <span class="legend-item"
+                ><span class="dot dot-water" /> <strong>🌊 Agua (2)</strong></span
+              >
             </div>
 
             <div
@@ -420,10 +423,7 @@ async function handleImportStructure(): Promise<void> {
               class="collision-grid-board"
               :style="{ gridTemplateColumns: `repeat(${footprint.width}, 48px)` }"
             >
-              <template
-                v-for="(row, r) in preSlicedCells"
-                :key="`row_${r}`"
-              >
+              <template v-for="(row, r) in preSlicedCells" :key="`row_${r}`">
                 <div
                   v-for="(cell, c) in row"
                   :id="`collision-cell-${r}-${c}`"
@@ -433,14 +433,7 @@ async function handleImportStructure(): Promise<void> {
                   :title="`Fila ${r}, Col ${c} - Colisión: ${collisionGrid[r]?.[c] ?? 1}`"
                   @click="toggleCellCollision(r, c)"
                 >
-                  <img
-                    :src="cell.dataUrl"
-                    alt="Tile"
-                    class="cell-thumb"
-                  
-                    width="32"
-                    height="32"
-                  >
+                  <img :src="cell.dataUrl" alt="Tile" class="cell-thumb" width="32" height="32" />
                   <div
                     class="cell-badge"
                     :class="{
@@ -449,18 +442,9 @@ async function handleImportStructure(): Promise<void> {
                       'badge-water': collisionGrid[r]?.[c] === 2
                     }"
                   >
-                    <span
-                      v-if="collisionGrid[r]?.[c] === 1"
-                      class="icon"
-                    >🧱</span>
-                    <span
-                      v-else-if="collisionGrid[r]?.[c] === 0"
-                      class="icon"
-                    >🚪</span>
-                    <span
-                      v-else-if="collisionGrid[r]?.[c] === 2"
-                      class="icon"
-                    >🌊</span>
+                    <span v-if="collisionGrid[r]?.[c] === 1" class="icon">🧱</span>
+                    <span v-else-if="collisionGrid[r]?.[c] === 0" class="icon">🚪</span>
+                    <span v-else-if="collisionGrid[r]?.[c] === 2" class="icon">🌊</span>
                   </div>
                 </div>
               </template>
@@ -470,12 +454,7 @@ async function handleImportStructure(): Promise<void> {
       </div>
 
       <footer class="import-modal-footer">
-        <button
-          id="btn-cancel-import"
-          type="button"
-          class="btn-secondary"
-          @click="emit('close')"
-        >
+        <button id="btn-cancel-import" type="button" class="btn-secondary" @click="emit('close')">
           Cancelar
         </button>
 

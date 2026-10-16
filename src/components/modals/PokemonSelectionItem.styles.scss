@@ -1,4 +1,4 @@
-@use "@/styles/components/badges" as *;
+@use '@/styles/components/badges' as *;
 
 .source-symbol {
   display: inline-flex;
@@ -21,7 +21,7 @@
   @include premium-card-hover(var(--tier-color, $blue), 1.02, -5px);
 
   position: relative;
-  
+
   &.is-premium-tier {
     @include pokemon-card-premium-tier;
   }
@@ -123,9 +123,13 @@
   font-size: var(--font-8);
 }
 
-.waiting-status { color: Rgb(255 255 255 / 25%); }
+.waiting-status {
+  color: Rgb(255 255 255 / 25%);
+}
 
-.egg-hint { color: var(--daycare-pink, #f36); }
+.egg-hint {
+  color: var(--daycare-pink, #f36);
+}
 
 .vigor-status-mini {
   @include pixelated;
@@ -134,11 +138,11 @@
   align-items: center;
   gap: $spacing-xs;
   font-size: var(--font-8);
-  
+
   .label {
     color: var(--gray, #94a3b8);
   }
-  
+
   .value {
     display: inline-flex;
     align-items: center;

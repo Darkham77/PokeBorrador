@@ -27,7 +27,7 @@ function applyTransformToUser(user: Pokemon, targetPoke: Pokemon): void {
   user.type2 = targetPoke.type2;
 
   if (targetPoke.moves) {
-    user.moves = targetPoke.moves.map(m => {
+    user.moves = targetPoke.moves.map((m) => {
       if (!m) return null;
       const copiedMax = Math.min(5, m.maxPP || 5);
       const builtMove: Move = {
@@ -59,7 +59,11 @@ function handleTransformToken(
   return true;
 }
 
-function applySpeciesDetailsToTarget(target: Pokemon, newSpecies: string, rawDetails: string): void {
+function applySpeciesDetailsToTarget(
+  target: Pokemon,
+  newSpecies: string,
+  rawDetails: string
+): void {
   const speciesId = requirePokemonSpeciesId(toID(newSpecies));
   target.id = speciesId;
   target.details = rawDetails;
@@ -89,9 +93,8 @@ function handleDetailsChangeToken(
     if (newSpecies) {
       applySpeciesDetailsToTarget(target, newSpecies, rawDetails);
     }
-    const msg = type === 'replace'
-      ? `¡Era ${target.name} disfrazado!`
-      : `¡${target.name} cambió de forma!`;
+    const msg =
+      type === 'replace' ? `¡Era ${target.name} disfrazado!` : `¡${target.name} cambió de forma!`;
     store.addLog(msg, 'log-info', target);
   }
   return true;
@@ -100,7 +103,12 @@ function handleDetailsChangeToken(
 function handleTerastallize(ctx: SBCtx): boolean {
   const target = ctx.getPoke(ctx.parts[2] || '');
   const teraType = ctx.parts[3] || '';
-  if (target) ctx.store.addLog(`¡${target.name} ha Terastalizado${teraType ? ` a tipo ${teraType}` : ''}!`, 'log-info', '💎');
+  if (target)
+    ctx.store.addLog(
+      `¡${target.name} ha Terastalizado${teraType ? ` a tipo ${teraType}` : ''}!`,
+      'log-info',
+      '💎'
+    );
   return true;
 }
 
@@ -112,7 +120,11 @@ function handleMega(ctx: SBCtx): boolean {
       const resolvedId = requirePokemonSpeciesId(toID(megaSpecies));
       target.id = resolvedId;
     }
-    ctx.store.addLog(`¡${target.name} megaevolucionó${megaSpecies ? ` en ${megaSpecies}` : ''}!`, 'log-info', '✨');
+    ctx.store.addLog(
+      `¡${target.name} megaevolucionó${megaSpecies ? ` en ${megaSpecies}` : ''}!`,
+      'log-info',
+      '✨'
+    );
   }
   return true;
 }
@@ -125,14 +137,15 @@ function handlePrimal(ctx: SBCtx): boolean {
 
 function handleZPower(ctx: SBCtx): boolean {
   const user = ctx.getPoke(ctx.parts[2] || '');
-  const userName = user ? user.name : (ctx.parts[2] || 'El Pokémon');
+  const userName = user ? user.name : ctx.parts[2] || 'El Pokémon';
   ctx.store.addLog(`¡${userName} desató el poder del Z-Move!`, 'log-info', '⭐');
   return true;
 }
 
 function handleZBroken(ctx: SBCtx): boolean {
   const target = ctx.getPoke(ctx.parts[2] || '');
-  if (target) ctx.store.addLog(`¡El Z-Move rompió la protección de ${target.name}!`, 'log-info', '⭐');
+  if (target)
+    ctx.store.addLog(`¡El Z-Move rompió la protección de ${target.name}!`, 'log-info', '⭐');
   return true;
 }
 
@@ -156,6 +169,7 @@ function handleFormeChange(ctx: SBCtx): boolean {
 }
 
 const GIMMICK_HANDLERS: Readonly<Record<string, (ctx: SBCtx) => boolean>> = {
+  // open-record: Showdown gimmick event dispatch table
   '-terastallize': handleTerastallize,
   '-mega': handleMega,
   '-primal': handlePrimal,
@@ -163,15 +177,28 @@ const GIMMICK_HANDLERS: Readonly<Record<string, (ctx: SBCtx) => boolean>> = {
   '-zbroken': handleZBroken,
   '-burst': handleBurst,
   '-formechange': handleFormeChange,
-  '-transform': (ctx) => handleTransformToken(
-    ctx.getPoke(ctx.parts[2] || ''),
-    ctx.getPoke(ctx.parts[3] || ''),
-    ctx.parts[3] || '',
-    ctx.store,
-    ctx.getSide(ctx.parts[2] || '') || 'enemy'
-  ),
-  'detailschange': (ctx) => handleDetailsChangeToken(ctx.type, ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3] || ctx.parts[2] || '', ctx.store),
-  'replace': (ctx) => handleDetailsChangeToken(ctx.type, ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3] || ctx.parts[2] || '', ctx.store)
+  '-transform': (ctx) =>
+    handleTransformToken(
+      ctx.getPoke(ctx.parts[2] || ''),
+      ctx.getPoke(ctx.parts[3] || ''),
+      ctx.parts[3] || '',
+      ctx.store,
+      ctx.getSide(ctx.parts[2] || '') || 'enemy'
+    ),
+  detailschange: (ctx) =>
+    handleDetailsChangeToken(
+      ctx.type,
+      ctx.getPoke(ctx.parts[2] || ''),
+      ctx.parts[3] || ctx.parts[2] || '',
+      ctx.store
+    ),
+  replace: (ctx) =>
+    handleDetailsChangeToken(
+      ctx.type,
+      ctx.getPoke(ctx.parts[2] || ''),
+      ctx.parts[3] || ctx.parts[2] || '',
+      ctx.store
+    )
 };
 
 export function handleGimmickEvents(ctx: SBCtx): boolean {

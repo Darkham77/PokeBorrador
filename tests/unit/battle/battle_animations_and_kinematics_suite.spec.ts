@@ -7,7 +7,7 @@
  * and escape trajectories (whirlwind, knockback, teleport, flee).
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { ref } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import gsap from 'gsap';
@@ -98,10 +98,25 @@ describe('Combatant Feedback Animations (combatantFeedbackAnims)', () => {
     const onCatchDone = vi.fn();
     const onReleaseDone = vi.fn();
 
-    const catchTween = executeCatchingTween(sprite, shadow, rotation, '50% 100%', { x: 10, y: 20 }, onCatchDone);
+    const catchTween = executeCatchingTween(
+      sprite,
+      shadow,
+      rotation,
+      '50% 100%',
+      { x: 10, y: 20 },
+      onCatchDone
+    );
     expect(catchTween).toBeDefined();
 
-    const releaseTween = executeReleasingTween(sprite, shadow, rotation, '50% 100%', { x: 10, y: 20 }, 'pikachu', onReleaseDone);
+    const releaseTween = executeReleasingTween(
+      sprite,
+      shadow,
+      rotation,
+      '50% 100%',
+      { x: 10, y: 20 },
+      'pikachu',
+      onReleaseDone
+    );
     expect(releaseTween).toBeDefined();
   });
 });
@@ -262,7 +277,10 @@ describe('Attack Action Animations (buildAttackTimeline)', () => {
       activeMove: { id: 'shadowpunch', name: 'Puño Sombra', cat: 'physical', side: 'player' }
     };
     const tlSeat2 = buildAttackTimeline(spriteEl, rotationEl, attackSeat2Props);
-    const dashSeat2 = (tlSeat2!.to as ReturnType<typeof vi.fn>).mock.calls[1]![1] as Record<string, number>;
+    const dashSeat2 = (tlSeat2!.to as ReturnType<typeof vi.fn>).mock.calls[1]![1] as Record<
+      string,
+      number
+    >;
     const dashSeat2X = Number(dashSeat2.x);
     const dashSeat2Y = Number(dashSeat2.y);
 
@@ -278,7 +296,10 @@ describe('Attack Action Animations (buildAttackTimeline)', () => {
       activeMove: { id: 'shadowpunch', name: 'Puño Sombra', cat: 'physical', side: 'player' }
     };
     const tlSeat4 = buildAttackTimeline(spriteEl, rotationEl, attackSeat4Props);
-    const dashSeat4 = (tlSeat4!.to as ReturnType<typeof vi.fn>).mock.calls[1]![1] as Record<string, number>;
+    const dashSeat4 = (tlSeat4!.to as ReturnType<typeof vi.fn>).mock.calls[1]![1] as Record<
+      string,
+      number
+    >;
     const dashSeat4X = Number(dashSeat4.x);
     const dashSeat4Y = Number(dashSeat4.y);
 
@@ -300,7 +321,10 @@ describe('Attack Action Animations (buildAttackTimeline)', () => {
       activeMove: { id: 'bite', name: 'Mordisco', cat: 'physical', side: 'enemy' }
     };
     const tlCounter = buildAttackTimeline(spriteEl, rotationEl, counterProps);
-    const dashCounter = (tlCounter!.to as ReturnType<typeof vi.fn>).mock.calls[1]![1] as Record<string, number>;
+    const dashCounter = (tlCounter!.to as ReturnType<typeof vi.fn>).mock.calls[1]![1] as Record<
+      string,
+      number
+    >;
 
     expect(Number(dashCounter.x)).toBeCloseTo(-dashSeat4X, 2);
     expect(Number(dashCounter.y)).toBeCloseTo(-dashSeat4Y, 2);
@@ -464,8 +488,22 @@ describe('Escape Trajectories & GSAP Tweens', () => {
 
     const props = {
       side: 'enemy' as const,
-      pokemon: { id: 'caterpie', uid: 'enemy-caterpie-1', name: 'Caterpie', hp: 18, maxHp: 18, moves: [] },
-      modelValue: { id: 'caterpie', uid: 'enemy-caterpie-1', name: 'Caterpie', hp: 18, maxHp: 18, moves: [] },
+      pokemon: {
+        id: 'caterpie',
+        uid: 'enemy-caterpie-1',
+        name: 'Caterpie',
+        hp: 18,
+        maxHp: 18,
+        moves: []
+      },
+      modelValue: {
+        id: 'caterpie',
+        uid: 'enemy-caterpie-1',
+        name: 'Caterpie',
+        hp: 18,
+        maxHp: 18,
+        moves: []
+      },
       playerCombatantRef: null,
       enemyCombatantRef: null,
       playerModel: null,
@@ -500,8 +538,22 @@ describe('Escape Trajectories & GSAP Tweens', () => {
 
     const props = {
       side: 'player' as const,
-      pokemon: { id: 'pidgeot', uid: 'player-pidgeot-1', name: 'Pidgeot', hp: 92, maxHp: 92, moves: [] },
-      modelValue: { id: 'pidgeot', uid: 'player-pidgeot-1', name: 'Pidgeot', hp: 92, maxHp: 92, moves: [] },
+      pokemon: {
+        id: 'pidgeot',
+        uid: 'player-pidgeot-1',
+        name: 'Pidgeot',
+        hp: 92,
+        maxHp: 92,
+        moves: []
+      },
+      modelValue: {
+        id: 'pidgeot',
+        uid: 'player-pidgeot-1',
+        name: 'Pidgeot',
+        hp: 92,
+        maxHp: 92,
+        moves: []
+      },
       playerCombatantRef: null,
       enemyCombatantRef: null,
       playerModel: null,
@@ -536,7 +588,14 @@ describe('Escape Trajectories & GSAP Tweens', () => {
 
     const props = {
       side: 'enemy' as const,
-      pokemon: { id: 'machop', uid: 'enemy-machop-1', name: 'Machop', hp: 50, maxHp: 50, moves: [] },
+      pokemon: {
+        id: 'machop',
+        uid: 'enemy-machop-1',
+        name: 'Machop',
+        hp: 50,
+        maxHp: 50,
+        moves: []
+      },
       position: { x: 500, y: 300 },
       baseSize: 64
     };
@@ -597,7 +656,14 @@ describe('Escape Trajectories & GSAP Tweens', () => {
 
     const props = {
       side: 'player' as const,
-      pokemon: { id: 'rattata', uid: 'player-rattata-1', name: 'Rattata', hp: 20, maxHp: 20, moves: [] },
+      pokemon: {
+        id: 'rattata',
+        uid: 'player-rattata-1',
+        name: 'Rattata',
+        hp: 20,
+        maxHp: 20,
+        moves: []
+      },
       position: { x: 100, y: 200 },
       baseSize: 64
     };

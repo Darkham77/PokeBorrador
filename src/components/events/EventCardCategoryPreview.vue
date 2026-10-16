@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useEventStore } from '@/stores/events'
-import { useGameStore } from '@/stores/game'
-import { useModalStore } from '@/stores/modals'
-import { useUIStore } from '@/stores/ui'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import type { CompetitionParticipant } from '@/types/system/stores'
+import { ref, computed, watch } from 'vue';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { CompetitionParticipant } from '@/types/system/stores';
 import {
   resolveSubCompetitionDirection,
   getSubCompTitle,
@@ -15,55 +15,58 @@ import {
   type Event as GameEvent,
   type SubCompetitionConfig,
   type ResolvedSubCompetition
-} from '@/logic/events/eventEngine'
-import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { getServerInstant } from '@/logic/utils/timeUtils'
-import EventCategorySpeciesTabs from './EventCategorySpeciesTabs.vue'
-import EventCategorySlotChip from './EventCategorySlotChip.vue'
-import type { SpeciesTabItem } from './eventCardTypes'
+} from '@/logic/events/eventEngine';
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { getServerInstant } from '@/logic/utils/timeUtils';
+import EventCategorySpeciesTabs from './EventCategorySpeciesTabs.vue';
+import EventCategorySlotChip from './EventCategorySlotChip.vue';
+import type { SpeciesTabItem } from './eventCardTypes';
 
 interface Props {
-  event: GameEvent
-  idPrefix?: string
-  resolvedSubComps: ResolvedSubCompetition[]
-  cardSpeciesList: PokemonSpeciesId[]
+  event: GameEvent;
+  idPrefix?: string;
+  resolvedSubComps: ResolvedSubCompetition[];
+  cardSpeciesList: PokemonSpeciesId[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   idPrefix: ''
-})
+});
 
-const eventStore = useEventStore()
-const gameStore = useGameStore()
-const modalStore = useModalStore()
-const uiStore = useUIStore()
+const eventStore = useEventStore();
+const gameStore = useGameStore();
+const modalStore = useModalStore();
+const uiStore = useUIStore();
 
 const getEntryForCategory = (catId: string) => {
-  return eventStore.userEntries[`${props.event.id}:${catId}`] || (catId === 'ivs' ? eventStore.userEntries[props.event.id] : undefined)
-}
+  return (
+    eventStore.userEntries[`${props.event.id}:${catId}`] ||
+    (catId === 'ivs' ? eventStore.userEntries[props.event.id] : undefined)
+  );
+};
 
 const enrolledCategoriesCount = computed(() => {
-  if (props.event.type !== 'competition') return 0
-  let count = 0
+  if (props.event.type !== 'competition') return 0;
+  let count = 0;
   for (const sub of props.resolvedSubComps) {
     if (getParticipantForCategory(sub)) {
-      count++
+      count++;
     }
   }
-  return count
-})
+  return count;
+});
 
 const getParticipantForCategory = (sub: SubCompetitionConfig): CompetitionParticipant | null => {
-  const entry = getEntryForCategory(sub.id)
-  if (!entry) return null
-  const uid = entry.pokemon_uid
-  const found = gameStore.getPokemonByUid(uid)
+  const entry = getEntryForCategory(sub.id);
+  if (!entry) return null;
+  const uid = entry.pokemon_uid;
+  const found = gameStore.getPokemonByUid(uid);
 
-  const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order)
+  const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order);
 
   if (found) {
-    const evalRes = evaluatePokemonForSubCompetition(found, sub, dir)
+    const evalRes = evaluatePokemonForSubCompetition(found, sub, dir);
     return {
       uid: found.uid,
       id: found.id,
@@ -76,10 +79,10 @@ const getParticipantForCategory = (sub: SubCompetitionConfig): CompetitionPartic
       weight: found.weight,
       displayValue: evalRes.displayValue,
       score: evalRes.score
-    }
+    };
   }
 
-  const data = entry.data
+  const data = entry.data;
   if (data && data.species && isPokemonSpeciesId(data.species)) {
     return {
       uid,
@@ -93,36 +96,48 @@ const getParticipantForCategory = (sub: SubCompetitionConfig): CompetitionPartic
       weight: data.weight,
       displayValue: data.displayValue,
       score: data.score
-    }
+    };
   }
-  return null
-}
+  return null;
+};
 
 const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
-  const targetSp = ('targetSpecies' in sub && sub.targetSpecies) ? sub.targetSpecies : null
+  const targetSp = 'targetSpecies' in sub && sub.targetSpecies ? sub.targetSpecies : null;
   const allowedSpecies = targetSp
     ? [targetSp]
-    : (props.cardSpeciesList.length > 0 ? props.cardSpeciesList : null)
+    : props.cardSpeciesList.length > 0
+      ? props.cardSpeciesList
+      : null;
 
-  const allPokes = [...gameStore.allPokemonList] as Pokemon[]
-  
-  const eligible = getEligiblePokemonForSubCompetition(props.event, sub, allPokes, getServerInstant())
-    .filter(p => !isPokemonEnrolledInOtherSubCompetition(eventStore.userEntries, props.event.id, sub.id, p.uid))
+  const allPokes = [...gameStore.allPokemonList] as Pokemon[];
+
+  const eligible = getEligiblePokemonForSubCompetition(
+    props.event,
+    sub,
+    allPokes,
+    getServerInstant()
+  ).filter(
+    (p) =>
+      !isPokemonEnrolledInOtherSubCompetition(eventStore.userEntries, props.event.id, sub.id, p.uid)
+  );
 
   if (eligible.length === 0) {
-    const spNote = targetSp ? ` (${targetSp})` : ''
-    uiStore.notify(`No tienes ningún Pokémon disponible para: ${getSubCompTitle(props.event.id, sub)}${spNote} (los ya inscritos en otra categoría no pueden repetir)`, '⚠️')
-    return
+    const spNote = targetSp ? ` (${targetSp})` : '';
+    uiStore.notify(
+      `No tienes ningún Pokémon disponible para: ${getSubCompTitle(props.event.id, sub)}${spNote} (los ya inscritos en otra categoría no pueden repetir)`,
+      '⚠️'
+    );
+    return;
   }
 
-  const allowedIds = eligible.map(p => p.uid)
-  const subtitle = `Elige un Pokémon para la categoría: ${getSubCompTitle(props.event.id, sub)}`
-  const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order)
+  const allowedIds = eligible.map((p) => p.uid);
+  const subtitle = `Elige un Pokémon para la categoría: ${getSubCompTitle(props.event.id, sub)}`;
+  const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order);
   const resolvedSub: ResolvedSubCompetition = {
     ...sub,
     order: dir,
     speciesScope: sub.speciesScope ?? 'global'
-  }
+  };
 
   modalStore.open('PokemonSelection', {
     title: 'SELECCIONAR POKÉMON',
@@ -135,78 +150,80 @@ const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConf
     allowedSpecies,
     allowedIds,
     onConfirm: async (selectedObjects: Pokemon[]) => {
-      const pokemon = selectedObjects[0]
+      const pokemon = selectedObjects[0];
       if (pokemon) {
-        await eventStore.submitCompetitionEntry(props.event.id, sub.id, pokemon.uid)
+        await eventStore.submitCompetitionEntry(props.event.id, sub.id, pokemon.uid);
       }
     }
-  })
-}
+  });
+};
 
 const handleSlotChipClick = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
-  const participant = getParticipantForCategory(sub)
+  const participant = getParticipantForCategory(sub);
   if (participant) {
     modalStore.open('EventSlotAction', {
       event: props.event,
       sub,
       participant,
       onChange: () => {
-        openParticipationModal(sub)
+        openParticipationModal(sub);
       },
       onWithdraw: () => {
-        eventStore.removeCompetitionEntry(props.event.id, sub.id)
+        eventStore.removeCompetitionEntry(props.event.id, sub.id);
       }
-    })
+    });
   } else {
-    openParticipationModal(sub)
+    openParticipationModal(sub);
   }
-}
+};
 
-const isAutoFilling = ref(false)
+const isAutoFilling = ref(false);
 
 const handleAutoFill = async () => {
-  if (isAutoFilling.value) return
-  isAutoFilling.value = true
+  if (isAutoFilling.value) return;
+  isAutoFilling.value = true;
   try {
-    const enrolled = await eventStore.autoFillBestEntries(props.event.id)
+    const enrolled = await eventStore.autoFillBestEntries(props.event.id);
     if (enrolled > 0) {
-      uiStore.notify(`¡${enrolled} categoría(s) rellenada(s) con tus mejores Pokémon!`, '🏆')
+      uiStore.notify(`¡${enrolled} categoría(s) rellenada(s) con tus mejores Pokémon!`, '🏆');
     } else {
-      uiStore.notify('No hay mejoras disponibles para inscribir automáticamente.', 'ℹ️')
+      uiStore.notify('No hay mejoras disponibles para inscribir automáticamente.', 'ℹ️');
     }
   } catch (_err) {
-    uiStore.notify('Error al auto-rellenar inscripciones.', '❌')
+    uiStore.notify('Error al auto-rellenar inscripciones.', '❌');
   } finally {
-    isAutoFilling.value = false
+    isAutoFilling.value = false;
   }
-}
+};
 
 // Check if this event has multiple participating species
 const isMultiSpecies = computed(() => {
-  const speciesSet = new Set<PokemonSpeciesId>()
+  const speciesSet = new Set<PokemonSpeciesId>();
   for (const sub of props.resolvedSubComps) {
     if (sub.targetSpecies) {
-      speciesSet.add(sub.targetSpecies)
+      speciesSet.add(sub.targetSpecies);
     }
   }
   for (const sp of props.cardSpeciesList) {
-    speciesSet.add(sp)
+    speciesSet.add(sp);
   }
-  return speciesSet.size > 1
-})
+  return speciesSet.size > 1;
+});
 
 // Derived Species Tabs with Completion Check (only activated for multi-species events)
 const speciesTabs = computed<SpeciesTabItem[]>(() => {
   if (!isMultiSpecies.value) {
-    return []
+    return [];
   }
 
-  const tabs: SpeciesTabItem[] = []
+  const tabs: SpeciesTabItem[] = [];
 
   // 1. Global categories
-  const globalSubs = props.resolvedSubComps.filter(s => !s.targetSpecies || s.speciesScope === 'global')
+  const globalSubs = props.resolvedSubComps.filter(
+    (s) => !s.targetSpecies || s.speciesScope === 'global'
+  );
   if (globalSubs.length > 0) {
-    const enrolled = globalSubs.filter(s => Boolean(getParticipantForCategory(s))).length
+    const enrolled = globalSubs.filter((s) => Boolean(getParticipantForCategory(s))).length;
     tabs.push({
       id: 'global',
       name: 'Global',
@@ -214,29 +231,29 @@ const speciesTabs = computed<SpeciesTabItem[]>(() => {
       totalCount: globalSubs.length,
       enrolledCount: enrolled,
       isComplete: enrolled === globalSubs.length && globalSubs.length > 0
-    })
+    });
   }
 
   // 2. Species categories in stable order
-  const speciesSeen = new Set<PokemonSpeciesId>()
-  const speciesList: PokemonSpeciesId[] = []
+  const speciesSeen = new Set<PokemonSpeciesId>();
+  const speciesList: PokemonSpeciesId[] = [];
   for (const sp of props.cardSpeciesList) {
     if (!speciesSeen.has(sp)) {
-      speciesSeen.add(sp)
-      speciesList.push(sp)
+      speciesSeen.add(sp);
+      speciesList.push(sp);
     }
   }
   for (const sub of props.resolvedSubComps) {
     if (sub.targetSpecies && !speciesSeen.has(sub.targetSpecies)) {
-      speciesSeen.add(sub.targetSpecies)
-      speciesList.push(sub.targetSpecies)
+      speciesSeen.add(sub.targetSpecies);
+      speciesList.push(sub.targetSpecies);
     }
   }
 
   for (const sp of speciesList) {
-    const spSubs = props.resolvedSubComps.filter(s => s.targetSpecies === sp)
+    const spSubs = props.resolvedSubComps.filter((s) => s.targetSpecies === sp);
     if (spSubs.length > 0) {
-      const enrolled = spSubs.filter(s => Boolean(getParticipantForCategory(s))).length
+      const enrolled = spSubs.filter((s) => Boolean(getParticipantForCategory(s))).length;
       tabs.push({
         id: sp,
         species: sp,
@@ -244,38 +261,38 @@ const speciesTabs = computed<SpeciesTabItem[]>(() => {
         totalCount: spSubs.length,
         enrolledCount: enrolled,
         isComplete: enrolled === spSubs.length && spSubs.length > 0
-      })
+      });
     }
   }
 
-  return tabs
-})
+  return tabs;
+});
 
-const activeTabId = ref<string>('global')
+const activeTabId = ref<string>('global');
 
 watch(
   speciesTabs,
   (tabs) => {
-    if (tabs.length === 0) return
-    const currentValid = tabs.some(t => t.id === activeTabId.value)
+    if (tabs.length === 0) return;
+    const currentValid = tabs.some((t) => t.id === activeTabId.value);
     if (!currentValid) {
-      const firstIncomplete = tabs.find(t => !t.isComplete)
-      const firstTab = tabs[0]
-      activeTabId.value = firstIncomplete ? firstIncomplete.id : (firstTab ? firstTab.id : 'global')
+      const firstIncomplete = tabs.find((t) => !t.isComplete);
+      const firstTab = tabs[0];
+      activeTabId.value = firstIncomplete ? firstIncomplete.id : firstTab ? firstTab.id : 'global';
     }
   },
   { immediate: true }
-)
+);
 
 const activeSubComps = computed<ResolvedSubCompetition[]>(() => {
   if (speciesTabs.value.length <= 1) {
-    return props.resolvedSubComps
+    return props.resolvedSubComps;
   }
   if (activeTabId.value === 'global') {
-    return props.resolvedSubComps.filter(s => !s.targetSpecies || s.speciesScope === 'global')
+    return props.resolvedSubComps.filter((s) => !s.targetSpecies || s.speciesScope === 'global');
   }
-  return props.resolvedSubComps.filter(s => s.targetSpecies === activeTabId.value)
-})
+  return props.resolvedSubComps.filter((s) => s.targetSpecies === activeTabId.value);
+});
 </script>
 
 <template>
@@ -283,11 +300,10 @@ const activeSubComps = computed<ResolvedSubCompetition[]>(() => {
     <!-- Header with Anti-Collision Flex-Wrap -->
     <div class="comp-preview-header">
       <div class="header-title-group">
-        <span class="comp-preview-title pixelated"><span class="emoji title-icon">🏆</span> CATEGORÍAS EN JUEGO</span>
-        <span
-          v-if="enrolledCategoriesCount > 0"
-          class="comp-preview-badge pixelated enrolled"
+        <span class="comp-preview-title pixelated"
+          ><span class="emoji title-icon">🏆</span> CATEGORÍAS EN JUEGO</span
         >
+        <span v-if="enrolledCategoriesCount > 0" class="comp-preview-badge pixelated enrolled">
           <span class="emoji">✓</span> {{ enrolledCategoriesCount }}/{{ resolvedSubComps.length }}
         </span>
       </div>

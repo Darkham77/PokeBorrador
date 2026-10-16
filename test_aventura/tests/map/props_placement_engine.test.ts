@@ -14,7 +14,12 @@ import {
   type PropsPlacementOptions
 } from '../../logic/map/propsPlacementEngine.ts';
 import type { TileCollision } from '../../logic/map/tilesRegistry.ts';
-import type { MapCell, MapSpawn, MapWarp, GeneratedMap } from '../../logic/map/proceduralMapGenerator.ts';
+import type {
+  MapCell,
+  MapSpawn,
+  MapWarp,
+  GeneratedMap
+} from '../../logic/map/proceduralMapGenerator.ts';
 import type { UrbanLot } from '../../logic/map/urbanZoningEngine.ts';
 
 function createMockMapContext(width = 30, height = 30) {
@@ -38,9 +43,7 @@ function createMockMapContext(width = 30, height = 30) {
     Array(width).fill(false)
   );
 
-  const isPathCell: boolean[][] = Array.from({ length: height }, () =>
-    Array(width).fill(false)
-  );
+  const isPathCell: boolean[][] = Array.from({ length: height }, () => Array(width).fill(false));
 
   const spawns: MapSpawn[] = [
     { id: 'player_start', x: 15, y: 15, direction: 'down' },
@@ -127,19 +130,70 @@ describe('Fase 5: Map Props Registry & Placement Engine', () => {
       const ctx = createMockMapContext(20, 20);
 
       // Bench (2x1) at x = 19 (exceeds width 20 since 19 + 2 = 21 > 20)
-      const benchFit = canPlacePropAt(ctx.objectLayer, ctx.elevationLayer, ctx.isPathCell, BENCH_WOODEN, 19, 5, 20, 20);
+      const benchFit = canPlacePropAt(
+        ctx.objectLayer,
+        ctx.elevationLayer,
+        ctx.isPathCell,
+        BENCH_WOODEN,
+        19,
+        5,
+        20,
+        20
+      );
       expect(benchFit).toBe(false);
 
       // Street Lamp (1x2) at y = 19 (exceeds height 20 since 19 + 2 = 21 > 20)
-      const lampFit = canPlacePropAt(ctx.objectLayer, ctx.elevationLayer, ctx.isPathCell, STREET_LAMP, 5, 19, 20, 20);
+      const lampFit = canPlacePropAt(
+        ctx.objectLayer,
+        ctx.elevationLayer,
+        ctx.isPathCell,
+        STREET_LAMP,
+        5,
+        19,
+        20,
+        20
+      );
       expect(lampFit).toBe(false);
 
       // Negative coordinates
-      expect(canPlacePropAt(ctx.objectLayer, ctx.elevationLayer, ctx.isPathCell, BENCH_WOODEN, -1, 5, 20, 20)).toBe(false);
-      expect(canPlacePropAt(ctx.objectLayer, ctx.elevationLayer, ctx.isPathCell, STREET_LAMP, 5, -1, 20, 20)).toBe(false);
+      expect(
+        canPlacePropAt(
+          ctx.objectLayer,
+          ctx.elevationLayer,
+          ctx.isPathCell,
+          BENCH_WOODEN,
+          -1,
+          5,
+          20,
+          20
+        )
+      ).toBe(false);
+      expect(
+        canPlacePropAt(
+          ctx.objectLayer,
+          ctx.elevationLayer,
+          ctx.isPathCell,
+          STREET_LAMP,
+          5,
+          -1,
+          20,
+          20
+        )
+      ).toBe(false);
 
       // Valid internal coordinates should be allowed
-      expect(canPlacePropAt(ctx.objectLayer, ctx.elevationLayer, ctx.isPathCell, BENCH_WOODEN, 2, 2, 20, 20)).toBe(true);
+      expect(
+        canPlacePropAt(
+          ctx.objectLayer,
+          ctx.elevationLayer,
+          ctx.isPathCell,
+          BENCH_WOODEN,
+          2,
+          2,
+          20,
+          20
+        )
+      ).toBe(true);
     });
 
     it('stampPropAt safely does nothing and returns false if out-of-bounds', () => {
@@ -330,13 +384,31 @@ describe('Fase 5: Map Props Registry & Placement Engine', () => {
       const ctx = createMockMapContext(20, 20);
 
       // Stamping solid mailbox
-      const stampedSolid = stampPropAt(ctx.objectLayer, ctx.collisionGrid, MAILBOX, 5, 5, 20, 20, ctx.makeCell);
+      const stampedSolid = stampPropAt(
+        ctx.objectLayer,
+        ctx.collisionGrid,
+        MAILBOX,
+        5,
+        5,
+        20,
+        20,
+        ctx.makeCell
+      );
       expect(stampedSolid).toBe(true);
       expect(ctx.collisionGrid[5]![5]).toBe(true);
       expect(ctx.objectLayer[5]![5]?.tileId).toBe(MAILBOX.tiles[0]![0]);
 
       // Stamping walkable flower
-      const stampedWalkable = stampPropAt(ctx.objectLayer, ctx.collisionGrid, FLOWERS_RED, 8, 8, 20, 20, ctx.makeCell);
+      const stampedWalkable = stampPropAt(
+        ctx.objectLayer,
+        ctx.collisionGrid,
+        FLOWERS_RED,
+        8,
+        8,
+        20,
+        20,
+        ctx.makeCell
+      );
       expect(stampedWalkable).toBe(true);
       expect(ctx.collisionGrid[8]![8]).toBe(false);
       expect(ctx.objectLayer[8]![8]?.tileId).toBe(FLOWERS_RED.tiles[0]![0]);

@@ -56,7 +56,11 @@ export const PRIMARY_POI_TYPES = [
 ] as const satisfies readonly POIType[];
 export type PrimaryPOIType = (typeof PRIMARY_POI_TYPES)[number];
 
-export const SETTLEMENT_SCALES = ['metropolis', 'city', 'town'] as const satisfies readonly PrimaryPOIType[];
+export const SETTLEMENT_SCALES = [
+  'metropolis',
+  'city',
+  'town'
+] as const satisfies readonly PrimaryPOIType[];
 export type SettlementScale = (typeof SETTLEMENT_SCALES)[number];
 
 const PRIMARY_POI_TYPE_SET: ReadonlySet<string> = new Set(PRIMARY_POI_TYPES); // runtime-set: Estructura o identificador procedural de aventura

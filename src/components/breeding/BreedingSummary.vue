@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
-import { useBreedingStore } from '@/stores/breeding'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/breedingInheritance'
-import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
-import gsap from 'gsap'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { getServerTime } from '@/logic/utils/timeUtils'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
+import { useBreedingStore } from '@/stores/breeding';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/breedingInheritance';
+import { COMPAT_TEXT } from '@/data/breeding/breedingConstants';
+import gsap from 'gsap';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getServerTime } from '@/logic/utils/timeUtils';
 
-const breedingStore = useBreedingStore()
-const classStore = usePlayerClassStore()
+const breedingStore = useBreedingStore();
+const classStore = usePlayerClassStore();
 
-const heartRef = ref<HTMLElement | null>(null)
-let pulseTween: gsap.core.Tween | null = null
+const heartRef = ref<HTMLElement | null>(null);
+let pulseTween: gsap.core.Tween | null = null;
 
 const startPulse = () => {
-  if (pulseTween) return
-  if (!heartRef.value) return
-  
+  if (pulseTween) return;
+  if (!heartRef.value) return;
+
   // Set initial state
   gsap.set(heartRef.value, {
     scale: 1.0,
     opacity: 1,
     filter: 'grayscale(0%) drop-shadow(0 0 0px rgba(239, 68, 68, 0))'
-  })
+  });
 
   // Pulsing animation
   pulseTween = gsap.to(heartRef.value, {
@@ -33,144 +33,155 @@ const startPulse = () => {
     repeat: -1,
     yoyo: true,
     ease: 'power1.inOut'
-  })
-}
+  });
+};
 
 const stopPulse = () => {
   if (pulseTween) {
-    pulseTween.kill()
-    pulseTween = null
+    pulseTween.kill();
+    pulseTween = null;
   }
   if (heartRef.value) {
     gsap.set(heartRef.value, {
       scale: 1.0,
       opacity: 0.1,
       filter: 'grayscale(100%) drop-shadow(0 0 0px rgba(239, 68, 68, 0))'
-    })
+    });
   }
-}
+};
 
 const isCompatible = computed(() => {
-  return (breedingStore.compatibility?.level ?? 0) > 0
-})
+  return (breedingStore.compatibility?.level ?? 0) > 0;
+});
 
 const hasVigor = computed(() => {
-  const pA = breedingStore.slots[0]?.pokemon
-  const pB = breedingStore.slots[1]?.pokemon
-  if (!pA || !pB) return false
-  return (pA.vigor ?? 0) > 0 && (pB.vigor ?? 0) > 0
-})
+  const pA = breedingStore.slots[0]?.pokemon;
+  const pB = breedingStore.slots[1]?.pokemon;
+  if (!pA || !pB) return false;
+  return (pA.vigor ?? 0) > 0 && (pB.vigor ?? 0) > 0;
+});
 
 const isActivelyBreeding = computed(() => {
-  return breedingStore.isBreeding && isCompatible.value && hasVigor.value
-})
+  return breedingStore.isBreeding && isCompatible.value && hasVigor.value;
+});
 
 watch(isActivelyBreeding, (active) => {
   if (active) {
-    startPulse()
+    startPulse();
   } else {
-    stopPulse()
+    stopPulse();
   }
-})
+});
 
 const forecast = computed<GeneticsForecast | null>(() => {
-  if (!breedingStore.isBreeding || !breedingStore.slots[0]?.pokemon || !breedingStore.slots[1]?.pokemon) return null
+  if (
+    !breedingStore.isBreeding ||
+    !breedingStore.slots[0]?.pokemon ||
+    !breedingStore.slots[1]?.pokemon
+  )
+    return null;
   return getGeneticsForecast(
     breedingStore.slots[0].pokemon,
     breedingStore.slots[1].pokemon,
     classStore.playerClass || ''
-  )
-})
+  );
+});
 
 const compatStyle = computed(() => {
   if (!breedingStore.isBreeding) {
-    return { label: 'Deposita 2 Pokémon', color: '#94a3b8' }
+    return { label: 'Deposita 2 Pokémon', color: '#94a3b8' };
   }
-  const level = (breedingStore.compatibility?.level ?? 0) as number
-  return (COMPAT_TEXT as Record<number, { label: string; color: string }>)[level] || { label: 'Desconocido', color: 'gray' }
-})
+  const level = (breedingStore.compatibility?.level ?? 0) as number;
+  return (
+    (COMPAT_TEXT as Record<number, { label: string; color: string }>)[level] || {
+      label: 'Desconocido',
+      color: 'gray'
+    }
+  );
+});
 
 const formatMs = (ms: number | null): string => {
-  if (!ms) return '--:--'
-  const left = Math.max(0, Math.floor((ms - getServerTime()) / 1000))
-  const h = Math.floor(left / 3600)
-  const m = Math.floor((left % 3600) / 60)
-  const s = left % 60
-  
+  if (!ms) return '--:--';
+  const left = Math.max(0, Math.floor((ms - getServerTime()) / 1000));
+  const h = Math.floor(left / 3600);
+  const m = Math.floor((left % 3600) / 60);
+  const s = left % 60;
+
   if (h > 0) {
-    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
-  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
-}
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+};
 
 // GSAP Ticker: updates timer display every frame without setInterval
-const displayTime = ref(formatMs(breedingStore.nextEggTime))
+const displayTime = ref(formatMs(breedingStore.nextEggTime));
 
 const tickerFn = () => {
-  displayTime.value = formatMs(breedingStore.nextEggTime)
-  
+  displayTime.value = formatMs(breedingStore.nextEggTime);
+
   // Capa 3: Check in real-time if timer hit zero while active
   if (breedingStore.isBreeding && breedingStore.nextEggTime) {
-    const nowMs = getServerTime()
+    const nowMs = getServerTime();
     if (nowMs >= breedingStore.nextEggTime) {
-      breedingStore.checkAndGenerateEgg()
+      breedingStore.checkAndGenerateEgg();
     }
   }
-}
+};
 
 onMounted(() => {
   if (isActivelyBreeding.value) {
-    startPulse()
+    startPulse();
   } else {
-    stopPulse()
+    stopPulse();
   }
-  gsap.ticker.add(tickerFn)
-})
+  gsap.ticker.add(tickerFn);
+});
 
 onUnmounted(() => {
-  stopPulse()
-  gsap.ticker.remove(tickerFn)
-})
+  stopPulse();
+  gsap.ticker.remove(tickerFn);
+});
 
 const getCompatEmoji = (label: string) => {
-  if (!label) return ''
-  const emojiRegex = /^([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF])/
-  const match = label.match(emojiRegex)
-  return match ? match[0] : ''
-}
+  if (!label) return '';
+  const emojiRegex =
+    /^([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF])/;
+  const match = label.match(emojiRegex);
+  return match ? match[0] : '';
+};
 
 const getCompatText = (label: string) => {
-  if (!label) return ''
-  const emoji = getCompatEmoji(label)
-  return emoji ? label.replace(emoji, '').trim() : label
-}
+  if (!label) return '';
+  const emoji = getCompatEmoji(label);
+  return emoji ? label.replace(emoji, '').trim() : label;
+};
 </script>
 
 <template>
   <div class="breeding-summary">
     <div class="compat-section">
-      <div
-        class="compat-indicator"
-        :style="{ color: compatStyle.color }"
-      >
+      <div class="compat-indicator" :style="{ color: compatStyle.color }">
         <div class="compat-label">
-          <span
-            v-if="getCompatEmoji(compatStyle.label)"
-            class="emoji compat-emoji"
-          >{{ getCompatEmoji(compatStyle.label) }}</span>
+          <span v-if="getCompatEmoji(compatStyle.label)" class="emoji compat-emoji">{{
+            getCompatEmoji(compatStyle.label)
+          }}</span>
           <span class="compat-text">{{ getCompatText(compatStyle.label) }}</span>
         </div>
-        <div
-          v-if="breedingStore.isBreeding"
-          class="timer"
-        >
+        <div v-if="breedingStore.isBreeding" class="timer">
           <template v-if="!isCompatible">
             <span class="emoji timer-icon">⏳</span>
             {{ displayTime }}
           </template>
           <template v-else-if="!hasVigor">
             <span class="emoji timer-icon font-large">💤</span>
-            <span style="color: var(--red-light); font-weight: bold; text-shadow: 0 0 5px rgb(239 68 68 / 40%);">CANSADOS (SIN VIGOR)</span>
+            <span
+              style="
+                color: var(--red-light);
+                font-weight: bold;
+                text-shadow: 0 0 5px rgb(239 68 68 / 40%);
+              "
+              >CANSADOS (SIN VIGOR)</span
+            >
           </template>
           <template v-else>
             <span class="emoji timer-icon">⏳</span>
@@ -178,18 +189,10 @@ const getCompatText = (label: string) => {
           </template>
         </div>
       </div>
-      <div
-        ref="heartRef"
-        class="heart-fx emoji"
-      >
-        ❤️
-      </div>
+      <div ref="heartRef" class="heart-fx emoji">❤️</div>
     </div>
 
-    <div
-      v-if="breedingStore.isBreeding && forecast"
-      class="forecast-card"
-    >
+    <div v-if="breedingStore.isBreeding && forecast" class="forecast-card">
       <div class="forecast-header">
         <span class="emoji icon">🧬</span>
         <h4>Pronóstico de Herencia</h4>
@@ -226,7 +229,9 @@ const getCompatText = (label: string) => {
           description="Se activa si los padres son de distintas nacionalidades (por ej. un Ditto extranjero). Multiplica por 6 la probabilidad de que la cría sea Shiny."
         >
           <span class="label">Método Masuda:</span>
-          <span class="value">{{ forecast.masudaActive ? `ACTIVO (x${forecast.shinyMultiplier})` : 'Inactivo' }}</span>
+          <span class="value">{{
+            forecast.masudaActive ? `ACTIVO (x${forecast.shinyMultiplier})` : 'Inactivo'
+          }}</span>
         </PVTooltip>
 
         <PVTooltip
@@ -237,22 +242,25 @@ const getCompatText = (label: string) => {
           description="Movimientos especiales que el bebé puede aprender al nacer si alguno de los padres conoce un movimiento compatible en su lista de movimientos huevo."
         >
           <span class="label">Movimientos Huevo:</span>
-          <span class="value">{{ forecast.eggMovesCount > 0 ? 'SÍ' : 'Ninguno' }} <span
-            v-if="forecast.eggMovesCount > 0"
-            class="emoji"
-          >✨</span></span>
+          <span class="value"
+            >{{ forecast.eggMovesCount > 0 ? 'SÍ' : 'Ninguno' }}
+            <span v-if="forecast.eggMovesCount > 0" class="emoji">✨</span></span
+          >
         </PVTooltip>
       </div>
 
       <div class="forecast-help">
-        <p><span class="emoji">ℹ️</span> Usa Piedra Eterna para la Naturaleza y Lazo Destino para heredar más IVs.</p>
+        <p>
+          <span class="emoji">ℹ️</span> Usa Piedra Eterna para la Naturaleza y Lazo Destino para
+          heredar más IVs.
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .breeding-summary {
   display: flex;
@@ -269,7 +277,7 @@ const getCompatText = (label: string) => {
 
 .compat-indicator {
   text-align: center;
-  
+
   .compat-label {
     display: flex;
     flex-direction: column;
@@ -300,7 +308,7 @@ const getCompatText = (label: string) => {
     .timer-icon {
       font-size: var(--font-26);
       line-height: 1;
-      
+
       &.font-large {
         font-size: var(--font-26);
       }
@@ -323,7 +331,7 @@ const getCompatText = (label: string) => {
   background: Rgb(30 41 59 / 85%);
   box-shadow: var(--shadow-xl);
   box-sizing: border-box;
-  
+
   .forecast-header {
     display: flex;
     align-items: center;
@@ -331,8 +339,10 @@ const getCompatText = (label: string) => {
     margin-bottom: 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid Rgb(255 255 255 / 5%);
-    
-    .icon { font-size: var(--font-16); }
+
+    .icon {
+      font-size: var(--font-16);
+    }
     h4 {
       color: $white;
       font-size: var(--font-11);
@@ -364,7 +374,7 @@ const getCompatText = (label: string) => {
   background: Rgb(0 0 0 / 20%);
   box-sizing: border-box;
   cursor: help;
-  
+
   .label {
     color: $muted;
     font-size: var(--font-8);
@@ -372,7 +382,7 @@ const getCompatText = (label: string) => {
     line-height: 1.4;
     text-align: left;
   }
-  
+
   .value {
     color: $white;
     font-size: var(--font-10);
@@ -380,17 +390,21 @@ const getCompatText = (label: string) => {
     line-height: 1.4;
     text-align: left;
   }
-  
+
   &.active {
     background: Rgb(255 51 102 / 4%);
     border-color: Rgb(255 51 102 / 35%);
-    .value { color: var(--rose); }
+    .value {
+      color: var(--rose);
+    }
   }
-  
+
   &.positive {
     background: Rgb(34 197 94 / 5%);
     border-color: Rgb(34 197 94 / 40%);
-    .value { color: Rgb(74 222 128 / 100%); }
+    .value {
+      color: Rgb(74 222 128 / 100%);
+    }
   }
 }
 

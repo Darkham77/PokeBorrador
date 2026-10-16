@@ -1,43 +1,50 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import BaseModal from '@/components/common/BaseModal.vue'
+import { computed } from 'vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 
 interface ActiveAdventureEvent {
-  title?: string
-  desc?: string
-  moRequired?: string
-  type?: string
+  title?: string;
+  desc?: string;
+  moRequired?: string;
+  type?: string;
 }
 
 const props = defineProps<{
-  activeEvent: ActiveAdventureEvent | null
-  activeHMs: Set<string>
-}>()
+  activeEvent: ActiveAdventureEvent | null;
+  activeHMs: Set<string>;
+}>();
 
 const emit = defineEmits<{
-  (e: 'resolve'): void
-  (e: 'resume'): void
-}>()
+  (e: 'resolve'): void;
+  (e: 'resume'): void;
+}>();
+
+type AdventureEventActionType =
+  | 'obstacle_rock_smash'
+  | 'fishing'
+  | 'obstacle_cut'
+  | 'obstacle_strength';
 
 interface EventTypeAction {
-  emoji: string
-  label: string
+  emoji: string;
+  label: string;
 }
 
-const EVENT_TYPE_ACTIONS: Readonly<Record<string, EventTypeAction>> = {
+const EVENT_TYPE_ACTIONS: Readonly<Record<AdventureEventActionType, EventTypeAction>> = {
   obstacle_rock_smash: { emoji: '⛏️', label: ' Excavar Fósil' },
   fishing: { emoji: '🎣', label: ' Lanzar Caña' },
   obstacle_cut: { emoji: '✂️', label: ' Cortar Arbusto' },
   obstacle_strength: { emoji: '💪', label: ' Empujar Roca' }
-}
+};
 
-const DEFAULT_EVENT_ACTION: Readonly<EventTypeAction> = { emoji: '⚔️', label: ' Combatir' }
+const DEFAULT_EVENT_ACTION: Readonly<EventTypeAction> = { emoji: '⚔️', label: ' Combatir' };
 
 const eventAction = computed<EventTypeAction>(() => {
-  const type = props.activeEvent?.type
-  if (!type) return DEFAULT_EVENT_ACTION
-  return EVENT_TYPE_ACTIONS[type] ?? DEFAULT_EVENT_ACTION
-})
+  const type = props.activeEvent?.type;
+  if (!type) return DEFAULT_EVENT_ACTION;
+  const entry = (EVENT_TYPE_ACTIONS as Record<string, EventTypeAction | undefined>)[type]; // open-record: Event type actions dictionary
+  return entry ?? DEFAULT_EVENT_ACTION;
+});
 </script>
 
 <template>
@@ -51,22 +58,25 @@ const eventAction = computed<EventTypeAction>(() => {
   >
     <div
       v-if="activeEvent"
-      style="display: flex; flex-direction: column; gap: $spacing-md; font-family: var(--font-pixel); font-size: var(--font-8); text-align: center;"
+      style="
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-md;
+        font-family: var(--font-pixel);
+        font-size: var(--font-8);
+        text-align: center;
+      "
     >
-      <p
-        class="adv-event-desc"
-        style=" margin: 0; color: var(--slate-300);line-height: 1.7;"
-      >
+      <p class="adv-event-desc" style="margin: 0; color: var(--slate-300); line-height: 1.7">
         {{ activeEvent.desc }}
       </p>
 
-      <div
-        v-if="activeEvent.moRequired"
-        class="adv-mo-status"
-      >
-        Requisito: <span :class="['adv-mo-badge', { ok: activeHMs.has(activeEvent.moRequired) }]">
-          MO {{ activeEvent.moRequired }}
-          ({{ activeHMs.has(activeEvent.moRequired) ? 'DISPONIBLE' : 'FALTANTE' }})
+      <div v-if="activeEvent.moRequired" class="adv-mo-status">
+        Requisito:
+        <span :class="['adv-mo-badge', { ok: activeHMs.has(activeEvent.moRequired) }]">
+          MO {{ activeEvent.moRequired }} ({{
+            activeHMs.has(activeEvent.moRequired) ? 'DISPONIBLE' : 'FALTANTE'
+          }})
         </span>
       </div>
 
@@ -74,7 +84,7 @@ const eventAction = computed<EventTypeAction>(() => {
         v-if="activeEvent.type === 'combat_won'"
         id="adv-event-resume-btn"
         class="btn-vicio-primary"
-        style="width: 100%; padding: 10px; font-size: var(--font-8);"
+        style="width: 100%; padding: 10px; font-size: var(--font-8)"
         @click="emit('resume')"
       >
         <span class="emoji">🚶</span> Continuar Viaje
@@ -84,7 +94,7 @@ const eventAction = computed<EventTypeAction>(() => {
           v-if="!activeEvent.moRequired || activeHMs.has(activeEvent.moRequired)"
           id="adv-event-resolve-btn"
           class="btn-vicio-primary"
-          style="width: 100%; padding: 10px; font-size: var(--font-8);"
+          style="width: 100%; padding: 10px; font-size: var(--font-8)"
           @click="emit('resolve')"
         >
           <span class="emoji">{{ eventAction.emoji }}</span>
@@ -94,7 +104,7 @@ const eventAction = computed<EventTypeAction>(() => {
           v-else
           id="adv-event-bypass-btn"
           class="btn-vicio-secondary"
-          style="width: 100%; padding: 10px; font-size: var(--font-8);"
+          style="width: 100%; padding: 10px; font-size: var(--font-8)"
           @click="emit('resolve')"
         >
           <span class="emoji">🚶</span> Rodear Obstáculo
@@ -105,4 +115,3 @@ const eventAction = computed<EventTypeAction>(() => {
 </template>
 
 <style scoped lang="scss" src="@/views/adventure/AdventureTestView.styles.scss"></style>
-

@@ -4,17 +4,22 @@
 // Note: BattleState.isTrapped() removed — use snapshot data only
 // ============================================================
 
-import type { HeuristicBattleSnapshot, PositionEvaluation, WinCondition, HeuristicPokemonState } from './types.ts';
+import type {
+  HeuristicBattleSnapshot,
+  PositionEvaluation,
+  WinCondition,
+  HeuristicPokemonState
+} from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { BattleConditionKey } from '@/types/battle/battle';
 import type { SideID } from '@pkmn/sim';
 
-const WEIGHT_POKEMON_ADVANTAGE = 0.20 as const;
+const WEIGHT_POKEMON_ADVANTAGE = 0.2 as const;
 const WEIGHT_HP_ADVANTAGE = 0.15 as const;
-const WEIGHT_HAZARD_ADVANTAGE = 0.10 as const;
+const WEIGHT_HAZARD_ADVANTAGE = 0.1 as const;
 const WEIGHT_SPEED_ADVANTAGE = 0.15 as const;
 const WEIGHT_TYPE_MATCHUP_ADVANTAGE = 0.15 as const;
-const WEIGHT_STATUS_ADVANTAGE = 0.10 as const;
+const WEIGHT_STATUS_ADVANTAGE = 0.1 as const;
 const WEIGHT_WIN_CONDITION_VIABILITY = 0.15 as const;
 
 const POSITION_WEIGHTS = {
@@ -38,10 +43,12 @@ const POSITION_WEIGHTS = {
 const HAZARD_DEFAULT_LAYER_COUNT = 0;
 
 function countHazardLayers(conditions: Map<BattleConditionKey, number>): number {
-  return (conditions.get('stealthrock') ?? HAZARD_DEFAULT_LAYER_COUNT) +
+  return (
+    (conditions.get('stealthrock') ?? HAZARD_DEFAULT_LAYER_COUNT) +
     (conditions.get('spikes') ?? HAZARD_DEFAULT_LAYER_COUNT) +
     (conditions.get('toxicspikes') ?? HAZARD_DEFAULT_LAYER_COUNT) +
-    (conditions.get('stickyweb') ?? HAZARD_DEFAULT_LAYER_COUNT);
+    (conditions.get('stickyweb') ?? HAZARD_DEFAULT_LAYER_COUNT)
+  );
 }
 
 function computePokemonAdvantage(myAliveCount: number, oppAliveCount: number): number {
@@ -55,8 +62,10 @@ function computeHpAdvantage(
   myAlive: readonly HeuristicPokemonState[],
   oppAlive: readonly HeuristicPokemonState[]
 ): number {
-  const myAvgHp = myAlive.length > 0 ? myAlive.reduce((s, p) => s + p.hpPercent, 0) / myAlive.length : 0;
-  const oppAvgHp = oppAlive.length > 0 ? oppAlive.reduce((s, p) => s + p.hpPercent, 0) / oppAlive.length : 0;
+  const myAvgHp =
+    myAlive.length > 0 ? myAlive.reduce((s, p) => s + p.hpPercent, 0) / myAlive.length : 0;
+  const oppAvgHp =
+    oppAlive.length > 0 ? oppAlive.reduce((s, p) => s + p.hpPercent, 0) / oppAlive.length : 0;
   return (myAvgHp - oppAvgHp) / POSITION_WEIGHTS.PERCENTAGE_FULL_SCALE;
 }
 
@@ -69,7 +78,8 @@ function computeHazardAdvantage(
     w.POSITION_BOUND_MIN,
     Math.min(
       w.POSITION_BOUND_MAX,
-      (countHazardLayers(oppSideConditions) - countHazardLayers(mySideConditions)) / w.MAX_HAZARD_LAYERS_NORMALIZER
+      (countHazardLayers(oppSideConditions) - countHazardLayers(mySideConditions)) /
+        w.MAX_HAZARD_LAYERS_NORMALIZER
     )
   );
 }
@@ -86,14 +96,17 @@ function computeSpeedAdvantage(
   for (const my of myAlive) {
     for (const opp of oppAlive) {
       speedTotal++;
-      if (calc.getEffectiveSpeed(my, snapshot.field, snapshot.myPlayer) >
-          calc.getEffectiveSpeed(opp, snapshot.field, oppSide)) {
+      if (
+        calc.getEffectiveSpeed(my, snapshot.field, snapshot.myPlayer) >
+        calc.getEffectiveSpeed(opp, snapshot.field, oppSide)
+      ) {
         speedWins++;
       }
     }
   }
   return speedTotal > 0
-    ? (speedWins / speedTotal - POSITION_WEIGHTS.MIDPOINT_OFFSET_HALF) * POSITION_WEIGHTS.RANGE_EXPANDER_DOUBLE
+    ? (speedWins / speedTotal - POSITION_WEIGHTS.MIDPOINT_OFFSET_HALF) *
+        POSITION_WEIGHTS.RANGE_EXPANDER_DOUBLE
     : POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE;
 }
 
@@ -110,13 +123,23 @@ function computeTypeMatchupAdvantage(
   let theirBest = w.POSITION_MIN_DEFAULT_SCORE;
   for (const mv of myActive.moves) {
     try {
-      ourBest = Math.max(ourBest, calc.calcDamage(myActive, oppActive, mv.id, snapshot.field).maxPercent);
-    } catch { /* catch-ok: Hypothetical move exploration probe skip */ }
+      ourBest = Math.max(
+        ourBest,
+        calc.calcDamage(myActive, oppActive, mv.id, snapshot.field).maxPercent
+      );
+    } catch {
+      /* catch-ok: Hypothetical move exploration probe skip */
+    }
   }
   for (const mv of oppActive.knownMoves) {
     try {
-      theirBest = Math.max(theirBest, calc.calcDamage(oppActive, myActive, mv, snapshot.field).maxPercent);
-    } catch { /* catch-ok: Hypothetical move exploration probe skip */ }
+      theirBest = Math.max(
+        theirBest,
+        calc.calcDamage(oppActive, myActive, mv, snapshot.field).maxPercent
+      );
+    } catch {
+      /* catch-ok: Hypothetical move exploration probe skip */
+    }
   }
   return Math.max(
     w.POSITION_BOUND_MIN,
@@ -129,8 +152,8 @@ function computeStatusAdvantage(
   oppAlive: readonly HeuristicPokemonState[]
 ): number {
   const w = POSITION_WEIGHTS;
-  const myStatused = myAlive.filter(p => p.status !== null).length;
-  const oppStatused = oppAlive.filter(p => p.status !== null).length;
+  const myStatused = myAlive.filter((p) => p.status !== null).length;
+  const oppStatused = oppAlive.filter((p) => p.status !== null).length;
   return Math.max(
     w.POSITION_BOUND_MIN,
     Math.min(w.POSITION_BOUND_MAX, (oppStatused - myStatused) / w.MAX_STATUS_PENALTY_COUNT)
@@ -138,39 +161,47 @@ function computeStatusAdvantage(
 }
 
 function computeWinConditionViability(winConditions: WinCondition[]): number {
-  const bestWC = winConditions.length > 0
-    ? (winConditions[0]?.score ?? POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE)
-    : POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE;
+  const bestWC =
+    winConditions.length > 0
+      ? (winConditions[0]?.score ?? POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE)
+      : POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE;
   return (bestWC - POSITION_WEIGHTS.MIDPOINT_OFFSET_HALF) * POSITION_WEIGHTS.RANGE_EXPANDER_DOUBLE;
 }
 
 export function evaluatePosition(
   snapshot: HeuristicBattleSnapshot,
   calc: HeuristicDamageCalculator,
-  winConditions: WinCondition[],
+  winConditions: WinCondition[]
 ): PositionEvaluation {
   const w = POSITION_WEIGHTS;
-  const myAlive = snapshot.mySide.pokemon.filter(p => !p.fainted);
-  const oppAlive = snapshot.opponentSide.pokemon.filter(p => !p.fainted);
+  const myAlive = snapshot.mySide.pokemon.filter((p) => !p.fainted);
+  const oppAlive = snapshot.opponentSide.pokemon.filter((p) => !p.fainted);
   const oppSide: SideID = snapshot.myPlayer === 'p1' ? 'p2' : 'p1';
 
   const pokemonAdvantage = computePokemonAdvantage(myAlive.length, oppAlive.length);
   const hpAdvantage = computeHpAdvantage(myAlive, oppAlive);
-  const hazardAdvantage = computeHazardAdvantage(snapshot.opponentSide.sideConditions, snapshot.mySide.sideConditions);
+  const hazardAdvantage = computeHazardAdvantage(
+    snapshot.opponentSide.sideConditions,
+    snapshot.mySide.sideConditions
+  );
   const speedAdvantage = computeSpeedAdvantage(myAlive, oppAlive, snapshot, calc, oppSide);
   const typeMatchupAdvantage = computeTypeMatchupAdvantage(snapshot, calc);
   const statusAdvantage = computeStatusAdvantage(myAlive, oppAlive);
   const winConditionViability = computeWinConditionViability(winConditions);
 
-  const score = Math.max(w.POSITION_BOUND_MIN, Math.min(w.POSITION_BOUND_MAX,
-    pokemonAdvantage * w.pokemonAdvantage +
-    hpAdvantage * w.hpAdvantage +
-    hazardAdvantage * w.hazardAdvantage +
-    speedAdvantage * w.speedAdvantage +
-    typeMatchupAdvantage * w.typeMatchupAdvantage +
-    statusAdvantage * w.statusAdvantage +
-    winConditionViability * w.winConditionViability,
-  ));
+  const score = Math.max(
+    w.POSITION_BOUND_MIN,
+    Math.min(
+      w.POSITION_BOUND_MAX,
+      pokemonAdvantage * w.pokemonAdvantage +
+        hpAdvantage * w.hpAdvantage +
+        hazardAdvantage * w.hazardAdvantage +
+        speedAdvantage * w.speedAdvantage +
+        typeMatchupAdvantage * w.typeMatchupAdvantage +
+        statusAdvantage * w.statusAdvantage +
+        winConditionViability * w.winConditionViability
+    )
+  );
 
   return {
     score,
@@ -181,7 +212,7 @@ export function evaluatePosition(
       speedAdvantage,
       typeMatchupAdvantage,
       statusAdvantage,
-      winConditionViability,
-    },
+      winConditionViability
+    }
   };
 }

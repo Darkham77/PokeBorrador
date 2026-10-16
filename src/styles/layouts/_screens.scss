@@ -1,7 +1,6 @@
 @use 'sass:string';
 @use '../core/tools' as *;
 
-
 #auth-screen,
 #title-screen {
   display: flex;
@@ -22,7 +21,6 @@
   }
 }
 
-
 #game-screen {
   position: relative;
   width: 100%;
@@ -33,8 +31,3 @@
 .map-grid {
   display: block; // Ensures it doesn't grid other items
 }
-
-
-
-
-

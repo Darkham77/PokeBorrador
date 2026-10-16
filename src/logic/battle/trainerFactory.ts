@@ -14,9 +14,9 @@ export async function applyCompetitiveSet(
   set: { moves: string[]; ability: string; item: string }
 ): Promise<void> {
   const { recalcPokemonStats, validatePokemon } = await import('@/logic/pokemon/pokemonFactory');
-  
+
   const moveEntries = set.moves
-    .map(id => pokemonDataProvider.getMoveData(toID(id)))
+    .map((id) => pokemonDataProvider.getMoveData(toID(id)))
     .filter((m): m is NonNullable<typeof m> => m !== null && m !== undefined);
 
   if (moveEntries.length === 0) {
@@ -25,7 +25,7 @@ export async function applyCompetitiveSet(
     );
   }
 
-  p.moves = moveEntries.slice(0, 4).map(m => ({
+  p.moves = moveEntries.slice(0, 4).map((m) => ({
     id: m.id,
     name: m.name,
     pp: m.pp,
@@ -47,7 +47,7 @@ export async function applyCompetitiveSet(
     levelDmg: m.levelDmg,
     counter: m.counter,
     turns: m.turns,
-    sound: m.sound,
+    sound: m.sound
   }));
 
   const rawItemId = toID(set.item);
@@ -88,7 +88,9 @@ export async function buildTrainerTeam(
   for (const set of generatedSets) {
     const speciesId = requirePokemonSpeciesId(toID(set.species));
     if (!isEnabledPokemonId(speciesId)) {
-      throw new Error(`[trainerFactory] Cannot create trainer pokemon for non-enabled species: ${speciesId}`);
+      throw new Error(
+        `[trainerFactory] Cannot create trainer pokemon for non-enabled species: ${speciesId}`
+      );
     }
 
     const p = makePokemon(speciesId, trainerLv) as Pokemon;

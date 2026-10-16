@@ -39,3 +39,6 @@ src/data/system/servers.local.json
 
 # Auditor tool caches (Added by @francogp/auditor)
 .stylelintcache
+
+# Auditor tool caches (Added by @francogp/auditor)
+.oxlintcache

@@ -26,12 +26,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "sludge",
-        "sludgebomb",
-        "sludgewave",
-        "smackdown"
-      ],
+      "moves": ["sludge", "sludgebomb", "sludgewave", "smackdown"],
       "uid": "0fe95ed6-c410-4f3e-8e7f-5d5294e5c20b",
       "stats": {
         "maxHp": 342,
@@ -66,12 +61,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "smartstrike",
-        "smog",
-        "smokescreen",
-        "snarl"
-      ],
+      "moves": ["smartstrike", "smog", "smokescreen", "snarl"],
       "uid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
       "stats": {
         "maxHp": 342,
@@ -106,12 +96,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "snipeshot",
-        "snore",
-        "snowscape",
-        "soak"
-      ],
+      "moves": ["snipeshot", "snore", "snowscape", "soak"],
       "uid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
       "stats": {
         "maxHp": 342,
@@ -146,12 +131,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "softboiled",
-        "solarbeam",
-        "solarblade",
-        "spacialrend"
-      ],
+      "moves": ["softboiled", "solarbeam", "solarblade", "spacialrend"],
       "uid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
       "stats": {
         "maxHp": 342,
@@ -186,12 +166,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "spark",
-        "sparklingaria",
-        "speedswap",
-        "spicyextract"
-      ],
+      "moves": ["spark", "sparklingaria", "speedswap", "spicyextract"],
       "uid": "72c5372a-ad3c-4f50-baeb-091d5e1414a6",
       "stats": {
         "maxHp": 342,
@@ -226,12 +201,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "spikes",
-        "spikyshield",
-        "spinout",
-        "spiritbreak"
-      ],
+      "moves": ["spikes", "spikyshield", "spinout", "spiritbreak"],
       "uid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
       "stats": {
         "maxHp": 342,
@@ -268,12 +238,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
       "stats": {
         "maxHp": 651,
@@ -308,12 +273,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
       "stats": {
         "maxHp": 651,
@@ -348,12 +308,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
       "stats": {
         "maxHp": 651,
@@ -388,12 +343,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "5dc7d588-a02e-437f-932f-db0e44583185",
       "stats": {
         "maxHp": 651,
@@ -428,12 +378,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "af09f752-887f-48b4-9da9-7f07378df179",
       "stats": {
         "maxHp": 651,
@@ -468,12 +413,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "80abd126-0911-4214-b57c-22a10d836002",
       "stats": {
         "maxHp": 651,
@@ -512,12 +452,7 @@
     "spiritbreak"
   ],
   "abilitiesToTest": [],
-  "seed": [
-    18588,
-    21544,
-    54523,
-    34263
-  ],
+  "seed": [18588, 21544, 54523, 34263],
   "playerChoices": [
     "move 1",
     "move 2",
@@ -1793,10 +1728,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 16,
       "p2MovePp": 11,
-      "p1Volatiles": [
-        "twoturnmove",
-        "solarbeam"
-      ],
+      "p1Volatiles": ["twoturnmove", "solarbeam"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1863,10 +1795,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 16,
       "p2MovePp": 23,
-      "p1Volatiles": [
-        "twoturnmove",
-        "solarblade"
-      ],
+      "p1Volatiles": ["twoturnmove", "solarblade"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2139,10 +2068,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 16,
       "p2MovePp": 18,
-      "p1Volatiles": [
-        "twoturnmove",
-        "solarblade"
-      ],
+      "p1Volatiles": ["twoturnmove", "solarblade"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2404,9 +2330,7 @@
       },
       "p1Hp": 207,
       "p2Hp": 596,
-      "p2SideConditions": [
-        "spikes"
-      ]
+      "p2SideConditions": ["spikes"]
     },
     {
       "turnCount": 57,
@@ -2419,9 +2343,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 16,
       "p2MovePp": 18,
-      "p1Volatiles": [
-        "stall"
-      ],
+      "p1Volatiles": ["stall"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2442,9 +2364,7 @@
       },
       "p1Hp": 207,
       "p2Hp": 596,
-      "p2SideConditions": [
-        "spikes"
-      ]
+      "p2SideConditions": ["spikes"]
     },
     {
       "turnCount": 58,
@@ -2466,9 +2386,7 @@
         "evasion": 0
       },
       "p1Hp": 150,
-      "p2SideConditions": [
-        "spikes"
-      ]
+      "p2SideConditions": ["spikes"]
     },
     {
       "turnCount": 59,
@@ -2497,9 +2415,7 @@
       },
       "p1Hp": 150,
       "p2Hp": 570,
-      "p2SideConditions": [
-        "spikes"
-      ],
+      "p2SideConditions": ["spikes"],
       "p2ForceSwitch": true
     },
     {
@@ -2533,9 +2449,7 @@
       },
       "p1Hp": 342,
       "p2Hp": 260,
-      "p2SideConditions": [
-        "spikes"
-      ],
+      "p2SideConditions": ["spikes"],
       "p1Heal": true
     },
     {
@@ -2559,9 +2473,7 @@
       },
       "p1Status": "par",
       "p1Hp": 303,
-      "p2SideConditions": [
-        "spikes"
-      ]
+      "p2SideConditions": ["spikes"]
     },
     {
       "turnCount": 62,
@@ -2591,9 +2503,7 @@
       "p1Status": "par",
       "p1Hp": 303,
       "p2Hp": 570,
-      "p2SideConditions": [
-        "spikes"
-      ],
+      "p2SideConditions": ["spikes"],
       "p2ForceSwitch": true
     },
     {
@@ -2628,9 +2538,7 @@
       "p1Status": "par",
       "p1Hp": 243,
       "p2Hp": 129,
-      "p2SideConditions": [
-        "spikes"
-      ]
+      "p2SideConditions": ["spikes"]
     },
     {
       "turnCount": 64,
@@ -2653,9 +2561,7 @@
       },
       "p1Status": "par",
       "p1Hp": 191,
-      "p2SideConditions": [
-        "spikes"
-      ]
+      "p2SideConditions": ["spikes"]
     },
     {
       "turnCount": 65,
@@ -2685,9 +2591,7 @@
       "p1Status": "par",
       "p1Hp": 191,
       "p2Hp": 570,
-      "p2SideConditions": [
-        "spikes"
-      ],
+      "p2SideConditions": ["spikes"],
       "p2ForceSwitch": true
     },
     {
@@ -2722,9 +2626,7 @@
       "p1Status": "par",
       "p1Hp": 140,
       "p2Hp": 120,
-      "p2SideConditions": [
-        "spikes"
-      ]
+      "p2SideConditions": ["spikes"]
     },
     {
       "turnCount": 67,
@@ -2747,9 +2649,7 @@
       },
       "p1Status": "par",
       "p1Hp": 88,
-      "p2SideConditions": [
-        "spikes"
-      ]
+      "p2SideConditions": ["spikes"]
     }
   ],
   "steps": [

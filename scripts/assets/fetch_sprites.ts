@@ -11,7 +11,7 @@ const BASE_URLS = {
   animatedBackShiny: 'https://play.pokemonshowdown.com/sprites/ani-back-shiny/',
   staticFrontShiny: 'https://play.pokemonshowdown.com/sprites/dex-shiny/',
   staticBackShiny: 'https://play.pokemonshowdown.com/sprites/dex-back-shiny/',
-  cries: 'https://play.pokemonshowdown.com/audio/cries/',
+  cries: 'https://play.pokemonshowdown.com/audio/cries/'
 };
 
 const DEFAULT_FETCH_DELAY_MS = 50;
@@ -22,7 +22,7 @@ const OUTPUT_DIRS = {
   back: path.resolve('external_assets/showdown/back'),
   frontShiny: path.resolve('external_assets/showdown/front-shiny'),
   backShiny: path.resolve('external_assets/showdown/back-shiny'),
-  cries: path.resolve('external_assets/showdown/cries'),
+  cries: path.resolve('external_assets/showdown/cries')
 };
 
 /**
@@ -35,7 +35,8 @@ async function downloadFile(url: string, destPath: string): Promise<boolean> {
     if (stat.size > 0) {
       return true;
     }
-  } catch { // catch-ok: file does not exist locally yet, proceed with download
+  } catch {
+    // catch-ok: file does not exist locally yet, proceed with download
     // El archivo no existe, proceder con la descarga
   }
 
@@ -73,7 +74,7 @@ export async function downloadPokemonAssets(
     back: { file: '', isAnimated: false },
     frontShiny: { file: '', isAnimated: false },
     backShiny: { file: '', isAnimated: false },
-    cry: { file: '' },
+    cry: { file: '' }
   };
 
   // 1. Descargar Sprite Frontal Normal (Intentar Animado -> Fallback Estático)
@@ -99,7 +100,9 @@ export async function downloadPokemonAssets(
   const frontShinyPngPath = path.join(OUTPUT_DIRS.frontShiny, `${pokemonId}.png`);
   if (await downloadFile(`${BASE_URLS.animatedFrontShiny}${pokemonId}.gif`, frontShinyGifPath)) {
     result.frontShiny = { file: `${pokemonId}.gif`, isAnimated: true };
-  } else if (await downloadFile(`${BASE_URLS.staticFrontShiny}${pokemonId}.png`, frontShinyPngPath)) {
+  } else if (
+    await downloadFile(`${BASE_URLS.staticFrontShiny}${pokemonId}.png`, frontShinyPngPath)
+  ) {
     result.frontShiny = { file: `${pokemonId}.png`, isAnimated: false };
   }
 
@@ -140,36 +143,46 @@ export async function downloadAllSprites(
   pokemonIds: string[],
   concurrencyLimit = 5,
   delayMs = DEFAULT_FETCH_DELAY_MS
-): Promise<Record<string, {
-  front: string;
-  frontAnimated: boolean;
-  back: string;
-  backAnimated: boolean;
-  frontShiny: string;
-  frontShinyAnimated: boolean;
-  backShiny: string;
-  backShinyAnimated: boolean;
-  cry: string;
-}>> {
+): Promise<
+  Record<
+    string,
+    {
+      front: string;
+      frontAnimated: boolean;
+      back: string;
+      backAnimated: boolean;
+      frontShiny: string;
+      frontShinyAnimated: boolean;
+      backShiny: string;
+      backShinyAnimated: boolean;
+      cry: string;
+    }
+  >
+> {
   await ensureDirsExist();
-  const assetMap: Record<string, {
-    front: string;
-    frontAnimated: boolean;
-    back: string;
-    backAnimated: boolean;
-    frontShiny: string;
-    frontShinyAnimated: boolean;
-    backShiny: string;
-    backShinyAnimated: boolean;
-    cry: string;
-  }> = {};
+  const assetMap: Record<
+    string,
+    {
+      front: string;
+      frontAnimated: boolean;
+      back: string;
+      backAnimated: boolean;
+      frontShiny: string;
+      frontShinyAnimated: boolean;
+      backShiny: string;
+      backShinyAnimated: boolean;
+      cry: string;
+    }
+  > = {};
 
   const total = pokemonIds.length;
-  console.log(`\n📥 Iniciando descarga de sprites (normal/shiny) y sonidos para ${total} Pokémon en lotes de ${concurrencyLimit}...`);
+  console.log(
+    `\n📥 Iniciando descarga de sprites (normal/shiny) y sonidos para ${total} Pokémon en lotes de ${concurrencyLimit}...`
+  );
 
   for (let i = 0; i < total; i += concurrencyLimit) {
     const batch = pokemonIds.slice(i, i + concurrencyLimit);
-    
+
     // Descargar el lote actual en paralelo
     const promises = batch.map(async (id) => {
       const res = await downloadPokemonAssets(id);
@@ -182,12 +195,12 @@ export async function downloadAllSprites(
         frontShinyAnimated: res.frontShiny.isAnimated,
         backShiny: res.backShiny.file,
         backShinyAnimated: res.backShiny.isAnimated,
-        cry: res.cry.file,
+        cry: res.cry.file
       };
     });
 
     await Promise.all(promises);
-    
+
     const progress = Math.min(i + concurrencyLimit, total);
     console.log(`[Progreso] ${progress}/${total} Pokémon procesados...`);
 

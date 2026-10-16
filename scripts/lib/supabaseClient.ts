@@ -46,25 +46,50 @@ export interface ServerConfig {
 export async function readAndParseEnv(): Promise<Record<string, ServerConfig>> {
   const serverConfigs: Record<string, ServerConfig> = {};
 
-  const KNOWN_SUFFIXES = [ // no-domain: Non-domain utility collection or data structure
-    'SUPABASE_PUBLIC_URL', 'API_EXTERNAL_URL', 'SUPABASE_ANON_KEY',
-    'SERVICE_ROLE_KEY', 'POSTGRES_PASSWORD', 'SECRET_KEY_BASE',
-    'DASHBOARD_USERNAME', 'DASHBOARD_PASSWORD', 'KONG_HTTPS_PORT',
-    'PG_META_CRYPTO_KEY', 'VAULT_ENC_KEY', 'DATABASE_URL',
-    'JWT_SECRET', 'SUPABASE_URL', 'TENANT_ID', 'IS_DEFAULT',
-    'ANON_KEY', 'SITE_URL', 'REGION', 'NAME', 'KEY', 'URL', 'ID',
-    'POSTGRES_PORT', 'DB_PORT', 'DB_PASSWORD', 'POSTGRES_URL', 'PG_URL'
+  const KNOWN_SUFFIXES = [
+    // no-domain: Non-domain utility collection or data structure
+    'SUPABASE_PUBLIC_URL',
+    'API_EXTERNAL_URL',
+    'SUPABASE_ANON_KEY',
+    'SERVICE_ROLE_KEY',
+    'POSTGRES_PASSWORD',
+    'SECRET_KEY_BASE',
+    'DASHBOARD_USERNAME',
+    'DASHBOARD_PASSWORD',
+    'KONG_HTTPS_PORT',
+    'PG_META_CRYPTO_KEY',
+    'VAULT_ENC_KEY',
+    'DATABASE_URL',
+    'JWT_SECRET',
+    'SUPABASE_URL',
+    'TENANT_ID',
+    'IS_DEFAULT',
+    'ANON_KEY',
+    'SITE_URL',
+    'REGION',
+    'NAME',
+    'KEY',
+    'URL',
+    'ID',
+    'POSTGRES_PORT',
+    'DB_PORT',
+    'DB_PASSWORD',
+    'POSTGRES_URL',
+    'PG_URL'
   ];
 
   function parseKeyVal(fullKey: string, rawVal: string): void {
     let value = rawVal.trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       value = value.slice(1, -1);
     }
 
     if (fullKey.startsWith('SERVER_')) {
       const withoutPrefix = fullKey.slice('SERVER_'.length);
-      const matchedSuffix = KNOWN_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
+      const matchedSuffix = KNOWN_SUFFIXES.find((s) => withoutPrefix.endsWith(`_${s}`));
       if (matchedSuffix === undefined) return;
 
       const profile = withoutPrefix.slice(0, withoutPrefix.length - matchedSuffix.length - 1);
@@ -111,7 +136,13 @@ export function buildDatabaseUrl(conf: ServerConfig, canonicalName: string): str
   let dbUrl = conf.DATABASE_URL || conf.POSTGRES_URL || conf.PG_URL || '';
   if (!dbUrl) {
     const pass = conf.POSTGRES_PASSWORD || conf.DB_PASSWORD || '';
-    const rawPubUrl = conf.SUPABASE_PUBLIC_URL || conf.SUPABASE_URL || conf.SITE_URL || conf.API_EXTERNAL_URL || conf.URL || '';
+    const rawPubUrl =
+      conf.SUPABASE_PUBLIC_URL ||
+      conf.SUPABASE_URL ||
+      conf.SITE_URL ||
+      conf.API_EXTERNAL_URL ||
+      conf.URL ||
+      '';
     if (rawPubUrl && pass) {
       try {
         const u = new URL(rawPubUrl);
@@ -120,12 +151,19 @@ export function buildDatabaseUrl(conf: ServerConfig, canonicalName: string): str
         if (host.endsWith('.supabase.co')) {
           const ref = conf.TENANT_ID || conf.POOLER_TENANT_ID || host.split('.')[0] || 'postgres';
           host = `db.${host.split('.')[0]}.supabase.co`;
-          console.log(styleText('cyan', `🏷️  Tenant ID / Project Ref detectado para [${canonicalName}]: ${ref}`));
+          console.log(
+            styleText(
+              'cyan',
+              `🏷️  Tenant ID / Project Ref detectado para [${canonicalName}]: ${ref}`
+            )
+          );
           dbUrl = `postgres://postgres:${encodeURIComponent(pass)}@${host}:${port}/postgres`;
         } else {
           port = conf.POSTGRES_PORT || conf.DB_PORT || DEFAULT_POSTGRES_PORT_TEXT;
           const tenant = conf.TENANT_ID || conf.POOLER_TENANT_ID || 'your-tenant-id';
-          console.log(styleText('cyan', `🏷️  Tenant ID detectado para [${canonicalName}]: ${tenant}`));
+          console.log(
+            styleText('cyan', `🏷️  Tenant ID detectado para [${canonicalName}]: ${tenant}`)
+          );
           dbUrl = `postgres://postgres.${tenant}:${encodeURIComponent(pass)}@${host}:${port}/postgres`;
         }
       } catch {
@@ -136,21 +174,39 @@ export function buildDatabaseUrl(conf: ServerConfig, canonicalName: string): str
   return dbUrl;
 }
 
-export async function getValidatedServerConfigs(): Promise<{ serverConfigs: Record<string, ServerConfig>; baseProfiles: string[]; allAvailable: string[] }> {
+export async function getValidatedServerConfigs(): Promise<{
+  serverConfigs: Record<string, ServerConfig>;
+  baseProfiles: string[];
+  allAvailable: string[];
+}> {
   const serverConfigs = await readAndParseEnv();
   const baseProfiles = Object.keys(serverConfigs);
   if (baseProfiles.length === 0) {
-    console.error(styleText('red', '❌ Error: No se encontraron configuraciones de servidor (SERVER_<profile>_*) en el .env.'));
+    console.error(
+      styleText(
+        'red',
+        '❌ Error: No se encontraron configuraciones de servidor (SERVER_<profile>_*) en el .env.'
+      )
+    );
     process.exit(1);
   }
-  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain: Non-domain utility collection or data structure
+  const allAvailable = Array.from(
+    new Set(
+      baseProfiles.concat(
+        Object.values(serverConfigs)
+          .map((c) => c.ID)
+          .filter(Boolean) as string[]
+      )
+    )
+  ); // no-domain: Non-domain utility collection or data structure
   return { serverConfigs, baseProfiles, allAvailable };
 }
 
 export function findServerConfig(
   serverConfigs: Record<string, ServerConfig>,
   profileOrId: string // infra-id-ok: Server configuration profile or server ID key
-): ServerConfig | null { // result-ok: Operation result wrapper payload
+): ServerConfig | null {
+  // result-ok: Operation result wrapper payload
   const direct = serverConfigs[profileOrId];
   if (direct) return direct;
   for (const conf of Object.values(serverConfigs)) {
@@ -159,8 +215,12 @@ export function findServerConfig(
   return null;
 }
 
-export function parseServerArguments(args: string[], baseProfiles: string[], allAvailable: string[]): string[] {
-  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
+export function parseServerArguments(
+  args: string[],
+  baseProfiles: string[],
+  allAvailable: string[]
+): string[] {
+  const normalized = args.map((a) => (a.includes('=') && !a.startsWith('-') ? `--${a}` : a));
   const { values, positionals } = parseArgs({
     args: normalized,
     options: {
@@ -172,24 +232,45 @@ export function parseServerArguments(args: string[], baseProfiles: string[], all
     strict: false
   });
 
-  const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+  const isHelp =
+    values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
   if (isHelp) {
-    console.log(styleText('cyan', `\n📖 USO: npm run <comando> [server=<perfil> | <perfil> | all]`));
+    console.log(
+      styleText('cyan', `\n📖 USO: npm run <comando> [server=<perfil> | <perfil> | all]`)
+    );
     console.log(styleText('gray', '\nOpciones disponibles:'));
     console.log(styleText('gray', '  server=<perfil>   : Nombre del perfil de servidor objetivo.'));
-    console.log(styleText('gray', '  <perfil>          : Nombre directo del servidor (ej. server_franco, cloud).'));
-    console.log(styleText('gray', '  all               : Aplica la operación a todos los servidores del .env.'));
+    console.log(
+      styleText(
+        'gray',
+        '  <perfil>          : Nombre directo del servidor (ej. server_franco, cloud).'
+      )
+    );
+    console.log(
+      styleText(
+        'gray',
+        '  all               : Aplica la operación a todos los servidores del .env.'
+      )
+    );
     console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
     process.exit(0);
   }
 
-  const isAll = Boolean(values.all || values.server === 'all' || positionals.includes('all') || args.includes('all'));
+  const isAll = Boolean(
+    values.all || values.server === 'all' || positionals.includes('all') || args.includes('all')
+  );
   const rawServer = typeof values.server === 'string' ? values.server.replace(/^=/, '') : undefined;
-  const serverArg = (rawServer && rawServer !== 'all' ? rawServer : undefined) ||
-                    positionals.find(p => p !== 'all' && (allAvailable.includes(p) || baseProfiles.includes(p)));
+  const serverArg =
+    (rawServer && rawServer !== 'all' ? rawServer : undefined) ||
+    positionals.find((p) => p !== 'all' && (allAvailable.includes(p) || baseProfiles.includes(p)));
 
   if (!serverArg && !isAll) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas seleccionar indicando server=<perfil>, el nombre del servidor o "all".'));
+    console.log(
+      styleText(
+        'yellow',
+        '⚠️  Especifica qué servidor deseas seleccionar indicando server=<perfil>, el nombre del servidor o "all".'
+      )
+    );
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
     console.log(styleText('gray', 'Ejemplos:'));
     console.log(styleText('gray', '  npm run database:update server=server_franco'));

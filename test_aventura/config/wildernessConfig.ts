@@ -43,7 +43,7 @@ export const FOREST_DUNGEON_TRAIL_MARGIN_RADIUS = 3 as const;
 export const FOREST_DUNGEON_TRAIL_DIST_MIN = 1.2 as const;
 export const FOREST_DUNGEON_TRAIL_DIST_MAX = 3.2 as const;
 export const FOREST_DUNGEON_TRAIL_MARGIN_NOISE_SCALE = 0.35 as const;
-export const FOREST_DUNGEON_TRAIL_MARGIN_NOISE_THRESHOLD = 0.40 as const;
+export const FOREST_DUNGEON_TRAIL_MARGIN_NOISE_THRESHOLD = 0.4 as const;
 
 // --- Roadside Props & Micro-Vignettes ---
 export const ROUTE_GATE_PROPS_CLEARANCE_RADIUS = 16 as const;
@@ -66,13 +66,13 @@ export const MINT_BUSH_THRESHOLD = 0.58 as const;
 export const MINT_BOULDER_MIN = 0.36 as const;
 export const MINT_BOULDER_MAX = 0.58 as const;
 
-export const VIRIDIAN_BUSH_THRESHOLD = 0.50 as const;
+export const VIRIDIAN_BUSH_THRESHOLD = 0.5 as const;
 export const VIRIDIAN_LOG_THRESHOLD = -0.52 as const;
 
 export const MEADOW_ROUND_BUSH_THRESHOLD = 0.65 as const;
 export const MEADOW_FERN_BUSH_THRESHOLD = -0.68 as const;
 export const MEADOW_FLOWER_MIN = 0.46 as const;
-export const MEADOW_FLOWER_MAX = 0.60 as const;
+export const MEADOW_FLOWER_MAX = 0.6 as const;
 
 // --- Forest Canopy Cellular Automata & Grooves ---
 export const GROVE_NOISE_SCALE = 0.08 as const;
@@ -93,7 +93,7 @@ export const TREE_SPECIES_ISOLATION_DISTANCE = 8 as const;
 // Autumn Noise & Biome Transition Thresholds
 export const AUTUMN_MACRO_NOISE_SCALE = 0.015 as const;
 export const AUTUMN_MACRO_THRESHOLD = 0.28 as const;
-export const AUTUMN_BUFFER_THRESHOLD = 0.20 as const;
+export const AUTUMN_BUFFER_THRESHOLD = 0.2 as const;
 export const AUTUMN_DENSE_TREE_THRESHOLD = 0.24 as const;
 
 export const SUBTRACTIVE_WILDERNESS_BASE_THRESHOLD = -0.98 as const;

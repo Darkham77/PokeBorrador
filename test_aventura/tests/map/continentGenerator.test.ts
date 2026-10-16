@@ -224,7 +224,7 @@ describe('continentGenerator', () => {
         oceanWaterPercentage: 0.38,
         beachWidth: 3,
         lakeCount: 2,
-        mountainPercentage: 0.20,
+        mountainPercentage: 0.2,
         mountainPalette: 'brown',
         withStairs: true
       });

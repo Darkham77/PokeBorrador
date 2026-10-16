@@ -141,7 +141,7 @@ export function resolvePokemonCardClasses(
   pokemon: Pick<Pokemon, 'onMission' | 'onEvent' | 'aura' | 'isShiny' | 'isGuardian'>,
   options: CardClassOptions
 ): string[] {
-  const classes = ['pokemon-display-card'];
+  const classes: string[] = ['pokemon-display-card']; // domain-ok: Open dynamic CSS class names list
   if (pokemon.onMission) classes.push('on-mission');
   if (pokemon.onEvent) classes.push('on-event');
   if (options.hasBadges) classes.push('with-badges');

@@ -29,10 +29,7 @@ import {
   loadCustomStructuresFromStorage,
   saveCustomStructuresToStorage
 } from '../logic/map/customAssetsStorage.ts';
-import {
-  MAP_PROPS_REGISTRY,
-  type MapPropDefinition
-} from '../config/mapProps.ts';
+import { MAP_PROPS_REGISTRY, type MapPropDefinition } from '../config/mapProps.ts';
 import { STUDIO_MAX_HISTORY_STEPS } from '../config/studioConstants.ts';
 
 function propToStructureTemplate(prop: MapPropDefinition): StructureTemplate {
@@ -47,7 +44,8 @@ function propToStructureTemplate(prop: MapPropDefinition): StructureTemplate {
 }
 
 const PROP_STRUCTURE_TEMPLATES: Record<string, StructureTemplate> = Object.fromEntries(
-  Object.values(MAP_PROPS_REGISTRY).map(p => [p.id, propToStructureTemplate(p)])
+  // open-record: Prop templates indexed by prop id string
+  Object.values(MAP_PROPS_REGISTRY).map((p) => [p.id, propToStructureTemplate(p)])
 );
 
 export type StudioTool =
@@ -90,9 +88,21 @@ export interface StructureHistoryAction {
   readonly type: 'structure';
   readonly x: number;
   readonly y: number;
-  readonly prevElevation: readonly { readonly x: number; readonly y: number; readonly cell: MapCell | null }[];
-  readonly prevDecorations: readonly { readonly x: number; readonly y: number; readonly cell: MapCell | null }[];
-  readonly prevCollisions: readonly { readonly x: number; readonly y: number; readonly col: CollisionType }[];
+  readonly prevElevation: readonly {
+    readonly x: number;
+    readonly y: number;
+    readonly cell: MapCell | null;
+  }[];
+  readonly prevDecorations: readonly {
+    readonly x: number;
+    readonly y: number;
+    readonly cell: MapCell | null;
+  }[];
+  readonly prevCollisions: readonly {
+    readonly x: number;
+    readonly y: number;
+    readonly col: CollisionType;
+  }[];
   readonly addedWarps: readonly MapWarp[];
   readonly addedSpawns: readonly MapSpawn[];
 }
@@ -165,12 +175,13 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
   const playerDirection = ref<SpriteFacingDirection>('down');
 
   // Custom User-Imported Structures & Props
-  const customStructures = ref<Record<string, StructureTemplate>>({});
+  const customStructures = ref<Record<string, StructureTemplate>>({}); // open-record: User-imported custom structures dictionary
   const availableStructures = computed<Record<string, StructureTemplate>>(() => {
+    // open-record: Aggregated structures dictionary
     return { ...STRUCTURE_TEMPLATES, ...PROP_STRUCTURE_TEMPLATES, ...customStructures.value };
   });
 
-  const availableProps = computed<Record<string, MapPropDefinition>>(() => MAP_PROPS_REGISTRY);
+  const availableProps = computed<Record<string, MapPropDefinition>>(() => MAP_PROPS_REGISTRY); // open-record: Map prop definitions catalog
 
   function selectProp(propId: string): void {
     selectedStructureId.value = propId;
@@ -182,7 +193,10 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
   const canUndo = computed(() => historyStack.value.length > 0);
   const canRedo = computed(() => redoStack.value.length > 0);
   const selectedStructure = computed(() => {
-    return availableStructures.value[selectedStructureId.value] ?? getStructureTemplate(selectedStructureId.value);
+    return (
+      availableStructures.value[selectedStructureId.value] ??
+      getStructureTemplate(selectedStructureId.value)
+    );
   });
 
   function registerCustomStructure(template: StructureTemplate): void {
@@ -198,7 +212,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
     }
     const structs = await loadCustomStructuresFromStorage();
     if (structs.length > 0) {
-      const map: Record<string, StructureTemplate> = {};
+      const map: Record<string, StructureTemplate> = {}; // open-record: Loaded custom structures mapping
       for (const s of structs) {
         registerStructureTemplate(s);
         map[s.id] = s;
@@ -219,7 +233,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
     selectedCoords.value = null;
 
     // Center player on player_start spawn if available
-    const startSpawn = map.entities?.spawns.find(s => s.id === 'player_start');
+    const startSpawn = map.entities?.spawns.find((s) => s.id === 'player_start');
     if (startSpawn) {
       playerX.value = startSpawn.x;
       playerY.value = startSpawn.y;
@@ -309,7 +323,11 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
   /**
    * Paints a collision value (0, 1, 2, 3) at (x, y).
    */
-  function paintCollision(x: number, y: number, colType: CollisionType = selectedCollisionType.value): boolean {
+  function paintCollision(
+    x: number,
+    y: number,
+    colType: CollisionType = selectedCollisionType.value
+  ): boolean {
     const map = currentMap.value;
     if (!map || x < 0 || y < 0 || x >= map.width || y >= map.height) return false;
 
@@ -387,7 +405,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
     const map = currentMap.value;
     if (!map) return;
     const warps = map.entities.warps as MapWarp[];
-    const idx = warps.findIndex(w => w.x === warp.x && w.y === warp.y);
+    const idx = warps.findIndex((w) => w.x === warp.x && w.y === warp.y);
     if (idx !== -1) warps.splice(idx, 1);
     warps.push(warp);
     pushHistory([{ type: 'warp', action: 'add', warp }]);
@@ -400,7 +418,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
     const map = currentMap.value;
     if (!map) return;
     const warps = map.entities.warps as MapWarp[];
-    const idx = warps.findIndex(w => w.x === x && w.y === y);
+    const idx = warps.findIndex((w) => w.x === x && w.y === y);
     if (idx !== -1) {
       const removed = warps.splice(idx, 1)[0]!;
       pushHistory([{ type: 'warp', action: 'remove', warp: removed }]);
@@ -414,7 +432,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
     const map = currentMap.value;
     if (!map) return;
     const spawns = map.entities.spawns as MapSpawn[];
-    const idx = spawns.findIndex(s => s.id === spawn.id);
+    const idx = spawns.findIndex((s) => s.id === spawn.id);
     if (idx !== -1) spawns.splice(idx, 1);
     spawns.push(spawn);
     pushHistory([{ type: 'spawn', action: 'add', spawn }]);
@@ -427,7 +445,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
     const map = currentMap.value;
     if (!map) return;
     const spawns = map.entities.spawns as MapSpawn[];
-    const idx = spawns.findIndex(s => s.id === id);
+    const idx = spawns.findIndex((s) => s.id === id);
     if (idx !== -1) {
       const removed = spawns.splice(idx, 1)[0]!;
       pushHistory([{ type: 'spawn', action: 'remove', spawn: removed }]);
@@ -461,18 +479,18 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
         // Remove added warps and spawns
         const warps = map.entities.warps as MapWarp[];
         for (const w of act.addedWarps) {
-          const idx = warps.findIndex(item => item.x === w.x && item.y === w.y);
+          const idx = warps.findIndex((item) => item.x === w.x && item.y === w.y);
           if (idx !== -1) warps.splice(idx, 1);
         }
         const spawns = map.entities.spawns as MapSpawn[];
         for (const s of act.addedSpawns) {
-          const idx = spawns.findIndex(item => item.id === s.id);
+          const idx = spawns.findIndex((item) => item.id === s.id);
           if (idx !== -1) spawns.splice(idx, 1);
         }
       } else if (act.type === 'warp') {
         const warps = map.entities.warps as MapWarp[];
         if (act.action === 'add') {
-          const idx = warps.findIndex(w => w.x === act.warp.x && w.y === act.warp.y);
+          const idx = warps.findIndex((w) => w.x === act.warp.x && w.y === act.warp.y);
           if (idx !== -1) warps.splice(idx, 1);
         } else {
           warps.push(act.warp);
@@ -480,7 +498,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
       } else if (act.type === 'spawn') {
         const spawns = map.entities.spawns as MapSpawn[];
         if (act.action === 'add') {
-          const idx = spawns.findIndex(s => s.id === act.spawn.id);
+          const idx = spawns.findIndex((s) => s.id === act.spawn.id);
           if (idx !== -1) spawns.splice(idx, 1);
         } else {
           spawns.push(act.spawn);
@@ -515,7 +533,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
         if (act.action === 'add') {
           warps.push(act.warp);
         } else {
-          const idx = warps.findIndex(w => w.x === act.warp.x && w.y === act.warp.y);
+          const idx = warps.findIndex((w) => w.x === act.warp.x && w.y === act.warp.y);
           if (idx !== -1) warps.splice(idx, 1);
         }
       } else if (act.type === 'spawn') {
@@ -523,7 +541,7 @@ export const useMapStudioStore = defineStore('mapStudio', () => {
         if (act.action === 'add') {
           spawns.push(act.spawn);
         } else {
-          const idx = spawns.findIndex(s => s.id === act.spawn.id);
+          const idx = spawns.findIndex((s) => s.id === act.spawn.id);
           if (idx !== -1) spawns.splice(idx, 1);
         }
       }

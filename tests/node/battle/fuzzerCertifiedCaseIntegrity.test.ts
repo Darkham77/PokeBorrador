@@ -1,23 +1,26 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { describe, expect, it } from 'vitest'
+import fs from 'node:fs';
+import path from 'node:path';
+import { describe, expect, it } from 'vite-plus/test';
 import {
   certifyBattleCase,
-  requireCertifiedBattleCaseDocument,
-} from '../../../scripts/e2e/fuzzer/core/certifiedBattleCase.ts'
-import type { TestBatch } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts'
+  requireCertifiedBattleCaseDocument
+} from '../../../scripts/e2e/fuzzer/core/certifiedBattleCase.ts';
+import type { TestBatch } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
 
-const CERTIFIED_CASES_PATH = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json')
+const CERTIFIED_CASES_PATH = path.resolve(
+  process.cwd(),
+  'scripts/e2e/results/fuzzer_certified_cases.json'
+);
 
 describe('certified fuzzer case integrity', () => {
   it('records ended consistently with the final Showdown state', () => {
-    const rawDocument: unknown = JSON.parse(fs.readFileSync(CERTIFIED_CASES_PATH, 'utf8'))
-    const document = requireCertifiedBattleCaseDocument(rawDocument, CERTIFIED_CASES_PATH)
+    const rawDocument: unknown = JSON.parse(fs.readFileSync(CERTIFIED_CASES_PATH, 'utf8'));
+    const document = requireCertifiedBattleCaseDocument(rawDocument, CERTIFIED_CASES_PATH);
 
     for (const battleCase of document.battle) {
-      expect(battleCase.ended, `case ${battleCase.id}`).toBe(battleCase.finalState.isOver)
+      expect(battleCase.ended, `case ${battleCase.id}`).toBe(battleCase.finalState.isOver);
     }
-  })
+  });
 
   it('refuses a non-terminal batch instead of serializing an unreplayable case', () => {
     const incomplete: TestBatch = {
@@ -29,67 +32,80 @@ describe('certified fuzzer case integrity', () => {
       playerChoices: [],
       enemyChoices: [],
       history: [],
-      ended: false,
-    }
+      ended: false
+    };
 
-    expect(() => certifyBattleCase(incomplete, 1)).toThrow('[FUZZER-CERTIFICATION]')
-  })
+    expect(() => certifyBattleCase(incomplete, 1)).toThrow('[FUZZER-CERTIFICATION]');
+  });
 
   it('rejects invalid battle section in the replay document', () => {
-    const rawDocument: unknown = JSON.parse(fs.readFileSync(CERTIFIED_CASES_PATH, 'utf8'))
-    const document = requireCertifiedBattleCaseDocument(rawDocument, CERTIFIED_CASES_PATH)
-    const contaminatedDocument = { ...document, battle: null }
+    const rawDocument: unknown = JSON.parse(fs.readFileSync(CERTIFIED_CASES_PATH, 'utf8'));
+    const document = requireCertifiedBattleCaseDocument(rawDocument, CERTIFIED_CASES_PATH);
+    const contaminatedDocument = { ...document, battle: null };
 
-    expect(() => requireCertifiedBattleCaseDocument(contaminatedDocument, 'contaminated-document')).toThrow('[FUZZER-CERTIFICATION]')
-  })
+    expect(() =>
+      requireCertifiedBattleCaseDocument(contaminatedDocument, 'contaminated-document')
+    ).toThrow('[FUZZER-CERTIFICATION]');
+  });
 
   it('refuses choice arrays that diverge from the atomic history', () => {
-    const rawDocument: unknown = JSON.parse(fs.readFileSync(CERTIFIED_CASES_PATH, 'utf8'))
-    const document = requireCertifiedBattleCaseDocument(rawDocument, CERTIFIED_CASES_PATH)
-    const source = document.battle[0]
-    if (!source) throw new Error('The certified document must contain at least one battle case.')
+    const rawDocument: unknown = JSON.parse(fs.readFileSync(CERTIFIED_CASES_PATH, 'utf8'));
+    const document = requireCertifiedBattleCaseDocument(rawDocument, CERTIFIED_CASES_PATH);
+    const source = document.battle[0];
+    if (!source) throw new Error('The certified document must contain at least one battle case.');
     const mismatched: TestBatch = {
       ...source,
-      playerChoices: [...source.playerChoices, 'move impossible'],
-    }
+      playerChoices: [...source.playerChoices, 'move impossible']
+    };
 
-    expect(() => certifyBattleCase(mismatched, source.idx)).toThrow('[FUZZER-CERTIFICATION]')
+    expect(() => certifyBattleCase(mismatched, source.idx)).toThrow('[FUZZER-CERTIFICATION]');
     const corruptedDocument = {
-      battle: [{ ...source, playerChoices: mismatched.playerChoices }],
-    }
+      battle: [{ ...source, playerChoices: mismatched.playerChoices }]
+    };
 
-    expect(() => requireCertifiedBattleCaseDocument(corruptedDocument, 'corrupted-document')).toThrow('[FUZZER-CERTIFICATION]')
-  })
+    expect(() =>
+      requireCertifiedBattleCaseDocument(corruptedDocument, 'corrupted-document')
+    ).toThrow('[FUZZER-CERTIFICATION]');
+  });
 
   it('rejects a persisted seed that cannot initialize a deterministic Showdown battle', () => {
-    const rawDocument: unknown = JSON.parse(fs.readFileSync(CERTIFIED_CASES_PATH, 'utf8'))
-    const document = requireCertifiedBattleCaseDocument(rawDocument, CERTIFIED_CASES_PATH)
-    const source = document.battle[0]
-    if (!source) throw new Error('The certified document must contain at least one battle case.')
+    const rawDocument: unknown = JSON.parse(fs.readFileSync(CERTIFIED_CASES_PATH, 'utf8'));
+    const document = requireCertifiedBattleCaseDocument(rawDocument, CERTIFIED_CASES_PATH);
+    const source = document.battle[0];
+    if (!source) throw new Error('The certified document must contain at least one battle case.');
     const corruptedDocument = {
-      battle: [{ ...source, seed: source.seed.slice(0, 3) }],
-    }
+      battle: [{ ...source, seed: source.seed.slice(0, 3) }]
+    };
 
-    expect(() => requireCertifiedBattleCaseDocument(corruptedDocument, 'invalid-seed-document')).toThrow('[FUZZER-CERTIFICATION]')
-  })
+    expect(() =>
+      requireCertifiedBattleCaseDocument(corruptedDocument, 'invalid-seed-document')
+    ).toThrow('[FUZZER-CERTIFICATION]');
+  });
 
   it('rejects a malformed certified bag-item action instead of accepting untyped JSON', () => {
-    const rawDocument: unknown = JSON.parse(fs.readFileSync(CERTIFIED_CASES_PATH, 'utf8'))
-    const document = requireCertifiedBattleCaseDocument(rawDocument, CERTIFIED_CASES_PATH)
-    const source = document.battle[0]
-    if (!source) throw new Error('The certified document must contain at least one battle case.')
-    const firstStep = source.history[0]
-    if (!firstStep) throw new Error('The certified battle case must contain a history entry.')
+    const rawDocument: unknown = JSON.parse(fs.readFileSync(CERTIFIED_CASES_PATH, 'utf8'));
+    const document = requireCertifiedBattleCaseDocument(rawDocument, CERTIFIED_CASES_PATH);
+    const source = document.battle[0];
+    if (!source) throw new Error('The certified document must contain at least one battle case.');
+    const firstStep = source.history[0];
+    if (!firstStep) throw new Error('The certified battle case must contain a history entry.');
     const corruptedDocument = {
-      battle: [{
-        ...source,
-        history: [{
-          ...firstStep,
-          p1GameAction: { kind: 'bag-item', itemId: 'not-an-item', targetSlot: 0 },
-        }, ...source.history.slice(1)],
-      }],
-    }
+      battle: [
+        {
+          ...source,
+          history: [
+            {
+              ...firstStep,
+              p1GameAction: { kind: 'bag-item', itemId: 'not-an-item', targetSlot: 0 }
+            },
+            ...source.history.slice(1)
+          ]
+        }
+      ]
+    };
 
-    expect(() => requireCertifiedBattleCaseDocument(corruptedDocument, 'invalid-bag-action-document')).toThrow('[FUZZER-CERTIFICATION]')
-  })
-})
+    expect(() =>
+      requireCertifiedBattleCaseDocument(corruptedDocument, 'invalid-bag-action-document')
+    ).toThrow('[FUZZER-CERTIFICATION]');
+  });
+});

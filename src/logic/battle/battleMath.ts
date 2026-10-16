@@ -38,14 +38,38 @@ const DEFAULT_STAT_FALLBACK_VAL = 10 as const;
 const DAMAGE_ROLL_MIN_RATIO = 0.85 as const;
 const DAMAGE_ROLL_MAX_RATIO = 1.0 as const;
 
+// open-record: Numeric stage string multiplier dictionary
 export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {
-  '-6': 2 / 8, '-5': 2 / 7, '-4': 2 / 6, '-3': 2 / 5, '-2': 2 / 4, '-1': 2 / 3,
-  '0': 1.0, '1': 3 / 2, '2': 4 / 2, '3': 5 / 2, '4': 6 / 2, '5': 7 / 2, '6': 8 / 2
+  '-6': 2 / 8,
+  '-5': 2 / 7,
+  '-4': 2 / 6,
+  '-3': 2 / 5,
+  '-2': 2 / 4,
+  '-1': 2 / 3,
+  '0': 1.0,
+  '1': 3 / 2,
+  '2': 4 / 2,
+  '3': 5 / 2,
+  '4': 6 / 2,
+  '5': 7 / 2,
+  '6': 8 / 2
 };
 
+// open-record: Numeric stage string accuracy multiplier dictionary
 export const STAGE_MULTIPLIERS_ACC: Record<string, number> = {
-  '-6': 3 / 9, '-5': 3 / 8, '-4': 3 / 7, '-3': 3 / 6, '-2': 3 / 5, '-1': 3 / 4,
-  '0': 1.0, '1': 4 / 3, '2': 5 / 3, '3': 6 / 3, '4': 7 / 3, '5': 8 / 3, '6': 9 / 3
+  '-6': 3 / 9,
+  '-5': 3 / 8,
+  '-4': 3 / 7,
+  '-3': 3 / 6,
+  '-2': 3 / 5,
+  '-1': 3 / 4,
+  '0': 1.0,
+  '1': 4 / 3,
+  '2': 5 / 3,
+  '3': 6 / 3,
+  '4': 7 / 3,
+  '5': 8 / 3,
+  '6': 9 / 3
 };
 
 export function getEffectiveStatPure(
@@ -60,13 +84,8 @@ export function getEffectiveStatPure(
     return (pokemon[statKey] as number) || DEFAULT_STAT_FALLBACK_VAL;
   }
 
-  return calculateDetailedStatBreakdown(
-    pokemon,
-    statKey,
-    stages,
-    weather,
-    { isGym, dayCycle }
-  ).final;
+  return calculateDetailedStatBreakdown(pokemon, statKey, stages, weather, { isGym, dayCycle })
+    .final;
 }
 
 export function calculateDamagePure(
@@ -108,8 +127,22 @@ export function calculateDamagePure(
   }
 
   const isGym = ctx.isGym || false;
-  const A = getEffectiveStatPure(attacker, isPhysical ? 'atk' : 'spa', aStages, weather, dayCycle, isGym);
-  const D = getEffectiveStatPure(defender, isPhysical ? 'def' : 'spd', dStages, weather, dayCycle, isGym);
+  const A = getEffectiveStatPure(
+    attacker,
+    isPhysical ? 'atk' : 'spa',
+    aStages,
+    weather,
+    dayCycle,
+    isGym
+  );
+  const D = getEffectiveStatPure(
+    defender,
+    isPhysical ? 'def' : 'spd',
+    dStages,
+    weather,
+    dayCycle,
+    isGym
+  );
 
   const baseDamage = calculateBaseDamageFormula(attacker.level, power, A, D);
 
@@ -121,7 +154,11 @@ export function calculateDamagePure(
     weather
   );
 
-  const itemMult = calculateHeldItemDamageMultiplier(attacker.heldItem ?? undefined, moveType, moveCat);
+  const itemMult = calculateHeldItemDamageMultiplier(
+    attacker.heldItem ?? undefined,
+    moveType,
+    moveCat
+  );
   const stab = calculateStabMultiplier(attacker, moveType);
   const { weatherMult, finalEff, terrainMult } = resolveEnvironmentModifiers(
     weather,
@@ -132,16 +169,24 @@ export function calculateDamagePure(
     dayCycle,
     ctx.terrain,
     eff,
-    defender,
+    defender
   );
   const randomInt = resolveDamageRandomInt(randomFactor);
 
   const totalModifiers = finalEff * finalAbilityMult * weatherMult * itemMult * terrainMult;
   const isBurnedPhysical = attacker.status === 'brn' && isPhysical && attacker.ability !== 'guts';
 
-  const finalDmg = (power > 0 && finalEff > 0 && weatherMult > 0)
-    ? calculateAppliedFinalDamage(baseDamage, critMult, randomInt, stab, totalModifiers, isBurnedPhysical)
-    : 0;
+  const finalDmg =
+    power > 0 && finalEff > 0 && weatherMult > 0
+      ? calculateAppliedFinalDamage(
+          baseDamage,
+          critMult,
+          randomInt,
+          stab,
+          totalModifiers,
+          isBurnedPhysical
+        )
+      : 0;
 
   return {
     dmg: finalDmg,
@@ -175,7 +220,10 @@ export function calculateDamageRangePure(
   move: PureMove,
   ctx: PureDamageOptions,
   dayCycle: DayPhase = 'day'
-): { effectiveness: { value: number; label: string; class: string } | null; damageRange: PureDamageRange | null } {
+): {
+  effectiveness: { value: number; label: string; class: string } | null;
+  damageRange: PureDamageRange | null;
+} {
   const sim = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 1.0, false);
   const effectiveness = getEffectivenessPresentation(sim.eff);
 
@@ -183,11 +231,43 @@ export function calculateDamageRangePure(
   const isStatus = move.cat === 'status';
 
   if (!isStatus && (move.power ?? 0) > 0) {
-    const normalMin = calculateDamagePure(attacker, defender, move, ctx, dayCycle, DAMAGE_ROLL_MIN_RATIO, false).dmg;
-    const normalMax = calculateDamagePure(attacker, defender, move, ctx, dayCycle, DAMAGE_ROLL_MAX_RATIO, false).dmg;
+    const normalMin = calculateDamagePure(
+      attacker,
+      defender,
+      move,
+      ctx,
+      dayCycle,
+      DAMAGE_ROLL_MIN_RATIO,
+      false
+    ).dmg;
+    const normalMax = calculateDamagePure(
+      attacker,
+      defender,
+      move,
+      ctx,
+      dayCycle,
+      DAMAGE_ROLL_MAX_RATIO,
+      false
+    ).dmg;
 
-    const critMin = calculateDamagePure(attacker, defender, move, ctx, dayCycle, DAMAGE_ROLL_MIN_RATIO, true).dmg;
-    const critMax = calculateDamagePure(attacker, defender, move, ctx, dayCycle, DAMAGE_ROLL_MAX_RATIO, true).dmg;
+    const critMin = calculateDamagePure(
+      attacker,
+      defender,
+      move,
+      ctx,
+      dayCycle,
+      DAMAGE_ROLL_MIN_RATIO,
+      true
+    ).dmg;
+    const critMax = calculateDamagePure(
+      attacker,
+      defender,
+      move,
+      ctx,
+      dayCycle,
+      DAMAGE_ROLL_MAX_RATIO,
+      true
+    ).dmg;
 
     const rivalMaxHp = defender.maxHp || 100;
     const normalPctMin = Math.round((normalMin / rivalMaxHp) * 100);

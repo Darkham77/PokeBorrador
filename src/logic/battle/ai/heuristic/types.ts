@@ -30,10 +30,10 @@ const _HEURISTIC_VOLATILE_KEYS = [
   'slowstart',
   'trapped',
   'ingrain',
-  'mustrecharge',
+  'mustrecharge'
 ] as const;
 
-export type HeuristicVolatileKey = typeof _HEURISTIC_VOLATILE_KEYS[number];
+export type HeuristicVolatileKey = (typeof _HEURISTIC_VOLATILE_KEYS)[number];
 
 export interface HeuristicPokemonMove {
   id: PokemonMoveId;
@@ -48,8 +48,8 @@ export interface HeuristicPokemonMove {
 }
 
 export interface HeuristicPokemonState {
-  species: string;       // canonical species ID (e.g. 'pikachu')
-  name: string;          // nickname or species name
+  species: string; // canonical species ID (e.g. 'pikachu')
+  name: string; // nickname or species name
   hp: number;
   maxhp: number;
   hpPercent: number;
@@ -62,12 +62,20 @@ export interface HeuristicPokemonState {
   stats: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number };
   moves: HeuristicPokemonMove[];
   knownMoves: PokemonMoveId[];
-  ability: string;       // mapped from pokemon.ability (canonical)
+  ability: string; // mapped from pokemon.ability (canonical)
   knownAbility: string | null;
-  item: string;          // mapped from pokemon.heldItem (canonical)
+  item: string; // mapped from pokemon.heldItem (canonical)
   knownItem: string | null;
   itemConsumed: boolean;
-  boosts: { atk: number; def: number; spa: number; spd: number; spe: number; accuracy: number; evasion: number };
+  boosts: {
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+    accuracy: number;
+    evasion: number;
+  };
   volatiles: Set<HeuristicVolatileKey>;
 }
 
@@ -82,7 +90,7 @@ export interface HeuristicFieldState {
   weather: string | null;
   terrain: string | null;
   trickRoom: boolean;
-  tailwind: Record<string, number>;
+  tailwind: Partial<Record<SideID, number>>;
 }
 
 export interface HeuristicBattleSnapshot {
@@ -103,8 +111,8 @@ export type HeuristicDecisionSource = 'heuristic' | 'fallback' | 'random';
 
 export interface HeuristicDecision {
   type: BattleActionType;
-  moveId?: PokemonMoveId;       // move ID (when type === 'move')
-  moveIndex?: number;    // 1-based index into available moves
+  moveId?: PokemonMoveId; // move ID (when type === 'move')
+  moveIndex?: number; // 1-based index into available moves
   switchTeamIndex?: number; // 0-based index into team array
   source: HeuristicDecisionSource;
   confidence: number;
@@ -187,7 +195,6 @@ export interface RandomBattleSetEntry {
   role: string;
 }
 
-
 export interface InferredSet extends RandomBattleSetEntry {
   probability: number;
 }
@@ -217,12 +224,12 @@ export interface AIConfig {
   useInference: boolean;
 }
 
-const AI_PRESET_ERROR_RATE_WILD = 0.50;
+const AI_PRESET_ERROR_RATE_WILD = 0.5;
 const AI_PRESET_ERROR_RATE_NOVICE = 0.25;
 const AI_PRESET_ERROR_RATE_INTERMEDIATE = 0.12;
 const AI_PRESET_ERROR_RATE_TACTICAL = 0.04;
 const AI_PRESET_ERROR_RATE_ELITE = 0.02;
-const AI_PRESET_ERROR_RATE_PERFECT = 0.00;
+const AI_PRESET_ERROR_RATE_PERFECT = 0.0;
 
 const AI_DEFAULT_SWITCH_COOLDOWN_TURNS = 2;
 const AI_RIVAL_SWITCH_COOLDOWN_TURNS = 1;
@@ -230,9 +237,21 @@ const AI_RIVAL_SWITCH_COOLDOWN_TURNS = 1;
 const AI_SWITCH_AGGRESSIVENESS_NONE = 0.0;
 const AI_SWITCH_AGGRESSIVENESS_INTERMEDIATE = 0.15;
 const AI_SWITCH_AGGRESSIVENESS_TACTICAL = 0.35;
-const AI_SWITCH_AGGRESSIVENESS_ELITE = 0.50;
+const AI_SWITCH_AGGRESSIVENESS_ELITE = 0.5;
 const AI_SWITCH_AGGRESSIVENESS_GYM = 0.65;
 const AI_SWITCH_AGGRESSIVENESS_RIVAL = 0.85;
+
+const AI_PRESET_IDS = [
+  'wild',
+  'novice',
+  'intermediate',
+  'tactical',
+  'elite',
+  'gym',
+  'rival',
+  'npc'
+] as const;
+export type AIPresetId = (typeof AI_PRESET_IDS)[number];
 
 export const AI_CONFIG_PRESETS = {
   wild: {
@@ -240,58 +259,57 @@ export const AI_CONFIG_PRESETS = {
     switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_NONE,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: false,
-    useInference: false,
+    useInference: false
   },
   novice: {
     errorRate: AI_PRESET_ERROR_RATE_NOVICE,
     switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_NONE,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: false,
-    useInference: false,
+    useInference: false
   },
   intermediate: {
     errorRate: AI_PRESET_ERROR_RATE_INTERMEDIATE,
     switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_INTERMEDIATE,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
-    useInference: true,
+    useInference: true
   },
   tactical: {
     errorRate: AI_PRESET_ERROR_RATE_TACTICAL,
     switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_TACTICAL,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
-    useInference: true,
+    useInference: true
   },
   elite: {
     errorRate: AI_PRESET_ERROR_RATE_ELITE,
     switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_ELITE,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
-    useInference: true,
+    useInference: true
   },
   gym: {
     errorRate: AI_PRESET_ERROR_RATE_PERFECT,
     switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_GYM,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
-    useInference: true,
+    useInference: true
   },
   rival: {
     errorRate: AI_PRESET_ERROR_RATE_PERFECT,
     switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_RIVAL,
     switchCooldownTurns: AI_RIVAL_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
-    useInference: true,
+    useInference: true
   },
   npc: {
     errorRate: AI_PRESET_ERROR_RATE_TACTICAL,
     switchAggressiveness: AI_SWITCH_AGGRESSIVENESS_TACTICAL,
     switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
-    useInference: true,
-  },
-} as const satisfies Record<string, AIConfig>;
+    useInference: true
+  }
+} as const satisfies Record<AIPresetId, AIConfig>;
 
 export type AIPresetKey = keyof typeof AI_CONFIG_PRESETS;
-

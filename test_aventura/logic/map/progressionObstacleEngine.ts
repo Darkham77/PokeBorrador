@@ -99,7 +99,8 @@ export function generateProgressionObstacles(
     if (continent.resolvedMountain.occupiedFootCells[y]?.[x]) return false;
     if (continent.resolvedMountain.cellDetails[y]?.[x]) return false;
 
-    if (isCellAdjacentToMountainStairs(x, y, continent.resolvedMountain.cellDetails, W, H)) return false;
+    if (isCellAdjacentToMountainStairs(x, y, continent.resolvedMountain.cellDetails, W, H))
+      return false;
 
     if (continent.placedStairs) {
       for (const s of continent.placedStairs) {
@@ -130,7 +131,11 @@ export function generateProgressionObstacles(
       // Check proximity to pathGrid (distance 1 to 3 cells)
       let nearPath = false;
       for (let dy = -CANDIDATE_PATH_PROXIMITY_RADIUS; dy <= CANDIDATE_PATH_PROXIMITY_RADIUS; dy++) {
-        for (let dx = -CANDIDATE_PATH_PROXIMITY_RADIUS; dx <= CANDIDATE_PATH_PROXIMITY_RADIUS; dx++) {
+        for (
+          let dx = -CANDIDATE_PATH_PROXIMITY_RADIUS;
+          dx <= CANDIDATE_PATH_PROXIMITY_RADIUS;
+          dx++
+        ) {
           if (pathGrid[y + dy]?.[x + dx]) {
             nearPath = true;
             break;
@@ -142,8 +147,16 @@ export function generateProgressionObstacles(
       if (nearPath) {
         // Proximity to mountain cliff
         let nearMtn = false;
-        for (let dy = -CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS; dy <= CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS; dy++) {
-          for (let dx = -CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS; dx <= CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS; dx++) {
+        for (
+          let dy = -CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS;
+          dy <= CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS;
+          dy++
+        ) {
+          for (
+            let dx = -CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS;
+            dx <= CANDIDATE_MOUNTAIN_PROXIMITY_RADIUS;
+            dx++
+          ) {
             if ((continent.heightmap[y + dy]?.[x + dx] ?? 0) > 0) {
               nearMtn = true;
               break;
@@ -214,7 +227,7 @@ export function generateProgressionObstacles(
     const hitBarrierRight = isImpassableBarrier(cand.x + hRight, cand.y);
 
     // Bounded laterally by West and East barriers -> vertical corridor (North-South transit)
-    const isHorizontalChoke = hitBarrierLeft && hitBarrierRight && (hLeft + hRight - 1) <= 6;
+    const isHorizontalChoke = hitBarrierLeft && hitBarrierRight && hLeft + hRight - 1 <= 6;
 
     let vUp = 1;
     while (vUp <= 5 && !isImpassableBarrier(cand.x, cand.y - vUp)) vUp++;
@@ -225,15 +238,17 @@ export function generateProgressionObstacles(
     const hitBarrierDown = isImpassableBarrier(cand.x, cand.y + vDown);
 
     // Bounded vertically by North and South barriers -> horizontal corridor (West-East transit)
-    const isVerticalChoke = hitBarrierUp && hitBarrierDown && (vUp + vDown - 1) <= 6;
+    const isVerticalChoke = hitBarrierUp && hitBarrierDown && vUp + vDown - 1 <= 6;
 
     // Must be an airtight bottleneck bounded on both ends by natural barriers (never an open field)
     if (!isHorizontalChoke && !isVerticalChoke) continue;
 
-    const chokeWidth = isHorizontalChoke ? (hLeft + hRight - 1) : (vUp + vDown - 1);
+    const chokeWidth = isHorizontalChoke ? hLeft + hRight - 1 : vUp + vDown - 1;
 
     // Guarantee placing both cut trees and strength boulders
-    const isStrength = (cutTreeCount > 0 && strengthCount === 0) || (cand.nearMountain && strengthCount < maxStrengthBoulders && cutTreeCount >= 1);
+    const isStrength =
+      (cutTreeCount > 0 && strengthCount === 0) ||
+      (cand.nearMountain && strengthCount < maxStrengthBoulders && cutTreeCount >= 1);
     const isCut = !isStrength && cutTreeCount < maxCutTrees;
     if (!isStrength && !isCut) continue;
 
@@ -241,12 +256,14 @@ export function generateProgressionObstacles(
     if (isCut && chokeWidth > 4) continue;
 
     const prop = cand.nearMountain
-      ? (continent.mountainPalette === 'brown' ? 'poke_boulder_brown.png' : 'poke_boulder_gray.png')
+      ? continent.mountainPalette === 'brown'
+        ? 'poke_boulder_brown.png'
+        : 'poke_boulder_gray.png'
       : 'poke_fence_wood_h.png';
     const flanking: ProgressionObstacleFlank[] = [];
 
     if (isHorizontalChoke) {
-      for (let dx = -(hLeft - 1); dx <= (hRight - 1); dx++) {
+      for (let dx = -(hLeft - 1); dx <= hRight - 1; dx++) {
         if (dx === 0) continue;
         const fx = cand.x + dx;
         const fy = cand.y;
@@ -254,7 +271,7 @@ export function generateProgressionObstacles(
         flanking.push({ x: fx, y: fy, prefabFile: prop });
       }
     } else if (isVerticalChoke) {
-      for (let dy = -(vUp - 1); dy <= (vDown - 1); dy++) {
+      for (let dy = -(vUp - 1); dy <= vDown - 1; dy++) {
         if (dy === 0) continue;
         const fx = cand.x;
         const fy = cand.y + dy;
@@ -285,10 +302,16 @@ export function generateProgressionObstacles(
         const cur = queue.shift()!;
         if (cur.x === goalX && cur.y === goalY) return true;
 
-        for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]] as const) {
+        for (const [dx, dy] of [
+          [0, 1],
+          [0, -1],
+          [1, 0],
+          [-1, 0]
+        ] as const) {
           const nx = cur.x + dx;
           const ny = cur.y + dy;
-          if (Math.abs(nx - cand.x) > SEARCH_RADIUS || Math.abs(ny - cand.y) > SEARCH_RADIUS) continue;
+          if (Math.abs(nx - cand.x) > SEARCH_RADIUS || Math.abs(ny - cand.y) > SEARCH_RADIUS)
+            continue;
           const k = `${nx}_${ny}`;
           if (visited.has(k)) continue;
           if (isBlocked(nx, ny)) continue;

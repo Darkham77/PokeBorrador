@@ -10,19 +10,27 @@ export type AtmosphereLayerDepth = (typeof _ATMOSPHERE_LAYER_DEPTHS)[number];
 
 const ATMOSPHERE_RAIN_WEATHERS = ['rain', 'storm', 'heavy_rain', 'thunderstorm'] as const;
 type AtmosphereRainWeather = (typeof ATMOSPHERE_RAIN_WEATHERS)[number];
-const ATMOSPHERE_RAIN_WEATHERS_SET: ReadonlySet<AtmosphereRainWeather> = new Set(ATMOSPHERE_RAIN_WEATHERS);
+const ATMOSPHERE_RAIN_WEATHERS_SET: ReadonlySet<AtmosphereRainWeather> = new Set(
+  ATMOSPHERE_RAIN_WEATHERS
+);
 
 const ATMOSPHERE_LIGHTNING_WEATHERS = ['storm', 'thunderstorm'] as const;
 type AtmosphereLightningWeather = (typeof ATMOSPHERE_LIGHTNING_WEATHERS)[number];
-const ATMOSPHERE_LIGHTNING_WEATHERS_SET: ReadonlySet<AtmosphereLightningWeather> = new Set(ATMOSPHERE_LIGHTNING_WEATHERS);
+const ATMOSPHERE_LIGHTNING_WEATHERS_SET: ReadonlySet<AtmosphereLightningWeather> = new Set(
+  ATMOSPHERE_LIGHTNING_WEATHERS
+);
 
 const ATMOSPHERE_SNOW_WEATHERS = ['snow', 'blizzard', 'hail'] as const;
 type AtmosphereSnowWeather = (typeof ATMOSPHERE_SNOW_WEATHERS)[number];
-const ATMOSPHERE_SNOW_WEATHERS_SET: ReadonlySet<AtmosphereSnowWeather> = new Set(ATMOSPHERE_SNOW_WEATHERS);
+const ATMOSPHERE_SNOW_WEATHERS_SET: ReadonlySet<AtmosphereSnowWeather> = new Set(
+  ATMOSPHERE_SNOW_WEATHERS
+);
 
 const ATMOSPHERE_SANDSTORM_WEATHERS = ['sandstorm', 'dust_storm'] as const;
 type AtmosphereSandstormWeather = (typeof ATMOSPHERE_SANDSTORM_WEATHERS)[number];
-const ATMOSPHERE_SANDSTORM_WEATHERS_SET: ReadonlySet<AtmosphereSandstormWeather> = new Set(ATMOSPHERE_SANDSTORM_WEATHERS);
+const ATMOSPHERE_SANDSTORM_WEATHERS_SET: ReadonlySet<AtmosphereSandstormWeather> = new Set(
+  ATMOSPHERE_SANDSTORM_WEATHERS
+);
 
 const ATMOSPHERE_CANVAS_WEATHERS = [
   'fog',
@@ -36,26 +44,40 @@ const ATMOSPHERE_CANVAS_WEATHERS = [
   'heatwave'
 ] as const;
 type AtmosphereCanvasWeather = (typeof ATMOSPHERE_CANVAS_WEATHERS)[number];
-const ATMOSPHERE_CANVAS_WEATHERS_SET: ReadonlySet<AtmosphereCanvasWeather> = new Set(ATMOSPHERE_CANVAS_WEATHERS);
+const ATMOSPHERE_CANVAS_WEATHERS_SET: ReadonlySet<AtmosphereCanvasWeather> = new Set(
+  ATMOSPHERE_CANVAS_WEATHERS
+);
 
 export function isRainWeather(weather?: string): boolean {
-  return weather !== undefined && ATMOSPHERE_RAIN_WEATHERS_SET.has(weather as AtmosphereRainWeather);
+  return (
+    weather !== undefined && ATMOSPHERE_RAIN_WEATHERS_SET.has(weather as AtmosphereRainWeather)
+  );
 }
 
 export function isLightningWeather(weather?: string): boolean {
-  return weather !== undefined && ATMOSPHERE_LIGHTNING_WEATHERS_SET.has(weather as AtmosphereLightningWeather);
+  return (
+    weather !== undefined &&
+    ATMOSPHERE_LIGHTNING_WEATHERS_SET.has(weather as AtmosphereLightningWeather)
+  );
 }
 
 export function isSnowWeather(weather?: string): boolean {
-  return weather !== undefined && ATMOSPHERE_SNOW_WEATHERS_SET.has(weather as AtmosphereSnowWeather);
+  return (
+    weather !== undefined && ATMOSPHERE_SNOW_WEATHERS_SET.has(weather as AtmosphereSnowWeather)
+  );
 }
 
 export function isSandstormWeather(weather?: string): boolean {
-  return weather !== undefined && ATMOSPHERE_SANDSTORM_WEATHERS_SET.has(weather as AtmosphereSandstormWeather);
+  return (
+    weather !== undefined &&
+    ATMOSPHERE_SANDSTORM_WEATHERS_SET.has(weather as AtmosphereSandstormWeather)
+  );
 }
 
 export function isCanvasWeather(weather?: string): boolean {
-  return weather !== undefined && ATMOSPHERE_CANVAS_WEATHERS_SET.has(weather as AtmosphereCanvasWeather);
+  return (
+    weather !== undefined && ATMOSPHERE_CANVAS_WEATHERS_SET.has(weather as AtmosphereCanvasWeather)
+  );
 }
 
 export function resolveSnowLayerClass(weather: string): string {
@@ -82,15 +104,21 @@ export interface AtmosphereOverlayStyleOptions {
   direction: number;
 }
 
-export function resolveWeatherOverlayStyles(options: AtmosphereOverlayStyleOptions): Record<string, string | number> {
-  const finalZ = options.zIndex !== undefined && options.zIndex !== ''
-    ? (typeof options.zIndex === 'number' ? `calc(${options.zIndex} + 1)` : options.zIndex)
-    : 'var(--z-map-weather, 8)';
+export function resolveWeatherOverlayStyles(
+  options: AtmosphereOverlayStyleOptions
+): Record<string, string | number> {
+  // open-record: Dynamic CSS custom property dictionary
+  const finalZ =
+    options.zIndex !== undefined && options.zIndex !== ''
+      ? typeof options.zIndex === 'number'
+        ? `calc(${options.zIndex} + 1)`
+        : options.zIndex
+      : 'var(--z-map-weather, 8)';
 
   return {
     '--atmo-z-final': finalZ,
     '--card-seed': options.animSeed,
-    '--card-speed': BASE_CARD_SPEED + (options.animSeed * CARD_SPEED_FACTOR),
+    '--card-speed': BASE_CARD_SPEED + options.animSeed * CARD_SPEED_FACTOR,
     '--atmo-dir': options.direction,
     '--seed-x': (options.animSeed * SEED_PERCENT_MULTIPLIER) % SEED_PERCENT_MULTIPLIER,
     '--seed-y': (options.animSeed * ATMOSPHERE_SEED_Y_MULTIPLIER) % SEED_PERCENT_MULTIPLIER

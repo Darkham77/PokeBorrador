@@ -7,7 +7,7 @@
  * 3. Passive defense team validation against October theme rules (ghost, dark, poison).
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { checkAndResolveSeasonEnd } from '@/logic/pvp/rankedSeasonRewardEngine.ts';
 import { fetchActiveSeasonRules, findInvalidDefendingPokemon } from '@/stores/pvpDataHelper.ts';
 import { INITIAL_STATE } from '@/stores/gameInitialState.ts';

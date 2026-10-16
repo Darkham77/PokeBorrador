@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ARCHETYPE_PRESETS } from './useDebugTrainers.ts'
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
+import { ARCHETYPE_PRESETS } from './useDebugTrainers.ts';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 
-const teamSize = defineModel<number>('teamSize', { required: true })
-const forceShiny = defineModel<boolean>('forceShiny', { required: true })
-const guardianProb = defineModel<number>('guardianProb', { required: true })
-const minLevel = defineModel<number>('minLevel', { required: true })
-const maxLevel = defineModel<number>('maxLevel', { required: true })
-const selectedPreset = defineModel<string>('selectedPreset', { required: true })
+const teamSize = defineModel<number>('teamSize', { required: true });
+const forceShiny = defineModel<boolean>('forceShiny', { required: true });
+const guardianProb = defineModel<number>('guardianProb', { required: true });
+const minLevel = defineModel<number>('minLevel', { required: true });
+const maxLevel = defineModel<number>('maxLevel', { required: true });
+const selectedPreset = defineModel<string>('selectedPreset', { required: true });
 
 const emit = defineEmits<{
-  (e: 'generate'): void
-}>()
+  (e: 'generate'): void;
+}>();
 </script>
 
 <template>
@@ -22,12 +22,13 @@ const emit = defineEmits<{
       <div class="input-group vertical">
         <span class="field-label">Cant. Pokes</span>
         <input
-          id="debug-trainer-gen-settings-input-teamsize" 
-          v-model.number="teamSize" 
-          type="number" 
-          min="1" 
+          id="debug-trainer-gen-settings-input-teamsize"
+          v-model.number="teamSize"
+          type="number"
+          min="1"
           max="6"
-        >
+          aria-label="Cantidad de Pokémon"
+        />
       </div>
 
       <div class="input-group vertical">
@@ -35,13 +36,10 @@ const emit = defineEmits<{
         <select
           id="debug-trainer-gen-settings-select-forceshiny"
           v-model="forceShiny"
+          aria-label="Forzar Shiny"
         >
-          <option :value="false">
-            No (5% azar)
-          </option>
-          <option :value="true">
-            Sí (100% Shiny)
-          </option>
+          <option :value="false">No (5% azar)</option>
+          <option :value="true">Sí (100% Shiny)</option>
         </select>
       </div>
 
@@ -50,22 +48,13 @@ const emit = defineEmits<{
         <select
           id="debug-trainer-gen-settings-select-guardianprob"
           v-model="guardianProb"
+          aria-label="Probabilidad de Guardián"
         >
-          <option :value="0.01">
-            No (1% azar)
-          </option>
-          <option :value="0.1">
-            10% azar
-          </option>
-          <option :value="0.25">
-            25% azar
-          </option>
-          <option :value="0.5">
-            50% azar
-          </option>
-          <option :value="1">
-            Sí (100% Guardián)
-          </option>
+          <option :value="0.01">No (1% azar)</option>
+          <option :value="0.1">10% azar</option>
+          <option :value="0.25">25% azar</option>
+          <option :value="0.5">50% azar</option>
+          <option :value="1">Sí (100% Guardián)</option>
         </select>
       </div>
 
@@ -77,47 +66,40 @@ const emit = defineEmits<{
           type="number"
           min="1"
           :max="MAX_POKEMON_LEVEL"
-        >
+          aria-label="Nivel Mínimo"
+        />
       </div>
-      <div style="flex: 1;">
-        <label style=" color: var(--purple-400);font-size: var(--font-12);">Nivel Máx</label>
+      <div style="flex: 1">
+        <label style="color: var(--purple-400); font-size: var(--font-12)">Nivel Máx</label>
         <input
           id="debug-trainer-gen-settings-input-maxlevel"
           v-model.number="maxLevel"
           type="number"
           min="1"
           :max="MAX_POKEMON_LEVEL"
-        >
+          aria-label="Nivel Máximo"
+        />
       </div>
 
-      <div
-        class="input-group vertical"
-        style="grid-column: span 2;"
-      >
+      <div class="input-group vertical" style="grid-column: span 2">
         <span class="field-label">Tema / Arquetipo (Preset)</span>
         <select
           id="debug-trainer-preset-select"
           v-model="selectedPreset"
+          aria-label="Tema o Arquetipo"
         >
-          <option 
-            v-for="p in ARCHETYPE_PRESETS" 
-            :key="p.id" 
-            :value="p.id"
-          >
+          <option v-for="p in ARCHETYPE_PRESETS" :key="p.id" :value="p.id">
             {{ p.name }}
           </option>
         </select>
       </div>
     </div>
 
-    <div
-      class="button-row"
-      style="margin-top: 12px;"
-    >
-      <button 
+    <div class="button-row" style="margin-top: 12px">
+      <button
         id="debug-btn-gen-random-team"
         class="btn-vicio-success sm"
-        style="width: 100%; height: 32px;"
+        style="width: 100%; height: 32px"
         @click.stop="emit('generate')"
       >
         <span class="emoji">🎲</span> GENERAR NUEVO EQUIPO AL AZAR

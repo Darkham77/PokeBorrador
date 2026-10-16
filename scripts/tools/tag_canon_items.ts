@@ -14,7 +14,8 @@ import { resolve } from 'node:path';
 import { styleText } from 'node:util';
 import { Dex, toID } from '@pkmn/sim';
 
-const CUSTOM_CATEGORIES = new Set([ // runtime-set: Fast O(1) membership lookup set
+const CUSTOM_CATEGORIES = new Set([
+  // runtime-set: Fast O(1) membership lookup set
   'raw_material',
   'refined_material',
   'component',
@@ -22,7 +23,8 @@ const CUSTOM_CATEGORIES = new Set([ // runtime-set: Fast O(1) membership lookup 
   'tools'
 ]);
 
-const CUSTOM_ITEM_IDS = new Set([ // runtime-set: Fast O(1) membership lookup set
+const CUSTOM_ITEM_IDS = new Set([
+  // runtime-set: Fast O(1) membership lookup set
   'ticketsafari',
   'ticketshiny',
   'ticketcerulean',
@@ -41,7 +43,8 @@ const CUSTOM_ITEM_IDS = new Set([ // runtime-set: Fast O(1) membership lookup se
   'ironingot'
 ]);
 
-const CANON_SPECIAL_IDS = new Set([ // runtime-set: Fast O(1) membership lookup set
+const CANON_SPECIAL_IDS = new Set([
+  // runtime-set: Fast O(1) membership lookup set
   'hpup',
   'protein',
   'iron',
@@ -179,7 +182,14 @@ export function tagAllItems(): { canonCount: number; customCount: number; total:
 
     // Check if special canon or in Showdown Dex
     const dexItem = Dex.items.get(toID(id));
-    if (dexItem.exists || CANON_SPECIAL_IDS.has(id) || cat === 'pokeballs' || cat === 'stones' || cat === 'potions' || cat === 'combat_held') {
+    if (
+      dexItem.exists ||
+      CANON_SPECIAL_IDS.has(id) ||
+      cat === 'pokeballs' ||
+      cat === 'stones' ||
+      cat === 'potions' ||
+      cat === 'combat_held'
+    ) {
       item.isCanon = true;
       canonCount++;
     } else {

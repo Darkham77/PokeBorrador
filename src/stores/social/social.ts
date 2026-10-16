@@ -1,26 +1,32 @@
-import { defineStore } from 'pinia'
-import { ref, reactive, watch, computed } from 'vue'
-import { gsap } from 'gsap'
+import { defineStore } from 'pinia';
+import { ref, reactive, watch, computed } from 'vue';
+import { gsap } from 'gsap';
 
-import { useAuthStore } from '@/stores/auth.ts'
-import { useGameStore } from '@/stores/game.ts'
-import { useUIStore } from '@/stores/ui.ts'
-import { useAudioStore } from '@/stores/audio.ts'
-import { useChatStore } from '@/stores/social/chat.ts'
-import { registerFriendIdsProvider } from '@/stores/social/chatPrivate.ts'
-import { useLeaderboardStore } from '@/stores/leaderboard.ts'
-import { usePlayerSearchStore } from '@/stores/player/playerSearch.ts'
-import { logger } from '@/logic/utils/logger'
-import { parseInstantSafe } from '@/logic/utils/timeUtils'
-import type { GameState } from '@/types/system/game'
-import type { ProfileRow } from '@/types/system/database'
-import { ONLINE_PRESENCE_WINDOW_MS, MAX_FRIEND_REQUESTS_PER_MINUTE, BATTLE_INVITE_EXPIRY_SECONDS, ONLINE_PRESENCE_PING_INTERVAL_SEC } from '@/logic/constants/gameplay.ts'
-import { ONE_MINUTE_MS } from '@/logic/constants/items.ts'
-import { parseFriendsList, parsePendingRequests } from './socialParser.ts'
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useAudioStore } from '@/stores/audio.ts';
+import { useChatStore } from '@/stores/social/chat.ts';
+import { registerFriendIdsProvider } from '@/stores/social/chatPrivate.ts';
+import { useLeaderboardStore } from '@/stores/leaderboard.ts';
+import { usePlayerSearchStore } from '@/stores/player/playerSearch.ts';
+import { logger } from '@/logic/utils/logger';
+import { parseInstantSafe } from '@/logic/utils/timeUtils';
+import type { GameState } from '@/types/system/game';
+import type { ProfileRow } from '@/types/system/database';
+import {
+  ONLINE_PRESENCE_WINDOW_MS,
+  MAX_FRIEND_REQUESTS_PER_MINUTE,
+  BATTLE_INVITE_EXPIRY_SECONDS,
+  ONLINE_PRESENCE_PING_INTERVAL_SEC
+} from '@/logic/constants/gameplay.ts';
+import { ONE_MINUTE_MS } from '@/logic/constants/items.ts';
+import { parseFriendsList, parsePendingRequests } from './socialParser.ts';
 
-const SOCIAL_PROFILE_COLUMNS = 'id, username, email, faction, player_class, trainer_level, avatar_style, nick_style, pvp_wins, pvp_losses, elo_rating, created_at, gender, badges'
-const SOCIAL_FRIENDSHIP_COLUMNS = 'id, requester_id, addressee_id, status, created_at'
-const SOCIAL_QUERY_LIMIT = 200
+const SOCIAL_PROFILE_COLUMNS =
+  'id, username, email, faction, player_class, trainer_level, avatar_style, nick_style, pvp_wins, pvp_losses, elo_rating, created_at, gender, badges';
+const SOCIAL_FRIENDSHIP_COLUMNS = 'id, requester_id, addressee_id, status, created_at';
+const SOCIAL_QUERY_LIMIT = 200;
 
 export interface Friend {
   id: string;
@@ -40,7 +46,7 @@ export interface PendingRequest {
   id: string;
   requester_id: string;
   status: string;
-  profiles?: { 
+  profiles?: {
     username: string;
     level?: number;
     trainer_level?: number;
@@ -83,205 +89,252 @@ export interface LeaderboardEntry {
 }
 
 interface FriendshipRow {
-  id: string
-  requester_id: string
-  addressee_id: string
-  status: string
+  id: string;
+  requester_id: string;
+  addressee_id: string;
+  status: string;
 }
 
-
 export const useSocialStore = defineStore('social', () => {
-  const authStore = useAuthStore()
-  const gameStore = useGameStore()
-  const uiStore = useUIStore()
-  const audioStore = useAudioStore()
-  const leaderboardStore = useLeaderboardStore()
-  const playerSearchStore = usePlayerSearchStore()
+  const authStore = useAuthStore();
+  const gameStore = useGameStore();
+  const uiStore = useUIStore();
+  const audioStore = useAudioStore();
+  const leaderboardStore = useLeaderboardStore();
+  const playerSearchStore = usePlayerSearchStore();
 
-  const friends = ref<Friend[]>([])
-  registerFriendIdsProvider(() => (friends.value || []).map(f => f.id))
-  const pendingRequests = ref<PendingRequest[]>([])
+  const friends = ref<Friend[]>([]);
+  registerFriendIdsProvider(() => (friends.value || []).map((f) => f.id));
+  const pendingRequests = ref<PendingRequest[]>([]);
   const searchResults = computed<SearchResult[]>({
     get: () => playerSearchStore.searchResults,
-    set: (val: SearchResult[]) => { playerSearchStore.searchResults = val }
-  })
+    set: (val: SearchResult[]) => {
+      playerSearchStore.searchResults = val;
+    }
+  });
   const searchLoading = computed<boolean>({
     get: () => playerSearchStore.searchLoading,
-    set: (val: boolean) => { playerSearchStore.searchLoading = val }
-  })
-  const sentRequestTimestamps = ref<number[]>([])
-  
+    set: (val: boolean) => {
+      playerSearchStore.searchLoading = val;
+    }
+  });
+  const sentRequestTimestamps = ref<number[]>([]);
+
   const notifications = reactive({
     friends: 0,
     trades: 0,
     battles: 0,
     chats: 0,
     total: 0
-  })
+  });
 
-  watch(() => {
-    const chatStore = useChatStore()
-    return chatStore.totalUnreadChats
-  }, (unread) => {
-    notifications.chats = unread
-    notifications.total = notifications.friends + notifications.trades + notifications.battles + notifications.chats
-  }, { immediate: true })
+  watch(
+    () => {
+      const chatStore = useChatStore();
+      return chatStore.totalUnreadChats;
+    },
+    (unread) => {
+      notifications.chats = unread;
+      notifications.total =
+        notifications.friends + notifications.trades + notifications.battles + notifications.chats;
+    },
+    { immediate: true }
+  );
 
-  let presenceInterval: gsap.core.Tween | null = null
+  let presenceInterval: gsap.core.Tween | null = null;
 
-
-
-  let inFlightPromise: Promise<void> | null = null
-  const isLoaded = ref(false)
+  let inFlightPromise: Promise<void> | null = null;
+  const isLoaded = ref(false);
 
   /**
    * Carga datos sociales (amigos y solicitudes) usando DBRouter.
    */
   async function loadSocialData(force = false): Promise<void> {
-    if (isLoaded.value && !force) return
-    if (inFlightPromise) return inFlightPromise
+    if (isLoaded.value && !force) return;
+    if (inFlightPromise) return inFlightPromise;
 
     inFlightPromise = (async () => {
       if (!authStore.user) {
-        friends.value = []
-        pendingRequests.value = []
-        return
+        friends.value = [];
+        pendingRequests.value = [];
+        return;
       }
 
-      const db = gameStore.db
-      if (!db) { return }
-      
+      const db = gameStore.db;
+      if (!db) {
+        return;
+      }
+
       try {
         // 1. Obtener amistades confirmadas
-        const { data: friendships, error: fErr } = await db
+        const { data: friendships, error: fErr } = (await db
           .from('friendships')
           .select(SOCIAL_FRIENDSHIP_COLUMNS)
           .or(`requester_id.eq.${authStore.user.id},addressee_id.eq.${authStore.user.id}`)
           .eq('status', 'accepted')
-          .limit(SOCIAL_QUERY_LIMIT) as { data: FriendshipRow[] | null; error: unknown }
+          .limit(SOCIAL_QUERY_LIMIT)) as { data: FriendshipRow[] | null; error: unknown };
 
-        if (fErr) throw fErr
-        
+        if (fErr) throw fErr;
+
         if (friendships && friendships.length > 0) {
-          const friendIds = friendships.map((f: FriendshipRow) => 
+          const friendIds = friendships.map((f: FriendshipRow) =>
             f.requester_id === authStore.user?.id ? f.addressee_id : f.requester_id
-          )
+          );
 
-          const profRes = await db.from('profiles').select(SOCIAL_PROFILE_COLUMNS).in('id', friendIds).limit(SOCIAL_QUERY_LIMIT) as { data: ProfileRow[] | null; error: unknown }
+          const profRes = (await db
+            .from('profiles')
+            .select(SOCIAL_PROFILE_COLUMNS)
+            .in('id', friendIds)
+            .limit(SOCIAL_QUERY_LIMIT)) as { data: ProfileRow[] | null; error: unknown };
 
-          friends.value = parseFriendsList(friendIds, profRes.data || [])
+          friends.value = parseFriendsList(friendIds, profRes.data || []);
         } else {
-          friends.value = []
+          friends.value = [];
         }
 
         // 2. Solicitudes pendientes
-        const { data: pending } = await db
+        const { data: pending } = (await db
           .from('friendships')
           .select(SOCIAL_FRIENDSHIP_COLUMNS)
           .eq('addressee_id', authStore.user?.id)
           .eq('status', 'pending')
-          .limit(SOCIAL_QUERY_LIMIT) as { data: PendingRequest[] | null; error: unknown }
+          .limit(SOCIAL_QUERY_LIMIT)) as { data: PendingRequest[] | null; error: unknown };
 
         if (pending && pending.length > 0) {
-          const requesterIds = pending.map((r: PendingRequest) => r.requester_id)
-          const profRes = await db.from('profiles').select(SOCIAL_PROFILE_COLUMNS).in('id', requesterIds).limit(SOCIAL_QUERY_LIMIT) as { data: ProfileRow[] | null; error: unknown }
+          const requesterIds = pending.map((r: PendingRequest) => r.requester_id);
+          const profRes = (await db
+            .from('profiles')
+            .select(SOCIAL_PROFILE_COLUMNS)
+            .in('id', requesterIds)
+            .limit(SOCIAL_QUERY_LIMIT)) as { data: ProfileRow[] | null; error: unknown };
 
-          pendingRequests.value = parsePendingRequests(pending, profRes.data || [])
+          pendingRequests.value = parsePendingRequests(pending, profRes.data || []);
         } else {
-          pendingRequests.value = []
+          pendingRequests.value = [];
         }
-        
-        await refreshNotificationCount()
-        isLoaded.value = true
-      } catch (err) {
-        logger.error('Social', `Error loading data: ${(err as Error).message}`)
-      } finally {
-        inFlightPromise = null
-      }
-    })()
 
-    return inFlightPromise
+        await refreshNotificationCount();
+        isLoaded.value = true;
+      } catch (err) {
+        logger.error('Social', `Error loading data: ${(err as Error).message}`);
+      } finally {
+        inFlightPromise = null;
+      }
+    })();
+
+    return inFlightPromise;
   }
 
-  async function searchPlayers(query: string, filters?: { playerClass?: string; faction?: string }) {
-    await playerSearchStore.searchPlayers(query, filters)
+  async function searchPlayers(
+    query: string,
+    filters?: { playerClass?: string; faction?: string }
+  ) {
+    await playerSearchStore.searchPlayers(query, filters);
   }
 
   async function sendFriendRequest(targetId: string) {
-    if (!gameStore.db || !authStore.user) return
+    if (!gameStore.db || !authStore.user) return;
 
-    const now = Temporal.Now.instant().epochMilliseconds
-    sentRequestTimestamps.value = sentRequestTimestamps.value.filter(t => now - t < ONE_MINUTE_MS)
+    const now = Temporal.Now.instant().epochMilliseconds;
+    sentRequestTimestamps.value = sentRequestTimestamps.value.filter(
+      (t) => now - t < ONE_MINUTE_MS
+    );
 
     if (sentRequestTimestamps.value.length >= MAX_FRIEND_REQUESTS_PER_MINUTE) {
-      uiStore.notify(`Límite de solicitudes de amistad alcanzado (máx. ${MAX_FRIEND_REQUESTS_PER_MINUTE} por minuto)`, '⚠️')
-      return
+      uiStore.notify(
+        `Límite de solicitudes de amistad alcanzado (máx. ${MAX_FRIEND_REQUESTS_PER_MINUTE} por minuto)`,
+        '⚠️'
+      );
+      return;
     }
 
     const { error } = await gameStore.db.from('friendships').insert({
       requester_id: authStore.user?.id,
       addressee_id: targetId,
       status: 'pending'
-    })
+    });
 
     if (error) {
-      uiStore.notify('Error al enviar solicitud', '❌')
+      uiStore.notify('Error al enviar solicitud', '❌');
     } else {
-      sentRequestTimestamps.value.push(now)
-      uiStore.notify('Solicitud enviada correctamente', '👥')
-      audioStore.play('sentMsg') // Sonido al enviar solicitud
-      const res = searchResults.value.find((p: SearchResult) => p.id === targetId)
-      if (res) { 
+      sentRequestTimestamps.value.push(now);
+      uiStore.notify('Solicitud enviada correctamente', '👥');
+      void audioStore.play('sentMsg'); // Sonido al enviar solicitud
+      const res = searchResults.value.find((p: SearchResult) => p.id === targetId);
+      if (res) {
         res.status = 'pending';
-        res.isRequester = true 
+        res.isRequester = true;
       }
     }
   }
 
   async function respondRequest(fId: string, status: string) {
-    if (!gameStore.db) return
-    const { error } = await gameStore.db.from('friendships').update({ status }).eq('id', fId)
+    if (!gameStore.db) return;
+    const { error } = await gameStore.db.from('friendships').update({ status }).eq('id', fId);
     if (!error) {
-      uiStore.notify(status === 'accepted' ? '¡Amistad aceptada!' : 'Solicitud rechazada', '✅')
-      await loadSocialData()
+      uiStore.notify(status === 'accepted' ? '¡Amistad aceptada!' : 'Solicitud rechazada', '✅');
+      await loadSocialData();
     }
   }
 
   async function removeFriend(targetId: string) {
-    if (!authStore.user || !gameStore.db) return
-    const { error } = await gameStore.db.from('friendships')
+    if (!authStore.user || !gameStore.db) return;
+    const { error } = await gameStore.db
+      .from('friendships')
       .delete()
-      .or(`and(requester_id.eq.${authStore.user?.id},addressee_id.eq.${targetId}),and(requester_id.eq.${targetId},addressee_id.eq.${authStore.user?.id})`)
+      .or(
+        `and(requester_id.eq.${authStore.user?.id},addressee_id.eq.${targetId}),and(requester_id.eq.${targetId},addressee_id.eq.${authStore.user?.id})`
+      );
 
     if (!error) {
-      uiStore.notify('Amigo eliminado', '👋')
-      const chatStore = useChatStore()
-      chatStore.closeChat(targetId)
-      await loadSocialData()
+      uiStore.notify('Amigo eliminado', '👋');
+      const chatStore = useChatStore();
+      chatStore.closeChat(targetId);
+      await loadSocialData();
     }
   }
 
   async function refreshNotificationCount() {
-    if (!authStore.user) return
+    if (!authStore.user) return;
 
-    const db = gameStore.db
-    if (!db) return
-    const [
-      res1,
-      res2,
-      res3,
-      res4
-    ] = await Promise.all([
-      db.from('friendships').select('id', { count: 'exact', head: true }).eq('addressee_id', authStore.user?.id).eq('status', 'pending').limit(1),
-      db.from('trade_offers').select('id', { count: 'exact', head: true }).eq('receiver_id', authStore.user?.id).eq('status', 'pending').limit(1),
-      db.from('trade_offers').select('id', { count: 'exact', head: true }).eq('sender_id', authStore.user?.id).eq('status', 'accepted').limit(1),
-      db.from('battle_invites').select('id', { count: 'exact', head: true }).eq('opponent_id', authStore.user?.id).eq('status', 'pending').gte('created_at', Temporal.Now.instant().subtract({ seconds: BATTLE_INVITE_EXPIRY_SECONDS }).toString()).limit(1)
-    ])
+    const db = gameStore.db;
+    if (!db) return;
+    const [res1, res2, res3, res4] = await Promise.all([
+      db
+        .from('friendships')
+        .select('id', { count: 'exact', head: true })
+        .eq('addressee_id', authStore.user?.id)
+        .eq('status', 'pending')
+        .limit(1),
+      db
+        .from('trade_offers')
+        .select('id', { count: 'exact', head: true })
+        .eq('receiver_id', authStore.user?.id)
+        .eq('status', 'pending')
+        .limit(1),
+      db
+        .from('trade_offers')
+        .select('id', { count: 'exact', head: true })
+        .eq('sender_id', authStore.user?.id)
+        .eq('status', 'accepted')
+        .limit(1),
+      db
+        .from('battle_invites')
+        .select('id', { count: 'exact', head: true })
+        .eq('opponent_id', authStore.user?.id)
+        .eq('status', 'pending')
+        .gte(
+          'created_at',
+          Temporal.Now.instant().subtract({ seconds: BATTLE_INVITE_EXPIRY_SECONDS }).toString()
+        )
+        .limit(1)
+    ]);
 
-    notifications.friends = res1.count || 0
-    notifications.trades = (res2.count || 0) + (res3.count || 0)
-    notifications.battles = res4.count || 0
-    notifications.total = notifications.friends + notifications.trades + notifications.battles + notifications.chats
+    notifications.friends = res1.count || 0;
+    notifications.trades = (res2.count || 0) + (res3.count || 0);
+    notifications.battles = res4.count || 0;
+    notifications.total =
+      notifications.friends + notifications.trades + notifications.battles + notifications.chats;
   }
 
   /**
@@ -289,66 +342,76 @@ export const useSocialStore = defineStore('social', () => {
    * Lightweight — only queries game_saves for friend IDs already loaded.
    */
   async function refreshFriendsPresence() {
-    const db = gameStore.db
-    if (!db || friends.value.length === 0) return
+    const db = gameStore.db;
+    if (!db || friends.value.length === 0) return;
     try {
-      const ids = friends.value.map(f => f.id)
-      const { data } = await db
+      const ids = friends.value.map((f) => f.id);
+      const { data } = (await db
         .from('profiles')
         .select('id, last_played_at')
-        .in('id', ids) as { data: { id: string; last_played_at: string }[] | null }
+        .in('id', ids)
+        .limit(SOCIAL_QUERY_LIMIT)) as {
+        data: { id: string; last_played_at: string }[] | null;
+      };
 
-      if (!data) return
-      const now = Temporal.Now.instant().epochMilliseconds
-      friends.value = friends.value.map(f => {
-        const row = data.find(r => r.id === f.id)
-        const lastSeen = parseInstantSafe(row?.last_played_at)
+      if (!data) return;
+      const now = Temporal.Now.instant().epochMilliseconds;
+      friends.value = friends.value.map((f) => {
+        const row = data.find((r) => r.id === f.id);
+        const lastSeen = parseInstantSafe(row?.last_played_at);
         return {
           ...f,
           lastSeen,
-          isOnline: !!(lastSeen && (now - lastSeen.epochMilliseconds) < ONLINE_PRESENCE_WINDOW_MS)
-        }
-      })
+          isOnline: !!(lastSeen && now - lastSeen.epochMilliseconds < ONLINE_PRESENCE_WINDOW_MS)
+        };
+      });
     } catch (err) {
-      logger.warn('Social', `refreshFriendsPresence error: ${(err as Error).message}`)
+      logger.warn('Social', `refreshFriendsPresence error: ${(err as Error).message}`);
     }
   }
 
   function startPresence() {
-    if (presenceInterval) presenceInterval.kill()
-    if (authStore.sessionMode === 'offline') return
-    
+    if (presenceInterval) presenceInterval.kill();
+    if (authStore.sessionMode === 'offline') return;
+
     const ping = async () => {
-      if (!authStore.user || !gameStore.db) return
-      await gameStore.db.from('profiles').update({ 
-        last_played_at: Temporal.Now.instant().toString() 
-      }).eq('id', authStore.user?.id)
+      if (!authStore.user || !gameStore.db) return;
+      await gameStore.db
+        .from('profiles')
+        .update({
+          last_played_at: Temporal.Now.instant().toString()
+        })
+        .eq('id', authStore.user?.id);
 
       // Refresh friends' presence on every ping cycle
-      await refreshFriendsPresence()
+      await refreshFriendsPresence();
 
-      presenceInterval = gsap.delayedCall(ONLINE_PRESENCE_PING_INTERVAL_SEC, ping)
-    }
-    
-    ping()
+      presenceInterval = gsap.delayedCall(ONLINE_PRESENCE_PING_INTERVAL_SEC, ping);
+    };
+
+    void ping();
   }
 
   function stopPresence() {
-    if (presenceInterval) presenceInterval.kill()
-    presenceInterval = null
+    if (presenceInterval) presenceInterval.kill();
+    presenceInterval = null;
   }
 
   const leaderboard = computed<LeaderboardEntry[]>({
     get: () => leaderboardStore.leaderboard,
-    set: (val: LeaderboardEntry[]) => { leaderboardStore.leaderboard = val }
-  })
+    set: (val: LeaderboardEntry[]) => {
+      leaderboardStore.leaderboard = val;
+    }
+  });
   const leaderboardLoading = computed<boolean>({
     get: () => leaderboardStore.leaderboardLoading,
-    set: (val: boolean) => { leaderboardStore.leaderboardLoading = val }
-  })
+    set: (val: boolean) => {
+      leaderboardStore.leaderboardLoading = val;
+    }
+  });
 
   async function fetchLeaderboard(sortBy = 'elo_rating') {
-    await leaderboardStore.fetchLeaderboard(sortBy)
+    await leaderboardStore.fetchLeaderboard(sortBy);
   }
 
   return {
@@ -370,5 +433,5 @@ export const useSocialStore = defineStore('social', () => {
     refreshFriendsPresence,
     refreshNotificationCount,
     fetchLeaderboard
-  }
-})
+  };
+});

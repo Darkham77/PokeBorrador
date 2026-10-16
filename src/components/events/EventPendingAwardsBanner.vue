@@ -1,79 +1,85 @@
 <script setup lang="ts">
-import { gsap } from 'gsap'
-import { storeToRefs } from 'pinia'
-import { useEventStore } from '@/stores/events'
-import { useUIStore } from '@/stores/ui'
-import { isAwardClaimable } from '@/logic/events/eventValidators'
-import { getEventDisplayName as getEventDisplayNameCore } from '@/logic/events/eventEngine'
-import { resolveAwardCategory } from '@/logic/events/eventCompetitions'
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
-import { logger } from '@/logic/utils/logger'
-import type { PendingAward } from '@/types/system/stores'
-import { parsePrize } from '@/composables/events/usePastEventAwards'
-import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
+import { gsap } from 'gsap';
+import { storeToRefs } from 'pinia';
+import { useEventStore } from '@/stores/events';
+import { useUIStore } from '@/stores/ui';
+import { isAwardClaimable } from '@/logic/events/eventValidators';
+import { getEventDisplayName as getEventDisplayNameCore } from '@/logic/events/eventEngine';
+import { resolveAwardCategory } from '@/logic/events/eventCompetitions';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { logger } from '@/logic/utils/logger';
+import type { PendingAward } from '@/types/system/stores';
+import { parsePrize } from '@/composables/events/usePastEventAwards';
+import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue';
 
-const eventStore = useEventStore()
-const uiStore = useUIStore()
-const { pendingAwards, allEvents } = storeToRefs(eventStore)
+const eventStore = useEventStore();
+const uiStore = useUIStore();
+const { pendingAwards, allEvents } = storeToRefs(eventStore);
 
 const getEventDisplayName = (eventId: string, awardedAt?: string): string => {
-  const ev = (allEvents.value || []).find(e => e.id === eventId)
-  if (!ev) return 'Evento desconocido'
+  const ev = (allEvents.value || []).find((e) => e.id === eventId);
+  if (!ev) return 'Evento desconocido';
   if (awardedAt) {
     try {
-      const awardedZdt = Temporal.Instant.from(awardedAt).toZonedDateTimeISO(GAME_TIMEZONE)
-      return getEventDisplayNameCore(ev, awardedZdt)
+      const awardedZdt = Temporal.Instant.from(awardedAt).toZonedDateTimeISO(GAME_TIMEZONE);
+      return getEventDisplayNameCore(ev, awardedZdt);
     } catch (err) {
-      logger.warn('[EventPendingAwardsBanner] Error parseando awardedAt:', err)
+      logger.warn('[EventPendingAwardsBanner] Error parseando awardedAt:', err);
     }
   }
-  return getEventDisplayNameCore(ev)
-}
+  return getEventDisplayNameCore(ev);
+};
 
 const getAwardCategory = (award: PendingAward) => {
-  const ev = (allEvents.value || []).find(e => e.id === award.event_id)
-  const pastEv = (eventStore.pastEvents || []).find(pe => pe.event_id === award.event_id)
-  return resolveAwardCategory(award, ev, pastEv?.winners)
-}
+  const ev = (allEvents.value || []).find((e) => e.id === award.event_id);
+  const pastEv = (eventStore.pastEvents || []).find((pe) => pe.event_id === award.event_id);
+  return resolveAwardCategory(award, ev, pastEv?.winners);
+};
 
 const getAwardEventName = (award: PendingAward): string => {
-  return getEventDisplayName(award.event_id || '', award.awarded_at)
-}
+  return getEventDisplayName(award.event_id || '', award.awarded_at);
+};
 
 const getAwardFullDisplayName = (award: PendingAward): string => {
-  const baseName = getAwardEventName(award)
-  const cat = getAwardCategory(award)
+  const baseName = getAwardEventName(award);
+  const cat = getAwardCategory(award);
   if (cat?.categoryTitle) {
-    return `${baseName} - ${cat.categoryTitle}`
+    return `${baseName} - ${cat.categoryTitle}`;
   }
-  return baseName
-}
+  return baseName;
+};
 
 const getCategoryBadge = (award: PendingAward): { icon: string; name: string } | null => {
-  const cat = getAwardCategory(award)
+  const cat = getAwardCategory(award);
   if (cat) {
-    return { icon: cat.icon, name: cat.categoryTitle }
+    return { icon: cat.icon, name: cat.categoryTitle };
   }
-  return null
-}
+  return null;
+};
 
 const checkIfClaimable = (award: PendingAward): boolean => {
-  return isAwardClaimable(award, allEvents.value)
-}
+  return isAwardClaimable(award, allEvents.value);
+};
 
 const onBtnHover = (e: MouseEvent, enter: boolean) => {
-  const el = e.currentTarget as HTMLElement
-  if (!el) return
+  const el = e.currentTarget as HTMLElement;
+  if (!el) return;
   if (enter) {
-    gsap.to(el, { scale: 1.05, duration: 0.15, ease: 'power2.out', overwrite: 'auto' })
+    gsap.to(el, { scale: 1.05, duration: 0.15, ease: 'power2.out', overwrite: 'auto' });
   } else {
-    gsap.to(el, { scale: 1.0, duration: 0.2, ease: 'power2.out', overwrite: 'auto', clearProps: 'transform,scale' })
+    gsap.to(el, {
+      scale: 1.0,
+      duration: 0.2,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      clearProps: 'transform,scale'
+    });
   }
-}
+};
 
 const onDiscardHover = (e: MouseEvent, enter: boolean) => {
-  onBtnHover(e, enter)
-}
+  onBtnHover(e, enter);
+};
 
 const confirmDiscard = (awardId: string, eventName: string) => {
   uiStore.openConfirm({
@@ -83,17 +89,14 @@ const confirmDiscard = (awardId: string, eventName: string) => {
     cancelText: 'VOLVER',
     type: 'danger',
     onConfirm: async () => {
-      await eventStore.discardAward(awardId)
+      await eventStore.discardAward(awardId);
     }
-  })
-}
+  });
+};
 </script>
 
 <template>
-  <div
-    v-if="pendingAwards.length > 0"
-    class="event-pending-awards-banner awards-box"
-  >
+  <div v-if="pendingAwards.length > 0" class="event-pending-awards-banner awards-box">
     <div class="box-inner">
       <h3 class="pixelated">
         <span class="emoji">🎁</span> RECOMPENSAS PENDIENTES ({{ pendingAwards.length }})
@@ -110,16 +113,11 @@ const confirmDiscard = (awardId: string, eventName: string) => {
           <div class="award-info">
             <div class="award-name-row">
               <span class="award-name">{{ getAwardEventName(award) }}</span>
-              <span
-                v-if="getCategoryBadge(award)"
-                class="category-badge"
-              >
-                <span class="emoji">{{ getCategoryBadge(award)?.icon }}</span> {{ getCategoryBadge(award)?.name }}
+              <span v-if="getCategoryBadge(award)" class="category-badge">
+                <span class="emoji">{{ getCategoryBadge(award)?.icon }}</span>
+                {{ getCategoryBadge(award)?.name }}
               </span>
-              <span
-                v-if="!checkIfClaimable(award)"
-                class="legacy-badge"
-              >
+              <span v-if="!checkIfClaimable(award)" class="legacy-badge">
                 <span class="emoji">⚠️</span> ARCHIVADO / NO DISPONIBLE
               </span>
             </div>
@@ -160,7 +158,7 @@ const confirmDiscard = (awardId: string, eventName: string) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .awards-box {
   padding: 4px;

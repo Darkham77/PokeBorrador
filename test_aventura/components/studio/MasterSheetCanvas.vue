@@ -96,13 +96,25 @@ function loadSheetImage(): void {
   };
 }
 
-watch(() => props.sheetUrl, () => {
-  loadSheetImage();
-});
+watch(
+  () => props.sheetUrl,
+  () => {
+    loadSheetImage();
+  }
+);
 
-watch([() => props.registeredEntries, () => props.selectedRect, () => props.showGrid, () => props.sheetGrid], () => {
-  redrawCanvas();
-}, { deep: true });
+watch(
+  [
+    () => props.registeredEntries,
+    () => props.selectedRect,
+    () => props.showGrid,
+    () => props.sheetGrid
+  ],
+  () => {
+    redrawCanvas();
+  },
+  { deep: true }
+);
 
 function redrawCanvas(): void {
   const canvas = canvasRef.value;
@@ -167,10 +179,19 @@ function redrawCanvas(): void {
 
     // Label tag
     ctx.fillStyle = isCurrent ? '#0284c7' : '#15803d';
-    ctx.fillRect(r.x, Math.max(0, r.y - LABEL_TAG_HEIGHT), Math.min(r.w, LABEL_MAX_WIDTH), LABEL_TAG_HEIGHT);
+    ctx.fillRect(
+      r.x,
+      Math.max(0, r.y - LABEL_TAG_HEIGHT),
+      Math.min(r.w, LABEL_MAX_WIDTH),
+      LABEL_TAG_HEIGHT
+    );
     ctx.fillStyle = '#ffffff';
     ctx.font = '9px monospace';
-    ctx.fillText(entry.id.slice(0, LABEL_MAX_CHARS), r.x + 2, Math.max(LABEL_TOP_MIN_OFFSET, r.y - 3));
+    ctx.fillText(
+      entry.id.slice(0, LABEL_MAX_CHARS),
+      r.x + 2,
+      Math.max(LABEL_TOP_MIN_OFFSET, r.y - 3)
+    );
   }
 
   // 4. Draw Active Selection Box (User Drag or Current Selection)
@@ -388,7 +409,9 @@ const tileHeight = computed(() => {
   return Math.max(1, Math.round((props.selectedRect.h + props.sheetGrid.spacingY) / strideY));
 });
 
-const runtimeDimensionsText = computed(() => `${tileWidth.value * CANVAS_TILE_SIZE} × ${tileHeight.value * CANVAS_TILE_SIZE}px`);
+const runtimeDimensionsText = computed(
+  () => `${tileWidth.value * CANVAS_TILE_SIZE} × ${tileHeight.value * CANVAS_TILE_SIZE}px`
+);
 
 // JSON synthesis
 const formattedSnippet = computed(() => {
@@ -439,11 +462,21 @@ async function copySnippet(): Promise<void> {
 }
 
 function onToastEnter(el: Element, done: () => void): void {
-  gsap.fromTo(el, { opacity: 0, y: TOAST_ENTER_OFFSET_Y }, { opacity: 1, y: 0, duration: TOAST_ENTER_DURATION_SEC, ease: 'power2.out', onComplete: done });
+  gsap.fromTo(
+    el,
+    { opacity: 0, y: TOAST_ENTER_OFFSET_Y },
+    { opacity: 1, y: 0, duration: TOAST_ENTER_DURATION_SEC, ease: 'power2.out', onComplete: done }
+  );
 }
 
 function onToastLeave(el: Element, done: () => void): void {
-  gsap.to(el, { opacity: 0, y: TOAST_ENTER_OFFSET_Y, duration: TOAST_LEAVE_DURATION_SEC, ease: 'power2.in', onComplete: done });
+  gsap.to(el, {
+    opacity: 0,
+    y: TOAST_ENTER_OFFSET_Y,
+    duration: TOAST_LEAVE_DURATION_SEC,
+    ease: 'power2.in',
+    onComplete: done
+  });
 }
 
 onMounted(() => {
@@ -472,10 +505,7 @@ onUnmounted(() => {
           transformOrigin: '0 0'
         }"
       >
-        <canvas
-          ref="canvasRef"
-          class="master-sheet-canvas"
-        />
+        <canvas ref="canvasRef" class="master-sheet-canvas" />
       </div>
 
       <!-- Quick Canvas Overlay Controls -->
@@ -512,10 +542,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Bottom Inspector HUD & JSON Copier Bar -->
-    <div
-      v-if="selectedRect"
-      class="selection-hud-bar"
-    >
+    <div v-if="selectedRect" class="selection-hud-bar">
       <div class="hud-coords-group">
         <div class="hud-cell">
           <span class="hud-label">Origen (X, Y)</span>
@@ -539,37 +566,30 @@ onUnmounted(() => {
           id="master-sheet-canvas-input-newassetid"
           v-model="newAssetId"
           type="text"
+          aria-label="ID canónico del asset"
           placeholder="ID canónico (ej. poke_road_slate)"
           class="hud-input"
-        >
+        />
         <select
           id="master-sheet-canvas-select-newassetcategory"
           v-model="newAssetCategory"
+          aria-label="Categoría del asset"
           class="hud-select"
         >
-          <option value="roads">
-            roads
-          </option>
-          <option value="curbs">
-            curbs
-          </option>
-          <option value="buildings">
-            buildings
-          </option>
-          <option value="props">
-            props
-          </option>
-          <option value="terrain">
-            terrain
-          </option>
+          <option value="roads">roads</option>
+          <option value="curbs">curbs</option>
+          <option value="buildings">buildings</option>
+          <option value="props">props</option>
+          <option value="terrain">terrain</option>
         </select>
         <input
           id="master-sheet-canvas-input-newassetname"
           v-model="newAssetName"
           type="text"
+          aria-label="Nombre descriptivo del asset"
           placeholder="Nombre descriptivo"
           class="hud-input wide"
-        >
+        />
         <button
           id="master-sheet-canvas-btn-copiar-json"
           type="button"
@@ -580,15 +600,8 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <Transition
-        :css="false"
-        @enter="onToastEnter"
-        @leave="onToastLeave"
-      >
-        <div
-          v-if="copyFeedback"
-          class="hud-feedback-toast"
-        >
+      <Transition :css="false" @enter="onToastEnter" @leave="onToastLeave">
+        <div v-if="copyFeedback" class="hud-feedback-toast">
           {{ copyFeedback }}
         </div>
       </Transition>
@@ -614,13 +627,17 @@ onUnmounted(() => {
   overflow: hidden;
   cursor: crosshair;
   user-select: none;
-  background-image: 
+  background-image:
     linear-gradient(45deg, #131924 25%, transparent 25%),
     linear-gradient(-45deg, #131924 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, #131924 75%),
     linear-gradient(-45deg, transparent 75%, #131924 75%);
   background-size: 24px 24px;
-  background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+  background-position:
+    0 0,
+    0 12px,
+    12px -12px,
+    -12px 0;
 }
 
 .canvas-transform-layer {

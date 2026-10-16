@@ -15,6 +15,7 @@ import {
   MAX_POKEMON_TEAM_SIZE
 } from '../constants/gameplay.ts';
 import { MAX_POKEMON_LEVEL } from '../../data/system/constants.ts';
+import type { GymId } from '@/data/world/gyms';
 
 /** Bonus level calculation step for excess criminality (1 level per 10%). */
 export const CRIMINALITY_BONUS_LEVEL_STEP_PERCENT = 10;
@@ -41,7 +42,7 @@ const ROCKET_QUICK_STEAL_BASE_CHANCE = 0.15;
 const ROCKET_QUICK_STEAL_PER_LEVEL = 0.01;
 
 /** Team Rocket quick steal maximum cap (30%). */
-const ROCKET_QUICK_STEAL_MAX_CAP = 0.30;
+const ROCKET_QUICK_STEAL_MAX_CAP = 0.3;
 
 /** Bug Catcher catch rate synergy base multiplier. */
 const BUG_SYNERGY_BASE_BONUS = 1.0;
@@ -80,7 +81,8 @@ const QUADRATIC_EXPONENT = 2;
  */
 export function calculateQuickStealChance(classLevel: number): number {
   const level = Math.max(MINIMUM_POKEMON_LEVEL, classLevel);
-  const rawChance = ROCKET_QUICK_STEAL_BASE_CHANCE + (level - MINIMUM_POKEMON_LEVEL) * ROCKET_QUICK_STEAL_PER_LEVEL;
+  const rawChance =
+    ROCKET_QUICK_STEAL_BASE_CHANCE + (level - MINIMUM_POKEMON_LEVEL) * ROCKET_QUICK_STEAL_PER_LEVEL;
   const chance = Math.min(ROCKET_QUICK_STEAL_MAX_CAP, rawChance);
   return Number(chance.toFixed(DECIMAL_PLACES_PRECISION_TWO));
 }
@@ -90,13 +92,17 @@ export function calculateQuickStealChance(classLevel: number): number {
  * Returns "Bug Synergy" Catch Rate multiplier according to Bug-type count in active team.
  * For each 'bug' or 'bicho' Pokémon in active team, increases catch rate by 5% (linearly stacked, max +30%).
  */
-export function calculateBugSymmetryBonus(activeTeam: { type1: string; type2?: string | null }[]): number {
-  const bugCount = activeTeam.filter(p => {
+export function calculateBugSymmetryBonus(
+  activeTeam: { type1: string; type2?: string | null }[]
+): number {
+  const bugCount = activeTeam.filter((p) => {
     const t1 = String(p.type1 || '').toLowerCase();
     const t2 = String(p.type2 || '').toLowerCase();
     return t1 === 'bug' || t1 === 'bicho' || t2 === 'bug' || t2 === 'bicho';
   }).length;
-  return BUG_SYNERGY_BASE_BONUS + Math.min(BUG_SYNERGY_MAX_COUNT, bugCount) * BUG_SYNERGY_BONUS_PER_BUG;
+  return (
+    BUG_SYNERGY_BASE_BONUS + Math.min(BUG_SYNERGY_MAX_COUNT, bugCount) * BUG_SYNERGY_BONUS_PER_BUG
+  );
 }
 
 /**
@@ -105,7 +111,10 @@ export function calculateBugSymmetryBonus(activeTeam: { type1: string; type2?: s
  */
 export function calculateTrainerCatchRateModifier(baseCatchRate: number, ivTotal: number): number {
   if (ivTotal > TRAINER_HIGH_IV_THRESHOLD) {
-    return Math.max(MINIMUM_POKEMON_LEVEL, Math.floor(baseCatchRate * TRAINER_CATCH_PENALTY_MULTIPLIER));
+    return Math.max(
+      MINIMUM_POKEMON_LEVEL,
+      Math.floor(baseCatchRate * TRAINER_CATCH_PENALTY_MULTIPLIER)
+    );
   }
   return baseCatchRate;
 }
@@ -116,12 +125,19 @@ export function calculateTrainerCatchRateModifier(baseCatchRate: number, ivTotal
  */
 export function hasDoubleRivalChance(
   defeatedGyms: string[],
-  gymProgress: Record<string, { easy?: boolean; normal?: boolean; hard?: boolean } | undefined>
+  gymProgress: Partial<
+    Record<GymId, { easy?: boolean; normal?: boolean; hard?: boolean } | undefined>
+  >
 ): boolean {
   if (!defeatedGyms || defeatedGyms.length === 0) return false;
   // Must have defeated all conquered gyms on "hard" difficulty
-  return defeatedGyms.every(gymId => {
-    const progress = gymProgress[gymId];
+  return defeatedGyms.every((gymId) => {
+    const progress = (
+      gymProgress as Record<
+        string,
+        { easy?: boolean; normal?: boolean; hard?: boolean } | undefined
+      >
+    )[gymId]; // open-record: Gym id lookup
     return !!(progress && progress.hard);
   });
 }
@@ -131,7 +147,10 @@ export function hasDoubleRivalChance(
  */
 export function getXPNeededForClassLevel(level: number): number {
   if (level >= MAX_PLAYER_CLASS_LEVEL) return MAX_LEVEL_XP_CAP;
-  return CLASS_XP_THRESHOLD_RANKS[level - MINIMUM_POKEMON_LEVEL] || (level * CLASS_LEVEL_FALLBACK_XP_MULTIPLIER);
+  return (
+    CLASS_XP_THRESHOLD_RANKS[level - MINIMUM_POKEMON_LEVEL] ||
+    level * CLASS_LEVEL_FALLBACK_XP_MULTIPLIER
+  );
 }
 
 /**
@@ -173,7 +192,10 @@ export function calculatePoliceEffectiveLevel(baseMapLv: number, criminality: nu
  * - 140% to 199%: 4 to 5 Pokémon (Strike force)
  * - >= 200%: Full 6 Pokémon (Full tactical SWAT squad)
  */
-export function calculatePoliceTeamSize(criminality: number, randomFn: () => number = Math.random): number {
+export function calculatePoliceTeamSize(
+  criminality: number,
+  randomFn: () => number = Math.random
+): number {
   const crim = criminality || 0;
   if (crim >= CRIMINALITY_SWAT_TEAM_THRESHOLD_PERCENT) {
     return MAX_POKEMON_TEAM_SIZE;
@@ -192,7 +214,11 @@ export function calculatePoliceTeamSize(criminality: number, randomFn: () => num
 export function calculatePoliceBail(classLevel: number, criminality: number): number {
   const level = Math.max(MINIMUM_POKEMON_LEVEL, classLevel || MINIMUM_POKEMON_LEVEL);
   const crim = Math.max(0, criminality || 0);
-  return Math.floor(Math.pow(level, QUADRATIC_EXPONENT) * POLICE_BAIL_BASE_MULTIPLIER * (crim / MAX_CRIMINALITY_LEVEL));
+  return Math.floor(
+    Math.pow(level, QUADRATIC_EXPONENT) *
+      POLICE_BAIL_BASE_MULTIPLIER *
+      (crim / MAX_CRIMINALITY_LEVEL)
+  );
 }
 
 /**
@@ -204,4 +230,3 @@ export function calculatePoliceEncounterChance(criminality: number, trainerBonus
   const crim = Math.max(0, criminality || 0);
   return (crim / CRIMINALITY_DENOMINATOR_FACTOR) * trainerBonus;
 }
-

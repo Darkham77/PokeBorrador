@@ -12,7 +12,10 @@ export interface ProtocolTokenAuditResult {
  * Escanea dinámicamente todos los tokens de protocolo emitidos por Showdown en external/
  * y audita dinámicamente todos los archivos TypeScript en src/logic/battle para verificar su soporte.
  */
-export function auditShowdownProtocolTokens(showdownCodePath: string, bridgePath: string): ProtocolTokenAuditResult {
+export function auditShowdownProtocolTokens(
+  showdownCodePath: string,
+  bridgePath: string
+): ProtocolTokenAuditResult {
   const unhandledProtocolTokens: string[] = []; // no-domain: Non-domain utility collection or data structure
   const foundTokens = new Set<string>();
 
@@ -26,7 +29,7 @@ export function auditShowdownProtocolTokens(showdownCodePath: string, bridgePath
     simDir = join(showdownCodePath, 'sim');
   }
   if (existsSync(simDir)) {
-    const files = readdirSync(simDir).filter(f => f.endsWith('.ts') || f.endsWith('.js'));
+    const files = readdirSync(simDir).filter((f) => f.endsWith('.ts') || f.endsWith('.js'));
     for (const file of files) {
       const content = readFileSync(join(simDir, file), 'utf-8');
       const matches = content.matchAll(/this\.add\(['"]\|?([a-z0-9_-]+)/gi);
@@ -39,7 +42,7 @@ export function auditShowdownProtocolTokens(showdownCodePath: string, bridgePath
   }
 
   // 2. Escanea recursivamente TODOS los archivos en la carpeta de lógica de batalla de src/
-  const bridgeFiles = getFilesRecursively(bridgePath).filter(f => f.endsWith('.ts'));
+  const bridgeFiles = getFilesRecursively(bridgePath).filter((f) => f.endsWith('.ts'));
   let combinedBridge = '';
   for (const file of bridgeFiles) {
     combinedBridge += `\n${readFileSync(file, 'utf-8').toLowerCase()}`;
@@ -47,9 +50,11 @@ export function auditShowdownProtocolTokens(showdownCodePath: string, bridgePath
 
   // 3. Comprueba qué tokens no están contemplados en los handlers
   for (const token of foundTokens) {
-    if (!combinedBridge.includes(`case '-${token}'`) &&
-        !combinedBridge.includes(`case '|${token}'`) &&
-        !combinedBridge.includes(`case '${token}'`)) {
+    if (
+      !combinedBridge.includes(`case '-${token}'`) &&
+      !combinedBridge.includes(`case '|${token}'`) &&
+      !combinedBridge.includes(`case '${token}'`)
+    ) {
       unhandledProtocolTokens.push(token);
     }
   }

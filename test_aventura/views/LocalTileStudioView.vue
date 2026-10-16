@@ -45,10 +45,7 @@ const showImportModal = ref(false);
       <StudioInspector />
     </aside>
 
-    <StudioAssetImportModal
-      v-if="showImportModal"
-      @close="showImportModal = false"
-    />
+    <StudioAssetImportModal v-if="showImportModal" @close="showImportModal = false" />
   </div>
 </template>
 

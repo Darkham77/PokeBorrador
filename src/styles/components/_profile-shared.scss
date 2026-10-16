@@ -1,5 +1,5 @@
 /* --- COMPARTIDO PARA COMPONENTES DE PERFIL Y TARJETAS --- */
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .profile-panel-content {
   @include gpu-layer;
@@ -11,11 +11,19 @@
   background: transparent;
   will-change: transform, filter, opacity, backdrop-filter;
   backdrop-filter: Blur(12px);
-  
-  .rocket & { background: Linear-Gradient(180deg, Rgb(239 68 68 / 15%) 0%, transparent 60%); }
-  .cazabichos & { background: Linear-Gradient(180deg, Rgb(34 197 94 / 15%) 0%, transparent 60%); }
-  .entrenador & { background: Linear-Gradient(180deg, Rgb(59 130 246 / 15%) 0%, transparent 60%); }
-  .criador & { background: Linear-Gradient(180deg, Rgb(168 85 247 / 15%) 0%, transparent 60%); }
+
+  .rocket & {
+    background: Linear-Gradient(180deg, Rgb(239 68 68 / 15%) 0%, transparent 60%);
+  }
+  .cazabichos & {
+    background: Linear-Gradient(180deg, Rgb(34 197 94 / 15%) 0%, transparent 60%);
+  }
+  .entrenador & {
+    background: Linear-Gradient(180deg, Rgb(59 130 246 / 15%) 0%, transparent 60%);
+  }
+  .criador & {
+    background: Linear-Gradient(180deg, Rgb(168 85 247 / 15%) 0%, transparent 60%);
+  }
 }
 
 .profile-section-card {
@@ -73,7 +81,8 @@
     background: Linear-Gradient(135deg, Rgb(59 130 246 / 5%) 0%, Rgb(15 23 42 / 40%) 100%);
     border-color: Rgb(59 130 246 / 20%);
 
-    .stat-val, .icon-war {
+    .stat-val,
+    .icon-war {
       color: var(--blue-400);
       text-shadow: 0 0 10px Rgb(59 130 246 / 40%);
     }
@@ -83,7 +92,8 @@
     background: Linear-Gradient(135deg, Rgb(251 191 36 / 5%) 0%, Rgb(15 23 42 / 40%) 100%);
     border-color: Rgb(251 191 36 / 20%);
 
-    .stat-val, .icon-war-coin {
+    .stat-val,
+    .icon-war-coin {
       color: var(--amber);
       text-shadow: 0 0 10px Rgb(251 191 36 / 40%);
     }
@@ -111,15 +121,30 @@
 }
 
 /* Colors & Helpers */
-.danger-text { color: var(--rose) !important; text-shadow: 0 0 10px Rgb(239 68 68 / 40%); }
+.danger-text {
+  color: var(--rose) !important;
+  text-shadow: 0 0 10px Rgb(239 68 68 / 40%);
+}
 
-.primary-text { color: var(--blue-400) !important; text-shadow: 0 0 10px Rgb(59 130 246 / 40%); }
+.primary-text {
+  color: var(--blue-400) !important;
+  text-shadow: 0 0 10px Rgb(59 130 246 / 40%);
+}
 
-.yellow-text { color: var(--amber) !important; text-shadow: 0 0 10px Rgb(251 191 36 / 40%); }
+.yellow-text {
+  color: var(--amber) !important;
+  text-shadow: 0 0 10px Rgb(251 191 36 / 40%);
+}
 
-.shiny-text { color: var(--amber) !important; text-shadow: 0 0 10px Rgb(251 191 36 / 40%); }
+.shiny-text {
+  color: var(--amber) !important;
+  text-shadow: 0 0 10px Rgb(251 191 36 / 40%);
+}
 
-.green-text { color: var(--green-light) !important; text-shadow: 0 0 10px Rgb(34 197 94 / 40%); }
+.green-text {
+  color: var(--green-light) !important;
+  text-shadow: 0 0 10px Rgb(34 197 94 / 40%);
+}
 
 /* Pokédex Section */
 .pokedex-stats {
@@ -163,7 +188,12 @@
 .pokedex-bar-progress {
   height: 100%;
   border-radius: $radius-sm;
-  background: linear-gradient(90deg, var(--red-500, #ef4444), var(--yellow-500, #eab308), var(--green-500, #22c55e));
+  background: linear-gradient(
+    90deg,
+    var(--red-500, #ef4444),
+    var(--yellow-500, #eab308),
+    var(--green-500, #22c55e)
+  );
   box-shadow: var(--shadow-glow-green);
 }
 

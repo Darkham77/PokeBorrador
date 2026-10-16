@@ -94,19 +94,19 @@ const GENE_PROBABILITIES = {
   CANOPY_BASE_FACTOR: 0.7,
   CANOPY_DRY_FACTOR: 0.4,
   WATER_HARBOR: 0.45,
-  WATER_CANAL: 0.80,
-  WATER_DRY_POND: 0.30,
-  ELEVATION_STAIRS: 0.60,
+  WATER_CANAL: 0.8,
+  WATER_DRY_POND: 0.3,
+  ELEVATION_STAIRS: 0.6,
   ELEVATION_PERCH: 0.85,
   DENSITY_METROPOLIS: 0.8,
   DENSITY_CITY: 0.5,
   DENSITY_RURAL: 0.2,
   DENSITY_VARIANCE: 0.4,
   DENSITY_SUB: 0.2,
-  PATTERN_TOWN_L: 0.60,
+  PATTERN_TOWN_L: 0.6,
   PATTERN_CITY_LINEAR: 0.35,
-  PATTERN_CITY_RADIAL: 0.70,
-  PATTERN_METRO_RADIAL: 0.50,
+  PATTERN_CITY_RADIAL: 0.7,
+  PATTERN_METRO_RADIAL: 0.5,
   CANOPY_HIGH_THRESHOLD: 0.4,
   SHUFFLE_CENTRAL_OFFSET: 0.5
 } as const;
@@ -116,7 +116,7 @@ const GENE_PROBABILITIES = {
 // ---------------------------------------------------------------------------
 
 function createPrng(seed: number): () => number {
-  let s = (seed >>> 0) || PRNG_CONSTANTS.DEFAULT_SEED;
+  let s = seed >>> 0 || PRNG_CONSTANTS.DEFAULT_SEED;
   return () => {
     s = (s * PRNG_CONSTANTS.MULTIPLIER + PRNG_CONSTANTS.INCREMENT) | 0;
     return (s >>> 0) / PRNG_CONSTANTS.DIVISOR;
@@ -244,12 +244,19 @@ export function synthesizeCityGenes(
   }
 
   // Urban density: towns lean rural (0.1..0.4), metropolis leans paved (0.7..1.0)
-  const baseDensity = scale === 'metropolis'
-    ? GENE_PROBABILITIES.DENSITY_METROPOLIS
-    : scale === 'city'
-      ? GENE_PROBABILITIES.DENSITY_CITY
-      : GENE_PROBABILITIES.DENSITY_RURAL;
-  const urbanDensity = Math.min(1.0, Math.max(0.0, baseDensity + (prng() * GENE_PROBABILITIES.DENSITY_VARIANCE - GENE_PROBABILITIES.DENSITY_SUB)));
+  const baseDensity =
+    scale === 'metropolis'
+      ? GENE_PROBABILITIES.DENSITY_METROPOLIS
+      : scale === 'city'
+        ? GENE_PROBABILITIES.DENSITY_CITY
+        : GENE_PROBABILITIES.DENSITY_RURAL;
+  const urbanDensity = Math.min(
+    1.0,
+    Math.max(
+      0.0,
+      baseDensity + (prng() * GENE_PROBABILITIES.DENSITY_VARIANCE - GENE_PROBABILITIES.DENSITY_SUB)
+    )
+  );
 
   // Street morphology: align strictly with canonical procedural archetypes
   const patternRoll = prng();
@@ -258,17 +265,21 @@ export function synthesizeCityGenes(
     node.hasPort ||
     node.terrainPreference === 'coast_water' ||
     waterFeatureType === 'harbor_dock' ||
-    (hasWater && (/port|carmin|vermilion|dock|wharf/i.test(node.id) || /port|carmin|vermilion|dock|wharf/i.test(node.name)))
+    (hasWater &&
+      (/port|carmin|vermilion|dock|wharf/i.test(node.id) ||
+        /port|carmin|vermilion|dock|wharf/i.test(node.name)))
   ) {
     streetPattern = 'coastal_wharf';
   } else if (scale === 'town') {
-    streetPattern = patternRoll < GENE_PROBABILITIES.PATTERN_TOWN_L ? 'l_enclave' : 'linear_boulevard';
+    streetPattern =
+      patternRoll < GENE_PROBABILITIES.PATTERN_TOWN_L ? 'l_enclave' : 'linear_boulevard';
   } else if (scale === 'city') {
     if (patternRoll < GENE_PROBABILITIES.PATTERN_CITY_LINEAR) streetPattern = 'linear_boulevard';
     else if (patternRoll < GENE_PROBABILITIES.PATTERN_CITY_RADIAL) streetPattern = 'radial_plaza';
     else streetPattern = 'l_enclave';
   } else {
-    streetPattern = patternRoll < GENE_PROBABILITIES.PATTERN_METRO_RADIAL ? 'radial_plaza' : 'linear_boulevard';
+    streetPattern =
+      patternRoll < GENE_PROBABILITIES.PATTERN_METRO_RADIAL ? 'radial_plaza' : 'linear_boulevard';
   }
 
   // 4. Compute Vignette Budget and Select Diverse Vignettes

@@ -20,7 +20,7 @@ const HOVER_VISUAL_BORDER_CLASSES = [
   'market-item-wrapper',
   'info-item',
   'trainer-card'
-] as const
+] as const;
 
 export const HOVER_DURATION_200MS_CLASSES = [
   'pc-banner',
@@ -44,17 +44,17 @@ export const HOVER_DURATION_200MS_CLASSES = [
   'gym-card',
   'inventory-item-card',
   'info-item'
-] as const
-
+] as const;
 
 export function hasVisualBorders(el: HTMLElement): boolean {
-  if (HOVER_VISUAL_BORDER_CLASSES.some(cls => el.classList.contains(cls))) return true
-  if (el.closest('.hud-submenu') && el.classList.contains('hud-nav-btn')) return true
-  return false
+  if (HOVER_VISUAL_BORDER_CLASSES.some((cls) => el.classList.contains(cls))) return true;
+  if (el.closest('.hud-submenu') && el.classList.contains('hud-nav-btn')) return true;
+  return false;
 }
 
 const DEFAULT_FALLBACK_COLOR = '#0a84ff';
 
+// open-record: CSS color variable fallback hex mapping
 const FALLBACK_CSS_COLORS: Record<string, string> = {
   'var(--blue)': '#0a84ff',
   'var(--red)': '#ff453a',
@@ -74,11 +74,11 @@ const FALLBACK_CSS_COLORS: Record<string, string> = {
   '--pokecenter-pink': '#ff3366',
   '--text': '#f5f5f7',
   '--gray': '#86868b',
-  'blue': '#0a84ff',
-  'red': '#ff453a',
-  'yellow': '#ffd60a',
-  'green': '#32d74b',
-  'purple': '#bf5af2'
+  blue: '#0a84ff',
+  red: '#ff453a',
+  yellow: '#ffd60a',
+  green: '#32d74b',
+  purple: '#bf5af2'
 };
 
 function extractVarName(color: string): string | null {
@@ -125,84 +125,90 @@ const HEXADECIMAL_RADIX = 16 as const;
  * Converts a hex color to a transparent rgba color string.
  */
 function hexToRgba(hex: string, alpha: number): string {
-  let c = hex.replace('#', '').trim()
+  let c = hex.replace('#', '').trim();
   if (c.length === HEX_SHORT_LENGTH) {
-    const r = c.charAt(0)
-    const g = c.charAt(1)
-    const b = c.charAt(2)
-    c = r + r + g + g + b + b
+    const r = c.charAt(0);
+    const g = c.charAt(1);
+    const b = c.charAt(2);
+    c = r + r + g + g + b + b;
   }
   if (c.length === HEX_FULL_LENGTH) {
-    const r = parseInt(c.substring(0, 2), HEXADECIMAL_RADIX)
-    const g = parseInt(c.substring(2, 4), HEXADECIMAL_RADIX)
-    const b = parseInt(c.substring(4, 6), HEXADECIMAL_RADIX)
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+    const r = parseInt(c.substring(0, 2), HEXADECIMAL_RADIX);
+    const g = parseInt(c.substring(2, 4), HEXADECIMAL_RADIX);
+    const b = parseInt(c.substring(4, 6), HEXADECIMAL_RADIX);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
-  return hex
+  return hex;
 }
 
 /**
  * Parses any color format (variable, hex, rgb) to an rgba equivalent with custom alpha opacity.
  */
 export function parseToRgba(colorStr: string, alpha: number, element?: HTMLElement): string {
-  const resolved = resolveCssColor(colorStr, element)
+  const resolved = resolveCssColor(colorStr, element);
   if (resolved.startsWith('#')) {
-    return hexToRgba(resolved, alpha)
+    return hexToRgba(resolved, alpha);
   }
   if (resolved.startsWith('rgb')) {
-    const match = resolved.match(/\d+/g)
+    const match = resolved.match(/\d+/g);
     if (match && match.length >= 3 && match[0] && match[1] && match[2]) {
-      return `rgba(${match[0]}, ${match[1]}, ${match[2]}, ${alpha})`
+      return `rgba(${match[0]}, ${match[1]}, ${match[2]}, ${alpha})`;
     }
   }
-  return resolved
+  return resolved;
 }
 
 export function is3DButton(el: HTMLElement): boolean {
-  if (!el) return false
-  return el.classList.contains('btn-confirm') || 
-         Array.from(el.classList).some(cls => cls.startsWith('btn-vicio'))
+  if (!el) return false;
+  return (
+    el.classList.contains('btn-confirm') ||
+    Array.from(el.classList).some((cls) => cls.startsWith('btn-vicio'))
+  );
 }
 
-export function getElementShadowColorAndDepth(el: HTMLElement): { color: string; depth: number; blur: string } {
+export function getElementShadowColorAndDepth(el: HTMLElement): {
+  color: string;
+  depth: number;
+  blur: string;
+} {
   // If we already have the base shadow cached, return it!
   if (el.dataset.baseShadowColor && el.dataset.baseShadowDepth) {
     return {
       color: el.dataset.baseShadowColor,
       depth: parseFloat(el.dataset.baseShadowDepth),
       blur: el.dataset.baseShadowBlur || '1.5px'
-    }
+    };
   }
 
-  const computed = typeof window !== 'undefined' ? window.getComputedStyle(el).boxShadow : ''
+  const computed = typeof window !== 'undefined' ? window.getComputedStyle(el).boxShadow : '';
   if (!computed || computed === 'none') {
-    const defaultVal = { color: 'rgba(0,0,0,0)', depth: 0, blur: '1.5px' }
-    el.dataset.baseShadowColor = defaultVal.color
-    el.dataset.baseShadowDepth = String(defaultVal.depth)
-    el.dataset.baseShadowBlur = defaultVal.blur
-    return defaultVal
+    const defaultVal = { color: 'rgba(0,0,0,0)', depth: 0, blur: '1.5px' };
+    el.dataset.baseShadowColor = defaultVal.color;
+    el.dataset.baseShadowDepth = String(defaultVal.depth);
+    el.dataset.baseShadowBlur = defaultVal.blur;
+    return defaultVal;
   }
 
   // Parse color (supports color at the beginning or end of the shadow segment)
-  const colorMatch = computed.match(/(rgba?\(.*?\))/)
+  const colorMatch = computed.match(/(rgba?\(.*?\))/);
   if (colorMatch && colorMatch[1]) {
-    const color = colorMatch[1]
-    const rest = computed.replace(color, '').trim().split(/\s+/)
-    const cleanOffsets = rest.filter(val => val && !val.includes('rgba') && !val.includes('rgb'))
-    const yOffset = parseFloat(cleanOffsets[1] || '0')
-    const blur = cleanOffsets[2] || '1.5px'
-    
-    // Cache the base stylesheet values so they never drift during active animations!
-    el.dataset.baseShadowColor = color
-    el.dataset.baseShadowDepth = String(yOffset)
-    el.dataset.baseShadowBlur = blur
+    const color = colorMatch[1];
+    const rest = computed.replace(color, '').trim().split(/\s+/);
+    const cleanOffsets = rest.filter((val) => val && !val.includes('rgba') && !val.includes('rgb'));
+    const yOffset = parseFloat(cleanOffsets[1] || '0');
+    const blur = cleanOffsets[2] || '1.5px';
 
-    return { color, depth: yOffset, blur }
+    // Cache the base stylesheet values so they never drift during active animations!
+    el.dataset.baseShadowColor = color;
+    el.dataset.baseShadowDepth = String(yOffset);
+    el.dataset.baseShadowBlur = blur;
+
+    return { color, depth: yOffset, blur };
   }
 
-  const fallback = { color: 'rgba(0,0,0,0)', depth: 0, blur: '1.5px' }
-  el.dataset.baseShadowColor = fallback.color
-  el.dataset.baseShadowDepth = String(fallback.depth)
-  el.dataset.baseShadowBlur = fallback.blur
-  return fallback
+  const fallback = { color: 'rgba(0,0,0,0)', depth: 0, blur: '1.5px' };
+  el.dataset.baseShadowColor = fallback.color;
+  el.dataset.baseShadowDepth = String(fallback.depth);
+  el.dataset.baseShadowBlur = fallback.blur;
+  return fallback;
 }

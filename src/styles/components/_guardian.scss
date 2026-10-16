@@ -7,7 +7,8 @@
    ========================================================================== */
 
 /* Ensure the container of the map card allows absolute positioning while maintaining clipped corners (Literal 7) */
-.location-card, .map-card {
+.location-card,
+.map-card {
   position: relative !important;
 }
 
@@ -42,7 +43,7 @@
   min-height: 32px !important;
   margin: 0 !important;
   object-fit: contain !important;
-  
+
   &:not(.is-low-power *) {
     @include gpu-layer;
   }
@@ -52,12 +53,12 @@
       will-change: transform, filter, opacity;
       filter: Drop-Shadow(0 0 5px Rgb(255 255 255 / 40%));
     }
-    
+
     .is-low-power & {
       will-change: auto !important;
       filter: none;
     }
-    
+
     &.captured {
       opacity: 0.8 !important;
       filter: Grayscale(100%);
@@ -68,7 +69,7 @@
     @include pokemon-silhouette;
 
     transform: none;
-    
+
     .is-low-power & {
       will-change: auto !important;
     }
@@ -90,20 +91,20 @@
   letter-spacing: 0.5px !important;
   white-space: nowrap !important;
   box-shadow: var(--shadow-sm);
-  
+
   &.captured {
     background: Rgb(34 197 94 / 100%) !important; /* Vivid Green for captured */
   }
 }
 
 /* DISABLE THE OLD LARGE ICON COMPLETELY - NUCLEAR OPTION (Literal 72) */
-.guardian-icon-large, 
+.guardian-icon-large,
 img.guardian-icon-large,
-.location-card > img[src*="sprites/pokemon"]:not(.guardian-mini-sprite) {
-    display: none !important;
+.location-card > img[src*='sprites/pokemon']:not(.guardian-mini-sprite) {
+  display: none !important;
 }
 
 /* Force the badge to stays in the corner (Literal 79) */
 .location-card .guardian-status-badge {
-    transform: none;
+  transform: none;
 }

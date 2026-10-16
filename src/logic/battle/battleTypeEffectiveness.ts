@@ -3,7 +3,11 @@ import type { PurePokemon } from './battleMathTypes.ts';
 
 const DELTA_STREAM_WEAKNESS_SET: ReadonlySet<string> = new Set(['electric', 'ice', 'rock']); // runtime-set: Fast O(1) membership lookup set
 
-function getTypeEff(moveType: string | undefined, defType: string | undefined, scrapy = false): number {
+function getTypeEff(
+  moveType: string | undefined,
+  defType: string | undefined,
+  scrapy = false
+): number {
   if (!moveType || !defType) return 1;
   const mType = isPokemonType(moveType) ? moveType : null;
   const dType = isPokemonType(defType) ? defType : null;
@@ -46,7 +50,11 @@ export function calculateDeltaStreamTypeEff(
   return eff;
 }
 
-export function getEffectivenessPresentation(eff: number): { value: number; label: string; class: string } {
+export function getEffectivenessPresentation(eff: number): {
+  value: number;
+  label: string;
+  class: string;
+} {
   let effLabel = 'Neutro';
   let effClass = 'neutral';
   if (eff > 1) {

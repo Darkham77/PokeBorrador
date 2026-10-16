@@ -13,13 +13,17 @@ export function auditUIDMappingIntegrity(targetDir: string): UIDAuditResult {
   const fallbackViolations: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(targetDir)) return { fallbackViolations };
 
-  const files = getFilesRecursively(targetDir).filter(f => f.endsWith('.ts') || f.endsWith('.vue'));
+  const files = getFilesRecursively(targetDir).filter(
+    (f) => f.endsWith('.ts') || f.endsWith('.vue')
+  );
 
   for (const file of files) {
     const content = readFileSync(file, 'utf-8');
     // Detecta patrones de fallback silencioso al resolver Pokémon/UIDs
-    if (/getPoke\([^)]*\)\s*\|\|\s*pokemon\.name/i.test(content) ||
-        /resolveUid\([^)]*\)\s*catch\s*=>\s*['"]/i.test(content)) {
+    if (
+      /getPoke\([^)]*\)\s*\|\|\s*pokemon\.name/i.test(content) ||
+      /resolveUid\([^)]*\)\s*catch\s*=>\s*['"]/i.test(content)
+    ) {
       fallbackViolations.push(file);
     }
   }

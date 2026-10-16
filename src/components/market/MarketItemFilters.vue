@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import SortControls from '@/components/common/SortControls.vue'
-import type { SortOrder, ItemSortKey } from '@/types/system/game'
+import SortControls from '@/components/common/SortControls.vue';
+import type { SortOrder, ItemSortKey } from '@/types/system/game';
 
 defineProps<{
-  itemSearchQuery: string
-  itemSortKey: ItemSortKey
-  itemSortOrder: SortOrder
-}>()
+  itemSearchQuery: string;
+  itemSortKey: ItemSortKey;
+  itemSortOrder: SortOrder;
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:itemSearchQuery', val: string): void
-  (e: 'update:itemSortKey', val: ItemSortKey): void
-  (e: 'update:itemSortOrder', val: SortOrder): void
-}>()
+  (e: 'update:itemSearchQuery', val: string): void;
+  (e: 'update:itemSortKey', val: ItemSortKey): void;
+  (e: 'update:itemSortOrder', val: SortOrder): void;
+}>();
 </script>
 
 <template>
@@ -24,9 +24,10 @@ const emit = defineEmits<{
         :value="itemSearchQuery"
         type="text"
         placeholder="Buscar por nombre..."
+        aria-label="Buscar por nombre"
         class="ps-search-input"
         @input="emit('update:itemSearchQuery', ($event.target as HTMLInputElement).value)"
-      >
+      />
       <button
         v-if="itemSearchQuery"
         id="market-item-filters-btn-1"
@@ -47,4 +48,3 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_gts.scss"></style>
-

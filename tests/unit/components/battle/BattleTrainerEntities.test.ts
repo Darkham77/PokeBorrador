@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // test-fragmentation-ok: Isolated single-purpose regression test for BattleTrainerEntities watch import
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';

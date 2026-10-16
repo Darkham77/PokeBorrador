@@ -7,10 +7,7 @@
  */
 
 import { ref, computed, onMounted, nextTick } from 'vue';
-import {
-  useShadowEditor,
-  DEFAULT_SPRITE_ZOOM
-} from './useShadowEditor.ts';
+import { useShadowEditor, DEFAULT_SPRITE_ZOOM } from './useShadowEditor.ts';
 import {
   DEFAULT_PAGE_SIZE,
   formatRatioPercent,
@@ -61,11 +58,19 @@ const {
 } = useShadowEditor();
 
 const shadowWidthPercent = computed(() => formatRatioPercent(globalShadowConfig.value.widthRatio));
-const shadowHeightPercent = computed(() => formatRatioPercent(globalShadowConfig.value.heightRatio));
+const shadowHeightPercent = computed(() =>
+  formatRatioPercent(globalShadowConfig.value.heightRatio)
+);
 const spriteZoomPercent = computed(() => formatRatioPercent(spriteZoom.value));
-const isProgressVisible = computed(() => isRebuildProgressActive(isRebuilding.value, rebuildProgress.value));
-const saveButtonState = computed(() => resolveSaveButtonState({ isSaving: isSaving.value, hasUnsavedChanges: hasUnsavedChanges.value }));
-const paginationRangeText = computed(() => formatPaginationRange(currentPage.value, DEFAULT_PAGE_SIZE, totalEntities.value));
+const isProgressVisible = computed(() =>
+  isRebuildProgressActive(isRebuilding.value, rebuildProgress.value)
+);
+const saveButtonState = computed(() =>
+  resolveSaveButtonState({ isSaving: isSaving.value, hasUnsavedChanges: hasUnsavedChanges.value })
+);
+const paginationRangeText = computed(() =>
+  formatPaginationRange(currentPage.value, DEFAULT_PAGE_SIZE, totalEntities.value)
+);
 const canGoPrev = computed(() => currentPage.value > 1);
 const canGoNext = computed(() => currentPage.value < totalPages.value);
 
@@ -100,7 +105,10 @@ const handlePageChange = (page: number) => {
 
 const handleMainScroll = () => {
   if (mainScrollRef.value) {
-    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.DEV_SHADOW_SCROLL_TOP, String(mainScrollRef.value.scrollTop));
+    safeSessionStorage.setItem(
+      SESSION_STORAGE_KEYS.DEV_SHADOW_SCROLL_TOP,
+      String(mainScrollRef.value.scrollTop)
+    );
   }
 };
 
@@ -163,28 +171,16 @@ onMounted(() => {
     />
 
     <!-- Main Content Area -->
-    <main
-      ref="mainScrollRef"
-      class="editor-main"
-      @scroll.passive="handleMainScroll"
-    >
+    <main ref="mainScrollRef" class="editor-main" @scroll.passive="handleMainScroll">
       <!-- Loading State -->
-      <div
-        v-if="isLoading"
-        class="state-message"
-      >
+      <div v-if="isLoading" class="state-message">
         <div class="spinner" />
         <p>Cargando catálogo de sprites y sombras...</p>
       </div>
 
       <!-- Empty State -->
-      <div
-        v-else-if="pagedEntities.length === 0"
-        class="state-message"
-      >
-        <p class="empty-title">
-          No se encontraron entidades con los filtros actuales.
-        </p>
+      <div v-else-if="pagedEntities.length === 0" class="state-message">
+        <p class="empty-title">No se encontraron entidades con los filtros actuales.</p>
         <button
           id="dev-shadow-editor-view-btn-limpiar-filtros"
           type="button"
@@ -196,11 +192,7 @@ onMounted(() => {
       </div>
 
       <!-- Entities Grid -->
-      <div
-        v-else
-        class="entities-grid"
-        :style="{ '--grid-columns': columns }"
-      >
+      <div v-else class="entities-grid" :style="{ '--grid-columns': columns }">
         <ShadowEditorCard
           v-for="entity in pagedEntities"
           :key="entity.key"
@@ -217,10 +209,7 @@ onMounted(() => {
     </main>
 
     <!-- Pagination Footer -->
-    <footer
-      v-if="!isLoading && totalEntities > 0"
-      class="editor-footer"
-    >
+    <footer v-if="!isLoading && totalEntities > 0" class="editor-footer">
       <div class="pagination-info">
         {{ paginationRangeText }}
       </div>
@@ -245,9 +234,7 @@ onMounted(() => {
           ‹ Anterior
         </button>
 
-        <span class="page-indicator">
-          Página {{ currentPage }} de {{ totalPages }}
-        </span>
+        <span class="page-indicator"> Página {{ currentPage }} de {{ totalPages }} </span>
 
         <button
           id="dev-shadow-editor-view-btn-siguiente"
@@ -271,10 +258,7 @@ onMounted(() => {
     </footer>
 
     <!-- Toast Notification Banner -->
-    <div
-      v-if="toastMessage"
-      class="toast-banner"
-    >
+    <div v-if="toastMessage" class="toast-banner">
       {{ toastMessage }}
     </div>
   </div>

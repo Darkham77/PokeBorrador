@@ -1,15 +1,15 @@
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/mixins' as *;
 
 // src/styles/components/pokemon-detail/_panes.scss
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pdex-summary-pane {
-      & .info-grid {
+  & .info-grid {
     display: grid;
     gap: $spacing-lg;
     grid-template-columns: repeat(3, 1fr);
     margin-bottom: 24px;
-    
+
     & .info-item {
       position: relative;
       display: flex;
@@ -20,41 +20,43 @@
       padding: 16px 8px;
       border: 1px solid Rgb(255 255 255 / 5%);
       border-radius: $radius-2xl;
-      background: Linear-Gradient(145deg, Rgb(255 255 255 / 5%) 0%, Rgb(255 255 255 / 2%) 100%); 
+      background: Linear-Gradient(145deg, Rgb(255 255 255 / 5%) 0%, Rgb(255 255 255 / 2%) 100%);
       text-align: center;
       overflow: hidden;
       box-shadow: var(--shadow-card);
-      
 
       &::after {
-        position: absolute; right: 0;
-        bottom: 0; left: 0;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
         height: 2px;
         background: var(--type-color);
         opacity: 0.3;
         content: '';
         box-shadow: var(--shadow-glow-amber);
       }
-      
-      & .ps-card-label, & .upd-info-label {
-        @include pixelated; 
 
-        display: block; 
-        color: Rgb(255 255 255 / 40%); 
-        font-size: var(--font-7); 
-        font-weight: 800; 
-        margin-bottom: 8px; 
+      & .ps-card-label,
+      & .upd-info-label {
+        @include pixelated;
+
+        display: block;
+        color: Rgb(255 255 255 / 40%);
+        font-size: var(--font-7);
+        font-weight: 800;
+        margin-bottom: 8px;
         text-transform: uppercase;
         letter-spacing: 1px;
       }
 
       & .ps-info-value {
-        @include pixelated; 
+        @include pixelated;
 
-        color: var(--white); 
-        font-size: var(--font-11); 
+        color: var(--white);
+        font-size: var(--font-11);
         font-weight: 700;
-        line-height: 1.6; 
+        line-height: 1.6;
         letter-spacing: 0.5px;
       }
 
@@ -129,53 +131,61 @@
       }
     }
   }
-  
-    & .description {
-      @include shell-premium(Rgba(255, 255, 255, 0.02));
 
-      position: relative;
-      padding: 24px;
-      border-radius: $radius-xl;
-      background: Linear-Gradient(90deg, Rgb(from var(--type-color, #fff) r g b / 5%) 0%, Rgb(255 255 255 / 1%) 100%); 
-      color: Rgb(255 255 255 / 60%); 
-      font-size: var(--font-14); 
-      line-height: 1.8; 
-      font-style: italic;
-      border-left: 3px solid var(--type-color, var(--yellow));
-      box-shadow: var(--shadow-2xl);
+  & .description {
+    @include shell-premium(Rgba(255, 255, 255, 0.02));
 
-      &::before {
-        position: absolute;
-        top: 10px;
-        left: 15px;
-        color: var(--type-color);
-        font-family: serif;
-        font-size: var(--font-40);
-        opacity: 0.1;
-        content: '"';
-      }
+    position: relative;
+    padding: 24px;
+    border-radius: $radius-xl;
+    background: Linear-Gradient(
+      90deg,
+      Rgb(from var(--type-color, #fff) r g b / 5%) 0%,
+      Rgb(255 255 255 / 1%) 100%
+    );
+    color: Rgb(255 255 255 / 60%);
+    font-size: var(--font-14);
+    line-height: 1.8;
+    font-style: italic;
+    border-left: 3px solid var(--type-color, var(--yellow));
+    box-shadow: var(--shadow-2xl);
+
+    &::before {
+      position: absolute;
+      top: 10px;
+      left: 15px;
+      color: var(--type-color);
+      font-family: serif;
+      font-size: var(--font-40);
+      opacity: 0.1;
+      content: '"';
     }
+  }
 }
 
 .pdex-stats-pane {
-     & .poke-identity {
+  & .poke-identity {
     display: flex;
     align-items: center;
     gap: $spacing-lg;
     pointer-events: auto;
     margin-bottom: 30px;
-    
+
     & .p-id {
       padding: 6px 12px;
       border-radius: $radius-md;
-      background: Linear-Gradient(to bottom, var(--type-color) 0%, Rgb(from var(--type-color, #fff) r g b / 80%) 100%);
+      background: Linear-Gradient(
+        to bottom,
+        var(--type-color) 0%,
+        Rgb(from var(--type-color, #fff) r g b / 80%) 100%
+      );
       color: var(--black);
       font-family: $font-family-sans !important;
       font-size: var(--font-11);
       font-weight: 900;
       box-shadow: var(--shadow-md);
     }
-    
+
     & .p-name {
       @include pixelated;
 
@@ -187,59 +197,68 @@
     }
   }
 
-    & .pdex-stat-row {
-      display: flex;
-      align-items: center;
-      gap: $spacing-xl;
-      margin-bottom: 20px;
-      
-      .pdex-stat-label {
-        @include pixelated; 
+  & .pdex-stat-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xl;
+    margin-bottom: 20px;
 
-        width: 50px; 
-        color: Rgb(255 255 255 / 30%); 
-        font-size: var(--font-7); 
-        font-weight: 900; 
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
+    .pdex-stat-label {
+      @include pixelated;
 
-      & .pdex-stat-value { 
-        @include pixelated; 
+      width: 50px;
+      color: Rgb(255 255 255 / 30%);
+      font-size: var(--font-7);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
-        width: 35px; 
-        color: var(--white); 
-        font-size: var(--font-10); 
-        font-weight: 700; 
-        text-align: right;
-      }
+    & .pdex-stat-value {
+      @include pixelated;
 
-      .stat-bar-bg { 
-        position: relative; 
-        height: 8px; 
-        border-radius: $radius-sm; 
-        background: Rgb(255 255 255 / 3%); 
-        flex: 1; 
-        overflow: hidden;
-        box-shadow: var(--shadow-card);
-      }
+      width: 35px;
+      color: var(--white);
+      font-size: var(--font-10);
+      font-weight: 700;
+      text-align: right;
+    }
 
-      .stat-bar-fill {
-        position: relative; 
-        height: 100%; 
-        border-radius: $radius-sm; 
-        background: Linear-Gradient(90deg, var(--type-color) 0%, Rgb(from var(--type-color, #fff) r g b / 70%) 100%);
-        box-shadow: var(--shadow-glow-amber);
+    .stat-bar-bg {
+      position: relative;
+      height: 8px;
+      border-radius: $radius-sm;
+      background: Rgb(255 255 255 / 3%);
+      flex: 1;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
 
-        &::after {
-          position: absolute;
-          background: Linear-Gradient(to bottom, Rgb(255 255 255 / 20%) 0%, transparent 50%, Rgb(0 0 0 / 20%) 100%);
-          inset: 0;
-          content: '';
-        }
+    .stat-bar-fill {
+      position: relative;
+      height: 100%;
+      border-radius: $radius-sm;
+      background: Linear-Gradient(
+        90deg,
+        var(--type-color) 0%,
+        Rgb(from var(--type-color, #fff) r g b / 70%) 100%
+      );
+      box-shadow: var(--shadow-glow-amber);
+
+      &::after {
+        position: absolute;
+        background: Linear-Gradient(
+          to bottom,
+          Rgb(255 255 255 / 20%) 0%,
+          transparent 50%,
+          Rgb(0 0 0 / 20%) 100%
+        );
+        inset: 0;
+        content: '';
       }
     }
-  
+  }
+
   .pdex-total-stat-value {
     @include shell-premium(Rgba(255, 255, 255, 0.01));
 
@@ -251,8 +270,9 @@
     border-radius: $radius-xl;
     background: Linear-Gradient(to right, Rgb(255 255 255 / 3%) 0%, Rgb(255 255 255 / 0%) 100%);
     margin-top: 32px;
-    
-    & .ps-card-label, & .upd-info-label {
+
+    & .ps-card-label,
+    & .upd-info-label {
       @include pixelated;
 
       color: Rgb(255 255 255 / 30%);
@@ -260,7 +280,7 @@
       letter-spacing: 2px;
       text-transform: uppercase;
     }
-    
+
     & .ps-info-value {
       @include pixelated;
 
@@ -277,7 +297,7 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 8px;
-    
+
     th {
       padding: 0 16px 8px;
       color: Rgb(255 255 255 / 30%);
@@ -291,7 +311,7 @@
         font-size: var(--font-8);
       }
     }
-    
+
     td {
       padding: 12px 16px;
       background: Rgb(255 255 255 / 3%);
@@ -302,27 +322,30 @@
         padding: 8px 6px;
         font-size: var(--font-10);
       }
-      
-      &:first-child { border-radius: $radius-xl 0 0 $radius-xl; }
-      &:last-child { border-radius: 0 $radius-xl $radius-xl 0; }
-    }
-    
-    .ps-move-lv { 
-      @include pixelated; 
 
-      color: var(--yellow); 
+      &:first-child {
+        border-radius: $radius-xl 0 0 $radius-xl;
+      }
+      &:last-child {
+        border-radius: 0 $radius-xl $radius-xl 0;
+      }
+    }
+
+    .ps-move-lv {
+      @include pixelated;
+
+      color: var(--yellow);
       font-size: var(--font-8);
     }
-    
+
     .ps-move-name {
       color: $white;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
 
-    
-    .move-power, .move-pp {
+    .move-power,
+    .move-pp {
       @include pixelated;
 
       color: Rgb(255 255 255 / 50%);
@@ -334,29 +357,36 @@
 // Global mobile tweaks for panes
 @media (width <= 480px) {
   body .pdex-summary-pane {
-      & .info-grid {
+    & .info-grid {
       gap: $spacing-sm;
       margin-bottom: 20px;
-        & .info-item {
+      & .info-item {
         min-height: 60px;
         padding: 10px 4px;
         border-radius: $radius-xl;
-        & .ps-info-value { font-size: var(--font-12); }
+        & .ps-info-value {
+          font-size: var(--font-12);
+        }
       }
     }
-      & .description {
+    & .description {
       padding: 14px;
       font-size: var(--font-12);
       line-height: 1.5;
     }
   }
-  
+
   body .pdex-stats-pane {
-      & .pdex-stat-row {
+    & .pdex-stat-row {
       gap: $spacing-md-alt;
       margin-bottom: 12px;
-        & .pdex-stat-value { width: 30px; font-size: var(--font-12); }
+      & .pdex-stat-value {
+        width: 30px;
+        font-size: var(--font-12);
+      }
     }
-    .stat-total .ps-info-value { font-size: var(--font-18); }
+    .stat-total .ps-info-value {
+      font-size: var(--font-18);
+    }
   }
 }

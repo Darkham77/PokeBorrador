@@ -1,9 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownPerspectiveAdapter } from '../../../src/logic/battle/helpers/showdownPerspectiveAdapter.ts';
 import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
-import { classifyRequest, requiresAction } from '../../../src/logic/battle/helpers/requestHelper.ts';
+import {
+  classifyRequest,
+  requiresAction
+} from '../../../src/logic/battle/helpers/requestHelper.ts';
 import type { ShowdownPlayerRequest } from '../../../src/types/battle/battle.ts';
 
 function createPvPTestBattle() {
@@ -78,8 +81,8 @@ describe('Showdown PvP Runner & Protocol Integration', () => {
     expect(battle.turn).toBe(2);
 
     // Logs contain move executions from both sides
-    const hasP1Move = out.turnLogs.some(l => l.includes('|move|p1a:'));
-    const hasP2Move = out.turnLogs.some(l => l.includes('|move|p2a:'));
+    const hasP1Move = out.turnLogs.some((l) => l.includes('|move|p1a:'));
+    const hasP2Move = out.turnLogs.some((l) => l.includes('|move|p2a:'));
     expect(hasP1Move).toBe(true);
     expect(hasP2Move).toBe(true);
   });
@@ -98,13 +101,13 @@ describe('Showdown PvP Runner & Protocol Integration', () => {
     const guestLogs = ShowdownPerspectiveAdapter.invertStream(hostLogs);
 
     // If host has |move|p1a: Pikachu..., guest must see |move|p2a: Pikachu...
-    const hostP1Line = hostLogs.find(l => l.startsWith('|move|p1a:'));
+    const hostP1Line = hostLogs.find((l) => l.startsWith('|move|p1a:'));
     expect(hostP1Line).toBeDefined();
-    expect(guestLogs.some(l => l.startsWith('|move|p2a: Pikachu'))).toBe(true);
+    expect(guestLogs.some((l) => l.startsWith('|move|p2a: Pikachu'))).toBe(true);
 
-    const hostP2Line = hostLogs.find(l => l.startsWith('|move|p2a:'));
+    const hostP2Line = hostLogs.find((l) => l.startsWith('|move|p2a:'));
     expect(hostP2Line).toBeDefined();
-    expect(guestLogs.some(l => l.startsWith('|move|p1a: Charmander'))).toBe(true);
+    expect(guestLogs.some((l) => l.startsWith('|move|p1a: Charmander'))).toBe(true);
   });
 
   it('3. Request inversion for Guest translates side and preserves choices', () => {
@@ -112,7 +115,14 @@ describe('Showdown PvP Runner & Protocol Integration', () => {
       active: [
         {
           moves: [
-            { move: 'Flamethrower', id: 'flamethrower', pp: 24, maxpp: 24, target: 'normal', disabled: false },
+            {
+              move: 'Flamethrower',
+              id: 'flamethrower',
+              pp: 24,
+              maxpp: 24,
+              target: 'normal',
+              disabled: false
+            },
             { move: 'Scratch', id: 'scratch', pp: 35, maxpp: 35, target: 'normal', disabled: false }
           ]
         }
@@ -121,7 +131,17 @@ describe('Showdown PvP Runner & Protocol Integration', () => {
         name: 'Guest Player',
         id: 'p2',
         pokemon: [
-          { ident: 'p2: Charmander', details: 'Charmander, L50, M', condition: '100/100', active: true, stats: { atk: 52, def: 43, spa: 60, spd: 50, spe: 65 }, moves: ['flamethrower', 'scratch'], baseAbility: 'blaze', item: '', pokeball: 'pokeball' }
+          {
+            ident: 'p2: Charmander',
+            details: 'Charmander, L50, M',
+            condition: '100/100',
+            active: true,
+            stats: { atk: 52, def: 43, spa: 60, spd: 50, spe: 65 },
+            moves: ['flamethrower', 'scratch'],
+            baseAbility: 'blaze',
+            item: '',
+            pokeball: 'pokeball'
+          }
         ]
       },
       rqid: 1
@@ -166,13 +186,13 @@ describe('Showdown PvP Runner & Protocol Integration', () => {
     });
 
     expect(turn2Out.p2AcceptedChoice).toBe('switch 2');
-    const switchLine = turn2Out.turnLogs.find(l => l.startsWith('|switch|p2a:'));
+    const switchLine = turn2Out.turnLogs.find((l) => l.startsWith('|switch|p2a:'));
     expect(switchLine).toBeDefined();
     expect(switchLine).toContain('Squirtle');
 
     // Guest stream inversion turns it into p1a for Guest
     const guestLogs = ShowdownPerspectiveAdapter.invertStream(turn2Out.turnLogs);
-    const guestSwitchLine = guestLogs.find(l => l.startsWith('|switch|p1a:'));
+    const guestSwitchLine = guestLogs.find((l) => l.startsWith('|switch|p1a:'));
     expect(guestSwitchLine).toBeDefined();
     expect(guestSwitchLine).toContain('Squirtle');
   });
@@ -191,8 +211,8 @@ describe('Showdown PvP Runner & Protocol Integration', () => {
     expect(out.p2AcceptedChoice).toMatch(/^move 1/);
 
     // In Showdown, regular switches execute with priority before normal attacks
-    const switchIdx = out.turnLogs.findIndex(l => l.startsWith('|switch|p1a:'));
-    const p2MoveIdx = out.turnLogs.findIndex(l => l.startsWith('|move|p2a:'));
+    const switchIdx = out.turnLogs.findIndex((l) => l.startsWith('|switch|p1a:'));
+    const p2MoveIdx = out.turnLogs.findIndex((l) => l.startsWith('|move|p2a:'));
     expect(switchIdx).toBeGreaterThan(-1);
     expect(p2MoveIdx).toBeGreaterThan(-1);
     expect(switchIdx).toBeLessThan(p2MoveIdx);

@@ -15,7 +15,8 @@ class PivotAndPhazingSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
 
       const gameStore = useGameStore();
       const battleStore = useBattleStore();
@@ -69,7 +70,9 @@ class PivotAndPhazingSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Battle Pivot, Phazing, and Complex Switch Mechanics - Real E2E Simulation', () => {
-  test('should execute Volt Switch pivot to bench, Whirlwind forced ejection, and consecutive turns without worker rejection', async ({ page }) => {
+  test('should execute Volt Switch pivot to bench, Whirlwind forced ejection, and consecutive turns without worker rejection', async ({
+    page
+  }) => {
     const sim = new PivotAndPhazingSimWrapper(page, 'PivotPhazingE2E');
     await sim.setup();
 
@@ -80,12 +83,20 @@ test.describe('Battle Pivot, Phazing, and Complex Switch Mechanics - Real E2E Si
       }
       const win = window as CustomWindow;
       win.__ANIM_EVENTS__ = [];
-      const debug = window.__VITE_DEBUG__ as { gameBus?: { on: (ev: string, cb: (data?: unknown) => void) => void } } | undefined;
+      const debug = window.__VITE_DEBUG__ as
+        | { gameBus?: { on: (ev: string, cb: (data?: unknown) => void) => void } }
+        | undefined;
       const gameBus = debug?.gameBus;
       if (gameBus) {
-        gameBus.on('PLAY_SEND_OUT', (d) => win.__ANIM_EVENTS__?.push(`PLAY_SEND_OUT:${JSON.stringify(d)}`));
-        gameBus.on('PLAY_ESCAPE_ANIM', (d) => win.__ANIM_EVENTS__?.push(`PLAY_ESCAPE_ANIM:${JSON.stringify(d)}`));
-        gameBus.on('PLAY_FAINT', (d) => win.__ANIM_EVENTS__?.push(`PLAY_FAINT:${JSON.stringify(d)}`));
+        gameBus.on('PLAY_SEND_OUT', (d) =>
+          win.__ANIM_EVENTS__?.push(`PLAY_SEND_OUT:${JSON.stringify(d)}`)
+        );
+        gameBus.on('PLAY_ESCAPE_ANIM', (d) =>
+          win.__ANIM_EVENTS__?.push(`PLAY_ESCAPE_ANIM:${JSON.stringify(d)}`)
+        );
+        gameBus.on('PLAY_FAINT', (d) =>
+          win.__ANIM_EVENTS__?.push(`PLAY_FAINT:${JSON.stringify(d)}`)
+        );
       }
     });
 
@@ -131,18 +142,22 @@ test.describe('Battle Pivot, Phazing, and Complex Switch Mechanics - Real E2E Si
 
     // Check combat history logs
     const logs = await page.evaluate(() => {
-      const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { battleLogs?: Array<{ msg?: string }> } } | undefined;
-      return debug?.useBattleStore?.()?.battleLogs?.map(l => l.msg || '') || [];
+      const debug = window.__VITE_DEBUG__ as
+        | { useBattleStore?: () => { battleLogs?: Array<{ msg?: string }> } }
+        | undefined;
+      return debug?.useBattleStore?.()?.battleLogs?.map((l) => l.msg || '') || [];
     });
 
     console.log('Pivot & Phazing E2E Logs:', logs);
 
     // Assert no error logs
-    const hasErrorLog = logs.some(l => l.includes('Ocurrió un error') || l.includes('rejected'));
+    const hasErrorLog = logs.some((l) => l.includes('Ocurrió un error') || l.includes('rejected'));
     expect(hasErrorLog).toBe(false);
 
     // Assert that Volt Switch and Whirlwind/moves were logged
-    expect(logs.some(l => l.includes('Voltiocambio') || l.includes('Volt Switch') || l.includes('usó'))).toBe(true);
+    expect(
+      logs.some((l) => l.includes('Voltiocambio') || l.includes('Volt Switch') || l.includes('usó'))
+    ).toBe(true);
 
     await sim.forceFleeDebugger();
   });

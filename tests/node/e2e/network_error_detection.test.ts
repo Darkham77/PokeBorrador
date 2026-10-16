@@ -1,5 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { isTransientNetworkError, isTransientNetworkFailure } from '../../../scripts/e2e/e2e_helpers.ts';
+import { describe, it, expect } from 'vite-plus/test';
+import {
+  isTransientNetworkError,
+  isTransientNetworkFailure
+} from '../../../scripts/e2e/e2e_helpers.ts';
 
 describe('Transient Infrastructure Network Error Detection', () => {
   describe('Positive cases (Must be classified as transient network error)', () => {
@@ -24,22 +27,26 @@ describe('Transient Infrastructure Network Error Detection', () => {
     });
 
     it('detects dynamic module import failure caused by network abort', () => {
-      const err = 'TypeError: Failed to fetch dynamically imported module: http://localhost:5174/src/views/game/MainGameView.vue';
+      const err =
+        'TypeError: Failed to fetch dynamically imported module: http://localhost:5174/src/views/game/MainGameView.vue';
       expect(isTransientNetworkError(err)).toBe(true);
     });
 
     it('detects Vue error wrapping dynamic import module fetch failure', () => {
-      const err = '[Vue error]: TypeError: Failed to fetch dynamically imported module: http://localhost:5174/src/views/game/MainGameView.vue';
+      const err =
+        '[Vue error]: TypeError: Failed to fetch dynamically imported module: http://localhost:5174/src/views/game/MainGameView.vue';
       expect(isTransientNetworkError(err)).toBe(true);
     });
 
     it('detects critical console error wrapping dynamic import module fetch failure', () => {
-      const err = '[CRITICAL-CONSOLE-ERROR] [Vue error]: TypeError: Failed to fetch dynamically imported module: http://localhost:5174/src/views/game/MainGameView.vue';
+      const err =
+        '[CRITICAL-CONSOLE-ERROR] [Vue error]: TypeError: Failed to fetch dynamically imported module: http://localhost:5174/src/views/game/MainGameView.vue';
       expect(isTransientNetworkError(err)).toBe(true);
     });
 
     it('detects Node fetch connection refusal to local dev server', () => {
-      const err = 'FetchError: request to http://localhost:5174 failed, reason: connect ECONNREFUSED 127.0.0.1:5174';
+      const err =
+        'FetchError: request to http://localhost:5174 failed, reason: connect ECONNREFUSED 127.0.0.1:5174';
       expect(isTransientNetworkError(err)).toBe(true);
     });
   });
@@ -51,7 +58,7 @@ describe('Transient Infrastructure Network Error Detection', () => {
     });
 
     it('rejects Vue undefined property access errors', () => {
-      const err = '[Vue error]: TypeError: Cannot read properties of undefined (reading \'state\')';
+      const err = "[Vue error]: TypeError: Cannot read properties of undefined (reading 'state')";
       expect(isTransientNetworkError(err)).toBe(false);
     });
 
@@ -61,7 +68,8 @@ describe('Transient Infrastructure Network Error Detection', () => {
     });
 
     it('rejects FSM state desynchronization errors', () => {
-      const err = 'Error: [FSM-SYNC-FAIL] State desync detected: expected READY_FOR_INPUT, got FIRST_INTRO';
+      const err =
+        'Error: [FSM-SYNC-FAIL] State desync detected: expected READY_FOR_INPUT, got FIRST_INTRO';
       expect(isTransientNetworkError(err)).toBe(false);
     });
 
@@ -119,9 +127,7 @@ describe('Transient Infrastructure Network Error Detection', () => {
 
     it('returns false when error is real Vue error and logBuffer contains Vue warnings', () => {
       const errorMsg = '[Vue error]: Unhandled error during execution of render function';
-      const logBuffer = [
-        '[BROWSER-WARN] [Vue warn]: Component is missing template'
-      ];
+      const logBuffer = ['[BROWSER-WARN] [Vue warn]: Component is missing template'];
       expect(isTransientNetworkFailure(errorMsg, logBuffer)).toBe(false);
     });
   });

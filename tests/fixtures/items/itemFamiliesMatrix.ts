@@ -19,7 +19,7 @@ export const ITEM_FAMILY_IDS = [
   'held_item',
   'pokeball',
   'fossil_cloning',
-  'crafting_economy',
+  'crafting_economy'
 ] as const;
 
 export type ItemFamilyId = (typeof ITEM_FAMILY_IDS)[number];
@@ -47,7 +47,8 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
   {
     familyId: 'healing_direct',
     title: 'Curación, Recuperación y Restauración Directa',
-    description: 'Modifica HP, estados alterados, PP, vigor o nivel inmediatamente sobre un Pokémon.',
+    description:
+      'Modifica HP, estados alterados, PP, vigor o nivel inmediatamente sobre un Pokémon.',
     testCases: [
       {
         itemId: 'potion',
@@ -161,7 +162,7 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
           }
         },
         setupInvalidTarget: (mon) => {
-          mon.moves.forEach(m => {
+          mon.moves.forEach((m) => {
             if (m) m.pp = m.maxPP;
           });
         },
@@ -204,7 +205,8 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
   {
     familyId: 'ev_friendship',
     title: 'Modificación de EVs, Amistad y Reseteo',
-    description: 'Aumenta o reduce EVs de estadísticas específicas, altera la amistad y resetea atributos.',
+    description:
+      'Aumenta o reduce EVs de estadísticas específicas, altera la amistad y resetea atributos.',
     testCases: [
       {
         itemId: 'protein',
@@ -255,7 +257,7 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
           mon.evs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
         },
         verifySuccessEffect: (mon, res) =>
-          res.success && mon.evs !== undefined && Object.values(mon.evs).every(val => val === 0)
+          res.success && mon.evs !== undefined && Object.values(mon.evs).every((val) => val === 0)
       },
       {
         itemId: 'pomegberry',
@@ -349,7 +351,8 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
   {
     familyId: 'tm_learning',
     title: 'Máquinas Técnicas (MTs / TMs)',
-    description: 'Enseña una técnica directamente (<4 movimientos) o abre cola diferida de reemplazo (=4 movimientos).',
+    description:
+      'Enseña una técnica directamente (<4 movimientos) o abre cola diferida de reemplazo (=4 movimientos).',
     testCases: [
       {
         itemId: 'tm01' as ItemId,
@@ -359,9 +362,7 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
         requiresTarget: true,
         setupValidTarget: (mon) => {
           mon.id = 'pikachu';
-          mon.moves = [
-            { id: 'thundershock', name: 'Impactrueno', pp: 30, maxPP: 30 } as Move
-          ];
+          mon.moves = [{ id: 'thundershock', name: 'Impactrueno', pp: 30, maxPP: 30 } as Move];
         },
         verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'learn_move'
       },
@@ -389,7 +390,8 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
   {
     familyId: 'move_relearner',
     title: 'Recordador de Movimientos',
-    description: 'Permite recordar técnicas olvidadas del learnset y de toda la cadena de pre-evolución.',
+    description:
+      'Permite recordar técnicas olvidadas del learnset y de toda la cadena de pre-evolución.',
     testCases: [
       {
         itemId: 'moverelearner',
@@ -400,9 +402,7 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
         setupValidTarget: (mon) => {
           mon.id = 'raichu';
           mon.level = 50;
-          mon.moves = [
-            { id: 'thunderbolt', name: 'Rayo', pp: 15, maxPP: 15 } as Move
-          ];
+          mon.moves = [{ id: 'thunderbolt', name: 'Rayo', pp: 15, maxPP: 15 } as Move];
         },
         verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'relearner'
       }
@@ -413,7 +413,8 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
   {
     familyId: 'trait_customization',
     title: 'Rasgos y Metagame (Modales Dedicados)',
-    description: 'Abre interfaces modales interactivas para elegir naturalezas, habilidades o subidas de PP.',
+    description:
+      'Abre interfaces modales interactivas para elegir naturalezas, habilidades o subidas de PP.',
     testCases: [
       {
         itemId: 'naturepatch',
@@ -445,9 +446,7 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
         isDeferred: true,
         requiresTarget: true,
         setupValidTarget: (mon) => {
-          mon.moves = [
-            { id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 } as Move
-          ];
+          mon.moves = [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 } as Move];
         },
         verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'pp_up'
       },
@@ -458,9 +457,7 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
         isDeferred: true,
         requiresTarget: true,
         setupValidTarget: (mon) => {
-          mon.moves = [
-            { id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 } as Move
-          ];
+          mon.moves = [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 } as Move];
         },
         verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'ppmax'
       }
@@ -485,7 +482,8 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
         setupInvalidTarget: (mon) => {
           mon.id = 'caterpie';
         },
-        verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'evolution' && res.targetId === 'flareon'
+        verifySuccessEffect: (_mon, res) =>
+          res.success && res.resultType === 'evolution' && res.targetId === 'flareon'
       },
       {
         itemId: 'linkcable',
@@ -496,7 +494,8 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
         setupValidTarget: (mon) => {
           mon.id = 'kadabra';
         },
-        verifySuccessEffect: (_mon, res) => res.success && res.resultType === 'evolution' && res.targetId === 'alakazam'
+        verifySuccessEffect: (_mon, res) =>
+          res.success && res.resultType === 'evolution' && res.targetId === 'alakazam'
       }
     ]
   },
@@ -541,7 +540,8 @@ export const ITEM_FAMILIES_MATRIX: readonly ItemFamilyDefinition[] = [
   {
     familyId: 'pokeball',
     title: 'Pokéballs (Captura en Batalla)',
-    description: 'Consumidas en combate para capturar el Pokémon rival con multiplicadores de ratio.',
+    description:
+      'Consumidas en combate para capturar el Pokémon rival con multiplicadores de ratio.',
     testCases: [
       {
         itemId: 'ultraball',

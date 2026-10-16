@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { isValidTarget, itemEffects } from '@/logic/items/itemEffects';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
@@ -15,7 +15,15 @@ describe('All Consumable Items - Comprehensive Unit & Integrity Suite', () => {
   }
 
   describe('1. HP Healing Potions & Drinks', () => {
-    const healItems = ['potion', 'superpotion', 'hyperpotion', 'maxpotion', 'sodapop', 'freshwater', 'lemonade'];
+    const healItems = [
+      'potion',
+      'superpotion',
+      'hyperpotion',
+      'maxpotion',
+      'sodapop',
+      'freshwater',
+      'lemonade'
+    ];
 
     healItems.forEach((itemId) => {
       it(`validates and applies ${itemId} to wounded Pokémon`, () => {
@@ -32,10 +40,18 @@ describe('All Consumable Items - Comprehensive Unit & Integrity Suite', () => {
 
       it(`rejects ${itemId} when Pokémon is at full HP or fainted`, () => {
         const fullHpMon = createTestMon({ hp: 50, maxHp: 50 });
-        assert.strictEqual(isValidTarget(itemId, fullHpMon), false, `${itemId} cannot target full HP mon`);
+        assert.strictEqual(
+          isValidTarget(itemId, fullHpMon),
+          false,
+          `${itemId} cannot target full HP mon`
+        );
 
         const faintedMon = createTestMon({ hp: 0, maxHp: 50 });
-        assert.strictEqual(isValidTarget(itemId, faintedMon), false, `${itemId} cannot target fainted mon`);
+        assert.strictEqual(
+          isValidTarget(itemId, faintedMon),
+          false,
+          `${itemId} cannot target fainted mon`
+        );
       });
     });
   });
@@ -59,7 +75,11 @@ describe('All Consumable Items - Comprehensive Unit & Integrity Suite', () => {
 
       it(`rejects ${itemId} when Pokémon is alive`, () => {
         const aliveMon = createTestMon({ hp: 30, maxHp: 60 });
-        assert.strictEqual(isValidTarget(itemId, aliveMon), false, `${itemId} cannot target alive mon`);
+        assert.strictEqual(
+          isValidTarget(itemId, aliveMon),
+          false,
+          `${itemId} cannot target alive mon`
+        );
       });
     });
   });
@@ -71,7 +91,7 @@ describe('All Consumable Items - Comprehensive Unit & Integrity Suite', () => {
       { item: 'paralyzeheal', status: 'par' as const },
       { item: 'awakening', status: 'slp' as const },
       { item: 'iceheal', status: 'frz' as const },
-      { item: 'fullheal', status: 'par' as const },
+      { item: 'fullheal', status: 'par' as const }
     ];
 
     statusMap.forEach(({ item, status }) => {
@@ -184,7 +204,7 @@ describe('All Consumable Items - Comprehensive Unit & Integrity Suite', () => {
       { item: 'qualotberry', stat: 'def' as const },
       { item: 'hondewberry', stat: 'spa' as const },
       { item: 'grepaberry', stat: 'spd' as const },
-      { item: 'tamatoberry', stat: 'spe' as const },
+      { item: 'tamatoberry', stat: 'spe' as const }
     ];
 
     berryList.forEach(({ item, stat }) => {
@@ -235,7 +255,7 @@ describe('All Consumable Items - Comprehensive Unit & Integrity Suite', () => {
       { item: 'iron', stat: 'def' as const },
       { item: 'calcium', stat: 'spa' as const },
       { item: 'zinc', stat: 'spd' as const },
-      { item: 'carbos', stat: 'spe' as const },
+      { item: 'carbos', stat: 'spe' as const }
     ];
 
     vitaminList.forEach(({ item, stat }) => {
@@ -272,7 +292,7 @@ describe('All Consumable Items - Comprehensive Unit & Integrity Suite', () => {
       { item: 'resistfeather', stat: 'def' as const },
       { item: 'geniusfeather', stat: 'spa' as const },
       { item: 'cleverfeather', stat: 'spd' as const },
-      { item: 'swiftfeather', stat: 'spe' as const },
+      { item: 'swiftfeather', stat: 'spe' as const }
     ];
 
     featherList.forEach(({ item, stat }) => {

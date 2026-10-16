@@ -1,59 +1,68 @@
 <script setup lang="ts">
-import { useGameStore } from '@/stores/game'
-import { useAuthStore } from '@/stores/auth'
-import { useLoadingStore } from '@/stores/loading'
-import { computed, watch, onMounted, nextTick } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { STARTER_POKEMON } from '@/data/pokemon/starters.ts'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { GAME_UI_EVENTS, type StarterSelectReadyDetail } from '@/types/system/gameEvents.ts'
-import { gsap } from 'gsap'
+import { useGameStore } from '@/stores/game';
+import { useAuthStore } from '@/stores/auth';
+import { useLoadingStore } from '@/stores/loading';
+import { computed, watch, onMounted, nextTick } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { STARTER_POKEMON } from '@/data/pokemon/starters.ts';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { GAME_UI_EVENTS, type StarterSelectReadyDetail } from '@/types/system/gameEvents.ts';
+import { gsap } from 'gsap';
 
-const STARTER_SEED_OFFSET = 0.1
-const STARTER_SEED_MULTIPLIER = 0.4
-const GSAP_HOVER_Y_PX = -12
-const GSAP_HOVER_SCALE = 1.03
-const GSAP_HOVER_DURATION_SEC = 0.35
-const GSAP_LEAVE_DURATION_SEC = 0.3
+const STARTER_SEED_OFFSET = 0.1;
+const STARTER_SEED_MULTIPLIER = 0.4;
+const STARTER_CARD_HOVER_Y_PX = -12;
+const STARTER_CARD_HOVER_SCALE = 1.03;
+const STARTER_CARD_HOVER_DURATION_SEC = 0.35;
+const STARTER_CARD_LEAVE_DURATION_SEC = 0.3;
 
-const gameStore = useGameStore()
-const authStore = useAuthStore()
-const loadingStore = useLoadingStore()
-const gs = computed(() => gameStore.state)
+const gameStore = useGameStore();
+const authStore = useAuthStore();
+const loadingStore = useLoadingStore();
+const gs = computed(() => gameStore.state);
 
 const emitStarterSelectReady = () => {
   if (!gs.value.starterChosen && gameStore.isReady && loadingStore.isGateOpen) {
     nextTick(() => {
       if (typeof window !== 'undefined') {
-        window.__STARTER_SELECT_READY__ = true
-        const detail: StarterSelectReadyDetail = { ready: true }
-        window.dispatchEvent(new CustomEvent<StarterSelectReadyDetail>(GAME_UI_EVENTS.STARTER_SELECT_READY, { detail }))
+        window.__STARTER_SELECT_READY__ = true;
+        const detail: StarterSelectReadyDetail = { ready: true };
+        window.dispatchEvent(
+          new CustomEvent<StarterSelectReadyDetail>(GAME_UI_EVENTS.STARTER_SELECT_READY, { detail })
+        );
       }
-    })
+    });
   }
-}
+};
 
 onMounted(() => {
-  emitStarterSelectReady()
-})
+  emitStarterSelectReady();
+});
 
 watch(
   () => [gs.value.starterChosen, gameStore.isReady, loadingStore.isGateOpen],
   () => {
-    emitStarterSelectReady()
+    emitStarterSelectReady();
   }
-)
+);
 
-const STARTER_BASE_HP_FALLBACK = 45
-const STARTER_BASE_ATK_FALLBACK = 49
-const STARTER_BASE_DEF_FALLBACK = 49
+const STARTER_BASE_HP_FALLBACK = 45;
+const STARTER_BASE_ATK_FALLBACK = 49;
+const STARTER_BASE_DEF_FALLBACK = 49;
 
 const starterList = computed(() => {
   return STARTER_POKEMON.map((config, index) => {
-    const data = pokemonDataProvider.getPokemonData(config.id)
-    const primaryType = data.type || 'normal'
-    const typeLabel = primaryType === 'grass' ? '🌿 Planta' : primaryType === 'fire' ? '🔥 Fuego' : primaryType === 'water' ? '💧 Agua' : primaryType
+    const data = pokemonDataProvider.getPokemonData(config.id);
+    const primaryType = data.type || 'normal';
+    const typeLabel =
+      primaryType === 'grass'
+        ? '🌿 Planta'
+        : primaryType === 'fire'
+          ? '🔥 Fuego'
+          : primaryType === 'water'
+            ? '💧 Agua'
+            : primaryType;
     return {
       id: config.id,
       name: data.name,
@@ -65,17 +74,17 @@ const starterList = computed(() => {
         attack: data.atk || STARTER_BASE_ATK_FALLBACK,
         defense: data.def || STARTER_BASE_DEF_FALLBACK
       }
-    }
-  })
-})
+    };
+  });
+});
 
 const handleChooseStarter = async (id: PokemonSpeciesId) => {
-  await gameStore.chooseStarter(id)
-}
+  await gameStore.chooseStarter(id);
+};
 
 const handleLogout = () => {
-  authStore.logout()
-}
+  authStore.logout();
+};
 
 const getStarterConfig = (type: string) => {
   if (type === 'grass') {
@@ -83,42 +92,42 @@ const getStarterConfig = (type: string) => {
       color: 'rgba(50, 215, 75, 0.8)',
       bg: 'rgba(50, 215, 75, 0.15)',
       shadow: '0 12px 35px rgba(50, 215, 75, 0.35)'
-    }
+    };
   }
   if (type === 'fire') {
     return {
       color: 'rgba(255, 69, 58, 0.8)',
       bg: 'rgba(255, 69, 58, 0.15)',
       shadow: '0 12px 35px rgba(255, 69, 58, 0.35)'
-    }
+    };
   }
   return {
     color: 'rgba(10, 132, 255, 0.8)',
     bg: 'rgba(10, 132, 255, 0.15)',
     shadow: '0 12px 35px rgba(10, 132, 255, 0.35)'
-  }
-}
+  };
+};
 
 const handleMouseEnter = (event: MouseEvent, type: string) => {
-  const el = event.currentTarget as HTMLElement
-  const config = getStarterConfig(type)
-  
+  const el = event.currentTarget as HTMLElement;
+  const config = getStarterConfig(type);
+
   gsap.to(el, {
-    y: GSAP_HOVER_Y_PX,
-    scale: GSAP_HOVER_SCALE,
+    y: STARTER_CARD_HOVER_Y_PX,
+    scale: STARTER_CARD_HOVER_SCALE,
     borderColor: config.color,
     backgroundColor: config.bg,
     boxShadow: config.shadow,
     '--glow-opacity': 1,
-    duration: GSAP_HOVER_DURATION_SEC,
+    duration: STARTER_CARD_HOVER_DURATION_SEC,
     ease: 'power2.out',
     overwrite: 'auto'
-  })
-}
+  });
+};
 
 const handleMouseLeave = (event: MouseEvent) => {
-  const el = event.currentTarget as HTMLElement
-  
+  const el = event.currentTarget as HTMLElement;
+
   gsap.to(el, {
     y: 0,
     scale: 1,
@@ -126,34 +135,26 @@ const handleMouseLeave = (event: MouseEvent) => {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     boxShadow: 'none',
     '--glow-opacity': 0,
-    duration: GSAP_LEAVE_DURATION_SEC,
+    duration: STARTER_CARD_LEAVE_DURATION_SEC,
     ease: 'power2.inOut',
     overwrite: 'auto'
-  })
-}
+  });
+};
 </script>
 
 <template>
-  <div
-    v-show="!gs.starterChosen && gameStore.isReady"
-    id="title-screen"
-    class="screen zoom-target"
-  >
-    <div class="title-logo">
-      Poké Vicio
-    </div>
-    <div class="title-sub">
-      Te reto a dejar de jugarlo
-    </div>
-    <p class="title-description">
-      Elegí tu Pokémon inicial para comenzar tu aventura
-    </p>
+  <div v-show="!gs.starterChosen && gameStore.isReady" id="title-screen" class="screen zoom-target">
+    <div class="title-logo">Poké Vicio</div>
+    <div class="title-sub">Te reto a dejar de jugarlo</div>
+    <p class="title-description">Elegí tu Pokémon inicial para comenzar tu aventura</p>
 
     <div class="starter-grid">
       <div
         v-for="starter in starterList"
         :id="`starter-card-${starter.id}`"
         :key="starter.id"
+        role="button"
+        tabindex="0"
         class="starter-card"
         :class="starter.type"
         :style="{ '--card-seed': starter.seed }"
@@ -169,15 +170,12 @@ const handleMouseLeave = (event: MouseEvent) => {
             class="starter-sprite"
             width="32"
             height="32"
-          >
+          />
         </div>
         <div class="starter-name">
           {{ starter.name }}
         </div>
-        <span
-          class="starter-type"
-          :class="`type-${starter.type}`"
-        >{{ starter.typeLabel }}</span>
+        <span class="starter-type" :class="`type-${starter.type}`">{{ starter.typeLabel }}</span>
         <div class="starter-stats">
           <div class="stat-mini">
             <span>HP</span><span>{{ starter.stats.hp }}</span>
@@ -201,15 +199,13 @@ const handleMouseLeave = (event: MouseEvent) => {
         <i class="fas fa-sign-out-alt" />
         <span>CERRAR SESIÓN</span>
       </button>
-      <div class="logout-hint">
-        ¿Te equivocaste de cuenta? Cierra sesión para volver al login.
-      </div>
+      <div class="logout-hint">¿Te equivocaste de cuenta? Cierra sesión para volver al login.</div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .title-description {
   color: var(--gray);
@@ -260,14 +256,14 @@ const handleMouseLeave = (event: MouseEvent) => {
     font-size: var(--font-12);
     margin-bottom: 15px;
   }
-  
+
   .starter-img-container {
     position: relative;
     height: 90px;
     margin-bottom: 4px;
     overflow: visible;
   }
-  
+
   .starter-sprite {
     position: absolute;
     top: 50%;
@@ -275,12 +271,12 @@ const handleMouseLeave = (event: MouseEvent) => {
     height: 160px;
     transform: Translatey(-55%);
   }
-  
+
   .title-footer {
     gap: $spacing-sm;
     margin-top: 15px;
   }
-  
+
   .logout-btn-trigger {
     min-width: 180px;
     padding: 10px 20px;

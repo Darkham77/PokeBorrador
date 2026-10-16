@@ -13,10 +13,9 @@
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .hud-sidebar-left {
-
   position: fixed;
   bottom: 20px;
   left: 20px;
@@ -30,7 +29,6 @@
   @include responsive(hud-mobile) {
     bottom: 100px;
   }
-  
 
   /* Ensure items are clickable even if the container is passthrough */
   :deep(> *) {

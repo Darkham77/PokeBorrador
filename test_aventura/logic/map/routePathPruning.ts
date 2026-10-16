@@ -9,6 +9,7 @@
  */
 
 import type { POINode } from '../../types/map/poiTypes.ts';
+import { floodFillGrid, type GridPoint } from '../utils/gridBfsUtils.ts';
 
 const STAIR_ENDPOINT_PRESERVE_NORTH = 2 as const;
 const STAIR_ENDPOINT_PRESERVE_LATERAL = 2 as const;
@@ -26,7 +27,7 @@ export function pruneOrphanPathFragments(
   H: number
 ): void {
   const visitedPath: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
-  const pathQueue: { x: number; y: number }[] = [];
+  const pathQueue: GridPoint[] = [];
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -46,7 +47,12 @@ export function pruneOrphanPathFragments(
       }
 
       if (!nearSeed) {
-        for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+        for (const [dx, dy] of [
+          [0, 1],
+          [0, -1],
+          [1, 0],
+          [-1, 0]
+        ]) {
           if (bridgeGrid[y + dy!]?.[x + dx!]) {
             nearSeed = true;
             break;
@@ -61,18 +67,7 @@ export function pruneOrphanPathFragments(
     }
   }
 
-  let queueHead = 0;
-  while (queueHead < pathQueue.length) {
-    const curr = pathQueue[queueHead++]!;
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = curr.x + dx!;
-      const ny = curr.y + dy!;
-      if (nx >= 0 && nx < W && ny >= 0 && ny < H && pathGrid[ny]![nx] && !visitedPath[ny]![nx]) {
-        visitedPath[ny]![nx] = true;
-        pathQueue.push({ x: nx, y: ny });
-      }
-    }
-  }
+  floodFillGrid(pathQueue, visitedPath, W, H, (nx, ny) => Boolean(pathGrid[ny]![nx]));
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -107,7 +102,11 @@ export function pruneDeadEndStubs(
   if (placedStairs) {
     for (const st of placedStairs) {
       for (let dy = -STAIR_ENDPOINT_PRESERVE_NORTH; dy <= STAIR_ENDPOINT_PRESERVE_SOUTH; dy++) {
-        for (let dx = -STAIR_ENDPOINT_PRESERVE_LATERAL; dx <= STAIR_ENDPOINT_PRESERVE_LATERAL; dx++) {
+        for (
+          let dx = -STAIR_ENDPOINT_PRESERVE_LATERAL;
+          dx <= STAIR_ENDPOINT_PRESERVE_LATERAL;
+          dx++
+        ) {
           preservedEndpoints.add(`${st.x + dx}_${st.y + dy}`);
         }
       }
@@ -125,7 +124,12 @@ export function pruneDeadEndStubs(
         if (preservedEndpoints.has(`${x}_${y}`)) continue;
 
         let neighborCount = 0;
-        for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+        for (const [dx, dy] of [
+          [0, 1],
+          [0, -1],
+          [1, 0],
+          [-1, 0]
+        ]) {
           const nx = x + dx!;
           const ny = y + dy!;
           if (nx >= 0 && nx < W && ny >= 0 && ny < H) {

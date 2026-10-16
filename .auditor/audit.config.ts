@@ -2,7 +2,7 @@ import { defineAuditConfig } from '@francogp/auditor';
 
 export default defineAuditConfig({
   name: 'Poké Vicio',
-  auditorVersion: '8.2.1-build.20261014-194804',
+  auditorVersion: '8.6.2-build.20261015-235755',
   paths: {
     srcRoots: ['src', 'test_aventura'],
     testRoots: ['tests', 'test_aventura/tests'],
@@ -42,12 +42,32 @@ export default defineAuditConfig({
       { glob: 'src/data/ai/random-sets.json', reason: 'Heuristic AI random movesets database' }
     ],
     acknowledgedDegradations: [
-      { glob: 'scripts/**', policy: 'scripts', reason: 'Maintenance and simulation scripts running in CLI Node environment' },
-      { glob: 'scripts/**', policy: 'cli', reason: 'Maintenance and tooling CLI scripts running in Node environment' },
-      { glob: 'src/data/**', policy: 'data', reason: 'Domain data catalogs and tabular game mini-databases' },
-      { glob: 'ui-demo/**', policy: 'demo', reason: 'Interactive UI demo sandbox and test harness components' },
+      {
+        glob: 'scripts/**',
+        policy: 'scripts',
+        reason: 'Maintenance and simulation scripts running in CLI Node environment'
+      },
+      {
+        glob: 'scripts/**',
+        policy: 'cli',
+        reason: 'Maintenance and tooling CLI scripts running in Node environment'
+      },
+      {
+        glob: 'src/data/**',
+        policy: 'data',
+        reason: 'Domain data catalogs and tabular game mini-databases'
+      },
+      {
+        glob: 'ui-demo/**',
+        policy: 'demo',
+        reason: 'Interactive UI demo sandbox and test harness components'
+      },
       { glob: 'ui-demo/src/data/**', policy: 'data', reason: 'UI demo mock catalogs' },
-      { glob: 'test_aventura/data/**', policy: 'data', reason: 'Adventure map data presets and catalogs' }
+      {
+        glob: 'test_aventura/data/**',
+        policy: 'data',
+        reason: 'Adventure map data presets and catalogs'
+      }
     ]
   },
   testCoverage: {
@@ -70,10 +90,7 @@ export default defineAuditConfig({
   },
   secretLeaks: {
     enabled: true,
-    exemptGlobs: [
-      'tests/**',
-      'scripts/testing/**'
-    ]
+    exemptGlobs: ['tests/**', 'scripts/testing/**']
   },
   persistence: {
     engine: 'hybrid',
@@ -155,18 +172,73 @@ export default defineAuditConfig({
       'FsmState'
     ],
     infraIdWhitelist: [
-      'saveId', 'userId', 'sessionId', 'combatantId', 'slotId', 'uuid', 'roomId',
-      'nationalId', 'national_id', 'nationalDexId', 'national_dex_id', 'dexId', 'dex_id',
-      'catId', 'cat_id', 'shadowId', 'shadow_id',
-      'sellerId', 'seller_id', 'listingId', 'matchId', 'inviteId', 'friendId',
-      'awardId', 'last_save_id', 'lastSaveId', 'targetTrainerId', 'challengerId',
-      'offerId', 'tradeId', 'p_trade_id', 'buyerId', 'buyer_id', 'senderId', 'sender_id',
-      'receiver_id', 'p_receiver_id', 'requestId', 'requester_id', 'addressee_id',
-      'relId', 'claimId', 'currentSessionId', 'current_session_id', 'targetChatId',
-      'seatId', 'opponentId', 'opponent_id', 'player_id', 'serverId', 'server_id',
-      'selectedServerId', 'selected_server_id', 'assetId', 'asset_id'
+      'saveId',
+      'userId',
+      'sessionId',
+      'combatantId',
+      'slotId',
+      'uuid',
+      'roomId',
+      'nationalId',
+      'national_id',
+      'nationalDexId',
+      'national_dex_id',
+      'dexId',
+      'dex_id',
+      'catId',
+      'cat_id',
+      'shadowId',
+      'shadow_id',
+      'sellerId',
+      'seller_id',
+      'listingId',
+      'matchId',
+      'inviteId',
+      'friendId',
+      'awardId',
+      'last_save_id',
+      'lastSaveId',
+      'targetTrainerId',
+      'challengerId',
+      'offerId',
+      'tradeId',
+      'p_trade_id',
+      'buyerId',
+      'buyer_id',
+      'senderId',
+      'sender_id',
+      'receiver_id',
+      'p_receiver_id',
+      'requestId',
+      'requester_id',
+      'addressee_id',
+      'relId',
+      'claimId',
+      'currentSessionId',
+      'current_session_id',
+      'targetChatId',
+      'seatId',
+      'opponentId',
+      'opponent_id',
+      'player_id',
+      'serverId',
+      'server_id',
+      'selectedServerId',
+      'selected_server_id',
+      'assetId',
+      'asset_id'
     ],
-    fallbackIdPatterns: ['heldItem', 'item', 'species', 'ability', 'move', 'moveId', 'itemId', 'speciesId', 'abilityId'],
+    fallbackIdPatterns: [
+      'heldItem',
+      'item',
+      'species',
+      'ability',
+      'move',
+      'moveId',
+      'itemId',
+      'speciesId',
+      'abilityId'
+    ],
     o1CatalogPatterns: [
       {
         name: 'OFFICIAL_SERVERS',
@@ -176,7 +248,21 @@ export default defineAuditConfig({
       }
     ],
     allowedStoreSetterPrefixes: ['set', 'update', 'equip', 'clear'],
-    caseNormalizationExemptTokens: ['rpg', 'pvp', 'pve', 'fsm', 'dex', 'hp', 'atk', 'def', 'spa', 'spd', 'spe', 'iv', 'ev']
+    caseNormalizationExemptTokens: [
+      'rpg',
+      'pvp',
+      'pve',
+      'fsm',
+      'dex',
+      'hp',
+      'atk',
+      'def',
+      'spa',
+      'spd',
+      'spe',
+      'iv',
+      'ev'
+    ]
   },
   constants: {
     enabled: true
@@ -268,19 +354,15 @@ export default defineAuditConfig({
     './scripts/auditors/fsm/validate_showdown_parity.ts',
     './scripts/auditors/persistence/validate_schema_parity.ts',
     './scripts/auditors/persistence/validate_sql_migrations.ts'
-  ]
-,
+  ],
   accessibility: {
-    enabled: true
-  },
-  architecture: {
     enabled: true
   },
   dependencyVulnerabilities: {
     enabled: true,
-    failOn: "critical"
+    failOn: 'critical'
   },
-  eslint: {
+  oxlint: {
     enabled: true
   },
   htmlValidate: {
@@ -298,8 +380,7 @@ export default defineAuditConfig({
   },
   assets: {
     enabled: true
-  }
-,
+  },
   environment: {
     enabled: true
   },
@@ -307,12 +388,10 @@ export default defineAuditConfig({
     enabled: true,
     enforceBuildAudit: true,
     recommendedScripts: true
-  }
-,
+  },
   auditorHygiene: {
     enabled: true
-  }
-,
+  },
   scriptExtensions: {
     enabled: true,
     enforceTypeScript: true,
@@ -340,6 +419,18 @@ export default defineAuditConfig({
     exemptSvgPaths: ['test_aventura/**']
   },
   securityHardening: {
+    enabled: true
+  },
+
+  vitePlusConfig: {
+    enabled: true
+  },
+
+  oxfmt: {
+    enabled: true
+  },
+
+  architecture: {
     enabled: true
   }
 });

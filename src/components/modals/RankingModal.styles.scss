@@ -1,6 +1,6 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/cosmetics" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/cosmetics' as *;
 
 .ranking-modal-header {
   display: flex;
@@ -41,7 +41,6 @@
   }
 }
 
-
 .ranking-modal-content {
   display: flex;
   flex-direction: column;
@@ -70,7 +69,8 @@
   min-height: 0;
   flex: 1;
 
-  .loading-view, .empty-view {
+  .loading-view,
+  .empty-view {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -95,5 +95,3 @@
   flex-direction: column;
   gap: $spacing-sm;
 }
-
-

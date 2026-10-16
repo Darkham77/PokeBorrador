@@ -1,12 +1,11 @@
-
 /**
  * src/logic/pokemon/statEngine.ts
  * Centralized logic for pokemon statistics and multipliers.
  */
 
-import { STAGE_MULT, ACC_STAGE_MULT } from '@/data/system/constants.ts'
-import { BATTLE_MAX_STAGE_OFFSET } from '@/logic/constants/gameplay.ts'
-export { STAGE_MULT, ACC_STAGE_MULT }
+import { STAGE_MULT, ACC_STAGE_MULT } from '@/data/system/constants.ts';
+import { BATTLE_MAX_STAGE_OFFSET } from '@/logic/constants/gameplay.ts';
+export { STAGE_MULT, ACC_STAGE_MULT };
 
 const MAX_STAGE_INDEX = 12;
 
@@ -15,12 +14,18 @@ const MAX_STAGE_INDEX = 12;
  * Index 6 is stage 0 (neutral).
  */
 export function getStatMultiplier(stage: number): number {
-  return STAGE_MULT[Math.max(0, Math.min(MAX_STAGE_INDEX, (stage || 0) + BATTLE_MAX_STAGE_OFFSET))] || 1;
+  return (
+    STAGE_MULT[Math.max(0, Math.min(MAX_STAGE_INDEX, (stage || 0) + BATTLE_MAX_STAGE_OFFSET))] || 1
+  );
 }
 
 /**
  * Get the multiplier for an accuracy/evasion stage (-6 to +6).
  */
 export function getAccuracyMultiplier(stage: number): number {
-  return ACC_STAGE_MULT[Math.max(0, Math.min(MAX_STAGE_INDEX, (stage || 0) + BATTLE_MAX_STAGE_OFFSET))] || 1;
+  return (
+    ACC_STAGE_MULT[
+      Math.max(0, Math.min(MAX_STAGE_INDEX, (stage || 0) + BATTLE_MAX_STAGE_OFFSET))
+    ] || 1
+  );
 }

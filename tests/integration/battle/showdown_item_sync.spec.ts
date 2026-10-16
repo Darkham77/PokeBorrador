@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { createPinia, setActivePinia } from 'pinia';
 import { Battle } from '@pkmn/sim';
 import type { ID } from '@pkmn/sim';
@@ -53,7 +53,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
   const setupItemSyncBattle = (p1Poke: Pokemon, ePokeActive: Pokemon, ePokeBenched: Pokemon) => {
     const playerTeam = [mapToShowdownSet(p1Poke)];
     const enemyTeamList = [ePokeActive, ePokeBenched];
-    const enemyTeam = enemyTeamList.map(p => mapToShowdownSet(p));
+    const enemyTeam = enemyTeamList.map((p) => mapToShowdownSet(p));
 
     const simBattle = new Battle({ formatid: getShowdownFormatId() });
     simBattle.setPlayer('p1', { name: 'Player', team: playerTeam });
@@ -88,7 +88,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
     ePokeBenched.hp = 170;
     ePokeBenched.status = '';
 
-    const p2Hps = enemyTeamList.map(p => p.hp);
+    const p2Hps = enemyTeamList.map((p) => p.hp);
     p2Hps.forEach((hp, idx) => {
       const simMon = p2Side?.pokemon?.[idx];
       if (simMon) {
@@ -138,7 +138,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
       ePokeActive.status = '';
 
       // Sincronizar estados en Showdown
-      const p2Statuses = enemyTeamList.map(p => p.status || '');
+      const p2Statuses = enemyTeamList.map((p) => p.status || '');
       p2Statuses.forEach((status, idx) => {
         const simMon = p2Side?.pokemon?.[idx];
         if (simMon && !simMon.fainted) {
@@ -179,7 +179,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
       ePokeActive.hp = testCase.expectedHp;
 
       // Sincronizar HP
-      const p2Hps = enemyTeamList.map(p => p.hp);
+      const p2Hps = enemyTeamList.map((p) => p.hp);
       p2Hps.forEach((hp, idx) => {
         const simMon = p2Side?.pokemon?.[idx];
         if (simMon) simMon.hp = hp;

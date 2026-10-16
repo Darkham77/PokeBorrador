@@ -1,5 +1,12 @@
 import { SHOWDOWN_BOOST_STAT_KEYS } from '@/types/pokemon/pokemon';
-import type { Pokemon, Move, MoveEffectBoosts, ShowdownBoostStatKey, ShowdownHitEffect, ShowdownSecondaryEffect } from '@/types/pokemon/pokemon';
+import type {
+  Pokemon,
+  Move,
+  MoveEffectBoosts,
+  ShowdownBoostStatKey,
+  ShowdownHitEffect,
+  ShowdownSecondaryEffect
+} from '@/types/pokemon/pokemon';
 import type { BattleStages, LogFn } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import { MIN_BATTLE_STAT_STAGE, MAX_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay';
@@ -33,27 +40,57 @@ function applyBoosts(
     const amount = boosts[rawStat];
     if (!amount) continue;
     const stat = toStageKey(rawStat);
-    targetStages[stat] = Math.max(MIN_BATTLE_STAT_STAGE, Math.min(MAX_BATTLE_STAT_STAGE, (targetStages[stat] || 0) + amount));
+    targetStages[stat] = Math.max(
+      MIN_BATTLE_STAT_STAGE,
+      Math.min(MAX_BATTLE_STAT_STAGE, (targetStages[stat] || 0) + amount)
+    );
     addLogFn(`¡Las estadísticas de ${target.name} cambiaron!`, 'log-info', target);
   }
 }
 
-const STATUS_ACTION_MAP: Record<string, (src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn) => void> = {
+// open-record: Showdown primary status condition action dispatch table
+const STATUS_ACTION_MAP: Record<
+  string,
+  (
+    src: Pokemon,
+    tgt: Pokemon,
+    srcStages: BattleStages,
+    tgtStages: BattleStages,
+    addLogFn: LogFn
+  ) => void
+> = {
   brn: (s, t, ss, ts, l) => STATUS_ACTIONS.burn?.(s, t, ss, ts, l),
   par: (s, t, ss, ts, l) => STATUS_ACTIONS.paralyze?.(s, t, ss, ts, l),
   psn: (s, t, ss, ts, l) => STATUS_ACTIONS.poison?.(s, t, ss, ts, l),
   tox: (s, t, ss, ts, l) => STATUS_ACTIONS.bad_poison?.(s, t, ss, ts, l),
   slp: (s, t, ss, ts, l) => STATUS_ACTIONS.sleep?.(s, t, ss, ts, l),
-  frz: (s, t, ss, ts, l) => STATUS_ACTIONS.freeze?.(s, t, ss, ts, l),
+  frz: (s, t, ss, ts, l) => STATUS_ACTIONS.freeze?.(s, t, ss, ts, l)
 };
 
-function applyStatus(status: ShowdownHitEffect['status'], src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn) {
+function applyStatus(
+  status: ShowdownHitEffect['status'],
+  src: Pokemon,
+  tgt: Pokemon,
+  srcStages: BattleStages,
+  tgtStages: BattleStages,
+  addLogFn: LogFn
+) {
   if (status && STATUS_ACTION_MAP[status]) {
     STATUS_ACTION_MAP[status](src, tgt, srcStages, tgtStages, addLogFn);
   }
 }
 
-const VOLATILE_ACTION_MAP: Record<string, (src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn) => void> = {
+// open-record: Showdown volatile status condition action dispatch table
+const VOLATILE_ACTION_MAP: Record<
+  string,
+  (
+    src: Pokemon,
+    tgt: Pokemon,
+    srcStages: BattleStages,
+    tgtStages: BattleStages,
+    addLogFn: LogFn
+  ) => void
+> = {
   confusion: (s, t, ss, ts, l) => STATUS_ACTIONS.confuse?.(s, t, ss, ts, l),
   flinch: (s, t, ss, ts, l) => STATUS_ACTIONS.flinch?.(s, t, ss, ts, l),
   leechseed: (s, t, ss, ts, l) => HEALING_ACTIONS.leech_seed?.(s, t, ss, ts, l),
@@ -73,40 +110,85 @@ const VOLATILE_ACTION_MAP: Record<string, (src: Pokemon, tgt: Pokemon, srcStages
       tgt.volatileCounters.partiallytrapped = 4 + Math.floor(Math.random() * 2);
       addLogFn(`¡${tgt.name} fue atrapado!`, 'log-info', tgt);
     }
-  },
+  }
 };
 
-function applyVolatileStatus(volatileStatus: string | undefined, src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn) {
+function applyVolatileStatus(
+  volatileStatus: string | undefined,
+  src: Pokemon,
+  tgt: Pokemon,
+  srcStages: BattleStages,
+  tgtStages: BattleStages,
+  addLogFn: LogFn
+) {
   if (volatileStatus && VOLATILE_ACTION_MAP[volatileStatus]) {
     VOLATILE_ACTION_MAP[volatileStatus](src, tgt, srcStages, tgtStages, addLogFn);
   }
 }
 
-const SIDE_CONDITION_MAP: Record<string, (src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn, battleCtx: BattleContext) => void> = {
+// open-record: Showdown side condition effect dispatch table
+const SIDE_CONDITION_MAP: Record<
+  string,
+  (
+    src: Pokemon,
+    tgt: Pokemon,
+    srcStages: BattleStages,
+    tgtStages: BattleStages,
+    addLogFn: LogFn,
+    battleCtx: BattleContext
+  ) => void
+> = {
   reflect: (s, t, ss, ts, l, c) => FIELD_ACTIONS.reflect?.(s, t, ss, ts, l, c),
   lightscreen: (s, t, ss, ts, l, c) => FIELD_ACTIONS.light_screen?.(s, t, ss, ts, l, c),
   safeguard: (s, t, ss, ts, l, c) => FIELD_ACTIONS.safeguard?.(s, t, ss, ts, l, c),
   spikes: (s, t, ss, ts, l, c) => FIELD_ACTIONS.spikes?.(s, t, ss, ts, l, c),
   toxicspikes: (s, t, ss, ts, l, c) => FIELD_ACTIONS.toxic_spikes?.(s, t, ss, ts, l, c),
   stealthrock: (s, t, ss, ts, l, c) => FIELD_ACTIONS.stealth_rock?.(s, t, ss, ts, l, c),
-  mist: (s, t, ss, ts, l, c) => FIELD_ACTIONS.mist?.(s, t, ss, ts, l, c),
+  mist: (s, t, ss, ts, l, c) => FIELD_ACTIONS.mist?.(s, t, ss, ts, l, c)
 };
 
-function applySideCondition(sideCondition: string | undefined, src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn, battleCtx: BattleContext) {
+function applySideCondition(
+  sideCondition: string | undefined,
+  src: Pokemon,
+  tgt: Pokemon,
+  srcStages: BattleStages,
+  tgtStages: BattleStages,
+  addLogFn: LogFn,
+  battleCtx: BattleContext
+) {
   if (sideCondition && SIDE_CONDITION_MAP[sideCondition]) {
     SIDE_CONDITION_MAP[sideCondition](src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
   }
 }
 
-const WEATHER_ACTION_MAP: Record<string, (src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn, battleCtx: BattleContext) => void> = {
+// open-record: Showdown weather condition action dispatch table
+const WEATHER_ACTION_MAP: Record<
+  string,
+  (
+    src: Pokemon,
+    tgt: Pokemon,
+    srcStages: BattleStages,
+    tgtStages: BattleStages,
+    addLogFn: LogFn,
+    battleCtx: BattleContext
+  ) => void
+> = {
   raindance: (s, t, ss, ts, l, c) => FIELD_ACTIONS.rain?.(s, t, ss, ts, l, c),
   sunnyday: (s, t, ss, ts, l, c) => FIELD_ACTIONS.sun?.(s, t, ss, ts, l, c),
   sandstorm: (s, t, ss, ts, l, c) => FIELD_ACTIONS.sandstorm?.(s, t, ss, ts, l, c),
   hail: (s, t, ss, ts, l, c) => FIELD_ACTIONS.hail?.(s, t, ss, ts, l, c),
-  snowscape: (s, t, ss, ts, l, c) => FIELD_ACTIONS.hail?.(s, t, ss, ts, l, c),
+  snowscape: (s, t, ss, ts, l, c) => FIELD_ACTIONS.hail?.(s, t, ss, ts, l, c)
 };
 
-function applyWeather(weather: string | undefined, src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn, battleCtx: BattleContext) {
+function applyWeather(
+  weather: string | undefined,
+  src: Pokemon,
+  tgt: Pokemon,
+  srcStages: BattleStages,
+  tgtStages: BattleStages,
+  addLogFn: LogFn,
+  battleCtx: BattleContext
+) {
   if (weather && WEATHER_ACTION_MAP[weather]) {
     WEATHER_ACTION_MAP[weather](src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
   }
@@ -121,6 +203,7 @@ type MoveActionHandler = (
   battleCtx: BattleContext
 ) => void | Promise<void>;
 
+// open-record: Showdown move ID effect handler dispatch table
 const MOVE_ACTION_HANDLERS: Record<string, MoveActionHandler> = {
   recover: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_50?.(s, t, ss, ts, l, c),
   slackoff: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_50?.(s, t, ss, ts, l, c),
@@ -181,7 +264,7 @@ const MOVE_ACTION_HANDLERS: Record<string, MoveActionHandler> = {
   spitup: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.spit_up?.(s, t, ss, ts, l, c),
   grudge: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.grudge?.(s, t, ss, ts, l, c),
   charge: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.charge?.(s, t, ss, ts, l, c),
-  brickbreak: (s, t, ss, ts, l, c) => FIELD_ACTIONS.break_screens?.(s, t, ss, ts, l, c),
+  brickbreak: (s, t, ss, ts, l, c) => FIELD_ACTIONS.break_screens?.(s, t, ss, ts, l, c)
 };
 
 async function applyMoveId(
@@ -248,7 +331,8 @@ export async function dispatchMoveEffect(
       }
     }
   } catch (error) {
-    if (!move.id) throw new Error(`[ActionRegistry] Move without canonical id: ${move.name}`, { cause: error });
+    if (!move.id)
+      throw new Error(`[ActionRegistry] Move without canonical id: ${move.name}`, { cause: error });
     logger.error('ActionRegistry', `Error executing ${move.id}: ${(error as Error).message}`);
     throw error;
   }

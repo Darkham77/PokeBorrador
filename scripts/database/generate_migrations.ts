@@ -1,16 +1,16 @@
 /**
  * @file generate_migrations.js
  * @description Generador automático de manifiesto de migraciones SQL.
- * 
- * UTILIDAD: 
- * Escanea el directorio 'database/migrations/' en busca de archivos .sql y los 
+ *
+ * UTILIDAD:
+ * Escanea el directorio 'database/migrations/' en busca de archivos .sql y los
  * empaqueta en un único archivo JavaScript ('src/logic/db/migrations_data.ts').
- * 
- * IMPORTANCIA: 
+ *
+ * IMPORTANCIA:
  * Este script es el puente entre el diseño de base de datos (SQL) y la lógica de ejecución (JS).
- * Permite que el DBRouter ejecute actualizaciones de esquema de forma determinista tanto en 
+ * Permite que el DBRouter ejecute actualizaciones de esquema de forma determinista tanto en
  * Supabase como en el SQLite local, manteniendo la "Triple Fuente de Verdad".
- * 
+ *
  * Se ejecuta automáticamente durante el proceso de build y en Hot Update mediante Vite.
  */
 
@@ -21,7 +21,6 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 
 enableCompileCache();
-
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/logic/db/migrations_data.ts');
@@ -41,89 +40,95 @@ export async function generateMigrations() {
   const list = await fs.readdir(MIGRATIONS_DIR);
 
   // Verify no orphan .sqlite.sql files exist
-  const sqliteFiles = list.filter(f => f.endsWith('.sqlite.sql'));
+  const sqliteFiles = list.filter((f) => f.endsWith('.sqlite.sql'));
   for (const sqliteFile of sqliteFiles) {
     const baseSqlFile = sqliteFile.replace(/\.sqlite\.sql$/, '.sql');
     if (!list.includes(baseSqlFile)) {
-      throw new Error(`[Migrations Generator] ERROR: Archivo SQLite huérfano detectado sin archivo base de PostgreSQL correspondiente: ${sqliteFile}. Todas las migraciones SQLite deben tener una contraparte base .sql`);
+      throw new Error(
+        `[Migrations Generator] ERROR: Archivo SQLite huérfano detectado sin archivo base de PostgreSQL correspondiente: ${sqliteFile}. Todas las migraciones SQLite deben tener una contraparte base .sql`
+      );
     }
   }
 
   const files = list
-    .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'))
+    .filter(
+      (f) => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema')
+    )
     .sort((a, b) => a.localeCompare(b));
 
-  const migrations = await Promise.all(files.map(async (filename) => {
-    const id = filename.replace(/\.sql$/, '');
-    const content = await fs.readFile(path.join(MIGRATIONS_DIR, filename), 'utf-8');
+  const migrations = await Promise.all(
+    files.map(async (filename) => {
+      const id = filename.replace(/\.sql$/, '');
+      const content = await fs.readFile(path.join(MIGRATIONS_DIR, filename), 'utf-8');
 
-    // Check for SQLite companion file
-    const sqliteFilename = filename.replace(/\.sql$/, '.sqlite.sql');
-    const stripInlineComment = (line: string): string => {
-      let inSingle = false;
-      let inDouble = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === "'" && !inDouble) {
-          if (line[i + 1] === "'") {
-            i++; // skip escaped quote ''
-          } else {
-            inSingle = !inSingle;
+      // Check for SQLite companion file
+      const sqliteFilename = filename.replace(/\.sql$/, '.sqlite.sql');
+      const stripInlineComment = (line: string): string => {
+        let inSingle = false;
+        let inDouble = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === "'" && !inDouble) {
+            if (line[i + 1] === "'") {
+              i++; // skip escaped quote ''
+            } else {
+              inSingle = !inSingle;
+            }
+          } else if (ch === '"' && !inSingle) {
+            if (line[i + 1] === '"') {
+              i++; // skip escaped quote ""
+            } else {
+              inDouble = !inDouble;
+            }
+          } else if (ch === '-' && line[i + 1] === '-' && !inSingle && !inDouble) {
+            return line.substring(0, i);
           }
-        } else if (ch === '"' && !inSingle) {
-          if (line[i + 1] === '"') {
-            i++; // skip escaped quote ""
-          } else {
-            inDouble = !inDouble;
-          }
-        } else if (ch === '-' && line[i + 1] === '-' && !inSingle && !inDouble) {
-          return line.substring(0, i);
+        }
+        return line;
+      };
+
+      const cleanContent = content
+        .split('\n')
+        .map((line) => stripInlineComment(line).trim())
+        .filter((line) => line.length > 0)
+        .join('\n');
+
+      let sqliteContent: string | undefined = undefined;
+      if (list.includes(sqliteFilename)) {
+        const rawSqlite = await fs.readFile(path.join(MIGRATIONS_DIR, sqliteFilename), 'utf-8');
+        sqliteContent = rawSqlite
+          .split('\n')
+          .map((line) => stripInlineComment(line).trim())
+          .filter((line) => line.length > 0)
+          .join('\n');
+      }
+
+      // Parse metadata from comments
+      // Example: -- check: { "table": "profiles", "column": "role" }
+      let check: Record<string, unknown> | null = null;
+      const checkMatch = content.match(/--\s*check:\s*({.+})/);
+      if (checkMatch && checkMatch[1]) {
+        try {
+          check = JSON.parse(checkMatch[1]) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+        } catch (e) {
+          console.error(`[Migrations Generator] Error parsing check metadata in ${filename}:`, e);
         }
       }
-      return line;
-    };
 
-    const cleanContent = content
-      .split('\n')
-      .map(line => stripInlineComment(line).trim())
-      .filter(line => line.length > 0)
-      .join('\n');
-
-    let sqliteContent: string | undefined = undefined;
-    if (list.includes(sqliteFilename)) {
-      const rawSqlite = await fs.readFile(path.join(MIGRATIONS_DIR, sqliteFilename), 'utf-8');
-      sqliteContent = rawSqlite
-        .split('\n')
-        .map(line => stripInlineComment(line).trim())
-        .filter(line => line.length > 0)
-        .join('\n');
-    }
-
-    // Parse metadata from comments
-    // Example: -- check: { "table": "profiles", "column": "role" }
-    let check: Record<string, unknown> | null = null;
-    const checkMatch = content.match(/--\s*check:\s*({.+})/);
-    if (checkMatch && checkMatch[1]) {
-      try {
-        check = JSON.parse(checkMatch[1]) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-      } catch (e) {
-        console.error(`[Migrations Generator] Error parsing check metadata in ${filename}:`, e);
-      }
-    }
-
-    const hasSqliteCompanion = sqliteContent !== undefined;
-    return {
-      id,
-      sql: hasSqliteCompanion ? '' : cleanContent,
-      sqlite_sql: sqliteContent,
-      check
-    };
-  }));
+      const hasSqliteCompanion = sqliteContent !== undefined;
+      return {
+        id,
+        sql: hasSqliteCompanion ? '' : cleanContent,
+        sqlite_sql: sqliteContent,
+        check
+      };
+    })
+  );
 
   const output = `/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
  * Generated by: scripts/database/generate_migrations.ts
- * 
+ *
  * Contains all static SQL migrations for deterministic offline/in-memory schema upgrades.
  */
 
@@ -141,7 +146,7 @@ export const DATABASE_MIGRATIONS = ${JSON.stringify(migrations, null, 2)};
   const versionOutput = `/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
  * Generated by: scripts/database/generate_migrations.ts
- * 
+ *
  * Lightweight metadata holding the current database migration version.
  * Decouples client version checks from the heavy migrations SQL data chunk.
  */
@@ -154,19 +159,26 @@ export const LATEST_MIGRATION_ID = '${latestId}';
     const currVersion = await fs.readFile(VERSION_OUTPUT_FILE, 'utf8');
     if (currVersion !== versionOutput) {
       await fs.writeFile(VERSION_OUTPUT_FILE, versionOutput, 'utf8');
-      console.log(`⚡ [Migrations Generator] Actualizado ${path.basename(VERSION_OUTPUT_FILE)} (v${latestVersion})`);
+      console.log(
+        `⚡ [Migrations Generator] Actualizado ${path.basename(VERSION_OUTPUT_FILE)} (v${latestVersion})`
+      );
     }
   } catch {
     await fs.writeFile(VERSION_OUTPUT_FILE, versionOutput, 'utf8');
-    console.log(`⚡ [Migrations Generator] Creado ${path.basename(VERSION_OUTPUT_FILE)} (v${latestVersion})`);
+    console.log(
+      `⚡ [Migrations Generator] Creado ${path.basename(VERSION_OUTPUT_FILE)} (v${latestVersion})`
+    );
   }
 
   try {
-    if (await fs.readFile(OUTPUT_FILE, 'utf8') === output) {
-      console.log(`📦 [Migrations Generator] ${relOutputDir} está actualizado (${migrations.length} migraciones).`);
+    if ((await fs.readFile(OUTPUT_FILE, 'utf8')) === output) {
+      console.log(
+        `📦 [Migrations Generator] ${relOutputDir} está actualizado (${migrations.length} migraciones).`
+      );
       return;
     }
-  } catch { // catch-ok: the manifest does not exist yet and must be created below
+  } catch {
+    // catch-ok: the manifest does not exist yet and must be created below
     // The manifest does not exist yet and must be created below.
   }
 
@@ -174,7 +186,9 @@ export const LATEST_MIGRATION_ID = '${latestId}';
     await using fileHandle = await fs.open(OUTPUT_FILE, 'w');
     await fileHandle.writeFile(output);
   }
-  console.log(`⚡ [Migrations Generator] Generadas ${migrations.length} migraciones en ${relOutputDir}`);
+  console.log(
+    `⚡ [Migrations Generator] Generadas ${migrations.length} migraciones en ${relOutputDir}`
+  );
 }
 
 async function runDirectCliPipeline(): Promise<void> {
@@ -182,13 +196,27 @@ async function runDirectCliPipeline(): Promise<void> {
 
   const skipTests = process.argv.includes('--no-test') || process.argv.includes('skip-test=true');
   if (skipTests) {
-    console.log(styleText('yellow', '\n⚠️  [Migrations Generator] Pruebas de migración omitidas por flag explícito (--no-test).'));
+    console.log(
+      styleText(
+        'yellow',
+        '\n⚠️  [Migrations Generator] Pruebas de migración omitidas por flag explícito (--no-test).'
+      )
+    );
     return;
   }
 
-  console.log(styleText('bold', '\n══════════════════════════════════════════════════════════════════════'));
-  console.log(styleText('bold', styleText('cyan', '🔍 PASO 1/2: Validando sintaxis, monotonicidad y timestamps SQL...')));
-  console.log(styleText('bold', '══════════════════════════════════════════════════════════════════════\n'));
+  console.log(
+    styleText('bold', '\n══════════════════════════════════════════════════════════════════════')
+  );
+  console.log(
+    styleText(
+      'bold',
+      styleText('cyan', '🔍 PASO 1/2: Validando sintaxis, monotonicidad y timestamps SQL...')
+    )
+  );
+  console.log(
+    styleText('bold', '══════════════════════════════════════════════════════════════════════\n')
+  );
 
   const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
@@ -198,14 +226,36 @@ async function runDirectCliPipeline(): Promise<void> {
   });
 
   if (validateProc.status !== 0) {
-    console.error(styleText('bold', styleText('red', '\n❌ [Migrations Generator] ERROR: Las migraciones fallaron la validación estática de SQL.')));
-    console.error(styleText('red', '👉 Corrige los errores señalados arriba antes de aprobar la migración.\n'));
+    console.error(
+      styleText(
+        'bold',
+        styleText(
+          'red',
+          '\n❌ [Migrations Generator] ERROR: Las migraciones fallaron la validación estática de SQL.'
+        )
+      )
+    );
+    console.error(
+      styleText('red', '👉 Corrige los errores señalados arriba antes de aprobar la migración.\n')
+    );
     process.exit(1);
   }
 
-  console.log(styleText('bold', '\n══════════════════════════════════════════════════════════════════════'));
-  console.log(styleText('bold', styleText('cyan', '🧪 PASO 2/2: Ejecutando test obligatorio contra respaldo real de producción...')));
-  console.log(styleText('bold', '══════════════════════════════════════════════════════════════════════\n'));
+  console.log(
+    styleText('bold', '\n══════════════════════════════════════════════════════════════════════')
+  );
+  console.log(
+    styleText(
+      'bold',
+      styleText(
+        'cyan',
+        '🧪 PASO 2/2: Ejecutando test obligatorio contra respaldo real de producción...'
+      )
+    )
+  );
+  console.log(
+    styleText('bold', '══════════════════════════════════════════════════════════════════════\n')
+  );
 
   const testProc = spawnSync(npmCmd, ['run', 'test:migrations'], {
     stdio: 'inherit',
@@ -213,28 +263,55 @@ async function runDirectCliPipeline(): Promise<void> {
   });
 
   if (testProc.status !== 0) {
-    console.error(styleText('bold', styleText('red', '\n❌ [Migrations Generator] ERROR: Las migraciones NO pasaron la prueba de compatibilidad con el respaldo real.')));
-    console.error(styleText('red', '👉 La migración ha sido RECHAZADA. Revisa los errores del test backup_migration_real.\n'));
+    console.error(
+      styleText(
+        'bold',
+        styleText(
+          'red',
+          '\n❌ [Migrations Generator] ERROR: Las migraciones NO pasaron la prueba de compatibilidad con el respaldo real.'
+        )
+      )
+    );
+    console.error(
+      styleText(
+        'red',
+        '👉 La migración ha sido RECHAZADA. Revisa los errores del test backup_migration_real.\n'
+      )
+    );
     process.exit(1);
   }
 
-  console.log(styleText('bold', '\n══════════════════════════════════════════════════════════════════════'));
-  console.log(styleText('bold', styleText('green', '✨ [Migrations Generator] MIGRACIONES CERTIFICADAS Y APROBADAS CON ÉXITO.')));
+  console.log(
+    styleText('bold', '\n══════════════════════════════════════════════════════════════════════')
+  );
+  console.log(
+    styleText(
+      'bold',
+      styleText(
+        'green',
+        '✨ [Migrations Generator] MIGRACIONES CERTIFICADAS Y APROBADAS CON ÉXITO.'
+      )
+    )
+  );
   console.log(styleText('green', '   - Manifiesto generado en src/logic/db/migrations_data.ts'));
   console.log(styleText('green', '   - Paridad y sintaxis SQL: PASS'));
   console.log(styleText('green', '   - Compatibilidad con respaldo real de producción: PASS'));
-  console.log(styleText('bold', '══════════════════════════════════════════════════════════════════════\n'));
+  console.log(
+    styleText('bold', '══════════════════════════════════════════════════════════════════════\n')
+  );
 }
 
 // Support running directly
-const isDirectRun = process.argv[1] && (
-  process.argv[1].endsWith('generate_migrations.ts') ||
-  process.argv[1].includes('generate_migrations.ts')
-);
+const isDirectRun =
+  process.argv[1] &&
+  (process.argv[1].endsWith('generate_migrations.ts') ||
+    process.argv[1].includes('generate_migrations.ts'));
 
 if (isDirectRun) {
   runDirectCliPipeline().catch((err: unknown) => {
-    console.error(styleText('red', `❌ [Migrations Generator] Error fatal: ${(err as Error).message}`));
+    console.error(
+      styleText('red', `❌ [Migrations Generator] Error fatal: ${(err as Error).message}`)
+    );
     process.exit(1);
   });
 }

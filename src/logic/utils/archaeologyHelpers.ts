@@ -18,7 +18,10 @@ export interface ArchaeologyWeights {
   rare: number;
 }
 
-export function calculateArchaeologyWeights(pickaxeType: string | null, brushType: string | null): ArchaeologyWeights {
+export function calculateArchaeologyWeights(
+  pickaxeType: string | null,
+  brushType: string | null
+): ArchaeologyWeights {
   const categoryWeights = {
     fossil: BASE_ARCHAEOLOGY_WEIGHT_FOSSIL,
     stone: BASE_ARCHAEOLOGY_WEIGHT_STONE,
@@ -36,9 +39,8 @@ export function calculateArchaeologyWeights(pickaxeType: string | null, brushTyp
     let remaining = budget;
     for (let i = 0; i < affected.length; i++) {
       const item = affected[i]!;
-      const added = i === affected.length - 1
-        ? remaining
-        : Math.round(remaining * SPLIT_REMAINING_FACTOR);
+      const added =
+        i === affected.length - 1 ? remaining : Math.round(remaining * SPLIT_REMAINING_FACTOR);
       categoryWeights[item.key as ArchaeologyCategory] += added;
       remaining -= added;
     }
@@ -121,21 +123,24 @@ export function rollArchaeologyReward(
   fossilPool?: readonly string[]
 ): ArchaeologyReward {
   if (category === 'fossil') {
-    const pool = (fossilPool && fossilPool.length > 0) ? fossilPool : (['kabuto', 'omanyte'] as const);
+    const pool =
+      fossilPool && fossilPool.length > 0 ? fossilPool : (['kabuto', 'omanyte'] as const);
     const selectedPoke = pool[Math.floor(Math.random() * pool.length)];
     if (selectedPoke === 'kabuto') return { rewardId: 'domefossil', rewardIcon: '🛡' };
     if (selectedPoke === 'omanyte') return { rewardId: 'helixfossil', rewardIcon: '🐚' };
     return { rewardId: 'oldamber', rewardIcon: '💎' };
   }
   if (category === 'stone') {
-    const rewardId = ARCHAEOLOGY_STONE_REWARDS[Math.floor(Math.random() * ARCHAEOLOGY_STONE_REWARDS.length)]!;
+    const rewardId =
+      ARCHAEOLOGY_STONE_REWARDS[Math.floor(Math.random() * ARCHAEOLOGY_STONE_REWARDS.length)]!;
     return { rewardId, rewardIcon: '💎' };
   }
   if (category === 'common') {
-    const item = ARCHAEOLOGY_COMMON_REWARDS[Math.floor(Math.random() * ARCHAEOLOGY_COMMON_REWARDS.length)]!;
+    const item =
+      ARCHAEOLOGY_COMMON_REWARDS[Math.floor(Math.random() * ARCHAEOLOGY_COMMON_REWARDS.length)]!;
     return { rewardId: item.id, rewardIcon: item.icon };
   }
-  const item = ARCHAEOLOGY_RARE_REWARDS[Math.floor(Math.random() * ARCHAEOLOGY_RARE_REWARDS.length)]!;
+  const item =
+    ARCHAEOLOGY_RARE_REWARDS[Math.floor(Math.random() * ARCHAEOLOGY_RARE_REWARDS.length)]!;
   return { rewardId: item.id, rewardIcon: item.icon };
 }
-

@@ -1,44 +1,47 @@
 <script setup lang="ts">
-import { useTemplateRef, onMounted, onUnmounted, nextTick, computed } from 'vue'
-import { gsap } from 'gsap'
-import HomePendingRewardsWidget from '@/components/home/HomePendingRewardsWidget.vue'
-import HomeEventsSection from '@/components/home/HomeEventsSection.vue'
-import EventMissions from '@/components/events/EventMissions.vue'
-import HomeBreedingWidget from '@/components/home/HomeBreedingWidget.vue'
-import HomeNotificationsFeed from '@/components/home/HomeNotificationsFeed.vue'
-import HomeGymsProgress from '@/components/home/HomeGymsProgress.vue'
-import HomeFactionWar from '@/components/home/HomeFactionWar.vue'
-import HomeClassMissionsWidget from '@/components/home/HomeClassMissionsWidget.vue'
-import HomeActiveBuffsWidget from '@/components/home/HomeActiveBuffsWidget.vue'
-import HomeEconomyWidget from '@/components/home/HomeEconomyWidget.vue'
-import HomeBlackMarketWidget from '@/components/home/HomeBlackMarketWidget.vue'
-import HomeRankedWidget from '@/components/home/HomeRankedWidget.vue'
-import HomePassiveDefenseWidget from '@/components/home/HomePassiveDefenseWidget.vue'
-import { useBreedingStore } from '@/stores/breeding'
-import { useLoadingStore } from '@/stores/loading'
-import { useGameStore } from '@/stores/game'
-import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards'
-import HomeCollapsibleWidget from '@/components/home/HomeCollapsibleWidget.vue'
-import HomeWidgetMinimizeBtn from '@/components/home/HomeWidgetMinimizeBtn.vue'
-import HomeWidgetRefreshBtn from '@/components/home/HomeWidgetRefreshBtn.vue'
+import { useTemplateRef, onMounted, onUnmounted, nextTick, computed } from 'vue';
+import { gsap } from 'gsap';
+import HomePendingRewardsWidget from '@/components/home/HomePendingRewardsWidget.vue';
+import HomeEventsSection from '@/components/home/HomeEventsSection.vue';
+import EventMissions from '@/components/events/EventMissions.vue';
+import HomeBreedingWidget from '@/components/home/HomeBreedingWidget.vue';
+import HomeNotificationsFeed from '@/components/home/HomeNotificationsFeed.vue';
+import HomeGymsProgress from '@/components/home/HomeGymsProgress.vue';
+import HomeFactionWar from '@/components/home/HomeFactionWar.vue';
+import HomeClassMissionsWidget from '@/components/home/HomeClassMissionsWidget.vue';
+import HomeActiveBuffsWidget from '@/components/home/HomeActiveBuffsWidget.vue';
+import HomeEconomyWidget from '@/components/home/HomeEconomyWidget.vue';
+import HomeBlackMarketWidget from '@/components/home/HomeBlackMarketWidget.vue';
+import HomeRankedWidget from '@/components/home/HomeRankedWidget.vue';
+import HomePassiveDefenseWidget from '@/components/home/HomePassiveDefenseWidget.vue';
+import { useBreedingStore } from '@/stores/breeding';
+import { useLoadingStore } from '@/stores/loading';
+import { useGameStore } from '@/stores/game';
+import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
+import HomeCollapsibleWidget from '@/components/home/HomeCollapsibleWidget.vue';
+import HomeWidgetMinimizeBtn from '@/components/home/HomeWidgetMinimizeBtn.vue';
+import HomeWidgetRefreshBtn from '@/components/home/HomeWidgetRefreshBtn.vue';
 
-const ROCKET_BLACK_MARKET_MIN_LEVEL = 10
+const ROCKET_BLACK_MARKET_MIN_LEVEL = 10;
 
-const gameStore = useGameStore()
-const breedingStore = useBreedingStore()
-const loadingStore = useLoadingStore()
-const { unifiedRewards } = useUnifiedRewards()
+const gameStore = useGameStore();
+const breedingStore = useBreedingStore();
+const loadingStore = useLoadingStore();
+const { unifiedRewards } = useUnifiedRewards();
 
 const isBlackMarketAvailable = computed(() => {
-  return gameStore.state.playerClass === 'rocket' && (gameStore.state.classLevel || 1) >= ROCKET_BLACK_MARKET_MIN_LEVEL
-})
+  return (
+    gameStore.state.playerClass === 'rocket' &&
+    (gameStore.state.classLevel || 1) >= ROCKET_BLACK_MARKET_MIN_LEVEL
+  );
+});
 
-const homeContainerRef = useTemplateRef<HTMLElement>('homeContainerRef')
-let gsapCtx: gsap.Context | null = null
+const homeContainerRef = useTemplateRef<HTMLElement>('homeContainerRef');
+let gsapCtx: gsap.Context | null = null;
 
 onMounted(() => {
-  breedingStore.loadDaycare()
-  breedingStore.checkDailyReset()
+  breedingStore.loadDaycare();
+  breedingStore.checkDailyReset();
 
   gsapCtx = gsap.context(() => {
     if (homeContainerRef.value) {
@@ -46,35 +49,31 @@ onMounted(() => {
         homeContainerRef.value,
         { opacity: 0, y: 10 },
         { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
-      )
+      );
     }
-  }, homeContainerRef.value || undefined)
+  }, homeContainerRef.value || undefined);
 
   // Ensure DOM and child widgets are fully laid out and painted before releasing loading overlay
   void nextTick(() => {
     if (typeof requestAnimationFrame !== 'undefined') {
       requestAnimationFrame(() => {
-        loadingStore.markAppMounted()
-      })
+        loadingStore.markAppMounted();
+      });
     } else {
-      loadingStore.markAppMounted()
+      loadingStore.markAppMounted();
     }
-  })
-})
+  });
+});
 
 onUnmounted(() => {
   if (gsapCtx) {
-    gsapCtx.revert()
+    gsapCtx.revert();
   }
-})
+});
 </script>
 
 <template>
-  <div
-    id="home-view-container"
-    ref="homeContainerRef"
-    class="home-view-container legacy-ui"
-  >
+  <div id="home-view-container" ref="homeContainerRef" class="home-view-container legacy-ui">
     <!-- Layout de Flujo Continuo / Masonry (Columna Principal + Columna Lateral) -->
     <div class="home-masonry-layout">
       <!-- Columna Principal / Ancha (Izquierda en desktop) -->
@@ -93,55 +92,27 @@ onUnmounted(() => {
             <HomePendingRewardsWidget />
           </HomeCollapsibleWidget>
         </div>
-        <div
-          id="widget-events-section"
-          class="home-widget-block widget-events"
-        >
-          <HomeCollapsibleWidget
-            widget-id="events"
-            title="EVENTOS MUNDIALES"
-            icon="🏆"
-          >
+        <div id="widget-events-section" class="home-widget-block widget-events">
+          <HomeCollapsibleWidget widget-id="events" title="EVENTOS MUNDIALES" icon="🏆">
             <HomeEventsSection />
           </HomeCollapsibleWidget>
         </div>
-        <div
-          id="widget-gyms-progress"
-          class="home-widget-block widget-gyms"
-        >
-          <HomeCollapsibleWidget
-            widget-id="gyms"
-            title="GIMNASIOS DE KANTO"
-            icon="🏆"
-          >
+        <div id="widget-gyms-progress" class="home-widget-block widget-gyms">
+          <HomeCollapsibleWidget widget-id="gyms" title="GIMNASIOS DE KANTO" icon="🏆">
             <HomeGymsProgress />
           </HomeCollapsibleWidget>
         </div>
-        <div
-          id="widget-coliseum-dual-section"
-          class="home-widget-block widget-coliseum-dual"
-        >
+        <div id="widget-coliseum-dual-section" class="home-widget-block widget-coliseum-dual">
           <div class="dual-widgets-grid">
-            <HomeCollapsibleWidget
-              widget-id="ranked"
-              title="ARENA CLASIFICATORIA"
-              icon="🏆"
-            >
+            <HomeCollapsibleWidget widget-id="ranked" title="ARENA CLASIFICATORIA" icon="🏆">
               <HomeRankedWidget />
             </HomeCollapsibleWidget>
-            <HomeCollapsibleWidget
-              widget-id="defense"
-              title="DEFENSA PASIVA"
-              icon="🛡️"
-            >
+            <HomeCollapsibleWidget widget-id="defense" title="DEFENSA PASIVA" icon="🛡️">
               <HomePassiveDefenseWidget />
             </HomeCollapsibleWidget>
           </div>
         </div>
-        <div
-          id="widget-daily-missions"
-          class="home-widget-block widget-missions"
-        >
+        <div id="widget-daily-missions" class="home-widget-block widget-missions">
           <HomeCollapsibleWidget
             widget-id="missions"
             title="MISIONES DIARIAS & DESPLIEGUES"
@@ -151,16 +122,12 @@ onUnmounted(() => {
               <div class="card-header-bar">
                 <div class="title-wrap">
                   <span class="emoji card-icon">📜</span>
-                  <h2 class="card-title">
-                    MISIONES DIARIAS &amp; DESPLIEGUES
-                  </h2>
+                  <h2 class="card-title">MISIONES DIARIAS &amp; DESPLIEGUES</h2>
                 </div>
                 <div class="header-actions">
-                  <span
-                    class="refresh-count-badge"
-                    title="Refrescos disponibles"
-                  >
-                    <span class="refresh-label">Refrescos: </span>{{ breedingStore.missionRefreshes }}/3
+                  <span class="refresh-count-badge" title="Refrescos disponibles">
+                    <span class="refresh-label">Refrescos: </span
+                    >{{ breedingStore.missionRefreshes }}/3
                   </span>
                   <HomeWidgetRefreshBtn
                     id="home-missions-refresh-btn"
@@ -176,15 +143,8 @@ onUnmounted(() => {
             </div>
           </HomeCollapsibleWidget>
         </div>
-        <div
-          id="widget-class-missions"
-          class="home-widget-block widget-class"
-        >
-          <HomeCollapsibleWidget
-            widget-id="class"
-            title="MAESTRÍA DE CLASE"
-            icon="🎓"
-          >
+        <div id="widget-class-missions" class="home-widget-block widget-class">
+          <HomeCollapsibleWidget widget-id="class" title="MAESTRÍA DE CLASE" icon="🎓">
             <HomeClassMissionsWidget />
           </HomeCollapsibleWidget>
         </div>
@@ -192,39 +152,18 @@ onUnmounted(() => {
 
       <!-- Columna Lateral / Widgets (Derecha en desktop) -->
       <aside class="home-column-sidebar">
-        <div
-          id="widget-buffs-section"
-          class="home-widget-block widget-buffs"
-        >
-          <HomeCollapsibleWidget
-            widget-id="buffs"
-            title="POTENCIADORES & AURAS"
-            icon="⚡"
-          >
+        <div id="widget-buffs-section" class="home-widget-block widget-buffs">
+          <HomeCollapsibleWidget widget-id="buffs" title="POTENCIADORES & AURAS" icon="⚡">
             <HomeActiveBuffsWidget />
           </HomeCollapsibleWidget>
         </div>
-        <div
-          id="widget-breeding-section"
-          class="home-widget-block widget-breeding"
-        >
-          <HomeCollapsibleWidget
-            widget-id="breeding"
-            title="EN CAMINATA & CRIANZA"
-            icon="🥚"
-          >
+        <div id="widget-breeding-section" class="home-widget-block widget-breeding">
+          <HomeCollapsibleWidget widget-id="breeding" title="EN CAMINATA & CRIANZA" icon="🥚">
             <HomeBreedingWidget />
           </HomeCollapsibleWidget>
         </div>
-        <div
-          id="widget-economy-section"
-          class="home-widget-block widget-economy"
-        >
-          <HomeCollapsibleWidget
-            widget-id="economy"
-            title="MERCADO GTS"
-            icon="🏪"
-          >
+        <div id="widget-economy-section" class="home-widget-block widget-economy">
+          <HomeCollapsibleWidget widget-id="economy" title="MERCADO GTS" icon="🏪">
             <HomeEconomyWidget />
           </HomeCollapsibleWidget>
         </div>
@@ -233,18 +172,11 @@ onUnmounted(() => {
           id="widget-black-market-section"
           class="home-widget-block widget-black-market"
         >
-          <HomeCollapsibleWidget
-            widget-id="black_market"
-            title="MERCADO NEGRO"
-            icon="🚀"
-          >
+          <HomeCollapsibleWidget widget-id="black_market" title="MERCADO NEGRO" icon="🚀">
             <HomeBlackMarketWidget />
           </HomeCollapsibleWidget>
         </div>
-        <div
-          id="widget-faction-section"
-          class="home-widget-block widget-faction"
-        >
+        <div id="widget-faction-section" class="home-widget-block widget-faction">
           <HomeCollapsibleWidget
             widget-id="faction"
             title="GUERRA TERRITORIAL DE FACCIONES"
@@ -253,15 +185,8 @@ onUnmounted(() => {
             <HomeFactionWar />
           </HomeCollapsibleWidget>
         </div>
-        <div
-          id="widget-notifications-section"
-          class="home-widget-block widget-notifications"
-        >
-          <HomeCollapsibleWidget
-            widget-id="notifications"
-            title="HISTORIAL DE ACTIVIDAD"
-            icon="🔔"
-          >
+        <div id="widget-notifications-section" class="home-widget-block widget-notifications">
+          <HomeCollapsibleWidget widget-id="notifications" title="HISTORIAL DE ACTIVIDAD" icon="🔔">
             <HomeNotificationsFeed />
           </HomeCollapsibleWidget>
         </div>
@@ -271,7 +196,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .home-view-container {
   width: 100%;

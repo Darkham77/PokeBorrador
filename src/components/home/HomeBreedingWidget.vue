@@ -1,75 +1,70 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useBreedingStore } from '@/stores/breeding'
-import { useModalStore } from '@/stores/modals'
-import EggSprite from '@/components/common/EggSprite.vue'
-import type { PokemonEgg } from '@/types/pokemon/pokemon'
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
+import { computed, onMounted } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useBreedingStore } from '@/stores/breeding';
+import { useModalStore } from '@/stores/modals';
+import EggSprite from '@/components/common/EggSprite.vue';
+import type { PokemonEgg } from '@/types/pokemon/pokemon';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
 interface Props {
-  columns?: 2 | 3
+  columns?: 2 | 3;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   columns: 2
-})
+});
 
-const gameStore = useGameStore()
-const breedingStore = useBreedingStore()
-const modalStore = useModalStore()
+const gameStore = useGameStore();
+const breedingStore = useBreedingStore();
+const modalStore = useModalStore();
 
 onMounted(() => {
-  breedingStore.loadDaycare()
-})
+  breedingStore.loadDaycare();
+});
 
-const eggs = computed<PokemonEgg[]>(() => gameStore.state.eggs ?? [])
-const warehouseCount = computed(() => breedingStore.warehouseEggs?.length || 0)
+const eggs = computed<PokemonEgg[]>(() => gameStore.state.eggs ?? []);
+const warehouseCount = computed(() => breedingStore.warehouseEggs?.length || 0);
 
 function getProgress(egg: PokemonEgg): number {
-  if (!egg.totalSteps || egg.totalSteps <= 0) return 0
-  return Math.min(100, Math.max(0, ((egg.totalSteps - egg.steps) / egg.totalSteps) * 100))
+  if (!egg.totalSteps || egg.totalSteps <= 0) return 0;
+  return Math.min(100, Math.max(0, ((egg.totalSteps - egg.steps) / egg.totalSteps) * 100));
 }
 
 function getStepsLabel(egg: PokemonEgg): string {
   if (egg.totalSteps) {
-    const walked = Math.max(0, egg.totalSteps - egg.steps)
-    return `${Math.floor(walked).toLocaleString()} / ${egg.totalSteps.toLocaleString()} pasos`
+    const walked = Math.max(0, egg.totalSteps - egg.steps);
+    return `${Math.floor(walked).toLocaleString()} / ${egg.totalSteps.toLocaleString()} pasos`;
   }
-  return `${Math.ceil(egg.steps).toLocaleString()} pasos restantes`
+  return `${Math.ceil(egg.steps).toLocaleString()} pasos restantes`;
 }
 
 function isReady(egg: PokemonEgg): boolean {
-  return egg.ready === true || egg.steps <= 0
+  return egg.ready === true || egg.steps <= 0;
 }
 
 const openDaycare = () => {
-  modalStore.open('Daycare')
-}
+  modalStore.open('Daycare');
+};
 
 const handleEggClick = (egg: PokemonEgg) => {
   if (isReady(egg)) {
-    modalStore.open('HatchAnimation', { egg })
+    modalStore.open('HatchAnimation', { egg });
   } else {
-    openDaycare()
+    openDaycare();
   }
-}
+};
 
-const isThreeColumns = computed(() => props.columns === 3)
+const isThreeColumns = computed(() => props.columns === 3);
 </script>
 
 <template>
-  <div
-    class="home-breeding-widget"
-    :class="{ 'cols-3': isThreeColumns }"
-  >
+  <div class="home-breeding-widget" :class="{ 'cols-3': isThreeColumns }">
     <!-- Header -->
     <div class="widget-header-row">
       <div class="header-left">
         <span class="emoji">🥚</span>
-        <h3 class="widget-title">
-          EN CAMINATA &amp; CRIANZA
-        </h3>
+        <h3 class="widget-title">EN CAMINATA &amp; CRIANZA</h3>
       </div>
       <div class="header-actions">
         <HomeWidgetMinimizeBtn widget-id="breeding" />
@@ -77,11 +72,7 @@ const isThreeColumns = computed(() => props.columns === 3)
     </div>
 
     <!-- Active Incubating Eggs Grid -->
-    <div
-      v-if="eggs.length > 0"
-      class="eggs-grid"
-      :class="{ 'grid-cols-3': isThreeColumns }"
-    >
+    <div v-if="eggs.length > 0" class="eggs-grid" :class="{ 'grid-cols-3': isThreeColumns }">
       <div
         v-for="egg in eggs"
         :id="`egg-hud-card-${egg.uid}`"
@@ -89,28 +80,20 @@ const isThreeColumns = computed(() => props.columns === 3)
         v-gsap-hover="'widget'"
         class="egg-hud-card"
         :class="{ 'is-ready': isReady(egg) }"
+        role="button"
+        tabindex="0"
         @click="handleEggClick(egg)"
       >
         <!-- Egg Icon -->
         <div class="egg-icon">
-          <EggSprite
-            :tint="egg.tint"
-            size="28"
-            class="egg-sprite-img"
-          />
-          <span
-            v-if="egg.isShiny"
-            class="shiny-star emoji"
-          >✨</span>
+          <EggSprite :tint="egg.tint" size="28" class="egg-sprite-img" />
+          <span v-if="egg.isShiny" class="shiny-star emoji">✨</span>
         </div>
 
         <!-- Egg Progress Body -->
         <div class="egg-body">
           <div class="egg-status-row">
-            <span
-              class="egg-status"
-              :class="{ 'status-ready': isReady(egg) }"
-            >
+            <span class="egg-status" :class="{ 'status-ready': isReady(egg) }">
               {{ isReady(egg) ? '¡LISTO PARA ECLOSIONAR!' : 'CAMINANDO' }}
             </span>
             <span class="egg-pct">{{ Math.round(getProgress(egg)) }}%</span>
@@ -139,20 +122,22 @@ const isThreeColumns = computed(() => props.columns === 3)
       id="home-breeding-widget-div-opendaycare"
       v-gsap-hover="{ scale: 1.01, y: -1 }"
       class="empty-breeding-card"
+      role="button"
+      tabindex="0"
       @click="openDaycare"
     >
       <span class="emoji empty-icon">🧺</span>
       <div class="empty-info">
         <span class="empty-title">No hay huevos en caminata</span>
         <span class="empty-sub">
-          {{ warehouseCount > 0 ? `Tienes ${warehouseCount} huevos en el almacén.` : 'Coloca una pareja en la guardería para incubar.' }}
+          {{
+            warehouseCount > 0
+              ? `Tienes ${warehouseCount} huevos en el almacén.`
+              : 'Coloca una pareja en la guardería para incubar.'
+          }}
         </span>
       </div>
-      <button
-        id="home-breeding-widget-btn-ir-a-guarder-a"
-        v-gsap-hover
-        class="empty-btn"
-      >
+      <button id="home-breeding-widget-btn-ir-a-guarder-a" v-gsap-hover class="empty-btn">
         IR A GUARDERÍA
       </button>
     </div>
@@ -160,7 +145,7 @@ const isThreeColumns = computed(() => props.columns === 3)
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .home-breeding-widget {
   display: flex;

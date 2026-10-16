@@ -1,43 +1,66 @@
 /**
  * @file vite-plugin-sass-traps.ts
  * @description Plugin de Vite para normalización automática de SASS y CSS Variables.
- * 
+ *
  * Safe Version: Explicitly ignores .module and $variable calls.
  */
 
 import fs from 'node:fs';
 
-const SASS_TRAPS = [ // no-domain: Non-domain utility collection or data structure
-  'scale', 'grayscale', 'invert', 'opacity', 'brightness', 
-  'blur', 'rotate', 'translate', 'saturate', 'drop-shadow',
-  'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix',
-  'rgba', 'rgb'
+const SASS_TRAPS = [
+  // no-domain: Non-domain utility collection or data structure
+  'scale',
+  'grayscale',
+  'invert',
+  'opacity',
+  'brightness',
+  'blur',
+  'rotate',
+  'translate',
+  'saturate',
+  'drop-shadow',
+  'translatex',
+  'translatey',
+  'translatez',
+  'skewx',
+  'skewy',
+  'matrix',
+  'rgba',
+  'rgb'
 ];
 
 export function sassTrapsFixer() {
   const fixContent = (code: string) => {
     // Regex that captures optional prefix (. or $)
-    return code.replace(/([.$])?\b([a-zA-Z0-9-]+)\(/g, (match: string, prefix: string | undefined, func: string) => {
-      // 1. If preceded by . or $, it's a SASS module or variable call. IGNORE.
-      if (prefix) return match;
+    return code.replace(
+      /([.$])?\b([a-zA-Z0-9-]+)\(/g,
+      (match: string, prefix: string | undefined, func: string) => {
+        // 1. If preceded by . or $, it's a SASS module or variable call. IGNORE.
+        if (prefix) return match;
 
-      const lowerFunc = func.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
-      if (SASS_TRAPS.includes(lowerFunc)) {
-        // 2. Capitalize traps
-        if (lowerFunc.includes('-')) {
-          return lowerFunc.split('-').map((p: string) => p.charAt(0).toUpperCase() + p.slice(1)).join('-') + '(';
+        const lowerFunc = func.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
+        if (SASS_TRAPS.includes(lowerFunc)) {
+          // 2. Capitalize traps
+          if (lowerFunc.includes('-')) {
+            return (
+              lowerFunc
+                .split('-')
+                .map((p: string) => p.charAt(0).toUpperCase() + p.slice(1))
+                .join('-') + '('
+            );
+          }
+          return lowerFunc.charAt(0).toUpperCase() + lowerFunc.slice(1) + '(';
         }
-        return lowerFunc.charAt(0).toUpperCase() + lowerFunc.slice(1) + '(';
-      }
 
-      return match;
-    });
+        return match;
+      }
+    );
   };
 
   return {
     name: 'vite-plugin-sass-traps',
     enforce: 'pre' as const,
-    
+
     transform(code: string, id: string): { code: string; map: null } | null {
       if (!id.endsWith('.scss') && !id.endsWith('.vue')) return null;
 
@@ -56,9 +79,9 @@ export function sassTrapsFixer() {
       return null;
     },
 
-    handleHotUpdate({ file, read }: { file: string, read: () => string | Promise<string> }): void {
+    handleHotUpdate({ file, read }: { file: string; read: () => string | Promise<string> }): void {
       if (!file.endsWith('.scss') && !file.endsWith('.vue')) return;
-      
+
       Promise.resolve(read()).then((content: string) => {
         let fixed: string;
         if (file.endsWith('.vue')) {
@@ -75,6 +98,5 @@ export function sassTrapsFixer() {
         }
       });
     }
-
   };
 }

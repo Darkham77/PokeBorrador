@@ -6,7 +6,7 @@ import type {
   HeuristicMoveInfo,
   HeuristicDecision,
   DamageMatchup,
-  StrategicState,
+  StrategicState
 } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
@@ -20,12 +20,12 @@ export const HEURISTIC_CONFIDENCE_SCORES = {
   GUARANTEED_OHKO: 0.95,
   RESCUE_PRIORITY_KO: 0.88,
   STANDARD_ATTACK: 0.85,
-  SETUP_MOVE: 0.80,
+  SETUP_MOVE: 0.8,
   HAZARD_REMOVAL: 0.75,
   HAZARD_SET: 0.75,
   BEST_SWITCH: 0.75,
   PIVOT_MOVE: 0.72,
-  BEST_ATTACK: 0.70,
+  BEST_ATTACK: 0.7
 } as const;
 
 const HEURISTIC_EVAL_DEFAULT_WIN_SCORE = 0;
@@ -52,10 +52,10 @@ export const HEURISTIC_THRESHOLDS = {
   STEALTH_ROCK_BASE_PERCENT: 12.5,
   SPIKES_LAYER_PERCENT: 8.3,
   BENCH_RESERVE_MIN_COUNT: 2,
-  SWITCH_WEIGHT_SAFETY: 0.40,
+  SWITCH_WEIGHT_SAFETY: 0.4,
   SWITCH_WEIGHT_OFFENSE: 0.25,
   SWITCH_WEIGHT_PRESERVATION: 0.15,
-  SWITCH_WEIGHT_HP: 0.20,
+  SWITCH_WEIGHT_HP: 0.2,
   WIN_CONDITION_HAZARD_HP_THRESHOLD: 60,
   HAZARD_DAMAGE_SIGNIFICANCE_THRESHOLD: 10,
   BENCH_HAZARD_HP_THRESHOLD: 70,
@@ -70,7 +70,7 @@ export const HEURISTIC_THRESHOLDS = {
   FULL_PERCENT: 100,
   SAFE_SWITCH_MAX_OPP_DAMAGE: 45,
   SAFE_SWITCH_MIN_MY_DAMAGE: 35,
-  SAFE_SWITCH_OUTSPEED_MIN_DAMAGE: 25,
+  SAFE_SWITCH_OUTSPEED_MIN_DAMAGE: 25
 } as const;
 
 export type SwitchEvaluationMode = 'counter' | 'faint_replacement';
@@ -82,37 +82,65 @@ export function pickBestSwitch(
   calc: HeuristicDamageCalculator,
   inference: InferenceEngine,
   oppActive: HeuristicPokemonState,
-  mode: SwitchEvaluationMode = 'counter',
+  mode: SwitchEvaluationMode = 'counter'
 ): HeuristicDecision | null {
   if (options.length === HEURISTIC_EVAL_DEFAULT_MOVE_INDEX) return null;
 
-  const scored = options.map(pokemon => {
+  const scored = options.map((pokemon) => {
     let score = HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
     const oppMoves = [...oppActive.knownMoves];
-    for (const { move } of inference.getLikelyUnrevealed(oppActive.species, HEURISTIC_THRESHOLDS.UNREVEALED_MOVE_PROBABILITY)) oppMoves.push(move);
+    for (const { move } of inference.getLikelyUnrevealed(
+      oppActive.species,
+      HEURISTIC_THRESHOLDS.UNREVEALED_MOVE_PROBABILITY
+    ))
+      oppMoves.push(move);
 
     let worstDmg = HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
     for (const mv of oppMoves) {
-      try { worstDmg = Math.max(worstDmg, calc.calcDamage(oppActive, pokemon, mv, snapshot.field).maxPercent); } catch { /* catch-ok: Hypothetical move exploration probe skip */ }
+      try {
+        worstDmg = Math.max(
+          worstDmg,
+          calc.calcDamage(oppActive, pokemon, mv, snapshot.field).maxPercent
+        );
+      } catch {
+        /* catch-ok: Hypothetical move exploration probe skip */
+      }
     }
-    score += ((HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE - worstDmg) / HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE) * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_SAFETY;
+    score +=
+      ((HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE - worstDmg) /
+        HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE) *
+      HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_SAFETY;
 
     let bestMyDmg = HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
     for (const mv of pokemon.moves) {
-      try { bestMyDmg = Math.max(bestMyDmg, calc.calcDamage(pokemon, oppActive, mv.id, snapshot.field).maxPercent); } catch { /* catch-ok: Hypothetical move exploration probe skip */ }
+      try {
+        bestMyDmg = Math.max(
+          bestMyDmg,
+          calc.calcDamage(pokemon, oppActive, mv.id, snapshot.field).maxPercent
+        );
+      } catch {
+        /* catch-ok: Hypothetical move exploration probe skip */
+      }
     }
-    score += (bestMyDmg / HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE) * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_OFFENSE;
+    score +=
+      (bestMyDmg / HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE) *
+      HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_OFFENSE;
 
-    const sackEntry = strategic.sackOrder.find(s => s.pokemon === pokemon.name);
-    const preservation = sackEntry?.preservationScore ?? HEURISTIC_THRESHOLDS.DEFAULT_PRESERVATION_SCORE_HALFWAY;
+    const sackEntry = strategic.sackOrder.find((s) => s.pokemon === pokemon.name);
+    const preservation =
+      sackEntry?.preservationScore ?? HEURISTIC_THRESHOLDS.DEFAULT_PRESERVATION_SCORE_HALFWAY;
 
     if (mode === 'counter') {
       score += preservation * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_PRESERVATION;
     } else {
-      score += (HEURISTIC_EVAL_MAX_PRESERVATION_SCORE - preservation) * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_PRESERVATION;
+      score +=
+        (HEURISTIC_EVAL_MAX_PRESERVATION_SCORE - preservation) *
+        HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_PRESERVATION;
     }
 
-    score += (pokemon.hpPercent / HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE) * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_HP;
+    score +=
+      (pokemon.hpPercent / HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE) *
+      HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_HP;
 
     return { pokemon, score };
   });
@@ -120,14 +148,19 @@ export function pickBestSwitch(
   scored.sort((a, b) => b.score - a.score);
   const best = scored[HEURISTIC_EVAL_DEFAULT_MOVE_INDEX];
   if (!best) return null;
-  const switchTeamIndex = snapshot.mySide.pokemon.findIndex(p => p.species === best.pokemon.species);
+  const switchTeamIndex = snapshot.mySide.pokemon.findIndex(
+    (p) => p.species === best.pokemon.species
+  );
 
   return {
     type: 'switch',
-    switchTeamIndex: switchTeamIndex >= HEURISTIC_EVAL_DEFAULT_MOVE_INDEX ? switchTeamIndex : HEURISTIC_THRESHOLDS.DEFAULT_FALLBACK_INDEX,
+    switchTeamIndex:
+      switchTeamIndex >= HEURISTIC_EVAL_DEFAULT_MOVE_INDEX
+        ? switchTeamIndex
+        : HEURISTIC_THRESHOLDS.DEFAULT_FALLBACK_INDEX,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.BEST_SWITCH,
-    reasoning: `Best switch-in (${mode}): ${best.pokemon.name} (score ${best.score.toFixed(2)})`,
+    reasoning: `Best switch-in (${mode}): ${best.pokemon.name} (score ${best.score.toFixed(2)})`
   };
 }
 
@@ -136,65 +169,107 @@ export function hasViableSwitchCounter(
   options: HeuristicPokemonState[],
   calc: HeuristicDamageCalculator,
   inference: InferenceEngine,
-  oppActive: HeuristicPokemonState,
+  oppActive: HeuristicPokemonState
 ): boolean {
   if (options.length === HEURISTIC_EVAL_DEFAULT_MOVE_INDEX) return false;
 
-  const oppSide = snapshot.myPlayer === 'p1' ? 'p2' as const : 'p1' as const;
+  const oppSide = snapshot.myPlayer === 'p1' ? ('p2' as const) : ('p1' as const);
   const oppMoves = [...oppActive.knownMoves];
-  for (const { move } of inference.getLikelyUnrevealed(oppActive.species, HEURISTIC_THRESHOLDS.UNREVEALED_MOVE_PROBABILITY)) {
+  for (const { move } of inference.getLikelyUnrevealed(
+    oppActive.species,
+    HEURISTIC_THRESHOLDS.UNREVEALED_MOVE_PROBABILITY
+  )) {
     oppMoves.push(move);
   }
 
-  return options.some(pokemon => {
+  return options.some((pokemon) => {
     let worstDmg = HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
     for (const mv of oppMoves) {
       try {
-        worstDmg = Math.max(worstDmg, calc.calcDamage(oppActive, pokemon, mv, snapshot.field).maxPercent);
-      } catch { /* catch-ok: Hypothetical move exploration probe skip */ }
+        worstDmg = Math.max(
+          worstDmg,
+          calc.calcDamage(oppActive, pokemon, mv, snapshot.field).maxPercent
+        );
+      } catch {
+        /* catch-ok: Hypothetical move exploration probe skip */
+      }
     }
     if (worstDmg >= HEURISTIC_THRESHOLDS.SAFE_SWITCH_MAX_OPP_DAMAGE) return false;
 
     let bestMyDmg = HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
     for (const mv of pokemon.moves) {
       try {
-        bestMyDmg = Math.max(bestMyDmg, calc.calcDamage(pokemon, oppActive, mv.id, snapshot.field).maxPercent);
-      } catch { /* catch-ok: Hypothetical move exploration probe skip */ }
+        bestMyDmg = Math.max(
+          bestMyDmg,
+          calc.calcDamage(pokemon, oppActive, mv.id, snapshot.field).maxPercent
+        );
+      } catch {
+        /* catch-ok: Hypothetical move exploration probe skip */
+      }
     }
 
     const mySpeed = calc.getEffectiveSpeed(pokemon, snapshot.field, snapshot.myPlayer);
     const oppSpeed = calc.getEffectiveSpeed(oppActive, snapshot.field, oppSide);
     const iOutspeed = mySpeed > oppSpeed;
 
-    return bestMyDmg >= HEURISTIC_THRESHOLDS.SAFE_SWITCH_MIN_MY_DAMAGE || (iOutspeed && bestMyDmg >= HEURISTIC_THRESHOLDS.SAFE_SWITCH_OUTSPEED_MIN_DAMAGE);
+    return (
+      bestMyDmg >= HEURISTIC_THRESHOLDS.SAFE_SWITCH_MIN_MY_DAMAGE ||
+      (iOutspeed && bestMyDmg >= HEURISTIC_THRESHOLDS.SAFE_SWITCH_OUTSPEED_MIN_DAMAGE)
+    );
   });
 }
 
 export function findMoveIndex(moves: HeuristicMoveInfo[], moveId: PokemonMoveId): number {
-  return moves.findIndex(m => toID(m.id) === toID(moveId) && !m.disabled && m.pp > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX);
+  return moves.findIndex(
+    (m) => toID(m.id) === toID(moveId) && !m.disabled && m.pp > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX
+  );
 }
 
-export function hazardsThreatenTeam(snapshot: HeuristicBattleSnapshot, strategic: StrategicState): boolean {
+export function hazardsThreatenTeam(
+  snapshot: HeuristicBattleSnapshot,
+  strategic: StrategicState
+): boolean {
   const hazards = snapshot.mySide.sideConditions;
   if (hazards.size === HEURISTIC_EVAL_DEFAULT_MOVE_INDEX) return false;
   const hasRocks = hazards.has('stealthrock');
   const spikeLayers = hazards.get('spikes') ?? HEURISTIC_EVAL_DEFAULT_MOVE_INDEX;
   const tSpikeLayers = hazards.get('toxicspikes') ?? HEURISTIC_EVAL_DEFAULT_MOVE_INDEX;
-  const bench = snapshot.mySide.pokemon.filter(p => !p.fainted && !p.active);
+  const bench = snapshot.mySide.pokemon.filter((p) => !p.fainted && !p.active);
   if (bench.length === HEURISTIC_EVAL_DEFAULT_MOVE_INDEX) return false;
 
   const topWC = strategic.winConditions[HEURISTIC_EVAL_DEFAULT_MOVE_INDEX];
   if (topWC) {
-    const wcPoke = bench.find(p => p.name === topWC.pokemon);
-    if (wcPoke && wcPoke.hpPercent - ((hasRocks ? HEURISTIC_THRESHOLDS.STEALTH_ROCK_BASE_PERCENT : HEURISTIC_EVAL_DEFAULT_WIN_SCORE) + spikeLayers * HEURISTIC_THRESHOLDS.SPIKES_LAYER_PERCENT) < HEURISTIC_THRESHOLDS.WIN_CONDITION_HAZARD_HP_THRESHOLD) return true;
+    const wcPoke = bench.find((p) => p.name === topWC.pokemon);
+    if (
+      wcPoke &&
+      wcPoke.hpPercent -
+        ((hasRocks
+          ? HEURISTIC_THRESHOLDS.STEALTH_ROCK_BASE_PERCENT
+          : HEURISTIC_EVAL_DEFAULT_WIN_SCORE) +
+          spikeLayers * HEURISTIC_THRESHOLDS.SPIKES_LAYER_PERCENT) <
+        HEURISTIC_THRESHOLDS.WIN_CONDITION_HAZARD_HP_THRESHOLD
+    )
+      return true;
   }
 
   let threatened = HEURISTIC_EVAL_DEFAULT_REPEATS;
   for (const p of bench) {
-    if ((hasRocks ? HEURISTIC_THRESHOLDS.STEALTH_ROCK_BASE_PERCENT : HEURISTIC_EVAL_DEFAULT_WIN_SCORE) + spikeLayers * HEURISTIC_THRESHOLDS.SPIKES_LAYER_PERCENT > HEURISTIC_THRESHOLDS.HAZARD_DAMAGE_SIGNIFICANCE_THRESHOLD && p.hpPercent < HEURISTIC_THRESHOLDS.BENCH_HAZARD_HP_THRESHOLD) threatened++;
+    if (
+      (hasRocks
+        ? HEURISTIC_THRESHOLDS.STEALTH_ROCK_BASE_PERCENT
+        : HEURISTIC_EVAL_DEFAULT_WIN_SCORE) +
+        spikeLayers * HEURISTIC_THRESHOLDS.SPIKES_LAYER_PERCENT >
+        HEURISTIC_THRESHOLDS.HAZARD_DAMAGE_SIGNIFICANCE_THRESHOLD &&
+      p.hpPercent < HEURISTIC_THRESHOLDS.BENCH_HAZARD_HP_THRESHOLD
+    )
+      threatened++;
   }
   if (threatened >= HEURISTIC_THRESHOLDS.BENCH_RESERVE_MIN_COUNT) return true;
-  if (tSpikeLayers > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX && bench.filter(p => p.status === null).length >= HEURISTIC_THRESHOLDS.BENCH_RESERVE_MIN_COUNT) return true;
+  if (
+    tSpikeLayers > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX &&
+    bench.filter((p) => p.status === null).length >= HEURISTIC_THRESHOLDS.BENCH_RESERVE_MIN_COUNT
+  )
+    return true;
   return false;
 }
 
@@ -202,15 +277,32 @@ export function shouldConsiderSwitching(
   matchup: DamageMatchup,
   strategic: StrategicState,
   switchOptions: HeuristicPokemonState[],
-  myActive: HeuristicPokemonState | null,
+  myActive: HeuristicPokemonState | null
 ): boolean {
   if (switchOptions.length === HEURISTIC_EVAL_DEFAULT_MOVE_INDEX || !myActive) return false;
-  const bestOppDmg = matchup.oppAttacking[HEURISTIC_EVAL_DEFAULT_MOVE_INDEX]?.maxPercent ?? HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
-  const bestMyDmg = matchup.myAttacking[HEURISTIC_EVAL_DEFAULT_MOVE_INDEX]?.maxPercent ?? HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
-  if (bestMyDmg > HEURISTIC_THRESHOLDS.MATCHUP_ATTACK_DAMAGE_THRESHOLD && bestOppDmg < HEURISTIC_THRESHOLDS.MATCHUP_DEFENSE_DAMAGE_THRESHOLD) return false;
-  if (myActive.boosts.atk > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX || myActive.boosts.spa > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX || myActive.boosts.spe > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX) return false;
-  if (bestOppDmg > HEURISTIC_THRESHOLDS.CRITICAL_OPPONENT_DAMAGE_THRESHOLD && bestMyDmg < HEURISTIC_THRESHOLDS.WEAK_ATTACK_DAMAGE_THRESHOLD) return true;
-   
+  const bestOppDmg =
+    matchup.oppAttacking[HEURISTIC_EVAL_DEFAULT_MOVE_INDEX]?.maxPercent ??
+    HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
+  const bestMyDmg =
+    matchup.myAttacking[HEURISTIC_EVAL_DEFAULT_MOVE_INDEX]?.maxPercent ??
+    HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
+  if (
+    bestMyDmg > HEURISTIC_THRESHOLDS.MATCHUP_ATTACK_DAMAGE_THRESHOLD &&
+    bestOppDmg < HEURISTIC_THRESHOLDS.MATCHUP_DEFENSE_DAMAGE_THRESHOLD
+  )
+    return false;
+  if (
+    myActive.boosts.atk > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX ||
+    myActive.boosts.spa > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX ||
+    myActive.boosts.spe > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX
+  )
+    return false;
+  if (
+    bestOppDmg > HEURISTIC_THRESHOLDS.CRITICAL_OPPONENT_DAMAGE_THRESHOLD &&
+    bestMyDmg < HEURISTIC_THRESHOLDS.WEAK_ATTACK_DAMAGE_THRESHOLD
+  )
+    return true;
+
   void strategic;
   return false;
 }

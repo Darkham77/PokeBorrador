@@ -8,7 +8,7 @@
  *    maintain strict data integrity with 0 schema violations.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { safeParse } from 'valibot';
@@ -89,7 +89,10 @@ describe('Event Competition Persistence & Valibot Validation Roundtrip', () => {
     };
 
     const parsedPoke = safeParse(pokemonSchema, horseaPokemon);
-    assert.ok(parsedPoke.success, `Pokemon validation failed: ${JSON.stringify(parsedPoke.issues)}`);
+    assert.ok(
+      parsedPoke.success,
+      `Pokemon validation failed: ${JSON.stringify(parsedPoke.issues)}`
+    );
 
     // 3. Validate full player save with event medal stats
     const fullSave = {
@@ -223,12 +226,18 @@ describe('Event Competition Persistence & Valibot Validation Roundtrip', () => {
     }
 
     // Query entries by event and category
-    const userEntries = db.prepare(`
+    const userEntries = db
+      .prepare(`
       SELECT * FROM competition_entries WHERE event_id = ? AND player_id = ?
-    `).all('torneo_pesca', 'user_1') as Array<{ category_id: string; pokemon_uid: string; data: string }>;
+    `)
+      .all('torneo_pesca', 'user_1') as Array<{
+      category_id: string;
+      pokemon_uid: string;
+      data: string;
+    }>;
 
     assert.equal(userEntries.length, 3);
-    const categoryIds = userEntries.map(u => u.category_id).sort();
+    const categoryIds = userEntries.map((u) => u.category_id).sort();
     assert.deepEqual(categoryIds, ['height_shellder', 'ivs', 'weight_horsea']);
 
     // Ensure PRIMARY KEY constraint works properly per canonical entry id (event_id:category_id:player_id)

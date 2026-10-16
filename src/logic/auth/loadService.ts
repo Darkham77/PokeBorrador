@@ -26,17 +26,31 @@ async function syncProfileDbVersion(user: AuthUser, db: DBRouter): Promise<void>
   if (isLocalUser) return;
 
   try {
-    const { data: profile } = await db.from('profiles').select('db_version').eq('id', user.id).single() as { data: { db_version: number } | null };
+    const { data: profile } = (await db
+      .from('profiles')
+      .select('db_version')
+      .eq('id', user.id)
+      .single()) as { data: { db_version: number } | null };
     if (profile?.db_version) {
       user.db_version = profile.db_version;
     }
   } catch (e) {
-    logger.warn('LOAD', `[loadService] Fallo al consultar db_version en profiles (red no disponible): ${(e as Error).message}`);
+    logger.warn(
+      'LOAD',
+      `[loadService] Fallo al consultar db_version en profiles (red no disponible): ${(e as Error).message}`
+    );
   }
 }
 
-async function migrateUserDbVersion(user: AuthUser, db: DBRouter, isLocalUser: boolean): Promise<void> {
-  logger.info('LOAD', `Auto-migrando usuario offline/local a v${REQUIRED_DB_VERSION} (actual: ${user.db_version || 1})`);
+async function migrateUserDbVersion(
+  user: AuthUser,
+  db: DBRouter,
+  isLocalUser: boolean
+): Promise<void> {
+  logger.info(
+    'LOAD',
+    `Auto-migrando usuario offline/local a v${REQUIRED_DB_VERSION} (actual: ${user.db_version || 1})`
+  );
   user.db_version = REQUIRED_DB_VERSION;
   if (isLocalUser) {
     safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(user));
@@ -46,7 +60,10 @@ async function migrateUserDbVersion(user: AuthUser, db: DBRouter, isLocalUser: b
     try {
       await db.from('profiles').update({ db_version: REQUIRED_DB_VERSION }).eq('id', user.id);
     } catch (e) {
-      logger.warn('LOAD', `[loadService] Fallo al actualizar db_version en profiles (red no disponible): ${(e as Error).message}`);
+      logger.warn(
+        'LOAD',
+        `[loadService] Fallo al actualizar db_version en profiles (red no disponible): ${(e as Error).message}`
+      );
     }
   }
 }
@@ -61,8 +78,13 @@ async function ensureUserDbVersion(user: AuthUser, db: DBRouter): Promise<void> 
   if (db.mode === 'offline' || isLocalUser) {
     await migrateUserDbVersion(user, db, isLocalUser);
   } else {
-    logger.error('LOAD', `La cuenta del usuario (versión ${currentVersion}) no está migrada a v3. Abortando carga.`);
-    throw new Error('La partida requiere actualización de seguridad (v3). Contacta al administrador.');
+    logger.error(
+      'LOAD',
+      `La cuenta del usuario (versión ${currentVersion}) no está migrada a v3. Abortando carga.`
+    );
+    throw new Error(
+      'La partida requiere actualización de seguridad (v3). Contacta al administrador.'
+    );
   }
 }
 
@@ -73,16 +95,20 @@ function parseSaveData(rawSaveData: unknown): GameState {
   try {
     return JSON.parse(rawSaveData) as GameState;
   } catch (e) {
-    throw new Error(`[loadService] Error al parsear JSON save_data: ${(e as Error).message}`, { cause: e });
+    throw new Error(`[loadService] Error al parsear JSON save_data: ${(e as Error).message}`, {
+      cause: e
+    });
   }
 }
 
 async function fetchDatabaseSave(user: AuthUser, db: DBRouter): Promise<CloudSaveRow | null> {
-  const isOnlineLocalUser = db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
+  const isOnlineLocalUser =
+    db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
   if (isOnlineLocalUser) return null;
 
   try {
-    const { data: saves, error } = await db.from('game_saves')
+    const { data: saves, error } = await db
+      .from('game_saves')
       .select('save_data, updated_at, last_save_id')
       .eq('user_id', user.id)
       .single();
@@ -96,12 +122,18 @@ async function fetchDatabaseSave(user: AuthUser, db: DBRouter): Promise<CloudSav
       last_save_id: (saves as { last_save_id: string }).last_save_id
     };
   } catch (e) {
-    logger.warn('LOAD', `[loadService] Fallo al consultar game_saves (red no disponible): ${(e as Error).message}`);
+    logger.warn(
+      'LOAD',
+      `[loadService] Fallo al consultar game_saves (red no disponible): ${(e as Error).message}`
+    );
     return null;
   }
 }
 
-async function loadOpfsSave(opfsKey: string, accumulatedIssues: string[]): Promise<GameState | null> {
+async function loadOpfsSave(
+  opfsKey: string,
+  accumulatedIssues: string[]
+): Promise<GameState | null> {
   try {
     const binary = await readOpfsFile(opfsKey);
     if (!binary) return null;
@@ -113,11 +145,18 @@ async function loadOpfsSave(opfsKey: string, accumulatedIssues: string[]): Promi
     }
     return null;
   } catch (e) {
-    throw new Error(`[loadService] Error reading OPFS save file: ${(e as Error).message}`, { cause: e });
+    throw new Error(`[loadService] Error reading OPFS save file: ${(e as Error).message}`, {
+      cause: e
+    });
   }
 }
 
-async function backupAndMigrateLocalStorage(userId: string, opfsKey: string, lsRaw: string, db: DBRouter): Promise<void> {
+async function backupAndMigrateLocalStorage(
+  userId: string,
+  opfsKey: string,
+  lsRaw: string,
+  db: DBRouter
+): Promise<void> {
   logger.info('LOAD', 'Migrating localStorage to OPFS...');
   const timestamp = Temporal.Now.instant().epochMilliseconds;
   const serverTime = Temporal.Now.instant().toString();
@@ -166,7 +205,10 @@ async function loadLocalStorageSave(
     await backupAndMigrateLocalStorage(user.id, opfsKey, lsRaw, db);
     return localData;
   } catch (e) {
-    throw new Error(`[loadService] Error parsing localStorage save content: ${(e as Error).message}`, { cause: e });
+    throw new Error(
+      `[loadService] Error parsing localStorage save content: ${(e as Error).message}`,
+      { cause: e }
+    );
   }
 }
 
@@ -224,8 +266,14 @@ async function validateLoadedSave(
   const validationResult = await processSaveInWorker({ rawObject: saveData });
   const { data: sanitized, valid, issues, error: validationError } = validationResult;
   if (!valid || !sanitized) {
-    logger.error('LOAD', 'Error crítico de validación al cargar partida:', validationError || issues);
-    throw new Error(`Carga abortada por datos corruptos o inválidos: ${validationError || issues.join(', ')}`);
+    logger.error(
+      'LOAD',
+      'Error crítico de validación al cargar partida:',
+      validationError || issues
+    );
+    throw new Error(
+      `Carga abortada por datos corruptos o inválidos: ${validationError || issues.join(', ')}`
+    );
   }
   if (issues?.length) {
     accumulatedIssues.push(...issues);
@@ -258,4 +306,3 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
     isNewerThanCloud: false
   };
 }
-

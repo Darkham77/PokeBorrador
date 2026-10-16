@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useDebugStore } from '@/stores/debug'
+import { ref, computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useDebugStore } from '@/stores/debug';
 
-interface ViteDebugBridge extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
+interface ViteDebugBridge extends Record<string, unknown> {
+  // open-record: Generic key-value data dictionary container
   setClassLevel: (val: number) => void;
   setReputation: (val: number) => void;
   setPlayerClass: (cls: string) => void;
@@ -11,26 +12,26 @@ interface ViteDebugBridge extends Record<string, unknown> { // open-record: Gene
   toggleFastRankedDelay?: () => boolean;
 }
 
-const game = useGameStore()
-const debugStore = useDebugStore()
+const game = useGameStore();
+const debugStore = useDebugStore();
 
-const debugClassLevel = ref(game.state.classLevel || 1)
-const debugReputation = ref(game.state.classData?.reputation || 0)
+const debugClassLevel = ref(game.state.classLevel || 1);
+const debugReputation = ref(game.state.classData?.reputation || 0);
 
-const isFastRanked = computed(() => debugStore.fastRankedDelay)
+const isFastRanked = computed(() => debugStore.fastRankedDelay);
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge
+const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge;
 
-const setClassLevel = () => getDebugBridge().setClassLevel(debugClassLevel.value)
-const setReputation = () => getDebugBridge().setReputation(debugReputation.value)
+const setClassLevel = () => getDebugBridge().setClassLevel(debugClassLevel.value);
+const setReputation = () => getDebugBridge().setReputation(debugReputation.value);
 function setPlayerClass(c: string) {
-  getDebugBridge().setPlayerClass(c)
+  getDebugBridge().setPlayerClass(c);
 }
 function clearClassCooldowns() {
-  getDebugBridge().clearClassCooldowns()
+  getDebugBridge().clearClassCooldowns();
 }
 function toggleFastRanked() {
-  debugStore.fastRankedDelay = !debugStore.fastRankedDelay
+  debugStore.fastRankedDelay = !debugStore.fastRankedDelay;
 }
 </script>
 
@@ -68,7 +69,9 @@ function toggleFastRanked() {
     <div class="debug-card">
       <label>Cooldowns de Clases</label>
       <div class="button-row">
-        <PVTooltip title="Elimina todos los cooldowns de clases (Rutas preferidas, Extorsión, Escáner IVs, etc.), Centro Pokémon y perfil">
+        <PVTooltip
+          title="Elimina todos los cooldowns de clases (Rutas preferidas, Extorsión, Escáner IVs, etc.), Centro Pokémon y perfil"
+        >
           <button
             id="debug-class-tab-btn-eliminar-cooldowns"
             class="btn-vicio-danger btn-vicio-sm"
@@ -87,14 +90,10 @@ function toggleFastRanked() {
           id="debug-class-tab-input-debugclasslevel"
           v-model="debugClassLevel"
           type="number"
-        >
+          aria-label="Nivel Clase"
+        />
         <PVTooltip title="Establece tu nivel de la clase activa.">
-          <button
-            id="debug-class-tab-btn-fijar"
-            @click.stop="setClassLevel"
-          >
-            FIJAR
-          </button>
+          <button id="debug-class-tab-btn-fijar" @click.stop="setClassLevel">FIJAR</button>
         </PVTooltip>
       </div>
     </div>
@@ -106,14 +105,10 @@ function toggleFastRanked() {
           id="debug-class-tab-input-debugreputation"
           v-model="debugReputation"
           type="number"
-        >
+          aria-label="Reputación"
+        />
         <PVTooltip title="Establece tu reputación (clase Entrenador).">
-          <button
-            id="debug-class-tab-btn-fijar-2"
-            @click.stop="setReputation"
-          >
-            FIJAR
-          </button>
+          <button id="debug-class-tab-btn-fijar-2" @click.stop="setReputation">FIJAR</button>
         </PVTooltip>
       </div>
     </div>
@@ -121,7 +116,9 @@ function toggleFastRanked() {
     <div class="debug-card">
       <label>Demora Entrada a Ranked</label>
       <div class="button-row">
-        <PVTooltip title="Alterna la demora para entrar a Ranked entre 5s (rápido para pruebas) y 60s (normal).">
+        <PVTooltip
+          title="Alterna la demora para entrar a Ranked entre 5s (rápido para pruebas) y 60s (normal)."
+        >
           <button
             id="debug-class-tab-btn-1"
             class="small-btn"
@@ -138,7 +135,7 @@ function toggleFastRanked() {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/debug";
+@use '@/styles/components/debug';
 
 .uppercase-btn {
   text-transform: uppercase;

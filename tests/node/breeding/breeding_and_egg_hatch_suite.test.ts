@@ -4,7 +4,7 @@
  * Consolidated Suite for Daycare Warehouse Persistence, Egg Natures, Moves Inheritance, and Debug Hatching.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { DatabaseSync } from 'node:sqlite';
 import { setActivePinia, createPinia } from 'pinia';
 import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
@@ -182,7 +182,9 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
         ]
       };
 
-      db.prepare('INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)').run(
+      db.prepare(
+        'INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)'
+      ).run(
         'kenviota_test_id',
         JSON.stringify(unmigratedSave),
         'save_kenviota_1',
@@ -194,7 +196,9 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
         trainer: 'kenviota_server_franco',
         daycareWarehouse: undefined
       };
-      db.prepare('INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)').run(
+      db.prepare(
+        'INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)'
+      ).run(
         'kenviota_missing_wh_id',
         JSON.stringify(saveWithMissingWarehouse),
         'save_kenviota_2',
@@ -207,7 +211,9 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
         }
       }
 
-      const row1 = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get('kenviota_test_id') as { save_data: string };
+      const row1 = db
+        .prepare('SELECT save_data FROM game_saves WHERE user_id = ?')
+        .get('kenviota_test_id') as { save_data: string };
       const migrated1 = JSON.parse(row1.save_data);
 
       expect(migrated1.eggs[0].nature).toBe('serious');
@@ -229,7 +235,9 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
       expect(hatched2).not.toBeNull();
       expect(hatched2?.nature).toBe('adamant');
 
-      const row2 = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get('kenviota_missing_wh_id') as { save_data: string };
+      const row2 = db
+        .prepare('SELECT save_data FROM game_saves WHERE user_id = ?')
+        .get('kenviota_missing_wh_id') as { save_data: string };
       const migrated2 = JSON.parse(row2.save_data);
       expect(Array.isArray(migrated2.daycareWarehouse)).toBe(true);
       expect(migrated2.daycareWarehouse.length).toBe(0);
@@ -268,14 +276,32 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
         id: 'stonjourner',
         level: 50,
         moves: [
-          { id: 'wideguard', name: 'Vastaguardia', pp: 10, maxPP: 10, type: 'rock', power: 0, acc: 100, cat: 'status' }
+          {
+            id: 'wideguard',
+            name: 'Vastaguardia',
+            pp: 10,
+            maxPP: 10,
+            type: 'rock',
+            power: 0,
+            acc: 100,
+            cat: 'status'
+          }
         ]
       };
       const pB: Partial<Pokemon> = {
         id: 'stonjourner',
         level: 50,
         moves: [
-          { id: 'wideguard', name: 'Vastaguardia', pp: 10, maxPP: 10, type: 'rock', power: 0, acc: 100, cat: 'status' }
+          {
+            id: 'wideguard',
+            name: 'Vastaguardia',
+            pp: 10,
+            maxPP: 10,
+            type: 'rock',
+            power: 0,
+            acc: 100,
+            cat: 'status'
+          }
         ]
       };
 
@@ -349,7 +375,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
       const hatched = await breedingActions.executeHatch(egg);
       expect(hatched).toBeDefined();
       expect(hatched.id).toBe('stonjourner');
-      expect(hatched.moves.some(m => m?.id === 'wideguard')).toBe(true);
+      expect(hatched.moves.some((m) => m?.id === 'wideguard')).toBe(true);
     });
 
     it('validates and sanitizes save data containing unreleased Pokemon when debug mode is active', () => {
@@ -403,7 +429,7 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
 
       const result = validateAndSanitize(validBaseSave);
       expect(result.valid).toBe(true);
-      if (result.valid) {
+      if (result.valid && result.data) {
         expect(result.data.team?.[0]?.id).toBe('stonjourner');
         expect((result.data.team?.[0] as Pokemon)?.isIllegal).toBeFalsy();
       }
@@ -421,7 +447,9 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
       expect(() => toNatureId('Firme')).toThrow("[natures] Invalid NatureId: 'Firme'");
       expect(() => toNatureId('Tímido')).toThrow("[natures] Invalid NatureId: 'Tímido'");
       expect(() => toNatureId('serio')).toThrow("[natures] Invalid NatureId: 'serio'");
-      expect(() => toNatureId('invalid_nature')).toThrow("[natures] Invalid NatureId: 'invalid_nature'");
+      expect(() => toNatureId('invalid_nature')).toThrow(
+        "[natures] Invalid NatureId: 'invalid_nature'"
+      );
     });
 
     it('should create DaycareEgg and PokemonEgg strictly with canonical NatureIds', () => {
@@ -508,7 +536,9 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
         starterChosen: true
       };
 
-      db.prepare('INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)').run(
+      db.prepare(
+        'INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)'
+      ).run(
         'user_nature_test',
         JSON.stringify(mockSaveWithSpanishNatures),
         'save_nature_1',
@@ -521,7 +551,9 @@ describe('Breeding Domain: Warehouse Persistence, Egg Natures & Hatching Suite',
         }
       }
 
-      const row = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get('user_nature_test') as { save_data: string };
+      const row = db
+        .prepare('SELECT save_data FROM game_saves WHERE user_id = ?')
+        .get('user_nature_test') as { save_data: string };
       const migratedSave = JSON.parse(row.save_data);
 
       expect(migratedSave.eggs[0].nature).toBe('serious');

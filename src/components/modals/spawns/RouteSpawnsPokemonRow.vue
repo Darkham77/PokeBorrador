@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/modals/spawns/RouteSpawnsPokemonRow.vue
- * 
+ *
  * Atomic row representation for route spawn Pokémon list.
  */
 
@@ -83,6 +83,8 @@ function handleClick() {
 <template>
   <div
     id="route-spawns-pokemon-row-div-click"
+    role="button"
+    tabindex="0"
     class="report-row"
     :class="[poke.statusClass, { 'is-unseen': !poke.isSeen }]"
     :style="{ cursor: poke.isSeen ? 'pointer' : 'default' }"
@@ -97,49 +99,28 @@ function handleClick() {
           :alt="poke.isSeen ? poke.name : 'Pokémon desconocido'"
           class="mini-sprite"
           :class="{ 'spawn-silhouette': !poke.isCaught }"
-        
           width="32"
           height="32"
-        >
-        <div
-          v-else
-          class="unknown-placeholder"
-        >
-          ?
-        </div>
+        />
+        <div v-else class="unknown-placeholder">?</div>
       </div>
       <div class="poke-name-wrap">
         <span class="poke-name">{{ poke.name }}</span>
-        <span
-          v-if="!poke.isSeen"
-          class="unseen-tag"
-        >? NO VISTO</span>
+        <span v-if="!poke.isSeen" class="unseen-tag">? NO VISTO</span>
       </div>
     </div>
 
     <!-- Types -->
     <div class="col-types row-cell flex-align">
       <template v-if="poke.isSeen && poke.types.length">
-        <PokemonTypeTag
-          v-for="t in poke.types"
-          :key="t"
-          :type="toPokemonType(t)"
-          size="ssm"
-        />
+        <PokemonTypeTag v-for="t in poke.types" :key="t" :type="toPokemonType(t)" size="ssm" />
       </template>
-      <span
-        v-else
-        class="hidden-info-placeholder"
-      >???</span>
+      <span v-else class="hidden-info-placeholder">???</span>
     </div>
 
     <!-- Spawn Status Type -->
     <div class="col-type row-cell flex-align">
-      <PVTooltip
-        v-if="getStatusTooltip"
-        :title="tooltipInfo.title"
-        :description="tooltipInfo.desc"
-      >
+      <PVTooltip v-if="getStatusTooltip" :title="tooltipInfo.title" :description="tooltipInfo.desc">
         <span :class="['status-tag', poke.statusClass]">
           {{ statusTagLabel }}
         </span>
@@ -155,24 +136,15 @@ function handleClick() {
 
     <!-- Probability -->
     <div class="col-prob row-cell flex-align">
-      <RouteSpawnsProbabilityBar
-        :poke="poke"
-        :get-spawn-tooltip="getSpawnTooltip"
-      />
+      <RouteSpawnsProbabilityBar :poke="poke" :get-spawn-tooltip="getSpawnTooltip" />
     </div>
 
     <!-- Base Stats -->
     <div class="col-stats row-cell flex-align text-center">
-      <span
-        v-if="poke.isSeen"
-        class="stat-total-value"
-      >
+      <span v-if="poke.isSeen" class="stat-total-value">
         {{ poke.totalStats }}
       </span>
-      <span
-        v-else
-        class="hidden-info-placeholder"
-      >???</span>
+      <span v-else class="hidden-info-placeholder">???</span>
     </div>
   </div>
 </template>

@@ -22,7 +22,9 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
 
   beforeAll(() => {
     const registryPath = path.resolve('test_aventura/assets/tiles_registry.json');
-    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(true);
+    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(
+      true
+    );
     const raw = fs.readFileSync(registryPath, 'utf-8');
     registryData = JSON.parse(raw) as TilesRegistryJson;
 
@@ -38,7 +40,9 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
   });
 
   it('ensures every tile has valid deterministic metadata and paths', () => {
-    const validSources = new Set(['firered', 'emerald', 'ruby_sapphire', 'structures']);
+    const VALID_SOURCES = ['firered', 'emerald', 'ruby_sapphire', 'structures'] as const;
+    type ValidSource = (typeof VALID_SOURCES)[number];
+    const VALID_SOURCES_SET: ReadonlySet<ValidSource> = new Set(VALID_SOURCES);
 
     // Build directory cache once O(1) to avoid 116k disk stat calls
     const tilesDir = path.resolve('test_aventura', 'assets', 'tiles');
@@ -54,60 +58,63 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
 
     for (const tile of registryData.tiles) {
       expect(tile.id).toBeTruthy();
-      expect(validSources.has(tile.source)).toBe(true);
+      expect(VALID_SOURCES_SET.has(tile.source as ValidSource)).toBe(true);
       expect(tile.dimensions.width).toBe(16);
       expect(tile.dimensions.height).toBe(16);
       expect(tile.file_path.startsWith('/assets/tiles/')).toBe(true);
       expect(tile.tags.length).toBeGreaterThan(0);
 
       // Verify file exists on disk via cached set
-      expect(existingRelativePaths.has(tile.file_path), `Tile file must exist on disk: ${tile.file_path}`).toBe(true);
+      expect(
+        existingRelativePaths.has(tile.file_path),
+        `Tile file must exist on disk: ${tile.file_path}`
+      ).toBe(true);
     }
   });
 
   it('retrieves tiles by category with O(1) performance', () => {
     const elevations = defaultTilesRegistry.getTilesByCategory('elevation');
     expect(elevations.length).toBeGreaterThan(0);
-    expect(elevations.every(t => t.category === 'elevation')).toBe(true);
-    expect(elevations.every(t => t.collision === true)).toBe(true);
+    expect(elevations.every((t) => t.category === 'elevation')).toBe(true);
+    expect(elevations.every((t) => t.collision === true)).toBe(true);
 
     const terrain = defaultTilesRegistry.getTilesByCategory('terrain');
     expect(terrain.length).toBeGreaterThan(0);
-    expect(terrain.every(t => t.category === 'terrain')).toBe(true);
-    expect(terrain.every(t => t.collision === false)).toBe(true);
+    expect(terrain.every((t) => t.category === 'terrain')).toBe(true);
+    expect(terrain.every((t) => t.collision === false)).toBe(true);
 
     const water = defaultTilesRegistry.getTilesByCategory('water');
     expect(water.length).toBeGreaterThan(0);
-    expect(water.every(t => t.category === 'water')).toBe(true);
-    expect(water.every(t => t.collision === 'water')).toBe(true);
+    expect(water.every((t) => t.category === 'water')).toBe(true);
+    expect(water.every((t) => t.collision === 'water')).toBe(true);
 
     const vegetation = defaultTilesRegistry.getTilesByCategory('vegetation');
     expect(vegetation.length).toBeGreaterThan(0);
-    expect(vegetation.every(t => t.category === 'vegetation')).toBe(true);
+    expect(vegetation.every((t) => t.category === 'vegetation')).toBe(true);
 
     const structures = defaultTilesRegistry.getTilesByCategory('structures');
     expect(structures.length).toBeGreaterThan(0);
-    expect(structures.every(t => t.category === 'structures')).toBe(true);
+    expect(structures.every((t) => t.category === 'structures')).toBe(true);
 
     const props = defaultTilesRegistry.getTilesByCategory('objects_props');
     expect(props.length).toBeGreaterThan(0);
-    expect(props.every(t => t.category === 'objects_props')).toBe(true);
+    expect(props.every((t) => t.category === 'objects_props')).toBe(true);
   });
 
   it('retrieves tiles by tag and applies filter options accurately', () => {
     const mountainTiles = getTilesByTag('mountain');
     expect(mountainTiles.length).toBeGreaterThan(0);
-    expect(mountainTiles.every(t => t.tags.includes('mountain'))).toBe(true);
+    expect(mountainTiles.every((t) => t.tags.includes('mountain'))).toBe(true);
 
     // Tag + Category Filter
     const cliffElevation = getTilesByTag('cliff', { category: 'elevation' });
     expect(cliffElevation.length).toBeGreaterThan(0);
-    expect(cliffElevation.every(t => t.category === 'elevation')).toBe(true);
+    expect(cliffElevation.every((t) => t.category === 'elevation')).toBe(true);
 
     // Filter by Collision
     const solidOnly = getTilesByTag('firered', { collision: true });
     expect(solidOnly.length).toBeGreaterThan(0);
-    expect(solidOnly.every(t => t.collision === true)).toBe(true);
+    expect(solidOnly.every((t) => t.collision === true)).toBe(true);
   });
 
   it('looks up tiles by deterministic ID in O(1)', () => {
@@ -154,17 +161,19 @@ describe('Canonical Tiles Registry API (SSoT v2.0)', () => {
       expect(all.length).toBeGreaterThan(0);
 
       // Filtering with the catalog logic
-      const fireredStructures = all.filter(t =>
-        t.source === 'firered' ||
-        t.tags.includes('firered') ||
-        t.tags.some(tag => tag.startsWith('firered'))
+      const fireredStructures = all.filter(
+        (t) =>
+          t.source === 'firered' ||
+          t.tags.includes('firered') ||
+          t.tags.some((tag) => tag.startsWith('firered'))
       );
       expect(fireredStructures.length).toBeGreaterThan(0);
 
-      const emeraldStructures = all.filter(t =>
-        t.source === 'emerald' ||
-        t.tags.includes('emerald') ||
-        t.tags.some(tag => tag.startsWith('emerald'))
+      const emeraldStructures = all.filter(
+        (t) =>
+          t.source === 'emerald' ||
+          t.tags.includes('emerald') ||
+          t.tags.some((tag) => tag.startsWith('emerald'))
       );
       expect(emeraldStructures.length).toBeGreaterThan(0);
     }

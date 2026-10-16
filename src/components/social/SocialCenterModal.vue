@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui'
+import { useUIStore } from '@/stores/ui';
 
 import { ref, onMounted, watch, computed } from 'vue';
 import { useSocialStore } from '@/stores/social/social';
@@ -26,18 +26,22 @@ const socialStore = useSocialStore();
 const gameStore = useGameStore();
 const tradeStore = useTradeStore();
 
-const tradeClaimsCount = computed(() =>
-  (gameStore.state.claimQueue ?? []).filter(
-    (c: ClaimItem) => c.source_type === 'trade' || c.source_type === 'trade_refund'
-  ).length
+const tradeClaimsCount = computed(
+  () =>
+    (gameStore.state.claimQueue ?? []).filter(
+      (c: ClaimItem) => c.source_type === 'trade' || c.source_type === 'trade_refund'
+    ).length
 );
 
 const activeTab = ref(props.initialTab === 'claims' ? 'trades' : props.initialTab);
 const bodyRef = ref<HTMLElement | null>(null);
 
-watch(() => props.initialTab, (val) => {
-  if (val) activeTab.value = val === 'claims' ? 'trades' : val;
-});
+watch(
+  () => props.initialTab,
+  (val) => {
+    if (val) activeTab.value = val === 'claims' ? 'trades' : val;
+  }
+);
 
 watch(activeTab, () => {
   if (bodyRef.value) {
@@ -45,12 +49,12 @@ watch(activeTab, () => {
   }
 });
 
-const ui = useUIStore()
-const isSmallScreen = computed(() => ui.isSmallScreen)
+const ui = useUIStore();
+const isSmallScreen = computed(() => ui.isSmallScreen);
 
 const emit = defineEmits<{
-  close: []
-}>()
+  close: [];
+}>();
 
 onMounted(() => {
   socialStore.loadSocialData();
@@ -91,61 +95,53 @@ onMounted(() => {
 
     <div class="social-modal-content-inner">
       <nav class="modal-tabs">
-        <button 
+        <button
           v-gsap-hover
-          :class="{ active: activeTab === 'friends' }" 
+          :class="{ active: activeTab === 'friends' }"
           @click.stop="activeTab = 'friends'"
         >
           AMIGOS
-          <span
-            v-if="socialStore.notifications.chats > 0"
-            class="hud-notification-badge"
-          >{{ socialStore.notifications.chats }}</span>
-          <span
-            v-else-if="socialStore.friends.length"
-            class="badge-mini"
-          >{{ socialStore.friends.length }}</span>
+          <span v-if="socialStore.notifications.chats > 0" class="hud-notification-badge">{{
+            socialStore.notifications.chats
+          }}</span>
+          <span v-else-if="socialStore.friends.length" class="badge-mini">{{
+            socialStore.friends.length
+          }}</span>
         </button>
-        <button 
+        <button
           v-gsap-hover
-          :class="{ active: activeTab === 'requests' }" 
+          :class="{ active: activeTab === 'requests' }"
           @click.stop="activeTab = 'requests'"
         >
           SOLICITUDES
-          <span
-            v-if="socialStore.notifications.friends > 0"
-            class="hud-notification-badge"
-          >{{ socialStore.notifications.friends }}</span>
+          <span v-if="socialStore.notifications.friends > 0" class="hud-notification-badge">{{
+            socialStore.notifications.friends
+          }}</span>
         </button>
-        <button 
+        <button
           v-gsap-hover
-          :class="{ active: activeTab === 'search' }" 
+          :class="{ active: activeTab === 'search' }"
           @click.stop="activeTab = 'search'"
         >
           BUSCAR
         </button>
-        <button 
+        <button
           v-gsap-hover
-          :class="{ active: activeTab === 'trades' }" 
+          :class="{ active: activeTab === 'trades' }"
           @click.stop="activeTab = 'trades'"
         >
           INTERCAMBIOS
           <span
-            v-if="(tradeStore.pendingCount + tradeClaimsCount) > 0"
+            v-if="tradeStore.pendingCount + tradeClaimsCount > 0"
             class="hud-notification-badge"
-          >{{ tradeStore.pendingCount + tradeClaimsCount }}</span>
+            >{{ tradeStore.pendingCount + tradeClaimsCount }}</span
+          >
         </button>
       </nav>
 
-      <div
-        ref="bodyRef"
-        class="modal-body custom-scrollbar"
-      >
+      <div ref="bodyRef" class="modal-body custom-scrollbar">
         <!-- TABS: FRIENDS -->
-        <SocialFriendsTab 
-          v-if="activeTab === 'friends'" 
-          @search-tab="activeTab = 'search'"
-        />
+        <SocialFriendsTab v-if="activeTab === 'friends'" @search-tab="activeTab = 'search'" />
 
         <!-- TABS: REQUESTS -->
         <SocialRequestsTab v-if="activeTab === 'requests'" />
@@ -161,8 +157,8 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .social-modal-header {
   @include shop-header;
@@ -177,8 +173,8 @@ onMounted(() => {
 
     .stat-node {
       @include shop-header-stat(var(--purple-light));
-      
-      &.level .value { 
+
+      &.level .value {
         color: var(--purple-light);
         text-shadow: 0 0 15px Rgb(192 132 252 / 25%);
       }
@@ -205,7 +201,7 @@ onMounted(() => {
 
   button {
     @include pixelated;
-    
+
     position: relative;
     padding: 12px 6px;
     border: 1px solid Rgb(255 255 255 / 5%);
@@ -229,7 +225,6 @@ onMounted(() => {
       color: var(--purple-light);
       border-color: Rgb(168 85 247 / 30%);
       box-shadow: var(--shadow-card);
-
     }
 
     .badge-mini {
@@ -274,13 +269,13 @@ onMounted(() => {
   padding: 60px 20px;
   color: Rgb(148 163 184 / 70%);
   text-align: center;
-  
+
   .icon {
     font-size: var(--font-40);
     margin-bottom: 15px;
     filter: Drop-Shadow(0 0 12px Rgb(168 85 247 / 20%));
   }
-  
+
   p {
     font-size: var(--font-14);
     margin-bottom: 0;

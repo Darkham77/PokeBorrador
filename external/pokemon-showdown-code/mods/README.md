@@ -31,11 +31,11 @@ This package contains data and logic for several mods:
   Sun and Ultra Moon)
 - `gen7letsgo`: A mod on top of Generation 7 which implements Let's Go Pikachu and Let's Go Eevee
 - `gen8dlc1`: A mod on top of Generation 8 which contains data from just Pokémon Sword and Shield
-   and the Isle of Armor DLC (ie. Generation 8 **without** the data from the Crown Tundra DLC)
+  and the Isle of Armor DLC (ie. Generation 8 **without** the data from the Crown Tundra DLC)
 - `gen9dlc1`: A mod on top of Generation 9 which contains data from just Pokémon Scarlet and Violet
   (ie. Generation 9 **without** the data from the Teal Mask or the Indigo Disk DLC)
 - `gen9dlc1`: A mod on top of Generation 9 which contains data from just Pokémon Scarlet and Violet
-   and the Teal Mask DLC (ie. Generation 9 **without** the data from the Indigo Disk DLC)
+  and the Teal Mask DLC (ie. Generation 9 **without** the data from the Indigo Disk DLC)
 - `champions`: A mod on top of Generation 9 which contains the data and logic for Pokémon Champions
 - `championsregma`: A mod on top of Generation 9 which applies the Regulation M-A restrictions to
   Pokémon Champions data
@@ -50,9 +50,9 @@ in slightly less ergonomic usage than would be desirable.
 > generations as their data is required for correct moveset validation.
 
 ```ts
-import {Dex, ID, ModData} from '@pkmn/dex'; // '@pkmn/sim'
+import { Dex, ID, ModData } from '@pkmn/dex'; // '@pkmn/sim'
 
-const dex = Dex.mod('gen7sm' as ID, await import('@pkmn/mods/gen7sm') as ModData);
+const dex = Dex.mod('gen7sm' as ID, (await import('@pkmn/mods/gen7sm')) as ModData);
 ```
 
 The TypeScript compiler may require special configuration to be able to directly import a
@@ -63,7 +63,7 @@ subdirectory of the main `@pkmn/mods` package - see the
 
 ```json
 {
- "compilerOptions": {
+  "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@pkmn/mods/*": ["node_modules/@pkmn/mods/build/*"]

@@ -1,7 +1,7 @@
-import { gameBus } from '@/logic/events/gameBus'
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
-const ESCAPE_ANIMATION_FALLBACK_DELAY_MS = 800
-import type { BattleContext } from '@/types/battle/battleContext'
+import { gameBus } from '@/logic/events/gameBus';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+const ESCAPE_ANIMATION_FALLBACK_DELAY_MS = 800;
+import type { BattleContext } from '@/types/battle/battleContext';
 
 type ActiveBattleRef = NonNullable<BattleContext['activeBattle']['value']>;
 
@@ -13,7 +13,11 @@ function checkEscapePreconditions(active: ActiveBattleRef | null): string | null
   if (active.isTrainer || active.isGym) {
     return '¡No puedes huir de un combate de entrenador!';
   }
-  if (isPokemonLocked(active.player) || active.player?.trapped || active.player?.volatileCounters?.['partiallytrapped']) {
+  if (
+    isPokemonLocked(active.player) ||
+    active.player?.trapped ||
+    active.player?.volatileCounters?.['partiallytrapped']
+  ) {
     return '¡No puedes huir mientras estás ejecutando un movimiento bloqueado o atrapado!';
   }
   return null;
@@ -27,7 +31,12 @@ async function handlePreCombatFlee(ctx: BattleContext, active: ActiveBattleRef):
   await ctx.endBattle(false, true);
 }
 
-async function handleSuccessfulFlee(ctx: BattleContext, active: ActiveBattleRef, p: NonNullable<ActiveBattleRef['player']>, e: NonNullable<ActiveBattleRef['enemy']>): Promise<void> {
+async function handleSuccessfulFlee(
+  ctx: BattleContext,
+  active: ActiveBattleRef,
+  p: NonNullable<ActiveBattleRef['player']>,
+  e: NonNullable<ActiveBattleRef['enemy']>
+): Promise<void> {
   ctx.addLog('¡Escapaste sin problemas!', 'log-info', 'player');
   await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS);
   await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POKEMON_RECALL);
@@ -55,7 +64,12 @@ async function handleSuccessfulFlee(ctx: BattleContext, active: ActiveBattleRef,
   await ctx.endBattle(false, true);
 }
 
-async function executeEnemyRetaliationTurn(ctx: BattleContext, active: ActiveBattleRef, p: NonNullable<ActiveBattleRef['player']>, e: NonNullable<ActiveBattleRef['enemy']>): Promise<void> {
+async function executeEnemyRetaliationTurn(
+  ctx: BattleContext,
+  active: ActiveBattleRef,
+  p: NonNullable<ActiveBattleRef['player']>,
+  e: NonNullable<ActiveBattleRef['enemy']>
+): Promise<void> {
   const { decideEnemyMove } = await import('./ai/battleAI.ts');
   const isWild = !active.isTrainer && !active.isGym;
   let enemyMove = decideEnemyMove(e, p, ctx.playerStages.value, isWild, ctx);
@@ -74,7 +88,7 @@ async function executeEnemyRetaliationTurn(ctx: BattleContext, active: ActiveBat
     await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.APPLY_MOVE);
 
     const cleanLogs = filterShowdownLogs(result.logs);
-    const filteredLogs = cleanLogs.filter(line => {
+    const filteredLogs = cleanLogs.filter((line) => {
       if (line.startsWith('|move|p1a:')) return false;
       if (line.startsWith('|cant|p1a:')) return false;
       if (line.startsWith('|-damage|p1a:') && line.includes('[from] recoil')) return false;
@@ -91,7 +105,12 @@ async function executeEnemyRetaliationTurn(ctx: BattleContext, active: ActiveBat
   }
 }
 
-async function handleFailedFlee(ctx: BattleContext, active: ActiveBattleRef, p: NonNullable<ActiveBattleRef['player']>, e: NonNullable<ActiveBattleRef['enemy']>): Promise<void> {
+async function handleFailedFlee(
+  ctx: BattleContext,
+  active: ActiveBattleRef,
+  p: NonNullable<ActiveBattleRef['player']>,
+  e: NonNullable<ActiveBattleRef['enemy']>
+): Promise<void> {
   active.escapeAttempts = (active.escapeAttempts || 0) + 1;
   ctx.addLog('¡No pudiste escapar!', 'log-info', 'player');
   gameBus.emit('PLAY_CRY', { name: e.id });
@@ -101,7 +120,10 @@ async function handleFailedFlee(ctx: BattleContext, active: ActiveBattleRef, p: 
   if (ctx.activeBattle.value?.over) {
     if (ctx.activeBattle.value.fled) {
       ctx.classStore?.onCaptureFail?.();
-      await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM);
+      await ctx.fsm.transition(
+        ctx.BATTLE_STATES.ACTIVE_BATTLE,
+        ctx.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM
+      );
       if (ctx.animations?.awaitTween) {
         await ctx.animations.awaitTween('escape-enemy');
       } else {
@@ -116,13 +138,20 @@ async function handleFailedFlee(ctx: BattleContext, active: ActiveBattleRef, p: 
   await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.EVAL_HP);
 
   if (ctx.activeBattle.value?.player && ctx.activeBattle.value.player.hp <= 0) {
-    await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.PLAYER_FAINT_SEQ);
+    await ctx.fsm.transition(
+      ctx.BATTLE_STATES.ACTIVE_BATTLE,
+      ctx.BATTLE_SUBSTATES.PLAYER_FAINT_SEQ
+    );
     await ctx.handleFaint('player');
     return;
   }
 
-  if (ctx.activeBattle.value && !ctx.activeBattle.value.over && ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE) {
-    ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT);
+  if (
+    ctx.activeBattle.value &&
+    !ctx.activeBattle.value.over &&
+    ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE
+  ) {
+    void ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT);
   }
 }
 

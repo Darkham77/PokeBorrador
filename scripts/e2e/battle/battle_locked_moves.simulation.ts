@@ -8,74 +8,92 @@ class LockedMovesSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupLockedMoveScenario(pokemonId: string, moveIds: string[]): Promise<void> {
-    await this.page.evaluate(async ({ pokemonId, moveIds }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider.ts');
+    await this.page.evaluate(
+      async ({ pokemonId, moveIds }) => {
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { pokemonDataProvider } =
+          await import('../../../src/logic/providers/pokemonDataProvider.ts');
 
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
+        const gameStore = useGameStore();
+        const battleStore = useBattleStore();
 
-      const { requirePokemonMoveId } = await import('../../../src/data/battle/moves.ts');
-      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-      const { toID } = await import('../../../src/logic/utils/strings.ts');
+        const { requirePokemonMoveId } = await import('../../../src/data/battle/moves.ts');
+        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+        const { toID } = await import('../../../src/logic/utils/strings.ts');
 
-      const { MAXIMUM_POKEMON_LEVEL } = await import('../../../src/logic/constants/gameplay.ts');
-      const ATTACKER_TEST_LEVEL = 50;
+        const { MAXIMUM_POKEMON_LEVEL } = await import('../../../src/logic/constants/gameplay.ts');
+        const ATTACKER_TEST_LEVEL = 50;
 
-      const attacker = pokemonDebugService.generate({ id: requirePokemonSpeciesId(pokemonId), level: ATTACKER_TEST_LEVEL });
-      attacker.moves = moveIds.map(id => {
-        const cleanId = requirePokemonMoveId(toID(id));
-        const md = pokemonDataProvider.getMoveData(cleanId);
-        return {
-          id: cleanId,
-          name: md?.name || cleanId,
-          type: md?.type || 'normal',
-          cat: md?.cat || 'physical',
-          power: md?.power,
-          acc: md?.acc,
-          pp: 15,
-          maxPP: 15,
-          priority: 0,
-          disabled: false
-        };
-      });
+        const attacker = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId(pokemonId),
+          level: ATTACKER_TEST_LEVEL
+        });
+        attacker.moves = moveIds.map((id) => {
+          const cleanId = requirePokemonMoveId(toID(id));
+          const md = pokemonDataProvider.getMoveData(cleanId);
+          return {
+            id: cleanId,
+            name: md?.name || cleanId,
+            type: md?.type || 'normal',
+            cat: md?.cat || 'physical',
+            power: md?.power,
+            acc: md?.acc,
+            pp: 15,
+            maxPP: 15,
+            priority: 0,
+            disabled: false
+          };
+        });
 
-      gameStore.state.team = [attacker];
-      gameStore.state.starterChosen = true;
+        gameStore.state.team = [attacker];
+        gameStore.state.starterChosen = true;
 
-      // Tank bulky enemy (Blissey with 700 HP) so the battle lasts across multi-turn moves
-      const BULKY_TANK_HP = 700;
-      const defender = pokemonDebugService.generate({ id: 'blissey', level: MAXIMUM_POKEMON_LEVEL });
-      defender.hp = BULKY_TANK_HP;
-      defender.maxHp = BULKY_TANK_HP;
-      defender.moves = [
-        {
-          id: 'softboiled',
-          name: 'Amortiguador',
-          type: 'normal',
-          cat: 'status',
-          pp: 10,
-          maxPP: 10,
-          disabled: false
-        }
-      ];
+        // Tank bulky enemy (Blissey with 700 HP) so the battle lasts across multi-turn moves
+        const BULKY_TANK_HP = 700;
+        const defender = pokemonDebugService.generate({
+          id: 'blissey',
+          level: MAXIMUM_POKEMON_LEVEL
+        });
+        defender.hp = BULKY_TANK_HP;
+        defender.maxHp = BULKY_TANK_HP;
+        defender.moves = [
+          {
+            id: 'softboiled',
+            name: 'Amortiguador',
+            type: 'normal',
+            cat: 'status',
+            pp: 10,
+            maxPP: 10,
+            disabled: false
+          }
+        ];
 
-      await battleStore.startBattle(defender, {
-        isTrainer: false,
-        locationId: 'route1'
-      });
-    }, { pokemonId, moveIds });
+        await battleStore.startBattle(defender, {
+          isTrainer: false,
+          locationId: 'route1'
+        });
+      },
+      { pokemonId, moveIds }
+    );
     await waitForWaitInput(this.page);
   }
 }
 
 test.describe('Exhaustive Locked & Forced Moves E2E Simulations (Tier 3)', () => {
-  test('1. lockedmove: Rayquaza con Enfado (Outrage) bloquea otros movimientos y ejecuta turnos sucesivos', async ({ page }) => {
+  test('1. lockedmove: Rayquaza con Enfado (Outrage) bloquea otros movimientos y ejecuta turnos sucesivos', async ({
+    page
+  }) => {
     const sim = new LockedMovesSimWrapper(page, 'OutrageSim');
     await sim.setup();
-    await sim.setupLockedMoveScenario('rayquaza', ['outrage', 'dragondance', 'raindance', 'hyperbeam']);
+    await sim.setupLockedMoveScenario('rayquaza', [
+      'outrage',
+      'dragondance',
+      'raindance',
+      'hyperbeam'
+    ]);
 
     // Turno 1: Ejecutar Enfado
     await page.locator('#move-btn-0').click();
@@ -88,7 +106,7 @@ test.describe('Exhaustive Locked & Forced Moves E2E Simulations (Tier 3)', () =>
         turnCount: bs.state?.turnCount ?? 0,
         fsmState: bs.currentFsmState,
         subState: bs.currentSubState,
-        playerMoves: bs.state?.player?.moves?.map(m => ({ id: m?.id, disabled: m?.disabled })),
+        playerMoves: bs.state?.player?.moves?.map((m) => ({ id: m?.id, disabled: m?.disabled })),
         playerRequest: bs.state?.playerRequest
       };
     });
@@ -98,10 +116,17 @@ test.describe('Exhaustive Locked & Forced Moves E2E Simulations (Tier 3)', () =>
     expect(battleState.turnCount).toBeGreaterThanOrEqual(1);
   });
 
-  test('2. twoturnmove: Venusaur con Rayo Solar (Solar Beam) ejecuta la fase de carga y el turno de disparo', async ({ page }) => {
+  test('2. twoturnmove: Venusaur con Rayo Solar (Solar Beam) ejecuta la fase de carga y el turno de disparo', async ({
+    page
+  }) => {
     const sim = new LockedMovesSimWrapper(page, 'SolarBeamSim');
     await sim.setup();
-    await sim.setupLockedMoveScenario('venusaur', ['solarbeam', 'synthesis', 'leechseed', 'tackle']);
+    await sim.setupLockedMoveScenario('venusaur', [
+      'solarbeam',
+      'synthesis',
+      'leechseed',
+      'tackle'
+    ]);
 
     // Turno 1: Cargar Rayo Solar
     await page.locator('#move-btn-0').click();
@@ -118,7 +143,9 @@ test.describe('Exhaustive Locked & Forced Moves E2E Simulations (Tier 3)', () =>
     expect(turnCount).toBeGreaterThanOrEqual(2);
   });
 
-  test('3. recharge: Snorlax con Hiperrayo (Hyper Beam) deshabilita movimientos en el turno de recarga', async ({ page }) => {
+  test('3. recharge: Snorlax con Hiperrayo (Hyper Beam) deshabilita movimientos en el turno de recarga', async ({
+    page
+  }) => {
     const sim = new LockedMovesSimWrapper(page, 'HyperBeamSim');
     await sim.setup();
     await sim.setupLockedMoveScenario('snorlax', ['hyperbeam', 'bodyslam', 'rest', 'curse']);
@@ -158,7 +185,9 @@ test.describe('Exhaustive Locked & Forced Moves E2E Simulations (Tier 3)', () =>
     expect(turnCount).toBeGreaterThanOrEqual(2);
   });
 
-  test('5. rollout: Donphan con Desenrollar (Rollout) progresa en turnos sucesivos', async ({ page }) => {
+  test('5. rollout: Donphan con Desenrollar (Rollout) progresa en turnos sucesivos', async ({
+    page
+  }) => {
     const sim = new LockedMovesSimWrapper(page, 'RolloutSim');
     await sim.setup();
     await sim.setupLockedMoveScenario('donphan', ['rollout', 'earthquake', 'defensecurl', 'slam']);
@@ -178,7 +207,9 @@ test.describe('Exhaustive Locked & Forced Moves E2E Simulations (Tier 3)', () =>
     expect(turnCount).toBeGreaterThanOrEqual(2);
   });
 
-  test('6. bide: Golem con Venganza (Bide) almacena energía y desata el ataque', async ({ page }) => {
+  test('6. bide: Golem con Venganza (Bide) almacena energía y desata el ataque', async ({
+    page
+  }) => {
     const sim = new LockedMovesSimWrapper(page, 'BideSim');
     await sim.setup();
     await sim.setupLockedMoveScenario('golem', ['bide', 'earthquake', 'rockthrow', 'harden']);

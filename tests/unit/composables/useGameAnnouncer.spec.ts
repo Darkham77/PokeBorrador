@@ -4,7 +4,7 @@
  * Comprehensive unit tests for useGameAnnouncer accessibility composable.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { useGameAnnouncer } from '@/composables/ui/useGameAnnouncer';
 
 describe('useGameAnnouncer', () => {
@@ -38,7 +38,7 @@ describe('useGameAnnouncer', () => {
 
   it('handles announcements with special characters, symbols, and formatting', () => {
     const announcer = useGameAnnouncer();
-    expect(() => announcer.announce('¡Farfetch\'d subió al nivel 25! +150 EXP')).not.toThrow();
+    expect(() => announcer.announce("¡Farfetch'd subió al nivel 25! +150 EXP")).not.toThrow();
     expect(() => announcer.announceBattleTurn('Mr. Mime usó Reflejo (Defensa +2).')).not.toThrow();
     expect(() => announcer.announceToast('💎 Obtenida Piedra Agua x1')).not.toThrow();
   });
@@ -57,7 +57,8 @@ describe('useGameAnnouncer', () => {
 
   it('handles multiline announcements and long combat narrative descriptions', () => {
     const announcer = useGameAnnouncer();
-    const multilineLog = '¡Gengar usó Bola Sombra!\n¡Un golpe crítico!\nEl Dragonite enemigo perdió 85% de sus PS.';
+    const multilineLog =
+      '¡Gengar usó Bola Sombra!\n¡Un golpe crítico!\nEl Dragonite enemigo perdió 85% de sus PS.';
     expect(() => announcer.announce(multilineLog)).not.toThrow();
     expect(() => announcer.polite(multilineLog)).not.toThrow();
   });
@@ -65,6 +66,8 @@ describe('useGameAnnouncer', () => {
   it('handles announcements containing brackets, quotes and numeric values', () => {
     const announcer = useGameAnnouncer();
     expect(() => announcer.announceToast('[MERCADO] Comprado Restos x1 por $5,000')).not.toThrow();
-    expect(() => announcer.announceBattleTurn('Turno #4: "Clima despejado" se disipó.')).not.toThrow();
+    expect(() =>
+      announcer.announceBattleTurn('Turno #4: "Clima despejado" se disipó.')
+    ).not.toThrow();
   });
 });

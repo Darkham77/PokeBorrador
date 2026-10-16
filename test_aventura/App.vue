@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import KantoAdventureView from './views/KantoAdventureView.vue'
-import RegionalContinentStudioView from './views/RegionalContinentStudioView.vue'
-import MapStudioView from './views/MapStudioView.vue'
-import AutotileStudioView from './views/AutotileStudioView.vue'
-import AssetAtlasInspectorView from './views/AssetAtlasInspectorView.vue'
-import AdventureGraphStudioView from './views/AdventureGraphStudioView.vue'
-import LocalTileStudioView from './views/LocalTileStudioView.vue'
+import { ref } from 'vue';
+import KantoAdventureView from './views/KantoAdventureView.vue';
+import RegionalContinentStudioView from './views/RegionalContinentStudioView.vue';
+import MapStudioView from './views/MapStudioView.vue';
+import AutotileStudioView from './views/AutotileStudioView.vue';
+import AssetAtlasInspectorView from './views/AssetAtlasInspectorView.vue';
+import AdventureGraphStudioView from './views/AdventureGraphStudioView.vue';
+import LocalTileStudioView from './views/LocalTileStudioView.vue';
 
-type ActiveTool = 'kanto' | 'continent' | 'map-studio' | 'graph-studio' | 'cell-studio' | 'autotile' | 'atlas'
-const currentTool = ref<ActiveTool>('kanto')
+type ActiveTool =
+  | 'kanto'
+  | 'continent'
+  | 'map-studio'
+  | 'graph-studio'
+  | 'cell-studio'
+  | 'autotile'
+  | 'atlas';
+const currentTool = ref<ActiveTool>('kanto');
 
 const tabs = [
   { id: 'kanto', label: '🗺️ Croquis Kanto' },
@@ -19,13 +26,17 @@ const tabs = [
   { id: 'cell-studio', label: '🧱 Tile Editor' },
   { id: 'autotile', label: '🧩 Autotile Studio' },
   { id: 'atlas', label: '🖼️ Atlas Inspector' }
-] as const
+] as const;
 </script>
 
 <template>
-  <div class="adventure-suite-container font-sans text-white h-screen w-screen overflow-hidden flex flex-col bg-slate-950">
+  <div
+    class="adventure-suite-container font-sans text-white h-screen w-screen overflow-hidden flex flex-col bg-slate-950"
+  >
     <!-- Barra Superior de Navegación del Sandbox -->
-    <header class="h-12 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between shrink-0 z-50">
+    <header
+      class="h-12 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between shrink-0 z-50"
+    >
       <div class="font-black text-xs tracking-wider text-yellow-400 flex items-center gap-2">
         <span class="text-base">🎮</span> POKÉ VICIO: ADVENTURE &amp; STUDIO SUITE
       </div>

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useRouteSpawnsWild } from '@/composables/modals/useRouteSpawnsWild';
 import { useRouteSpawnsFishing } from '@/composables/modals/useRouteSpawnsFishing';
@@ -39,7 +39,8 @@ const ALL_SYSTEM_EVENTS: GameEvent[] = [
     type: 'passive_bonus',
     active: true,
     schedule: '{"type": "weekly", "days": [2], "startHour": 0, "endHour": 23.99}',
-    config: '{"fishingMult": 2.0, "minigameBuffs": {"fishing": {"encounterRateMult": 2.0, "rareDropMult": 1.5}}, "banner": "dia_pesca_full"}',
+    config:
+      '{"fishingMult": 2.0, "minigameBuffs": {"fishing": {"encounterRateMult": 2.0, "rareDropMult": 1.5}}, "banner": "dia_pesca_full"}',
     description: '¡Mayor pesca!'
   },
   {
@@ -58,15 +59,49 @@ const ALL_SYSTEM_EVENTS: GameEvent[] = [
       fishingMult: 2.0,
       minigameBuffs: { fishing: { encounterRateMult: 2.0, rareDropMult: 1.5, shinyMult: 3.0 } },
       weeklyRotations: {
-        '1': { species: 'magikarp,gyarados', banner: 'hora_magikarp_full', title: 'Torneo Magikarp & Gyarados' },
-        '2': { species: 'shellder,staryu,horsea,seadra,goldeen', banner: 'pesca_exotica_full', title: 'Torneo de Pesca Exótica' },
-        '3': { species: 'tentacool,tentacruel,krabby,kingler,poliwag', banner: 'pesca_profunda_full', title: 'Torneo de Pesca Profunda' },
-        '4': { species: 'dratini,dragonair,lapras', banner: 'pesca_mistica_full', title: 'Torneo de Pesca Mística' }
+        '1': {
+          species: 'magikarp,gyarados',
+          banner: 'hora_magikarp_full',
+          title: 'Torneo Magikarp & Gyarados'
+        },
+        '2': {
+          species: 'shellder,staryu,horsea,seadra,goldeen',
+          banner: 'pesca_exotica_full',
+          title: 'Torneo de Pesca Exótica'
+        },
+        '3': {
+          species: 'tentacool,tentacruel,krabby,kingler,poliwag',
+          banner: 'pesca_profunda_full',
+          title: 'Torneo de Pesca Profunda'
+        },
+        '4': {
+          species: 'dratini,dragonair,lapras',
+          banner: 'pesca_mistica_full',
+          title: 'Torneo de Pesca Mística'
+        }
       },
       subCompetitions: [
-        { id: 'ivs', name: 'Genética Superior (IVs)', metric: 'total_ivs', order: 'max', prizes: { first: { type: 'mixed', money: 25000 } } },
-        { id: 'weight', name: 'Masa y Peso', metric: 'weight', order: 'auto', prizes: { first: { type: 'mixed', money: 25000 } } },
-        { id: 'height', name: 'Envergadura y Altura', metric: 'height', order: 'auto', prizes: { first: { type: 'mixed', money: 25000 } } }
+        {
+          id: 'ivs',
+          name: 'Genética Superior (IVs)',
+          metric: 'total_ivs',
+          order: 'max',
+          prizes: { first: { type: 'mixed', money: 25000 } }
+        },
+        {
+          id: 'weight',
+          name: 'Masa y Peso',
+          metric: 'weight',
+          order: 'auto',
+          prizes: { first: { type: 'mixed', money: 25000 } }
+        },
+        {
+          id: 'height',
+          name: 'Envergadura y Altura',
+          metric: 'height',
+          order: 'auto',
+          prizes: { first: { type: 'mixed', money: 25000 } }
+        }
       ]
     }),
     description: '¡Competencia semanal de pesca!'
@@ -105,15 +140,49 @@ const ALL_SYSTEM_EVENTS: GameEvent[] = [
       speciesShinyMult: 3.0,
       speciesRateMult: 2.0,
       weeklyRotations: {
-        '1': { species: 'scyther,pinsir,butterfree,beedrill,venomoth', banner: 'caza_bichos_full', title: 'Concurso de Caza de Bichos' },
-        '2': { species: 'tauros,kangaskhan,chansey,dodrio', banner: 'safari_park_full', title: 'Gran Torneo Safari' },
-        '3': { species: 'kabuto,omanyte,aerodactyl,geodude,onix,rhyhorn', banner: 'arqueologia_fosiles_full', title: 'Torneo Excavación' },
-        '4': { species: 'gastly,haunter,gengar,zubat,golbat,hypno', banner: 'caza_nocturna_full', title: 'Caza Nocturna' }
+        '1': {
+          species: 'scyther,pinsir,butterfree,beedrill,venomoth',
+          banner: 'caza_bichos_full',
+          title: 'Concurso de Caza de Bichos'
+        },
+        '2': {
+          species: 'tauros,kangaskhan,chansey,dodrio',
+          banner: 'safari_park_full',
+          title: 'Gran Torneo Safari'
+        },
+        '3': {
+          species: 'kabuto,omanyte,aerodactyl,geodude,onix,rhyhorn',
+          banner: 'arqueologia_fosiles_full',
+          title: 'Torneo Excavación'
+        },
+        '4': {
+          species: 'gastly,haunter,gengar,zubat,golbat,hypno',
+          banner: 'caza_nocturna_full',
+          title: 'Caza Nocturna'
+        }
       },
       subCompetitions: [
-        { id: 'ivs', name: 'Genética Superior (IVs)', metric: 'total_ivs', order: 'max', prizes: { first: { type: 'mixed', money: 25000 } } },
-        { id: 'weight', name: 'Masa y Peso', metric: 'weight', order: 'auto', prizes: { first: { type: 'mixed', money: 25000 } } },
-        { id: 'height', name: 'Envergadura y Tamaño', metric: 'height', order: 'auto', prizes: { first: { type: 'mixed', money: 25000 } } }
+        {
+          id: 'ivs',
+          name: 'Genética Superior (IVs)',
+          metric: 'total_ivs',
+          order: 'max',
+          prizes: { first: { type: 'mixed', money: 25000 } }
+        },
+        {
+          id: 'weight',
+          name: 'Masa y Peso',
+          metric: 'weight',
+          order: 'auto',
+          prizes: { first: { type: 'mixed', money: 25000 } }
+        },
+        {
+          id: 'height',
+          name: 'Envergadura y Tamaño',
+          metric: 'height',
+          order: 'auto',
+          prizes: { first: { type: 'mixed', money: 25000 } }
+        }
       ]
     }),
     description: '¡Torneo semanal de caza!'
@@ -151,9 +220,27 @@ const ALL_SYSTEM_EVENTS: GameEvent[] = [
       species: '*',
       banner: 'gran_concurso_sabado_full',
       subCompetitions: [
-        { id: 'ivs', name: 'Genética Suprema', metric: 'total_ivs', order: 'max', prizes: { first: { type: 'mixed', money: 50000 } } },
-        { id: 'weight', name: 'Titanes y Miniaturas', metric: 'weight', order: 'auto', prizes: { first: { type: 'mixed', money: 50000 } } },
-        { id: 'height', name: 'Envergadura y Altura', metric: 'height', order: 'auto', prizes: { first: { type: 'mixed', money: 50000 } } }
+        {
+          id: 'ivs',
+          name: 'Genética Suprema',
+          metric: 'total_ivs',
+          order: 'max',
+          prizes: { first: { type: 'mixed', money: 50000 } }
+        },
+        {
+          id: 'weight',
+          name: 'Titanes y Miniaturas',
+          metric: 'weight',
+          order: 'auto',
+          prizes: { first: { type: 'mixed', money: 50000 } }
+        },
+        {
+          id: 'height',
+          name: 'Envergadura y Altura',
+          metric: 'height',
+          order: 'auto',
+          prizes: { first: { type: 'mixed', money: 50000 } }
+        }
       ]
     }),
     description: '¡El gran campeonato de los sábados!'
@@ -165,7 +252,8 @@ const ALL_SYSTEM_EVENTS: GameEvent[] = [
     type: 'passive_bonus',
     active: true,
     schedule: '{"type": "weekly", "days": [0], "startHour": 0, "endHour": 23.99}',
-    config: '{"shinyMult": 1.5, "catchRateMult": 1.5, "bcMult": 1.5, "banner": "safari_suerte_full"}',
+    config:
+      '{"shinyMult": 1.5, "catchRateMult": 1.5, "bcMult": 1.5, "banner": "safari_suerte_full"}',
     description: '¡50% más shiny!'
   },
   {
@@ -175,7 +263,8 @@ const ALL_SYSTEM_EVENTS: GameEvent[] = [
     type: 'passive_bonus',
     active: true,
     schedule: '{"type": "monthly", "trigger": "last_weekend", "startHour": 0, "endHour": 23.99}',
-    config: '{"species": "growlithe", "speciesRateMult": 3.0, "speciesShinyMult": 4.0, "banner": "growlithe_full"}',
+    config:
+      '{"species": "growlithe", "speciesRateMult": 3.0, "speciesShinyMult": 4.0, "banner": "growlithe_full"}',
     description: '¡Gran evento mensual!'
   },
   {
@@ -225,9 +314,7 @@ const FUTURE_EVENT_SCENARIOS: GameEvent[] = [
       speciesRateMult: 3.0,
       speciesShinyMult: 5.0,
       ignoreTimeRestrictions: true,
-      subCompetitions: [
-        { id: 'ivs', name: 'Genética', metric: 'total_ivs', order: 'max' }
-      ]
+      subCompetitions: [{ id: 'ivs', name: 'Genética', metric: 'total_ivs', order: 'max' }]
     }),
     description: 'Caza de iniciales con formato sucio'
   },
@@ -245,7 +332,11 @@ const FUTURE_EVENT_SCENARIOS: GameEvent[] = [
         '1': { species: 'dratini, larvitar', banner: 'pseudo_banner', title: 'Semana Dragón' },
         '2': { species: '*', banner: 'open_week_banner', title: 'Semana Libre' },
         '3': { species: 'eevee', banner: 'eevee_banner', title: 'Semana Eevee' },
-        '4': { species: 'snorlax, lapras, aerodactyl', banner: 'rare_banner', title: 'Semana Raros' }
+        '4': {
+          species: 'snorlax, lapras, aerodactyl',
+          banner: 'rare_banner',
+          title: 'Semana Raros'
+        }
       },
       subCompetitions: [
         { id: 'ivs', name: 'IVs', metric: 'total_ivs', order: 'max' },
@@ -311,25 +402,33 @@ describe('System Events Engine Domain Suite', () => {
   describe('Core Event Scheduling & Calculation Logic', () => {
     it('correctly identifies manual events as active', () => {
       const event = { active: true, manual: true };
-      expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0])).toBe(true);
+      expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0])).toBe(
+        true
+      );
     });
 
     it('identifies inactive events as false', () => {
       const event = { active: false, manual: true };
-      expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0])).toBe(false);
+      expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0])).toBe(
+        false
+      );
     });
 
     it('filters by absolute date range', () => {
-      const event = { 
-        active: true, 
-        start_at: '2026-04-10T00:00:00Z', 
-        end_at: '2026-04-20T00:00:00Z' 
+      const event = {
+        active: true,
+        start_at: '2026-04-10T00:00:00Z',
+        end_at: '2026-04-20T00:00:00Z'
       };
       const internalDate = Temporal.Instant.from('2026-04-15T12:00:00Z');
       const outsideDate = Temporal.Instant.from('2026-04-25T12:00:00Z');
 
-      expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], internalDate)).toBe(true);
-      expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], outsideDate)).toBe(false);
+      expect(
+        isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], internalDate)
+      ).toBe(true);
+      expect(
+        isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], outsideDate)
+      ).toBe(false);
     });
 
     it('aggregates multipliers correctly', () => {
@@ -337,8 +436,10 @@ describe('System Events Engine Domain Suite', () => {
         { config: { expMult: 2, moneyMult: 1.5 } },
         { config: { expMult: 1.5, shinyMult: 2 } }
       ];
-      const mults = getGlobalMultipliers(activeEvents as unknown as Parameters<typeof getGlobalMultipliers>[0]);
-      
+      const mults = getGlobalMultipliers(
+        activeEvents as unknown as Parameters<typeof getGlobalMultipliers>[0]
+      );
+
       expect(mults.exp).toBe(3);
       expect(mults.money).toBe(1.5);
       expect(mults.shiny).toBe(2);
@@ -351,9 +452,18 @@ describe('System Events Engine Domain Suite', () => {
         { config: { species: 'bulbasaur', speciesRateMult: 10 } }
       ];
 
-      const pikaBoost = getSpeciesBoosts(activeEvents as unknown as Parameters<typeof getSpeciesBoosts>[0], 'pikachu');
-      const bulbBoost = getSpeciesBoosts(activeEvents as unknown as Parameters<typeof getSpeciesBoosts>[0], 'bulbasaur');
-      const charmBoost = getSpeciesBoosts(activeEvents as unknown as Parameters<typeof getSpeciesBoosts>[0], 'charmander');
+      const pikaBoost = getSpeciesBoosts(
+        activeEvents as unknown as Parameters<typeof getSpeciesBoosts>[0],
+        'pikachu'
+      );
+      const bulbBoost = getSpeciesBoosts(
+        activeEvents as unknown as Parameters<typeof getSpeciesBoosts>[0],
+        'bulbasaur'
+      );
+      const charmBoost = getSpeciesBoosts(
+        activeEvents as unknown as Parameters<typeof getSpeciesBoosts>[0],
+        'charmander'
+      );
 
       expect(pikaBoost.rate).toBe(5);
       expect(pikaBoost.shiny).toBe(2);
@@ -364,15 +474,24 @@ describe('System Events Engine Domain Suite', () => {
     it('handles robust parsing of stringified JSON config/schedule', () => {
       const event = {
         active: true,
-        schedule: JSON.stringify({ type: 'weekly', days: [1, 2, 3, 4, 5], startHour: 0, endHour: 23.99 }),
+        schedule: JSON.stringify({
+          type: 'weekly',
+          days: [1, 2, 3, 4, 5],
+          startHour: 0,
+          endHour: 23.99
+        }),
         config: JSON.stringify({ expMult: 5 })
       };
-      
-      const mults = getGlobalMultipliers([event] as unknown as Parameters<typeof getGlobalMultipliers>[0]);
+
+      const mults = getGlobalMultipliers([event] as unknown as Parameters<
+        typeof getGlobalMultipliers
+      >[0]);
       expect(mults.exp).toBe(5);
 
       const monday = Temporal.Instant.from('2026-04-20T12:00:00Z');
-      expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], monday)).toBe(true);
+      expect(
+        isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], monday)
+      ).toBe(true);
     });
 
     it('correctly handles weekly schedules crossover (midnight)', () => {
@@ -390,15 +509,23 @@ describe('System Events Engine Domain Suite', () => {
       const tuesdayMorning = Temporal.Instant.from('2026-04-21T04:00:00Z');
       const mondayEvening = Temporal.Instant.from('2026-04-21T00:00:00Z');
 
-      expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], mondayNight)).toBe(true);
-      expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], tuesdayMorning)).toBe(true);
-      expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], mondayEvening)).toBe(false);
+      expect(
+        isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], mondayNight)
+      ).toBe(true);
+      expect(
+        isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], tuesdayMorning)
+      ).toBe(true);
+      expect(
+        isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], mondayEvening)
+      ).toBe(false);
     });
 
     it('formats argument date strings correctly', () => {
       const date = Temporal.Instant.from('2026-05-09T12:00:00Z');
-      const zdt = Temporal.ZonedDateTime.from('2026-05-10T12:00:00[America/Argentina/Buenos_Aires]');
-      
+      const zdt = Temporal.ZonedDateTime.from(
+        '2026-05-10T12:00:00[America/Argentina/Buenos_Aires]'
+      );
+
       expect(getArgDateString(date)).toBe('2026-05-09');
       expect(getArgDateString(zdt)).toBe('2026-05-10');
       expect(getArgDateString()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
@@ -498,7 +625,7 @@ describe('System Events Engine Domain Suite', () => {
       scyther.obtainedAt = nowMs;
       pidgey.obtainedAt = nowMs;
 
-      const competitionEvents = ALL_SYSTEM_EVENTS.filter(e => e.type === 'competition');
+      const competitionEvents = ALL_SYSTEM_EVENTS.filter((e) => e.type === 'competition');
       expect(competitionEvents.length).toBe(3); // torneo_pesca, torneo_caza, gran_concurso_sabado
 
       for (const ev of competitionEvents) {
@@ -526,33 +653,40 @@ describe('System Events Engine Domain Suite', () => {
       expect(growlitheBoost.shiny).toBe(4.0);
 
       // 2. Wildcard event ('*') should not boost a specific species
-      const pidgeyBoost = getSpeciesBoosts([{
-        id: 'gran_concurso_sabado',
-        name: 'Gran Concurso',
-        description: 'Concurso abierto',
-        active: true,
-        config: JSON.stringify({ species: '*', speciesRateMult: 5 })
-      }], 'pidgey');
+      const pidgeyBoost = getSpeciesBoosts(
+        [
+          {
+            id: 'gran_concurso_sabado',
+            name: 'Gran Concurso',
+            description: 'Concurso abierto',
+            active: true,
+            config: JSON.stringify({ species: '*', speciesRateMult: 5 })
+          }
+        ],
+        'pidgey'
+      );
       expect(pidgeyBoost.rate).toBe(1);
 
       // 3. Weekly rotation event
-      const rotatingEvents: GameEvent[] = [{
-        id: 'torneo_caza',
-        name: 'Torneo Caza',
-        description: 'Torneo semanal de caza',
-        active: true,
-        config: JSON.stringify({
-          rotationTheme: 'weekly_4',
-          speciesRateMult: 2.0,
-          speciesShinyMult: 3.0,
-          weeklyRotations: {
-            '1': { species: 'scyther,pinsir', banner: 'caza_full', title: 'Torneo' },
-            '2': { species: 'tauros,chansey', banner: 'safari_full', title: 'Torneo' },
-            '3': { species: 'kabuto,onix', banner: 'fosil_full', title: 'Torneo' },
-            '4': { species: 'gastly,gengar', banner: 'fantasma_full', title: 'Torneo' }
-          }
-        })
-      }];
+      const rotatingEvents: GameEvent[] = [
+        {
+          id: 'torneo_caza',
+          name: 'Torneo Caza',
+          description: 'Torneo semanal de caza',
+          active: true,
+          config: JSON.stringify({
+            rotationTheme: 'weekly_4',
+            speciesRateMult: 2.0,
+            speciesShinyMult: 3.0,
+            weeklyRotations: {
+              '1': { species: 'scyther,pinsir', banner: 'caza_full', title: 'Torneo' },
+              '2': { species: 'tauros,chansey', banner: 'safari_full', title: 'Torneo' },
+              '3': { species: 'kabuto,onix', banner: 'fosil_full', title: 'Torneo' },
+              '4': { species: 'gastly,gengar', banner: 'fantasma_full', title: 'Torneo' }
+            }
+          })
+        }
+      ];
       const boost = getSpeciesBoosts(rotatingEvents, 'scyther');
       expect(boost).toBeDefined();
       expect(boost.rate).toBeGreaterThanOrEqual(1);
@@ -563,7 +697,14 @@ describe('System Events Engine Domain Suite', () => {
     it('guarantees useRouteSpawnsWild and useRouteSpawnsFishing NEVER throw on any future event configuration across all maps', () => {
       const eventStore = useEventStore();
       const gameStore = useGameStore();
-      gameStore.state.seenPokedex = ['pidgey', 'rattata', 'bulbasaur', 'pikachu', 'dratini', 'magikarp'];
+      gameStore.state.seenPokedex = [
+        'pidgey',
+        'rattata',
+        'bulbasaur',
+        'pikachu',
+        'dratini',
+        'magikarp'
+      ];
       gameStore.state.pokedex = ['pidgey', 'bulbasaur', 'magikarp'];
 
       const testMaps = FIRE_RED_MAPS.slice(0, 10);
@@ -638,7 +779,9 @@ describe('System Events Engine Domain Suite', () => {
 
       for (let month = 1; month <= 12; month++) {
         for (let day = 1; day <= 28; day += 7) {
-          const testDate = Temporal.Instant.from(`2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T12:00:00Z`);
+          const testDate = Temporal.Instant.from(
+            `2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T12:00:00Z`
+          );
 
           for (const scenario of FUTURE_EVENT_SCENARIOS) {
             expect(() => {

@@ -24,7 +24,7 @@ The spawn grid dynamically computes column count and cell dimensions to prevent 
 ```javascript
 export function calculateSpawnGrid(spawnsCount, preferredCols = 3) {
   let cols = Math.max(3, preferredCols);
-  
+
   // Expand cols if N is high
   const idealCols = Math.ceil(Math.sqrt(spawnsCount));
   if (idealCols > cols) cols = idealCols;
@@ -54,12 +54,12 @@ The `.map-card` component **MUST** use `isolation: isolate;`. This ensures negat
 
 ### 2.2 Standard Layer Hierarchy
 
-| Layer | Selector | Z-Index | Purpose |
-| :--- | :--- | :--- | :--- |
-| **0: Background** | `&::before` | `-3` | Route background image with atmospheric filters. |
-| **1: Weather Overlay** | `.weather-overlay` | `-2 !important` | Weather particles / ambient overlay. |
-| **2: Atmosphere** | `&::after` | `-1` | Dark vignette and hover contrast layers. |
-| **3: Content** | `& > *` | `var(--z-base)` (0) | Interactive Pokémon sprites, headers, and pills. |
+| Layer                  | Selector           | Z-Index             | Purpose                                          |
+| :--------------------- | :----------------- | :------------------ | :----------------------------------------------- |
+| **0: Background**      | `&::before`        | `-3`                | Route background image with atmospheric filters. |
+| **1: Weather Overlay** | `.weather-overlay` | `-2 !important`     | Weather particles / ambient overlay.             |
+| **2: Atmosphere**      | `&::after`         | `-1`                | Dark vignette and hover contrast layers.         |
+| **3: Content**         | `& > *`            | `var(--z-base)` (0) | Interactive Pokémon sprites, headers, and pills. |
 
 ### 2.3 Atmosphere & Hover Dynamics
 

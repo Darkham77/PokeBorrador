@@ -5,7 +5,7 @@ export const Formats = [
     name: '[Gen 1] Stadium OU',
     mod: 'gen1stadium',
     searchShow: false,
-    ruleset: [ 'Standard', 'Team Preview' ],
+    ruleset: ['Standard', 'Team Preview'],
     banlist: [
       'Uber',
       'Nidoking + Fury Attack + Thrash',
@@ -29,6 +29,6 @@ export const Formats = [
       'Team Preview',
       'Stadium Poke Cup Rentals'
     ],
-    banlist: [ 'Uber' ]
+    banlist: ['Uber']
   }
 ];

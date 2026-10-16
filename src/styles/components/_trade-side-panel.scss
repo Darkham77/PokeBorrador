@@ -1,5 +1,5 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/variables" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/variables' as *;
 
 .trade-side {
   display: flex;
@@ -185,7 +185,7 @@
         margin: 0;
         appearance: none;
       }
-      &[type="number"] {
+      &[type='number'] {
         appearance: textfield;
       }
     }
@@ -277,7 +277,7 @@
       background: Rgb(239 68 68 / 20%);
       color: var(--red-light);
       border-color: Rgb(239 68 68 / 40%);
-      
+
       &:hover {
         background: var(--red-light);
         color: var(--white);

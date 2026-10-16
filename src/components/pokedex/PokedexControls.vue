@@ -1,40 +1,40 @@
 <script setup lang="ts">
-import type { SortOrder } from '@/types/system/game'
+import type { SortOrder } from '@/types/system/game';
 
 interface Props {
-  currentGen: number
-  sortBy: string
-  sortOrder: SortOrder
-  searchQuery: string
+  currentGen: number;
+  sortBy: string;
+  sortOrder: SortOrder;
+  searchQuery: string;
 }
 
-const { currentGen, sortBy, sortOrder, searchQuery } = defineProps<Props>()
+const { currentGen, sortBy, sortOrder, searchQuery } = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'update:currentGen', gen: number): void
-  (e: 'update:sortBy', sortBy: string): void
-  (e: 'update:sortOrder', sortOrder: SortOrder): void
-  (e: 'update:searchQuery', query: string): void
-}>()
+  (e: 'update:currentGen', gen: number): void;
+  (e: 'update:sortBy', sortBy: string): void;
+  (e: 'update:sortOrder', sortOrder: SortOrder): void;
+  (e: 'update:searchQuery', query: string): void;
+}>();
 
 const handleSortClick = (key: string) => {
   if (sortBy === key) {
-    emit('update:sortOrder', sortOrder === 'asc' ? 'desc' : 'asc')
+    emit('update:sortOrder', sortOrder === 'asc' ? 'desc' : 'asc');
   } else {
-    emit('update:sortBy', key)
-    emit('update:sortOrder', 'asc')
+    emit('update:sortBy', key);
+    emit('update:sortOrder', 'asc');
   }
-}
+};
 </script>
 
 <template>
   <div class="pokedex-controls glass-morphism">
     <nav class="gen-tabs">
       <button
-        v-for="gen in [1, 2]" 
+        v-for="gen in [1, 2]"
         id="pokedex-controls-btn-gen-gen"
         :key="gen"
-        class="tab-btn" 
+        class="tab-btn"
         :class="{ active: currentGen === gen }"
         @click.stop="$emit('update:currentGen', gen)"
       >
@@ -46,30 +46,24 @@ const handleSortClick = (key: string) => {
       <div class="sort-group">
         <span class="sort-label">ORDEN:</span>
         <button
-          id="pokedex-controls-btn-1" 
-          class="pdex-sort-btn" 
+          id="pokedex-controls-btn-1"
+          class="pdex-sort-btn"
           :class="{ active: sortBy === 'number' }"
           @click.stop="handleSortClick('number')"
         >
           Nº
-          <span
-            v-if="sortBy === 'number'"
-            class="emoji sort-arrow"
-          >
+          <span v-if="sortBy === 'number'" class="emoji sort-arrow">
             {{ sortOrder === 'asc' ? '↑' : '↓' }}
           </span>
         </button>
         <button
-          id="pokedex-controls-btn-2" 
-          class="pdex-sort-btn" 
+          id="pokedex-controls-btn-2"
+          class="pdex-sort-btn"
           :class="{ active: sortBy === 'name' }"
           @click.stop="handleSortClick('name')"
         >
           A-Z
-          <span
-            v-if="sortBy === 'name'"
-            class="emoji sort-arrow"
-          >
+          <span v-if="sortBy === 'name'" class="emoji sort-arrow">
             {{ sortOrder === 'asc' ? '↑' : '↓' }}
           </span>
         </button>
@@ -78,15 +72,16 @@ const handleSortClick = (key: string) => {
       <div class="search-wrapper">
         <span class="emoji pdex-search-icon">🔍</span>
         <input
-          id="pokedex-controls-input-buscar" 
-          :value="searchQuery" 
-          type="text" 
+          id="pokedex-controls-input-buscar"
+          :value="searchQuery"
+          type="text"
+          aria-label="Buscar en la Pokédex por nombre o número"
           placeholder="Buscar..."
           class="pdex-search-input"
           @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
-        >
+        />
         <button
-          v-if="searchQuery" 
+          v-if="searchQuery"
           id="pokedex-controls-btn-3"
           class="clear-btn"
           @click.stop="$emit('update:searchQuery', '')"
@@ -99,7 +94,7 @@ const handleSortClick = (key: string) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pokedex-controls {
   @include shell-premium(Rgba(15, 23, 42, 0.95));
@@ -142,7 +137,10 @@ const handleSortClick = (key: string) => {
     cursor: pointer;
     will-change: transform, background-color, color;
 
-    &:hover { background: Rgb(255 255 255 / 5%); color: var(--white); }
+    &:hover {
+      background: Rgb(255 255 255 / 5%);
+      color: var(--white);
+    }
     &.active {
       border: 1px solid Rgb(255 255 255 / 10%);
       background: Rgb(255 255 255 / 10%);
@@ -152,7 +150,6 @@ const handleSortClick = (key: string) => {
 }
 
 .controls-right {
-
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -209,7 +206,6 @@ const handleSortClick = (key: string) => {
 }
 
 .search-wrapper {
-
   position: relative;
   display: flex;
   align-items: center;
@@ -267,7 +263,9 @@ const handleSortClick = (key: string) => {
     line-height: 1;
     cursor: pointer;
 
-    &:hover { color: var(--white); }
+    &:hover {
+      color: var(--white);
+    }
   }
 }
 </style>

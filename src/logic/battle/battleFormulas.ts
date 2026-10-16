@@ -1,13 +1,12 @@
 /**
  * Battle Formulas Central Manager
  * Bridges the UI-friendly types with the Pure Math Core (battleMath.ts).
- * 
+ *
  * Refer to `@/project-standards/references/core/game_formulas_manual.md` for logic details.
  */
-import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { getDayCycle } from '@/logic/utils/timeUtils.ts';
 
-import { 
+import {
   getEffectiveStatPure as pureGetEffectiveStat,
   calculateDamagePure,
   type PurePokemon,
@@ -20,7 +19,12 @@ import {
   calculateEscapeChancePure as pureCalculateEscapeChance
 } from './battleCatchMath.ts';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import type { BattleStages, BattleWeather, BattleConditionKey, BattleTimedCondition } from '@/types/battle/battle';
+import type {
+  BattleStages,
+  BattleWeather,
+  BattleConditionKey,
+  BattleTimedCondition
+} from '@/types/battle/battle';
 import type { DayPhase } from '@/logic/utils/timeUtils';
 import type { ItemId } from '@/data/inventory/items';
 import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath';
@@ -38,7 +42,8 @@ export function registerBattleFormulasContextResolver(resolver: BattleFormulasRe
   contextResolver = resolver;
 }
 
-function getAmbientBattleContext(): BattleFormulasContext | null { // result-ok: Operation result wrapper payload
+function getAmbientBattleContext(): BattleFormulasContext | null {
+  // result-ok: Operation result wrapper payload
   if (contextResolver) {
     try {
       return contextResolver() ?? null;
@@ -98,11 +103,21 @@ function toPureWeather(w: BattleWeather | null | undefined): PureBattleWeather |
 
 // ── Exported Functions ───────────────────────────────────────────────────────
 
-export function getEffectiveStat(pokemon: Pokemon, statKey: keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
+export function getEffectiveStat(
+  pokemon: Pokemon,
+  statKey: keyof Pokemon,
+  stages: Partial<BattleStages>,
+  weather: BattleWeather | null
+) {
   let activeWeather = weather;
   let isGym = false;
   const ambient = getAmbientBattleContext();
-  const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
+  const isMoveWeather = !!(
+    weather &&
+    weather.type !== 'clear' &&
+    weather.type !== 'none' &&
+    weather.turns !== -1
+  );
   if (ambient?.isGym && !isMoveWeather) {
     activeWeather = null;
     isGym = true;
@@ -122,25 +137,34 @@ export function getEffectiveStat(pokemon: Pokemon, statKey: keyof Pokemon, stage
 
 import { calculateDetailedStatBreakdown } from './statBreakdownHelper.ts';
 
-export function getStatBreakdown(pokemon: Pokemon, statKey: StatIDExceptHP | keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
-  let activeWeather = weather
-  let isGym = false
-  let fieldConditions: Record<string, unknown> = {}
-  const ambient = getAmbientBattleContext()
-  const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1)
+export function getStatBreakdown(
+  pokemon: Pokemon,
+  statKey: StatIDExceptHP | keyof Pokemon,
+  stages: Partial<BattleStages>,
+  weather: BattleWeather | null
+) {
+  let activeWeather = weather;
+  let isGym = false;
+  let fieldConditions: Record<string, unknown> = {};
+  const ambient = getAmbientBattleContext();
+  const isMoveWeather = !!(
+    weather &&
+    weather.type !== 'clear' &&
+    weather.type !== 'none' &&
+    weather.turns !== -1
+  );
   if (ambient?.isGym && !isMoveWeather) {
-    activeWeather = null
-    isGym = true
+    activeWeather = null;
+    isGym = true;
   } else if (ambient?.isGym) {
-    isGym = true
+    isGym = true;
   }
   if (ambient?.fieldConditions) {
-    fieldConditions = ambient.fieldConditions
+    fieldConditions = ambient.fieldConditions;
   }
 
-  const validStatKey: StatIDExceptHP = typeof statKey === 'string' && isStatIdExceptHP(statKey)
-    ? statKey
-    : 'atk'
+  const validStatKey: StatIDExceptHP =
+    typeof statKey === 'string' && isStatIdExceptHP(statKey) ? statKey : 'atk';
 
   const breakdown = calculateDetailedStatBreakdown(
     toPurePoke(pokemon),
@@ -152,7 +176,7 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: StatIDExceptHP | key
       dayCycle: getDayCycle(),
       fieldConditions
     }
-  )
+  );
 
   return {
     base: breakdown.base,
@@ -167,10 +191,15 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: StatIDExceptHP | key
     isUp: breakdown.isUp,
     isDown: breakdown.isDown,
     sources: breakdown.sources
-  }
+  };
 }
 
-export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Partial<Move>, ctx: DamageOptions = {}) {
+export function calculateDamage(
+  attacker: Pokemon,
+  defender: Pokemon,
+  move: Partial<Move>,
+  ctx: DamageOptions = {}
+) {
   let activeWeather = ctx.weather;
   let isGym = ctx.isGym ?? false;
   const ambient = getAmbientBattleContext();
@@ -183,7 +212,7 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
     toPurePoke(attacker),
     toPurePoke(defender),
     toPureMove(move),
-    { 
+    {
       weather: toPureWeather(activeWeather),
       atkStages: ctx.atkStages,
       defStages: ctx.defStages,
@@ -199,32 +228,37 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
   };
 }
 
-export function calculateCatchRate(pokemon: Pokemon, rawBallType: ItemId = 'pokeball', eventCatchMult = 1, ctx: CatchOptions = {}) {
+export function calculateCatchRate(
+  pokemon: Pokemon,
+  rawBallType: ItemId = 'pokeball',
+  eventCatchMult = 1,
+  ctx: CatchOptions = {}
+) {
   let activeWeather = ctx.weather;
   const ambient = getAmbientBattleContext();
   if (ambient?.isGym) {
     activeWeather = null;
   }
 
-  return pureCalculateCatchRate(
-    toPurePoke(pokemon),
-    rawBallType,
-    eventCatchMult,
-    { 
-      weather: toPureWeather(activeWeather),
-      turnCount: ctx.turnCount,
-      cycle: ctx.cycle || getDayCycle(),
-      isCave: ctx.isCave,
-      pokedexCount: ctx.pokedexCount,
-      forceCritical: ctx.forceCritical,
-      playerClass: ctx.playerClass,
-      activeTeam: ctx.activeTeam,
-      ivTotal: ctx.ivTotal
-    }
-  );
+  return pureCalculateCatchRate(toPurePoke(pokemon), rawBallType, eventCatchMult, {
+    weather: toPureWeather(activeWeather),
+    turnCount: ctx.turnCount,
+    cycle: ctx.cycle || getDayCycle(),
+    isCave: ctx.isCave,
+    pokedexCount: ctx.pokedexCount,
+    forceCritical: ctx.forceCritical,
+    playerClass: ctx.playerClass,
+    activeTeam: ctx.activeTeam,
+    ivTotal: ctx.ivTotal
+  });
 }
 
-export function calculateEscapeChance(playerPoke: Pokemon, wildPoke: Pokemon, attempts: number, ctx: EscapeOptions = {}) {
+export function calculateEscapeChance(
+  playerPoke: Pokemon,
+  wildPoke: Pokemon,
+  attempts: number,
+  ctx: EscapeOptions = {}
+) {
   let activeWeather = ctx.weather;
   const ambient = getAmbientBattleContext();
   if (ambient?.isGym) {
@@ -246,16 +280,4 @@ export function getAbilityMultiplier(_attacker: Pokemon, _defender: Pokemon, _mo
   return { mult: 1, triggeredAbility: null }; // Simplified, logic is now in battleMath
 }
 
-import type { PokemonType } from '@/data/battle/types';
-import type { MoveCategory } from '@/data/battle/moves';
-
-const SPECIAL_TYPES_GEN3: readonly PokemonType[] = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
-
-export function getMoveCategory(move: Partial<Move>): MoveCategory {
-  if (move.cat === 'status') return 'status';
-  if (ACTIVE_GENERATION <= 3) {
-    if (move.type && SPECIAL_TYPES_GEN3.includes(move.type)) return 'special';
-    return 'physical';
-  }
-  return move.cat ?? 'physical';
-}
+export { getMoveCategory } from './battleMathTypes.ts';

@@ -8,21 +8,32 @@
  * 3. Seller canceling their own listing retains their original friendship value (255).
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts';
 import { emulateSendTradeOffer, emulateAcceptTrade } from '@/logic/db/rpcEmulations/tradeRpc.ts';
-import { emulatePublishListing, emulateBuyListing, emulateCancelListing, emulateClaimAsset } from '@/logic/db/rpcEmulations/marketRpc.ts';
+import {
+  emulatePublishListing,
+  emulateBuyListing,
+  emulateCancelListing,
+  emulateClaimAsset
+} from '@/logic/db/rpcEmulations/marketRpc.ts';
 import { queryLocal } from '@/logic/db/sqliteEngine.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
 import { type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 
 vi.mock('@/logic/db/sqliteEngine.ts', () => ({
   queryLocal: vi.fn(),
-  persistSQLite: vi.fn(async () => {}),
+  persistSQLite: vi.fn(async () => {})
 }));
 
-function createLegalPokemon(id: PokemonSpeciesId, name: string, level = 10, uid = 'legal-uid-1', friendship = 70): Pokemon {
+function createLegalPokemon(
+  id: PokemonSpeciesId,
+  name: string,
+  level = 10,
+  uid = 'legal-uid-1',
+  friendship = 70
+): Pokemon {
   const abilities = pokemonDataProvider.getSpeciesAbilities(id);
   const ability = abilities[0] || 'waterabsorb';
   return {
@@ -38,10 +49,21 @@ function createLegalPokemon(id: PokemonSpeciesId, name: string, level = 10, uid 
     spa: 20,
     spd: 20,
     spe: 20,
-    moves: [{ id: 'surf', name: 'Surf', type: 'water', cat: 'special', power: 90, acc: 100, pp: 15, maxPP: 15 }],
+    moves: [
+      {
+        id: 'surf',
+        name: 'Surf',
+        type: 'water',
+        cat: 'special',
+        power: 90,
+        acc: 100,
+        pp: 15,
+        maxPP: 15
+      }
+    ],
     ability,
     isIllegal: false,
-    friendship,
+    friendship
   } as unknown as Pokemon;
 }
 
@@ -62,7 +84,7 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
       game_saves: {},
       trade_offers: {},
       market_listings: {},
-      claim_queue: {},
+      claim_queue: {}
     };
 
     mockSqliteDb = {
@@ -73,7 +95,18 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
             inMemoryDb.game_saves[userId].save_data = saveDataJson;
           }
         } else if (sql.startsWith('INSERT INTO trade_offers')) {
-          const [id, sender_id, receiver_id, offer_pokemon, offer_items, offer_money, request_pokemon, request_items, request_money, message] = params;
+          const [
+            id,
+            sender_id,
+            receiver_id,
+            offer_pokemon,
+            offer_items,
+            offer_money,
+            request_pokemon,
+            request_items,
+            request_money,
+            message
+          ] = params;
           inMemoryDb.trade_offers[id] = {
             id,
             sender_id,
@@ -85,7 +118,7 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
             request_items,
             request_money,
             message,
-            status: 'pending',
+            status: 'pending'
           };
         } else if (sql.startsWith('UPDATE trade_offers SET status =')) {
           const [tradeId] = params;
@@ -102,7 +135,7 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
             listing_type,
             data,
             price,
-            status: 'active',
+            status: 'active'
           };
         } else if (sql.startsWith("UPDATE market_listings SET status = 'sold'")) {
           const [buyerId, listingId] = params;
@@ -121,13 +154,13 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
             id,
             user_id,
             source_id,
-            asset_data,
+            asset_data
           };
         } else if (sql.startsWith('DELETE FROM claim_queue')) {
           const [claimId] = params;
           delete inMemoryDb.claim_queue[claimId];
         }
-      }),
+      })
     } as unknown as SQLiteDatabase;
 
     vi.mocked(queryLocal).mockImplementation(async (sql: string, params: any[] = []) => {
@@ -143,7 +176,9 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
       }
       if (sql.includes('FROM market_listings WHERE seller_id =')) {
         const sellerId = params[0];
-        return Object.values(inMemoryDb.market_listings).filter((l) => l.seller_id === sellerId && l.status === 'active');
+        return Object.values(inMemoryDb.market_listings).filter(
+          (l) => l.seller_id === sellerId && l.status === 'active'
+        );
       }
       if (sql.includes('FROM market_listings WHERE id =')) {
         const listingId = params[0];
@@ -172,8 +207,8 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
         team: [maxFriendshipLapras],
         box: [],
         money: 5000,
-        inventory: {},
-      }),
+        inventory: {}
+      })
     };
 
     inMemoryDb.game_saves[receiverUserId] = {
@@ -182,8 +217,8 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
         team: [bobPikachu],
         box: [],
         money: 5000,
-        inventory: {},
-      }),
+        inventory: {}
+      })
     };
 
     // 1. Alice sends trade offer to Bob
@@ -197,7 +232,7 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
         p_request_pokemon: bobPikachu,
         p_request_items: null,
         p_request_money: 0,
-        p_message: 'Let us trade!',
+        p_message: 'Let us trade!'
       },
       { userId: senderUserId }
     );
@@ -213,7 +248,9 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
     );
     expect(acceptRes.error).toBeNull();
 
-    const bobClaim = Object.values(inMemoryDb.claim_queue).find((c) => c.user_id === receiverUserId);
+    const bobClaim = Object.values(inMemoryDb.claim_queue).find(
+      (c) => c.user_id === receiverUserId
+    );
     expect(bobClaim).toBeDefined();
 
     // 3. Bob claims Lapras
@@ -235,7 +272,13 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
     const sellerUserId = 'trainer-alice';
     const buyerUserId = 'trainer-bob';
 
-    const maxFriendshipLapras = createLegalPokemon('lapras', 'Lapras', 50, 'alice-lapras-gts-uid', 255);
+    const maxFriendshipLapras = createLegalPokemon(
+      'lapras',
+      'Lapras',
+      50,
+      'alice-lapras-gts-uid',
+      255
+    );
 
     inMemoryDb.game_saves[sellerUserId] = {
       user_id: sellerUserId,
@@ -243,8 +286,8 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
         team: [maxFriendshipLapras],
         box: [],
         money: 1000,
-        inventory: {},
-      }),
+        inventory: {}
+      })
     };
 
     inMemoryDb.game_saves[buyerUserId] = {
@@ -253,8 +296,8 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
         team: [],
         box: [],
         money: 50000,
-        inventory: {},
-      }),
+        inventory: {}
+      })
     };
 
     // 1. Alice publishes Lapras on GTS
@@ -263,7 +306,7 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
       {
         p_listing_type: 'pokemon',
         p_asset_data: maxFriendshipLapras,
-        p_price: 10000,
+        p_price: 10000
       },
       { userId: sellerUserId, username: 'Alice' }
     );
@@ -303,7 +346,13 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
   it('GTS / Market Cancel: seller retains their original 255 friendship when canceling their own listing', async () => {
     const sellerUserId = 'trainer-alice';
 
-    const maxFriendshipLapras = createLegalPokemon('lapras', 'Lapras', 50, 'alice-lapras-cancel-uid', 255);
+    const maxFriendshipLapras = createLegalPokemon(
+      'lapras',
+      'Lapras',
+      50,
+      'alice-lapras-cancel-uid',
+      255
+    );
 
     inMemoryDb.game_saves[sellerUserId] = {
       user_id: sellerUserId,
@@ -311,8 +360,8 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
         team: [maxFriendshipLapras],
         box: [],
         money: 1000,
-        inventory: {},
-      }),
+        inventory: {}
+      })
     };
 
     // 1. Alice publishes listing
@@ -321,7 +370,7 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
       {
         p_listing_type: 'pokemon',
         p_asset_data: maxFriendshipLapras,
-        p_price: 10000,
+        p_price: 10000
       },
       { userId: sellerUserId, username: 'Alice' }
     );
@@ -339,7 +388,9 @@ describe('Trade and GTS / Market Friendship Simulations', () => {
 
     // 3. Verify Lapras returned to Alice with friendship intact (255)
     const aliceSave = cancelRes.data as any;
-    const returnedPoke = (aliceSave.box || []).find((p: Pokemon) => p.uid === 'alice-lapras-cancel-uid');
+    const returnedPoke = (aliceSave.box || []).find(
+      (p: Pokemon) => p.uid === 'alice-lapras-cancel-uid'
+    );
     expect(returnedPoke).toBeDefined();
     expect(returnedPoke.friendship).toBe(255);
   });

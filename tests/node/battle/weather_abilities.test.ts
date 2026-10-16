@@ -6,7 +6,7 @@
  * Verifies one-by-one that all weathers affect the implemented abilities and attacks correctly.
  */
 
-import { describe, it, vi } from 'vitest';
+import { describe, it, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import {
@@ -15,22 +15,21 @@ import {
   getEffectiveStatPure as getEffectiveStat,
   type PurePokemon,
   type PureMove,
-  type PureBattleWeather,
+  type PureBattleWeather
 } from '../../../src/logic/battle/battleMath.ts';
 
 describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
-
   // Fix Math.random for deterministic maximum damage rolls
   vi.spyOn(Math, 'random').mockReturnValue(1.0);
 
-  const clear:        PureBattleWeather = { type: 'clear', turns: -1 };
-  const sun:          PureBattleWeather = { type: 'sun', turns: 5 };
-  const rain:         PureBattleWeather = { type: 'rain', turns: 5 };
-  const storm:        PureBattleWeather = { type: 'storm', turns: 5 };
-  const heavyRain:    PureBattleWeather = { type: 'heavy_rain', turns: 5 };
-  const heatwave:     PureBattleWeather = { type: 'heatwave', turns: 5 };
-  const snow:         PureBattleWeather = { type: 'snow', turns: 5 };
-  const hail:         PureBattleWeather = { type: 'hail', turns: 5 };
+  const clear: PureBattleWeather = { type: 'clear', turns: -1 };
+  const sun: PureBattleWeather = { type: 'sun', turns: 5 };
+  const rain: PureBattleWeather = { type: 'rain', turns: 5 };
+  const storm: PureBattleWeather = { type: 'storm', turns: 5 };
+  const heavyRain: PureBattleWeather = { type: 'heavy_rain', turns: 5 };
+  const heatwave: PureBattleWeather = { type: 'heatwave', turns: 5 };
+  const snow: PureBattleWeather = { type: 'snow', turns: 5 };
+  const hail: PureBattleWeather = { type: 'hail', turns: 5 };
 
   describe('Move Type interaction under extreme climates', () => {
     it('Fire moves should deal 0 damage under Heavy Rain and Storm', () => {
@@ -64,19 +63,40 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
     const move: PureMove = { type: 'fire', power: 90, cat: 'special' };
 
     it('should boost Fire moves by 1.5x at <= 1/3 HP', () => {
-      const lowHpAttacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'fire', ability: 'blaze' };
+      const lowHpAttacker: PurePokemon = {
+        level: 100,
+        hp: 30,
+        maxHp: 100,
+        spa: 200,
+        type: 'fire',
+        ability: 'blaze'
+      };
       const { mult } = getAbilityMultiplier(lowHpAttacker, move, null);
       assert.strictEqual(mult, 1.5);
     });
 
     it('should NOT boost Fire moves at > 1/3 HP', () => {
-      const highHpAttacker: PurePokemon = { level: 100, hp: 80, maxHp: 100, spa: 200, type: 'fire', ability: 'blaze' };
+      const highHpAttacker: PurePokemon = {
+        level: 100,
+        hp: 80,
+        maxHp: 100,
+        spa: 200,
+        type: 'fire',
+        ability: 'blaze'
+      };
       const { mult } = getAbilityMultiplier(highHpAttacker, move, null);
       assert.strictEqual(mult, 1.0);
     });
 
     it('Fire moves still deal 0 damage under Heavy Rain even if blaze is active', () => {
-      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'fire', ability: 'blaze' };
+      const attacker: PurePokemon = {
+        level: 100,
+        hp: 30,
+        maxHp: 100,
+        spa: 200,
+        type: 'fire',
+        ability: 'blaze'
+      };
       const defender: PurePokemon = { level: 100, spd: 100, type: 'normal' };
       const dmg = calculateDamagePure(attacker, defender, move, { weather: heavyRain });
       assert.strictEqual(dmg.dmg, 0);
@@ -87,7 +107,14 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
     const move: PureMove = { type: 'water', power: 90, cat: 'special' };
 
     it('should boost Water moves by 1.5x at <= 1/3 HP', () => {
-      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'water', ability: 'torrent' };
+      const attacker: PurePokemon = {
+        level: 100,
+        hp: 30,
+        maxHp: 100,
+        spa: 200,
+        type: 'water',
+        ability: 'torrent'
+      };
       const { mult } = getAbilityMultiplier(attacker, move, null);
       assert.strictEqual(mult, 1.5);
     });
@@ -97,7 +124,14 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
     const move: PureMove = { type: 'grass', power: 90, cat: 'special' };
 
     it('should boost Grass moves by 1.5x at <= 1/3 HP', () => {
-      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'grass', ability: 'overgrow' };
+      const attacker: PurePokemon = {
+        level: 100,
+        hp: 30,
+        maxHp: 100,
+        spa: 200,
+        type: 'grass',
+        ability: 'overgrow'
+      };
       const { mult } = getAbilityMultiplier(attacker, move, null);
       assert.strictEqual(mult, 1.5);
     });
@@ -107,7 +141,14 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
     const move: PureMove = { type: 'bug', power: 90, cat: 'physical' };
 
     it('should boost Bug moves by 1.5x at <= 1/3 HP', () => {
-      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, atk: 200, type: 'bug', ability: 'swarm' };
+      const attacker: PurePokemon = {
+        level: 100,
+        hp: 30,
+        maxHp: 100,
+        atk: 200,
+        type: 'bug',
+        ability: 'swarm'
+      };
       const { mult } = getAbilityMultiplier(attacker, move, null);
       assert.strictEqual(mult, 1.5);
     });
@@ -164,8 +205,8 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
 
   describe('Ability: thickfat (Thick Fat)', () => {
     const attackerFire: PurePokemon = { level: 100, spa: 200, type: 'fire' };
-    const attackerIce:  PurePokemon = { level: 100, spa: 200, type: 'ice' };
-    const defender:      PurePokemon = { level: 100, spd: 100, type: 'normal', ability: 'thickfat' };
+    const attackerIce: PurePokemon = { level: 100, spa: 200, type: 'ice' };
+    const defender: PurePokemon = { level: 100, spd: 100, type: 'normal', ability: 'thickfat' };
 
     it('should reduce Fire-type move damage by 50%', () => {
       const move: PureMove = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
@@ -189,7 +230,10 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
       const move: PureMove = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
 
       const dmg = calculateDamagePure(attacker, defender, move, { weather: heavyRain });
-      assert.ok(dmg.dmg > 0, 'Fire moves should deal damage under heavy rain when cloudnine is active');
+      assert.ok(
+        dmg.dmg > 0,
+        'Fire moves should deal damage under heavy rain when cloudnine is active'
+      );
     });
 
     it('should negate Water move damage reduction to 0 under Heatwave if defender has cloudnine', () => {
@@ -198,7 +242,10 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
       const move: PureMove = { name: 'Surf', type: 'water', power: 95, cat: 'special' };
 
       const dmg = calculateDamagePure(attacker, defender, move, { weather: heatwave });
-      assert.ok(dmg.dmg > 0, 'Water moves should deal damage under heatwave when defender has cloudnine');
+      assert.ok(
+        dmg.dmg > 0,
+        'Water moves should deal damage under heatwave when defender has cloudnine'
+      );
     });
   });
 
@@ -210,18 +257,33 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
 
       // 1. Natural rain in gym (blocked, weather turns = -1)
       const naturalRain: PureBattleWeather = { type: 'rain', turns: -1 };
-      const dmgGymNatural = calculateDamagePure(attacker, defender, waterMove, { weather: naturalRain, isGym: true });
-      
+      const dmgGymNatural = calculateDamagePure(attacker, defender, waterMove, {
+        weather: naturalRain,
+        isGym: true
+      });
+
       // 2. Clear weather in gym
-      const dmgClear = calculateDamagePure(attacker, defender, waterMove, { weather: clear, isGym: true });
-      assert.strictEqual(dmgGymNatural.dmg, dmgClear.dmg, 'Natural rain in gym must be blocked and match clear weather damage');
+      const dmgClear = calculateDamagePure(attacker, defender, waterMove, {
+        weather: clear,
+        isGym: true
+      });
+      assert.strictEqual(
+        dmgGymNatural.dmg,
+        dmgClear.dmg,
+        'Natural rain in gym must be blocked and match clear weather damage'
+      );
 
       // 3. Move-activated rain in gym (turns = 5, not blocked)
       const moveRain: PureBattleWeather = { type: 'rain', turns: 5 };
-      const dmgGymMove = calculateDamagePure(attacker, defender, waterMove, { weather: moveRain, isGym: true });
-      
-      assert.ok(dmgGymMove.dmg > dmgClear.dmg, 'Move-activated rain in gym must NOT be blocked (deals boosted water damage)');
+      const dmgGymMove = calculateDamagePure(attacker, defender, waterMove, {
+        weather: moveRain,
+        isGym: true
+      });
+
+      assert.ok(
+        dmgGymMove.dmg > dmgClear.dmg,
+        'Move-activated rain in gym must NOT be blocked (deals boosted water damage)'
+      );
     });
   });
-
 });

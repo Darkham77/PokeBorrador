@@ -1,9 +1,8 @@
-
 /**
  * tests/unit/buffsStore.spec.js
  * Unit tests for the Global Buffs and Timers Store
  */
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useBuffsStore } from '@/stores/battle/buffs';
 import { useGameStore } from '@/stores/game';
@@ -11,7 +10,7 @@ import { useGameStore } from '@/stores/game';
 vi.mock('@/logic/services/assetService', () => ({
   getAssetUrl: vi.fn((_, id) => `mock-url-${id}`),
   ASSET_TYPES: { ITEM: 'item' }
-}))
+}));
 
 describe('Buffs Store', () => {
   let buffsStore: ReturnType<typeof useBuffsStore>;
@@ -24,7 +23,7 @@ describe('Buffs Store', () => {
 
     // Mock save function so it doesn't trigger side effects
     gameStore.save = vi.fn();
-    
+
     // Setup fake timers for interval testing
     vi.useFakeTimers();
   });
@@ -63,38 +62,38 @@ describe('Buffs Store', () => {
   it('should tick down active buffs over time', () => {
     buffsStore.addBuff('repel', 10);
     buffsStore.addBuff('shiny', 5);
-    
+
     buffsStore.initTick();
-    
+
     // Advance 5 seconds
     vi.advanceTimersByTime(5000);
-    
+
     expect(gameStore.state.repelSecs).toBe(5);
     expect(gameStore.state.shinyBoostSecs).toBe(0); // Expired
-    
+
     expect(buffsStore.activeBuffs).toHaveLength(1); // Only repel remains
   });
 
   it('should pause timers if a battle is active', () => {
     buffsStore.addBuff('repel', 10);
-    
+
     // Mock active battle
     gameStore.state.battle = { over: false } as unknown as typeof gameStore.state.battle;
-    
+
     buffsStore.initTick();
-    
+
     // Advance 5 seconds
     vi.advanceTimersByTime(5000);
-    
+
     // Timer should not have decreased because battle is active
     expect(gameStore.state.repelSecs).toBe(10);
-    
+
     // Mock battle ending
     gameStore.state.battle!.over = true;
-    
+
     // Advance another 5 seconds
     vi.advanceTimersByTime(5000);
-    
+
     // Now it should decrease
     expect(gameStore.state.repelSecs).toBe(5);
   });

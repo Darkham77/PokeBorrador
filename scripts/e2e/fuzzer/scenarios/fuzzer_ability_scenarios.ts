@@ -273,7 +273,18 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   },
   {
     name: 'Contact Status Contact Abilities',
-    abilities: ['static', 'flamebody', 'poisonpoint', 'effectspore', 'cutecharm', 'roughskin', 'ironbarbs', 'mummy', 'gooey', 'tanglinghair'],
+    abilities: [
+      'static',
+      'flamebody',
+      'poisonpoint',
+      'effectspore',
+      'cutecharm',
+      'roughskin',
+      'ironbarbs',
+      'mummy',
+      'gooey',
+      'tanglinghair'
+    ],
     playerTeam: [
       {
         name: 'P-Static',
@@ -463,7 +474,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Sand Stream activa arena al entrar
       { p1: 'move 2', p2: 'move 1' },
-      { p1: 'switch 2', p2: 'move 1' }  // Sand Rush activo en arena
+      { p1: 'switch 2', p2: 'move 1' } // Sand Rush activo en arena
     ]
   },
 
@@ -525,7 +536,14 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Terrain Entry & Abilities',
-    abilities: ['electricsurge', 'grassysurge', 'mistysurge', 'psychicsurge', 'surgesurfer', 'mimicry'],
+    abilities: [
+      'electricsurge',
+      'grassysurge',
+      'mistysurge',
+      'psychicsurge',
+      'surgesurfer',
+      'mimicry'
+    ],
     playerTeam: [
       {
         name: 'P-ESurge',
@@ -569,7 +587,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Electric Surge activa terreno eléctrico al entrar
       { p1: 'switch 2', p2: 'move 1' }, // Surge Surfer en terreno eléctrico
-      { p1: 'move 1', p2: 'move 2' }    // Rival cambia a Grassy Terrain
+      { p1: 'move 1', p2: 'move 2' } // Rival cambia a Grassy Terrain
     ]
   },
 
@@ -621,7 +639,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 2', p2: 'move 1' }, // Hyper Beam noquea al primer Shedinja → Moxie +1 Atk
-      { p1: 'move 1', p2: 'move 1' }  // Rival envía el segundo, ataca
+      { p1: 'move 1', p2: 'move 1' } // Rival envía el segundo, ataca
     ]
   },
 
@@ -630,7 +648,20 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Attack Modifier Abilities',
-    abilities: ['toughclaws', 'ironfist', 'reckless', 'adaptability', 'technician', 'sniper', 'sheerforce', 'neuroforce', 'tintedlens', 'megalauncher', 'strongjaw', 'punkrock'],
+    abilities: [
+      'toughclaws',
+      'ironfist',
+      'reckless',
+      'adaptability',
+      'technician',
+      'sniper',
+      'sheerforce',
+      'neuroforce',
+      'tintedlens',
+      'megalauncher',
+      'strongjaw',
+      'punkrock'
+    ],
     playerTeam: [
       {
         name: 'P-ToughClaws',
@@ -663,11 +694,24 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' }, // Tackle (contacto)
       { p1: 'move 2', p2: 'move 1' }, // Double-Edge (recoil)
       { p1: 'move 3', p2: 'move 1' }, // Water Pulse (pulso)
-      { p1: 'move 4', p2: 'move 1' }  // Mach Punch (prioridad)
+      { p1: 'move 4', p2: 'move 1' } // Mach Punch (prioridad)
     ],
     validate: (sim) => {
       // Como son pasivas de boost silenciosas, validamos que el Pokémon las tenga cargadas en la batalla
-      const abilitiesSet = new Set(['toughclaws', 'ironfist', 'reckless', 'adaptability', 'technician', 'sniper', 'sheerforce', 'neuroforce', 'tintedlens', 'megalauncher', 'strongjaw', 'punkrock']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'toughclaws',
+        'ironfist',
+        'reckless',
+        'adaptability',
+        'technician',
+        'sniper',
+        'sheerforce',
+        'neuroforce',
+        'tintedlens',
+        'megalauncher',
+        'strongjaw',
+        'punkrock'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -677,7 +721,20 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Defense Modifier Abilities',
-    abilities: ['filter', 'solidrock', 'multiscale', 'shadowshield', 'furcoat', 'icescales', 'thickfat', 'heatproof', 'fluffy', 'prismarmor', 'wonderskin', 'purifyingsalt'],
+    abilities: [
+      'filter',
+      'solidrock',
+      'multiscale',
+      'shadowshield',
+      'furcoat',
+      'icescales',
+      'thickfat',
+      'heatproof',
+      'fluffy',
+      'prismarmor',
+      'wonderskin',
+      'purifyingsalt'
+    ],
     playerTeam: [
       {
         name: 'P-Filter',
@@ -710,10 +767,23 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' }, // SE hit → Filter reduce daño
       { p1: 'move 1', p2: 'move 2' }, // Flamethrower → Heatproof/ThickFat
       { p1: 'move 1', p2: 'move 3' }, // Ice Beam → IceScales
-      { p1: 'move 1', p2: 'move 4' }  // Close Combat → FurCoat
+      { p1: 'move 1', p2: 'move 4' } // Close Combat → FurCoat
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['filter', 'solidrock', 'multiscale', 'shadowshield', 'furcoat', 'icescales', 'thickfat', 'heatproof', 'fluffy', 'prismarmor', 'wonderskin', 'purifyingsalt']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'filter',
+        'solidrock',
+        'multiscale',
+        'shadowshield',
+        'furcoat',
+        'icescales',
+        'thickfat',
+        'heatproof',
+        'fluffy',
+        'prismarmor',
+        'wonderskin',
+        'purifyingsalt'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -768,7 +838,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' }, // Rival usa Quick Attack (prioridad) → bloqueado por Dazzling
       { p1: 'move 1', p2: 'move 4' }, // Rival usa Mach Punch → bloqueado
       { p1: 'switch 2', p2: 'move 1' }, // Cambia a Prankster
-      { p1: 'move 1', p2: 'move 1' }  // Thunder Wave con Prankster → prioridad +1
+      { p1: 'move 1', p2: 'move 1' } // Thunder Wave con Prankster → prioridad +1
     ]
   },
 
@@ -777,7 +847,16 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'End-of-Turn Abilities',
-    abilities: ['harvest', 'speedboost', 'moody', 'simple', 'unburden', 'gluttony', 'cheekpouch', 'ripen'],
+    abilities: [
+      'harvest',
+      'speedboost',
+      'moody',
+      'simple',
+      'unburden',
+      'gluttony',
+      'cheekpouch',
+      'ripen'
+    ],
     playerTeam: [
       {
         name: 'P-Harvest',
@@ -863,7 +942,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // King's Shield → Shield Form
       { p1: 'move 2', p2: 'move 1' }, // Aerial Ace → Blade Form (Stance Change)
-      { p1: 'move 1', p2: 'move 1' }  // King's Shield de nuevo → vuelve a Shield Form
+      { p1: 'move 1', p2: 'move 1' } // King's Shield de nuevo → vuelve a Shield Form
     ]
   },
 
@@ -1041,7 +1120,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Mew usa Focus Punch (Blissey usa Soft-Boiled, no daña)
-      { p1: 'move 2', p2: 'move 1' }  // Mew usa Noble Roar
+      { p1: 'move 2', p2: 'move 1' } // Mew usa Noble Roar
     ]
   },
 
@@ -1081,7 +1160,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Mew usa Nuzzle (paraliza)
-      { p1: 'move 2', p2: 'move 1' }  // Mew usa Ice Punch
+      { p1: 'move 2', p2: 'move 1' } // Mew usa Ice Punch
     ]
   },
 
@@ -1121,7 +1200,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Mew usa Night Slash
-      { p1: 'move 2', p2: 'move 1' }  // Mew usa Incinerate (quema la Sitrus Berry del rival)
+      { p1: 'move 2', p2: 'move 1' } // Mew usa Incinerate (quema la Sitrus Berry del rival)
     ]
   },
 
@@ -1160,7 +1239,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       }
     ],
     actions: [
-      { p1: 'move 1', p2: 'move 1' }  // Falinks usa No Retreat (queda atrapado legalmente, termina el escenario)
+      { p1: 'move 1', p2: 'move 1' } // Falinks usa No Retreat (queda atrapado legalmente, termina el escenario)
     ]
   },
 
@@ -1225,7 +1304,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Mew usa Tackle, Blissey usa Growl -> Activa Contrary (sube Atk)
       { p1: 'switch 2', p2: 'move 1' }, // Cambia a Mew Defiant, Blissey usa Growl -> Activa Defiant (sube Atk +2)
-      { p1: 'switch 3', p2: 'move 1' }  // Cambia a Mew Competitive, Blissey usa Growl -> Activa Competitive (sube SpA +2)
+      { p1: 'switch 3', p2: 'move 1' } // Cambia a Mew Competitive, Blissey usa Growl -> Activa Competitive (sube SpA +2)
     ],
     validate: (sim) => {
       // Validamos que Contrary, Defiant y Competitive estén en el equipo de combate
@@ -1239,7 +1318,18 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Contact Reactives & Damage Abilities',
-    abilities: ['aftermath', 'roughskin', 'ironbarbs', 'cutecharm', 'effectspore', 'poisonpoint', 'static', 'flamebody', 'mummy', 'gooey'],
+    abilities: [
+      'aftermath',
+      'roughskin',
+      'ironbarbs',
+      'cutecharm',
+      'effectspore',
+      'poisonpoint',
+      'static',
+      'flamebody',
+      'mummy',
+      'gooey'
+    ],
     playerTeam: [
       {
         name: 'P-Contact',
@@ -1270,10 +1360,21 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Rival usa Tackle (contacto) -> Detona habilidades de daño/contacto
-      { p1: 'move 1', p2: 'move 2' }  // Rival usa Double-Edge
+      { p1: 'move 1', p2: 'move 2' } // Rival usa Double-Edge
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['aftermath', 'roughskin', 'ironbarbs', 'cutecharm', 'effectspore', 'poisonpoint', 'static', 'flamebody', 'mummy', 'gooey']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'aftermath',
+        'roughskin',
+        'ironbarbs',
+        'cutecharm',
+        'effectspore',
+        'poisonpoint',
+        'static',
+        'flamebody',
+        'mummy',
+        'gooey'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -1283,7 +1384,19 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Status Blockers & Immunities',
-    abilities: ['bulletproof', 'soundproof', 'limber', 'insomnia', 'vitalspirit', 'owntempo', 'waterveil', 'magmaarmor', 'immunity', 'clearbody', 'whitesmoke'],
+    abilities: [
+      'bulletproof',
+      'soundproof',
+      'limber',
+      'insomnia',
+      'vitalspirit',
+      'owntempo',
+      'waterveil',
+      'magmaarmor',
+      'immunity',
+      'clearbody',
+      'whitesmoke'
+    ],
     playerTeam: [
       {
         name: 'P-Immunities',
@@ -1315,10 +1428,22 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey intenta paralizar -> Limber inmune/bloquea
       { p1: 'move 1', p2: 'move 2' }, // Blissey intenta envenenar -> Immunity bloquea
-      { p1: 'move 1', p2: 'move 3' }  // Blissey intenta dormir -> Insomnia/VitalSpirit bloquea
+      { p1: 'move 1', p2: 'move 3' } // Blissey intenta dormir -> Insomnia/VitalSpirit bloquea
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['bulletproof', 'soundproof', 'limber', 'insomnia', 'vitalspirit', 'owntempo', 'waterveil', 'magmaarmor', 'immunity', 'clearbody', 'whitesmoke']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'bulletproof',
+        'soundproof',
+        'limber',
+        'insomnia',
+        'vitalspirit',
+        'owntempo',
+        'waterveil',
+        'magmaarmor',
+        'immunity',
+        'clearbody',
+        'whitesmoke'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -1360,10 +1485,16 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey usa Tackle -> Stamina +1 Def / WeakArmor +Spe -Def
       { p1: 'move 1', p2: 'move 2' }, // Blissey usa Flamethrower -> SteamedEngine +6 Spe
-      { p1: 'move 1', p2: 'move 4' }  // Blissey usa Crunch (Siniestro) -> Justified +1 Atk / Rattled +1 Spe
+      { p1: 'move 1', p2: 'move 4' } // Blissey usa Crunch (Siniestro) -> Justified +1 Atk / Rattled +1 Spe
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['stamina', 'weakarmor', 'justified', 'rattled', 'steamedengine']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'stamina',
+        'weakarmor',
+        'justified',
+        'rattled',
+        'steamedengine'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -1373,7 +1504,18 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Weather & Terrain Synergies',
-    abilities: ['solarpower', 'dryskin', 'watercompaction', 'grassypelt', 'sandforce', 'sandrush', 'sandveil', 'slushrush', 'snowcloak', 'icebody'],
+    abilities: [
+      'solarpower',
+      'dryskin',
+      'watercompaction',
+      'grassypelt',
+      'sandforce',
+      'sandrush',
+      'sandveil',
+      'slushrush',
+      'snowcloak',
+      'icebody'
+    ],
     playerTeam: [
       {
         name: 'P-Solar',
@@ -1405,10 +1547,21 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey activa sol -> Solar Power drena vida / solarpower activo
       { p1: 'move 1', p2: 'move 2' }, // Blissey activa lluvia -> Dry Skin se cura en lluvia
-      { p1: 'move 1', p2: 'move 3' }  // Blissey activa campo de hierba -> Grassy Pelt sube defensa
+      { p1: 'move 1', p2: 'move 3' } // Blissey activa campo de hierba -> Grassy Pelt sube defensa
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['solarpower', 'dryskin', 'watercompaction', 'grassypelt', 'sandforce', 'sandrush', 'sandveil', 'slushrush', 'snowcloak', 'icebody']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'solarpower',
+        'dryskin',
+        'watercompaction',
+        'grassypelt',
+        'sandforce',
+        'sandrush',
+        'sandveil',
+        'slushrush',
+        'snowcloak',
+        'icebody'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -1464,7 +1617,14 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'switch 2', p2: 'move 1' } // Cambia a Mew Frisk -> cachea la Sitrus Berry del rival
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['intimidate', 'download', 'trace', 'frisk', 'anticipation', 'forewarn']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'intimidate',
+        'download',
+        'trace',
+        'frisk',
+        'anticipation',
+        'forewarn'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -1548,10 +1708,17 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey usa Storm Throw -> Battle Armor bloquea crítico
-      { p1: 'move 1', p2: 'move 2' }  // Blissey usa Zap Cannon -> No Guard / Compound Eyes aciertan
+      { p1: 'move 1', p2: 'move 2' } // Blissey usa Zap Cannon -> No Guard / Compound Eyes aciertan
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['battlearmor', 'shellarmor', 'compoundeyes', 'noguard', 'keeneye', 'hypercutter']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'battlearmor',
+        'shellarmor',
+        'compoundeyes',
+        'noguard',
+        'keeneye',
+        'hypercutter'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -1561,7 +1728,16 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Status Condition Reactives & Synchronize',
-    abilities: ['synchronize', 'shedskin', 'earlybird', 'guts', 'quickfeet', 'toxicboost', 'flareboost', 'marvelscale'],
+    abilities: [
+      'synchronize',
+      'shedskin',
+      'earlybird',
+      'guts',
+      'quickfeet',
+      'toxicboost',
+      'flareboost',
+      'marvelscale'
+    ],
     playerTeam: [
       {
         name: 'P-Sync',
@@ -1594,7 +1770,16 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey envenena a Mew -> Synchronize envenena de vuelta a Blissey
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['synchronize', 'shedskin', 'earlybird', 'guts', 'quickfeet', 'toxicboost', 'flareboost', 'marvelscale']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'synchronize',
+        'shedskin',
+        'earlybird',
+        'guts',
+        'quickfeet',
+        'toxicboost',
+        'flareboost',
+        'marvelscale'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -1647,7 +1832,14 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Type Immunity Absorbers',
-    abilities: ['eartheater', 'wellbakedbody', 'thermalexchange', 'dragonsmaw', 'transistor', 'rockypayload'],
+    abilities: [
+      'eartheater',
+      'wellbakedbody',
+      'thermalexchange',
+      'dragonsmaw',
+      'transistor',
+      'rockypayload'
+    ],
     playerTeam: [
       {
         name: 'P-Absorber',
@@ -1678,10 +1870,17 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey usa Earthquake -> Earth Eater absorbe y cura
-      { p1: 'move 1', p2: 'move 2' }  // Blissey usa Flamethrower -> Well Baked Body absorbe / Thermal Exchange se activa
+      { p1: 'move 1', p2: 'move 2' } // Blissey usa Flamethrower -> Well Baked Body absorbe / Thermal Exchange se activa
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['eartheater', 'wellbakedbody', 'thermalexchange', 'dragonsmaw', 'transistor', 'rockypayload']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'eartheater',
+        'wellbakedbody',
+        'thermalexchange',
+        'dragonsmaw',
+        'transistor',
+        'rockypayload'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -1778,7 +1977,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey usa Growl -> bloqueado por Full Metal Body / Clear Body
-      { p1: 'move 1', p2: 'move 2' }  // Blissey usa Leer -> bloqueado por Big Pecks
+      { p1: 'move 1', p2: 'move 2' } // Blissey usa Leer -> bloqueado por Big Pecks
     ],
     validate: (sim) => {
       const abilitiesSet = new Set(['fullmetalbody', 'bigpecks', 'heavymetal', 'lightmetal']); // runtime-set: Fast O(1) membership lookup set
@@ -1822,7 +2021,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey activa sol -> activa Chlorophyll (dobla velocidad)
-      { p1: 'move 2', p2: 'move 2' }  // Mew usa Hurricane (prioridad por Galewings al 100% HP)
+      { p1: 'move 2', p2: 'move 2' } // Mew usa Hurricane (prioridad por Galewings al 100% HP)
     ],
     validate: (sim) => {
       const abilitiesSet = new Set(['chlorophyll', 'galewings']); // runtime-set: Fast O(1) membership lookup set
@@ -1921,7 +2120,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey intenta envenenar -> bloqueado por Good as Gold
-      { p1: 'move 1', p2: 'move 2' }  // Blissey intenta Mofa -> bloqueado por Oblivious / Good as Gold
+      { p1: 'move 1', p2: 'move 2' } // Blissey intenta Mofa -> bloqueado por Oblivious / Good as Gold
     ],
     validate: (sim) => {
       const abilitiesSet = new Set(['goodasgold', 'magicguard', 'magicbounce', 'oblivious']); // runtime-set: Fast O(1) membership lookup set
@@ -2021,7 +2220,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // T1: Se activa Toxic Orb al final del turno
-      { p1: 'move 1', p2: 'move 2' }  // T2: Poison Heal cura en lugar de dañar
+      { p1: 'move 1', p2: 'move 2' } // T2: Poison Heal cura en lugar de dañar
     ],
     validate: (sim) => {
       const abilitiesSet = new Set(['hydration', 'poisonheal']); // runtime-set: Fast O(1) membership lookup set
@@ -2108,7 +2307,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey usa Giga Drain -> Liquid Ooze hiere en lugar de curar
-      { p1: 'move 1', p2: 'move 2' }  // Blissey intenta Self-Destruct -> Damp lo bloquea
+      { p1: 'move 1', p2: 'move 2' } // Blissey intenta Self-Destruct -> Damp lo bloquea
     ],
     validate: (sim) => {
       const abilitiesSet = new Set(['liquidooze', 'innardsout', 'damp']); // runtime-set: Fast O(1) membership lookup set
@@ -2152,7 +2351,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey usa Earthquake -> Levitate inmune
-      { p1: 'move 1', p2: 'move 2' }  // Blissey usa Substitute -> Infiltrator ataca a través de él
+      { p1: 'move 1', p2: 'move 2' } // Blissey usa Substitute -> Infiltrator ataca a través de él
     ],
     validate: (sim) => {
       const abilitiesSet = new Set(['levitate', 'infiltrator']); // runtime-set: Fast O(1) membership lookup set
@@ -2626,7 +2825,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey activa sol -> Protosynthesis se activa
-      { p1: 'move 1', p2: 'move 2' }  // Blissey activa campo eléctrico -> Quark Drive se activa
+      { p1: 'move 1', p2: 'move 2' } // Blissey activa campo eléctrico -> Quark Drive se activa
     ],
     validate: (sim) => {
       const abilitiesSet = new Set(['protosynthesis', 'quarkdrive']); // runtime-set: Fast O(1) membership lookup set
@@ -3312,7 +3511,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey ataca con Double-Edge -> Sturdy se activa al 100% HP y sobrevive con 1 HP
-      { p1: 'move 1', p2: 'move 2' }  // Blissey usa Roar -> bloqueado si tuviese Ventosas
+      { p1: 'move 1', p2: 'move 2' } // Blissey usa Roar -> bloqueado si tuviese Ventosas
     ],
     validate: (sim) => {
       const abilitiesSet = new Set(['sturdy', 'suctioncups']); // runtime-set: Fast O(1) membership lookup set
@@ -3457,7 +3656,13 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Mew usa Tackle -> daño transmutado y potenciado
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['aerilate', 'galvanize', 'refrigerate', 'waterbubble', 'parentalbond']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'aerilate',
+        'galvanize',
+        'refrigerate',
+        'waterbubble',
+        'parentalbond'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -3467,7 +3672,18 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Ruins & Wonder Guard Blockers',
-    abilities: ['flowergift', 'grasspelt', 'tabletsofruin', 'wonderguard', 'unaware', 'unnerve', 'baddreams', 'curiousmedicine', 'runaway', 'illuminate'],
+    abilities: [
+      'flowergift',
+      'grasspelt',
+      'tabletsofruin',
+      'wonderguard',
+      'unaware',
+      'unnerve',
+      'baddreams',
+      'curiousmedicine',
+      'runaway',
+      'illuminate'
+    ],
     playerTeam: [
       {
         name: 'P-Shedinja',
@@ -3498,10 +3714,21 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey usa Tackle -> bloqueado por Wonder Guard
-      { p1: 'move 1', p2: 'move 2' }  // Blissey usa Flamethrower -> golpe súper eficaz
+      { p1: 'move 1', p2: 'move 2' } // Blissey usa Flamethrower -> golpe súper eficaz
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['flowergift', 'grasspelt', 'tabletsofruin', 'wonderguard', 'unaware', 'unnerve', 'baddreams', 'curiousmedicine', 'runaway', 'illuminate']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'flowergift',
+        'grasspelt',
+        'tabletsofruin',
+        'wonderguard',
+        'unaware',
+        'unnerve',
+        'baddreams',
+        'curiousmedicine',
+        'runaway',
+        'illuminate'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -3511,7 +3738,19 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Wind & Toxic Reactives',
-    abilities: ['angerpoint', 'windpower', 'windrider', 'toxicdebris', 'toxicchain', 'dancer', 'gulpmissile', 'electromorphosis', 'guarddog', 'tangledfeet', 'tanglinghair'],
+    abilities: [
+      'angerpoint',
+      'windpower',
+      'windrider',
+      'toxicdebris',
+      'toxicchain',
+      'dancer',
+      'gulpmissile',
+      'electromorphosis',
+      'guarddog',
+      'tangledfeet',
+      'tanglinghair'
+    ],
     playerTeam: [
       {
         name: 'P-Anger',
@@ -3542,10 +3781,22 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
     ],
     actions: [
       { p1: 'move 1', p2: 'move 1' }, // Blissey usa Storm Throw -> Mew Anger Point se maximiza Atk (+6)
-      { p1: 'move 1', p2: 'move 2' }  // Blissey usa Hurricane -> Wind Power / Wind Rider se activan
+      { p1: 'move 1', p2: 'move 2' } // Blissey usa Hurricane -> Wind Power / Wind Rider se activan
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['angerpoint', 'windpower', 'windrider', 'toxicdebris', 'toxicchain', 'dancer', 'gulpmissile', 'electromorphosis', 'guarddog', 'tangledfeet', 'tanglinghair']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'angerpoint',
+        'windpower',
+        'windrider',
+        'toxicdebris',
+        'toxicchain',
+        'dancer',
+        'gulpmissile',
+        'electromorphosis',
+        'guarddog',
+        'tangledfeet',
+        'tanglinghair'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -3555,7 +3806,22 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
   // -------------------------------------------------------------------------
   {
     name: 'Berry Chewing & Unburden',
-    abilities: ['cudchew', 'unburden', 'symbiosis', 'pickup', 'ballfetch', 'honeygather', 'quickdraw', 'unseenfist', 'zenmode', 'hungerswitch', 'schooling', 'mimicry', 'pastelveil', 'windrider'],
+    abilities: [
+      'cudchew',
+      'unburden',
+      'symbiosis',
+      'pickup',
+      'ballfetch',
+      'honeygather',
+      'quickdraw',
+      'unseenfist',
+      'zenmode',
+      'hungerswitch',
+      'schooling',
+      'mimicry',
+      'pastelveil',
+      'windrider'
+    ],
     playerTeam: [
       {
         name: 'P-CudChewer',
@@ -3588,7 +3854,22 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       { p1: 'move 1', p2: 'move 1' } // Blissey ataca -> Mew consume baya, Cud Chew la vuelve a comer en el sig. turno
     ],
     validate: (sim) => {
-      const abilitiesSet = new Set(['cudchew', 'unburden', 'symbiosis', 'pickup', 'ballfetch', 'honeygather', 'quickdraw', 'unseenfist', 'zenmode', 'hungerswitch', 'schooling', 'mimicry', 'pastelveil', 'windrider']); // runtime-set: Fast O(1) membership lookup set
+      const abilitiesSet = new Set([
+        'cudchew',
+        'unburden',
+        'symbiosis',
+        'pickup',
+        'ballfetch',
+        'honeygather',
+        'quickdraw',
+        'unseenfist',
+        'zenmode',
+        'hungerswitch',
+        'schooling',
+        'mimicry',
+        'pastelveil',
+        'windrider'
+      ]); // runtime-set: Fast O(1) membership lookup set
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
   },
@@ -3666,9 +3947,6 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
         moves: ['Body Slam']
       }
     ],
-    actions: [
-      { p1: 'move 1', p2: 'move 1' }
-    ]
+    actions: [{ p1: 'move 1', p2: 'move 1' }]
   }
 ];
-

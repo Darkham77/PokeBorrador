@@ -1,4 +1,4 @@
-import { describe, test } from 'vitest';
+import { describe, test } from 'vite-plus/test';
 import assert from 'node:assert';
 import {
   resolveFieldEncounterModifiers,
@@ -120,8 +120,18 @@ describe('fieldRulesCoordinator - Unified Modifiers Engine', () => {
   describe('Post-Battle Rewards Coordination', () => {
     test('Coordina tiradas independientes de Recogida, Recogemiel y Cura Natural', () => {
       const meowth = createMockPokemon({ name: 'Meowth', ability: 'pickup', level: 30, hp: 50 });
-      const combee = createMockPokemon({ name: 'Combee', ability: 'honeygather', level: 40, hp: 50 });
-      const chansey = createMockPokemon({ name: 'Chansey', ability: 'naturalcure', hp: 50, status: 'psn' });
+      const combee = createMockPokemon({
+        name: 'Combee',
+        ability: 'honeygather',
+        level: 40,
+        hp: 50
+      });
+      const chansey = createMockPokemon({
+        name: 'Chansey',
+        ability: 'naturalcure',
+        hp: 50,
+        status: 'psn'
+      });
 
       const rewards = resolveFieldBattleRewards({
         team: [meowth, combee, chansey],

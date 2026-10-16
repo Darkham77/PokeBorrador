@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert';
 import { DatabaseSync } from 'node:sqlite';
 import { SQLiteQueryBuilder } from '../../../src/logic/db/sqliteQueryBuilder.ts';
@@ -24,20 +24,27 @@ describe('SQLiteQueryBuilder .or() filter clause parsing & query resolution', ()
     `);
 
     const mockDb = {
-      run: (sql: string, params: unknown[] = []) => rawDb.prepare(sql).run(...(params as (string | number | bigint | null | Uint8Array)[])),
+      run: (sql: string, params: unknown[] = []) =>
+        rawDb.prepare(sql).run(...(params as (string | number | bigint | null | Uint8Array)[])),
       exec: (sql: string, params: unknown[] = []): SQLiteResult[] => {
         const stmt = rawDb.prepare(sql);
-        const rows = stmt.all(...(params as (string | number | bigint | null | Uint8Array)[])) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
+        const rows = stmt.all(
+          ...(params as (string | number | bigint | null | Uint8Array)[])
+        ) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
         if (!rows.length) return [];
         const columns = Object.keys(rows[0]!);
-        const values = rows.map(r => columns.map(c => r[c]));
+        const values = rows.map((r) => columns.map((c) => r[c]));
         return [{ columns, values }];
       },
       export: () => new Uint8Array(),
       prepare: (sql: string) => rawDb.prepare(sql)
     } as unknown as SQLiteDatabase;
 
-    const qb = new SQLiteQueryBuilder('chat_messages', () => mockDb, async () => {});
+    const qb = new SQLiteQueryBuilder(
+      'chat_messages',
+      () => mockDb,
+      async () => {}
+    );
 
     // Query for local_darkham's perspective (messages involving local_darkham)
     const myId = 'local_darkham';
@@ -46,7 +53,11 @@ describe('SQLiteQueryBuilder .or() filter clause parsing & query resolution', ()
       .or(`type.eq.private:${myId},senderId.eq.${myId}`)
       .order('created_at', { ascending: true });
 
-    assert.strictEqual(messages.length, 2, 'Should find exactly 2 messages involving local_darkham');
+    assert.strictEqual(
+      messages.length,
+      2,
+      'Should find exactly 2 messages involving local_darkham'
+    );
     assert.strictEqual(messages[0]!['message'], 'Hola Darkham');
     assert.strictEqual(messages[1]!['message'], 'Hola Franco');
   });
@@ -68,26 +79,35 @@ describe('SQLiteQueryBuilder .or() filter clause parsing & query resolution', ()
     `);
 
     const mockDb = {
-      run: (sql: string, params: unknown[] = []) => rawDb.prepare(sql).run(...(params as (string | number | bigint | null | Uint8Array)[])),
+      run: (sql: string, params: unknown[] = []) =>
+        rawDb.prepare(sql).run(...(params as (string | number | bigint | null | Uint8Array)[])),
       exec: (sql: string, params: unknown[] = []): SQLiteResult[] => {
         const stmt = rawDb.prepare(sql);
-        const rows = stmt.all(...(params as (string | number | bigint | null | Uint8Array)[])) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
+        const rows = stmt.all(
+          ...(params as (string | number | bigint | null | Uint8Array)[])
+        ) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
         if (!rows.length) return [];
         const columns = Object.keys(rows[0]!);
-        const values = rows.map(r => columns.map(c => r[c]));
+        const values = rows.map((r) => columns.map((c) => r[c]));
         return [{ columns, values }];
       },
       export: () => new Uint8Array(),
       prepare: (sql: string) => rawDb.prepare(sql)
     } as unknown as SQLiteDatabase;
 
-    const qb = new SQLiteQueryBuilder('friendships', () => mockDb, async () => {});
+    const qb = new SQLiteQueryBuilder(
+      'friendships',
+      () => mockDb,
+      async () => {}
+    );
 
     const u1 = 'local_darkham';
     const u2 = 'local_franco';
     const friendship = await qb
       .select('*')
-      .or(`and(requester_id.eq.${u1},addressee_id.eq.${u2}),and(requester_id.eq.${u2},addressee_id.eq.${u1})`);
+      .or(
+        `and(requester_id.eq.${u1},addressee_id.eq.${u2}),and(requester_id.eq.${u2},addressee_id.eq.${u1})`
+      );
 
     assert.strictEqual(friendship.length, 1, 'Should find bidirectional friendship');
     assert.strictEqual(friendship[0]!['status'], 'accepted');

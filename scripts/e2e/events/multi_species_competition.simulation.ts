@@ -2,7 +2,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-
 class MultiSpeciesEventSimulation extends BaseEventSimulation {
   constructor(page: Page, username: string) {
     super(page, username);
@@ -20,7 +19,8 @@ class MultiSpeciesEventSimulation extends BaseEventSimulation {
     // 3. Seed team with eligible Week 2 Pokémon caught during the event window
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const { getServerTime } = await import('../../../src/logic/utils/timeUtils.ts');
 
@@ -65,7 +65,9 @@ class MultiSpeciesEventSimulation extends BaseEventSimulation {
 }
 
 test.describe('Multi-Species Event Competition E2E Simulation', () => {
-  test('renders global IV slot, species tabs, switches active slots and registers participants', async ({ page }) => {
+  test('renders global IV slot, species tabs, switches active slots and registers participants', async ({
+    page
+  }) => {
     const sim = new MultiSpeciesEventSimulation(page, 'FisherPro');
     await sim.setup();
     try {
@@ -109,7 +111,10 @@ test.describe('Multi-Species Event Competition E2E Simulation', () => {
       await expect(selectionModal.first()).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Select Horsea from list and confirm
-      const horseaItem = page.locator('.list-item, [id^="pokemon-select-"]').filter({ hasText: 'HORSEA' }).first();
+      const horseaItem = page
+        .locator('.list-item, [id^="pokemon-select-"]')
+        .filter({ hasText: 'HORSEA' })
+        .first();
       await expect(horseaItem).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await horseaItem.click();
 

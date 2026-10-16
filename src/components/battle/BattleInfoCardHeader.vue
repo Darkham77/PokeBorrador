@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import { computed } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
 
 const props = defineProps<{
-  pokemon: Pokemon
-  isPlayer: boolean
-  isScrambled: boolean
-}>()
+  pokemon: Pokemon;
+  isPlayer: boolean;
+  isScrambled: boolean;
+}>();
 
 const displayName = computed(() => {
-  if (props.isScrambled) return '???'
-  const name = props.pokemon.name
-  return (name === 'Nidoran-M' || name === 'Nidoran-F') ? 'Nidoran' : name
-})
+  if (props.isScrambled) return '???';
+  const name = props.pokemon.name;
+  return name === 'Nidoran-M' || name === 'Nidoran-F' ? 'Nidoran' : name;
+});
 
 const hasNameGender = computed(() => {
-  const n = props.pokemon.name
-  return n.includes('♂') || n.includes('♀')
-})
+  const n = props.pokemon.name;
+  return n.includes('♂') || n.includes('♀');
+});
 </script>
 
 <template>
@@ -40,9 +40,8 @@ const hasNameGender = computed(() => {
       class="caught-icon"
       width="16"
       height="16"
-    >
+    />
   </div>
 </template>
 
 <style scoped src="./BattleInfoCard.styles.scss" lang="scss"></style>
-

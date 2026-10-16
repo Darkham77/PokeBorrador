@@ -1,6 +1,6 @@
 /**
  * src/logic/render/render.worker.ts
- * 
+ *
  * Web Worker for off-thread rendering using OffscreenCanvas.
  * Prevents main thread layout thrashing and ensures smooth 60 FPS.
  */
@@ -70,10 +70,14 @@ function renderLoop() {
   // Draw simple label
   context.fillStyle = '#ffffff';
   context.font = '12px Courier New';
-  context.fillText('Player (Offscreen)', state.player.x - LABEL_OFFSET_X_PX, state.player.y - LABEL_OFFSET_Y_PX);
+  context.fillText(
+    'Player (Offscreen)',
+    state.player.x - LABEL_OFFSET_X_PX,
+    state.player.y - LABEL_OFFSET_Y_PX
+  );
 
   // Draw mock entities
-  state.entities.forEach(ent => {
+  state.entities.forEach((ent) => {
     context.fillStyle = '#ed64a6'; // Pink
     context.beginPath();
     context.arc(ent.x, ent.y, ENTITY_MOCK_RADIUS_PX, 0, Math.PI * 2);
@@ -128,5 +132,3 @@ self.onmessage = (event: MessageEvent) => {
     }
   }
 };
-
-export {};

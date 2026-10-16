@@ -1,18 +1,18 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
-import EventCard from '@/components/modals/EventCard.vue'
-import { useModalStore } from '@/stores/modals'
-import type { Event as GameEvent, UpcomingEventOccurrence } from '@/logic/events/eventEngine'
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
+import EventCard from '@/components/modals/EventCard.vue';
+import { useModalStore } from '@/stores/modals';
+import type { Event as GameEvent, UpcomingEventOccurrence } from '@/logic/events/eventEngine';
 
 describe('EventCard.vue', () => {
-  let pinia: ReturnType<typeof createPinia>
+  let pinia: ReturnType<typeof createPinia>;
 
   beforeEach(() => {
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
+    pinia = createPinia();
+    setActivePinia(pinia);
+  });
 
   const mockActiveEvent: GameEvent = {
     id: 'fiebre_oro',
@@ -23,7 +23,7 @@ describe('EventCard.vue', () => {
     manual: false,
     description: '¡Doble dinero en combates!',
     config: JSON.stringify({ banner: 'rival_full' })
-  }
+  };
 
   const mockOccurrence: UpcomingEventOccurrence = {
     event: {
@@ -43,19 +43,19 @@ describe('EventCard.vue', () => {
     dayName: 'Martes',
     isActiveNow: false,
     startsInLabel: 'En 20h'
-  }
+  };
 
   it('renders active event correctly with ACTIVO badge', () => {
     const wrapper = mount(EventCard, {
       props: { event: mockActiveEvent },
       global: { plugins: [pinia] }
-    })
+    });
 
-    expect(wrapper.text()).toContain('Fiebre del Oro y Rivales')
-    expect(wrapper.text()).toContain('ACTIVO')
-    expect(wrapper.text()).toContain('FINALIZA EN:')
-    expect(wrapper.find('.is-upcoming-card').exists()).toBe(false)
-  })
+    expect(wrapper.text()).toContain('Fiebre del Oro y Rivales');
+    expect(wrapper.text()).toContain('ACTIVO');
+    expect(wrapper.text()).toContain('FINALIZA EN:');
+    expect(wrapper.find('.is-upcoming-card').exists()).toBe(false);
+  });
 
   it('renders upcoming event correctly with monochrome banner and single bottom PROXIMO badge', () => {
     const wrapper = mount(EventCard, {
@@ -64,33 +64,33 @@ describe('EventCard.vue', () => {
         occurrence: mockOccurrence
       },
       global: { plugins: [pinia] }
-    })
+    });
 
-    expect(wrapper.text()).toContain('Torneo de Pesca Acuática')
-    expect(wrapper.text()).toContain('INICIA EN:')
-    expect(wrapper.text()).toContain('En 20h')
-    expect(wrapper.text()).toContain('Mañana · 18:00 - 22:00 hs')
-    expect(wrapper.find('.is-upcoming-card').exists()).toBe(true)
-    expect(wrapper.find('.is-upcoming-banner').exists()).toBe(true)
-    expect(wrapper.find('.upcoming-badge').text()).toContain('PRÓXIMO')
-  })
+    expect(wrapper.text()).toContain('Torneo de Pesca Acuática');
+    expect(wrapper.text()).toContain('INICIA EN:');
+    expect(wrapper.text()).toContain('En 20h');
+    expect(wrapper.text()).toContain('Mañana · 18:00 - 22:00 hs');
+    expect(wrapper.find('.is-upcoming-card').exists()).toBe(true);
+    expect(wrapper.find('.is-upcoming-banner').exists()).toBe(true);
+    expect(wrapper.find('.upcoming-badge').text()).toContain('PRÓXIMO');
+  });
 
   it('opens EventDetail modal on click', async () => {
-    const modalStore = useModalStore()
+    const modalStore = useModalStore();
     const wrapper = mount(EventCard, {
       props: { event: mockActiveEvent },
       global: { plugins: [pinia] }
-    })
+    });
 
-    await wrapper.trigger('click')
-    expect(modalStore.isOpen('EventDetail')).toBe(true)
-  })
+    await wrapper.trigger('click');
+    expect(modalStore.isOpen('EventDetail')).toBe(true);
+  });
 
   it('supports idPrefix prop to prevent DOM ID collision between home widget and modal', () => {
     const modalWrapper = mount(EventCard, {
       props: { event: mockActiveEvent },
       global: { plugins: [pinia] }
-    })
+    });
 
     const homeWrapper = mount(EventCard, {
       props: {
@@ -98,10 +98,10 @@ describe('EventCard.vue', () => {
         idPrefix: 'home-'
       },
       global: { plugins: [pinia] }
-    })
+    });
 
-    expect(modalWrapper.attributes('id')).toBe('event-card-fiebre_oro')
-    expect(homeWrapper.attributes('id')).toBe('home-event-card-fiebre_oro')
-    expect(modalWrapper.attributes('id')).not.toBe(homeWrapper.attributes('id'))
-  })
-})
+    expect(modalWrapper.attributes('id')).toBe('event-card-fiebre_oro');
+    expect(homeWrapper.attributes('id')).toBe('home-event-card-fiebre_oro');
+    expect(modalWrapper.attributes('id')).not.toBe(homeWrapper.attributes('id'));
+  });
+});

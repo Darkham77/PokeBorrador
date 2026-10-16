@@ -19,7 +19,11 @@ describe('spritePipelineEngine', () => {
   /**
    * Helper to create a blank RGBA buffer
    */
-  function createBuffer(width: number, height: number, fillColor: [number, number, number, number]): RawImageBuffer {
+  function createBuffer(
+    width: number,
+    height: number,
+    fillColor: [number, number, number, number]
+  ): RawImageBuffer {
     const data = new Uint8ClampedArray(width * height * 4);
     for (let i = 0; i < data.length; i += 4) {
       data[i] = fillColor[0];
@@ -104,41 +108,59 @@ describe('spritePipelineEngine', () => {
     // Tree: Tall green rectangle
     const treeBuf = createBuffer(32, 48, [0, 0, 0, 0]);
     drawRect(treeBuf, 0, 0, 32, 48, [34, 197, 94, 255]);
-    const treeClass = classifySprite({ minX: 0, minY: 0, maxX: 31, maxY: 47, width: 32, height: 48 }, treeBuf);
+    const treeClass = classifySprite(
+      { minX: 0, minY: 0, maxX: 31, maxY: 47, width: 32, height: 48 },
+      treeBuf
+    );
     expect(treeClass.category).toBe('tree');
     expect(treeClass.biome).toBe('forest');
 
     // Mountain: Brown/Gray rectangle
     const mtnBuf = createBuffer(48, 48, [0, 0, 0, 0]);
     drawRect(mtnBuf, 0, 0, 48, 48, [120, 80, 50, 255]);
-    const mtnClass = classifySprite({ minX: 0, minY: 0, maxX: 47, maxY: 47, width: 48, height: 48 }, mtnBuf);
+    const mtnClass = classifySprite(
+      { minX: 0, minY: 0, maxX: 47, maxY: 47, width: 48, height: 48 },
+      mtnBuf
+    );
     expect(mtnClass.category).toBe('mountain');
     expect(mtnClass.biome).toBe('mountain');
 
     // Snow: White/pale cyan rectangle
     const snowBuf = createBuffer(32, 32, [0, 0, 0, 0]);
     drawRect(snowBuf, 0, 0, 32, 32, [240, 248, 255, 255]);
-    const snowClass = classifySprite({ minX: 0, minY: 0, maxX: 31, maxY: 31, width: 32, height: 32 }, snowBuf);
+    const snowClass = classifySprite(
+      { minX: 0, minY: 0, maxX: 31, maxY: 31, width: 32, height: 32 },
+      snowBuf
+    );
     expect(snowClass.category).toBe('snow');
     expect(snowClass.biome).toBe('snow');
 
     // Water: Deep blue rectangle
     const waterBuf = createBuffer(32, 32, [0, 0, 0, 0]);
     drawRect(waterBuf, 0, 0, 32, 32, [14, 116, 144, 255]);
-    const waterClass = classifySprite({ minX: 0, minY: 0, maxX: 31, maxY: 31, width: 32, height: 32 }, waterBuf);
+    const waterClass = classifySprite(
+      { minX: 0, minY: 0, maxX: 31, maxY: 31, width: 32, height: 32 },
+      waterBuf
+    );
     expect(waterClass.category).toBe('water_edge');
     expect(waterClass.biome).toBe('ocean');
 
     // Building: Large structure (64x64)
     const bldBuf = createBuffer(64, 64, [0, 0, 0, 0]);
     drawRect(bldBuf, 0, 0, 64, 64, [220, 38, 38, 255]);
-    const bldClass = classifySprite({ minX: 0, minY: 0, maxX: 63, maxY: 63, width: 64, height: 64 }, bldBuf);
+    const bldClass = classifySprite(
+      { minX: 0, minY: 0, maxX: 63, maxY: 63, width: 64, height: 64 },
+      bldBuf
+    );
     expect(bldClass.category).toBe('building');
 
     // Prop: Small red flower (16x16)
     const flowerBuf = createBuffer(16, 16, [0, 0, 0, 0]);
     drawRect(flowerBuf, 0, 0, 16, 16, [239, 68, 68, 255]);
-    const flowerClass = classifySprite({ minX: 0, minY: 0, maxX: 15, maxY: 15, width: 16, height: 16 }, flowerBuf);
+    const flowerClass = classifySprite(
+      { minX: 0, minY: 0, maxX: 15, maxY: 15, width: 16, height: 16 },
+      flowerBuf
+    );
     expect(flowerClass.category).toBe('prop');
   });
 

@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { MAX_POKEMON_BOX_PAGES_LIMIT } from '@/logic/constants/gameplay'
+import { computed } from 'vue';
+import { MAX_POKEMON_BOX_PAGES_LIMIT } from '@/logic/constants/gameplay';
 
-const props = withDefaults(defineProps<{
-  boxCount?: number
-  currentIndex: number
-  buyCost: number
-}>(), {
-  boxCount: 4
-})
+const props = withDefaults(
+  defineProps<{
+    boxCount?: number;
+    currentIndex: number;
+    buyCost: number;
+  }>(),
+  {
+    boxCount: 4
+  }
+);
 
 const emit = defineEmits<{
-  (e: 'switch', index: number): void
-  (e: 'buy'): void
-}>()
+  (e: 'switch', index: number): void;
+  (e: 'buy'): void;
+}>();
 
-const canBuyMoreBoxes = computed(() => (props.boxCount ?? 0) < MAX_POKEMON_BOX_PAGES_LIMIT)
+const canBuyMoreBoxes = computed(() => (props.boxCount ?? 0) < MAX_POKEMON_BOX_PAGES_LIMIT);
 </script>
 
 <template>
@@ -25,7 +28,7 @@ const canBuyMoreBoxes = computed(() => (props.boxCount ?? 0) < MAX_POKEMON_BOX_P
         v-for="i in props.boxCount"
         id="box-tabs-btn-caja-i"
         :key="i"
-        :class="{ active: currentIndex === (i - 1) }"
+        :class="{ active: currentIndex === i - 1 }"
         class="box-tab-btn"
         @click.stop="emit('switch', i - 1)"
       >
@@ -39,7 +42,9 @@ const canBuyMoreBoxes = computed(() => (props.boxCount ?? 0) < MAX_POKEMON_BOX_P
         @click.stop="emit('buy')"
       >
         <span class="btn-text">+ ADQUIRIR</span>
-        <span class="btn-price">(<span class="currency-symbol">₱</span>{{ buyCost.toLocaleString() }})</span>
+        <span class="btn-price"
+          >(<span class="currency-symbol">₱</span>{{ buyCost.toLocaleString() }})</span
+        >
       </button>
     </div>
 
@@ -50,7 +55,7 @@ const canBuyMoreBoxes = computed(() => (props.boxCount ?? 0) < MAX_POKEMON_BOX_P
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .box-tabs {
   display: flex;
@@ -59,7 +64,7 @@ const canBuyMoreBoxes = computed(() => (props.boxCount ?? 0) < MAX_POKEMON_BOX_P
   align-items: center;
   gap: $spacing-lg;
   padding: 8px 16px;
-  
+
   .tabs-list {
     display: flex;
     flex-wrap: wrap;
@@ -74,7 +79,7 @@ const canBuyMoreBoxes = computed(() => (props.boxCount ?? 0) < MAX_POKEMON_BOX_P
     align-items: center;
     gap: $spacing-md;
     flex-shrink: 0;
-    
+
     @media (width <= 768px) {
       justify-content: flex-end;
       width: 100%;
@@ -107,7 +112,9 @@ const canBuyMoreBoxes = computed(() => (props.boxCount ?? 0) < MAX_POKEMON_BOX_P
   @media (width <= 900px) {
     padding: 0 8px;
     margin-left: 4px;
-    .btn-price { display: none; }
+    .btn-price {
+      display: none;
+    }
   }
 
   .currency-symbol {

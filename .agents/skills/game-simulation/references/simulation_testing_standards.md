@@ -51,6 +51,7 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
   ```
 
   is a critical quality breach and must be rejected immediately.
+
 - **Mandatory Tier-3 Certification**: Whenever editing combat execution, FSM turn loops, or worker clients in `src/logic/battle/`, unit tests alone are insufficient. Agents MUST execute at least one Playwright E2E combat simulation (`npm run sim:e2e:combat` or certified fuzzer replay) to prove that the real browser Web Worker initializes and executes turns without crashing.
 
 ---

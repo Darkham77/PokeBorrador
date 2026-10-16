@@ -28,8 +28,8 @@ const hoverInfo = computed(() => {
   const elevCell = map.layers.elevation[y]?.[x] ?? null;
   const decCell = map.layers.decorations[y]?.[x] ?? null;
   const col = map.collisionMatrix[y]?.[x] ?? 0;
-  const warp = map.entities.warps.find(w => w.x === x && w.y === y);
-  const spawn = map.entities.spawns.find(s => s.x === x && s.y === y);
+  const warp = map.entities.warps.find((w) => w.x === x && w.y === y);
+  const spawn = map.entities.spawns.find((s) => s.x === x && s.y === y);
 
   return {
     x,
@@ -47,7 +47,11 @@ const selectedTileEntry = computed(() => {
   return defaultTilesRegistry.getTileById(store.selectedTileId);
 });
 
-const collisionTypes: readonly { readonly code: CollisionType; readonly label: string; readonly badgeClass: string }[] = [
+const collisionTypes: readonly {
+  readonly code: CollisionType;
+  readonly label: string;
+  readonly badgeClass: string;
+}[] = [
   { code: 0, label: '0: Libre / Transitable', badgeClass: 'col-0' },
   { code: 1, label: '1: Sólido / Bloqueado', badgeClass: 'col-1' },
   { code: 2, label: '2: Agua (Surf)', badgeClass: 'col-2' },
@@ -74,9 +78,7 @@ function selectCollisionType(code: CollisionType): void {
   <div class="studio-inspector">
     <div class="panel-header">
       <span class="header-icon">🔍</span>
-      <h4 class="panel-title">
-        INSPECTOR DE MAPA
-      </h4>
+      <h4 class="panel-title">INSPECTOR DE MAPA</h4>
     </div>
 
     <!-- Active Tool Properties -->
@@ -84,10 +86,7 @@ function selectCollisionType(code: CollisionType): void {
       <span class="section-title">Herramienta: {{ TOOL_LABELS[store.activeTool] }}</span>
 
       <!-- Collision Brush Selector -->
-      <div
-        v-if="store.activeTool === 'collision'"
-        class="tool-options"
-      >
+      <div v-if="store.activeTool === 'collision'" class="tool-options">
         <span class="field-label">Código de Colisión:</span>
         <div class="col-buttons">
           <button
@@ -104,38 +103,31 @@ function selectCollisionType(code: CollisionType): void {
       </div>
 
       <!-- Structure Stamper Selector -->
-      <div
-        v-else-if="store.activeTool === 'stamp'"
-        class="tool-options"
-      >
+      <div v-else-if="store.activeTool === 'stamp'" class="tool-options">
         <span class="field-label">Estructura a Estampar:</span>
         <select
           id="inspector-select-structure"
           v-model="store.selectedStructureId"
+          aria-label="Estructura a estampar"
           class="retro-select"
         >
-          <option
-            v-for="s in Object.values(store.availableStructures)"
-            :key="s.id"
-            :value="s.id"
-          >
+          <option v-for="s in Object.values(store.availableStructures)" :key="s.id" :value="s.id">
             {{ s.name }} ({{ s.footprint.width }}x{{ s.footprint.height }})
           </option>
         </select>
-        <div
-          v-if="store.selectedStructure"
-          class="structure-details"
-        >
+        <div v-if="store.selectedStructure" class="structure-details">
           <span>Interior: {{ store.selectedStructure.interiorMapId ?? 'Ninguno' }}</span>
-          <span>Huella: {{ store.selectedStructure.footprint.width }}x{{ store.selectedStructure.footprint.height }} tiles</span>
+          <span
+            >Huella: {{ store.selectedStructure.footprint.width }}x{{
+              store.selectedStructure.footprint.height
+            }}
+            tiles</span
+          >
         </div>
       </div>
 
       <!-- Tile Brush Preview -->
-      <div
-        v-else-if="store.activeTool === 'brush'"
-        class="tool-options"
-      >
+      <div v-else-if="store.activeTool === 'brush'" class="tool-options">
         <span class="field-label">Tile Activo:</span>
         <div class="tile-preview-box">
           <img
@@ -143,10 +135,9 @@ function selectCollisionType(code: CollisionType): void {
             :src="selectedTileEntry.file_path"
             alt="Tile Activo"
             class="tile-img"
-          
             width="32"
             height="32"
-          >
+          />
           <div class="tile-details">
             <span class="tile-id">{{ store.selectedTileId }}</span>
             <span class="tile-cat">{{ selectedTileEntry?.category ?? 'Desconocida' }}</span>
@@ -160,10 +151,7 @@ function selectCollisionType(code: CollisionType): void {
     <!-- Cursor Coordinates & Cell Information -->
     <div class="inspector-section">
       <span class="section-title">Coordenadas del Cursor</span>
-      <div
-        v-if="hoverInfo"
-        class="coords-card"
-      >
+      <div v-if="hoverInfo" class="coords-card">
         <div class="coord-header">
           <span class="coord-badge">X: {{ hoverInfo.x }}</span>
           <span class="coord-badge">Y: {{ hoverInfo.y }}</span>
@@ -183,44 +171,27 @@ function selectCollisionType(code: CollisionType): void {
           </div>
           <div class="cell-row">
             <span class="cell-label">Colisión:</span>
-            <span
-              class="cell-col-val"
-              :class="'col-' + hoverInfo.collision"
-            >
+            <span class="cell-col-val" :class="'col-' + hoverInfo.collision">
               {{ getCollisionDescription(hoverInfo.collision) }}
             </span>
           </div>
-          <div
-            v-if="hoverInfo.warp"
-            class="cell-row text-warp"
-          >
+          <div v-if="hoverInfo.warp" class="cell-row text-warp">
             <span class="cell-label">Warp:</span>
             <span class="cell-val">{{ hoverInfo.warp.targetMapId }}</span>
           </div>
-          <div
-            v-if="hoverInfo.spawn"
-            class="cell-row text-spawn"
-          >
+          <div v-if="hoverInfo.spawn" class="cell-row text-spawn">
             <span class="cell-label">Spawn:</span>
             <span class="cell-val">{{ hoverInfo.spawn.id }}</span>
           </div>
         </div>
       </div>
-      <div
-        v-else
-        class="empty-coords"
-      >
-        Pasa el cursor sobre el lienzo...
-      </div>
+      <div v-else class="empty-coords">Pasa el cursor sobre el lienzo...</div>
     </div>
 
     <div class="panel-divider" />
 
     <!-- Map General Metadata -->
-    <div
-      v-if="store.currentMap"
-      class="inspector-section"
-    >
+    <div v-if="store.currentMap" class="inspector-section">
       <span class="section-title">Datos del Mapa</span>
       <div class="map-stats">
         <div class="stat-row">
@@ -253,7 +224,7 @@ function selectCollisionType(code: CollisionType): void {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .studio-inspector {
   display: flex;
@@ -355,25 +326,37 @@ function selectCollisionType(code: CollisionType): void {
     &.col-0 {
       background: Rgb(34 197 94 / 15%);
       color: var(--green-light);
-      &.active { background: Rgb(34 197 94 / 35%); border-color: var(--emerald); }
+      &.active {
+        background: Rgb(34 197 94 / 35%);
+        border-color: var(--emerald);
+      }
     }
 
     &.col-1 {
       background: Rgb(239 68 68 / 15%);
       color: var(--rose);
-      &.active { background: Rgb(239 68 68 / 35%); border-color: var(--red-light); }
+      &.active {
+        background: Rgb(239 68 68 / 35%);
+        border-color: var(--red-light);
+      }
     }
 
     &.col-2 {
       background: Rgb(59 130 246 / 15%);
       color: var(--blue-400);
-      &.active { background: Rgb(59 130 246 / 35%); border-color: var(--blue-500); }
+      &.active {
+        background: Rgb(59 130 246 / 35%);
+        border-color: var(--blue-500);
+      }
     }
 
     &.col-3 {
       background: Rgb(234 179 8 / 15%);
       color: var(--amber-300);
-      &.active { background: Rgb(234 179 8 / 35%); border-color: var(--amber-dark); }
+      &.active {
+        background: Rgb(234 179 8 / 35%);
+        border-color: var(--amber-dark);
+      }
     }
   }
 }
@@ -449,19 +432,40 @@ function selectCollisionType(code: CollisionType): void {
       display: flex;
       justify-content: space-between;
 
-      .cell-label { color: var(--slate-500); }
-      .cell-val { max-width: 140px; color: var(--slate-100); overflow: hidden; text-overflow: ellipsis; }
+      .cell-label {
+        color: var(--slate-500);
+      }
+      .cell-val {
+        max-width: 140px;
+        color: var(--slate-100);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
       .cell-col-val {
         font-weight: bold;
-        &.col-0 { color: var(--green-light); }
-        &.col-1 { color: var(--rose); }
-        &.col-2 { color: var(--blue-400); }
-        &.col-3 { color: var(--amber-300); }
+        &.col-0 {
+          color: var(--green-light);
+        }
+        &.col-1 {
+          color: var(--rose);
+        }
+        &.col-2 {
+          color: var(--blue-400);
+        }
+        &.col-3 {
+          color: var(--amber-300);
+        }
       }
 
-      &.text-warp .cell-val { color: var(--amber-400); font-weight: bold; }
-      &.text-spawn .cell-val { color: var(--cyan); font-weight: bold; }
+      &.text-warp .cell-val {
+        color: var(--amber-400);
+        font-weight: bold;
+      }
+      &.text-spawn .cell-val {
+        color: var(--cyan);
+        font-weight: bold;
+      }
     }
   }
 }
@@ -485,7 +489,9 @@ function selectCollisionType(code: CollisionType): void {
     justify-content: space-between;
     color: var(--slate-400);
 
-    b { color: var(--slate-100); }
+    b {
+      color: var(--slate-100);
+    }
   }
 }
 </style>

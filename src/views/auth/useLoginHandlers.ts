@@ -6,7 +6,11 @@
 
 import { type Ref } from 'vue';
 import type { Router } from 'vue-router';
-import { validateAuthLogin, validateAuthRegister, validateTrainerName } from '@/logic/validation/schemas';
+import {
+  validateAuthLogin,
+  validateAuthRegister,
+  validateTrainerName
+} from '@/logic/validation/schemas';
 import { OFFICIAL_SERVERS_BY_ID } from '@/data/system/official_servers';
 import type { useAuthStore } from '@/stores/auth';
 import { logger } from '@/logic/utils/logger';
@@ -45,7 +49,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     success,
     loading,
     authTab,
-    getFriendlyErrorMessage,
+    getFriendlyErrorMessage
   } = params;
 
   const handleLogin = async () => {
@@ -73,7 +77,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
       email: email.value,
       password: password.value,
       username: username.value,
-      gender: gender.value,
+      gender: gender.value
     });
     if (!validRes.success) {
       error.value = validRes.issues[0]?.message || 'Datos de registro inválidos';
@@ -82,7 +86,12 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     loading.value = true;
     error.value = null;
     try {
-      await authStore.signup(validRes.output.email, validRes.output.password, validRes.output.username, validRes.output.gender || 'h');
+      await authStore.signup(
+        validRes.output.email,
+        validRes.output.password,
+        validRes.output.username,
+        validRes.output.gender || 'h'
+      );
       success.value = '¡Cuenta creada! Revisa tu email para confirmar.';
       authTab.value = 'login';
     } catch (err: unknown) {
@@ -134,7 +143,11 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
   };
 
   const checkServerHealth = async () => {
-    if (typeof window !== 'undefined' && '__E2E__' in window && Boolean((window as Window & { __E2E__?: boolean }).__E2E__)) {
+    if (
+      typeof window !== 'undefined' &&
+      '__E2E__' in window &&
+      Boolean((window as Window & { __E2E__?: boolean }).__E2E__)
+    ) {
       serverStatus.value = 'offline';
       serverStatusDetail.value = 'Offline E2E session';
       return;
@@ -153,12 +166,12 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
       // fallow-ignore-next-line security-sink
       const response = await fetch(`${server.url}/rest/v1/`, {
         signal: AbortSignal.timeout(SERVER_HEALTH_TIMEOUT_MS),
-        headers: { 'apikey': server.anonKey },
+        headers: { apikey: server.anonKey }
       });
 
       serverStatus.value = response.status < 500 ? 'online' : 'offline';
       serverStatusDetail.value = response.status < 500 ? 'Operativo ✅' : 'Error de Servidor 💥';
-    } catch (_e) {
+    } catch {
       serverStatus.value = 'offline';
       serverStatusDetail.value = 'Inalcanzable 💤';
     }
@@ -169,6 +182,6 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     handleSignup,
     handleLocalLogin,
     handleLocalSignup,
-    checkServerHealth,
+    checkServerHealth
   };
 }

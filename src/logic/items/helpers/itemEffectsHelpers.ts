@@ -16,18 +16,18 @@ export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectRe
     }
     const tmData: TMData | undefined = isTmId(tmId) ? GAME_TMS_BY_ID[tmId] : undefined;
     if (!tmData) return { success: false, message: 'MT inválida.' };
-    
+
     // Check if pokemon already knows the move
-    if (p.moves.some(m => m && m.name === tmData.name)) {
+    if (p.moves.some((m) => m && m.name === tmData.name)) {
       return { success: false, message: 'Ya conoce este movimiento.' };
     }
 
-    return { 
-      success: true, 
-      message: `aprenderá ${tmData.name}`, 
-      deferred: true, 
-      resultType: 'learn_move', 
-      moveName: tmData.moveId 
+    return {
+      success: true,
+      message: `aprenderá ${tmData.name}`,
+      deferred: true,
+      resultType: 'learn_move',
+      moveName: tmData.moveId
     };
   }
   return null;

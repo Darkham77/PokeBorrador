@@ -1,4 +1,8 @@
-import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts';
+import {
+  getMechanicalWeather,
+  WEATHER_MECHANICAL,
+  WEATHER_REGISTRY
+} from '../weather/weatherRegistry.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleWeather, BattleSide } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
@@ -11,7 +15,10 @@ const WEATHER_CHIP_DAMAGE_DIVISOR = 16;
 const SOLAR_POWER_DAMAGE_DIVISOR = 8;
 
 function isSandImmune(poke: Pokemon): boolean {
-  return SAND_IMMUNE_TYPES_SET.has(poke.type) || (poke.type2 ? SAND_IMMUNE_TYPES_SET.has(poke.type2) : false);
+  return (
+    SAND_IMMUNE_TYPES_SET.has(poke.type) ||
+    (poke.type2 ? SAND_IMMUNE_TYPES_SET.has(poke.type2) : false)
+  );
 }
 
 function isHailImmune(poke: Pokemon): boolean {
@@ -34,17 +41,34 @@ function applyWeatherDamage(
   }
 }
 
-function applySandstormWeather(p: Pokemon, e: Pokemon, weatherLabel: string, ctx: BattleContext, promises: Promise<void>[]): void {
+function applySandstormWeather(
+  p: Pokemon,
+  e: Pokemon,
+  weatherLabel: string,
+  ctx: BattleContext,
+  promises: Promise<void>[]
+): void {
   if (!isSandImmune(p)) applyWeatherDamage(p, weatherLabel, 'player', ctx, promises);
   if (!isSandImmune(e)) applyWeatherDamage(e, weatherLabel, 'enemy', ctx, promises);
 }
 
-function applyHailWeather(p: Pokemon, e: Pokemon, weatherLabel: string, ctx: BattleContext, promises: Promise<void>[]): void {
+function applyHailWeather(
+  p: Pokemon,
+  e: Pokemon,
+  weatherLabel: string,
+  ctx: BattleContext,
+  promises: Promise<void>[]
+): void {
   if (!isHailImmune(p)) applyWeatherDamage(p, weatherLabel, 'player', ctx, promises);
   if (!isHailImmune(e)) applyWeatherDamage(e, weatherLabel, 'enemy', ctx, promises);
 }
 
-function applySolarPowerRecoil(poke: Pokemon, side: BattleSide, ctx: BattleContext, promises: Promise<void>[]): void {
+function applySolarPowerRecoil(
+  poke: Pokemon,
+  side: BattleSide,
+  ctx: BattleContext,
+  promises: Promise<void>[]
+): void {
   if (poke.ability !== 'solarpower' || poke.hp <= 0) return;
   const dmg = Math.max(1, Math.floor(poke.maxHp / SOLAR_POWER_DAMAGE_DIVISOR));
   poke.hp = Math.max(0, poke.hp - dmg);
@@ -54,7 +78,12 @@ function applySolarPowerRecoil(poke: Pokemon, side: BattleSide, ctx: BattleConte
   }
 }
 
-export async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, ctx: BattleContext): Promise<void> {
+export async function applyEndTurnWeather(
+  p: Pokemon,
+  e: Pokemon,
+  weather: BattleWeather | null,
+  ctx: BattleContext
+): Promise<void> {
   if (p?.ability === 'cloudnine' || e?.ability === 'cloudnine') {
     return;
   }

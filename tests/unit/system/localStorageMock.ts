@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test';
 
 /**
  * Creates a localStorage mock compatible with jsdom/vitest.
@@ -7,13 +7,19 @@ import { vi } from 'vitest'
  * installed on `window.localStorage` automatically.
  */
 export function setupLocalStorageMock() {
-  let store: Record<string, string> = {}
+  let store: Record<string, string> = {};
   const localStorageMock = {
     getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value.toString() }),
-    removeItem: vi.fn((key: string) => { delete store[key] }),
-    clear: vi.fn(() => { store = {} })
-  }
-  Object.defineProperty(window, 'localStorage', { value: localStorageMock, writable: true })
-  return localStorageMock
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value.toString();
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    })
+  };
+  Object.defineProperty(window, 'localStorage', { value: localStorageMock, writable: true });
+  return localStorageMock;
 }

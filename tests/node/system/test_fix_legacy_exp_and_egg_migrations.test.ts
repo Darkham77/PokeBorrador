@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { DatabaseSync } from 'node:sqlite';
 import { safeParse } from 'valibot';
 import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
@@ -94,12 +94,9 @@ describe('Fix Legacy expNeeded and Egg IDs Migration Test', () => {
     const beforeCheck = safeParse(saveDataSchema, mockSaveData);
     expect(beforeCheck.success).toBe(false);
 
-    db.prepare('INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)').run(
-      'mock_user_1',
-      JSON.stringify(mockSaveData),
-      'save_1',
-      Temporal.Now.instant().toString()
-    );
+    db.prepare(
+      'INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)'
+    ).run('mock_user_1', JSON.stringify(mockSaveData), 'save_1', Temporal.Now.instant().toString());
 
     // Apply migrations
     for (const migration of DATABASE_MIGRATIONS) {
@@ -109,7 +106,9 @@ describe('Fix Legacy expNeeded and Egg IDs Migration Test', () => {
     }
 
     // Read back save
-    const row = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get('mock_user_1') as { save_data: string };
+    const row = db
+      .prepare('SELECT save_data FROM game_saves WHERE user_id = ?')
+      .get('mock_user_1') as { save_data: string };
     const migratedSave = JSON.parse(row.save_data);
 
     // Verify expNeeded is now 0 (number) on team and box
@@ -125,7 +124,16 @@ describe('Fix Legacy expNeeded and Egg IDs Migration Test', () => {
     // Verify full schema compliance
     const afterCheck = safeParse(saveDataSchema, migratedSave);
     if (!afterCheck.success) {
-      console.log('After check issues:', afterCheck.issues.map(i => ({ path: i.path?.map(p => p.key).join('.'), msg: i.message, expected: i.expected, received: i.received, input: i.input })));
+      console.log(
+        'After check issues:',
+        afterCheck.issues.map((i) => ({
+          path: i.path?.map((p) => p.key).join('.'),
+          msg: i.message,
+          expected: i.expected,
+          received: i.received,
+          input: i.input
+        }))
+      );
     }
     expect(afterCheck.success).toBe(true);
   });

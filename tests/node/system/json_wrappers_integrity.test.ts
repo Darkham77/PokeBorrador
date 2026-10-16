@@ -6,7 +6,7 @@
  * (ItemId, PokemonSpeciesId, AbilityId, PokemonMoveId) without raw string desyncs.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import { RANDOM_SETS_DATA } from '../../../src/data/ai/randomSetsData.ts';
@@ -22,7 +22,10 @@ import { PDEX_ORDER } from '../../../src/data/pokemon/pokedex.ts';
 describe('JSON Typed Data Wrappers — Domain Integrity Audit', () => {
   describe('RANDOM_SETS_DATA', () => {
     it('contains strictly valid PokemonSpeciesId, ItemId, AbilityId, and moves in all random sets', () => {
-      assert.ok(Array.isArray(RANDOM_SETS_DATA) && RANDOM_SETS_DATA.length > 0, 'RANDOM_SETS_DATA must not be empty');
+      assert.ok(
+        Array.isArray(RANDOM_SETS_DATA) && RANDOM_SETS_DATA.length > 0,
+        'RANDOM_SETS_DATA must not be empty'
+      );
 
       for (const entry of RANDOM_SETS_DATA) {
         assert.ok(
@@ -38,7 +41,10 @@ describe('JSON Typed Data Wrappers — Domain Integrity Audit', () => {
             }, `Item "${set.item}" in random-sets for species "${entry.pokemon}" must be a valid canonical ItemId in items database`);
           }
 
-          assert.ok(Array.isArray(set.moves) && set.moves.length > 0, `Set for "${entry.pokemon}" must have valid moves`);
+          assert.ok(
+            Array.isArray(set.moves) && set.moves.length > 0,
+            `Set for "${entry.pokemon}" must have valid moves`
+          );
         }
       }
     });
@@ -81,10 +87,7 @@ describe('JSON Typed Data Wrappers — Domain Integrity Audit', () => {
         const list = Array.isArray(detailOrList) ? detailOrList : [detailOrList];
         for (const detail of list) {
           if (!detail) continue;
-          assert.ok(
-            detail.to,
-            `Evolution target species for "${sourceSpecies}" must be defined`
-          );
+          assert.ok(detail.to, `Evolution target species for "${sourceSpecies}" must be defined`);
 
           if (detail.item) {
             assert.doesNotThrow(() => {

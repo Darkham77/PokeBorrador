@@ -5,7 +5,12 @@ import { getDayCycle, requireDayPhase } from '@/logic/utils/timeUtils';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
 import { useEventStore } from '@/stores/events';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
+import type {
+  MapLocation,
+  Encounter,
+  EncounterOptions,
+  EncounterState
+} from '@/types/pokemon/encounters';
 import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import {
   getEncounterPool,
@@ -21,15 +26,21 @@ import {
   hasMapEncounterSpawns
 } from './encounterHelpers.ts';
 
-import { generateFishingEncounter } from './fishingEncounterHelper.ts'
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
-import { getMapLocationById } from '@/data/world/maps'
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { ItemId } from '@/data/inventory/items'
-import type { PokemonType } from '@/data/battle/types'
+import { generateFishingEncounter } from './fishingEncounterHelper.ts';
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { getMapLocationById } from '@/data/world/maps';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { ItemId } from '@/data/inventory/items';
+import type { PokemonType } from '@/data/battle/types';
 
-export { getEncounterPool, selectFromPool, clampLegendaryRates, getFinalGroundRates, getSpeciesEntries }
+export {
+  getEncounterPool,
+  selectFromPool,
+  clampLegendaryRates,
+  getFinalGroundRates,
+  getSpeciesEntries
+};
 
 /**
  * General walking wild encounter tables, weather visitor quota, incense, and region boosts.
@@ -70,19 +81,27 @@ function generateGroundEncounter(
     incensegrass: 'grass',
     incensenormal: 'normal',
     incenseghost: 'ghost',
-    incensepsychic: 'psychic',
+    incensepsychic: 'psychic'
   };
 
-  const targetType = modifiers.attractionType || (state.incenseSecs && state.incenseSecs > 0 && state.incenseType ? INCENSE_TO_TYPE[state.incenseType] : null);
+  const targetType =
+    modifiers.attractionType ||
+    (state.incenseSecs && state.incenseSecs > 0 && state.incenseType
+      ? INCENSE_TO_TYPE[state.incenseType]
+      : null);
   if (targetType) {
-    const typeIndices = pool.map((id, idx) => {
-      const pData = pokemonDataProvider.getPokemonData(id);
-      return (pData && (pData.type === targetType || pData.type2 === targetType)) ? idx : -1;
-    }).filter(idx => idx !== -1);
+    const typeIndices = pool
+      .map((id, idx) => {
+        const pData = pokemonDataProvider.getPokemonData(id);
+        return pData && (pData.type === targetType || pData.type2 === targetType) ? idx : -1;
+      })
+      .filter((idx) => idx !== -1);
 
     if (typeIndices.length > 0) {
-      pool = typeIndices.map(idx => pool[idx]).filter((id): id is PokemonSpeciesId => id !== undefined);
-      rates = typeIndices.map(idx => rates[idx]).filter((r): r is number => r !== undefined);
+      pool = typeIndices
+        .map((idx) => pool[idx])
+        .filter((id): id is PokemonSpeciesId => id !== undefined);
+      rates = typeIndices.map((idx) => rates[idx]).filter((r): r is number => r !== undefined);
     }
   }
 
@@ -91,11 +110,13 @@ function generateGroundEncounter(
   const selectedId = selectFromPool(pool, rates);
   const minLv = loc.lv[0] || 2;
   const maxLv = loc.lv[1] || 5;
-  let level = modifiers.forceMaxLevel ? maxLv : Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
+  let level = modifiers.forceMaxLevel
+    ? maxLv
+    : Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
   if (modifiers.shouldAvoidLowLevel(level)) {
     level = Math.max(level, maxLv);
   }
-  
+
   const pokemon = makePokemon(selectedId, level, {
     nature: modifiers.natureOverride ?? undefined,
     gender: modifiers.genderOverride ?? undefined,
@@ -108,13 +129,16 @@ function generateGroundEncounter(
 
   applyAtmosphericStatus(pokemon, loc, weather, selectedId);
 
-  return { 
-    type: 'wild', 
-    pokemon: applyEncounterBonuses(pokemon, locId, state.faction, options.dominanceData) 
+  return {
+    type: 'wild',
+    pokemon: applyEncounterBonuses(pokemon, locId, state.faction, options.dominanceData)
   };
 }
 
-async function checkTrainerEncounter(state: EncounterState, options: EncounterOptions): Promise<boolean> {
+async function checkTrainerEncounter(
+  state: EncounterState,
+  options: EncounterOptions
+): Promise<boolean> {
   if (options.forceEncounter) return false;
   const trainerBonus = options.eventTrainerBonus || 1;
   const criminality = state.classData?.criminality || 0;
@@ -123,7 +147,10 @@ async function checkTrainerEncounter(state: EncounterState, options: EncounterOp
   const { calculatePoliceEncounterChance } = await import('@/logic/player/classMath');
   const tChance = isRocketMaxCrim
     ? calculatePoliceEncounterChance(criminality, trainerBonus)
-    : Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus;
+    : Math.min(
+        state.trainerChance || GAME_RATIOS.encounters.trainerBase,
+        GAME_RATIOS.encounters.trainerMax
+      ) * trainerBonus;
 
   return Math.random() * 100 < tChance;
 }
@@ -134,7 +161,12 @@ function resolveActivityEncounter(
   state: EncounterState,
   options: EncounterOptions
 ): Encounter | null {
-  const { fishingWeight, archWeight, totalWeight } = calculateEncounterTypeWeights(loc, weather, state, options);
+  const { fishingWeight, archWeight, totalWeight } = calculateEncounterTypeWeights(
+    loc,
+    weather,
+    state,
+    options
+  );
   const roll = Math.random() * totalWeight;
 
   if (loc.fishing && roll < fishingWeight) {
@@ -150,16 +182,20 @@ function resolveActivityEncounter(
  * Main logic to generate a wild encounter.
  * Decomposes complex logic flows into single-responsibility utilities.
  */
-export async function generateEncounter(locId: MapRouteId, state: EncounterState, options: EncounterOptions = {}): Promise<Encounter | null> {
+export async function generateEncounter(
+  locId: MapRouteId,
+  state: EncounterState,
+  options: EncounterOptions = {}
+): Promise<Encounter | null> {
   const routeId = requireMapRouteId(locId);
   const maps = pokemonDataProvider.getMaps();
-  const loc = maps.find(l => l.id === routeId) || getMapLocationById(routeId);
+  const loc = maps.find((l) => l.id === routeId) || getMapLocationById(routeId);
   if (!loc || !hasMapEncounterSpawns(loc)) return null;
 
   const cycle = requireDayPhase(options.cycle || getDayCycle());
   const eventStore = useEventStore() as { activeEvents: GameEvent[] };
-  const activeEvents = options.activeEvents || (eventStore.activeEvents || []) || [];
-  const allMapIds = maps.map(m => requireMapRouteId(m.id));
+  const activeEvents = options.activeEvents || eventStore.activeEvents || [] || [];
+  const allMapIds = maps.map((m) => requireMapRouteId(m.id));
 
   // 1. Check special overrides (debug, rival, defender, guardian)
   const specialEncounter = checkSpecialEncounters(routeId, state, options, allMapIds);

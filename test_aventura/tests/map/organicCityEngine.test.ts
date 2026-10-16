@@ -22,8 +22,18 @@ describe('organicCityEngine (100-Seed Fuzzer Suite)', () => {
   it('strictly validates 100% Doorstep Clearance across 100 random seeds in Metropolis, City, and Town', () => {
     for (let seed = 1; seed <= 100; seed++) {
       const scale = SETTLEMENT_SCALES[seed % SETTLEMENT_SCALES.length]!;
-      const width = scale === 'metropolis' ? 26 + (seed % 5) : scale === 'city' ? 16 + (seed % 3) : 10 + (seed % 3);
-      const height = scale === 'metropolis' ? 22 + (seed % 3) : scale === 'city' ? 14 + (seed % 3) : 10 + (seed % 3);
+      const width =
+        scale === 'metropolis'
+          ? 26 + (seed % 5)
+          : scale === 'city'
+            ? 16 + (seed % 3)
+            : 10 + (seed % 3);
+      const height =
+        scale === 'metropolis'
+          ? 22 + (seed % 3)
+          : scale === 'city'
+            ? 14 + (seed % 3)
+            : 10 + (seed % 3);
 
       const node: POINode = {
         id: `fuzz_${scale}_${seed}`,
@@ -78,9 +88,9 @@ describe('organicCityEngine (100-Seed Fuzzer Suite)', () => {
       for (const b of bldgs) {
         expect(
           b.x >= node.gridX &&
-          b.x + b.width <= node.gridX + node.footprint.width &&
-          b.y >= node.gridY &&
-          b.y + b.height <= node.gridY + node.footprint.height,
+            b.x + b.width <= node.gridX + node.footprint.width &&
+            b.y >= node.gridY &&
+            b.y + b.height <= node.gridY + node.footprint.height,
           `Seed ${seed}: Building ${b.id} out of bounds at (${b.x},${b.y}) in ${scale}`
         ).toBe(true);
       }
@@ -93,10 +103,9 @@ describe('organicCityEngine (100-Seed Fuzzer Suite)', () => {
 
           const overlapX = a.x < b.x + b.width && a.x + a.width > b.x;
           const overlapY = a.y < b.y + b.height && a.y + a.height > b.y;
-          expect(
-            overlapX && overlapY,
-            `Seed ${seed}: Overlap between ${a.id} and ${b.id}`
-          ).toBe(false);
+          expect(overlapX && overlapY, `Seed ${seed}: Overlap between ${a.id} and ${b.id}`).toBe(
+            false
+          );
 
           const touchHoriz =
             (a.x + a.width === b.x || b.x + b.width === a.x) &&

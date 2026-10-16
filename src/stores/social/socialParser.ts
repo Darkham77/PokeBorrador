@@ -1,19 +1,20 @@
+import { DEFAULT_PLAYER_CLASS } from '@/data/player/playerClasses.ts';
+import {
+  DEFAULT_TRAINER_NAME,
+  DEFAULT_TRAINER_LEVEL,
+  DEFAULT_GENDER
+} from '@/types/system/game.ts';
 import type { GameState } from '@/types/system/game';
 import type { ProfileRow, GameSaveRow } from '@/types/system/database';
 import { ONLINE_PRESENCE_WINDOW_MS } from '@/logic/constants/gameplay.ts';
 import { parseInstantSafe } from '@/logic/utils/timeUtils';
 import type { Friend, PendingRequest } from './social.ts';
 
-const DEFAULT_TRAINER_NAME = 'Entrenador' as const;
-const DEFAULT_TRAINER_LEVEL = 1 as const;
-const DEFAULT_GENDER = 'h' as const;
-const DEFAULT_PLAYER_CLASS = 'entrenador' as const;
-const EMPTY_STRING = '' as const;
 const SHORT_FALLBACK_SLICE_LENGTH = 8 as const;
 
 function resolveCandidateField<T>(fallback: T, ...candidates: (T | null | undefined)[]): T {
   for (const candidate of candidates) {
-    if (candidate !== null && candidate !== undefined && candidate !== EMPTY_STRING) {
+    if (candidate !== null && candidate !== undefined && candidate !== '') {
       return candidate;
     }
   }
@@ -31,7 +32,9 @@ function resolveBadgesCount(badges: unknown): number {
 }
 
 function resolveFallbackFriendName(friendUid: string): string {
-  const baseName = friendUid.startsWith('local_') ? friendUid.replace('local_', EMPTY_STRING) : DEFAULT_TRAINER_NAME;
+  const baseName = friendUid.startsWith('local_')
+    ? friendUid.replace('local_', '')
+    : DEFAULT_TRAINER_NAME;
   return baseName.charAt(0).toUpperCase() + baseName.slice(1);
 }
 
@@ -49,13 +52,16 @@ function resolveSaveData(saveRow?: GameSaveRow): Partial<GameState> {
 
 function resolveIsOnline(lastSeen?: Temporal.Instant | null): boolean {
   if (!lastSeen) return false;
-  return Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds < ONLINE_PRESENCE_WINDOW_MS;
+  return (
+    Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds <
+    ONLINE_PRESENCE_WINDOW_MS
+  );
 }
 
 function buildFriendItem(
   friendUid: string,
   profile: ProfileRow | undefined,
-  saveRow?: GameSaveRow | undefined
+  saveRow?: GameSaveRow
 ): Friend {
   const save = resolveSaveData(saveRow);
   const lastSeen = parseInstantSafe(profile?.last_played_at || saveRow?.updated_at);
@@ -65,15 +71,19 @@ function buildFriendItem(
   return {
     id: friendUid,
     username: resolveCandidateField(capitalizedFallback, profile?.username, save.trainer as string),
-    level: resolveCandidateField(DEFAULT_TRAINER_LEVEL, profile?.trainer_level, save.trainerLevel as number),
+    level: resolveCandidateField(
+      DEFAULT_TRAINER_LEVEL,
+      profile?.trainer_level,
+      save.trainerLevel as number
+    ),
     badges: profile?.badges ?? resolveBadgesCount(save.badges),
-    playerClass: resolveCandidateField(EMPTY_STRING, profile?.player_class, save.playerClass as string),
-    faction: resolveCandidateField(EMPTY_STRING, profile?.faction, save.faction as string),
-    nick_style: resolveCandidateField(EMPTY_STRING, profile?.nick_style, save.nick_style as string),
-    avatar_style: resolveCandidateField(EMPTY_STRING, profile?.avatar_style, save.avatar_style as string),
+    playerClass: resolveCandidateField('', profile?.player_class, save.playerClass as string),
+    faction: resolveCandidateField('', profile?.faction, save.faction as string),
+    nick_style: resolveCandidateField('', profile?.nick_style, save.nick_style as string),
+    avatar_style: resolveCandidateField('', profile?.avatar_style, save.avatar_style as string),
     gender: resolveCandidateField(DEFAULT_GENDER, profile?.gender, save.gender as string),
     isOnline,
-    lastSeen,
+    lastSeen
   };
 }
 
@@ -82,15 +92,11 @@ export function parseFriendsList(
   profilesData: ProfileRow[],
   savesData: GameSaveRow[] = []
 ): Friend[] {
-  const profilesById: Record<string, ProfileRow> = Object.fromEntries(
-    profilesData.map((p) => [p.id, p])
-  );
-  const savesByUserId: Record<string, GameSaveRow> = Object.fromEntries(
-    savesData.map((s) => [s.user_id, s])
-  );
+  const profilesById = new Map<string, ProfileRow>(profilesData.map((p) => [p.id, p]));
+  const savesByUserId = new Map<string, GameSaveRow>(savesData.map((s) => [s.user_id, s]));
 
   return friendIds.map((fId: string) =>
-    buildFriendItem(fId, profilesById[fId], savesByUserId[fId])
+    buildFriendItem(fId, profilesById.get(fId), savesByUserId.get(fId))
   );
 }
 
@@ -99,11 +105,9 @@ export function parsePendingRequests(
   profilesData: ProfileRow[],
   savesData: GameSaveRow[] = []
 ): PendingRequest[] {
-  const savesByUserId: Record<string, GameSaveRow> = Object.fromEntries(
-    savesData.map((s) => [s.user_id, s])
-  );
+  const savesByUserId = new Map<string, GameSaveRow>(savesData.map((s) => [s.user_id, s]));
 
-  const profilesMap: Record<
+  const profilesMap = new Map<
     string,
     {
       username: string;
@@ -113,26 +117,34 @@ export function parsePendingRequests(
       avatar_style: string;
       gender: string;
     }
-  > = {};
+  >();
 
   for (const p of profilesData) {
     const reqUid = p.id;
-    const saveRow = savesByUserId[reqUid];
+    const saveRow = savesByUserId.get(reqUid);
     const save = resolveSaveData(saveRow);
     const capitalizedFallback = reqUid.slice(0, SHORT_FALLBACK_SLICE_LENGTH).toUpperCase();
 
-    profilesMap[reqUid] = {
+    profilesMap.set(reqUid, {
       username: resolveCandidateField(capitalizedFallback, p?.username, save.trainer as string),
-      nick_style: resolveCandidateField(EMPTY_STRING, p?.nick_style, save.nick_style as string),
-      trainer_level: resolveCandidateField(DEFAULT_TRAINER_LEVEL, p?.trainer_level, save.trainerLevel as number),
-      player_class: resolveCandidateField(DEFAULT_PLAYER_CLASS, p?.player_class, save.playerClass as string),
-      avatar_style: resolveCandidateField(EMPTY_STRING, p?.avatar_style, save.avatar_style as string),
-      gender: resolveCandidateField(DEFAULT_GENDER, p?.gender, save.gender as string),
-    };
+      nick_style: resolveCandidateField('', p?.nick_style, save.nick_style as string),
+      trainer_level: resolveCandidateField(
+        DEFAULT_TRAINER_LEVEL,
+        p?.trainer_level,
+        save.trainerLevel as number
+      ),
+      player_class: resolveCandidateField(
+        DEFAULT_PLAYER_CLASS,
+        p?.player_class,
+        save.playerClass as string
+      ),
+      avatar_style: resolveCandidateField('', p?.avatar_style, save.avatar_style as string),
+      gender: resolveCandidateField(DEFAULT_GENDER, p?.gender, save.gender as string)
+    });
   }
 
   pending.forEach((r: PendingRequest) => {
-    const profInfo = profilesMap[r.requester_id];
+    const profInfo = profilesMap.get(r.requester_id);
     if (profInfo) {
       r.profiles = {
         username: profInfo.username,
@@ -142,7 +154,7 @@ export function parsePendingRequests(
         playerClass: profInfo.player_class,
         level: profInfo.trainer_level,
         avatar_style: profInfo.avatar_style,
-        gender: profInfo.gender,
+        gender: profInfo.gender
       };
     }
   });

@@ -1,35 +1,44 @@
-import { handleEntryAbilities } from '../battleFlow.ts'
-import { getMapBiomeAndTags } from '../biomeHelper.ts'
-import { logger } from '../../utils/logger.ts'
-import type { BattleContext } from '@/types/battle/battleContext'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleState } from '@/types/battle/battle'
-import { resetActiveBattleState } from '../orchestratorStateHelper.ts'
-import { processRocketStealMechanics } from '../orchestratorRocketHelper.ts'
-import { initWorkerForBattle } from '../orchestratorWorkerInitHelper.ts'
-import type { BattleOptions } from '../orchestrator.ts'
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
+import { handleEntryAbilities } from '../battleFlow.ts';
+import { getMapBiomeAndTags } from '../biomeHelper.ts';
+import { logger } from '../../utils/logger.ts';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleState } from '@/types/battle/battle';
+import { resetActiveBattleState } from '../orchestratorStateHelper.ts';
+import { processRocketStealMechanics } from '../orchestratorRocketHelper.ts';
+import { initWorkerForBattle } from '../orchestratorWorkerInitHelper.ts';
+import type { BattleOptions } from '../orchestrator.ts';
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import {
   runTrainerIntroSequence,
   runWildSearchIntroSequence,
   runWildGrassIntroSequence
-} from './battleIntroSequencer.ts'
+} from './battleIntroSequencer.ts';
 
 function resolveInitialCombatants(
   ctx: BattleContext,
   options?: Partial<BattleOptions & { initialEnemy: Pokemon | null; initialPlayer: Pokemon | null }>
 ): { initialPlayer: Pokemon | null; initialEnemy: Pokemon | null } {
-  const initialEnemy = options?.initialEnemy || ctx.activeBattle.value?.enemy || ctx.activeBattle.value?.enemyTeam?.[0] || null
-  const initialPlayer = options?.initialPlayer || ctx.activeBattle.value?.player || ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0) || ctx.gs.state.team[0] || null
-  return { initialPlayer, initialEnemy }
+  const initialEnemy =
+    options?.initialEnemy ||
+    ctx.activeBattle.value?.enemy ||
+    ctx.activeBattle.value?.enemyTeam?.[0] ||
+    null;
+  const initialPlayer =
+    options?.initialPlayer ||
+    ctx.activeBattle.value?.player ||
+    ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0) ||
+    ctx.gs.state.team[0] ||
+    null;
+  return { initialPlayer, initialEnemy };
 }
 
 function clearBattleVolatiles(ctx: BattleContext, initialEnemy: Pokemon | null): void {
   ctx.gs.state.team.forEach((p: Pokemon) => {
-    if (p) ctx.clearVolatileStatus(p)
-  })
+    if (p) ctx.clearVolatileStatus(p);
+  });
   if (initialEnemy) {
-    ctx.clearVolatileStatus(initialEnemy)
+    ctx.clearVolatileStatus(initialEnemy);
   }
 }
 
@@ -47,15 +56,20 @@ async function executeIntroByMode(
   options: ExecuteIntroOptions
 ): Promise<void> {
   const { isTrainer, wasSearching, trainerName, battleState } = options;
-  const currentPlayer = ctx.activeBattle.value?.player
-  const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
+  const currentPlayer = ctx.activeBattle.value?.player;
+  const needsCall = !currentPlayer || currentPlayer.uid !== initialPlayer.uid;
 
   if (isTrainer) {
-    await runTrainerIntroSequence(ctx, initialPlayer, initialEnemy, { wasSearching, trainerName, battleState, needsCall })
+    await runTrainerIntroSequence(ctx, initialPlayer, initialEnemy, {
+      wasSearching,
+      trainerName,
+      battleState,
+      needsCall
+    });
   } else if (wasSearching) {
-    await runWildSearchIntroSequence(ctx, initialPlayer, initialEnemy, needsCall)
+    await runWildSearchIntroSequence(ctx, initialPlayer, initialEnemy, needsCall);
   } else {
-    await runWildGrassIntroSequence(ctx, initialPlayer, initialEnemy, needsCall)
+    await runWildGrassIntroSequence(ctx, initialPlayer, initialEnemy, needsCall);
   }
 }
 
@@ -71,21 +85,24 @@ function setupActiveBattleEnemy(
   options: ActiveBattleEnemyOptions
 ): void {
   const { isTrainer, isGym, wasSearching } = options;
-  const activeBattle = ctx.activeBattle.value
-  if (!activeBattle) return
+  const activeBattle = ctx.activeBattle.value;
+  if (!activeBattle) return;
 
-  activeBattle.enemy = (!isTrainer && !isGym) ? initialEnemy : null
-  activeBattle.wasSearching = wasSearching
+  activeBattle.enemy = !isTrainer && !isGym ? initialEnemy : null;
+  activeBattle.wasSearching = wasSearching;
   if (!isTrainer && !isGym && !activeBattle.isPvP) {
-    activeBattle.enemyTeam = [initialEnemy]
+    activeBattle.enemyTeam = [initialEnemy];
   }
 }
 
 async function runPreIntroTransitions(ctx: BattleContext, wasSearching: boolean): Promise<void> {
-  ctx.isIntroAnimating.value = true
+  ctx.isIntroAnimating.value = true;
   if (!wasSearching) {
-    await ctx.fsm.transition(ctx.BATTLE_STATES.INITIALIZING, ctx.BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS)
-    await ctx.fsm.transition(ctx.BATTLE_STATES.FIRST_INTRO, ctx.BATTLE_SUBSTATES.ENTRY_ANIM)
+    await ctx.fsm.transition(
+      ctx.BATTLE_STATES.INITIALIZING,
+      ctx.BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS
+    );
+    await ctx.fsm.transition(ctx.BATTLE_STATES.FIRST_INTRO, ctx.BATTLE_SUBSTATES.ENTRY_ANIM);
   }
 }
 
@@ -105,28 +122,44 @@ async function applyPostIntroSetup(
 ): Promise<void> {
   const { isTrainer, isGym, trainerName, battleState } = options;
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('resize'))
+    window.dispatchEvent(new Event('resize'));
   }
 
-  ctx.attackerSide.value = null
-  ctx.activeMove.value = null
+  ctx.attackerSide.value = null;
+  ctx.activeMove.value = null;
 
-  const { activeBiome, mapTags } = getMapBiomeAndTags(locationId)
-  logger.info('Orchestrator', `Combat started in biome: ${activeBiome} (Tags: ${mapTags.join(', ') || 'ninguno'}) for location: ${locationId}`)
+  const { activeBiome, mapTags } = getMapBiomeAndTags(locationId);
+  logger.info(
+    'Orchestrator',
+    `Combat started in biome: ${activeBiome} (Tags: ${mapTags.join(', ') || 'ninguno'}) for location: ${locationId}`
+  );
 
-  handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog, ctx.activeBattle.value?.weather?.type)
+  handleEntryAbilities(
+    initialPlayer,
+    initialEnemy,
+    ctx.playerStages.value,
+    ctx.enemyStages.value,
+    ctx.addLog,
+    ctx.activeBattle.value?.weather?.type
+  );
 
-  if (isTrainer) await ctx.gs.scheduleSave()
+  if (isTrainer) ctx.gs.scheduleSave();
 
-  await processRocketStealMechanics(ctx, trainerName || '', battleState ?? null, { isTrainer, isGym })
+  await processRocketStealMechanics(ctx, trainerName || '', battleState ?? null, {
+    isTrainer,
+    isGym
+  });
 }
 
-async function finalizeBattleInitialization(ctx: BattleContext, workerInitPromise: Promise<void>): Promise<void> {
-  await workerInitPromise
-  ctx.isIntroAnimating.value = false
-  await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT)
-  if (ctx.persistBattle) ctx.persistBattle()
-  ctx.isIntroAnimating.value = false
+async function finalizeBattleInitialization(
+  ctx: BattleContext,
+  workerInitPromise: Promise<void>
+): Promise<void> {
+  await workerInitPromise;
+  ctx.isIntroAnimating.value = false;
+  await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT);
+  if (ctx.persistBattle) ctx.persistBattle();
+  ctx.isIntroAnimating.value = false;
 }
 
 /**
@@ -136,35 +169,46 @@ export async function initBattleSequence(
   ctx: BattleContext,
   options?: Partial<BattleOptions & { initialEnemy: Pokemon | null; initialPlayer: Pokemon | null }>
 ) {
-  const { initialPlayer, initialEnemy } = resolveInitialCombatants(ctx, options)
-  if (!initialPlayer || !initialEnemy) return
+  const { initialPlayer, initialEnemy } = resolveInitialCombatants(ctx, options);
+  if (!initialPlayer || !initialEnemy) return;
 
-  const battleState = ctx.activeBattle.value
+  const battleState = ctx.activeBattle.value;
   if (!battleState?.locationId) {
-    throw new Error('[Battle] Active battle locationId is missing during initialization')
+    throw new Error('[Battle] Active battle locationId is missing during initialization');
   }
-  const locationId = requireMapRouteId(battleState.locationId)
-  const isTrainer = !!battleState.isTrainer
-  const isGym = !!battleState.isGym
-  const wasSearching = options?.wasSearching !== undefined ? !!options.wasSearching : !!battleState.wasSearching
-  const trainerName = battleState.trainerName
+  const locationId = requireMapRouteId(battleState.locationId);
+  const isTrainer = !!battleState.isTrainer;
+  const isGym = !!battleState.isGym;
+  const wasSearching =
+    options?.wasSearching !== undefined ? !!options.wasSearching : !!battleState.wasSearching;
+  const trainerName = battleState.trainerName;
 
-  await resetActiveBattleState(ctx, initialPlayer, isGym)
-  setupActiveBattleEnemy(ctx, initialEnemy, { isTrainer, isGym, wasSearching })
+  await resetActiveBattleState(ctx, initialPlayer, isGym);
+  setupActiveBattleEnemy(ctx, initialEnemy, { isTrainer, isGym, wasSearching });
 
   if (!wasSearching && ctx.animations?.resetAll) {
-    ctx.animations.resetAll()
+    ctx.animations.resetAll();
   }
 
   // Showdown Web Worker initialization in parallel with visual intro
-  const workerInitPromise = initWorkerForBattle(ctx, initialPlayer, initialEnemy)
+  const workerInitPromise = initWorkerForBattle(ctx, initialPlayer, initialEnemy);
 
-  clearBattleVolatiles(ctx, initialEnemy)
+  clearBattleVolatiles(ctx, initialEnemy);
 
-  await runPreIntroTransitions(ctx, wasSearching)
-  await executeIntroByMode(ctx, initialPlayer, initialEnemy, { isTrainer, wasSearching, trainerName, battleState })
-  await ctx.fsm.transition(ctx.BATTLE_STATES.REORDER_TEAM, null)
+  await runPreIntroTransitions(ctx, wasSearching);
+  await executeIntroByMode(ctx, initialPlayer, initialEnemy, {
+    isTrainer,
+    wasSearching,
+    trainerName,
+    battleState
+  });
+  await ctx.fsm.transition(ctx.BATTLE_STATES.REORDER_TEAM, null);
 
-  await applyPostIntroSetup(ctx, initialPlayer, initialEnemy, locationId, { isTrainer, isGym, trainerName, battleState })
-  await finalizeBattleInitialization(ctx, workerInitPromise)
+  await applyPostIntroSetup(ctx, initialPlayer, initialEnemy, locationId, {
+    isTrainer,
+    isGym,
+    trainerName,
+    battleState
+  });
+  await finalizeBattleInitialization(ctx, workerInitPromise);
 }

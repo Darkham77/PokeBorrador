@@ -12,47 +12,52 @@ class PvpSeasonAwardSimWrapper extends BaseE2ESimulation {
   }
 
   public async openSeasonRewardModal(): Promise<void> {
-    await this.page.evaluate(async ({ finalElo, rank, coinsAmount }) => {
-      const { useModalStore } = await import('../../../src/stores/modals.ts');
-      const { usePvPStore } = await import('../../../src/stores/pvp.ts');
+    await this.page.evaluate(
+      async ({ finalElo, rank, coinsAmount }) => {
+        const { useModalStore } = await import('../../../src/stores/modals.ts');
+        const { usePvPStore } = await import('../../../src/stores/pvp.ts');
 
-      const modalStore = useModalStore();
-      const pvpStore = usePvPStore();
+        const modalStore = useModalStore();
+        const pvpStore = usePvPStore();
 
-      pvpStore.elo = finalElo;
+        pvpStore.elo = finalElo;
 
-      modalStore.open('RankedSeasonReward', {
-        seasonName: 'Temporada 1: Renacer de Kanto',
-        tier: 'maestro',
-        rank,
-        finalElo,
-        awards: [
-          {
-            id: 'award_season_1_medal',
-            prize: { type: 'ranked_medal', tier: 'maestro', season: 'Temporada 1' }
-          },
-          {
-            id: 'award_season_1_pokemon',
-            prize: { type: 'pokemon', species: 'eevee', level: 50, shiny: true }
-          },
-          {
-            id: 'award_season_1_coins',
-            prize: { type: 'battle_coins', amount: coinsAmount }
-          }
-        ]
-      });
-    }, {
-      finalElo: SIM_MASTER_FINAL_ELO,
-      rank: SIM_PODIUM_RANK_FIRST,
-      coinsAmount: SIM_AWARD_COINS_AMOUNT
-    });
+        modalStore.open('RankedSeasonReward', {
+          seasonName: 'Temporada 1: Renacer de Kanto',
+          tier: 'maestro',
+          rank,
+          finalElo,
+          awards: [
+            {
+              id: 'award_season_1_medal',
+              prize: { type: 'ranked_medal', tier: 'maestro', season: 'Temporada 1' }
+            },
+            {
+              id: 'award_season_1_pokemon',
+              prize: { type: 'pokemon', species: 'eevee', level: 50, shiny: true }
+            },
+            {
+              id: 'award_season_1_coins',
+              prize: { type: 'battle_coins', amount: coinsAmount }
+            }
+          ]
+        });
+      },
+      {
+        finalElo: SIM_MASTER_FINAL_ELO,
+        rank: SIM_PODIUM_RANK_FIRST,
+        coinsAmount: SIM_AWARD_COINS_AMOUNT
+      }
+    );
   }
 }
 
 test.describe('PvP Season End Award & Claim Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('displays season celebration modal with maestro tier, podio #1, and claims rewards', async ({ page }) => {
+  test('displays season celebration modal with maestro tier, podio #1, and claims rewards', async ({
+    page
+  }) => {
     const sim = new PvpSeasonAwardSimWrapper(page, 'PvpSeasonAwardSim');
     await sim.setup();
     await sim.openSeasonRewardModal();

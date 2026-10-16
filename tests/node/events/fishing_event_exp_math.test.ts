@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { calculateBaseExp, processExpGain } from '@/logic/battle/battleRewards.ts';
 import { buildPrimaryRewardLine } from '@/logic/battle/rewards/combatantExpEvProcessor.ts';
@@ -67,7 +67,13 @@ describe('Fishing & Event Experience Mathematics', () => {
     assert.strictEqual(extraEventExp, 80);
 
     // Format string verification in combatant reward line
-    const rewardLine = buildPrimaryRewardLine(playerMonWithEvent.name, playerMonWithEvent.level, undefined, rewardWithEvent.gained, extraEventExp);
+    const rewardLine = buildPrimaryRewardLine(
+      playerMonWithEvent.name,
+      playerMonWithEvent.level,
+      undefined,
+      rewardWithEvent.gained,
+      extraEventExp
+    );
     assert.match(rewardLine, /\(\+\d+\s+EXP evento\)/);
   });
 
@@ -116,6 +122,9 @@ describe('Fishing & Event Experience Mathematics', () => {
 
     assert.strictEqual(weightsEvent.fishingWeight, weightsNormal.fishingWeight * 2);
     assert.ok(weightsEvent.totalWeight > weightsNormal.totalWeight);
-    assert.ok((weightsEvent.fishingWeight / weightsEvent.totalWeight) > (weightsNormal.fishingWeight / weightsNormal.totalWeight));
+    assert.ok(
+      weightsEvent.fishingWeight / weightsEvent.totalWeight >
+        weightsNormal.fishingWeight / weightsNormal.totalWeight
+    );
   });
 });

@@ -3,6 +3,8 @@
  * Centralized constant definitions for GSAP durations, easing, offsets, and UI movement.
  */
 
+import type { PokemonType } from '@/data/battle/types';
+
 /** Full rotation angle in degrees (360°). */
 export const FULL_ROTATION_DEG = 360;
 
@@ -290,6 +292,7 @@ export const DIALOG_LEAVE_DURATION_SEC = 0.3;
 
 /** Avatar spin animation durations per trainer class level in seconds. */
 export const AVATAR_CLASS_SPIN_DURATIONS_SEC: Record<string, number> = {
+  // open-record: Trainer class and faction spin duration dictionary
   fire: 1.5,
   water: 2.0,
   electric: 0.8,
@@ -310,7 +313,7 @@ export const AVATAR_CLASS_SPIN_DURATIONS_SEC: Record<string, number> = {
 };
 
 /** Avatar spin animation durations per trainer type in seconds. */
-export const AVATAR_TYPE_SPIN_DURATIONS_SEC: Record<string, number> = {
+export const AVATAR_TYPE_SPIN_DURATIONS_SEC: Record<PokemonType, number> = {
   normal: 2.0,
   fire: 1.5,
   water: 2.0,
@@ -333,6 +336,7 @@ export const AVATAR_TYPE_SPIN_DURATIONS_SEC: Record<string, number> = {
 
 /** Avatar shadow animation durations per element/class in seconds. */
 export const AVATAR_SHADOW_DURATIONS_SEC: Record<string, number> = {
+  // open-record: Trainer class and elemental shadow duration dictionary
   fire: 1.0,
   water: 1.5,
   electric: 0.1,
@@ -481,9 +485,9 @@ export const POKEBALL_SPRITE_SHAKE_REPEAT = 5;
 
 // --- Ball leave / dismiss animation ---
 /** Scale factor target for Pokeball leave/dismiss animation. */
-export const BALL_LEAVE_SCALE = 0.8;
+export const BALL_LEAVE_SCALE = 0.5;
 /** Duration of Pokeball leave/dismiss animation in seconds. */
-export const BALL_LEAVE_DURATION_SEC = 0.3;
+export const BALL_LEAVE_DURATION_SEC = 0.2;
 
 /** Sparkle enter particle total rotation angle in degrees. */
 export const SPARKLE_FULL_ROTATION_DEG = 720;
@@ -536,7 +540,7 @@ export const HOVER_EFFECT_VARIANTS = {
   LIFT: 'lift',
   GLOW: 'glow',
   PULSE: 'pulse',
-  POP: 'pop',
+  POP: 'pop'
 } as const;
 
 /** Shared UI micro-interaction hover constants. */
@@ -611,3 +615,5 @@ export const POKEMON_SPRITE_IDLE_FPS = 10.4;
 /** Pokémon combatant spritesheet loop variation animation speed (FPS), accelerated by 30% from base 10 FPS. */
 export const POKEMON_SPRITE_VARIATION_FPS = 13;
 
+/** 50% probability threshold for randomized animation direction (+/-). */
+export const RANDOM_DIRECTION_PROBABILITY_HALF = 0.5;

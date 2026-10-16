@@ -6,13 +6,14 @@
  * a JSON string (e.g., from JSON.stringify) or JSON object, without throwing 'case not found'.
  */
 
-import { it, describe } from 'vitest';
+import { it, describe } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 describe('claim_asset_v2 JSON resilience and parity', () => {
   const testUserId = 'e57ac10b-58cc-4372-a567-0e02b2c3d479';
   const testUsername = 'ClaimParityUser';
-  const dbUrl = process.env.TEST_POSTGRES_URL || 'postgres://postgres:postgres@localhost:54329/postgres';
+  const dbUrl =
+    process.env.TEST_POSTGRES_URL || 'postgres://postgres:postgres@localhost:54329/postgres';
 
   it('fails or succeeds on stringified JSON asset_data in claim_asset_v2', async () => {
     if (!process.env.TEST_POSTGRES_URL) {

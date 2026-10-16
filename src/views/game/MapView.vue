@@ -1,58 +1,62 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
-import { gsap } from 'gsap'
-import { useGameStore } from '@/stores/game'
-import { useMapStore } from '@/stores/map'
-import { useUIStore } from '@/stores/ui'
-import { useModalStore } from '@/stores/modals'
-import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue'
-import HomeBreedingWidget from '@/components/home/HomeBreedingWidget.vue'
-import MapGrid from '@/components/map/MapGrid.vue'
-import type { MapLocation } from '@/types/pokemon/encounters'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
-import { requireMapRouteId } from '@/data/world/map-assets'
-import { EGG_POLLER_INTERVAL_SEC } from '@/logic/constants/gameplay'
+import { onMounted, onUnmounted } from 'vue';
+import { gsap } from 'gsap';
+import { useGameStore } from '@/stores/game';
+import { useMapStore } from '@/stores/map';
+import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
+import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue';
+import HomeBreedingWidget from '@/components/home/HomeBreedingWidget.vue';
+import MapGrid from '@/components/map/MapGrid.vue';
+import type { MapLocation } from '@/types/pokemon/encounters';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import {
+  isMapExtortable,
+  getExtortionConfirmMessage,
+  getOfficialRouteConfirmMessage
+} from '@/logic/map/mapCardHelper';
+import { requireMapRouteId } from '@/data/world/map-assets';
+import { EGG_POLLER_INTERVAL_SEC } from '@/logic/constants/gameplay';
 
-const gameStore = useGameStore()
-const mapStore = useMapStore()
-const uiStore = useUIStore()
-const modalStore = useModalStore()
+const gameStore = useGameStore();
+const mapStore = useMapStore();
+const uiStore = useUIStore();
+const modalStore = useModalStore();
 
-let expirationTicker: gsap.core.Tween | null = null
+let expirationTicker: gsap.core.Tween | null = null;
 
 const tickExpirations = () => {
-  gameStore.checkRouteExpirations()
-  expirationTicker = gsap.delayedCall(EGG_POLLER_INTERVAL_SEC, tickExpirations)
-}
+  gameStore.checkRouteExpirations();
+  expirationTicker = gsap.delayedCall(EGG_POLLER_INTERVAL_SEC, tickExpirations);
+};
 
 onMounted(() => {
-  tickExpirations()
-})
+  tickExpirations();
+});
 
 onUnmounted(() => {
   if (expirationTicker) {
-    expirationTicker.kill()
+    expirationTicker.kill();
   }
-})
+});
 
 const navigateToMap = async (loc: MapLocation | string | number) => {
-  if (modalStore.isOpen('Confirm')) return
-  const id = requireMapRouteId(typeof loc === 'object' ? loc.id : String(loc))
+  if (modalStore.isOpen('Confirm')) return;
+  const id = requireMapRouteId(typeof loc === 'object' ? loc.id : String(loc));
   if (id === 'stadium' || id === 'gym') {
-    uiStore.activeTab = 'gyms'
-    return
+    uiStore.activeTab = 'gyms';
+    return;
   }
-  const maps = pokemonDataProvider.getMaps()
-  const targetMap = maps.find(m => m.id === id)
-  const mapDisplayName = targetMap ? targetMap.name : id
-  
+  const maps = pokemonDataProvider.getMaps();
+  const targetMap = maps.find((m) => m.id === id);
+  const mapDisplayName = targetMap ? targetMap.name : id;
+
   // Team Rocket extortion logic
   if (gameStore.state.playerClass === 'rocket' && isMapExtortable(targetMap)) {
-    const classData = gameStore.state.classData || {}
-    const now = Temporal.Now.instant().epochMilliseconds
-    const extTimestamp = Number(classData.extortedRouteTimestamp || 0)
-    const isExpired = !extTimestamp || (now - extTimestamp > 24 * 3600 * 1000)
+    const classData = gameStore.state.classData || {};
+    const now = Temporal.Now.instant().epochMilliseconds;
+    const extTimestamp = Number(classData.extortedRouteTimestamp || 0);
+    const isExpired = !extTimestamp || now - extTimestamp > 24 * 3600 * 1000;
 
     if (isExpired) {
       modalStore.open('Confirm', {
@@ -70,28 +74,28 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
               blackMarketSales: 0,
               criminality: 0,
               blackMarketDaily: { date: '', items: [], purchased: [] }
-            }
+            };
           }
-          gameStore.state.classData.extortedRouteId = id
-          gameStore.state.classData.extortedRouteTimestamp = String(now)
-          uiStore.notify(`¡Has tomado control y extorsionado la ${mapDisplayName}!`, '💰')
-          await gameStore.save(false)
-          mapStore.navigate(id)
+          gameStore.state.classData.extortedRouteId = id;
+          gameStore.state.classData.extortedRouteTimestamp = String(now);
+          uiStore.notify(`¡Has tomado control y extorsionado la ${mapDisplayName}!`, '💰');
+          await gameStore.save(false);
+          mapStore.navigate(id);
         },
         onCancel: () => {
-          mapStore.navigate(id)
+          mapStore.navigate(id);
         }
-      })
-      return
+      });
+      return;
     }
   }
 
   // Trainer Official Route logic
   if (gameStore.state.playerClass === 'entrenador' && isMapExtortable(targetMap)) {
-    const classData = gameStore.state.classData || {}
-    const now = Temporal.Now.instant().epochMilliseconds
-    const offTimestamp = Number(classData.officialRouteTimestamp || 0)
-    const isExpired = !offTimestamp || (now - offTimestamp > 24 * 3600 * 1000)
+    const classData = gameStore.state.classData || {};
+    const now = Temporal.Now.instant().epochMilliseconds;
+    const offTimestamp = Number(classData.officialRouteTimestamp || 0);
+    const isExpired = !offTimestamp || now - offTimestamp > 24 * 3600 * 1000;
 
     if (isExpired) {
       modalStore.open('Confirm', {
@@ -109,24 +113,24 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
               blackMarketSales: 0,
               criminality: 0,
               blackMarketDaily: { date: '', items: [], purchased: [] }
-            }
+            };
           }
-          gameStore.state.classData.officialRouteId = id
-          gameStore.state.classData.officialRouteTimestamp = String(now)
-          uiStore.notify(`¡Estableciste la ${mapDisplayName} como tu Ruta Oficial!`, '📍')
-          await gameStore.save(false)
-          mapStore.navigate(id)
+          gameStore.state.classData.officialRouteId = id;
+          gameStore.state.classData.officialRouteTimestamp = String(now);
+          uiStore.notify(`¡Estableciste la ${mapDisplayName} como tu Ruta Oficial!`, '📍');
+          await gameStore.save(false);
+          mapStore.navigate(id);
         },
         onCancel: () => {
-          mapStore.navigate(id)
+          mapStore.navigate(id);
         }
-      })
-      return
+      });
+      return;
     }
   }
 
-  mapStore.navigate(id)
-}
+  mapStore.navigate(id);
+};
 </script>
 
 <template>
@@ -159,7 +163,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .map-view-container {
   width: 100%;

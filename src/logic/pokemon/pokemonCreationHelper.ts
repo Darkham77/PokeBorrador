@@ -1,6 +1,10 @@
 import { GAME_RATIOS } from '@/data/system/constants';
 import { getActivePinia } from 'pinia';
-import { getSpeciesBoosts, getGlobalMultipliers, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
+import {
+  getSpeciesBoosts,
+  getGlobalMultipliers,
+  type Event as GameEvent
+} from '@/logic/events/eventEngine.ts';
 import type { ObtainedMethod, PokemonIVs, PokemonGender } from '@/types/pokemon/pokemon';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { generateIvPure } from './generationMath.ts';
@@ -33,13 +37,19 @@ export function computeCreationIVs(
 ): PokemonIVs {
   let ivFloor = options.ivFloor || 0;
   if (piniaActive?.state?.value?.playerClass) {
-    const classState = piniaActive.state.value.playerClass as { playerClass?: string; classData?: { captureStreak?: number } };
+    const classState = piniaActive.state.value.playerClass as {
+      playerClass?: string;
+      classData?: { captureStreak?: number };
+    };
     if (classState.playerClass === 'cazabichos') {
       ivFloor = Math.max(ivFloor, classState.classData?.captureStreak || 0);
     }
   }
 
-  const isGuardian = Boolean(options.mapId && (piniaActive?.state?.value?.war as { activeFactions?: unknown } | undefined)?.activeFactions);
+  const isGuardian = Boolean(
+    options.mapId &&
+    (piniaActive?.state?.value?.war as { activeFactions?: unknown } | undefined)?.activeFactions
+  );
   const rand = () => generateIvPure(Math.random, ivFloor, false, isGuardian);
 
   return {
@@ -48,7 +58,7 @@ export function computeCreationIVs(
     def: rand(),
     spa: rand(),
     spd: rand(),
-    spe: rand(),
+    spe: rand()
   };
 }
 
@@ -59,22 +69,33 @@ export function computeCreationShiny(
 ): boolean {
   if (options.isShiny !== undefined) return options.isShiny;
 
-  const debugObj = typeof window !== 'undefined' ? (window.__VITE_DEBUG__ as { forceShiny100?: boolean; shinyRateOverride?: number | null } | undefined) : undefined;
+  const debugObj =
+    typeof window !== 'undefined'
+      ? (window.__VITE_DEBUG__ as
+          | { forceShiny100?: boolean; shinyRateOverride?: number | null }
+          | undefined)
+      : undefined;
   if (debugObj?.forceShiny100 || debugObj?.shinyRateOverride === 1) {
     return true;
   }
 
-  const baseShinyRate = (debugObj?.shinyRateOverride && debugObj.shinyRateOverride > 1)
-    ? debugObj.shinyRateOverride
-    : GAME_RATIOS.shinyRate;
+  const baseShinyRate =
+    debugObj?.shinyRateOverride && debugObj.shinyRateOverride > 1
+      ? debugObj.shinyRateOverride
+      : GAME_RATIOS.shinyRate;
 
-  const activeEvents = (piniaActive?.state?.value?.events as { activeEvents?: GameEvent[] } | undefined)?.activeEvents || [];
+  const activeEvents =
+    (piniaActive?.state?.value?.events as { activeEvents?: GameEvent[] } | undefined)
+      ?.activeEvents || [];
   const speciesBonuses = getSpeciesBoosts(activeEvents, id);
-  const totalBonusMult = speciesBonuses?.shiny ? (speciesBonuses.shiny - 1) : 0;
+  const totalBonusMult = speciesBonuses?.shiny ? speciesBonuses.shiny - 1 : 0;
 
   const globalMults = getGlobalMultipliers(activeEvents);
   const finalMult = Math.max(1, 1 + totalBonusMult);
-  const finalShinyRate = Math.max(1, Math.floor(baseShinyRate / (finalMult * (globalMults.shiny || 1))));
+  const finalShinyRate = Math.max(
+    1,
+    Math.floor(baseShinyRate / (finalMult * (globalMults.shiny || 1)))
+  );
 
-  return Math.random() < (1 / finalShinyRate);
+  return Math.random() < 1 / finalShinyRate;
 }

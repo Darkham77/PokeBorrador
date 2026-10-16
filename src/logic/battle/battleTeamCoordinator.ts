@@ -32,7 +32,10 @@ export function resolveGameBattleMode(battleState?: BattleState | null): GameBat
 /**
  * Resolves the team format (3v3 vs 6v6).
  */
-export function resolveBattleFormat(mode: GameBattleMode, battleState?: BattleState | null): PvpMatchFormat {
+export function resolveBattleFormat(
+  mode: GameBattleMode,
+  battleState?: BattleState | null
+): PvpMatchFormat {
   if (mode === 'pvp_ranked') return '3v3';
   if (mode === 'pvp_casual') {
     const rawFormat = Reflect.get(battleState || {}, 'format');
@@ -80,7 +83,7 @@ function resolvePvpStartingTeam(
   if (resolved.length < targetCount) {
     for (const p of allAvailable) {
       if (resolved.length >= targetCount) break;
-      if (!resolved.some(r => r.uid === p.uid)) {
+      if (!resolved.some((r) => r.uid === p.uid)) {
         resolved.push(cloneReactive(p));
       }
     }
@@ -119,10 +122,9 @@ export function resolveStartingTeamForMode(
     warTeam?: string[];
   }
 ): Pokemon[] {
-  const allAvailable = [
-    ...(saveData.team || []),
-    ...(saveData.box || [])
-  ].filter((p): p is Pokemon => p !== null && !p.isIllegal);
+  const allAvailable = [...(saveData.team || []), ...(saveData.box || [])].filter(
+    (p): p is Pokemon => p !== null && !p.isIllegal
+  );
 
   const byUid = new Map<string, Pokemon>();
   for (const p of allAvailable) {
@@ -130,7 +132,7 @@ export function resolveStartingTeamForMode(
   }
 
   if (mode === 'pvp_ranked' || mode === 'pvp_casual') {
-    const uids = format === '3v3' ? (saveData.pvpTeam || []) : (saveData.pvpTeam6 || []);
+    const uids = format === '3v3' ? saveData.pvpTeam || [] : saveData.pvpTeam6 || [];
     return resolvePvpStartingTeam(format, uids, byUid, allAvailable);
   }
 
@@ -159,7 +161,7 @@ export function getActiveCombatTeam(ctx: BattleContext): Pokemon[] {
 export function getHealthyBenchCombatants(ctx: BattleContext): Pokemon[] {
   const team = getActiveCombatTeam(ctx);
   const activeUid = ctx.activeBattle?.value?.player?.uid;
-  return team.filter(p => p.hp > 0 && p.uid !== activeUid);
+  return team.filter((p) => p.hp > 0 && p.uid !== activeUid);
 }
 
 /**
@@ -186,14 +188,25 @@ function isLocationGym(
   mapConfig?: LocationEnvironmentFlags | null,
   locationId?: MapRouteId
 ): boolean {
-  return Boolean(battleState?.isGym || gymConfig || mapConfig?.isGym || locationId === 'stadium' || locationId === 'gym');
+  return Boolean(
+    battleState?.isGym ||
+    gymConfig ||
+    mapConfig?.isGym ||
+    locationId === 'stadium' ||
+    locationId === 'gym'
+  );
 }
 
 function isLocationCave(
   battleState?: LocationEnvironmentFlags | null,
   mapConfig?: LocationEnvironmentFlags | null
 ): boolean {
-  return Boolean(battleState?.isCave || battleState?.isCrystalCave || mapConfig?.isCave || mapConfig?.isCrystalCave);
+  return Boolean(
+    battleState?.isCave ||
+    battleState?.isCrystalCave ||
+    mapConfig?.isCave ||
+    mapConfig?.isCrystalCave
+  );
 }
 
 function isLocationIndoors(
@@ -203,11 +216,14 @@ function isLocationIndoors(
   return Boolean(battleState?.isIndoors || mapConfig?.isIndoors);
 }
 
-function selectAvailableCycle(locationId?: MapRouteId, currentMapCycle: DayPhase = 'day'): DayPhase | null {
+function selectAvailableCycle(
+  locationId?: MapRouteId,
+  currentMapCycle: DayPhase = 'day'
+): DayPhase | null {
   if (typeof locationId !== 'string' || !isMapRouteId(locationId)) return null;
   const available = getAvailableCyclesForMap(locationId);
   if (available.length <= 1) return null;
-  return available.includes(currentMapCycle) ? currentMapCycle : (available[0] || 'day');
+  return available.includes(currentMapCycle) ? currentMapCycle : available[0] || 'day';
 }
 
 export function isNaturalWeatherAllowedInLocation(
@@ -243,7 +259,9 @@ export function resolveEffectiveCycleForLocation(
   locationId?: MapRouteId,
   mapConfig?: LocationEnvironmentFlags | null,
   gymConfig?: { fixedCycle?: DayPhase; isGym?: boolean } | null,
-  battleState?: (LocationEnvironmentFlags & { fixedCycle?: DayPhase; locationId?: MapRouteId }) | null,
+  battleState?:
+    | (LocationEnvironmentFlags & { fixedCycle?: DayPhase; locationId?: MapRouteId })
+    | null,
   currentMapCycle: DayPhase = 'day'
 ): DayPhase {
   if (battleState?.fixedCycle) return battleState.fixedCycle;
@@ -271,7 +289,8 @@ export function resolveEffectiveCycleForLocation(
 export function isBagAllowedInBattle(ctx: BattleContext): boolean {
   const active = ctx.activeBattle?.value;
   if (!active) return true;
-  if (active.isPvP || Reflect.get(active, 'isSpectator') || Reflect.get(active, 'isReplay')) return false;
+  if (active.isPvP || Reflect.get(active, 'isSpectator') || Reflect.get(active, 'isReplay'))
+    return false;
   if (active.cannotEscape) return false;
   return true;
 }
@@ -282,8 +301,15 @@ export function isBagAllowedInBattle(ctx: BattleContext): boolean {
 export function isStealingAllowedInBattle(ctx: BattleContext): boolean {
   const active = ctx.activeBattle?.value;
   if (!active) return false;
-  if (active.isPvP || active.isGym || Reflect.get(active, 'isSpectator') || Reflect.get(active, 'isReplay')) return false;
-  const isRocket = active.trainerArchetype === 'rocket' ||
+  if (
+    active.isPvP ||
+    active.isGym ||
+    Reflect.get(active, 'isSpectator') ||
+    Reflect.get(active, 'isReplay')
+  )
+    return false;
+  const isRocket =
+    active.trainerArchetype === 'rocket' ||
     (typeof active.trainerSprite === 'string' && active.trainerSprite.includes('rocket')) ||
     (typeof active.trainerName === 'string' && active.trainerName.toLowerCase().includes('rocket'));
   return isRocket;
@@ -296,7 +322,8 @@ export function isStealingAllowedInBattle(ctx: BattleContext): boolean {
 export function shouldPersistPlayerState(ctx: BattleContext): boolean {
   const active = ctx.activeBattle?.value;
   if (!active) return true;
-  if (Reflect.get(active, 'isSpectator') === true || Reflect.get(active, 'isReplay') === true) return false;
+  if (Reflect.get(active, 'isSpectator') === true || Reflect.get(active, 'isReplay') === true)
+    return false;
   return true;
 }
 
@@ -307,7 +334,11 @@ export function shouldPersistPlayerState(ctx: BattleContext): boolean {
 export function shouldPersistHpToAdventure(ctx: BattleContext): boolean {
   const active = ctx.activeBattle?.value;
   if (!active) return true;
-  if (active.isPvP || Reflect.get(active, 'isSpectator') === true || Reflect.get(active, 'isReplay') === true) {
+  if (
+    active.isPvP ||
+    Reflect.get(active, 'isSpectator') === true ||
+    Reflect.get(active, 'isReplay') === true
+  ) {
     return false;
   }
   return true;

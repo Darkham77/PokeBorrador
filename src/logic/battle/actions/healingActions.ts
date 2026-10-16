@@ -1,5 +1,9 @@
 import type { MoveAction } from '@/types/battle/battle';
-import { getMechanicalWeather, WEATHER_MECHANICAL, type WeatherMechanical } from '../../weather/weatherRegistry.ts';
+import {
+  getMechanicalWeather,
+  WEATHER_MECHANICAL,
+  type WeatherMechanical
+} from '../../weather/weatherRegistry.ts';
 
 const BAD_HEAL_WEATHERS: readonly WeatherMechanical[] = [
   WEATHER_MECHANICAL.RAIN,
@@ -13,7 +17,8 @@ const HEAL_WEATHER_SUN_PCT = 0.66;
 const HEAL_WEATHER_BAD_PCT = 0.25;
 
 export const HEALING_ACTIONS: Record<string, MoveAction> = {
-  'heal_50': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  // open-record: Healing move effect dispatch table indexed by move effect string
+  heal_50: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     if (src.hp >= src.maxHp) {
       addLogFn('¡Pero falló!', 'log-info', src);
       return;
@@ -23,9 +28,9 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
     addLogFn(`¡${src.name} recuperó salud! (+${healAmt} HP)`, 'log-info', src);
   },
 
-  'heal_weather': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  heal_weather: (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (src.hp >= src.maxHp) return;
-    
+
     let healPct: number;
     const weather = battleCtx?.activeBattle.value?.weather?.type;
     const mechWeather = getMechanicalWeather(weather);
@@ -39,20 +44,20 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
       // Clear weather (Default)
       healPct = 0.5;
     }
-    
+
     const hwAmt = Math.floor(src.maxHp * healPct);
     src.hp = Math.min(src.maxHp, src.hp + hwAmt);
     addLogFn(`¡${src.name} recuperó salud con el clima! (+${hwAmt} HP)`, 'log-info', src);
   },
 
-  'rest': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  rest: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.hp = src.maxHp;
     src.status = 'slp';
     src.sleepTurns = 2;
     addLogFn(`¡${src.name} se recuperó completamente y se quedó dormido!`, 'log-info', src);
   },
 
-  'leech_seed': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  leech_seed: (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.type === 'grass' || tgt.type2 === 'grass') {
       addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       return;
@@ -65,10 +70,12 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
     }
   },
 
-  'wish': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  wish: (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (!battleCtx || !battleCtx.activeBattle.value) return;
-    const isPlayer = (src.uid === battleCtx.activeBattle.value.player?.uid);
-    const sideConds = isPlayer ? battleCtx.activeBattle.value.playerSideConditions : battleCtx.activeBattle.value.enemySideConditions;
+    const isPlayer = src.uid === battleCtx.activeBattle.value.player?.uid;
+    const sideConds = isPlayer
+      ? battleCtx.activeBattle.value.playerSideConditions
+      : battleCtx.activeBattle.value.enemySideConditions;
     if (sideConds) {
       if (sideConds['wish']) {
         addLogFn('¡Pero falló!', 'log-info', src);

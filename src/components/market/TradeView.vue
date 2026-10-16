@@ -1,19 +1,19 @@
 <script setup lang="ts">
-
-import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useTradeStore } from '@/stores/trade'
-import { useUIStore } from '@/stores/ui'
-import BaseModal from '@/components/common/BaseModal.vue'
-import TradeSidePanel from '../social/TradeSidePanel.vue'
-import TradeFooter from '../social/TradeFooter.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { gsap } from 'gsap'
-import { getItemById } from '@/data/inventory/items'
-import { isPokemonBusy } from '@/logic/constants/tags'
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useTradeStore } from '@/stores/trade';
+import { useUIStore } from '@/stores/ui';
+import BaseModal from '@/components/common/BaseModal.vue';
+import TradeSidePanel from '../social/TradeSidePanel.vue';
+import TradeFooter from '../social/TradeFooter.vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Inventory } from '@/types/inventory/items';
+import { gsap } from 'gsap';
+import { getItemById } from '@/data/inventory/items';
+import { isPokemonBusy } from '@/logic/constants/tags';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 const TRADE_HEADER_ANIM_OFFSET_Y = -30;
@@ -21,41 +21,45 @@ const TRADE_SIDE_ANIM_OFFSET_X = 50;
 
 const props = withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const gameStore = useGameStore()
-const tradeStore = useTradeStore()
-const uiStore = useUIStore()
+const gameStore = useGameStore();
+const tradeStore = useTradeStore();
+const uiStore = useUIStore();
 
-const gs = computed(() => gameStore.state)
-const target = computed(() => tradeStore.tradeTarget)
+const gs = computed(() => gameStore.state);
+const target = computed(() => tradeStore.tradeTarget);
 
 interface FriendSave {
-  team: Pokemon[]
-  box: (Pokemon | null)[]
-  inventory: Record<string, number>
-  money: number
+  team: Pokemon[];
+  box: (Pokemon | null)[];
+  inventory: Inventory;
+  money: number;
 }
 
-const friendSave = computed<FriendSave>(() => (tradeStore.tradeFriendSave as FriendSave) || { team: [], box: [], inventory: {}, money: 0 })
+const friendSave = computed<FriendSave>(
+  () => (tradeStore.tradeFriendSave as FriendSave) || { team: [], box: [], inventory: {}, money: 0 }
+);
 
 // Local state for the form
-const isSending = ref(false)
-const isGift = ref(false)
-const offerMoney = ref(0)
-const requestMoney = ref(0)
-const message = ref('')
+const isSending = ref(false);
+const isGift = ref(false);
+const offerMoney = ref(0);
+const requestMoney = ref(0);
+const message = ref('');
 
 const openSelector = (side: string) => {
   if (side === 'offer') {
-    const team = (gs.value.team || []).filter((p): p is Pokemon => p !== null && !isPokemonBusy(p))
-    const box = (gs.value.box as (Pokemon | null)[] || []).filter((p): p is Pokemon => p !== null && !isPokemonBusy(p))
-    const allMyPokemon = [...team, ...box]
-    
+    const team = (gs.value.team || []).filter((p): p is Pokemon => p !== null && !isPokemonBusy(p));
+    const box = ((gs.value.box as (Pokemon | null)[]) || []).filter(
+      (p): p is Pokemon => p !== null && !isPokemonBusy(p)
+    );
+    const allMyPokemon = [...team, ...box];
+
     uiStore.open('PokemonSelection', {
       title: 'SELECCIONA TU POKÉMON',
       subtitle: 'Elige un Pokémon de tu equipo o caja para ofrecer.',
@@ -63,151 +67,162 @@ const openSelector = (side: string) => {
       customList: allMyPokemon,
       callbackConfirm: (selected: Pokemon[]) => {
         if (selected && selected.length > 0) {
-          tradeStore.tradeOfferPoke = selected[0] || null
+          tradeStore.tradeOfferPoke = selected[0] || null;
         }
       }
-    })
+    });
   } else {
-    const team = (friendSave.value.team || []).filter((p): p is Pokemon => p !== null && !isPokemonBusy(p))
-    const box = (friendSave.value.box || []).filter((p): p is Pokemon => p !== null && !isPokemonBusy(p))
-    const allFriendPokemon = [...team, ...box]
-    
+    const team = (friendSave.value.team || []).filter(
+      (p): p is Pokemon => p !== null && !isPokemonBusy(p)
+    );
+    const box = (friendSave.value.box || []).filter(
+      (p): p is Pokemon => p !== null && !isPokemonBusy(p)
+    );
+    const allFriendPokemon = [...team, ...box];
+
     uiStore.open('PokemonSelection', {
       title: `POKÉMON DE ${target.value?.username || 'ENTRENADOR'}`,
       subtitle: `Elige un Pokémon de ${target.value?.username || 'su'} equipo o caja para pedir.`,
       customList: allFriendPokemon,
       callbackConfirm: (selected: Pokemon[]) => {
         if (selected && selected.length > 0) {
-          tradeStore.tradeRequestPoke = selected[0] || null
+          tradeStore.tradeRequestPoke = selected[0] || null;
         }
       }
-    })
+    });
   }
-}
+};
 
 const closeTrade = () => {
-  if (isSending.value) return
-  emit('close')
-}
+  if (isSending.value) return;
+  emit('close');
+};
 
-import type { ItemId } from '@/data/inventory/items'
+import type { ItemId } from '@/data/inventory/items';
 
 const toggleOfferItem = (itemId: ItemId) => {
   if (tradeStore.tradeOfferItems[itemId]) {
-    delete tradeStore.tradeOfferItems[itemId]
+    delete tradeStore.tradeOfferItems[itemId];
   } else {
-    tradeStore.tradeOfferItems[itemId] = 1
+    tradeStore.tradeOfferItems[itemId] = 1;
   }
-}
+};
 
 const updateOfferItemQty = (itemId: ItemId, qty: number) => {
   if (qty <= 0) {
-    delete tradeStore.tradeOfferItems[itemId]
+    delete tradeStore.tradeOfferItems[itemId];
   } else {
-    tradeStore.tradeOfferItems[itemId] = qty
+    tradeStore.tradeOfferItems[itemId] = qty;
   }
-}
+};
 
 const toggleRequestItem = (itemId: ItemId) => {
   if (tradeStore.tradeRequestItems[itemId]) {
-    delete tradeStore.tradeRequestItems[itemId]
+    delete tradeStore.tradeRequestItems[itemId];
   } else {
-    tradeStore.tradeRequestItems[itemId] = 1
+    tradeStore.tradeRequestItems[itemId] = 1;
   }
-}
+};
 
 const updateRequestItemQty = (itemId: ItemId, qty: number) => {
   if (qty <= 0) {
-    delete tradeStore.tradeRequestItems[itemId]
+    delete tradeStore.tradeRequestItems[itemId];
   } else {
-    tradeStore.tradeRequestItems[itemId] = qty
+    tradeStore.tradeRequestItems[itemId] = qty;
   }
-}
+};
 
 const handleSend = async () => {
-  if (isSending.value) return
-  isSending.value = true
-  
+  if (isSending.value) return;
+  isSending.value = true;
+
   const success = await tradeStore.sendTradeOffer({
     isGift: isGift.value,
     offerMoney: offerMoney.value,
     requestMoney: requestMoney.value,
     message: message.value
-  })
-  
-  isSending.value = false
-  if (success) {
-    closeTrade()
-  }
-}
+  });
 
-const tradeSummaryRef = ref<HTMLElement | null>(null)
-const tradeGridRef = ref<HTMLElement | null>(null)
-let ctx: gsap.Context | null = null
+  isSending.value = false;
+  if (success) {
+    closeTrade();
+  }
+};
+
+const tradeSummaryRef = ref<HTMLElement | null>(null);
+const tradeGridRef = ref<HTMLElement | null>(null);
+let ctx: gsap.Context | null = null;
 
 // Entry animation using GSAP
 const animateEntry = () => {
-  if (ctx) ctx.revert()
+  if (ctx) ctx.revert();
   ctx = gsap.context(() => {
     if (tradeSummaryRef.value) {
-      gsap.fromTo(tradeSummaryRef.value, 
-        { y: TRADE_HEADER_ANIM_OFFSET_Y, opacity: 0 }, 
+      gsap.fromTo(
+        tradeSummaryRef.value,
+        { y: TRADE_HEADER_ANIM_OFFSET_Y, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.2)' }
-      )
+      );
     }
     if (tradeGridRef.value) {
-      gsap.fromTo('.trade-grid .offer-side', 
-        { x: -TRADE_SIDE_ANIM_OFFSET_X, opacity: 0 }, 
+      gsap.fromTo(
+        '.trade-grid .offer-side',
+        { x: -TRADE_SIDE_ANIM_OFFSET_X, opacity: 0 },
         { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
-      )
-      gsap.fromTo('.trade-grid .request-side', 
-        { x: TRADE_SIDE_ANIM_OFFSET_X, opacity: 0 }, 
+      );
+      gsap.fromTo(
+        '.trade-grid .request-side',
+        { x: TRADE_SIDE_ANIM_OFFSET_X, opacity: 0 },
         { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
-      )
+      );
     }
-  }, tradeGridRef.value ?? undefined)
-}
+  }, tradeGridRef.value ?? undefined);
+};
 
 onUnmounted(() => {
   if (ctx) {
-    ctx.revert()
-    ctx = null
+    ctx.revert();
+    ctx = null;
   }
-})
+});
 
-watch(() => props.show, async (newVal) => {
-  if (newVal) {
-    await nextTick()
-    animateEntry()
-  } else if (ctx) {
-    ctx.revert()
-    ctx = null
-  }
-}, { immediate: true })
+watch(
+  () => props.show,
+  async (newVal) => {
+    if (newVal) {
+      await nextTick();
+      animateEntry();
+    } else if (ctx) {
+      ctx.revert();
+      ctx = null;
+    }
+  },
+  { immediate: true }
+);
 
 // Summary helpers
 const offerSummary = computed(() => {
-  const lines: string[] = [] // text-ok: UI text display localization string
-  if (tradeStore.tradeOfferPoke) lines.push(tradeStore.tradeOfferPoke.name)
+  const lines: string[] = []; // text-ok: UI text display localization string
+  if (tradeStore.tradeOfferPoke) lines.push(tradeStore.tradeOfferPoke.name);
   Object.entries(tradeStore.tradeOfferItems).forEach(([name, qty]) => {
-    const dbItem = getItemById(name)
-    lines.push(`${dbItem?.name || name} x${qty}`)
-  })
-  if (offerMoney.value > 0) lines.push(`₽${offerMoney.value.toLocaleString()}`)
-  return lines.length ? lines.join(', ') : 'Vacío'
-})
+    const dbItem = getItemById(name);
+    lines.push(`${dbItem?.name || name} x${qty}`);
+  });
+  if (offerMoney.value > 0) lines.push(`₽${offerMoney.value.toLocaleString()}`);
+  return lines.length ? lines.join(', ') : 'Vacío';
+});
 
 const requestSummary = computed(() => {
-  if (isGift.value) return '🎁 REGALO'
-  const lines: string[] = [] // text-ok: UI text display localization string
-  if (tradeStore.tradeRequestPoke) lines.push(tradeStore.tradeRequestPoke.name)
+  if (isGift.value) return '🎁 REGALO';
+  const lines: string[] = []; // text-ok: UI text display localization string
+  if (tradeStore.tradeRequestPoke) lines.push(tradeStore.tradeRequestPoke.name);
   Object.entries(tradeStore.tradeRequestItems).forEach(([name, qty]) => {
-    const dbItem = getItemById(name)
-    lines.push(`${dbItem?.name || name} x${qty}`)
-  })
-  if (requestMoney.value > 0) lines.push(`₽${requestMoney.value.toLocaleString()}`)
-  return lines.length ? lines.join(', ') : 'Nada (¿Es un regalo?)'
-})
+    const dbItem = getItemById(name);
+    lines.push(`${dbItem?.name || name} x${qty}`);
+  });
+  if (requestMoney.value > 0) lines.push(`₽${requestMoney.value.toLocaleString()}`);
+  return lines.length ? lines.join(', ') : 'Nada (¿Es un regalo?)';
+});
 </script>
 
 <template>
@@ -223,27 +238,19 @@ const requestSummary = computed(() => {
   >
     <div class="trade-modal-inner">
       <!-- Summary split -->
-      <div
-        ref="tradeSummaryRef"
-        class="trade-summary-bar"
-      >
+      <div ref="tradeSummaryRef" class="trade-summary-bar">
         <div class="summary-box offer">
           <span class="label">TE OFREZCO:</span>
           <span class="value">{{ offerSummary }}</span>
         </div>
-        <div class="summary-icon emoji">
-          🔄
-        </div>
+        <div class="summary-icon emoji">🔄</div>
         <div class="summary-box request">
           <span class="label">PIDO A CAMBIO:</span>
           <span class="value">{{ requestSummary }}</span>
         </div>
       </div>
 
-      <div
-        ref="tradeGridRef"
-        class="trade-grid"
-      >
+      <div ref="tradeGridRef" class="trade-grid">
         <!-- Left: My Side -->
         <TradeSidePanel
           class="offer-side"
@@ -256,7 +263,7 @@ const requestSummary = computed(() => {
           @open-selector="openSelector('offer')"
           @toggle-item="toggleOfferItem"
           @update-item-qty="updateOfferItemQty"
-          @update:money="val => offerMoney = val"
+          @update:money="(val) => (offerMoney = val)"
         />
 
         <!-- Right: Friend's Side -->
@@ -273,7 +280,7 @@ const requestSummary = computed(() => {
           @open-selector="openSelector('request')"
           @toggle-item="toggleRequestItem"
           @update-item-qty="updateRequestItemQty"
-          @update:money="val => requestMoney = val"
+          @update:money="(val) => (requestMoney = val)"
         />
       </div>
     </div>
@@ -290,7 +297,7 @@ const requestSummary = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .trade-modal-inner {
   padding: 8px 0;
@@ -306,29 +313,31 @@ const requestSummary = computed(() => {
   background: Rgb(0 0 0 / 30%);
   margin-bottom: 24px;
 
-  .summary-box { 
-    display: flex; 
-    flex-direction: column; 
-    gap: $spacing-xs; 
-    flex: 1; 
+  .summary-box {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    flex: 1;
 
-    .label { 
+    .label {
       @include pixelated;
 
-      color: var(--gray); 
+      color: var(--gray);
       font-size: var(--font-8);
     }
     .value {
-      @include pixelated; 
+      @include pixelated;
 
-      color: $white; 
-      font-size: var(--font-8); 
+      color: $white;
+      font-size: var(--font-8);
       font-weight: 700;
       line-height: 1.5;
     }
   }
 
-  .summary-icon { font-size: var(--font-24); }
+  .summary-icon {
+    font-size: var(--font-24);
+  }
 }
 
 .trade-grid {

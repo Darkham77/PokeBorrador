@@ -25,7 +25,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 import { ENABLED_POKEMON_IDS_SET } from '../../../src/data/system/constants.ts';
 import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import { GYMS, type Gym, type GymId } from '../../../src/data/world/gyms.ts';
@@ -79,9 +79,12 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
         'spawns-encounter-rates-parity': 'Discrepancia en probabilidades'
       },
       ruleRemediations: {
-        'spawns-species-whitelist': 'Ensure all spawnable Pokemon are included in ENABLED_POKEMON_IDS whitelist',
-        'spawns-level-range-integrity': 'Verify level ranges satisfy min/max constraints and match Pokemon counts',
-        'spawns-encounter-rates-parity': 'Ensure encounter rates sum to expected percentages across time slots'
+        'spawns-species-whitelist':
+          'Ensure all spawnable Pokemon are included in ENABLED_POKEMON_IDS whitelist',
+        'spawns-level-range-integrity':
+          'Verify level ranges satisfy min/max constraints and match Pokemon counts',
+        'spawns-encounter-rates-parity':
+          'Ensure encounter rates sum to expected percentages across time slots'
       },
       requiredFiles: [
         path.resolve(process.cwd(), MAPS_FILE_PATH),
@@ -212,7 +215,12 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
     }
   }
 
-  private auditGymLevels(gymId: GymId, pokemon: readonly string[], levels: readonly number[], diffName?: string): void {
+  private auditGymLevels(
+    gymId: GymId,
+    pokemon: readonly string[],
+    levels: readonly number[],
+    diffName?: string
+  ): void {
     const label = diffName ? `Gym '${gymId}' (${diffName})` : `Gym '${gymId}'`;
     const ctx = diffName ? `id: '${gymId}', difficulty: '${diffName}'` : `id: '${gymId}'`;
 
@@ -238,7 +246,10 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
     while ((rMatch = rematchPokemonRegex.exec(rematchContent)) !== null) {
       const rawList = rMatch[1];
       if (!rawList) continue;
-      const list = rawList.split(',').map(s => s.trim().replace(/['"]/g, '')).filter(Boolean);
+      const list = rawList
+        .split(',')
+        .map((s) => s.trim().replace(/['"]/g, ''))
+        .filter(Boolean);
       const line = rematchContent.slice(0, rMatch.index).split('\n').length;
       for (const sp of list) {
         if (!ENABLED_POKEMON_IDS_SET.has(sp)) {
@@ -331,6 +342,10 @@ export class SpawnsWhitelistAuditor extends BaseAuditor<SpawnWhitelistRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new SpawnsWhitelistAuditor());
 }

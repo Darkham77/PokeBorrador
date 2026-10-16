@@ -1,6 +1,6 @@
 /**
  * src/components/profile/useTrainerAvatarAnim.ts
- * 
+ *
  * GSAP animations and IntersectionObserver lifecycle for TrainerAvatar.
  */
 
@@ -12,7 +12,7 @@ import {
   applyFrameSpinAnimation,
   applyGhostAnimation,
   applyBlinkRedAnimation,
-  applyShadowAnimation,
+  applyShadowAnimation
 } from './trainerAvatarAnimHelper.ts';
 
 export interface UseTrainerAvatarAnimParams {
@@ -21,24 +21,27 @@ export interface UseTrainerAvatarAnimParams {
   resolvedAvatarStyle: Ref<string>;
   isSquare: Ref<boolean>;
   hasFrame: Ref<boolean>;
-  elementColors: Record<string, { base: string; light: string; frame: string }>;
+  elementColors: Record<string, { base: string; light: string; frame: string }>; // open-record: Dynamic element colors dictionary
 }
 
 export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
   const { containerRef, frameRef, resolvedAvatarStyle, isSquare, hasFrame, elementColors } = params;
   let activeTimeline: gsap.core.Timeline | null = null;
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (activeTimeline) {
-        if (entry.isIntersecting) {
-          activeTimeline.play();
-        } else {
-          activeTimeline.pause();
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (activeTimeline) {
+          if (entry.isIntersecting) {
+            activeTimeline.play();
+          } else {
+            activeTimeline.pause();
+          }
         }
-      }
-    });
-  }, { threshold: INTERSECTION_OBSERVER_THRESHOLD_PCT });
+      });
+    },
+    { threshold: INTERSECTION_OBSERVER_THRESHOLD_PCT }
+  );
 
   function cleanAnimations() {
     if (containerRef.value) {
@@ -58,17 +61,14 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
 
   function initAnimations() {
     cleanAnimations();
-    
+
     if (!containerRef.value) return;
     observer.observe(containerRef.value);
 
     const styleClass = resolvedAvatarStyle.value || '';
     if (!styleClass.trim()) return;
 
-    const cleanStyle = styleClass
-      .replace('av-sq-', '')
-      .replace('av-', '')
-      .trim();
+    const cleanStyle = styleClass.replace('av-sq-', '').replace('av-', '').trim();
 
     activeTimeline = gsap.timeline({ repeat: -1 });
 
@@ -92,7 +92,7 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
   }
 
   onMounted(() => {
-    nextTick(() => {
+    void nextTick(() => {
       initAnimations();
     });
   });
@@ -101,15 +101,21 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
     cleanAnimations();
   });
 
-  watch(() => resolvedAvatarStyle.value, () => {
-    nextTick(() => {
-      initAnimations();
-    });
-  });
+  watch(
+    () => resolvedAvatarStyle.value,
+    () => {
+      void nextTick(() => {
+        initAnimations();
+      });
+    }
+  );
 
-  watch(() => hasFrame.value, () => {
-    nextTick(() => {
-      initAnimations();
-    });
-  });
+  watch(
+    () => hasFrame.value,
+    () => {
+      void nextTick(() => {
+        initAnimations();
+      });
+    }
+  );
 }

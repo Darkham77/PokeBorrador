@@ -14,9 +14,7 @@ import { describe, it, expect } from 'vitest';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
-import {
-  generateRouteLedges
-} from '../../logic/map/routeLedgeEngine.ts';
+import { generateRouteLedges } from '../../logic/map/routeLedgeEngine.ts';
 
 describe('routeLedgeEngine (Phase 4)', () => {
   const continent = generateContinentMap({
@@ -75,8 +73,14 @@ describe('routeLedgeEngine (Phase 4)', () => {
       const maxX = Math.max(...run.cells.map((c) => c.x));
       const y = run.cells[0]!.y;
 
-      const leftBypass = minX - 1 >= 0 && continent.terrainMatrix[y]?.[minX - 1] === 'grass' && (continent.heightmap[y]?.[minX - 1] ?? 0) === 0;
-      const rightBypass = maxX + 1 < continent.width && continent.terrainMatrix[y]?.[maxX + 1] === 'grass' && (continent.heightmap[y]?.[maxX + 1] ?? 0) === 0;
+      const leftBypass =
+        minX - 1 >= 0 &&
+        continent.terrainMatrix[y]?.[minX - 1] === 'grass' &&
+        (continent.heightmap[y]?.[minX - 1] ?? 0) === 0;
+      const rightBypass =
+        maxX + 1 < continent.width &&
+        continent.terrainMatrix[y]?.[maxX + 1] === 'grass' &&
+        (continent.heightmap[y]?.[maxX + 1] ?? 0) === 0;
 
       expect(leftBypass || rightBypass).toBe(true);
     }

@@ -1,8 +1,8 @@
 /**
  * scripts/convert_assets.ts
- * 
+ *
  * ZERO-CONFIG ASSET PIPELINE (Node.js 26+) - MULTICORE OPTIMIZED
- * 
+ *
  * Escanea _raw-assets, convierte a WebP en paralelo y genera catálogos y bases de datos.
  */
 
@@ -119,7 +119,7 @@ async function handleProcessFile(filePath: string) {
   await fs.mkdir(destDir, { recursive: true });
 
   const LOSSLESS_SEGMENTS = ['sprites', 'icons', 'badges', 'items', 'pixel'] as const;
-  const isLossless = LOSSLESS_SEGMENTS.some(seg => relPath.includes(seg));
+  const isLossless = LOSSLESS_SEGMENTS.some((seg) => relPath.includes(seg));
 
   let image = sharp(filePath);
   const metadata = await image.metadata();
@@ -165,10 +165,11 @@ async function handleProcessFile(filePath: string) {
   const posixRelPath = relPath.split(path.sep).join(path.posix.sep);
   let feetPoints: { feetY: number; feetX: number } | undefined;
 
-  const isSpriteWithFeet = (posixRelPath.toLowerCase().includes('sprites/pokemon') || 
-                            posixRelPath.toLowerCase().includes('sprites/trainers') ||
-                            posixRelPath.toLowerCase().includes('sprites/npc')) && 
-                           !posixRelPath.toLowerCase().includes('sprites/pokemon/egg');
+  const isSpriteWithFeet =
+    (posixRelPath.toLowerCase().includes('sprites/pokemon') ||
+      posixRelPath.toLowerCase().includes('sprites/trainers') ||
+      posixRelPath.toLowerCase().includes('sprites/npc')) &&
+    !posixRelPath.toLowerCase().includes('sprites/pokemon/egg');
 
   if (isSpriteWithFeet) {
     feetPoints = await calculateFeetPointsWorker(filePath);
@@ -183,7 +184,9 @@ async function handleProcessFile(filePath: string) {
   };
 }
 
-async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: number; feetX: number }> {
+async function calculateFeetPointsWorker(
+  filePath: string
+): Promise<{ feetY: number; feetX: number }> {
   try {
     const { data, info } = await sharp(filePath).raw().toBuffer({ resolveWithObject: true });
     return findFeetPointsFromBuffer(data, info.width, info.height, info.channels);
@@ -240,7 +243,7 @@ async function handleAnalyzeAnimated(filePath: string) {
 async function getFilesToConvert(dir: string): Promise<string[]> {
   const files: string[] = [];
   const pattern = '**/*.{png,jpg,jpeg,webp}';
-  
+
   for await (const entry of fs.glob(pattern, { cwd: dir })) {
     files.push(safeResolve(dir, entry));
   }
@@ -312,8 +315,8 @@ async function convertSourceFiles(
   maxWorkers: number,
   pipelineErrors: string[]
 ): Promise<ConversionResultsData> {
-  const tasks: ProcessTask[] = files.map(f => ({ type: 'processFile', filePath: f }));
-  const results = await runTasksInParallel(tasks, maxWorkers) as ProcessResult[];
+  const tasks: ProcessTask[] = files.map((f) => ({ type: 'processFile', filePath: f }));
+  const results = (await runTasksInParallel(tasks, maxWorkers)) as ProcessResult[];
 
   let successfulFiles = 0;
   let generatedWebps = 0;
@@ -328,7 +331,10 @@ async function convertSourceFiles(
         environmentFiles.push(r.environmentFile);
       }
       if (r.feetPoints) {
-        const publicRel = path.relative(PUBLIC_ASSETS_DIR, r.destFiles[0] || '').split(path.sep).join('/');
+        const publicRel = path
+          .relative(PUBLIC_ASSETS_DIR, r.destFiles[0] || '')
+          .split(path.sep)
+          .join('/');
         const normalizedDbKey = `/assets/${publicRel}`;
         pokemonFeetDatabase[normalizedDbKey] = r.feetPoints;
       }
@@ -352,7 +358,12 @@ function collectAnimatedResults(
 
   for (const res of analyzeResults) {
     if (!res.success || !res.animatedData) {
-      console.error(styleText('red', `   [ERROR] No se pudo analizar frame animado ${res.filePath}: ${res.error}`));
+      console.error(
+        styleText(
+          'red',
+          `   [ERROR] No se pudo analizar frame animado ${res.filePath}: ${res.error}`
+        )
+      );
       pipelineErrors.push(`Análisis animado falló en ${res.filePath}: ${res.error}`);
       continue;
     }
@@ -364,7 +375,8 @@ function collectAnimatedResults(
     if (isBackFile) {
       if (res.animatedData.size > maxAnimatedSizeBack) maxAnimatedSizeBack = res.animatedData.size;
     } else {
-      if (res.animatedData.size > maxAnimatedSizeFront) maxAnimatedSizeFront = res.animatedData.size;
+      if (res.animatedData.size > maxAnimatedSizeFront)
+        maxAnimatedSizeFront = res.animatedData.size;
     }
 
     if (res.spriteKey.includes('v')) {
@@ -387,7 +399,12 @@ function syncVariationFeetWithIdle(
         animatedDbData[key] = { ...varData, feetY: idleData.feetY, feetX: idleData.feetX };
       } else {
         pipelineWarnings.push(`Variación ${key} no encontró idle ${idleKey}`);
-        console.log(styleText('yellow', `      [WARN] No se encontró el idle correspondiente (${idleKey}) para la variación ${key}. Se usarán sus propios pies calculados.`));
+        console.log(
+          styleText(
+            'yellow',
+            `      [WARN] No se encontró el idle correspondiente (${idleKey}) para la variación ${key}. Se usarán sus propios pies calculados.`
+          )
+        );
       }
     }
   }
@@ -398,39 +415,76 @@ async function processAnimatedSprites(
   pipelineWarnings: string[],
   pipelineErrors: string[]
 ): Promise<number> {
-  console.log(styleText('yellow', `\n   📦 Generando base de datos de sprites animados en src/data/animatedSpriteDatabase.ts...`));
-  const ANIMATED_FRONT_DIR = safeResolve(process.cwd(), 'public/assets/sprites/pokemon/animated/Front');
-  const ANIMATED_BACK_DIR = safeResolve(process.cwd(), 'public/assets/sprites/pokemon/animated/Back');
+  console.log(
+    styleText(
+      'yellow',
+      `\n   📦 Generando base de datos de sprites animados en src/data/animatedSpriteDatabase.ts...`
+    )
+  );
+  const ANIMATED_FRONT_DIR = safeResolve(
+    process.cwd(),
+    'public/assets/sprites/pokemon/animated/Front'
+  );
+  const ANIMATED_BACK_DIR = safeResolve(
+    process.cwd(),
+    'public/assets/sprites/pokemon/animated/Back'
+  );
   const animatedDbData: Record<string, AnimatedSpriteData> = {};
   const animatedVariationFrames: Record<string, number> = {};
   let maxAnimatedSizeFront = 0;
   let maxAnimatedSizeBack = 0;
 
   try {
-    const frontFiles = (await fs.readdir(ANIMATED_FRONT_DIR)).filter(f => f.endsWith('.webp') || f.endsWith('.png'));
+    const frontFiles = (await fs.readdir(ANIMATED_FRONT_DIR)).filter(
+      (f) => f.endsWith('.webp') || f.endsWith('.png')
+    );
     let backFiles: string[] = [];
     try {
-      backFiles = (await fs.readdir(ANIMATED_BACK_DIR)).filter(f => f.endsWith('.webp') || f.endsWith('.png'));
-    } catch { // catch-ok: optional back directory might not exist yet
+      backFiles = (await fs.readdir(ANIMATED_BACK_DIR)).filter(
+        (f) => f.endsWith('.webp') || f.endsWith('.png')
+      );
+    } catch {
+      // catch-ok: optional back directory might not exist yet
     }
 
     const analyzeTasks: WorkerTask[] = [
-      ...frontFiles.map(file => ({ type: 'analyzeAnimated' as const, filePath: safeJoin(ANIMATED_FRONT_DIR, file) })),
-      ...backFiles.map(file => ({ type: 'analyzeAnimated' as const, filePath: safeJoin(ANIMATED_BACK_DIR, file) }))
+      ...frontFiles.map((file) => ({
+        type: 'analyzeAnimated' as const,
+        filePath: safeJoin(ANIMATED_FRONT_DIR, file)
+      })),
+      ...backFiles.map((file) => ({
+        type: 'analyzeAnimated' as const,
+        filePath: safeJoin(ANIMATED_BACK_DIR, file)
+      }))
     ];
 
-    const analyzeResults = await runTasksInParallel(analyzeTasks, maxWorkers) as AnalyzeResult[];
-    const sizes = collectAnimatedResults(analyzeResults, animatedDbData, animatedVariationFrames, pipelineErrors);
+    const analyzeResults = (await runTasksInParallel(analyzeTasks, maxWorkers)) as AnalyzeResult[];
+    const sizes = collectAnimatedResults(
+      analyzeResults,
+      animatedDbData,
+      animatedVariationFrames,
+      pipelineErrors
+    );
     maxAnimatedSizeFront = sizes.maxAnimatedSizeFront;
     maxAnimatedSizeBack = sizes.maxAnimatedSizeBack;
 
     syncVariationFeetWithIdle(animatedDbData, pipelineWarnings);
   } catch (err) {
-    console.error(styleText('red', `\n❌ ERROR: No se pudieron procesar los sprites animados: ${(err as Error).message}`));
+    console.error(
+      styleText(
+        'red',
+        `\n❌ ERROR: No se pudieron procesar los sprites animados: ${(err as Error).message}`
+      )
+    );
     pipelineErrors.push(`Procesamiento de sprites animados falló: ${(err as Error).message}`);
   }
 
-  return generateAnimatedSpriteDatabase(animatedDbData, animatedVariationFrames, maxAnimatedSizeFront, maxAnimatedSizeBack);
+  return generateAnimatedSpriteDatabase(
+    animatedDbData,
+    animatedVariationFrames,
+    maxAnimatedSizeFront,
+    maxAnimatedSizeBack
+  );
 }
 
 function renderPipelineSummary(
@@ -456,29 +510,48 @@ function renderPipelineSummary(
   console.log('━'.repeat(REPORT_SEPARATOR_LENGTH));
 
   if (pipelineWarnings.length > 0) {
-    console.log(styleText('yellow', `\n⚠️  El proceso finalizó con ${pipelineWarnings.length} advertencia(s) registradas:`));
+    console.log(
+      styleText(
+        'yellow',
+        `\n⚠️  El proceso finalizó con ${pipelineWarnings.length} advertencia(s) registradas:`
+      )
+    );
     const sampleWarnings = pipelineWarnings.slice(0, MAX_WARNINGS_DISPLAYED);
-    sampleWarnings.forEach(w => console.log(styleText('yellow', `   - ${w}`)));
+    sampleWarnings.forEach((w) => console.log(styleText('yellow', `   - ${w}`)));
     if (pipelineWarnings.length > MAX_WARNINGS_DISPLAYED) {
-      console.log(styleText('yellow', `   ... y ${pipelineWarnings.length - MAX_WARNINGS_DISPLAYED} advertencias más.`));
+      console.log(
+        styleText(
+          'yellow',
+          `   ... y ${pipelineWarnings.length - MAX_WARNINGS_DISPLAYED} advertencias más.`
+        )
+      );
     }
   }
 
   if (pipelineErrors.length > 0) {
-    console.error(styleText('red', `\n❌ El proceso finalizó con ${pipelineErrors.length} error(es):`));
-    pipelineErrors.forEach(e => console.error(styleText('red', `   - ${e}`)));
+    console.error(
+      styleText('red', `\n❌ El proceso finalizó con ${pipelineErrors.length} error(es):`)
+    );
+    pipelineErrors.forEach((e) => console.error(styleText('red', `   - ${e}`)));
     process.exit(1);
   }
 
   if (pipelineWarnings.length === 0 && pipelineErrors.length === 0) {
-    console.log(styleText('green', '\n✨ Proceso de assets finalizado 100% limpio (0 errores, 0 advertencias).\n'));
+    console.log(
+      styleText(
+        'green',
+        '\n✨ Proceso de assets finalizado 100% limpio (0 errores, 0 advertencias).\n'
+      )
+    );
   } else {
     console.log(styleText('yellow', `\n⚠️  Proceso de assets finalizado con advertencias.\n`));
   }
 }
 
 async function main() {
-  console.log(styleText('bold', '🚀 INICIANDO CONVERSIÓN Y PROCESAMIENTO MULTICORE DE ASSETS (Node.js 26+)'));
+  console.log(
+    styleText('bold', '🚀 INICIANDO CONVERSIÓN Y PROCESAMIENTO MULTICORE DE ASSETS (Node.js 26+)')
+  );
   const startTime = performance.now();
 
   const pipelineWarnings: string[] = [];
@@ -490,7 +563,8 @@ async function main() {
   const maxWorkers = Math.max(1, os.cpus().length - 1);
   console.log(`⚡ Usando pool de ${maxWorkers} workers en paralelo...`);
 
-  const { successfulFiles, generatedWebps, environmentFiles, pokemonFeetDatabase } = await convertSourceFiles(files, maxWorkers, pipelineErrors);
+  const { successfulFiles, generatedWebps, environmentFiles, pokemonFeetDatabase } =
+    await convertSourceFiles(files, maxWorkers, pipelineErrors);
 
   const duration = ((performance.now() - startTime) / 1000).toFixed(2);
   console.log(styleText('green', `✅ Conversión inicial completada en ${duration}s.`));
@@ -502,12 +576,26 @@ async function main() {
 
   const databaseDir = safeResolve(process.cwd(), 'src/data/pokemon');
   const criesDir = safeResolve(process.cwd(), 'public/cries');
-  const packedFeetData = await generateFeetAndCriesDatabase(pokemonFeetDatabase, criesDir, databaseDir, pipelineWarnings, pipelineErrors);
+  const packedFeetData = await generateFeetAndCriesDatabase(
+    pokemonFeetDatabase,
+    criesDir,
+    databaseDir,
+    pipelineWarnings,
+    pipelineErrors
+  );
 
   const npcCatalogPath = safeResolve(process.cwd(), 'src/data/pokemon/npcSpriteCatalog.ts');
-  const npcCatalogLists = await generateNpcSpriteCatalog(SOURCE_DIR, npcCatalogPath, pipelineWarnings);
+  const npcCatalogLists = await generateNpcSpriteCatalog(
+    SOURCE_DIR,
+    npcCatalogPath,
+    pipelineWarnings
+  );
 
-  const animatedSpriteCount = await processAnimatedSprites(maxWorkers, pipelineWarnings, pipelineErrors);
+  const animatedSpriteCount = await processAnimatedSprites(
+    maxWorkers,
+    pipelineWarnings,
+    pipelineErrors
+  );
 
   renderPipelineSummary(
     animatedSpriteCount,

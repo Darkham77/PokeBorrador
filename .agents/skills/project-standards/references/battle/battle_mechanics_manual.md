@@ -53,7 +53,7 @@ When executing turns and team swaps in battles coordinated by the Showdown worke
 - **Choice Loop Mid-Turn State Transitions (`ShowdownBattleEngine`)**: When resolving multi-seat choices, `ShowdownBattleEngine` captures `startTurn = battle.turn` and `startReqState = battle.requestState`. If an action submitted for the first seat immediately resolves the turn or triggers a forced switch, subsequent seat submissions in that same loop are halted to prevent feeding outdated commands to Showdown's state machine.
 - **Mandatory Recharge Clamping**: During turns following `Blast Burn`, `Hyper Beam`, or `Giga Impact`, Showdown emits an active request with `moves: [{ id: 'recharge', move: 'Recharge' }]`. Move choices submitted during this state are clamped to `move 1` (`Recharge`) exclusively, preserving normal move selections in standard turns.
 - **Atomic Stream Consumption (`ShowdownBattleRunner`)**: Choice streams in automated replays are consumed directly from `choicesBySeat` without transient engine instantiations. P1 `teamPreview` requests resolve to `'team 1'` without advancing choice stream indices.
-- **Post-Switch FSM Transition Guard (`switchAction.ts`)**: When resolving any switch sequence (voluntary, forced, or replacement), if the entering Pokémon faints on entry (e.g. from *Stealth Rock*, *Spikes*, or entry poison damage: `newPoke.hp <= 0`) or if the battle ends (`activeBattle.over`), the FSM MUST NOT transition back to `WAIT_INPUT` or reset `isBattleSwitchForced = false`. The FSM MUST remain in `SWITCH_MENU` (or the defeat / termination state) with `isBattleSwitchForced = true` so the UI presents the replacement menu and does not lock up with an empty/fainted combatant.
+- **Post-Switch FSM Transition Guard (`switchAction.ts`)**: When resolving any switch sequence (voluntary, forced, or replacement), if the entering Pokémon faints on entry (e.g. from _Stealth Rock_, _Spikes_, or entry poison damage: `newPoke.hp <= 0`) or if the battle ends (`activeBattle.over`), the FSM MUST NOT transition back to `WAIT_INPUT` or reset `isBattleSwitchForced = false`. The FSM MUST remain in `SWITCH_MENU` (or the defeat / termination state) with `isBattleSwitchForced = true` so the UI presents the replacement menu and does not lock up with an empty/fainted combatant.
 - **Client Decoupling & RPC Team Generation Protocol**: Client UI and combat orchestration modules in `src/` must NEVER directly import `@pkmn/sim` or `@pkmn/randoms`. All Showdown execution is isolated to `showdown.worker.ts`. Team generation for trainers and rivals executes via asynchronous RPC messages (`requestTrainerTeam`, `requestRivalTeam` in `showdownWorkerClient.ts`). For headless test environments (Vitest/Node) without a worker runtime, test fixtures register generation handlers via `registerTeamGeneratorHandler()`.
 
 ### 5. Multi-Turn Forced & Locked Moves Lifecycle
@@ -71,7 +71,7 @@ Pokémon Showdown emits specialized request structures and log tokens for multi-
    - Turn 2: Showdown sends `moves: [{ id: 'recharge', move: 'Recharge' }]`. The turn auto-executes `move 1` (`|cant|...|recharge`).
 4. **`uproar`, `rollout`, `bide`**:
    - Successive turns maintain fixed action execution and UI slot disabling until expiration.
-   - **Bide Trapping & Switch Guard**: While charging or discharging *Bide*, Showdown sets `active[0].trapped: true` in the side request. The client engine synchronizes this into `poke.trapped`, immediately disabling the `#battle-switch-btn` and `BattleQuickTeam` cards, displaying the `🪤` badge in `BattleInfoCardStatusContainer.vue`, and synchronously blocking any voluntary switch attempts with a descriptive notification toast before dispatching choices to Showdown.
+   - **Bide Trapping & Switch Guard**: While charging or discharging _Bide_, Showdown sets `active[0].trapped: true` in the side request. The client engine synchronizes this into `poke.trapped`, immediately disabling the `#battle-switch-btn` and `BattleQuickTeam` cards, displaying the `🪤` badge in `BattleInfoCardStatusContainer.vue`, and synchronously blocking any voluntary switch attempts with a descriptive notification toast before dispatching choices to Showdown.
 
 ### 6. Canonical Combat Engine & BattleSession Architecture (Zero Duplication)
 
@@ -578,10 +578,10 @@ stateDiagram-v2
 
 After `INITIALIZING`, the `wasSearching` flag determines which visual entry path the orchestrator takes:
 
-| `wasSearching` | Entry path | Shows `¡COMBATIR!` button? | Use case |
-| :--- | :--- | :--- | :--- |
-| `true` (default) | `SEARCH_PHASE → COMBAT_OR_FLEE` | ✅ Yes | Wild encounters, Trainer/Gym battles |
-| `false` | `FIRST_INTRO` directly | ❌ No — battle starts immediately | Internal/debug forced battles |
+| `wasSearching`   | Entry path                      | Shows `¡COMBATIR!` button?        | Use case                             |
+| :--------------- | :------------------------------ | :-------------------------------- | :----------------------------------- |
+| `true` (default) | `SEARCH_PHASE → COMBAT_OR_FLEE` | ✅ Yes                            | Wild encounters, Trainer/Gym battles |
+| `false`          | `FIRST_INTRO` directly          | ❌ No — battle starts immediately | Internal/debug forced battles        |
 
 > [!CAUTION]
 > **Never pass `wasSearching: false` for Gym or Trainer battles.** Doing so skips `SEARCH_PHASE` entirely, which means the `¡COMBATIR!` / `¡DESAFIAR!` button never appears and the battle starts without user confirmation.
@@ -692,7 +692,7 @@ stateDiagram-v2
     state TURN_ENGINE {
         [*] --> COLLECT_CHOICES: "Recolectar decisiones (Jugador + IA)"
         COLLECT_CHOICES --> SEND_TO_WORKER: "Enviar elecciones al Web Worker"
-        
+
         state SEND_TO_WORKER {
             [*] --> EXECUTE_TURN_SIMULATOR: "@pkmn/sim calcula el turno completo"
             EXECUTE_TURN_SIMULATOR --> RETURN_LOGS: "Retornar cola de logs estructurados"
@@ -774,22 +774,22 @@ stateDiagram-v2
 stateDiagram-v2
     state FLEE_ATTEMPT {
         [*] --> CALC_ESCAPE_CHANCE : "calculateEscapeChance()"
-        
+
         state ESCAPE_FAILED {
             CALC_ESCAPE_CHANCE --> DELEGATE_WORKER : "Flee Failed (escapeAttempts++)"
             DELEGATE_WORKER --> FILTER_RECOIL_LOGS : "Send: p1Choice='move struggle' / p2Choice='move <enemy_move>'"
             FILTER_RECOIL_LOGS --> PLAY_ENEMY_COUNTERATTACK : "Filter out p1a: struggle & recoil logs"
         }
-        
+
         PLAY_ENEMY_COUNTERATTACK --> EVAL_HP : "Execute visual damages & updates"
         CALC_ESCAPE_CHANCE --> PARALLEL_ESCAPE_EXECUTION : "Flee Success"
-        
+
         state PARALLEL_ESCAPE_EXECUTION {
             [*] --> POKEMON_RECALL : "Player: handleWithdrawRequest (Pokéball Recall)"
             --
             [*] --> PLAY_ESCAPE_ANIM : "Wild Enemy: TRIGGER_COMBATANT_ESCAPE ('flee' | 'teleport')"
         }
-        
+
         PARALLEL_ESCAPE_EXECUTION --> VACATE_SEAT : "Free Seats"
         VACATE_SEAT --> [*] : "Exit Engine"
     }
@@ -986,13 +986,13 @@ Battles where `isSingle === true` (i.e. `isGym`, `isPvP`, or `persistenceMode ==
 
 To maintain a cinematic feel, the post-capture sequence follows a strictly timed protocol synchronized with the rewards flow:
 
-| Time | Event | Visual State |
-| :-- | :-- | :-- |
-| **0.0s** | `CATCH_SUCCESS` | Sparkles start. Poké Ball visible & shaking. Enemy Sprite HIDDEN. The caught Pokémon MUST be added to the team or box (`addPokemon`) BEFORE the rewards transition. |
-| **Log Entry** | **Rewards Phase Start** | Sparkles end. Poké Ball despawns. All visual traces cleared. |
-| **Variable** | **XP & Gold Sync** | Stage is COMPLETELY EMPTY. No sprites, no balls, no HUDs. Wait for log queue to empty. |
-| **Next Step** | **Level Up Sequence** | Enter `LEVEL_UP_MODAL`. Stage remains in a clean state. |
-| **Variable** | **Search Phase Trigger** | All selections cleared. `isSearching = true`. Transition to bushes starts. |
+| Time          | Event                    | Visual State                                                                                                                                                        |
+| :------------ | :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **0.0s**      | `CATCH_SUCCESS`          | Sparkles start. Poké Ball visible & shaking. Enemy Sprite HIDDEN. The caught Pokémon MUST be added to the team or box (`addPokemon`) BEFORE the rewards transition. |
+| **Log Entry** | **Rewards Phase Start**  | Sparkles end. Poké Ball despawns. All visual traces cleared.                                                                                                        |
+| **Variable**  | **XP & Gold Sync**       | Stage is COMPLETELY EMPTY. No sprites, no balls, no HUDs. Wait for log queue to empty.                                                                              |
+| **Next Step** | **Level Up Sequence**    | Enter `LEVEL_UP_MODAL`. Stage remains in a clean state.                                                                                                             |
+| **Variable**  | **Search Phase Trigger** | All selections cleared. `isSearching = true`. Transition to bushes starts.                                                                                          |
 
 ### 9. Capture Animation Fidelity
 
@@ -1077,7 +1077,7 @@ stateDiagram-v2
 
 #### Forced Switch & Phazing Sequence (FORCED_SWITCH_SEQ)
 
-Handles involuntary target expulsion (*phazing*) from moves like Whirlwind, Roar, Dragon Tail, Circle Throw, and item triggers (Red Card), as well as pivot and self-teleport moves. The departing Pokémon executes its move-specific exit animation (`whirlwind`, `flee`, `teleport`, `knockback`, or `withdraw`), the seat is vacated, and the incoming dragged or chosen Pokémon enters the battlefield via `POKEMON_CALL` and `handleReleaseRequest`.
+Handles involuntary target expulsion (_phazing_) from moves like Whirlwind, Roar, Dragon Tail, Circle Throw, and item triggers (Red Card), as well as pivot and self-teleport moves. The departing Pokémon executes its move-specific exit animation (`whirlwind`, `flee`, `teleport`, `knockback`, or `withdraw`), the seat is vacated, and the incoming dragged or chosen Pokémon enters the battlefield via `POKEMON_CALL` and `handleReleaseRequest`.
 
 ```mermaid
 stateDiagram-v2
@@ -1140,23 +1140,23 @@ stateDiagram-v2
 
 ##### Move & Item Forced Exit Mapping Matrix
 
-| Trigger ID | Canonical ID | Exit Target | Animation Type (`BattleEscapeType`) | GSAP Visual Effect | Localized Expulsion Log |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Whirlwind** | `whirlwind` | Target | `whirlwind` | Fast rotation + lateral/upward spiral off-screen | *¡[Pokémon] fue expulsado por el remolino!* |
-| **Roar** | `roar` | Target | `flee` | Dust/smoke burst + fast horizontal retreat | *¡[Pokémon] huyó asustado por el rugido!* |
-| **Dragon Tail** | `dragontail` | Target | `knockback` | Heavy impact shake + elastic backward launch | *¡[Pokémon] fue arrojado fuera por la cola dragón!* |
-| **Circle Throw** | `circlethrow` | Target | `knockback` | Martial throw impulse + fast slide out | *¡[Pokémon] fue lanzado fuera del combate!* |
-| **Teleport** | `teleport` | User | `teleport` | Vertical stretch (`scaleY: 2.0`) + brightness glow flash | *¡[Pokémon] se teletransportó lejos!* |
-| **U-turn** | `uturn` | User | `withdraw` | Fast recall into Pokéball | *¡[Pokémon] dio media vuelta y regresó!* |
-| **Volt Switch** | `voltswitch` | User | `withdraw` | Spark flash + fast recall into Pokéball | *¡[Pokémon] cambió de posición con un chispazo!* |
-| **Flip Turn** | `flipturn` | User | `withdraw` | Water splash + fast recall into Pokéball | *¡[Pokémon] viró ágilmente y regresó!* |
-| **Parting Shot** | `partingshot` | User | `withdraw` | Stat debuff + dramatic Pokéball return | *¡[Pokémon] se retira tras su última palabra!* |
-| **Chilly Reception**| `chillyreception`| User | `withdraw` | Snow particles + Pokéball return | *¡[Pokémon] dejó el campo tras su chiste helado!* |
-| **Shed Tail** | `shedtail` | User | `withdraw` | Sheds substitute + Pokéball return | *¡[Pokémon] mudó su cola y regresó!* |
-| **Baton Pass** | `batonpass` | User | `withdraw` | Stat transfer + Pokéball return | *¡[Pokémon] pasa el relevo!* |
-| **Red Card** | `redcard` | Attacker | `knockback` | Involuntary eject from item activation | *¡La Tarjeta Roja expulsó a [Pokémon]!* |
-| **Eject Button** | `ejectbutton` | Holder | `withdraw` | Instant Pokéball return on damage | *¡El Botón Escape activó la retirada de [Pokémon]!* |
-| **Eject Pack** | `ejectpack` | Holder | `withdraw` | Instant Pokéball return on stat drop | *¡La Mochila Escape activó la retirada de [Pokémon]!* |
+| Trigger ID           | Canonical ID      | Exit Target | Animation Type (`BattleEscapeType`) | GSAP Visual Effect                                       | Localized Expulsion Log                               |
+| :------------------- | :---------------- | :---------- | :---------------------------------- | :------------------------------------------------------- | :---------------------------------------------------- |
+| **Whirlwind**        | `whirlwind`       | Target      | `whirlwind`                         | Fast rotation + lateral/upward spiral off-screen         | _¡[Pokémon] fue expulsado por el remolino!_           |
+| **Roar**             | `roar`            | Target      | `flee`                              | Dust/smoke burst + fast horizontal retreat               | _¡[Pokémon] huyó asustado por el rugido!_             |
+| **Dragon Tail**      | `dragontail`      | Target      | `knockback`                         | Heavy impact shake + elastic backward launch             | _¡[Pokémon] fue arrojado fuera por la cola dragón!_   |
+| **Circle Throw**     | `circlethrow`     | Target      | `knockback`                         | Martial throw impulse + fast slide out                   | _¡[Pokémon] fue lanzado fuera del combate!_           |
+| **Teleport**         | `teleport`        | User        | `teleport`                          | Vertical stretch (`scaleY: 2.0`) + brightness glow flash | _¡[Pokémon] se teletransportó lejos!_                 |
+| **U-turn**           | `uturn`           | User        | `withdraw`                          | Fast recall into Pokéball                                | _¡[Pokémon] dio media vuelta y regresó!_              |
+| **Volt Switch**      | `voltswitch`      | User        | `withdraw`                          | Spark flash + fast recall into Pokéball                  | _¡[Pokémon] cambió de posición con un chispazo!_      |
+| **Flip Turn**        | `flipturn`        | User        | `withdraw`                          | Water splash + fast recall into Pokéball                 | _¡[Pokémon] viró ágilmente y regresó!_                |
+| **Parting Shot**     | `partingshot`     | User        | `withdraw`                          | Stat debuff + dramatic Pokéball return                   | _¡[Pokémon] se retira tras su última palabra!_        |
+| **Chilly Reception** | `chillyreception` | User        | `withdraw`                          | Snow particles + Pokéball return                         | _¡[Pokémon] dejó el campo tras su chiste helado!_     |
+| **Shed Tail**        | `shedtail`        | User        | `withdraw`                          | Sheds substitute + Pokéball return                       | _¡[Pokémon] mudó su cola y regresó!_                  |
+| **Baton Pass**       | `batonpass`       | User        | `withdraw`                          | Stat transfer + Pokéball return                          | _¡[Pokémon] pasa el relevo!_                          |
+| **Red Card**         | `redcard`         | Attacker    | `knockback`                         | Involuntary eject from item activation                   | _¡La Tarjeta Roja expulsó a [Pokémon]!_               |
+| **Eject Button**     | `ejectbutton`     | Holder      | `withdraw`                          | Instant Pokéball return on damage                        | _¡El Botón Escape activó la retirada de [Pokémon]!_   |
+| **Eject Pack**       | `ejectpack`       | Holder      | `withdraw`                          | Instant Pokéball return on stat drop                     | _¡La Mochila Escape activó la retirada de [Pokémon]!_ |
 
 #### Pokémon Recall (Receiving)
 
@@ -1309,7 +1309,7 @@ The battle engine uses a decoupled architecture where move effects are mapped to
   - `specialActions.ts`: For unique mechanics (Transform, Roar, Metronome).
 - **Source Propagation**: All action functions MUST receive and propagate the `src` and `tgt` objects to the `addLogFn` to maintain the visual link between the action and the combatant's sprite.
 - **Data Integrity (Move Sync)**: Moves in the player's team may have stale metadata. Before processing an effect, the engine MUST verify/sync the `effect` property from the `pokemonDataProvider` if it is missing or null.
-- **Battle Context (Team Access)**: Actions that force switches (e.g., *Roar*, *Whirlwind*) or involve team data MUST have access to `activeBattle.playerTeam`. This team reference is injected during battle initialization.
+- **Battle Context (Team Access)**: Actions that force switches (e.g., _Roar_, _Whirlwind_) or involve team data MUST have access to `activeBattle.playerTeam`. This team reference is injected during battle initialization.
 - **Technical Debugging Standard**:
   - **Technical Logs**: Internal dispatching details, target resolution, and technical blocks (e.g., "Stat already at -6") MUST use `console.log` or `console.warn` instead of the combat log.
   - **Game Logs**: Only "gameplay-relevant" failures (e.g., "Clear Body prevented the drop", "Type immunity") should be added to the user-facing `addLog`.
@@ -1335,7 +1335,7 @@ When a Pokémon successfully flees or switches via Teleport:
 
 - **Flee Anim Safety**: When a Pokémon successfully flees (fled state is active), the standard faint/exit animation (`handleFaintAnim`) MUST NOT be executed for any surviving combatants during battle resolution, as the escape action already runs its own exit transition.
 
-*Note: Manual Fleeing (via Run Button) triggers `EXIT_BATTLE` directly and closes the modal, returning the player to the map. In wild battles, if the player chooses to run, the system must evaluate the escape chance based on the current generation formulas.*
+_Note: Manual Fleeing (via Run Button) triggers `EXIT_BATTLE` directly and closes the modal, returning the player to the map. In wild battles, if the player chooses to run, the system must evaluate the escape chance based on the current generation formulas._
 
 ## 📈 Level Up & Move Learning
 
@@ -1586,11 +1586,11 @@ Field conditions (Wish, Spikes, Stealth Rock, Toxic Spikes, Reflect, Light Scree
 
 ```ts
 // ✅ Correct
-activeBattle.playerSideConditions['wish'] = { turns: 2 }
-activeBattle.enemySideConditions['spikes'] = { turns: 0, count: 1 }
+activeBattle.playerSideConditions['wish'] = { turns: 2 };
+activeBattle.enemySideConditions['spikes'] = { turns: 0, count: 1 };
 
 // ❌ Wrong — stages are for stat multipliers only
-playerStages.wish = 2
+playerStages.wish = 2;
 ```
 
 - Type: `Record<string, { turns: number; [key: string]: unknown }>`.
@@ -1617,14 +1617,30 @@ When resetting enemy stat stages on switch, use a **spread + selective reset** i
 ```ts
 // ✅ Correct — spread first, then reset only stat modifiers
 store.enemyStages.value = {
-  ...s,  // preserve spikes, stealthRock, reflect, lightScreen, etc.
-  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0
+  ...s, // preserve spikes, stealthRock, reflect, lightScreen, etc.
+  atk: 0,
+  def: 0,
+  spa: 0,
+  spd: 0,
+  spe: 0,
+  acc: 0,
+  eva: 0
 };
 
 // ❌ Wrong — destroys all field conditions on every switch
 store.enemyStages.value = {
-  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0,
-  reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
+  atk: 0,
+  def: 0,
+  spa: 0,
+  spd: 0,
+  spe: 0,
+  acc: 0,
+  eva: 0,
+  reflect: 0,
+  lightScreen: 0,
+  safeguard: 0,
+  mist: 0,
+  spikes: 0
 };
 ```
 
@@ -1640,10 +1656,10 @@ Battle animations (faint, withdraw, send_out, status_hit) MUST be triggered via 
 
 ```ts
 // Standard Animation Trigger
-gameBus.emit('animation', { 
-  type: 'faint', 
-  target: 'player', 
-  index: 0 
+gameBus.emit('animation', {
+  type: 'faint',
+  target: 'player',
+  index: 0
 });
 ```
 

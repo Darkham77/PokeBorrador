@@ -1,4 +1,4 @@
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .egg-card {
   position: relative;
@@ -139,7 +139,11 @@
   padding: 8px 16px;
   border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: $radius-lg;
-  background: Linear-Gradient(135deg, $pokecenter-pink 0%, color-mix(in sRGB, $pokecenter-pink 80%, black) 100%);
+  background: Linear-Gradient(
+    135deg,
+    $pokecenter-pink 0%,
+    color-mix(in sRGB, $pokecenter-pink 80%, black) 100%
+  );
   color: $white;
   font-size: var(--font-9);
   text-align: center;

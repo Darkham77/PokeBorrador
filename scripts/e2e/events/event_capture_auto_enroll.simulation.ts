@@ -33,84 +33,93 @@ class CaptureAutoEnrollSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupActiveCompetitionAndBattle(): Promise<void> {
-    await this.page.evaluate(async (params) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useEventStore } = await import('../../../src/stores/events.ts');
-      const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const { requireItemId } = await import('../../../src/data/inventory/items.ts');
-      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+    await this.page.evaluate(
+      async (params) => {
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const { useEventStore } = await import('../../../src/stores/events.ts');
+        const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { requireItemId } = await import('../../../src/data/inventory/items.ts');
+        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
-      const gameStore = useGameStore();
-      const starter = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: 25 });
-      gameStore.state.team = [starter];
-      gameStore.state.starterChosen = true;
+        const gameStore = useGameStore();
+        const starter = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('pikachu'),
+          level: 25
+        });
+        gameStore.state.team = [starter];
+        gameStore.state.starterChosen = true;
 
-      const invStore = useInventoryStore();
-      await invStore.addItem(requireItemId('masterball'), 5);
+        const invStore = useInventoryStore();
+        await invStore.addItem(requireItemId('masterball'), 5);
 
-      const eventStore = useEventStore();
-      eventStore.simEventsEnabled = true;
+        const eventStore = useEventStore();
+        eventStore.simEventsEnabled = true;
 
-      const mockCompEvent = {
-        id: 'capture_comp_test',
-        name: 'Concurso de Captura Test',
-        description: 'Concurso de Captura Test',
-        active: true,
-        type: 'competition' as const,
-        icon: '🏆',
-        config: JSON.stringify({
-          subCompetitions: [
-            {
-              id: 'heavyweight',
-              name: 'Más Pesado',
-              metric: 'weight',
-              order: 'max'
-            }
-          ]
-        }),
-        rules: {
-          categories: [
-            {
-              id: 'heavyweight',
-              title: 'Más Pesado',
-              metric: 'weight' as const,
-              order: 'max' as const
-            }
-          ]
-        }
-      };
+        const mockCompEvent = {
+          id: 'capture_comp_test',
+          name: 'Concurso de Captura Test',
+          description: 'Concurso de Captura Test',
+          active: true,
+          type: 'competition' as const,
+          icon: '🏆',
+          config: JSON.stringify({
+            subCompetitions: [
+              {
+                id: 'heavyweight',
+                name: 'Más Pesado',
+                metric: 'weight',
+                order: 'max'
+              }
+            ]
+          }),
+          rules: {
+            categories: [
+              {
+                id: 'heavyweight',
+                title: 'Más Pesado',
+                metric: 'weight' as const,
+                order: 'max' as const
+              }
+            ]
+          }
+        };
 
-      eventStore.allEvents = [mockCompEvent];
-      eventStore.activeEvents = [mockCompEvent];
+        eventStore.allEvents = [mockCompEvent];
+        eventStore.activeEvents = [mockCompEvent];
 
-      const wildSnorlax = pokemonDebugService.generate({
-        id: requirePokemonSpeciesId('snorlax'),
-        level: params.level
-      });
-      wildSnorlax.weight = params.weight;
-      wildSnorlax.ivs = {
-        hp: params.iv,
-        atk: params.iv,
-        def: params.iv,
-        spa: params.iv,
-        spd: params.iv,
-        spe: params.iv
-      };
+        const wildSnorlax = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('snorlax'),
+          level: params.level
+        });
+        wildSnorlax.weight = params.weight;
+        wildSnorlax.ivs = {
+          hp: params.iv,
+          atk: params.iv,
+          def: params.iv,
+          spa: params.iv,
+          spd: params.iv,
+          spe: params.iv
+        };
 
-      const battleStore = useBattleStore();
-      await battleStore.startBattle(wildSnorlax, {
-        isTrainer: false,
-        locationId: 'route1'
-      });
-    }, { weight: MOCK_SNORLAX_WEIGHT_KG, level: MOCK_SNORLAX_LEVEL, iv: STAT_IV_PERFECT });
+        const battleStore = useBattleStore();
+        await battleStore.startBattle(wildSnorlax, {
+          isTrainer: false,
+          locationId: 'route1'
+        });
+      },
+      { weight: MOCK_SNORLAX_WEIGHT_KG, level: MOCK_SNORLAX_LEVEL, iv: STAT_IV_PERFECT }
+    );
     await awaitBattleReadyForInput(this.page);
   }
 }
 
 test.describe('Post-Capture Event Auto-Enrollment & Home Auto-Fill Simulation', () => {
-  test('prompts auto-enroll modal upon catching high-record Pokémon and confirms enrollment', async ({ page }) => {
+  test('prompts auto-enroll modal upon catching high-record Pokémon and confirms enrollment', async ({
+    page
+  }) => {
     const sim = new CaptureAutoEnrollSimWrapper(page, 'EventCaptureSim');
     await sim.setup();
     await sim.setupActiveCompetitionAndBattle();

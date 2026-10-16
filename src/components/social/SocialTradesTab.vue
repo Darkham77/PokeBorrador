@@ -28,6 +28,7 @@ const listRef = ref<HTMLElement | null>(null);
 
 /* ── Validation map for incoming offers ── */
 const validationMap = computed(() => {
+  // open-record: Trade offer validation result indexed by offer id string
   const result: Record<string, { can: boolean; reason?: string }> = {};
   const context = {
     team: gameStore.state.team,
@@ -57,7 +58,7 @@ function animateCards() {
       stagger: TRADE_CARD_ANIM_STAGGER_SEC,
       ease: 'back.out(1.2)',
       clearProps: 'all',
-      onComplete: () => listRef.value?.classList.remove('tab-mounting'),
+      onComplete: () => listRef.value?.classList.remove('tab-mounting')
     });
   });
 }
@@ -74,15 +75,18 @@ function onTradeAccepted() {
 }
 
 /* ── Claims typed list (trade claims only) ── */
-const tradeClaims = computed(() =>
-  (gameStore.state.claimQueue ?? []).filter(
-    (c: ClaimItem) => c.source_type === 'trade' || c.source_type === 'trade_refund'
-  ) as ClaimItem[]
+const tradeClaims = computed(
+  () =>
+    (gameStore.state.claimQueue ?? []).filter(
+      (c: ClaimItem) => c.source_type === 'trade' || c.source_type === 'trade_refund'
+    ) as ClaimItem[]
 );
 
 /* ── Reactive badge counts ── */
 const receivedCount = computed(() => tradeStore.pendingIncoming.length);
-const sentCount = computed(() => tradeStore.pendingOutgoing.length + tradeStore.pendingAccepted.length);
+const sentCount = computed(
+  () => tradeStore.pendingOutgoing.length + tradeStore.pendingAccepted.length
+);
 const claimsCount = computed(() => tradeClaims.value.length);
 const currentEmptyState = computed(() =>
   resolveTradeEmptyState(subTab.value, receivedCount.value, sentCount.value, claimsCount.value)
@@ -101,7 +105,13 @@ onMounted(async () => {
 });
 
 watch(
-  [subTab, () => tradeStore.pendingIncoming, () => tradeStore.pendingOutgoing, () => tradeStore.pendingAccepted, tradeClaims],
+  [
+    subTab,
+    () => tradeStore.pendingIncoming,
+    () => tradeStore.pendingOutgoing,
+    () => tradeStore.pendingAccepted,
+    tradeClaims
+  ],
   animateCards,
   { deep: true }
 );
@@ -119,10 +129,7 @@ watch(
     />
 
     <!-- Empty states -->
-    <div
-      v-if="currentEmptyState"
-      class="empty-state"
-    >
+    <div v-if="currentEmptyState" class="empty-state">
       <div class="icon emoji">
         {{ currentEmptyState.icon }}
       </div>
@@ -130,11 +137,7 @@ watch(
     </div>
 
     <!-- Card lists -->
-    <div
-      v-else
-      ref="listRef"
-      class="trades-list"
-    >
+    <div v-else ref="listRef" class="trades-list">
       <!-- RECIBIDOS -->
       <template v-if="subTab === 'received'">
         <TradeCard
@@ -156,28 +159,19 @@ watch(
           mode="accepted"
           @claimed="onTradeAccepted"
         />
-        <TradeCard
-          v-for="t in tradeStore.pendingOutgoing"
-          :key="t.id"
-          :trade="t"
-          mode="outgoing"
-        />
+        <TradeCard v-for="t in tradeStore.pendingOutgoing" :key="t.id" :trade="t" mode="outgoing" />
       </template>
 
       <!-- RECLAMOS -->
       <template v-else-if="subTab === 'claims'">
-        <ClaimCard
-          v-for="claim in tradeClaims"
-          :key="claim.id"
-          :claim="claim"
-        />
+        <ClaimCard v-for="claim in tradeClaims" :key="claim.id" :claim="claim" />
       </template>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 /* ── Cards list ── */
 .trades-list {
@@ -198,6 +192,9 @@ watch(
     filter: Drop-Shadow(0 0 8px Rgb(168 85 247 / 15%));
   }
 
-  p { font-size: var(--font-14); margin-bottom: 0; }
+  p {
+    font-size: var(--font-14);
+    margin-bottom: 0;
+  }
 }
 </style>

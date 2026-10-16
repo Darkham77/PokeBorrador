@@ -54,7 +54,10 @@ class HeuristicAgent extends BattleAgent {
     if (!activePoke) return super.decideSingleSlot(slotReq, slotIdx, fullRequest, targetLocation);
 
     const legalMoveIds = (slotReq.moves ?? [])
-      .filter((m: { disabled?: boolean | string; pp?: number }) => !m.disabled && (m.pp === undefined || m.pp > 0))
+      .filter(
+        (m: { disabled?: boolean | string; pp?: number }) =>
+          !m.disabled && (m.pp === undefined || m.pp > 0)
+      )
       .map((m: { id: string }) => m.id);
 
     const projectSet: PokemonSet = {
@@ -67,13 +70,28 @@ class HeuristicAgent extends BattleAgent {
       gender: 'M',
       nature: 'serious',
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
     };
     const projectPoke = createLocalPoke(projectSet);
 
     // Extract opponent active pokemon properly instead of using player's benched team
-    const oppTeam = (fullRequest as { oppSide?: { pokemon?: Array<{ active?: boolean; condition?: string; details?: string; ident?: string; moves?: string[]; ability?: string }> } }).oppSide?.pokemon ?? [];
-    const opponentPoke = oppTeam.find((p) => p.active && !p.condition?.endsWith('fnt')) ?? oppTeam[0];
+    const oppTeam =
+      (
+        fullRequest as {
+          oppSide?: {
+            pokemon?: Array<{
+              active?: boolean;
+              condition?: string;
+              details?: string;
+              ident?: string;
+              moves?: string[];
+              ability?: string;
+            }>;
+          };
+        }
+      ).oppSide?.pokemon ?? [];
+    const opponentPoke =
+      oppTeam.find((p) => p.active && !p.condition?.endsWith('fnt')) ?? oppTeam[0];
     let oppProject = projectPoke;
     if (opponentPoke) {
       const oppProjectSet: PokemonSet = {
@@ -86,8 +104,8 @@ class HeuristicAgent extends BattleAgent {
         gender: 'M',
         nature: 'serious',
         evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-      }
+        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+      };
       oppProject = createLocalPoke(oppProjectSet);
     }
 
@@ -127,10 +145,24 @@ class HeuristicAgent extends BattleAgent {
     battleState.enemy = this.sideId === 'p1' ? projectPoke : oppProject;
 
     const chosen = this.ai.decideMove(
-      projectPoke, oppProject,
-      { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
+      projectPoke,
+      oppProject,
+      {
+        atk: 0,
+        def: 0,
+        spa: 0,
+        spd: 0,
+        spe: 0,
+        accuracy: 0,
+        evasion: 0,
+        reflect: 0,
+        lightScreen: 0,
+        safeguard: 0,
+        mist: 0,
+        spikes: 0
+      },
       false,
-      mockCtx,
+      mockCtx
     );
 
     const mega = slotReq.canMegaEvo ? ' mega' : '';
@@ -138,7 +170,10 @@ class HeuristicAgent extends BattleAgent {
 
     if (chosen) {
       const moves = slotReq.moves ?? [];
-      const slot = moves.findIndex((m: { id: string; disabled?: boolean | string; pp?: number }) => m.id === chosen.id && !m.disabled && (m.pp ?? 0) > 0); // type-ok: Type contract declaration
+      const slot = moves.findIndex(
+        (m: { id: string; disabled?: boolean | string; pp?: number }) =>
+          m.id === chosen.id && !m.disabled && (m.pp ?? 0) > 0
+      ); // type-ok: Type contract declaration
       if (slot !== -1) return `move ${slot + 1}${mega}${tera}`;
     }
 
@@ -233,7 +268,9 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
         const logsAdvanced = newLogs.length > 0;
         const turnAdvanced = simBattle.turn > prevTurn || logsAdvanced;
         if (!turnAdvanced && !simBattle.ended) {
-          throw new Error(`[AI_FUZZER_STALL] Battle ${batch.id} did not advance after P1="${p1AcceptedChoice}" P2="${p2AcceptedChoice}".`);
+          throw new Error(
+            `[AI_FUZZER_STALL] Battle ${batch.id} did not advance after P1="${p1AcceptedChoice}" P2="${p2AcceptedChoice}".`
+          );
         }
       }
       battleTurns = simBattle.turn;
@@ -244,14 +281,24 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
       passed++;
       const result = winner ? `Ganó ${winner}` : 'Empate (Max turnos)';
       console.log(`    ✅ ${result} en ${battleTurns} turnos`);
-
     } catch (err: unknown) {
       error = err instanceof Error ? err.message : String(err);
       failed++;
       console.log(styleText('red', `    ❌ ERROR: ${error}`));
     }
 
-    results.push({ id: batch.id, p1Team: batch.p1Team, p2Team: batch.p2Team, p1Choices, p2Choices, steps, ended, winner, turns: battleTurns, error });
+    results.push({
+      id: batch.id,
+      p1Team: batch.p1Team,
+      p2Team: batch.p2Team,
+      p1Choices,
+      p2Choices,
+      steps,
+      ended,
+      winner,
+      turns: battleTurns,
+      error
+    });
   }
 
   // Write coverage report
@@ -261,31 +308,44 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
       total: results.length,
       passed,
       failed,
-      completedNaturally: results.filter(r => r.ended).length,
-      maxTurnsReached: results.filter(r => !r.ended && !r.error).length,
+      completedNaturally: results.filter((r) => r.ended).length,
+      maxTurnsReached: results.filter((r) => !r.ended && !r.error).length
     },
-    battles: results.map(r => ({ id: r.id, ended: r.ended, winner: r.winner, turns: r.turns, error: r.error })),
+    battles: results.map((r) => ({
+      id: r.id,
+      ended: r.ended,
+      winner: r.winner,
+      turns: r.turns,
+      error: r.error
+    }))
   };
   await fileWriterQueue.safeWriteFile(AI_REPORT_FILE, JSON.stringify(report, null, 2));
   console.log(`\n💾 Reporte IA guardado en: ${AI_REPORT_FILE}`);
 
-  const completedNaturally = results.filter(r => r.ended).length;
-  const maxTurns = results.filter(r => !r.ended && !r.error).length;
+  const completedNaturally = results.filter((r) => r.ended).length;
+  const maxTurns = results.filter((r) => !r.ended && !r.error).length;
 
   // Sanity check: >50% of battles not finishing naturally is statistically impossible
   // and indicates a broken protocol or stall bug. Treat as a hard failure.
   const unfinishedRate = (results.length - completedNaturally) / results.length;
   const tooManyStalled = unfinishedRate > 0.5;
   if (tooManyStalled) {
-    console.error(styleText('red', `❌ SANITY FAIL: ${results.length - completedNaturally}/${results.length} combates no terminaron (${(unfinishedRate * 100).toFixed(0)}%). Indica un bug en el protocolo.`));
+    console.error(
+      styleText(
+        'red',
+        `❌ SANITY FAIL: ${results.length - completedNaturally}/${results.length} combates no terminaron (${(unfinishedRate * 100).toFixed(0)}%). Indica un bug en el protocolo.`
+      )
+    );
   }
 
-  return [{
-    label: 'Combates IA vs. IA (Rival)',
-    passed: tooManyStalled ? 0 : passed,
-    failed: tooManyStalled ? results.length : failed,
-    untested: 0,
-    total: results.length,
-    detail: `(${completedNaturally} terminados naturalmente, ${maxTurns} por max turnos)`,
-  }];
+  return [
+    {
+      label: 'Combates IA vs. IA (Rival)',
+      passed: tooManyStalled ? 0 : passed,
+      failed: tooManyStalled ? results.length : failed,
+      untested: 0,
+      total: results.length,
+      detail: `(${completedNaturally} terminados naturalmente, ${maxTurns} por max turnos)`
+    }
+  ];
 }

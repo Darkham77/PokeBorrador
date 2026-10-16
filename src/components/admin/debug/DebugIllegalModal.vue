@@ -1,40 +1,35 @@
 <script setup lang="ts">
 defineProps<{
-  title: string
-  description: string
-  issues: string[]
-  emoji?: string
-}>()
+  title: string;
+  description: string;
+  issues: string[];
+  emoji?: string;
+}>();
 
 const emit = defineEmits<{
-  close: []
-}>()
+  close: [];
+}>();
 </script>
 
 <template>
   <div
     id="debug-illegal-pokemon-modal"
     class="creator-illegal-modal-overlay"
+    role="button"
+    tabindex="-1"
     @click.self="emit('close')"
   >
     <div class="creator-illegal-modal">
       <div class="modal-header">
         <h4 class="illegal-title">
-          <span
-            v-if="emoji"
-            class="emoji"
-          >{{ emoji }}</span> {{ title }}
+          <span v-if="emoji" class="emoji">{{ emoji }}</span> {{ title }}
         </h4>
       </div>
       <p class="illegal-desc">
         {{ description }}
       </p>
       <ul class="illegal-list">
-        <li
-          v-for="(issue, i) in issues"
-          :key="i"
-          class="illegal-item"
-        >
+        <li v-for="(issue, i) in issues" :key="i" class="illegal-item">
           <span class="emoji">❌</span> {{ issue }}
         </li>
       </ul>
@@ -52,7 +47,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .creator-illegal-modal-overlay {
   position: fixed;

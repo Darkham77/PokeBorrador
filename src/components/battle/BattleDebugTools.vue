@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import DebugAudioAnimTab from '@/components/admin/debug/DebugAudioAnimTab.vue'
-import TimeDebugControls from '@/components/admin/debug/shared/TimeDebugControls.vue'
-import SpawnDebugControls from '@/components/admin/debug/shared/SpawnDebugControls.vue'
-import DebugActionPanel from '@/components/battle/DebugActionPanel.vue'
+import { ref, computed } from 'vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import DebugAudioAnimTab from '@/components/admin/debug/DebugAudioAnimTab.vue';
+import TimeDebugControls from '@/components/admin/debug/shared/TimeDebugControls.vue';
+import SpawnDebugControls from '@/components/admin/debug/shared/SpawnDebugControls.vue';
+import DebugActionPanel from '@/components/battle/DebugActionPanel.vue';
 
-const isOpen = ref(false)
-const isEffectsOpen = ref(false)
-const isTimeOpen = ref(false)
-const isSpawnOpen = ref(false)
+const isOpen = ref(false);
+const isEffectsOpen = ref(false);
+const isTimeOpen = ref(false);
+const isSpawnOpen = ref(false);
 
-const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_DEBUG__)
+const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_DEBUG__);
 </script>
 
 <template>
@@ -22,18 +22,12 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   >
     <!-- MODULAR ACTION DEBUG PANEL -->
     <Transition name="slide-up">
-      <DebugActionPanel
-        v-if="isOpen"
-        @close="isOpen = false"
-      />
+      <DebugActionPanel v-if="isOpen" @close="isOpen = false" />
     </Transition>
 
     <!-- EFFECTS PANEL -->
     <Transition name="slide-up">
-      <div
-        v-if="isEffectsOpen"
-        class="effects-menu custom-scrollbar-vicio"
-      >
+      <div v-if="isEffectsOpen" class="effects-menu custom-scrollbar-vicio">
         <div class="effects-header">
           <span class="emoji">✨</span>
           <span class="title">BATTLE EFFECTS &amp; AUDIO</span>
@@ -53,18 +47,11 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
     <!-- TIME PANEL -->
     <Transition name="slide-up">
-      <div
-        v-if="isTimeOpen"
-        class="time-menu custom-scrollbar-vicio"
-      >
+      <div v-if="isTimeOpen" class="time-menu custom-scrollbar-vicio">
         <div class="time-header">
           <span class="emoji">⌛</span>
           <span class="title">TIME &amp; WEATHER CONTROL</span>
-          <button
-            id="battle-debug-tools-btn-1"
-            class="close-mini"
-            @click.stop="isTimeOpen = false"
-          >
+          <button id="battle-debug-tools-btn-1" class="close-mini" @click.stop="isTimeOpen = false">
             <span class="emoji">✕</span>
           </button>
         </div>
@@ -76,10 +63,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
     <!-- SPAWN PANEL -->
     <Transition name="slide-up">
-      <div
-        v-if="isSpawnOpen"
-        class="spawn-menu custom-scrollbar-vicio"
-      >
+      <div v-if="isSpawnOpen" class="spawn-menu custom-scrollbar-vicio">
         <div class="spawn-header">
           <span class="emoji">🎲</span>
           <span class="title">SPAWN &amp; MINIGAMES CONDITIONS</span>
@@ -104,7 +88,12 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           id="battle-debug-menu-btn"
           class="debug-trigger"
           :class="{ active: isOpen }"
-          @click.stop="isOpen = !isOpen; isEffectsOpen = false; isTimeOpen = false; isSpawnOpen = false"
+          @click.stop="
+            isOpen = !isOpen;
+            isEffectsOpen = false;
+            isTimeOpen = false;
+            isSpawnOpen = false;
+          "
         >
           <span class="emoji">🕹️</span>
           <span class="label">DEBUG</span>
@@ -116,7 +105,12 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           id="battle-debug-effects-btn"
           class="effects-trigger"
           :class="{ active: isEffectsOpen }"
-          @click.stop="isEffectsOpen = !isEffectsOpen; isOpen = false; isTimeOpen = false; isSpawnOpen = false"
+          @click.stop="
+            isEffectsOpen = !isEffectsOpen;
+            isOpen = false;
+            isTimeOpen = false;
+            isSpawnOpen = false;
+          "
         >
           <span class="emoji">✨</span>
           <span class="label">EFECTOS</span>
@@ -128,7 +122,12 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           id="battle-debug-tools-btn-tiempo"
           class="time-trigger"
           :class="{ active: isTimeOpen }"
-          @click.stop="isTimeOpen = !isTimeOpen; isOpen = false; isEffectsOpen = false; isSpawnOpen = false"
+          @click.stop="
+            isTimeOpen = !isTimeOpen;
+            isOpen = false;
+            isEffectsOpen = false;
+            isSpawnOpen = false;
+          "
         >
           <span class="emoji">⌛</span>
           <span class="label">TIEMPO</span>
@@ -140,7 +139,12 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           id="battle-debug-spawn-btn"
           class="spawn-trigger"
           :class="{ active: isSpawnOpen }"
-          @click.stop="isSpawnOpen = !isSpawnOpen; isOpen = false; isEffectsOpen = false; isTimeOpen = false"
+          @click.stop="
+            isSpawnOpen = !isSpawnOpen;
+            isOpen = false;
+            isEffectsOpen = false;
+            isTimeOpen = false;
+          "
         >
           <span class="emoji">🎲</span>
           <span class="label">SPAWN</span>
@@ -151,8 +155,8 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .battle-debug-tools {
   @include pixelated;
@@ -162,11 +166,13 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   flex-direction: column-reverse;
   align-items: flex-start;
   width: 100%;
-  min-height: 0; 
+  min-height: 0;
   padding: 0;
   pointer-events: none;
-  
-  &.is-open { pointer-events: all; }
+
+  &.is-open {
+    pointer-events: all;
+  }
 }
 
 .debug-triggers-row {
@@ -198,7 +204,12 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
   border: 2px solid var(--yellow);
   color: var(--yellow);
-  &:hover, &.active { background: var(--yellow); color: $black; text-shadow: none; }
+  &:hover,
+  &.active {
+    background: var(--yellow);
+    color: $black;
+    text-shadow: none;
+  }
 }
 
 .effects-trigger {
@@ -206,7 +217,11 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
   border: 2px solid var(--purple);
   color: var(--purple);
-  &:hover, &.active { background: var(--purple); color: var(--white); }
+  &:hover,
+  &.active {
+    background: var(--purple);
+    color: var(--white);
+  }
 }
 
 .effects-menu {
@@ -235,8 +250,22 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
     background: Rgb(124 58 237 / 15%);
     border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
-    .title { @include pixelated; color: var(--purple); font-size: var(--font-8); flex: 1; }
-    .close-mini { border: none; background: none; color: var(--white); opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
+    .title {
+      @include pixelated;
+      color: var(--purple);
+      font-size: var(--font-8);
+      flex: 1;
+    }
+    .close-mini {
+      border: none;
+      background: none;
+      color: var(--white);
+      opacity: 0.5;
+      cursor: pointer;
+      &:hover {
+        opacity: 1;
+      }
+    }
   }
 
   .effects-scroll-area {
@@ -273,8 +302,22 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
     background: Rgb(59 130 246 / 15%);
     border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
-    .title { @include pixelated; color: var(--blue); font-size: var(--font-8); flex: 1; }
-    .close-mini { border: none; background: none; color: var(--white); opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
+    .title {
+      @include pixelated;
+      color: var(--blue);
+      font-size: var(--font-8);
+      flex: 1;
+    }
+    .close-mini {
+      border: none;
+      background: none;
+      color: var(--white);
+      opacity: 0.5;
+      cursor: pointer;
+      &:hover {
+        opacity: 1;
+      }
+    }
   }
 
   .time-scroll-area {
@@ -292,7 +335,12 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
   border: 2px solid var(--blue);
   color: var(--blue);
-  &:hover, &.active { background: var(--blue); color: var(--white); text-shadow: none; }
+  &:hover,
+  &.active {
+    background: var(--blue);
+    color: var(--white);
+    text-shadow: none;
+  }
 }
 
 .spawn-menu {
@@ -319,8 +367,22 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
     background: Rgb(34 197 94 / 15%);
     border-bottom: 1px solid Rgb(255 255 255 / 10%);
 
-    .title { @include pixelated; color: var(--green); font-size: var(--font-8); flex: 1; }
-    .close-mini { border: none; background: none; color: var(--white); opacity: 0.5; cursor: pointer; &:hover { opacity: 1; } }
+    .title {
+      @include pixelated;
+      color: var(--green);
+      font-size: var(--font-8);
+      flex: 1;
+    }
+    .close-mini {
+      border: none;
+      background: none;
+      color: var(--white);
+      opacity: 0.5;
+      cursor: pointer;
+      &:hover {
+        opacity: 1;
+      }
+    }
   }
 
   .spawn-scroll-area {
@@ -338,6 +400,11 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
   border: 2px solid var(--green);
   color: var(--green);
-  &:hover, &.active { background: var(--green); color: $black; text-shadow: none; }
+  &:hover,
+  &.active {
+    background: var(--green);
+    color: $black;
+    text-shadow: none;
+  }
 }
 </style>

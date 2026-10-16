@@ -6,7 +6,10 @@
 
 import type { MinigameDifficulty } from '@/types/battle/battle';
 
-export const ARCHAEOLOGY_DIFFICULTIES: Record<MinigameDifficulty, { grid: number; energy: number; parts: number; label: string; items: number; color: string }> = {
+export const ARCHAEOLOGY_DIFFICULTIES: Record<
+  MinigameDifficulty,
+  { grid: number; energy: number; parts: number; label: string; items: number; color: string }
+> = {
   easy: { grid: 5, energy: 12, parts: 3, label: 'Fácil', items: 1, color: '#4ade80' },
   medium: { grid: 6, energy: 10, parts: 4, label: 'Medio', items: 2, color: '#facc15' },
   hard: { grid: 7, energy: 8, parts: 5, label: 'Difícil', items: 3, color: '#fb923c' },
@@ -32,7 +35,7 @@ const ARCHAEOLOGY_NORMAL_DIFFICULTY_EASY_PCT = 40;
 const ARCHAEOLOGY_NORMAL_DIFFICULTY_MEDIUM_PCT = 70;
 const ARCHAEOLOGY_NORMAL_DIFFICULTY_HARD_PCT = 90;
 
-const DEFAULT_ARCHAEOLOGY_RARITY = 50;
+export const DEFAULT_ARCHAEOLOGY_RARITY = 50;
 const ARCHAEOLOGY_RARE_THRESHOLD = 15;
 
 const MANHATTAN_MAX_INITIAL_DISTANCE = 999;
@@ -107,7 +110,7 @@ function growConnectedFossilCoords(gridSize: number, totalFossilParts: number): 
   fossilCoords.add(`${currentR},${currentC}`);
 
   while (fossilCoords.size < totalFossilParts) {
-    const activeList = Array.from(fossilCoords).map(str => {
+    const activeList = Array.from(fossilCoords).map((str) => {
       const parts = str.split(',');
       const r = Number(parts[0] ?? 0);
       const c = Number(parts[1] ?? 0);
@@ -131,7 +134,10 @@ function growConnectedFossilCoords(gridSize: number, totalFossilParts: number): 
   return fossilCoords;
 }
 
-export function generateArchaeologyGrid(gridSize: number, totalFossilParts: number): ArchaeologyTile[] {
+export function generateArchaeologyGrid(
+  gridSize: number,
+  totalFossilParts: number
+): ArchaeologyTile[] {
   const tempGrid = createEmptyArchaeologyGrid(gridSize);
   const fossilCoords = growConnectedFossilCoords(gridSize, totalFossilParts);
 
@@ -144,7 +150,11 @@ export function generateArchaeologyGrid(gridSize: number, totalFossilParts: numb
   return tempGrid;
 }
 
-export function getDistanceToNearestFossil(grid: readonly ArchaeologyTile[], r: number, c: number): number {
+export function getDistanceToNearestFossil(
+  grid: readonly ArchaeologyTile[],
+  r: number,
+  c: number
+): number {
   let minDistance = MANHATTAN_MAX_INITIAL_DISTANCE;
   for (const tile of grid) {
     if (tile.isFossil && !tile.isDug) {

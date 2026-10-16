@@ -1,63 +1,76 @@
-import { ref, computed, watch, onMounted } from 'vue'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
-import type { MapLocation } from '@/types/pokemon/encounters'
-import type { PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon'
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
-import { requireAbilityId, type AbilityId } from '@/data/battle/abilities'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { NatureId } from '@/data/battle/natures'
-import type { ItemId } from '@/data/inventory/items'
-import type { MapRouteId } from '@/data/world/map-assets'
-import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
-import { MINIGAME_DIFFICULTY_SELECTIONS, type MinigameDifficultySelection, type BattleMinigame } from '@/types/battle/battle'
-import { canLearnMove, getLegalSpeciesMoves, getRandomLegalMoves, getMaxAllowedMoves } from '@/logic/pokemon/pokemonFactory'
-import { toID } from '@/logic/utils/strings.ts'
-import { useMapStore } from '@/stores/map'
+import { ref, computed, watch, onMounted } from 'vue';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
+import type { MapLocation } from '@/types/pokemon/encounters';
+import type { PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { NatureId } from '@/data/battle/natures';
+import type { ItemId } from '@/data/inventory/items';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import {
+  MINIGAME_DIFFICULTY_SELECTIONS,
+  type MinigameDifficultySelection,
+  type BattleMinigame
+} from '@/types/battle/battle';
+import {
+  canLearnMove,
+  getLegalSpeciesMoves,
+  getRandomLegalMoves,
+  getMaxAllowedMoves
+} from '@/logic/pokemon/pokemonFactory';
+import { toID } from '@/logic/utils/strings.ts';
+import { useMapStore } from '@/stores/map';
 
-const DEBUG_CREATOR_SHINY_PROB = 0.05
-const DEBUG_CREATOR_GUARDIAN_PROB = 0.01
-const MAX_FRIENDSHIP_VAL = 255
-const MAX_MOVE_SLOTS_COUNT = 4
-const HALF_SPLIT_THRESHOLD = 0.5
-const NICKNAME_PROB_THRESHOLD = 0.3
-const INITIAL_DEBUG_POKEMON_LEVEL = 5
-const INITIAL_FRIENDSHIP_VAL = 70
-const PERFECT_IV_VAL = 31
+const DEBUG_CREATOR_SHINY_PROB = 0.05;
+const DEBUG_CREATOR_GUARDIAN_PROB = 0.01;
+const MAX_FRIENDSHIP_VAL = 255;
+const MAX_MOVE_SLOTS_COUNT = 4;
+const HALF_SPLIT_THRESHOLD = 0.5;
+const NICKNAME_PROB_THRESHOLD = 0.3;
+const INITIAL_DEBUG_POKEMON_LEVEL = 5;
+const INITIAL_FRIENDSHIP_VAL = 70;
+const PERFECT_IV_VAL = 31;
 
 export interface PokemonConfig {
-  id: PokemonSpeciesId
-  level: number
-  isShiny: boolean
-  isGuardian: boolean
-  nature: NatureId
-  ability: AbilityId
-  gender: Exclude<PokemonGender, null>
-  nickname: string
-  friendship: number
-  heldItem: ItemId | ''
-  mapId: MapRouteId
-  ivs: PokemonIVs
-  moves: (PokemonMoveId | null)[]
-  protocol: string
-  minigameDifficulty?: MinigameDifficultySelection
+  id: PokemonSpeciesId;
+  level: number;
+  isShiny: boolean;
+  isGuardian: boolean;
+  nature: NatureId;
+  ability: AbilityId;
+  gender: Exclude<PokemonGender, null>;
+  nickname: string;
+  friendship: number;
+  heldItem: ItemId | '';
+  mapId: MapRouteId;
+  ivs: PokemonIVs;
+  moves: (PokemonMoveId | null)[];
+  protocol: string;
+  minigameDifficulty?: MinigameDifficultySelection;
 }
 
 interface SpeciesOption {
-  id: PokemonSpeciesId
-  name: string
-  icon?: string
+  id: PokemonSpeciesId;
+  name: string;
+  icon?: string;
 }
 
 interface MapOption {
-  id: MapRouteId
-  name: string
+  id: MapRouteId;
+  name: string;
 }
 
-import { getSelectableSpecies, getSelectableNatures, getSelectableAbilities } from '@/logic/utils/routeSpawnHelpers'
+import {
+  getSelectableSpecies,
+  getSelectableNatures,
+  getSelectableAbilities
+} from '@/logic/utils/routeSpawnHelpers';
 
 export function useDebugPokemonCreator() {
-  const mapStore = useMapStore()
+  const mapStore = useMapStore();
   const config = ref<PokemonConfig>({
     id: 'bulbasaur',
     level: INITIAL_DEBUG_POKEMON_LEVEL,
@@ -70,55 +83,62 @@ export function useDebugPokemonCreator() {
     friendship: INITIAL_FRIENDSHIP_VAL,
     heldItem: '',
     mapId: mapStore.currentMap || 'route1',
-    ivs: { hp: PERFECT_IV_VAL, atk: PERFECT_IV_VAL, def: PERFECT_IV_VAL, spa: PERFECT_IV_VAL, spd: PERFECT_IV_VAL, spe: PERFECT_IV_VAL },
+    ivs: {
+      hp: PERFECT_IV_VAL,
+      atk: PERFECT_IV_VAL,
+      def: PERFECT_IV_VAL,
+      spa: PERFECT_IV_VAL,
+      spd: PERFECT_IV_VAL,
+      spe: PERFECT_IV_VAL
+    },
     moves: [],
     protocol: 'catch',
     minigameDifficulty: 'auto'
-  })
+  });
 
-  const selectedMinigame = ref<BattleMinigame>('fishing')
-  const selectedMinigameDifficulty = ref<MinigameDifficultySelection>('auto')
+  const selectedMinigame = ref<BattleMinigame>('fishing');
+  const selectedMinigameDifficulty = ref<MinigameDifficultySelection>('auto');
 
   watch(selectedMinigameDifficulty, (val) => {
-    config.value.minigameDifficulty = val
-  })
+    config.value.minigameDifficulty = val;
+  });
 
-  const allSpecies = computed<SpeciesOption[]>(() => getSelectableSpecies(true))
-  const allNatures = getSelectableNatures()
-  const allAbilities = getSelectableAbilities()
+  const allSpecies = computed<SpeciesOption[]>(() => getSelectableSpecies(true));
+  const allNatures = getSelectableNatures();
+  const allAbilities = getSelectableAbilities();
 
   const allMaps = computed<MapOption[]>(() => {
-    const maps = pokemonDataProvider.getMaps() as MapLocation[]
-    return maps.map(m => ({ id: m.id, name: m.name }))
-  })
+    const maps = pokemonDataProvider.getMaps() as MapLocation[];
+    return maps.map((m) => ({ id: m.id, name: m.name }));
+  });
 
   const filteredMaps = computed(() => {
-    const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok: Open dynamic text or non-domain string payload
+    const maps = pokemonDataProvider.getMaps() as MapLocation[]; // domain-ok: Open dynamic text or non-domain string payload
     return maps
-      .filter(m => {
+      .filter((m) => {
         if (selectedMinigame.value === 'fishing') {
-          return !!m.fishing
+          return !!m.fishing;
         } else if (selectedMinigame.value === 'archaeology') {
-          return !!m.archaeology
+          return !!m.archaeology;
         }
-        return true
+        return true;
       })
-      .map(m => ({ id: m.id, name: m.name }))
-  })
+      .map((m) => ({ id: m.id, name: m.name }));
+  });
 
   watch(selectedMinigame, () => {
     if (filteredMaps.value.length > 0) {
-      config.value.mapId = filteredMaps.value[0]?.id || 'route1'
+      config.value.mapId = filteredMaps.value[0]?.id || 'route1';
     }
-  })
+  });
 
   const speciesMoves = computed<PokemonMoveId[]>(() => {
-    return getLegalSpeciesMoves(config.value.id, config.value.level)
-  })
+    return getLegalSpeciesMoves(config.value.id, config.value.level);
+  });
 
   const baseStats = computed(() => {
-    const data = pokemonDataProvider.getPokemonData(config.value.id)
-    if (!data) return { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+    const data = pokemonDataProvider.getPokemonData(config.value.id);
+    if (!data) return { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
     return {
       hp: data.hp || 0,
       atk: data.atk || 0,
@@ -126,142 +146,165 @@ export function useDebugPokemonCreator() {
       spa: data.spa || 0,
       spd: data.spd || 0,
       spe: data.spe || 0
-    }
-  })
+    };
+  });
 
   function selectSpecies(p: SpeciesOption) {
-    config.value.id = p.id
-    const abilities = pokemonDataProvider.getSpeciesAbilities(p.id)
+    config.value.id = p.id;
+    const abilities = pokemonDataProvider.getSpeciesAbilities(p.id);
     if (abilities.length > 0 && abilities[0]) {
-      config.value.ability = requireAbilityId(abilities[0])
+      config.value.ability = requireAbilityId(abilities[0]);
     }
-    autoFillMoves()
+    autoFillMoves();
   }
 
-  watch(() => config.value.level, () => {
-    autoFillMoves()
-  })
+  watch(
+    () => config.value.level,
+    () => {
+      autoFillMoves();
+    }
+  );
 
   function autoFillMoves() {
-    const data = pokemonDataProvider.getPokemonData(config.value.id)
-    if (!data?.learnset) return
-    
+    const data = pokemonDataProvider.getPokemonData(config.value.id);
+    if (!data?.learnset) return;
+
     const learnedMoves = data.learnset
-      .filter(m => m.lv <= config.value.level)
+      .filter((m) => m.lv <= config.value.level)
       .sort((a, b) => b.lv - a.lv)
-      .map(m => m.id)
-    
-    const uniqueMoves = [...new Set(learnedMoves)].slice(0, MAX_MOVE_SLOTS_COUNT)
-    const finalMoves: (PokemonMoveId | null)[] = [...uniqueMoves]
-    while (finalMoves.length < MAX_MOVE_SLOTS_COUNT) finalMoves.push(null)
-    
-    config.value.moves = finalMoves
+      .map((m) => m.id);
+
+    const uniqueMoves = [...new Set(learnedMoves)].slice(0, MAX_MOVE_SLOTS_COUNT);
+    const finalMoves: (PokemonMoveId | null)[] = [...uniqueMoves];
+    while (finalMoves.length < MAX_MOVE_SLOTS_COUNT) finalMoves.push(null);
+
+    config.value.moves = finalMoves;
   }
 
   function randomFillMoves() {
-    config.value.moves = getRandomLegalMoves(config.value.id, config.value.level, MAX_MOVE_SLOTS_COUNT)
+    config.value.moves = getRandomLegalMoves(
+      config.value.id,
+      config.value.level,
+      MAX_MOVE_SLOTS_COUNT
+    );
   }
 
   function randomizeSpecies() {
-    const speciesList = allSpecies.value
-    if (speciesList.length === 0) return
-    const randomSpecies = speciesList[Math.floor(Math.random() * speciesList.length)]
+    const speciesList = allSpecies.value;
+    if (speciesList.length === 0) return;
+    const randomSpecies = speciesList[Math.floor(Math.random() * speciesList.length)];
     if (randomSpecies) {
-      selectSpecies(randomSpecies)
+      selectSpecies(randomSpecies);
     }
   }
 
   function randomizeLevel() {
-    config.value.level = Math.floor(Math.random() * MAX_POKEMON_LEVEL) + 1
+    config.value.level = Math.floor(Math.random() * MAX_POKEMON_LEVEL) + 1;
   }
 
   function randomizeIVs() {
-    config.value.ivs = generateRandomIVs()
+    config.value.ivs = generateRandomIVs();
   }
 
   function randomizeNature() {
-    const natures = allNatures
-    const randomNature = natures[Math.floor(Math.random() * natures.length)]
+    const natures = allNatures;
+    const randomNature = natures[Math.floor(Math.random() * natures.length)];
     if (randomNature) {
-      config.value.nature = randomNature.id
+      config.value.nature = randomNature.id;
     }
   }
 
   function randomizeAbility() {
-    const abilities = pokemonDataProvider.getSpeciesAbilities(config.value.id)
+    const abilities = pokemonDataProvider.getSpeciesAbilities(config.value.id);
     if (abilities.length > 0) {
-      const randomAbility = abilities[Math.floor(Math.random() * abilities.length)]
+      const randomAbility = abilities[Math.floor(Math.random() * abilities.length)];
       if (randomAbility) {
-        config.value.ability = requireAbilityId(randomAbility)
+        config.value.ability = requireAbilityId(randomAbility);
       }
     }
   }
 
   function randomizeNickname() {
-    const names = ['POKI', 'CRACK', 'VICIADO', 'RAYO', 'TITAN', 'FURIA', 'CHISPA', 'GOKU', 'PEPE'] as const
-    config.value.nickname = Math.random() > NICKNAME_PROB_THRESHOLD ? names[Math.floor(Math.random() * names.length)] || '' : ''
+    const names = [
+      'POKI',
+      'CRACK',
+      'VICIADO',
+      'RAYO',
+      'TITAN',
+      'FURIA',
+      'CHISPA',
+      'GOKU',
+      'PEPE'
+    ] as const;
+    config.value.nickname =
+      Math.random() > NICKNAME_PROB_THRESHOLD
+        ? names[Math.floor(Math.random() * names.length)] || ''
+        : '';
   }
 
   function randomizeMinigame() {
-    selectedMinigame.value = Math.random() > HALF_SPLIT_THRESHOLD ? 'fishing' : 'archaeology'
+    selectedMinigame.value = Math.random() > HALF_SPLIT_THRESHOLD ? 'fishing' : 'archaeology';
   }
 
   function randomizeOrigin() {
-    const maps = filteredMaps.value.length > 0 ? filteredMaps.value : allMaps.value
+    const maps = filteredMaps.value.length > 0 ? filteredMaps.value : allMaps.value;
     if (maps.length > 0) {
-      const randomMap = maps[Math.floor(Math.random() * maps.length)]
+      const randomMap = maps[Math.floor(Math.random() * maps.length)];
       if (randomMap) {
-        config.value.mapId = randomMap.id
+        config.value.mapId = randomMap.id;
       }
     }
   }
 
   function randomizeBase() {
-    randomizeSpecies()
-    randomizeLevel()
-    randomizeNature()
-    randomizeAbility()
-    randomizeIVs()
+    randomizeSpecies();
+    randomizeLevel();
+    randomizeNature();
+    randomizeAbility();
+    randomizeIVs();
   }
 
   function randomizeVisuals() {
-    config.value.isShiny = Math.random() < DEBUG_CREATOR_SHINY_PROB
-    config.value.isGuardian = Math.random() < DEBUG_CREATOR_GUARDIAN_PROB
-    config.value.gender = Math.random() > HALF_SPLIT_THRESHOLD ? 'm' : 'f'
+    config.value.isShiny = Math.random() < DEBUG_CREATOR_SHINY_PROB;
+    config.value.isGuardian = Math.random() < DEBUG_CREATOR_GUARDIAN_PROB;
+    config.value.gender = Math.random() > HALF_SPLIT_THRESHOLD ? 'm' : 'f';
   }
 
   function randomizeMinigameDifficulty() {
-    selectedMinigameDifficulty.value = MINIGAME_DIFFICULTY_SELECTIONS[Math.floor(Math.random() * MINIGAME_DIFFICULTY_SELECTIONS.length)] || 'auto'
+    selectedMinigameDifficulty.value =
+      MINIGAME_DIFFICULTY_SELECTIONS[
+        Math.floor(Math.random() * MINIGAME_DIFFICULTY_SELECTIONS.length)
+      ] || 'auto';
   }
 
   function randomizeExtras() {
-    randomizeNickname()
-    randomizeMinigame()
-    randomizeMinigameDifficulty()
-    randomizeOrigin()
-    config.value.friendship = Math.floor(Math.random() * (MAX_FRIENDSHIP_VAL + 1))
+    randomizeNickname();
+    randomizeMinigame();
+    randomizeMinigameDifficulty();
+    randomizeOrigin();
+    config.value.friendship = Math.floor(Math.random() * (MAX_FRIENDSHIP_VAL + 1));
   }
 
   function handleRandomize() {
-    randomizeBase()
-    randomizeVisuals()
-    randomizeExtras()
-    randomFillMoves()
+    randomizeBase();
+    randomizeVisuals();
+    randomizeExtras();
+    randomFillMoves();
   }
 
   onMounted(() => {
     if (mapStore.currentMap) {
-      config.value.mapId = mapStore.currentMap
+      config.value.mapId = mapStore.currentMap;
     } else if (allMaps.value.length > 0) {
-      const firstMap = allMaps.value[0]
+      const firstMap = allMaps.value[0];
       if (firstMap) {
-        config.value.mapId = firstMap.id
+        config.value.mapId = firstMap.id;
       }
     }
-  })
+  });
 
   function validateLegality(cfg = config.value) {
-    return validatePokemonLegality(cfg)
+    return validatePokemonLegality(cfg);
   }
 
   return {
@@ -292,62 +335,68 @@ export function useDebugPokemonCreator() {
     randomizeOrigin,
     handleRandomize,
     validateLegality
-  }
+  };
 }
 
 export function validatePokemonLegality(cfg: PokemonConfig): { valid: boolean; issues: string[] } {
-  const issues: string[] = [] // no-domain: Non-domain utility collection or data structure
-  
+  const issues: string[] = []; // no-domain: Non-domain utility collection or data structure
+
   if (!cfg.id) {
-    issues.push('La especie no está seleccionada.')
-    return { valid: false, issues }
+    issues.push('La especie no está seleccionada.');
+    return { valid: false, issues };
   }
 
-  const speciesData = pokemonDataProvider.getPokemonData(cfg.id)
+  const speciesData = pokemonDataProvider.getPokemonData(cfg.id);
   if (!speciesData) {
-    issues.push(`La especie "${cfg.id}" no existe en la base de datos.`)
-    return { valid: false, issues }
+    issues.push(`La especie "${cfg.id}" no existe en la base de datos.`);
+    return { valid: false, issues };
   }
 
   if (cfg.level < 1 || cfg.level > MAX_POKEMON_LEVEL) {
-    issues.push(`Nivel ${cfg.level} fuera de rango permitido (1-${MAX_POKEMON_LEVEL}).`)
+    issues.push(`Nivel ${cfg.level} fuera de rango permitido (1-${MAX_POKEMON_LEVEL}).`);
   }
 
   if (cfg.ability) {
-    const validAbilities = pokemonDataProvider.getSpeciesAbilities(cfg.id)
+    const validAbilities = pokemonDataProvider.getSpeciesAbilities(cfg.id);
     if (!validAbilities.includes(cfg.ability as (typeof validAbilities)[number])) {
-      issues.push(`La habilidad "${cfg.ability}" es ilegal para ${speciesData.name}. Habilidades válidas: [${validAbilities.join(', ')}].`)
+      issues.push(
+        `La habilidad "${cfg.ability}" es ilegal para ${speciesData.name}. Habilidades válidas: [${validAbilities.join(', ')}].`
+      );
     }
   }
 
-  const activeMoves = (cfg.moves || []).filter((m): m is PokemonMoveId => !!m)
+  const activeMoves = (cfg.moves || []).filter((m): m is PokemonMoveId => !!m);
   if (activeMoves.length === 0) {
-    issues.push('El Pokémon debe tener al menos 1 movimiento asignado.')
+    issues.push('El Pokémon debe tener al menos 1 movimiento asignado.');
   } else {
-    const maxAllowedMoves = getMaxAllowedMoves(cfg.id, cfg.level)
+    const maxAllowedMoves = getMaxAllowedMoves(cfg.id, cfg.level);
     if (activeMoves.length > maxAllowedMoves) {
-      issues.push(`El Pokémon al nivel ${cfg.level} solo puede conocer hasta ${maxAllowedMoves} movimiento(s) según su etapa de aprendizaje (posee ${activeMoves.length}).`)
+      issues.push(
+        `El Pokémon al nivel ${cfg.level} solo puede conocer hasta ${maxAllowedMoves} movimiento(s) según su etapa de aprendizaje (posee ${activeMoves.length}).`
+      );
     }
   }
 
-  const moveSet = new Set<string>()
+  const moveSet = new Set<string>();
   for (const moveId of activeMoves) {
-    const cleanMoveId = toID(moveId)
+    const cleanMoveId = toID(moveId);
     if (moveSet.has(cleanMoveId)) {
-      issues.push(`Movimiento duplicado: "${moveId}".`)
+      issues.push(`Movimiento duplicado: "${moveId}".`);
     }
-    moveSet.add(cleanMoveId)
+    moveSet.add(cleanMoveId);
 
-    const moveData = pokemonDataProvider.getMoveData(cleanMoveId)
+    const moveData = pokemonDataProvider.getMoveData(cleanMoveId);
     if (!moveData || !isPokemonMoveId(cleanMoveId)) {
-      issues.push(`El movimiento "${moveId}" no existe en la base de datos de movimientos.`)
+      issues.push(`El movimiento "${moveId}" no existe en la base de datos de movimientos.`);
     } else if (!canLearnMove(cfg.id, cleanMoveId, cfg.level)) {
-      issues.push(`El movimiento "${moveData.name}" (${cleanMoveId}) es ilegal para la especie ${speciesData.name} al nivel ${cfg.level}.`)
+      issues.push(
+        `El movimiento "${moveData.name}" (${cleanMoveId}) es ilegal para la especie ${speciesData.name} al nivel ${cfg.level}.`
+      );
     }
   }
 
   return {
     valid: issues.length === 0,
     issues
-  }
+  };
 }

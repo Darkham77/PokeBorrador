@@ -28,7 +28,12 @@ function isReplayExecutionComplete(
   certifiedHistoryIndex: number | undefined
 ): boolean {
   const isEnded = Reflect.get(debugObj, 'certifiedReplayWorkerEnded') === true;
-  return isEnded || (Array.isArray(history) && typeof certifiedHistoryIndex === 'number' && certifiedHistoryIndex >= history.length);
+  return (
+    isEnded ||
+    (Array.isArray(history) &&
+      typeof certifiedHistoryIndex === 'number' &&
+      certifiedHistoryIndex >= history.length)
+  );
 }
 
 export interface ReplayChoiceFlags {
@@ -68,10 +73,14 @@ function serializeReplayContext(args: ReplayTraceContextArgs): string {
     p1UsedBattleItem: !!args.p1UsedBattleItem,
     p1ChoiceIdx: viteDebug?.p1ChoiceIdx,
     p2ChoiceIdx: viteDebug?.p2ChoiceIdx,
-    playerChoiceCount: Array.isArray(viteDebug?.playerChoices) ? viteDebug.playerChoices.length : undefined,
-    enemyChoiceCount: Array.isArray(viteDebug?.enemyChoices) ? viteDebug.enemyChoices.length : undefined,
+    playerChoiceCount: Array.isArray(viteDebug?.playerChoices)
+      ? viteDebug.playerChoices.length
+      : undefined,
+    enemyChoiceCount: Array.isArray(viteDebug?.enemyChoices)
+      ? viteDebug.enemyChoices.length
+      : undefined,
     historyCount: args.historyLength,
-    certifiedHistoryStep: args.certifiedHistoryStep,
+    certifiedHistoryStep: args.certifiedHistoryStep
   });
 }
 
@@ -81,23 +90,36 @@ export function validateAndTraceSimulationReplay(
   options: ReplayChoiceFlags = {}
 ): SimulationValidationResult {
   const { p1Skip, p2Skip, p1UsedBattleItem } = options;
-  const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
-  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined) as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
+  const isSimulation =
+    typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
+  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined) as
+    | Record<string, unknown>
+    | undefined; // open-record: Generic key-value data dictionary container
   const history = debugObj?.history;
-  const certifiedHistoryIndex = isSimulation && debugObj
-    ? (Reflect.get(debugObj, 'replayHistoryIdx') as number | undefined)
-    : undefined;
+  const certifiedHistoryIndex =
+    isSimulation && debugObj
+      ? (Reflect.get(debugObj, 'replayHistoryIdx') as number | undefined)
+      : undefined;
 
-  if (isSimulation && debugObj && isReplayExecutionComplete(debugObj, history, certifiedHistoryIndex)) {
-    console.warn('[ShowdownWorkerClient] Bypassing executeTurnInWorker because certified replay has already finished all history steps.');
+  if (
+    isSimulation &&
+    debugObj &&
+    isReplayExecutionComplete(debugObj, history, certifiedHistoryIndex)
+  ) {
+    console.warn(
+      '[ShowdownWorkerClient] Bypassing executeTurnInWorker because certified replay has already finished all history steps.'
+    );
     return { shouldBypass: true, replayContext: '', isSimulation, history };
   }
 
   if (isSimulation && (typeof certifiedHistoryIndex !== 'number' || certifiedHistoryIndex < 0)) {
-    throw new Error(`[ShowdownWorkerClient] Certified replay submission is missing its atomic history cursor. context=${JSON.stringify({ certifiedHistoryIndex, historyLength: Array.isArray(history) ? history.length : undefined, p1Choice, p2Choice })}`);
+    throw new Error(
+      `[ShowdownWorkerClient] Certified replay submission is missing its atomic history cursor. context=${JSON.stringify({ certifiedHistoryIndex, historyLength: Array.isArray(history) ? history.length : undefined, p1Choice, p2Choice })}`
+    );
   }
 
-  const certifiedHistoryStep = typeof certifiedHistoryIndex === 'number' ? certifiedHistoryIndex + 1 : undefined;
+  const certifiedHistoryStep =
+    typeof certifiedHistoryIndex === 'number' ? certifiedHistoryIndex + 1 : undefined;
   if (isSimulation && debugObj) {
     recordReplayTrace(debugObj, p1Choice, p2Choice, { p1Skip, p2Skip, p1UsedBattleItem });
   }
@@ -110,7 +132,7 @@ export function validateAndTraceSimulationReplay(
     p2Skip,
     p1UsedBattleItem,
     certifiedHistoryStep,
-    historyLength: Array.isArray(history) ? history.length : undefined,
+    historyLength: Array.isArray(history) ? history.length : undefined
   });
 
   return { shouldBypass: false, replayContext, isSimulation, history, certifiedHistoryStep };
@@ -120,7 +142,8 @@ export function generateWorkerReproductionError(payloadMessage?: string): Error 
   let reproductionReport = '';
   try {
     const battleStore = resolveBattleStore();
-    const active = ((battleStore?.state as { value?: BattleState } | undefined)?.value || battleStore?.state) as BattleState | null | undefined;
+    const active = ((battleStore?.state as { value?: BattleState } | undefined)?.value ||
+      battleStore?.state) as BattleState | null | undefined;
     if (active) {
       const reportObj = buildCombatReplayPayload(active);
       reproductionReport = `\n\n--- REPRODUCE BATTLE TEST CASE ---\nJSON Payload:\n${JSON.stringify(reportObj, null, 2)}\n----------------------------------`;

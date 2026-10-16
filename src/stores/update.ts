@@ -1,13 +1,11 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { gsap } from 'gsap'
-import { logger } from '@/logic/utils/logger'
-import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage'
-import { useAuthStore } from '@/stores/auth'
-import { useLoadingStore } from '@/stores/loading'
-import { gameBus } from '@/logic/events/gameBus'
-
-declare const __APP_VERSION__: string
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { gsap } from 'gsap';
+import { logger } from '@/logic/utils/logger';
+import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage';
+import { useAuthStore } from '@/stores/auth';
+import { useLoadingStore } from '@/stores/loading';
+import { gameBus } from '@/logic/events/gameBus';
 
 type UpdateStatus =
   | 'up_to_date'
@@ -16,13 +14,9 @@ type UpdateStatus =
   | 'outdated_server'
   | 'db_incompatible'
   | 'updating'
-  | 'error'
+  | 'error';
 
-type UpdateModalType =
-  | 'client_update'
-  | 'server_outdated'
-  | 'db_outdated'
-  | null
+type UpdateModalType = 'client_update' | 'server_outdated' | 'db_outdated' | null;
 
 interface UpdateVersionInfo {
   client: string;
@@ -35,88 +29,88 @@ export interface UpdateExecutionOptions {
   targetPath?: string;
 }
 
-const PROGRESS_STAGE_START_PERCENT = 10
-const PROGRESS_STAGE_LOGOUT_PERCENT = 40
-const PROGRESS_STAGE_APPLY_PERCENT = 80
-const PROGRESS_COMPLETE_PERCENT = 100
+const PROGRESS_STAGE_START_PERCENT = 10;
+const PROGRESS_STAGE_LOGOUT_PERCENT = 40;
+const PROGRESS_STAGE_APPLY_PERCENT = 80;
+const PROGRESS_COMPLETE_PERCENT = 100;
 
 const UPDATE_PROGRESS_STAGES = {
   START: PROGRESS_STAGE_START_PERCENT,
   LOGOUT: PROGRESS_STAGE_LOGOUT_PERCENT,
   APPLY: PROGRESS_STAGE_APPLY_PERCENT,
   COMPLETE: PROGRESS_COMPLETE_PERCENT
-} as const
+} as const;
 
-const UPDATE_CHECK_TIMEOUT_SEC = 1.5
-const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 4.0
-const PRESERVED_CACHE_REGEXP = /^game-(images|audio|event-banners)-v\d+$/i
+const UPDATE_CHECK_TIMEOUT_SEC = 1.5;
+const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 4.0;
+const PRESERVED_CACHE_REGEXP = /^game-(images|audio|event-banners)-v\d+$/i;
 
 export const useUpdateStore = defineStore('update', () => {
-  const authStore = useAuthStore()
-  const loadingStore = useLoadingStore()
+  const authStore = useAuthStore();
+  const loadingStore = useLoadingStore();
 
   // State
-  const status = ref<UpdateStatus>('up_to_date')
-  const modalType = ref<UpdateModalType>(null)
-  const versionInfo = ref<UpdateVersionInfo | null>(null)
-  const isUpdating = ref(false)
-  const progress = ref(0)
-  const progressText = ref('')
+  const status = ref<UpdateStatus>('up_to_date');
+  const modalType = ref<UpdateModalType>(null);
+  const versionInfo = ref<UpdateVersionInfo | null>(null);
+  const isUpdating = ref(false);
+  const progress = ref(0);
+  const progressText = ref('');
 
   // Computed
   const isUpdateAvailable = computed(() => {
-    return status.value === 'outdated_client' || status.value === 'updating'
-  })
+    return status.value === 'outdated_client' || status.value === 'updating';
+  });
 
   const isBlocked = computed(() => {
-    return modalType.value !== null
-  })
+    return modalType.value !== null;
+  });
 
   // Purge outdated code caches while preserving heavy game media
   const purgeCodeCaches = async (): Promise<void> => {
-    if (typeof window === 'undefined' || !('caches' in window)) return
+    if (typeof window === 'undefined' || !('caches' in window)) return;
     try {
-      const keys = await caches.keys()
+      const keys = await caches.keys();
       await Promise.all(
         keys.map((key) => {
           if (PRESERVED_CACHE_REGEXP.test(key)) {
-            return Promise.resolve(false)
+            return Promise.resolve(false);
           }
-          logger.info('UpdateStore', `Purging outdated cache bucket: ${key}`)
-          return caches.delete(key)
+          logger.info('UpdateStore', `Purging outdated cache bucket: ${key}`);
+          return caches.delete(key);
         })
-      )
+      );
     } catch (e) {
-      logger.error('UpdateStore', `Error during selective cache purge: ${(e as Error).message}`)
+      logger.error('UpdateStore', `Error during selective cache purge: ${(e as Error).message}`);
     }
-  }
+  };
 
-  let isReloading = false
-  let failsafeTimer: gsap.core.Tween | null = null
+  let isReloading = false;
+  let failsafeTimer: gsap.core.Tween | null = null;
 
   // Force cache-busting HTTP fetch and redirect strictly to target path (default: 'login')
   const forceCacheBustingReload = async (targetPath = 'login'): Promise<void> => {
-    if (typeof window === 'undefined') return
-    if (isReloading) return
-    isReloading = true
+    if (typeof window === 'undefined') return;
+    if (isReloading) return;
+    isReloading = true;
 
     if (failsafeTimer) {
-      failsafeTimer.kill()
-      failsafeTimer = null
+      failsafeTimer.kill();
+      failsafeTimer = null;
     }
 
-    const baseUrl = import.meta.env.BASE_URL || '/'
-    const cacheBuster = Temporal.Now.instant().epochMilliseconds.toString()
-    const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
-    const cleanTarget = targetPath.replace(/^\/+/, '')
-    const target = `${window.location.origin}${cleanBase}${cleanTarget}?reload_t=${cacheBuster}`
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const cacheBuster = Temporal.Now.instant().epochMilliseconds.toString();
+    const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+    const cleanTarget = targetPath.replace(/^\/+/, '');
+    const target = `${window.location.origin}${cleanBase}${cleanTarget}?reload_t=${cacheBuster}`;
 
     try {
       const mainUrls = [
         window.location.origin + cleanBase,
         window.location.origin + cleanBase + 'index.html',
         window.location.origin + cleanBase + 'version.json'
-      ]
+      ];
 
       await Promise.allSettled(
         mainUrls.map((url) =>
@@ -130,250 +124,262 @@ export const useUpdateStore = defineStore('update', () => {
             mode: 'no-cors'
           })
         )
-      )
+      );
     } catch (e) {
-      logger.error('UpdateStore', 'Error during HTTP cache reload sequence:', e)
+      logger.error('UpdateStore', 'Error during HTTP cache reload sequence:', e);
     }
 
     try {
       // fallow-ignore-next-line security-sink
-      window.location.replace(target)
+      window.location.replace(target);
     } catch {
-      window.location.reload()
+      window.location.reload();
     }
-  }
+  };
 
   // Notifications of incompatibility
   function notifyOutdatedClient(info: UpdateVersionInfo) {
-    logger.warn('UpdateStore', `Client outdated (${info.client}) vs Server (${info.server}). Locking for clean update.`)
-    status.value = 'outdated_client'
-    modalType.value = 'client_update'
-    versionInfo.value = info
-    gameBus.emit('PWA_NEED_REFRESH')
+    logger.warn(
+      'UpdateStore',
+      `Client outdated (${info.client}) vs Server (${info.server}). Locking for clean update.`
+    );
+    status.value = 'outdated_client';
+    modalType.value = 'client_update';
+    versionInfo.value = info;
+    gameBus.emit('PWA_NEED_REFRESH');
   }
 
   gameBus.on('OUTDATED_CLIENT_DETECTED', (e: Event) => {
-    const detail = (e as CustomEvent<UpdateVersionInfo>).detail
+    const detail = (e as CustomEvent<UpdateVersionInfo>).detail;
     if (detail) {
-      notifyOutdatedClient(detail)
+      notifyOutdatedClient(detail);
     }
-  })
+  });
 
   function notifyOutdatedServer(info: UpdateVersionInfo) {
-    logger.warn('UpdateStore', `Server outdated (${info.server}) vs Client (${info.client}).`)
-    status.value = 'outdated_server'
-    modalType.value = 'server_outdated'
-    versionInfo.value = info
+    logger.warn('UpdateStore', `Server outdated (${info.server}) vs Client (${info.client}).`);
+    status.value = 'outdated_server';
+    modalType.value = 'server_outdated';
+    versionInfo.value = info;
   }
 
   function notifyDbIncompatible(info: UpdateVersionInfo) {
-    logger.warn('UpdateStore', `Database incompatible: client db ${info.client} vs server db ${info.db || info.server}.`)
-    status.value = 'db_incompatible'
-    modalType.value = 'db_outdated'
-    versionInfo.value = info
+    logger.warn(
+      'UpdateStore',
+      `Database incompatible: client db ${info.client} vs server db ${info.db || info.server}.`
+    );
+    status.value = 'db_incompatible';
+    modalType.value = 'db_outdated';
+    versionInfo.value = info;
   }
 
   function notifyServiceWorkerUpdate() {
-    if (modalType.value === 'client_update') return
-    logger.info('UpdateStore', 'Service Worker update detected.')
-    status.value = 'outdated_client'
-    modalType.value = 'client_update'
+    if (modalType.value === 'client_update') return;
+    logger.info('UpdateStore', 'Service Worker update detected.');
+    status.value = 'outdated_client';
+    modalType.value = 'client_update';
   }
 
   function notifyChunkLoadError(err?: unknown) {
-    logger.warn('UpdateStore', 'Chunk load or module fetch error caught. Requesting refresh.', err)
-    status.value = 'outdated_client'
-    modalType.value = 'client_update'
-    gameBus.emit('PWA_NEED_REFRESH')
+    logger.warn('UpdateStore', 'Chunk load or module fetch error caught. Requesting refresh.', err);
+    status.value = 'outdated_client';
+    modalType.value = 'client_update';
+    gameBus.emit('PWA_NEED_REFRESH');
   }
 
   // Clear modal and reset flags
   function resetStatus() {
-    isReloading = false
+    isReloading = false;
     if (failsafeTimer) {
-      failsafeTimer.kill()
-      failsafeTimer = null
+      failsafeTimer.kill();
+      failsafeTimer = null;
     }
-    status.value = 'up_to_date'
-    modalType.value = null
-    versionInfo.value = null
-    isUpdating.value = false
-    progress.value = 0
-    progressText.value = ''
-    loadingStore.clearAll()
-    loadingStore.markAppMounted()
+    status.value = 'up_to_date';
+    modalType.value = null;
+    versionInfo.value = null;
+    isUpdating.value = false;
+    progress.value = 0;
+    progressText.value = '';
+    loadingStore.clearAll();
+    loadingStore.markAppMounted();
   }
 
   // Clean exit directly to /login (bypassing loops)
   async function exitToLogin(): Promise<void> {
-    logger.info('UpdateStore', 'Executing exit to /login...')
-    resetStatus()
-    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN, 'true')
+    logger.info('UpdateStore', 'Executing exit to /login...');
+    resetStatus();
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN, 'true');
     try {
-      await authStore.logout(true, true)
+      await authStore.logout(true, true);
     } catch (e) {
-      logger.warn('UpdateStore', `Logout error on exitToLogin: ${(e as Error).message}`)
+      logger.warn('UpdateStore', `Logout error on exitToLogin: ${(e as Error).message}`);
     }
-    const baseUrl = import.meta.env.BASE_URL || '/'
-    const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
     if (typeof window !== 'undefined') {
       // security-ok: Same-origin redirect to internal /login route
-      window.location.replace(`${window.location.origin}${cleanBase}login`)
+      window.location.replace(`${window.location.origin}${cleanBase}login`);
     }
   }
 
   // Retry version check by hard reloading
   function retryCheck(): void {
     if (typeof window !== 'undefined') {
-      window.location.reload()
+      window.location.reload();
     }
   }
 
-function terminateShowdownWorker(): void {
-  if (typeof window !== 'undefined' && window.__showdownWorker__) {
-    try {
-      window.__showdownWorker__.terminate()
-      window.__showdownWorker__ = undefined
-    } catch (e) {
-      logger.warn('UpdateStore', 'Error terminating showdown worker:', e)
+  function terminateShowdownWorker(): void {
+    if (typeof window !== 'undefined' && window.__showdownWorker__) {
+      try {
+        window.__showdownWorker__.terminate();
+        window.__showdownWorker__ = undefined;
+      } catch (e) {
+        logger.warn('UpdateStore', 'Error terminating showdown worker:', e);
+      }
     }
   }
-}
 
-function waitForControllerChange(timeoutSec: number): Promise<void> {
-  const controllerPromise = new Promise<void>((resolve) => {
-    const onControllerChange = () => {
-      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
-      resolve()
-    }
-    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
-  })
-  return Promise.race([
-    controllerPromise,
-    new Promise<void>((resolve) => {
-      gsap.delayedCall(timeoutSec, resolve)
-    })
-  ])
-}
-
-async function activateWaitingWorker(waiting: ServiceWorker): Promise<void> {
-  logger.info('UpdateStore', 'Waiting Service Worker detected. Sending SKIP_WAITING...')
-  waiting.postMessage({ type: 'SKIP_WAITING' })
-  await waitForControllerChange(UPDATE_CHECK_TIMEOUT_SEC)
-}
-
-async function awaitAndActivateInstallingWorker(worker: ServiceWorker | null): Promise<void> {
-  logger.info('UpdateStore', 'Installing Service Worker detected. Awaiting installation...')
-  await new Promise<void>((resolve) => {
-    if (worker) {
-      worker.addEventListener('statechange', () => {
-        if (worker.state === 'installed') {
-          logger.info('UpdateStore', 'Worker installed. Sending SKIP_WAITING...')
-          worker.postMessage({ type: 'SKIP_WAITING' })
-          resolve()
-        }
+  function waitForControllerChange(timeoutSec: number): Promise<void> {
+    const controllerPromise = new Promise<void>((resolve) => {
+      const onControllerChange = () => {
+        navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+        resolve();
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+    });
+    return Promise.race([
+      controllerPromise,
+      new Promise<void>((resolve) => {
+        gsap.delayedCall(timeoutSec, resolve);
       })
-    } else {
-      resolve()
-    }
-  })
-  await waitForControllerChange(UPDATE_CHECK_TIMEOUT_SEC)
-}
+    ]);
+  }
 
-async function updateAndActivateWorker(registration: ServiceWorkerRegistration): Promise<void> {
-  logger.info('UpdateStore', 'No waiting/installing worker. Triggering registration.update()...')
-  try {
-    await registration.update()
+  async function activateWaitingWorker(waiting: ServiceWorker): Promise<void> {
+    logger.info('UpdateStore', 'Waiting Service Worker detected. Sending SKIP_WAITING...');
+    waiting.postMessage({ type: 'SKIP_WAITING' });
+    await waitForControllerChange(UPDATE_CHECK_TIMEOUT_SEC);
+  }
+
+  async function awaitAndActivateInstallingWorker(worker: ServiceWorker | null): Promise<void> {
+    logger.info('UpdateStore', 'Installing Service Worker detected. Awaiting installation...');
     await new Promise<void>((resolve) => {
-      gsap.delayedCall(UPDATE_CHECK_TIMEOUT_SEC, resolve)
-    })
-    const freshReg = await navigator.serviceWorker.getRegistration()
-    const updatedWorker = freshReg?.waiting
-    if (updatedWorker) {
-      logger.info('UpdateStore', 'New worker ready after update. Activating...')
-      updatedWorker.postMessage({ type: 'SKIP_WAITING' })
-      await waitForControllerChange(UPDATE_CHECK_TIMEOUT_SEC)
-    } else {
-      logger.info('UpdateStore', 'No updated worker appeared. Unregistering existing SW to force clean fetch on reload...')
-      await registration.unregister()
+      if (worker) {
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'installed') {
+            logger.info('UpdateStore', 'Worker installed. Sending SKIP_WAITING...');
+            worker.postMessage({ type: 'SKIP_WAITING' });
+            resolve();
+          }
+        });
+      } else {
+        resolve();
+      }
+    });
+    await waitForControllerChange(UPDATE_CHECK_TIMEOUT_SEC);
+  }
+
+  async function updateAndActivateWorker(registration: ServiceWorkerRegistration): Promise<void> {
+    logger.info('UpdateStore', 'No waiting/installing worker. Triggering registration.update()...');
+    try {
+      await registration.update();
+      await new Promise<void>((resolve) => {
+        gsap.delayedCall(UPDATE_CHECK_TIMEOUT_SEC, resolve);
+      });
+      const freshReg = await navigator.serviceWorker.getRegistration();
+      const updatedWorker = freshReg?.waiting;
+      if (updatedWorker) {
+        logger.info('UpdateStore', 'New worker ready after update. Activating...');
+        updatedWorker.postMessage({ type: 'SKIP_WAITING' });
+        await waitForControllerChange(UPDATE_CHECK_TIMEOUT_SEC);
+      } else {
+        logger.info(
+          'UpdateStore',
+          'No updated worker appeared. Unregistering existing SW to force clean fetch on reload...'
+        );
+        await registration.unregister();
+      }
+    } catch (updateErr) {
+      logger.error('UpdateStore', `Error during manual update: ${(updateErr as Error).message}`);
+      await registration.unregister();
     }
-  } catch (updateErr) {
-    logger.error('UpdateStore', `Error during manual update: ${(updateErr as Error).message}`)
-    await registration.unregister()
   }
-}
 
-async function transitionServiceWorker(): Promise<void> {
-  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
-  const registration = await navigator.serviceWorker.getRegistration()
-  if (!registration) return
+  async function transitionServiceWorker(): Promise<void> {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) return;
 
-  if (registration.waiting) {
-    await activateWaitingWorker(registration.waiting)
-  } else if (registration.installing) {
-    await awaitAndActivateInstallingWorker(registration.installing)
-  } else {
-    await updateAndActivateWorker(registration)
+    if (registration.waiting) {
+      await activateWaitingWorker(registration.waiting);
+    } else if (registration.installing) {
+      await awaitAndActivateInstallingWorker(registration.installing);
+    } else {
+      await updateAndActivateWorker(registration);
+    }
   }
-}
 
   // Atomic clean update execution
   async function executeCleanUpdate(options?: UpdateExecutionOptions): Promise<void> {
-    if (isUpdating.value) return
-    isUpdating.value = true
-    status.value = 'updating'
-    progress.value = UPDATE_PROGRESS_STAGES.START
-    progressText.value = 'Iniciando...'
+    if (isUpdating.value) return;
+    isUpdating.value = true;
+    status.value = 'updating';
+    progress.value = UPDATE_PROGRESS_STAGES.START;
+    progressText.value = 'Iniciando...';
 
-    const targetDestination = options?.targetPath || 'login'
+    const targetDestination = options?.targetPath || 'login';
 
     // 1. Terminate active Web Workers
-    terminateShowdownWorker()
+    terminateShowdownWorker();
 
     // 2. Unconditional safe logout (preventSave = true to avoid corrupting database)
     if (authStore.user) {
-      progress.value = UPDATE_PROGRESS_STAGES.LOGOUT
-      progressText.value = 'Cerrando sesión de forma segura...'
+      progress.value = UPDATE_PROGRESS_STAGES.LOGOUT;
+      progressText.value = 'Cerrando sesión de forma segura...';
       try {
-        await authStore.logout(true, true)
+        await authStore.logout(true, true);
       } catch (e) {
-        logger.error('UpdateStore', `Error during logout on update: ${(e as Error).message}`)
+        logger.error('UpdateStore', `Error during logout on update: ${(e as Error).message}`);
       }
     }
 
     // Prevent immediate autologin on reload
-    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN, 'true')
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN, 'true');
 
-    progress.value = UPDATE_PROGRESS_STAGES.APPLY
-    progressText.value = 'Aplicando actualización...'
+    progress.value = UPDATE_PROGRESS_STAGES.APPLY;
+    progressText.value = 'Aplicando actualización...';
 
     // Failsafe: force reload to targetDestination if SW doesn't transition in time
     failsafeTimer = gsap.delayedCall(SW_UPDATE_FAILSAFE_TIMEOUT_SEC, () => {
-      logger.warn('UpdateStore', 'SW update exceeded failsafe timeout. Executing forced clean reload to login.')
-      void forceCacheBustingReload(targetDestination)
-    })
+      logger.warn(
+        'UpdateStore',
+        'SW update exceeded failsafe timeout. Executing forced clean reload to login.'
+      );
+      void forceCacheBustingReload(targetDestination);
+    });
 
     try {
       // 3. Purge code caches before activating new SW
-      await purgeCodeCaches()
+      await purgeCodeCaches();
 
       // 4. Service Worker 3-state transition
-      await transitionServiceWorker()
+      await transitionServiceWorker();
 
       if (failsafeTimer) {
-        failsafeTimer.kill()
-        failsafeTimer = null
+        failsafeTimer.kill();
+        failsafeTimer = null;
       }
-      progress.value = UPDATE_PROGRESS_STAGES.COMPLETE
-      progressText.value = 'Reiniciando...'
-      await forceCacheBustingReload(targetDestination)
+      progress.value = UPDATE_PROGRESS_STAGES.COMPLETE;
+      progressText.value = 'Reiniciando...';
+      await forceCacheBustingReload(targetDestination);
     } catch (e) {
       if (failsafeTimer) {
-        failsafeTimer.kill()
-        failsafeTimer = null
+        failsafeTimer.kill();
+        failsafeTimer = null;
       }
-      logger.error('UpdateStore', `Error during forced update execution: ${(e as Error).message}`)
-      await forceCacheBustingReload(targetDestination)
+      logger.error('UpdateStore', `Error during forced update execution: ${(e as Error).message}`);
+      await forceCacheBustingReload(targetDestination);
     }
   }
 
@@ -395,5 +401,5 @@ async function transitionServiceWorker(): Promise<void> {
     exitToLogin,
     retryCheck,
     executeCleanUpdate
-  }
-})
+  };
+});

@@ -6,7 +6,11 @@
 
 import type { BattleState } from '@/types/battle/battle.ts';
 
-export function updateLogSkippingState(battle: BattleState, type: string | undefined, parts: string[]): boolean {
+export function updateLogSkippingState(
+  battle: BattleState,
+  type: string | undefined,
+  parts: string[]
+): boolean {
   if (type === 'turnStart') {
     Reflect.set(battle, 'p2Skip', parts[2] === 'p2Skip=true');
     Reflect.set(battle, 'ignoreEnemyLogs', false);
@@ -14,7 +18,8 @@ export function updateLogSkippingState(battle: BattleState, type: string | undef
   }
 
   if (Reflect.get(battle, 'ignoreEnemyLogs')) {
-    const isPlayerMove = type === 'move' && (parts[2]?.startsWith('p1a:') || parts[2]?.startsWith('p1:'));
+    const isPlayerMove =
+      type === 'move' && (parts[2]?.startsWith('p1a:') || parts[2]?.startsWith('p1:'));
     const isSwitchOrDrag = type === 'switch' || type === 'drag';
     const isTurnOrUpkeep = type === 'turn' || type === 'upkeep' || type === 'win' || type === 'tie';
 

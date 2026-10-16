@@ -8,7 +8,7 @@
  * - Asserts clean execution on repository data
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   CombatInvariantsAuditor,
   COMBAT_INVARIANTS_RULES,
@@ -69,7 +69,9 @@ describe('CombatInvariantsAuditor', () => {
       `;
 
       scan(auditor, 'src/logic/battle/testSuppressed.ts', code);
-      expect(auditor.getCountsByRule().get('showdown-healthy-status-null-prohibition') ?? 0).toBe(0);
+      expect(auditor.getCountsByRule().get('showdown-healthy-status-null-prohibition') ?? 0).toBe(
+        0
+      );
       expect(auditor.getCountsByRule().get('battle-multi-seat-hardcoding') ?? 0).toBe(0);
     });
   });

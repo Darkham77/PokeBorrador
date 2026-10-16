@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { createPinia, setActivePinia } from 'pinia';
 import { serializeActiveBattle } from '@/logic/auth/battleSerializerHelper';
 import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
@@ -20,7 +20,10 @@ describe('Rival Anti-Cheat Battle Persistence & Remote Save Parity', () => {
 
   it('should faithfully serialize and restore an active rival trainer battle', async () => {
     const p1 = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: 50 });
-    const rivalMon = pokemonDebugService.generate({ id: requirePokemonSpeciesId('eevee'), level: 50 });
+    const rivalMon = pokemonDebugService.generate({
+      id: requirePokemonSpeciesId('eevee'),
+      level: 50
+    });
 
     const rivalBattle: BattleState = {
       player: p1,
@@ -37,7 +40,7 @@ describe('Rival Anti-Cheat Battle Persistence & Remote Save Parity', () => {
       turnCount: 2,
       over: false,
       escapeAttempts: 0,
-      wasSearching: false,
+      wasSearching: false
     };
 
     const gameState = {
@@ -45,7 +48,7 @@ describe('Rival Anti-Cheat Battle Persistence & Remote Save Parity', () => {
       trainer: 'Red',
       starterChosen: true,
       team: [p1],
-      activeBattle: rivalBattle,
+      activeBattle: rivalBattle
     } as unknown as GameState;
 
     // 1. Serialize active battle
@@ -69,24 +72,24 @@ describe('Rival Anti-Cheat Battle Persistence & Remote Save Parity', () => {
         SEARCH_PHASE: 'SEARCH_PHASE',
         ACTIVE_BATTLE: 'ACTIVE_BATTLE',
         CONTEXT_SETUP: 'CONTEXT_SETUP',
-        EXIT_BATTLE: 'EXIT_BATTLE',
+        EXIT_BATTLE: 'EXIT_BATTLE'
       },
       BATTLE_SUBSTATES: {
         WAIT_INPUT: 'WAIT_INPUT',
-        DISCOVER_WILDS: 'DISCOVER_WILDS',
+        DISCOVER_WILDS: 'DISCOVER_WILDS'
       },
       fsm: {
         currentState: ref('EXIT_BATTLE'),
         transition: async (state: string, subState?: string) => {
           transitions.push({ state, subState });
           mockCtx.fsm.currentState.value = state;
-        },
+        }
       },
       gs: {
         state: gameState,
-        save: () => {},
+        save: () => {}
       },
-      router: { push: vi.fn() },
+      router: { push: vi.fn() }
     };
 
     await restoreBattleState(mockCtx as any, serialized);
@@ -105,11 +108,17 @@ describe('Rival Anti-Cheat Battle Persistence & Remote Save Parity', () => {
     const user: AuthUser = {
       id: '00000000-0000-0000-0000-000000000099',
       email: 'anticheat@test.local',
-      user_metadata: { username: 'AntiCheatRival' },
+      user_metadata: { username: 'AntiCheatRival' }
     };
 
-    const starter = pokemonDebugService.generate({ id: requirePokemonSpeciesId('rayquaza'), level: 100 });
-    const rivalMon = pokemonDebugService.generate({ id: requirePokemonSpeciesId('eevee'), level: 50 });
+    const starter = pokemonDebugService.generate({
+      id: requirePokemonSpeciesId('rayquaza'),
+      level: 100
+    });
+    const rivalMon = pokemonDebugService.generate({
+      id: requirePokemonSpeciesId('eevee'),
+      level: 50
+    });
 
     const state: GameState = {
       ...INITIAL_STATE,
@@ -129,8 +138,8 @@ describe('Rival Anti-Cheat Battle Persistence & Remote Save Parity', () => {
         weather: { type: 'none', turns: 0 },
         turnCount: 1,
         over: false,
-        escapeAttempts: 0,
-      } as BattleState,
+        escapeAttempts: 0
+      } as BattleState
     } as unknown as GameState;
 
     let rpcCalled = false;
@@ -142,17 +151,25 @@ describe('Rival Anti-Cheat Battle Persistence & Remote Save Parity', () => {
       },
       from: () => ({
         select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: user.id } }) }) }),
-        update: () => ({ eq: async () => ({ data: null, error: null }) }),
-      }),
+        update: () => ({ eq: async () => ({ data: null, error: null }) })
+      })
     };
 
     // Un-forced save is throttled locally
-    const unforcedResult = await saveGame(state, user, { db: mockDb, showNotif: false, forceRemote: false });
+    const unforcedResult = await saveGame(state, user, {
+      db: mockDb,
+      showNotif: false,
+      forceRemote: false
+    });
     expect(unforcedResult?.remote).toBe(false);
     expect(rpcCalled).toBe(false);
 
     // ForceRemote save bypasses throttle and persists to remote database
-    const forcedResult = await saveGame(state, user, { db: mockDb, showNotif: false, forceRemote: true });
+    const forcedResult = await saveGame(state, user, {
+      db: mockDb,
+      showNotif: false,
+      forceRemote: true
+    });
     expect(forcedResult?.remote).toBe(true);
     expect(rpcCalled).toBe(true);
   });

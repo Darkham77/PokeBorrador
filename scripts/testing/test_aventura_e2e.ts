@@ -18,10 +18,14 @@ const SELECTION_CANVAS_RENDER_TIMEOUT_MS = 500 as const;
 
 async function clickIdSafely(page: Page, id: string, description: string): Promise<boolean> {
   const locator = page.locator(`#${id}`);
-  const isVisible = await locator.waitFor({ state: 'visible', timeout: CONTROL_WAIT_TIMEOUT_MS })
+  const isVisible = await locator
+    .waitFor({ state: 'visible', timeout: CONTROL_WAIT_TIMEOUT_MS })
     .then(() => true)
     .catch((err: unknown) => {
-      console.debug(`[clickIdSafely] Element #${id} wait timed out:`, err instanceof Error ? err.message : String(err));
+      console.debug(
+        `[clickIdSafely] Element #${id} wait timed out:`,
+        err instanceof Error ? err.message : String(err)
+      );
       return false;
     });
 
@@ -43,7 +47,9 @@ async function clickIdSafely(page: Page, id: string, description: string): Promi
 }
 
 async function runTestAventuraSuite(): Promise<void> {
-  console.log('🚀 Iniciando suite de verificación Playwright para test_aventura con selectores por ID...');
+  console.log(
+    '🚀 Iniciando suite de verificación Playwright para test_aventura con selectores por ID...'
+  );
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
     ignoreHTTPSErrors: true,
@@ -146,12 +152,18 @@ async function runTestAventuraSuite(): Promise<void> {
     await clickIdSafely(page, 'chip-buildings', 'Filtro Prefabs Edificios');
     await page.waitForTimeout(PREFAB_THUMB_LOAD_TIMEOUT_MS);
     const brokenPrefabs = await page.evaluate(() => {
-      const imgs = Array.from(document.querySelectorAll('.prefabs-grid img.prefab-thumb')) as HTMLImageElement[];
+      const imgs = Array.from(
+        document.querySelectorAll('.prefabs-grid img.prefab-thumb')
+      ) as HTMLImageElement[];
       return imgs.filter((img) => img.complete && img.naturalWidth === 0).map((img) => img.src);
     });
     if (brokenPrefabs.length > 0) {
       console.error('🚨 Prefabs con imágenes rotas en Graph Studio:', brokenPrefabs);
-      issues.push({ type: 'failed-request', message: `Broken prefabs: ${brokenPrefabs.join(', ')}`, tab: 'graph-studio' });
+      issues.push({
+        type: 'failed-request',
+        message: `Broken prefabs: ${brokenPrefabs.join(', ')}`,
+        tab: 'graph-studio'
+      });
     } else {
       console.log('   ✅ Prefabs visibles de Graph Studio cargados sin imágenes rotas.');
     }
@@ -191,7 +203,9 @@ async function runTestAventuraSuite(): Promise<void> {
     console.log('   🔍 Verificando integridad de imágenes renderizadas en la galería...');
     await page.waitForSelector('.asset-card img.preview-img', { timeout: SELECTOR_TIMEOUT_MS });
     const brokenImages = await page.evaluate(() => {
-      const imgs = Array.from(document.querySelectorAll('.asset-card img.preview-img')) as HTMLImageElement[];
+      const imgs = Array.from(
+        document.querySelectorAll('.asset-card img.preview-img')
+      ) as HTMLImageElement[];
       return imgs
         .filter((img) => img.complete && img.naturalWidth === 0)
         .slice(0, 10)
@@ -199,9 +213,16 @@ async function runTestAventuraSuite(): Promise<void> {
     });
 
     if (brokenImages.length > 0) {
-      console.error(`🚨 Detectadas ${brokenImages.length} imágenes rotas en Atlas Inspector:`, brokenImages);
+      console.error(
+        `🚨 Detectadas ${brokenImages.length} imágenes rotas en Atlas Inspector:`,
+        brokenImages
+      );
       for (const broken of brokenImages) {
-        issues.push({ type: 'failed-request', message: `Broken image in DOM: ${broken}`, tab: 'atlas' });
+        issues.push({
+          type: 'failed-request',
+          message: `Broken image in DOM: ${broken}`,
+          tab: 'atlas'
+        });
       }
     } else {
       console.log('   ✅ Todas las imágenes visibles de la galería cargaron correctamente.');
@@ -214,7 +235,9 @@ async function runTestAventuraSuite(): Promise<void> {
     await page.waitForTimeout(SELECTION_CANVAS_RENDER_TIMEOUT_MS);
 
     const canvasHasContent = await page.evaluate(() => {
-      const canvas = document.querySelector('canvas.master-sheet-canvas') as HTMLCanvasElement | null;
+      const canvas = document.querySelector(
+        'canvas.master-sheet-canvas'
+      ) as HTMLCanvasElement | null;
       if (!canvas) return false;
       if (canvas.width === 0 || canvas.height === 0) return false;
       const ctx = canvas.getContext('2d');
@@ -226,14 +249,17 @@ async function runTestAventuraSuite(): Promise<void> {
 
     if (!canvasHasContent) {
       console.error('🚨 Canvas central no tiene contenido tras seleccionar edificio.');
-      issues.push({ type: 'pageerror', message: 'MasterSheetCanvas is empty or has 0 dimensions', tab: 'atlas' });
+      issues.push({
+        type: 'pageerror',
+        message: 'MasterSheetCanvas is empty or has 0 dimensions',
+        tab: 'atlas'
+      });
     } else {
       console.log('   ✅ Canvas central renderizó correctamente el edificio seleccionado.');
     }
 
     await clickIdSafely(page, 'card-asset-poke_museum', 'Seleccionar Edificio Museo Pewter');
     await page.waitForTimeout(SELECTION_CANVAS_RENDER_TIMEOUT_MS);
-
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     console.error('💥 Error crítico durante la ejecución del test:', errorMsg);
@@ -246,7 +272,9 @@ async function runTestAventuraSuite(): Promise<void> {
   console.log('📊 RESUMEN DE COMPROBACIÓN TEST_AVENTURA CON SELECTORES ID:');
   console.log(`Total de incidencias capturadas: ${issues.length}`);
   if (issues.length === 0) {
-    console.log('🎉 ¡Todas las páginas, menús y vistas de test_aventura fueron interactuadas mediante ID con 0 errores!');
+    console.log(
+      '🎉 ¡Todas las páginas, menús y vistas de test_aventura fueron interactuadas mediante ID con 0 errores!'
+    );
   } else {
     for (const [idx, issue] of issues.entries()) {
       console.log(`\n[${idx + 1}] Tipo: ${issue.type} | Tab: ${issue.tab}`);

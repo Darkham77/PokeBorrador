@@ -47,7 +47,9 @@ describe('Emergent Corridor Property Engine (Phase 4)', () => {
     const starterCorridor = enriched.find((c) => c.fromId === 'node_0' || c.toId === 'node_0')!;
     // Pre-league corridor (Gym 8 -> League)
     const leagueNodeId = embedded.mainChainOrder[embedded.mainChainOrder.length - 1]!;
-    const leagueCorridor = enriched.find((c) => c.fromId === leagueNodeId || c.toId === leagueNodeId)!;
+    const leagueCorridor = enriched.find(
+      (c) => c.fromId === leagueNodeId || c.toId === leagueNodeId
+    )!;
 
     expect(starterCorridor.width).toBeGreaterThan(leagueCorridor.width);
     expect(starterCorridor.difficulty).toBeLessThan(leagueCorridor.difficulty);
@@ -60,7 +62,7 @@ describe('Emergent Corridor Property Engine (Phase 4)', () => {
     const enriched = enrichCorridorProperties(embedded, continent);
 
     // Find all main chain corridors in order
-    const mainCorridors: typeof enriched[number][] = [];
+    const mainCorridors: (typeof enriched)[number][] = [];
     for (let i = 0; i < embedded.mainChainOrder.length - 1; i++) {
       const a = embedded.mainChainOrder[i]!;
       const b = embedded.mainChainOrder[i + 1]!;
@@ -73,8 +75,12 @@ describe('Emergent Corridor Property Engine (Phase 4)', () => {
     for (let i = 0; i < mainCorridors.length - 1; i++) {
       const curr = mainCorridors[i]!;
       const next = mainCorridors[i + 1]!;
-      const isIdentical = curr.terrainInfluence === next.terrainInfluence && curr.width === next.width;
-      expect(isIdentical, `Consecutive corridors ${curr.corridorId} and ${next.corridorId} must not be identical`).toBe(false);
+      const isIdentical =
+        curr.terrainInfluence === next.terrainInfluence && curr.width === next.width;
+      expect(
+        isIdentical,
+        `Consecutive corridors ${curr.corridorId} and ${next.corridorId} must not be identical`
+      ).toBe(false);
     }
   });
 

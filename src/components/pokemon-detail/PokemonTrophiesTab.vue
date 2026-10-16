@@ -1,67 +1,60 @@
 <script setup lang="ts">
-import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon'
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
-import { useEventStore } from '@/stores/events'
-import { resolveTrophyDisplayName } from '@/logic/events/eventEngine'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { useEventStore } from '@/stores/events';
+import { resolveTrophyDisplayName } from '@/logic/events/eventEngine';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 interface Props {
-  trophies?: PokemonCompetitionTrophy[]
-  speciesId?: PokemonSpeciesId
+  trophies?: PokemonCompetitionTrophy[];
+  speciesId?: PokemonSpeciesId;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   trophies: () => [],
   speciesId: undefined
-})
+});
 
-const eventStore = useEventStore()
+const eventStore = useEventStore();
 
 const resolveTrophyEventName = (trophy: PokemonCompetitionTrophy) => {
-  return resolveTrophyDisplayName(trophy, eventStore.allEvents, props.speciesId)
-}
+  return resolveTrophyDisplayName(trophy, eventStore.allEvents, props.speciesId);
+};
 
 const getRankBadge = (rank: string) => {
-  if (rank === 'first') return { medal: '🥇', label: '1º LUGAR (ORO)', css: 'rank-gold' }
-  if (rank === 'second') return { medal: '🥈', label: '2º LUGAR (PLATA)', css: 'rank-silver' }
-  if (rank === 'third') return { medal: '🥉', label: '3º LUGAR (BRONCE)', css: 'rank-bronze' }
-  return { medal: '🏆', label: 'GANADOR', css: 'rank-default' }
-}
+  if (rank === 'first') return { medal: '🥇', label: '1º LUGAR (ORO)', css: 'rank-gold' };
+  if (rank === 'second') return { medal: '🥈', label: '2º LUGAR (PLATA)', css: 'rank-silver' };
+  if (rank === 'third') return { medal: '🥉', label: '3º LUGAR (BRONCE)', css: 'rank-bronze' };
+  return { medal: '🏆', label: 'GANADOR', css: 'rank-default' };
+};
 
 const formatDate = (timestamp: number) => {
-  if (!timestamp) return ''
+  if (!timestamp) return '';
   try {
-    const instant = Temporal.Instant.fromEpochMilliseconds(timestamp)
-    const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE)
-    const dd = String(zdt.day).padStart(2, '0')
-    const mm = String(zdt.month).padStart(2, '0')
-    const yyyy = zdt.year
-    return `${dd}/${mm}/${yyyy}`
+    const instant = Temporal.Instant.fromEpochMilliseconds(timestamp);
+    const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE);
+    const dd = String(zdt.day).padStart(2, '0');
+    const mm = String(zdt.month).padStart(2, '0');
+    const yyyy = zdt.year;
+    return `${dd}/${mm}/${yyyy}`;
   } catch {
-    return ''
+    return '';
   }
-}
+};
 </script>
 
 <template>
   <div class="pokemon-trophies-tab">
-    <div
-      v-if="!props.trophies || props.trophies.length === 0"
-      class="trophies-empty-state"
-    >
+    <div v-if="!props.trophies || props.trophies.length === 0" class="trophies-empty-state">
       <span class="emoji empty-icon">🏆</span>
-      <p class="empty-title pixelated">
-        SIN TROFEOS AÚN
-      </p>
+      <p class="empty-title pixelated">SIN TROFEOS AÚN</p>
       <p class="empty-desc">
-        Este Pokémon aún no ha ganado torneos o competencias globales. ¡Inscríbelo en los eventos activos para ganar trofeos y medallas!
+        Este Pokémon aún no ha ganado torneos o competencias globales. ¡Inscríbelo en los eventos
+        activos para ganar trofeos y medallas!
       </p>
     </div>
 
-    <div
-      v-else
-      class="trophies-list"
-    >
+    <div v-else class="trophies-list">
       <div
         v-for="(trophy, idx) in props.trophies"
         :key="`${trophy.eventId}-${trophy.categoryId}-${trophy.awardedAt}-${idx}`"
@@ -75,10 +68,9 @@ const formatDate = (timestamp: number) => {
         <div class="trophy-info-box">
           <div class="trophy-header-row">
             <span class="trophy-rank-badge pixelated">{{ getRankBadge(trophy.rank).label }}</span>
-            <span
-              v-if="trophy.awardedAt"
-              class="trophy-date pixelated"
-            >{{ formatDate(trophy.awardedAt) }}</span>
+            <span v-if="trophy.awardedAt" class="trophy-date pixelated">{{
+              formatDate(trophy.awardedAt)
+            }}</span>
           </div>
 
           <h3 class="trophy-event-title">
@@ -90,10 +82,7 @@ const formatDate = (timestamp: number) => {
             <span class="category-val pixelated">{{ trophy.categoryName }}</span>
           </div>
 
-          <div
-            v-if="trophy.score !== undefined"
-            class="trophy-score-row"
-          >
+          <div v-if="trophy.score !== undefined" class="trophy-score-row">
             <span class="score-lbl pixelated">PUNTUACIÓN / MARCA:</span>
             <span class="score-val pixelated">{{ trophy.score }}</span>
           </div>
@@ -104,7 +93,7 @@ const formatDate = (timestamp: number) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pokemon-trophies-tab {
   display: flex;

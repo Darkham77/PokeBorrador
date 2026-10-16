@@ -1,6 +1,6 @@
 /**
  * src/logic/validation/subschemas/battleSchemas.ts
- * 
+ *
  * Valibot validation schemas for Active Battle, serialized enemy combatants, weather, and stages.
  */
 
@@ -16,7 +16,7 @@ import {
   nullable,
   literal,
   unknown,
-  type InferOutput,
+  type InferOutput
 } from 'valibot';
 
 import { pokemonSchema } from './pokemonSchemas.ts';
@@ -24,12 +24,12 @@ import { pokemonSchema } from './pokemonSchemas.ts';
 export const battleWeatherSchema = object({
   type: string(),
   visual: optional(nullable(string())),
-  turns: number(),
+  turns: number()
 });
 
 export const battleTimedConditionSchema = object({
   turns: number(),
-  meta: optional(record(string(), unknown())),
+  meta: optional(record(string(), unknown()))
 });
 
 export const pendingSlotEffectSchema = object({
@@ -38,12 +38,12 @@ export const pendingSlotEffectSchema = object({
   targetSlot: number(),
   turnsLeft: number(),
   damage: number(),
-  sourceName: optional(nullable(string())),
+  sourceName: optional(nullable(string()))
 });
 
 export const stolenResourcesSchema = object({
   money: number(),
-  items: record(string(), number()),
+  items: record(string(), number())
 });
 
 export const battleLogSchema = object({
@@ -52,7 +52,7 @@ export const battleLogSchema = object({
   type: string(),
   side: nullable(union([literal('player'), literal('enemy')])),
   icon: nullable(string()),
-  iconType: nullable(string()),
+  iconType: nullable(string())
 });
 
 export const battleStagesSchema = object({
@@ -72,7 +72,7 @@ export const battleStagesSchema = object({
   toxicspikes: optional(number()),
   acc: optional(number()),
   eva: optional(number()),
-  fissure: optional(number()),
+  fissure: optional(number())
 });
 
 export const battleMinigameSchema = union([literal('fishing'), literal('archaeology')]);
@@ -128,7 +128,7 @@ export const activeBattleSchema = object({
   pvpIsHost: optional(nullable(boolean())),
   pvpOpponentId: optional(nullable(string())),
   pvpOpponentName: optional(nullable(string())),
-  playerTeam: optional(nullable(array(pokemonSchema))),
+  playerTeam: optional(nullable(array(pokemonSchema)))
 });
 
 export type ActiveBattleDto = InferOutput<typeof activeBattleSchema>;

@@ -12,7 +12,11 @@
  *      and South archway doorway gateways.
  */
 
-import type { CardinalDirection, POINode, SettlementLayoutResult } from '../../../types/map/poiTypes.ts';
+import type {
+  CardinalDirection,
+  POINode,
+  SettlementLayoutResult
+} from '../../../types/map/poiTypes.ts';
 import type { ContinentMapResult } from '../continentGenerator.ts';
 import type { SettlementTerrainContext } from '../cityLayoutEngine.ts';
 import { generateSettlementLayout } from '../cityLayoutEngine.ts';
@@ -65,7 +69,9 @@ const PRIMARY_CORRIDOR_KINDS = ['main_chain', 'cycle'] as const satisfies readon
 const PRIMARY_CORRIDOR_KINDS_SET: ReadonlySet<GraphEdgeKind> = new Set(PRIMARY_CORRIDOR_KINDS);
 
 const FALLBACK_CORRIDOR_KINDS_SET: ReadonlySet<GraphEdgeKind> = new Set(
-  GRAPH_EDGE_KINDS.filter((kind) => kind === 'main_chain' || kind === 'cycle' || kind === 'branch_stub')
+  GRAPH_EDGE_KINDS.filter(
+    (kind) => kind === 'main_chain' || kind === 'cycle' || kind === 'branch_stub'
+  )
 );
 const PRIMARY_GATE_MIN_SEPARATION = 10;
 const FALLBACK_GATE_CORRIDOR_LENGTH = 16;
@@ -167,8 +173,16 @@ export function placeProceduralRouteGates(
               break;
             }
             // Edge-to-edge AABB clearance
-            const sepX = Math.max(0, p.gridX - (gx + GATE_DEFAULT_SIZE), gx - (p.gridX + p.footprint.width));
-            const sepY = Math.max(0, p.gridY - (gy + GATE_DEFAULT_SIZE), gy - (p.gridY + p.footprint.height));
+            const sepX = Math.max(
+              0,
+              p.gridX - (gx + GATE_DEFAULT_SIZE),
+              gx - (p.gridX + p.footprint.width)
+            );
+            const sepY = Math.max(
+              0,
+              p.gridY - (gy + GATE_DEFAULT_SIZE),
+              gy - (p.gridY + p.footprint.height)
+            );
             if (Math.hypot(sepX, sepY) < minSep) {
               tooClose = true;
               break;
@@ -194,13 +208,18 @@ export function placeProceduralRouteGates(
 
         // Detect local tangent orientation of corridor path to choose horizontal vs vertical gatehouse
         const samplePrev = corridor.pathCells[Math.max(0, found.i - 3)]!;
-        const sampleNext = corridor.pathCells[Math.min(corridor.pathCells.length - 1, found.i + 3)]!;
+        const sampleNext =
+          corridor.pathCells[Math.min(corridor.pathCells.length - 1, found.i + 3)]!;
         const deltaX = Math.abs(sampleNext.x - samplePrev.x);
         const deltaY = Math.abs(sampleNext.y - samplePrev.y);
         const isHorizontalCorridor = deltaX > deltaY;
         const gateFacing: CardinalDirection = isHorizontalCorridor
-          ? (sampleNext.x >= samplePrev.x ? 'east' : 'west')
-          : (sampleNext.y >= samplePrev.y ? 'south' : 'north');
+          ? sampleNext.x >= samplePrev.x
+            ? 'east'
+            : 'west'
+          : sampleNext.y >= samplePrev.y
+            ? 'south'
+            : 'north';
 
         const gatePoi: POINode = {
           id: gateId,
@@ -239,19 +258,22 @@ export function placeProceduralRouteGates(
           const distE1 = Math.hypot(fromPoi.gridX - eastDoor.x, fromPoi.gridY - eastDoor.y);
           const distW2 = Math.hypot(toPoi.gridX - westDoor.x, toPoi.gridY - westDoor.y);
 
-          const westToEast = (distW1 + distE2) <= (distE1 + distW2);
+          const westToEast = distW1 + distE2 <= distE1 + distW2;
           c1Goal = westToEast ? westDoor : eastDoor;
           c2Start = westToEast ? eastDoor : westDoor;
         } else {
           // Vertical gate: North and South archways
           const northDoor = { x: found.gx + GATE_SEARCH_OFFSET, y: Math.max(0, found.gy - 1) };
-          const southDoor = { x: found.gx + GATE_SEARCH_OFFSET, y: Math.min(height - 1, found.gy + GATE_DEFAULT_SIZE) };
+          const southDoor = {
+            x: found.gx + GATE_SEARCH_OFFSET,
+            y: Math.min(height - 1, found.gy + GATE_DEFAULT_SIZE)
+          };
           const distN1 = Math.hypot(fromPoi.gridX - northDoor.x, fromPoi.gridY - northDoor.y);
           const distS2 = Math.hypot(toPoi.gridX - southDoor.x, toPoi.gridY - southDoor.y);
           const distS1 = Math.hypot(fromPoi.gridX - southDoor.x, fromPoi.gridY - southDoor.y);
           const distN2 = Math.hypot(toPoi.gridX - northDoor.x, toPoi.gridY - northDoor.y);
 
-          const northToSouth = (distN1 + distS2) <= (distS1 + distN2);
+          const northToSouth = distN1 + distS2 <= distS1 + distN2;
           c1Goal = northToSouth ? northDoor : southDoor;
           c2Start = northToSouth ? southDoor : northDoor;
         }

@@ -2,7 +2,14 @@ import { gsap } from 'gsap';
 import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
 import { saveActivePvPSession } from '@/logic/pvp/pvpReconnectHelper';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleInvite, PvPBattleState, PvpChallengeConfig, PvPAction, PvpTurnStreamPayload, PvpReconnectPayload } from '@/types/battle/pvp';
+import type {
+  BattleInvite,
+  PvPBattleState,
+  PvpChallengeConfig,
+  PvPAction,
+  PvpTurnStreamPayload,
+  PvpReconnectPayload
+} from '@/types/battle/pvp';
 import type { ShowdownPlayerRequest } from '@/types/battle/battle';
 import type { PvpSpectateSyncPayload } from '@/logic/pvp/pvpSpectatorHelper';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -53,15 +60,40 @@ export function createInitialLivePvPBattleState(): LiveBattleState {
     enemyActiveIdx: 0,
     myHp: [],
     enemyHp: [],
-    myStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
-    enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
+    myStages: {
+      atk: 0,
+      def: 0,
+      spa: 0,
+      spd: 0,
+      spe: 0,
+      accuracy: 0,
+      evasion: 0,
+      reflect: 0,
+      lightScreen: 0,
+      safeguard: 0,
+      mist: 0,
+      spikes: 0
+    },
+    enemyStages: {
+      atk: 0,
+      def: 0,
+      spa: 0,
+      spd: 0,
+      spe: 0,
+      accuracy: 0,
+      evasion: 0,
+      reflect: 0,
+      lightScreen: 0,
+      safeguard: 0,
+      mist: 0,
+      spikes: 0
+    },
     myPick: null,
     enemyPick: null,
     logs: [],
     deadline: null
   };
 }
-
 
 function resolvePvPArchetype(playerClass?: PlayerClassId | null): NpcArchetype {
   if (playerClass === 'rocket') return 'rocket';
@@ -123,10 +155,7 @@ export interface StartBattleContext {
   setupBattleChannel: (inviteId: string) => void;
 }
 
-export function resolvePvpTeam(
-  gameStore: GameStoreForPvpTeam,
-  format?: string
-): Pokemon[] {
+export function resolvePvpTeam(gameStore: GameStoreForPvpTeam, format?: string): Pokemon[] {
   const is6v6 = format === '6v6';
   let uids = is6v6 ? gameStore.state.pvpTeam6 : gameStore.state.pvpTeam;
   if (!uids || uids.length === 0) {
@@ -135,15 +164,15 @@ export function resolvePvpTeam(
     uids = is6v6 ? gameStore.state.pvpTeam6 : gameStore.state.pvpTeam;
   }
   const pokesByUid = new Map<string, Pokemon>();
-  for (const p of (gameStore.state.team || [])) {
+  for (const p of gameStore.state.team || []) {
     if (p) pokesByUid.set(p.uid, p);
   }
-  for (const p of (gameStore.state.box || [])) {
+  for (const p of gameStore.state.box || []) {
     if (p) pokesByUid.set(p.uid, p);
   }
 
   const resolved: Pokemon[] = [];
-  for (const uid of (uids || [])) {
+  for (const uid of uids || []) {
     const poke = pokesByUid.get(uid);
     if (poke) resolved.push(cloneReactive(poke) as Pokemon);
   }
@@ -156,26 +185,28 @@ export function executeCheckBothTeamsConfirmed(ctx: CheckBothTeamsConfirmedConte
 
     const enemyLeader = ctx.battleState.enemyTeam[0];
     if (enemyLeader) {
-      void ctx.battleStore.startBattle(enemyLeader, {
-        isPvP: true,
-        pvpMatchId: ctx.battleState.inviteId || undefined,
-        pvpIsHost: ctx.battleState.isHost,
-        pvpOpponentId: ctx.battleState.opponentId || undefined,
-        pvpOpponentName: ctx.battleState.opponentName,
-        enemyTeam: ctx.battleState.enemyTeam,
-        playerTeam: ctx.battleState.myTeam,
-        isTrainer: true,
-        trainerName: ctx.battleState.opponentName,
-        trainerSprite: ctx.battleState.opponentClass || 'entrenador',
-        trainerGender: ctx.battleState.opponentGender || 'h',
-        trainerArchetype: resolvePvPArchetype(ctx.battleState.opponentClass),
-        trainerQuote: getRandomQuoteForTrainer('rival'),
-        locationId: 'stadium'
-      }).then(() => {
-        if (ctx.battleState.active) {
-          ctx.timerManager.startTurnTimer();
-        }
-      });
+      void ctx.battleStore
+        .startBattle(enemyLeader, {
+          isPvP: true,
+          pvpMatchId: ctx.battleState.inviteId || undefined,
+          pvpIsHost: ctx.battleState.isHost,
+          pvpOpponentId: ctx.battleState.opponentId || undefined,
+          pvpOpponentName: ctx.battleState.opponentName,
+          enemyTeam: ctx.battleState.enemyTeam,
+          playerTeam: ctx.battleState.myTeam,
+          isTrainer: true,
+          trainerName: ctx.battleState.opponentName,
+          trainerSprite: ctx.battleState.opponentClass || 'entrenador',
+          trainerGender: ctx.battleState.opponentGender || 'h',
+          trainerArchetype: resolvePvPArchetype(ctx.battleState.opponentClass),
+          trainerQuote: getRandomQuoteForTrainer('rival'),
+          locationId: 'stadium'
+        })
+        .then(() => {
+          if (ctx.battleState.active) {
+            ctx.timerManager.startTurnTimer();
+          }
+        });
     }
   }
 }
@@ -187,11 +218,11 @@ export function executeConfirmTeamPreview(
   ctx.battleState.myTeam = orderedPicks;
   ctx.myTeamConfirmed.value = true;
   if (ctx.battleState.ch) {
-    ctx.battleState.ch.send({
+    void ctx.battleState.ch.send({
       type: 'broadcast',
       event: 'pvp_team_order',
       payload: {
-        orderedUids: orderedPicks.map(p => p.uid)
+        orderedUids: orderedPicks.map((p) => p.uid)
       }
     });
   }
@@ -226,27 +257,29 @@ export function executeHandleOpponentTeam(
 
     const enemyLeader = battleState.enemyTeam[0];
     if (enemyLeader) {
-      void ctx.battleStore.startBattle(enemyLeader, {
-        isPvP: true,
-        isRanked: battleState.isRanked,
-        pvpMatchId: battleState.inviteId || undefined,
-        pvpIsHost: battleState.isHost,
-        pvpOpponentId: battleState.opponentId || undefined,
-        pvpOpponentName: battleState.opponentName,
-        enemyTeam: battleState.enemyTeam,
-        playerTeam: battleState.myTeam,
-        isTrainer: true,
-        trainerName: battleState.opponentName,
-        trainerSprite: battleState.opponentClass || 'entrenador',
-        trainerGender: battleState.opponentGender || 'h',
-        trainerArchetype: resolvePvPArchetype(battleState.opponentClass),
-        trainerQuote: getRandomQuoteForTrainer('rival'),
-        locationId: 'stadium'
-      }).then(() => {
-        if (battleState.active) {
-          ctx.timerManager.startTurnTimer();
-        }
-      });
+      void ctx.battleStore
+        .startBattle(enemyLeader, {
+          isPvP: true,
+          isRanked: battleState.isRanked,
+          pvpMatchId: battleState.inviteId || undefined,
+          pvpIsHost: battleState.isHost,
+          pvpOpponentId: battleState.opponentId || undefined,
+          pvpOpponentName: battleState.opponentName,
+          enemyTeam: battleState.enemyTeam,
+          playerTeam: battleState.myTeam,
+          isTrainer: true,
+          trainerName: battleState.opponentName,
+          trainerSprite: battleState.opponentClass || 'entrenador',
+          trainerGender: battleState.opponentGender || 'h',
+          trainerArchetype: resolvePvPArchetype(battleState.opponentClass),
+          trainerQuote: getRandomQuoteForTrainer('rival'),
+          locationId: 'stadium'
+        })
+        .then(() => {
+          if (battleState.active) {
+            ctx.timerManager.startTurnTimer();
+          }
+        });
     }
   }
 }
@@ -257,9 +290,9 @@ export function executeHandleOpponentTeamOrder(
 ): void {
   if (payload?.orderedUids && ctx.battleState.enemyTeam.length > 0) {
     const map = new Map<string, Pokemon>();
-    ctx.battleState.enemyTeam.forEach(p => map.set(p.uid, p));
+    ctx.battleState.enemyTeam.forEach((p) => map.set(p.uid, p));
     const reordered: Pokemon[] = [];
-    payload.orderedUids.forEach(uid => {
+    payload.orderedUids.forEach((uid) => {
       const mon = map.get(uid);
       if (mon) reordered.push(mon);
     });
@@ -296,7 +329,9 @@ export function executeStartBattle(
   ctx.battleState.isRanked = isRanked;
   ctx.battleState.inviteId = invite.id;
   ctx.battleState.config = invite.config;
-  ctx.battleState.opponentId = isHost ? invite.opponent_id : (invite.sender_id || invite.challenger_id || null);
+  ctx.battleState.opponentId = isHost
+    ? invite.opponent_id
+    : invite.sender_id || invite.challenger_id || null;
   ctx.battleState.myTeam = myTeam;
   ctx.battleState.myHp = ctx.battleState.myTeam.map((p: Pokemon) => p.hp);
   ctx.battleState.myActiveIdx = 0;
@@ -320,7 +355,7 @@ export function executeStartBattle(
 
   const broadcastTeam = () => {
     if (ctx.battleState.ch) {
-      ctx.battleState.ch.send({
+      void ctx.battleState.ch.send({
         type: 'broadcast',
         event: 'pvp_team',
         payload: {
@@ -347,7 +382,9 @@ export interface SetupBattleChannelContext {
     onOpponentTeam: (event: { payload: OpponentTeamBroadcastPayload }) => void;
     onOpponentTeamOrder: (event: { payload: OpponentTeamOrderBroadcastPayload }) => void;
     onOpponentPick: (event: { payload: PvPAction }) => void;
-    onTurnStream: (event: { payload: PvpTurnStreamPayload & { request?: ShowdownPlayerRequest } }) => void;
+    onTurnStream: (event: {
+      payload: PvpTurnStreamPayload & { request?: ShowdownPlayerRequest };
+    }) => void;
     onOpponentReconnect: (event: { payload: PvpReconnectPayload }) => void;
     onOpponentForfeit: () => void;
     onSpectateJoin: () => void;
@@ -355,10 +392,7 @@ export interface SetupBattleChannelContext {
   };
 }
 
-export function executeSetupBattleChannel(
-  inviteId: string,
-  ctx: SetupBattleChannelContext
-): void {
+export function executeSetupBattleChannel(inviteId: string, ctx: SetupBattleChannelContext): void {
   if (!ctx.db) return;
   const ch = ctx.db.channel(`pvp-${inviteId}`);
   ctx.battleState.ch = ch;
@@ -372,7 +406,7 @@ export function executeSetupBattleChannel(
     .on('broadcast' as const, { event: 'pvp_spectate_sync' }, ctx.handlers.onSpectateSync)
     .subscribe((status: string) => {
       if (status === 'SUBSCRIBED') {
-        ch.send({
+        void ch.send({
           type: 'broadcast',
           event: 'pvp_team',
           payload: {
@@ -385,4 +419,3 @@ export function executeSetupBattleChannel(
       }
     });
 }
-

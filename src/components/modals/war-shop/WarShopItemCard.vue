@@ -1,77 +1,73 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useShopStore } from '@/stores/inventory/shop'
-import { useWarStore } from '@/stores/war'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
-import type { ItemId } from '@/data/inventory/items'
+import { computed } from 'vue';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useWarStore } from '@/stores/war';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
+import type { ItemId } from '@/data/inventory/items';
 
 interface ShopItem {
-  id: ItemId
-  name: string
-  warPrice?: number
-  desc?: string
-  sprite?: string
-  unlockLv?: number
-  tier?: string
+  id: ItemId;
+  name: string;
+  warPrice?: number;
+  desc?: string;
+  sprite?: string;
+  unlockLv?: number;
+  tier?: string;
 }
 
 interface Props {
-  item: ShopItem
+  item: ShopItem;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const shopStore = useShopStore()
-const warStore = useWarStore()
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const shopStore = useShopStore();
+const warStore = useWarStore();
+const gameStore = useGameStore();
+const uiStore = useUIStore();
 
 const isUnlocked = computed(() => {
-  return (gameStore.state.trainerLevel || 1) >= (props.item.unlockLv || 1)
-})
+  return (gameStore.state.trainerLevel || 1) >= (props.item.unlockLv || 1);
+});
 
 const hasEnoughCoins = computed(() => {
-  return (warStore.warCoins || 0) >= (props.item.warPrice || 0)
-})
+  return (warStore.warCoins || 0) >= (props.item.warPrice || 0);
+});
 
 const buy = () => {
   if (!isUnlocked.value) {
-    uiStore.notify('¡Objeto bloqueado! Sube tu nivel de entrenador.', '🔒')
-    return
+    uiStore.notify('¡Objeto bloqueado! Sube tu nivel de entrenador.', '🔒');
+    return;
   }
   if (!hasEnoughCoins.value) {
-    uiStore.notify('No tienes suficientes Monedas de Guerra.', '⚡')
-    return
+    uiStore.notify('No tienes suficientes Monedas de Guerra.', '⚡');
+    return;
   }
-  shopStore.buyItemWar(props.item.id)
-}
+  shopStore.buyItemWar(props.item.id);
+};
 
-const tierLabel = computed(() => getItemTierLabel(props.item.tier))
+const tierLabel = computed(() => getItemTierLabel(props.item.tier));
 
-const tierColor = computed(() => getItemTierColor(props.item.tier))
+const tierColor = computed(() => getItemTierColor(props.item.tier));
 
 const handleImageError = (e: Event) => {
   if (e.target) {
-    (e.target as HTMLImageElement).style.display = 'none'
+    (e.target as HTMLImageElement).style.display = 'none';
   }
-}
+};
 </script>
 
 <template>
-  <div 
+  <div
     class="war-shop-item-card"
     :class="[{ locked: !isUnlocked }, 'tier-' + (item.tier || 'common')]"
     :style="{ '--tier-color': tierColor }"
   >
     <!-- Tier Tag -->
-    <span
-      v-if="item.tier"
-      class="tier-tag"
-      :class="'tier-' + item.tier"
-    >
+    <span v-if="item.tier" class="tier-tag" :class="'tier-' + item.tier">
       {{ tierLabel }}
     </span>
 
@@ -82,16 +78,12 @@ const handleImageError = (e: Event) => {
           :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
           :alt="item.name"
           width="32"
-        
           height="32"
           @error="handleImageError"
-        >
+        />
 
         <!-- Lock Overlay -->
-        <div 
-          v-if="!isUnlocked"
-          class="item-lock-badge"
-        >
+        <div v-if="!isUnlocked" class="item-lock-badge">
           <span class="emoji lock-icon">🔒</span>
           <span class="lock-lvl">NV. {{ item.unlockLv }}</span>
         </div>
@@ -135,6 +127,3 @@ const handleImageError = (e: Event) => {
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_shop_cards.scss"></style>
-
-
-

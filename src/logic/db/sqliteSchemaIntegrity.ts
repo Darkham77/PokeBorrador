@@ -4,14 +4,14 @@ import { logger } from '../utils/logger.ts';
 
 function upgradeTradeOffersPrimaryKey(db: SQLiteDatabase): void {
   try {
-    const info = db.exec("PRAGMA table_info(trade_offers)");
+    const info = db.exec('PRAGMA table_info(trade_offers)');
     if (info.length === 0) return;
 
     const idCol = info[0]!.values.find((row: unknown[]) => (row[1] as string) === 'id');
     if (!idCol || (idCol[2] as string).toUpperCase() !== 'INTEGER') return;
 
     logger.info('SQLite', 'Upgrading trade_offers.id from INTEGER to TEXT...');
-    db.run("PRAGMA foreign_keys = OFF");
+    db.run('PRAGMA foreign_keys = OFF');
     db.run(`
       CREATE TABLE trade_offers_new (
         id TEXT PRIMARY KEY,
@@ -39,9 +39,9 @@ function upgradeTradeOffersPrimaryKey(db: SQLiteDatabase): void {
         request_pokemon, request_items, request_money, message, status, created_at, updated_at
       FROM trade_offers
     `);
-    db.run("DROP TABLE trade_offers");
-    db.run("ALTER TABLE trade_offers_new RENAME TO trade_offers");
-    db.run("PRAGMA foreign_keys = ON");
+    db.run('DROP TABLE trade_offers');
+    db.run('ALTER TABLE trade_offers_new RENAME TO trade_offers');
+    db.run('PRAGMA foreign_keys = ON');
     logger.success('SQLite', 'trade_offers table primary key successfully converted to TEXT.');
   } catch (e: unknown) {
     logger.error('SQLite', `Failed to migrate trade_offers PK: ${(e as Error).message}`);
@@ -55,7 +55,11 @@ interface ColParserState {
   inDoubleQuote: boolean;
 }
 
-function handleQuoteStep(char: string, nextChar: string | undefined, state: ColParserState): number {
+function handleQuoteStep(
+  char: string,
+  nextChar: string | undefined,
+  state: ColParserState
+): number {
   if (state.inSingleQuote) {
     state.current += char;
     if (char === "'") {
@@ -126,10 +130,19 @@ function parseColumnDefinitions(colPart: string): string[] {
 
 function isIgnoredConstraint(def: string): boolean {
   const upperDef = def.toUpperCase(); // text-ok: UI text display localization string
-  return upperDef.startsWith('PRIMARY KEY') || upperDef.startsWith('FOREIGN KEY') || upperDef.startsWith('UNIQUE');
+  return (
+    upperDef.startsWith('PRIMARY KEY') ||
+    upperDef.startsWith('FOREIGN KEY') ||
+    upperDef.startsWith('UNIQUE')
+  );
 }
 
-function addMissingColumn(db: SQLiteDatabase, tableName: string, def: string, existingCols: string[]): void {
+function addMissingColumn(
+  db: SQLiteDatabase,
+  tableName: string,
+  def: string,
+  existingCols: string[]
+): void {
   if (isIgnoredConstraint(def)) return;
 
   const colName = def.split(/\s+/)[0]!.toLowerCase();
@@ -140,7 +153,10 @@ function addMissingColumn(db: SQLiteDatabase, tableName: string, def: string, ex
     const cleanDef = def.replace(/\s+PRIMARY\s+KEY/gi, '').replace(/\s+AUTOINCREMENT/gi, '');
     db.run(`ALTER TABLE ${tableName} ADD COLUMN ${cleanDef}`);
   } catch (e: unknown) {
-    logger.warn('SQLite', `Auto-repair failed for ${tableName}.${colName}: ${(e as Error).message}`);
+    logger.warn(
+      'SQLite',
+      `Auto-repair failed for ${tableName}.${colName}: ${(e as Error).message}`
+    );
   }
 }
 
@@ -171,34 +187,49 @@ function verifyAllTables(db: SQLiteDatabase): void {
     try {
       verifyTableSchema(db, schemaStr);
     } catch (e: unknown) {
-      logger.error('SQLite', `Error during integrity check for: ${schemaStr} - ${(e as Error).message}`);
+      logger.error(
+        'SQLite',
+        `Error during integrity check for: ${schemaStr} - ${(e as Error).message}`
+      );
     }
   }
 }
 
 function migrateLegacyGlobalChat(db: SQLiteDatabase): void {
   try {
-    const chatInfo = db.exec("PRAGMA table_info(global_chat_messages)");
+    const chatInfo = db.exec('PRAGMA table_info(global_chat_messages)');
     if (chatInfo.length > 0) {
       const cols = chatInfo[0]!.values.map((v: unknown[]) => (v[1] as string).toLowerCase());
       if (cols.includes('sender_id')) {
-        db.run("UPDATE global_chat_messages SET user_id = sender_id WHERE user_id IS NULL AND sender_id IS NOT NULL");
+        db.run(
+          'UPDATE global_chat_messages SET user_id = sender_id WHERE user_id IS NULL AND sender_id IS NOT NULL'
+        );
       }
       if (cols.includes('sender_name')) {
-        db.run("UPDATE global_chat_messages SET username = sender_name WHERE username IS NULL AND sender_name IS NOT NULL");
+        db.run(
+          'UPDATE global_chat_messages SET username = sender_name WHERE username IS NULL AND sender_name IS NOT NULL'
+        );
       }
     }
     // Align sender IDs for mock accounts to ensure correct profile loading
     db.run("UPDATE global_chat_messages SET user_id = 'local_ash' WHERE username = 'ash'");
-    db.run("UPDATE global_chat_messages SET user_id = 'local_entrenador' WHERE username = 'Entrenador' OR username = 'entrenador'");
+    db.run(
+      "UPDATE global_chat_messages SET user_id = 'local_entrenador' WHERE username = 'Entrenador' OR username = 'entrenador'"
+    );
 
     logger.info('SQLite', 'Legacy global chat columns migrated and aligned successfully.');
   } catch (err: unknown) {
-    throw new Error(`[sqliteSchemaIntegrity] Legacy chat columns migration error: ${(err as Error).message}`, { cause: err });
+    throw new Error(
+      `[sqliteSchemaIntegrity] Legacy chat columns migration error: ${(err as Error).message}`,
+      { cause: err }
+    );
   }
 }
 
-function extractProfileFromSave(userId: string, saveData: Record<string, unknown>): {
+function extractProfileFromSave(
+  userId: string,
+  saveData: Record<string, unknown>
+): {
   username: string;
   trainerLevel: number;
   playerClass: string;
@@ -223,7 +254,8 @@ function extractProfileFromSave(userId: string, saveData: Record<string, unknown
 function parseSaveDataRecord(rawSave: string): Record<string, unknown> | null {
   try {
     return JSON.parse(rawSave) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-  } catch (_e) { // catch-ok: Ignore unparseable saves during profile recovery scan
+  } catch {
+    // catch-ok: Ignore unparseable saves during profile recovery scan
     return null;
   }
 }
@@ -234,23 +266,35 @@ function repairProfileRow(db: SQLiteDatabase, userId: string, rawSave: string): 
   const saveData = parseSaveDataRecord(rawSave);
   if (!saveData) return;
 
-  const profRes = db.exec("SELECT id FROM profiles WHERE id = ?", [userId]);
+  const profRes = db.exec('SELECT id FROM profiles WHERE id = ?', [userId]);
   if (profRes.length === 0) {
-    logger.info('SQLite', `Auto-repair: Creating missing profile for user ${userId} from save_data`);
+    logger.info(
+      'SQLite',
+      `Auto-repair: Creating missing profile for user ${userId} from save_data`
+    );
     const p = extractProfileFromSave(userId, saveData);
     db.run(
       `INSERT INTO profiles (id, username, trainer_level, player_class, faction, avatar_style, nick_style, badges, db_version) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 3)`,
-      [userId, p.username, p.trainerLevel, p.playerClass, p.faction, p.avatarStyle, p.nickStyle, p.badges]
+      [
+        userId,
+        p.username,
+        p.trainerLevel,
+        p.playerClass,
+        p.faction,
+        p.avatarStyle,
+        p.nickStyle,
+        p.badges
+      ]
     );
   } else {
-    db.run("UPDATE profiles SET db_version = 3 WHERE id = ?", [userId]);
+    db.run('UPDATE profiles SET db_version = 3 WHERE id = ?', [userId]);
   }
 }
 
 function repairMissingProfiles(db: SQLiteDatabase): void {
   try {
-    const savesRes = db.exec("SELECT user_id, save_data FROM game_saves");
+    const savesRes = db.exec('SELECT user_id, save_data FROM game_saves');
     if (savesRes.length === 0) return;
 
     const rows = savesRes[0]!.values;
@@ -263,7 +307,10 @@ function repairMissingProfiles(db: SQLiteDatabase): void {
   }
 }
 
-export async function ensureSchemaIntegrity(db: SQLiteDatabase, persistFn?: () => Promise<void>): Promise<void> {
+export async function ensureSchemaIntegrity(
+  db: SQLiteDatabase,
+  persistFn?: () => Promise<void>
+): Promise<void> {
   logger.info('SQLite', 'Verifying schema integrity...');
   upgradeTradeOffersPrimaryKey(db);
   verifyAllTables(db);
@@ -275,4 +322,3 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase, persistFn?: () =
     await persistFn();
   }
 }
-

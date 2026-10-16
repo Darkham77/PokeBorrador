@@ -1,13 +1,19 @@
-import { isBattleSubStateName, type BattleSubStateName } from '@/logic/battle/battleStateMachine.ts';
-import { CERTIFIED_BATTLE_TEAM_SLOTS, type CertifiedBattleTeamSlot } from './certifiedBattleActions.ts';
+import {
+  isBattleSubStateName,
+  type BattleSubStateName
+} from '@/logic/battle/battleStateMachine.ts';
+import {
+  CERTIFIED_BATTLE_TEAM_SLOTS,
+  type CertifiedBattleTeamSlot
+} from './certifiedBattleActions.ts';
 
 export const BATTLE_UI_EVENTS = {
   FLOW_COMPLETED: 'battle-flow-completed',
   FORCED_SWITCH_REQUIRED: 'battle-forced-switch-required',
-  READY_FOR_INPUT: 'battle-ready-for-input',
+  READY_FOR_INPUT: 'battle-ready-for-input'
 } as const;
 
-export type BattleUiEventName = typeof BATTLE_UI_EVENTS[keyof typeof BATTLE_UI_EVENTS];
+export type BattleUiEventName = (typeof BATTLE_UI_EVENTS)[keyof typeof BATTLE_UI_EVENTS];
 
 export const BATTLE_FLOW_DESTINATIONS = ['map', 'search'] as const;
 export type BattleFlowDestination = (typeof BATTLE_FLOW_DESTINATIONS)[number];
@@ -38,10 +44,18 @@ export interface BattleReadyForInputDetail {
 export function isBattleReadyForInputDetail(value: unknown): value is BattleReadyForInputDetail {
   if (typeof value !== 'object' || value === null) return false;
   const obj = value as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-  if (!('subState' in obj) || !('p1ChoiceIdx' in obj) || !('p2ChoiceIdx' in obj) || !('over' in obj) || !('playerSwitchSlots' in obj)) return false;
+  if (
+    !('subState' in obj) ||
+    !('p1ChoiceIdx' in obj) ||
+    !('p2ChoiceIdx' in obj) ||
+    !('over' in obj) ||
+    !('playerSwitchSlots' in obj)
+  )
+    return false;
 
   const { subState, p1ChoiceIdx, p2ChoiceIdx, over, playerSwitchSlots } = obj;
-  return typeof subState === 'string' &&
+  return (
+    typeof subState === 'string' &&
     (subState === '' || isBattleSubStateName(subState)) &&
     typeof p1ChoiceIdx === 'number' &&
     typeof p2ChoiceIdx === 'number' &&
@@ -50,10 +64,13 @@ export function isBattleReadyForInputDetail(value: unknown): value is BattleRead
     playerSwitchSlots.every((slot) => {
       if (typeof slot !== 'object' || slot === null) return false;
       const s = slot as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-      return 'showdownSlot' in s &&
+      return (
+        'showdownSlot' in s &&
         CERTIFIED_BATTLE_TEAM_SLOTS.some((candidate) => candidate === s.showdownSlot) &&
         'pokemonUid' in s &&
         typeof s.pokemonUid === 'string' &&
-        s.pokemonUid.length > 0;
-    });
+        s.pokemonUid.length > 0
+      );
+    })
+  );
 }

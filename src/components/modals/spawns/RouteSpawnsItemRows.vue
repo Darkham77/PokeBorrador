@@ -22,4 +22,3 @@ defineProps<Props>();
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_route-spawns-tables.scss"></style>
-

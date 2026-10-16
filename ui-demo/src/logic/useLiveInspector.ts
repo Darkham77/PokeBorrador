@@ -1,13 +1,13 @@
-import { ref } from 'vue'
+import { ref } from 'vue';
 
 interface InspectorLogEntry {
-  id: number
-  time: string
-  message: string
+  id: number;
+  time: string;
+  message: string;
 }
 
 function getCurrentTimeString(): string {
-  return Temporal.Now.plainTimeISO().toString().slice(0, 8)
+  return Temporal.Now.plainTimeISO().toString().slice(0, 8);
 }
 
 const logs = ref<InspectorLogEntry[]>([
@@ -16,38 +16,38 @@ const logs = ref<InspectorLogEntry[]>([
     time: getCurrentTimeString(),
     message: 'Sistema inicializado. Modifica cualquier input o interactúa con los paneles...'
   }
-])
+]);
 
 const serializedData = ref<Record<string, unknown>>({
   status: 'esperando_interaccion',
   nota: 'Cambia cualquier input o pulsa submit para serializar los datos en vivo.'
-})
+});
 
 const MAX_INSPECTOR_LOG_ENTRIES = 50;
-const logState = { nextId: 2 }
+const logState = { nextId: 2 };
 
 export function logToInspector(message: string): void {
-  const time = getCurrentTimeString()
+  const time = getCurrentTimeString();
   logs.value.unshift({
     id: logState.nextId++,
     time,
     message
-  })
+  });
   if (logs.value.length > MAX_INSPECTOR_LOG_ENTRIES) {
-    logs.value.pop()
+    logs.value.pop();
   }
 }
 
 export function updateSerializedFormData(data: Record<string, unknown>): void {
-  serializedData.value = { ...data }
+  serializedData.value = { ...data };
 }
 
 function clearInspectorLogs(): void {
-  logs.value = []
+  logs.value = [];
   serializedData.value = {
     status: 'consola_limpia',
     timestamp: getCurrentTimeString()
-  }
+  };
 }
 
 export function useLiveInspector() {
@@ -57,5 +57,5 @@ export function useLiveInspector() {
     log: logToInspector,
     updateSerialized: updateSerializedFormData,
     clear: clearInspectorLogs
-  }
+  };
 }

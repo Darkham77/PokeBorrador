@@ -4,15 +4,20 @@
  * Helper for matching past event occurrences and picking simulated prizes.
  */
 
-import { normalizeZonedDateTime } from '@/logic/utils/timeUtils'
-import { safeParse, isLastSundayOfMonth, isSecondWeekendOfMonth, isLastWeekendOfMonth } from '@/logic/events/eventSchedules'
-import { getEventConfiguredPrizes } from '@/logic/events/eventValidators'
-import { logger } from '@/logic/utils/logger'
-import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine'
+import { normalizeZonedDateTime } from '@/logic/utils/timeUtils';
+import {
+  safeParse,
+  isLastSundayOfMonth,
+  isSecondWeekendOfMonth,
+  isLastWeekendOfMonth
+} from '@/logic/events/eventSchedules';
+import { getEventConfiguredPrizes } from '@/logic/events/eventValidators';
+import { logger } from '@/logic/utils/logger';
+import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
 
 export interface PastEventMatch {
-  event: GameEvent
-  endedAt: Temporal.Instant
+  event: GameEvent;
+  endedAt: Temporal.Instant;
 }
 
 const WEEKLY_LOOKBACK_DAYS_LIMIT = -14 as const;
@@ -24,17 +29,17 @@ function matchStaticEndDate(
   cfg: EventConfig | null,
   nowInstant: Temporal.Instant
 ): PastEventMatch | null {
-  const staticEndStr = event.end_at || cfg?.catchEndDate
-  if (!staticEndStr) return null
+  const staticEndStr = event.end_at || cfg?.catchEndDate;
+  if (!staticEndStr) return null;
   try {
-    const endInst = Temporal.Instant.from(staticEndStr)
+    const endInst = Temporal.Instant.from(staticEndStr);
     if (Temporal.Instant.compare(endInst, nowInstant) < 0) {
-      return { event, endedAt: endInst }
+      return { event, endedAt: endInst };
     }
   } catch (err) {
-    logger.warn('[rewardsDebugOccurrenceHelper] Error parseando staticEndStr:', staticEndStr, err)
+    logger.warn('[rewardsDebugOccurrenceHelper] Error parseando staticEndStr:', staticEndStr, err);
   }
-  return null
+  return null;
 }
 
 function matchWeeklySchedule(
@@ -43,37 +48,42 @@ function matchWeeklySchedule(
   nowZdt: Temporal.ZonedDateTime,
   nowInstant: Temporal.Instant
 ): PastEventMatch | null {
-  if (!Array.isArray(sched.days) && typeof sched.dayOfWeek !== 'number') return null
-  const days = (Array.isArray(sched.days) ? sched.days : [sched.dayOfWeek]) as number[]
-  const startHour = typeof sched.startHour === 'number' ? sched.startHour : 0
-  const endHour = typeof sched.endHour === 'number' ? sched.endHour : 24
+  if (!Array.isArray(sched.days) && typeof sched.dayOfWeek !== 'number') return null;
+  const days = (Array.isArray(sched.days) ? sched.days : [sched.dayOfWeek]) as number[];
+  const startHour = typeof sched.startHour === 'number' ? sched.startHour : 0;
+  const endHour = typeof sched.endHour === 'number' ? sched.endHour : 24;
 
   for (let offset = 0; offset >= WEEKLY_LOOKBACK_DAYS_LIMIT; offset--) {
-    const targetDay = nowZdt.add({ days: offset })
-    const jsDay = targetDay.dayOfWeek % 7
+    const targetDay = nowZdt.add({ days: offset });
+    const jsDay = targetDay.dayOfWeek % 7;
 
     if (days.includes(jsDay)) {
-      const targetBase = startHour < endHour ? targetDay : targetDay.add({ days: 1 })
+      const targetBase = startHour < endHour ? targetDay : targetDay.add({ days: 1 });
       const endZdt = targetBase.with({
         hour: Math.min(MAX_END_HOUR_OF_DAY, Math.floor(endHour)),
         minute: Math.round((endHour % 1) * 60),
         second: 0,
         millisecond: 0
-      })
-      const endInst = endZdt.toInstant()
+      });
+      const endInst = endZdt.toInstant();
       if (Temporal.Instant.compare(endInst, nowInstant) < 0) {
-        return { event, endedAt: endInst }
+        return { event, endedAt: endInst };
       }
     }
   }
-  return null
+  return null;
 }
 
-const MONTHLY_TRIGGER_PREDICATES: Record<string, (day: Temporal.ZonedDateTime) => boolean> = {
+type MonthlyTriggerKey = 'last_sunday' | 'second_weekend' | 'last_weekend';
+
+const MONTHLY_TRIGGER_PREDICATES: Record<
+  MonthlyTriggerKey,
+  (day: Temporal.ZonedDateTime) => boolean
+> = {
   last_sunday: isLastSundayOfMonth,
   second_weekend: isSecondWeekendOfMonth,
   last_weekend: isLastWeekendOfMonth
-}
+};
 
 function matchMonthlyTrigger(
   event: GameEvent,
@@ -81,28 +91,33 @@ function matchMonthlyTrigger(
   nowZdt: Temporal.ZonedDateTime,
   nowInstant: Temporal.Instant
 ): PastEventMatch | null {
-  if (typeof sched.trigger !== 'string') return null
-  const predicate = MONTHLY_TRIGGER_PREDICATES[sched.trigger]
-  if (!predicate) return null
+  if (typeof sched.trigger !== 'string') return null;
+  const predicate = (
+    MONTHLY_TRIGGER_PREDICATES as Record<
+      string,
+      ((day: Temporal.ZonedDateTime) => boolean) | undefined
+    >
+  )[sched.trigger]; // open-record: Monthly trigger predicate lookup
+  if (!predicate) return null;
 
-  const endHour = typeof sched.endHour === 'number' ? sched.endHour : 24
+  const endHour = typeof sched.endHour === 'number' ? sched.endHour : 24;
 
   for (let offset = 0; offset >= MONTHLY_LOOKBACK_DAYS_LIMIT; offset--) {
-    const targetDay = nowZdt.add({ days: offset })
+    const targetDay = nowZdt.add({ days: offset });
     if (predicate(targetDay)) {
       const endZdt = targetDay.with({
         hour: Math.min(MAX_END_HOUR_OF_DAY, Math.floor(endHour)),
         minute: Math.round((endHour % 1) * 60),
         second: 0,
         millisecond: 0
-      })
-      const endInst = endZdt.toInstant()
+      });
+      const endInst = endZdt.toInstant();
       if (Temporal.Instant.compare(endInst, nowInstant) < 0) {
-        return { event, endedAt: endInst }
+        return { event, endedAt: endInst };
       }
     }
   }
-  return null
+  return null;
 }
 
 /**
@@ -113,103 +128,123 @@ export function findLatestPastEvent(
   events: GameEvent[],
   nowZdt: Temporal.ZonedDateTime = normalizeZonedDateTime()
 ): PastEventMatch | null {
-  const nowInstant = nowZdt.toInstant()
-  const matches: PastEventMatch[] = []
+  const nowInstant = nowZdt.toInstant();
+  const matches: PastEventMatch[] = [];
 
   for (const event of events) {
-    const prizes = getEventConfiguredPrizes(event)
-    if (prizes.length === 0) continue
+    const prizes = getEventConfiguredPrizes(event);
+    if (prizes.length === 0) continue;
 
-    const cfg = (typeof event.config === 'string' ? safeParse(event.config) : event.config) as EventConfig | null
-    const sched = (typeof event.schedule === 'string' ? safeParse(event.schedule) : event.schedule) as Record<string, unknown> | null // open-record: Generic key-value data dictionary container
+    const cfg = (
+      typeof event.config === 'string' ? safeParse(event.config) : event.config
+    ) as EventConfig | null;
+    const sched = (
+      typeof event.schedule === 'string' ? safeParse(event.schedule) : event.schedule
+    ) as Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
 
-    const staticMatch = matchStaticEndDate(event, cfg, nowInstant)
+    const staticMatch = matchStaticEndDate(event, cfg, nowInstant);
     if (staticMatch) {
-      matches.push(staticMatch)
-      continue
+      matches.push(staticMatch);
+      continue;
     }
 
     if (sched) {
-      const weeklyMatch = matchWeeklySchedule(event, sched, nowZdt, nowInstant)
+      const weeklyMatch = matchWeeklySchedule(event, sched, nowZdt, nowInstant);
       if (weeklyMatch) {
-        matches.push(weeklyMatch)
-        continue
+        matches.push(weeklyMatch);
+        continue;
       }
 
-      const monthlyMatch = matchMonthlyTrigger(event, sched, nowZdt, nowInstant)
+      const monthlyMatch = matchMonthlyTrigger(event, sched, nowZdt, nowInstant);
       if (monthlyMatch) {
-        matches.push(monthlyMatch)
+        matches.push(monthlyMatch);
       }
     }
   }
 
-  if (matches.length === 0) return null
+  if (matches.length === 0) return null;
 
   // Sort descending: closest to now comes first
-  matches.sort((a, b) => Temporal.Instant.compare(b.endedAt, a.endedAt))
-  return matches[0] || null
+  matches.sort((a, b) => Temporal.Instant.compare(b.endedAt, a.endedAt));
+  return matches[0] || null;
 }
 
 /**
  * Extracts a random prize and rank from the event's configured rewards.
  */
-export function pickRandomPrize(event: GameEvent): { prize: Record<string, unknown>; rankLabel: string; categoryName?: string; categoryId?: string } { // open-record: Generic key-value data dictionary container
-  const cfg = (typeof event.config === 'string' ? safeParse(event.config) : event.config) as Record<string, unknown> | null // open-record: Generic key-value data dictionary container
+export function pickRandomPrize(event: GameEvent): {
+  prize: Record<string, unknown>;
+  rankLabel: string;
+  categoryName?: string;
+  categoryId?: string;
+} {
+  // open-record: Generic key-value data dictionary container
+  const cfg = (typeof event.config === 'string' ? safeParse(event.config) : event.config) as Record<
+    string,
+    unknown
+  > | null; // open-record: Generic key-value data dictionary container
 
   // 1. Check subCompetitions
   if (cfg && Array.isArray(cfg.subCompetitions) && cfg.subCompetitions.length > 0) {
-    const subsWithPrizes = (cfg.subCompetitions as Array<{ id?: string; name?: string; prizes?: Record<string, unknown> }>) // open-record: Generic key-value data dictionary container
-      .filter(s => s && s.prizes && Object.keys(s.prizes).length > 0)
+    const subsWithPrizes = (
+      cfg.subCompetitions as Array<{ id?: string; name?: string; prizes?: Record<string, unknown> }>
+    ) // open-record: Generic key-value data dictionary container
+      .filter((s) => s && s.prizes && Object.keys(s.prizes).length > 0);
 
     if (subsWithPrizes.length > 0) {
-      const chosenSub = subsWithPrizes[Math.floor(Math.random() * subsWithPrizes.length)]!
-      const prizeKeys = Object.keys(chosenSub.prizes || {})
-      const chosenKey = prizeKeys[Math.floor(Math.random() * prizeKeys.length)] || 'first'
-      const rawPrize = (chosenSub.prizes as Record<string, unknown>)[chosenKey] as Record<string, unknown> || {} // open-record: Generic key-value data dictionary container
+      const chosenSub = subsWithPrizes[Math.floor(Math.random() * subsWithPrizes.length)]!;
+      const prizeKeys = Object.keys(chosenSub.prizes || {});
+      const chosenKey = prizeKeys[Math.floor(Math.random() * prizeKeys.length)] || 'first';
+      const rawPrize =
+        ((chosenSub.prizes as Record<string, unknown>)[chosenKey] as Record<string, unknown>) || {}; // open-record: Generic key-value data dictionary container
       const rankLabels: Record<string, string> = {
         first: '1° Puesto 🥇',
         second: '2° Puesto 🥈',
         third: '3° Puesto 🥉'
-      }
+      };
       return {
         prize: rawPrize,
         rankLabel: rankLabels[chosenKey] || `${chosenKey.toUpperCase()} 🏆`,
         categoryId: chosenSub.id,
         categoryName: chosenSub.name
-      }
+      };
     }
   }
 
   // 2. Check event-level prizes
   if (cfg && cfg.prizes && typeof cfg.prizes === 'object') {
-    const keys = Object.keys(cfg.prizes as Record<string, unknown>) // open-record: Generic key-value data dictionary container
+    const keys = Object.keys(cfg.prizes as Record<string, unknown>); // open-record: Generic key-value data dictionary container
     if (keys.length > 0) {
-      const chosenKey = keys[Math.floor(Math.random() * keys.length)] || 'first'
-      const rawPrize = (cfg.prizes as Record<string, unknown>)[chosenKey] as Record<string, unknown> || {} // open-record: Generic key-value data dictionary container
+      const chosenKey = keys[Math.floor(Math.random() * keys.length)] || 'first';
+      const rawPrize =
+        ((cfg.prizes as Record<string, unknown>)[chosenKey] as Record<string, unknown>) || {}; // open-record: Generic key-value data dictionary container
       const rankLabels: Record<string, string> = {
         first: '1° Puesto 🥇',
         second: '2° Puesto 🥈',
         third: '3° Puesto 🥉'
-      }
+      };
       return {
         prize: rawPrize,
         rankLabel: rankLabels[chosenKey] || `${chosenKey.toUpperCase()} 🏆`
-      }
+      };
     }
   }
 
   // 3. Fallback to all configured prizes
-  const allPrizes = getEventConfiguredPrizes(event)
+  const allPrizes = getEventConfiguredPrizes(event);
   if (allPrizes.length > 0) {
-    const chosen = allPrizes[Math.floor(Math.random() * allPrizes.length)] as Record<string, unknown> // open-record: Generic key-value data dictionary container
+    const chosen = allPrizes[Math.floor(Math.random() * allPrizes.length)] as Record<
+      string,
+      unknown
+    >; // open-record: Generic key-value data dictionary container
     return {
       prize: chosen,
       rankLabel: 'Premio Ganador 🏆'
-    }
+    };
   }
 
   return {
     prize: { money: 1000 },
     rankLabel: 'Premio Consuelo 🏅'
-  }
+  };
 }

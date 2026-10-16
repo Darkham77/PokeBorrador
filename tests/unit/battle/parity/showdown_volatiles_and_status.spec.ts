@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { handleCoreEvents } from '@/logic/battle/showdownBridgeCore';
 import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
 import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
@@ -15,7 +15,7 @@ describe('Audit Parity - BUG-021: -heal silently applies appended status', () =>
       p: null,
       getPoke: () => mockPoke,
       getSide: () => 'player',
-      turnLogs: [],
+      turnLogs: []
     } as unknown as Parameters<typeof handleCoreEvents>[0];
     await handleCoreEvents(ctx);
     // A -heal line must NEVER set status — it's informational only
@@ -35,7 +35,7 @@ describe('Audit Parity - BUG-022: -damage silently applies appended status', () 
       p: null,
       getPoke: () => mockPoke,
       getSide: () => 'player',
-      turnLogs: [],
+      turnLogs: []
     } as unknown as Parameters<typeof handleCoreEvents>[0];
     await handleCoreEvents(ctx);
     // The status in HP string is informational — only |-status| should set it
@@ -55,7 +55,7 @@ describe('Audit Parity - BUG-023: faint sets invalid status fnt', () => {
       p: null,
       getPoke: () => mockPoke,
       getSide: () => 'player',
-      turnLogs: [],
+      turnLogs: []
     } as unknown as Parameters<typeof handleCoreEvents>[0];
     await handleCoreEvents(ctx);
     // faint must only set fainted=true and hp=0; status should remain null or ''
@@ -71,10 +71,10 @@ describe('Audit Parity - BUG-024: -curestatusall must not create redundant doubl
     const activePlayer = { name: 'Pikachu', status: 'brn' as unknown };
     const playerTeam = [activePlayer, { name: 'Charizard', status: 'psn' as unknown }];
     const battle = {
-      player: activePlayer,         // same reference as team[0]
+      player: activePlayer, // same reference as team[0]
       enemy: null,
       playerTeam,
-      enemyTeam: [],
+      enemyTeam: []
     };
     const store = { activeBattle: { value: battle }, addLog: () => {} };
     const ctx = {
@@ -85,7 +85,7 @@ describe('Audit Parity - BUG-024: -curestatusall must not create redundant doubl
       p: null,
       getPoke: () => null,
       getSide: () => null,
-      turnLogs: [],
+      turnLogs: []
     } as unknown as Parameters<typeof handleCoreEvents>[0];
     await handleCoreEvents(ctx);
 
@@ -151,7 +151,12 @@ describe('Audit Parity - BUG-061: cant truancy message', () => {
     let logMsg = '';
     const target = { name: 'Slaking' };
     const ctx = {
-      store: { activeBattle: { value: {} }, addLog: (msg: string) => { logMsg = msg; } },
+      store: {
+        activeBattle: { value: {} },
+        addLog: (msg: string) => {
+          logMsg = msg;
+        }
+      },
       type: 'cant',
       parts: ['', 'cant', 'p1a: Slaking', 'ability: Truant'],
       line: '|cant|p1a: Slaking|ability: Truant',
@@ -187,7 +192,12 @@ describe('Audit Parity - BUG-080: status message custom mappings', () => {
     let logMsg = '';
     const target = { name: 'Gengar', status: null };
     const ctx = {
-      store: { activeBattle: { value: {} }, addLog: (msg: string) => { logMsg = msg; } },
+      store: {
+        activeBattle: { value: {} },
+        addLog: (msg: string) => {
+          logMsg = msg;
+        }
+      },
       type: '-status',
       parts: ['', '-status', 'p1a: Gengar', 'psn'],
       line: '|-status|p1a: Gengar|psn',
@@ -206,7 +216,9 @@ describe('Audit Parity - Curestatus Silent Override', () => {
   it('should respect [silent] flag in -curestatus event', async () => {
     let logCount = 0;
     const mockStore = {
-      addLog: () => { logCount++; },
+      addLog: () => {
+        logCount++;
+      },
       activeBattle: { value: {} }
     };
     const ctx = {
@@ -228,7 +240,9 @@ describe('Audit Parity - Status Message Silent Override', () => {
   it('should respect [silent] flag in -status event', async () => {
     let logCount = 0;
     const mockStore = {
-      addLog: () => { logCount++; },
+      addLog: () => {
+        logCount++;
+      },
       activeBattle: { value: {} }
     };
     const ctx = {

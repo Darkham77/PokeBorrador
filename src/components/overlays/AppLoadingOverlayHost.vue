@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { gsap } from 'gsap'
-import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
+import { gsap } from 'gsap';
+import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue';
 
 type LoadingOverlayTheme = 'default' | 'purple' | 'error' | 'warning';
 
 interface Props {
-  show: boolean
-  title: string
-  message: string
-  statusText?: string
-  icon?: string
-  showSpinner?: boolean
-  theme?: LoadingOverlayTheme
-  cardClass?: string
-  needRefresh?: boolean
+  show: boolean;
+  title: string;
+  message: string;
+  statusText?: string;
+  icon?: string;
+  showSpinner?: boolean;
+  theme?: LoadingOverlayTheme;
+  cardClass?: string;
+  needRefresh?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -23,29 +23,24 @@ const props = withDefaults(defineProps<Props>(), {
   theme: 'default',
   cardClass: '',
   needRefresh: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'update'): void
-}>()
+  (e: 'update'): void;
+}>();
 
 const onLoadingEnter = (el: Element, done: () => void) => {
-  gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none', onComplete: done })
-}
+  gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none', onComplete: done });
+};
 
 const onLoadingLeave = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 0, duration: 0.8, ease: 'power2.inOut', onComplete: done })
-}
+  gsap.to(el, { opacity: 0, duration: 0.8, ease: 'power2.inOut', onComplete: done });
+};
 </script>
 
 <template>
   <Teleport to="body">
-    <Transition
-      appear
-      :css="false"
-      @enter="onLoadingEnter"
-      @leave="onLoadingLeave"
-    >
+    <Transition appear :css="false" @enter="onLoadingEnter" @leave="onLoadingLeave">
       <PVLoadingOverlay
         v-if="props.show"
         :title="props.title"
@@ -56,10 +51,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
         :theme="props.theme"
         :card-class="props.cardClass"
       >
-        <template
-          v-if="props.needRefresh"
-          #actions
-        >
+        <template v-if="props.needRefresh" #actions>
           <button
             id="app-loading-overlay-update-btn"
             class="pv-button-retro"

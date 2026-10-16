@@ -1,8 +1,8 @@
 export interface ActivityTerrainFeature {
-  isAvailable: boolean
-  emoji: string
-  levelText?: string
-  fallbackText?: string
+  isAvailable: boolean;
+  emoji: string;
+  levelText?: string;
+  fallbackText?: string;
 }
 
 export const ROUTE_SPAWN_TERRAIN_TYPES = ['official', 'extorted'] as const;
@@ -19,19 +19,19 @@ export const CLASS_ROUTE_ACTION_KINDS = ['cooldown', 'button-official', 'button-
 export type ClassRouteActionKind = (typeof CLASS_ROUTE_ACTION_KINDS)[number];
 
 export interface ClassRouteAction {
-  kind: ClassRouteActionKind
-  text: string
-  buttonId?: string // infra-id-ok: HTML button element identifier
-  buttonClass?: string
+  kind: ClassRouteActionKind;
+  text: string;
+  buttonId?: string; // infra-id-ok: HTML button element identifier
+  buttonClass?: string;
 }
 
 export interface ResolveClassRouteActionParams {
-  playerClass: string | null
-  isOfficialActive: boolean
-  isOfficialCooldown: boolean
-  cooldownText: string
-  isExtortedActive: boolean
-  extortedOtherRoute: boolean
+  playerClass: string | null;
+  isOfficialActive: boolean;
+  isOfficialCooldown: boolean;
+  cooldownText: string;
+  isExtortedActive: boolean;
+  extortedOtherRoute: boolean;
 }
 
 export function resolveActivityTerrainFeature(
@@ -41,19 +41,19 @@ export function resolveActivityTerrainFeature(
   emoji: string
 ): ActivityTerrainFeature {
   if (activity && activity.lv) {
-    const minLv = activity.lv[0] ?? 1
-    const maxLv = activity.lv[1] ?? minLv
+    const minLv = activity.lv[0] ?? 1;
+    const maxLv = activity.lv[1] ?? minLv;
     return {
       isAvailable: true,
       emoji,
       levelText: `Nv. ${minLv}-${maxLv}`
-    }
+    };
   }
   return {
     isAvailable: false,
     emoji,
     fallbackText: 'No disponible'
-  }
+  };
 }
 
 export interface SpecialRouteBonusOptions {
@@ -72,7 +72,7 @@ export function resolveSpecialRouteBonus(
       label: '📍 Ruta Oficial:',
       description: `+1 REP por victoria (Restan: ${timeRemainingText})`,
       cssClass: 'text-primary'
-    }
+    };
   }
   if (isExtortedActive) {
     return {
@@ -80,9 +80,9 @@ export function resolveSpecialRouteBonus(
       label: '🏴‍☠️ Extorsionada:',
       description: `x1.5 ₽ por victoria (Restan: ${timeRemainingText})`,
       cssClass: 'text-danger'
-    }
+    };
   }
-  return null
+  return null;
 }
 
 export function resolveClassRouteAction(
@@ -90,7 +90,7 @@ export function resolveClassRouteAction(
 ): ClassRouteAction | null {
   if (params.playerClass === 'entrenador') {
     if (params.isOfficialCooldown && !params.isOfficialActive) {
-      return { kind: 'cooldown', text: `📍 Cooldown Oficial: ${params.cooldownText}` }
+      return { kind: 'cooldown', text: `📍 Cooldown Oficial: ${params.cooldownText}` };
     }
     if (!params.isOfficialActive) {
       return {
@@ -98,13 +98,13 @@ export function resolveClassRouteAction(
         text: '📍 MARCAR RUTA OFICIAL',
         buttonId: 'btn-establish-official-route',
         buttonClass: 'btn-vicio-info btn-vicio-sm w-full btn-establish-route'
-      }
+      };
     }
   }
 
   if (params.playerClass === 'rocket') {
     if (params.extortedOtherRoute) {
-      return { kind: 'cooldown', text: '🏴‍☠️ Ya extorsionaste otra ruta hoy' }
+      return { kind: 'cooldown', text: '🏴‍☠️ Ya extorsionaste otra ruta hoy' };
     }
     if (!params.isExtortedActive) {
       return {
@@ -112,9 +112,9 @@ export function resolveClassRouteAction(
         text: '🏴‍☠️ EXTORSIONAR RUTA',
         buttonId: 'btn-extort-route',
         buttonClass: 'btn-vicio-danger btn-vicio-sm w-full btn-establish-route'
-      }
+      };
     }
   }
 
-  return null
+  return null;
 }

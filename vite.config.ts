@@ -1,75 +1,84 @@
-import { defineConfig, type HmrContext } from 'vite'
-import { type ViteDevServer } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import * as compiler from 'vue/compiler-sfc'
-import path from 'node:path'
-import type { IncomingMessage, ServerResponse } from 'node:http'
+import { defineConfig, type HmrContext, type PluginOption } from 'vite-plus';
+import { type ViteDevServer } from 'vite-plus';
+import vue from '@vitejs/plugin-vue';
+import * as compiler from 'vue/compiler-sfc';
+import path from 'node:path';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
+import { generateMigrations } from './scripts/database/generate_migrations.ts';
+import { generatePokemonDatabase } from './scripts/data/generate_pokemon_db.ts';
+import { sassTrapsFixer } from './scripts/maintenance/vite-plugin-sass-traps.ts';
+import { staticPrecompressPlugin } from './scripts/maintenance/vite-plugin-precompress.ts';
+import { lanPvPPlugin } from './scripts/maintenance/vite-plugin-lan-pvp.ts';
+import { devShadowEditorPlugin } from './scripts/maintenance/vite-plugin-dev-shadow-editor.ts';
+import { fixPkmnSimPlugin } from './scripts/maintenance/vite-plugin-fix-pkmn-sim.ts';
+import { isValidSqliteBuffer } from './src/logic/db/sqliteBufferValidator.ts';
 
-import { generateMigrations } from './scripts/database/generate_migrations.ts'
-import { generatePokemonDatabase } from './scripts/data/generate_pokemon_db.ts'
-import { sassTrapsFixer } from './scripts/maintenance/vite-plugin-sass-traps.ts'
-import { staticPrecompressPlugin } from './scripts/maintenance/vite-plugin-precompress.ts'
-import { lanPvPPlugin } from './scripts/maintenance/vite-plugin-lan-pvp.ts'
-import { devShadowEditorPlugin } from './scripts/maintenance/vite-plugin-dev-shadow-editor.ts'
-import { fixPkmnSimPlugin } from './scripts/maintenance/vite-plugin-fix-pkmn-sim.ts'
-import { isValidSqliteBuffer } from './src/logic/db/sqliteBufferValidator.ts'
+import { VitePWA } from 'vite-plugin-pwa';
+import basicSsl from '@vitejs/plugin-basic-ssl';
+import { visualizer } from 'rollup-plugin-visualizer';
 
-import { VitePWA } from 'vite-plugin-pwa'
-import basicSsl from '@vitejs/plugin-basic-ssl'
-import { visualizer } from 'rollup-plugin-visualizer'
+import fsPromises from 'node:fs/promises';
+import fs from 'node:fs';
 
-import fsPromises from 'node:fs/promises'
-import fs from 'node:fs'
+import type { ESBuildOptions } from 'vite-plus';
 
-import type { ESBuildOptions } from 'vite'
-
-type ESBuildOptionsWithCharset = ESBuildOptions & { charset?: 'utf8' }
+type ESBuildOptionsWithCharset = ESBuildOptions & { charset?: 'utf8' };
 const esbuildConfig: ESBuildOptionsWithCharset = {
   charset: 'utf8',
   legalComments: 'none',
   treeShaking: true,
   drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
-  pure: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : [],
-}
+  pure:
+    process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : []
+};
 
 function pokemonDbGeneratorPlugin() {
   return {
     name: 'pokemon-db-generator',
     async buildStart() {
-      await generatePokemonDatabase()
+      await generatePokemonDatabase();
     },
     handleHotUpdate({ file }: { file: string }) {
-      if (file.includes('src/data/pokemon/speciesMetadata') || file.includes('src/data/battle/moves') || file.includes('src/data/system/constants')) {
-        generatePokemonDatabase().catch(err => {
-          console.error('[PokemonDB Generator] Hot update generation failed:', err)
-        })
+      if (
+        file.includes('src/data/pokemon/speciesMetadata') ||
+        file.includes('src/data/battle/moves') ||
+        file.includes('src/data/system/constants')
+      ) {
+        generatePokemonDatabase().catch((err) => {
+          console.error('[PokemonDB Generator] Hot update generation failed:', err);
+        });
       }
     }
-  }
+  };
 }
 
 function migrationsPlugin() {
   return {
     name: 'migrations-generator',
     async buildStart() {
-      await generateMigrations()
+      await generateMigrations();
     },
     handleHotUpdate({ file }: { file: string }) {
       if (file.includes('database/migrations')) {
-        generateMigrations().catch(err => {
-          console.error('[Migrations Generator] Hot update generation failed:', err)
-        })
+        generateMigrations().catch((err) => {
+          console.error('[Migrations Generator] Hot update generation failed:', err);
+        });
         try {
-          const templatePath = path.resolve(import.meta.dirname, 'scratch/database/clean_template.db')
+          const templatePath = path.resolve(
+            import.meta.dirname,
+            'scratch/database/clean_template.db'
+          );
           if (fs.existsSync(templatePath)) {
-            fs.unlinkSync(templatePath)
-            console.log('🗑️ [DevDB] clean_template.db deleted due to migration update.')
+            fs.unlinkSync(templatePath);
+            console.log('🗑️ [DevDB] clean_template.db deleted due to migration update.');
           }
-        } catch (_e) { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
-  }
+  };
 }
 
 function devDbImportPlugin() {
@@ -79,15 +88,19 @@ function devDbImportPlugin() {
       let cleanDbRamBuffer: Buffer | null = null;
       const simDbRamBuffers = new Map<string, Buffer>();
 
-      const manualImportPath = path.resolve(import.meta.dirname, 'scratch/database/manual_user_backup_import.db');
+      const manualImportPath = path.resolve(
+        import.meta.dirname,
+        'scratch/database/manual_user_backup_import.db'
+      );
 
       const getSimKey = (req: IncomingMessage): string | null => {
         const headerKey = req.headers['x-db-key'];
-        const cleanHeaderKey = typeof headerKey === 'string'
-          ? headerKey.replace(/[^a-zA-Z0-9_-]/g, '')
-          : Array.isArray(headerKey) && headerKey[0]
-            ? headerKey[0].replace(/[^a-zA-Z0-9_-]/g, '')
-            : '';
+        const cleanHeaderKey =
+          typeof headerKey === 'string'
+            ? headerKey.replace(/[^a-zA-Z0-9_-]/g, '')
+            : Array.isArray(headerKey) && headerKey[0]
+              ? headerKey[0].replace(/[^a-zA-Z0-9_-]/g, '')
+              : '';
         if (cleanHeaderKey && cleanHeaderKey.startsWith('sim_')) return cleanHeaderKey;
 
         if (!req.url) return null;
@@ -102,10 +115,17 @@ function devDbImportPlugin() {
 
       const getSimDbPath = (simKey: string): string => {
         const normalizedKey = simKey.startsWith('sim_') ? simKey : `sim_${simKey}`;
-        return path.resolve(import.meta.dirname, 'scratch/database/simulations', `${normalizedKey}.db`);
+        return path.resolve(
+          import.meta.dirname,
+          'scratch/database/simulations',
+          `${normalizedKey}.db`
+        );
       };
 
-      async function handleManualImportRoute(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
+      async function handleManualImportRoute(
+        req: IncomingMessage,
+        res: ServerResponse
+      ): Promise<boolean> {
         const url = req.url ?? '';
         if (url.startsWith('/api/dev-manual-import-check')) {
           try {
@@ -140,7 +160,9 @@ function devDbImportPlugin() {
           try {
             await fsPromises.unlink(manualImportPath);
             console.log('📦 [DevDB] manual_user_backup_import.db cleaned up from disk.');
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           res.writeHead(200, { 'Content-Type': 'text/plain' });
           res.end('Cleaned up');
           return true;
@@ -175,8 +197,12 @@ function devDbImportPlugin() {
           const simPath = getSimDbPath(simKey);
           try {
             await fsPromises.unlink(simPath);
-            console.log(`📦 [DevDB] Simulation ${path.basename(simPath)} cleaned up from RAM & disk.`);
-          } catch { /* ignore */ }
+            console.log(
+              `📦 [DevDB] Simulation ${path.basename(simPath)} cleaned up from RAM & disk.`
+            );
+          } catch {
+            /* ignore */
+          }
         }
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('Cleaned up');
@@ -217,7 +243,9 @@ function devDbImportPlugin() {
             'Cache-Control': 'no-store'
           });
           res.end(binary);
-          console.debug(`📦 [DevDB] Simulation ${path.basename(simPath)} sent to client from disk.`);
+          console.debug(
+            `📦 [DevDB] Simulation ${path.basename(simPath)} sent to client from disk.`
+          );
           return;
         } catch {
           res.writeHead(404, { 'Content-Type': 'text/plain' });
@@ -234,14 +262,20 @@ function devDbImportPlugin() {
         }
 
         let isAborted = false;
-        req.on('aborted', () => { isAborted = true; });
-        req.on('close', () => { if (!req.complete) isAborted = true; });
+        req.on('aborted', () => {
+          isAborted = true;
+        });
+        req.on('close', () => {
+          if (!req.complete) isAborted = true;
+        });
 
         const chunks: Buffer[] = [];
-        req.on('data', chunk => chunks.push(chunk as Buffer));
+        req.on('data', (chunk) => chunks.push(chunk as Buffer));
         req.on('end', async () => {
           if (isAborted || !req.complete) {
-            console.warn(`⚠️ [DevDB] Simulation ${simKey} upload aborted prematurely by client. Discarding incomplete payload.`);
+            console.warn(
+              `⚠️ [DevDB] Simulation ${simKey} upload aborted prematurely by client. Discarding incomplete payload.`
+            );
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             res.end('Upload aborted');
             return;
@@ -252,7 +286,9 @@ function devDbImportPlugin() {
           const expectedLength = rawLength ? parseInt(rawLength, 10) : undefined;
 
           if (!isValidSqliteBuffer(buffer, expectedLength)) {
-            console.warn(`⚠️ [DevDB] Simulation ${simKey} failed SQLite buffer validation (len: ${buffer.length}, expected: ${expectedLength}). Discarding.`);
+            console.warn(
+              `⚠️ [DevDB] Simulation ${simKey} failed SQLite buffer validation (len: ${buffer.length}, expected: ${expectedLength}). Discarding.`
+            );
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             res.end('Invalid SQLite database buffer');
             return;
@@ -265,8 +301,10 @@ function devDbImportPlugin() {
             await fsPromises.mkdir(path.dirname(simPath), { recursive: true });
             await fsPromises.writeFile(tmpPath, buffer);
             await fsPromises.rename(tmpPath, simPath);
-            console.debug(`📥 [DevDB] Simulation ${path.basename(simPath)} updated in RAM and disk.`);
-          } catch (_err: unknown) {
+            console.debug(
+              `📥 [DevDB] Simulation ${path.basename(simPath)} updated in RAM and disk.`
+            );
+          } catch {
             await fsPromises.unlink(tmpPath).catch(() => {});
           }
           res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -280,7 +318,10 @@ function devDbImportPlugin() {
           await handleSimDbCheck(req, res);
           return true;
         }
-        if (url.startsWith('/api/dev-sim-db-cleanup') || url.startsWith('/api/dev-import-db-cleanup')) {
+        if (
+          url.startsWith('/api/dev-sim-db-cleanup') ||
+          url.startsWith('/api/dev-import-db-cleanup')
+        ) {
           await handleSimDbCleanup(req, res);
           return true;
         }
@@ -323,14 +364,20 @@ function devDbImportPlugin() {
 
       function handleCleanDbExport(req: IncomingMessage, res: ServerResponse): void {
         let isAborted = false;
-        req.on('aborted', () => { isAborted = true; });
-        req.on('close', () => { if (!req.complete) isAborted = true; });
+        req.on('aborted', () => {
+          isAborted = true;
+        });
+        req.on('close', () => {
+          if (!req.complete) isAborted = true;
+        });
 
         const chunks: Buffer[] = [];
-        req.on('data', chunk => chunks.push(chunk as Buffer));
+        req.on('data', (chunk) => chunks.push(chunk as Buffer));
         req.on('end', async () => {
           if (isAborted || !req.complete) {
-            console.warn('⚠️ [DevDB] clean_template.db upload aborted prematurely by client. Discarding.');
+            console.warn(
+              '⚠️ [DevDB] clean_template.db upload aborted prematurely by client. Discarding.'
+            );
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             res.end('Upload aborted');
             return;
@@ -341,7 +388,9 @@ function devDbImportPlugin() {
           const expectedLength = rawLength ? parseInt(rawLength, 10) : undefined;
 
           if (!isValidSqliteBuffer(buffer, expectedLength)) {
-            console.warn(`⚠️ [DevDB] clean_template.db failed SQLite buffer validation (len: ${buffer.length}). Discarding.`);
+            console.warn(
+              `⚠️ [DevDB] clean_template.db failed SQLite buffer validation (len: ${buffer.length}). Discarding.`
+            );
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             res.end('Invalid SQLite database buffer');
             return;
@@ -355,7 +404,7 @@ function devDbImportPlugin() {
             await fsPromises.writeFile(tmpPath, buffer);
             await fsPromises.rename(tmpPath, dbPath);
             console.debug('📥 [DevDB] clean_template.db updated 100% in RAM and synchronized.');
-          } catch (_err: unknown) {
+          } catch {
             await fsPromises.unlink(tmpPath).catch(() => {});
           }
           res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -363,7 +412,10 @@ function devDbImportPlugin() {
         });
       }
 
-      async function handleCleanDbRoute(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
+      async function handleCleanDbRoute(
+        req: IncomingMessage,
+        res: ServerResponse
+      ): Promise<boolean> {
         const url = req.url ?? '';
         if (url.startsWith('/api/dev-clean-db')) {
           await handleCleanDbDownload(res);
@@ -376,16 +428,17 @@ function devDbImportPlugin() {
         return false;
       }
 
-      server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-        if (await handleManualImportRoute(req, res)) return;
-        if (await handleSimDbRoute(req, res)) return;
-        if (await handleCleanDbRoute(req, res)) return;
-        next();
-      });
+      server.middlewares.use(
+        async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+          if (await handleManualImportRoute(req, res)) return;
+          if (await handleSimDbRoute(req, res)) return;
+          if (await handleCleanDbRoute(req, res)) return;
+          next();
+        }
+      );
     }
   };
 }
-
 
 // ─── Version System ───────────────────────────────────────────────────────────
 // The developer's LOCAL build is the single source of truth for the version.
@@ -397,11 +450,16 @@ function getPackageVersion(): string {
   try {
     const pkgPath = path.resolve(import.meta.dirname, 'package.json');
     const parsed: unknown = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-    if (parsed && typeof parsed === 'object' && 'version' in parsed && typeof (parsed as Record<string, unknown>).version === 'string') {
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      'version' in parsed &&
+      typeof (parsed as Record<string, unknown>).version === 'string'
+    ) {
       const ver = (parsed as { version: string }).version;
       return ver.startsWith('v') ? ver : `v${ver}`;
     }
-  } catch (_e) {
+  } catch {
     // Silently ignore
   }
   return 'v0.6.0';
@@ -429,13 +487,13 @@ function versionPlugin() {
         console.error('Failed to write version.json:', e);
       }
     }
-  }
+  };
 }
 
 // Detect if building on GitHub Actions for GitHub Pages
-const isGithubActions = !!process.env.GITHUB_ACTIONS
-const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1]
-const base = process.env.VITE_BASE_URL || (isGithubActions && repoName ? `/${repoName}/` : '/')
+const isGithubActions = !!process.env.GITHUB_ACTIONS;
+const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1];
+const base = process.env.VITE_BASE_URL || (isGithubActions && repoName ? `/${repoName}/` : '/');
 
 interface ChunkRule {
   readonly patterns: readonly string[];
@@ -443,15 +501,24 @@ interface ChunkRule {
 }
 
 const CHUNK_RULES: readonly ChunkRule[] = [
-  { patterns: ['node_modules/vue', 'node_modules/pinia', 'node_modules/vue-router'], chunk: 'vendor-vue' },
+  {
+    patterns: ['node_modules/vue', 'node_modules/pinia', 'node_modules/vue-router'],
+    chunk: 'vendor-vue'
+  },
   { patterns: ['node_modules/@supabase'], chunk: 'vendor-supabase' },
   { patterns: ['node_modules/gsap'], chunk: 'vendor-gsap' },
   { patterns: ['node_modules/sql.js'], chunk: 'vendor-sqljs' },
   { patterns: ['node_modules/@smogon/calc'], chunk: 'vendor-smogon-calc' },
   { patterns: ['src/logic/db/migrations_data'], chunk: 'db-migrations-data' },
   { patterns: ['node_modules/valibot'], chunk: 'vendor-valibot' },
-  { patterns: ['src/data/pokemon/pokemonFeetDatabase', 'src/data/pokemon/feetCoordinatesData'], chunk: 'game-data-feet' },
-  { patterns: ['src/data/pokemon/animatedSpriteDatabase', 'src/data/pokemon/animatedSpriteData'], chunk: 'game-data-sprites' },
+  {
+    patterns: ['src/data/pokemon/pokemonFeetDatabase', 'src/data/pokemon/feetCoordinatesData'],
+    chunk: 'game-data-feet'
+  },
+  {
+    patterns: ['src/data/pokemon/animatedSpriteDatabase', 'src/data/pokemon/animatedSpriteData'],
+    chunk: 'game-data-sprites'
+  },
   { patterns: ['src/data/pokemon/pokemonDB'], chunk: 'game-data-pokemon-db' },
   { patterns: ['src/data/pokemon/'], chunk: 'game-data-pokemon' },
   { patterns: ['src/data/battle/'], chunk: 'game-data-battle' },
@@ -462,168 +529,177 @@ const CHUNK_RULES: readonly ChunkRule[] = [
 
 function resolveManualChunk(id: string): string | undefined {
   for (const rule of CHUNK_RULES) {
-    if (rule.patterns.some(pattern => id.includes(pattern))) {
+    if (rule.patterns.some((pattern) => id.includes(pattern))) {
       return rule.chunk;
     }
   }
   return undefined;
 }
 
+const plugins: PluginOption[] = [
+  fixPkmnSimPlugin(),
+  vue({
+    compiler,
+    template: {
+      compilerOptions: {
+        hoistStatic: true,
+        cacheHandlers: true,
+        comments: false
+      }
+    }
+  }),
+  ...((!isVitest
+    ? [
+        basicSsl(),
+        lanPvPPlugin(),
+        pokemonDbGeneratorPlugin(),
+        migrationsPlugin(),
+        devDbImportPlugin(),
+        devShadowEditorPlugin(),
+        sassTrapsFixer(),
+        versionPlugin(),
+        VitePWA({
+          registerType: 'prompt',
+          includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
+          manifest: {
+            name: 'Poké Vicio',
+            short_name: 'PokéVicio',
+            description: 'El juego definitivo de Pokémon para navegador',
+            theme_color: '#161a2e',
+            background_color: '#0a0c14',
+            display: 'standalone',
+            orientation: 'any',
+            start_url: base,
+            scope: base,
+            icons: [
+              {
+                src: 'assets/fondo/logo%203.webp',
+                sizes: '512x512',
+                type: 'image/webp',
+                purpose: 'any'
+              },
+              {
+                src: 'assets/fondo/logo%203.webp',
+                sizes: '512x512',
+                type: 'image/webp',
+                purpose: 'maskable'
+              }
+            ]
+          },
+          workbox: {
+            cleanupOutdatedCaches: true,
+            skipWaiting: true,
+            clientsClaim: true,
+            // CRITICAL: Precache ONLY the essential App Shell (< 500 KB).
+            // Heavy data chunks, optional views, and dynamic engines are cached on-demand via runtime caching.
+            globPatterns: [
+              '**/*.{html,ico,woff2}',
+              '**/index-*.{js,css}',
+              '**/vendor-vue-*.js',
+              '**/vendor-gsap-*.js'
+            ],
+            maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+            runtimeCaching: [
+              {
+                // Dynamic code chunks & wasm modules (game data, modals, subviews, sqlite)
+                urlPattern: /\/assets\/.*\.(js|css|wasm)(\?.*)?$/i,
+                handler: 'StaleWhileRevalidate',
+                options: {
+                  cacheName: 'app-dynamic-chunks-v1',
+                  expiration: {
+                    maxEntries: 150,
+                    maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                  },
+                  cacheableResponse: {
+                    statuses: [0, 200]
+                  }
+                }
+              },
+              {
+                // Dynamic event and PokeCenter UI banners (updated in background via StaleWhileRevalidate)
+                urlPattern:
+                  /\/assets\/ui\/(events|pokecenter)\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
+                handler: 'StaleWhileRevalidate',
+                options: {
+                  cacheName: 'game-event-banners-v1',
+                  expiration: {
+                    maxEntries: 100,
+                    maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                  },
+                  cacheableResponse: {
+                    statuses: [0, 200]
+                  }
+                }
+              },
+              {
+                // All game image assets (sprites, icons, backgrounds)
+                urlPattern: /\/assets\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'game-images-v1',
+                  expiration: {
+                    maxEntries: 25000,
+                    maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
+                  },
+                  cacheableResponse: {
+                    statuses: [0, 200]
+                  }
+                }
+              },
+              {
+                // All game audio assets (music tracks, SFX files: mp3, ogg, wav, midi, m4a, flac, aac)
+                urlPattern: /\/assets\/.*\.(mp3|ogg|wav|mid|midi|m4a|flac|aac)(\?.*)?$/i,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'game-audio-v1',
+                  expiration: {
+                    maxEntries: 500,
+                    maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
+                  },
+                  cacheableResponse: {
+                    statuses: [0, 200]
+                  }
+                }
+              }
+            ]
+          },
+          devOptions: {
+            enabled: false,
+            type: 'module'
+          }
+        }),
+        staticPrecompressPlugin(),
+        {
+          name: 'worker-reload-plugin',
+          handleHotUpdate({ file, server }: HmrContext) {
+            if (file.endsWith('showdown.worker.ts')) {
+              server.config.logger.info(
+                `[HMR] showdown.worker.ts modificado. Forzando recarga de página.`
+              );
+              server.ws.send({ type: 'full-reload' });
+              return [];
+            }
+            return;
+          }
+        }
+      ]
+    : []) as PluginOption[]),
+  ...(process.env.ANALYZE === 'true'
+    ? [
+        visualizer({
+          filename: 'scratch/bundle_stats.html',
+          open: false,
+          gzipSize: true,
+          brotliSize: true
+        })
+      ]
+    : [])
+];
+
 // https://vitejs.dev/config/
 export default defineConfig({
   base,
-  plugins: [
-    fixPkmnSimPlugin(),
-    vue({
-      compiler,
-      template: {
-        compilerOptions: {
-          hoistStatic: true,
-          cacheHandlers: true,
-          comments: false
-        }
-      }
-    }),
-    ...(!isVitest ? [
-      basicSsl(),
-      lanPvPPlugin(),
-      pokemonDbGeneratorPlugin(),
-      migrationsPlugin(),
-      devDbImportPlugin(),
-      devShadowEditorPlugin(),
-      sassTrapsFixer(),
-      versionPlugin(),
-      VitePWA({
-        registerType: 'prompt',
-        includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
-        manifest: {
-        name: 'Poké Vicio',
-        short_name: 'PokéVicio',
-        description: 'El juego definitivo de Pokémon para navegador',
-        theme_color: '#161a2e',
-        background_color: '#0a0c14',
-        display: 'standalone',
-        orientation: 'any',
-        start_url: base,
-        scope: base,
-        icons: [
-          {
-            src: 'assets/fondo/logo%203.webp',
-            sizes: '512x512',
-            type: 'image/webp',
-            purpose: 'any'
-          },
-          {
-            src: 'assets/fondo/logo%203.webp',
-            sizes: '512x512',
-            type: 'image/webp',
-            purpose: 'maskable'
-          }
-        ]
-      },
-      workbox: {
-        cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
-        // CRITICAL: Precache ONLY the essential App Shell (< 500 KB).
-        // Heavy data chunks, optional views, and dynamic engines are cached on-demand via runtime caching.
-        globPatterns: [
-          '**/*.{html,ico,woff2}',
-          '**/index-*.{js,css}',
-          '**/vendor-vue-*.js',
-          '**/vendor-gsap-*.js'
-        ],
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-        runtimeCaching: [
-          {
-            // Dynamic code chunks & wasm modules (game data, modals, subviews, sqlite)
-            urlPattern: /\/assets\/.*\.(js|css|wasm)(\?.*)?$/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'app-dynamic-chunks-v1',
-              expiration: {
-                maxEntries: 150,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            // Dynamic event and PokeCenter UI banners (updated in background via StaleWhileRevalidate)
-            urlPattern: /\/assets\/ui\/(events|pokecenter)\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'game-event-banners-v1',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            // All game image assets (sprites, icons, backgrounds)
-            urlPattern: /\/assets\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'game-images-v1',
-              expiration: {
-                maxEntries: 25000,
-                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            // All game audio assets (music tracks, SFX files: mp3, ogg, wav, midi, m4a, flac, aac)
-            urlPattern: /\/assets\/.*\.(mp3|ogg|wav|mid|midi|m4a|flac|aac)(\?.*)?$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'game-audio-v1',
-              expiration: {
-                maxEntries: 500,
-                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
-      },
-      devOptions: {
-        enabled: false,
-        type: 'module'
-      }
-    }),
-      staticPrecompressPlugin(),
-      {
-        name: 'worker-reload-plugin',
-        handleHotUpdate({ file, server }: HmrContext) {
-          if (file.endsWith('showdown.worker.ts')) {
-            server.config.logger.info(`[HMR] showdown.worker.ts modificado. Forzando recarga de página.`);
-            server.ws.send({ type: 'full-reload' });
-            return [];
-          }
-          return;
-        }
-      }
-    ] : []),
-    ...(process.env.ANALYZE === 'true' ? [
-      visualizer({
-        filename: 'scratch/bundle_stats.html',
-        open: false,
-        gzipSize: true,
-        brotliSize: true
-      })
-    ] : [])
-  ],
+  plugins,
   define: {
     __BUILD_TIME__: JSON.stringify(appVersion.match(/build\.(\d{8}-\d{6})/)?.[1] || appVersion),
     __APP_VERSION__: JSON.stringify(appVersion)
@@ -631,34 +707,57 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
-      ...(isVitest ? { 'virtual:pwa-register': path.resolve(import.meta.dirname, './tests/helpers/pwaRegisterMock.ts') } : {})
+      ...(isVitest
+        ? {
+            'virtual:pwa-register': path.resolve(
+              import.meta.dirname,
+              './tests/helpers/pwaRegisterMock.ts'
+            )
+          }
+        : {})
     },
     dedupe: ['vue', 'pinia', 'vue-router']
   },
   worker: {
     format: 'es',
-    plugins: () => [
-      fixPkmnSimPlugin(),
-    ],
+    plugins: () => [fixPkmnSimPlugin()],
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules/@pkmn/sim/build/esm/data/learnsets') || id.includes('@pkmn/sim/build/cjs/data/learnsets') || id.includes('/learnsets')) {
+          if (
+            id.includes('node_modules/@pkmn/sim/build/esm/data/learnsets') ||
+            id.includes('@pkmn/sim/build/cjs/data/learnsets') ||
+            id.includes('/learnsets')
+          ) {
             return 'worker-vendor-pkmn-learnsets';
           }
-          if (id.includes('node_modules/@pkmn/sim/build/esm/data/mods') || id.includes('@pkmn/sim/build/cjs/data/mods') || id.includes('/mods/')) {
+          if (
+            id.includes('node_modules/@pkmn/sim/build/esm/data/mods') ||
+            id.includes('@pkmn/sim/build/cjs/data/mods') ||
+            id.includes('/mods/')
+          ) {
             return 'worker-vendor-pkmn-mods';
           }
-          if (id.includes('node_modules/@pkmn/sim') || id.includes('node_modules/@pkmn/sets') || id.includes('pkmn_sim.js')) {
+          if (
+            id.includes('node_modules/@pkmn/sim') ||
+            id.includes('node_modules/@pkmn/sets') ||
+            id.includes('pkmn_sim.js')
+          ) {
             return 'worker-vendor-pkmn-sim';
           }
           if (id.includes('node_modules/@pkmn/randoms')) {
             return 'worker-vendor-randoms';
           }
-          if (id.includes('src/data/pokemon/pokemonFeetDatabase') || id.includes('src/data/pokemon/feetCoordinatesData')) {
+          if (
+            id.includes('src/data/pokemon/pokemonFeetDatabase') ||
+            id.includes('src/data/pokemon/feetCoordinatesData')
+          ) {
             return 'worker-game-data-feet';
           }
-          if (id.includes('src/data/pokemon/animatedSpriteDatabase') || id.includes('src/data/pokemon/animatedSpriteData')) {
+          if (
+            id.includes('src/data/pokemon/animatedSpriteDatabase') ||
+            id.includes('src/data/pokemon/animatedSpriteData')
+          ) {
             return 'worker-game-data-sprites';
           }
           if (id.includes('src/data/pokemon/pokemonDB')) {
@@ -676,10 +775,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    entries: [
-      'index.html',
-      'src/**/*.{ts,tsx,vue,js,jsx}'
-    ]
+    entries: ['index.html', 'src/**/*.{ts,tsx,vue,js,jsx}']
   },
   css: {
     devSourcemap: true,
@@ -695,7 +791,7 @@ export default defineConfig({
   server: {
     port: 5173,
     allowedHosts: true,
-    host : true,
+    host: true,
     watch: {
       ignored: [
         '**/_raw-assets/**',
@@ -707,24 +803,27 @@ export default defineConfig({
         '**/src/data/pokemon/pokemonFeetDatabase.ts'
       ]
     },
-    hmr: (process.env.DEPLOY_SERVER_NAME || process.env.VITE_HMR_PORT || process.env.VITE_REVERSE_PROXY === 'true')
-      ? {
-          protocol: 'wss',
-          clientPort: 443,
-        }
-      : undefined,
+    hmr:
+      process.env.DEPLOY_SERVER_NAME ||
+      process.env.VITE_HMR_PORT ||
+      process.env.VITE_REVERSE_PROXY === 'true'
+        ? {
+            protocol: 'wss',
+            clientPort: 443
+          }
+        : undefined,
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
         bypass: (req) => {
           if (req.url?.includes('/api/dev-')) {
-            return req.url
+            return req.url;
           }
-          return undefined
+          return undefined;
         }
-      },
-    },
+      }
+    }
   },
   build: {
     target: 'esnext',
@@ -755,4 +854,181 @@ export default defineConfig({
     }
   },
   esbuild: esbuildConfig,
-})
+  test: {
+    // 1. Persistent Disk Transform Cache
+    fsModuleCache: true,
+    fsModuleCachePath: 'node_modules/.vitest-cache',
+    sharedViteServer: true,
+
+    // 2. CSS/Sass layout bypass in unit tests (layout tested exclusively in Playwright)
+    css: false,
+
+    // 3. Native Node.js worker execution args
+    execArgv: [
+      '--no-experimental-webstorage',
+      '--no-warnings=ExperimentalWarning',
+      '--allow-inspector'
+    ],
+
+    // 4. Thread-based worker pool (fast startup on Windows)
+    pool: 'forks',
+    fileParallelism: true,
+    teardownTimeout: 10000,
+    vmMemoryLimit: '1GB',
+
+    // 5. Unified V8 Coverage
+    coverage: {
+      provider: 'v8',
+      include: [
+        'test_aventura/tests/**/*.{test,spec}.ts',
+        'tests/**/*.{test,spec}.ts',
+        'src/**/*.{ts,js}',
+        'scripts/**/*.{ts,js}'
+      ],
+      exclude: [
+        'src/**/*.vue',
+        '**/*.d.ts',
+        '**/*.md',
+        '**/*.scss',
+        '**/*.css',
+        'external/**',
+        'dist/**',
+        'scratch/**',
+        'node_modules/**'
+      ],
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage'
+    },
+
+    // 6. Unified Inline Workspace Projects
+    projects: [
+      {
+        test: {
+          name: 'unit',
+          globals: true,
+          pool: 'forks',
+          environment: 'node',
+          environmentOptions: {
+            jsdom: {
+              pretendToBeVisual: true,
+              console: false
+            }
+          },
+          include: [
+            'tests/unit/**/*.{test,spec}.ts',
+            'tests/integration/**/*.{test,spec}.ts',
+            'src/**/*.{test,spec}.ts'
+          ],
+          setupFiles: ['./tests/vitest.setup.ts'],
+          testTimeout: 60000
+        }
+      },
+      {
+        test: {
+          name: 'node',
+          globals: true,
+          pool: 'forks',
+          environment: 'node',
+          include: ['tests/node/**/*.test.ts', 'packages/auditor/tests/**/*.test.ts'],
+          exclude: ['tests/node/**/backup_migration_real.test.ts'],
+          setupFiles: ['./tests/vitest.node.setup.ts'],
+          testTimeout: 120000
+        }
+      },
+      {
+        test: {
+          name: 'migrations',
+          globals: true,
+          pool: 'forks',
+          environment: 'node',
+          include: ['tests/node/**/backup_migration_real.test.ts'],
+          setupFiles: ['./tests/vitest.node.setup.ts'],
+          testTimeout: 300000
+        }
+      }
+    ]
+  },
+  lint: {
+    options: {
+      typeAware: true,
+      typeCheck: true
+    },
+    jsPlugins: ['@francogp/auditor/domain-type-plugin'],
+    rules: {
+      '@francogp/domain-type/no-legacy-date': 'error',
+      '@francogp/domain-type/no-double-cast-unknown': 'error',
+      '@typescript-eslint/consistent-type-assertions': [
+        'error',
+        { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' }
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/ban-ts-comment': 'error',
+      '@francogp/domain-type/no-naked-string-union': 'error',
+      '@francogp/domain-type/no-record-string-key': 'error',
+      '@francogp/domain-type/no-untyped-string-set-map': 'error',
+      '@francogp/domain-type/no-broad-string-array': 'error'
+    },
+    ignorePatterns: [
+      'scripts/**',
+      'ui-demo/**',
+      'ui-demo/src/data/**',
+      'test_aventura/data/**',
+      'src/data/ai/random-sets.json',
+      'src/data/**',
+      'src/logic/db/migrations_data.ts',
+      'test_aventura/tests/**',
+      'scripts/e2e/**',
+      'tests/**',
+      'tests/e2e/**',
+      'tests/integration/**',
+      '**/*.spec.ts',
+      '**/*.test.ts',
+      '**/*.simulation.ts',
+      '.tsbuildinfo/**',
+      'external/**',
+      'showdown/**',
+      'backup_legacy_code/**',
+      'supabase/docker/**',
+      'dist/**',
+      'dev-dist/**',
+      'node_modules/**',
+      'scratch/**',
+      'tmp/**',
+      '.agents/**',
+      'coverage/**',
+      '**/*.d.ts'
+    ]
+  },
+  fmt: {
+    ignorePatterns: [
+      'scripts/**',
+      'src/data/**',
+      'ui-demo/**',
+      'ui-demo/src/data/**',
+      'test_aventura/data/**',
+      'src/data/ai/random-sets.json',
+      'package-lock.json',
+      'src/logic/db/migrations_data.ts',
+      'dist/**',
+      'dev-dist/**',
+      'node_modules/**',
+      'scratch/**',
+      'tmp/**',
+      '.agents/**',
+      'coverage/**',
+      '**/*.d.ts',
+      '.tsbuildinfo/**',
+      'external/**',
+      'showdown/**',
+      'backup_legacy_code/**',
+      'supabase/docker/**'
+    ],
+    singleQuote: true,
+    semi: true,
+    trailingComma: 'none',
+    printWidth: 100
+  },
+  staged: {
+    '*': 'vp check --fix'
+  }
+});

@@ -6,11 +6,17 @@
 import { logger } from '../utils/logger.ts';
 
 export function isOPFSSupported(): boolean {
-  return typeof navigator !== 'undefined' && Boolean(navigator.storage?.getDirectory);
+  return (
+    typeof navigator !== 'undefined' &&
+    Boolean(navigator.storage && 'getDirectory' in navigator.storage)
+  );
 }
 
 interface FileHandleWritable {
-  createWritable: () => Promise<{ write: (d: Uint8Array) => Promise<void>; close: () => Promise<void> }>;
+  createWritable: () => Promise<{
+    write: (d: Uint8Array) => Promise<void>;
+    close: () => Promise<void>;
+  }>;
 }
 
 export async function saveToOPFS(fileName: string, data: Uint8Array): Promise<boolean> {
@@ -18,12 +24,15 @@ export async function saveToOPFS(fileName: string, data: Uint8Array): Promise<bo
   try {
     const root = await navigator.storage.getDirectory();
     const fileHandle = await root.getFileHandle(fileName, { create: true });
-    
+
     if ('createWritable' in fileHandle) {
       const writable = await (fileHandle as FileHandleWritable).createWritable();
       await writable.write(data);
       await writable.close();
-      logger.debug('OPFS', `Successfully persisted ${data.byteLength} bytes to OPFS file '${fileName}'`);
+      logger.debug(
+        'OPFS',
+        `Successfully persisted ${data.byteLength} bytes to OPFS file '${fileName}'`
+      );
       return true;
     }
     return false;
@@ -41,10 +50,16 @@ export async function loadFromOPFS(fileName: string): Promise<Uint8Array | null>
     const file = await fileHandle.getFile();
     const buffer = await file.arrayBuffer();
     const bytes = new Uint8Array(buffer);
-    logger.debug('OPFS', `Successfully loaded ${bytes.byteLength} bytes from OPFS file '${fileName}'`);
+    logger.debug(
+      'OPFS',
+      `Successfully loaded ${bytes.byteLength} bytes from OPFS file '${fileName}'`
+    );
     return bytes;
   } catch (err) {
-    logger.debug('OPFS', `OPFS file '${fileName}' not found or unreadable: ${(err as Error).message}`);
+    logger.debug(
+      'OPFS',
+      `OPFS file '${fileName}' not found or unreadable: ${(err as Error).message}`
+    );
     return null;
   }
 }

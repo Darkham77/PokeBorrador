@@ -71,7 +71,10 @@ function handleWheel(e: WheelEvent) {
 }
 
 function handleViewportPointerDown(e: PointerEvent) {
-  if (e.button === 1 || (e.button === 0 && store.activeTool === 'pointer' && !draggedNodeId.value)) {
+  if (
+    e.button === 1 ||
+    (e.button === 0 && store.activeTool === 'pointer' && !draggedNodeId.value)
+  ) {
     isPanning.value = true;
     panStart.value = { x: e.clientX, y: e.clientY };
     panOrigin.value = { x: store.panX, y: store.panY };
@@ -181,6 +184,9 @@ function handleCanvasClick(e: MouseEvent) {
   <div
     id="studio-connections-viewport-div-canvasclick"
     ref="viewportRef"
+    tabindex="0"
+    role="region"
+    aria-label="Lienzo de conexiones regionales"
     class="connections-viewport-container"
     @wheel="handleWheel"
     @pointerdown="handleViewportPointerDown"
@@ -188,10 +194,7 @@ function handleCanvasClick(e: MouseEvent) {
     @pointerup="handleViewportPointerUp"
     @click="handleCanvasClick"
   >
-    <div
-      class="svg-world-wrapper"
-      :style="transformStyle"
-    >
+    <div class="svg-world-wrapper" :style="transformStyle">
       <svg
         :viewBox="`0 0 ${worldWidth} ${worldHeight}`"
         :width="worldWidth"
@@ -200,12 +203,7 @@ function handleCanvasClick(e: MouseEvent) {
       >
         <!-- Grid pattern background -->
         <defs>
-          <pattern
-            id="conn-subgrid"
-            width="64"
-            height="64"
-            patternUnits="userSpaceOnUse"
-          >
+          <pattern id="conn-subgrid" width="64" height="64" patternUnits="userSpaceOnUse">
             <path
               d="M 64 0 L 0 0 0 64"
               fill="none"
@@ -214,18 +212,11 @@ function handleCanvasClick(e: MouseEvent) {
             />
           </pattern>
         </defs>
-        <rect
-          width="100%"
-          height="100%"
-          fill="url(#conn-subgrid)"
-        />
+        <rect width="100%" height="100%" fill="url(#conn-subgrid)" />
 
         <!-- Route Lines -->
         <g class="routes-group">
-          <template
-            v-for="[u, v] in store.activeProject.connections"
-            :key="`${u}:${v}`"
-          >
+          <template v-for="[u, v] in store.activeProject.connections" :key="`${u}:${v}`">
             <!-- Background click hitbox -->
             <line
               v-if="store.activeProject.nodes[u] && store.activeProject.nodes[v]"
@@ -328,12 +319,7 @@ function handleCanvasClick(e: MouseEvent) {
             </text>
 
             <!-- City Label -->
-            <text
-              :x="node.x"
-              :y="node.y - 20"
-              text-anchor="middle"
-              class="node-label"
-            >
+            <text :x="node.x" :y="node.y - 20" text-anchor="middle" class="node-label">
               {{ node.name }}
             </text>
           </g>

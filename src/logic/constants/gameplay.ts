@@ -4,6 +4,7 @@
  */
 
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { ItemId } from '@/data/inventory/items';
 
 /** Minimum legal level for Pokémon in the engine. */
 export const MINIMUM_POKEMON_LEVEL = 1;
@@ -43,6 +44,12 @@ export const NPC_BABY_POKEMON_POOL: readonly PokemonSpeciesId[] = [
 /** Standard 2 decimal places rounding precision. */
 export const DECIMAL_PLACES_PRECISION_TWO = 2;
 
+/** Base EXP reward factor per average level for Gym victories. */
+export const GYM_REWARD_BASE_EXP_FACTOR = 180;
+
+/** Base Poké-dollar reward factor per average level for Gym victories. */
+export const GYM_REWARD_BASE_MONEY_FACTOR = 30;
+
 /** Maximum number of active moves a Pokémon can carry (4 slots). */
 export const MAX_LEARNED_MOVES_SLOTS = 4;
 
@@ -50,7 +57,12 @@ export const MAX_LEARNED_MOVES_SLOTS = 4;
 export const DEFAULT_INITIAL_ELO = 1000;
 
 /** Canonical battle terrains recognized by the engine. */
-export const CANONICAL_TERRAINS = ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain'] as const;
+export const CANONICAL_TERRAINS = [
+  'electricterrain',
+  'grassyterrain',
+  'mistyterrain',
+  'psychicterrain'
+] as const;
 export type CanonicalTerrain = (typeof CANONICAL_TERRAINS)[number];
 
 /** Default starting friendship value for newly caught Pokémon. */
@@ -116,6 +128,11 @@ export const RARE_GUARDIAN_RARITY_THRESHOLD = 60;
 /** Hash bitwise shift factor for seed calculations (5 bits). */
 export const HASH_SHIFT_BITS = 5;
 
+/** Default 4-element PRNG seed tuple for battle replay initialization. */
+export const DEFAULT_INITIAL_BATTLE_SEED: readonly [number, number, number, number] = [
+  0, 0, 0, 0
+] as const;
+
 /** Modulo scale factor for random guardian generator. */
 export const GUARDIAN_RANDOM_SCALE = 100;
 
@@ -142,6 +159,15 @@ export const TECHNICIAN_BOOST_MULTIPLIER = 1.5;
 
 /** Sand Force ability power multiplier (1.3x). */
 export const SAND_FORCE_MULTIPLIER = 1.3;
+
+/** Guts ability physical attack multiplier when affected by a status condition (1.5x). */
+export const GUTS_STATUS_ATK_MULTIPLIER = 1.5;
+
+/** Lucky Egg held item experience multiplier (1.5x). */
+export const LUCKY_EGG_EXP_MULTIPLIER = 1.5;
+
+/** Day cycle daytime boost multiplier for matching move types (1.2x). */
+export const DAY_CYCLE_BOOST_MULTIPLIER = 1.2;
 
 /** Held item type-boosting item damage multiplier (1.2x e.g. Charcoal, Mystic Water). */
 export const HELD_ITEM_TYPE_BOOST_MULTIPLIER = 1.2;
@@ -191,9 +217,8 @@ export const TYPE_EFFECTIVENESS_THRESHOLDS = {
 
 /** XP threshold table for player class level progression. */
 export const CLASS_XP_THRESHOLD_RANKS: readonly number[] = [
-  100, 250, 500, 900, 1400, 2100, 3000, 4200, 6000, 8500,
-  11500, 15000, 19000, 23500, 28500, 34000, 40000, 46500, 53500, 61000,
-  69000, 77500, 86500, 96000, 106000, 116500, 127500, 139000, 151500
+  100, 250, 500, 900, 1400, 2100, 3000, 4200, 6000, 8500, 11500, 15000, 19000, 23500, 28500, 34000,
+  40000, 46500, 53500, 61000, 69000, 77500, 86500, 96000, 106000, 116500, 127500, 139000, 151500
 ] as const;
 
 /** Points awarded for defeating Legendary guardians. */
@@ -229,16 +254,40 @@ export const DEFAULT_MINIGAME_RARITY = 50;
 export const SHOWDOWN_DAMAGE_VARIANCE_MIN = 0.85;
 
 /** Showdown damage variance maximum multiplier exclusive (1.00). */
-export const SHOWDOWN_DAMAGE_VARIANCE_MAX_EXCLUSIVE = 1.00;
+export const SHOWDOWN_DAMAGE_VARIANCE_MAX_EXCLUSIVE = 1.0;
 
 /** Battle stage stat modifier multiplier lookup table (-6 to +6). */
 export const BATTLE_STAGE_STAT_MULTIPLIERS: readonly number[] = [
-  2 / 8, 2 / 7, 2 / 6, 2 / 5, 2 / 4, 2 / 3, 2 / 2, 3 / 2, 4 / 2, 5 / 2, 6 / 2, 7 / 2, 8 / 2
+  2 / 8,
+  2 / 7,
+  2 / 6,
+  2 / 5,
+  2 / 4,
+  2 / 3,
+  2 / 2,
+  3 / 2,
+  4 / 2,
+  5 / 2,
+  6 / 2,
+  7 / 2,
+  8 / 2
 ] as const;
 
 /** Battle stage accuracy/evasion modifier multiplier lookup table (-6 to +6). */
 export const BATTLE_STAGE_ACC_MULTIPLIERS: readonly number[] = [
-  3 / 9, 3 / 8, 3 / 7, 3 / 6, 3 / 5, 3 / 4, 3 / 3, 4 / 3, 5 / 3, 6 / 3, 7 / 3, 8 / 3, 9 / 3
+  3 / 9,
+  3 / 8,
+  3 / 7,
+  3 / 6,
+  3 / 5,
+  3 / 4,
+  3 / 3,
+  4 / 3,
+  5 / 3,
+  6 / 3,
+  7 / 3,
+  8 / 3,
+  9 / 3
 ] as const;
 
 /** Maximum stat stage offset (+6 / -6). */
@@ -256,13 +305,12 @@ export const BATTLE_TOTAL_STAGES_COUNT = 13;
 /** Maximum possible IV (Individual Value) for a single stat in standard Pokémon mechanics. */
 export const MAX_STAT_IV = 31;
 
-
 // --- Box store constants ---
 /** Criminality points added per Pokémon sold in black-market mode. */
 export const BLACK_MARKET_CRIMINALITY_PER_SALE = 10;
 
 /** Default black market discount multiplier for Rocket members (20%). */
-export const BLACK_MARKET_DEFAULT_DISCOUNT = 0.20;
+export const BLACK_MARKET_DEFAULT_DISCOUNT = 0.2;
 
 /** Conversion exchange rate from Battle Coins (BC) to Pokédollars (50₽ per BC). */
 export const BATTLE_COIN_TO_MONEY_RATE = 50;
@@ -401,7 +449,7 @@ export const LEADERBOARD_LIMIT = 100;
 export const MAX_ITEM_PURCHASE_QTY = 999;
 
 /** Shop price penalty multiplier applied to Team Rocket class members (1.20x). */
-export const ROCKET_SHOP_PRICE_PENALTY_MULTIPLIER = 1.20;
+export const ROCKET_SHOP_PRICE_PENALTY_MULTIPLIER = 1.2;
 
 /** Great Ball inventory count bonus multiplier (1.5x). */
 export const GREAT_BALL_INVENTORY_COUNT_MULT = 1.5;
@@ -480,13 +528,13 @@ export const BUG_SYNERGY_BONUS_PER_BUG = 0.05;
 export const BUG_SYNERGY_MAX_COUNT = 6;
 
 /** Bug Catcher maximum catch rate synergy bonus (+30%). */
-export const BUG_SYNERGY_MAX_BONUS = 0.30;
+export const BUG_SYNERGY_MAX_BONUS = 0.3;
 
 /** Trainer class high-IV threshold for catch rate calculation (120). */
 export const TRAINER_HIGH_IV_THRESHOLD = 120;
 
 /** Trainer class catch rate penalty rate (10%). */
-export const TRAINER_IV_PENALTY_RATE = 0.10;
+export const TRAINER_IV_PENALTY_RATE = 0.1;
 
 /** Number of Pokémon slots available in each storage box (50). */
 export const POKEMON_BOX_SLOT_CAPACITY = 50;
@@ -502,6 +550,9 @@ export const MAX_POKEMON_TEAM_SIZE = 6;
 
 /** Base 36 radix used for generating random alphanumeric tokens and IDs. */
 export const ALPHANUMERIC_RADIX = 36;
+
+/** Base 10 radix for decimal string integer parsing. */
+export const RADIX_DECIMAL = 10;
 
 /** Substring start index for extracting pseudo-random alphanumeric slices from Math.random().toString(36). */
 export const RANDOM_STRING_SUBSTRING_START = 2;
@@ -536,5 +587,26 @@ export const DAY_CYCLE_TOTAL_HOURS = 8;
 /** Upper bound hour limit for the dusk phase within the 8-hour day cycle (hour 6). */
 export const DUSK_PHASE_END_HOUR = 6;
 
+/** Minimum character length required for player/social search queries. */
+export const MIN_SEARCH_QUERY_LENGTH = 2;
 
+/** Maximum percentage value (100%). */
+export const PERCENT_MAX = 100;
 
+/** Conversion exchange rate from Battle Coins (BC) to Poké-dollars in Black Market (50). */
+export const BLACK_MARKET_BC_TO_MONEY_RATE = 50;
+
+/** Default Team Rocket shop discount ratio (20% off). */
+export const ROCKET_SHOP_DISCOUNT_RATIO = 0.2;
+
+/** Canonical Choice items that lock the user into the selected move (Band, Specs, Scarf). */
+const CANONICAL_CHOICE_ITEM_IDS: readonly ItemId[] = [
+  'choiceband',
+  'choicespecs',
+  'choicescarf'
+] as const;
+
+/** Canonical Choice items O(1) membership lookup set. */
+export const CANONICAL_CHOICE_ITEMS_SET: ReadonlySet<ItemId> = new Set<ItemId>(
+  CANONICAL_CHOICE_ITEM_IDS
+); // runtime-set: Fast O(1) membership lookup set

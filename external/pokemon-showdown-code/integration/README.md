@@ -33,16 +33,16 @@ difficulties in synchronizing a stateful AI across two different simulations. In
 regular flags, the following flags may be used with the simulator test:
 
 - **`--num`**: play a specific number of games for a format instead of the
-    default 100.
+  default 100.
 - **`--format`**: play the specified format for each of the games it runs.
-    Note that the harness only supports formats where the team can be randomly
-    generated.
+  Note that the harness only supports formats where the team can be randomly
+  generated.
 - **`--output`**: makes the harness display the _output_ logs of each battle
-    it runs.
+  it runs.
 - **`--cycle`**: cycles through the possible formats, playing one battle in
-    each `--num` battles in total.
+  each `--num` battles in total.
 - **`--all`**: plays every supported format `--num` times before moving on to
-    the next format.
+  the next format.
 - **`--input`**: dump the battle _input_ logs of each battle it runs.
 
 ### Client
@@ -54,10 +54,10 @@ The protocol for the simulated battles are verified and then fed into
 following additional flags may be used:
 
 - **`--format`** / **`--formats`**: play the specified format(s) instead of
-    iterating through all possible formats. If multiple formats are specified,
-    separate each format with a comma (eg. `format1,format2`).
+  iterating through all possible formats. If multiple formats are specified,
+  separate each format with a comma (eg. `format1,format2`).
 - **`--cycles`**: exhaust the pools of effects `--cycles` times instead of
-    just once. If `--cycles` is negative, `--forever` is implied.
+  just once. If `--cycles` is negative, `--forever` is implied.
 - **`--forever`**: continue iterating through formats infinitely, exhausting
-    each `--cycles` times.
+  each `--cycles` times.
 - **`--maxFailures`**: exit early if this many failures have occurred.

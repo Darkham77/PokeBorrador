@@ -1,36 +1,36 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import { computed } from 'vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { PERCENT_MAX } from '@/logic/constants/gameplay';
 
-const PERCENT_MIN = 0
-const PERCENT_MAX = 100
-const HEALTHY_HP_RATIO = 0.5
-const WARNING_HP_RATIO = 0.2
+const PERCENT_MIN = 0;
+const HEALTHY_HP_RATIO = 0.5;
+const WARNING_HP_RATIO = 0.2;
 
-const HP_COLOR_HEALTHY = '#4caf50'
-const HP_COLOR_WARNING = '#ff9800'
-const HP_COLOR_DANGER = '#f44336'
+const HP_COLOR_HEALTHY = '#4caf50';
+const HP_COLOR_WARNING = '#ff9800';
+const HP_COLOR_DANGER = '#f44336';
 
 interface Props {
-  pokemon: Pokemon
+  pokemon: Pokemon;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const hpRatio = computed(() => {
-  if (props.pokemon.maxHp <= 0) return 0
-  return props.pokemon.hp / props.pokemon.maxHp
-})
+  if (props.pokemon.maxHp <= 0) return 0;
+  return props.pokemon.hp / props.pokemon.maxHp;
+});
 
 const hpPercentage = computed(() => {
-  return Math.max(PERCENT_MIN, Math.min(PERCENT_MAX, hpRatio.value * PERCENT_MAX))
-})
+  return Math.max(PERCENT_MIN, Math.min(PERCENT_MAX, hpRatio.value * PERCENT_MAX));
+});
 
 const hpColor = computed(() => {
-  if (hpRatio.value > HEALTHY_HP_RATIO) return HP_COLOR_HEALTHY
-  if (hpRatio.value > WARNING_HP_RATIO) return HP_COLOR_WARNING
-  return HP_COLOR_DANGER
-})
+  if (hpRatio.value > HEALTHY_HP_RATIO) return HP_COLOR_HEALTHY;
+  if (hpRatio.value > WARNING_HP_RATIO) return HP_COLOR_WARNING;
+  return HP_COLOR_DANGER;
+});
 </script>
 
 <template>
@@ -46,27 +46,23 @@ const hpColor = computed(() => {
         <span>{{ pokemon.hp }} / {{ pokemon.maxHp }}</span>
       </div>
       <div class="hp-bar-track">
-        <div 
+        <div
           class="hp-bar-fill"
-          :style="{ 
-            width: `${hpPercentage}%`, 
-            backgroundColor: hpColor 
+          :style="{
+            width: `${hpPercentage}%`,
+            backgroundColor: hpColor
           }"
         />
       </div>
     </div>
 
     <div class="moves-container">
-      <template
-        v-for="(move, idx) in pokemon.moves"
-        :key="move ? move.name : idx"
-      >
-        <div 
-          v-if="move"
-          class="move-badge"
-        >
+      <template v-for="(move, idx) in pokemon.moves" :key="move ? move.name : idx">
+        <div v-if="move" class="move-badge">
           <span class="move-name">{{ move.name }}</span>
-          <span :class="['move-pp', { 'is-empty': move.pp <= 0 }]">{{ move.pp }}/{{ move.maxPP }}</span>
+          <span :class="['move-pp', { 'is-empty': move.pp <= 0 }]"
+            >{{ move.pp }}/{{ move.maxPP }}</span
+          >
         </div>
       </template>
     </div>

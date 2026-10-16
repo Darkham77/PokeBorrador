@@ -27,7 +27,11 @@ import {
   TRIMMED_HEDGE,
   FIELD_ROCK
 } from '../../config/mapProps.ts';
-import { type TileCollision, type TilesRegistryService, defaultTilesRegistry } from './tilesRegistry.ts';
+import {
+  type TileCollision,
+  type TilesRegistryService,
+  defaultTilesRegistry
+} from './tilesRegistry.ts';
 import type {
   MapCell,
   MapSpawn,
@@ -172,12 +176,7 @@ export function stampProp(
 ): boolean {
   const { width: pw, height: ph } = prop;
 
-  if (
-    gridX < 0 ||
-    gridY < 0 ||
-    gridX + pw > targetMap.width ||
-    gridY + ph > targetMap.height
-  ) {
+  if (gridX < 0 || gridY < 0 || gridX + pw > targetMap.width || gridY + ph > targetMap.height) {
     return false;
   }
 
@@ -238,9 +237,30 @@ function decorateLotFrontFences(
   for (let fx = lot.x; fx < lot.x + lot.width; fx++) {
     if (fx === lot.doorX || Math.abs(fx - lot.doorX) <= 0) continue;
     if (ctx.isReserved(fx, frontY, 1, 1)) continue;
-    if (!canPlacePropAt(ctx.objectLayer, ctx.elevationLayer, ctx.isPathCell, fenceProp, fx, frontY, ctx.mapWidth, ctx.mapHeight)) continue;
+    if (
+      !canPlacePropAt(
+        ctx.objectLayer,
+        ctx.elevationLayer,
+        ctx.isPathCell,
+        fenceProp,
+        fx,
+        frontY,
+        ctx.mapWidth,
+        ctx.mapHeight
+      )
+    )
+      continue;
 
-    stampPropAt(ctx.objectLayer, ctx.collisionGrid, fenceProp, fx, frontY, ctx.mapWidth, ctx.mapHeight, ctx.makeCell);
+    stampPropAt(
+      ctx.objectLayer,
+      ctx.collisionGrid,
+      fenceProp,
+      fx,
+      frontY,
+      ctx.mapWidth,
+      ctx.mapHeight,
+      ctx.makeCell
+    );
     count++;
   }
   return count;
@@ -256,8 +276,28 @@ function decorateLotFrontFlowers(
   for (let fx = lot.x; fx < lot.x + lot.width; fx++) {
     if (fx === lot.doorX || Math.abs(fx - lot.doorX) <= 1) continue;
     if (ctx.isReserved(fx, yardY, 1, 1)) continue;
-    if (canPlacePropAt(ctx.objectLayer, ctx.elevationLayer, ctx.isPathCell, flowerProp, fx, yardY, ctx.mapWidth, ctx.mapHeight)) {
-      stampPropAt(ctx.objectLayer, ctx.collisionGrid, flowerProp, fx, yardY, ctx.mapWidth, ctx.mapHeight, ctx.makeCell);
+    if (
+      canPlacePropAt(
+        ctx.objectLayer,
+        ctx.elevationLayer,
+        ctx.isPathCell,
+        flowerProp,
+        fx,
+        yardY,
+        ctx.mapWidth,
+        ctx.mapHeight
+      )
+    ) {
+      stampPropAt(
+        ctx.objectLayer,
+        ctx.collisionGrid,
+        flowerProp,
+        fx,
+        yardY,
+        ctx.mapWidth,
+        ctx.mapHeight,
+        ctx.makeCell
+      );
       count++;
     }
   }
@@ -356,9 +396,27 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
         if (
           southY + 1 < mapHeight &&
           !isReserved(x, southY, 1, 2) &&
-          canPlacePropAt(objectLayer, elevationLayer, isPathCell, STREET_LAMP, x, southY, mapWidth, mapHeight)
+          canPlacePropAt(
+            objectLayer,
+            elevationLayer,
+            isPathCell,
+            STREET_LAMP,
+            x,
+            southY,
+            mapWidth,
+            mapHeight
+          )
         ) {
-          stampPropAt(objectLayer, collisionGrid, STREET_LAMP, x, southY, mapWidth, mapHeight, makeCell);
+          stampPropAt(
+            objectLayer,
+            collisionGrid,
+            STREET_LAMP,
+            x,
+            southY,
+            mapWidth,
+            mapHeight,
+            makeCell
+          );
           placedPropsCount++;
           lampsCount++;
         } else {
@@ -367,9 +425,27 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
           if (
             northY >= 0 &&
             !isReserved(x, northY, 1, 2) &&
-            canPlacePropAt(objectLayer, elevationLayer, isPathCell, STREET_LAMP, x, northY, mapWidth, mapHeight)
+            canPlacePropAt(
+              objectLayer,
+              elevationLayer,
+              isPathCell,
+              STREET_LAMP,
+              x,
+              northY,
+              mapWidth,
+              mapHeight
+            )
           ) {
-            stampPropAt(objectLayer, collisionGrid, STREET_LAMP, x, northY, mapWidth, mapHeight, makeCell);
+            stampPropAt(
+              objectLayer,
+              collisionGrid,
+              STREET_LAMP,
+              x,
+              northY,
+              mapWidth,
+              mapHeight,
+              makeCell
+            );
             placedPropsCount++;
             lampsCount++;
           }
@@ -386,9 +462,27 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
         if (
           eastX < mapWidth &&
           !isReserved(eastX, y, 1, 2) &&
-          canPlacePropAt(objectLayer, elevationLayer, isPathCell, STREET_LAMP, eastX, y, mapWidth, mapHeight)
+          canPlacePropAt(
+            objectLayer,
+            elevationLayer,
+            isPathCell,
+            STREET_LAMP,
+            eastX,
+            y,
+            mapWidth,
+            mapHeight
+          )
         ) {
-          stampPropAt(objectLayer, collisionGrid, STREET_LAMP, eastX, y, mapWidth, mapHeight, makeCell);
+          stampPropAt(
+            objectLayer,
+            collisionGrid,
+            STREET_LAMP,
+            eastX,
+            y,
+            mapWidth,
+            mapHeight,
+            makeCell
+          );
           placedPropsCount++;
           lampsCount++;
         }
@@ -423,7 +517,16 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
           mbX < lot.x + lot.width &&
           mbY < mapHeight &&
           !isReserved(mbX, mbY, 1, 1) &&
-          canPlacePropAt(objectLayer, elevationLayer, isPathCell, MAILBOX, mbX, mbY, mapWidth, mapHeight)
+          canPlacePropAt(
+            objectLayer,
+            elevationLayer,
+            isPathCell,
+            MAILBOX,
+            mbX,
+            mbY,
+            mapWidth,
+            mapHeight
+          )
         ) {
           stampPropAt(objectLayer, collisionGrid, MAILBOX, mbX, mbY, mapWidth, mapHeight, makeCell);
           placedPropsCount++;
@@ -464,9 +567,27 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
         signX < mapWidth &&
         signY < mapHeight &&
         !isReserved(signX, signY, 1, 1) &&
-        canPlacePropAt(objectLayer, elevationLayer, isPathCell, SIGNPOST, signX, signY, mapWidth, mapHeight)
+        canPlacePropAt(
+          objectLayer,
+          elevationLayer,
+          isPathCell,
+          SIGNPOST,
+          signX,
+          signY,
+          mapWidth,
+          mapHeight
+        )
       ) {
-        stampPropAt(objectLayer, collisionGrid, SIGNPOST, signX, signY, mapWidth, mapHeight, makeCell);
+        stampPropAt(
+          objectLayer,
+          collisionGrid,
+          SIGNPOST,
+          signX,
+          signY,
+          mapWidth,
+          mapHeight,
+          makeCell
+        );
         placedPropsCount++;
       }
     }
@@ -490,9 +611,27 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
       if (prng() > dFactor) continue;
       if (
         !isReserved(pos.x, pos.y, benchProp.width, benchProp.height) &&
-        canPlacePropAt(objectLayer, elevationLayer, isPathCell, benchProp, pos.x, pos.y, mapWidth, mapHeight)
+        canPlacePropAt(
+          objectLayer,
+          elevationLayer,
+          isPathCell,
+          benchProp,
+          pos.x,
+          pos.y,
+          mapWidth,
+          mapHeight
+        )
       ) {
-        stampPropAt(objectLayer, collisionGrid, benchProp, pos.x, pos.y, mapWidth, mapHeight, makeCell);
+        stampPropAt(
+          objectLayer,
+          collisionGrid,
+          benchProp,
+          pos.x,
+          pos.y,
+          mapWidth,
+          mapHeight,
+          makeCell
+        );
         placedPropsCount++;
         benchesCount++;
       }
@@ -510,7 +649,16 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
       if (prng() > dFactor) continue;
       if (
         !isReserved(c.x, c.y, 1, 1) &&
-        canPlacePropAt(objectLayer, elevationLayer, isPathCell, c.prop, c.x, c.y, mapWidth, mapHeight)
+        canPlacePropAt(
+          objectLayer,
+          elevationLayer,
+          isPathCell,
+          c.prop,
+          c.x,
+          c.y,
+          mapWidth,
+          mapHeight
+        )
       ) {
         stampPropAt(objectLayer, collisionGrid, c.prop, c.x, c.y, mapWidth, mapHeight, makeCell);
         placedPropsCount++;
@@ -526,9 +674,27 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
 
     if (
       !isReserved(midX + 2, midY + 1, 1, 1) &&
-      canPlacePropAt(objectLayer, elevationLayer, isPathCell, SIGNPOST, midX + 2, midY + 1, mapWidth, mapHeight)
+      canPlacePropAt(
+        objectLayer,
+        elevationLayer,
+        isPathCell,
+        SIGNPOST,
+        midX + 2,
+        midY + 1,
+        mapWidth,
+        mapHeight
+      )
     ) {
-      stampPropAt(objectLayer, collisionGrid, SIGNPOST, midX + 2, midY + 1, mapWidth, mapHeight, makeCell);
+      stampPropAt(
+        objectLayer,
+        collisionGrid,
+        SIGNPOST,
+        midX + 2,
+        midY + 1,
+        mapWidth,
+        mapHeight,
+        makeCell
+      );
       placedPropsCount++;
     }
 
@@ -539,7 +705,16 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
         const x = 3 + Math.floor(prng() * 3);
         if (
           !isReserved(x, y, 1, 1) &&
-          canPlacePropAt(objectLayer, elevationLayer, isPathCell, FENCE_WOOD, x, y, mapWidth, mapHeight)
+          canPlacePropAt(
+            objectLayer,
+            elevationLayer,
+            isPathCell,
+            FENCE_WOOD,
+            x,
+            y,
+            mapWidth,
+            mapHeight
+          )
         ) {
           stampPropAt(objectLayer, collisionGrid, FENCE_WOOD, x, y, mapWidth, mapHeight, makeCell);
           placedPropsCount++;
@@ -555,9 +730,27 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
           const obstacleProp = prng() < 0.5 ? FIELD_ROCK : WOOD_STUMP;
           if (
             !isReserved(x, y, 1, 1) &&
-            canPlacePropAt(objectLayer, elevationLayer, isPathCell, obstacleProp, x, y, mapWidth, mapHeight)
+            canPlacePropAt(
+              objectLayer,
+              elevationLayer,
+              isPathCell,
+              obstacleProp,
+              x,
+              y,
+              mapWidth,
+              mapHeight
+            )
           ) {
-            stampPropAt(objectLayer, collisionGrid, obstacleProp, x, y, mapWidth, mapHeight, makeCell);
+            stampPropAt(
+              objectLayer,
+              collisionGrid,
+              obstacleProp,
+              x,
+              y,
+              mapWidth,
+              mapHeight,
+              makeCell
+            );
             placedPropsCount++;
           }
         }
@@ -585,9 +778,27 @@ export function placeScenicProps(options: PropsPlacementOptions): PropsPlacement
 
         if (
           !isReserved(fx, fy, 1, 1) &&
-          canPlacePropAt(objectLayer, elevationLayer, isPathCell, clusterProp, fx, fy, mapWidth, mapHeight)
+          canPlacePropAt(
+            objectLayer,
+            elevationLayer,
+            isPathCell,
+            clusterProp,
+            fx,
+            fy,
+            mapWidth,
+            mapHeight
+          )
         ) {
-          stampPropAt(objectLayer, collisionGrid, clusterProp, fx, fy, mapWidth, mapHeight, makeCell);
+          stampPropAt(
+            objectLayer,
+            collisionGrid,
+            clusterProp,
+            fx,
+            fy,
+            mapWidth,
+            mapHeight,
+            makeCell
+          );
           placedPropsCount++;
           flowersCount++;
         }

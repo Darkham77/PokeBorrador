@@ -17,7 +17,7 @@
 
   &:hover {
     @include premium-card-hover($yellow, 1.05, -8px);
-    
+
     &::before {
       will-change: transform, filter, opacity;
     }
@@ -33,13 +33,12 @@
     background-position: center;
     background-repeat: no-repeat;
     will-change: transform, filter, opacity;
-    
   }
 
   &.locked {
     opacity: 0.6;
     will-change: transform, filter, opacity;
-  filter: Grayscale(100%);
+    filter: Grayscale(100%);
     cursor: not-allowed;
   }
 }
@@ -54,11 +53,13 @@
   align-items: center;
   gap: spacing(4);
   border-width: 2px;
-  
+
   &:hover:not(.gym-defeated, .gym-locked) {
     @include premium-card-hover($red, 1.05, 0);
   }
-  &::before { display: none; } // Gyms use background colors or sprites
+  &::before {
+    display: none;
+  } // Gyms use background colors or sprites
 
   &.gym-defeated {
     opacity: 0.7;

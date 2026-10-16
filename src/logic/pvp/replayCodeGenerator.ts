@@ -54,18 +54,45 @@ export function parseBattleReplayRecord(data: unknown): BattleReplayRecord {
     team: []
   };
   return {
-    id: String(raw.id || ''),
-    battleCode: requireBattleCode(String(raw.battle_code || raw.battleCode || 'BTL-0000-0000')),
-    seasonId: String(raw.season_id || raw.seasonId || ''),
-    themeId: isSeasonalThemeId(raw.theme_id) ? raw.theme_id : (isSeasonalThemeId(raw.themeId) ? raw.themeId : 'masters_allstars'),
+    id: typeof raw.id === 'string' ? raw.id : typeof raw.id === 'number' ? String(raw.id) : '',
+    battleCode: requireBattleCode(
+      typeof raw.battle_code === 'string'
+        ? raw.battle_code
+        : typeof raw.battleCode === 'string'
+          ? raw.battleCode
+          : 'BTL-0000-0000'
+    ),
+    seasonId:
+      typeof raw.season_id === 'string'
+        ? raw.season_id
+        : typeof raw.seasonId === 'string'
+          ? raw.seasonId
+          : '',
+    themeId: isSeasonalThemeId(raw.theme_id)
+      ? raw.theme_id
+      : isSeasonalThemeId(raw.themeId)
+        ? raw.themeId
+        : 'masters_allstars',
     p1: parseJsonSafe(raw.p1_data, (raw.p1 as ReplayCombatantSummary) || defaultCombatant),
     p2: parseJsonSafe(raw.p2_data, (raw.p2 as ReplayCombatantSummary) || defaultCombatant),
     turnsCount: Number(raw.turns_count ?? raw.turnsCount ?? 0),
-    winnerSide: (String(raw.winner_side || raw.winnerSide || 'p1') as SideID),
+    winnerSide: (typeof raw.winner_side === 'string'
+      ? raw.winner_side
+      : typeof raw.winnerSide === 'string'
+        ? raw.winnerSide
+        : 'p1') as SideID,
     choiceStream: parseJsonSafe(raw.choice_stream, (raw.choiceStream as ReplayChoiceStep[]) || []),
-    initialSeed: parseJsonSafe(raw.initial_seed, (raw.initialSeed as [number, number, number, number]) || [0, 0, 0, 0]),
+    initialSeed: parseJsonSafe(
+      raw.initial_seed,
+      (raw.initialSeed as [number, number, number, number]) || [0, 0, 0, 0]
+    ),
     isTop10Archived: Boolean(raw.is_top10_archived ?? raw.isTop10Archived),
     viewsCount: Number(raw.views_count ?? raw.viewsCount ?? 0),
-    createdAt: String(raw.created_at || raw.createdAt || '')
+    createdAt:
+      typeof raw.created_at === 'string'
+        ? raw.created_at
+        : typeof raw.createdAt === 'string'
+          ? raw.createdAt
+          : ''
   };
 }

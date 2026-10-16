@@ -90,12 +90,7 @@
         "spd": 7,
         "spe": 21
       },
-      "movesAtBirth": [
-        "Hidrobomba",
-        "Poder Pasado",
-        "Cosquillas",
-        "Clavo Cañón"
-      ]
+      "movesAtBirth": ["Hidrobomba", "Poder Pasado", "Cosquillas", "Clavo Cañón"]
     },
     {
       "uid": "tangela-1782179454752",
@@ -557,9 +552,7 @@
       "catchRate": 255,
       "obtainedAt": 1782010266039,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "furyCutterCount": 0,
       "lastMove": null,
       "thrashTurns": 0,
@@ -664,9 +657,7 @@
       "catchRate": 45,
       "obtainedAt": 1782543301206,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "furyCutterCount": 0,
       "lastMove": null,
       "thrashTurns": 0,
@@ -769,9 +760,7 @@
       "catchRate": 45,
       "obtainedAt": 1782543553377,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "furyCutterCount": 0,
       "lastMove": null,
       "thrashTurns": 0,
@@ -864,9 +853,7 @@
       "catchRate": 255,
       "obtainedAt": 1783890545662,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "furyCutterCount": 0,
       "lastMove": null,
       "thrashTurns": 0,
@@ -970,9 +957,7 @@
       "catchRate": 45,
       "obtainedAt": 1782170323499,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "furyCutterCount": 0,
       "lastMove": null,
       "thrashTurns": 0,
@@ -1075,9 +1060,7 @@
       "catchRate": 255,
       "obtainedAt": 1782010255140,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "furyCutterCount": 0,
       "lastMove": null,
       "thrashTurns": 0,
@@ -1158,9 +1141,7 @@
       "catchRate": 255,
       "obtainedAt": 1781301004511,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "volatileCounters": {},
       "species": "magikarp",
       "evs": {
@@ -1229,9 +1210,7 @@
       "catchRate": 45,
       "obtainedAt": 1781301007053,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "volatileCounters": {},
       "species": "squirtle",
       "evs": {
@@ -1300,9 +1279,7 @@
       "catchRate": 45,
       "obtainedAt": 1781412268757,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "volatileCounters": {},
       "species": "vaporeon",
       "evs": {
@@ -1371,9 +1348,7 @@
       "catchRate": 45,
       "obtainedAt": 1781415528851,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "volatileCounters": {},
       "species": "magby",
       "evs": {
@@ -1444,9 +1419,7 @@
       "catchRate": 90,
       "obtainedAt": 1781417982106,
       "obtainedMethod": "egg",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "volatileCounters": {},
       "species": "golbat",
       "evs": {
@@ -1505,9 +1478,7 @@
       "catchRate": 45,
       "obtainedAt": 1781469818522,
       "obtainedMethod": "egg",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "inDaycare": true,
       "daycareSlot": 1,
       "daycareDepositedAt": "2026-06-22T23:18:08.953334961Z",
@@ -1569,9 +1540,7 @@
       "catchRate": 45,
       "obtainedAt": 1781470212958,
       "obtainedMethod": "egg",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "volatileCounters": {},
       "species": "bulbasaur",
       "evs": {
@@ -1657,9 +1626,7 @@
       "maxVigor": 3,
       "catchRate": 255,
       "obtainedAt": 1781288641790,
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "lastMove": {
         "id": "tackle",
         "name": "Placaje",
@@ -1763,9 +1730,7 @@
       "obtainedAt": 1781838473188,
       "isAtmospheric": true,
       "weatherOrigin": "rain",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "thrashTurns": 0,
       "encoreMove": null,
       "disabledMove": null,
@@ -1841,9 +1806,7 @@
       "catchRate": 45,
       "obtainedAt": 1781838546574,
       "obtainedMethod": "egg",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "inDaycare": true,
       "daycareSlot": 0,
       "daycareDepositedAt": "2026-06-22T23:18:08.953334961Z",
@@ -1915,9 +1878,7 @@
       "catchRate": 127,
       "obtainedAt": 1781838561024,
       "obtainedMethod": "egg",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "inDaycare": false,
       "volatileCounters": {},
       "species": "raticate",
@@ -2009,9 +1970,7 @@
       "catchRate": 255,
       "obtainedAt": 1781976467317,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "lastMove": {
         "id": "peck",
         "name": "Picotazo",
@@ -2122,9 +2081,7 @@
       "catchRate": 180,
       "obtainedAt": 1781300996087,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "lastMove": {
         "id": "submission",
         "name": "Sumisión",
@@ -2210,9 +2167,7 @@
       "catchRate": 45,
       "obtainedAt": 1782010664250,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "volatileCounters": {},
       "species": "bulbasaur",
       "evs": {
@@ -2308,9 +2263,7 @@
       "obtainedMethod": "wild",
       "isAtmospheric": true,
       "weatherOrigin": "cold",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "lastMove": {
         "id": "rest",
         "name": "Descanso",
@@ -2424,9 +2377,7 @@
       "catchRate": 255,
       "obtainedAt": 1781301001703,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "lastMove": {
         "id": "wingattack",
         "name": "Ataque Ala",
@@ -2537,9 +2488,7 @@
       "maxVigor": 3,
       "catchRate": 45,
       "obtainedAt": 1781288222370,
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "lastMove": {
         "id": "metalclaw",
         "name": "Garra Metal",
@@ -2658,9 +2607,7 @@
       "catchRate": 75,
       "obtainedAt": 1781300997937,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "lastMove": {
         "id": "yawn",
         "name": "Bostezo",
@@ -2774,9 +2721,7 @@
       "catchRate": 45,
       "obtainedAt": 1781554732491,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "furyCutterCount": 0,
       "lastMove": null,
       "thrashTurns": 0,
@@ -2879,9 +2824,7 @@
       "catchRate": 190,
       "obtainedAt": 1781300999728,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "furyCutterCount": 0,
       "lastMove": null,
       "thrashTurns": 0,
@@ -2973,9 +2916,7 @@
       "catchRate": 45,
       "obtainedAt": 1782170332954,
       "obtainedMethod": "wild",
-      "tags": [
-        "ball:pokeball"
-      ],
+      "tags": ["ball:pokeball"],
       "furyCutterCount": 0,
       "lastMove": null,
       "thrashTurns": 0,

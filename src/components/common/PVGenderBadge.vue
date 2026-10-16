@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
-type PVGenderBadgeSize = 'mini' | 'sm' | 'md' | 'lg'
+type PVGenderBadgeSize = 'mini' | 'sm' | 'md' | 'lg';
 
 interface Props {
-  gender?: string | null
-  isTrainer?: boolean
-  size?: PVGenderBadgeSize
-  title?: string
+  gender?: string | null;
+  isTrainer?: boolean;
+  size?: PVGenderBadgeSize;
+  title?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -15,27 +15,27 @@ const props = withDefaults(defineProps<Props>(), {
   isTrainer: false,
   size: 'sm',
   title: undefined
-})
+});
 
 const resolvedType = computed<'male' | 'female' | null>(() => {
-  const g = props.gender
-  if (!g) return null
+  const g = props.gender;
+  if (!g) return null;
   if (props.isTrainer) {
-    if (g === 'm' || g === 'mujer' || g === 'f' || g === 'F') return 'female'
-    if (g === 'h' || g === 'hombre') return 'male'
-    return null
+    if (g === 'm' || g === 'mujer' || g === 'f' || g === 'F') return 'female';
+    if (g === 'h' || g === 'hombre') return 'male';
+    return null;
   }
-  if (g === 'f' || g === 'F' || g === 'female' || g === 'mujer') return 'female'
-  if (g === 'm' || g === 'M' || g === 'male' || g === 'hombre' || g === 'h') return 'male'
-  return null
-})
+  if (g === 'f' || g === 'F' || g === 'female' || g === 'mujer') return 'female';
+  if (g === 'm' || g === 'M' || g === 'male' || g === 'hombre' || g === 'h') return 'male';
+  return null;
+});
 
 const defaultTitle = computed(() => {
-  if (props.title) return props.title
-  if (resolvedType.value === 'female') return 'Femenino'
-  if (resolvedType.value === 'male') return 'Masculino'
-  return ''
-})
+  if (props.title) return props.title;
+  if (resolvedType.value === 'female') return 'Femenino';
+  if (resolvedType.value === 'male') return 'Masculino';
+  return '';
+});
 </script>
 
 <template>
@@ -56,13 +56,7 @@ const defaultTitle = computed(() => {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      <circle
-        cx="6"
-        cy="10"
-        r="3.2"
-        stroke="currentColor"
-        stroke-width="2"
-      />
+      <circle cx="6" cy="10" r="3.2" stroke="currentColor" stroke-width="2" />
       <path
         d="M8.5 7.5L13 3M9 3H13V7"
         stroke="currentColor"
@@ -81,13 +75,7 @@ const defaultTitle = computed(() => {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      <circle
-        cx="8"
-        cy="5.8"
-        r="3.2"
-        stroke="currentColor"
-        stroke-width="2"
-      />
+      <circle cx="8" cy="5.8" r="3.2" stroke="currentColor" stroke-width="2" />
       <path
         d="M8 9V14M5.5 11.5H10.5"
         stroke="currentColor"
@@ -96,7 +84,10 @@ const defaultTitle = computed(() => {
       />
     </svg>
 
-    <span class="sr-only"><span class="emoji">{{ resolvedType === 'female' ? '♀' : '♂' }}</span> {{ defaultTitle }}</span>
+    <span class="sr-only"
+      ><span class="emoji">{{ resolvedType === 'female' ? '♀' : '♂' }}</span>
+      {{ defaultTitle }}</span
+    >
   </span>
 </template>
 

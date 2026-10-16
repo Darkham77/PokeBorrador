@@ -1,4 +1,4 @@
-import { describe, it, vi, beforeEach } from 'vitest';
+import { describe, it, vi, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { HeuristicAI } from '../../../src/logic/battle/ai/heuristicAI.ts';
 import type { Pokemon, Move } from '../../../src/types/pokemon/pokemon.ts';
@@ -38,8 +38,25 @@ describe('HeuristicAI - Path Coverage Tests', () => {
       type: 'electric',
       spe: 90,
       moves: [
-        { id: 'thunderbolt', name: 'Thunderbolt', power: 90, type: 'electric', cat: 'special', pp: 15, maxPp: 15 },
-        { id: 'quickattack', name: 'Quick Attack', power: 40, type: 'normal', cat: 'physical', pp: 30, maxPp: 30, priority: 1 },
+        {
+          id: 'thunderbolt',
+          name: 'Thunderbolt',
+          power: 90,
+          type: 'electric',
+          cat: 'special',
+          pp: 15,
+          maxPp: 15
+        },
+        {
+          id: 'quickattack',
+          name: 'Quick Attack',
+          power: 40,
+          type: 'normal',
+          cat: 'physical',
+          pp: 30,
+          maxPp: 30,
+          priority: 1
+        },
         { id: 'growl', name: 'Growl', power: 0, type: 'normal', cat: 'status', pp: 40, maxPp: 40 }
       ]
     } as unknown as Pokemon;
@@ -59,18 +76,18 @@ describe('HeuristicAI - Path Coverage Tests', () => {
     it('should select highest power non-disabled move when buildSnapshot fails (graceful degradation)', () => {
       // Mock Math.random para evitar la aleatoriedad de la IA NPC
       const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(1.0);
-      
+
       // Sin store context, buildSnapshot fallará y se usará pickBestMoveByPower
       const move = ai.decideMove(attacker, defender, defStages, false);
       assert.ok(move);
       assert.strictEqual(move.id, 'thunderbolt'); // 90 power vs 40 vs 0
-      
+
       randomSpy.mockRestore();
     });
 
     it('should select highest power non-disabled move when isWild = false but no store is provided', () => {
       const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(1.0);
-      
+
       const move = ai.decideMove(attacker, defender, defStages, false, undefined);
       assert.ok(move);
       assert.strictEqual(move.id, 'thunderbolt');
@@ -103,7 +120,12 @@ describe('HeuristicAI - Path Coverage Tests', () => {
           }
         }
       } as unknown as BattleContext;
-      const result = ai.shouldSwitch(attacker, defender, [attacker, { ...attacker, uid: 'att-2' } as Pokemon], fakeStore);
+      const result = ai.shouldSwitch(
+        attacker,
+        defender,
+        [attacker, { ...attacker, uid: 'att-2' } as Pokemon],
+        fakeStore
+      );
       assert.strictEqual(result, false);
     });
   });
@@ -144,13 +166,18 @@ describe('HeuristicAI - Path Coverage Tests', () => {
 
     it('should use Revive on a fainted teammate if active pokemon is healthy', async () => {
       const activePoke = { ...attacker, hp: 90 } as Pokemon;
-      const faintedPoke = { name: 'Teammate', hp: 0, maxHp: 100, status: 'psn' } as unknown as Pokemon;
-      
+      const faintedPoke = {
+        name: 'Teammate',
+        hp: 0,
+        maxHp: 100,
+        status: 'psn'
+      } as unknown as Pokemon;
+
       mockContext.activeBattle.value!.enemyTeam = [activePoke, faintedPoke];
       mockContext.activeBattle.value!.enemyInventory = { revive: 1 };
 
       const itemUsed = await ai.evaluateAndUseItem(mockContext, activePoke);
-      
+
       assert.strictEqual(itemUsed, true);
       assert.strictEqual(faintedPoke.hp, 50); // Revive cura el 50%
       assert.strictEqual(faintedPoke.status, ''); // Showdown uses empty string for no status
@@ -162,7 +189,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
       mockContext.activeBattle.value!.enemyInventory = { antidote: 1 };
 
       const itemUsed = await ai.evaluateAndUseItem(mockContext, activePoke);
-      
+
       assert.strictEqual(itemUsed, true);
       assert.strictEqual(activePoke.status, '');
       assert.strictEqual(mockContext.activeBattle.value!.enemyInventory['antidote'], undefined);
@@ -173,7 +200,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
       mockContext.activeBattle.value!.enemyInventory = { potion: 1 };
 
       const itemUsed = await ai.evaluateAndUseItem(mockContext, activePoke);
-      
+
       assert.strictEqual(itemUsed, true);
       assert.strictEqual(activePoke.hp, 30); // Pocion cura 20 HP
       assert.strictEqual(mockContext.activeBattle.value!.enemyInventory['potion'], undefined);
@@ -184,7 +211,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
       mockContext.activeBattle.value!.enemyInventory = { fullrestore: 1 };
 
       const itemUsed = await ai.evaluateAndUseItem(mockContext, activePoke);
-      
+
       assert.strictEqual(itemUsed, true);
       assert.strictEqual(activePoke.hp, 100);
       assert.strictEqual(activePoke.status, '');

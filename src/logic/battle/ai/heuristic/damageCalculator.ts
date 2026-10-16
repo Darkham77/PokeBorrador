@@ -3,30 +3,69 @@
 // Adapted from external/pokemon-showdown-ai/src/calculator/damage.ts
 // ============================================================
 
-import { Generations, Pokemon, Move, Field, calculate, type Result, type GenerationNum } from '@smogon/calc';
+import {
+  Generations,
+  Pokemon,
+  Move,
+  Field,
+  calculate,
+  type Result,
+  type GenerationNum
+} from '@smogon/calc';
 import type { SideID } from '@pkmn/sim';
 import { toID } from '@/logic/utils/strings.ts';
 import { requireItemId } from '../../../../data/inventory/items.ts';
 import { requireAbilityId } from '../../../../data/battle/abilities.ts';
 import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
-import type { HeuristicPokemonState, HeuristicFieldState, DamageResult, DamageMatchup, HeuristicMoveInfo, HeuristicBattleSnapshot } from './types.ts';
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+import type {
+  HeuristicPokemonState,
+  HeuristicFieldState,
+  DamageResult,
+  DamageMatchup,
+  HeuristicMoveInfo,
+  HeuristicBattleSnapshot
+} from './types.ts';
 
 // Priority moves (positive = priority, negative = delayed, protection = high positive)
-const PRIORITY_MAP: Record<string, number> = {
+const PRIORITY_MAP: Partial<Record<PokemonMoveId, number>> = {
   // High Priority Status / Protection
-  protect: 4, detect: 4, spikyshield: 4, kingsshield: 4, banefulbunker: 4, obstruct: 4,
-  fakeout: 3, upperhand: 3,
-  extremespeed: 2, firstimpression: 2, feint: 2, allyswitch: 2,
-  accelerock: 1, aquajet: 1, bulletpunch: 1, iceshard: 1,
-  machpunch: 1, quickattack: 1, shadowsneak: 1, suckerpunch: 1,
-  jetpunch: 1, thunderclap: 1, watershuriken: 1, vacuumwave: 1,
+  protect: 4,
+  detect: 4,
+  spikyshield: 4,
+  kingsshield: 4,
+  banefulbunker: 4,
+  obstruct: 4,
+  fakeout: 3,
+  upperhand: 3,
+  extremespeed: 2,
+  firstimpression: 2,
+  feint: 2,
+  allyswitch: 2,
+  accelerock: 1,
+  aquajet: 1,
+  bulletpunch: 1,
+  iceshard: 1,
+  machpunch: 1,
+  quickattack: 1,
+  shadowsneak: 1,
+  suckerpunch: 1,
+  jetpunch: 1,
+  thunderclap: 1,
+  watershuriken: 1,
+  vacuumwave: 1,
   bide: 1,
   // Negative Priority
-  vitalthrow: -1, trick: -1,
+  vitalthrow: -1,
+  trick: -1,
   focuspunch: -3,
-  avalanche: -4, revenge: -4,
-  roar: -6, whirlwind: -6, dragontail: -6, circlethrow: -6,
-  trickroom: -7,
+  avalanche: -4,
+  revenge: -4,
+  roar: -6,
+  whirlwind: -6,
+  dragontail: -6,
+  circlethrow: -6,
+  trickroom: -7
 };
 
 const CACHE_MAX_SIZE = 2048;
@@ -35,7 +74,6 @@ const DEFAULT_BASE_SPEED_STAT = 100;
 const PARALYSIS_SPEED_PENALTY_MULT = 0.5;
 const TAILWIND_SPEED_BOOST_MULT = 2;
 const DEFAULT_HEURISTIC_POKEMON_LEVEL = 50;
-const PERCENTAGE_MAX_SCALE_FACTOR = 100;
 const ESTIMATED_HP_PER_PERCENT = 3;
 const STAGE_BASE_FACTOR_DIVISOR = 2;
 const MAX_PERFECT_IV_STAT = 31;
@@ -56,7 +94,7 @@ export class HeuristicDamageCalculator {
     attacker: HeuristicPokemonState,
     defender: HeuristicPokemonState,
     moveId: PokemonMoveId,
-    field: HeuristicFieldState,
+    field: HeuristicFieldState
   ): DamageResult {
     const key = this.cacheKey(attacker, defender, moveId, field);
     const cached = this.cache.get(key);
@@ -68,7 +106,7 @@ export class HeuristicDamageCalculator {
         this.toPokemon(attacker),
         this.toPokemon(defender),
         new Move(this.gen, moveId),
-        this.toField(field),
+        this.toField(field)
       );
       const dmg = this.parseResult(result, moveId, attacker.name, defender.name);
       this.addToCache(key, dmg);
@@ -81,7 +119,7 @@ export class HeuristicDamageCalculator {
   calcMatchup(
     snapshot: HeuristicBattleSnapshot,
     availableMoves: HeuristicMoveInfo[],
-    inferredOpponentMoves?: Map<string, number>,
+    inferredOpponentMoves?: Map<string, number>
   ): DamageMatchup {
     const my = snapshot.mySide.activePokemon;
     const opp = snapshot.opponentSide.activePokemon;
@@ -102,7 +140,11 @@ export class HeuristicDamageCalculator {
 
     const oppAttacking: DamageResult[] = [];
     for (const mv of oppMoves) {
-      try { oppAttacking.push(this.calcDamage(opp, my, mv, snapshot.field)); } catch { /* catch-ok: Hypothetical move exploration probe skip */ }
+      try {
+        oppAttacking.push(this.calcDamage(opp, my, mv, snapshot.field));
+      } catch {
+        /* catch-ok: Hypothetical move exploration probe skip */
+      }
     }
 
     return {
@@ -111,11 +153,17 @@ export class HeuristicDamageCalculator {
     };
   }
 
-  getEffectiveSpeed(pokemon: HeuristicPokemonState, field: HeuristicFieldState, side: SideID): number {
+  getEffectiveSpeed(
+    pokemon: HeuristicPokemonState,
+    field: HeuristicFieldState,
+    side: SideID
+  ): number {
     let spd = pokemon.stats.spe || DEFAULT_BASE_SPEED_STAT;
     const boost = pokemon.boosts.spe;
-    if (boost > 0) spd = Math.floor(spd * (STAGE_BASE_FACTOR_DIVISOR + boost) / STAGE_BASE_FACTOR_DIVISOR);
-    else if (boost < 0) spd = Math.floor(spd * STAGE_BASE_FACTOR_DIVISOR / (STAGE_BASE_FACTOR_DIVISOR - boost));
+    if (boost > 0)
+      spd = Math.floor((spd * (STAGE_BASE_FACTOR_DIVISOR + boost)) / STAGE_BASE_FACTOR_DIVISOR);
+    else if (boost < 0)
+      spd = Math.floor((spd * STAGE_BASE_FACTOR_DIVISOR) / (STAGE_BASE_FACTOR_DIVISOR - boost));
     if (pokemon.status === 'par') spd = Math.floor(spd * PARALYSIS_SPEED_PENALTY_MULT);
     if ((field.tailwind?.[side] ?? 0) > 0) spd *= TAILWIND_SPEED_BOOST_MULT;
     if (field.trickRoom) spd = -spd;
@@ -134,12 +182,29 @@ export class HeuristicDamageCalculator {
   private toPokemon(p: HeuristicPokemonState): Pokemon {
     const species = this.resolveSpecies(p.species);
 
+    // open-record: Options dictionary for external @smogon/calc Pokemon constructor
     const opts: Record<string, unknown> = {
       level: p.level || DEFAULT_HEURISTIC_POKEMON_LEVEL,
-      curHP: p.hp > 0 ? p.hp : Math.max(MIN_HP_BOUND_FLOOR, Math.round(p.hpPercent * ESTIMATED_HP_PER_PERCENT)),
-      boosts: { atk: p.boosts.atk, def: p.boosts.def, spa: p.boosts.spa, spd: p.boosts.spd, spe: p.boosts.spe },
+      curHP:
+        p.hp > 0
+          ? p.hp
+          : Math.max(MIN_HP_BOUND_FLOOR, Math.round(p.hpPercent * ESTIMATED_HP_PER_PERCENT)),
+      boosts: {
+        atk: p.boosts.atk,
+        def: p.boosts.def,
+        spa: p.boosts.spa,
+        spd: p.boosts.spd,
+        spe: p.boosts.spe
+      },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-      ivs: { hp: MAX_PERFECT_IV_STAT, atk: MAX_PERFECT_IV_STAT, def: MAX_PERFECT_IV_STAT, spa: MAX_PERFECT_IV_STAT, spd: MAX_PERFECT_IV_STAT, spe: MAX_PERFECT_IV_STAT },
+      ivs: {
+        hp: MAX_PERFECT_IV_STAT,
+        atk: MAX_PERFECT_IV_STAT,
+        def: MAX_PERFECT_IV_STAT,
+        spa: MAX_PERFECT_IV_STAT,
+        spd: MAX_PERFECT_IV_STAT,
+        spe: MAX_PERFECT_IV_STAT
+      }
     };
 
     // Held item — validate strictly with requireItemId if present and map to Smogon name
@@ -167,20 +232,29 @@ export class HeuristicDamageCalculator {
   }
 
   private toField(f: HeuristicFieldState): Field {
+    // open-record: Options dictionary for external @smogon/calc Field constructor
     const opts: Record<string, unknown> = {};
     if (f.weather) {
+      // open-record: Move-based weather string mapped to Smogon field weather
       const wmap: Record<string, string> = {
-        sunnyday: 'Sun', desolateland: 'Harsh Sunshine',
-        raindance: 'Rain', primordialsea: 'Heavy Rain',
-        sandstorm: 'Sand', snowscape: 'Snow', hail: 'Hail',
+        sunnyday: 'Sun',
+        desolateland: 'Harsh Sunshine',
+        raindance: 'Rain',
+        primordialsea: 'Heavy Rain',
+        sandstorm: 'Sand',
+        snowscape: 'Snow',
+        hail: 'Hail'
       };
       const mapped = wmap[f.weather];
       if (mapped) opts['weather'] = mapped;
     }
     if (f.terrain) {
+      // open-record: Move-based terrain string mapped to Smogon field terrain
       const tmap: Record<string, string> = {
-        electricterrain: 'Electric', grassyterrain: 'Grassy',
-        mistyterrain: 'Misty', psychicterrain: 'Psychic',
+        electricterrain: 'Electric',
+        grassyterrain: 'Grassy',
+        mistyterrain: 'Misty',
+        psychicterrain: 'Psychic'
       };
       const mapped = tmap[f.terrain];
       if (mapped) opts['terrain'] = mapped;
@@ -189,17 +263,27 @@ export class HeuristicDamageCalculator {
   }
 
   private resolveSpecies(species: string): string {
+    // open-record: Special-case Showdown species names normalization map
     const map: Record<string, string> = {
-      nidoranf: 'Nidoran-F', nidoranm: 'Nidoran-M',
-      farfetchd: "Farfetch'd", mrmime: 'Mr. Mime',
-      hooh: 'Ho-Oh', jangmoo: 'Jangmo-o',
+      nidoranf: 'Nidoran-F',
+      nidoranm: 'Nidoran-M',
+      farfetchd: "Farfetch'd",
+      mrmime: 'Mr. Mime',
+      hooh: 'Ho-Oh',
+      jangmoo: 'Jangmo-o'
     };
-    return map[toID(species)] ?? (species.charAt(0).toUpperCase() + species.slice(1));
+    return map[toID(species)] ?? species.charAt(0).toUpperCase() + species.slice(1);
   }
 
-  private parseResult(result: Result, moveId: PokemonMoveId, attacker: string, defender: string): DamageResult {
+  private parseResult(
+    result: Result,
+    moveId: PokemonMoveId,
+    attacker: string,
+    defender: string
+  ): DamageResult {
     const damage = result.damage;
-    let min = 0, max = 0;
+    let min = 0,
+      max = 0;
 
     if (typeof damage === 'number') {
       min = max = damage;
@@ -216,9 +300,12 @@ export class HeuristicDamageCalculator {
     }
 
     const defMaxHp = result.defender.originalCurHP || result.defender.maxHP();
-    const minPct = defMaxHp > 0 ? (min / defMaxHp) * PERCENTAGE_MAX_SCALE_FACTOR : 0;
-    const maxPct = defMaxHp > 0 ? (max / defMaxHp) * PERCENTAGE_MAX_SCALE_FACTOR : 0;
-    const curPct = defMaxHp > 0 ? (result.defender.curHP() / defMaxHp) * PERCENTAGE_MAX_SCALE_FACTOR : PERCENTAGE_MAX_SCALE_FACTOR;
+    const minPct = defMaxHp > 0 ? (min / defMaxHp) * PERCENT_BASE_MULTIPLIER : 0;
+    const maxPct = defMaxHp > 0 ? (max / defMaxHp) * PERCENT_BASE_MULTIPLIER : 0;
+    const curPct =
+      defMaxHp > 0
+        ? (result.defender.curHP() / defMaxHp) * PERCENT_BASE_MULTIPLIER
+        : PERCENT_BASE_MULTIPLIER;
 
     return {
       move: moveId,
@@ -228,18 +315,34 @@ export class HeuristicDamageCalculator {
       maxPercent: maxPct,
       isOHKO: minPct >= curPct,
       is2HKO: minPct * 2 >= curPct,
-      priority: PRIORITY_MAP[toID(moveId)] ?? 0,
+      priority: PRIORITY_MAP[moveId] ?? 0
     };
   }
 
   private fallback(moveId: PokemonMoveId, attacker: string, defender: string): DamageResult {
-    return { move: moveId, attacker, defender, minPercent: 0, maxPercent: 0, isOHKO: false, is2HKO: false, priority: PRIORITY_MAP[toID(moveId)] ?? 0 };
+    return {
+      move: moveId,
+      attacker,
+      defender,
+      minPercent: 0,
+      maxPercent: 0,
+      isOHKO: false,
+      is2HKO: false,
+      priority: PRIORITY_MAP[moveId] ?? 0
+    };
   }
 
-  private cacheKey(a: HeuristicPokemonState, d: HeuristicPokemonState, mv: string, f: HeuristicFieldState): string {
-    return `${a.species}:${a.ability}:${a.item}:${a.status}:${JSON.stringify(a.boosts)}|` +
+  private cacheKey(
+    a: HeuristicPokemonState,
+    d: HeuristicPokemonState,
+    mv: string,
+    f: HeuristicFieldState
+  ): string {
+    return (
+      `${a.species}:${a.ability}:${a.item}:${a.status}:${JSON.stringify(a.boosts)}|` +
       `${d.species}:${d.ability}:${d.item}:${d.status}:${d.hpPercent.toFixed(0)}:${JSON.stringify(d.boosts)}|` +
-      `${mv}|${f.weather ?? ''}:${f.terrain ?? ''}:${f.trickRoom}`;
+      `${mv}|${f.weather ?? ''}:${f.terrain ?? ''}:${f.trickRoom}`
+    );
   }
 
   private addToCache(key: string, result: DamageResult): void {

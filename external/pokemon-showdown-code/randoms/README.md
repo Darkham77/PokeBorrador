@@ -18,7 +18,7 @@ npm install @pkmn/randoms
 To generate a random team, get a `TeamGenerator` for a supported format and call `getTeam`:
 
 ```ts
-import {TeamGenerators} from '@pkmn/randoms';
+import { TeamGenerators } from '@pkmn/randoms';
 
 const generator = TeamGenerators.getTeamGenerator('gen8randombattle');
 const team = generator.getTeam();
@@ -28,8 +28,8 @@ const team = generator.getTeam();
 its `Teams` so that `Teams.generate` will work:
 
 ```ts
-import {Teams} from '@pkmn/sim';
-import {TeamGenerators} from '@pkmn/randoms';
+import { Teams } from '@pkmn/sim';
+import { TeamGenerators } from '@pkmn/randoms';
 
 Teams.setGeneratorFactory(TeamGenerators);
 const team = Teams.generate('gen1randombattle');

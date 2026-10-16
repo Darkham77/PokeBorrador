@@ -1,4 +1,4 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pv-tooltip-wrapper {
   display: inline-flex !important;
@@ -16,7 +16,7 @@
   min-width: calc(120px * var(--app-zoom, 1));
   max-width: calc(320px * var(--app-zoom, 1));
   pointer-events: none !important;
-  
+
   &.pos-top {
     transform: Translate(-50%, -100%);
   }
@@ -37,7 +37,7 @@
   position: relative;
   zoom: var(--app-zoom, 1);
   will-change: transform, opacity, zoom;
-  
+
   .tooltip-content {
     display: flex;
     flex-direction: column;
@@ -84,7 +84,7 @@
     display: block;
     color: Rgb(241 245 249 / 90%);
     font-family: var(--font-pixel, 'Pokemon FireRed LeafGreen') !important;
-    font-size: var(--font-8); 
+    font-size: var(--font-8);
     line-height: 1.6;
     white-space: pre-wrap;
 

@@ -1,44 +1,44 @@
 <script setup lang="ts">
-import { watch, nextTick, computed } from 'vue'
-import { gsap } from 'gsap'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-
-const SPINNER_FULL_ROTATION_DEG = 360
-import { formatCurrency } from '@/logic/utils/formatters'
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
-import { useModalStore } from '@/stores/modals'
-import BaseModal from '@/components/common/BaseModal.vue'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue'
-import ProfileBadgesCard from '@/components/profile/ProfileBadgesCard.vue'
-import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
-import ProfileEventStatsCard from '@/components/profile/ProfileEventStatsCard.vue'
-import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
-import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
-import ProfileFactionWarCard from './ProfileFactionWarCard.vue'
-import ProfileStatsSection from './ProfileStatsSection.vue'
-import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue'
-import ProfilePinnedReplaysCard from '@/components/profile/ProfilePinnedReplaysCard.vue'
-import { useLivePvPStore } from '@/stores/livePvP'
-import type { BattleReplayRecord } from '@/types/battle/pvp'
-import { useTrainerProfile } from './useTrainerProfile.ts'
-import { useStatHover } from '@/composables/ui/useStatHover'
+import { watch, nextTick, computed } from 'vue';
+import { gsap } from 'gsap';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { FULL_ROTATION_DEG } from '@/logic/constants/animations';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { useModalStore } from '@/stores/modals';
+import BaseModal from '@/components/common/BaseModal.vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue';
+import ProfileBadgesCard from '@/components/profile/ProfileBadgesCard.vue';
+import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue';
+import ProfileEventStatsCard from '@/components/profile/ProfileEventStatsCard.vue';
+import ProfileXpCard from '@/components/profile/ProfileXpCard.vue';
+import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue';
+import ProfileFactionWarCard from './ProfileFactionWarCard.vue';
+import ProfileStatsSection from './ProfileStatsSection.vue';
+import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue';
+import ProfilePinnedReplaysCard from '@/components/profile/ProfilePinnedReplaysCard.vue';
+import { useLivePvPStore } from '@/stores/livePvP';
+import type { BattleReplayRecord } from '@/types/battle/pvp';
+import { useTrainerProfile } from './useTrainerProfile.ts';
+import { useStatHover } from '@/composables/ui/useStatHover';
+import { isPlayerClassId, type PlayerClassId } from '@/data/player/playerClasses';
 
 interface Props {
-  show?: boolean
-  userId?: string | null
+  show?: boolean;
+  userId?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   userId: null
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const modalStore = useModalStore()
+const modalStore = useModalStore();
 
 const {
   loading,
@@ -90,99 +90,115 @@ const {
   pinnedReplays,
   saveState,
   fetchData
-} = useTrainerProfile(() => props.userId)
+} = useTrainerProfile(() => props.userId);
 
 const formatDate = (isoStr: string | null | undefined) => {
-  if (!isoStr) return '---'
+  if (!isoStr) return '---';
   try {
-    const inst = Temporal.Instant.from(isoStr)
-    const zdt = inst.toZonedDateTimeISO(GAME_TIMEZONE)
-    const day = String(zdt.day).padStart(2, '0')
-    const month = String(zdt.month).padStart(2, '0')
-    const year = zdt.year
-    return `${day}/${month}/${year}`
+    const inst = Temporal.Instant.from(isoStr);
+    const zdt = inst.toZonedDateTimeISO(GAME_TIMEZONE);
+    const day = String(zdt.day).padStart(2, '0');
+    const month = String(zdt.month).padStart(2, '0');
+    const year = zdt.year;
+    return `${day}/${month}/${year}`;
   } catch (_) {
-    return '---'
+    return '---';
   }
-}
+};
 
 const openRename = () => {
-  modalStore.open('Rename')
-}
+  modalStore.open('Rename');
+};
 
-const formatNum = (num: unknown) => formatCurrency(Number(num || 0))
+const formatNum = (num: unknown) => formatCurrency(Number(num || 0));
 
 const close = () => {
-  emit('close')
-}
+  emit('close');
+};
 
 // GSAP hover handlers via shared composable
-const { handleStatEnter, handleStatLeave } = useStatHover()
+const { handleStatEnter, handleStatLeave } = useStatHover();
 
 const activityStats = computed(() => [
   { label: 'Tiempo Jugado', value: `${playtimeHours.value}h`, class: 'yellow-text' },
   { label: 'Miembro Desde', value: formatDate(createdAt.value) },
-  { label: 'Última Partida', value: isOwnProfile.value ? 'Activo Ahora' : formatDate(lastPlayedAt.value) }
-])
+  {
+    label: 'Última Partida',
+    value: isOwnProfile.value ? 'Activo Ahora' : formatDate(lastPlayedAt.value)
+  }
+]);
 
 const classStats = computed(() => {
-  const stats = []
+  const stats = [];
   if (playerClass.value === 'rocket') {
-    stats.push({ label: 'Criminalidad', value: `${criminality.value}%`, class: 'danger-text' })
+    stats.push({ label: 'Criminalidad', value: `${criminality.value}%`, class: 'danger-text' });
   } else if (playerClass.value === 'entrenador') {
-    stats.push({ label: 'Reputación', value: reputation.value, class: 'primary-text' })
+    stats.push({ label: 'Reputación', value: reputation.value, class: 'primary-text' });
   }
-  stats.push({ label: 'Mayor Racha', value: captureStreak.value, class: 'yellow-text' })
-  return stats
-})
-
+  stats.push({ label: 'Mayor Racha', value: captureStreak.value, class: 'yellow-text' });
+  return stats;
+});
 
 // Watch loading state to animate the spinner via GSAP
-watch(loading, (newVal) => {
-  if (newVal) {
-    nextTick(() => {
-      const spinner = document.querySelector('.loader-spinner')
-      if (spinner) {
-        gsap.to(spinner, {
-          rotation: SPINNER_FULL_ROTATION_DEG,
-          duration: 1.5,
-          repeat: -1,
-          ease: 'none'
-        })
-      }
-    })
-  }
-}, { immediate: true })
+watch(
+  loading,
+  (newVal) => {
+    if (newVal) {
+      nextTick(() => {
+        const spinner = document.querySelector('.loader-spinner');
+        if (spinner) {
+          gsap.to(spinner, {
+            rotation: FULL_ROTATION_DEG,
+            duration: 1.5,
+            repeat: -1,
+            ease: 'none'
+          });
+        }
+      });
+    }
+  },
+  { immediate: true }
+);
 
 // Asset loaders
-const getAssetUrlLocal = getAssetUrl
+const getAssetUrlLocal = getAssetUrl;
 
-const livePvPStore = useLivePvPStore()
+const livePvPStore = useLivePvPStore();
 
 const handleWatchReplay = (replay: BattleReplayRecord) => {
-  livePvPStore.watchReplay(replay)
-  close()
-}
-const CLASS_HEADER_BG_MAP: Record<string, string> = {
+  livePvPStore.watchReplay(replay);
+  close();
+};
+const CLASS_HEADER_BG_MAP: Record<PlayerClassId, string> = {
   rocket: 'rgba(239, 68, 68, 0.15)',
   cazabichos: 'rgba(34, 197, 94, 0.15)',
   entrenador: 'rgba(59, 130, 246, 0.15)',
   criador: 'rgba(168, 85, 247, 0.15)'
-}
-const DEFAULT_HEADER_BG = 'rgba(15, 23, 42, 0.8)'
+};
+const DEFAULT_HEADER_BG = 'rgba(15, 23, 42, 0.8)';
 
 const headerBackground = computed(() => {
-  return (playerClass.value && CLASS_HEADER_BG_MAP[playerClass.value]) || DEFAULT_HEADER_BG
-})
+  return (
+    (playerClass.value &&
+      isPlayerClassId(playerClass.value) &&
+      CLASS_HEADER_BG_MAP[playerClass.value]) ||
+    DEFAULT_HEADER_BG
+  );
+});
 
 const hasValidFaction = computed(() => {
-  return Boolean(faction.value && faction.value !== 'null' && faction.value !== 'undefined' && faction.value.trim() !== '')
-})
+  return Boolean(
+    faction.value &&
+    faction.value !== 'null' &&
+    faction.value !== 'undefined' &&
+    faction.value.trim() !== ''
+  );
+});
 
 const factionAssetUrl = computed(() => {
-  if (!hasValidFaction.value || !faction.value) return ''
-  return getAssetUrlLocal(ASSET_TYPES.FACTION, faction.value)
-})
+  if (!hasValidFaction.value || !faction.value) return '';
+  return getAssetUrlLocal(ASSET_TYPES.FACTION, faction.value);
+});
 </script>
 
 <template>
@@ -202,35 +218,22 @@ const factionAssetUrl = computed(() => {
   >
     <section class="profile-panel-content custom-scrollbar">
       <!-- Loading State -->
-      <div
-        v-if="loading"
-        class="loading-state"
-      >
+      <div v-if="loading" class="loading-state">
         <div class="loader-spinner" />
         <span class="loading-text">CARGANDO ENTRENADOR...</span>
       </div>
 
       <!-- Error State -->
-      <div
-        v-else-if="error"
-        class="error-state"
-      >
+      <div v-else-if="error" class="error-state">
         <span class="emoji error-icon">⚠️</span>
         <span class="error-message">{{ error }}</span>
-        <button
-          id="trainer-profile-modal-btn-reintentar"
-          class="retry-btn"
-          @click="fetchData"
-        >
+        <button id="trainer-profile-modal-btn-reintentar" class="retry-btn" @click="fetchData">
           REINTENTAR
         </button>
       </div>
 
       <!-- Main Profile Body -->
-      <div
-        v-else
-        class="profile-body-premium"
-      >
+      <div v-else class="profile-body-premium">
         <!-- Identity Section -->
         <div class="profile-identity-card">
           <div class="avatar-wrap">
@@ -242,13 +245,10 @@ const factionAssetUrl = computed(() => {
               :gender="gender"
             />
           </div>
-          <div
-            class="profile-username"
-          >
-            <span
-              v-gsap-nick="nickStyle || 'normal'"
-              :class="nickStyle || 'normal'"
-            >{{ trainerName }}</span>
+          <div class="profile-username">
+            <span v-gsap-nick="nickStyle || 'normal'" :class="nickStyle || 'normal'">{{
+              trainerName
+            }}</span>
             <a
               v-if="isOwnProfile"
               id="trainer-profile-modal-a-cambiar-nombre"
@@ -260,25 +260,16 @@ const factionAssetUrl = computed(() => {
               <span class="emoji">✏️</span> CAMBIAR
             </a>
           </div>
-          <div
-            v-if="classDef"
-            class="profile-profession"
-            :style="{ color: classDef.color }"
-          >
+          <div v-if="classDef" class="profile-profession" :style="{ color: classDef.color }">
             {{ classDef.name }} • LV. {{ trainerLevel }}
           </div>
         </div>
 
         <!-- Faction Section -->
         <div class="profile-section-card faction-card">
-          <div class="section-label">
-            BANDO
-          </div>
+          <div class="section-label">BANDO</div>
           <div class="faction-row">
-            <div
-              class="faction-badge"
-              :style="{ color: factionColor }"
-            >
+            <div class="faction-badge" :style="{ color: factionColor }">
               <img
                 v-if="hasValidFaction"
                 :src="factionAssetUrl"
@@ -286,30 +277,27 @@ const factionAssetUrl = computed(() => {
                 class="faction-img"
                 width="32"
                 height="32"
-              >
+              />
               {{ factionLabel }}
             </div>
           </div>
         </div>
 
         <!-- Badges Showcase -->
-        <ProfileBadgesCard
-          :badges-count="badgesCount"
-          :is-gym-defeated="isGymDefeated"
-        />
+        <ProfileBadgesCard :badges-count="badgesCount" :is-gym-defeated="isGymDefeated" />
 
         <!-- Experiencia -->
-        <ProfileXpCard 
-          :level="trainerLevel" 
-          :exp="saveState?.trainerExp ?? 0" 
-          :exp-needed="saveState?.trainerExpNeeded ?? 100" 
-          :class-id="playerClass" 
+        <ProfileXpCard
+          :level="trainerLevel"
+          :exp="saveState?.trainerExp ?? 0"
+          :exp-needed="saveState?.trainerExpNeeded ?? 100"
+          :class-id="playerClass"
           :class-color="classDef?.color || 'var(--purple)'"
           :hide-unlocks="true"
           title="Nivel y Experiencia Cuenta"
         />
 
-        <ProfileXpCard 
+        <ProfileXpCard
           v-if="playerClass && classDef"
           :level="classLevel"
           :exp="classXP"
@@ -320,14 +308,11 @@ const factionAssetUrl = computed(() => {
         />
 
         <!-- Pokedex Progress -->
-        <ProfilePokedexCard 
-          :pokedex-caught="pokedexCaught" 
-          :pokedex-seen="pokedexSeen" 
-        />
+        <ProfilePokedexCard :pokedex-caught="pokedexCaught" :pokedex-seen="pokedexSeen" />
 
         <!-- Stats Grid -->
-        <ProfileStatsGrid 
-          :stats="{ wins: wildWins, trainersDefeated: trainersDefeated }" 
+        <ProfileStatsGrid
+          :stats="{ wins: wildWins, trainersDefeated: trainersDefeated }"
           :level="trainerLevel"
           :badges="badgesCount"
           :money="money"
@@ -391,4 +376,3 @@ const factionAssetUrl = computed(() => {
 </template>
 
 <style src="./TrainerProfileModal.styles.scss" scoped lang="scss"></style>
-

@@ -1,118 +1,119 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventory/inventory'
-import { useShopStore } from '@/stores/inventory/shop'
-import { ITEMS_BY_ID, isItemId, type ItemId } from '@/data/inventory/items'
-import { makePokemon } from '@/logic/pokemon/pokemonFactory'
-import AdventureCheatTeamCard from './AdventureCheatTeamCard.vue'
+import { computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useShopStore } from '@/stores/inventory/shop';
+import { ITEMS_BY_ID, isItemId, type ItemId } from '@/data/inventory/items';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import AdventureCheatTeamCard from './AdventureCheatTeamCard.vue';
 
 interface Props {
-  injectedItems: Set<ItemId>
+  injectedItems: Set<ItemId>;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'addLog', message: string): void
-  (e: 'update:injectedItems', next: Set<ItemId>): void
-}>()
+  (e: 'addLog', message: string): void;
+  (e: 'update:injectedItems', next: Set<ItemId>): void;
+}>();
 
-const gameStore = useGameStore()
-const inventoryStore = useInventoryStore()
-const shopStore = useShopStore()
+const gameStore = useGameStore();
+const inventoryStore = useInventoryStore();
+const shopStore = useShopStore();
 
-const filteredShopItems = computed(() => Object.values(ITEMS_BY_ID))
+const filteredShopItems = computed(() => Object.values(ITEMS_BY_ID));
 
 const adjustItem = (itemId: ItemId, amount: number) => {
-  const nextInjected = new Set(props.injectedItems)
+  const nextInjected = new Set(props.injectedItems);
   if (amount > 0) {
-    inventoryStore.addItem(itemId, amount)
-    nextInjected.add(itemId)
-    emit('update:injectedItems', nextInjected)
-    emit('addLog', `🔧 Cheat: Añadido ${amount}x ${itemId} a la mochila.`)
+    inventoryStore.addItem(itemId, amount);
+    nextInjected.add(itemId);
+    emit('update:injectedItems', nextInjected);
+    emit('addLog', `🔧 Cheat: Añadido ${amount}x ${itemId} a la mochila.`);
   } else {
-    const inv = gameStore.state.inventory || {}
-    const currentQty = inv[itemId] || 0
+    const inv = gameStore.state.inventory || {};
+    const currentQty = inv[itemId] || 0;
     if (currentQty > 0) {
-      inventoryStore.removeItem(itemId, Math.min(Math.abs(amount), currentQty))
-      emit('addLog', `🔧 Cheat: Removido ${Math.abs(amount)}x ${itemId} de la mochila.`)
+      inventoryStore.removeItem(itemId, Math.min(Math.abs(amount), currentQty));
+      emit('addLog', `🔧 Cheat: Removido ${Math.abs(amount)}x ${itemId} de la mochila.`);
     }
   }
-}
+};
 
-const MAX_INVENTORY_CLEAR_QTY = 999
-const TEST_PIKACHU_LEVEL = 20 as const
-const TEST_ABRA_LEVEL = 15 as const
-const TEST_CHARIZARD_LEVEL = 25 as const
+const MAX_INVENTORY_CLEAR_QTY = 999;
+const TEST_PIKACHU_LEVEL = 20 as const;
+const TEST_ABRA_LEVEL = 15 as const;
+const TEST_CHARIZARD_LEVEL = 25 as const;
 
 const clearTestItems = () => {
-  const inv = gameStore.state.inventory || {}
-  props.injectedItems.forEach(itemId => {
+  const inv = gameStore.state.inventory || {};
+  props.injectedItems.forEach((itemId) => {
     if (isItemId(itemId) && inv[itemId]) {
-      inventoryStore.removeItem(itemId, MAX_INVENTORY_CLEAR_QTY)
+      inventoryStore.removeItem(itemId, MAX_INVENTORY_CLEAR_QTY);
     }
-  })
-  emit('update:injectedItems', new Set<ItemId>())
-  emit('addLog', `🧹 Limpieza: Todos los ítems inyectados por el panel de pruebas han sido eliminados.`)
-}
+  });
+  emit('update:injectedItems', new Set<ItemId>());
+  emit(
+    'addLog',
+    `🧹 Limpieza: Todos los ítems inyectados por el panel de pruebas han sido eliminados.`
+  );
+};
 
 const injectTestTeam = () => {
-  const currentTeam = gameStore.state.team || []
+  const currentTeam = gameStore.state.team || [];
   if (currentTeam.length >= 6) {
-    emit('addLog', '⚠️ El equipo ya está lleno (máx. 6 Pokémon). Remueve alguno desde el PC.')
-    return
+    emit('addLog', '⚠️ El equipo ya está lleno (máx. 6 Pokémon). Remueve alguno desde el PC.');
+    return;
   }
-  
-  const pika = makePokemon('pikachu', TEST_PIKACHU_LEVEL)
-  const abra = makePokemon('abra', TEST_ABRA_LEVEL)
-  const char = makePokemon('charizard', TEST_CHARIZARD_LEVEL)
-  
+
+  const pika = makePokemon('pikachu', TEST_PIKACHU_LEVEL);
+  const abra = makePokemon('abra', TEST_ABRA_LEVEL);
+  const char = makePokemon('charizard', TEST_CHARIZARD_LEVEL);
+
   if (char) {
-    char.ability = 'flamebody'
+    char.ability = 'flamebody';
   }
-  
-  if (pika) gameStore.addPokemon(pika, { notify: false })
-  if (abra) gameStore.addPokemon(abra, { notify: false })
-  if (char) gameStore.addPokemon(char, { notify: false })
-  
-  emit('addLog', '🔧 Cheat: Inyectado equipo de prueba (Pikachu Nv20, Abra Nv15, Charizard Nv25 con pasiva Cuerpo Llama).')
-  gameStore.save(false)
-}
+
+  if (pika) gameStore.addPokemon(pika, { notify: false });
+  if (abra) gameStore.addPokemon(abra, { notify: false });
+  if (char) gameStore.addPokemon(char, { notify: false });
+
+  emit(
+    'addLog',
+    '🔧 Cheat: Inyectado equipo de prueba (Pikachu Nv20, Abra Nv15, Charizard Nv25 con pasiva Cuerpo Llama).'
+  );
+  gameStore.save(false);
+};
 
 const healActiveTeam = () => {
-  shopStore.healAllPokemon(0)
-  emit('addLog', '🏥 Cheat: Todo tu equipo ha sido completamente curado.')
-}
+  shopStore.healAllPokemon(0);
+  emit('addLog', '🏥 Cheat: Todo tu equipo ha sido completamente curado.');
+};
 </script>
 
 <template>
-  <div style="display: flex; flex-direction: column; gap: $spacing-lg; width: 100%;">
+  <div style="display: flex; flex-direction: column; gap: $spacing-lg; width: 100%">
     <!-- Mi Equipo Activo -->
     <div
       class="adv-panel adv-column adv-active-team-column"
-      style="display: flex; flex-direction: column; gap: $spacing-sm;"
+      style="display: flex; flex-direction: column; gap: $spacing-sm"
     >
-      <h3
-        class="adv-pixel-text adv-column-title"
-        style="margin-bottom: 2px;"
-      >
-        Mi Equipo Activo
-      </h3>
+      <h3 class="adv-pixel-text adv-column-title" style="margin-bottom: 2px">Mi Equipo Activo</h3>
 
-      <div style="display: flex; gap: $spacing-xs; width: 100%;">
+      <div style="display: flex; gap: $spacing-xs; width: 100%">
         <button
-          id="adventure-cheat-panel-btn-inyectar-equipo" 
-          class="adv-hm-btn" 
-          style=" padding: 4px; font-family: var(--font-pixel); font-size: var(--font-6);flex: 1;"
+          id="adventure-cheat-panel-btn-inyectar-equipo"
+          class="adv-hm-btn"
+          style="padding: 4px; font-family: var(--font-pixel); font-size: var(--font-6); flex: 1"
           @click="injectTestTeam"
         >
           <span class="emoji">🐣</span> Inyectar Equipo
         </button>
         <button
-          id="adventure-cheat-panel-btn-curar-todo" 
-          class="adv-hm-btn" 
-          style=" padding: 4px; font-family: var(--font-pixel); font-size: var(--font-6);flex: 1;"
+          id="adventure-cheat-panel-btn-curar-todo"
+          class="adv-hm-btn"
+          style="padding: 4px; font-family: var(--font-pixel); font-size: var(--font-6); flex: 1"
           @click="healActiveTeam"
         >
           <span class="emoji">🏥</span> Curar Todo
@@ -121,7 +122,14 @@ const healActiveTeam = () => {
 
       <div
         class="adv-team-scroll"
-        style=" display: flex; flex-direction: column; gap: $spacing-sm-alt;max-height: 180px; overflow-y: auto; padding-right: 4px;"
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: $spacing-sm-alt;
+          max-height: 180px;
+          overflow-y: auto;
+          padding-right: 4px;
+        "
       >
         <AdventureCheatTeamCard
           v-for="pkmn in gameStore.state.team"
@@ -129,9 +137,15 @@ const healActiveTeam = () => {
           :pokemon="pkmn"
         />
 
-        <div 
+        <div
           v-if="!gameStore.state.team || gameStore.state.team.length === 0"
-          style=" padding: 12px;color: var(--slate-400); font-family: var(--font-pixel); font-size: var(--font-8); text-align: center;"
+          style="
+            padding: 12px;
+            color: var(--slate-400);
+            font-family: var(--font-pixel);
+            font-size: var(--font-8);
+            text-align: center;
+          "
         >
           Tu equipo está vacío. ¡Usa Inyectar Equipo!
         </div>
@@ -141,36 +155,52 @@ const healActiveTeam = () => {
     <!-- Inyector de Mochila -->
     <div
       class="adv-panel adv-column adv-cheat-inventory-column"
-      style="display: flex; flex-direction: column; gap: $spacing-sm;"
+      style="display: flex; flex-direction: column; gap: $spacing-sm"
     >
-      <h3
-        class="adv-pixel-text adv-column-title"
-        style="margin-bottom: 2px;"
-      >
+      <h3 class="adv-pixel-text adv-column-title" style="margin-bottom: 2px">
         Inyector de Mochila
       </h3>
       <button
-        id="adventure-cheat-panel-btn-limpiar-test-items" 
-        class="adv-hm-btn" 
-        style="width: 100%; padding: 4px; font-family: var(--font-pixel); font-size: var(--font-8);"
+        id="adventure-cheat-panel-btn-limpiar-test-items"
+        class="adv-hm-btn"
+        style="width: 100%; padding: 4px; font-family: var(--font-pixel); font-size: var(--font-8)"
         @click="clearTestItems"
       >
         <span class="emoji">🗑️</span> Limpiar Test Items
       </button>
       <div
         class="adv-cheat-item-scroll"
-        style=" display: flex; flex-direction: column; gap: $spacing-xs;max-height: 120px; overflow-y: auto; padding-right: 4px;"
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: $spacing-xs;
+          max-height: 120px;
+          overflow-y: auto;
+          padding-right: 4px;
+        "
       >
         <div
           class="adv-cheat-item-row"
-          style="display: flex; justify-content: space-between; align-items: center; padding: 4px; border-radius: $radius-sm; background: rgb(0 0 0 / 20%); font-size: var(--font-8);"
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px;
+            border-radius: $radius-sm;
+            background: rgb(0 0 0 / 20%);
+            font-size: var(--font-8);
+          "
         >
-          <span style="font-family: var(--font-pixel);"><span class="emoji">🚲</span> Bici ({{ gameStore.state.inventory?.['bicycle'] || 0 }})</span>
-          <div style="display: flex; gap: $spacing-2xs;">
+          <span style="font-family: var(--font-pixel)"
+            ><span class="emoji">🚲</span> Bici ({{
+              gameStore.state.inventory?.['bicycle'] || 0
+            }})</span
+          >
+          <div style="display: flex; gap: $spacing-2xs">
             <button
               id="adventure-cheat-panel-btn-1"
               class="adv-hm-btn"
-              style=" min-width: auto;padding: 2px 4px; font-size: var(--font-8);"
+              style="min-width: auto; padding: 2px 4px; font-size: var(--font-8)"
               @click="adjustItem('bicycle', 1)"
             >
               +1
@@ -178,27 +208,45 @@ const healActiveTeam = () => {
             <button
               id="adventure-cheat-panel-btn-1-2"
               class="adv-hm-btn"
-              style=" min-width: auto;padding: 2px 4px; font-size: var(--font-8);"
+              style="min-width: auto; padding: 2px 4px; font-size: var(--font-8)"
               @click="adjustItem('bicycle', -1)"
             >
               -1
             </button>
           </div>
         </div>
-        <div 
-          v-for="item in filteredShopItems" 
-          :key="item.id" 
-          class="adv-cheat-item-row" 
-          style="display: flex; justify-content: space-between; align-items: center; padding: 4px; border-radius: $radius-sm; background: rgb(0 0 0 / 20%); font-size: var(--font-8);"
+        <div
+          v-for="item in filteredShopItems"
+          :key="item.id"
+          class="adv-cheat-item-row"
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px;
+            border-radius: $radius-sm;
+            background: rgb(0 0 0 / 20%);
+            font-size: var(--font-8);
+          "
         >
-          <span style=" max-width: 120px;font-family: var(--font-pixel); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
-            <span class="emoji">{{ item.icon }}</span> {{ item.name }} ({{ gameStore.state.inventory?.[item.id] || 0 }})
+          <span
+            style="
+              max-width: 120px;
+              font-family: var(--font-pixel);
+              text-overflow: ellipsis;
+              overflow: hidden;
+              white-space: nowrap;
+            "
+          >
+            <span class="emoji">{{ item.icon }}</span> {{ item.name }} ({{
+              gameStore.state.inventory?.[item.id] || 0
+            }})
           </span>
-          <div style="display: flex; gap: $spacing-2xs; flex-shrink: 0;">
+          <div style="display: flex; gap: $spacing-2xs; flex-shrink: 0">
             <button
               id="adventure-cheat-panel-btn-1-3"
               class="adv-hm-btn"
-              style=" min-width: auto;padding: 2px 4px; font-size: var(--font-8);"
+              style="min-width: auto; padding: 2px 4px; font-size: var(--font-8)"
               @click="adjustItem(item.id, 1)"
             >
               +1
@@ -206,7 +254,7 @@ const healActiveTeam = () => {
             <button
               id="adventure-cheat-panel-btn-10"
               class="adv-hm-btn"
-              style=" min-width: auto;padding: 2px 4px; font-size: var(--font-8);"
+              style="min-width: auto; padding: 2px 4px; font-size: var(--font-8)"
               @click="adjustItem(item.id, 10)"
             >
               +10
@@ -214,7 +262,7 @@ const healActiveTeam = () => {
             <button
               id="adventure-cheat-panel-btn-1-4"
               class="adv-hm-btn"
-              style=" min-width: auto;padding: 2px 4px; font-size: var(--font-8);"
+              style="min-width: auto; padding: 2px 4px; font-size: var(--font-8)"
               @click="adjustItem(item.id, -1)"
             >
               -1
@@ -227,4 +275,3 @@ const healActiveTeam = () => {
 </template>
 
 <style scoped lang="scss" src="@/views/adventure/AdventureTestView.styles.scss"></style>
-

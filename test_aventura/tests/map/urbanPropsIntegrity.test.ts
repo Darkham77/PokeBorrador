@@ -26,7 +26,10 @@ const ROOT_DIR = process.cwd();
 
 describe('urbanPropsIntegrity (Error 6)', () => {
   it('guarantees poke_street_lamp.png is 32x96 px authentic GBA red lamp (not cut logs)', async () => {
-    const lampPath = path.resolve(ROOT_DIR, 'test_aventura/assets/canon/props/poke_street_lamp.png');
+    const lampPath = path.resolve(
+      ROOT_DIR,
+      'test_aventura/assets/canon/props/poke_street_lamp.png'
+    );
     expect(fs.existsSync(lampPath)).toBe(true);
 
     const meta = await sharp(lampPath).metadata();
@@ -157,8 +160,14 @@ describe('urbanPropsIntegrity (Error 6)', () => {
         const p2 = wilderness.props[j]!;
         // Contiguous segments belonging to the same fence run connect seamlessly
         const isContiguousFence =
-          (p1.type === 'fence_h' && p2.type === 'fence_h' && p1.y === p2.y && Math.abs(p1.x - p2.x) === 1) ||
-          (p1.type === 'fence_v' && p2.type === 'fence_v' && p1.x === p2.x && Math.abs(p1.y - p2.y) === 1);
+          (p1.type === 'fence_h' &&
+            p2.type === 'fence_h' &&
+            p1.y === p2.y &&
+            Math.abs(p1.x - p2.x) === 1) ||
+          (p1.type === 'fence_v' &&
+            p2.type === 'fence_v' &&
+            p1.x === p2.x &&
+            Math.abs(p1.y - p2.y) === 1);
         if (isContiguousFence) {
           continue;
         }

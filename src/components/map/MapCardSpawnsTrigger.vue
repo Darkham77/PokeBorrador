@@ -1,63 +1,63 @@
 <script setup lang="ts">
 /**
  * src/components/map/MapCardSpawnsTrigger.vue
- * 
+ *
  * Animated Pokéball button triggering the Route Spawns modal.
  */
-import { useTemplateRef } from 'vue'
-import { gsap } from 'gsap'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { useUIStore } from '@/stores/ui'
+import { useTemplateRef } from 'vue';
+import { gsap } from 'gsap';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useUIStore } from '@/stores/ui';
 
-const POKEBALL_TRIGGER_HOVER_OFFSET_PX = 1
-const POKEBALL_TRIGGER_HOVER_SCALE = 1.15
-const GSAP_TRANSITION_DURATION_SEC = 0.2
+const POKEBALL_TRIGGER_HOVER_OFFSET_PX = 1;
+const POKEBALL_TRIGGER_HOVER_SCALE = 1.15;
+const POKEBALL_TRIGGER_TRANSITION_DURATION_SEC = 0.2;
 
 const emit = defineEmits<{
-  (e: 'click'): void
-}>()
+  (e: 'click'): void;
+}>();
 
-const uiStore = useUIStore()
-const pokeballTriggerRef = useTemplateRef<HTMLElement>('pokeballTriggerRef')
+const uiStore = useUIStore();
+const pokeballTriggerRef = useTemplateRef<HTMLElement>('pokeballTriggerRef');
 
 const onMouseEnter = () => {
-  if (uiStore.isLowPowerActive) return
+  if (uiStore.isLowPowerActive) return;
   if (pokeballTriggerRef.value) {
     gsap.to(pokeballTriggerRef.value, {
       x: POKEBALL_TRIGGER_HOVER_OFFSET_PX,
       y: POKEBALL_TRIGGER_HOVER_OFFSET_PX,
       scale: POKEBALL_TRIGGER_HOVER_SCALE,
-      duration: GSAP_TRANSITION_DURATION_SEC,
+      duration: POKEBALL_TRIGGER_TRANSITION_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto'
-    })
+    });
   }
-}
+};
 
 const onMouseLeave = () => {
   if (uiStore.isLowPowerActive) {
     if (pokeballTriggerRef.value) {
-      gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' })
+      gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' });
     }
-    return
+    return;
   }
   if (pokeballTriggerRef.value) {
     gsap.to(pokeballTriggerRef.value, {
       x: 0,
       y: 0,
       scale: 1,
-      duration: GSAP_TRANSITION_DURATION_SEC,
+      duration: POKEBALL_TRIGGER_TRANSITION_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto',
       onComplete: () => {
         if (pokeballTriggerRef.value) {
-          gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' })
+          gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' });
         }
       }
-    })
+    });
   }
-}
+};
 </script>
 
 <template>
@@ -69,23 +69,21 @@ const onMouseLeave = () => {
   >
     <div
       id="map-card-spawns-trigger-div-1"
+      role="button"
+      tabindex="0"
       class="pokeball-route-trigger"
       @click.stop.prevent="emit('click')"
       @mouseenter="onMouseEnter"
       @mouseleave="onMouseLeave"
     >
-      <div
-        ref="pokeballTriggerRef"
-        class="pokeball-icon-wrapper"
-      >
+      <div ref="pokeballTriggerRef" class="pokeball-icon-wrapper">
         <img
           :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
           class="pokeball-icon"
           alt="Spawns"
-        
           width="32"
           height="32"
-        >
+        />
       </div>
     </div>
   </PVTooltip>

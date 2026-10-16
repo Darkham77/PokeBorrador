@@ -7,7 +7,11 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS, requirePokemonSpeciesId } from '../../src/data/pokemon/pokedex.ts';
+import {
+  POKEMON_AESTHETICS,
+  POKEMON_SPRITE_IDS,
+  requirePokemonSpeciesId
+} from '../../src/data/pokemon/pokedex.ts';
 import feetDbJson from '../../src/data/pokemon/pokemonFeetDatabase.json' with { type: 'json' };
 import type { SpriteShadowOverridesMap } from '../../src/types/pokemon/spriteShadows.ts';
 
@@ -20,7 +24,8 @@ async function main() {
     const raw = await fs.readFile(TARGET_FILE, 'utf8');
     const existing = JSON.parse(raw);
     Object.assign(overrides, existing);
-  } catch { // catch-ok: file does not exist yet, initialize fresh
+  } catch {
+    // catch-ok: file does not exist yet, initialize fresh
     // File does not exist yet, initialize fresh
   }
 
@@ -62,10 +67,12 @@ async function main() {
   }
 
   await fs.writeFile(TARGET_FILE, JSON.stringify(overrides, null, 2), 'utf8');
-  console.log(`✅ [init_shadow_overrides] Initialized ${Object.keys(overrides).length} entries in ${TARGET_FILE}`);
+  console.log(
+    `✅ [init_shadow_overrides] Initialized ${Object.keys(overrides).length} entries in ${TARGET_FILE}`
+  );
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('❌ Error initializing shadow overrides:', err);
   process.exit(1);
 });

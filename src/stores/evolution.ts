@@ -33,9 +33,9 @@ export const useEvolutionStore = defineStore('evolution', () => {
    * @param {Function} callback - Callback after the animation finishes.
    */
   function startEvolution(
-    pokemon: Pokemon, 
-    targetSpeciesId: PokemonSpeciesId, 
-    evItemName = '', 
+    pokemon: Pokemon,
+    targetSpeciesId: PokemonSpeciesId,
+    evItemName = '',
     callback: ((data: EvolutionCompletePayload) => void) | null = null
   ) {
     sourcePokemon.value = pokemon;
@@ -60,12 +60,12 @@ export const useEvolutionStore = defineStore('evolution', () => {
 
     // Pokédex registration
     gameStore.registerPokedex(targetId.value, true); // true = caught
-    
+
     // Persistence
-    gameStore.scheduleSave();
-    
-    return { 
-      oldName: pokemonDataProvider.getPokemonData(result.fromId)?.name || 'Pokémon', 
+    void gameStore.scheduleSave();
+
+    return {
+      oldName: pokemonDataProvider.getPokemonData(result.fromId)?.name || 'Pokémon',
       newName: sourcePokemon.value.name,
       fromId: result.fromId,
       toId: result.toId
@@ -92,7 +92,9 @@ export const useEvolutionStore = defineStore('evolution', () => {
   }
 
   const handleStartEvolutionFlow = (e: Event) => {
-    const detail = (e as CustomEvent<{ pokemon?: Pokemon; targetSpeciesId?: PokemonSpeciesId; itemName?: string }>).detail;
+    const detail = (
+      e as CustomEvent<{ pokemon?: Pokemon; targetSpeciesId?: PokemonSpeciesId; itemName?: string }>
+    ).detail;
     if (detail?.pokemon && detail.targetSpeciesId) {
       startEvolution(detail.pokemon, detail.targetSpeciesId, detail.itemName || '');
     }

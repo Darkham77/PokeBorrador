@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue'
-import type { RefreshButtonSize, RefreshButtonVariant } from '@/components/common/baseRefreshButtonTypes'
+import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue';
+import type {
+  RefreshButtonSize,
+  RefreshButtonVariant
+} from '@/components/common/baseRefreshButtonTypes';
 
 interface Props {
-  id?: string
-  loading?: boolean
-  disabled?: boolean
-  label?: string
-  title?: string
-  size?: RefreshButtonSize
-  variant?: RefreshButtonVariant
+  id?: string;
+  loading?: boolean;
+  disabled?: boolean;
+  label?: string;
+  title?: string;
+  size?: RefreshButtonSize;
+  variant?: RefreshButtonVariant;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -20,11 +23,11 @@ withDefaults(defineProps<Props>(), {
   title: 'Refrescar contenido',
   size: 'sm',
   variant: 'circle'
-})
+});
 
 const emit = defineEmits<{
-  (e: 'click', event: MouseEvent): void
-}>()
+  (e: 'click', event: MouseEvent): void;
+}>();
 </script>
 
 <template>
@@ -39,4 +42,3 @@ const emit = defineEmits<{
     @click="emit('click', $event)"
   />
 </template>
-

@@ -7,7 +7,7 @@
  * - Asserts clean execution on repository data
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   ShowdownParityAuditor,
   SHOWDOWN_PARITY_RULES,
@@ -25,9 +25,7 @@ describe('ShowdownParityAuditor', () => {
     });
 
     it('declares all expected canonical rules in SHOWDOWN_PARITY_RULES', () => {
-      const expectedRules: ShowdownParityRuleId[] = [
-        'missing-protocol-token'
-      ];
+      const expectedRules: ShowdownParityRuleId[] = ['missing-protocol-token'];
 
       for (const rule of expectedRules) {
         expect(SHOWDOWN_PARITY_RULES).toContain(rule);

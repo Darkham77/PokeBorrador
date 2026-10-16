@@ -21,9 +21,17 @@ import {
   MAX_SHADOW_SCALE,
   SHADOW_SCALE_STEP
 } from '@/types/pokemon/spriteShadows';
-import { ANIMATED_SPRITE_DATABASE, hasAnimatedSpriteId } from '@/data/pokemon/animatedSpriteDatabase';
+import {
+  ANIMATED_SPRITE_DATABASE,
+  hasAnimatedSpriteId
+} from '@/data/pokemon/animatedSpriteDatabase';
 import { DEFAULT_FRAME_SIZE_PX, POKEMON_SPRITE_IDLE_FPS } from '@/logic/constants/animations';
-import { copySliderValue, readSliderValue, copyAllValues, readAllValues } from '../utils/shadowEditorClipboard';
+import {
+  copySliderValue,
+  readSliderValue,
+  copyAllValues,
+  readAllValues
+} from '../utils/shadowEditorClipboard';
 
 interface Props {
   entity: EditorEntity;
@@ -43,21 +51,28 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: 'updateOverride', key: string, feetX: number, feetY: number, isFlying: boolean, shadowScale?: number): void;
+  (
+    e: 'updateOverride',
+    key: string,
+    feetX: number,
+    feetY: number,
+    isFlying: boolean,
+    shadowScale?: number
+  ): void;
   (e: 'resetOverride', key: string): void;
 }>();
-
 
 const MIN_COORDINATE = 0;
 const MAX_COORDINATE = 1;
 const COORDINATE_STEP = 0.005;
 
-
 // Current values (override || default)
 const currentFeetX = computed(() => props.override?.feetX ?? props.entity.defaultFeetX);
 const currentFeetY = computed(() => props.override?.feetY ?? props.entity.defaultFeetY);
 const currentIsFlying = computed(() => props.override?.isFlying ?? props.entity.defaultIsFlying);
-const currentShadowScale = computed(() => props.override?.shadowScale ?? props.entity.defaultShadowScale ?? 1.0);
+const currentShadowScale = computed(
+  () => props.override?.shadowScale ?? props.entity.defaultShadowScale ?? 1.0
+);
 const isModified = computed(() => props.override !== undefined);
 
 const badgeText = computed(() => {
@@ -92,7 +107,11 @@ const getAnimSpriteKey = (url: string): string | null => {
 };
 
 const animKey = computed(() => getAnimSpriteKey(props.entity.spriteUrl));
-const animData = computed(() => (animKey.value && hasAnimatedSpriteId(animKey.value)) ? (ANIMATED_SPRITE_DATABASE[animKey.value] ?? null) : null);
+const animData = computed(() =>
+  animKey.value && hasAnimatedSpriteId(animKey.value)
+    ? (ANIMATED_SPRITE_DATABASE[animKey.value] ?? null)
+    : null
+);
 const isAnimated = computed(() => Boolean(animData.value));
 const frameCount = computed(() => animData.value?.frames ?? 1);
 
@@ -147,13 +166,7 @@ const syncShadowInStore = () => {
 };
 
 watch(
-  [
-    shadowKey,
-    currentIsFlying,
-    currentShadowScale,
-    effectiveShadowWidthStr,
-    containerSize
-  ],
+  [shadowKey, currentIsFlying, currentShadowScale, effectiveShadowWidthStr, containerSize],
   () => {
     syncShadowInStore();
   },
@@ -231,13 +244,20 @@ const handlePointerMove = (e: PointerEvent) => {
   const size = containerSize.value;
   if (size <= 0) return;
 
-  const rawX = dragStartCoords.value.x - (deltaX / size);
-  const rawY = dragStartCoords.value.y - (deltaY / size);
+  const rawX = dragStartCoords.value.x - deltaX / size;
+  const rawY = dragStartCoords.value.y - deltaY / size;
 
   const clampedX = Math.max(MIN_COORDINATE, Math.min(MAX_COORDINATE, Number(rawX.toFixed(3))));
   const clampedY = Math.max(MIN_COORDINATE, Math.min(MAX_COORDINATE, Number(rawY.toFixed(3))));
 
-  emit('updateOverride', props.entity.key, clampedX, clampedY, currentIsFlying.value, currentShadowScale.value);
+  emit(
+    'updateOverride',
+    props.entity.key,
+    clampedX,
+    clampedY,
+    currentIsFlying.value,
+    currentShadowScale.value
+  );
 };
 
 const handlePointerUp = (e: PointerEvent) => {
@@ -245,7 +265,8 @@ const handlePointerUp = (e: PointerEvent) => {
     isDragging.value = false;
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch (_err) { // catch-ok: Pointer capture might already be released or lost by the browser
+    } catch (_err) {
+      // catch-ok: Pointer capture might already be released or lost by the browser
       // Ignored if capture lost
     }
 
@@ -256,9 +277,22 @@ const handlePointerUp = (e: PointerEvent) => {
         const clickRelX = (e.clientX - rect.left) / rect.width;
         const clickRelY = (e.clientY - rect.top) / rect.height;
         if (clickRelX >= 0 && clickRelX <= 1 && clickRelY >= 0 && clickRelY <= 1) {
-          const clampedX = Math.max(MIN_COORDINATE, Math.min(MAX_COORDINATE, Number(clickRelX.toFixed(3))));
-          const clampedY = Math.max(MIN_COORDINATE, Math.min(MAX_COORDINATE, Number(clickRelY.toFixed(3))));
-          emit('updateOverride', props.entity.key, clampedX, clampedY, currentIsFlying.value, currentShadowScale.value);
+          const clampedX = Math.max(
+            MIN_COORDINATE,
+            Math.min(MAX_COORDINATE, Number(clickRelX.toFixed(3)))
+          );
+          const clampedY = Math.max(
+            MIN_COORDINATE,
+            Math.min(MAX_COORDINATE, Number(clickRelY.toFixed(3)))
+          );
+          emit(
+            'updateOverride',
+            props.entity.key,
+            clampedX,
+            clampedY,
+            currentIsFlying.value,
+            currentShadowScale.value
+          );
         }
       }
     }
@@ -269,26 +303,54 @@ const handleNumericXChange = (event: Event) => {
   const num = parseFloat((event.target as HTMLInputElement).value);
   if (isNaN(num)) return;
   const val = Math.max(MIN_COORDINATE, Math.min(MAX_COORDINATE, Number(num.toFixed(3))));
-  emit('updateOverride', props.entity.key, val, currentFeetY.value, currentIsFlying.value, currentShadowScale.value);
+  emit(
+    'updateOverride',
+    props.entity.key,
+    val,
+    currentFeetY.value,
+    currentIsFlying.value,
+    currentShadowScale.value
+  );
 };
 
 const handleNumericYChange = (event: Event) => {
   const num = parseFloat((event.target as HTMLInputElement).value);
   if (isNaN(num)) return;
   const val = Math.max(MIN_COORDINATE, Math.min(MAX_COORDINATE, Number(num.toFixed(3))));
-  emit('updateOverride', props.entity.key, currentFeetX.value, val, currentIsFlying.value, currentShadowScale.value);
+  emit(
+    'updateOverride',
+    props.entity.key,
+    currentFeetX.value,
+    val,
+    currentIsFlying.value,
+    currentShadowScale.value
+  );
 };
 
 const handleShadowScaleChange = (event: Event) => {
   const num = parseFloat((event.target as HTMLInputElement).value);
   if (isNaN(num)) return;
   const val = Math.max(MIN_SHADOW_SCALE, Math.min(MAX_SHADOW_SCALE, Number(num.toFixed(2))));
-  emit('updateOverride', props.entity.key, currentFeetX.value, currentFeetY.value, currentIsFlying.value, val);
+  emit(
+    'updateOverride',
+    props.entity.key,
+    currentFeetX.value,
+    currentFeetY.value,
+    currentIsFlying.value,
+    val
+  );
 };
 
 const handleFlyingToggle = (event: Event) => {
   const checked = (event.target as HTMLInputElement).checked;
-  emit('updateOverride', props.entity.key, currentFeetX.value, currentFeetY.value, checked, currentShadowScale.value);
+  emit(
+    'updateOverride',
+    props.entity.key,
+    currentFeetX.value,
+    currentFeetY.value,
+    checked,
+    currentShadowScale.value
+  );
 };
 
 const COPY_FEEDBACK_DURATION_SEC = 0.9 as const;
@@ -315,13 +377,34 @@ const handlePasteValue = async (field: ShadowSliderField) => {
 
   if (field === 'x') {
     const val = Math.max(MIN_COORDINATE, Math.min(MAX_COORDINATE, Number(raw.toFixed(3))));
-    emit('updateOverride', props.entity.key, val, currentFeetY.value, currentIsFlying.value, currentShadowScale.value);
+    emit(
+      'updateOverride',
+      props.entity.key,
+      val,
+      currentFeetY.value,
+      currentIsFlying.value,
+      currentShadowScale.value
+    );
   } else if (field === 'y') {
     const val = Math.max(MIN_COORDINATE, Math.min(MAX_COORDINATE, Number(raw.toFixed(3))));
-    emit('updateOverride', props.entity.key, currentFeetX.value, val, currentIsFlying.value, currentShadowScale.value);
+    emit(
+      'updateOverride',
+      props.entity.key,
+      currentFeetX.value,
+      val,
+      currentIsFlying.value,
+      currentShadowScale.value
+    );
   } else if (field === 'scale') {
     const val = Math.max(MIN_SHADOW_SCALE, Math.min(MAX_SHADOW_SCALE, Number(raw.toFixed(2))));
-    emit('updateOverride', props.entity.key, currentFeetX.value, currentFeetY.value, currentIsFlying.value, val);
+    emit(
+      'updateOverride',
+      props.entity.key,
+      currentFeetX.value,
+      currentFeetY.value,
+      currentIsFlying.value,
+      val
+    );
   }
 };
 
@@ -365,17 +448,11 @@ const handleReset = () => {
 </script>
 
 <template>
-  <div
-    class="shadow-editor-card"
-    :class="{ 'is-modified': isModified }"
-  >
+  <div class="shadow-editor-card" :class="{ 'is-modified': isModified }">
     <!-- Card Header with High-Contrast Legible Names & Badges -->
     <div class="card-header">
       <div class="header-name-box">
-        <span
-          class="entity-name"
-          :title="entity.name"
-        >
+        <span class="entity-name" :title="entity.name">
           {{ entity.name }}
         </span>
       </div>
@@ -391,10 +468,7 @@ const handleReset = () => {
         </span>
 
         <!-- Status Badge (AUTO / HEREDADO / MOD) -->
-        <span
-          class="status-badge"
-          :class="badgeClass"
-        >
+        <span class="status-badge" :class="badgeClass">
           {{ badgeText }}
         </span>
       </div>
@@ -448,16 +522,15 @@ const handleReset = () => {
             width: `${frameCount * 100}%`
           }"
           alt=""
-        >
+        />
         <img
           v-else
           class="static-sprite-image"
           :src="entity.spriteUrl"
           alt=""
-        
           width="32"
           height="32"
-        >
+        />
       </div>
     </div>
 
@@ -474,8 +547,9 @@ const handleReset = () => {
           :max="MAX_COORDINATE"
           :step="COORDINATE_STEP"
           :value="currentFeetX"
+          aria-label="Posición X"
           @input="handleNumericXChange"
-        >
+        />
         <input
           id="shadow-editor-card-input-numericxchange"
           type="number"
@@ -484,9 +558,10 @@ const handleReset = () => {
           :max="MAX_COORDINATE"
           :step="COORDINATE_STEP"
           :value="currentFeetX.toFixed(3)"
+          aria-label="Valor numérico Posición X"
           @input="handleNumericXChange"
           @change="handleNumericXChange"
-        >
+        />
         <div class="slider-btn-group">
           <button
             id="shadow-editor-card-btn-copiedfield-x"
@@ -520,8 +595,9 @@ const handleReset = () => {
           :max="MAX_COORDINATE"
           :step="COORDINATE_STEP"
           :value="currentFeetY"
+          aria-label="Posición Y"
           @input="handleNumericYChange"
-        >
+        />
         <input
           id="shadow-editor-card-input-numericychange"
           type="number"
@@ -530,9 +606,10 @@ const handleReset = () => {
           :max="MAX_COORDINATE"
           :step="COORDINATE_STEP"
           :value="currentFeetY.toFixed(3)"
+          aria-label="Valor numérico Posición Y"
           @input="handleNumericYChange"
           @change="handleNumericYChange"
-        >
+        />
         <div class="slider-btn-group">
           <button
             id="shadow-editor-card-btn-copiedfield-y"
@@ -557,10 +634,7 @@ const handleReset = () => {
 
       <!-- Shadow Size / Scale Control -->
       <div class="control-row">
-        <label
-          class="control-label"
-          title="Escala de Sombra (Tamaño)"
-        >Tam:</label>
+        <label class="control-label" title="Escala de Sombra (Tamaño)">Tam:</label>
         <input
           id="shadow-editor-card-input-3"
           type="range"
@@ -569,8 +643,9 @@ const handleReset = () => {
           :max="MAX_SHADOW_SCALE"
           :step="SHADOW_SCALE_STEP"
           :value="currentShadowScale"
+          aria-label="Escala de Sombra"
           @input="handleShadowScaleChange"
-        >
+        />
         <input
           id="shadow-editor-card-input-shadowscalechange"
           type="number"
@@ -579,9 +654,10 @@ const handleReset = () => {
           :max="MAX_SHADOW_SCALE"
           :step="SHADOW_SCALE_STEP"
           :value="currentShadowScale.toFixed(2)"
+          aria-label="Valor numérico Escala de Sombra"
           @input="handleShadowScaleChange"
           @change="handleShadowScaleChange"
-        >
+        />
         <div class="slider-btn-group">
           <button
             id="shadow-editor-card-btn-copiedfield-scale"
@@ -612,8 +688,9 @@ const handleReset = () => {
             type="checkbox"
             class="flying-checkbox"
             :checked="currentIsFlying"
+            aria-label="Modo Volador"
             @change="handleFlyingToggle"
-          >
+          />
           <span class="flying-text">Volador</span>
         </label>
 

@@ -21,7 +21,7 @@ Game Mechanics / World Exploration Prototyping.
 ## Work Guidance
 
 - To test the visual suite, launch `npm run dev` and open `http://localhost:5173/test_aventura/index.html`.
-- For unit testing, run `npx vitest run test_aventura/tests/`.
+- For unit testing, run `npm run test:node -- test_aventura/tests/` (or `npm test -- test_aventura/tests/`).
 
 ## Verification
 

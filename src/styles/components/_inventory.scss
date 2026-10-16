@@ -1,5 +1,5 @@
-@use "@/styles/core/mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .inventory-modal-header {
   @include shop-header;
@@ -19,8 +19,12 @@
 
     .stat-node {
       @include shop-header-stat;
-      
-      &.money .value { @extend .colored; color: var(--green); text-shadow: 0 0 15px Rgb(74 222 128 / 20%); }
+
+      &.money .value {
+        @extend .colored;
+        color: var(--green);
+        text-shadow: 0 0 15px Rgb(74 222 128 / 20%);
+      }
     }
   }
 }
@@ -101,18 +105,16 @@
 
   .empty-text {
     text-align: center;
-    h3 { 
-      @include pixelated; 
+    h3 {
+      @include pixelated;
 
-      color: var(--white); 
-      font-size: var(--font-10); 
+      color: var(--white);
+      font-size: var(--font-10);
       margin-bottom: 8px;
     }
-    p { 
-      color: Rgb(255 255 255 / 40%); 
-      font-size: var(--font-13); 
+    p {
+      color: Rgb(255 255 255 / 40%);
+      font-size: var(--font-13);
     }
   }
 }
-
-

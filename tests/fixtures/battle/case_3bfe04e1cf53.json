@@ -26,12 +26,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "bite",
-        "bitterblade",
-        "bittermalice",
-        "blastburn"
-      ],
+      "moves": ["bite", "bitterblade", "bittermalice", "blastburn"],
       "uid": "77e741a8-4cea-463f-bd55-456f9d79d9d2",
       "stats": {
         "maxHp": 342,
@@ -66,12 +61,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "blazekick",
-        "bleakwindstorm",
-        "blizzard",
-        "block"
-      ],
+      "moves": ["blazekick", "bleakwindstorm", "blizzard", "block"],
       "uid": "9ec3c5f1-a06a-42e7-ad18-41031a48b5ae",
       "stats": {
         "maxHp": 238,
@@ -106,12 +96,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "bloodmoon",
-        "blueflare",
-        "bodypress",
-        "bodyslam"
-      ],
+      "moves": ["bloodmoon", "blueflare", "bodypress", "bodyslam"],
       "uid": "6eff9566-4ab4-4ed2-a602-f9b6df038b8e",
       "stats": {
         "maxHp": 326,
@@ -146,12 +131,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "boltstrike",
-        "bonerush",
-        "boomburst",
-        "bounce"
-      ],
+      "moves": ["boltstrike", "bonerush", "boomburst", "bounce"],
       "uid": "ebd6b2d1-790e-4b16-84f5-ac87299c40b2",
       "stats": {
         "maxHp": 242,
@@ -186,12 +166,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "branchpoke",
-        "bravebird",
-        "breakingswipe",
-        "brickbreak"
-      ],
+      "moves": ["branchpoke", "bravebird", "breakingswipe", "brickbreak"],
       "uid": "35fa0161-79c7-4a9e-99bf-9a3a3b50de5d",
       "stats": {
         "maxHp": 272,
@@ -226,12 +201,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "brine",
-        "brutalswing",
-        "bubblebeam",
-        "bugbite"
-      ],
+      "moves": ["brine", "brutalswing", "bubblebeam", "bugbite"],
       "uid": "1e41a12a-153a-4adc-8f3d-582eeeb58b00",
       "stats": {
         "maxHp": 222,
@@ -268,12 +238,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "04ffceb4-1d02-446f-a355-356a7fc23ca0",
       "stats": {
         "maxHp": 651,
@@ -308,12 +273,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "fd613ac4-250c-4995-acdd-a75713350005",
       "stats": {
         "maxHp": 651,
@@ -348,12 +308,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "84b39acd-1d9a-437e-a744-78ed33e2f146",
       "stats": {
         "maxHp": 651,
@@ -388,12 +343,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "213ad0f5-53da-4145-956f-6b2b19551fb5",
       "stats": {
         "maxHp": 651,
@@ -428,12 +378,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "c0ec32d1-863b-4f39-8112-346d6742e38a",
       "stats": {
         "maxHp": 651,
@@ -468,12 +413,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "04c27b16-00c9-4703-8ce6-7801e0e9b0e7",
       "stats": {
         "maxHp": 651,
@@ -519,12 +459,7 @@
     "moldbreaker",
     "neutralizinggas"
   ],
-  "seed": [
-    18588,
-    21544,
-    54523,
-    34263
-  ],
+  "seed": [18588, 21544, 54523, 34263],
   "playerChoices": [
     "move 1",
     "move 2",
@@ -923,9 +858,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 18,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1139,10 +1072,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 22,
-      "p1Volatiles": [
-        "twoturnmove",
-        "bounce"
-      ],
+      "p1Volatiles": ["twoturnmove", "bounce"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2151,9 +2081,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 23,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2221,9 +2149,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 7,
       "p2MovePp": 21,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2290,9 +2216,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 6,
       "p2MovePp": 19,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2358,9 +2282,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 5,
       "p2MovePp": 17,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2425,9 +2347,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 4,
       "p2MovePp": 15,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2446,9 +2366,7 @@
       "battleTurn": 51,
       "p1ActiveUid": "77e741a8-4cea-463f-bd55-456f9d79d9d2",
       "p2ActiveUid": "04c27b16-00c9-4703-8ce6-7801e0e9b0e7",
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2515,9 +2433,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 3,
       "p2MovePp": 23,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2583,9 +2499,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 2,
       "p2MovePp": 21,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2651,9 +2565,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 1,
       "p2MovePp": 19,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,

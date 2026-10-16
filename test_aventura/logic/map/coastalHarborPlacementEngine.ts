@@ -10,11 +10,14 @@
  *   4. Zero open-ocean wooden bridges: maritime travel connects via Ferry service.
  */
 
-import { GEO_CARDINAL_DIRECTIONS, type POINode, type CardinalDirection, type POIGateway } from '../../types/map/poiTypes.ts';
+import {
+  GEO_CARDINAL_DIRECTIONS,
+  type POINode,
+  type CardinalDirection,
+  type POIGateway
+} from '../../types/map/poiTypes.ts';
 import { resolvePortGateAsset } from './canvasLandmarkRenderer.ts';
 import type { ContinentMapResult } from './continentGenerator.ts';
-
-
 
 const MAX_OCEAN_DEPTH_SCAN = 14 as const;
 const MIN_OCEAN_DEPTH_REQUIRED = 6 as const;
@@ -44,7 +47,14 @@ function countInlandClearCells(
     if (cy >= 0) {
       for (let dx = 0; dx < candW; dx++) {
         const c = continentMap.cells[cy]?.[x + dx];
-        if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[cy]?.[x + dx] && continentMap.terrainMatrix[cy]?.[x + dx] !== 'water') inlandCount++;
+        if (
+          c &&
+          c.isWalkable &&
+          c.elevation === 0 &&
+          !continentMap.resolvedMountain.occupiedFootCells[cy]?.[x + dx] &&
+          continentMap.terrainMatrix[cy]?.[x + dx] !== 'water'
+        )
+          inlandCount++;
       }
     }
   } else if (dir === 'north') {
@@ -52,7 +62,14 @@ function countInlandClearCells(
     if (cy < H) {
       for (let dx = 0; dx < candW; dx++) {
         const c = continentMap.cells[cy]?.[x + dx];
-        if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[cy]?.[x + dx] && continentMap.terrainMatrix[cy]?.[x + dx] !== 'water') inlandCount++;
+        if (
+          c &&
+          c.isWalkable &&
+          c.elevation === 0 &&
+          !continentMap.resolvedMountain.occupiedFootCells[cy]?.[x + dx] &&
+          continentMap.terrainMatrix[cy]?.[x + dx] !== 'water'
+        )
+          inlandCount++;
       }
     }
   } else if (dir === 'east') {
@@ -60,7 +77,14 @@ function countInlandClearCells(
     if (cx >= 0) {
       for (let dy = 0; dy < candH; dy++) {
         const c = continentMap.cells[y + dy]?.[cx];
-        if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[y + dy]?.[cx] && continentMap.terrainMatrix[y + dy]?.[cx] !== 'water') inlandCount++;
+        if (
+          c &&
+          c.isWalkable &&
+          c.elevation === 0 &&
+          !continentMap.resolvedMountain.occupiedFootCells[y + dy]?.[cx] &&
+          continentMap.terrainMatrix[y + dy]?.[cx] !== 'water'
+        )
+          inlandCount++;
       }
     }
   } else if (dir === 'west') {
@@ -68,7 +92,14 @@ function countInlandClearCells(
     if (cx < W) {
       for (let dy = 0; dy < candH; dy++) {
         const c = continentMap.cells[y + dy]?.[cx];
-        if (c && c.isWalkable && c.elevation === 0 && !continentMap.resolvedMountain.occupiedFootCells[y + dy]?.[cx] && continentMap.terrainMatrix[y + dy]?.[cx] !== 'water') inlandCount++;
+        if (
+          c &&
+          c.isWalkable &&
+          c.elevation === 0 &&
+          !continentMap.resolvedMountain.occupiedFootCells[y + dy]?.[cx] &&
+          continentMap.terrainMatrix[y + dy]?.[cx] !== 'water'
+        )
+          inlandCount++;
       }
     }
   }
@@ -217,7 +248,13 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
 
           if (gwX < 0 || gwX >= W || gwY < 0 || gwY >= H) continue;
           const cell = continentMap.cells[gwY]?.[gwX];
-          if (!cell || !cell.isWalkable || cell.elevation !== 0 || continentMap.resolvedMountain.occupiedFootCells[gwY]?.[gwX] || continentMap.terrainMatrix[gwY]?.[gwX] === 'water') {
+          if (
+            !cell ||
+            !cell.isWalkable ||
+            cell.elevation !== 0 ||
+            continentMap.resolvedMountain.occupiedFootCells[gwY]?.[gwX] ||
+            continentMap.terrainMatrix[gwY]?.[gwX] === 'water'
+          ) {
             continue;
           }
 
@@ -241,12 +278,28 @@ export function placeCoastalHarborDocks(ctx: HarborPlacementContext): void {
 
       const inlandGateway: POIGateway =
         bestPort.facing === 'south'
-          ? { x: bestPort.x + Math.floor(portWidth / 2), y: Math.max(0, bestPort.y - 1), direction: 'north' }
+          ? {
+              x: bestPort.x + Math.floor(portWidth / 2),
+              y: Math.max(0, bestPort.y - 1),
+              direction: 'north'
+            }
           : bestPort.facing === 'north'
-            ? { x: bestPort.x + Math.floor(portWidth / 2), y: Math.min(H - 1, bestPort.y + portHeight), direction: 'south' }
+            ? {
+                x: bestPort.x + Math.floor(portWidth / 2),
+                y: Math.min(H - 1, bestPort.y + portHeight),
+                direction: 'south'
+              }
             : bestPort.facing === 'east'
-              ? { x: Math.max(0, bestPort.x - 1), y: bestPort.y + Math.floor(portHeight / 2), direction: 'west' }
-              : { x: Math.min(W - 1, bestPort.x + portWidth), y: bestPort.y + Math.floor(portHeight / 2), direction: 'east' };
+              ? {
+                  x: Math.max(0, bestPort.x - 1),
+                  y: bestPort.y + Math.floor(portHeight / 2),
+                  direction: 'west'
+                }
+              : {
+                  x: Math.min(W - 1, bestPort.x + portWidth),
+                  y: bestPort.y + Math.floor(portHeight / 2),
+                  direction: 'east'
+                };
 
       const node: POINode = {
         id: portId,

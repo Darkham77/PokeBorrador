@@ -1,5 +1,5 @@
 // src/styles/views/box/_grid.scss
-@use "../../core/tools" as *;
+@use '../../core/tools' as *;
 
 .box-grid {
   display: grid;
@@ -22,7 +22,7 @@
   overflow: hidden;
 
   &:hover {
-    & .box-card-sprite { 
+    & .box-card-sprite {
       @include pokemon-sprite-hover-standard;
     }
   }
@@ -40,8 +40,11 @@
       transform: none;
     }
 
-    &::before, &::after { display: none !important; }
-    
+    &::before,
+    &::after {
+      display: none !important;
+    }
+
     & .box-card-sprite {
       transform: none;
       will-change: transform, filter, opacity;
@@ -88,7 +91,7 @@
     overflow: visible;
 
     .with-badges & {
-      margin-left: 12px; 
+      margin-left: 12px;
     }
 
     .pv-fx-wrapper,
@@ -100,7 +103,7 @@
     }
 
     & .box-card-sprite {
-      @include pokemon-sprite-base-standard; 
+      @include pokemon-sprite-base-standard;
 
       width: 83px !important;
       min-width: 83px !important;
@@ -119,7 +122,7 @@
     padding-left: 0;
 
     .with-badges & {
-      padding-left: 12px; 
+      padding-left: 12px;
     }
 
     .box-pokemon-name-row {

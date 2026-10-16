@@ -1,5 +1,5 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/variables" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/variables' as *;
 
 .hatch-overlay {
   @include pixelated;

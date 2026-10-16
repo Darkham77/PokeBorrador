@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import {
@@ -68,11 +68,14 @@ describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
   describe('generateNPCInventory', () => {
     it('generates a valid inventory and remaining money for a low-level normal NPC', () => {
       const { inventory, remainingMoney } = generateNPCInventory(10, 'easy', false, false);
-      
+
       const totalItems = Object.values(inventory).reduce((a, b) => a + b, 0);
-      assert.ok(totalItems <= 10, 'Low level normal route NPC should have items including pokeballs');
+      assert.ok(
+        totalItems <= 10,
+        'Low level normal route NPC should have items including pokeballs'
+      );
       assert.ok(remainingMoney >= 0, 'Remaining money cannot be negative');
-      
+
       // Should not have unlock-restricted items like revives
       assert.strictEqual(inventory['revive'], undefined);
       assert.strictEqual(inventory['revivemax'], undefined);
@@ -80,9 +83,25 @@ describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
 
     it('generates a richer inventory for a hard-mode Gym Leader', () => {
       const { inventory, remainingMoney } = generateNPCInventory(60, 'hard', true, false);
-      
-      const recoveryItems = ['potion', 'superpotion', 'hyperpotion', 'maxpotion', 'fullrestore', 'antidote', 'burnheal', 'paralyzeheal', 'awakening', 'iceheal', 'fullheal', 'revive', 'revivemax'];
-      const totalRecoveryCount = Object.keys(inventory).filter(k => recoveryItems.includes(k)).reduce((a, b) => a + inventory[b]!, 0);
+
+      const recoveryItems = [
+        'potion',
+        'superpotion',
+        'hyperpotion',
+        'maxpotion',
+        'fullrestore',
+        'antidote',
+        'burnheal',
+        'paralyzeheal',
+        'awakening',
+        'iceheal',
+        'fullheal',
+        'revive',
+        'revivemax'
+      ];
+      const totalRecoveryCount = Object.entries(inventory)
+        .filter(([k]) => recoveryItems.includes(k))
+        .reduce((a, [, v]) => a + (v ?? 0), 0);
 
       assert.ok(totalRecoveryCount <= 8, 'Gym Leader on hard should have at most 8 recovery items');
       assert.ok(remainingMoney >= 0, 'Remaining money cannot be negative');
@@ -92,39 +111,39 @@ describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
   describe('Team Rocket Player Robbery Simulation', () => {
     it('successfully steals items from enemy inventory within budget limit', () => {
       const enemyInventory: Record<string, number> = {
-        'potion': 3,
-        'pokeball': 5,
-        'superpotion': 2,
-        'ultraball': 1
+        potion: 3,
+        pokeball: 5,
+        superpotion: 2,
+        ultraball: 1
       };
-      
+
       const itemPrices: Record<string, number> = {
-        'potion': 200,
-        'pokeball': 200,
-        'superpotion': 600,
-        'ultraball': 1000
+        potion: 200,
+        pokeball: 200,
+        superpotion: 600,
+        ultraball: 1000
       };
 
       const classLevel = 5;
       const maxLimit = 8 * Math.pow(classLevel, 2); // 200 coins
-      
+
       const playerInventory: Record<string, number> = {};
       let stolenTotalCost = 0;
-      
-      const availableItems = Object.keys(enemyInventory).filter(k => enemyInventory[k]! > 0);
-      
+
+      const availableItems = Object.keys(enemyInventory).filter((k) => enemyInventory[k]! > 0);
+
       for (const itemId of availableItems) {
         if (stolenTotalCost >= maxLimit) break;
         const itemPrice = itemPrices[itemId] || 100;
         const availableQty = enemyInventory[itemId] || 0;
-        
+
         const remainingBudget = maxLimit - stolenTotalCost;
         const maxQtyToSteal = Math.floor(remainingBudget / itemPrice);
-        
+
         if (maxQtyToSteal >= 1 && availableQty > 0) {
           const qtyAllowed = Math.min(availableQty, maxQtyToSteal);
           const qtyToSteal = Math.min(qtyAllowed, 1);
-          
+
           enemyInventory[itemId] = availableQty - qtyToSteal;
           if (enemyInventory[itemId] <= 0) {
             delete enemyInventory[itemId];
@@ -133,7 +152,7 @@ describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
           stolenTotalCost += qtyToSteal * itemPrice;
         }
       }
-      
+
       assert.ok(stolenTotalCost <= maxLimit, 'Stolen cost must respect the budget limit');
       assert.ok(Object.keys(playerInventory).length > 0, 'Should have stolen at least one item');
       const potionQty = enemyInventory['potion'] ?? 0;

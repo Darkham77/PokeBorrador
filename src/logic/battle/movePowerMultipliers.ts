@@ -1,58 +1,56 @@
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { PokemonType } from '@/data/battle/types'
-import { WEATHER_MECHANICAL, type WeatherMechanical } from '@/logic/weather/weatherRegistry'
-import type { PokemonMoveId } from '@/data/battle/moves'
-import type { DayPhase } from '@/logic/utils/timeUtils'
-import type { PureBattleWeather } from './battleMathTypes.ts'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PokemonType } from '@/data/battle/types';
+import { WEATHER_MECHANICAL, type WeatherMechanical } from '@/logic/weather/weatherRegistry';
+import type { PokemonMoveId } from '@/data/battle/moves';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import { isItemId, type ItemId } from '@/data/inventory/items';
+import type { AbilityId } from '@/data/battle/abilities';
+import type { PureBattleWeather } from './battleMathTypes.ts';
+import { SAND_FORCE_MULTIPLIER, DAY_CYCLE_BOOST_MULTIPLIER } from '@/logic/constants/gameplay.ts';
 
-const BASE_STAB_MULT = 1.5
-const ADAPTABILITY_STAB_MULTIPLIER = 2
-const LOW_HP_PINCH_RATIO_ONE_THIRD = 3
-const TECHNICIAN_MAX_POWER_CAP = 60
-const DAY_CYCLE_BOOST_MULTIPLIER = 1.2
-const ITEM_TYPE_BOOST_MULTIPLIER = 1.2
-const CHOICE_BAND_MULTIPLIER = 1.5
-const HALF_DAMAGE_MULTIPLIER = 0.5
-const SAND_FORCE_MULTIPLIER = 1.3
+const BASE_STAB_MULT = 1.5;
+const ADAPTABILITY_STAB_MULTIPLIER = 2;
+const LOW_HP_PINCH_RATIO_ONE_THIRD = 3;
+const TECHNICIAN_MAX_POWER_CAP = 60;
+const ITEM_TYPE_BOOST_MULTIPLIER = 1.2;
+const CHOICE_BAND_MULTIPLIER = 1.5;
+const HALF_DAMAGE_MULTIPLIER = 0.5;
 
-const TYPE_BOOSTING_ITEMS: Record<string, string> = {
+const TYPE_BOOSTING_ITEMS: Readonly<Partial<Record<ItemId, PokemonType>>> = {
   charcoal: 'fire',
   magnet: 'electric',
-  mystic_water: 'water',
-  miracle_seed: 'grass',
-  black_belt: 'fighting',
-  twisted_spoon: 'psychic',
-  spell_tag: 'ghost',
-  silver_powder: 'bug',
-  poison_barb: 'poison',
+  mysticwater: 'water',
+  miracleseed: 'grass',
+  blackbelt: 'fighting',
+  twistedspoon: 'psychic',
+  spelltag: 'ghost',
+  silverpowder: 'bug',
+  poisonbarb: 'poison'
+};
+
+export function calculateStabMultiplier(moveType: PokemonType, attacker: Pokemon): number {
+  let stab = moveType === attacker.type || moveType === attacker.type2 ? BASE_STAB_MULT : 1;
+  if (attacker.ability === 'adaptability' && stab > 1) stab = ADAPTABILITY_STAB_MULTIPLIER;
+  return stab;
 }
 
-export function calculateStabMultiplier(
-  moveType: PokemonType,
-  attacker: Pokemon
-): number {
-  let stab = (moveType === attacker.type || moveType === attacker.type2) ? BASE_STAB_MULT : 1
-  if (attacker.ability === 'adaptability' && stab > 1) stab = ADAPTABILITY_STAB_MULTIPLIER
-  return stab
-}
-
-const PINCH_ABILITIES_MAP: Readonly<Record<string, PokemonType>> = {
+const PINCH_ABILITIES_MAP: Readonly<Partial<Record<AbilityId, PokemonType>>> = {
   blaze: 'fire',
   torrent: 'water',
   overgrow: 'grass',
-  swarm: 'bug',
-}
+  swarm: 'bug'
+};
 
 function resolveSunMultiplier(moveType: PokemonType, wType: string): number {
-  if (moveType === 'fire') return BASE_STAB_MULT
-  if (moveType === 'water') return wType === 'heatwave' ? 0 : HALF_DAMAGE_MULTIPLIER
-  return 1
+  if (moveType === 'fire') return BASE_STAB_MULT;
+  if (moveType === 'water') return wType === 'heatwave' ? 0 : HALF_DAMAGE_MULTIPLIER;
+  return 1;
 }
 
 function resolveRainMultiplier(moveType: PokemonType): number {
-  if (moveType === 'water') return BASE_STAB_MULT
-  if (moveType === 'fire') return HALF_DAMAGE_MULTIPLIER
-  return 1
+  if (moveType === 'water') return BASE_STAB_MULT;
+  if (moveType === 'fire') return HALF_DAMAGE_MULTIPLIER;
+  return 1;
 }
 
 function resolveWeatherElementalMultiplier(
@@ -61,25 +59,25 @@ function resolveWeatherElementalMultiplier(
   moveType: PokemonType
 ): number {
   if (mechWeather === WEATHER_MECHANICAL.SUN) {
-    return resolveSunMultiplier(moveType, wType)
+    return resolveSunMultiplier(moveType, wType);
   }
   if (mechWeather === WEATHER_MECHANICAL.RAIN) {
-    return resolveRainMultiplier(moveType)
+    return resolveRainMultiplier(moveType);
   }
   if (wType === 'thunderstorm' && (moveType === 'electric' || moveType === 'dragon')) {
-    return BASE_STAB_MULT
+    return BASE_STAB_MULT;
   }
-  return 1
+  return 1;
 }
 
 function isSolarbeamReducedInWeather(
   weather: PureBattleWeather,
   mechWeather: WeatherMechanical
 ): boolean {
-  if (weather.turns === 0) return false
-  const isSun = mechWeather === WEATHER_MECHANICAL.SUN
-  const isClear = mechWeather === WEATHER_MECHANICAL.CLEAR && weather.type !== 'thunderstorm'
-  return !isSun && !isClear
+  if (weather.turns === 0) return false;
+  const isSun = mechWeather === WEATHER_MECHANICAL.SUN;
+  const isClear = mechWeather === WEATHER_MECHANICAL.CLEAR && weather.type !== 'thunderstorm';
+  return !isSun && !isClear;
 }
 
 function calculateDirectWeatherMultiplier(
@@ -88,24 +86,23 @@ function calculateDirectWeatherMultiplier(
   weather?: PureBattleWeather | null,
   mechWeather: WeatherMechanical = WEATHER_MECHANICAL.CLEAR
 ): number {
-  if (!weather || weather.turns === 0) return 1
-  const wType = weather.type || weather.visual || 'clear'
-  let weatherMult = resolveWeatherElementalMultiplier(mechWeather, wType, moveType)
+  if (!weather || weather.turns === 0) return 1;
+  const wType = weather.type || weather.visual || 'clear';
+  let weatherMult = resolveWeatherElementalMultiplier(mechWeather, wType, moveType);
 
   if (moveId === 'solarbeam' && isSolarbeamReducedInWeather(weather, mechWeather)) {
-    weatherMult *= HALF_DAMAGE_MULTIPLIER
+    weatherMult *= HALF_DAMAGE_MULTIPLIER;
   }
 
-  return weatherMult
+  return weatherMult;
 }
 
-function calculateDayCycleMultiplier(
-  moveType: PokemonType,
-  cycle?: DayPhase
-): number {
-  if ((cycle === 'day' || cycle === 'morning') && moveType === 'fire') return DAY_CYCLE_BOOST_MULTIPLIER
-  if ((cycle === 'night' || cycle === 'dusk') && moveType === 'water') return DAY_CYCLE_BOOST_MULTIPLIER
-  return 1
+function calculateDayCycleMultiplier(moveType: PokemonType, cycle?: DayPhase): number {
+  if ((cycle === 'day' || cycle === 'morning') && moveType === 'fire')
+    return DAY_CYCLE_BOOST_MULTIPLIER;
+  if ((cycle === 'night' || cycle === 'dusk') && moveType === 'water')
+    return DAY_CYCLE_BOOST_MULTIPLIER;
+  return 1;
 }
 
 export function calculateWeatherAndCyclePowerMultiplier(
@@ -115,11 +112,11 @@ export function calculateWeatherAndCyclePowerMultiplier(
   mechWeather: WeatherMechanical = WEATHER_MECHANICAL.CLEAR,
   cycle?: DayPhase
 ): number {
-  const weatherMult = calculateDirectWeatherMultiplier(moveType, moveId, weather, mechWeather)
+  const weatherMult = calculateDirectWeatherMultiplier(moveType, moveId, weather, mechWeather);
   if (weatherMult === 1 && (mechWeather === WEATHER_MECHANICAL.CLEAR || !weather)) {
-    return calculateDayCycleMultiplier(moveType, cycle)
+    return calculateDayCycleMultiplier(moveType, cycle);
   }
-  return weatherMult
+  return weatherMult;
 }
 
 function calculateAttackerAbilityMultiplier(
@@ -129,24 +126,29 @@ function calculateAttackerAbilityMultiplier(
   weather: { type?: string; turns?: number } | null | undefined,
   mechWeather: string
 ): number {
-  let abilMult = 1
-  const isLowHp = attacker.hp <= (attacker.maxHp / LOW_HP_PINCH_RATIO_ONE_THIRD)
+  let abilMult = 1;
+  const isLowHp = attacker.hp <= attacker.maxHp / LOW_HP_PINCH_RATIO_ONE_THIRD;
 
   if (isLowHp && attacker.ability && PINCH_ABILITIES_MAP[attacker.ability] === moveType) {
-    abilMult = BASE_STAB_MULT
+    abilMult = BASE_STAB_MULT;
   }
 
   if (attacker.ability === 'technician' && movePower <= TECHNICIAN_MAX_POWER_CAP) {
-    abilMult *= BASE_STAB_MULT
+    abilMult *= BASE_STAB_MULT;
   }
 
-  if (weather && weather.turns !== 0 && attacker.ability === 'sandforce' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
+  if (
+    weather &&
+    weather.turns !== 0 &&
+    attacker.ability === 'sandforce' &&
+    mechWeather === WEATHER_MECHANICAL.SANDSTORM
+  ) {
     if (moveType === 'ground' || moveType === 'rock' || moveType === 'steel') {
-      abilMult *= SAND_FORCE_MULTIPLIER
+      abilMult *= SAND_FORCE_MULTIPLIER;
     }
   }
 
-  return abilMult
+  return abilMult;
 }
 
 export function calculateAbilityPowerMultiplier(
@@ -157,13 +159,19 @@ export function calculateAbilityPowerMultiplier(
   weather: { type?: string; turns?: number } | null | undefined,
   mechWeather: string
 ): number {
-  let abilMult = calculateAttackerAbilityMultiplier(moveType, movePower, attacker, weather, mechWeather)
+  let abilMult = calculateAttackerAbilityMultiplier(
+    moveType,
+    movePower,
+    attacker,
+    weather,
+    mechWeather
+  );
 
   if (defender && defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
-    abilMult *= HALF_DAMAGE_MULTIPLIER
+    abilMult *= HALF_DAMAGE_MULTIPLIER;
   }
 
-  return abilMult
+  return abilMult;
 }
 
 export function calculateItemPowerMultiplier(
@@ -171,11 +179,13 @@ export function calculateItemPowerMultiplier(
   moveCategory: string | undefined,
   heldItem: string | null | undefined
 ): number {
-  if (!heldItem) return 1
-  let itemMult = 1
+  if (!heldItem) return 1;
+  let itemMult = 1;
 
-  if (TYPE_BOOSTING_ITEMS[heldItem] === moveType) itemMult = ITEM_TYPE_BOOST_MULTIPLIER
-  if (heldItem === 'choiceband' && moveCategory === 'physical') itemMult = CHOICE_BAND_MULTIPLIER
+  if (isItemId(heldItem) && TYPE_BOOSTING_ITEMS[heldItem] === moveType) {
+    itemMult = ITEM_TYPE_BOOST_MULTIPLIER;
+  }
+  if (heldItem === 'choiceband' && moveCategory === 'physical') itemMult = CHOICE_BAND_MULTIPLIER;
 
-  return itemMult
+  return itemMult;
 }

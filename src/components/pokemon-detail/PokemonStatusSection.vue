@@ -1,89 +1,96 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { getNatureInfo } from '@/data/battle/natures'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
-import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic'
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
-import { MAXIMUM_FRIENDSHIP_VALUE, PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay'
+import { computed } from 'vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getNatureInfo } from '@/data/battle/natures';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils';
+import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { MAXIMUM_FRIENDSHIP_VALUE, PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
 
 interface Props {
-  pokemon: Pokemon
-  context?: string
+  pokemon: Pokemon;
+  context?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   context: ''
-})
+});
 
-const p = computed(() => props.pokemon)
+const p = computed(() => props.pokemon);
 
-const friendshipDetails = computed(() => getFriendshipTooltipDetails(p.value))
-const friendshipSeal = computed(() => friendshipDetails.value.seal)
-const friendshipPct = computed(() => (friendshipDetails.value.currentValue / MAXIMUM_FRIENDSHIP_VALUE) * 100)
+const friendshipDetails = computed(() => getFriendshipTooltipDetails(p.value));
+const friendshipSeal = computed(() => friendshipDetails.value.seal);
+const friendshipPct = computed(
+  () => (friendshipDetails.value.currentValue / MAXIMUM_FRIENDSHIP_VALUE) * 100
+);
 
 const friendshipTooltipDesc = computed(() => {
-  const d = friendshipDetails.value
-  const quote = `«${d.evaluatorQuote}»`
-  const evo = `🚀 ${d.evolutionMessage}`
-  const battle = `⚔️ Retribución: ${d.returnPower} BP | Frustración: ${d.frustrationPower} BP`
-  const perks = `⭐ ${d.combatPerksSummary}`
-  return `${quote}\n\n${evo}\n${battle}\n${perks}`
-})
+  const d = friendshipDetails.value;
+  const quote = `«${d.evaluatorQuote}»`;
+  const evo = `🚀 ${d.evolutionMessage}`;
+  const battle = `⚔️ Retribución: ${d.returnPower} BP | Frustración: ${d.frustrationPower} BP`;
+  const perks = `⭐ ${d.combatPerksSummary}`;
+  return `${quote}\n\n${evo}\n${battle}\n${perks}`;
+});
 
-const HP_HIGH_THRESHOLD_PCT = 50
-const HP_MID_THRESHOLD_PCT = 25
+const HP_HIGH_THRESHOLD_PCT = 50;
+const HP_MID_THRESHOLD_PCT = 25;
 
-const getHpPct = (cur: number, max: number) => (cur / max) * 100
+const getHpPct = (cur: number, max: number) => (cur / max) * 100;
 const getHpClass = (pct: number) => {
-  if (pct > HP_HIGH_THRESHOLD_PCT) return 'hp-high'
-  if (pct > HP_MID_THRESHOLD_PCT) return 'hp-mid'
-  return 'hp-low'
-}
+  if (pct > HP_HIGH_THRESHOLD_PCT) return 'hp-high';
+  if (pct > HP_MID_THRESHOLD_PCT) return 'hp-mid';
+  return 'hp-low';
+};
 
-const getLevelPct = (level: number) => Math.min(100, Math.max(0, (level / MAX_POKEMON_LEVEL) * 100))
+const getLevelPct = (level: number) =>
+  Math.min(100, Math.max(0, (level / MAX_POKEMON_LEVEL) * 100));
 
 const expFillWidthPercent = computed(() => {
-  const currentPoke = p.value
-  if (!currentPoke) return '0%'
-  if (currentPoke.level >= MAX_POKEMON_LEVEL) return '100%'
-  const needed = currentPoke.expNeeded || 1
-  const current = currentPoke.exp || 0
-  const pct = Math.min(PERCENT_BASE_MULTIPLIER, Math.max(0, (current / needed) * PERCENT_BASE_MULTIPLIER))
-  return `${pct}%`
-})
+  const currentPoke = p.value;
+  if (!currentPoke) return '0%';
+  if (currentPoke.level >= MAX_POKEMON_LEVEL) return '100%';
+  const needed = currentPoke.expNeeded || 1;
+  const current = currentPoke.exp || 0;
+  const pct = Math.min(
+    PERCENT_BASE_MULTIPLIER,
+    Math.max(0, (current / needed) * PERCENT_BASE_MULTIPLIER)
+  );
+  return `${pct}%`;
+});
 
 const getAbilityDesc = (ability: string) => {
-  if (!ability) return 'Habilidad especial de este Pokémon.'
-  const data = pokemonDataProvider.getAbilityData(ability)
-  return data ? data.desc : 'Habilidad especial de este Pokémon.'
-}
+  if (!ability) return 'Habilidad especial de este Pokémon.';
+  const data = pokemonDataProvider.getAbilityData(ability);
+  return data ? data.desc : 'Habilidad especial de este Pokémon.';
+};
 
 const getAbilityName = (ability: string) => {
-  if (!ability) return '—'
-  const data = pokemonDataProvider.getAbilityData(ability)
-  return data ? data.name : ability
-}
+  if (!ability) return '—';
+  const data = pokemonDataProvider.getAbilityData(ability);
+  return data ? data.name : ability;
+};
 
 const natureStyle = computed(() => {
-  const info = getNatureInfo(p.value.nature)
-  if (!info.up) return { color: '$gray' } // Neutral gray
-  
-  const colors: Record<string, string> = {
-    'Ataque': '$red',
-    'Defensa': '$yellow',
+  const info = getNatureInfo(p.value.nature);
+  if (!info.up) return { color: '$gray' }; // Neutral gray
+
+  type NatureStatUpKey = 'Ataque' | 'Defensa' | 'At. Esp' | 'Def. Esp' | 'Velocidad';
+  const colors: Record<NatureStatUpKey, string> = {
+    Ataque: '$red',
+    Defensa: '$yellow',
     'At. Esp': 'Rgba(59, 139, 255, 1)',
     'Def. Esp': '$green',
-    'Velocidad': '$purple'
-  }
-  return { color: colors[info.up] || '$white' }
-})
+    Velocidad: '$purple'
+  };
+  return { color: colors[info.up] || '$white' };
+});
 
 const abilityStyle = computed(() => ({
   color: '$green' // Special interactive green
-}))
+}));
 </script>
 
 <template>
@@ -98,10 +105,9 @@ const abilityStyle = computed(() => ({
       >
         <span class="label">Naturaleza</span>
         <div class="value-wrap">
-          <span
-            class="val interactive-val m-interactive-label"
-            :style="natureStyle"
-          >{{ getNatureInfo(p.nature).name || p.nature || 'Seria' }}</span>
+          <span class="val interactive-val m-interactive-label" :style="natureStyle">{{
+            getNatureInfo(p.nature).name || p.nature || 'Seria'
+          }}</span>
         </div>
       </PVTooltip>
 
@@ -113,29 +119,31 @@ const abilityStyle = computed(() => ({
       >
         <span class="label">Habilidad</span>
         <div class="value-wrap">
-          <span
-            class="val interactive-val m-interactive-label"
-            :style="abilityStyle"
-          >{{ getAbilityName(p.ability || '') }}</span>
+          <span class="val interactive-val m-interactive-label" :style="abilityStyle">{{
+            getAbilityName(p.ability || '')
+          }}</span>
         </div>
       </PVTooltip>
 
       <PVTooltip
         title="VIGOR"
-        :description="p.obtainedMethod === 'egg' ? 'Determina cuántas veces puede reproducirse este Pokémon en la Guardería. Se consume al criar y NO se recupera de forma natural. Las crías nacidas de huevo comienzan con vigor inicial reducido a la mitad por desgaste genético, pero puede aumentarse usando Caramelos de Vigor.' : 'Determina cuántas veces puede reproducirse este Pokémon en la Guardería. Se consume al criar y NO se recupera.'"
+        :description="
+          p.obtainedMethod === 'egg'
+            ? 'Determina cuántas veces puede reproducirse este Pokémon en la Guardería. Se consume al criar y NO se recupera de forma natural. Las crías nacidas de huevo comienzan con vigor inicial reducido a la mitad por desgaste genético, pero puede aumentarse usando Caramelos de Vigor.'
+            : 'Determina cuántas veces puede reproducirse este Pokémon en la Guardería. Se consume al criar y NO se recupera.'
+        "
         position="top"
         class="info-card vigor-card"
       >
         <span class="label">Vigor</span>
-        <span class="val vigor-val"><span class="emoji">⚡</span><span>{{ getVigor(p) }}/{{ getMaxVigor(p) }}</span></span>
+        <span class="val vigor-val"
+          ><span class="emoji">⚡</span><span>{{ getVigor(p) }}/{{ getMaxVigor(p) }}</span></span
+        >
       </PVTooltip>
     </div>
 
     <!-- Egg Born Badge -->
-    <div
-      v-if="p.obtainedMethod === 'egg'"
-      class="egg-born-badge pixelated"
-    >
+    <div v-if="p.obtainedMethod === 'egg'" class="egg-born-badge pixelated">
       <span class="emoji">🥚</span> Nacido de Huevo (Cría)
     </div>
 
@@ -147,8 +155,8 @@ const abilityStyle = computed(() => ({
           <span>{{ p.hp }} / {{ p.maxHp }}</span>
         </div>
         <div class="progress-outer">
-          <div 
-            class="progress-inner" 
+          <div
+            class="progress-inner"
             :class="getHpClass(getHpPct(p.hp, p.maxHp))"
             :style="{ width: getHpPct(p.hp, p.maxHp) + '%' }"
           />
@@ -160,27 +168,24 @@ const abilityStyle = computed(() => ({
         tag="div"
         class="level-tooltip-block mt-12"
         :title="`NIVEL ${p.level} / ${MAX_POKEMON_LEVEL}`"
-        :description="p.level >= MAX_POKEMON_LEVEL ? 'Este Pokémon ha alcanzado el nivel máximo permitido.' : `Nivel actual: ${p.level}. Faltan ${MAX_POKEMON_LEVEL - p.level} niveles para alcanzar el nivel máximo (${MAX_POKEMON_LEVEL}).`"
+        :description="
+          p.level >= MAX_POKEMON_LEVEL
+            ? 'Este Pokémon ha alcanzado el nivel máximo permitido.'
+            : `Nivel actual: ${p.level}. Faltan ${MAX_POKEMON_LEVEL - p.level} niveles para alcanzar el nivel máximo (${MAX_POKEMON_LEVEL}).`
+        "
         position="top"
         :touch-instant="true"
       >
         <div class="bar-group level-group">
           <div class="bar-header">
             <span>NIVEL</span>
-            <span
-              v-if="p.level >= MAX_POKEMON_LEVEL"
-              class="max-text"
-            >Nv. {{ p.level }} / {{ MAX_POKEMON_LEVEL }} (MAX)</span>
-            <span
-              v-else
-              class="level-text"
-            >Nv. {{ p.level }} / {{ MAX_POKEMON_LEVEL }}</span>
+            <span v-if="p.level >= MAX_POKEMON_LEVEL" class="max-text"
+              >Nv. {{ p.level }} / {{ MAX_POKEMON_LEVEL }} (MAX)</span
+            >
+            <span v-else class="level-text">Nv. {{ p.level }} / {{ MAX_POKEMON_LEVEL }}</span>
           </div>
           <div class="progress-outer level">
-            <div 
-              class="progress-inner level-fill" 
-              :style="{ width: getLevelPct(p.level) + '%' }"
-            />
+            <div class="progress-inner level-fill" :style="{ width: getLevelPct(p.level) + '%' }" />
           </div>
         </div>
       </PVTooltip>
@@ -189,20 +194,11 @@ const abilityStyle = computed(() => ({
       <div class="bar-group mt-12">
         <div class="bar-header">
           <span>EXPERIENCIA</span>
-          <span
-            v-if="p.level >= MAX_POKEMON_LEVEL"
-            class="max-text"
-          >MAX</span>
-          <span
-            v-else
-            class="exp-text"
-          >{{ p.exp || 0 }} / {{ p.expNeeded || 0 }}</span>
+          <span v-if="p.level >= MAX_POKEMON_LEVEL" class="max-text">MAX</span>
+          <span v-else class="exp-text">{{ p.exp || 0 }} / {{ p.expNeeded || 0 }}</span>
         </div>
         <div class="progress-outer exp">
-          <div 
-            class="progress-inner exp-fill" 
-            :style="{ width: expFillWidthPercent }"
-          />
+          <div class="progress-inner exp-fill" :style="{ width: expFillWidthPercent }" />
         </div>
       </div>
 
@@ -224,8 +220,8 @@ const abilityStyle = computed(() => ({
             </span>
           </div>
           <div class="progress-outer friendship">
-            <div 
-              class="progress-inner" 
+            <div
+              class="progress-inner"
               :class="friendshipSeal.barGradientClass"
               :style="{ width: friendshipPct + '%' }"
             />
@@ -237,7 +233,7 @@ const abilityStyle = computed(() => ({
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .glass-inset {
   padding: 0; // Remove padding
@@ -254,9 +250,9 @@ const abilityStyle = computed(() => ({
   cursor: help;
 }
 
-.bar-group { 
-  margin-bottom: 12px; 
-  
+.bar-group {
+  margin-bottom: 12px;
+
   &.friendship-group,
   &.level-group {
     margin-bottom: 0;
@@ -291,22 +287,31 @@ const abilityStyle = computed(() => ({
 }
 
 .progress-inner {
-  @include will-animate(width); 
+  @include will-animate(width);
 
-  height: 100%; 
+  height: 100%;
   box-shadow: var(--shadow-glow-amber);
 }
 
-.hp-high { background: Linear-Gradient(90deg, Rgb(16 185 129 / 100%), Rgb(52 211 153 / 100%)); color: Rgb(16 185 129 / 100%); }
+.hp-high {
+  background: Linear-Gradient(90deg, Rgb(16 185 129 / 100%), Rgb(52 211 153 / 100%));
+  color: Rgb(16 185 129 / 100%);
+}
 
-.hp-mid { background: Linear-Gradient(90deg, Rgb(245 158 11 / 100%), Rgb(251 191 36 / 100%)); color: Rgb(245 158 11 / 100%); }
+.hp-mid {
+  background: Linear-Gradient(90deg, Rgb(245 158 11 / 100%), Rgb(251 191 36 / 100%));
+  color: Rgb(245 158 11 / 100%);
+}
 
-.hp-low { background: Linear-Gradient(90deg, Rgb(239 68 68 / 100%), Rgb(248 113 113 / 100%)); color: Rgb(239 68 68 / 100%); }
+.hp-low {
+  background: Linear-Gradient(90deg, Rgb(239 68 68 / 100%), Rgb(248 113 113 / 100%));
+  color: Rgb(239 68 68 / 100%);
+}
 
 .exp-fill {
-  @include will-animate(width); 
+  @include will-animate(width);
 
-  background: Linear-Gradient(90deg, Rgb(139 92 246 / 100%), Rgb(168 85 247 / 100%)); 
+  background: Linear-Gradient(90deg, Rgb(139 92 246 / 100%), Rgb(168 85 247 / 100%));
   color: Rgb(139 92 246 / 100%);
 }
 
@@ -387,7 +392,7 @@ const abilityStyle = computed(() => ({
   display: block;
   color: var(--white);
   font-size: var(--font-10); // Standardized size for all values
-  
+
   &.interactive-val {
     display: inline-block; // To keep the dotted border tight
   }
@@ -404,8 +409,8 @@ const abilityStyle = computed(() => ({
   display: inline-flex !important;
   justify-content: center !important;
   align-items: center !important;
-  gap: $spacing-xs; 
-  color: var(--yellow) !important; 
+  gap: $spacing-xs;
+  color: var(--yellow) !important;
   text-shadow: 0 0 10px Rgb(255 214 10 / 30%) !important;
 }
 
@@ -429,22 +434,49 @@ const abilityStyle = computed(() => ({
   box-shadow: var(--shadow-glow-emerald);
 }
 
-.mt-12 { margin-top: 12px; }
+.mt-12 {
+  margin-top: 12px;
+}
 
-.max-text { color: var(--yellow); font-size: var(--font-8); }
+.max-text {
+  color: var(--yellow);
+  font-size: var(--font-8);
+}
 
-.level-text { color: var(--sky); font-size: var(--font-8); }
+.level-text {
+  color: var(--sky);
+  font-size: var(--font-8);
+}
 
-.exp-text { color: var(--purple-light); font-size: var(--font-8); }
+.exp-text {
+  color: var(--purple-light);
+  font-size: var(--font-8);
+}
 
 @media (width <= 480px) {
-  .glass-inset { margin-bottom: 24px; }
-  .bar-header { font-size: var(--font-8); margin-bottom: 8px; }
-  .progress-outer { height: 10px; }
-  
-  .info-grid { gap: $spacing-sm; }
-  .info-card { padding: 12px 8px; }
-  .info-card .label { font-size: var(--font-8); margin-bottom: 8px; }
-  .info-card .val { font-size: var(--font-10); }
+  .glass-inset {
+    margin-bottom: 24px;
+  }
+  .bar-header {
+    font-size: var(--font-8);
+    margin-bottom: 8px;
+  }
+  .progress-outer {
+    height: 10px;
+  }
+
+  .info-grid {
+    gap: $spacing-sm;
+  }
+  .info-card {
+    padding: 12px 8px;
+  }
+  .info-card .label {
+    font-size: var(--font-8);
+    margin-bottom: 8px;
+  }
+  .info-card .val {
+    font-size: var(--font-10);
+  }
 }
 </style>

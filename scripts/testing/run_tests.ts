@@ -1,7 +1,7 @@
 /**
  * @file run_tests.ts
  * @description Testing orchestrator script with multi-platform Docker auto-discovery,
- * daemon auto-start, ephemeral PostgreSQL container lifecycle, and dual-engine Vitest execution.
+ * daemon auto-start, ephemeral PostgreSQL container lifecycle, and dual-engine Vite+ / Vitest execution.
  */
 
 import { styleText } from 'node:util';
@@ -30,12 +30,20 @@ function syncPublicVersionJson(): void {
     const publicVerPath = path.resolve(process.cwd(), 'public/version.json');
     const expectedContent = JSON.stringify({ version: normalizedVersion }, null, 2) + '\n';
 
-    if (!fs.existsSync(publicVerPath) || fs.readFileSync(publicVerPath, 'utf-8') !== expectedContent) {
+    if (
+      !fs.existsSync(publicVerPath) ||
+      fs.readFileSync(publicVerPath, 'utf-8') !== expectedContent
+    ) {
       fs.mkdirSync(path.dirname(publicVerPath), { recursive: true });
       fs.writeFileSync(publicVerPath, expectedContent, 'utf-8');
     }
   } catch (err) {
-    console.warn(styleText('yellow', `⚠️ [syncPublicVersionJson] Falló sincronización de version.json: ${(err as Error).message}`));
+    console.warn(
+      styleText(
+        'yellow',
+        `⚠️ [syncPublicVersionJson] Falló sincronización de version.json: ${(err as Error).message}`
+      )
+    );
   }
 }
 
@@ -62,10 +70,17 @@ async function setupTestEnvironment(dockerInfo: DockerDiscovery): Promise<{
       containerStarted = true;
       postgresReady = true;
     } else {
-      console.log(styleText('yellow', '⚠️  PostgreSQL no pudo completarse. Se continuará con SQLite en RAM.'));
+      console.log(
+        styleText('yellow', '⚠️  PostgreSQL no pudo completarse. Se continuará con SQLite en RAM.')
+      );
     }
   } else {
-    console.log(styleText('cyan', 'ℹ️  Docker no detectado o no disponible. Ejecutando tests exclusivamente en SQLite (RAM)...'));
+    console.log(
+      styleText(
+        'cyan',
+        'ℹ️  Docker no detectado o no disponible. Ejecutando tests exclusivamente en SQLite (RAM)...'
+      )
+    );
   }
 
   return { postgresReady, cleanupContainer };
@@ -90,20 +105,42 @@ function registerCleanupSignals(cleanupContainer: () => void): void {
 
 function executeVitestSuite(args: string[], childEnv: Record<string, string>): number {
   if (args.length === 0) {
-    console.log(styleText('bold', styleText('cyan', '📦 [1/2] Ejecutando suite de tests unitarios y componentes (unit)...')));
+    console.log(
+      styleText(
+        'bold',
+        styleText('cyan', '📦 [1/2] Ejecutando suite de tests unitarios y componentes (unit)...')
+      )
+    );
     const unitProcess = spawnSync(
       'node',
-      ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', '--project', 'unit'],
+      [
+        '--no-experimental-webstorage',
+        './node_modules/vitest/vitest.mjs',
+        'run',
+        '--project',
+        'unit'
+      ],
       { stdio: 'inherit', env: childEnv }
     );
     if (unitProcess.status !== 0) {
       return unitProcess.status ?? 1;
     }
 
-    console.log(styleText('bold', styleText('cyan', '\n📦 [2/2] Ejecutando suite de tests de lógica y persistencia (node)...')));
+    console.log(
+      styleText(
+        'bold',
+        styleText('cyan', '\n📦 [2/2] Ejecutando suite de tests de lógica y persistencia (node)...')
+      )
+    );
     const nodeProcess = spawnSync(
       'node',
-      ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', '--project', 'node'],
+      [
+        '--no-experimental-webstorage',
+        './node_modules/vitest/vitest.mjs',
+        'run',
+        '--project',
+        'node'
+      ],
       { stdio: 'inherit', env: childEnv }
     );
     return nodeProcess.status ?? 0;
@@ -111,7 +148,9 @@ function executeVitestSuite(args: string[], childEnv: Record<string, string>): n
 
   const isCoverage = args.includes('--coverage');
   const BASE_NODE_RUN_ARGS = ['--no-experimental-webstorage'] as const;
-  const nodeArgs = isCoverage ? ['--allow-inspector', ...BASE_NODE_RUN_ARGS] : [...BASE_NODE_RUN_ARGS];
+  const nodeArgs = isCoverage
+    ? ['--allow-inspector', ...BASE_NODE_RUN_ARGS]
+    : [...BASE_NODE_RUN_ARGS];
   const vitestProcess = spawnSync(
     'node',
     [...nodeArgs, './node_modules/vitest/vitest.mjs', 'run', ...args],
@@ -124,27 +163,77 @@ function printTestSummaryReport(vitestExitCode: number, postgresReady: boolean):
   console.log();
   if (vitestExitCode === 0) {
     if (postgresReady) {
-      console.log(styleText('green', '======================================================================'));
-      console.log(styleText('bold', styleText('green', '✨ REPORTE DE BASE DE DATOS: Validación DUAL completada exitosamente.')));
+      console.log(
+        styleText('green', '======================================================================')
+      );
+      console.log(
+        styleText(
+          'bold',
+          styleText(
+            'green',
+            '✨ REPORTE DE BASE DE DATOS: Validación DUAL completada exitosamente.'
+          )
+        )
+      );
       console.log(styleText('green', '   - SQLite (en memoria): PASS'));
       console.log(styleText('green', '   - PostgreSQL (Docker efímero): PASS'));
-      console.log(styleText('green', '======================================================================'));
+      console.log(
+        styleText('green', '======================================================================')
+      );
     } else {
-      console.log(styleText('yellow', '======================================================================'));
+      console.log(
+        styleText(
+          'yellow',
+          '======================================================================'
+        )
+      );
       console.log(styleText('bold', styleText('yellow', '⚠️  ADVERTENCIA DE ENTORNO DE PRUEBAS:')));
-      console.log(styleText('yellow', '   Docker no fue detectado o no está en ejecución en este sistema.'));
-      console.log(styleText('yellow', '   Los tests se ejecutaron exclusivamente en emulación SQLite (RAM).'));
-      console.log(styleText('yellow', '   👉 Se recomienda instalar o iniciar Docker Desktop (o Docker Engine en Linux)'));
-      console.log(styleText('yellow', '      para habilitar la validación dual con PostgreSQL real.'));
-      console.log(styleText('yellow', '======================================================================'));
+      console.log(
+        styleText('yellow', '   Docker no fue detectado o no está en ejecución en este sistema.')
+      );
+      console.log(
+        styleText('yellow', '   Los tests se ejecutaron exclusivamente en emulación SQLite (RAM).')
+      );
+      console.log(
+        styleText(
+          'yellow',
+          '   👉 Se recomienda instalar o iniciar Docker Desktop (o Docker Engine en Linux)'
+        )
+      );
+      console.log(
+        styleText('yellow', '      para habilitar la validación dual con PostgreSQL real.')
+      );
+      console.log(
+        styleText(
+          'yellow',
+          '======================================================================'
+        )
+      );
     }
   } else {
-    console.log(styleText('red', '======================================================================'));
-    console.log(styleText('bold', styleText('red', `❌ REPORTE DE TESTS: Se detectaron fallas en la ejecución (Exit Code: ${vitestExitCode}).`)));
+    console.log(
+      styleText('red', '======================================================================')
+    );
+    console.log(
+      styleText(
+        'bold',
+        styleText(
+          'red',
+          `❌ REPORTE DE TESTS: Se detectaron fallas en la ejecución (Exit Code: ${vitestExitCode}).`
+        )
+      )
+    );
     if (!postgresReady) {
-      console.log(styleText('yellow', '   ℹ️  Nota: Docker no estuvo activo; las fallas ocurrieron en SQLite (RAM).'));
+      console.log(
+        styleText(
+          'yellow',
+          '   ℹ️  Nota: Docker no estuvo activo; las fallas ocurrieron en SQLite (RAM).'
+        )
+      );
     }
-    console.log(styleText('red', '======================================================================'));
+    console.log(
+      styleText('red', '======================================================================')
+    );
   }
 }
 
@@ -158,7 +247,8 @@ async function main(): Promise<void> {
   const { postgresReady, cleanupContainer } = await setupTestEnvironment(dockerInfo);
   registerCleanupSignals(cleanupContainer);
 
-  const childEnv: Record<string, string> = { // open-record: Generic key-value data dictionary container
+  const childEnv: Record<string, string> = {
+    // open-record: Generic key-value data dictionary container
     ...(process.env as Record<string, string>) // open-record: Generic key-value data dictionary container
   };
 
@@ -171,9 +261,27 @@ async function main(): Promise<void> {
   let vitestExitCode: number;
 
   try {
-    console.log(styleText('bold', styleText('blue', '\n------------------------------------------------------------')));
-    console.log(styleText('bold', styleText('cyan', `🧪 INICIANDO EJECUCIÓN DE TESTS (${postgresReady ? 'DUAL: PostgreSQL + SQLite' : 'SQLite RAM'})`)));
-    console.log(styleText('bold', styleText('blue', '------------------------------------------------------------\n')));
+    console.log(
+      styleText(
+        'bold',
+        styleText('blue', '\n------------------------------------------------------------')
+      )
+    );
+    console.log(
+      styleText(
+        'bold',
+        styleText(
+          'cyan',
+          `🧪 INICIANDO EJECUCIÓN DE TESTS (${postgresReady ? 'DUAL: PostgreSQL + SQLite' : 'SQLite RAM'})`
+        )
+      )
+    );
+    console.log(
+      styleText(
+        'bold',
+        styleText('blue', '------------------------------------------------------------\n')
+      )
+    );
 
     vitestExitCode = executeVitestSuite(args, childEnv);
   } finally {

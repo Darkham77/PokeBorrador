@@ -16,28 +16,28 @@ const FISHING_SPEED = {
   EASY: 910,
   MEDIUM: 780,
   HARD: 680,
-  EXPERT: 580,
+  EXPERT: 580
 } as const;
 
 const FISHING_SPAWN_INTERVAL = {
   EASY: 680,
   MEDIUM: 580,
   HARD: 500,
-  EXPERT: 420,
+  EXPERT: 420
 } as const;
 
 const FISHING_HIT_WINDOW = {
   EASY: 200,
   MEDIUM: 160,
   HARD: 130,
-  EXPERT: 100,
+  EXPERT: 100
 } as const;
 
 const FISHING_NOTE_COUNTS = {
   EASY: 5,
   MEDIUM: 8,
   HARD: 11,
-  EXPERT: 13,
+  EXPERT: 13
 } as const;
 
 const FISHING_MAX_LEVEL_BONUS_EXPERT = 10;
@@ -90,7 +90,9 @@ export const FISHING_DIFFICULTIES = {
 } as const;
 
 export type FishingDifficultyKey = keyof typeof FISHING_DIFFICULTIES;
-export const FISHING_DIFFICULTY_KEYS = Object.keys(FISHING_DIFFICULTIES) as readonly FishingDifficultyKey[];
+export const FISHING_DIFFICULTY_KEYS = Object.keys(
+  FISHING_DIFFICULTIES
+) as readonly FishingDifficultyKey[];
 const FISHING_DIFFICULTY_KEYS_SET: ReadonlySet<string> = new Set(FISHING_DIFFICULTY_KEYS);
 
 export function isFishingDifficultyKey(value: unknown): value is FishingDifficultyKey {
@@ -105,8 +107,8 @@ export function requireFishingDifficultyKey(value: unknown): FishingDifficultyKe
 }
 
 const MAX_REFERENCE_LEVEL = 70;
-const LEVEL_WEIGHT = 0.40;
-const RARITY_WEIGHT = 0.60;
+const LEVEL_WEIGHT = 0.4;
+const RARITY_WEIGHT = 0.6;
 const EASY_DIFFICULTY_MAX_SCORE = 45;
 const MEDIUM_DIFFICULTY_MAX_SCORE = 70;
 const HARD_DIFFICULTY_MAX_SCORE = 85;
@@ -122,7 +124,7 @@ export function calculateFishingDifficultyScore(rarity: number, level: number): 
   const rarityScore = 100 - safeRarity;
   const levelScore = Math.min(100, (safeLevel / MAX_REFERENCE_LEVEL) * 100);
 
-  const combinedScore = (levelScore * LEVEL_WEIGHT) + (rarityScore * RARITY_WEIGHT);
+  const combinedScore = levelScore * LEVEL_WEIGHT + rarityScore * RARITY_WEIGHT;
   return Math.round(Math.max(0, Math.min(100, combinedScore)));
 }
 
@@ -164,7 +166,7 @@ export function applyFishingLevelAndIvBonus(
 
   // 2. Expert IV single reroll (keep highest)
   if (config.rerollIVs && pokemon.ivs) {
-    POKEMON_STAT_KEYS.forEach(stat => {
+    POKEMON_STAT_KEYS.forEach((stat) => {
       const current = pokemon.ivs[stat] || 0;
       const reroll = generateIvPure(randomFn);
       pokemon.ivs[stat] = Math.max(current, reroll);

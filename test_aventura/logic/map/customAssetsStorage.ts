@@ -94,7 +94,9 @@ export async function loadCustomTilesFromStorage(): Promise<readonly TileMetadat
 /**
  * Persists an array of custom structure templates to IndexedDB.
  */
-export async function saveCustomStructuresToStorage(structures: readonly StructureTemplate[]): Promise<void> {
+export async function saveCustomStructuresToStorage(
+  structures: readonly StructureTemplate[]
+): Promise<void> {
   const db = await openDatabase();
   if (!db) return;
 

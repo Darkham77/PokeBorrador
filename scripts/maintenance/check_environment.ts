@@ -1,8 +1,14 @@
 import fs from 'node:fs';
 
-function parseSemver(v: string): { major: number; minor: number; patch: number } {
+interface SemverVersion {
+  major: number;
+  minor: number;
+  patch: number;
+}
+
+function parseSemver(v: string): SemverVersion {
   const clean = v.replace(/[^0-9.]/g, '');
-  const parts = clean.split('.').map(n => parseInt(n, 10) || 0);
+  const parts = clean.split('.').map((n) => parseInt(n, 10) || 0);
   return {
     major: parts[0] ?? 0,
     minor: parts[1] ?? 0,
@@ -10,7 +16,11 @@ function parseSemver(v: string): { major: number; minor: number; patch: number }
   };
 }
 
-function compareVersions(current: { major: number; minor: number; patch: number }, required: { major: number; minor: number; patch: number }): boolean { // type-ok: Type contract declaration
+function compareVersions(
+  current: SemverVersion,
+  required: SemverVersion
+): boolean {
+  // type-ok: Type contract declaration
   if (current.major > required.major) return true;
   if (current.major < required.major) return false;
   if (current.minor > required.minor) return true;
@@ -19,11 +29,13 @@ function compareVersions(current: { major: number; minor: number; patch: number 
 }
 
 try {
-  const pkgData = JSON.parse(fs.readFileSync('package.json', 'utf8')) as { engines?: { node?: string; npm?: string } };
+  const pkgData = JSON.parse(fs.readFileSync('package.json', 'utf8')) as {
+    engines?: { node?: string; npm?: string };
+  };
   if (!pkgData.engines?.node || !pkgData.engines?.npm) {
     throw new Error('package.json must explicitly define both "engines.node" and "engines.npm"');
   }
-  
+
   const nodeReqStr = pkgData.engines.node;
   const npmReqStr = pkgData.engines.npm;
 
@@ -52,29 +64,45 @@ try {
 
     console.error('\n\x1b[31m\x1b[1m❌ ERROR DE ENTORNO EN POKÉ VICIO:\x1b[0m');
     console.error(`Requisito único configurado en package.json ("engines"):`);
-    console.error(`  - Node.js: \x1b[33m${nodeReqStr}\x1b[0m (Detectado: v${process.versions.node})`);
-    console.error(`  - npm:     \x1b[33m${npmReqStr}\x1b[0m (Detectado: v${npmCurrentStr === '0.0.0' ? 'desconocido' : npmCurrentStr})\n`);
-    
+    console.error(
+      `  - Node.js: \x1b[33m${nodeReqStr}\x1b[0m (Detectado: v${process.versions.node})`
+    );
+    console.error(
+      `  - npm:     \x1b[33m${npmReqStr}\x1b[0m (Detectado: v${npmCurrentStr === '0.0.0' ? 'desconocido' : npmCurrentStr})\n`
+    );
+
     const targetNodeVer = nodeReqStr.replace(/[^0-9.]/g, '');
 
     if (hasNvm) {
       console.error('\x1b[32m\x1b[1m💡 NVM DETECTADO EN EL SISTEMA:\x1b[0m');
-      console.error('Ejecuta los siguientes comandos para activar la versión requerida en este proyecto:');
+      console.error(
+        'Ejecuta los siguientes comandos para activar la versión requerida en este proyecto:'
+      );
       console.error('  1. Instalar la versión requerida (si aún no la tienes):');
       console.error(`     nvm install ${targetNodeVer}`);
       console.error('  2. Activar la versión para este proyecto:');
       console.error(`     nvm use`);
       console.error('     (o ejecuta ./setup-linux.sh / .\\setup-windows.ps1)\n');
-      console.error('  ℹ️  Convivencia multi-proyecto: No necesitas sobreescribir tu alias default de NVM.');
-      console.error('     Este proyecto lee .nvmrc automáticamente para convivir con tus otros proyectos.\n');
+      console.error(
+        '  ℹ️  Convivencia multi-proyecto: No necesitas sobreescribir tu alias default de NVM.'
+      );
+      console.error(
+        '     Este proyecto lee .node-version (.nvmrc) automáticamente para convivir con tus otros proyectos.\n'
+      );
     } else {
       console.error('\x1b[33m\x1b[1m⚠️ NVM NO DETECTADO EN EL SISTEMA:\x1b[0m');
-      console.error('Se recomienda encarecidamente instalar NVM (Node Version Manager) para convivir con múltiples versiones de Node.js sin problemas de permisos.\n');
-      
+      console.error(
+        'Se recomienda encarecidamente instalar NVM (Node Version Manager) para convivir con múltiples versiones de Node.js sin problemas de permisos.\n'
+      );
+
       if (isWindows) {
         console.error('\x1b[1m🪟 INSTALACIÓN DE NVM EN WINDOWS (nvm-windows):\x1b[0m');
-        console.error('  ⚠️  IMPORTANTE: Desinstala primero cualquier versión previa de Node.js instalada manualmente');
-        console.error('      desde el Panel de Control / Configuración de Windows antes de instalar NVM.\n');
+        console.error(
+          '  ⚠️  IMPORTANTE: Desinstala primero cualquier versión previa de Node.js instalada manualmente'
+        );
+        console.error(
+          '      desde el Panel de Control / Configuración de Windows antes de instalar NVM.\n'
+        );
         console.error('  1. Instalar NVM via winget (PowerShell / CMD):');
         console.error('     winget install CoreyButler.NVMforWindows');
         console.error('  2. Abrir PowerShell en esta carpeta y ejecutar el setup del proyecto:');
@@ -82,8 +110,12 @@ try {
       } else {
         console.error('\x1b[1m🐧 INSTALACIÓN DE NVM EN LINUX / MACOS:\x1b[0m');
         console.error('  1. Instalar NVM:');
-        console.error('     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash');
-        console.error('  2. Reiniciar la terminal (o ejecutar: source ~/.bashrc / source ~/.zshrc)');
+        console.error(
+          '     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+        );
+        console.error(
+          '  2. Reiniciar la terminal (o ejecutar: source ~/.bashrc / source ~/.zshrc)'
+        );
         console.error('  3. Ejecutar el setup del proyecto:');
         console.error('     ./setup-linux.sh\n');
       }

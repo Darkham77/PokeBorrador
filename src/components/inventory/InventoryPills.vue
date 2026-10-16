@@ -1,92 +1,93 @@
 <script setup lang="ts">
-import { computed, onMounted, nextTick, watch, useTemplateRef } from 'vue'
-import { useResizeObserver } from '@vueuse/core'
-import { useGameStore } from '@/stores/game'
-import { useModalStore } from '@/stores/modals'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { formatCurrency } from '@/logic/utils/formatters'
+import { computed, onMounted, nextTick, watch, useTemplateRef } from 'vue';
+import { useResizeObserver } from '@vueuse/core';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { formatCurrency } from '@/logic/utils/formatters';
 
-const _gameStore = useGameStore()
-const modalStore = useModalStore()
+const _gameStore = useGameStore();
+const modalStore = useModalStore();
 
-const money = computed(() => _gameStore.state.money)
-const battleCoins = computed(() => _gameStore.state.battleCoins || 0)
-const warCoins = computed(() => _gameStore.state.warCoins || 0)
+const money = computed(() => _gameStore.state.money);
+const battleCoins = computed(() => _gameStore.state.battleCoins || 0);
+const warCoins = computed(() => _gameStore.state.warCoins || 0);
 
-const containerRef = useTemplateRef<HTMLElement>('containerRef')
-const moneyRef = useTemplateRef<HTMLElement>('moneyRef')
-const bcRef = useTemplateRef<HTMLElement>('bcRef')
-const warRef = useTemplateRef<HTMLElement>('warRef')
+const containerRef = useTemplateRef<HTMLElement>('containerRef');
+const moneyRef = useTemplateRef<HTMLElement>('moneyRef');
+const bcRef = useTemplateRef<HTMLElement>('bcRef');
+const warRef = useTemplateRef<HTMLElement>('warRef');
 
-const PILL_PADDING_SAFETY_PX = 8
-const MIN_FONT_SIZE_PX = 4
-const MAX_FIT_ATTEMPTS = 20
-const DEFAULT_PILL_FONT_SIZE_PX = 14
+const PILL_PADDING_SAFETY_PX = 8;
+const MIN_FONT_SIZE_PX = 4;
+const MAX_FIT_ATTEMPTS = 20;
+const DEFAULT_PILL_FONT_SIZE_PX = 14;
 
 /**
  * Dynamically adjusts font size to fit container width without overflowing.
  */
 const fitText = async (el: HTMLElement | null, baseSize: number) => {
-  if (!el) return
-  await nextTick()
-  
-  const parent = el.parentElement
-  if (!parent) return
-  
-  const maxW = parent.clientWidth - PILL_PADDING_SAFETY_PX 
-  if (maxW <= 0) return
-  
-  let size = baseSize
-  el.style.fontSize = `${size}px`
-  
-  let attempts = 0
+  if (!el) return;
+  await nextTick();
+
+  const parent = el.parentElement;
+  if (!parent) return;
+
+  const maxW = parent.clientWidth - PILL_PADDING_SAFETY_PX;
+  if (maxW <= 0) return;
+
+  let size = baseSize;
+  el.style.fontSize = `${size}px`;
+
+  let attempts = 0;
   while (size > MIN_FONT_SIZE_PX && attempts < MAX_FIT_ATTEMPTS && el.scrollWidth > maxW) {
-    size -= 1
-    el.style.fontSize = `${size}px`
-    attempts++
+    size -= 1;
+    el.style.fontSize = `${size}px`;
+    attempts++;
   }
-}
+};
 
 const fitAllPills = () => {
-  void fitText(moneyRef.value, DEFAULT_PILL_FONT_SIZE_PX)
-  void fitText(bcRef.value, DEFAULT_PILL_FONT_SIZE_PX)
-  void fitText(warRef.value, DEFAULT_PILL_FONT_SIZE_PX)
-}
+  void fitText(moneyRef.value, DEFAULT_PILL_FONT_SIZE_PX);
+  void fitText(bcRef.value, DEFAULT_PILL_FONT_SIZE_PX);
+  void fitText(warRef.value, DEFAULT_PILL_FONT_SIZE_PX);
+};
 
 // Resize observer (mobile resize / orientation)
 useResizeObserver(containerRef, () => {
-  fitAllPills()
-})
+  fitAllPills();
+});
 
 // Watchers to trigger refitting when data changes
-watch([money, battleCoins, warCoins], () => {
-  fitAllPills()
-}, { deep: true })
+watch(
+  [money, battleCoins, warCoins],
+  () => {
+    fitAllPills();
+  },
+  { deep: true }
+);
 
 onMounted(async () => {
   // Load daycare initial state to synchronize egg storage
-  const { useBreedingStore } = await import('@/stores/breeding')
-  useBreedingStore().loadDaycare()
+  const { useBreedingStore } = await import('@/stores/breeding');
+  useBreedingStore().loadDaycare();
 
-  await nextTick()
-  
+  await nextTick();
+
   // Initial run
-  fitAllPills()
+  fitAllPills();
 
   // Re-evaluate once physical font is fully loaded
   if (typeof document !== 'undefined' && document.fonts) {
     document.fonts.ready.then(() => {
-      fitAllPills()
-    })
+      fitAllPills();
+    });
   }
-})
+});
 </script>
 
 <template>
-  <div
-    ref="containerRef"
-    class="hud-items"
-  >
+  <div ref="containerRef" class="hud-items">
     <!-- DINERO -->
     <PVTooltip
       title="POKÉ-PESOS (₱)"
@@ -96,14 +97,12 @@ onMounted(async () => {
       <div
         id="inventory-pills-div-1"
         class="hud-pill money-pill clickable-pill"
+        role="button"
+        tabindex="0"
         @click.stop="modalStore.open('Shop', { initialCategory: 'todos' })"
       >
         <span class="currency-icon-money">₱</span>
-        <span
-          id="hud-money"
-          ref="moneyRef"
-          class="pill-value"
-        >{{ formatCurrency(money) }}</span>
+        <span id="hud-money" ref="moneyRef" class="pill-value">{{ formatCurrency(money) }}</span>
       </div>
     </PVTooltip>
 
@@ -116,14 +115,12 @@ onMounted(async () => {
       <div
         id="inventory-pills-div-2"
         class="hud-pill bc-pill clickable-pill"
+        role="button"
+        tabindex="0"
         @click.stop="modalStore.open('BCShop')"
       >
         <i class="fas fa-coins currency-icon-bc" />
-        <span
-          id="hud-bc"
-          ref="bcRef"
-          class="pill-value"
-        >{{ formatCurrency(battleCoins) }}</span>
+        <span id="hud-bc" ref="bcRef" class="pill-value">{{ formatCurrency(battleCoins) }}</span>
       </div>
     </PVTooltip>
 
@@ -136,14 +133,14 @@ onMounted(async () => {
       <div
         id="inventory-pills-div-3"
         class="hud-pill war-pill clickable-pill"
+        role="button"
+        tabindex="0"
         @click.stop="modalStore.open('WarShop')"
       >
         <span class="emoji war-icon">⚔️</span>
-        <span
-          id="hud-war-coins"
-          ref="warRef"
-          class="pill-value"
-        >{{ formatCurrency(warCoins) }}</span>
+        <span id="hud-war-coins" ref="warRef" class="pill-value">{{
+          formatCurrency(warCoins)
+        }}</span>
       </div>
     </PVTooltip>
   </div>
@@ -170,7 +167,9 @@ onMounted(async () => {
   &.clickable-pill {
     cursor: pointer;
     will-change: background-color;
-    &:hover { background: Rgba($white, 0.05); }
+    &:hover {
+      background: Rgba($white, 0.05);
+    }
   }
 
   .pill-value {
@@ -187,7 +186,8 @@ onMounted(async () => {
 
   &.money-pill {
     border-color: Rgba($green, 0.3);
-    .pill-value, .currency-icon-money {
+    .pill-value,
+    .currency-icon-money {
       color: var(--green);
       text-shadow: 0 0 8px Rgba($green, 0.4);
     }
@@ -195,7 +195,8 @@ onMounted(async () => {
 
   &.bc-pill {
     border-color: Rgba($purple, 0.3);
-    .pill-value, .currency-icon-bc {
+    .pill-value,
+    .currency-icon-bc {
       color: var(--purple);
       text-shadow: 0 0 8px Rgba($purple, 0.4);
     }
@@ -203,7 +204,8 @@ onMounted(async () => {
 
   &.war-pill {
     border-color: Rgb(239 68 68 / 30%);
-    .pill-value, .war-icon {
+    .pill-value,
+    .war-icon {
       color: var(--red-light);
       text-shadow: 0 0 8px Rgb(239 68 68 / 40%);
     }

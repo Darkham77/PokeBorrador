@@ -8,7 +8,7 @@
  * - mapDataLoader (/)
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useSocialDataLoader } from '@/loaders/socialDataLoader';
 import { useBagDataLoader } from '@/loaders/bagDataLoader';

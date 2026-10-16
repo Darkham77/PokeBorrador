@@ -40,7 +40,10 @@ export interface ClassificationResult {
 /**
  * Strips solid background colors via adaptive corner-pixel chroma-keying.
  */
-export function stripBackground(image: RawImageBuffer, tolerance: number = SPRITE_PIPELINE.DEFAULT_CHROMA_TOLERANCE): RawImageBuffer {
+export function stripBackground(
+  image: RawImageBuffer,
+  tolerance: number = SPRITE_PIPELINE.DEFAULT_CHROMA_TOLERANCE
+): RawImageBuffer {
   const { width, height } = image;
   const outData = new Uint8ClampedArray(image.data);
 
@@ -53,7 +56,10 @@ export function stripBackground(image: RawImageBuffer, tolerance: number = SPRIT
   ];
 
   // If top-left corner already has alpha < 10, the image is already transparent
-  if ((outData[3] ?? SPRITE_PIPELINE.OPAQUE_ALPHA_FALLBACK) < SPRITE_PIPELINE.CORNER_ALPHA_TRANSPARENT_LIMIT) {
+  if (
+    (outData[3] ?? SPRITE_PIPELINE.OPAQUE_ALPHA_FALLBACK) <
+    SPRITE_PIPELINE.CORNER_ALPHA_TRANSPARENT_LIMIT
+  ) {
     return { width, height, data: outData };
   }
 
@@ -85,7 +91,10 @@ export function stripBackground(image: RawImageBuffer, tolerance: number = SPRIT
 /**
  * Slices contiguous non-transparent pixel clusters into tight bounding boxes.
  */
-export function sliceConnectedSprites(image: RawImageBuffer, minArea: number = SPRITE_PIPELINE.MIN_CLUSTER_AREA): BoundingBox[] {
+export function sliceConnectedSprites(
+  image: RawImageBuffer,
+  minArea: number = SPRITE_PIPELINE.MIN_CLUSTER_AREA
+): BoundingBox[] {
   const { width, height, data } = image;
   const visited = new Uint8Array(width * height);
   const boxes: BoundingBox[] = [];
@@ -145,7 +154,11 @@ export function sliceConnectedSprites(image: RawImageBuffer, minArea: number = S
       const boxW = maxX - minX + 1;
       const boxH = maxY - minY + 1;
 
-      if (count >= minArea && boxW >= SPRITE_PIPELINE.MIN_SPRITE_DIMENSION && boxH >= SPRITE_PIPELINE.MIN_SPRITE_DIMENSION) {
+      if (
+        count >= minArea &&
+        boxW >= SPRITE_PIPELINE.MIN_SPRITE_DIMENSION &&
+        boxH >= SPRITE_PIPELINE.MIN_SPRITE_DIMENSION
+      ) {
         boxes.push({
           minX,
           minY,
@@ -197,24 +210,38 @@ export function classifySprite(box: BoundingBox, pixels: RawImageBuffer): Classi
   const dominantColors = [hexColor];
 
   // 1. Snow / Ice Check: Very light luminance
-  if (avgR > SPRITE_PIPELINE.SNOW_LUMINANCE_MIN_RG && avgG > SPRITE_PIPELINE.SNOW_LUMINANCE_MIN_RG && avgB > SPRITE_PIPELINE.SNOW_LUMINANCE_MIN_B) {
+  if (
+    avgR > SPRITE_PIPELINE.SNOW_LUMINANCE_MIN_RG &&
+    avgG > SPRITE_PIPELINE.SNOW_LUMINANCE_MIN_RG &&
+    avgB > SPRITE_PIPELINE.SNOW_LUMINANCE_MIN_B
+  ) {
     return { category: 'snow', biome: 'snow', dominantColors };
   }
 
   // 2. Water / Shore Check: High blue dominance
-  if (avgB > avgR * SPRITE_PIPELINE.WATER_DOMINANCE_BLUE_TO_RED && avgB > avgG * SPRITE_PIPELINE.WATER_DOMINANCE_BLUE_TO_GREEN) {
+  if (
+    avgB > avgR * SPRITE_PIPELINE.WATER_DOMINANCE_BLUE_TO_RED &&
+    avgB > avgG * SPRITE_PIPELINE.WATER_DOMINANCE_BLUE_TO_GREEN
+  ) {
     return { category: 'water_edge', biome: 'ocean', dominantColors };
   }
 
   // 3. Tree / Forest Check: Taller than wide, green dominance
-  if (bH >= bW * SPRITE_PIPELINE.TREE_ASPECT_RATIO_MIN && avgG > avgR * SPRITE_PIPELINE.TREE_GREEN_DOMINANCE_MIN) {
+  if (
+    bH >= bW * SPRITE_PIPELINE.TREE_ASPECT_RATIO_MIN &&
+    avgG > avgR * SPRITE_PIPELINE.TREE_GREEN_DOMINANCE_MIN
+  ) {
     return { category: 'tree', biome: 'forest', dominantColors };
   }
 
   // 4. Mountain Check: Brown, dark gray, or earthy rock
   const isMountainColor =
-    (avgR > avgB * SPRITE_PIPELINE.MOUNTAIN_RED_TO_BLUE && avgG > avgB * SPRITE_PIPELINE.MOUNTAIN_GREEN_TO_BLUE && avgR < SPRITE_PIPELINE.MOUNTAIN_MAX_RED_PRIMARY) ||
-    (Math.abs(avgR - avgG) < SPRITE_PIPELINE.MOUNTAIN_NEUTRAL_CHANNEL_DIFF && Math.abs(avgG - avgB) < SPRITE_PIPELINE.MOUNTAIN_NEUTRAL_CHANNEL_DIFF && avgR < SPRITE_PIPELINE.MOUNTAIN_MAX_RED_NEUTRAL);
+    (avgR > avgB * SPRITE_PIPELINE.MOUNTAIN_RED_TO_BLUE &&
+      avgG > avgB * SPRITE_PIPELINE.MOUNTAIN_GREEN_TO_BLUE &&
+      avgR < SPRITE_PIPELINE.MOUNTAIN_MAX_RED_PRIMARY) ||
+    (Math.abs(avgR - avgG) < SPRITE_PIPELINE.MOUNTAIN_NEUTRAL_CHANNEL_DIFF &&
+      Math.abs(avgG - avgB) < SPRITE_PIPELINE.MOUNTAIN_NEUTRAL_CHANNEL_DIFF &&
+      avgR < SPRITE_PIPELINE.MOUNTAIN_MAX_RED_NEUTRAL);
   if (isMountainColor) {
     return { category: 'mountain', biome: 'mountain', dominantColors };
   }

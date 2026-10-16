@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { createPinia, setActivePinia } from 'pinia';
 import { serializeActiveBattle } from '@/logic/auth/battleSerializerHelper';
 import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
@@ -14,7 +14,7 @@ describe('Battle Searching Mode Persistence & Serialization Parity', () => {
 
   const dummyState: GameState = {
     map: { currentMap: 'route2' } as GameState['map'],
-    team: [{ id: 'pikachu', hp: 100, maxHp: 100 }] as unknown as GameState['team'],
+    team: [{ id: 'pikachu', hp: 100, maxHp: 100 }] as unknown as GameState['team']
   } as GameState;
 
   it('should faithfully serialize an active searching state without dropping locationId or wasSearching', () => {
@@ -53,7 +53,11 @@ describe('Battle Searching Mode Persistence & Serialization Parity', () => {
       enemyStages: ref({}),
       battleLogs: ref([]),
       isProcessing: ref(false),
-      BATTLE_STATES: { SEARCH_PHASE: 'SEARCH_PHASE', ACTIVE_BATTLE: 'ACTIVE_BATTLE', CONTEXT_SETUP: 'CONTEXT_SETUP' },
+      BATTLE_STATES: {
+        SEARCH_PHASE: 'SEARCH_PHASE',
+        ACTIVE_BATTLE: 'ACTIVE_BATTLE',
+        CONTEXT_SETUP: 'CONTEXT_SETUP'
+      },
       BATTLE_SUBSTATES: { WAIT_INPUT: 'WAIT_INPUT', DISCOVER_WILDS: 'DISCOVER_WILDS' },
       fsm: {
         currentState: ref('IDLE'),

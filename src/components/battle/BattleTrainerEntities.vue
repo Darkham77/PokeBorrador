@@ -1,77 +1,79 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
-import VirtualEntity from './VirtualEntity.vue'
-import BattleTrainerFigure from './BattleTrainerFigure.vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers'
-import { useCombatShadowStore } from '@/stores/battle/combatShadows'
+import { ref, computed, watch, onUnmounted } from 'vue';
+import VirtualEntity from './VirtualEntity.vue';
+import BattleTrainerFigure from './BattleTrainerFigure.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
+import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers';
+import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 import {
   TRAINER_RETREAT_X_OFFSET_PX,
   TRAINER_RETREAT_Y_OFFSET_PX,
   TRAINER_RETREAT_SCALE
-} from '@/logic/constants/animations'
-import type { GenderId } from '@/types/system/game'
+} from '@/logic/constants/animations';
+import type { GenderId } from '@/types/system/game';
 
 const props = defineProps<{
-  isTrainerVisible: boolean
-  showStandingTrainers: boolean
-  trainerAnimState?: string | null
-  showGuides: boolean
-  p2Pos: { x: number; y: number }
-  baseEntitySizeEnemy: number
-  baseEntitySizePlayer: number
-  objectScale: number
-  isTrainerOrGym: boolean
-  isPvP: boolean
-  trainerSprite?: string
-  trainerGender?: GenderId
-  trainerName?: string
-  playerBackSpriteUrl: string
-}>()
+  isTrainerVisible: boolean;
+  showStandingTrainers: boolean;
+  trainerAnimState?: string | null;
+  showGuides: boolean;
+  p2Pos: { x: number; y: number };
+  baseEntitySizeEnemy: number;
+  baseEntitySizePlayer: number;
+  objectScale: number;
+  isTrainerOrGym: boolean;
+  isPvP: boolean;
+  trainerSprite?: string;
+  trainerGender?: GenderId;
+  trainerName?: string;
+  playerBackSpriteUrl: string;
+}>();
 
 const resolvedEnemyTrainerSprite = computed(() => {
-  if (props.trainerSprite) return props.trainerSprite
-  if (props.isPvP) return 'entrenador'
-  return props.trainerName || 'entrenador'
-})
+  if (props.trainerSprite) return props.trainerSprite;
+  if (props.isPvP) return 'entrenador';
+  return props.trainerName || 'entrenador';
+});
 
 const enemyTrainerSpriteUrl = computed(() => {
-  return getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite.value, { gender: props.trainerGender })
-})
+  return getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite.value, {
+    gender: props.trainerGender
+  });
+});
 
-const shadowStore = useCombatShadowStore()
-const enemyTrainerShadowKey = computed(() => `trainer_enemy_${resolvedEnemyTrainerSprite.value}`)
-const playerTrainerShadowKey = computed(() => `trainer_player_${props.playerBackSpriteUrl}`)
+const shadowStore = useCombatShadowStore();
+const enemyTrainerShadowKey = computed(() => `trainer_enemy_${resolvedEnemyTrainerSprite.value}`);
+const playerTrainerShadowKey = computed(() => `trainer_player_${props.playerBackSpriteUrl}`);
 
 const enemyFeetCoords = computed(() => {
-  if (!enemyTrainerSpriteUrl.value) return null
+  if (!enemyTrainerSpriteUrl.value) return null;
   try {
-    return getPokemonFeetCoords(enemyTrainerSpriteUrl.value)
+    return getPokemonFeetCoords(enemyTrainerSpriteUrl.value);
   } catch {
-    return null
+    return null;
   }
-})
+});
 
 const playerFeetCoords = computed(() => {
-  if (!props.playerBackSpriteUrl) return null
+  if (!props.playerBackSpriteUrl) return null;
   try {
-    return getPokemonFeetCoords(props.playerBackSpriteUrl)
+    return getPokemonFeetCoords(props.playerBackSpriteUrl);
   } catch {
-    return null
+    return null;
   }
-})
+});
 
-const TRAINER_SHADOW_FEET_Y = 1.0
+const TRAINER_SHADOW_FEET_Y = 1.0;
 
-const enemyTrainerSize = computed(() => props.baseEntitySizeEnemy * (props.objectScale || 2))
-const playerTrainerSize = computed(() => props.baseEntitySizePlayer * (props.objectScale || 2))
+const enemyTrainerSize = computed(() => props.baseEntitySizeEnemy * (props.objectScale || 2));
+const playerTrainerSize = computed(() => props.baseEntitySizePlayer * (props.objectScale || 2));
 
 watch(
   [enemyTrainerShadowKey, enemyTrainerSpriteUrl, enemyTrainerSize, enemyFeetCoords],
   () => {
     if (enemyTrainerSpriteUrl.value) {
-      const coords = enemyFeetCoords.value
+      const coords = enemyFeetCoords.value;
       shadowStore.requestShadow(enemyTrainerShadowKey.value, {
         side: 'enemy',
         feetX: 0.5,
@@ -82,17 +84,17 @@ watch(
         shadowScale: coords?.shadowScale ?? 1.0,
         spriteUrl: enemyTrainerSpriteUrl.value,
         visible: true
-      })
+      });
     }
   },
   { immediate: true }
-)
+);
 
 watch(
   [playerTrainerShadowKey, () => props.playerBackSpriteUrl, playerTrainerSize, playerFeetCoords],
   () => {
     if (props.playerBackSpriteUrl) {
-      const coords = playerFeetCoords.value
+      const coords = playerFeetCoords.value;
       shadowStore.requestShadow(playerTrainerShadowKey.value, {
         side: 'player',
         feetX: 0.5,
@@ -103,62 +105,71 @@ watch(
         shadowScale: coords?.shadowScale ?? 1.0,
         spriteUrl: props.playerBackSpriteUrl,
         visible: true
-      })
+      });
     }
   },
   { immediate: true }
-)
+);
 
-const trainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null)
-const standingTrainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null)
+const trainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null);
+const standingTrainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null);
 
-const PLAYER_TRAINER_ASPECT_WIDTH_PX = 65
-const PLAYER_TRAINER_ASPECT_HEIGHT_PX = 165
-const STANDING_PLAYER_Y_OFFSET_PX = 55
+const PLAYER_TRAINER_ASPECT_WIDTH_PX = 65;
+const PLAYER_TRAINER_ASPECT_HEIGHT_PX = 165;
+const STANDING_PLAYER_Y_OFFSET_PX = 55;
 
 const standingPlayerWidth = computed(() =>
-  Math.round(props.baseEntitySizePlayer * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX)
-)
+  Math.round(
+    (props.baseEntitySizePlayer * PLAYER_TRAINER_ASPECT_WIDTH_PX) / PLAYER_TRAINER_ASPECT_HEIGHT_PX
+  )
+);
 
-const standingPlayerX = computed(() =>
-  WORLD_CONSTANTS.SAFE_ZONE_X - standingPlayerWidth.value * (props.objectScale || 2)
-)
+const standingPlayerX = computed(
+  () => WORLD_CONSTANTS.SAFE_ZONE_X - standingPlayerWidth.value * (props.objectScale || 2)
+);
 
 // Anchored relative to P1 ANCHOR with custom vertical ground nudge to align feet with the battlefield ground line.
 // Height: baseEntitySizePlayer * objectScale = 225 * 2 = 450px.
 // Base Top: 1233 + 55 = 1288, Bottom: 1288 + 450 = 1738.
-const standingPlayerY = computed(() =>
-  WORLD_CONSTANTS.SAFE_ZONE_Y + WORLD_CONSTANTS.SAFE_ZONE_HEIGHT - WORLD_CONSTANTS.ENTITY_SIZE_PLAYER + STANDING_PLAYER_Y_OFFSET_PX
-)
+const standingPlayerY = computed(
+  () =>
+    WORLD_CONSTANTS.SAFE_ZONE_Y +
+    WORLD_CONSTANTS.SAFE_ZONE_HEIGHT -
+    WORLD_CONSTANTS.ENTITY_SIZE_PLAYER +
+    STANDING_PLAYER_Y_OFFSET_PX
+);
 
 onUnmounted(() => {
   if (enemyTrainerShadowKey.value) {
-    shadowStore.hideShadow(enemyTrainerShadowKey.value)
+    shadowStore.hideShadow(enemyTrainerShadowKey.value);
   }
   if (playerTrainerShadowKey.value) {
-    shadowStore.hideShadow(playerTrainerShadowKey.value)
+    shadowStore.hideShadow(playerTrainerShadowKey.value);
   }
-})
+});
 
 const getTrainerElement = (): HTMLElement | null => {
-  const el = props.showStandingTrainers ? standingTrainerRef.value : trainerRef.value
-  if (!el) return null
-  if ('$el' in el && el.$el instanceof HTMLElement) return el.$el
-  if (el instanceof HTMLElement) return el
-  return null
-}
+  const el = props.showStandingTrainers ? standingTrainerRef.value : trainerRef.value;
+  if (!el) return null;
+  if ('$el' in el && el.$el instanceof HTMLElement) return el.$el;
+  if (el instanceof HTMLElement) return el;
+  return null;
+};
 
 function onEnemyTrainerError(e: Event): void {
-  const target = e.target as HTMLImageElement | null
+  const target = e.target as HTMLImageElement | null;
   if (target) {
-    target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { gender: props.trainerGender })
+    target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { gender: props.trainerGender });
   }
 }
 
 function onPlayerTrainerBackError(e: Event): void {
-  const target = e.target as HTMLImageElement | null
+  const target = e.target as HTMLImageElement | null;
   if (target) {
-    target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { trainerSuffix: 'back', gender: 'h' })
+    target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', {
+      trainerSuffix: 'back',
+      gender: 'h'
+    });
   }
 }
 
@@ -166,7 +177,7 @@ defineExpose({
   trainerRef,
   standingTrainerRef,
   getTrainerElement
-})
+});
 </script>
 
 <template>

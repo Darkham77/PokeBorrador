@@ -1,30 +1,30 @@
 <script setup lang="ts">
 interface MapItem {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 interface GymItem {
-  id: string
-  name: string
-  leader: string
+  id: string;
+  name: string;
+  leader: string;
 }
 
 interface Props {
-  allMapsList: MapItem[]
-  gymList: GymItem[]
+  allMapsList: MapItem[];
+  gymList: GymItem[];
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
-const combatLocationType = defineModel<'map' | 'gym'>('combatLocationType', { required: true })
-const selectedMapId = defineModel<string>('selectedMapId', { required: true })
-const selectedGymId = defineModel<string>('selectedGymId', { required: true })
-const gymDifficulty = defineModel<'easy' | 'normal' | 'hard'>('gymDifficulty', { required: true })
+const combatLocationType = defineModel<'map' | 'gym'>('combatLocationType', { required: true });
+const selectedMapId = defineModel<string>('selectedMapId', { required: true });
+const selectedGymId = defineModel<string>('selectedGymId', { required: true });
+const gymDifficulty = defineModel<'easy' | 'normal' | 'hard'>('gymDifficulty', { required: true });
 
 const emit = defineEmits<{
-  (e: 'startCombat'): void
-}>()
+  (e: 'startCombat'): void;
+}>();
 </script>
 
 <template>
@@ -33,21 +33,18 @@ const emit = defineEmits<{
 
     <div class="input-group vertical">
       <span class="field-label">Tipo de Encuentro</span>
-      <div
-        class="button-row"
-        style=" display: flex;width: 100%;"
-      >
+      <div class="button-row" style="display: flex; width: 100%">
         <button
-          id="debug-trainer-battle-launcher-btn-ruta-mapa" 
-          style="flex: 1;"
+          id="debug-trainer-battle-launcher-btn-ruta-mapa"
+          style="flex: 1"
           :class="{ active: combatLocationType === 'map' }"
           @click.stop="combatLocationType = 'map'"
         >
           <span class="emoji">🗺️</span> RUTA / MAPA
         </button>
         <button
-          id="debug-trainer-battle-launcher-btn-gimnasio" 
-          style="flex: 1;"
+          id="debug-trainer-battle-launcher-btn-gimnasio"
+          style="flex: 1"
           :class="{ active: combatLocationType === 'gym' }"
           @click.stop="combatLocationType = 'gym'"
         >
@@ -56,21 +53,14 @@ const emit = defineEmits<{
       </div>
     </div>
 
-    <div
-      v-if="combatLocationType === 'map'"
-      class="input-group vertical"
-      style="margin-top: 10px;"
-    >
+    <div v-if="combatLocationType === 'map'" class="input-group vertical" style="margin-top: 10px">
       <span class="field-label">Seleccionar Ruta/Mapa</span>
       <select
         id="debug-trainer-battle-launcher-select-selectedmapid"
         v-model="selectedMapId"
+        aria-label="Seleccionar Ruta o Mapa"
       >
-        <option 
-          v-for="m in allMapsList" 
-          :key="m.id" 
-          :value="m.id"
-        >
+        <option v-for="m in allMapsList" :key="m.id" :value="m.id">
           {{ m.name }}
         </option>
       </select>
@@ -79,19 +69,16 @@ const emit = defineEmits<{
     <div
       v-else
       class="gym-fields-flex"
-      style=" display: flex; flex-direction: column; gap: $spacing-md-alt;margin-top: 10px;"
+      style="display: flex; flex-direction: column; gap: $spacing-md-alt; margin-top: 10px"
     >
       <div class="input-group vertical">
         <span class="field-label">Líder / Gimnasio</span>
         <select
           id="debug-trainer-battle-launcher-select-selectedgymid"
           v-model="selectedGymId"
+          aria-label="Líder o Gimnasio"
         >
-          <option 
-            v-for="g in gymList" 
-            :key="g.id" 
-            :value="g.id"
-          >
+          <option v-for="g in gymList" :key="g.id" :value="g.id">
             {{ g.name }} ({{ g.leader }})
           </option>
         </select>
@@ -99,16 +86,13 @@ const emit = defineEmits<{
 
       <div class="input-group vertical">
         <span class="field-label">Dificultad</span>
-        <div
-          class="button-row"
-          style=" display: flex;width: 100%;"
-        >
+        <div class="button-row" style="display: flex; width: 100%">
           <button
-            v-for="d in (['easy', 'normal', 'hard'] as const)" 
-            id="debug-trainer-battle-launcher-btn-d" 
+            v-for="d in ['easy', 'normal', 'hard'] as const"
+            id="debug-trainer-battle-launcher-btn-d"
             :key="d"
             class="sim-diff-btn"
-            style="flex: 1;"
+            style="flex: 1"
             :class="{ active: gymDifficulty === d, [d]: true }"
             @click.stop="gymDifficulty = d"
           >
@@ -118,13 +102,11 @@ const emit = defineEmits<{
       </div>
     </div>
 
-    <div
-      style="margin-top: 16px;"
-    >
+    <div style="margin-top: 16px">
       <button
-        id="debug-trainer-battle-launcher-btn-iniciar-combate" 
+        id="debug-trainer-battle-launcher-btn-iniciar-combate"
         class="battle-start-btn-debug"
-        style="width: 100%; height: 34px; font-weight: bold;"
+        style="width: 100%; height: 34px; font-weight: bold"
         @click.stop="emit('startCombat')"
       >
         <span class="emoji">⚔️</span> INICIAR COMBATE

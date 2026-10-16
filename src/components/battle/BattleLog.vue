@@ -1,86 +1,91 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { gsap } from 'gsap'
-import { useBattleStore } from '@/stores/battle/battle'
-import { useGameStore } from '@/stores/game'
-import { PLAYER_CLASSES } from '@/data/player/playerClasses'
-import EggSprite from '@/components/common/EggSprite.vue'
-import { NPC_EGG_TINT } from '@/logic/constants/gameplay'
-import { sanitizeHtml } from '@/logic/utils/sanitizeHtml'
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { gsap } from 'gsap';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { PLAYER_CLASSES } from '@/data/player/playerClasses';
+import EggSprite from '@/components/common/EggSprite.vue';
+import { NPC_EGG_TINT } from '@/logic/constants/gameplay';
+import { sanitizeHtml } from '@/logic/utils/sanitizeHtml';
 
-const battleStore = useBattleStore()
-const gameStore = useGameStore()
-const logContainer = ref<HTMLDivElement | null>(null)
-const logInner = ref<HTMLDivElement | null>(null)
+const battleStore = useBattleStore();
+const gameStore = useGameStore();
+const logContainer = ref<HTMLDivElement | null>(null);
+const logInner = ref<HTMLDivElement | null>(null);
 
-const logs = computed(() => battleStore.battleLogs)
+const logs = computed(() => battleStore.battleLogs);
 
 const playerClassColor = computed(() => {
-  const pClass = gameStore.state.playerClass || 'entrenador'
-  return (PLAYER_CLASSES as Record<string, { color: string }>)[pClass]?.color || '#3b82f6' // open-record: Generic dynamic key-value JSON container
-})
+  const pClass = gameStore.state.playerClass || 'entrenador';
+  return (PLAYER_CLASSES as Record<string, { color: string }>)[pClass]?.color || '#3b82f6'; // open-record: Generic dynamic key-value JSON container
+});
 
 const scrollToBottom = async (isInstant = false) => {
-  await nextTick()
-  if (!logContainer.value) return
-  
+  await nextTick();
+  if (!logContainer.value) return;
+
   if (isInstant) {
-    logContainer.value.scrollTop = logContainer.value.scrollHeight
+    logContainer.value.scrollTop = logContainer.value.scrollHeight;
   } else {
-    gsap.killTweensOf(logContainer.value)
+    gsap.killTweensOf(logContainer.value);
     gsap.to(logContainer.value, {
       scrollTop: logContainer.value.scrollHeight,
       duration: 0.4,
       ease: 'power2.out'
-    })
+    });
   }
-}
+};
 
-const lastLogId = ref<string | number | null>(null)
+const lastLogId = ref<string | number | null>(null);
 
-watch(logs, (newVal) => {
-  scrollToBottom()
-  
-  if (newVal && newVal.length > 0) {
-    const lastLog = newVal[newVal.length - 1]
-    if (lastLog && lastLog.id !== lastLogId.value) {
-      const isNew = lastLogId.value !== null
-      lastLogId.value = lastLog.id
-      
-      if (isNew) {
-        nextTick(() => {
-          const entries = logContainer.value?.querySelectorAll('.log-entry')
-          if (entries && entries.length > 0) {
-            const lastEntry = entries[entries.length - 1] as HTMLElement
-            gsap.killTweensOf(lastEntry)
-const GSAP_LOG_ENTRY_INITIAL_X_OFFSET_PX = -20
+watch(
+  logs,
+  (newVal) => {
+    scrollToBottom();
 
-            gsap.fromTo(lastEntry, 
-              { opacity: 0, x: GSAP_LOG_ENTRY_INITIAL_X_OFFSET_PX, filter: 'Blur(4px)' }, 
-              { opacity: 1, x: 0, filter: 'Blur(0px)', duration: 0.5, ease: 'back.out(1.2)' }
-            )
-          }
-        })
+    if (newVal && newVal.length > 0) {
+      const lastLog = newVal[newVal.length - 1];
+      if (lastLog && lastLog.id !== lastLogId.value) {
+        const isNew = lastLogId.value !== null;
+        lastLogId.value = lastLog.id;
+
+        if (isNew) {
+          nextTick(() => {
+            const entries = logContainer.value?.querySelectorAll('.log-entry');
+            if (entries && entries.length > 0) {
+              const lastEntry = entries[entries.length - 1] as HTMLElement;
+              gsap.killTweensOf(lastEntry);
+              const GSAP_LOG_ENTRY_INITIAL_X_OFFSET_PX = -20;
+
+              gsap.fromTo(
+                lastEntry,
+                { opacity: 0, x: GSAP_LOG_ENTRY_INITIAL_X_OFFSET_PX, filter: 'Blur(4px)' },
+                { opacity: 1, x: 0, filter: 'Blur(0px)', duration: 0.5, ease: 'back.out(1.2)' }
+              );
+            }
+          });
+        }
       }
+    } else {
+      lastLogId.value = null;
     }
-  } else {
-    lastLogId.value = null
-  }
-}, { deep: true, immediate: true })
+  },
+  { deep: true, immediate: true }
+);
 
 const handleImgError = (e: Event) => {
-  const target = e.target as HTMLImageElement
-  console.error(`[BattleLog] Fallo al cargar sprite del log de combate: ${target.src}`)
-  target.style.display = 'none'
-}
+  const target = e.target as HTMLImageElement;
+  console.error(`[BattleLog] Fallo al cargar sprite del log de combate: ${target.src}`);
+  target.style.display = 'none';
+};
 
 onMounted(() => {
-  scrollToBottom(true)
+  scrollToBottom(true);
   if (logInner.value) {
-    const observer = new ResizeObserver(() => scrollToBottom())
-    observer.observe(logInner.value)
+    const observer = new ResizeObserver(() => scrollToBottom());
+    observer.observe(logInner.value);
   }
-})
+});
 </script>
 
 <template>
@@ -89,25 +94,16 @@ onMounted(() => {
     class="battle-log custom-scrollbar-vicio"
     :style="{ '--player-class-color': playerClassColor }"
   >
-    <div
-      ref="logInner"
-      class="log-scroll-inner"
-    >
-      <div 
-        v-for="(log, idx) in logs" 
-        :key="log.id ? `${log.id}-${idx}` : idx" 
+    <div ref="logInner" class="log-scroll-inner">
+      <div
+        v-for="(log, idx) in logs"
+        :key="log.id ? `${log.id}-${idx}` : idx"
         class="log-entry"
         :class="[log.type, `side-${log.side}`]"
       >
         <!-- Siempre renderizamos el wrapper para mantener la alineación de la columna de texto -->
-        <div
-          class="log-icon-wrapper"
-          :class="[log.iconType || 'empty']"
-        >
-          <span
-            v-if="log.iconType === 'emoji'"
-            class="log-emoji"
-          >{{ log.icon }}</span>
+        <div class="log-icon-wrapper" :class="[log.iconType || 'empty']">
+          <span v-if="log.iconType === 'emoji'" class="log-emoji">{{ log.icon }}</span>
           <EggSprite
             v-else-if="log.iconType === 'egg' || log.iconType === 'npc_egg'"
             size="26"
@@ -120,10 +116,9 @@ onMounted(() => {
             class="log-icon"
             loading="lazy"
             width="24"
-          
             height="24"
             @error="handleImgError"
-          >
+          />
         </div>
         <span class="log-text">
           <!-- fallow-ignore-next-line security-sink -->
@@ -137,7 +132,7 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .battle-log {
   @include smooth-scroll;
@@ -162,7 +157,7 @@ onMounted(() => {
     border: 1px solid Rgb(0 0 0 / 20%);
     border-radius: $radius-xs-alt;
     background: Rgb(255 255 255 / 15%);
-    
+
     &:hover {
       background: Rgb(255 255 255 / 25%);
     }
@@ -188,7 +183,7 @@ onMounted(() => {
 
   display: flex;
   align-items: center;
-  gap: $spacing-sm; 
+  gap: $spacing-sm;
   min-height: 28px !important;
   border-radius: $radius-sm 0 0 $radius-sm;
   color: Rgb(255 255 255 / 90%);
@@ -216,7 +211,7 @@ onMounted(() => {
 
     // Estilos específicos para AVATAR (Entrenador)
     &.trainer {
-      .log-icon { 
+      .log-icon {
         position: absolute !important;
         top: 50% !important;
         left: 50% !important;
@@ -236,7 +231,7 @@ onMounted(() => {
 
     // Estilos para el Avatar del Jugador
     &.player_avatar {
-      .log-icon { 
+      .log-icon {
         position: absolute !important;
         top: 50% !important;
         left: 50% !important;
@@ -253,7 +248,7 @@ onMounted(() => {
         filter: none;
       }
     }
-    
+
     // Estilos específicos para ITEMS (Objetos) - Reducidos a la mitad
     &.item {
       .log-icon {
@@ -273,7 +268,7 @@ onMounted(() => {
       align-items: center;
       filter: Drop-Shadow(0 2px 5px Rgb(0 0 0 / 45%));
     }
-    
+
     &.empty {
       opacity: 0;
     }
@@ -286,7 +281,7 @@ onMounted(() => {
     top: 50%;
     left: 50%;
     width: 56px !important;
-    max-width: none !important; 
+    max-width: none !important;
     height: 56px !important;
     max-height: none !important;
     transform: Translate(-50%, -50%);
@@ -297,7 +292,7 @@ onMounted(() => {
 
   .log-emoji {
     @include pixelated;
-    
+
     // Centrado absoluto con prioridad máxima - Forzamos minúscula para asegurar compatibilidad
     position: absolute !important;
     top: 50% !important;
@@ -329,13 +324,14 @@ onMounted(() => {
       width: 28px !important;
       height: 28px !important;
     }
-    
+
     .log-icon:not(.trainer .log-icon, .item .log-icon) {
       width: 38px !important;
       height: 38px !important;
     }
-    
-    .trainer .log-icon, .item .log-icon {
+
+    .trainer .log-icon,
+    .item .log-icon {
       width: 18px !important;
       height: 18px !important;
     }
@@ -360,20 +356,35 @@ onMounted(() => {
 }
 
 /* Compatibility with new types (Text only overrides) */
-:deep(.log-info) { color: var(--yellow); font-weight: 500; }
+:deep(.log-info) {
+  color: var(--yellow);
+  font-weight: 500;
+}
 
-:deep(.log-player) { color: Rgb(0 255 127 / 100%); }
+:deep(.log-player) {
+  color: Rgb(0 255 127 / 100%);
+}
 
-:deep(.log-enemy) { color: Rgb(255 65 54 / 100%); }
+:deep(.log-enemy) {
+  color: Rgb(255 65 54 / 100%);
+}
 
-:deep(.log-catch) { color: Rgb(177 13 201 / 100%); }
+:deep(.log-catch) {
+  color: Rgb(177 13 201 / 100%);
+}
 
 /* Semantic types */
-:deep(.log-damage) { color: Rgb(255 65 54 / 100%); }
+:deep(.log-damage) {
+  color: Rgb(255 65 54 / 100%);
+}
 
-:deep(.log-heal) { color: Rgb(0 255 127 / 100%); }
+:deep(.log-heal) {
+  color: Rgb(0 255 127 / 100%);
+}
 
-:deep(.log-status) { color: Rgb(177 13 201 / 100%); }
+:deep(.log-status) {
+  color: Rgb(177 13 201 / 100%);
+}
 
 /* Recompensas Unificadas de Fin de Combate */
 :deep(.reward-entry-unified) {

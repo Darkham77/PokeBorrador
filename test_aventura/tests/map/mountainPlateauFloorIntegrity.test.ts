@@ -9,7 +9,10 @@
 
 import { describe, it, expect } from 'vitest';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
-import { resolveMountainAutotileCell, type ElevationMatrix } from '../../logic/map/mountainAutotileEngine.ts';
+import {
+  resolveMountainAutotileCell,
+  type ElevationMatrix
+} from '../../logic/map/mountainAutotileEngine.ts';
 
 describe('mountainPlateauFloorIntegrity', () => {
   it('guarantees seed 42 at (59, 18) resolves to clean edge without corner_inner_sw', () => {

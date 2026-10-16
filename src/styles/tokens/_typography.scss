@@ -8,13 +8,13 @@ $font-future: 'Orbitron', sans-serif;
 $font-classic: 'Cinzel', serif;
 $font-display: 'Rajdhani', sans-serif;
 $font-sizes: (
-  "xs": 10px,
-  "sm": 12px,
-  "md": 14px,
-  "lg": 18px,
-  "xl": 24px,
-  "xxl": 32px,
-  "huge": clamp(24px, 5dvw, 48px)
+  'xs': 10px,
+  'sm': 12px,
+  'md': 14px,
+  'lg': 18px,
+  'xl': 24px,
+  'xxl': 32px,
+  'huge': clamp(24px, 5dvw, 48px)
 );
 
 @mixin font-size($size) {

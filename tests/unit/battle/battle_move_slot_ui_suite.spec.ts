@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { h, ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
@@ -293,23 +293,26 @@ describe('Battle Move Slot UI & Choice / Volatile Move Locking Suite', () => {
         hp: 100,
         volatileCounters: {}
       } as unknown as Pokemon;
-      
+
       const activeBattle = ref({
         player,
         enemy: { uid: 'e-active', id: 'pikachu', name: 'Pikachu', hp: 100 } as unknown as Pokemon,
         playerTeam: [player],
         enemyTeam: [{ uid: 'e-active', id: 'pikachu', name: 'Pikachu', hp: 100 }]
       });
-      
+
       const mockCtx = {
         activeBattle,
         addLog: vi.fn(),
         attackerSide: ref(null),
         activeMove: ref(null)
       } as unknown as BattleContext;
-      
-      await parseShowdownLogLine(mockCtx, '|-prepare|p1a: Rayquaza-Mega|Fly|[uids]p1a:Rayquaza-Mega=p-active');
-      
+
+      await parseShowdownLogLine(
+        mockCtx,
+        '|-prepare|p1a: Rayquaza-Mega|Fly|[uids]p1a:Rayquaza-Mega=p-active'
+      );
+
       expect(player.volatileCounters?.['twoturnmove']).toBe(1);
       expect(player.lastMove?.id).toBe('fly');
     });
@@ -323,24 +326,27 @@ describe('Battle Move Slot UI & Choice / Volatile Move Locking Suite', () => {
         hp: 100,
         volatileCounters: {}
       } as unknown as Pokemon;
-      
+
       const activeBattle = ref({
         player,
         enemy: { uid: 'e-active', id: 'pikachu', name: 'Pikachu', hp: 100 } as unknown as Pokemon,
         playerTeam: [player],
         enemyTeam: [{ uid: 'e-active', id: 'pikachu', name: 'Pikachu', hp: 100 }]
       });
-      
+
       const mockCtx = {
         activeBattle,
         addLog: vi.fn(),
         attackerSide: ref(null),
         activeMove: ref(null)
       } as unknown as BattleContext;
-      
+
       // Simular uso de Enfado (Outrage)
-      await parseShowdownLogLine(mockCtx, '|move|p1a: Rayquaza-Mega|Outrage|p2a: Pikachu|[uids]p1a:Rayquaza-Mega=p-active,p2a:Pikachu=e-active');
-      
+      await parseShowdownLogLine(
+        mockCtx,
+        '|move|p1a: Rayquaza-Mega|Outrage|p2a: Pikachu|[uids]p1a:Rayquaza-Mega=p-active,p2a:Pikachu=e-active'
+      );
+
       expect(player.volatileCounters?.['lockedmove']).toBe(1);
       expect(player.lastMove?.id).toBe('outrage');
     });

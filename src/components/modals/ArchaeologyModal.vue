@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { gsap } from 'gsap'
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { gsap } from 'gsap';
 
 const DIG_TILE_SCALE_IN = 0.9;
 const DIG_TILE_ENTRY_DURATION_SEC = 0.15;
@@ -9,7 +9,6 @@ const DIG_FOSSIL_COUNTER_DURATION_SEC = 0.3;
 const DIG_FOSSIL_TILE_FLASH_DURATION_SEC = 0.2;
 const DIG_OUTCOME_ANIM_DURATION_SEC = 0.5;
 const DIG_PARTICLE_BASE_SCALE_OUT = 0.5;
-const DEFAULT_ARCHAEOLOGY_RARITY = 50 as const;
 const DEFAULT_ARCHAEOLOGY_GRID_SIZE = 5 as const;
 const DEFAULT_ARCHAEOLOGY_MAX_ENERGY = 12 as const;
 const DEFAULT_TOTAL_FOSSIL_PARTS = 3 as const;
@@ -17,28 +16,30 @@ const OUTCOME_CLOSE_DELAY_SEC = 1.2 as const;
 const FAIL_GRID_OPACITY = 0.5 as const;
 const DUST_PARTICLES_COUNT = 6 as const;
 const DUST_DURATION_VARIANCE_SEC = 0.3 as const;
-import BaseModal from '@/components/common/BaseModal.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import BaseModal from '@/components/common/BaseModal.vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 const fossilSprite = computed(() => {
-  const idStr = String(props.pokemon?.id || '').toLowerCase()
-  if (idStr === 'kabuto' || idStr === 'kabutops') return getAssetUrl(ASSET_TYPES.ITEM, 'domefossil')
-  if (idStr === 'omanyte' || idStr === 'omastar') return getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil')
-  if (idStr === 'aerodactyl') return getAssetUrl(ASSET_TYPES.ITEM, 'oldamber')
-  return getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil') // Fallback
-})
+  const idStr = String(props.pokemon?.id || '').toLowerCase();
+  if (idStr === 'kabuto' || idStr === 'kabutops')
+    return getAssetUrl(ASSET_TYPES.ITEM, 'domefossil');
+  if (idStr === 'omanyte' || idStr === 'omastar')
+    return getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil');
+  if (idStr === 'aerodactyl') return getAssetUrl(ASSET_TYPES.ITEM, 'oldamber');
+  return getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil'); // Fallback
+});
 
-import type { MinigameDifficulty } from '@/types/battle/battle'
+import type { MinigameDifficulty } from '@/types/battle/battle';
 
 interface Props {
-  show?: boolean
-  pokemon: Pokemon
-  rarity?: number
-  difficulty?: MinigameDifficulty | null
-  onWin?: ((difficulty: MinigameDifficulty) => void) | null
-  onFail?: (() => void) | null
-  onCloseCallback?: (() => void) | null
+  show?: boolean;
+  pokemon: Pokemon;
+  rarity?: number;
+  difficulty?: MinigameDifficulty | null;
+  onWin?: ((difficulty: MinigameDifficulty) => void) | null;
+  onFail?: (() => void) | null;
+  onCloseCallback?: (() => void) | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -48,153 +49,177 @@ const props = withDefaults(defineProps<Props>(), {
   onWin: null,
   onFail: null,
   onCloseCallback: null
-})
+});
 
 const emit = defineEmits<{
-  (e: 'win', difficulty: MinigameDifficulty): void
-  (e: 'fail'): void
-  (e: 'close'): void
-}>()
+  (e: 'win', difficulty: MinigameDifficulty): void;
+  (e: 'fail'): void;
+  (e: 'close'): void;
+}>();
 
 import {
   ARCHAEOLOGY_DIFFICULTIES,
+  DEFAULT_ARCHAEOLOGY_RARITY,
   calculateArchaeologyDifficulty,
   generateArchaeologyGrid,
   getDistanceToNearestFossil,
   type ArchaeologyTile
-} from './archaeologyGameHelper.ts'
+} from './archaeologyGameHelper.ts';
 
 // State
 const difficulty = computed<MinigameDifficulty>(() => {
   if (props.difficulty && props.difficulty in ARCHAEOLOGY_DIFFICULTIES) {
-    return props.difficulty
+    return props.difficulty;
   }
-  return calculateArchaeologyDifficulty(props.rarity || DEFAULT_ARCHAEOLOGY_RARITY)
-})
+  return calculateArchaeologyDifficulty(props.rarity || DEFAULT_ARCHAEOLOGY_RARITY);
+});
 
-const gridSize = ref<number>(DEFAULT_ARCHAEOLOGY_GRID_SIZE)
-const maxEnergy = ref<number>(DEFAULT_ARCHAEOLOGY_MAX_ENERGY)
-const totalFossilParts = ref<number>(DEFAULT_TOTAL_FOSSIL_PARTS)
+const gridSize = ref<number>(DEFAULT_ARCHAEOLOGY_GRID_SIZE);
+const maxEnergy = ref<number>(DEFAULT_ARCHAEOLOGY_MAX_ENERGY);
+const totalFossilParts = ref<number>(DEFAULT_TOTAL_FOSSIL_PARTS);
 
-type Tile = ArchaeologyTile
+type Tile = ArchaeologyTile;
 
 // State
-const gridRef = ref<HTMLElement | null>(null)
-const energyCounterRef = ref<HTMLElement | null>(null)
-const grid = ref<Tile[]>([])
-const energy = ref<number>(DEFAULT_ARCHAEOLOGY_MAX_ENERGY)
-const fossilsFound = ref(0)
-const gameActive = ref(true)
-const feedback = ref('¡Excavá las rocas con cuidado!')
-const isFailed = ref(false)
+const gridRef = ref<HTMLElement | null>(null);
+const energyCounterRef = ref<HTMLElement | null>(null);
+const grid = ref<Tile[]>([]);
+const energy = ref<number>(DEFAULT_ARCHAEOLOGY_MAX_ENERGY);
+const fossilsFound = ref(0);
+const gameActive = ref(true);
+const feedback = ref('¡Excavá las rocas con cuidado!');
+const isFailed = ref(false);
 
 function scheduleGameplayDelay(delaySec: number, callback: () => void) {
-  const tween = gsap.delayedCall(delaySec, callback)
-  const globalScale = gsap.globalTimeline.timeScale()
-  if (globalScale > 0) tween.timeScale(1 / globalScale)
-  return tween
+  const tween = gsap.delayedCall(delaySec, callback);
+  const globalScale = gsap.globalTimeline.timeScale();
+  if (globalScale > 0) tween.timeScale(1 / globalScale);
+  return tween;
 }
 
 // Initialize Game
 function initGame() {
-  const config = ARCHAEOLOGY_DIFFICULTIES[difficulty.value]
-  gridSize.value = config.grid
-  maxEnergy.value = config.energy
-  totalFossilParts.value = config.parts
+  const config = ARCHAEOLOGY_DIFFICULTIES[difficulty.value];
+  gridSize.value = config.grid;
+  maxEnergy.value = config.energy;
+  totalFossilParts.value = config.parts;
 
-  grid.value = generateArchaeologyGrid(gridSize.value, totalFossilParts.value)
-  energy.value = maxEnergy.value
-  fossilsFound.value = 0
-  gameActive.value = true
-  isFailed.value = false
-  feedback.value = '¡Excavá las rocas con cuidado!'
+  grid.value = generateArchaeologyGrid(gridSize.value, totalFossilParts.value);
+  energy.value = maxEnergy.value;
+  fossilsFound.value = 0;
+  gameActive.value = true;
+  isFailed.value = false;
+  feedback.value = '¡Excavá las rocas con cuidado!';
 }
 
 // Handle Tile Dig
 function handleTileClick(tile: Tile) {
-  if (!gameActive.value || tile.isDug) return
+  if (!gameActive.value || tile.isDug) return;
 
-  tile.isDug = true
+  tile.isDug = true;
   if (!tile.isFossil) {
-    energy.value--
+    energy.value--;
   }
 
-  const GRID_SHAKE_OFFSET_PX = 3
-  const GRID_SHAKE_STEP_SEC = 0.05
-  const GRID_SHAKE_REPEAT_COUNT = 5
+  const GRID_SHAKE_OFFSET_PX = 3;
+  const GRID_SHAKE_STEP_SEC = 0.05;
+  const GRID_SHAKE_REPEAT_COUNT = 5;
   // Click Animation: Shake Grid slightly
   if (gridRef.value) {
-    gsap.fromTo(gridRef.value, 
+    gsap.fromTo(
+      gridRef.value,
       { x: -GRID_SHAKE_OFFSET_PX },
-      { x: GRID_SHAKE_OFFSET_PX, duration: GRID_SHAKE_STEP_SEC, repeat: GRID_SHAKE_REPEAT_COUNT, yoyo: true, ease: 'none', onComplete: () => { if (gridRef.value) gsap.set(gridRef.value, { x: 0 }) } }
-    )
+      {
+        x: GRID_SHAKE_OFFSET_PX,
+        duration: GRID_SHAKE_STEP_SEC,
+        repeat: GRID_SHAKE_REPEAT_COUNT,
+        yoyo: true,
+        ease: 'none',
+        onComplete: () => {
+          if (gridRef.value) gsap.set(gridRef.value, { x: 0 });
+        }
+      }
+    );
   }
 
   // Dig Animation on tile
-  const tileEl = document.querySelector(`.tile[data-coord="${tile.r},${tile.c}"]`)
+  const tileEl = document.querySelector(`.tile[data-coord="${tile.r},${tile.c}"]`);
   if (tileEl) {
-    gsap.fromTo(tileEl, { scale: DIG_TILE_SCALE_IN }, { scale: 1, duration: DIG_TILE_ENTRY_DURATION_SEC, ease: 'power1.out' })
-    createDustParticles(tileEl)
+    gsap.fromTo(
+      tileEl,
+      { scale: DIG_TILE_SCALE_IN },
+      { scale: 1, duration: DIG_TILE_ENTRY_DURATION_SEC, ease: 'power1.out' }
+    );
+    createDustParticles(tileEl);
   }
 
   if (tile.isFossil) {
-    fossilsFound.value++
-    feedback.value = '¡Encontraste una pieza de fósil!'
+    fossilsFound.value++;
+    feedback.value = '¡Encontraste una pieza de fósil!';
     if (energyCounterRef.value) {
-      gsap.fromTo(energyCounterRef.value, { scale: DIG_FOSSIL_COUNTER_SCALE }, { scale: 1, duration: DIG_FOSSIL_COUNTER_DURATION_SEC })
+      gsap.fromTo(
+        energyCounterRef.value,
+        { scale: DIG_FOSSIL_COUNTER_SCALE },
+        { scale: 1, duration: DIG_FOSSIL_COUNTER_DURATION_SEC }
+      );
     }
-    
+
     // Sparkle Animation on hit
     if (tileEl) {
-      gsap.to(tileEl, { backgroundColor: '#fef08a', duration: DIG_FOSSIL_TILE_FLASH_DURATION_SEC, yoyo: true, repeat: 1 })
+      gsap.to(tileEl, {
+        backgroundColor: '#fef08a',
+        duration: DIG_FOSSIL_TILE_FLASH_DURATION_SEC,
+        yoyo: true,
+        repeat: 1
+      });
     }
 
     if (fossilsFound.value >= totalFossilParts.value) {
-      win()
-      return
+      win();
+      return;
     }
   } else {
     // Clue
-    const dist = getDistanceToNearestFossil(grid.value, tile.r, tile.c)
+    const dist = getDistanceToNearestFossil(grid.value, tile.r, tile.c);
     if (dist <= 1) {
-      tile.clue = 'HOT'
-      feedback.value = '¡Muy caliente! Hay un fósil cerca.'
+      tile.clue = 'HOT';
+      feedback.value = '¡Muy caliente! Hay un fósil cerca.';
     } else {
-      tile.clue = 'COLD'
-      feedback.value = 'Frío. Sigue buscando.'
+      tile.clue = 'COLD';
+      feedback.value = 'Frío. Sigue buscando.';
     }
   }
 
   // Out of Energy Check
   if (energy.value <= 0 && fossilsFound.value < totalFossilParts.value) {
-    fail()
+    fail();
   }
 }
 
 // Win sequence
 function win() {
-  gameActive.value = false
-  feedback.value = '¡FÓSIL EXCAVADO CON ÉXITO!'
-  
+  gameActive.value = false;
+  feedback.value = '¡FÓSIL EXCAVADO CON ÉXITO!';
+
   // Confetti / glow animation
   if (gridRef.value) {
     gsap.to(gridRef.value, {
       boxShadow: '0 0 40px rgba(234, 179, 8, 0.8)',
       duration: DIG_OUTCOME_ANIM_DURATION_SEC
-    })
+    });
   }
 
   scheduleGameplayDelay(OUTCOME_CLOSE_DELAY_SEC, () => {
-    emit('win', difficulty.value)
-    emit('close')
-  })
+    emit('win', difficulty.value);
+    emit('close');
+  });
 }
 
 // Fail sequence
 function fail() {
-  gameActive.value = false
-  isFailed.value = true
-  feedback.value = 'El fósil se ha desmoronado...'
+  gameActive.value = false;
+  isFailed.value = true;
+  feedback.value = 'El fósil se ha desmoronado...';
 
   // Crack grid animation
   if (gridRef.value) {
@@ -202,26 +227,26 @@ function fail() {
       opacity: FAIL_GRID_OPACITY,
       filter: 'grayscale(1)',
       duration: DIG_OUTCOME_ANIM_DURATION_SEC
-    })
+    });
   }
 
   scheduleGameplayDelay(OUTCOME_CLOSE_DELAY_SEC, () => {
-    emit('fail')
-    emit('close')
-  })
+    emit('fail');
+    emit('close');
+  });
 }
 
 // Sparkle/Dust Generator
 function createDustParticles(target: Element) {
-  const rect = target.getBoundingClientRect()
-  const parent = target.parentElement
-  if (!parent) return
+  const rect = target.getBoundingClientRect();
+  const parent = target.parentElement;
+  if (!parent) return;
 
   for (let i = 0; i < DUST_PARTICLES_COUNT; i++) {
-const DUST_PARTICLE_BORDER_RADIUS_PERCENT = 50
+    const DUST_PARTICLE_BORDER_RADIUS_PERCENT = 50;
 
-    const particle = document.createElement('div')
-    particle.className = 'dust-particle'
+    const particle = document.createElement('div');
+    particle.className = 'dust-particle';
     particle.style.cssText = `
       position: absolute;
       width: 4px;
@@ -232,15 +257,15 @@ const DUST_PARTICLE_BORDER_RADIUS_PERCENT = 50
       left: ${rect.left - parent.getBoundingClientRect().left + rect.width / 2}px;
       top: ${rect.top - parent.getBoundingClientRect().top + rect.height / 2}px;
       z-index: var(--z-hud);
-    `
-    parent.appendChild(particle)
+    `;
+    parent.appendChild(particle);
 
-    const DUST_VELOCITY_BASE = 20
-    const DUST_VELOCITY_VARIANCE = 40
-    const DUST_PARTICLE_TOP_OFFSET_PX = 20
-    const angle = Math.random() * Math.PI * 2
-    const velocity = DUST_VELOCITY_BASE + Math.random() * DUST_VELOCITY_VARIANCE
-    
+    const DUST_VELOCITY_BASE = 20;
+    const DUST_VELOCITY_VARIANCE = 40;
+    const DUST_PARTICLE_TOP_OFFSET_PX = 20;
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = DUST_VELOCITY_BASE + Math.random() * DUST_VELOCITY_VARIANCE;
+
     gsap.to(particle, {
       x: Math.cos(angle) * velocity,
       y: Math.sin(angle) * velocity - DUST_PARTICLE_TOP_OFFSET_PX, // push up slightly
@@ -249,22 +274,22 @@ const DUST_PARTICLE_BORDER_RADIUS_PERCENT = 50
       duration: DIG_OUTCOME_ANIM_DURATION_SEC + Math.random() * DUST_DURATION_VARIANCE_SEC,
       ease: 'power2.out',
       onComplete: () => particle.remove()
-    })
+    });
   }
 }
 
 onMounted(() => {
-  initGame()
-})
+  initGame();
+});
 
 onUnmounted(() => {
-  gameActive.value = false
-})
+  gameActive.value = false;
+});
 
 const handleCloseModal = () => {
-  emit('close')
-  props.onCloseCallback?.()
-}
+  emit('close');
+  props.onCloseCallback?.();
+};
 </script>
 
 <template>
@@ -279,40 +304,36 @@ const handleCloseModal = () => {
     max-width="420px"
     @close="handleCloseModal"
   >
-    <template #header-icon>
-      <span class="emoji">⛏️</span>&nbsp;
-    </template>
-    <div
-      class="archaeology-container"
-      :class="{ fail: isFailed }"
-    >
+    <template #header-icon> <span class="emoji">⛏️</span>&nbsp; </template>
+    <div class="archaeology-container" :class="{ fail: isFailed }">
       <div class="archaeology-header">
-        <p>Encontrá el fósil de <span>{{ totalFossilParts }} piezas</span> oculto en las rocas.</p>
+        <p>
+          Encontrá el fósil de <span>{{ totalFossilParts }} piezas</span> oculto en las rocas.
+        </p>
       </div>
 
       <div class="stats-row">
         <div
           class="stat-pill difficulty-pill"
-          :style="{ borderColor: ARCHAEOLOGY_DIFFICULTIES[difficulty].color, color: ARCHAEOLOGY_DIFFICULTIES[difficulty].color }"
+          :style="{
+            borderColor: ARCHAEOLOGY_DIFFICULTIES[difficulty].color,
+            color: ARCHAEOLOGY_DIFFICULTIES[difficulty].color
+          }"
         >
           {{ ARCHAEOLOGY_DIFFICULTIES[difficulty].label.toUpperCase() }}
         </div>
-        <div
-          ref="energyCounterRef"
-          class="stat-pill energy-counter"
-        >
-          ENERGÍA: {{ energy }}
-        </div>
-        <div class="stat-pill">
-          PIEZAS: {{ fossilsFound }} / {{ totalFossilParts }}
-        </div>
+        <div ref="energyCounterRef" class="stat-pill energy-counter">ENERGÍA: {{ energy }}</div>
+        <div class="stat-pill">PIEZAS: {{ fossilsFound }} / {{ totalFossilParts }}</div>
       </div>
 
       <div
         id="archaeology-grid"
         ref="gridRef"
         class="archaeology-grid"
-        :style="{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, gridTemplateRows: `repeat(${gridSize}, 1fr)` }"
+        :style="{
+          gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
+          gridTemplateRows: `repeat(${gridSize}, 1fr)`
+        }"
       >
         <div
           v-for="tile in grid"
@@ -334,18 +355,11 @@ const handleCloseModal = () => {
               :src="fossilSprite"
               class="fossil-sprite pixelated"
               alt="Fósil"
-            
               width="32"
               height="32"
-            >
-            <span
-              v-else-if="tile.clue === 'HOT'"
-              class="emoji clue-tag hot"
-            >🔥</span>
-            <span
-              v-else-if="tile.clue === 'COLD'"
-              class="emoji clue-tag cold"
-            >❄️</span>
+            />
+            <span v-else-if="tile.clue === 'HOT'" class="emoji clue-tag hot">🔥</span>
+            <span v-else-if="tile.clue === 'COLD'" class="emoji clue-tag cold">❄️</span>
           </template>
           <template v-else>
             <div class="rock-texture" />
@@ -361,7 +375,7 @@ const handleCloseModal = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .archaeology-container {
   position: relative;
@@ -389,7 +403,10 @@ const handleCloseModal = () => {
   p {
     color: var(--amber-300);
     font-size: var(--font-12);
-    span { color: var(--yellow-light); font-weight: bold; }
+    span {
+      color: var(--yellow-light);
+      font-weight: bold;
+    }
   }
 }
 
@@ -474,11 +491,11 @@ const handleCloseModal = () => {
 
     font-size: var(--font-10);
     font-weight: bold;
-    
+
     &.hot {
       color: var(--rose);
     }
-    
+
     &.cold {
       color: var(--blue-400);
     }

@@ -43,7 +43,9 @@ class TieredSaveSimWrapper extends BaseE2ESimulation {
     }, times);
   }
 
-  public async triggerManualSave(forceRemote = false): Promise<{ success: boolean; remote?: boolean }> {
+  public async triggerManualSave(
+    forceRemote = false
+  ): Promise<{ success: boolean; remote?: boolean }> {
     return await this.page.evaluate(async (force) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const game = useGameStore();
@@ -67,10 +69,13 @@ class TieredSaveSimWrapper extends BaseE2ESimulation {
     }, rules);
   }
 
-  public async setDefendingRoster(roster: Array<{ id: PokemonSpeciesId; level: number; uid?: string }>): Promise<void> {
+  public async setDefendingRoster(
+    roster: Array<{ id: PokemonSpeciesId; level: number; uid?: string }>
+  ): Promise<void> {
     await this.page.evaluate(async (mons) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const gameStore = useGameStore();
 
       const generated = mons.map((m, i) => {
@@ -80,7 +85,7 @@ class TieredSaveSimWrapper extends BaseE2ESimulation {
       });
 
       gameStore.state.team = generated;
-      gameStore.state.pvpTeam6 = generated.map(g => g.uid);
+      gameStore.state.pvpTeam6 = generated.map((g) => g.uid);
     }, roster);
   }
 
@@ -112,7 +117,9 @@ class TieredSaveSimWrapper extends BaseE2ESimulation {
 test.describe('2-Tier Persistence Architecture & Passive Defense Coalescing Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('Scenario 1: Coalesces rapid mutations into a single debounced local save', async ({ page }) => {
+  test('Scenario 1: Coalesces rapid mutations into a single debounced local save', async ({
+    page
+  }) => {
     const sim = new TieredSaveSimWrapper(page, 'TierUser1');
     await sim.setup();
     await waitForStoreReady(page);
@@ -133,10 +140,14 @@ test.describe('2-Tier Persistence Architecture & Passive Defense Coalescing Simu
     expect(remoteSaveRpcCount).toBe(0);
 
     // Wait deterministically for the local debounce window and save to finish
-    await page.waitForFunction(async () => {
-      const { saveCoordinator } = await import('../../../src/logic/auth/saveCoordinator.ts');
-      return !saveCoordinator.hasPendingLocalSave() && !saveCoordinator.isDirty();
-    }, null, { timeout: 10000 });
+    await page.waitForFunction(
+      async () => {
+        const { saveCoordinator } = await import('../../../src/logic/auth/saveCoordinator.ts');
+        return !saveCoordinator.hasPendingLocalSave() && !saveCoordinator.isDirty();
+      },
+      null,
+      { timeout: 10000 }
+    );
 
     // Exactly 1 remote save request fired (first save of session)
     expect(remoteSaveRpcCount).toBeLessThanOrEqual(1);
@@ -146,7 +157,9 @@ test.describe('2-Tier Persistence Architecture & Passive Defense Coalescing Simu
     expect(coordState.lastCloudSaveTime).toBeGreaterThan(0);
   });
 
-  test('Scenario 2: Throttles cloud save to 60-second window while updating local storage (Tier 1)', async ({ page }) => {
+  test('Scenario 2: Throttles cloud save to 60-second window while updating local storage (Tier 1)', async ({
+    page
+  }) => {
     const sim = new TieredSaveSimWrapper(page, 'TierUser2');
     await sim.setup();
     await waitForStoreReady(page);
@@ -167,7 +180,9 @@ test.describe('2-Tier Persistence Architecture & Passive Defense Coalescing Simu
     expect(throttledCoord.shouldExecuteCloudSave).toBe(false);
   });
 
-  test('Scenario 3: Bypasses 60-second cloud throttle immediately when forceRemote is true', async ({ page }) => {
+  test('Scenario 3: Bypasses 60-second cloud throttle immediately when forceRemote is true', async ({
+    page
+  }) => {
     const sim = new TieredSaveSimWrapper(page, 'TierUser3');
     await sim.setup();
     await waitForStoreReady(page);
@@ -188,7 +203,9 @@ test.describe('2-Tier Persistence Architecture & Passive Defense Coalescing Simu
     expect(finalCoord.lastCloudSaveTime).toBeGreaterThanOrEqual(t0);
   });
 
-  test('Scenario 4: Flushes pending dirty cloud state on emergency flush (beforeunload)', async ({ page }) => {
+  test('Scenario 4: Flushes pending dirty cloud state on emergency flush (beforeunload)', async ({
+    page
+  }) => {
     const sim = new TieredSaveSimWrapper(page, 'TierUser4');
     await sim.setup();
     await waitForStoreReady(page);
@@ -207,7 +224,9 @@ test.describe('2-Tier Persistence Architecture & Passive Defense Coalescing Simu
     expect(flushedCoord.isDirty).toBe(false);
   });
 
-  test('Scenario 5: Passive defense coalesces rapid roster syncs and cancels immediately on ineligibility', async ({ page }) => {
+  test('Scenario 5: Passive defense coalesces rapid roster syncs and cancels immediately on ineligibility', async ({
+    page
+  }) => {
     const sim = new TieredSaveSimWrapper(page, 'TierUser5');
     await sim.setup();
     await sim.navigateToHome();
@@ -235,7 +254,7 @@ test.describe('2-Tier Persistence Architecture & Passive Defense Coalescing Simu
     await page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const gameStore = useGameStore();
-      const charizard = gameStore.state.team.find(p => p.id === 'charizard');
+      const charizard = gameStore.state.team.find((p) => p.id === 'charizard');
       if (charizard) {
         charizard.level = 51;
       }

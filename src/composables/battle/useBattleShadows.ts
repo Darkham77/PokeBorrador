@@ -1,21 +1,25 @@
-import { ref, computed, watch, onUnmounted } from 'vue'
-import { useCombatShadowStore } from '@/stores/battle/combatShadows'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers'
+import { ref, computed, watch, onUnmounted } from 'vue';
+import { useCombatShadowStore } from '@/stores/battle/combatShadows';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers';
 import {
   hasAnimatedSpriteId,
   requireAnimatedSpriteData,
   type AnimatedSpriteId
-} from '@/data/pokemon/animatedSpriteDatabase'
-import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping'
+} from '@/data/pokemon/animatedSpriteDatabase';
+import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
 
-import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { PokemonType } from '@/data/battle/types'
-import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { toID } from '@/logic/utils/strings'
-import { logger } from '@/logic/utils/logger'
+import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PokemonType } from '@/data/battle/types';
+import {
+  isPokemonSpeciesId,
+  requirePokemonSpeciesId,
+  type PokemonSpeciesId
+} from '@/data/pokemon/pokedex';
+import { toID } from '@/logic/utils/strings';
+import { logger } from '@/logic/utils/logger';
 
 const DEFAULT_SHADOW_BODY_RADIUS_PCT = 0.4;
 const SHADOW_PERCENTAGE_SCALE_FACTOR = 250;
@@ -28,115 +32,128 @@ function computeAnimatedKey(
   isBack = false,
   gender?: string | null
 ): AnimatedSpriteId | null {
-  const spriteNum = requirePokemonSpriteValue(pokemonId)
-  const match = String(spriteNum).match(/^(\d+)(.*)$/)
-  if (!match) return null
-  const numId = match[1]!
-  const suffix = match[2]!
-  const isFemale = gender === 'f'
+  const spriteNum = requirePokemonSpriteValue(pokemonId);
+  const match = String(spriteNum).match(/^(\d+)(.*)$/);
+  if (!match) return null;
+  const numId = match[1]!;
+  const suffix = match[2]!;
+  const isFemale = gender === 'f';
 
-  const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`] as const satisfies readonly string[]
+  const candidates = [
+    `${numId}i${suffix}`,
+    `${numId}${suffix}`
+  ] as const satisfies readonly string[];
 
   for (const cand of candidates) {
     if (isBack) {
-      const femaleBack = `${cand}_f_back`
-      const back = `${cand}_back`
+      const femaleBack = `${cand}_f_back`;
+      const back = `${cand}_back`;
       if (isFemale && hasAnimatedSpriteId(femaleBack)) {
-        return femaleBack
+        return femaleBack;
       }
       if (hasAnimatedSpriteId(back)) {
-        return back
+        return back;
       }
     } else {
-      const femaleFront = `${cand}_f`
-      const front = cand
+      const femaleFront = `${cand}_f`;
+      const front = cand;
       if (isFemale && hasAnimatedSpriteId(femaleFront)) {
-        return femaleFront
+        return femaleFront;
       }
       if (hasAnimatedSpriteId(front)) {
-        return front
+        return front;
       }
     }
   }
 
-  return null
+  return null;
 }
 
 function checkAnimated(pokemonId: PokemonSpeciesId, gender?: string | null): boolean {
-  return !!computeAnimatedKey(pokemonId, false, gender) || !!computeAnimatedKey(pokemonId, true, gender)
+  return (
+    !!computeAnimatedKey(pokemonId, false, gender) || !!computeAnimatedKey(pokemonId, true, gender)
+  );
 }
 
 export interface SpriteResolutionTarget {
-  id: PokemonSpeciesId
-  form?: string
-  gender?: string | null
+  id: PokemonSpeciesId;
+  form?: string;
+  gender?: string | null;
 }
 
 function getEffectiveSpriteId(pokemon: SpriteResolutionTarget): PokemonSpeciesId {
   if (pokemon.form && pokemon.form !== 'normal') {
-    const combined = toID(`${pokemon.id}${pokemon.form}`)
+    const combined = toID(`${pokemon.id}${pokemon.form}`);
     if (isPokemonSpeciesId(combined)) {
-      return combined
+      return combined;
     }
   }
-  return requirePokemonSpeciesId(pokemon.id)
+  return requirePokemonSpeciesId(pokemon.id);
 }
 
 interface SpriteUrlOptions {
-  isShiny?: boolean
-  isBack?: boolean
+  isShiny?: boolean;
+  isBack?: boolean;
 }
 
-function getFinalSpriteUrl(pokemon: SpriteResolutionTarget, options: SpriteUrlOptions = {}): string {
-  const { isShiny = false, isBack = false } = options
-  const spriteId = getEffectiveSpriteId(pokemon)
-  const isAnim = checkAnimated(spriteId, pokemon.gender)
-  const url = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, { isShiny, isBack, isAnimated: isAnim })
+function getFinalSpriteUrl(
+  pokemon: SpriteResolutionTarget,
+  options: SpriteUrlOptions = {}
+): string {
+  const { isShiny = false, isBack = false } = options;
+  const spriteId = getEffectiveSpriteId(pokemon);
+  const isAnim = checkAnimated(spriteId, pokemon.gender);
+  const url = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, { isShiny, isBack, isAnimated: isAnim });
   if (isAnim && url) {
-    const key = computeAnimatedKey(spriteId, isBack, pokemon.gender)
+    const key = computeAnimatedKey(spriteId, isBack, pokemon.gender);
     if (key) {
-      const filename = key.replace(/_back$/, '')
-      return url.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`)
+      const filename = key.replace(/_back$/, '');
+      return url.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`);
     }
   }
-  return url
+  return url;
 }
 
-const { ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
+const { ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS;
 
 interface Position {
-  x: number
-  y: number
+  x: number;
+  y: number;
 }
 
-export function hasAnimatedShadowKey(
-  pokemonId: PokemonSpeciesId,
-  gender?: string | null
-): boolean {
-  return !!computeAnimatedKey(pokemonId, false, gender) || !!computeAnimatedKey(pokemonId, true, gender)
+export function hasAnimatedShadowKey(pokemonId: PokemonSpeciesId, gender?: string | null): boolean {
+  return (
+    !!computeAnimatedKey(pokemonId, false, gender) || !!computeAnimatedKey(pokemonId, true, gender)
+  );
 }
 
-export function computeShadowCoords(pokemon: Pokemon | null | undefined, isBack = false): { x: number; y: number } {
-  if (!pokemon) return { x: DEFAULT_SHADOW_X_FALLBACK, y: DEFAULT_SHADOW_Y_FALLBACK }
-  
-  const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon as SpriteResolutionTarget) : undefined
+export function computeShadowCoords(
+  pokemon: Pokemon | null | undefined,
+  isBack = false
+): { x: number; y: number } {
+  if (!pokemon) return { x: DEFAULT_SHADOW_X_FALLBACK, y: DEFAULT_SHADOW_Y_FALLBACK };
+
+  const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon as SpriteResolutionTarget) : undefined;
   if (spriteId && hasAnimatedShadowKey(spriteId, pokemon.gender)) {
-    const key = computeAnimatedKey(spriteId, isBack, pokemon.gender)
+    const key = computeAnimatedKey(spriteId, isBack, pokemon.gender);
     if (key) {
-      const data = requireAnimatedSpriteData(key)
+      const data = requireAnimatedSpriteData(key);
       if (data && data.feetX !== undefined) {
         return {
           x: Math.round(data.feetX),
           y: Math.round(data.feetY)
-        }
+        };
       }
     }
   }
 
   // Fallback to static feet database
-  const url = getFinalSpriteUrl(pokemon as SpriteResolutionTarget, { isShiny: !!pokemon.isShiny, isBack })
-  const coords = getPokemonFeetCoords(url)
-  return { x: coords.feetX, y: coords.feetY }
+  const url = getFinalSpriteUrl(pokemon as SpriteResolutionTarget, {
+    isShiny: !!pokemon.isShiny,
+    isBack
+  });
+  const coords = getPokemonFeetCoords(url);
+  return { x: coords.feetX, y: coords.feetY };
 }
 
 export function computeShadowBodyRadius(
@@ -144,91 +161,98 @@ export function computeShadowBodyRadius(
   isBack = false,
   visualRadius = DEFAULT_SHADOW_BODY_RADIUS_PCT
 ): string {
-  if (!pokemon) return `${visualRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`
+  if (!pokemon) return `${visualRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`;
 
-  const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon as SpriteResolutionTarget) : undefined
-  const animKey = spriteId ? (computeAnimatedKey(spriteId, isBack, pokemon.gender) || computeAnimatedKey(spriteId, !isBack, pokemon.gender)) : null
-  const meta = animKey ? requireAnimatedSpriteData(animKey) : null
-  const bodyRadius = meta?.bodyRadius ?? DEFAULT_SHADOW_BODY_RADIUS_PCT
-  return `${bodyRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`
+  const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon as SpriteResolutionTarget) : undefined;
+  const animKey = spriteId
+    ? computeAnimatedKey(spriteId, isBack, pokemon.gender) ||
+      computeAnimatedKey(spriteId, !isBack, pokemon.gender)
+    : null;
+  const meta = animKey ? requireAnimatedSpriteData(animKey) : null;
+  const bodyRadius = meta?.bodyRadius ?? DEFAULT_SHADOW_BODY_RADIUS_PCT;
+  return `${bodyRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`;
 }
 
 export function isFlying(pokemon: Pokemon | null | undefined): boolean {
-  if (!pokemon || !pokemon.id) return false
-  const data = pokemonDataProvider.getPokemonData(pokemon.id)
-  if (!data) return false
-  if (data.isFloating !== undefined) return data.isFloating
-  
-  const types: PokemonType[] = [] // no-domain: Non-domain utility collection or data structure
-  if (data.type) types.push(data.type as PokemonType)
-  if (data.type2) types.push(data.type2 as PokemonType)
-  return types.includes('flying')
+  if (!pokemon || !pokemon.id) return false;
+  const data = pokemonDataProvider.getPokemonData(pokemon.id);
+  if (!data) return false;
+  if (data.isFloating !== undefined) return data.isFloating;
+
+  const types: PokemonType[] = []; // no-domain: Non-domain utility collection or data structure
+  if (data.type) types.push(data.type as PokemonType);
+  if (data.type2) types.push(data.type2 as PokemonType);
+  return types.includes('flying');
 }
 
 export function getShadowWidth(pokemon: SpriteResolutionTarget, isBack: boolean): string {
-  const spriteId = getEffectiveSpriteId(pokemon)
-  const animKey = computeAnimatedKey(spriteId, isBack, pokemon.gender) || computeAnimatedKey(spriteId, !isBack, pokemon.gender)
-  const meta = animKey ? requireAnimatedSpriteData(animKey) : null
-  const bodyRadius = meta?.bodyRadius ?? DEFAULT_SHADOW_BODY_RADIUS_PCT
-  return `${bodyRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`
+  const spriteId = getEffectiveSpriteId(pokemon);
+  const animKey =
+    computeAnimatedKey(spriteId, isBack, pokemon.gender) ||
+    computeAnimatedKey(spriteId, !isBack, pokemon.gender);
+  const meta = animKey ? requireAnimatedSpriteData(animKey) : null;
+  const bodyRadius = meta?.bodyRadius ?? DEFAULT_SHADOW_BODY_RADIUS_PCT;
+  return `${bodyRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`;
 }
 
 export function useBattleShadows() {
-  const shadowStore = useCombatShadowStore()
-
+  const shadowStore = useCombatShadowStore();
 
   // Unique keys for shadows in the store
-  const currentPlayerShadowKey = ref<string | null>(null)
-  const currentEnemyShadowKey = ref<string | null>(null)
+  const currentPlayerShadowKey = ref<string | null>(null);
+  const currentEnemyShadowKey = ref<string | null>(null);
 
-  const lastEnemyShadowId = ref<string | null>(null)
-  const lastPlayerShadowId = ref<string | null>(null)
+  const lastEnemyShadowId = ref<string | null>(null);
+  const lastPlayerShadowId = ref<string | null>(null);
 
   // Persistent ground coordinates to prevent jumps
-  const stableEnemyGroundY = ref(DEFAULT_STABLE_GROUND_Y_PCT)
-  const stablePlayerGroundY = ref(DEFAULT_STABLE_GROUND_Y_PCT)
+  const stableEnemyGroundY = ref(DEFAULT_STABLE_GROUND_Y_PCT);
+  const stablePlayerGroundY = ref(DEFAULT_STABLE_GROUND_Y_PCT);
 
-  const enemyGroundY = computed(() => stableEnemyGroundY.value)
-  const playerGroundY = computed(() => stablePlayerGroundY.value)
+  const enemyGroundY = computed(() => stableEnemyGroundY.value);
+  const playerGroundY = computed(() => stablePlayerGroundY.value);
 
   function getStableShadowId(pokemon: Pokemon | null, side: string): string | null {
-    if (!pokemon) return null
-    if (pokemon.uid) return `shadow_${pokemon.uid}`
-    return `${side}_${pokemon.id}`
+    if (!pokemon) return null;
+    if (pokemon.uid) return `shadow_${pokemon.uid}`;
+    return `${side}_${pokemon.id}`;
   }
 
-
-
-
-
   // Synchronize enemy shadow visibility and position
-  const syncEnemyShadow = async (visible: boolean, data: Pokemon | null, pos: Position, animState: unknown) => {
-    const shadowId = getStableShadowId(data, 'enemy')
-    
+  const syncEnemyShadow = async (
+    visible: boolean,
+    data: Pokemon | null,
+    pos: Position,
+    animState: unknown
+  ) => {
+    const shadowId = getStableShadowId(data, 'enemy');
+
     // Initialize coordinates immediately if seat is occupied by a pokemon
     if (data) {
-      const url = getFinalSpriteUrl(data, { isShiny: !!data.isShiny, isBack: false })
-      getPokemonFeetCoords(url)
-      stableEnemyGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
+      const url = getFinalSpriteUrl(data, { isShiny: !!data.isShiny, isBack: false });
+      getPokemonFeetCoords(url);
+      stableEnemyGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT;
     }
 
     // Clean up orphan shadows if ID changes (prevents duplicates when catching/switching)
     if (lastEnemyShadowId.value && lastEnemyShadowId.value !== shadowId) {
-      if (lastEnemyShadowId.value) shadowStore.hideShadow(lastEnemyShadowId.value)
+      if (lastEnemyShadowId.value) shadowStore.hideShadow(lastEnemyShadowId.value);
     }
-    lastEnemyShadowId.value = shadowId
-    currentEnemyShadowKey.value = shadowId
+    lastEnemyShadowId.value = shadowId;
+    currentEnemyShadowKey.value = shadowId;
 
     // Hide shadow if in any Poké Ball energy transition state
-    const isEnergyState = !!animState 
+    const isEnergyState = !!animState;
     if (!visible || !data || isEnergyState) {
-      if (shadowId) shadowStore.hideShadow(shadowId)
-      return
+      if (shadowId) shadowStore.hideShadow(shadowId);
+      return;
     }
 
     if (shadowId) {
-      const spriteUrl = data ? getFinalSpriteUrl(data, { isShiny: !!data.isShiny, isBack: false }) : ''
-      const feetCoords = spriteUrl ? getPokemonFeetCoords(spriteUrl) : null
+      const spriteUrl = data
+        ? getFinalSpriteUrl(data, { isShiny: !!data.isShiny, isBack: false })
+        : '';
+      const feetCoords = spriteUrl ? getPokemonFeetCoords(spriteUrl) : null;
       await shadowStore.requestShadow(shadowId, {
         side: 'enemy',
         entityX: pos.x,
@@ -239,38 +263,40 @@ export function useBattleShadows() {
         spriteUrl,
         width: data ? getShadowWidth(data, false) : '100%',
         visible: true
-      })
+      });
     }
-  }
+  };
 
   // Synchronize player shadow visibility and position
   const syncPlayerShadow = async (pokemon: Pokemon | null, pos: Position, animState: unknown) => {
-    const shadowId = getStableShadowId(pokemon, 'player')
+    const shadowId = getStableShadowId(pokemon, 'player');
 
     // Initialize coordinates immediately if seat is occupied by a pokemon
     if (pokemon) {
-      const url = getFinalSpriteUrl(pokemon, { isShiny: !!pokemon.isShiny, isBack: true })
-      getPokemonFeetCoords(url)
-      stablePlayerGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
+      const url = getFinalSpriteUrl(pokemon, { isShiny: !!pokemon.isShiny, isBack: true });
+      getPokemonFeetCoords(url);
+      stablePlayerGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT;
     }
 
     // Clean up orphan shadows
     if (lastPlayerShadowId.value && lastPlayerShadowId.value !== shadowId) {
-      if (lastPlayerShadowId.value) shadowStore.hideShadow(lastPlayerShadowId.value)
+      if (lastPlayerShadowId.value) shadowStore.hideShadow(lastPlayerShadowId.value);
     }
-    lastPlayerShadowId.value = shadowId
-    currentPlayerShadowKey.value = shadowId
+    lastPlayerShadowId.value = shadowId;
+    currentPlayerShadowKey.value = shadowId;
 
     // Hide shadow during energy transitions
-    const isEnergyState = !!animState
+    const isEnergyState = !!animState;
     if (!pokemon || isEnergyState) {
-      if (shadowId) shadowStore.hideShadow(shadowId)
-      return
+      if (shadowId) shadowStore.hideShadow(shadowId);
+      return;
     }
 
     if (shadowId) {
-      const spriteUrl = pokemon ? getFinalSpriteUrl(pokemon, { isShiny: !!pokemon.isShiny, isBack: true }) : ''
-      const feetCoords = spriteUrl ? getPokemonFeetCoords(spriteUrl) : null
+      const spriteUrl = pokemon
+        ? getFinalSpriteUrl(pokemon, { isShiny: !!pokemon.isShiny, isBack: true })
+        : '';
+      const feetCoords = spriteUrl ? getPokemonFeetCoords(spriteUrl) : null;
       await shadowStore.requestShadow(shadowId, {
         side: 'player',
         entityX: pos.x,
@@ -281,90 +307,96 @@ export function useBattleShadows() {
         spriteUrl,
         width: getShadowWidth(pokemon, true),
         visible: true
-      })
+      });
     }
-  }
+  };
 
   // Ground line is fixed at 75% — watchers based on shadow.feetY were removed because
   // feetY represents the foot position WITHIN the sprite, not the ground line in the entity box.
   watch(currentEnemyShadowKey, (val) => {
-    if (!val) stableEnemyGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
-  })
+    if (!val) stableEnemyGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT;
+  });
   watch(currentPlayerShadowKey, (val) => {
-    if (!val) stablePlayerGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
-  })
+    if (!val) stablePlayerGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT;
+  });
 
   const preloadTeamFeet = async (team: Pokemon[], side: string) => {
-    if (!team || !Array.isArray(team)) return
-    const tasks = team.map(p => {
-      const isBack = side === 'player'
-      const url = getFinalSpriteUrl(p, { isShiny: !!p.isShiny, isBack })
-      return shadowStore.detectFeetPoints(url)
-    })
-    return Promise.all(tasks)
-  }
+    if (!team || !Array.isArray(team)) return;
+    const tasks = team.map((p) => {
+      const isBack = side === 'player';
+      const url = getFinalSpriteUrl(p, { isShiny: !!p.isShiny, isBack });
+      return shadowStore.detectFeetPoints(url);
+    });
+    return Promise.all(tasks);
+  };
 
   const preloadCombatCoords = async (
-    p1Data: Pokemon | null, 
-    p2Data: Pokemon | null, 
-    p1Position: Position, 
-    p2Position: Position, 
-    p1Team: Pokemon[], 
+    p1Data: Pokemon | null,
+    p2Data: Pokemon | null,
+    p1Position: Position,
+    p2Position: Position,
+    p1Team: Pokemon[],
     p2Team: Pokemon[]
   ) => {
-    const tasks = []
-    
+    const tasks = [];
+
     // Preload feet points of ALL teams to avoid first-time lag
-    if (p1Team) tasks.push(preloadTeamFeet(p1Team, 'player'))
-    if (p2Team) tasks.push(preloadTeamFeet(p2Team, 'enemy'))
+    if (p1Team) tasks.push(preloadTeamFeet(p1Team, 'player'));
+    if (p2Team) tasks.push(preloadTeamFeet(p2Team, 'enemy'));
 
     if (p1Data) {
-      const shadowId = getStableShadowId(p1Data, 'player')
-      currentPlayerShadowKey.value = shadowId
-      const url = getFinalSpriteUrl(p1Data, { isShiny: !!p1Data.isShiny, isBack: true })
-      const feetCoords = url ? getPokemonFeetCoords(url) : null
+      const shadowId = getStableShadowId(p1Data, 'player');
+      currentPlayerShadowKey.value = shadowId;
+      const url = getFinalSpriteUrl(p1Data, { isShiny: !!p1Data.isShiny, isBack: true });
+      const feetCoords = url ? getPokemonFeetCoords(url) : null;
       if (shadowId) {
-        tasks.push(shadowStore.requestShadow(shadowId, {
-          side: 'player',
-          entityX: p1Position.x,
-          entityY: p1Position.y,
-          entitySize: ENTITY_SIZE_PLAYER,
-          isFlying: feetCoords?.isFlying ?? isFlying(p1Data),
-          shadowScale: feetCoords?.shadowScale ?? 1.0,
-          spriteUrl: url,
-          width: getShadowWidth(p1Data, true),
-          visible: true
-        }))
+        tasks.push(
+          shadowStore.requestShadow(shadowId, {
+            side: 'player',
+            entityX: p1Position.x,
+            entityY: p1Position.y,
+            entitySize: ENTITY_SIZE_PLAYER,
+            isFlying: feetCoords?.isFlying ?? isFlying(p1Data),
+            shadowScale: feetCoords?.shadowScale ?? 1.0,
+            spriteUrl: url,
+            width: getShadowWidth(p1Data, true),
+            visible: true
+          })
+        );
       }
     }
-    
+
     if (p2Data) {
-      const shadowId = getStableShadowId(p2Data, 'enemy')
-      currentEnemyShadowKey.value = shadowId
-      const url = getFinalSpriteUrl(p2Data, { isShiny: !!p2Data.isShiny, isBack: false })
-      const feetCoords = url ? getPokemonFeetCoords(url) : null
+      const shadowId = getStableShadowId(p2Data, 'enemy');
+      currentEnemyShadowKey.value = shadowId;
+      const url = getFinalSpriteUrl(p2Data, { isShiny: !!p2Data.isShiny, isBack: false });
+      const feetCoords = url ? getPokemonFeetCoords(url) : null;
       if (shadowId) {
-        tasks.push(shadowStore.requestShadow(shadowId, {
-          side: 'enemy',
-          entityX: p2Position.x,
-          entityY: p2Position.y,
-          entitySize: ENTITY_SIZE_ENEMY,
-          isFlying: feetCoords?.isFlying ?? isFlying(p2Data),
-          shadowScale: feetCoords?.shadowScale ?? 1.0,
-          spriteUrl: url,
-          width: getShadowWidth(p2Data, false),
-          visible: true
-        }))
+        tasks.push(
+          shadowStore.requestShadow(shadowId, {
+            side: 'enemy',
+            entityX: p2Position.x,
+            entityY: p2Position.y,
+            entitySize: ENTITY_SIZE_ENEMY,
+            isFlying: feetCoords?.isFlying ?? isFlying(p2Data),
+            shadowScale: feetCoords?.shadowScale ?? 1.0,
+            spriteUrl: url,
+            width: getShadowWidth(p2Data, false),
+            visible: true
+          })
+        );
       }
     }
     if (tasks.length > 0) {
-      await Promise.all(tasks).catch(err => logger.warn('Shadow', `Preloading failed: ${(err as Error).message}`))
+      await Promise.all(tasks).catch((err) =>
+        logger.warn('Shadow', `Preloading failed: ${(err as Error).message}`)
+      );
     }
-  }
+  };
 
   onUnmounted(() => {
-    shadowStore.clearAll()
-  })
+    shadowStore.clearAll();
+  });
 
   return {
     currentPlayerShadowKey,
@@ -375,5 +407,5 @@ export function useBattleShadows() {
     syncPlayerShadow,
     preloadCombatCoords,
     getStableShadowId
-  }
+  };
 }

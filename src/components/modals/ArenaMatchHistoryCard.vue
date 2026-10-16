@@ -12,16 +12,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div
-    class="match-card"
-    :class="item.result"
-  >
+  <div class="match-card" :class="item.result">
     <div class="match-badge-col">
-      <span
-        class="result-badge text-outline"
-        :class="item.result"
-      >
-        {{ item.result === 'victory' ? 'VICTORIA' : (item.result === 'defeat' ? 'DERROTA' : 'EMPATE') }}
+      <span class="result-badge text-outline" :class="item.result">
+        {{
+          item.result === 'victory' ? 'VICTORIA' : item.result === 'defeat' ? 'DERROTA' : 'EMPATE'
+        }}
       </span>
       <span
         v-if="item.deltaElo !== undefined && item.deltaElo !== 0"
@@ -39,14 +35,8 @@ const emit = defineEmits<{
       </div>
       <div class="meta-row">
         <span class="meta-pill text-outline">{{ item.format === '6v6' ? '6V6' : '3V3' }}</span>
-        <span
-          v-if="item.isRanked"
-          class="meta-pill ranked text-outline"
-        >RANKED</span>
-        <span
-          v-else
-          class="meta-pill casual text-outline"
-        >AMISTOSO</span>
+        <span v-if="item.isRanked" class="meta-pill ranked text-outline">RANKED</span>
+        <span v-else class="meta-pill casual text-outline">AMISTOSO</span>
         <span class="meta-turns">{{ item.turnsCount }} turnos</span>
       </div>
     </div>
@@ -77,7 +67,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .match-card {
   display: flex;

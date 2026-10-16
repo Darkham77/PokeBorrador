@@ -4,15 +4,19 @@
  * Consolidated Suite for Environmental Bush Library, Fishing Minigame, and Minigame Math Formulas.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
-import { getActiveBushesForMap, BIOME_BUSH_CONFIG, BUSH_FAMILIES } from '../../../src/logic/environment/bushLibrary.ts';
+import {
+  getActiveBushesForMap,
+  BIOME_BUSH_CONFIG,
+  BUSH_FAMILIES
+} from '../../../src/logic/environment/bushLibrary.ts';
 import {
   FISHING_DIFFICULTIES,
   calculateFishingDifficulty,
   calculateFishingDifficultyScore,
-  applyFishingLevelAndIvBonus,
+  applyFishingLevelAndIvBonus
 } from '../../../src/components/modals/fishingGameHelper.ts';
 import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
 import {
@@ -22,10 +26,15 @@ import {
   calculateArchaeologyEncounterRate,
   calculateCloningCost,
   calculateCloningRerolls,
-  calculateCloningShinyChance,
+  calculateCloningShinyChance
 } from '../../../src/logic/minigames/minigameMath.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
-import { GYM_REMATCHES, isGymRematchAvailable, isGymRematchCompletedToday, recordGymRematchCompletion } from '../../../src/data/world/gymRematches.ts';
+import {
+  GYM_REMATCHES,
+  isGymRematchAvailable,
+  isGymRematchCompletedToday,
+  recordGymRematchCompletion
+} from '../../../src/data/world/gymRematches.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
 import type { GymId } from '../../../src/data/world/gyms.ts';
 
@@ -39,7 +48,7 @@ describe('World Domain: Minigames, Bushes & Harvesting Suite', () => {
     it('debe resolver la configuración de coberturas para un mapa de llanuras (Ruta 1)', () => {
       const bushes = getActiveBushesForMap('route1', 'front', 12345, baseBushes);
       assert.strictEqual(bushes.length, 2);
-      
+
       const first = bushes[0];
       assert.ok(first);
       assert.ok(Object.keys(BUSH_FAMILIES).includes(first.family));
@@ -71,14 +80,17 @@ describe('World Domain: Minigames, Bushes & Harvesting Suite', () => {
       for (let seed = 0; seed < 100; seed++) {
         const bushes = getActiveBushesForMap('cerulean_cave', 'front', seed, baseBushes);
         assert.strictEqual(bushes.length, 2);
-        
+
         for (const bush of bushes) {
           if (bush.family === 'rock') {
             foundRock = true;
             assert.strictEqual(bush.tintClass, 'tint-cave');
           } else {
             foundCrystal = true;
-            assert.ok(bush.family.startsWith('crystal'), `Debería ser una familia de cristal (obtenido: ${bush.family})`);
+            assert.ok(
+              bush.family.startsWith('crystal'),
+              `Debería ser una familia de cristal (obtenido: ${bush.family})`
+            );
             assert.strictEqual(bush.tintClass, '');
           }
         }
@@ -95,7 +107,7 @@ describe('World Domain: Minigames, Bushes & Harvesting Suite', () => {
       for (let seed = 0; seed < 100; seed++) {
         const bushes = getActiveBushesForMap('seafoam_islands', 'front', seed, baseBushes);
         assert.strictEqual(bushes.length, 2);
-        
+
         for (const bush of bushes) {
           if (bush.family === 'rock') {
             foundRock = true;
@@ -113,14 +125,14 @@ describe('World Domain: Minigames, Bushes & Harvesting Suite', () => {
     it('debe ser determinista para la misma semilla de sesión y capa', () => {
       const bushesA = getActiveBushesForMap('route1', 'front', 999, baseBushes);
       const bushesB = getActiveBushesForMap('route1', 'front', 999, baseBushes);
-      
+
       assert.deepStrictEqual(bushesA, bushesB);
     });
 
     it('debe generar diferentes resultados para capas front y back con la misma semilla', () => {
       const bushesFront = getActiveBushesForMap('route1', 'front', 999, baseBushes);
-      const bushesBack  = getActiveBushesForMap('route1', 'back', 999, baseBushes);
-      
+      const bushesBack = getActiveBushesForMap('route1', 'back', 999, baseBushes);
+
       assert.notDeepStrictEqual(bushesFront, bushesBack);
     });
 
@@ -182,8 +194,14 @@ describe('World Domain: Minigames, Bushes & Harvesting Suite', () => {
       it('should have easy speed accessible and accelerated (around 910ms collapse, 680ms spawn interval)', () => {
         const easy = FISHING_DIFFICULTIES.easy;
         assert.strictEqual(easy.notes, 5);
-        assert.ok(easy.speedBase <= 950 && easy.speedBase >= 800, `Speed base should be ~910ms, got ${easy.speedBase}`);
-        assert.ok(easy.spawnInterval <= 750 && easy.spawnInterval >= 600, `Spawn interval should be ~680ms, got ${easy.spawnInterval}`);
+        assert.ok(
+          easy.speedBase <= 950 && easy.speedBase >= 800,
+          `Speed base should be ~910ms, got ${easy.speedBase}`
+        );
+        assert.ok(
+          easy.spawnInterval <= 750 && easy.spawnInterval >= 600,
+          `Spawn interval should be ~680ms, got ${easy.spawnInterval}`
+        );
         assert.strictEqual(easy.minLevelBonus, 0);
         assert.strictEqual(easy.maxLevelBonus, 0);
         assert.strictEqual(easy.rerollIVs, false);
@@ -253,7 +271,7 @@ describe('World Domain: Minigames, Bushes & Harvesting Suite', () => {
         const p = makePokemon('magikarp', 10) as Pokemon;
         assert.ok(p);
         p.ivs = { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 };
-        
+
         const mockRandom = () => 0.9;
         applyFishingLevelAndIvBonus(p, 'expert', mockRandom);
 
@@ -312,16 +330,28 @@ describe('World Domain: Minigames, Bushes & Harvesting Suite', () => {
   describe('Archaeology and Fossil Cloning Math Formulas', () => {
     describe('calculateArchaeologyEncounterRate', () => {
       it('should return 10% for caves', () => {
-        assert.strictEqual(calculateArchaeologyEncounterRate({ isCave: true, isMountain: false }), 0.10);
-        assert.strictEqual(calculateArchaeologyEncounterRate({ isCave: true, isMountain: true }), 0.10);
+        assert.strictEqual(
+          calculateArchaeologyEncounterRate({ isCave: true, isMountain: false }),
+          0.1
+        );
+        assert.strictEqual(
+          calculateArchaeologyEncounterRate({ isCave: true, isMountain: true }),
+          0.1
+        );
       });
 
       it('should return 5% for mountains if not cave', () => {
-        assert.strictEqual(calculateArchaeologyEncounterRate({ isCave: false, isMountain: true }), 0.05);
+        assert.strictEqual(
+          calculateArchaeologyEncounterRate({ isCave: false, isMountain: true }),
+          0.05
+        );
       });
 
       it('should return 0% for other biomes', () => {
-        assert.strictEqual(calculateArchaeologyEncounterRate({ isCave: false, isMountain: false }), 0.00);
+        assert.strictEqual(
+          calculateArchaeologyEncounterRate({ isCave: false, isMountain: false }),
+          0.0
+        );
       });
     });
 
@@ -399,7 +429,16 @@ describe('World Domain: Minigames, Bushes & Harvesting Suite', () => {
     const yesterday = '2026-09-06';
 
     it('has valid rematch configurations for all 8 Kanto gyms', () => {
-      const gymIds: GymId[] = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'];
+      const gymIds: GymId[] = [
+        'pewter',
+        'cerulean',
+        'vermilion',
+        'celadon',
+        'fuchsia',
+        'saffron',
+        'cinnabar',
+        'viridian'
+      ];
       for (const id of gymIds) {
         const config = GYM_REMATCHES[id];
         assert.ok(config);
@@ -461,4 +500,3 @@ describe('World Domain: Minigames, Bushes & Harvesting Suite', () => {
     });
   });
 });
-

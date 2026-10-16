@@ -22,22 +22,22 @@ const SYNCHRONIZE_CHANCE_GEN8_PLUS = 1.0;
 const SYNCHRONIZE_CHANCE_LEGACY = 0.5;
 const CUTE_CHARM_OPPOSITE_GENDER_CHANCE = 2 / 3;
 
-export const HELD_ITEM_NORMAL_RATES = { commonRate: 0.50, rareRate: 0.05 } as const;
-export const HELD_ITEM_BOOSTED_RATES = { commonRate: 0.60, rareRate: 0.20 } as const;
-const FRISK_FORCE_HELD_ITEM_CHANCE = 0.50;
+export const HELD_ITEM_NORMAL_RATES = { commonRate: 0.5, rareRate: 0.05 } as const;
+export const HELD_ITEM_BOOSTED_RATES = { commonRate: 0.6, rareRate: 0.2 } as const;
+const FRISK_FORCE_HELD_ITEM_CHANCE = 0.5;
 
 const EGG_HATCH_SPEED_NORMAL = 1;
 const EGG_HATCH_SPEED_BOOSTED = 2;
 
-const PICKUP_TRIGGER_CHANCE = 0.10;
+const PICKUP_TRIGGER_CHANCE = 0.1;
 const HONEY_GATHER_BASE_CHANCE = 0.05;
-const HONEY_GATHER_MAX_CHANCE = 0.50;
+const HONEY_GATHER_MAX_CHANCE = 0.5;
 const HONEY_GATHER_LEVEL_SCALE_STEP = 10;
 const HONEY_GATHER_LEVEL_SCALE_RATE = 0.05;
 
-const ELEMENTAL_ATTRACTION_CHANCE = 0.50;
+const ELEMENTAL_ATTRACTION_CHANCE = 0.5;
 const INTIMIDATE_AVOID_LEVEL_DELTA = 5;
-const LEVEL_FILTER_CHANCE = 0.50;
+const LEVEL_FILTER_CHANCE = 0.5;
 
 const SPAWN_RATE_MULTIPLIER_NORMAL = 1.0;
 const SPAWN_RATE_MULTIPLIER_HIGH = 2.0;
@@ -67,7 +67,16 @@ const PICKUP_LOOT_TABLES: {
   {
     minLevel: 1,
     maxLevel: PICKUP_BRACKET_FIRST_MAX_LEVEL,
-    pool: ['potion', 'antidote', 'paralyzeheal', 'awakening', 'burnheal', 'greatball', 'repel', 'pokeball']
+    pool: [
+      'potion',
+      'antidote',
+      'paralyzeheal',
+      'awakening',
+      'burnheal',
+      'greatball',
+      'repel',
+      'pokeball'
+    ]
   },
   {
     minLevel: PICKUP_BRACKET_SECOND_MIN_LEVEL,
@@ -121,7 +130,7 @@ function hasPartyFieldAbility(
   abilityId: AbilityId
 ): boolean {
   if (!team) return false;
-  return team.some(pkmn => pkmn != null && pkmn.hp > 0 && pkmn.ability === abilityId);
+  return team.some((pkmn) => pkmn != null && pkmn.hp > 0 && pkmn.ability === abilityId);
 }
 
 /**
@@ -135,7 +144,8 @@ export function resolveSynchronizeNature(
   if (!leader || !leader.nature || leader.ability !== 'synchronize') return null;
   if (generation >= GALAR_GENERATION_NUM && leader.hp <= 0) return null;
 
-  const threshold = generation >= GALAR_GENERATION_NUM ? SYNCHRONIZE_CHANCE_GEN8_PLUS : SYNCHRONIZE_CHANCE_LEGACY;
+  const threshold =
+    generation >= GALAR_GENERATION_NUM ? SYNCHRONIZE_CHANCE_GEN8_PLUS : SYNCHRONIZE_CHANCE_LEGACY;
   return randomFn() < threshold ? leader.nature : null;
 }
 
@@ -163,9 +173,11 @@ export function resolveCuteCharmGender(
 /**
  * Returns the modified wild held item probabilities based on leader's ability.
  */
-export function getWildHeldItemRates(
-  leaderAbility: AbilityId | null | undefined
-): { commonRate: number; rareRate: number; forceHeldChance?: number } {
+export function getWildHeldItemRates(leaderAbility: AbilityId | null | undefined): {
+  commonRate: number;
+  rareRate: number;
+  forceHeldChance?: number;
+} {
   if (leaderAbility === 'compoundeyes' || leaderAbility === 'superluck') {
     return HELD_ITEM_BOOSTED_RATES;
   }
@@ -235,7 +247,11 @@ export function shouldForceMaxRouteLevel(
   randomFn: () => number = Math.random
 ): boolean {
   if (!leaderAbility) return false;
-  if (leaderAbility === 'pressure' || leaderAbility === 'vitalspirit' || leaderAbility === 'hustle') {
+  if (
+    leaderAbility === 'pressure' ||
+    leaderAbility === 'vitalspirit' ||
+    leaderAbility === 'hustle'
+  ) {
     return randomFn() < LEVEL_FILTER_CHANCE;
   }
   return false;
@@ -250,7 +266,11 @@ export function getEncounterRateMultiplier(
 ): number {
   if (!leaderAbility) return SPAWN_RATE_MULTIPLIER_NORMAL;
 
-  if (leaderAbility === 'arenatrap' || leaderAbility === 'illuminate' || leaderAbility === 'noguard') {
+  if (
+    leaderAbility === 'arenatrap' ||
+    leaderAbility === 'illuminate' ||
+    leaderAbility === 'noguard'
+  ) {
     return SPAWN_RATE_MULTIPLIER_HIGH;
   }
   if (
@@ -284,7 +304,9 @@ export function getFishingWeightMultiplier(leaderAbility: AbilityId | null | und
 /**
  * Calculates egg hatch speed multiplier from party abilities (non-stacking).
  */
-export function getHatchSpeedMultiplier(team: readonly (Pokemon | null)[] | null | undefined): number {
+export function getHatchSpeedMultiplier(
+  team: readonly (Pokemon | null)[] | null | undefined
+): number {
   if (!team) return EGG_HATCH_SPEED_NORMAL;
   const hasHatchBooster =
     hasPartyFieldAbility(team, 'flamebody') ||
@@ -303,7 +325,9 @@ export function resolvePickupLoot(
   if (pokemon.ability !== 'pickup' || pokemon.hp <= 0) return null;
   if (randomFn() >= PICKUP_TRIGGER_CHANCE) return null;
 
-  const bracket = PICKUP_LOOT_TABLES.find(b => pokemon.level >= b.minLevel && pokemon.level <= b.maxLevel);
+  const bracket = PICKUP_LOOT_TABLES.find(
+    (b) => pokemon.level >= b.minLevel && pokemon.level <= b.maxLevel
+  );
   const pool = bracket ? bracket.pool : PICKUP_LOOT_TABLES[0]!.pool;
   const selected = pool[Math.floor(randomFn() * pool.length)];
   return selected || null;
@@ -319,7 +343,8 @@ export function resolveHoneyGather(
   if (pokemon.ability !== 'honeygather' || pokemon.hp <= 0) return false;
   const chance = Math.min(
     HONEY_GATHER_MAX_CHANCE,
-    HONEY_GATHER_BASE_CHANCE + Math.floor(pokemon.level / HONEY_GATHER_LEVEL_SCALE_STEP) * HONEY_GATHER_LEVEL_SCALE_RATE
+    HONEY_GATHER_BASE_CHANCE +
+      Math.floor(pokemon.level / HONEY_GATHER_LEVEL_SCALE_STEP) * HONEY_GATHER_LEVEL_SCALE_RATE
   );
   return randomFn() < chance;
 }
@@ -328,11 +353,12 @@ export function resolveHoneyGather(
  * Cures persistent status conditions for party members with Natural Cure.
  * Returns the list of cured Pokemon names.
  */
-export function curePartyNaturalCure(team: (Pokemon | null)[] | null | undefined): string[] { // no-domain: Non-domain utility collection or data structure
+export function curePartyNaturalCure(team: (Pokemon | null)[] | null | undefined): string[] {
+  // no-domain: Non-domain utility collection or data structure
   if (!team) return [];
   const curedNames: string[] = []; // no-domain: Non-domain utility collection or data structure
 
-  team.forEach(p => {
+  team.forEach((p) => {
     if (p && p.ability === 'naturalcure' && p.status) {
       p.status = '';
       p.sleepTurns = 0;
@@ -350,7 +376,7 @@ export function getFieldAbilityDescription(abilityId: AbilityId): string {
   const trans = ABILITY_TRANSLATIONS_ES[abilityId];
   if (!trans || !trans.desc) return '';
   const lines = trans.desc.split('\n');
-  const fieldLine = lines.find(line => line.includes('Campo:'));
+  const fieldLine = lines.find((line) => line.includes('Campo:'));
   if (fieldLine) {
     return fieldLine.replace(/^[•\s]*Campo:\s*/u, '').trim();
   }

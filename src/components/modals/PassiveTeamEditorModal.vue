@@ -1,32 +1,32 @@
 <script setup lang="ts">
-import BaseModal from '@/components/common/BaseModal.vue'
+import BaseModal from '@/components/common/BaseModal.vue';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
 const closeEditor = () => {
-  emit('close')
-}
+  emit('close');
+};
 
 const confirmSave = () => {
   (Reflect.get(window, 'confirmPassiveTeamEdit') as (() => void) | undefined)?.();
-}
+};
 
 // Shim for legacy code - we keep this but use the prop as source of truth
 if (typeof window !== 'undefined') {
   Reflect.set(window, 'openPassiveTeamEditor', () => {
     // This is now managed by the store/host, but we keep the shim for event-based calls
-    import('@/stores/modals').then(m => m.useModalStore().open('PassiveTeamEditor'))
-  })
+    import('@/stores/modals').then((m) => m.useModalStore().open('PassiveTeamEditor'));
+  });
 }
 </script>
 
@@ -41,17 +41,13 @@ if (typeof window !== 'undefined') {
   >
     <div class="passive-editor-inner">
       <p class="editor-help-text">
-        Elegí tus mejores defensores. Estos Pokémon protegerán tus rutas conquistadas automáticamente.
+        Elegí tus mejores defensores. Estos Pokémon protegerán tus rutas conquistadas
+        automáticamente.
       </p>
 
-      <div
-        id="passive-editor-body"
-        class="editor-body-container"
-      >
+      <div id="passive-editor-body" class="editor-body-container">
         <!-- Contenido inyectado por el sistema de defensa legado -->
-        <div class="loading-placeholder">
-          Cargando configuración de defensa...
-        </div>
+        <div class="loading-placeholder">Cargando configuración de defensa...</div>
       </div>
     </div>
 
@@ -68,7 +64,7 @@ if (typeof window !== 'undefined') {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .passive-editor-inner {
   padding: 8px 0;

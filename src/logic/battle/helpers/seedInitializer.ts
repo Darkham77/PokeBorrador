@@ -4,21 +4,24 @@
  */
 function parseShowdownSeed(seed: unknown): [number, number, number, number] | undefined {
   if (!seed) return undefined;
-  
+
   if (Array.isArray(seed)) {
-    const nums = seed.map(Number).filter(n => !isNaN(n));
+    const nums = seed.map(Number).filter((n) => !isNaN(n));
     if (nums.length === 4) {
       return nums as [number, number, number, number];
     }
   }
-  
+
   if (typeof seed === 'string') {
-    const nums = seed.split(',').map(Number).filter(n => !isNaN(n));
+    const nums = seed
+      .split(',')
+      .map(Number)
+      .filter((n) => !isNaN(n));
     if (nums.length === 4) {
       return nums as [number, number, number, number];
     }
   }
-  
+
   return undefined;
 }
 
@@ -41,4 +44,3 @@ export function resetDeterministicMathRandom(initialSeed = DEFAULT_RNG_INITIAL_S
     return x - Math.floor(x);
   };
 }
-

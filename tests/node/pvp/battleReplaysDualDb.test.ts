@@ -6,7 +6,7 @@
  * across both SQLite and PostgreSQL.
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { describeWithDatabase } from '../../dbTestHelper.ts';
@@ -20,7 +20,10 @@ vi.mock('@/logic/db/sqliteEngine.ts', () => ({
     const isSelect = trimmed.toUpperCase().startsWith('SELECT');
     const stmt = memoryDb.prepare(sql);
     if (isSelect) {
-      return stmt.all(...(params as (string | number | bigint | null)[])) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
+      return stmt.all(...(params as (string | number | bigint | null)[])) as Record<
+        string,
+        unknown
+      >[]; // open-record: Generic key-value data dictionary container
     }
     stmt.run(...(params as (string | number | bigint | null)[]));
     return [];
@@ -112,14 +115,14 @@ describeWithDatabase('Battle Replays Dual Database Integration', (engine, getDb)
           WHERE table_schema = ${schema} AND table_name = 'battle_replays'
         `;
 
-        const idCol = cols.find(c => c.column_name === 'id');
+        const idCol = cols.find((c) => c.column_name === 'id');
         assert.ok(idCol, 'battle_replays must have an id column');
         assert.strictEqual(idCol.data_type, 'uuid', 'id column must be uuid');
 
-        const codeCol = cols.find(c => c.column_name === 'battle_code');
+        const codeCol = cols.find((c) => c.column_name === 'battle_code');
         assert.ok(codeCol, 'battle_replays must have a battle_code column');
 
-        const top10Col = cols.find(c => c.column_name === 'is_top10_archived');
+        const top10Col = cols.find((c) => c.column_name === 'is_top10_archived');
         assert.ok(top10Col, 'battle_replays must have is_top10_archived column');
         assert.strictEqual(top10Col.data_type, 'boolean', 'is_top10_archived must be boolean');
 
@@ -155,7 +158,7 @@ describeWithDatabase('Battle Replays Dual Database Integration', (engine, getDb)
           isTop10Archived: boolean;
         }>;
         assert.ok(Array.isArray(replaysList), 'Featured replays must return an array');
-        const found = replaysList.find(r => r.battleCode === 'BTL-ABCD-EFGH');
+        const found = replaysList.find((r) => r.battleCode === 'BTL-ABCD-EFGH');
         assert.ok(found, 'Featured replays must include published battle replay');
         assert.strictEqual(found.isTop10Archived, true);
 
@@ -169,9 +172,15 @@ describeWithDatabase('Battle Replays Dual Database Integration', (engine, getDb)
         const rowsCount = await sql`
           SELECT COUNT(*)::int as count FROM public.battle_replays WHERE battle_code = 'BTL-ABCD-EFGH'
         `;
-        assert.strictEqual(rowsCount[0]!.count, 1, 'Conflict must not create duplicate replay rows');
+        assert.strictEqual(
+          rowsCount[0]!.count,
+          1,
+          'Conflict must not create duplicate replay rows'
+        );
       } finally {
-        await sql`DELETE FROM public.battle_replays WHERE battle_code = 'BTL-ABCD-EFGH'`.catch(() => {});
+        await sql`DELETE FROM public.battle_replays WHERE battle_code = 'BTL-ABCD-EFGH'`.catch(
+          () => {}
+        );
         await sql.end();
       }
     } else {
@@ -205,10 +214,14 @@ describeWithDatabase('Battle Replays Dual Database Integration', (engine, getDb)
 
       const sqliteMock: SQLiteDatabase = {} as SQLiteDatabase;
 
-      const pubRes = await emulatePublishBattleReplay(sqliteMock, { payload: samplePayload }, {
-        userId: sampleP1.userId,
-        username: sampleP1.username
-      });
+      const pubRes = await emulatePublishBattleReplay(
+        sqliteMock,
+        { payload: samplePayload },
+        {
+          userId: sampleP1.userId,
+          username: sampleP1.username
+        }
+      );
 
       expect(pubRes.error).toBeNull();
       expect(pubRes.data).toBeDefined();
@@ -233,7 +246,7 @@ describeWithDatabase('Battle Replays Dual Database Integration', (engine, getDb)
         p2: typeof sampleP2;
       }>;
       expect(Array.isArray(featuredData)).toBe(true);
-      const replayFound = featuredData.find(r => r.battleCode === 'BTL-ABCD-EFGH');
+      const replayFound = featuredData.find((r) => r.battleCode === 'BTL-ABCD-EFGH');
       expect(replayFound).toBeDefined();
       expect(replayFound?.isTop10Archived).toBe(true);
       expect(replayFound?.p1.username).toBe('Red');
@@ -271,4 +284,3 @@ describe('Replay Code Generator', () => {
     expect(formatBattleCodeInput('btl12')).toBe('BTL-12');
   });
 });
-

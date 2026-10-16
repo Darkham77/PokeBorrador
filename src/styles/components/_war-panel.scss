@@ -1,4 +1,4 @@
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/mixins' as *;
 
 // src/styles/components/_war-panel.scss
 @use '../core/tools' as *;
@@ -44,13 +44,29 @@ $poder-color: var(--red);
     display: flex;
     align-items: center;
     gap: $spacing-md-alt;
-    
-    &.union .team-val { color: var(--blue); text-shadow: 0 0 10px Rgb(59 130 246 / 40%); }
-    &.poder .team-val { color: var(--red); text-shadow: 0 0 10px Rgb(239 68 68 / 40%); }
+
+    &.union .team-val {
+      color: var(--blue);
+      text-shadow: 0 0 10px Rgb(59 130 246 / 40%);
+    }
+    &.poder .team-val {
+      color: var(--red);
+      text-shadow: 0 0 10px Rgb(239 68 68 / 40%);
+    }
   }
 
-  .team-label { @include pixelated; display: block; color: var(--gray); font-size: var(--font-7); margin-bottom: 4px; }
-  .team-val { color: var(--white); font-size: var(--font-16); font-weight: 900; }
+  .team-label {
+    @include pixelated;
+    display: block;
+    color: var(--gray);
+    font-size: var(--font-7);
+    margin-bottom: 4px;
+  }
+  .team-val {
+    color: var(--white);
+    font-size: var(--font-16);
+    font-weight: 900;
+  }
 }
 
 .war-stat-item {
@@ -61,7 +77,6 @@ $poder-color: var(--red);
   border: 1px solid Rgb(255 255 255 / 6%);
   border-radius: $radius-3xl;
   background: Rgb(255 255 255 / 3%);
-  
 
   &:hover {
     background: Rgb(255 255 255 / 6%);
@@ -69,8 +84,18 @@ $poder-color: var(--red);
     border-color: Rgb(255 255 255 / 15%);
   }
 
-  .war-stat-label { display: block; color: var(--gray); font-size: var(--font-9); margin-bottom: 2px; }
-  .war-stat-value { @include pixelated; color: var(--white); font-size: var(--font-13); font-weight: 800; }
+  .war-stat-label {
+    display: block;
+    color: var(--gray);
+    font-size: var(--font-9);
+    margin-bottom: 2px;
+  }
+  .war-stat-value {
+    @include pixelated;
+    color: var(--white);
+    font-size: var(--font-13);
+    font-weight: 800;
+  }
 }
 
 .war-grid-premium {
@@ -88,7 +113,6 @@ $poder-color: var(--red);
   background-size: 180%;
   background-position: center bottom;
   box-shadow: var(--shadow-2xl);
-  
 
   &:hover {
     z-index: var(--z-base);
@@ -103,7 +127,12 @@ $poder-color: var(--red);
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background: Linear-Gradient(0deg, Rgb(0 0 0 / 95%) 0%, Rgb(0 0 0 / 10%) 60%, Rgb(0 0 0 / 70%) 100%);
+  background: Linear-Gradient(
+    0deg,
+    Rgb(0 0 0 / 95%) 0%,
+    Rgb(0 0 0 / 10%) 60%,
+    Rgb(0 0 0 / 70%) 100%
+  );
   inset: 0;
 }
 
@@ -115,6 +144,14 @@ $poder-color: var(--red);
   overflow: hidden;
   box-shadow: $shadow-inset-sm;
 
-  .bar-union { height: 100%;  background: var(--blue); box-shadow: $shadow-glow-blue; }
-  .bar-poder { height: 100%;  background: var(--red); box-shadow: $shadow-glow-red; }
+  .bar-union {
+    height: 100%;
+    background: var(--blue);
+    box-shadow: $shadow-glow-blue;
+  }
+  .bar-poder {
+    height: 100%;
+    background: var(--red);
+    box-shadow: $shadow-glow-red;
+  }
 }

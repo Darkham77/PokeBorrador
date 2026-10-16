@@ -21,7 +21,7 @@ import {
   StatsTable,
   Type,
   TypeData,
-  TypeName,
+  TypeName
 } from '@pkmn/dex-types';
 
 export class ModdedDex<
@@ -57,7 +57,7 @@ export class ModdedDex<
       },
       getByID(id: IDT) {
         return dex.abilities.getByID(id) as A;
-      },
+      }
     };
     this.conditions = {
       get(name: string) {
@@ -65,7 +65,7 @@ export class ModdedDex<
       },
       getByID(id: IDT) {
         return dex.conditions.getByID(id) as C;
-      },
+      }
     };
     this.items = {
       get(name: string) {
@@ -73,7 +73,7 @@ export class ModdedDex<
       },
       getByID(id: IDT) {
         return dex.items.getByID(id) as I;
-      },
+      }
     };
     this.learnsets = {
       get(name: string) {
@@ -81,7 +81,7 @@ export class ModdedDex<
       },
       getByID(id: IDT) {
         return dex.learnsets.getByID(id) as Promise<L>;
-      },
+      }
     };
     this.moves = {
       get(name: string) {
@@ -89,7 +89,7 @@ export class ModdedDex<
       },
       getByID(id: IDT) {
         return dex.moves.getByID(id) as M;
-      },
+      }
     };
     this.species = {
       get(name: string) {
@@ -97,7 +97,7 @@ export class ModdedDex<
       },
       getByID(id: IDT) {
         return dex.species.getByID(id) as S;
-      },
+      }
     };
     this.natures = this.dex.natures;
     this.types = this.dex.types;
@@ -114,14 +114,14 @@ export class ModdedDex<
 
   get data() {
     return this.dex.data as {
-      Abilities: {[id: string]: AD};
-      Aliases: {[id: string]: string};
-      Items: {[id: string]: ITD};
-      Moves: {[id: string]: MD};
-      Species: {[id: string]: SD};
-      Natures: {[id: string]: NatureData};
-      Learnsets: null | {[id: string]: LD};
-      Types: {[type in Exclude<TypeName, '???'>]: TypeData};
+      Abilities: { [id: string]: AD };
+      Aliases: { [id: string]: string };
+      Items: { [id: string]: ITD };
+      Moves: { [id: string]: MD };
+      Species: { [id: string]: SD };
+      Natures: { [id: string]: NatureData };
+      Learnsets: null | { [id: string]: LD };
+      Types: { [type in Exclude<TypeName, '???'>]: TypeData };
     };
   }
 
@@ -156,15 +156,15 @@ export class ModdedDex<
   }
 
   getImmunity(
-    source: {type: string} | string,
-    target: {getTypes: () => string[]} | {types: string[]} | string[] | string
+    source: { type: string } | string,
+    target: { getTypes: () => string[] } | { types: string[] } | string[] | string
   ) {
     return this.dex.getImmunity(source, target);
   }
 
   getEffectiveness(
-    source: {type: string} | string,
-    target: {getTypes: () => string[]} | {types: string[]} | string[] | string
+    source: { type: string } | string,
+    target: { getTypes: () => string[] } | { types: string[] } | string[] | string
   ) {
     return this.dex.getEffectiveness(source, target);
   }

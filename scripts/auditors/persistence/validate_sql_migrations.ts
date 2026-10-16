@@ -1,6 +1,6 @@
 /**
  * scripts/auditors/persistence/validate_sql_migrations.ts
- * 
+ *
  * SQL MIGRATION VALIDATOR (Node.js 26+)
  * In-memory SQLite validation of database migrations translated from PostgreSQL syntax,
  * strict monotonicity / non-repetition audit of migration timestamps, and exact parity
@@ -11,9 +11,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { enableCompileCache } from 'node:module';
-import { translatePostgresToSqlite, splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
+import {
+  translatePostgresToSqlite,
+  splitSQLStatements
+} from '../../../src/logic/db/sqlTranslator.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
-import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';
 
 enableCompileCache();
@@ -28,7 +31,8 @@ function isIgnorableSqliteMigrationError(error: unknown): boolean {
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 const TIMESTAMP_REGEX = /^(\d{14})_/;
-const DB_VERSION_SQL_REGEX = /(?:VALUES\s*\(\s*['"]db_version['"]\s*,\s*['"]*(\d{14})|SET\s+value\s*=\s*['"]*(\d{14})|jsonb_build_object\s*\(\s*['"]db_version['"]\s*,\s*['"]*(\d{14}))/i;
+const DB_VERSION_SQL_REGEX =
+  /(?:VALUES\s*\(\s*['"]db_version['"]\s*,\s*['"]*(\d{14})|SET\s+value\s*=\s*['"]*(\d{14})|jsonb_build_object\s*\(\s*['"]db_version['"]\s*,\s*['"]*(\d{14}))/i;
 const MANDATORY_DB_VERSION_TIMESTAMP = '20260901000000';
 const MANDATORY_SQLITE_COMPANION_TIMESTAMP = '20260619202000';
 
@@ -92,15 +96,23 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
         'sql-migration-sqlite-exec-failure': 'Fallo en SQLite en memoria'
       },
       ruleRemediations: {
-        'sql-migration-orphan-sqlite': 'Remove orphan .sqlite.sql file or add matching .sql migration',
-        'sql-migration-invalid-timestamp': 'Use valid 14-digit YYYYMMDDHHmmss timestamp prefix for migration file',
-        'sql-migration-duplicate-timestamp': 'Ensure migration timestamp is unique across all migrations',
+        'sql-migration-orphan-sqlite':
+          'Remove orphan .sqlite.sql file or add matching .sql migration',
+        'sql-migration-invalid-timestamp':
+          'Use valid 14-digit YYYYMMDDHHmmss timestamp prefix for migration file',
+        'sql-migration-duplicate-timestamp':
+          'Ensure migration timestamp is unique across all migrations',
         'sql-migration-broken-monotonicity': 'Ensure migration timestamps are strictly increasing',
-        'sql-migration-missing-dbversion': 'Update system_config.db_version to match the migration timestamp',
-        'sql-migration-missing-sqlite-companion': 'Create companion .sqlite.sql migration for SQLite engine parity',
-        'sql-migration-sqlite-missing-dbversion': 'Update system_config.db_version in companion .sqlite.sql file',
-        'sql-migration-dbversion-desync': 'Synchronize db_version value between PostgreSQL and SQLite migrations',
-        'sql-migration-sqlite-exec-failure': 'Fix SQL syntax or schema mismatch causing in-memory SQLite execution error'
+        'sql-migration-missing-dbversion':
+          'Update system_config.db_version to match the migration timestamp',
+        'sql-migration-missing-sqlite-companion':
+          'Create companion .sqlite.sql migration for SQLite engine parity',
+        'sql-migration-sqlite-missing-dbversion':
+          'Update system_config.db_version in companion .sqlite.sql file',
+        'sql-migration-dbversion-desync':
+          'Synchronize db_version value between PostgreSQL and SQLite migrations',
+        'sql-migration-sqlite-exec-failure':
+          'Fix SQL syntax or schema mismatch causing in-memory SQLite execution error'
       },
       requiredFiles: [MIGRATIONS_DIR],
       coverage: {
@@ -110,7 +122,7 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
   }
 
   private validateOrphanSqliteFiles(dirEntries: readonly string[]): void {
-    const sqliteFiles = dirEntries.filter(f => f.endsWith('.sqlite.sql'));
+    const sqliteFiles = dirEntries.filter((f) => f.endsWith('.sqlite.sql'));
     for (const sqliteFile of sqliteFiles) {
       const baseSqlFile = sqliteFile.replace(/\.sqlite\.sql$/, '.sql');
       if (!dirEntries.includes(baseSqlFile)) {
@@ -152,7 +164,10 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
     }
   }
 
-  private executeSingleMigration(db: DatabaseSync, migration: (typeof DATABASE_MIGRATIONS)[number]): void {
+  private executeSingleMigration(
+    db: DatabaseSync,
+    migration: (typeof DATABASE_MIGRATIONS)[number]
+  ): void {
     const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
     const isSqliteSpec = migration.sqlite_sql !== undefined;
     const statements = splitSQLStatements(sqlSource);
@@ -187,14 +202,22 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
       }
 
       baseSqlFiles = dirEntries
-        .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'))
+        .filter(
+          (f) => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema')
+        )
         .sort((a, b) => a.localeCompare(b));
 
       for (const file of baseSqlFiles) {
-        migrationFileContents.set(file, await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8'));
+        migrationFileContents.set(
+          file,
+          await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8')
+        );
       }
-      for (const file of dirEntries.filter(f => f.endsWith('.sqlite.sql'))) {
-        sqliteCompanionContents.set(file, await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8'));
+      for (const file of dirEntries.filter((f) => f.endsWith('.sqlite.sql'))) {
+        sqliteCompanionContents.set(
+          file,
+          await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8')
+        );
       }
 
       this.validateOrphanSqliteFiles(dirEntries);
@@ -351,7 +374,8 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
           const sqliteContent = sqliteCompanionContents.get(companionSqliteName) ?? '';
           const sqliteVersionMatch = sqliteContent.match(DB_VERSION_SQL_REGEX);
           if (sqliteVersionMatch) {
-            const sqliteVersion = sqliteVersionMatch[1] || sqliteVersionMatch[2] || sqliteVersionMatch[3];
+            const sqliteVersion =
+              sqliteVersionMatch[1] || sqliteVersionMatch[2] || sqliteVersionMatch[3];
             if (sqliteVersion && sqliteVersion !== timestamp) {
               this.addViolation({
                 ruleId: 'sql-migration-dbversion-desync',
@@ -377,6 +401,10 @@ export class SqlMigrationAuditor extends BaseAuditor<SqlMigrationRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new SqlMigrationAuditor());
 }

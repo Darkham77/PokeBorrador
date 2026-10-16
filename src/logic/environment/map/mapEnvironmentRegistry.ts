@@ -8,8 +8,17 @@ import {
 import { FIRE_RED_MAPS } from '@/data/world/maps.ts';
 import type { MapLocation } from '@/types/pokemon/encounters.ts';
 import type { GymId } from '@/data/world/gyms.ts';
-import { MAP_ROUTE_MAPPING, getAvailableCyclesForMap, isMapRouteId, type MapRouteId } from '@/data/world/map-assets.ts';
-import { ROUTE_WEATHER_TABLES, isWeatherTableRouteId, WEATHER_SEASON_IDS } from '@/data/world/weather-tables.ts';
+import {
+  MAP_ROUTE_MAPPING,
+  getAvailableCyclesForMap,
+  isMapRouteId,
+  type MapRouteId
+} from '@/data/world/map-assets.ts';
+import {
+  ROUTE_WEATHER_TABLES,
+  isWeatherTableRouteId,
+  WEATHER_SEASON_IDS
+} from '@/data/world/weather-tables.ts';
 import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
 import { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
 
@@ -22,7 +31,9 @@ export interface EnvironmentResolutionOptions {
 }
 
 const DEFAULT_CITY_ALLOWED_WEATHERS: readonly WeatherId[] = ['clear', 'none'] as const;
-const DEFAULT_CITY_ALLOWED_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(DEFAULT_CITY_ALLOWED_WEATHERS); // runtime-set: Fast O(1) membership lookup set
+const DEFAULT_CITY_ALLOWED_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(
+  DEFAULT_CITY_ALLOWED_WEATHERS
+); // runtime-set: Fast O(1) membership lookup set
 
 function collectWeathersFromTable(routeId: MapRouteId, target: Set<WeatherId>): void {
   if (!isWeatherTableRouteId(routeId)) return;
@@ -63,26 +74,33 @@ function deriveAllowedWeathers(loc: MapLocation): ReadonlySet<WeatherId> {
 
 function buildBoundariesFromMapLocation(loc: MapLocation): MapEnvironmentBoundaries {
   const allowedWeathers = deriveAllowedWeathers(loc);
-  
+
   let weatherEnabled: boolean;
   if (loc.weatherEnabled !== undefined) {
     weatherEnabled = loc.weatherEnabled;
   } else {
-    const nonClear = Array.from(allowedWeathers).some(w => w !== 'clear' && w !== 'none');
+    const nonClear = Array.from(allowedWeathers).some((w) => w !== 'clear' && w !== 'none');
     weatherEnabled = nonClear;
   }
 
-  const supportedCycles: readonly DayPhase[] = loc.supportedCycles && loc.supportedCycles.length > 0
-    ? loc.supportedCycles
-    : (() => {
-        const available = getAvailableCyclesForMap(loc.id);
-        if (available.length > 0) return available;
-        if (loc.fixedCycle) return [loc.fixedCycle] as const;
-        return DAY_PHASES;
-      })();
+  const supportedCycles: readonly DayPhase[] =
+    loc.supportedCycles && loc.supportedCycles.length > 0
+      ? loc.supportedCycles
+      : (() => {
+          const available = getAvailableCyclesForMap(loc.id);
+          if (available.length > 0) return available;
+          if (loc.fixedCycle) return [loc.fixedCycle] as const;
+          return DAY_PHASES;
+        })();
 
   const isCave = Boolean(loc.isCave || loc.isCrystalCave);
-  const isIndoors = Boolean(loc.isIndoors || loc.id === 'stadium' || loc.id === 'power_plant' || loc.id === 'pokemon_tower' || loc.id === 'mansion');
+  const isIndoors = Boolean(
+    loc.isIndoors ||
+    loc.id === 'stadium' ||
+    loc.id === 'power_plant' ||
+    loc.id === 'pokemon_tower' ||
+    loc.id === 'mansion'
+  );
 
   return {
     id: loc.id,
@@ -158,7 +176,9 @@ export function getMapEnvironment(
   _options?: EnvironmentResolutionOptions
 ): BaseMapEnvironment {
   if (!locationId || typeof locationId !== 'string' || locationId.trim() === '') {
-    throw new Error('[MapEnvironmentRegistry] locationId no especificado o inválido. Se prohíben fallbacks silenciosos.');
+    throw new Error(
+      '[MapEnvironmentRegistry] locationId no especificado o inválido. Se prohíben fallbacks silenciosos.'
+    );
   }
 
   // If gym is passed as locationId, canonically map to stadium
@@ -167,7 +187,9 @@ export function getMapEnvironment(
   // Direct canonical lookup by map locationId
   const env = REGISTRY.get(resolvedId);
   if (!env) {
-    throw new Error(`[MapEnvironmentRegistry] Entorno no registrado para locationId: "${locationId}". Se rechazan fallbacks silenciosos.`);
+    throw new Error(
+      `[MapEnvironmentRegistry] Entorno no registrado para locationId: "${locationId}". Se rechazan fallbacks silenciosos.`
+    );
   }
 
   return env;

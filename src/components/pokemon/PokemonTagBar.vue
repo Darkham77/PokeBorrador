@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import { computed } from 'vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import {
   CANONICAL_FILTER_TAGS,
   type FilterTagDefinition,
   type PokemonFilterTagId
-} from '@/logic/constants/tags'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+} from '@/logic/constants/tags';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
-  modelValue?: readonly PokemonFilterTagId[]
-  activeTags?: readonly PokemonFilterTagId[]
-  compact?: boolean
-  showLabel?: boolean
-  label?: string
-  allowedKeys?: readonly PokemonFilterTagId[]
-  showCompatible?: boolean
-  filterCompatibleOnly?: boolean
-  otherDaycarePokemon?: Pokemon | null
+  modelValue?: readonly PokemonFilterTagId[];
+  activeTags?: readonly PokemonFilterTagId[];
+  compact?: boolean;
+  showLabel?: boolean;
+  label?: string;
+  allowedKeys?: readonly PokemonFilterTagId[];
+  showCompatible?: boolean;
+  filterCompatibleOnly?: boolean;
+  otherDaycarePokemon?: Pokemon | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -30,88 +30,82 @@ const props = withDefaults(defineProps<Props>(), {
   showCompatible: false,
   filterCompatibleOnly: false,
   otherDaycarePokemon: null
-})
+});
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', val: PokemonFilterTagId[]): void
-  (e: 'update:activeTags', val: PokemonFilterTagId[]): void
-  (e: 'update:filterCompatibleOnly', val: boolean): void
-  (e: 'toggle', tagId: PokemonFilterTagId): void
-}>()
+  (e: 'update:modelValue', val: PokemonFilterTagId[]): void;
+  (e: 'update:activeTags', val: PokemonFilterTagId[]): void;
+  (e: 'update:filterCompatibleOnly', val: boolean): void;
+  (e: 'toggle', tagId: PokemonFilterTagId): void;
+}>();
 
 const selectedTags = computed<readonly PokemonFilterTagId[]>(() => {
-  return props.activeTags ?? props.modelValue ?? []
-})
+  return props.activeTags ?? props.modelValue ?? [];
+});
 
 const visibleTags = computed<readonly FilterTagDefinition[]>(() => {
   if (!props.allowedKeys || props.allowedKeys.length === 0) {
-    return CANONICAL_FILTER_TAGS
+    return CANONICAL_FILTER_TAGS;
   }
-  const allowed = new Set(props.allowedKeys)
-  return CANONICAL_FILTER_TAGS.filter(t => allowed.has(t.id))
-})
+  const allowed = new Set(props.allowedKeys);
+  return CANONICAL_FILTER_TAGS.filter((t) => allowed.has(t.id));
+});
 
 function isTagActive(tagId: PokemonFilterTagId): boolean {
-  if (tagId === 'shiny' && selectedTags.value.includes('shy')) return true
-  if (tagId === 'shy' && selectedTags.value.includes('shiny')) return true
-  if (tagId === 'comp' && selectedTags.value.includes('competitive')) return true
-  if (tagId === 'competitive' && selectedTags.value.includes('comp')) return true
-  return selectedTags.value.includes(tagId)
+  if (tagId === 'shiny' && selectedTags.value.includes('shy')) return true;
+  if (tagId === 'shy' && selectedTags.value.includes('shiny')) return true;
+  if (tagId === 'comp' && selectedTags.value.includes('competitive')) return true;
+  if (tagId === 'competitive' && selectedTags.value.includes('comp')) return true;
+  return selectedTags.value.includes(tagId);
 }
 
 function toggleTag(tagId: PokemonFilterTagId) {
-  const current = [...selectedTags.value]
-  const idx = current.indexOf(tagId)
+  const current = [...selectedTags.value];
+  const idx = current.indexOf(tagId);
 
   if (idx > -1) {
-    current.splice(idx, 1)
-    emit('update:modelValue', current)
-    emit('update:activeTags', current)
-    emit('toggle', tagId)
-    return
+    current.splice(idx, 1);
+    emit('update:modelValue', current);
+    emit('update:activeTags', current);
+    emit('toggle', tagId);
+    return;
   }
 
   // Handle aliases
   if (tagId === 'shiny') {
-    const altIdx = current.indexOf('shy')
+    const altIdx = current.indexOf('shy');
     if (altIdx > -1) {
-      current.splice(altIdx, 1)
-      emit('update:modelValue', current)
-      emit('update:activeTags', current)
-      emit('toggle', tagId)
-      return
+      current.splice(altIdx, 1);
+      emit('update:modelValue', current);
+      emit('update:activeTags', current);
+      emit('toggle', tagId);
+      return;
     }
   } else if (tagId === 'shy') {
-    const altIdx = current.indexOf('shiny')
+    const altIdx = current.indexOf('shiny');
     if (altIdx > -1) {
-      current.splice(altIdx, 1)
-      emit('update:modelValue', current)
-      emit('update:activeTags', current)
-      emit('toggle', tagId)
-      return
+      current.splice(altIdx, 1);
+      emit('update:modelValue', current);
+      emit('update:activeTags', current);
+      emit('toggle', tagId);
+      return;
     }
   }
 
-  current.push(tagId)
-  emit('update:modelValue', current)
-  emit('update:activeTags', current)
-  emit('toggle', tagId)
+  current.push(tagId);
+  emit('update:modelValue', current);
+  emit('update:activeTags', current);
+  emit('toggle', tagId);
 }
 
 function toggleCompatible() {
-  emit('update:filterCompatibleOnly', !props.filterCompatibleOnly)
+  emit('update:filterCompatibleOnly', !props.filterCompatibleOnly);
 }
 </script>
 
 <template>
-  <div
-    class="pokemon-tag-bar"
-    :class="{ 'is-compact': compact }"
-  >
-    <span
-      v-if="showLabel"
-      class="mini-label"
-    >{{ label }}</span>
+  <div class="pokemon-tag-bar" :class="{ 'is-compact': compact }">
+    <span v-if="showLabel" class="mini-label">{{ label }}</span>
 
     <div class="tag-items ps-tags-list-horizontal">
       <slot name="prefix" />
@@ -136,10 +130,7 @@ function toggleCompatible() {
           @click.stop="toggleTag(t.id)"
         >
           <span class="emoji tag-icon">{{ t.icon }}</span>
-          <span
-            v-if="!compact"
-            class="tag-text ps-tag-label"
-          >{{ t.shortLabel }}</span>
+          <span v-if="!compact" class="tag-text ps-tag-label">{{ t.shortLabel }}</span>
         </button>
       </PVTooltip>
 
@@ -147,9 +138,11 @@ function toggleCompatible() {
       <PVTooltip
         v-if="showCompatible"
         :title="otherDaycarePokemon ? 'COMPATIBLES' : 'MODO COMPATIBLE'"
-        :description="otherDaycarePokemon 
-          ? `Mostrar solo Pokémon compatibles con ${otherDaycarePokemon.name}.` 
-          : 'Filtro compatible (elige una pareja en el otro slot para filtrar).'"
+        :description="
+          otherDaycarePokemon
+            ? `Mostrar solo Pokémon compatibles con ${otherDaycarePokemon.name}.`
+            : 'Filtro compatible (elige una pareja en el otro slot para filtrar).'
+        "
         position="bottom"
         class="tag-tooltip-wrapper"
       >
@@ -165,10 +158,7 @@ function toggleCompatible() {
           @click.stop="toggleCompatible"
         >
           <span class="emoji tag-icon">❤️</span>
-          <span
-            v-if="!compact"
-            class="tag-text ps-tag-label"
-          >COMPATIBLE</span>
+          <span v-if="!compact" class="tag-text ps-tag-label">COMPATIBLE</span>
         </button>
       </PVTooltip>
     </div>
@@ -176,7 +166,7 @@ function toggleCompatible() {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pokemon-tag-bar {
   display: flex;

@@ -95,7 +95,8 @@
   transform: Translatex(-50%);
   pointer-events: none;
 
-  &::before, &::after {
+  &::before,
+  &::after {
     font-size: var(--font-14);
     content: '⭐';
   }

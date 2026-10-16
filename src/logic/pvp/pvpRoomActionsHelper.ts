@@ -6,22 +6,22 @@
  * to ensure strict maintainability and single responsibility modularity.
  */
 
-import { gsap } from 'gsap'
-import type { BattleInvite, PvpChallengeConfig, PvpRoomCode } from '@/types/battle/pvp'
-import { generateRoomCode, isValidRoomCode, formatRoomCode } from '@/logic/pvp/pvpRoomCodeHelper'
-import { buildSpectateSyncPayload, type PvpSpectateSyncPayload } from '@/logic/pvp/pvpSpectatorHelper'
-import type { BattleContext } from '@/types/battle/battleContext'
-import type { DBRouter } from '@/logic/db/dbRouter'
-import type { PvpBattleSeatFlags } from '@/logic/pvp/livePvPBattleSetupHandler'
+import { gsap } from 'gsap';
+import type { BattleInvite, PvpChallengeConfig, PvpRoomCode } from '@/types/battle/pvp';
+import { generateRoomCode, isValidRoomCode, formatRoomCode } from '@/logic/pvp/pvpRoomCodeHelper';
+
+import type { DBRouter } from '@/logic/db/dbRouter';
+import type { PvpBattleSeatFlags } from '@/logic/pvp/livePvPBattleSetupHandler';
 
 const ROOM_HOST_POLL_INTERVAL_SEC = 2;
-const ROOM_BATTLE_INVITE_COLUMNS = 'id, sender_id, challenger_id, opponent_id, status, created_at, config, room_code';
+const ROOM_BATTLE_INVITE_COLUMNS =
+  'id, sender_id, challenger_id, opponent_id, status, created_at, config, room_code';
 
 interface RoomActionsContext {
-  db: DBRouter
-  userId: string
-  notify: (msg: string, icon?: string) => void
-  onBattleStart: (invite: BattleInvite, flags: PvpBattleSeatFlags) => void
+  db: DBRouter;
+  userId: string;
+  notify: (msg: string, icon?: string) => void;
+  onBattleStart: (invite: BattleInvite, flags: PvpBattleSeatFlags) => void;
 }
 
 async function executeCreateRoom(
@@ -29,57 +29,58 @@ async function executeCreateRoom(
   ctx: RoomActionsContext,
   onPollerCreated: (poller: gsap.core.Tween) => void
 ): Promise<{ code: PvpRoomCode; inviteId: string } | null> {
-  const code = generateRoomCode()
+  const code = generateRoomCode();
   const challengeConfig: PvpChallengeConfig = config || {
     format: '3v3',
     levelRule: 'flat50',
     arena: { gymId: 'celadon' },
     mode: 'casual'
-  }
+  };
 
-  const { data, error } = await ctx.db.from('battle_invites').insert({
-    challenger_id: ctx.userId,
-    sender_id: ctx.userId,
-    opponent_id: '',
-    status: 'pending',
-    config: challengeConfig,
-    room_code: code
-  }).select().single() as { data: BattleInvite | null; error: unknown }
+  const { data, error } = (await ctx.db
+    .from('battle_invites')
+    .insert({
+      challenger_id: ctx.userId,
+      sender_id: ctx.userId,
+      opponent_id: '',
+      status: 'pending',
+      config: challengeConfig,
+      room_code: code
+    })
+    .select()
+    .single()) as { data: BattleInvite | null; error: unknown };
 
   if (error || !data) {
-    ctx.notify('Error al crear sala.', '❌')
-    return null
+    ctx.notify('Error al crear sala.', '❌');
+    return null;
   }
 
-  const poller = startRoomHostPoller(data.id, ctx)
-  onPollerCreated(poller)
-  return { code, inviteId: data.id }
+  const poller = startRoomHostPoller(data.id, ctx);
+  onPollerCreated(poller);
+  return { code, inviteId: data.id };
 }
 
-function startRoomHostPoller(
-  inviteId: string,
-  ctx: RoomActionsContext
-): gsap.core.Tween {
-  let poller: gsap.core.Tween
+function startRoomHostPoller(inviteId: string, ctx: RoomActionsContext): gsap.core.Tween {
+  let poller: gsap.core.Tween;
 
   const poll = async () => {
-    if (!ctx.db) return
-    const { data } = await ctx.db
+    if (!ctx.db) return;
+    const { data } = (await ctx.db
       .from('battle_invites')
       .select(ROOM_BATTLE_INVITE_COLUMNS)
       .eq('id', inviteId)
-      .single() as { data: BattleInvite | null }
+      .single()) as { data: BattleInvite | null };
 
     if (data && data.status === 'accepted' && data.opponent_id) {
-      ctx.onBattleStart(data, { isHost: true, isRanked: false })
-      return
+      ctx.onBattleStart(data, { isHost: true, isRanked: false });
+      return;
     }
 
-    poller = gsap.delayedCall(ROOM_HOST_POLL_INTERVAL_SEC, poll)
-  }
+    poller = gsap.delayedCall(ROOM_HOST_POLL_INTERVAL_SEC, poll);
+  };
 
-  poller = gsap.delayedCall(ROOM_HOST_POLL_INTERVAL_SEC, poll)
-  return poller
+  poller = gsap.delayedCall(ROOM_HOST_POLL_INTERVAL_SEC, poll);
+  return poller;
 }
 
 async function executeCancelRoom(
@@ -87,69 +88,60 @@ async function executeCancelRoom(
   db: DBRouter | null,
   poller: { kill: () => void } | null
 ): Promise<void> {
-  if (poller) poller.kill()
+  if (poller) poller.kill();
   if (roomCode && db) {
-    await db.from('battle_invites').delete().eq('room_code', roomCode)
+    await db.from('battle_invites').delete().eq('room_code', roomCode);
   }
 }
 
-async function executeJoinRoom(
-  code: PvpRoomCode,
-  ctx: RoomActionsContext
-): Promise<boolean> {
-  const formatted = formatRoomCode(code)
+async function executeJoinRoom(code: PvpRoomCode, ctx: RoomActionsContext): Promise<boolean> {
+  const formatted = formatRoomCode(code);
   if (!isValidRoomCode(formatted)) {
-    ctx.notify('Código de sala inválido.', '⚠️')
-    return false
+    ctx.notify('Código de sala inválido.', '⚠️');
+    return false;
   }
 
-  const { data: invite, error } = await ctx.db.from('battle_invites')
+  const { data: invite, error } = (await ctx.db
+    .from('battle_invites')
     .select(ROOM_BATTLE_INVITE_COLUMNS)
     .eq('room_code', formatted)
     .eq('status', 'pending')
-    .maybeSingle() as { data: BattleInvite | null; error: unknown }
+    .maybeSingle()) as { data: BattleInvite | null; error: unknown };
 
   if (error || !invite) {
-    ctx.notify('Sala no encontrada o ya ocupada.', '🚫')
-    return false
+    ctx.notify('Sala no encontrada o ya ocupada.', '🚫');
+    return false;
   }
 
   if (invite.sender_id === ctx.userId) {
-    ctx.notify('No puedes unirte a tu propia sala.', '⚠️')
-    return false
+    ctx.notify('No puedes unirte a tu propia sala.', '⚠️');
+    return false;
   }
 
-  await ctx.db.from('battle_invites')
+  await ctx.db
+    .from('battle_invites')
     .update({ opponent_id: ctx.userId, status: 'accepted' })
-    .eq('id', invite.id)
+    .eq('id', invite.id);
 
-  ctx.onBattleStart(invite, { isHost: false, isRanked: false })
-  return true
-}
-
-export function buildHostSpectateBroadcast(
-  inviteId: string,
-  battleCtx: BattleContext,
-  opponentName: string
-): PvpSpectateSyncPayload | null {
-  return buildSpectateSyncPayload(inviteId, battleCtx, opponentName)
+  ctx.onBattleStart(invite, { isHost: false, isRanked: false });
+  return true;
 }
 
 export interface CreateRoomActionContext {
-  userId?: string
-  db: DBRouter | null
-  notify: (msg: string, icon?: string) => void
-  activeRoomCode: { value: PvpRoomCode | null }
-  getRoomHostPoller: () => { kill: () => void } | null
-  setRoomHostPoller: (poller: { kill: () => void } | null) => void
-  startBattle: (invite: BattleInvite, flags: PvpBattleSeatFlags) => void
+  userId?: string;
+  db: DBRouter | null;
+  notify: (msg: string, icon?: string) => void;
+  activeRoomCode: { value: PvpRoomCode | null };
+  getRoomHostPoller: () => { kill: () => void } | null;
+  setRoomHostPoller: (poller: { kill: () => void } | null) => void;
+  startBattle: (invite: BattleInvite, flags: PvpBattleSeatFlags) => void;
 }
 
 export async function createRoomAction(
   config: PvpChallengeConfig | undefined,
   ctx: CreateRoomActionContext
 ): Promise<PvpRoomCode | null> {
-  if (!ctx.userId || !ctx.db) return null
+  if (!ctx.userId || !ctx.db) return null;
   const result = await executeCreateRoom(
     config,
     {
@@ -157,22 +149,22 @@ export async function createRoomAction(
       userId: ctx.userId,
       notify: ctx.notify,
       onBattleStart: (invite, flags) => {
-        ctx.activeRoomCode.value = null
-        ctx.startBattle(invite, flags)
+        ctx.activeRoomCode.value = null;
+        ctx.startBattle(invite, flags);
       }
     },
     (poller) => {
-      const existing = ctx.getRoomHostPoller()
-      if (existing) existing.kill()
-      ctx.setRoomHostPoller(poller)
+      const existing = ctx.getRoomHostPoller();
+      if (existing) existing.kill();
+      ctx.setRoomHostPoller(poller);
     }
-  )
+  );
   if (!result) {
-    ctx.activeRoomCode.value = null
-    return null
+    ctx.activeRoomCode.value = null;
+    return null;
   }
-  ctx.activeRoomCode.value = result.code
-  return result.code
+  ctx.activeRoomCode.value = result.code;
+  return result.code;
 }
 
 export async function cancelRoomAction(
@@ -181,26 +173,25 @@ export async function cancelRoomAction(
   roomHostPoller: { kill: () => void } | null,
   setRoomHostPoller: (poller: null) => void
 ): Promise<void> {
-  await executeCancelRoom(activeRoomCode.value, db, roomHostPoller)
-  setRoomHostPoller(null)
-  activeRoomCode.value = null
+  await executeCancelRoom(activeRoomCode.value, db, roomHostPoller);
+  setRoomHostPoller(null);
+  activeRoomCode.value = null;
 }
 
 export async function joinRoomAction(
   code: PvpRoomCode,
   ctx: {
-    userId?: string
-    db: DBRouter | null
-    notify: (msg: string, icon?: string) => void
-    startBattle: (invite: BattleInvite, flags: PvpBattleSeatFlags) => void
+    userId?: string;
+    db: DBRouter | null;
+    notify: (msg: string, icon?: string) => void;
+    startBattle: (invite: BattleInvite, flags: PvpBattleSeatFlags) => void;
   }
 ): Promise<boolean> {
-  if (!ctx.userId || !ctx.db) return false
+  if (!ctx.userId || !ctx.db) return false;
   return executeJoinRoom(code, {
     db: ctx.db,
     userId: ctx.userId,
     notify: ctx.notify,
     onBattleStart: ctx.startBattle
-  })
+  });
 }
-

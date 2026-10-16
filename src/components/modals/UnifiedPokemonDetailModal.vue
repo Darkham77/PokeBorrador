@@ -1,30 +1,33 @@
 <script setup lang="ts">
 // Universal Pokémon info panel (Pokedex + Instance)
-import { ref, computed, type MaybeRefOrGetter } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventory/inventory'
-import { usePokemonDetail } from '@/composables/pokemon/usePokemonDetail'
-import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
-import BaseModal from '@/components/common/BaseModal.vue'
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+import { ref, computed, type MaybeRefOrGetter } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { usePokemonDetail } from '@/composables/pokemon/usePokemonDetail';
+import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants';
+import BaseModal from '@/components/common/BaseModal.vue';
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
 
-import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
-import PokemonDetailHeader from '@/components/pokemon-detail/PokemonDetailHeader.vue'
-import PokemonDetailTabContent from '@/components/pokemon-detail/PokemonDetailTabContent.vue'
-import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
-import type { Pokemon, PokemonStorageLocation, PokemonSelectionSource } from '@/types/pokemon/pokemon'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { PokemonTagId } from '@/logic/constants/tags'
-
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
+import PokemonDetailHeader from '@/components/pokemon-detail/PokemonDetailHeader.vue';
+import PokemonDetailTabContent from '@/components/pokemon-detail/PokemonDetailTabContent.vue';
+import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue';
+import type {
+  Pokemon,
+  PokemonStorageLocation,
+  PokemonSelectionSource
+} from '@/types/pokemon/pokemon';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PokemonTagId } from '@/logic/constants/tags';
 
 interface Props {
-  show?: boolean
-  speciesId?: PokemonSpeciesId
-  pokemon?: Pokemon | null
-  index?: number
-  context?: PokemonSelectionSource
-  extra?: { offerId?: string, price?: number, type?: string } | null
+  show?: boolean;
+  speciesId?: PokemonSpeciesId;
+  pokemon?: Pokemon | null;
+  index?: number;
+  context?: PokemonSelectionSource;
+  extra?: { offerId?: string; price?: number; type?: string } | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -34,14 +37,14 @@ const props = withDefaults(defineProps<Props>(), {
   index: -1,
   context: 'pokedex',
   extra: null
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const uiStore = useUIStore()
-const gameStore = useGameStore()
+const uiStore = useUIStore();
+const gameStore = useGameStore();
 
 // --- COMPOSABLE LOGIC ---
 const {
@@ -60,68 +63,76 @@ const {
   getSprite,
   finalIndex,
   finalContext
-} = usePokemonDetail(props as Record<string, MaybeRefOrGetter<unknown>>) // open-record: Generic key-value data dictionary container
+} = usePokemonDetail(props as Record<string, MaybeRefOrGetter<unknown>>); // open-record: Generic key-value data dictionary container
 
 // --- LOCAL UI STATE ---
-const ui = useUIStore()
-const isSmallScreen = computed(() => ui.isSmallScreen)
+const ui = useUIStore();
+const isSmallScreen = computed(() => ui.isSmallScreen);
 
-const activeTab = ref('summary')
+const activeTab = ref('summary');
 const primaryTypeColor = computed(() => {
-  const type = species.value?.type[0]
-  return type ? PDEX_TYPE_COLORS[type] ?? '#888' : '#888'
-})
+  const type = species.value?.type[0];
+  return type ? (PDEX_TYPE_COLORS[type] ?? '#888') : '#888';
+});
 
 const tabs = computed(() => {
   const base = [
     { id: 'summary', label: 'RESUMEN', icon: '📝' },
     { id: 'stats', label: isInstance.value ? 'STATS+' : 'STATS', icon: '📊' },
-    { id: 'moves', label: 'ATAQUES', icon: '⚔️' },
-  ]
-  
+    { id: 'moves', label: 'ATAQUES', icon: '⚔️' }
+  ];
+
   if (props.context === 'pokedex') {
-    base.push({ id: 'tms', label: 'MTs', icon: '💿' })
+    base.push({ id: 'tms', label: 'MTs', icon: '💿' });
   }
 
   if (evolutions.value.length > 0) {
-    base.push({ id: 'evolve', label: 'EVOL.', icon: '✨' })
+    base.push({ id: 'evolve', label: 'EVOL.', icon: '✨' });
   }
 
-  if (isInstance.value && targetPokemon.value?.trophies && targetPokemon.value.trophies.length > 0) {
-    base.push({ id: 'trophies', label: 'TROFEOS', icon: '🏆' })
+  if (
+    isInstance.value &&
+    targetPokemon.value?.trophies &&
+    targetPokemon.value.trophies.length > 0
+  ) {
+    base.push({ id: 'trophies', label: 'TROFEOS', icon: '🏆' });
   }
-  
-  return base
-})
+
+  return base;
+});
 
 // --- HANDLERS ---
 const handleBuy = () => {
   if (props.extra) {
-    (Reflect.get(window, 'buyFromMarket') as ((offerId: string, price: number, type: string) => void) | undefined)?.(props.extra.offerId || '', props.extra.price || 0, props.extra.type || '')
-    emit('close')
+    (
+      Reflect.get(window, 'buyFromMarket') as
+        | ((offerId: string, price: number, type: string) => void)
+        | undefined
+    )?.(props.extra.offerId || '', props.extra.price || 0, props.extra.type || '');
+    emit('close');
   }
-}
+};
 
 const handleEvolve = () => {
-  const inventoryStore = useInventoryStore()
-  inventoryStore.activeMainTab = 'productos'
-  inventoryStore.activeCategory = 'stones'
-  emit('close')
-  uiStore.toggleInventory(finalContext.value as PokemonStorageLocation, finalIndex.value)
-}
+  const inventoryStore = useInventoryStore();
+  inventoryStore.activeMainTab = 'productos';
+  inventoryStore.activeCategory = 'stones';
+  emit('close');
+  uiStore.toggleInventory(finalContext.value as PokemonStorageLocation, finalIndex.value);
+};
 
-const handleToggleTag = (tagOrId: PokemonTagId | { id?: PokemonTagId, dbId?: PokemonTagId }) => {
-  const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
+const handleToggleTag = (tagOrId: PokemonTagId | { id?: PokemonTagId; dbId?: PokemonTagId }) => {
+  const tagId = typeof tagOrId === 'string' ? tagOrId : tagOrId.id || tagOrId.dbId;
   if (tagId && isInstance.value && finalIndex.value > -1) {
-    const ctx = finalContext.value
+    const ctx = finalContext.value;
     if (ctx === 'team' || ctx === 'box') {
-      gameStore.togglePokeTag(ctx, finalIndex.value, tagId)
+      gameStore.togglePokeTag(ctx, finalIndex.value, tagId);
     }
   }
-}
+};
 
 const handleEditNickname = () => {
-  if (!isInstance.value || !targetPokemon.value) return
+  if (!isInstance.value || !targetPokemon.value) return;
 
   uiStore.openPrompt({
     title: 'Cambiar Apodo',
@@ -129,19 +140,19 @@ const handleEditNickname = () => {
     initialValue: targetPokemon.value.nickname || species.value?.name || '',
     confirmText: 'Guardar',
     onConfirm: (val: string) => {
-      const newNick = val?.trim() || null
-      if (targetPokemon.value) targetPokemon.value.nickname = newNick
-      uiStore.notify(`¡Apodo cambiado a ${newNick || species.value?.name || 'Pokémon'}!`, '✨')
-      gameStore.save(false)
+      const newNick = val?.trim() || null;
+      if (targetPokemon.value) targetPokemon.value.nickname = newNick;
+      uiStore.notify(`¡Apodo cambiado a ${newNick || species.value?.name || 'Pokémon'}!`, '✨');
+      gameStore.save(false);
     }
-  })
-}
+  });
+};
 
 const handleReorderMoves = (from: number, to: number) => {
   if (isInstance.value && targetPokemon.value) {
-    gameStore.reorderMoves(targetPokemon.value, from, to)
+    gameStore.reorderMoves(targetPokemon.value, from, to);
   }
-}
+};
 </script>
 
 <template>
@@ -159,7 +170,7 @@ const handleReorderMoves = (from: number, to: number) => {
       v-if="species"
       class="upd-core-container"
       :class="{ 'instance-mode': isInstance }"
-      :style="{ 
+      :style="{
         '--type-color': primaryTypeColor
       }"
     >
@@ -174,25 +185,19 @@ const handleReorderMoves = (from: number, to: number) => {
       <!-- TOP DISPLAY -->
       <div class="upd-main-display">
         <div class="upd-sprite-container">
-          <PVSpriteFX
-            :is-shiny="targetPokemon?.isShiny"
-            :is-guardian="targetPokemon?.isGuardian"
-          >
+          <PVSpriteFX :is-shiny="targetPokemon?.isShiny" :is-guardian="targetPokemon?.isGuardian">
             <img
               :src="getSprite(targetSpeciesId, targetPokemon?.isShiny)"
               :alt="targetPokemon?.nickname || species?.name || 'Pokémon'"
               class="main-sprite"
               width="32"
               height="32"
-            >
+            />
           </PVSpriteFX>
         </div>
 
         <!-- Píldora de Insignias Global (Fuera de tabs) -->
-        <div
-          v-if="isInstance && targetPokemon"
-          class="upd-floating-tags"
-        >
+        <div v-if="isInstance && targetPokemon" class="upd-floating-tags">
           <UnifiedBadgePill
             :pokemon="targetPokemon"
             :vertical="false"
@@ -201,12 +206,11 @@ const handleReorderMoves = (from: number, to: number) => {
             show-all
             top="0"
             left="0"
-            style="position: relative;"
+            style="position: relative"
             @toggle-tag="handleToggleTag"
           />
         </div>
       </div>
-
 
       <!-- TABS NAVIGATION -->
       <nav class="pdex-detail-tabs premium-tabs">
@@ -216,7 +220,9 @@ const handleReorderMoves = (from: number, to: number) => {
           :key="tab.id"
           class="upd-tab-btn"
           :class="{ active: activeTab === tab.id }"
-          :style="{ '--tab-color': activeTab === tab.id ? 'var(--type-color)' : 'Rgba(255,255,255,0.4)' }"
+          :style="{
+            '--tab-color': activeTab === tab.id ? 'var(--type-color)' : 'Rgba(255,255,255,0.4)'
+          }"
           @click.stop="activeTab = tab.id"
         >
           <span class="emoji">{{ tab.icon }}</span>
@@ -255,6 +261,6 @@ const handleReorderMoves = (from: number, to: number) => {
 </template>
 
 <style scoped lang="scss">
-@use "../../styles/components/pokedex-detail" as *;
-@use "../../styles/components/unified-pokemon-detail" as *;
+@use '../../styles/components/pokedex-detail' as *;
+@use '../../styles/components/unified-pokemon-detail' as *;
 </style>

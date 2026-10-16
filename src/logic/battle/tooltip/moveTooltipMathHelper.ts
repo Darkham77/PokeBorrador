@@ -5,9 +5,14 @@
  * weather accuracy overrides, and power calculations.
  */
 
-import { WEATHER_MECHANICAL, type WeatherId, type WeatherMechanical } from '@/logic/weather/weatherRegistry.ts';
+import {
+  WEATHER_MECHANICAL,
+  type WeatherId,
+  type WeatherMechanical
+} from '@/logic/weather/weatherRegistry.ts';
 import type { PokemonMoveId } from '@/data/battle/moves.ts';
 import type { PokemonType } from '@/data/battle/types.ts';
+import { isAbilityId, type AbilityId } from '@/data/battle/abilities.ts';
 import { isItemId, type ItemId } from '@/data/inventory/items.ts';
 import type { PureBattleWeather } from '@/logic/battle/battleMathTypes.ts';
 import type { Move } from '@/types/pokemon/pokemon.ts';
@@ -75,7 +80,8 @@ function checkSolarMove(
 ): { type: string; text: string } | null {
   if (moveId !== 'solarbeam' && moveId !== 'solarblade') return null;
   if (isSunny) return { type: 'boosted', text: 'Carga instantánea por Sol.' };
-  if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'penalized', text: WEATHER_ADVERSE_PENALTY_TEXT };
+  if (mechWeather !== WEATHER_MECHANICAL.CLEAR)
+    return { type: 'penalized', text: WEATHER_ADVERSE_PENALTY_TEXT };
   return null;
 }
 
@@ -86,7 +92,8 @@ export function getSpecialMoveModifier(
 ): { type: string; text: string } | null {
   const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
   const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN;
-  const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL;
+  const isSnowing =
+    mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL;
   const isThunderstorm = weather?.toLowerCase() === 'thunderstorm';
 
   const thunderRes = checkThunderOrHurricane(moveId, { isSunny, isRaining, isThunderstorm });
@@ -105,7 +112,14 @@ export function getSpecialMoveModifier(
   return null;
 }
 
-const WEATHER_TYPE_POWER_MODS: Readonly<Partial<Record<WeatherMechanical, Readonly<Partial<Record<PokemonType, { mult: number; label: string }>>>>>> = {
+const WEATHER_TYPE_POWER_MODS: Readonly<
+  Partial<
+    Record<
+      WeatherMechanical,
+      Readonly<Partial<Record<PokemonType, { mult: number; label: string }>>>
+    >
+  >
+> = {
   [WEATHER_MECHANICAL.SUN]: {
     fire: { mult: 1.5, label: 'Clima (Sol)' },
     water: { mult: 0.5, label: 'Clima (Sol)' }
@@ -129,14 +143,15 @@ export function applyWeatherPowerMod(
   }
 
   const isSolarMove = moveId === 'solarbeam' || moveId === 'solarblade';
-  const isAdverse = mechWeather !== WEATHER_MECHANICAL.SUN && mechWeather !== WEATHER_MECHANICAL.CLEAR;
+  const isAdverse =
+    mechWeather !== WEATHER_MECHANICAL.SUN && mechWeather !== WEATHER_MECHANICAL.CLEAR;
   if (isSolarMove && isAdverse) {
     ctx.powerList.push({ label: 'Clima Adverso', mult: SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER });
     ctx.currentPower *= SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER;
   }
 }
 
-const LOW_HP_PINCH_ABILITIES: Readonly<Record<string, string>> = {
+const LOW_HP_PINCH_ABILITIES: Readonly<Partial<Record<AbilityId, PokemonType>>> = {
   overgrow: 'grass',
   blaze: 'fire',
   torrent: 'water',
@@ -151,8 +166,12 @@ function isSandForceBoostedType(type: string): type is SandForceBoostedType {
   return SAND_FORCE_BOOSTED_SET.has(type);
 }
 
-function resolvePinchAbilityMultiplier(ability: string, moveType: string, isLowHp: boolean): number {
-  if (isLowHp && LOW_HP_PINCH_ABILITIES[ability] === moveType) {
+function resolvePinchAbilityMultiplier(
+  ability: string,
+  moveType: string,
+  isLowHp: boolean
+): number {
+  if (isLowHp && isAbilityId(ability) && LOW_HP_PINCH_ABILITIES[ability] === moveType) {
     return LOW_HP_ABILITY_MULTIPLIER;
   }
   return DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
@@ -166,8 +185,13 @@ export function resolveAttackerAbilityMultiplier(
   isLowHp: boolean
 ): number {
   let abilMult = resolvePinchAbilityMultiplier(ability, moveType, isLowHp);
-  if (ability === 'technician' && basePower <= TECHNICIAN_POWER_CAP) abilMult *= TECHNICIAN_BOOST_MULTIPLIER;
-  if (ability === 'sandforce' && mechWeather === WEATHER_MECHANICAL.SANDSTORM && isSandForceBoostedType(moveType)) {
+  if (ability === 'technician' && basePower <= TECHNICIAN_POWER_CAP)
+    abilMult *= TECHNICIAN_BOOST_MULTIPLIER;
+  if (
+    ability === 'sandforce' &&
+    mechWeather === WEATHER_MECHANICAL.SANDSTORM &&
+    isSandForceBoostedType(moveType)
+  ) {
     abilMult *= SAND_FORCE_MULTIPLIER;
   }
   return abilMult;
@@ -181,13 +205,16 @@ export function resolveHeldItemMultiplier(
   ctx: PowerContext
 ): number {
   const canonicalKey = h.replace(/_/g, '');
-  const itemKey: ItemId | null = isItemId(h) ? h : (isItemId(canonicalKey) ? canonicalKey : null);
+  const itemKey: ItemId | null = isItemId(h) ? h : isItemId(canonicalKey) ? canonicalKey : null;
   if (itemKey && heldItemBoosters[itemKey] === moveType) {
     return HELD_ITEM_TYPE_BOOST_MULTIPLIER;
   }
   if (h === 'choiceband') {
     if (move.cat === 'physical') return STAB_STANDARD_MULTIPLIER;
-    ctx.powerList.push({ label: 'Objeto (choiceband - Solo Físico)', mult: DEFAULT_WEATHER_NEUTRAL_MULTIPLIER });
+    ctx.powerList.push({
+      label: 'Objeto (choiceband - Solo Físico)',
+      mult: DEFAULT_WEATHER_NEUTRAL_MULTIPLIER
+    });
   }
   return DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
 }
@@ -243,10 +270,14 @@ export function applyStageAccuracyModifier(
   const netStage = Math.max(STAGE_MIN_BOUND, Math.min(STAGE_MAX_BOUND, accStage - evaStage));
   if (netStage === 0) return currentAcc;
 
-  const factor = netStage >= 0
-    ? (STAGE_MATH_BASE + netStage) / STAGE_MATH_BASE
-    : STAGE_MATH_BASE / (STAGE_MATH_BASE - netStage);
+  const factor =
+    netStage >= 0
+      ? (STAGE_MATH_BASE + netStage) / STAGE_MATH_BASE
+      : STAGE_MATH_BASE / (STAGE_MATH_BASE - netStage);
   const sign = netStage > 0 ? '+' : '';
-  accList.push({ label: `Modificador Rango (${sign}${netStage})`, mult: Number(factor.toFixed(3)) });
+  accList.push({
+    label: `Modificador Rango (${sign}${netStage})`,
+    mult: Number(factor.toFixed(3))
+  });
   return currentAcc * factor;
 }

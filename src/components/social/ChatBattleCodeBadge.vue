@@ -1,49 +1,49 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useLivePvPStore } from '@/stores/livePvP'
-import { useUIStore } from '@/stores/ui'
-import { mapDbRecordToBattleReplay } from './chatBattleCodeHelper'
+import { ref } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useUIStore } from '@/stores/ui';
+import { mapDbRecordToBattleReplay } from './chatBattleCodeHelper';
 
 interface Props {
-  battleCode: string
+  battleCode: string;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const gameStore = useGameStore()
-const livePvPStore = useLivePvPStore()
-const uiStore = useUIStore()
+const gameStore = useGameStore();
+const livePvPStore = useLivePvPStore();
+const uiStore = useUIStore();
 
-const loading = ref(false)
+const loading = ref(false);
 
 async function handleWatch() {
-  if (loading.value) return
-  loading.value = true
+  if (loading.value) return;
+  loading.value = true;
 
   try {
     if (!gameStore.db) {
-      uiStore.notify('Error de conexión a base de datos', '❌')
-      return
+      uiStore.notify('Error de conexión a base de datos', '❌');
+      return;
     }
 
     const { data, error } = await gameStore.db
       .from('battle_replays')
       .select('*')
       .eq('battle_code', props.battleCode)
-      .single()
+      .single();
 
     if (error || !data) {
-      uiStore.notify(`No se encontró la repetición ${props.battleCode}`, '🔍')
-      return
+      uiStore.notify(`No se encontró la repetición ${props.battleCode}`, '🔍');
+      return;
     }
 
-    const record = mapDbRecordToBattleReplay(data)
-    livePvPStore.watchReplay(record)
+    const record = mapDbRecordToBattleReplay(data);
+    livePvPStore.watchReplay(record);
   } catch {
-    uiStore.notify('Error al cargar la repetición', '❌')
+    uiStore.notify('Error al cargar la repetición', '❌');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>

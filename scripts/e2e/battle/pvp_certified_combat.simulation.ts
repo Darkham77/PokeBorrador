@@ -11,7 +11,8 @@ class PvpCombatSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
 
       const gameStore = useGameStore();
       const battleStore = useBattleStore();
@@ -49,7 +50,9 @@ class PvpCombatSimWrapper extends BaseBattleSimulation {
 test.describe('PvP Certified Combat Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('verifies PvP UI restrictions: visual turn timer active, bag disabled, and team isolation', async ({ page }) => {
+  test('verifies PvP UI restrictions: visual turn timer active, bag disabled, and team isolation', async ({
+    page
+  }) => {
     const sim = new PvpCombatSimWrapper(page, 'PvpUiCert');
     await sim.setup();
     await sim.setupPvpBattle();

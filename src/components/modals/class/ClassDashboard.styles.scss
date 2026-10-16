@@ -1,20 +1,28 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .dashboard-layout {
   position: relative;
   display: flex;
   height: 100%;
-  
+
   // Base dark background
   background: Rgb(10 12 20 / 100%);
   overflow: hidden;
-  
+
   // Custom class gradients
-  .rocket & { background: Linear-Gradient(135deg, Rgb(26 5 5 / 100%) 0%, Rgb(5 2 2 / 100%) 100%); }
-  .cazabichos & { background: Linear-Gradient(135deg, Rgb(5 20 5 / 100%) 0%, Rgb(2 6 2 / 100%) 100%); }
-  .entrenador & { background: Linear-Gradient(135deg, Rgb(5 10 20 / 100%) 0%, Rgb(2 4 6 / 100%) 100%); }
-  .criador & { background: Linear-Gradient(135deg, Rgb(10 5 20 / 100%) 0%, Rgb(3 2 6 / 100%) 100%); }
+  .rocket & {
+    background: Linear-Gradient(135deg, Rgb(26 5 5 / 100%) 0%, Rgb(5 2 2 / 100%) 100%);
+  }
+  .cazabichos & {
+    background: Linear-Gradient(135deg, Rgb(5 20 5 / 100%) 0%, Rgb(2 6 2 / 100%) 100%);
+  }
+  .entrenador & {
+    background: Linear-Gradient(135deg, Rgb(5 10 20 / 100%) 0%, Rgb(2 4 6 / 100%) 100%);
+  }
+  .criador & {
+    background: Linear-Gradient(135deg, Rgb(10 5 20 / 100%) 0%, Rgb(3 2 6 / 100%) 100%);
+  }
 
   &::before {
     position: absolute;
@@ -39,79 +47,81 @@
   border-right: 1px solid Rgb(255 255 255 / 5%);
   overflow: hidden auto;
 
-    .avatar-box {
-      position: relative;
+  .avatar-box {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 300px;
+    height: 300px;
+    border: none;
+    background: transparent;
+    margin-bottom: 40px;
+
+    .avatar-glow {
+      position: absolute;
+      background: Radial-Gradient(circle at center, var(--cls-color) 0%, transparent 80%);
+      opacity: 0.1;
+      inset: 0;
+    }
+
+    .trainers-wrap {
+      z-index: var(--z-base);
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 300px;
-      height: 300px;
-      border: none;
-      background: transparent;
-      margin-bottom: 40px;
-      
-      .avatar-glow {
-        position: absolute;
-        background: Radial-Gradient(circle at center, var(--cls-color) 0%, transparent 80%);
-        opacity: 0.1;
-        inset: 0;
+
+      :deep(.pv-tooltip-wrapper:not(:first-child)),
+      > :not(:first-child) {
+        margin-left: -50px;
       }
-      
-      .trainers-wrap {
-        z-index: var(--z-base);
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    }
 
-        :deep(.pv-tooltip-wrapper:not(:first-child)),
-        > :not(:first-child) {
-          margin-left: -50px;
-        }
+    .trainer-big-img {
+      @include pixelated;
+
+      width: auto;
+      height: 220px;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      will-change: transform, filter, opacity;
+      filter: Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
+      cursor: pointer;
+
+      &.active {
+        z-index: calc(var(--z-base) + 2);
+        opacity: 1;
+        filter: Drop-Shadow(0 0 15px var(--cls-color)) Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
       }
 
-      .trainer-big-img {
-        @include pixelated;
-
-        width: auto;
-        height: 220px;
-        aspect-ratio: 1 / 1;
-        object-fit: contain;
+      &.inactive {
+        opacity: 0.65;
         will-change: transform, filter, opacity;
-        filter: Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
-        cursor: pointer;
+        filter: Grayscale(0.4) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
 
-        &.active {
-          z-index: calc(var(--z-base) + 2);
+        &:hover {
           opacity: 1;
-          filter: Drop-Shadow(0 0 15px var(--cls-color)) Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
+          will-change: transform, filter, opacity;
+          filter: Grayscale(0) Drop-Shadow(0 0 10px var(--yellow))
+            Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
         }
+      }
 
-        &.inactive {
+      &.inactive.locked {
+        opacity: 0.45;
+        will-change: transform, filter, opacity;
+        filter: Grayscale(0.8) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
+        cursor: not-allowed;
+
+        &:hover {
           opacity: 0.65;
           will-change: transform, filter, opacity;
-          filter: Grayscale(0.4) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
-
-          &:hover {
-            opacity: 1;
-            will-change: transform, filter, opacity;
-            filter: Grayscale(0) Drop-Shadow(0 0 10px var(--yellow)) Drop-Shadow(0 15px 30px Rgb(0 0 0 / 80%));
-          }
-        }
-
-        &.inactive.locked {
-          opacity: 0.45;
-          will-change: transform, filter, opacity;
-          filter: Grayscale(0.8) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
-          cursor: not-allowed;
-
-          &:hover {
-            opacity: 0.65;
-            will-change: transform, filter, opacity;
-            filter: Grayscale(0.6) Drop-Shadow(0 0 8px $red-light) Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
-          }
+          filter: Grayscale(0.6) Drop-Shadow(0 0 8px $red-light)
+            Drop-Shadow(0 10px 20px Rgb(0 0 0 / 80%));
         }
       }
     }
+  }
 
   .class-main-title {
     @include pixelated;
@@ -120,7 +130,7 @@
     color: var(--cls-color);
     font-size: var(--font-20);
     margin-bottom: 16px;
-    text-shadow: 0 0 20px var(--cls-color)66;
+    text-shadow: 0 0 20px var(--cls-color) 66;
   }
 
   .class-slogan {
@@ -151,18 +161,32 @@
     text-align: left;
 
     .card-icon {
-      display: flex; justify-content: center; align-items: center; 
-      width: 48px; height: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 48px;
+      height: 48px;
       border-radius: $radius-xl;
       background: Rgb(0 0 0 / 30%);
-      font-size: var(--font-24); 
+      font-size: var(--font-24);
     }
     .card-text {
       display: flex;
       flex-direction: column;
-      .label { @include pixelated; color: Rgb(255 255 255 / 40%); font-size: var(--font-8); margin-bottom: 8px; }
-      .value { @include pixelated; color: var(--white); font-size: var(--font-14); }
-      .highlight { color: var(--yellow); }
+      .label {
+        @include pixelated;
+        color: Rgb(255 255 255 / 40%);
+        font-size: var(--font-8);
+        margin-bottom: 8px;
+      }
+      .value {
+        @include pixelated;
+        color: var(--white);
+        font-size: var(--font-14);
+      }
+      .highlight {
+        color: var(--yellow);
+      }
     }
   }
 }
@@ -183,16 +207,19 @@
     align-items: center;
     gap: $spacing-lg;
     margin-bottom: 24px;
-    
+
     .header-line {
       width: 4px;
       height: 24px;
       border-radius: $radius-xs;
       background: Rgb(34 197 94 / 100%);
       box-shadow: var(--shadow-glow-amber);
-      &.red { background: Rgb(239 68 68 / 100%); box-shadow: var(--shadow-glow-red); }
+      &.red {
+        background: Rgb(239 68 68 / 100%);
+        box-shadow: var(--shadow-glow-red);
+      }
     }
-    
+
     h2 {
       @include pixelated;
       @include pixelated;
@@ -220,11 +247,14 @@
     border-left: 3px solid Rgb(34 197 94 / 100%);
 
     .ability-checkbox {
-      display: flex; justify-content: center; align-items: center; 
-      width: 28px; height: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 28px;
+      height: 28px;
       border-radius: $radius-md;
       background: Rgb(0 0 0 / 40%);
-      font-size: var(--font-14); 
+      font-size: var(--font-14);
     }
     .ability-content {
       flex: 1;
@@ -232,26 +262,39 @@
         display: block !important;
         line-height: 1.5 !important;
       }
-      p { margin: 0; color: Rgb(203 213 225 / 100%); font-size: var(--font-13); }
+      p {
+        margin: 0;
+        color: Rgb(203 213 225 / 100%);
+        font-size: var(--font-13);
+      }
     }
     .ability-help {
-      display: flex; justify-content: center; align-items: center;
-      width: 20px; height: 20px; color: Rgb(239 68 68 / 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 20px;
+      height: 20px;
+      color: Rgb(239 68 68 / 100%);
       font-size: var(--font-16);
-      font-weight: 900; cursor: help;
+      font-weight: 900;
+      cursor: help;
     }
 
-    &.limitation { 
-      border-left: 3px solid Rgb(239 68 68 / 100%); 
+    &.limitation {
+      border-left: 3px solid Rgb(239 68 68 / 100%);
       border-color: Rgb(239 68 68 / 30%);
     }
 
-    &.locked { 
+    &.locked {
       opacity: 0.7;
-      .ability-checkbox { opacity: 0.5;
-  will-change: transform, filter, opacity;
-  filter: #{"Grayscale(1)"}; }
-      .ability-content p { color: $muted; }
+      .ability-checkbox {
+        opacity: 0.5;
+        will-change: transform, filter, opacity;
+        filter: #{'Grayscale(1)'};
+      }
+      .ability-content p {
+        color: $muted;
+      }
     }
 
     .req-hint {
@@ -271,7 +314,9 @@
       font-size: var(--font-8);
     }
 
-    .text-locked { color: $muted !important; }
+    .text-locked {
+      color: $muted !important;
+    }
   }
 }
 
@@ -288,13 +333,21 @@
   .action-footer {
     display: flex;
     gap: $spacing-lg;
-    
+
     .btn-secondary {
       @include btn-vicio('secondary', 'md', true);
-      
-      .btn-label { color: Rgb(255 255 255 / 70%); font-size: var(--font-8); }
-      .price { color: var(--yellow); font-size: var(--font-9); }
-      .icon { opacity: 0.8; }
+
+      .btn-label {
+        color: Rgb(255 255 255 / 70%);
+        font-size: var(--font-8);
+      }
+      .price {
+        color: var(--yellow);
+        font-size: var(--font-9);
+      }
+      .icon {
+        opacity: 0.8;
+      }
     }
 
     .btn-primary {
@@ -375,7 +428,7 @@
     .action-footer {
       flex-direction: column;
       gap: $spacing-md;
-      
+
       button {
         width: 100%;
       }

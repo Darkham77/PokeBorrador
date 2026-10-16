@@ -11,7 +11,8 @@ class PvpAfkTimeoutSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
 
       const gameStore = useGameStore();
       const battleStore = useBattleStore();

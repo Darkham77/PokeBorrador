@@ -1,5 +1,5 @@
-@use "../core/mixins" as *;
-@use "../core/tools" as *;
+@use '../core/mixins' as *;
+@use '../core/tools' as *;
 
 #game-screen {
   display: flex;
@@ -16,13 +16,13 @@
   }
 }
 
-.content-area { 
+.content-area {
   position: relative;
   display: flex;
   flex-direction: column;
   padding: 0;
   flex: 1;
-  overflow: visible !important; 
+  overflow: visible !important;
 }
 
 .tab-content {
@@ -62,7 +62,7 @@
   & > * {
     pointer-events: auto;
   }
-  
+
   // Estado inicial Desktop: oculto
   @media (width >= 1411px) {
     opacity: 0;
@@ -89,7 +89,8 @@
   margin-bottom: 12px;
 }
 
-.rocket-hint, .release-hint {
+.rocket-hint,
+.release-hint {
   border: 1px solid Rgb(239 68 68 / 20%);
   background: Rgb(239 68 68 / 8%);
   color: var(--red);
@@ -123,7 +124,7 @@
   @include responsive(hud-mobile) {
     bottom: 100px;
   }
-  
+
   & > * {
     pointer-events: auto;
   }
@@ -136,33 +137,42 @@
     display: flex !important;
   }
 
-  @media (width <= 467px) { zoom: 0.9; }
+  @media (width <= 467px) {
+    zoom: 0.9;
+  }
 
-  @media (width <= 420px) { zoom: 0.8; }
+  @media (width <= 420px) {
+    zoom: 0.8;
+  }
 
-  @media (width <= 380px) { zoom: 0.7; }
+  @media (width <= 380px) {
+    zoom: 0.7;
+  }
 
-  @media (width <= 340px) { zoom: 0.6; }
+  @media (width <= 340px) {
+    zoom: 0.6;
+  }
 
   // Seguridad para Desktop (> 1410px): Siempre oculto
-  @media (width >= 1411px) { 
-    display: none !important; 
+  @media (width >= 1411px) {
+    display: none !important;
   }
 }
 
 /* --- HUD Visibility States --- */
 .hud-hidden {
   &.main-hud-desktop {
-    opacity: 0; 
+    opacity: 0;
     transform: Translatey(-110%);
   }
-  
+
   &.hud-sidebar-tools {
     opacity: 0;
     transform: Translatex(-150%);
   }
 }
 
-.hud-container, .hud-sidebar-tools {
+.hud-container,
+.hud-sidebar-tools {
   @include will-animate(transform, opacity);
 }

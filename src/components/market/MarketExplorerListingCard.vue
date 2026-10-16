@@ -1,50 +1,55 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { MarketListing, MarketItemData } from '@/logic/economy/market'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { formatCurrency } from '@/logic/utils/formatters'
-import { formatDisplayDate } from '@/logic/utils/timeUtils'
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts'
-import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
+import { computed } from 'vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MarketListing, MarketItemData } from '@/logic/economy/market';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { formatDisplayDate } from '@/logic/utils/timeUtils';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
+import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue';
 import {
   resolveItemTier,
   resolveItemDisplayName,
   resolveTierLabel,
   resolveTierColor,
   resolveBuyButtonState
-} from './marketExplorerHelper.ts'
+} from './marketExplorerHelper.ts';
 
 const props = defineProps<{
-  listing: MarketListing
-  userMoney: number
-  currentUserUid?: string
-}>()
+  listing: MarketListing;
+  userMoney: number;
+  currentUserUid?: string;
+}>();
 
 const emit = defineEmits<{
-  (e: 'buy', listing: MarketListing): void
-}>()
+  (e: 'buy', listing: MarketListing): void;
+}>();
 
 const pokemon = computed<Pokemon | null>(() =>
   props.listing.listing_type === 'pokemon' ? props.listing.data : null
-)
+);
 const item = computed<MarketItemData | null>(() =>
   props.listing.listing_type === 'item' ? props.listing.data : null
-)
+);
 
-const itemTier = computed(() => resolveItemTier(item.value?.name))
-const tierColor = computed(() => resolveTierColor(itemTier.value))
-const tierLabel = computed(() => resolveTierLabel(itemTier.value))
-const itemDisplayName = computed(() => resolveItemDisplayName(item.value?.name))
-const formattedTime = computed(() => formatDisplayDate(props.listing.created_at))
-const itemQuantity = computed(() => item.value?.qty || 1)
+const itemTier = computed(() => resolveItemTier(item.value?.name));
+const tierColor = computed(() => resolveTierColor(itemTier.value));
+const tierLabel = computed(() => resolveTierLabel(itemTier.value));
+const itemDisplayName = computed(() => resolveItemDisplayName(item.value?.name));
+const formattedTime = computed(() => formatDisplayDate(props.listing.created_at));
+const itemQuantity = computed(() => item.value?.qty || 1);
 
 const buyState = computed(() =>
-  resolveBuyButtonState(props.listing.price, props.listing.seller_id, props.currentUserUid, props.userMoney)
-)
+  resolveBuyButtonState(
+    props.listing.price,
+    props.listing.seller_id,
+    props.currentUserUid,
+    props.userMoney
+  )
+);
 
 function onImageError(e: Event) {
-  (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'potion')
+  (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'potion');
 }
 </script>
 
@@ -52,14 +57,13 @@ function onImageError(e: Event) {
   <div
     :id="'market-item-wrapper-' + listing.id"
     class="market-item-wrapper"
-    :class="[
-      listing.listing_type,
-      item ? 'tier-' + itemTier : ''
-    ]"
+    :class="[listing.listing_type, item ? 'tier-' + itemTier : '']"
     :style="item ? { '--tier-color': tierColor } : {}"
   >
     <div class="seller-tag">
-      <span class="s-name"><span class="emoji">👤</span> <span>{{ listing.seller_name }}</span></span>
+      <span class="s-name"
+        ><span class="emoji">👤</span> <span>{{ listing.seller_name }}</span></span
+      >
       <span class="s-time">{{ formattedTime }}</span>
     </div>
 
@@ -76,10 +80,7 @@ function onImageError(e: Event) {
       />
     </template>
     <template v-else-if="item">
-      <span
-        class="tier-tag"
-        :class="'tier-' + itemTier"
-      >
+      <span class="tier-tag" :class="'tier-' + itemTier">
         {{ tierLabel }}
       </span>
 
@@ -90,10 +91,9 @@ function onImageError(e: Event) {
             :alt="itemDisplayName"
             class="i-sprite pixelated"
             width="32"
-          
             height="32"
             @error="onImageError"
-          >
+          />
         </div>
         <div class="item-details">
           <span class="i-name">{{ itemDisplayName }}</span>
@@ -122,7 +122,7 @@ function onImageError(e: Event) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .market-item-wrapper {
   @include shop-item-card($yellow);
@@ -196,7 +196,11 @@ function onImageError(e: Event) {
       border-radius: $radius-xl;
       background: Rgb(0 0 0 / 20%);
       flex-shrink: 0;
-      .i-sprite { width: 36px; height: 36px; object-fit: contain; }
+      .i-sprite {
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+      }
     }
 
     .item-details {

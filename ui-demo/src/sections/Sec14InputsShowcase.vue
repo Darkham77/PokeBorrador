@@ -1,45 +1,57 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { gsap } from 'gsap'
-import { logToInspector, updateSerializedFormData } from '../logic/useLiveInspector.ts'
+import { ref, onMounted } from 'vue';
+import { gsap } from 'gsap';
+import { logToInspector, updateSerializedFormData } from '../logic/useLiveInspector.ts';
 
-const DEFAULT_RANGE_PERCENT = 75 as const
-const DEFAULT_PROGRESS_PERCENT = 65 as const
-const DEFAULT_METER_VALUE = 85 as const
+const DEFAULT_RANGE_PERCENT = 75 as const;
+const DEFAULT_PROGRESS_PERCENT = 65 as const;
+const DEFAULT_METER_VALUE = 85 as const;
 
 // Grupo C: Temporales
 const temporalInputs = [
   { id: 'date', label: '8. FECHA', type: 'date', tag: 'type="date"', desc: 'Día, mes y año.' },
-  { id: 'datetime-local', label: '9. FECHA Y HORA', type: 'datetime-local', tag: 'datetime-local', desc: 'Hora local sin zona.' },
+  {
+    id: 'datetime-local',
+    label: '9. FECHA Y HORA',
+    type: 'datetime-local',
+    tag: 'datetime-local',
+    desc: 'Hora local sin zona.'
+  },
   { id: 'time', label: '10. HORA', type: 'time', tag: 'type="time"', desc: 'Horas y minutos.' },
   { id: 'month', label: '11. MES', type: 'month', tag: 'type="month"', desc: 'Año y mes ISO.' },
-  { id: 'week', label: '12. SEMANA', type: 'week', tag: 'type="week"', desc: 'Número de semana ISO.' },
-] as const
+  {
+    id: 'week',
+    label: '12. SEMANA',
+    type: 'week',
+    tag: 'type="week"',
+    desc: 'Número de semana ISO.'
+  }
+] as const;
 
 const temporalVals = ref<Record<string, string>>({
   date: '2026-09-09',
   'datetime-local': '2026-09-09T18:30',
   time: '14:45',
   month: '2026-09',
-  week: '2026-W37',
-})
+  week: '2026-W37'
+});
 
 // Grupo D: Opciones y Gráficos
-const optTerms = ref(true)
-const optNewsletter = ref(false)
-const planTier = ref<'free' | 'pro'>('free')
-const colorVal = ref('#4f46e5')
-const rangeVal = ref<number>(DEFAULT_RANGE_PERCENT)
+const optTerms = ref(true);
+const optNewsletter = ref(false);
+const planTier = ref<'free' | 'pro'>('free');
+const colorVal = ref('#4f46e5');
+const rangeVal = ref<number>(DEFAULT_RANGE_PERCENT);
 
 // Grupo E: Archivos y Botones
-const fileName = ref('')
-const hiddenToken = 'tok_987xzy412alpha'
+const fileName = ref('');
+const hiddenToken = 'tok_987xzy412alpha';
 
 // Extras Semánticos
-const textareaVal = ref('Notas del entrenador: Equipo listo para el gimnasio de Kanto.')
-const selectVal = ref('1')
-const progressVal = ref<number>(DEFAULT_PROGRESS_PERCENT)
-const meterVal = ref<number>(DEFAULT_METER_VALUE)
+const textareaVal = ref('Notas del entrenador: Equipo listo para el gimnasio de Kanto.');
+const selectVal = ref('1');
+const progressVal = ref<number>(DEFAULT_PROGRESS_PERCENT);
+const meterVal = ref<number>(DEFAULT_METER_VALUE);
 
 onMounted(() => {
   gsap.from('.progress-fill', {
@@ -47,61 +59,61 @@ onMounted(() => {
     duration: 0.6,
     ease: 'power2.out',
     stagger: 0.15
-  })
-})
+  });
+});
 
 function onFieldChange(name: string, val: string | number | boolean) {
-  logToInspector(`Input [${name}]: ${val}`)
-  syncAllData()
+  logToInspector(`Input [${name}]: ${val}`);
+  syncAllData();
 }
 
 function onRangeInput(e: Event) {
-  const val = Number((e.target as HTMLInputElement).value)
-  rangeVal.value = val
-  logToInspector(`type="range": nuevo volumen = ${val}%`)
-  syncAllData()
+  const val = Number((e.target as HTMLInputElement).value);
+  rangeVal.value = val;
+  logToInspector(`type="range": nuevo volumen = ${val}%`);
+  syncAllData();
 }
 
 function onColorInput(e: Event) {
-  const val = (e.target as HTMLInputElement).value
-  colorVal.value = val
-  logToInspector(`type="color": seleccionado = ${val}`)
-  syncAllData()
+  const val = (e.target as HTMLInputElement).value;
+  colorVal.value = val;
+  logToInspector(`type="color": seleccionado = ${val}`);
+  syncAllData();
 }
 
 function onFileUpload(e: Event) {
-  const files = (e.target as HTMLInputElement).files
-  fileName.value = files && files.length > 0 ? files[0]!.name : ''
-  if (fileName.value) logToInspector(`type="file": seleccionado "${fileName.value}"`)
-  syncAllData()
+  const files = (e.target as HTMLInputElement).files;
+  fileName.value = files && files.length > 0 ? files[0]!.name : '';
+  if (fileName.value) logToInspector(`type="file": seleccionado "${fileName.value}"`);
+  syncAllData();
 }
 
 function onImageClick(e: MouseEvent) {
-  const rect = (e.target as HTMLElement).getBoundingClientRect()
-  const x = Math.round(e.clientX - rect.left)
-  const y = Math.round(e.clientY - rect.top)
-  logToInspector(`type="image" presionado en coordenadas: (x=${x}, y=${y})`)
+  const rect = (e.target as HTMLElement).getBoundingClientRect();
+  const x = Math.round(e.clientX - rect.left);
+  const y = Math.round(e.clientY - rect.top);
+  logToInspector(`type="image" presionado en coordenadas: (x=${x}, y=${y})`);
 }
 
 function onSubmitForm() {
-  logToInspector('type="submit": Formulario enviado y serializado con éxito')
-  syncAllData()
+  logToInspector('type="submit": Formulario enviado y serializado con éxito');
+  syncAllData();
 }
 
 function onResetForm() {
-  temporalVals.value.date = '2026-09-09'
-  temporalVals.value['datetime-local'] = '2026-09-09T18:30'
-  temporalVals.value.time = '14:45'
-  temporalVals.value.month = '2026-09'
-  temporalVals.value.week = '2026-W37'
-  optTerms.value = true
-  optNewsletter.value = false
-  planTier.value = 'free'
-  colorVal.value = '#4f46e5'
-  rangeVal.value = DEFAULT_RANGE_PERCENT
-  fileName.value = ''
-  logToInspector('type="reset": Formulario restablecido a valores por defecto')
-  syncAllData()
+  temporalVals.value.date = '2026-09-09';
+  temporalVals.value['datetime-local'] = '2026-09-09T18:30';
+  temporalVals.value.time = '14:45';
+  temporalVals.value.month = '2026-09';
+  temporalVals.value.week = '2026-W37';
+  optTerms.value = true;
+  optNewsletter.value = false;
+  planTier.value = 'free';
+  colorVal.value = '#4f46e5';
+  rangeVal.value = DEFAULT_RANGE_PERCENT;
+  fileName.value = '';
+  logToInspector('type="reset": Formulario restablecido a valores por defecto');
+  syncAllData();
 }
 
 function syncAllData() {
@@ -122,7 +134,7 @@ function syncAllData() {
     strategySelect: selectVal.value,
     progressLevel: `${progressVal.value}%`,
     meterPerformance: meterVal.value
-  })
+  });
 }
 </script>
 
@@ -143,11 +155,7 @@ function syncAllData() {
           </legend>
 
           <div class="input-grid-cols-5">
-            <div
-              v-for="inp in temporalInputs"
-              :key="inp.id"
-              class="pv-input-field-block"
-            >
+            <div v-for="inp in temporalInputs" :key="inp.id" class="pv-input-field-block">
               <div class="field-top-label">
                 <span>{{ inp.label }}</span>
                 <span class="type-pill-tag">{{ inp.tag }}</span>
@@ -158,7 +166,7 @@ function syncAllData() {
                   :type="inp.type"
                   class="pv-input"
                   @change="onFieldChange(inp.id, temporalVals[inp.id]!)"
-                >
+                />
               </div>
               <span class="field-desc">{{ inp.desc }}</span>
             </div>
@@ -179,18 +187,17 @@ function syncAllData() {
                 <span>13. CHECKBOXES</span>
                 <span class="type-pill-tag">type="checkbox"</span>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px">
                 <label class="pv-checkbox-row">
                   <input
                     v-model="optTerms"
                     type="checkbox"
                     @change="onFieldChange('optTerms', optTerms)"
-                  >
+                  />
                   <span class="pv-frame-pill pv-pixel-checkbox">
-                    <span
-                      v-if="optTerms"
-                      style="font-size: var(--font-8); color: var(--yellow);"
-                    >✓</span>
+                    <span v-if="optTerms" style="font-size: var(--font-8); color: var(--yellow)"
+                      >✓</span
+                    >
                   </span>
                   <span>Acepto los términos</span>
                 </label>
@@ -199,12 +206,13 @@ function syncAllData() {
                     v-model="optNewsletter"
                     type="checkbox"
                     @change="onFieldChange('optNewsletter', optNewsletter)"
-                  >
+                  />
                   <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="optNewsletter"
-                      style="font-size: var(--font-8); color: var(--yellow);"
-                    >✓</span>
+                      style="font-size: var(--font-8); color: var(--yellow)"
+                      >✓</span
+                    >
                   </span>
                   <span>Boletín de eventos</span>
                 </label>
@@ -217,7 +225,7 @@ function syncAllData() {
                 <span>14. RADIO BUTTONS</span>
                 <span class="type-pill-tag">type="radio"</span>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px">
                 <label class="pv-checkbox-row">
                   <input
                     v-model="planTier"
@@ -225,12 +233,13 @@ function syncAllData() {
                     value="free"
                     name="plan-tier-demo"
                     @change="onFieldChange('planTier', planTier)"
-                  >
+                  />
                   <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="planTier === 'free'"
-                      style="font-size: var(--font-7); color: var(--sky);"
-                    >●</span>
+                      style="font-size: var(--font-7); color: var(--sky)"
+                      >●</span
+                    >
                   </span>
                   <span>Pase Gratuito</span>
                 </label>
@@ -241,12 +250,13 @@ function syncAllData() {
                     value="pro"
                     name="plan-tier-demo"
                     @change="onFieldChange('planTier', planTier)"
-                  >
+                  />
                   <span class="pv-frame-pill pv-pixel-checkbox">
                     <span
                       v-if="planTier === 'pro'"
-                      style="font-size: var(--font-7); color: var(--sky);"
-                    >●</span>
+                      style="font-size: var(--font-7); color: var(--sky)"
+                      >●</span
+                    >
                   </span>
                   <span>Pase Maestro (Pro)</span>
                 </label>
@@ -260,16 +270,9 @@ function syncAllData() {
                 <span class="type-pill-tag">type="color"</span>
               </div>
               <div class="pv-color-picker-row">
-                <input
-                  v-model="colorVal"
-                  type="color"
-                  @input="onColorInput"
-                >
+                <input v-model="colorVal" type="color" @input="onColorInput" />
                 <div>
-                  <div
-                    class="color-hex-text"
-                    :style="{ color: colorVal }"
-                  >
+                  <div class="color-hex-text" :style="{ color: colorVal }">
                     {{ colorVal }}
                   </div>
                   <span class="field-desc">Selector nativo RGB</span>
@@ -294,7 +297,7 @@ function syncAllData() {
                   min="0"
                   max="100"
                   @input="onRangeInput"
-                >
+                />
               </div>
             </div>
           </div>
@@ -315,10 +318,7 @@ function syncAllData() {
                 <span class="type-pill-tag">type="file"</span>
               </div>
               <div class="pv-file-input-wrap">
-                <input
-                  type="file"
-                  @change="onFileUpload"
-                >
+                <input type="file" @change="onFileUpload" />
               </div>
               <span class="field-desc">Carga de avatar o guardado.</span>
             </div>
@@ -329,18 +329,19 @@ function syncAllData() {
                 <span>18. CAMPO OCULTO</span>
                 <span class="type-pill-tag">type="hidden"</span>
               </div>
-              <input
-                type="hidden"
-                :value="hiddenToken"
-              >
+              <input type="hidden" :value="hiddenToken" />
               <div
                 class="pv-frame-control"
-                style="padding: 6px 8px; background: rgba(234, 179, 8, 0.1); --frame-border: var(--amber-dark);"
+                style="
+                  padding: 6px 8px;
+                  background: rgba(234, 179, 8, 0.1);
+                  --frame-border: var(--amber-dark);
+                "
               >
-                <div style="font-size: var(--font-7); color: var(--yellow); font-weight: bold;">
+                <div style="font-size: var(--font-7); color: var(--yellow); font-weight: bold">
                   Invisible en el DOM renderizado
                 </div>
-                <div style="font-size: var(--font-7); color: var(--slate-400); margin-top: 2px;">
+                <div style="font-size: var(--font-7); color: var(--slate-400); margin-top: 2px">
                   CSRF: "{{ hiddenToken }}"
                 </div>
               </div>
@@ -352,45 +353,68 @@ function syncAllData() {
                 <span>19. BOTÓN IMAGEN</span>
                 <span class="type-pill-tag">type="image"</span>
               </div>
-              <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px">
                 <input
                   type="image"
                   src="/assets/sprites/crafting/tier3/pokeball.webp"
                   alt="Lanzar Pokéball"
-                  style="width: 32px; height: 32px; image-rendering: pixelated; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.2) !important; padding: 2px;"
+                  style="
+                    width: 32px;
+                    height: 32px;
+                    image-rendering: pixelated;
+                    cursor: pointer;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    padding: 2px;
+                  "
                   @click.prevent="onImageClick"
-                >
+                />
                 <span class="field-desc">Envía coordenadas (x,y) del clic al pulsarse.</span>
               </div>
             </div>
           </div>
 
           <!-- BOTONES NATIVOS OFICIALES 20, 21, 22 -->
-          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
-            <span style="font-size: var(--font-8); font-weight: bold; color: var(--color-text-gold, #ffd60a);">
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 8px;
+              margin-top: 14px;
+              padding-top: 10px;
+              border-top: 1px solid rgba(255, 255, 255, 0.08);
+            "
+          >
+            <span
+              style="
+                font-size: var(--font-8);
+                font-weight: bold;
+                color: var(--color-text-gold, #ffd60a);
+              "
+            >
               BOTONES NATIVOS OFICIALES:
             </span>
             <input
               type="submit"
               value="20. type='submit'"
               class="pv-curve-xs pv-btn pv-btn-primary"
-              style="font-size: var(--font-8); padding: 6px 12px; cursor: pointer;"
+              style="font-size: var(--font-8); padding: 6px 12px; cursor: pointer"
               @click.prevent="onSubmitForm"
-            >
+            />
             <input
               type="reset"
               value="21. type='reset'"
               class="pv-curve-xs pv-btn pv-btn-danger"
-              style="font-size: var(--font-8); padding: 6px 12px; cursor: pointer;"
+              style="font-size: var(--font-8); padding: 6px 12px; cursor: pointer"
               @click.prevent="onResetForm"
-            >
+            />
             <input
               type="button"
               value="22. type='button'"
               class="pv-curve-xs pv-btn pv-btn-secondary"
-              style="font-size: var(--font-8); padding: 6px 12px; cursor: pointer;"
+              style="font-size: var(--font-8); padding: 6px 12px; cursor: pointer"
               @click="logToInspector('type=\'button\' presionado')"
-            >
+            />
           </div>
         </fieldset>
 
@@ -413,7 +437,7 @@ function syncAllData() {
                   v-model="textareaVal"
                   rows="2"
                   class="pv-input"
-                  style="resize: vertical;"
+                  style="resize: vertical"
                   @input="onFieldChange('textarea', textareaVal)"
                 />
               </div>
@@ -431,15 +455,9 @@ function syncAllData() {
                   class="pv-input pv-select"
                   @change="onFieldChange('select', selectVal)"
                 >
-                  <option value="1">
-                    Estrategia Ofensiva (Atq. Esp.)
-                  </option>
-                  <option value="2">
-                    Estrategia Defensiva (Muralla)
-                  </option>
-                  <option value="3">
-                    Estrategia Velocidad (Sweeper)
-                  </option>
+                  <option value="1">Estrategia Ofensiva (Atq. Esp.)</option>
+                  <option value="2">Estrategia Defensiva (Muralla)</option>
+                  <option value="3">Estrategia Velocidad (Sweeper)</option>
                 </select>
               </div>
             </div>
@@ -451,10 +469,7 @@ function syncAllData() {
                 <span class="type-pill-tag">progreso</span>
               </div>
               <div class="pv-progress-bar pv-frame-control">
-                <div
-                  class="progress-fill"
-                  :style="{ width: `${progressVal}%` }"
-                />
+                <div class="progress-fill" :style="{ width: `${progressVal}%` }" />
               </div>
               <span class="field-desc">Barra de progreso HTML5 nativa.</span>
             </div>
@@ -467,11 +482,14 @@ function syncAllData() {
               </div>
               <div
                 class="pv-progress-bar pv-frame-control"
-                style="--frame-border: var(--purple-400);"
+                style="--frame-border: var(--purple-400)"
               >
                 <div
                   class="progress-fill"
-                  :style="{ width: `${meterVal}%`, background: 'linear-gradient(90deg, #a855f7 0%, #c084fc 100%)' }"
+                  :style="{
+                    width: `${meterVal}%`,
+                    background: 'linear-gradient(90deg, #a855f7 0%, #c084fc 100%)'
+                  }"
                 />
               </div>
               <span class="field-desc">Medición óptima de rendimiento.</span>

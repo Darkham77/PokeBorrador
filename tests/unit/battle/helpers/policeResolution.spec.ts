@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { handlePoliceResolution } from '@/logic/battle/helpers/battleResolutionHelpers';
 import { useGameStore } from '@/stores/game';
@@ -11,7 +11,10 @@ describe('policeResolution - handlePoliceResolution', () => {
     setActivePinia(createPinia());
   });
 
-  const createBaseBattleState = (trainerName: string, trainerArchetype: BattleState['trainerArchetype']): BattleState => ({
+  const createBaseBattleState = (
+    trainerName: string,
+    trainerArchetype: BattleState['trainerArchetype']
+  ): BattleState => ({
     player: null,
     enemy: null,
     playerTeamIndex: 0,

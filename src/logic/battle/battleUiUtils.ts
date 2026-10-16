@@ -1,4 +1,3 @@
-
 /**
  * src/logic/battle/battleUiUtils.js
  * UI mappings and helpers for battle components.
@@ -11,7 +10,7 @@ export const STATUS_EMOJI_MAP = {
   par: '⚡',
   frz: '🧊',
   tox: '🟣'
-} as const
+} as const;
 
 export const STATUS_SHORT_LABEL_MAP = {
   brn: 'BRN',
@@ -20,7 +19,7 @@ export const STATUS_SHORT_LABEL_MAP = {
   par: 'PAR',
   frz: 'FRZ',
   tox: 'TOX'
-} as const satisfies Record<BattleStatusKey, string>
+} as const satisfies Record<BattleStatusKey, string>;
 
 export const STATUS_NAME_MAP = {
   brn: 'QUEMADURA',
@@ -29,8 +28,7 @@ export const STATUS_NAME_MAP = {
   par: 'PARÁLISIS',
   frz: 'CONGELACIÓN',
   tox: 'TÓXICO' // spanish-ok: UI Spanish text localization label
-} as const satisfies Record<BattleStatusKey, string>
-
+} as const satisfies Record<BattleStatusKey, string>;
 
 export const STATUS_TOOLTIP_MAP = {
   brn: 'QUEMADO: Pierde 1/8 HP por turno y su Ataque Físico se reduce al 50%.',
@@ -39,7 +37,7 @@ export const STATUS_TOOLTIP_MAP = {
   par: 'PARALIZADO: Su Velocidad se reduce al 50% y tiene un 25% de probabilidad de no atacar.',
   frz: 'CONGELADO: No puede atacar. 20% de probabilidad de descongelarse cada turno.',
   tox: 'TÓXICO: Envenenamiento grave cuyo daño aumenta exponencialmente cada turno.'
-} as const satisfies Record<BattleStatusKey, string>
+} as const satisfies Record<BattleStatusKey, string>;
 
 export const STAT_EMOJI_MAP = {
   atk: { icon: '⚔️', name: 'Ataque' },
@@ -53,4 +51,3 @@ export const STAT_EMOJI_MAP = {
 
 export type BattleStatusKey = keyof typeof STATUS_EMOJI_MAP;
 export type BattleStatKey = keyof typeof STAT_EMOJI_MAP;
-

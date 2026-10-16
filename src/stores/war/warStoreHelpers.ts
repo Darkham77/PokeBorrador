@@ -11,10 +11,11 @@ import {
   WEEKLY_REWARD_MILESTONES,
   FACTION_VICTORY_BONUS_COINS,
   GUARDIAN_DEFEAT_POINTS_MULTIPLIER,
-  getPointReward
+  getPointReward,
+  type WarEventType
 } from '@/logic/war/warEngine.ts';
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets.ts';
-import { requireFactionId, type FactionId } from '@/types/system/game.ts';
+import { requireFactionId, type FactionId, type ISODateKey } from '@/types/system/game.ts';
 import type { DominanceInfo } from '@/types/system/stores.ts';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
 import { logger } from '@/logic/utils/logger.ts';
@@ -53,12 +54,20 @@ export function calculateWarCoinsAwarded(
   ptsPerCoin: number = WAR_POINTS_PER_COIN
 ): WarCoinsCalculationResult {
   if (currentDailyCoins >= dailyCap) {
-    return { allowedCoins: 0, nextAccumulator: currentAccumulator, nextDailyCoins: currentDailyCoins };
+    return {
+      allowedCoins: 0,
+      nextAccumulator: currentAccumulator,
+      nextDailyCoins: currentDailyCoins
+    };
   }
 
   const updatedAccumulator = currentAccumulator + ptsEarned;
   if (updatedAccumulator < ptsPerCoin) {
-    return { allowedCoins: 0, nextAccumulator: updatedAccumulator, nextDailyCoins: currentDailyCoins };
+    return {
+      allowedCoins: 0,
+      nextAccumulator: updatedAccumulator,
+      nextDailyCoins: currentDailyCoins
+    };
   }
 
   const newCoins = Math.floor(updatedAccumulator / ptsPerCoin);
@@ -142,8 +151,8 @@ function computeWeeklyMapDominanceRows(
 }
 
 export function calculateAllowedMapPoints(
-  dailyCap: Partial<Record<string, Partial<Record<MapRouteId, number>>>>,
-  today: string,
+  dailyCap: Partial<Record<ISODateKey, Partial<Record<MapRouteId, number>>>>,
+  today: ISODateKey,
   routeId: MapRouteId,
   pts: number,
   maxDailyMapCap: number = DAILY_MAP_CAP
@@ -183,14 +192,17 @@ export async function fetchUserWeeklyProgress(
   state: GuardianCapturesState,
   today: string
 ): Promise<UserWeeklyProgressData> {
-  const { data: pts } = await db.from('war_user_points')
+  const { data: pts } = await db
+    .from('war_user_points')
     .select('points')
     .eq('user_id', userId)
     .eq('week_id', weekId);
 
-  const weeklyPoints = (pts as Array<{ points: number }> | null)?.reduce((acc, r) => acc + (r.points || 0), 0) || 0;
+  const weeklyPoints =
+    (pts as Array<{ points: number }> | null)?.reduce((acc, r) => acc + (r.points || 0), 0) || 0;
 
-  const { data: guardians } = await db.from('guardian_captures')
+  const { data: guardians } = await db
+    .from('guardian_captures')
     .select('map_id')
     .eq('user_id', userId)
     .eq('capture_date', today);
@@ -238,7 +250,10 @@ export function mergeSettledWinners(
   for (const row of domRecords) {
     const routeId = requireMapRouteId(row.map_id);
     if (!domMap[routeId]) domMap[routeId] = { union: 0, poder: 0, winner: null };
-    domMap[routeId]!.winner = (!row.winner_faction || row.winner_faction === 'tie') ? null : requireFactionId(row.winner_faction);
+    domMap[routeId]!.winner =
+      !row.winner_faction || row.winner_faction === 'tie'
+        ? null
+        : requireFactionId(row.winner_faction);
   }
 }
 
@@ -264,7 +279,11 @@ export async function persistGuardianCapture(
   return !error;
 }
 
-export function resolveRewardPoints(eventType: string, success: boolean, customPoints?: number): number {
+export function resolveRewardPoints(
+  eventType: WarEventType,
+  success: boolean,
+  customPoints?: number
+): number {
   return customPoints !== undefined ? customPoints : getPointReward(eventType, success);
 }
 
@@ -272,7 +291,12 @@ async function upsertDominanceRows(db: DBRouter, rows: DominancePayloadRow[]): P
   try {
     const { error } = await db.from('war_dominance').upsert(rows);
     if (error) {
-      const errMsg = (error as { message?: string })?.message ?? String(error);
+      const errMsg =
+        typeof error === 'string'
+          ? error
+          : error instanceof Error
+            ? error.message
+            : ((error as { message?: string })?.message ?? 'Unknown error');
       logger.warn('WarStore', `Failed to upsert war dominance: ${errMsg}`);
     }
   } catch (err) {
@@ -284,13 +308,15 @@ export async function executeResolveWeekDominance(
   db: DBRouter,
   prevWeek: string // infra-id-ok: Temporal ISO week identifier string (YYYY-Www)
 ): Promise<void> {
-  const { data: existingDom } = await db.from('war_dominance')
+  const { data: existingDom } = await db
+    .from('war_dominance')
     .select('map_id')
     .eq('week_id', prevWeek);
 
   if (Array.isArray(existingDom) && existingDom.length > 0) return;
 
-  const { data: pointsData } = await db.from('war_points')
+  const { data: pointsData } = await db
+    .from('war_points')
     .select('map_id, faction, points')
     .eq('week_id', prevWeek);
 
@@ -319,7 +345,8 @@ export async function fetchWeeklyRewardCalculation(
   prevWeek: string, // infra-id-ok: Temporal ISO week identifier string (YYYY-Www)
   userFaction: FactionId
 ): Promise<WeeklyRewardResult | null> {
-  const { data: ptsData } = await db.from('war_user_points')
+  const { data: ptsData } = await db
+    .from('war_user_points')
     .select('points')
     .eq('user_id', userId)
     .eq('week_id', prevWeek);
@@ -329,7 +356,8 @@ export async function fetchWeeklyRewardCalculation(
 
   const milestoneCoins = computeMilestoneCoins(userPts);
 
-  const { data: domData } = await db.from('war_dominance')
+  const { data: domData } = await db
+    .from('war_dominance')
     .select('winner_faction')
     .eq('week_id', prevWeek);
 
@@ -341,9 +369,12 @@ export async function fetchWeeklyRewardCalculation(
   return { milestoneCoins, victoryBonus, totalReward };
 }
 
-export function formatWeeklyRewardNotification(milestoneCoins: number, victoryBonus: number, totalReward: number): string {
-  const victoryText = victoryBonus > 0 ? ` + ${FACTION_VICTORY_BONUS_COINS} por victoria de facción` : '';
+export function formatWeeklyRewardNotification(
+  milestoneCoins: number,
+  victoryBonus: number,
+  totalReward: number
+): string {
+  const victoryText =
+    victoryBonus > 0 ? ` + ${FACTION_VICTORY_BONUS_COINS} por victoria de facción` : '';
   return `¡Recompensa semanal recibida! ⚡+${totalReward} Monedas de Guerra (${milestoneCoins} por hitos${victoryText}).`;
 }
-
-

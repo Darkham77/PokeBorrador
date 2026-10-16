@@ -1,82 +1,93 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getEloTier } from '@/logic/pvp/rankedEngine'
-import { useRankCardHover } from '@/composables/arena/useRankCardHover'
-import { useUIStore } from '@/stores/ui'
-import type { LeaderboardEntry } from '@/stores/social/social'
-import type { RankingSortKey } from '@/types/system/game'
+import { computed } from 'vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getEloTier } from '@/logic/pvp/rankedEngine';
+import { useRankCardHover } from '@/composables/arena/useRankCardHover';
+import { useUIStore } from '@/stores/ui';
+import type { LeaderboardEntry } from '@/stores/social/social';
+import type { RankingSortKey } from '@/types/system/game';
+import { PODIUM_MEDALS } from '@/types/system/game';
 
 interface Props {
-  player: LeaderboardEntry
-  index: number
-  activeSort: RankingSortKey
+  player: LeaderboardEntry;
+  index: number;
+  activeSort: RankingSortKey;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const uiStore = useUIStore()
-const { handleCardEnter, handleCardLeave } = useRankCardHover()
+const uiStore = useUIStore();
+const { handleCardEnter, handleCardLeave } = useRankCardHover();
 
 const getFactionColor = (faction?: string) => {
   const colors: Record<string, string> = {
+    // open-record: Extended faction colors palette
     union: 'rgba(59, 130, 246, 1)',
     poder: 'rgba(239, 68, 68, 1)',
     rocket: 'rgba(148, 163, 184, 1)',
     magma: 'rgba(239, 68, 68, 1)',
     aqua: 'rgba(59, 130, 246, 1)',
     galactic: 'rgba(167, 139, 250, 1)'
-  }
-  return colors[faction?.toLowerCase() || ''] || 'rgba(156, 163, 175, 1)'
-}
+  };
+  return colors[faction?.toLowerCase() || ''] || 'rgba(156, 163, 175, 1)';
+};
 
 const getFactionLabel = (faction?: string) => {
-  if (!faction || faction === 'null' || faction === 'NULL' || faction === 'undefined' || faction.trim() === '') return ''
+  if (
+    !faction ||
+    faction === 'null' ||
+    faction === 'NULL' ||
+    faction === 'undefined' ||
+    faction.trim() === ''
+  )
+    return '';
   const labels: Record<string, string> = {
+    // open-record: Extended faction display labels
     union: 'Unión',
     poder: 'Poder',
     rocket: 'Rocket',
     magma: 'Magma',
     aqua: 'Aqua',
     galactic: 'Galactic'
-  }
-  return labels[faction?.toLowerCase() || ''] || faction
-}
+  };
+  return labels[faction?.toLowerCase() || ''] || faction;
+};
 
 const openTrainerProfile = (userId: string) => {
-  uiStore.open('TrainerProfile', { userId })
-}
+  uiStore.open('TrainerProfile', { userId });
+};
 
 const isFactionVisible = computed(() => {
-  const f = props.player.faction
-  return Boolean(f && f !== 'null' && f !== 'NULL' && f !== 'undefined' && f.trim() !== '')
-})
+  const f = props.player.faction;
+  return Boolean(f && f !== 'null' && f !== 'NULL' && f !== 'undefined' && f.trim() !== '');
+});
 
 const playerClassText = computed(() => {
-  const cls = props.player.playerClass
-  return (cls && cls !== 'null' && cls !== 'Null' && cls !== 'NULL') ? cls : 'Entrenador'
-})
+  const cls = props.player.playerClass;
+  return cls && cls !== 'null' && cls !== 'Null' && cls !== 'NULL' ? cls : 'Entrenador';
+});
 
 const scoreText = computed(() => {
-  if (props.activeSort === 'elo_rating') return `${props.player.elo} ELO`
-  if (props.activeSort === 'trainer_level') return `Nv. ${props.player.level}`
-  return `${props.player.badges} Medallas`
-})
+  if (props.activeSort === 'elo_rating') return `${props.player.elo} ELO`;
+  if (props.activeSort === 'trainer_level') return `Nv. ${props.player.level}`;
+  return `${props.player.badges} Medallas`;
+});
 
 const eloTier = computed(() => {
-  return getEloTier(props.player.elo)
-})
+  return getEloTier(props.player.elo);
+});
 
-const PODIUM_MEDALS = ['🥇', '🥈', '🥉'] as const
-const podiumMedal = computed(() => PODIUM_MEDALS[props.index] || null)
-const displayRankNumber = computed(() => props.index + 1)
-const rankCardClass = computed(() => `rank-${props.index + 1}`)
+const podiumMedal = computed(() => PODIUM_MEDALS[props.index] || null);
+const displayRankNumber = computed(() => props.index + 1);
+const rankCardClass = computed(() => `rank-${props.index + 1}`);
 </script>
 
 <template>
   <div
     :id="`ranking-modal-card-${player.id}`"
+    role="button"
+    tabindex="0"
     class="rank-card"
     :class="rankCardClass"
     @click.stop="openTrainerProfile(player.id)"
@@ -85,14 +96,8 @@ const rankCardClass = computed(() => `rank-${props.index + 1}`)
   >
     <!-- Rank placement indicator -->
     <div class="rank-badge">
-      <span
-        v-if="podiumMedal"
-        class="emoji crown"
-      >{{ podiumMedal }}</span>
-      <span
-        v-else
-        class="generic-rank text-outline"
-      >
+      <span v-if="podiumMedal" class="emoji crown">{{ podiumMedal }}</span>
+      <span v-else class="generic-rank text-outline">
         {{ displayRankNumber }}
       </span>
       <img
@@ -101,23 +106,16 @@ const rankCardClass = computed(() => `rank-${props.index + 1}`)
         :alt="eloTier.name"
         class="ranked-medal-mini"
         :title="`Rango: ${eloTier.name}`"
-      
         width="32"
         height="32"
-      >
+      />
     </div>
 
     <!-- Avatar -->
     <div class="avatar-container">
-      <TrainerAvatar
-        :profile="player"
-        :size="38"
-      >
+      <TrainerAvatar :profile="player" :size="38">
         <template #overlay>
-          <div
-            class="status-dot"
-            :class="{ online: player.isOnline }"
-          />
+          <div class="status-dot" :class="{ online: player.isOnline }" />
         </template>
       </TrainerAvatar>
     </div>
@@ -157,5 +155,5 @@ const rankCardClass = computed(() => `rank-${props.index + 1}`)
 </template>
 
 <style scoped lang="scss">
-@use "./RankingPlayerRow.styles.scss" as *;
+@use './RankingPlayerRow.styles.scss' as *;
 </style>

@@ -1,6 +1,7 @@
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import { isForcedSwitchMove } from './helpers/forcedSwitchRegistry.ts';
 import { isPokemonMoveId } from '@/data/battle/moves';
+import type { VolatileStatusKey } from '@/types/pokemon/pokemon';
 
 export function handleFailEvent(ctx: SBCtx): boolean {
   const { store, parts, line, p, getPoke } = ctx;
@@ -12,15 +13,27 @@ export function handleFailEvent(ctx: SBCtx): boolean {
   const lastMoveId = target.lastMove?.id || store.activeMove?.value?.id || '';
   const isPlayerAttacking = target === p;
   const opponentTeam = isPlayerAttacking
-    ? (store.activeBattle.value?.enemyTeam || (store.activeBattle.value?.enemy ? [store.activeBattle.value.enemy] : []))
-    : (store.activeBattle.value?.playerTeam || (store.activeBattle.value?.player ? [store.activeBattle.value.player] : []));
+    ? store.activeBattle.value?.enemyTeam ||
+      (store.activeBattle.value?.enemy ? [store.activeBattle.value.enemy] : [])
+    : store.activeBattle.value?.playerTeam ||
+      (store.activeBattle.value?.player ? [store.activeBattle.value.player] : []);
   const currentOpponentUid = isPlayerAttacking
     ? store.activeBattle.value?.enemy?.uid
     : store.activeBattle.value?.player?.uid;
-  const aliveOpponentsOnBench = opponentTeam.filter(mon => mon && mon.hp > 0 && mon.uid !== currentOpponentUid);
+  const aliveOpponentsOnBench = opponentTeam.filter(
+    (mon) => mon && mon.hp > 0 && mon.uid !== currentOpponentUid
+  );
 
-  if (isPokemonMoveId(lastMoveId) && isForcedSwitchMove(lastMoveId) && aliveOpponentsOnBench.length === 0) {
-    store.addLog(`¡El movimiento de ${target.name} falló porque no hay ningún Pokémon en la banca para cambiar!`, style, target);
+  if (
+    isPokemonMoveId(lastMoveId) &&
+    isForcedSwitchMove(lastMoveId) &&
+    aliveOpponentsOnBench.length === 0
+  ) {
+    store.addLog(
+      `¡El movimiento de ${target.name} falló porque no hay ningún Pokémon en la banca para cambiar!`,
+      style,
+      target
+    );
   } else {
     store.addLog(`¡El movimiento de ${target.name} falló!`, style, target);
   }
@@ -35,8 +48,11 @@ export function handleTurnOrUpkeep(ctx: SBCtx): boolean {
       store.activeBattle.value.turnCount = turnNum;
     }
     const seatKeys = ['player', 'playerB', 'enemy', 'enemyB', 'p1', 'p2', 'p3', 'p4'] as const;
-    seatKeys.forEach(k => {
-      const mon = Reflect.get(store.activeBattle.value!, k) as { volatileCounters?: Record<string, number> } | null | undefined;
+    seatKeys.forEach((k) => {
+      const mon = Reflect.get(store.activeBattle.value!, k) as
+        | { volatileCounters?: Partial<Record<VolatileStatusKey, number>> }
+        | null
+        | undefined;
       if (mon && mon.volatileCounters) {
         delete mon.volatileCounters['protect'];
         delete mon.volatileCounters['flinch'];

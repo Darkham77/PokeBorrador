@@ -1,5 +1,5 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/components/inventory";
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/components/inventory';
 
 .is-battle-mode {
   height: 520px !important;
@@ -52,6 +52,10 @@
     color: var(--white);
     border-color: var(--red-light);
     box-shadow: var(--shadow-glow-yellow-sm);
-    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    text-shadow:
+      1px 1px 0 #000,
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000;
   }
 }

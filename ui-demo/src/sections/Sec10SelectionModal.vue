@@ -1,46 +1,50 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { MOCK_SELECTION_ITEMS, type SelectionDemoPokemon } from '../data/mockSelectionPokemon.ts'
-import { logToInspector } from '../logic/useLiveInspector.ts'
-import Sec10SelectionFilters from './Sec10SelectionFilters.vue'
-import Sec10SelectionItem from './Sec10SelectionItem.vue'
+import { ref, computed } from 'vue';
+import { MOCK_SELECTION_ITEMS, type SelectionDemoPokemon } from '../data/mockSelectionPokemon.ts';
+import { logToInspector } from '../logic/useLiveInspector.ts';
+import Sec10SelectionFilters from './Sec10SelectionFilters.vue';
+import Sec10SelectionItem from './Sec10SelectionItem.vue';
 
 interface Props {
-  isFloating?: boolean
+  isFloating?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isFloating: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'confirm', uid: string): void
-  (e: 'open-floating'): void
-}>()
+  (e: 'close'): void;
+  (e: 'confirm', uid: string): void;
+  (e: 'open-floating'): void;
+}>();
 
-const searchQuery = ref('')
-const activeSort = ref<'rec' | 'lvl' | 'ivs' | 'tot' | 'dex' | 'cri' | 'pes' | 'alt' | 'ami'>('rec')
-const activeTag = ref<'clear' | 'fav' | 'gen' | 'cmp' | 'trd' | 'iv31' | 'shy' | 'tem' | 'cri' | 'evo' | 'max' | null>(null)
-const selectedUid = ref<string>('sel-dragonite-85')
+const searchQuery = ref('');
+const activeSort = ref<'rec' | 'lvl' | 'ivs' | 'tot' | 'dex' | 'cri' | 'pes' | 'alt' | 'ami'>(
+  'rec'
+);
+const activeTag = ref<
+  'clear' | 'fav' | 'gen' | 'cmp' | 'trd' | 'iv31' | 'shy' | 'tem' | 'cri' | 'evo' | 'max' | null
+>(null);
+const selectedUid = ref<string>('sel-dragonite-85');
 
 const filteredPokemon = computed<SelectionDemoPokemon[]>(() => {
-  let list = [...MOCK_SELECTION_ITEMS]
+  let list = [...MOCK_SELECTION_ITEMS];
   if (searchQuery.value.trim()) {
-    const q = searchQuery.value.toLowerCase()
-    list = list.filter(p => p.name.toLowerCase().includes(q) || String(p.id).includes(q))
+    const q = searchQuery.value.toLowerCase();
+    list = list.filter((p) => p.name.toLowerCase().includes(q) || String(p.id).includes(q));
   }
-  return list
-})
+  return list;
+});
 
 function onSelectPokemon(item: SelectionDemoPokemon) {
   if (item.seasonViolation) {
-    logToInspector(`Selector: ${item.name} bloqueado por reglas de temporada`)
-    return
+    logToInspector(`Selector: ${item.name} bloqueado por reglas de temporada`);
+    return;
   }
-  selectedUid.value = item.uid
-  logToInspector(`Selector: ${item.name} seleccionado (UID: ${item.uid})`)
-  emit('confirm', item.uid)
+  selectedUid.value = item.uid;
+  logToInspector(`Selector: ${item.name} seleccionado (UID: ${item.uid})`);
+  emit('confirm', item.uid);
 }
 </script>
 

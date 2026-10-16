@@ -1,14 +1,21 @@
-import { PDEX_ORDER, GEN2_PDEX_ORDER, isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
+import {
+  PDEX_ORDER,
+  GEN2_PDEX_ORDER,
+  isPokemonSpeciesId,
+  requirePokemonSpeciesId,
+  type PokemonSpeciesId
+} from '@/data/pokemon/pokedex.ts';
 import { hasPokemonSpriteId, requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping.ts';
 import { hasAnimatedSpriteId } from '@/data/pokemon/animatedSpriteDatabase.ts';
 import { requireFeetPoints } from '@/data/pokemon/pokemonFeetDatabase.ts';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService.ts';
 import type { useBattleStore } from '@/stores/battle/battle.ts';
+import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
 
 export const ALL_PDEX: readonly PokemonSpeciesId[] = [...PDEX_ORDER, ...GEN2_PDEX_ORDER];
-const PARSE_INT_DECIMAL_RADIX = 10;
 
-const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] } => { // domain-ok: Debug panel raw identifier parser input
+const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] } => {
+  // domain-ok: Debug panel raw identifier parser input
   const parts = fullId.split('_');
 
   for (let i = parts.length; i >= 1; i--) {
@@ -25,7 +32,8 @@ const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] 
   throw new Error(`[DebugActionPanel] Unknown pokemon id: ${fullId}`);
 };
 
-export const deconstructPokemonId = (fullId: string) => { // domain-ok: Debug panel raw identifier parser input
+export const deconstructPokemonId = (fullId: string) => {
+  // domain-ok: Debug panel raw identifier parser input
   const { numId, rest } = resolveToSpriteNumber(fullId);
   let variant = '';
   let gender = '';
@@ -45,7 +53,8 @@ export const deconstructPokemonId = (fullId: string) => { // domain-ok: Debug pa
   return { baseId: numId, variant, gender };
 };
 
-function requireSpeciesFromDebugBase(baseId: string): PokemonSpeciesId { // domain-ok: Debug panel raw base numeric or name string
+function requireSpeciesFromDebugBase(baseId: string): PokemonSpeciesId {
+  // domain-ok: Debug panel raw base numeric or name string
   const cleanBase = baseId.trim().toLowerCase();
   if (/^\d+$/.test(cleanBase)) {
     const species = ALL_PDEX[Number(cleanBase) - 1];
@@ -55,7 +64,12 @@ function requireSpeciesFromDebugBase(baseId: string): PokemonSpeciesId { // doma
   return requirePokemonSpeciesId(cleanBase);
 }
 
-export const constructPokemonId = (baseId: string, variant: string, gender: string): PokemonSpeciesId => { // domain-ok: Debug panel raw base numeric or name string
+export const constructPokemonId = (
+  baseId: string,
+  variant: string,
+  gender: string
+): PokemonSpeciesId => {
+  // domain-ok: Debug panel raw base numeric or name string
   let id = requireSpeciesFromDebugBase(baseId);
   const cleanVariant = variant.trim().toLowerCase();
   const cleanGender = gender.trim().toLowerCase();
@@ -69,8 +83,11 @@ export const constructPokemonId = (baseId: string, variant: string, gender: stri
   return requirePokemonSpeciesId(id);
 };
 
-export function resolveBaseNumber(current: string, pdexOrder: readonly PokemonSpeciesId[] = ALL_PDEX): number {
-  const num = parseInt(current, PARSE_INT_DECIMAL_RADIX);
+export function resolveBaseNumber(
+  current: string,
+  pdexOrder: readonly PokemonSpeciesId[] = ALL_PDEX
+): number {
+  const num = parseInt(current, RADIX_DECIMAL);
   if (!isNaN(num)) return num;
   const speciesId = current.toLowerCase();
   const idx = isPokemonSpeciesId(speciesId) ? pdexOrder.indexOf(speciesId) : -1;
@@ -91,7 +108,8 @@ export function resolveAnimatedSpriteKey(
   const suffix = isBack ? '_back' : '';
   if (isFemale && hasAnimatedSpriteId(`${candIdle}_f${suffix}`)) return `${candIdle}_f${suffix}`;
   if (hasAnimatedSpriteId(`${candIdle}${suffix}`)) return `${candIdle}${suffix}`;
-  if (isFemale && hasAnimatedSpriteId(`${candSimple}_f${suffix}`)) return `${candSimple}_f${suffix}`;
+  if (isFemale && hasAnimatedSpriteId(`${candSimple}_f${suffix}`))
+    return `${candSimple}_f${suffix}`;
   if (hasAnimatedSpriteId(`${candSimple}${suffix}`)) return `${candSimple}${suffix}`;
   return '';
 }
@@ -104,7 +122,9 @@ function validateSpriteFeetPoints(targetUrl: string, baseUrl: string): void {
   try {
     dbKey = decodeURIComponent(dbKey);
   } catch (e) {
-    throw new Error(`[DebugActionPanel] Error al decodificar dbKey '${dbKey}': ${String(e)}`, { cause: e });
+    throw new Error(`[DebugActionPanel] Error al decodificar dbKey '${dbKey}': ${String(e)}`, {
+      cause: e
+    });
   }
   requireFeetPoints(dbKey);
 }
@@ -114,10 +134,7 @@ export interface CombatantStatusTarget {
   isGuardian?: boolean;
 }
 
-export function toggleCombatantStatus(
-  pokemon: CombatantStatusTarget,
-  type: string
-): void {
+export function toggleCombatantStatus(pokemon: CombatantStatusTarget, type: string): void {
   if (type === 'shiny') pokemon.isShiny = !pokemon.isShiny;
   if (type === 'guardian') pokemon.isGuardian = !pokemon.isGuardian;
 }
@@ -137,8 +154,10 @@ function resolveSwapTarget(
 ): SwapTargetInfo {
   const baseNum = resolveBaseNumber(String(baseIdVal ?? '').trim(), pdexOrder);
   const targetBase = String(baseNum);
-  const cleanVar = String(rawVariantVal ?? '').trim().toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
-  const variantVal = (cleanVar === '0' || cleanVar === '') ? '' : cleanVar;
+  const cleanVar = String(rawVariantVal ?? '')
+    .trim()
+    .toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
+  const variantVal = cleanVar === '0' || cleanVar === '' ? '' : cleanVar;
   const targetId = constructPokemonId(targetBase, variantVal, genderVal);
   const isFemale = genderVal === 'f' || genderVal === 'F';
   return { targetId, targetBase, variantVal, isFemale };
@@ -155,7 +174,11 @@ function verifyFallbackFeetPoints(
   baseUrl: string
 ): void {
   const { isShiny, isBack } = options;
-  const targetUrl = getAssetUrl(ASSET_TYPES.POKEMON, targetId, { isShiny, isBack, isAnimated: false });
+  const targetUrl = getAssetUrl(ASSET_TYPES.POKEMON, targetId, {
+    isShiny,
+    isBack,
+    isAnimated: false
+  });
   validateSpriteFeetPoints(targetUrl, baseUrl);
 }
 
@@ -200,14 +223,23 @@ export interface VisualSwapParams {
 
 export function executeVisualSwap(params: VisualSwapParams): void {
   const { battleStore, isPlayer, baseId, rawVariant, gender, baseUrl } = params;
-  const { targetId, targetBase, variantVal, isFemale } = resolveSwapTarget(baseId, rawVariant, gender);
+  const { targetId, targetBase, variantVal, isFemale } = resolveSwapTarget(
+    baseId,
+    rawVariant,
+    gender
+  );
   const suffix = variantVal ? `_${variantVal}` : '';
   const candIdle = `${targetBase}i${suffix}`;
   const candSimple = `${targetBase}${suffix}`;
-  const animatedKey = resolveAnimatedSpriteKey(candIdle, candSimple, { isBack: isPlayer, isFemale });
+  const animatedKey = resolveAnimatedSpriteKey(candIdle, candSimple, {
+    isBack: isPlayer,
+    isFemale
+  });
 
   if (!animatedKey) {
-    const isShiny = Boolean(isPlayer ? battleStore.state?.player?.isShiny : battleStore.state?.enemy?.isShiny);
+    const isShiny = Boolean(
+      isPlayer ? battleStore.state?.player?.isShiny : battleStore.state?.enemy?.isShiny
+    );
     verifyFallbackFeetPoints(targetId, { isShiny, isBack: isPlayer }, baseUrl);
   }
 

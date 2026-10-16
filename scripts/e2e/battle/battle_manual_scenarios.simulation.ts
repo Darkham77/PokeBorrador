@@ -1,6 +1,10 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { awaitBattleReadyForInput, awaitGameStoreReady, type WindowWithResolver } from '../e2e_helpers.ts';
+import {
+  awaitBattleReadyForInput,
+  awaitGameStoreReady,
+  type WindowWithResolver
+} from '../e2e_helpers.ts';
 import type { BattleState } from '../../../src/types/battle/battle.ts';
 
 class ManualScenariosSimWrapper extends BaseBattleSimulation {
@@ -12,7 +16,8 @@ class ManualScenariosSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
 
       const gameStore = useGameStore();
       const battleStore = useBattleStore();
@@ -41,7 +46,9 @@ class ManualScenariosSimWrapper extends BaseBattleSimulation {
 test.describe('Battle Manual E2E Scenarios', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('debería consumir un Revivir en un Pokémon de la banca debilitado y jugar el combate hasta el final', async ({ page }) => {
+  test('debería consumir un Revivir en un Pokémon de la banca debilitado y jugar el combate hasta el final', async ({
+    page
+  }) => {
     const sim = new ManualScenariosSimWrapper(page, 'ManualRevive');
     await sim.setup();
     await sim.setupReviveScenario();
@@ -56,7 +63,9 @@ test.describe('Battle Manual E2E Scenarios', () => {
     expect(await sim.getCharmanderHp()).toBeGreaterThan(0);
   });
 
-  test('debería persistir y restaurar el combate activo y sus condiciones completas al recargar la página con F5', async ({ page }) => {
+  test('debería persistir y restaurar el combate activo y sus condiciones completas al recargar la página con F5', async ({
+    page
+  }) => {
     const sim = new ManualScenariosSimWrapper(page, 'BattleReloadF5');
     await sim.setup();
 
@@ -64,7 +73,8 @@ test.describe('Battle Manual E2E Scenarios', () => {
     await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
 
       const gameStore = useGameStore();
       const battleStore = useBattleStore();
@@ -84,14 +94,14 @@ test.describe('Battle Manual E2E Scenarios', () => {
         trainerName: 'Rival Azul',
         trainerSprite: 'youngster-masters',
         enemyTeam: [enemy],
-        locationId: 'route1',
+        locationId: 'route1'
       });
 
       // Establecer clima, condiciones y cambiar al 2do Pokémon en la arena
       if (battleStore.state) {
         battleStore.state.weather = { type: 'rain', visual: 'rain', turns: 4 };
         battleStore.state.playerSideConditions = {
-          lightscreen: { turns: 3 },
+          lightscreen: { turns: 3 }
         };
         battleStore.state.playerTeamIndex = 1;
         battleStore.state.player = p2;
@@ -112,14 +122,20 @@ test.describe('Battle Manual E2E Scenarios', () => {
     // 2. Simular recarga de página (F5) con listener de eventos
     await page.reload();
     await awaitGameStoreReady(page);
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return false;
-      const bs = resolver();
-      const fsmState = bs?.currentFsmState;
-      const fsmSubState = bs?.currentSubState;
-      return bs && fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT' && bs.state !== null;
-    }, undefined, { timeout: 30000 });
+    await page.waitForFunction(
+      () => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        if (!resolver) return false;
+        const bs = resolver();
+        const fsmState = bs?.currentFsmState;
+        const fsmSubState = bs?.currentSubState;
+        return (
+          bs && fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT' && bs.state !== null
+        );
+      },
+      undefined,
+      { timeout: 30000 }
+    );
 
     // 3. Verificar que todos los campos del combate fueron restaurados 1:1
     const restoredState = await page.evaluate(async () => {
@@ -137,7 +153,7 @@ test.describe('Battle Manual E2E Scenarios', () => {
         weatherType: battle?.weather?.type,
         weatherTurns: battle?.weather?.turns,
         hasLightScreen: Boolean(battle?.playerSideConditions?.lightscreen),
-        enemyHeldItem: battle?.enemyTeam?.[0]?.heldItem,
+        enemyHeldItem: battle?.enemyTeam?.[0]?.heldItem
       };
     });
 
@@ -154,14 +170,17 @@ test.describe('Battle Manual E2E Scenarios', () => {
     expect(restoredState.enemyHeldItem).toBe('focussash');
   });
 
-  test('debería persistir el modo búsqueda de hierbas al recargar la página con F5 para evitar trampas', async ({ page }) => {
+  test('debería persistir el modo búsqueda de hierbas al recargar la página con F5 para evitar trampas', async ({
+    page
+  }) => {
     const sim = new ManualScenariosSimWrapper(page, 'SearchReloadF5');
     await sim.setup();
 
     // 1. Iniciar modo búsqueda en ruta 2 y persistir estado de búsqueda activa
     await page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
 
       const gameStore = useGameStore();
 
@@ -193,14 +212,18 @@ test.describe('Battle Manual E2E Scenarios', () => {
     await page.reload();
     await awaitGameStoreReady(page);
 
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return false;
-      const bs = resolver();
-      if (!bs) return false;
-      const fsmState = bs.currentFsmState;
-      return fsmState === 'SEARCH_PHASE' || fsmState === 'ACTIVE_BATTLE';
-    }, undefined, { timeout: 30000 });
+    await page.waitForFunction(
+      () => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        if (!resolver) return false;
+        const bs = resolver();
+        if (!bs) return false;
+        const fsmState = bs.currentFsmState;
+        return fsmState === 'SEARCH_PHASE' || fsmState === 'ACTIVE_BATTLE';
+      },
+      undefined,
+      { timeout: 30000 }
+    );
 
     const searchState = await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
@@ -208,7 +231,7 @@ test.describe('Battle Manual E2E Scenarios', () => {
       return {
         fsmState: bs.currentFsmState,
         locationId: bs.state?.locationId,
-        wasSearching: Boolean(bs.state?.wasSearching),
+        wasSearching: Boolean(bs.state?.wasSearching)
       };
     });
 

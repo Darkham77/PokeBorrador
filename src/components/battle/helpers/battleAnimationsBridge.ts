@@ -1,5 +1,5 @@
-import type { useBattleAnimations } from '@/composables/battle/useBattleAnimations'
-import type { useBattleStore } from '@/stores/battle/battle'
+import type { useBattleAnimations } from '@/composables/battle/useBattleAnimations';
+import type { useBattleStore } from '@/stores/battle/battle';
 
 export function createBattleAnimationsBridge(
   animations: ReturnType<typeof useBattleAnimations>
@@ -27,5 +27,5 @@ export function createBattleAnimationsBridge(
     triggerFlinchAnim: animations.triggerFlinchAnim,
     awaitTween: animations.awaitTween,
     resetAll: animations.resetAll
-  }
+  };
 }

@@ -1,20 +1,19 @@
 /**
  * tests/node/events.test.ts
- * 
+ *
  * VITEST (vite-node) — node environment
- * 
+ *
  * Migrated from tests/unit/events.spec.ts
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
-
 // Use relative path since Node native doesn't resolve aliases by default without loaders
-import { 
-  isEventActiveNow, 
-  getGlobalMultipliers, 
-  getSpeciesBoosts, 
+import {
+  isEventActiveNow,
+  getGlobalMultipliers,
+  getSpeciesBoosts,
   getArgDateString,
   type Event
 } from '../../../src/logic/events/eventEngine.ts';
@@ -31,10 +30,10 @@ describe('Event Engine Logic (Native)', () => {
   });
 
   it('filters by absolute date range', () => {
-    const event = { 
-      active: true, 
-      start_at: '2026-04-10T00:00:00Z', 
-      end_at: '2026-04-20T00:00:00Z' 
+    const event = {
+      active: true,
+      start_at: '2026-04-10T00:00:00Z',
+      end_at: '2026-04-20T00:00:00Z'
     };
     const internalDate = Temporal.Instant.from('2026-04-15T12:00:00Z');
     const outsideDate = Temporal.Instant.from('2026-04-25T12:00:00Z');
@@ -49,7 +48,7 @@ describe('Event Engine Logic (Native)', () => {
       { config: { expMult: 1.5, shinyMult: 2 } }
     ];
     const mults = getGlobalMultipliers(activeEvents as unknown as Event[]);
-    
+
     assert.strictEqual(mults.exp, 3); // 2 * 1.5
     assert.strictEqual(mults.money, 1.5);
     assert.strictEqual(mults.shiny, 2);
@@ -75,10 +74,15 @@ describe('Event Engine Logic (Native)', () => {
   it('handles robust parsing of stringified JSON config/schedule', () => {
     const event = {
       active: true,
-      schedule: JSON.stringify({ type: 'weekly', days: [1, 2, 3, 4, 5], startHour: 0, endHour: 23.99 }),
+      schedule: JSON.stringify({
+        type: 'weekly',
+        days: [1, 2, 3, 4, 5],
+        startHour: 0,
+        endHour: 23.99
+      }),
       config: JSON.stringify({ expMult: 5 })
     };
-    
+
     // Check multiplier parsing
     const mults = getGlobalMultipliers([event] as unknown as Event[]);
     assert.strictEqual(mults.exp, 5);
@@ -111,7 +115,7 @@ describe('Event Engine Logic (Native)', () => {
   it('formats argument date strings correctly', () => {
     const date = Temporal.Instant.from('2026-05-09T12:00:00Z');
     const zdt = Temporal.ZonedDateTime.from('2026-05-10T12:00:00[America/Argentina/Buenos_Aires]');
-    
+
     assert.strictEqual(getArgDateString(date), '2026-05-09');
     assert.strictEqual(getArgDateString(zdt), '2026-05-10');
     assert.match(getArgDateString(), /^\d{4}-\d{2}-\d{2}$/);

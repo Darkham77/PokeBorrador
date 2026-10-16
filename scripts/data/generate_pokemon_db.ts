@@ -1,8 +1,8 @@
 /**
  * scripts/data/generate_pokemon_db.ts
- * 
+ *
  * Generador estático en tiempo de build para src/data/pokemon/pokemonDB.json.
- * 
+ *
  * BENEFICIO:
  * Ejecuta las consultas de Showdown Dex y resolución de learnsets en Node.js
  * una sola vez en build/dev, eliminando @pkmn/sim del hilo principal del navegador
@@ -37,7 +37,6 @@ export interface CompactPokemonData {
   compatMoves?: string[]; // domain-ok: Open dynamic text or non-domain string payload
 }
 
-
 const MAX_DEX_NUMS: Record<number, number> = {
   1: 151,
   2: 251,
@@ -47,7 +46,7 @@ const MAX_DEX_NUMS: Record<number, number> = {
   6: 721,
   7: 809,
   8: 898,
-  9: 1025,
+  9: 1025
 };
 
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.json');
@@ -63,7 +62,11 @@ interface ResolvedLearnsetResult {
   readonly compatMoves: PokemonMoveId[];
 }
 
-function parseMethodFlags(methods: readonly string[]): { minLevel: number; hasCompat: boolean; hasLevelUp: boolean } {
+function parseMethodFlags(methods: readonly string[]): {
+  minLevel: number;
+  hasCompat: boolean;
+  hasLevelUp: boolean;
+} {
   let minLevel = Infinity;
   let hasCompat = false;
   let hasLevelUp = false;
@@ -128,7 +131,9 @@ async function collectSpeciesLearnsetRaw(
   return resolveNextSpeciesAncestor(speciesSlug);
 }
 
-async function resolveSpeciesLearnset(speciesId: PokemonDbSpeciesId): Promise<ResolvedLearnsetResult> {
+async function resolveSpeciesLearnset(
+  speciesId: PokemonDbSpeciesId
+): Promise<ResolvedLearnsetResult> {
   const movesMap = new Map<string, number>();
   const compatMovesSet = new Set<PokemonMoveId>();
   let currentSlug: string | undefined = speciesId;
@@ -148,8 +153,13 @@ async function resolveSpeciesLearnset(speciesId: PokemonDbSpeciesId): Promise<Re
   }
   if (learnset.length === 0) {
     const defaultMoveId = speciesId === 'unown' ? 'hiddenpower' : 'tackle';
-    const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(defaultMoveId) || Dex.moves.get(defaultMoveId);
-    learnset.push([1, requirePokemonMoveId(defaultMoveId), moveData?.exists ? moveData.pp : DEFAULT_MOVE_PP_FALLBACK]);
+    const moveData =
+      Dex.forGen(ACTIVE_GENERATION).moves.get(defaultMoveId) || Dex.moves.get(defaultMoveId);
+    learnset.push([
+      1,
+      requirePokemonMoveId(defaultMoveId),
+      moveData?.exists ? moveData.pp : DEFAULT_MOVE_PP_FALLBACK
+    ]);
   }
   learnset.sort((a, b) => a[0] - b[0]);
   return { learnset, compatMoves: Array.from(compatMovesSet) };
@@ -164,10 +174,10 @@ function buildCompactPokemonData(
 ): CompactPokemonData {
   const type = species.types[0]!.toLowerCase() as PokemonType;
   const type2 = species.types[1] ? (species.types[1].toLowerCase() as PokemonType) : undefined;
-  const abilities = Object.values(species.abilities).map(a => toID(a));
+  const abilities = Object.values(species.abilities).map((a) => toID(a));
   const gender = species.gender || (species.genderRatio ? species.genderRatio.M : 0.5);
-  const height = (species.heightm && species.heightm > 0) ? species.heightm : 0.1;
-  const weight = (species.weightkg && species.weightkg > 0) ? species.weightkg : 0.1;
+  const height = species.heightm && species.heightm > 0 ? species.heightm : 0.1;
+  const weight = species.weightkg && species.weightkg > 0 ? species.weightkg : 0.1;
 
   return {
     name: species.name,
@@ -199,7 +209,9 @@ export async function generatePokemonDatabase(): Promise<void> {
 
     const speciesId = String(toID(species.id));
     if (!isSpeciesId(speciesId)) {
-      throw new Error(`[PokemonDB Generator] Missing species metadata for active Showdown species: ${speciesId}`);
+      throw new Error(
+        `[PokemonDB Generator] Missing species metadata for active Showdown species: ${speciesId}`
+      );
     }
 
     const learnsetResult = await resolveSpeciesLearnset(speciesId);
@@ -216,19 +228,22 @@ export async function generatePokemonDatabase(): Promise<void> {
       console.log(`📦 [PokemonDB Generator] ${relPath} está actualizado.`);
       return;
     }
-  } catch { // catch-ok: file does not exist yet, proceed with writing
+  } catch {
+    // catch-ok: file does not exist yet, proceed with writing
     // File doesn't exist yet, proceed with writing
   }
 
   await fs.writeFile(OUTPUT_FILE, jsonContent, 'utf8');
   const speciesCount = Object.keys(db).length;
   const sizeKb = (Buffer.byteLength(jsonContent, 'utf8') / 1024).toFixed(1);
-  console.log(`⚡ [PokemonDB Generator] Generado ${relPath} (${speciesCount} especies, ${sizeKb} kB).`);
+  console.log(
+    `⚡ [PokemonDB Generator] Generado ${relPath} (${speciesCount} especies, ${sizeKb} kB).`
+  );
 }
 
 // Allow direct execution from CLI
 if (process.argv[1]?.endsWith('generate_pokemon_db.ts')) {
-  generatePokemonDatabase().catch(err => {
+  generatePokemonDatabase().catch((err) => {
     console.error('❌ [PokemonDB Generator] Error fatal:', err);
     process.exit(1);
   });

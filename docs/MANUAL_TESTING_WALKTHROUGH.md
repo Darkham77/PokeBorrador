@@ -201,7 +201,10 @@ useModalStore().open('PastEventsList');
 useModalStore().open('Daycare');
 
 // Open Archaeology minigame
-useModalStore().open('Archaeology', { pokemon: { id: 'aerodactyl', name: 'Aerodactyl' }, rarity: 50 });
+useModalStore().open('Archaeology', {
+  pokemon: { id: 'aerodactyl', name: 'Aerodactyl' },
+  rarity: 50
+});
 
 // Trigger Save serialization check
 useGameStore().scheduleSave();

@@ -14,7 +14,7 @@ import {
   StatsTable,
   StatusName,
   Tier,
-  TypeName,
+  TypeName
 } from '@pkmn/types';
 
 export type AbilityName = string & As<'AbilityName'>;
@@ -24,12 +24,26 @@ export type SpeciesName = string & As<'SpeciesName'>;
 export type FormeName = string & As<'FormeName'>;
 
 export type EffectType =
-  'Condition' | 'Pokemon' | 'Move' | 'Item' | 'Ability' |
-  'Nature' | 'Weather' | 'Status' | 'Terastal';
+  | 'Condition'
+  | 'Pokemon'
+  | 'Move'
+  | 'Item'
+  | 'Ability'
+  | 'Nature'
+  | 'Weather'
+  | 'Status'
+  | 'Terastal';
 export type Effect = Ability | Item | Move | Condition;
 
 export type DataKind =
-  'Condition' | 'Species' | 'Move' | 'Item' | 'Ability' | 'Nature' | 'Type' | 'Learnset';
+  | 'Condition'
+  | 'Species'
+  | 'Move'
+  | 'Item'
+  | 'Ability'
+  | 'Nature'
+  | 'Type'
+  | 'Learnset';
 export type Data = Condition | Species | Move | Item | Ability | Nature | Type | Learnset;
 
 export interface EffectData {
@@ -85,8 +99,8 @@ export interface ItemData extends EffectData {
   isGem?: boolean;
   isPokeball?: boolean;
   isPrimalOrb?: boolean;
-  megaStone?: {[megaEvolves: string]: string};
-  naturalGift?: {basePower: number; type: TypeName};
+  megaStone?: { [megaEvolves: string]: string };
+  naturalGift?: { basePower: number; type: TypeName };
   onDrive?: string;
   onMemory?: string;
   onPlate?: string;
@@ -189,7 +203,7 @@ export interface MoveData extends EffectData, HitEffect {
   heal?: number[];
   forceSwitch?: boolean;
   selfSwitch?: 'copyvolatile' | 'shedtail' | boolean;
-  selfBoost?: {boosts?: Partial<BoostsTable>};
+  selfBoost?: { boosts?: Partial<BoostsTable> };
   selfdestruct?: boolean | 'ifHit' | 'always';
   breaksProtect?: boolean;
   recoil?: [number, number];
@@ -214,7 +228,7 @@ export interface MoveData extends EffectData, HitEffect {
   ignoreAccuracy?: boolean;
   ignoreDefensive?: boolean;
   ignoreEvasion?: boolean;
-  ignoreImmunity?: boolean | {[k in keyof TypeName]?: boolean};
+  ignoreImmunity?: boolean | { [k in keyof TypeName]?: boolean };
   ignoreNegativeOffensive?: boolean;
   ignoreOffensive?: boolean;
   ignorePositiveDefensive?: boolean;
@@ -242,8 +256,17 @@ export interface MoveData extends EffectData, HitEffect {
 }
 
 export type SpeciesTag =
-  'Mythical' | 'Restricted Legendary' | 'Sub-Legendary' | 'Ultra Beast' | 'Paradox';
-export interface SpeciesAbility<A = string> {0: A; 1?: A; H?: A; S?: A}
+  | 'Mythical'
+  | 'Restricted Legendary'
+  | 'Sub-Legendary'
+  | 'Ultra Beast'
+  | 'Paradox';
+export interface SpeciesAbility<A = string> {
+  0: A;
+  1?: A;
+  H?: A;
+  S?: A;
+}
 
 export interface SpeciesData {
   abilities: SpeciesAbility;
@@ -268,7 +291,7 @@ export interface SpeciesData {
   evoType?: EvoType;
   forme?: string;
   gender?: GenderName;
-  genderRatio?: {M: number; F: number};
+  genderRatio?: { M: number; F: number };
   maxHP?: number;
   cosmeticFormes?: string[];
   otherFormes?: string[];
@@ -320,7 +343,7 @@ export interface EventInfoData {
 }
 
 export interface LearnsetData {
-  learnset?: {[moveid: string]: MoveSource[]};
+  learnset?: { [moveid: string]: MoveSource[] };
   eventData?: EventInfoData[];
   eventOnly?: boolean;
   encounters?: EventInfoData[];
@@ -328,7 +351,7 @@ export interface LearnsetData {
 }
 
 export interface TypeData {
-  damageTaken: {[t in Exclude<TypeName, '???'>]?: number} & {[key: string]: number};
+  damageTaken: { [t in Exclude<TypeName, '???'>]?: number } & { [key: string]: number };
   HPdvs?: Partial<StatsTable>;
   HPivs?: Partial<StatsTable>;
   isNonstandard?: Nonstandard | null;
@@ -371,7 +394,7 @@ export interface Item extends Readonly<BasicEffect<ItemName> & ItemData> {
   readonly effectType: 'Item';
   readonly kind: 'Item';
   readonly forcedForme?: SpeciesName;
-  readonly megaStone?: {[megaEvolves: SpeciesName]: SpeciesName};
+  readonly megaStone?: { [megaEvolves: SpeciesName]: SpeciesName };
   readonly onDrive?: TypeName;
   readonly onMemory?: TypeName;
   readonly onPlate?: TypeName;
@@ -421,7 +444,7 @@ export interface Species extends Readonly<BasicEffect<SpeciesName> & SpeciesData
   readonly cosmeticFormes?: SpeciesName[];
   readonly otherFormes?: SpeciesName[];
   readonly formeOrder?: SpeciesName[];
-  readonly genderRatio: {M: number; F: number};
+  readonly genderRatio: { M: number; F: number };
   readonly weighthg: number;
   readonly tags: SpeciesTag[];
   readonly unreleasedHidden: boolean | 'Past';
@@ -456,7 +479,7 @@ export interface Learnset {
   readonly eventOnly: boolean;
   readonly eventData?: EventInfo[];
   readonly encounters?: EventInfo[];
-  readonly learnset?: {[moveid: string]: MoveSource[]};
+  readonly learnset?: { [moveid: string]: MoveSource[] };
 }
 
 export interface Type extends Readonly<TypeData> {
@@ -466,7 +489,7 @@ export interface Type extends Readonly<TypeData> {
   readonly name: TypeName;
   readonly exists: boolean;
   readonly gen: GenerationNum;
-  readonly damageTaken: {[t in Exclude<TypeName, '???'>]: number} & {[key: string]: number};
+  readonly damageTaken: { [t in Exclude<TypeName, '???'>]: number } & { [key: string]: number };
   readonly HPivs: Partial<StatsTable>;
   readonly HPdvs: Partial<StatsTable>;
 }
@@ -481,7 +504,7 @@ export interface Nature extends NatureData {
 }
 
 export type GenID = 'gen1' | 'gen2' | 'gen3' | 'gen4' | 'gen5' | 'gen6' | 'gen7' | 'gen8' | 'gen9';
-export type ModData = DeepPartial<Dex['data'] & {Scripts: {inherit: GenID}; Formats: any}>;
+export type ModData = DeepPartial<Dex['data'] & { Scripts: { inherit: GenID }; Formats: any }>;
 
 export interface DexTable<T> {
   get(name: string): T;
@@ -492,14 +515,14 @@ export interface Dex {
   readonly gen: GenerationNum;
   readonly modid: ID;
   readonly data: {
-    Abilities: {[id: Lowercase<string>]: AbilityData};
-    Aliases: {[id: string]: string};
-    Items: {[id: Lowercase<string>]: ItemData};
-    Moves: {[id: Lowercase<string>]: MoveData};
-    Species: {[id: Lowercase<string>]: SpeciesData};
-    Natures: {[id: Lowercase<string>]: NatureData};
-    Learnsets: null | {[id: Lowercase<string>]: LearnsetData};
-    Types: {[id: Lowercase<string>]: TypeData};
+    Abilities: { [id: Lowercase<string>]: AbilityData };
+    Aliases: { [id: string]: string };
+    Items: { [id: Lowercase<string>]: ItemData };
+    Moves: { [id: Lowercase<string>]: MoveData };
+    Species: { [id: Lowercase<string>]: SpeciesData };
+    Natures: { [id: Lowercase<string>]: NatureData };
+    Learnsets: null | { [id: Lowercase<string>]: LearnsetData };
+    Types: { [id: Lowercase<string>]: TypeData };
   };
 
   mod(genid: GenID): Dex;
@@ -519,14 +542,14 @@ export interface Dex {
   species: DexTable<Species>;
   types: DexTable<Type>;
 
-  getHiddenPower(ivs: StatsTable): {type: TypeName; power: number};
+  getHiddenPower(ivs: StatsTable): { type: TypeName; power: number };
   getImmunity(
-    source: {type: string} | string,
-    target: {getTypes: () => string[]} | {types: string[]} | string[] | string
+    source: { type: string } | string,
+    target: { getTypes: () => string[] } | { types: string[] } | string[] | string
   ): boolean;
   getEffectiveness(
-    source: {type: string} | string,
-    target: {getTypes: () => string[]} | {types: string[]} | string[] | string
+    source: { type: string } | string,
+    target: { getTypes: () => string[] } | { types: string[] } | string[] | string
   ): number;
 }
 
@@ -538,23 +561,34 @@ export * from '@pkmn/types';
 export type Primitive = string | number | boolean | bigint | symbol | undefined | null;
 export type Builtin = Primitive | Function | Date | Error | RegExp;
 
-export type IsTuple<T> =
-  T extends [infer A] ? T
-  : T extends [infer A, infer B] ? T
-  : T extends [infer A, infer B, infer C] ? T
-  : T extends [infer A, infer B, infer C, infer D] ? T
-  : T extends [infer A, infer B, infer C, infer D, infer E] ? T
-  : never;
+export type IsTuple<T> = T extends [infer A]
+  ? T
+  : T extends [infer A, infer B]
+    ? T
+    : T extends [infer A, infer B, infer C]
+      ? T
+      : T extends [infer A, infer B, infer C, infer D]
+        ? T
+        : T extends [infer A, infer B, infer C, infer D, infer E]
+          ? T
+          : never;
 
-export type DeepPartial<T> =
-  T extends Builtin ? T
-  : T extends Map<infer K, infer V> ? Map<DeepPartial<K>, DeepPartial<V>>
-  : T extends ReadonlyMap<infer K, infer V> ? ReadonlyMap<DeepPartial<K>, DeepPartial<V>>
-  : T extends Set<infer U> ? Set<DeepPartial<U>>
-  : T extends ReadonlySet<infer U> ? ReadonlySet<DeepPartial<U>>
-  : T extends Array<infer U> ? T extends IsTuple<T>
-    ? {[K in keyof T]?: DeepPartial<T[K]>}
-    : Array<DeepPartial<U>>
-  : T extends Promise<infer U> ? Promise<DeepPartial<U>>
-  : T extends {} ? {[K in keyof T]?: DeepPartial<T[K]>}
-  : Partial<T>;
+export type DeepPartial<T> = T extends Builtin
+  ? T
+  : T extends Map<infer K, infer V>
+    ? Map<DeepPartial<K>, DeepPartial<V>>
+    : T extends ReadonlyMap<infer K, infer V>
+      ? ReadonlyMap<DeepPartial<K>, DeepPartial<V>>
+      : T extends Set<infer U>
+        ? Set<DeepPartial<U>>
+        : T extends ReadonlySet<infer U>
+          ? ReadonlySet<DeepPartial<U>>
+          : T extends Array<infer U>
+            ? T extends IsTuple<T>
+              ? { [K in keyof T]?: DeepPartial<T[K]> }
+              : Array<DeepPartial<U>>
+            : T extends Promise<infer U>
+              ? Promise<DeepPartial<U>>
+              : T extends {}
+                ? { [K in keyof T]?: DeepPartial<T[K]> }
+                : Partial<T>;

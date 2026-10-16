@@ -36,7 +36,12 @@ export interface VignetteProp {
 export interface MicroVignette {
   readonly id: string;
   readonly kind: MicroVignetteKind;
-  readonly bounds: { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
+  readonly bounds: {
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+  };
   readonly props: readonly VignetteProp[];
 }
 
@@ -73,7 +78,12 @@ export function sweepStrayPathTiles(pathGrid: boolean[][]): number {
       if (!pathGrid[y]![x]) continue;
 
       let neighborCount = 0;
-      for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]] as const) {
+      for (const [dx, dy] of [
+        [0, 1],
+        [0, -1],
+        [1, 0],
+        [-1, 0]
+      ] as const) {
         const nx = x + dx;
         const ny = y + dy;
         if (nx >= 0 && nx < W && ny >= 0 && ny < H && pathGrid[ny]![nx]) {
@@ -191,8 +201,16 @@ export function generateMicroVignettes(
   };
 
   const candidateClearings: { x: number; y: number }[] = [];
-  for (let y = CLEARING_SEARCH_MARGIN_TOP_LEFT; y < H - CLEARING_SEARCH_MARGIN_BOTTOM_RIGHT; y += 2) {
-    for (let x = CLEARING_SEARCH_MARGIN_TOP_LEFT; x < W - CLEARING_SEARCH_MARGIN_BOTTOM_RIGHT; x += 2) {
+  for (
+    let y = CLEARING_SEARCH_MARGIN_TOP_LEFT;
+    y < H - CLEARING_SEARCH_MARGIN_BOTTOM_RIGHT;
+    y += 2
+  ) {
+    for (
+      let x = CLEARING_SEARCH_MARGIN_TOP_LEFT;
+      x < W - CLEARING_SEARCH_MARGIN_BOTTOM_RIGHT;
+      x += 2
+    ) {
       if (isAreaFree(x, y, 5, 4)) {
         candidateClearings.push({ x, y });
       }
@@ -246,7 +264,12 @@ export function generateMicroVignettes(
 
       // Lower fence posts & entrance sign
       props.push({ type: 'fence', x: cx, y: cy + 3, prefabFile: 'poke_fence_wood_h.png' });
-      props.push({ type: 'signpost', x: cx + 2, y: cy + 3, prefabFile: 'poke_trainer_tips_sign.png' });
+      props.push({
+        type: 'signpost',
+        x: cx + 2,
+        y: cy + 3,
+        prefabFile: 'poke_trainer_tips_sign.png'
+      });
       props.push({ type: 'fence', x: cx + 4, y: cy + 3, prefabFile: 'poke_fence_wood_h.png' });
     } else if (kind === 'civic_fountain') {
       // 5x5 Civic Fountain Plaza: 3x3 stone fountain, streetlamps, park bench & flowers
@@ -258,10 +281,25 @@ export function generateMicroVignettes(
       props.push({ type: 'flower', x: cx + 4, y: cy + 3, prefabFile: 'poke_flowers_red.png' });
     } else if (kind === 'explorer_camp') {
       // 5x4 Explorer Camp: cargo crate stacks, rest bench, trail tips sign & wildflowers
-      props.push({ type: 'crate_stack', x: cx + 1, y: cy, prefabFile: 'poke_port_cargo_crates_stack.png' });
-      props.push({ type: 'crate_double', x: cx + 1, y: cy + 2, prefabFile: 'poke_port_cargo_crates_double.png' });
+      props.push({
+        type: 'crate_stack',
+        x: cx + 1,
+        y: cy,
+        prefabFile: 'poke_port_cargo_crates_stack.png'
+      });
+      props.push({
+        type: 'crate_double',
+        x: cx + 1,
+        y: cy + 2,
+        prefabFile: 'poke_port_cargo_crates_double.png'
+      });
       props.push({ type: 'bench', x: cx + 1, y: cy + 3, prefabFile: 'poke_bench.png' });
-      props.push({ type: 'signpost', x: cx + 3, y: cy + 2, prefabFile: 'poke_trainer_tips_sign.png' });
+      props.push({
+        type: 'signpost',
+        x: cx + 3,
+        y: cy + 2,
+        prefabFile: 'poke_trainer_tips_sign.png'
+      });
       props.push({ type: 'flower', x: cx, y: cy + 1, prefabFile: 'poke_flowers_red.png' });
       props.push({ type: 'flower', x: cx + 4, y: cy + 1, prefabFile: 'poke_flowers_red.png' });
     } else if (kind === 'botanical_garden') {

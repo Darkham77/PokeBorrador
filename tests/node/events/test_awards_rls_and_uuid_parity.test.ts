@@ -6,7 +6,7 @@
  * and claim_queue items in PostgreSQL without RLS or permission violations.
  */
 
-import { it, describe, beforeAll } from 'vitest';
+import { it, describe, beforeAll } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -14,13 +14,17 @@ import path from 'node:path';
 describe('Public Awards and Claim Queue RLS and Privileges Parity', () => {
   const testUserId = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
   const testUsername = 'AwardParityUser';
-  const dbUrl = process.env.TEST_POSTGRES_URL || 'postgres://postgres:postgres@localhost:54329/postgres';
+  const dbUrl =
+    process.env.TEST_POSTGRES_URL || 'postgres://postgres:postgres@localhost:54329/postgres';
 
   beforeAll(async () => {
     const postgres = (await import('postgres')).default;
     const sql = postgres(dbUrl, { max: 1, onnotice: () => {} });
     try {
-      const migPath = path.resolve(process.cwd(), 'database/migrations/20260908060000_grant_awards_insert_policy.sql');
+      const migPath = path.resolve(
+        process.cwd(),
+        'database/migrations/20260908060000_grant_awards_insert_policy.sql'
+      );
       const sqlContent = await fs.readFile(migPath, 'utf-8');
       await sql.unsafe(sqlContent);
       await sql`INSERT INTO public._migrations (id) VALUES ('20260908060000_grant_awards_insert_policy') ON CONFLICT DO NOTHING`;
@@ -61,8 +65,12 @@ describe('Public Awards and Claim Queue RLS and Privileges Parity', () => {
           )
         `;
 
-        const [insertedRow] = await tx`SELECT id, event_id, winner_id, received_at FROM public.awards WHERE id = ${testAwardId}`;
-        assert.ok(insertedRow, 'Authenticated user must be able to SELECT their own inserted award');
+        const [insertedRow] =
+          await tx`SELECT id, event_id, winner_id, received_at FROM public.awards WHERE id = ${testAwardId}`;
+        assert.ok(
+          insertedRow,
+          'Authenticated user must be able to SELECT their own inserted award'
+        );
         assert.strictEqual(insertedRow.winner_id, testUserId);
       });
     } finally {
@@ -102,8 +110,12 @@ describe('Public Awards and Claim Queue RLS and Privileges Parity', () => {
           )
         `;
 
-        const [insertedClaim] = await tx`SELECT id, user_id FROM public.claim_queue WHERE id = ${testClaimId}`;
-        assert.ok(insertedClaim, 'Authenticated user must be able to SELECT their own claim_queue item');
+        const [insertedClaim] =
+          await tx`SELECT id, user_id FROM public.claim_queue WHERE id = ${testClaimId}`;
+        assert.ok(
+          insertedClaim,
+          'Authenticated user must be able to SELECT their own claim_queue item'
+        );
         assert.strictEqual(insertedClaim.user_id, testUserId);
       });
     } finally {

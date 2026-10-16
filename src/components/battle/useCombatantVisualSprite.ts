@@ -10,7 +10,7 @@ import {
   requireAnimatedSpriteData,
   requireAnimatedVariationFrameCount,
   type AnimatedSpriteId,
-  type AnimatedVariationId,
+  type AnimatedVariationId
 } from '@/data/pokemon/animatedSpriteDatabase';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { BattleSide } from '@/types/battle/battle';
@@ -30,11 +30,11 @@ export interface CombatantVisualSpriteProps {
 const COMBATANT_SCALE_FACTOR_BASE = 1.0;
 const SINGLE_FRAME_FALLBACK = 1;
 
-const MIN_SPECIES_SIZE_SCALE = 0.20;
+const MIN_SPECIES_SIZE_SCALE = 0.2;
 const MAX_SPECIES_SIZE_SCALE = 1.0;
 const MIN_SPECIES_SPRITE_SIZE_PX = 45;
 const MAX_SPECIES_SPRITE_SIZE_PX = 95;
-const SPECIES_SCALE_RANGE = 0.80;
+const SPECIES_SCALE_RANGE = 0.8;
 const SPECIES_SIZE_DELTA = 50;
 
 function checkPokemonFloating(pokemon: Pokemon | null | undefined): boolean {
@@ -56,7 +56,11 @@ function resolveSpriteKey(pokemon: Pokemon | null | undefined): string {
   return String(requirePokemonSpriteValue(stringId));
 }
 
-function determineIdleSpriteKey(spriteKeyVal: string, isPlayerSide: boolean, gender?: string | null): AnimatedSpriteId | null {
+function determineIdleSpriteKey(
+  spriteKeyVal: string,
+  isPlayerSide: boolean,
+  gender?: string | null
+): AnimatedSpriteId | null {
   if (!spriteKeyVal) return null;
   const match = spriteKeyVal.match(/^(\d+)(.*)$/);
   if (!match) return null;
@@ -86,7 +90,9 @@ export function useCombatantVisualSprite(props: CombatantVisualSpriteProps) {
   const isPlayer = computed(() => props.side === 'player');
   const isEnemy = computed(() => props.side === 'enemy');
   const spriteKey = computed(() => resolveSpriteKey(props.pokemon));
-  const idleKey = computed(() => determineIdleSpriteKey(spriteKey.value, isPlayer.value, props.pokemon?.gender));
+  const idleKey = computed(() =>
+    determineIdleSpriteKey(spriteKey.value, isPlayer.value, props.pokemon?.gender)
+  );
 
   const variationKey = computed<AnimatedVariationId | null>(() => {
     if (!spriteKey.value) return null;
@@ -155,23 +161,34 @@ export function useCombatantVisualSprite(props: CombatantVisualSpriteProps) {
   const speciesSizeScale = computed(() => {
     if (!animatedMeta.value) return MAX_SPECIES_SIZE_SCALE;
     const size = animatedMeta.value.size;
-    const clampedSize = Math.max(MIN_SPECIES_SPRITE_SIZE_PX, Math.min(MAX_SPECIES_SPRITE_SIZE_PX, size));
-    const normalized = MIN_SPECIES_SIZE_SCALE + (clampedSize - MIN_SPECIES_SPRITE_SIZE_PX) * (SPECIES_SCALE_RANGE / SPECIES_SIZE_DELTA);
+    const clampedSize = Math.max(
+      MIN_SPECIES_SPRITE_SIZE_PX,
+      Math.min(MAX_SPECIES_SPRITE_SIZE_PX, size)
+    );
+    const normalized =
+      MIN_SPECIES_SIZE_SCALE +
+      (clampedSize - MIN_SPECIES_SPRITE_SIZE_PX) * (SPECIES_SCALE_RANGE / SPECIES_SIZE_DELTA);
     return Math.min(MAX_SPECIES_SIZE_SCALE, Math.max(MIN_SPECIES_SIZE_SCALE, normalized));
   });
 
   const displaySize = computed(() => {
-    const sideMultiplier = props.side === 'enemy' ? COMBATANT_DISPLAY_SIZE_ENEMY_MULT : COMBATANT_DISPLAY_SIZE_PLAYER_MULT;
+    const sideMultiplier =
+      props.side === 'enemy'
+        ? COMBATANT_DISPLAY_SIZE_ENEMY_MULT
+        : COMBATANT_DISPLAY_SIZE_PLAYER_MULT;
     return Math.round(props.baseSize * scaleFactor.value * sideMultiplier);
   });
 
   const imageUrl = computed(() => {
     if (!props.pokemon) return '';
-    const spriteId = props.pokemon.form && props.pokemon.form !== 'normal' ? `${props.pokemon.id}-${props.pokemon.form}` : props.pokemon.id;
+    const spriteId =
+      props.pokemon.form && props.pokemon.form !== 'normal'
+        ? `${props.pokemon.id}-${props.pokemon.form}`
+        : props.pokemon.id;
     const base = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, {
       isShiny: Boolean(props.pokemon.isShiny),
       isBack: isPlayer.value,
-      isAnimated: isAnimated.value,
+      isAnimated: isAnimated.value
     });
     if (isAnimated.value && idleKey.value) {
       const filename = idleKey.value.replace(/_back$/, '');
@@ -182,11 +199,14 @@ export function useCombatantVisualSprite(props: CombatantVisualSpriteProps) {
 
   const variationUrl = computed(() => {
     if (!variationKey.value || !props.pokemon) return '';
-    const spriteId = props.pokemon.form && props.pokemon.form !== 'normal' ? `${props.pokemon.id}-${props.pokemon.form}` : props.pokemon.id;
+    const spriteId =
+      props.pokemon.form && props.pokemon.form !== 'normal'
+        ? `${props.pokemon.id}-${props.pokemon.form}`
+        : props.pokemon.id;
     const base = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, {
       isShiny: Boolean(props.pokemon.isShiny),
       isBack: isPlayer.value,
-      isAnimated: true,
+      isAnimated: true
     });
     const filename = variationKey.value.replace(/_back$/, '');
     return base.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`);

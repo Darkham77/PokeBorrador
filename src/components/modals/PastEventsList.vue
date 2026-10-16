@@ -1,56 +1,40 @@
 <script setup lang="ts">
-import { useEventStore } from '@/stores/events'
-import type { PastEventHistoryItem } from '@/types/system/stores'
-import PastEventCard from './PastEventCard.vue'
+import { useEventStore } from '@/stores/events';
+import type { PastEventHistoryItem } from '@/types/system/stores';
+import PastEventCard from './PastEventCard.vue';
 
 interface Props {
-  pastEvents: PastEventHistoryItem[]
-  isLoading?: boolean
+  pastEvents: PastEventHistoryItem[];
+  isLoading?: boolean;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
-const eventStore = useEventStore()
+const eventStore = useEventStore();
 
 const handleClaim = async (awardId: string) => {
-  await eventStore.claimAward(awardId)
-}
+  await eventStore.claimAward(awardId);
+};
 </script>
 
 <template>
-  <div
-    id="past-events-history-section"
-    class="past-events-section"
-  >
+  <div id="past-events-history-section" class="past-events-section">
     <div class="section-header">
       <div class="section-title-wrap">
         <span class="emoji section-icon">📜</span>
-        <h3 class="section-title">
-          ÚLTIMOS CONCURSOS Y GANADORES
-        </h3>
+        <h3 class="section-title">ÚLTIMOS CONCURSOS Y GANADORES</h3>
       </div>
       <span class="section-subtitle">Últimos 20 eventos con recompensa</span>
     </div>
 
     <div class="past-events-scrollable custom-scrollbar">
-      <div
-        v-if="isLoading"
-        class="empty-history"
-      >
-        Cargando historial de eventos...
-      </div>
+      <div v-if="isLoading" class="empty-history">Cargando historial de eventos...</div>
 
-      <div
-        v-else-if="pastEvents.length === 0"
-        class="empty-history"
-      >
+      <div v-else-if="pastEvents.length === 0" class="empty-history">
         No hay concursos concluidos recientemente.
       </div>
 
-      <div
-        v-else
-        class="past-events-list"
-      >
+      <div v-else class="past-events-list">
         <PastEventCard
           v-for="item in pastEvents"
           :key="item.id"
@@ -63,7 +47,7 @@ const handleClaim = async (awardId: string) => {
 </template>
 
 <style lang="scss" scoped>
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .past-events-section {
   display: flex;

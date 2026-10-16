@@ -19,13 +19,17 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor, parseVueSfc, hasLineSuppression, createRuleCapabilities } from '@francogp/auditor';
+import {
+  BaseAuditor,
+  FileScanAuditor,
+  parseVueSfc,
+  hasLineSuppression,
+  createRuleCapabilities
+} from '@francogp/auditor';
 
 enableCompileCache();
 
-export type BattleUiBranchingRuleId =
-  | 'ui-branching-raw-flag'
-  | 'ui-branching-escape';
+export type BattleUiBranchingRuleId = 'ui-branching-raw-flag' | 'ui-branching-escape';
 
 export const BATTLE_UI_BRANCHING_RULES: readonly BattleUiBranchingRuleId[] = [
   'ui-branching-raw-flag',
@@ -38,12 +42,14 @@ const FORBIDDEN_STATE_PATTERNS = [
   {
     ruleId: 'ui-branching-escape' as const,
     regex: /\bcannotEscape\b/,
-    message: "Queda ESTRICTAMENTE PROHIBIDO usar 'cannotEscape' en la UI de combate para deshabilitar o esconder botones. El botón Huir solo se debe bloquear contra entrenadores/PvP y estar SIEMPRE habilitado contra salvajes a través de 'uiConfig.allowFlee'."
+    message:
+      "Queda ESTRICTAMENTE PROHIBIDO usar 'cannotEscape' en la UI de combate para deshabilitar o esconder botones. El botón Huir solo se debe bloquear contra entrenadores/PvP y estar SIEMPRE habilitado contra salvajes a través de 'uiConfig.allowFlee'."
   },
   {
     ruleId: 'ui-branching-raw-flag' as const,
     regex: /\b(?:battleStore\.|state\.)?(?:isTrainer|isGym|isPvP|isWild)\b/,
-    message: "Queda PROHIBIDO ramificar botones de combate usando flags primitivos (isTrainer, isGym, isPvP, isWild) directamente. Usa la configuración declarativa centralizada 'battleStore.uiConfig' (allowFlee, allowItems, etc.)."
+    message:
+      "Queda PROHIBIDO ramificar botones de combate usando flags primitivos (isTrainer, isGym, isPvP, isWild) directamente. Usa la configuración declarativa centralizada 'battleStore.uiConfig' (allowFlee, allowItems, etc.)."
   }
 ] as const;
 
@@ -77,8 +83,10 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
         'ui-branching-escape': 'cannotEscape en template'
       },
       ruleRemediations: {
-        'ui-branching-raw-flag': 'Reemplaza banderas primitivas booleanas (isTrainer, isGym, isPvP, isWild) por battleStore.uiConfig (allowFlee, allowItems, etc.).',
-        'ui-branching-escape': 'Reemplaza cannotEscape por la propiedad declarativa uiConfig.allowFlee.'
+        'ui-branching-raw-flag':
+          'Reemplaza banderas primitivas booleanas (isTrainer, isGym, isPvP, isWild) por battleStore.uiConfig (allowFlee, allowItems, etc.).',
+        'ui-branching-escape':
+          'Reemplaza cannotEscape por la propiedad declarativa uiConfig.allowFlee.'
       },
       roots,
       allowedExtensions: new Set(['.vue'])
@@ -134,6 +142,10 @@ export class BattleUiBranchingAuditor extends FileScanAuditor<BattleUiBranchingR
 }
 
 // Canonical CLI Entrypoint
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new BattleUiBranchingAuditor());
 }

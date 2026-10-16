@@ -1,12 +1,12 @@
-import { awaitAnimation } from '@/logic/utils/gsapHelpers'
-import gsap from 'gsap'
-import { useItemOnPokemon } from '../providers/itemProvider.ts'
-import { gameBus } from '@/logic/events/gameBus'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { AudioStore } from '@/types/system/stores'
-import type { LogFn } from '@/types/battle/battle'
-import type { BattleContext } from '@/types/battle/battleContext'
-import { getItemName, type ItemId } from '@/data/inventory/items'
+import { awaitAnimation } from '@/logic/utils/gsapHelpers';
+import gsap from 'gsap';
+import { useItemOnPokemon } from '../providers/itemProvider.ts';
+import { gameBus } from '@/logic/events/gameBus';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { AudioStore } from '@/types/system/stores';
+import type { LogFn } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import { getItemName, type ItemId } from '@/data/inventory/items';
 
 const HEAL_ANIMATION_FALLBACK_DELAY_SEC = 0.6;
 
@@ -22,31 +22,35 @@ export async function executeHealingItemUsage(
   pokemon: Pokemon,
   options: HealingItemOptions
 ): Promise<{ action: string; pokemon?: Pokemon }> {
-  const { addLog, consumeItem, audio, ctx } = options
-  const displayName = getItemName(itemName)
+  const { addLog, consumeItem, audio, ctx } = options;
+  const displayName = getItemName(itemName);
 
-  addLog(`Usaste ${displayName}`, 'log-info', 'player')
+  addLog(`Usaste ${displayName}`, 'log-info', 'player');
 
-  const res = useItemOnPokemon(itemName, pokemon) as { success: boolean, message: string, pokemon: Pokemon } | null
+  const res = useItemOnPokemon(itemName, pokemon) as {
+    success: boolean;
+    message: string;
+    pokemon: Pokemon;
+  } | null;
   if (res) {
-    addLog(`¡${pokemon.name} ${res.message}!`, 'log-info', itemName, 'player')
-    consumeItem(itemName)
+    addLog(`¡${pokemon.name} ${res.message}!`, 'log-info', itemName, 'player');
+    consumeItem(itemName);
 
-    const isActive = ctx?.activeBattle?.value?.player?.uid === pokemon.uid
+    const isActive = ctx?.activeBattle?.value?.player?.uid === pokemon.uid;
     if (isActive) {
       if (ctx?.animations?.handleHealRequest) {
-        await ctx.animations.handleHealRequest({ side: 'player' })
+        await ctx.animations.handleHealRequest({ side: 'player' });
       } else {
-        gameBus.emit('PLAY_HEAL', { side: 'player' })
-        await awaitAnimation(gsap.delayedCall(HEAL_ANIMATION_FALLBACK_DELAY_SEC, () => {}))
+        gameBus.emit('PLAY_HEAL', { side: 'player' });
+        await awaitAnimation(gsap.delayedCall(HEAL_ANIMATION_FALLBACK_DELAY_SEC, () => {}));
       }
     } else {
-      audio.play('heal')
+      void audio.play('heal');
     }
 
-    return { action: 'heal', pokemon: res.pokemon }
+    return { action: 'heal', pokemon: res.pokemon };
   }
 
-  addLog('No tuvo efecto.', 'log-info', pokemon)
-  return { action: 'fail' }
+  addLog('No tuvo efecto.', 'log-info', pokemon);
+  return { action: 'fail' };
 }

@@ -20,7 +20,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-
 export class EventHomeSectionSimulation extends BaseEventSimulation {
   constructor(page: Page, username: string = 'HomeObserver') {
     super(page, username);
@@ -29,7 +28,8 @@ export class EventHomeSectionSimulation extends BaseEventSimulation {
   public async setupPlayerScenario(): Promise<void> {
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const gameStore = useGameStore();
@@ -58,7 +58,9 @@ export class EventHomeSectionSimulation extends BaseEventSimulation {
 }
 
 test.describe('World Events Home Dashboard & Schedule E2E Simulation', () => {
-  test('renders events section on home dashboard, toggles upcoming schedule and reacts to time changes', async ({ page }) => {
+  test('renders events section on home dashboard, toggles upcoming schedule and reacts to time changes', async ({
+    page
+  }) => {
     const sim = new EventHomeSectionSimulation(page, 'HomeObserver');
     await sim.setup();
 

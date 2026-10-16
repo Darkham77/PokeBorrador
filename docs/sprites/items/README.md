@@ -8,24 +8,24 @@ All assets are available in both uncompressed **PNG** and lossless **WebP** form
 
 ## Summary of Acquired Assets
 
-| Item ID | Item Name | Suggested File | Dimensions | Source / Provenance | Resolves Collision With |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `polkadotbow` | Lazo Rosa | `polkadotbow.png` / `.webp` | 32x32 | Custom retro pixel art (alternatives: `polkadotbow_pink_scarf`, `polkadotbow_ribbon_sweet`) | `choicescarf` |
-| `linkcable` | Cable Link | `linkcable.png` / `.webp` | 40x40 | Bulbapedia (Pokémon Legends: Arceus official, with HD `linkcable_hd.png`) | `everstone` |
-| `vilevial` | Frasco Vil | `vilevial.png` / `.webp` | 30x30 | Smogon Sprites (CAP 30 Venomicon signature item) | `leftovers` |
-| `vigorcandy` | Caramelo de vigor | `vigorcandy.png` / `.webp` | 30x30 | PokéSprite (Let's Go / GO Energy Yellow Candy) | `rarecandy` |
-| `vigorrestorer` | Restaurador de Vigor | `vigorrestorer.png` / `.webp` | 30x30 | PokeAPI (Max Elixir tonic; alternative: `vigorrestorer_alt_root`) | `rarecandy` |
-| `ticketshiny` | Ticket Shiny | `ticketshiny.png` / `.webp` | 30x30 | PokeAPI (Official FRLG Rainbow Pass - 7 colored) | `eonticket` |
-| `ticketsafari` | Ticket Safari | `ticketsafari.png` / `.webp` | 24x24 | PokeAPI (Official S.S. Ticket; alternative: `ticketsafari_alt_pass`) | `eonticket` |
-| `ticketcerulean` | Ticket Cueva Celeste | `ticketcerulean.png` / `.webp` | 24x24 | PokéSprite (Official Aurora Ticket - Cosmic theme) | `eonticket` |
-| `ticketarticuno` | Ticket Articuno | `ticketarticuno.png` / `.webp` | 24x24 | PokéSprite (Official Mystic Ticket - Island sea theme) | `eonticket` |
-| `ticketmewtwo` | Ticket Mewtwo | `ticketmewtwo.png` / `.webp` | 30x30 | PokeAPI (Official Liberty Pass - Secret Mythical pass) | `eonticket` |
-| `incensewater` | Incienso Agua | `incensewater.png` / `.webp` | 30x30 | PokeAPI (Official Wave Incense; alternative: `incensewater_alt_sea`) | `luckincense` |
-| `incensegrass` | Incienso Planta | `incensegrass.png` / `.webp` | 30x30 | PokeAPI (Official Rose Incense) | `luckincense` |
-| `incensepsychic` | Incienso Psíquico | `incensepsychic.png` / `.webp` | 30x30 | PokeAPI (Official Odd Incense) | `luckincense` |
-| `incensenormal` | Incienso Normal | `incensenormal.png` / `.webp` | 30x30 | PokeAPI (Official Pure Incense) | `luckincense` |
-| `incensefire` | Incienso Fuego | `incensefire.png` / `.webp` | 30x30 | Curated Incense (Fiery crimson ceramic with flaming ember smoke) | `luckincense` |
-| `incenseghost` | Incienso Fantasma | `incenseghost.png` / `.webp` | 30x30 | Curated Incense (Shadowy indigo ceramic with spectral lavender smoke) | `luckincense` |
+| Item ID          | Item Name            | Suggested File                 | Dimensions | Source / Provenance                                                                         | Resolves Collision With |
+| :--------------- | :------------------- | :----------------------------- | :--------- | :------------------------------------------------------------------------------------------ | :---------------------- |
+| `polkadotbow`    | Lazo Rosa            | `polkadotbow.png` / `.webp`    | 32x32      | Custom retro pixel art (alternatives: `polkadotbow_pink_scarf`, `polkadotbow_ribbon_sweet`) | `choicescarf`           |
+| `linkcable`      | Cable Link           | `linkcable.png` / `.webp`      | 40x40      | Bulbapedia (Pokémon Legends: Arceus official, with HD `linkcable_hd.png`)                   | `everstone`             |
+| `vilevial`       | Frasco Vil           | `vilevial.png` / `.webp`       | 30x30      | Smogon Sprites (CAP 30 Venomicon signature item)                                            | `leftovers`             |
+| `vigorcandy`     | Caramelo de vigor    | `vigorcandy.png` / `.webp`     | 30x30      | PokéSprite (Let's Go / GO Energy Yellow Candy)                                              | `rarecandy`             |
+| `vigorrestorer`  | Restaurador de Vigor | `vigorrestorer.png` / `.webp`  | 30x30      | PokeAPI (Max Elixir tonic; alternative: `vigorrestorer_alt_root`)                           | `rarecandy`             |
+| `ticketshiny`    | Ticket Shiny         | `ticketshiny.png` / `.webp`    | 30x30      | PokeAPI (Official FRLG Rainbow Pass - 7 colored)                                            | `eonticket`             |
+| `ticketsafari`   | Ticket Safari        | `ticketsafari.png` / `.webp`   | 24x24      | PokeAPI (Official S.S. Ticket; alternative: `ticketsafari_alt_pass`)                        | `eonticket`             |
+| `ticketcerulean` | Ticket Cueva Celeste | `ticketcerulean.png` / `.webp` | 24x24      | PokéSprite (Official Aurora Ticket - Cosmic theme)                                          | `eonticket`             |
+| `ticketarticuno` | Ticket Articuno      | `ticketarticuno.png` / `.webp` | 24x24      | PokéSprite (Official Mystic Ticket - Island sea theme)                                      | `eonticket`             |
+| `ticketmewtwo`   | Ticket Mewtwo        | `ticketmewtwo.png` / `.webp`   | 30x30      | PokeAPI (Official Liberty Pass - Secret Mythical pass)                                      | `eonticket`             |
+| `incensewater`   | Incienso Agua        | `incensewater.png` / `.webp`   | 30x30      | PokeAPI (Official Wave Incense; alternative: `incensewater_alt_sea`)                        | `luckincense`           |
+| `incensegrass`   | Incienso Planta      | `incensegrass.png` / `.webp`   | 30x30      | PokeAPI (Official Rose Incense)                                                             | `luckincense`           |
+| `incensepsychic` | Incienso Psíquico    | `incensepsychic.png` / `.webp` | 30x30      | PokeAPI (Official Odd Incense)                                                              | `luckincense`           |
+| `incensenormal`  | Incienso Normal      | `incensenormal.png` / `.webp`  | 30x30      | PokeAPI (Official Pure Incense)                                                             | `luckincense`           |
+| `incensefire`    | Incienso Fuego       | `incensefire.png` / `.webp`    | 30x30      | Curated Incense (Fiery crimson ceramic with flaming ember smoke)                            | `luckincense`           |
+| `incenseghost`   | Incienso Fantasma    | `incenseghost.png` / `.webp`   | 30x30      | Curated Incense (Shadowy indigo ceramic with spectral lavender smoke)                       | `luckincense`           |
 
 ---
 
@@ -43,7 +43,7 @@ All assets are available in both uncompressed **PNG** and lossless **WebP** form
 ### Group 2: `everstone` vs `linkcable`
 
 - **Problem**: `linkcable` currently reuses `crafting/tier3/everstone.webp`.
-- **Domain Context**: Linking Cord (Cable Link) is the canonical item from *Pokémon Legends: Arceus* allowing trade evolutions.
+- **Domain Context**: Linking Cord (Cable Link) is the canonical item from _Pokémon Legends: Arceus_ allowing trade evolutions.
 - **Files Provided**:
   - `linkcable.png` / `.webp`: Pixel-scaled 40x40 sprite matching standard inventory dimensions.
   - `linkcable_hd.png` / `.webp`: The original 128x128 official illustration from Bulbapedia.
@@ -62,7 +62,7 @@ All assets are available in both uncompressed **PNG** and lossless **WebP** form
   - `vigorcandy`: Usable item that restores 1 vigor point.
   - `vigorrestorer`: Rare breeding held item that restores breeding vigor to veteran Pokémon.
 - **Files Provided**:
-  - `vigorcandy.png` / `.webp`: Official yellow energy candy sprite from *Let's Go* / *PokéSprite*.
+  - `vigorcandy.png` / `.webp`: Official yellow energy candy sprite from _Let's Go_ / _PokéSprite_.
   - `vigorcandy_alt_orange.png` / `.webp`: Alternative red/orange candy variant.
   - `vigorrestorer.png` / `.webp`: Official Max Elixir tonic sprite from PokeAPI.
   - `vigorrestorer_alt_root.png` / `.webp`: Alternative herbal Energy Root sprite from PokeAPI.
@@ -97,6 +97,6 @@ All assets are available in both uncompressed **PNG** and lossless **WebP** form
 
 - **Auditor finding**: `[ogerpon] (Number: 1017) is missing: animatedBackShiny`.
 - **Investigation findings**:
-  1. In official Generation IX (*Scarlet/Violet*), Ogerpon is **shiny-locked**.
+  1. In official Generation IX (_Scarlet/Violet_), Ogerpon is **shiny-locked**.
   2. In the project repository (`public/assets/sprites/pokemon/animated/Back shiny/`), all masked forms (`1017i_1.webp` through `1017i_11.webp`) exist. Only the base unmasked form (`1017i.webp`) is missing.
   3. The animated sprite format in the repository is a **horizontal sprite strip** of 20 frames (each frame 71x71, total resolution 1420x71).

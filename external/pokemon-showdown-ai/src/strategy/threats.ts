@@ -8,13 +8,29 @@ function toId(text: string): string {
 }
 
 const SETUP_MOVES = new Set([
-  'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
-  'shellsmash', 'bulkup', 'bellydrum', 'coil', 'shiftgear',
+  'swordsdance',
+  'nastyplot',
+  'dragondance',
+  'calmmind',
+  'quiverdance',
+  'shellsmash',
+  'bulkup',
+  'bellydrum',
+  'coil',
+  'shiftgear'
 ]);
 
 const PRIORITY_MOVES = new Set([
-  'extremespeed', 'aquajet', 'bulletpunch', 'iceshard', 'machpunch',
-  'quickattack', 'shadowsneak', 'suckerpunch', 'grassyglide', 'jetpunch',
+  'extremespeed',
+  'aquajet',
+  'bulletpunch',
+  'iceshard',
+  'machpunch',
+  'quickattack',
+  'shadowsneak',
+  'suckerpunch',
+  'grassyglide',
+  'jetpunch'
 ]);
 
 /**
@@ -26,14 +42,14 @@ export function evaluateThreats(
   calc: DamageCalculator,
   inference: InferenceEngine
 ): ThreatAssessment[] {
-  const oppAlive = state.opponentSide.pokemon.filter(p => !p.fainted);
-  const myAlive = state.mySide.pokemon.filter(p => !p.fainted);
+  const oppAlive = state.opponentSide.pokemon.filter((p) => !p.fainted);
+  const myAlive = state.mySide.pokemon.filter((p) => !p.fainted);
   const weights = CONFIG.strategy.threatWeights;
 
   if (oppAlive.length === 0 || myAlive.length === 0) return [];
 
   const threats: ThreatAssessment[] = [];
-  const oppSide = state.myPlayer === 'p1' ? 'p2' as const : 'p1' as const;
+  const oppSide = state.myPlayer === 'p1' ? ('p2' as const) : ('p1' as const);
 
   for (const opp of oppAlive) {
     // Get all known + inferred moves
@@ -61,16 +77,21 @@ export function evaluateThreats(
           const dmg = calc.calcDamage(opp, my, moveId, state.field);
           bestDmg = Math.max(bestDmg, dmg.maxPercent);
           if (dmg.isOHKO) totalKOs++;
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
       }
       totalDmgPercent += bestDmg;
     }
     const avgDmg = totalDmgPercent / Math.max(myAlive.length, 1);
-    const damageThreat = Math.min(1.0, (avgDmg / 100) * 0.7 + (totalKOs / Math.max(myAlive.length, 1)) * 0.3);
+    const damageThreat = Math.min(
+      1.0,
+      (avgDmg / 100) * 0.7 + (totalKOs / Math.max(myAlive.length, 1)) * 0.3
+    );
 
     // 3. Setup Potential: can it set up and sweep?
-    const hasSetup = moveList.some(m => SETUP_MOVES.has(m));
-    const hasPriority = moveList.some(m => PRIORITY_MOVES.has(m));
+    const hasSetup = moveList.some((m) => SETUP_MOVES.has(m));
+    const hasPriority = moveList.some((m) => PRIORITY_MOVES.has(m));
     const alreadyBoosted = opp.boosts.atk > 0 || opp.boosts.spa > 0 || opp.boosts.spe > 0;
     let setupPotential = 0;
     if (hasSetup) setupPotential += 0.5;
@@ -86,7 +107,9 @@ export function evaluateThreats(
         try {
           const dmg = calc.calcDamage(my, opp, move, state.field);
           bestMyDmg = Math.max(bestMyDmg, dmg.maxPercent);
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
       }
       // If our Pokemon can't even 3HKO, it's a wall
       if (bestMyDmg < 34) wallScore += 0.3;
@@ -97,18 +120,16 @@ export function evaluateThreats(
     // because there are fewer checks remaining
     const lateGame = myAlive.length <= 3;
     const setupWeight = lateGame
-      ? Math.min(weights.setupPotential + 0.10, 0.40)
+      ? Math.min(weights.setupPotential + 0.1, 0.4)
       : weights.setupPotential;
-    const dmgWeight = lateGame
-      ? Math.max(weights.damageThreat - 0.05, 0.20)
-      : weights.damageThreat;
+    const dmgWeight = lateGame ? Math.max(weights.damageThreat - 0.05, 0.2) : weights.damageThreat;
 
     // Weighted total
     const score =
-      (speedThreat * weights.speedThreat) +
-      (damageThreat * dmgWeight) +
-      (setupPotential * setupWeight) +
-      (defensiveWallValue * weights.defensiveWallValue);
+      speedThreat * weights.speedThreat +
+      damageThreat * dmgWeight +
+      setupPotential * setupWeight +
+      defensiveWallValue * weights.defensiveWallValue;
 
     threats.push({
       pokemon: opp.name,
@@ -116,7 +137,7 @@ export function evaluateThreats(
       speedThreat,
       damageThreat,
       setupPotential,
-      defensiveWallValue,
+      defensiveWallValue
     });
   }
 

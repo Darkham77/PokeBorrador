@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/map/MapCardLeftPills.vue
- * 
+ *
  * Renders the bottom-left action pills: fishing, archaeology, faction dominance, and winner crown.
  */
 
@@ -35,9 +35,7 @@ const isFast = computed(() => props.isFastMode ?? props.isPerformanceMode ?? fal
       description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
       position="top"
     >
-      <div 
-        :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': isLowPower }]"
-      >
+      <div :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': isLowPower }]">
         <span class="emoji pill-icon">🎣</span>
       </div>
     </PVTooltip>
@@ -50,9 +48,7 @@ const isFast = computed(() => props.isFastMode ?? props.isPerformanceMode ?? fal
       description="¡Esta zona tiene rocas antiguas! Puedes excavar fósiles y minerales aquí."
       position="top"
     >
-      <div 
-        :class="['interactive-pill archaeology-pill map-pill', { 'is-low-power': isLowPower }]"
-      >
+      <div :class="['interactive-pill archaeology-pill map-pill', { 'is-low-power': isLowPower }]">
         <span class="emoji pill-icon">⛏️</span>
       </div>
     </PVTooltip>
@@ -81,10 +77,7 @@ const isFast = computed(() => props.isFastMode ?? props.isPerformanceMode ?? fal
       position="top"
     >
       <div class="crown-glow-wrapper">
-        <div 
-          v-if="!isLowPower" 
-          class="crown-shine-aura" 
-        />
+        <div v-if="!isLowPower" class="crown-shine-aura" />
         <span class="emoji pill-content icon">👑</span>
       </div>
     </PVTooltip>

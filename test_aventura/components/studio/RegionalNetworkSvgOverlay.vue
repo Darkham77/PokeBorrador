@@ -76,7 +76,9 @@ function getRoutePathD(edge: RouteEdge): string {
   // Hybrid mode: Path follows A* waypoints in pixel coordinates
   const pts: string[] = [`M ${centerA.x.toFixed(1)} ${centerA.y.toFixed(1)}`]; // no-domain: Estructura o identificador procedural de aventura
   for (const wp of edge.waypoints) {
-    pts.push(`L ${(wp.x * CANVAS_TILE_SIZE + STUDIO_TILE_SIZE).toFixed(1)} ${(wp.y * CANVAS_TILE_SIZE + STUDIO_TILE_SIZE).toFixed(1)}`);
+    pts.push(
+      `L ${(wp.x * CANVAS_TILE_SIZE + STUDIO_TILE_SIZE).toFixed(1)} ${(wp.y * CANVAS_TILE_SIZE + STUDIO_TILE_SIZE).toFixed(1)}`
+    );
   }
   pts.push(`L ${centerB.x.toFixed(1)} ${centerB.y.toFixed(1)}`);
   return pts.join(' ');
@@ -198,12 +200,7 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
   >
     <!-- Background grid in Pokégear mode -->
     <defs>
-      <pattern
-        id="pokegear-grid"
-        width="64"
-        height="64"
-        patternUnits="userSpaceOnUse"
-      >
+      <pattern id="pokegear-grid" width="64" height="64" patternUnits="userSpaceOnUse">
         <path
           d="M 64 0 L 0 0 0 64"
           fill="none"
@@ -211,31 +208,13 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
           stroke-width="1"
         />
       </pattern>
-      <filter
-        id="badge-glow"
-        x="-20%"
-        y="-20%"
-        width="140%"
-        height="140%"
-      >
-        <feGaussianBlur
-          stdDeviation="6"
-          result="blur"
-        />
-        <feComposite
-          in="SourceGraphic"
-          in2="blur"
-          operator="over"
-        />
+      <filter id="badge-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="6" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
       </filter>
     </defs>
 
-    <rect
-      v-if="store.displayMode === 'pokégear'"
-      width="100%"
-      height="100%"
-      fill="#0c1322"
-    />
+    <rect v-if="store.displayMode === 'pokégear'" width="100%" height="100%" fill="#0c1322" />
     <rect
       v-if="store.displayMode === 'pokégear'"
       width="100%"
@@ -244,10 +223,7 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
     />
 
     <!-- Route Edges Group -->
-    <g
-      v-if="store.displayMode !== 'tiles_only'"
-      class="route-edges-layer"
-    >
+    <g v-if="store.displayMode !== 'tiles_only'" class="route-edges-layer">
       <g
         v-for="edge in store.routes"
         id="regional-network-svg-overlay-g-store-selectroute"
@@ -284,10 +260,7 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
     </g>
 
     <!-- POI Nodes Group -->
-    <g
-      v-if="store.displayMode !== 'tiles_only'"
-      class="poi-nodes-layer"
-    >
+    <g v-if="store.displayMode !== 'tiles_only'" class="poi-nodes-layer">
       <g
         v-for="poi in store.pois"
         :key="poi.id"
@@ -305,7 +278,13 @@ const viewBoxAttr = computed(() => `0 0 ${store.widthPx} ${store.heightPx}`);
       >
         <!-- Outer Glowing Ring -->
         <circle
-          v-gsap-loop="{ effect: 'pulse', active: store.selectedPOIId === poi.id || store.hoveredPOIId === poi.id || activeDragNodeId === poi.id }"
+          v-gsap-loop="{
+            effect: 'pulse',
+            active:
+              store.selectedPOIId === poi.id ||
+              store.hoveredPOIId === poi.id ||
+              activeDragNodeId === poi.id
+          }"
           class="poi-pulse-ring"
           r="32"
           :fill="getPoiBadgeTheme(poi.type).color"

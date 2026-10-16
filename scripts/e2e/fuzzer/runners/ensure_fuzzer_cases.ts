@@ -30,7 +30,9 @@ function checkAndRunFuzzers() {
 
   // Anular filtros de TEST_CASE para forzar una simulación completa
   if (process.env.TEST_CASE || process.env.TEST_CASE_ID || process.env.TEST_START_FROM_CASE_ID) {
-    console.log(`⚠️  Anulando filtros de TEST_CASE/TEST_CASE_ID/TEST_START_FROM_CASE_ID para forzar una simulación limpia.`);
+    console.log(
+      `⚠️  Anulando filtros de TEST_CASE/TEST_CASE_ID/TEST_START_FROM_CASE_ID para forzar una simulación limpia.`
+    );
     delete process.env.TEST_CASE;
     delete process.env.TEST_CASE_ID;
     delete process.env.TEST_START_FROM_CASE_ID;
@@ -39,7 +41,9 @@ function checkAndRunFuzzers() {
   console.log(`🚀 Ejecutando suite completa de fuzzers desde cero...`);
   try {
     execSync('npm run sim:fuzzer', { stdio: 'inherit' });
-    console.log(`✅ Casos certificados y reportes de cobertura generados desde cero con éxito en scripts/e2e/results/.`);
+    console.log(
+      `✅ Casos certificados y reportes de cobertura generados desde cero con éxito en scripts/e2e/results/.`
+    );
   } catch (err) {
     console.error(`❌ Error al ejecutar los fuzzers:`, err);
     process.exit(1);

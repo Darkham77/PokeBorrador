@@ -4,7 +4,7 @@
  * Consolidated Suite for Weather Math, Climate Biome Restrictions, Unique Weather Identity, and Spawn/Legendary Integrity.
  */
 
-import { describe, it, test } from 'vitest';
+import { describe, it, test } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -17,7 +17,7 @@ import {
   getRouteWeatherPure,
   getSessionWeatherSeed,
   getWeatherAnimSeed,
-  type WeatherTable,
+  type WeatherTable
 } from '../../../src/logic/weather/weatherMath.ts';
 import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import { ROUTE_WEATHER_TABLES } from '../../../src/data/world/weather-tables.ts';
@@ -37,7 +37,7 @@ function extractArray(content: string, name: string): string[] {
   }
   return match[1]
     .split(',')
-    .map(s => s.trim().replace(/['"\s]/g, ''))
+    .map((s) => s.trim().replace(/['"\s]/g, ''))
     .filter(Boolean);
 }
 
@@ -51,38 +51,54 @@ const TEST_TABLES: WeatherTable = {
   route1: {
     spring: {
       morning: { fog: 100 },
-      day:     { clear: 100 },
-      dusk:    { storm: 100 },
-      night:   { clear: 100 },
+      day: { clear: 100 },
+      dusk: { storm: 100 },
+      night: { clear: 100 }
     },
     summer: {
       morning: { clear: 100 },
-      day:     { heatwave: 100 },
-      dusk:    { clear: 100 },
-      night:   { clear: 100 },
-    },
+      day: { heatwave: 100 },
+      dusk: { clear: 100 },
+      night: { clear: 100 }
+    }
   },
   route2: {
     spring: {
-      morning: { clear: 10, rain: 10 },
-    },
-  },
+      morning: { clear: 10, rain: 10 }
+    }
+  }
 };
 
 const BANNED_INDOORS = [
-  'sun', 'intense_sun', 
-  'rain', 'heavy_rain', 'storm', 'thunderstorm', 
-  'snow', 'hail', 'blizzard', 
-  'wind', 'strong_winds', 
-  'sandstorm', 'dust_storm'
+  'sun',
+  'intense_sun',
+  'rain',
+  'heavy_rain',
+  'storm',
+  'thunderstorm',
+  'snow',
+  'hail',
+  'blizzard',
+  'wind',
+  'strong_winds',
+  'sandstorm',
+  'dust_storm'
 ];
 
 const BANNED_CAVES = [
-  'sun', 'intense_sun', 
-  'rain', 'heavy_rain', 'storm', 'thunderstorm', 
-  'snow', 'hail', 'blizzard', 
-  'wind', 'strong_winds',
-  'sandstorm', 'dust_storm'
+  'sun',
+  'intense_sun',
+  'rain',
+  'heavy_rain',
+  'storm',
+  'thunderstorm',
+  'snow',
+  'hail',
+  'blizzard',
+  'wind',
+  'strong_winds',
+  'sandstorm',
+  'dust_storm'
 ];
 
 const NIGHT_BANNED = ['sun', 'intense_sun'];
@@ -153,7 +169,7 @@ function simulateClampLegendaryRates(pool: string[], rates: number[]): void {
 
   const cap = sumOtherRates / 99;
 
-  legendaryIndices.forEach(idx => {
+  legendaryIndices.forEach((idx) => {
     if ((rates[idx] || 0) > cap) {
       rates[idx] = cap;
     }
@@ -202,7 +218,8 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
     it('phase 2 → day', () => assert.strictEqual(getDayCyclePure(2 * 3600 * 1000), 'day'));
     it('phase 4 → dusk', () => assert.strictEqual(getDayCyclePure(4 * 3600 * 1000), 'dusk'));
     it('phase 6 → night', () => assert.strictEqual(getDayCyclePure(6 * 3600 * 1000), 'night'));
-    it('phase 8 (wraps) → morning', () => assert.strictEqual(getDayCyclePure(8 * 3600 * 1000), 'morning'));
+    it('phase 8 (wraps) → morning', () =>
+      assert.strictEqual(getDayCyclePure(8 * 3600 * 1000), 'morning'));
   });
 
   describe('getRouteWeatherPure', () => {
@@ -268,12 +285,12 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
   });
 
   describe('Weather Integrity & Biome Restrictions', () => {
-    (FIRE_RED_MAPS as unknown as MapData[]).forEach(map => {
+    (FIRE_RED_MAPS as unknown as MapData[]).forEach((map) => {
       const mapId = map.id;
       const isIndoors = !!map.isIndoors;
       const isCave = !!map.isCave;
-      
-      const activeBiomes = Object.keys(BIOME_BANNED).filter(tag => !!map[tag]);
+
+      const activeBiomes = Object.keys(BIOME_BANNED).filter((tag) => !!map[tag]);
       const weatherData = (ROUTE_WEATHER_TABLES as LandmarkWeather)[mapId];
 
       if (!weatherData) return;
@@ -287,14 +304,21 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
 
               test(`Cycle: ${cycle} - should sum 100%`, () => {
                 const total = weatherEntries.reduce((sum, [_, prob]) => sum + (prob as number), 0);
-                assert.equal(total, 100, `Weather probabilities for ${mapId} in ${season}/${cycle} must sum 100% (got ${total}%)`);
+                assert.equal(
+                  total,
+                  100,
+                  `Weather probabilities for ${mapId} in ${season}/${cycle} must sum 100% (got ${total}%)`
+                );
               });
 
               test(`Cycle: ${cycle} - night restrictions`, () => {
                 if (cycle === 'night') {
                   weatherEntries.forEach(([weather, prob]) => {
                     if ((prob as number) > 0) {
-                      assert.ok(!NIGHT_BANNED.includes(weather), `Banned weather "${weather}" found at Night in ${mapId}`);
+                      assert.ok(
+                        !NIGHT_BANNED.includes(weather),
+                        `Banned weather "${weather}" found at Night in ${mapId}`
+                      );
                     }
                   });
                 }
@@ -304,7 +328,10 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
                 test(`Cycle: ${cycle} - indoor restrictions`, () => {
                   weatherEntries.forEach(([weather, prob]) => {
                     if ((prob as number) > 0) {
-                      assert.ok(!BANNED_INDOORS.includes(weather), `Banned weather "${weather}" found inside Indoors map ${mapId} (${season}/${cycle})`);
+                      assert.ok(
+                        !BANNED_INDOORS.includes(weather),
+                        `Banned weather "${weather}" found inside Indoors map ${mapId} (${season}/${cycle})`
+                      );
                     }
                   });
                 });
@@ -312,18 +339,24 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
                 test(`Cycle: ${cycle} - cave restrictions`, () => {
                   weatherEntries.forEach(([weather, prob]) => {
                     if ((prob as number) > 0) {
-                      assert.ok(!BANNED_CAVES.includes(weather), `Banned weather "${weather}" found inside Cave map ${mapId} (${season}/${cycle})`);
+                      assert.ok(
+                        !BANNED_CAVES.includes(weather),
+                        `Banned weather "${weather}" found inside Cave map ${mapId} (${season}/${cycle})`
+                      );
                     }
                   });
                 });
               }
 
-              activeBiomes.forEach(biomeTag => {
+              activeBiomes.forEach((biomeTag) => {
                 test(`Cycle: ${cycle} - ${biomeTag} restrictions`, () => {
                   const bannedList = BIOME_BANNED[biomeTag] || [];
                   weatherEntries.forEach(([weather, prob]) => {
                     if ((prob as number) > 0) {
-                      assert.ok(!bannedList.includes(weather), `Banned weather "${weather}" for biome ${biomeTag} found in map ${mapId} (${season}/${cycle})`);
+                      assert.ok(
+                        !bannedList.includes(weather),
+                        `Banned weather "${weather}" for biome ${biomeTag} found in map ${mapId} (${season}/${cycle})`
+                      );
                     }
                   });
                 });
@@ -334,38 +367,56 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
 
         test('Weather visitors and exclusives should not overlap with native spawns', () => {
           const nativeSpawns = new Set<string>();
-          
+
           const wild = map.wild as Record<string, string[]> | undefined;
           if (wild) {
-            Object.values(wild).forEach(list => {
-              if (Array.isArray(list)) list.forEach(id => nativeSpawns.add(id));
+            Object.values(wild).forEach((list) => {
+              if (Array.isArray(list)) list.forEach((id) => nativeSpawns.add(id));
             });
           }
-          
+
           const fishing = map.fishing as { pool?: string[] } | undefined;
           if (fishing?.pool) {
-            fishing.pool.forEach(id => nativeSpawns.add(id));
+            fishing.pool.forEach((id) => nativeSpawns.add(id));
           }
-          
+
           const archaeology = map.archaeology as { pool?: string[] } | undefined;
           if (archaeology?.pool) {
             assert.ok(Array.isArray(archaeology.pool));
-            archaeology.pool.forEach(id => nativeSpawns.add(id));
+            archaeology.pool.forEach((id) => nativeSpawns.add(id));
           }
 
-          const weather = map.weather as Record<string, { visitors?: Record<string, number> | string[], exclusive?: Record<string, number> | string[] }> | undefined;
+          const weather = map.weather as
+            | Record<
+                string,
+                {
+                  visitors?: Record<string, number> | string[];
+                  exclusive?: Record<string, number> | string[];
+                }
+              >
+            | undefined;
           if (weather) {
             Object.entries(weather).forEach(([weatherType, cfg]) => {
               if (cfg.visitors) {
-                const visitors = Array.isArray(cfg.visitors) ? cfg.visitors : Object.keys(cfg.visitors);
-                visitors.forEach(v => {
-                  assert.ok(!nativeSpawns.has(v), `Weather visitor "${v}" under weather "${weatherType}" in map "${map.id}" is already a native spawn (wild/fishing/archaeology) on this map.`);
+                const visitors = Array.isArray(cfg.visitors)
+                  ? cfg.visitors
+                  : Object.keys(cfg.visitors);
+                visitors.forEach((v) => {
+                  assert.ok(
+                    !nativeSpawns.has(v),
+                    `Weather visitor "${v}" under weather "${weatherType}" in map "${map.id}" is already a native spawn (wild/fishing/archaeology) on this map.`
+                  );
                 });
               }
               if (cfg.exclusive) {
-                const exclusives = Array.isArray(cfg.exclusive) ? cfg.exclusive : Object.keys(cfg.exclusive);
-                exclusives.forEach(e => {
-                  assert.ok(!nativeSpawns.has(e), `Weather exclusive "${e}" under weather "${weatherType}" in map "${map.id}" is already a native spawn (wild/fishing/archaeology) on this map.`);
+                const exclusives = Array.isArray(cfg.exclusive)
+                  ? cfg.exclusive
+                  : Object.keys(cfg.exclusive);
+                exclusives.forEach((e) => {
+                  assert.ok(
+                    !nativeSpawns.has(e),
+                    `Weather exclusive "${e}" under weather "${weatherType}" in map "${map.id}" is already a native spawn (wild/fishing/archaeology) on this map.`
+                  );
                 });
               }
             });
@@ -374,41 +425,84 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
 
         test('Castform weather integration validation', () => {
           if (isIndoors || isCave) {
-            const weather = map.weather as Record<string, { visitors?: Record<string, number> | string[], exclusive?: Record<string, number> | string[] }> | undefined;
+            const weather = map.weather as
+              | Record<
+                  string,
+                  {
+                    visitors?: Record<string, number> | string[];
+                    exclusive?: Record<string, number> | string[];
+                  }
+                >
+              | undefined;
             if (weather) {
               Object.entries(weather).forEach(([weatherType, cfg]) => {
-                const hasCastformInVisitors = cfg.visitors ? (
-                  Array.isArray(cfg.visitors) ? cfg.visitors.includes('castform') : 'castform' in cfg.visitors
-                ) : false;
-                const hasCastformInExclusives = cfg.exclusive ? (
-                  Array.isArray(cfg.exclusive) ? cfg.exclusive.includes('castform') : 'castform' in cfg.exclusive
-                ) : false;
-                assert.ok(!hasCastformInVisitors, `Castform must not be present as visitor in indoors/cave map ${map.id} under weather "${weatherType}"`);
-                assert.ok(!hasCastformInExclusives, `Castform must not be present as exclusive in indoors/cave map ${map.id} under weather "${weatherType}"`);
+                const hasCastformInVisitors = cfg.visitors
+                  ? Array.isArray(cfg.visitors)
+                    ? cfg.visitors.includes('castform')
+                    : 'castform' in cfg.visitors
+                  : false;
+                const hasCastformInExclusives = cfg.exclusive
+                  ? Array.isArray(cfg.exclusive)
+                    ? cfg.exclusive.includes('castform')
+                    : 'castform' in cfg.exclusive
+                  : false;
+                assert.ok(
+                  !hasCastformInVisitors,
+                  `Castform must not be present as visitor in indoors/cave map ${map.id} under weather "${weatherType}"`
+                );
+                assert.ok(
+                  !hasCastformInExclusives,
+                  `Castform must not be present as exclusive in indoors/cave map ${map.id} under weather "${weatherType}"`
+                );
               });
             }
             return;
           }
 
-          const weather = map.weather as Record<string, { visitors?: Record<string, number> | string[], exclusive?: Record<string, number> | string[] }> | undefined;
+          const weather = map.weather as
+            | Record<
+                string,
+                {
+                  visitors?: Record<string, number> | string[];
+                  exclusive?: Record<string, number> | string[];
+                }
+              >
+            | undefined;
           if (!weather) return;
 
           Object.entries(weather).forEach(([weatherType, cfg]) => {
-            const isExclusiveWeather = ['rain', 'storm', 'thunderstorm', 'heavy_rain', 'hail', 'blizzard'].includes(weatherType);
+            const isExclusiveWeather = [
+              'rain',
+              'storm',
+              'thunderstorm',
+              'heavy_rain',
+              'hail',
+              'blizzard'
+            ].includes(weatherType);
             const isVisitorWeather = ['sun', 'intense_sun', 'snow', 'cold'].includes(weatherType);
             if (!isExclusiveWeather && !isVisitorWeather) return;
 
-            const hasCastformInVisitors = cfg.visitors ? (
-              Array.isArray(cfg.visitors) ? cfg.visitors.includes('castform') : 'castform' in cfg.visitors
-            ) : false;
+            const hasCastformInVisitors = cfg.visitors
+              ? Array.isArray(cfg.visitors)
+                ? cfg.visitors.includes('castform')
+                : 'castform' in cfg.visitors
+              : false;
 
-            const hasCastformInExclusives = cfg.exclusive ? (
-              Array.isArray(cfg.exclusive) ? cfg.exclusive.includes('castform') : 'castform' in cfg.exclusive
-            ) : false;
+            const hasCastformInExclusives = cfg.exclusive
+              ? Array.isArray(cfg.exclusive)
+                ? cfg.exclusive.includes('castform')
+                : 'castform' in cfg.exclusive
+              : false;
 
             if (isExclusiveWeather) {
-              assert.ok(hasCastformInExclusives, `Castform must be present as exclusive in rain/hail weather "${weatherType}" on map ${map.id}`);
-              assert.ok(!hasCastformInVisitors, `Castform must not be visitor in rain/hail weather "${weatherType}" on map ${map.id}`);
+              assert.ok(
+                hasCastformInExclusives,
+                `Castform must be present as exclusive in rain/hail weather "${weatherType}" on map ${map.id}`
+              );
+              assert.ok(
+                !hasCastformInVisitors,
+                `Castform must not be visitor in rain/hail weather "${weatherType}" on map ${map.id}`
+              );
             } else if (isVisitorWeather) {
               let isSunnyAtNight = false;
               if (weatherType === 'sun' || weatherType === 'intense_sun') {
@@ -416,7 +510,12 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
                 if (weatherData) {
                   Object.values(weatherData).forEach((seasonData) => {
                     const nightTable = (seasonData as CycleData)['night'];
-                    if (nightTable && typeof nightTable === 'object' && nightTable[weatherType] !== undefined && (nightTable[weatherType] as unknown as number) > 0) {
+                    if (
+                      nightTable &&
+                      typeof nightTable === 'object' &&
+                      nightTable[weatherType] !== undefined &&
+                      (nightTable[weatherType] as unknown as number) > 0
+                    ) {
                       isSunnyAtNight = true;
                     }
                   });
@@ -424,11 +523,23 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
               }
 
               if (isSunnyAtNight) {
-                assert.ok(!hasCastformInVisitors, `Castform must not be present as visitor in sunny weather "${weatherType}" because it can occur at night on map ${map.id}`);
-                assert.ok(!hasCastformInExclusives, `Castform must not be present as exclusive in sunny weather "${weatherType}" because it can occur at night on map ${map.id}`);
+                assert.ok(
+                  !hasCastformInVisitors,
+                  `Castform must not be present as visitor in sunny weather "${weatherType}" because it can occur at night on map ${map.id}`
+                );
+                assert.ok(
+                  !hasCastformInExclusives,
+                  `Castform must not be present as exclusive in sunny weather "${weatherType}" because it can occur at night on map ${map.id}`
+                );
               } else {
-                assert.ok(hasCastformInVisitors, `Castform must be present as visitor in sun/snow weather "${weatherType}" on map ${map.id}`);
-                assert.ok(!hasCastformInExclusives, `Castform must not be exclusive in sun/snow weather "${weatherType}" on map ${map.id}`);
+                assert.ok(
+                  hasCastformInVisitors,
+                  `Castform must be present as visitor in sun/snow weather "${weatherType}" on map ${map.id}`
+                );
+                assert.ok(
+                  !hasCastformInExclusives,
+                  `Castform must not be exclusive in sun/snow weather "${weatherType}" on map ${map.id}`
+                );
               }
             }
           });
@@ -443,28 +554,35 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
 
       Object.entries(ROUTE_WEATHER_TABLES).forEach(([mapId, seasonsData]) => {
         const serialized = JSON.stringify(seasonsData);
-        
+
         if (mapConfigs.has(serialized)) {
           const duplicateMapId = mapConfigs.get(serialized);
-          assert.fail(`Map "${mapId}" has an identical weather table configuration as map "${duplicateMapId}". Weather configs must be distinct to respect atmospheric identity.`);
+          assert.fail(
+            `Map "${mapId}" has an identical weather table configuration as map "${duplicateMapId}". Weather configs must be distinct to respect atmospheric identity.`
+          );
         }
-        
+
         mapConfigs.set(serialized, mapId);
       });
     });
   });
 
   describe('Spawn Integrity - No Babies in the Wild', () => {
-    typedMaps.forEach(map => {
-      const hasSpawns = Boolean(map.wild || map.fishing?.pool || map.archaeology?.pool || map.weather);
+    typedMaps.forEach((map) => {
+      const hasSpawns = Boolean(
+        map.wild || map.fishing?.pool || map.archaeology?.pool || map.weather
+      );
       if (!hasSpawns) return;
 
       describe(`Map: ${map.id} (${map.name})`, () => {
         if (map.wild) {
           Object.entries(map.wild).forEach(([cycle, pool]) => {
             test(`cycle "${cycle}" wild pool contains no baby Pokemon`, () => {
-              pool.forEach(id => {
-                assert.ok(!babySet.has(id), `Baby Pokemon "${id}" found in wild.${cycle} spawn table of "${map.id}"`);
+              pool.forEach((id) => {
+                assert.ok(
+                  !babySet.has(id),
+                  `Baby Pokemon "${id}" found in wild.${cycle} spawn table of "${map.id}"`
+                );
               });
             });
           });
@@ -472,16 +590,22 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
 
         if (map.fishing?.pool) {
           test('fishing pool contains no baby Pokemon', () => {
-            map.fishing!.pool.forEach(id => {
-              assert.ok(!babySet.has(id), `Baby Pokemon "${id}" found in fishing pool of "${map.id}"`);
+            map.fishing!.pool.forEach((id) => {
+              assert.ok(
+                !babySet.has(id),
+                `Baby Pokemon "${id}" found in fishing pool of "${map.id}"`
+              );
             });
           });
         }
 
         if (map.archaeology?.pool) {
           test('archaeology pool contains no baby Pokemon', () => {
-            map.archaeology!.pool.forEach(id => {
-              assert.ok(!babySet.has(id), `Baby Pokemon "${id}" found in archaeology pool of "${map.id}"`);
+            map.archaeology!.pool.forEach((id) => {
+              assert.ok(
+                !babySet.has(id),
+                `Baby Pokemon "${id}" found in archaeology pool of "${map.id}"`
+              );
             });
           });
         }
@@ -490,37 +614,57 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
           Object.entries(map.weather).forEach(([weatherName, wConfig]) => {
             describe(`weather override: ${weatherName}`, () => {
               if (wConfig.visitors) {
-                const list = Array.isArray(wConfig.visitors) ? wConfig.visitors : Object.keys(wConfig.visitors);
+                const list = Array.isArray(wConfig.visitors)
+                  ? wConfig.visitors
+                  : Object.keys(wConfig.visitors);
                 test('visitors contains no baby Pokemon', () => {
-                  list.forEach(id => {
-                    assert.ok(!babySet.has(id), `Baby Pokemon "${id}" found in weather.${weatherName}.visitors of "${map.id}"`);
+                  list.forEach((id) => {
+                    assert.ok(
+                      !babySet.has(id),
+                      `Baby Pokemon "${id}" found in weather.${weatherName}.visitors of "${map.id}"`
+                    );
                   });
                 });
               }
 
               if (wConfig.exclusive) {
-                const list = Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive);
+                const list = Array.isArray(wConfig.exclusive)
+                  ? wConfig.exclusive
+                  : Object.keys(wConfig.exclusive);
                 test('exclusive contains no baby Pokemon', () => {
-                  list.forEach(id => {
-                    assert.ok(!babySet.has(id), `Baby Pokemon "${id}" found in weather.${weatherName}.exclusive of "${map.id}"`);
+                  list.forEach((id) => {
+                    assert.ok(
+                      !babySet.has(id),
+                      `Baby Pokemon "${id}" found in weather.${weatherName}.exclusive of "${map.id}"`
+                    );
                   });
                 });
               }
 
               if (wConfig.fishingVisitors) {
-                const list = Array.isArray(wConfig.fishingVisitors) ? wConfig.fishingVisitors : Object.keys(wConfig.fishingVisitors);
+                const list = Array.isArray(wConfig.fishingVisitors)
+                  ? wConfig.fishingVisitors
+                  : Object.keys(wConfig.fishingVisitors);
                 test('fishingVisitors contains no baby Pokemon', () => {
-                  list.forEach(id => {
-                    assert.ok(!babySet.has(id), `Baby Pokemon "${id}" found in weather.${weatherName}.fishingVisitors of "${map.id}"`);
+                  list.forEach((id) => {
+                    assert.ok(
+                      !babySet.has(id),
+                      `Baby Pokemon "${id}" found in weather.${weatherName}.fishingVisitors of "${map.id}"`
+                    );
                   });
                 });
               }
 
               if (wConfig.fishingExclusive) {
-                const list = Array.isArray(wConfig.fishingExclusive) ? wConfig.fishingExclusive : Object.keys(wConfig.fishingExclusive);
+                const list = Array.isArray(wConfig.fishingExclusive)
+                  ? wConfig.fishingExclusive
+                  : Object.keys(wConfig.fishingExclusive);
                 test('fishingExclusive contains no baby Pokemon', () => {
-                  list.forEach(id => {
-                    assert.ok(!babySet.has(id), `Baby Pokemon "${id}" found in weather.${weatherName}.fishingExclusive of "${map.id}"`);
+                  list.forEach((id) => {
+                    assert.ok(
+                      !babySet.has(id),
+                      `Baby Pokemon "${id}" found in weather.${weatherName}.fishingExclusive of "${map.id}"`
+                    );
                   });
                 });
               }
@@ -532,15 +676,15 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
   });
 
   describe('Spawn Integrity - Legendary Probabilities capped at 1%', () => {
-    typedMaps.forEach(map => {
+    typedMaps.forEach((map) => {
       if (!map.wild) return;
 
       describe(`Map: ${map.id} (${map.name})`, () => {
         const cycles = ['morning', 'day', 'night'];
         const weathers = ['clear', ...(map.weather ? Object.keys(map.weather) : [])];
 
-        cycles.forEach(cycle => {
-          weathers.forEach(weather => {
+        cycles.forEach((cycle) => {
+          weathers.forEach((weather) => {
             test(`final legendary spawn rate does not exceed 1% in cycle "${cycle}" under weather "${weather}"`, () => {
               const pool = [...(map.wild?.[cycle] || map.wild?.day || [])];
               const rates = [...((map.rates && (map.rates[cycle] || map.rates.day)) || [])];
@@ -549,22 +693,30 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
               const wConfig = map.weather?.[weather];
               if (weather !== 'clear' && wConfig) {
                 if (wConfig.exclusive) {
-                  const list = Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive);
-                  list.forEach(id => {
+                  const list = Array.isArray(wConfig.exclusive)
+                    ? wConfig.exclusive
+                    : Object.keys(wConfig.exclusive);
+                  list.forEach((id) => {
                     if (!pool.includes(id)) {
                       pool.push(id);
-                      const weight = Array.isArray(wConfig.exclusive) ? 5 : ((wConfig.exclusive as Record<string, number>)[id] || 5);
+                      const weight = Array.isArray(wConfig.exclusive)
+                        ? 5
+                        : (wConfig.exclusive as Record<string, number>)[id] || 5;
                       rates.push(weight);
                     }
                   });
                 }
 
                 if (wConfig.visitors) {
-                  const list = Array.isArray(wConfig.visitors) ? wConfig.visitors : Object.keys(wConfig.visitors);
-                  list.forEach(id => {
+                  const list = Array.isArray(wConfig.visitors)
+                    ? wConfig.visitors
+                    : Object.keys(wConfig.visitors);
+                  list.forEach((id) => {
                     if (!pool.includes(id)) {
                       pool.push(id);
-                      const weight = Array.isArray(wConfig.visitors) ? -10 : -((wConfig.visitors as Record<string, number>)[id] || 10);
+                      const weight = Array.isArray(wConfig.visitors)
+                        ? -10
+                        : -((wConfig.visitors as Record<string, number>)[id] || 10);
                       rates.push(weight);
                     }
                   });
@@ -572,15 +724,25 @@ describe('World Domain: Weather & Spawn Integrity Suite', () => {
               }
 
               if (weather !== 'clear') {
-                const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1);
-                const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1);
+                const visitorIndices = rates
+                  .map((r, i) => (r < 0 ? i : -1))
+                  .filter((i) => i !== -1);
+                const nativeIndices = rates
+                  .map((r, i) => (r >= 0 ? i : -1))
+                  .filter((i) => i !== -1);
 
                 if (visitorIndices.length > 0) {
-                  const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0);
+                  const totalNativeWeight = nativeIndices.reduce(
+                    (sum, idx) => sum + (rates[idx] || 0),
+                    0
+                  );
                   const visitorQuota = totalNativeWeight / 9;
-                  const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0);
+                  const sumRelativeWeights = visitorIndices.reduce(
+                    (sum, idx) => sum + Math.abs(rates[idx] || 0),
+                    0
+                  );
 
-                  visitorIndices.forEach(idx => {
+                  visitorIndices.forEach((idx) => {
                     const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1);
                     rates[idx] = visitorQuota * relativeWeight;
                   });

@@ -1,4 +1,3 @@
-
 import { Pokemon } from '@/types/pokemon/pokemon';
 import type { DominanceInfo } from '@/types/system/stores';
 import type { Event } from '@/logic/events/eventEngine';
@@ -11,10 +10,25 @@ import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { FactionId, PlayerClassId, PlayerClassState } from '@/types/system/game';
 import type { ItemId } from '@/data/inventory/items';
 
-export const ENCOUNTER_TYPES = ['wild', 'trainer', 'fishing', 'guardian', 'defender', 'archaeology', 'rival'] as const;
+export const ENCOUNTER_TYPES = [
+  'wild',
+  'trainer',
+  'fishing',
+  'guardian',
+  'defender',
+  'archaeology',
+  'rival'
+] as const;
 export type EncounterType = (typeof ENCOUNTER_TYPES)[number];
 
-export const ADVENTURE_EVENT_TYPES = ['combat', 'combat_won', 'obstacle_cut', 'obstacle_strength', 'obstacle_rock_smash', 'fishing'] as const;
+export const ADVENTURE_EVENT_TYPES = [
+  'combat',
+  'combat_won',
+  'obstacle_cut',
+  'obstacle_strength',
+  'obstacle_rock_smash',
+  'fishing'
+] as const;
 export type AdventureEventType = (typeof ADVENTURE_EVENT_TYPES)[number];
 
 export const ROUTE_SPAWN_TABS = ['pokemon', 'item', 'fishing', 'npc'] as const;
@@ -125,5 +139,7 @@ export interface EncounterState {
   playerClass?: PlayerClassId | null;
   classLevel?: number;
   classData?: Partial<PlayerClassState>;
-  gymProgress?: Partial<Record<GymId, { easy: boolean; normal: boolean; hard: boolean; attempts: number }>>;
+  gymProgress?: Partial<
+    Record<GymId, { easy: boolean; normal: boolean; hard: boolean; attempts: number }>
+  >;
 }

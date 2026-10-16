@@ -18,10 +18,7 @@ import {
   generateLocalMapForNode,
   SCALE_DIMENSIONS
 } from '../../logic/map/nodeLocalMapGenerator.ts';
-import {
-  getBiomePalette,
-  type MapCell
-} from '../../logic/map/proceduralMapGenerator.ts';
+import { getBiomePalette, type MapCell } from '../../logic/map/proceduralMapGenerator.ts';
 import type { TileCollision } from '../../logic/map/tilesRegistry.ts';
 import type { MapNode } from '../../logic/adventure/mapData.ts';
 
@@ -92,7 +89,16 @@ describe('urbanZoningEngine', () => {
     it('finds lot closest to given coordinates', () => {
       const lots = [
         { x: 5, y: 5, width: 6, height: 6, doorX: 8, doorY: 10, roadConnectX: 8, roadConnectY: 11 },
-        { x: 20, y: 20, width: 6, height: 6, doorX: 23, doorY: 25, roadConnectX: 23, roadConnectY: 26 }
+        {
+          x: 20,
+          y: 20,
+          width: 6,
+          height: 6,
+          doorX: 23,
+          doorY: 25,
+          roadConnectX: 23,
+          roadConnectY: 26
+        }
       ];
       const occupied = new Set<number>();
 
@@ -120,8 +126,15 @@ describe('urbanZoningEngine', () => {
   });
 
   describe('generateUrbanLayout', () => {
-    function setupLayoutOptions(scale: any, density = 5, extraConfig: any = {}): UrbanZoningOptions {
-      const dims = SCALE_DIMENSIONS[scale as keyof typeof SCALE_DIMENSIONS] ?? { width: 40, height: 30 };
+    function setupLayoutOptions(
+      scale: any,
+      density = 5,
+      extraConfig: any = {}
+    ): UrbanZoningOptions {
+      const dims = SCALE_DIMENSIONS[scale as keyof typeof SCALE_DIMENSIONS] ?? {
+        width: 40,
+        height: 30
+      };
       const palette = getBiomePalette('firered');
       return {
         mapWidth: dims.width,
@@ -173,13 +186,21 @@ describe('urbanZoningEngine', () => {
     });
 
     it('respects buildingDensity slider (density 1 produces fewer buildings than density 10)', () => {
-      const lowDensityOpts = setupLayoutOptions('city', 1, { includeGym: false, includeLab: false });
-      const highDensityOpts = setupLayoutOptions('city', 10, { includeGym: false, includeLab: false });
+      const lowDensityOpts = setupLayoutOptions('city', 1, {
+        includeGym: false,
+        includeLab: false
+      });
+      const highDensityOpts = setupLayoutOptions('city', 10, {
+        includeGym: false,
+        includeLab: false
+      });
 
       const lowResult = generateUrbanLayout(lowDensityOpts);
       const highResult = generateUrbanLayout(highDensityOpts);
 
-      expect(highResult.placedBuildingsCount).toBeGreaterThanOrEqual(lowResult.placedBuildingsCount);
+      expect(highResult.placedBuildingsCount).toBeGreaterThanOrEqual(
+        lowResult.placedBuildingsCount
+      );
     });
 
     it('guarantees door-to-road transitable paths for all stamped buildings', () => {

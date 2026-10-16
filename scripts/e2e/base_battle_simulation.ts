@@ -1,9 +1,6 @@
 import type { Page } from '@playwright/test';
 import { BaseE2ESimulation, type SimulationOptions } from './base_simulation.ts';
-import {
-  MAX_PER_ACTION_TIMEOUT_MS,
-  SIMULATION_GSAP_TIME_SCALE
-} from './simulation_config.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS, SIMULATION_GSAP_TIME_SCALE } from './simulation_config.ts';
 import {
   armBattleFlowCompletion,
   awaitBattleFlowCompletion,
@@ -73,7 +70,9 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
     await setSimulationMapWeather(this.page, weather);
   }
 
-  public async seedInventory(items: Partial<Record<ItemId, number>> | Array<{ id: ItemId; quantity: number }>): Promise<void> {
+  public async seedInventory(
+    items: Partial<Record<ItemId, number>> | Array<{ id: ItemId; quantity: number }>
+  ): Promise<void> {
     await seedSimulationInventory(this.page, items);
   }
 
@@ -81,11 +80,17 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
     await setupBattleScenarioHelper(this.page, options);
   }
 
-  public async setupWildBattle(enemy: DebugPokemonSpec, options?: Omit<BattleScenarioOptions, 'enemy' | 'isTrainer'>): Promise<void> {
+  public async setupWildBattle(
+    enemy: DebugPokemonSpec,
+    options?: Omit<BattleScenarioOptions, 'enemy' | 'isTrainer'>
+  ): Promise<void> {
     await this.setupBattleScenario({ ...options, enemy, isTrainer: false });
   }
 
-  public async setupTrainerBattle(enemyTeam: DebugPokemonSpec[], options?: Omit<BattleScenarioOptions, 'enemyTeam' | 'isTrainer'>): Promise<void> {
+  public async setupTrainerBattle(
+    enemyTeam: DebugPokemonSpec[],
+    options?: Omit<BattleScenarioOptions, 'enemyTeam' | 'isTrainer'>
+  ): Promise<void> {
     await this.setupBattleScenario({ ...options, enemyTeam, isTrainer: true });
   }
 
@@ -101,14 +106,19 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
 
   public async speedUpAnimations(scale = SIMULATION_GSAP_TIME_SCALE): Promise<void> {
     await this.page.evaluate((s) => {
-      const winWithGsap = window as Window & { gsap?: { globalTimeline: { timeScale: (n: number) => void } } };
+      const winWithGsap = window as Window & {
+        gsap?: { globalTimeline: { timeScale: (n: number) => void } };
+      };
       if (winWithGsap.gsap) {
         winWithGsap.gsap.globalTimeline.timeScale(s);
       }
     }, scale);
   }
 
-  public async useItemOnPokemon(itemId: ItemId, pokemonUid: string): Promise<BattleReadyForInputDetail> {
+  public async useItemOnPokemon(
+    itemId: ItemId,
+    pokemonUid: string
+  ): Promise<BattleReadyForInputDetail> {
     this.lastBattleReady = await useItemOnPokemonHelper(this.page, itemId, pokemonUid);
     return this.lastBattleReady;
   }
@@ -159,11 +169,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   }
 
   public async resetToCleanState(): Promise<void> {
-    await resetSimulationToCleanState(
-      this.page,
-      this.driver,
-      this.username,
-      (query, params) => this.queryTestDb(query, params)
+    await resetSimulationToCleanState(this.page, this.driver, this.username, (query, params) =>
+      this.queryTestDb(query, params)
     );
     this.lastBattleReady = null;
   }
@@ -190,7 +197,9 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
 
   public async disableAutoMode(): Promise<void> {
     await this.page.evaluate(() => {
-      const debug = window.__VITE_DEBUG__ as { useGameStore?: () => { state?: { autoBattle?: boolean; autoSearch?: boolean } } } | undefined;
+      const debug = window.__VITE_DEBUG__ as
+        | { useGameStore?: () => { state?: { autoBattle?: boolean; autoSearch?: boolean } } }
+        | undefined;
       const gameStore = debug?.useGameStore?.();
       if (gameStore?.state) {
         gameStore.state.autoBattle = false;

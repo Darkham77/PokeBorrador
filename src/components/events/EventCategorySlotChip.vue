@@ -1,41 +1,41 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import { computed } from 'vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import {
   resolveSubCompetitionDirection,
   getSubCompTitle,
   getSubCompDescription,
   getSubCompIcon,
   type ResolvedSubCompetition
-} from '@/logic/events/eventEngine'
-import type { CompetitionParticipant } from '@/types/system/stores'
+} from '@/logic/events/eventEngine';
+import type { CompetitionParticipant } from '@/types/system/stores';
 
 interface Props {
-  sub: ResolvedSubCompetition
-  eventId: string
-  participant: CompetitionParticipant | null
-  idPrefix?: string
+  sub: ResolvedSubCompetition;
+  eventId: string;
+  participant: CompetitionParticipant | null;
+  idPrefix?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   idPrefix: ''
-})
+});
 
 const emit = defineEmits<{
-  (e: 'click', sub: ResolvedSubCompetition): void
-}>()
+  (e: 'click', sub: ResolvedSubCompetition): void;
+}>();
 
 const metricLabel = computed<string>(() => {
-  const sub = props.sub
-  const dir = resolveSubCompetitionDirection(props.eventId, sub.id, sub.order)
-  if (sub.metric === 'total_ivs') return 'Mayor IVs'
-  if (sub.metric === 'stat_iv' && sub.targetStat) return `Mayor ${sub.targetStat.toUpperCase()}`
-  if (sub.metric === 'weight') return dir === 'max' ? 'Mayor Peso' : 'Menor Peso'
-  if (sub.metric === 'height') return dir === 'max' ? 'Mayor Altura' : 'Menor Altura'
-  if (sub.metric === 'level') return dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel'
-  if (sub.metric === 'friendship') return dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad'
-  return sub.name
-})
+  const sub = props.sub;
+  const dir = resolveSubCompetitionDirection(props.eventId, sub.id, sub.order);
+  if (sub.metric === 'total_ivs') return 'Mayor IVs';
+  if (sub.metric === 'stat_iv' && sub.targetStat) return `Mayor ${sub.targetStat.toUpperCase()}`;
+  if (sub.metric === 'weight') return dir === 'max' ? 'Mayor Peso' : 'Menor Peso';
+  if (sub.metric === 'height') return dir === 'max' ? 'Mayor Altura' : 'Menor Altura';
+  if (sub.metric === 'level') return dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel';
+  if (sub.metric === 'friendship') return dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad';
+  return sub.name;
+});
 </script>
 
 <template>

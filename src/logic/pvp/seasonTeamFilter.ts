@@ -25,23 +25,25 @@ function checkBannedSpecies(
   speciesId: PokemonSpeciesId,
   rules: SeasonRulesInput
 ): PokemonSeasonEvaluation | null {
-  const banned = ('bannedPokemonIds' in rules && Array.isArray(rules.bannedPokemonIds))
-    ? (rules.bannedPokemonIds as readonly PokemonSpeciesId[])
-    : [];
+  const banned =
+    'bannedPokemonIds' in rules && Array.isArray(rules.bannedPokemonIds)
+      ? (rules.bannedPokemonIds as readonly PokemonSpeciesId[])
+      : [];
   if (banned.includes(speciesId)) {
     return { eligible: false, reason: 'Especie baneada en esta temporada' };
   }
   return null;
 }
 
-function checkLevelCap(
-  level: number,
-  rules: SeasonRulesInput
-): PokemonSeasonEvaluation | null {
+function checkLevelCap(level: number, rules: SeasonRulesInput): PokemonSeasonEvaluation | null {
   const isLittleCup = 'isLittleCup' in rules && Boolean(rules.isLittleCup);
   const effectiveLevelCap = isLittleCup
-    ? (('levelCap' in rules && typeof rules.levelCap === 'number') ? rules.levelCap : 5)
-    : (('levelCap' in rules && typeof rules.levelCap === 'number' && rules.levelCap > 0) ? rules.levelCap : undefined);
+    ? 'levelCap' in rules && typeof rules.levelCap === 'number'
+      ? rules.levelCap
+      : 5
+    : 'levelCap' in rules && typeof rules.levelCap === 'number' && rules.levelCap > 0
+      ? rules.levelCap
+      : undefined;
 
   if (effectiveLevelCap !== undefined && level > effectiveLevelCap) {
     return {
@@ -60,13 +62,17 @@ function checkLittleCupAndGen(
 ): PokemonSeasonEvaluation | null {
   if ('isLittleCup' in rules && rules.isLittleCup) {
     if (!isLittleCupEligible(speciesId)) {
-      return { eligible: false, reason: 'En Little Cup sólo se permiten crías o formas base con evolución' };
+      return {
+        eligible: false,
+        reason: 'En Little Cup sólo se permiten crías o formas base con evolución'
+      };
     }
   }
 
-  const allowedGens = ('allowedGenerations' in rules && Array.isArray(rules.allowedGenerations))
-    ? (rules.allowedGenerations as readonly number[])
-    : [];
+  const allowedGens =
+    'allowedGenerations' in rules && Array.isArray(rules.allowedGenerations)
+      ? (rules.allowedGenerations as readonly number[])
+      : [];
   const monGen = getPokemonGeneration(speciesId);
   if (allowedGens.length > 0 && !allowedGens.includes(monGen)) {
     return {
@@ -81,13 +87,17 @@ function checkTypeRestrictions(
   pokeTypes: readonly PokemonType[],
   rules: SeasonRulesInput
 ): PokemonSeasonEvaluation | null {
-  const allowed = ('allowedTypes' in rules && Array.isArray(rules.allowedTypes))
-    ? (rules.allowedTypes as PokemonType[])
-    : undefined;
+  const allowed =
+    'allowedTypes' in rules && Array.isArray(rules.allowedTypes)
+      ? (rules.allowedTypes as PokemonType[])
+      : undefined;
   if (allowed && allowed.length > 0) {
-    const hasAllowed = pokeTypes.some(t => allowed.includes(t));
+    const hasAllowed = pokeTypes.some((t) => allowed.includes(t));
     if (!hasAllowed) {
-      return { eligible: false, reason: `Tipo (${pokeTypes.join('/')}) no permitido en esta temporada` };
+      return {
+        eligible: false,
+        reason: `Tipo (${pokeTypes.join('/')}) no permitido en esta temporada`
+      };
     }
   }
 
@@ -99,7 +109,7 @@ function checkTypeRestrictions(
     if (pokeTypes.length < 2) {
       return { eligible: false, reason: 'Esta temporada exige Pokémon de doble tipo' };
     }
-    if (allowed && allowed.length > 0 && !pokeTypes.every(t => allowed.includes(t))) {
+    if (allowed && allowed.length > 0 && !pokeTypes.every((t) => allowed.includes(t))) {
       return { eligible: false, reason: 'Ambos tipos deben pertenecer a los tipos permitidos' };
     }
   }
@@ -156,7 +166,9 @@ export function buildAutoRankedTeam(
     }
   }
 
-  uniqueEligible.sort((a, b) => calculatePokemonStrengthScore(b) - calculatePokemonStrengthScore(a));
+  uniqueEligible.sort(
+    (a, b) => calculatePokemonStrengthScore(b) - calculatePokemonStrengthScore(a)
+  );
 
   return uniqueEligible.slice(0, count);
 }

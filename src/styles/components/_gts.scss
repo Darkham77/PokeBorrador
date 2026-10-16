@@ -35,9 +35,17 @@
 
     .stat-node {
       @include shop-header-stat;
-      
-      &.money .value { @extend .colored; color: var(--green); text-shadow: 0 0 15px Rgb(74 222 128 / 25%); }
-      &.listings-limit .value { @extend .colored; color: var(--yellow); text-shadow: 0 0 15px Rgb(250 204 21 / 20%); }
+
+      &.money .value {
+        @extend .colored;
+        color: var(--green);
+        text-shadow: 0 0 15px Rgb(74 222 128 / 25%);
+      }
+      &.listings-limit .value {
+        @extend .colored;
+        color: var(--yellow);
+        text-shadow: 0 0 15px Rgb(250 204 21 / 20%);
+      }
     }
   }
 }
@@ -60,7 +68,6 @@
       @include shop-sidebar-button(#38bdf8);
 
       .hud-notification-badge {
-
         position: absolute !important;
         top: 6px !important;
         right: 8px !important;
@@ -108,7 +115,7 @@
   text-align: center;
   inset: 0;
   box-sizing: border-box;
-  
+
   .offline-card {
     display: flex;
     flex-direction: column;
@@ -146,7 +153,7 @@
       font-size: var(--font-11);
       line-height: 1.6;
     }
-    
+
     .offline-close-btn {
       @include pixelated;
 

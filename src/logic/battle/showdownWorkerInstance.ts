@@ -23,7 +23,8 @@ export function registerShowdownStoreResolvers(resolvers: {
   showdownStoreResolvers = { ...showdownStoreResolvers, ...resolvers };
 }
 
-export function resolveBattleStore(): BattleStoreAccess | null { // result-ok: Operation result wrapper payload
+export function resolveBattleStore(): BattleStoreAccess | null {
+  // result-ok: Operation result wrapper payload
   if (showdownStoreResolvers.getBattleStore) {
     const s = showdownStoreResolvers.getBattleStore();
     if (s) return s;
@@ -41,7 +42,8 @@ export function resolveBattleStore(): BattleStoreAccess | null { // result-ok: O
   return null;
 }
 
-export function resolveGameStore(): GameStoreAccess | null { // result-ok: Operation result wrapper payload
+export function resolveGameStore(): GameStoreAccess | null {
+  // result-ok: Operation result wrapper payload
   if (showdownStoreResolvers.getGameStore) {
     const s = showdownStoreResolvers.getGameStore();
     if (s) return s;
@@ -68,7 +70,8 @@ export function setShowdownWorker(worker: Worker | null): void {
   }
 }
 
-export function getShowdownWorker(): Worker | null { // result-ok: Operation result wrapper payload
+export function getShowdownWorker(): Worker | null {
+  // result-ok: Operation result wrapper payload
   if (!showdownWorker && typeof window !== 'undefined' && window.__showdownWorker__) {
     showdownWorker = window.__showdownWorker__;
   }

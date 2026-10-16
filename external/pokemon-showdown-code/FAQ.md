@@ -18,9 +18,9 @@ its codebase and whether a sufficient quantity and quality of changes have lande
 overhead of a release. If there are large breaking changes in `smogon/pokemon-showdown` or
 `smogon/pokemon-showdown-client` there may be some increased latency before a release.
 
-`pkmn/ps`'s [SLO](https://en.wikipedia.org/wiki/Service-level_objective) is to update at *worst*
+`pkmn/ps`'s [SLO](https://en.wikipedia.org/wiki/Service-level_objective) is to update at _worst_
 once a month, but will aim to release approximately weekly. Pokémon Showdown often runs on the
-bleeding edge -  being able to pick a commit from a larger range to cut a release from ends up
+bleeding edge - being able to pick a commit from a larger range to cut a release from ends up
 resulting in a more stable package to build off of. If your project has a particular need for a
 one-off import and release to be cut to capture specific functionality or data, please open an issue
 or or reach out on [Discord](https://pkmn.cc/dev) to request one.

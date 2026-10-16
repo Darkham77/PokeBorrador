@@ -4,7 +4,12 @@ const FIRST_POOL_INDEX = 0;
 import { GAME_RATIOS } from '@/data/system/constants';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
+import type {
+  MapLocation,
+  Encounter,
+  EncounterOptions,
+  EncounterState
+} from '@/types/pokemon/encounters';
 import type { DayPhase } from '@/logic/utils/timeUtils';
 import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
@@ -31,7 +36,7 @@ import {
   CAVE_ARCHAEOLOGY_WEIGHT,
   MOUNTAIN_ARCHAEOLOGY_WEIGHT,
   VISITOR_WEIGHT_REPLACEMENT_VALUE,
-  DEFAULT_WEATHER_MULTIPLIER_NORMAL,
+  DEFAULT_WEATHER_MULTIPLIER_NORMAL
 } from '@/logic/constants/encounters';
 
 import {
@@ -48,7 +53,12 @@ import {
   getFishingWeightMultiplier
 } from '@/logic/pokemon/pokemonFieldAbilities';
 
-const RAINY_WEATHER_IDS = ['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const satisfies readonly WeatherId[];
+const RAINY_WEATHER_IDS = [
+  'rain',
+  'heavy_rain',
+  'storm',
+  'thunderstorm'
+] as const satisfies readonly WeatherId[];
 type RainyWeatherId = (typeof RAINY_WEATHER_IDS)[number];
 const RAINY_WEATHERS_SET: ReadonlySet<RainyWeatherId> = new Set<RainyWeatherId>(RAINY_WEATHER_IDS);
 
@@ -65,11 +75,12 @@ export {
  * Selects a random Pokémon ID from a pool using weights.
  */
 export function selectFromPool<T extends string>(pool: readonly T[], rates: number[]): T {
-  if (!pool.length) throw new Error('[encounterHelpers] Cannot select from an empty encounter pool');
+  if (!pool.length)
+    throw new Error('[encounterHelpers] Cannot select from an empty encounter pool');
   const totalRate = rates.reduce((a, b) => a + b, ENCOUNTER_INITIAL_CUMULATIVE_RATE);
   const rand = Math.random() * totalRate;
   let cumulative = ENCOUNTER_INITIAL_CUMULATIVE_RATE;
-  
+
   for (let i = FIRST_POOL_INDEX; i < pool.length; i++) {
     cumulative += rates[i] || ENCOUNTER_INITIAL_CUMULATIVE_RATE;
     const selected = pool[i];
@@ -89,18 +100,23 @@ export function checkSpecialEncounters(
   options: EncounterOptions,
   allMapIds: MapRouteId[]
 ): Encounter | null {
-  const win = (typeof window !== 'undefined' ? window : null) as (Window & {
-    __VITE_DEBUG__?: ViteDebugEncounterConfig;
-  }) | null;
+  const win = (typeof window !== 'undefined' ? window : null) as
+    | (Window & {
+        __VITE_DEBUG__?: ViteDebugEncounterConfig;
+      })
+    | null;
   const debug = win?.__VITE_DEBUG__;
 
   const forced = checkDebugForcedEncounter(debug);
   if (forced) return forced;
 
-  const hasTrainerOverride = debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null;
+  const hasTrainerOverride =
+    debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null;
   const trainerOverrideChance = hasTrainerOverride
-    ? (debug!.trainerChancePct! / 100)
-    : (debug?.trainerChance50 ? (DEBUG_TRAINER_CHANCE_PERCENT / 100) : null);
+    ? debug!.trainerChancePct! / 100
+    : debug?.trainerChance50
+      ? DEBUG_TRAINER_CHANCE_PERCENT / 100
+      : null;
   if (!options.forceEncounter && trainerOverrideChance !== null) {
     if (Math.random() < trainerOverrideChance) {
       return { type: 'trainer' };
@@ -132,14 +148,14 @@ export function handleRepellentEncounter(
   if (Math.random() < GAME_RATIOS.encounters.trainerRepel) {
     return { type: 'trainer' };
   }
-  
+
   const weather = options.weather || 'clear';
   const { pool, rates: rawRates } = getEncounterPool(loc, cycle, weather, activeEvents, {
     articunoTicketSecs: state.articunoTicketSecs,
     mewtwoTicketSecs: state.mewtwoTicketSecs
   });
-  const rates = rawRates.map(r => r === -1 ? VISITOR_WEIGHT_REPLACEMENT_VALUE : r); 
-  clampLegendaryRates(pool, rates); 
+  const rates = rawRates.map((r) => (r === -1 ? VISITOR_WEIGHT_REPLACEMENT_VALUE : r));
+  clampLegendaryRates(pool, rates);
 
   const firstPokemon = state.team?.[0];
 
@@ -150,9 +166,11 @@ export function handleRepellentEncounter(
     const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
 
     if (!firstPokemon || level >= firstPokemon.level) {
-      return { 
-        type: 'wild', 
-        pokemon: makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon 
+      return {
+        type: 'wild',
+        pokemon: makePokemon(selectedId, level, {
+          shinyMultiplier: options.shinyMultiplier
+        }) as Pokemon
       };
     }
   }
@@ -176,11 +194,14 @@ export function generateArchaeologyEncounter(
   const totalRate = archRates.reduce((a: number, b: number) => a + b, 0);
   const rateIdx = archPool.indexOf(selectedId);
   const rateVal = archRates[rateIdx];
-  const rarity = ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * PERCENTAGE_MULTIPLIER_FACTOR;
-  
+  const rarity =
+    ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * PERCENTAGE_MULTIPLIER_FACTOR;
+
   return {
     type: 'archaeology',
-    pokemon: makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon,
+    pokemon: makePokemon(selectedId, level, {
+      shinyMultiplier: options.shinyMultiplier
+    }) as Pokemon,
     rarity
   };
 }
@@ -193,7 +214,9 @@ function calculateFishingWeight(
 ): number {
   if (!loc.fishing) return 0;
   const hasFishingOverride = debugChancePct !== undefined && debugChancePct !== null;
-  const baseFishing = hasFishingOverride ? (debugChancePct / PERCENTAGE_MULTIPLIER_FACTOR) : GAME_RATIOS.encounters.fishing;
+  const baseFishing = hasFishingOverride
+    ? debugChancePct / PERCENTAGE_MULTIPLIER_FACTOR
+    : GAME_RATIOS.encounters.fishing;
   let fishingWeight = baseFishing * FISHING_WEIGHT_SCALE * fishingBonus;
   if ((state.fishingRodSecs || 0) > 0) {
     fishingWeight += EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT;
@@ -228,12 +251,14 @@ export function calculateEncounterTypeWeights(
   state: EncounterState,
   options: EncounterOptions
 ): { groundWeight: number; fishingWeight: number; archWeight: number; totalWeight: number } {
-  const win = (typeof window !== 'undefined' ? window : null) as (Window & {
-    __VITE_DEBUG__?: {
-      fishingChancePct?: number | null;
-      archaeologyChancePct?: number | null;
-    };
-  }) | null;
+  const win = (typeof window !== 'undefined' ? window : null) as
+    | (Window & {
+        __VITE_DEBUG__?: {
+          fishingChancePct?: number | null;
+          archaeologyChancePct?: number | null;
+        };
+      })
+    | null;
   const debug = win?.__VITE_DEBUG__;
 
   const leaderAbility = getEffectiveLeaderAbility(state.team);
@@ -241,8 +266,11 @@ export function calculateEncounterTypeWeights(
   const abilityFishingMult = getFishingWeightMultiplier(leaderAbility);
 
   const isRainy = RAINY_WEATHERS_SET.has(weather as RainyWeatherId);
-  const climateFishingMultiplier = isRainy ? RAINY_WEATHER_FISHING_MULTIPLIER : DEFAULT_WEATHER_MULTIPLIER_NORMAL;
-  const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier * abilityFishingMult;
+  const climateFishingMultiplier = isRainy
+    ? RAINY_WEATHER_FISHING_MULTIPLIER
+    : DEFAULT_WEATHER_MULTIPLIER_NORMAL;
+  const fishingBonus =
+    (options.eventFishingBonus || 1) * climateFishingMultiplier * abilityFishingMult;
 
   const groundWeight = GROUND_ENCOUNTER_BASE_WEIGHT * encounterRateMult;
   const fishingWeight = calculateFishingWeight(loc, debug?.fishingChancePct, fishingBonus, state);
@@ -259,15 +287,19 @@ export function calculateEncounterTypeWeights(
 function hasWildSpawns(wild?: MapLocation['wild']): boolean {
   if (!wild) return false;
   if (Array.isArray(wild)) return wild.length > 0;
-  return Object.values(wild).some(pool => Array.isArray(pool) && pool.length > 0);
+  return Object.values(wild).some((pool) => Array.isArray(pool) && pool.length > 0);
 }
 
 function hasWeatherConfigSpawns(weather?: MapLocation['weather']): boolean {
   if (!weather) return false;
-  return Object.values(weather).some(w => {
+  return Object.values(weather).some((w) => {
     if (!w) return false;
-    const vCount = Array.isArray(w.visitors) ? w.visitors.length : Object.keys(w.visitors || {}).length;
-    const eCount = Array.isArray(w.exclusive) ? w.exclusive.length : Object.keys(w.exclusive || {}).length;
+    const vCount = Array.isArray(w.visitors)
+      ? w.visitors.length
+      : Object.keys(w.visitors || {}).length;
+    const eCount = Array.isArray(w.exclusive)
+      ? w.exclusive.length
+      : Object.keys(w.exclusive || {}).length;
     return vCount > 0 || eCount > 0;
   });
 }
@@ -291,5 +323,3 @@ export function isMapVisibleInWorld(loc: MapLocation): boolean {
   if (loc.visibleInWorldMap === false) return false;
   return hasMapEncounterSpawns(loc);
 }
-
-

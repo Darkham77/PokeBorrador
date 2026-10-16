@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import { computed } from 'vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 import {
   POKEMON_SORT_OPTIONS,
   isSortOptionActive,
   type PokemonSortOption
-} from '@/logic/constants/pokemonSortConstants'
+} from '@/logic/constants/pokemonSortConstants';
 
 interface Props {
-  modelValue?: string
-  sortDirection?: string
-  sortOrder?: string
-  sortBy?: string
-  sortMode?: string
-  allowedKeys?: readonly string[]
-  showLabel?: boolean
-  label?: string
-  compact?: boolean
+  modelValue?: string;
+  sortDirection?: string;
+  sortOrder?: string;
+  sortBy?: string;
+  sortMode?: string;
+  allowedKeys?: readonly string[];
+  showLabel?: boolean;
+  label?: string;
+  compact?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,57 +29,53 @@ const props = withDefaults(defineProps<Props>(), {
   showLabel: false,
   label: 'ORDEN:',
   compact: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', val: string): void
-  (e: 'update:sortBy', val: string): void
-  (e: 'update:sortMode', val: string): void
-  (e: 'update:sortDirection', val: string): void
-  (e: 'update:sortOrder', val: string): void
-  (e: 'change', payload: { key: string; direction: string }): void
-}>()
+  (e: 'update:modelValue', val: string): void;
+  (e: 'update:sortBy', val: string): void;
+  (e: 'update:sortMode', val: string): void;
+  (e: 'update:sortDirection', val: string): void;
+  (e: 'update:sortOrder', val: string): void;
+  (e: 'change', payload: { key: string; direction: string }): void;
+}>();
 
 const activeKey = computed(() => {
-  return props.modelValue ?? props.sortBy ?? props.sortMode ?? 'recent'
-})
+  return props.modelValue ?? props.sortBy ?? props.sortMode ?? 'recent';
+});
 
 const currentDirection = computed(() => {
-  return props.sortDirection ?? props.sortOrder ?? 'desc'
-})
+  return props.sortDirection ?? props.sortOrder ?? 'desc';
+});
 
 const visibleOptions = computed<readonly PokemonSortOption[]>(() => {
   if (!props.allowedKeys || props.allowedKeys.length === 0) {
-    return POKEMON_SORT_OPTIONS
+    return POKEMON_SORT_OPTIONS;
   }
-  const allowed = props.allowedKeys
+  const allowed = props.allowedKeys;
   return (POKEMON_SORT_OPTIONS as readonly PokemonSortOption[]).filter((opt: PokemonSortOption) => {
-    return allowed.includes(opt.id) || Boolean(opt.aliases?.some((a: string) => allowed.includes(a)))
-  })
-})
+    return (
+      allowed.includes(opt.id) || Boolean(opt.aliases?.some((a: string) => allowed.includes(a)))
+    );
+  });
+});
 
 function handleOptionClick(opt: PokemonSortOption) {
-  const isCurrentlyActive = isSortOptionActive(opt, activeKey.value)
-  const nextDirection = isCurrentlyActive && currentDirection.value === 'desc' ? 'asc' : 'desc'
+  const isCurrentlyActive = isSortOptionActive(opt, activeKey.value);
+  const nextDirection = isCurrentlyActive && currentDirection.value === 'desc' ? 'asc' : 'desc';
 
-  emit('update:modelValue', opt.id)
-  emit('update:sortBy', opt.id)
-  emit('update:sortMode', opt.id)
-  emit('update:sortDirection', nextDirection)
-  emit('update:sortOrder', nextDirection)
-  emit('change', { key: opt.id, direction: nextDirection })
+  emit('update:modelValue', opt.id);
+  emit('update:sortBy', opt.id);
+  emit('update:sortMode', opt.id);
+  emit('update:sortDirection', nextDirection);
+  emit('update:sortOrder', nextDirection);
+  emit('change', { key: opt.id, direction: nextDirection });
 }
 </script>
 
 <template>
-  <div
-    class="pokemon-sort-bar"
-    :class="{ 'is-compact': compact }"
-  >
-    <span
-      v-if="showLabel"
-      class="mini-label"
-    >{{ label }}</span>
+  <div class="pokemon-sort-bar" :class="{ 'is-compact': compact }">
+    <span v-if="showLabel" class="mini-label">{{ label }}</span>
     <div class="sort-items">
       <PVTooltip
         v-for="opt in visibleOptions"
@@ -98,14 +94,8 @@ function handleOptionClick(opt: PokemonSortOption) {
           @click.stop="handleOptionClick(opt)"
         >
           <span class="emoji">{{ opt.icon }}</span>
-          <span
-            v-if="!compact"
-            class="label"
-          >{{ opt.shortLabel }}</span>
-          <span
-            v-if="isSortOptionActive(opt, activeKey)"
-            class="emoji arrow"
-          >
+          <span v-if="!compact" class="label">{{ opt.shortLabel }}</span>
+          <span v-if="isSortOptionActive(opt, activeKey)" class="emoji arrow">
             {{ currentDirection === 'desc' ? '▼' : '▲' }}
           </span>
         </button>
@@ -115,7 +105,7 @@ function handleOptionClick(opt: PokemonSortOption) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pokemon-sort-bar {
   display: flex;

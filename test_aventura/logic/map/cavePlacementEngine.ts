@@ -30,7 +30,14 @@ export interface CavePlacementContext {
  * Places cave entrances onto valid south cliff wall faces.
  */
 export function placeCaveEntrances(ctx: CavePlacementContext): void {
-  const { continentMap, activeCatalog, placedNodes, isAreaFree, markAreaOccupied, getMinDistanceToPlaced } = ctx;
+  const {
+    continentMap,
+    activeCatalog,
+    placedNodes,
+    isAreaFree,
+    markAreaOccupied,
+    getMinDistanceToPlaced
+  } = ctx;
   const W = continentMap.width;
   const H = continentMap.height;
 
@@ -51,7 +58,8 @@ export function placeCaveEntrances(ctx: CavePlacementContext): void {
         // Landing tile at y + 1 must be on flat walkable ground grass (elevation 0)
         const leftCell = continentMap.resolvedMountain.cellDetails[y]?.[x - 1];
         const rightCell = continentMap.resolvedMountain.cellDetails[y]?.[x + 1];
-        const hasFlanks = leftCell?.role === 'edge_south_top' && rightCell?.role === 'edge_south_top';
+        const hasFlanks =
+          leftCell?.role === 'edge_south_top' && rightCell?.role === 'edge_south_top';
 
         // Ground across foot and flanks must be flat grass at elevation 0
         let flatFoot = true;
@@ -88,7 +96,8 @@ export function placeCaveEntrances(ctx: CavePlacementContext): void {
     for (const cand of caveCandidates) {
       if (!isAreaFree(cand.x, cand.y, 1, 2, 2)) continue;
       const d = getMinDistanceToPlaced(cand.x, cand.y);
-      const minCaveDist = Math.min(W, H) <= COMPACT_MAP_THRESHOLD ? COMPACT_MIN_CAVE_DIST : STANDARD_MIN_CAVE_DIST;
+      const minCaveDist =
+        Math.min(W, H) <= COMPACT_MAP_THRESHOLD ? COMPACT_MIN_CAVE_DIST : STANDARD_MIN_CAVE_DIST;
       if (d >= minCaveDist && d > bestDist) {
         bestDist = d;
         bestCand = cand;

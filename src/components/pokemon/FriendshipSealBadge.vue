@@ -1,44 +1,44 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue'
-import { gsap } from 'gsap'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic'
-import { DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay'
-import type { ComponentPillSize } from '@/types/system/game'
+import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue';
+import { gsap } from 'gsap';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic';
+import { DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
+import type { ComponentPillSize } from '@/types/system/game';
 
 interface Props {
-  friendship?: number | null
-  size?: ComponentPillSize
-  showTooltip?: boolean
+  friendship?: number | null;
+  size?: ComponentPillSize;
+  showTooltip?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   friendship: DEFAULT_FRIENDSHIP_VALUE,
   size: 'md',
-  showTooltip: true,
-})
+  showTooltip: true
+});
 
-const badgeRef = useTemplateRef<HTMLElement>('badgeRef')
-let pulseTween: gsap.core.Tween | null = null
+const badgeRef = useTemplateRef<HTMLElement>('badgeRef');
+let pulseTween: gsap.core.Tween | null = null;
 
-const details = computed(() => getFriendshipTooltipDetails({ friendship: props.friendship }))
-const seal = computed(() => details.value.seal)
+const details = computed(() => getFriendshipTooltipDetails({ friendship: props.friendship }));
+const seal = computed(() => details.value.seal);
 
 const tooltipTitle = computed(() => {
-  return `${seal.value.iconEmoji} ${seal.value.label} (${details.value.currentValue}/${details.value.maxValue})`
-})
+  return `${seal.value.iconEmoji} ${seal.value.label} (${details.value.currentValue}/${details.value.maxValue})`;
+});
 
 const tooltipDescription = computed(() => {
-  const d = details.value
-  const quote = `«${d.evaluatorQuote}»`
-  const evo = `🚀 ${d.evolutionMessage}`
-  const battle = `⚔️ Retribución: ${d.returnPower} BP | Frustración: ${d.frustrationPower} BP`
-  const perks = `⭐ ${d.combatPerksSummary}`
-  return `${quote}\n\n${evo}\n${battle}\n${perks}`
-})
+  const d = details.value;
+  const quote = `«${d.evaluatorQuote}»`;
+  const evo = `🚀 ${d.evolutionMessage}`;
+  const battle = `⚔️ Retribución: ${d.returnPower} BP | Frustración: ${d.frustrationPower} BP`;
+  const perks = `⭐ ${d.combatPerksSummary}`;
+  return `${quote}\n\n${evo}\n${battle}\n${perks}`;
+});
 
 onMounted(() => {
-  if (!badgeRef.value) return
+  if (!badgeRef.value) return;
 
   // Subtle GSAP pulse animation for top tiers
   if (seal.value.id === 'radiant_prism' || seal.value.id === 'best_friends') {
@@ -47,25 +47,25 @@ onMounted(() => {
       duration: 1.4,
       repeat: -1,
       yoyo: true,
-      ease: 'sine.inOut',
-    })
+      ease: 'sine.inOut'
+    });
   }
-})
+});
 
 onUnmounted(() => {
   if (pulseTween) {
-    pulseTween.kill()
-    pulseTween = null
+    pulseTween.kill();
+    pulseTween = null;
   }
-})
+});
 
 function onMouseEnter() {
   if (badgeRef.value) {
     gsap.to(badgeRef.value, {
       scale: 1.25,
       duration: 0.2,
-      ease: 'back.out(2)',
-    })
+      ease: 'back.out(2)'
+    });
   }
 }
 
@@ -74,8 +74,8 @@ function onMouseLeave() {
     gsap.to(badgeRef.value, {
       scale: 1.0,
       duration: 0.2,
-      ease: 'power1.out',
-    })
+      ease: 'power1.out'
+    });
   }
 }
 </script>
@@ -102,10 +102,7 @@ function onMouseLeave() {
       @mouseenter="onMouseEnter"
       @mouseleave="onMouseLeave"
     >
-      <span
-        class="emoji seal-icon"
-        aria-hidden="true"
-      >{{ seal.iconEmoji }}</span>
+      <span class="emoji seal-icon" aria-hidden="true">{{ seal.iconEmoji }}</span>
     </div>
   </PVTooltip>
   <div
@@ -117,15 +114,12 @@ function onMouseLeave() {
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
-    <span
-      class="emoji seal-icon"
-      aria-hidden="true"
-    >{{ seal.iconEmoji }}</span>
+    <span class="emoji seal-icon" aria-hidden="true">{{ seal.iconEmoji }}</span>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .friendship-seal-badge {
   display: inline-flex;

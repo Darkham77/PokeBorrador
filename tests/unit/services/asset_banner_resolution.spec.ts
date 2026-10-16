@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
@@ -49,7 +49,9 @@ describe('Asset Banner Resolution & GitHub Pages Parity', () => {
     expect(fs.existsSync(eventsDir)).toBe(true);
 
     for (const theme of SEASONAL_ANNUAL_THEMES) {
-      const canonicalId = theme.bannerImage.replace(/^\/?assets\/ui\/events\//, '').replace(/\.webp$/, '');
+      const canonicalId = theme.bannerImage
+        .replace(/^\/?assets\/ui\/events\//, '')
+        .replace(/\.webp$/, '');
       const expectedPath = path.join(eventsDir, `${canonicalId}.webp`);
       expect(
         fs.existsSync(expectedPath),

@@ -38,15 +38,10 @@ function handleExportPng(): void {
     <!-- Two-View Active Workspace -->
     <main class="studio-workspace">
       <!-- 1. Geographic View (2D Canvas + Autotile) -->
-      <StudioGeographicViewport
-        v-if="store.activeView === 'geographic'"
-        ref="geoViewportRef"
-      />
+      <StudioGeographicViewport v-if="store.activeView === 'geographic'" ref="geoViewportRef" />
 
       <!-- 2. Connections View (Interactive SVG Graph) -->
-      <StudioConnectionsViewport
-        v-else-if="store.activeView === 'connections'"
-      />
+      <StudioConnectionsViewport v-else-if="store.activeView === 'connections'" />
     </main>
   </div>
 </template>

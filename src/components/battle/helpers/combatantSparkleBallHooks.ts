@@ -1,41 +1,41 @@
 /**
  * src/components/battle/helpers/combatantSparkleBallHooks.ts
- * 
+ *
  * Vue transition hooks for shiny sparkles and Pokeball in/out animations.
  */
 
-import { gsap } from 'gsap'
-import { gameBus } from '@/logic/events/gameBus'
-import type { BattleSide } from '@/types/battle/battle'
+import { gsap } from 'gsap';
+import { gameBus } from '@/logic/events/gameBus';
+import type { BattleSide } from '@/types/battle/battle';
 import {
   SPARKLE_FULL_ROTATION_DEG,
   SPARKLE_HORIZONTAL_DURATION_SEC,
   SPARKLE_FOUNTAIN_UP_DURATION_SEC,
   SPARKLE_FOUNTAIN_DOWN_DURATION_SEC,
-  POKEBALL_APPEAR_DURATION_SEC
-} from '@/logic/constants/animations'
+  POKEBALL_APPEAR_DURATION_SEC,
+  BALL_LEAVE_SCALE,
+  BALL_LEAVE_DURATION_SEC
+} from '@/logic/constants/animations';
 
-const BALL_LEAVE_SCALE = 0.5
-const BALL_LEAVE_DURATION_SEC = 0.2
-const SPARKLE_CENTER_OFFSET_PERCENT = -50
+const SPARKLE_CENTER_OFFSET_PERCENT = -50;
 
 export function onSparkleEnter(el: Element, done: () => void) {
-  const htmlEl = el as HTMLElement
-  const tx = parseFloat(htmlEl.dataset.tx || '0')
-  const ty = parseFloat(htmlEl.dataset.ty || '0')
-  const tf = parseFloat(htmlEl.dataset.tf || '0')
-  const delay = parseFloat((htmlEl.dataset.delay || '0s').replace('s', ''))
-  const scale = parseFloat(htmlEl.dataset.scale || '1')
+  const htmlEl = el as HTMLElement;
+  const tx = parseFloat(htmlEl.dataset.tx || '0');
+  const ty = parseFloat(htmlEl.dataset.ty || '0');
+  const tf = parseFloat(htmlEl.dataset.tf || '0');
+  const delay = parseFloat((htmlEl.dataset.delay || '0s').replace('s', ''));
+  const scale = parseFloat(htmlEl.dataset.scale || '1');
 
-  gsap.set(htmlEl, { 
-    x: 0, 
-    y: 0, 
-    xPercent: SPARKLE_CENTER_OFFSET_PERCENT, 
-    yPercent: SPARKLE_CENTER_OFFSET_PERCENT, 
-    scale: 0, 
+  gsap.set(htmlEl, {
+    x: 0,
+    y: 0,
+    xPercent: SPARKLE_CENTER_OFFSET_PERCENT,
+    yPercent: SPARKLE_CENTER_OFFSET_PERCENT,
+    scale: 0,
     opacity: 1,
     rotation: 0
-  })
+  });
 
   gsap.to(htmlEl, {
     x: tx,
@@ -43,7 +43,7 @@ export function onSparkleEnter(el: Element, done: () => void) {
     duration: SPARKLE_HORIZONTAL_DURATION_SEC,
     delay: delay,
     ease: 'power1.out'
-  })
+  });
 
   gsap.to(htmlEl, {
     y: ty,
@@ -58,57 +58,69 @@ export function onSparkleEnter(el: Element, done: () => void) {
         duration: SPARKLE_FOUNTAIN_DOWN_DURATION_SEC,
         ease: 'power2.in',
         onComplete: done
-      })
+      });
     }
-  })
+  });
 }
 
 export function onBallEnter(el: Element, done: () => void) {
-  gsap.fromTo(el, 
-    { opacity: 0, scale: 0.5 }, 
-    { opacity: 1, scale: 1, duration: POKEBALL_APPEAR_DURATION_SEC, ease: 'back.out(1.7)', onComplete: done }
-  )
+  gsap.fromTo(
+    el,
+    { opacity: 0, scale: 0.5 },
+    {
+      opacity: 1,
+      scale: 1,
+      duration: POKEBALL_APPEAR_DURATION_SEC,
+      ease: 'back.out(1.7)',
+      onComplete: done
+    }
+  );
 }
 
 export function onBallLeave(el: Element, side: BattleSide, done: () => void) {
-  const tween = gsap.to(el, { 
-    opacity: 0, 
-    scale: BALL_LEAVE_SCALE, 
+  const tween = gsap.to(el, {
+    opacity: 0,
+    scale: BALL_LEAVE_SCALE,
     duration: BALL_LEAVE_DURATION_SEC,
-    ease: 'power2.in', 
-    onComplete: done 
-  })
-  const animKey = `ball-fadeout-${side}`
-  gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
+    ease: 'power2.in',
+    onComplete: done
+  });
+  const animKey = `ball-fadeout-${side}`;
+  gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
 }
 
 const CRITICAL_BANNER_ANIM = {
   Y_STAGE_1: -25,
   Y_STAGE_2: -45,
-  Y_STAGE_3: -65,
+  Y_STAGE_3: -65
 } as const;
 
 export function onCriticalBannerEnter(el: Element, done: () => void) {
-  const htmlEl = el as HTMLElement
-  const tl = gsap.timeline({ onComplete: done })
+  const htmlEl = el as HTMLElement;
+  const tl = gsap.timeline({ onComplete: done });
 
   tl.fromTo(
     htmlEl,
     { opacity: 0, scale: 0.3, y: 10 },
-    { opacity: 1, scale: 1.1, y: CRITICAL_BANNER_ANIM.Y_STAGE_1, duration: 0.35, ease: 'back.out(2.2)' }
+    {
+      opacity: 1,
+      scale: 1.1,
+      y: CRITICAL_BANNER_ANIM.Y_STAGE_1,
+      duration: 0.35,
+      ease: 'back.out(2.2)'
+    }
   )
-  .to(htmlEl, {
-    y: CRITICAL_BANNER_ANIM.Y_STAGE_2,
-    scale: 1.0,
-    duration: 0.5,
-    ease: 'power1.out'
-  })
-  .to(htmlEl, {
-    opacity: 0,
-    y: CRITICAL_BANNER_ANIM.Y_STAGE_3,
-    scale: 0.9,
-    duration: 0.35,
-    ease: 'power2.in'
-  })
+    .to(htmlEl, {
+      y: CRITICAL_BANNER_ANIM.Y_STAGE_2,
+      scale: 1.0,
+      duration: 0.5,
+      ease: 'power1.out'
+    })
+    .to(htmlEl, {
+      opacity: 0,
+      y: CRITICAL_BANNER_ANIM.Y_STAGE_3,
+      scale: 0.9,
+      duration: 0.35,
+      ease: 'power2.in'
+    });
 }
-

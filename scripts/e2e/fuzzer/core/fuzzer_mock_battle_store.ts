@@ -47,7 +47,20 @@ export function createMockBattleContext(
     logs.push(`[${type || 'info'}] ${msg}`);
   };
 
-  const initialStages: BattleStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 };
+  const initialStages: BattleStages = {
+    atk: 0,
+    def: 0,
+    spa: 0,
+    spd: 0,
+    spe: 0,
+    accuracy: 0,
+    evasion: 0,
+    reflect: 0,
+    lightScreen: 0,
+    safeguard: 0,
+    mist: 0,
+    spikes: 0
+  };
 
   const context: Partial<BattleContext> = {
     activeBattle,
@@ -70,7 +83,7 @@ export function createMockBattleContext(
     debugLoopPokemon: ref(null),
     exitingPlayer: ref(null),
     exitingEnemy: ref(null),
-    
+
     addLog,
     handleFaint: async () => {},
     endBattle: async () => {},
@@ -79,7 +92,7 @@ export function createMockBattleContext(
     waitForLogs: async () => {},
     clearLogs: () => {},
     clearVolatileStatus: () => {},
-    
+
     animations: {
       triggerSearchEncounter: async () => {},
       revealWildPokemon: async () => {},

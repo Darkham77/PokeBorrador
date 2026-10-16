@@ -13,4 +13,5 @@ export type AnimatedSpriteMap = Record<PokemonSpeciesId, string | undefined>;
 /**
  * Strongly-typed animated sprite database.
  */
-export const ANIMATED_SPRITE_DATA: Partial<AnimatedSpriteMap> = dbJson as Partial<AnimatedSpriteMap>;
+export const ANIMATED_SPRITE_DATA: Partial<AnimatedSpriteMap> =
+  dbJson as Partial<AnimatedSpriteMap>;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/modals/spawns/RouteSpawnsNpcRow.vue
- * 
+ *
  * Atomic row component rendering a single NPC chance entry in the route spawns table.
  */
 import { computed } from 'vue';
@@ -16,39 +16,52 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const NPC_EMOJIS: Record<string, string> = {
+const NPC_ROLE_TYPES = ['rival', 'defender', 'guardian', 'trainer', 'police'] as const;
+type NpcRoleType = (typeof NPC_ROLE_TYPES)[number];
+
+const NPC_EMOJIS: Record<NpcRoleType, string> = {
   rival: '👦',
   defender: '🛡️',
   guardian: '👹',
-  trainer: '🎒'
+  trainer: '🎒',
+  police: '👮'
 };
 
-const NPC_TAG_CLASSES: Record<string, string> = {
+const NPC_TAG_CLASSES: Partial<Record<NpcRoleType, string>> = {
   rival: 'visitor',
   defender: 'exclusive',
   guardian: 'exclusive'
 };
 
-const NPC_ROLE_LABELS: Record<string, string> = {
+const NPC_ROLE_LABELS: Record<NpcRoleType, string> = {
   rival: 'RIVAL',
   defender: 'DEFENSOR',
   guardian: 'GUARDIÁN',
-  trainer: 'ENTRENADOR'
+  trainer: 'ENTRENADOR',
+  police: 'POLICÍA'
 };
 
-const emoji = computed(() => NPC_EMOJIS[props.npc.type] || '👤');
-const roleClass = computed(() => NPC_TAG_CLASSES[props.npc.type] || 'common');
-const roleLabel = computed(() => NPC_ROLE_LABELS[props.npc.type] || props.npc.type);
+const emoji = computed(() => {
+  const type = props.npc.type as NpcRoleType;
+  return NPC_EMOJIS[type] || '👤';
+});
+const roleClass = computed(() => {
+  const type = props.npc.type as NpcRoleType;
+  return NPC_TAG_CLASSES[type] || 'common';
+});
+const roleLabel = computed(() => {
+  const type = props.npc.type as NpcRoleType;
+  return NPC_ROLE_LABELS[type] || props.npc.type;
+});
 const activeClass = computed(() => (props.npc.active ? 'exclusive' : 'common'));
 const activeLabel = computed(() => (props.npc.active ? 'ACTIVO' : 'INACTIVO'));
-const probWidth = computed(() => `${Math.min(MAX_PROBABILITY_BAR_PERCENT, props.npc.chance * PROBABILITY_SCALE_FACTOR)}%`);
+const probWidth = computed(
+  () => `${Math.min(MAX_PROBABILITY_BAR_PERCENT, props.npc.chance * PROBABILITY_SCALE_FACTOR)}%`
+);
 </script>
 
 <template>
-  <div
-    class="report-row"
-    :class="{ 'gray-text': !npc.active }"
-  >
+  <div class="report-row" :class="{ 'gray-text': !npc.active }">
     <!-- NPC Info (Icon/Emoji, Name) -->
     <div class="col-pokemon row-cell flex-align">
       <div class="mini-sprite-wrapper">
@@ -63,20 +76,14 @@ const probWidth = computed(() => `${Math.min(MAX_PROBABILITY_BAR_PERCENT, props.
 
     <!-- Tipo / Rol -->
     <div class="col-types row-cell flex-align">
-      <span
-        class="status-tag"
-        :class="roleClass"
-      >
+      <span class="status-tag" :class="roleClass">
         {{ roleLabel }}
       </span>
     </div>
 
     <!-- Estado (Activo / Inactivo) -->
     <div class="col-type row-cell flex-align">
-      <span
-        class="status-tag"
-        :class="activeClass"
-      >
+      <span class="status-tag" :class="activeClass">
         {{ activeLabel }}
       </span>
     </div>
@@ -90,15 +97,10 @@ const probWidth = computed(() => `${Math.min(MAX_PROBABILITY_BAR_PERCENT, props.
     <div class="col-prob row-cell flex-align">
       <div class="prob-bar-wrapper">
         <div class="prob-numerical">
-          <span class="active-prob">
-            {{ npc.chance.toFixed(1) }}%
-          </span>
+          <span class="active-prob"> {{ npc.chance.toFixed(1) }}% </span>
         </div>
         <div class="prob-visual-progress">
-          <div
-            class="fill base-fill"
-            :style="{ width: probWidth }"
-          />
+          <div class="fill base-fill" :style="{ width: probWidth }" />
         </div>
       </div>
     </div>

@@ -68,11 +68,11 @@ Accessing items via the combat sidebar HUD must mirror the full inventory logic:
 To provide clear visual feedback without redundancy, item usage logs must be split:
 
 1. **Action Log**: "¡Has usado X!" o "¡Entrenador usó X!".
-    - **Source**: `'player'` or `'enemy_trainer'`.
-    - **Visual**: Shows the trainer's avatar.
+   - **Source**: `'player'` or `'enemy_trainer'`.
+   - **Visual**: Shows the trainer's avatar.
 2. **Effect Log**: "¡Recuperó HP!" o "¡Curó su parálisis!".
-    - **Source**: The item ID/Name.
-    - **Visual**: Shows the specific item sprite.
+   - **Source**: The item ID/Name.
+   - **Visual**: Shows the specific item sprite.
 
 ---
 
@@ -112,14 +112,14 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 
 ## 🛠️ Functional Categories (`cat`)
 
-| Category | Primary Use | Entry in `HEALING_ITEMS` |
-| :--- | :--- | :--- |
-| `healing` | Healing, PP, Status | ✅ Mandatory |
-| `held` | Equippable on Pokémon (`type: 'held'`) | ❌ Forbidden |
-| `tm` | Teach moves | ✅ Mandatory |
-| `stone` | Evolution | ✅ Mandatory |
-| `special` | Global buffs, Repels | ✅ Mandatory |
-| `breeding` | Daycare & Vigor recovery | ❌ Forbidden (Except 'vigor_restorer') |
+| Category   | Primary Use                            | Entry in `HEALING_ITEMS`               |
+| :--------- | :------------------------------------- | :------------------------------------- |
+| `healing`  | Healing, PP, Status                    | ✅ Mandatory                           |
+| `held`     | Equippable on Pokémon (`type: 'held'`) | ❌ Forbidden                           |
+| `tm`       | Teach moves                            | ✅ Mandatory                           |
+| `stone`    | Evolution                              | ✅ Mandatory                           |
+| `special`  | Global buffs, Repels                   | ✅ Mandatory                           |
+| `breeding` | Daycare & Vigor recovery               | ❌ Forbidden (Except 'vigor_restorer') |
 
 ---
 
@@ -130,9 +130,9 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 3. **Battle Restriction**: If not usable in battle, add it to the `nonCombat` list in `items.ts`.
 4. **Validation**: Run the script:
 
-    ```bash
-    npm run auditor:items
-    ```
+   ```bash
+   npm run auditor:items
+   ```
 
 ---
 

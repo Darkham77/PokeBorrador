@@ -7,7 +7,7 @@ const REGULAR_POISON_DENOMINATOR = 8;
 
 export function getStatusIcon(status: PokemonStatus): string {
   if (!status) return '';
-  const icons: Record<string, string> = {
+  const icons: Partial<Record<PokemonStatus, string>> = {
     brn: '🔥',
     psn: '☠️',
     par: '⚡',

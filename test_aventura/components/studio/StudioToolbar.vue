@@ -71,15 +71,24 @@ async function handleSyncAssets(): Promise<void> {
     try {
       res = await fetch('/api/studio/sync-assets', { method: 'POST' });
     } catch (networkErr: unknown) {
-      console.warn('[StudioToolbar] Servidor de sync no disponible, usando recarga local:', networkErr);
+      console.warn(
+        '[StudioToolbar] Servidor de sync no disponible, usando recarga local:',
+        networkErr
+      );
     }
 
     if (res && res.ok) {
-      const data = (await res.json()) as { success: boolean; totalPrefabs?: number; error?: string };
+      const data = (await res.json()) as {
+        success: boolean;
+        totalPrefabs?: number;
+        error?: string;
+      };
       if (data.success) {
         await defaultPrefabsRegistry.loadManifest('/test_aventura/assets/prefabs/manifest.json');
         store.generateGeography(false);
-        alert(`¡Catálogo de assets actualizado con éxito! (${data.totalPrefabs ?? 0} prefabs registrados)`);
+        alert(
+          `¡Catálogo de assets actualizado con éxito! (${data.totalPrefabs ?? 0} prefabs registrados)`
+        );
         return;
       }
     }
@@ -153,10 +162,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
       <div class="divider" />
 
       <!-- Contextual Tools according to Active View -->
-      <div
-        v-if="store.activeView === 'geographic'"
-        class="context-tools-group"
-      >
+      <div v-if="store.activeView === 'geographic'" class="context-tools-group">
         <button
           id="tool-btn-pointer-geo"
           class="tool-btn"
@@ -184,12 +190,9 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
             v-model="store.terrainBrushBiome"
             class="toolbar-subselect"
             title="Bioma a pintar"
+            aria-label="Bioma de terreno a pintar"
           >
-            <option
-              v-for="b in biomesList"
-              :key="b.id"
-              :value="b.id"
-            >
+            <option v-for="b in biomesList" :key="b.id" :value="b.id">
               {{ b.icon }} {{ b.label }}
             </option>
           </select>
@@ -199,19 +202,12 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
             v-model.number="store.terrainBrushSize"
             class="toolbar-subselect"
             title="Tamaño del pincel"
+            aria-label="Tamaño del pincel"
           >
-            <option :value="1">
-              1×1
-            </option>
-            <option :value="2">
-              2×2
-            </option>
-            <option :value="4">
-              4×4
-            </option>
-            <option :value="8">
-              8×8
-            </option>
+            <option :value="1">1×1</option>
+            <option :value="2">2×2</option>
+            <option :value="4">4×4</option>
+            <option :value="8">8×8</option>
           </select>
         </template>
 
@@ -233,11 +229,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
             class="toolbar-subselect"
             title="Estructura a estampar"
           >
-            <option
-              v-for="p in prefabsList"
-              :key="p.id"
-              :value="p.id"
-            >
+            <option v-for="p in prefabsList" :key="p.id" :value="p.id">
               {{ p.icon }} {{ p.label }}
             </option>
           </select>
@@ -245,10 +237,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
       </div>
 
       <!-- Connections Mode Tools -->
-      <div
-        v-else-if="store.activeView === 'connections'"
-        class="context-tools-group"
-      >
+      <div v-else-if="store.activeView === 'connections'" class="context-tools-group">
         <button
           v-for="t in connectionTools"
           :id="`tool-btn-${t.id}`"
@@ -306,11 +295,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
         title="Seleccionar o cambiar Perfil de Mapa"
         @change="(e) => store.selectProject((e.target as HTMLSelectElement).value)"
       >
-        <option
-          v-for="p in projectsList"
-          :key="p.id"
-          :value="p.id"
-        >
+        <option v-for="p in projectsList" :key="p.id" :value="p.id">
           {{ p.name }}
         </option>
       </select>
@@ -364,7 +349,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
         accept=".svg"
         class="hidden-file-input"
         @change="handleImportSvgInput"
-      >
+      />
 
       <button
         id="btn-open-sprites"
@@ -383,10 +368,7 @@ const prefabsList: readonly { id: string; label: string; icon: string }[] = [
         title="Actualizar y registrar todos los prefabs y hojas de sprites automáticamente"
         @click="handleSyncAssets"
       >
-        <span
-          v-gsap-loop="{ effect: 'spin', active: isSyncing }"
-          class="icon"
-        >🔄</span>
+        <span v-gsap-loop="{ effect: 'spin', active: isSyncing }" class="icon">🔄</span>
         <span>{{ isSyncing ? 'Sincronizando...' : 'Actualizar' }}</span>
       </button>
 

@@ -36,12 +36,7 @@ describe('waterAutotileEngine', () => {
       ];
 
       // Test mask for 'land' around (1, 1)
-      const mask = compute2DNeighborMask(
-        matrix,
-        1,
-        1,
-        (cell) => cell === 'land'
-      );
+      const mask = compute2DNeighborMask(matrix, 1, 1, (cell) => cell === 'land');
 
       // (0, 0) is NW (bit 1), (2, 2) is SE (bit 128)
       expect(mask & BITMASK_2D_DIRECTIONS.NW).not.toBe(0);
@@ -92,13 +87,21 @@ describe('waterAutotileEngine', () => {
 
     it('classifies outer convex corners correctly', () => {
       // North + West is land
-      expect(classify2DAutotileRole(BITMASK_2D_DIRECTIONS.N | BITMASK_2D_DIRECTIONS.W).role).toBe('corner_outer_nw');
+      expect(classify2DAutotileRole(BITMASK_2D_DIRECTIONS.N | BITMASK_2D_DIRECTIONS.W).role).toBe(
+        'corner_outer_nw'
+      );
       // North + East is land
-      expect(classify2DAutotileRole(BITMASK_2D_DIRECTIONS.N | BITMASK_2D_DIRECTIONS.E).role).toBe('corner_outer_ne');
+      expect(classify2DAutotileRole(BITMASK_2D_DIRECTIONS.N | BITMASK_2D_DIRECTIONS.E).role).toBe(
+        'corner_outer_ne'
+      );
       // South + West is land
-      expect(classify2DAutotileRole(BITMASK_2D_DIRECTIONS.S | BITMASK_2D_DIRECTIONS.W).role).toBe('corner_outer_sw');
+      expect(classify2DAutotileRole(BITMASK_2D_DIRECTIONS.S | BITMASK_2D_DIRECTIONS.W).role).toBe(
+        'corner_outer_sw'
+      );
       // South + East is land
-      expect(classify2DAutotileRole(BITMASK_2D_DIRECTIONS.S | BITMASK_2D_DIRECTIONS.E).role).toBe('corner_outer_se');
+      expect(classify2DAutotileRole(BITMASK_2D_DIRECTIONS.S | BITMASK_2D_DIRECTIONS.E).role).toBe(
+        'corner_outer_se'
+      );
     });
 
     it('classifies inner concave corners when cardinal edges are clean', () => {
@@ -190,8 +193,8 @@ describe('waterAutotileEngine', () => {
       const matrix: WaterTerrainMatrix = [
         ['grass', 'grass', 'grass', 'grass'],
         ['grass', 'grass', 'grass', 'grass'],
-        ['sand',  'sand',  'sand',  'sand'],
-        ['sand',  'sand',  'sand',  'sand'],
+        ['sand', 'sand', 'sand', 'sand'],
+        ['sand', 'sand', 'sand', 'sand'],
         ['water', 'water', 'water', 'water'],
         ['water', 'water', 'water', 'water']
       ];
@@ -204,7 +207,9 @@ describe('waterAutotileEngine', () => {
 
       // Sand row 3 has water to South -> sand edge_south with foam (Sand-to-Water)
       expect(result.cellDetails[3]?.[1]?.role).toBe('edge_south');
-      expect(result.cellDetails[3]?.[1]?.primaryTile).toBe(CANONICAL_SAND_OCEAN_SHORE_BRUSH.edgeSouth);
+      expect(result.cellDetails[3]?.[1]?.primaryTile).toBe(
+        CANONICAL_SAND_OCEAN_SHORE_BRUSH.edgeSouth
+      );
 
       // Water row 4 is ocean water -> center waves
       expect(result.cellDetails[4]?.[1]?.role).toBe('center');
@@ -223,7 +228,7 @@ describe('waterAutotileEngine', () => {
         ['grass', 'grass', 'water', 'water', 'grass', 'grass'],
         ['grass', 'grass', 'water', 'water', 'grass', 'grass'],
         ['grass', 'grass', 'water', 'water', 'grass', 'grass'],
-        ['sand',  'sand',  'water', 'water', 'sand',  'sand'],
+        ['sand', 'sand', 'water', 'water', 'sand', 'sand'],
         ['water', 'water', 'water', 'water', 'water', 'water'],
         ['water', 'water', 'water', 'water', 'water', 'water']
       ];

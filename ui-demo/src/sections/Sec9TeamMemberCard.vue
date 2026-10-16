@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { TeamMember } from './sec9TeamTypes'
+import { computed } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { TeamMember } from './sec9TeamTypes';
 
 const props = defineProps<{
-  poke: TeamMember
-}>()
+  poke: TeamMember;
+}>();
 
 const emit = defineEmits<{
-  (e: 'select-pokemon', uid: string): void
-  (e: 'open-inventory'): void
-  (e: 'action', action: string, poke: TeamMember): void
-}>()
+  (e: 'select-pokemon', uid: string): void;
+  (e: 'open-inventory'): void;
+  (e: 'action', action: string, poke: TeamMember): void;
+}>();
 
-const hpPercent = computed(() => (props.poke.hp / props.poke.maxHp) * 100)
+const hpPercent = computed(() => (props.poke.hp / props.poke.maxHp) * 100);
 </script>
 
 <template>
@@ -27,14 +27,8 @@ const hpPercent = computed(() => (props.poke.hp / props.poke.maxHp) * 100)
     <div class="team-card-top-row">
       <!-- Píldora Vertical Unificada (Negra) -->
       <div class="pv-curve-xs team-card-unified-pill">
-        <template
-          v-for="(b, bIdx) in poke.badges"
-          :key="bIdx"
-        >
-          <span
-            v-if="b === '31'"
-            class="team-pill-iv"
-          >31</span>
+        <template v-for="(b, bIdx) in poke.badges" :key="bIdx">
+          <span v-if="b === '31'" class="team-pill-iv">31</span>
           <img
             v-else-if="b === 'item' && poke.heldItem"
             :id="`team-card-${poke.id}-held-item-btn`"
@@ -43,23 +37,11 @@ const hpPercent = computed(() => (props.poke.hp / props.poke.maxHp) * 100)
             class="team-pill-item-icon"
             title="Objeto Equipado"
             @click.stop="emit('open-inventory')"
-          >
-          <span
-            v-else-if="b === '⭐'"
-            class="team-pill-star"
-          >⭐</span>
-          <span
-            v-else-if="b === '🧬'"
-            class="team-pill-shiny"
-          >🧬</span>
-          <span
-            v-else-if="b === '🥚'"
-            style="font-size: var(--font-8);"
-          >🥚</span>
-          <span
-            v-else-if="b === '🏆'"
-            style="font-size: var(--font-8);"
-          >🏆</span>
+          />
+          <span v-else-if="b === '⭐'" class="team-pill-star">⭐</span>
+          <span v-else-if="b === '🧬'" class="team-pill-shiny">🧬</span>
+          <span v-else-if="b === '🥚'" style="font-size: var(--font-8)">🥚</span>
+          <span v-else-if="b === '🏆'" style="font-size: var(--font-8)">🏆</span>
         </template>
       </div>
 
@@ -72,11 +54,9 @@ const hpPercent = computed(() => (props.poke.hp / props.poke.maxHp) * 100)
           {{ poke.tier }}
         </div>
         <div class="team-card-status-icons">
-          <span
-            v-for="(p, pIdx) in poke.passives"
-            :key="pIdx"
-            class="team-passive-icon"
-          >{{ p }}</span>
+          <span v-for="(p, pIdx) in poke.passives" :key="pIdx" class="team-passive-icon">{{
+            p
+          }}</span>
         </div>
       </div>
     </div>
@@ -87,7 +67,7 @@ const hpPercent = computed(() => (props.poke.hp / props.poke.maxHp) * 100)
         :src="getAssetUrl(ASSET_TYPES.POKEMON, poke.id)"
         :alt="poke.name"
         class="team-pokemon-sprite"
-      >
+      />
     </div>
 
     <!-- Nombre, Género, Tipos, Stats y Barra HP -->
@@ -123,14 +103,9 @@ const hpPercent = computed(() => (props.poke.hp / props.poke.maxHp) * 100)
       <!-- Barra de HP -->
       <div class="team-hp-block">
         <div class="team-hp-track">
-          <div
-            class="team-hp-fill"
-            :style="{ width: `${hpPercent}%` }"
-          />
+          <div class="team-hp-fill" :style="{ width: `${hpPercent}%` }" />
         </div>
-        <div class="team-hp-text">
-          {{ poke.hp }} / {{ poke.maxHp }} HP
-        </div>
+        <div class="team-hp-text">{{ poke.hp }} / {{ poke.maxHp }} HP</div>
       </div>
     </div>
 
@@ -141,7 +116,10 @@ const hpPercent = computed(() => (props.poke.hp / props.poke.maxHp) * 100)
         v-gsap-hover="'button'"
         type="button"
         class="pv-curve-xs pv-btn btn-action-use-item"
-        @click="emit('action', 'USAR OBJETO', poke); emit('open-inventory')"
+        @click="
+          emit('action', 'USAR OBJETO', poke);
+          emit('open-inventory');
+        "
       >
         <span>🎒</span> <span>USAR OBJETO</span>
       </button>
@@ -159,7 +137,10 @@ const hpPercent = computed(() => (props.poke.hp / props.poke.maxHp) * 100)
         v-gsap-hover="'button'"
         type="button"
         class="pv-curve-xs pv-btn btn-action-details"
-        @click="emit('action', 'DATOS', poke); emit('select-pokemon', poke.uid)"
+        @click="
+          emit('action', 'DATOS', poke);
+          emit('select-pokemon', poke.uid);
+        "
       >
         <span>📊</span> <span>DATOS</span>
       </button>

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { POKEMON_STAT_KEYS, type PokemonIVs, type PokemonStatKey } from '@/types/pokemon/pokemon'
+import { POKEMON_STAT_KEYS, type PokemonIVs, type PokemonStatKey } from '@/types/pokemon/pokemon';
 
 interface Props {
-  ivs: PokemonIVs
+  ivs: PokemonIVs;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'update:iv', stat: PokemonStatKey, val: number): void
-}>()
+  (e: 'update:iv', stat: PokemonStatKey, val: number): void;
+}>();
 </script>
 
 <template>
@@ -19,11 +19,7 @@ const emit = defineEmits<{
       description="Potencial genético de cada estadística (rango 0-31)."
     >
       <div class="iv-grid">
-        <div
-          v-for="stat in POKEMON_STAT_KEYS"
-          :key="stat"
-          class="iv-item"
-        >
+        <div v-for="stat in POKEMON_STAT_KEYS" :key="stat" class="iv-item">
           <label>{{ stat }}</label>
           <input
             :id="`debug-iv-${stat}`"
@@ -31,8 +27,11 @@ const emit = defineEmits<{
             type="number"
             min="0"
             max="31"
-            @input="(e: Event) => emit('update:iv', stat, parseInt((e.target as HTMLInputElement).value))"
-          >
+            :aria-label="'IV de ' + stat"
+            @input="
+              (e: Event) => emit('update:iv', stat, parseInt((e.target as HTMLInputElement).value))
+            "
+          />
         </div>
       </div>
     </PVTooltip>
@@ -55,13 +54,13 @@ const emit = defineEmits<{
     gap: $spacing-xs;
 
     label {
-      color: Rgb(255 255 255 / 40%); 
-      font-size: var(--font-9); 
-      text-align: center; 
+      color: Rgb(255 255 255 / 40%);
+      font-size: var(--font-9);
+      text-align: center;
       text-transform: uppercase;
     }
-    
-    input { 
+
+    input {
       width: 100%;
       padding: 6px 2px;
       border: 1px solid Rgb(255 255 255 / 10%);
@@ -72,11 +71,11 @@ const emit = defineEmits<{
       text-align: center;
       outline: none;
       appearance: textfield;
-      
+
       &:focus {
         border-color: var(--vicio-primary);
       }
-      
+
       &::-webkit-outer-spin-button,
       &::-webkit-inner-spin-button {
         margin: 0;

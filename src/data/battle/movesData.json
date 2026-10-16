@@ -139,10 +139,7 @@
     "cat": "physical",
     "pp": 20,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "aromatherapy": {
     "id": "aromatherapy",
@@ -228,10 +225,7 @@
     "cat": "physical",
     "pp": 20,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "barrier": {
     "id": "barrier",
@@ -441,10 +435,7 @@
     "cat": "physical",
     "pp": 10,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "bounce": {
     "id": "bounce",
@@ -547,10 +538,7 @@
     "cat": "physical",
     "pp": 30,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "calmmind": {
     "id": "calmmind",
@@ -623,10 +611,7 @@
     "cat": "physical",
     "pp": 15,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "confuseray": {
     "id": "confuseray",
@@ -968,10 +953,7 @@
     "cat": "physical",
     "pp": 10,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "doubleteam": {
     "id": "doubleteam",
@@ -1506,10 +1488,7 @@
     "cat": "physical",
     "pp": 20,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "furycutter": {
     "id": "furycutter",
@@ -1530,10 +1509,7 @@
     "cat": "physical",
     "pp": 15,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "futuresight": {
     "id": "futuresight",
@@ -1927,10 +1903,7 @@
     "cat": "physical",
     "pp": 30,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "icywind": {
     "id": "icywind",
@@ -2757,10 +2730,7 @@
     "cat": "physical",
     "pp": 20,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "poisonfang": {
     "id": "poisonfang",
@@ -3162,10 +3132,7 @@
     "cat": "physical",
     "pp": 10,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "rockslide": {
     "id": "rockslide",
@@ -3853,10 +3820,7 @@
     "cat": "physical",
     "pp": 15,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "spikes": {
     "id": "spikes",
@@ -10516,10 +10480,7 @@
     "cat": "physical",
     "pp": 20,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "scorchingsands": {
     "id": "scorchingsands",
@@ -11533,10 +11494,7 @@
     "cat": "physical",
     "pp": 10,
     "priority": 0,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "tailwind": {
     "id": "tailwind",
@@ -12124,10 +12082,7 @@
     "cat": "special",
     "pp": 20,
     "priority": 1,
-    "hits": [
-      2,
-      5
-    ]
+    "hits": [2, 5]
   },
   "wavecrash": {
     "id": "wavecrash",

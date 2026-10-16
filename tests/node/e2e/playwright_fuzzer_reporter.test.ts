@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import type { FullConfig, Suite, TestCase, TestResult } from '@playwright/test/reporter';
 import PlaywrightFuzzerReporter from '../../../scripts/e2e/logging/playwright_fuzzer_reporter.ts';
 
@@ -15,10 +15,18 @@ describe('PlaywrightFuzzerReporter Progress Tracking', () => {
   });
 
   function createMockSuite(testCount: number): Suite {
-    const tests: TestCase[] = Array.from({ length: testCount }, (_, i) => ({
-      title: `test #${i + 1}`,
-      location: { file: '/project/scripts/e2e/battle/battle_fsm_sync.simulation.ts', line: i + 1, column: 1 }
-    } as unknown as TestCase));
+    const tests: TestCase[] = Array.from(
+      { length: testCount },
+      (_, i) =>
+        ({
+          title: `test #${i + 1}`,
+          location: {
+            file: '/project/scripts/e2e/battle/battle_fsm_sync.simulation.ts',
+            line: i + 1,
+            column: 1
+          }
+        }) as unknown as TestCase
+    );
 
     return {
       allTests: () => tests

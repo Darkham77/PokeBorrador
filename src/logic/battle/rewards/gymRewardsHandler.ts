@@ -7,10 +7,13 @@ import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { getExpNeededPure } from '@/logic/pokemon/statsMath';
 
+import {
+  GYM_REWARD_BASE_EXP_FACTOR,
+  GYM_REWARD_BASE_MONEY_FACTOR
+} from '@/logic/constants/gameplay.ts';
+
 const REMATCH_TM_CHANCE_NORMAL = 0.03;
 const REMATCH_TM_CHANCE_HARD = 0.05;
-const GYM_REWARD_BASE_EXP_FACTOR = 180;
-const GYM_REWARD_BASE_MONEY_FACTOR = 30;
 
 const DIFFICULTY_REWARD_MULTIPLIERS: Record<BattleDifficulty, number> = {
   easy: 1,
@@ -56,10 +59,7 @@ function handleGymBadgeAndTmAward(
   }
 }
 
-async function handleDailyRematchReward(
-  ctx: BattleContext,
-  gid: GymId
-): Promise<void> {
+async function handleDailyRematchReward(ctx: BattleContext, gid: GymId): Promise<void> {
   const { GYM_REMATCHES, recordGymRematchCompletion } = await import('@/data/world/gymRematches');
   recordGymRematchCompletion(ctx.gs.state, gid);
   const rematchConfig = GYM_REMATCHES[gid];
@@ -68,11 +68,22 @@ async function handleDailyRematchReward(
   for (const reward of rematchConfig.rewardItems) {
     incrementRecordKey(ctx.gs.state.inventory, reward.itemId, reward.quantity);
     const itemObj = getItemById(reward.itemId);
-    ctx.addLog(`¡Bono de Revancha: Recibiste x${reward.quantity} ${itemObj.name}!`, 'log-success', reward.itemId);
+    ctx.addLog(
+      `¡Bono de Revancha: Recibiste x${reward.quantity} ${itemObj.name}!`,
+      'log-success',
+      reward.itemId
+    );
   }
   ctx.gs.state.battleCoins = (ctx.gs.state.battleCoins || 0) + rematchConfig.rewardBattleCoins;
-  ctx.addLog(`¡Bono de Revancha: Recibiste ${rematchConfig.rewardBattleCoins} Battle Coins!`, 'log-success', 'player');
-  ctx.uiStore.notify(`¡Victoria en Revancha Diaria! +${rematchConfig.rewardBattleCoins} BC y premios especiales.`, '🔥');
+  ctx.addLog(
+    `¡Bono de Revancha: Recibiste ${rematchConfig.rewardBattleCoins} Battle Coins!`,
+    'log-success',
+    'player'
+  );
+  ctx.uiStore.notify(
+    `¡Victoria en Revancha Diaria! +${rematchConfig.rewardBattleCoins} BC y premios especiales.`,
+    '🔥'
+  );
 }
 
 function calculateGymDifficultyRewards(
@@ -85,7 +96,8 @@ function calculateGymDifficultyRewards(
   const diffData = gym.difficulties[diff];
   if (!diffData || !diffData.levels || diffData.levels.length === 0) return null;
 
-  const avgLevel = diffData.levels.reduce((a: number, b: number) => a + b, 0) / diffData.levels.length;
+  const avgLevel =
+    diffData.levels.reduce((a: number, b: number) => a + b, 0) / diffData.levels.length;
   const mult = DIFFICULTY_REWARD_MULTIPLIERS[diff] ?? 1;
 
   return {
@@ -121,7 +133,7 @@ function applyGymExpToPokemon(
     }
     levelsGained++;
     if (pendingMoves.length > 0) {
-      uiStore.addToLearnQueue(pendingMoves.map(m => ({ pokemon: p, move: m })));
+      uiStore.addToLearnQueue(pendingMoves.map((m) => ({ pokemon: p, move: m })));
     }
   }
 
@@ -180,7 +192,10 @@ async function handleGymDifficultyProgression(
   prog.attempts++;
 }
 
-export async function processGymBattleRewards(ctx: BattleContext, active: BattleState): Promise<void> {
+export async function processGymBattleRewards(
+  ctx: BattleContext,
+  active: BattleState
+): Promise<void> {
   if (!active.isGym || !active.gymId) return;
 
   const gid = requireGymId(active.gymId);

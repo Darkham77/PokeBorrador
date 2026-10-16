@@ -5,7 +5,7 @@
  * - No duplicate switch target slots in forced switch
  * - No "undefined" modifier string coercion when canMegaEvo is undefined
  */
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { ShowdownBattleAgent } from '../../../src/logic/battle/helpers/showdownBattleAgent.ts';
 import type { ChoiceRequest } from '../../../src/logic/battle/helpers/requestHelper.ts';
@@ -23,12 +23,44 @@ describe('ShowdownBattleAgent & Bridge integrity tests', () => {
       forceSwitch: [true, true],
       side: {
         pokemon: [
-          { ident: 'p1a: Mon1', details: 'Charizard', condition: '0 fnt', active: true, stats: { hp: 100 }, moves: [], ability: '' },
-          { ident: 'p1b: Mon2', details: 'Blastoise', condition: '0 fnt', active: true, stats: { hp: 100 }, moves: [], ability: '' },
-          { ident: 'p1: Mon3', details: 'Venusaur', condition: '100/100', active: false, stats: { hp: 100 }, moves: [], ability: '' },
-          { ident: 'p1: Mon4', details: 'Pikachu', condition: '100/100', active: false, stats: { hp: 100 }, moves: [], ability: '' },
-        ],
-      },
+          {
+            ident: 'p1a: Mon1',
+            details: 'Charizard',
+            condition: '0 fnt',
+            active: true,
+            stats: { hp: 100 },
+            moves: [],
+            ability: ''
+          },
+          {
+            ident: 'p1b: Mon2',
+            details: 'Blastoise',
+            condition: '0 fnt',
+            active: true,
+            stats: { hp: 100 },
+            moves: [],
+            ability: ''
+          },
+          {
+            ident: 'p1: Mon3',
+            details: 'Venusaur',
+            condition: '100/100',
+            active: false,
+            stats: { hp: 100 },
+            moves: [],
+            ability: ''
+          },
+          {
+            ident: 'p1: Mon4',
+            details: 'Pikachu',
+            condition: '100/100',
+            active: false,
+            stats: { hp: 100 },
+            moves: [],
+            ability: ''
+          }
+        ]
+      }
     };
 
     const choice = agent.testDecide(request);
@@ -41,11 +73,36 @@ describe('ShowdownBattleAgent & Bridge integrity tests', () => {
       forceSwitch: [true],
       side: {
         pokemon: [
-          { ident: 'p1a: Reviver', details: 'Pawmot', condition: '100/100', active: true, reviving: true, stats: { hp: 100 }, moves: [], ability: '' },
-          { ident: 'p1: FaintedTarget', details: 'Pikachu', condition: '0 fnt', active: false, stats: { hp: 100 }, moves: [], ability: '' },
-          { ident: 'p1: HealthyBench', details: 'Raichu', condition: '100/100', active: false, stats: { hp: 100 }, moves: [], ability: '' },
-        ],
-      },
+          {
+            ident: 'p1a: Reviver',
+            details: 'Pawmot',
+            condition: '100/100',
+            active: true,
+            reviving: true,
+            stats: { hp: 100 },
+            moves: [],
+            ability: ''
+          },
+          {
+            ident: 'p1: FaintedTarget',
+            details: 'Pikachu',
+            condition: '0 fnt',
+            active: false,
+            stats: { hp: 100 },
+            moves: [],
+            ability: ''
+          },
+          {
+            ident: 'p1: HealthyBench',
+            details: 'Raichu',
+            condition: '100/100',
+            active: false,
+            stats: { hp: 100 },
+            moves: [],
+            ability: ''
+          }
+        ]
+      }
     };
 
     assert.equal(agent.testDecide(request), 'switch 2');
@@ -56,11 +113,9 @@ describe('ShowdownBattleAgent & Bridge integrity tests', () => {
     const request: ChoiceRequest = {
       active: [
         {
-          moves: [
-            { id: 'flamethrower', disabled: false, pp: 15 },
-          ],
-        },
-      ],
+          moves: [{ id: 'flamethrower', disabled: false, pp: 15 }]
+        }
+      ]
     };
 
     const choice = agent.testDecide(request);

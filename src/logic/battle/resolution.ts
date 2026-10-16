@@ -1,29 +1,32 @@
-import { gameBus } from '@/logic/events/gameBus'
-import { gsapSleep } from '@/logic/utils/gsapHelpers'
-import type { BattleContext } from '@/types/battle/battleContext'
-import type { BattleSide, BattleOutcomeFlags } from '@/types/battle/battle'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { useUIStore } from '@/stores/ui'
-import { clearVolatileStatus } from './battleStatus.ts'
-import { registerRewardCombatant } from './rewardsDistributor.ts'
+import { gameBus } from '@/logic/events/gameBus';
+import { gsapSleep } from '@/logic/utils/gsapHelpers';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { BattleSide, BattleOutcomeFlags } from '@/types/battle/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { useUIStore } from '@/stores/ui';
+import { clearVolatileStatus } from './battleStatus.ts';
+import { registerRewardCombatant } from './rewardsDistributor.ts';
 import {
   handlePoliceResolution,
   animatePlayerAutoSwap,
   handleEnemyForceSwitchExecution
-} from './helpers/battleResolutionHelpers.ts'
+} from './helpers/battleResolutionHelpers.ts';
 import {
   handleCombatantsExitAnimations,
   handleBattleDefeatFlow,
   handleBattleFleeFlow
-} from './battleTerminationOutcomes.ts'
-export { awardDebugExp } from './rewardsDistributor.ts'
-export { syncAndPersist } from './battleStateSync.ts'
+} from './battleTerminationOutcomes.ts';
+export { awardDebugExp } from './rewardsDistributor.ts';
+export { syncAndPersist } from './battleStateSync.ts';
 
-const TERMINATING_BATTLES = new WeakSet<object>()
-const DESTINY_BOND_SLEEP_DELAY_MS = 500
+const TERMINATING_BATTLES = new WeakSet<object>();
+const DESTINY_BOND_SLEEP_DELAY_MS = 500;
 
-function isCurrentBattle(ctx: BattleContext, battle: NonNullable<BattleContext['activeBattle']['value']>): boolean {
-  return ctx.activeBattle.value === battle
+function isCurrentBattle(
+  ctx: BattleContext,
+  battle: NonNullable<BattleContext['activeBattle']['value']>
+): boolean {
+  return ctx.activeBattle.value === battle;
 }
 
 /**
@@ -31,35 +34,43 @@ function isCurrentBattle(ctx: BattleContext, battle: NonNullable<BattleContext['
  */
 export async function processFaint(ctx: BattleContext, side: BattleSide) {
   const active = ctx.activeBattle.value;
-  if (!active || active.rewardsProcessed || ['SEARCH_PHASE', 'REWARDS_PHASE'].includes(ctx.fsm.currentState.value)) return;
+  if (
+    !active ||
+    active.rewardsProcessed ||
+    ['SEARCH_PHASE', 'REWARDS_PHASE'].includes(ctx.fsm.currentState.value)
+  )
+    return;
 
-  const isPlayer = side === 'player'
+  const isPlayer = side === 'player';
   if (isPlayer && active.player && active.player.hp > 0) return;
   if (!isPlayer && active.enemy && active.enemy.hp > 0) return;
-  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
-  const fsm = ctx.fsm
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
+  const fsm = ctx.fsm;
 
-  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, isPlayer ? BATTLE_SUBSTATES.PLAYER_FAINT_SEQ : BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-  
-  if (ctx.faintedSides.value.has(side)) return
-  ctx.faintedSides.value.add(side)
-  
-  const pokemon = isPlayer ? active.player : active.enemy
-  const opponent = isPlayer ? active.enemy : active.player
+  await fsm.transition(
+    BATTLE_STATES.ACTIVE_BATTLE,
+    isPlayer ? BATTLE_SUBSTATES.PLAYER_FAINT_SEQ : BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
+  );
+
+  if (ctx.faintedSides.value.has(side)) return;
+  ctx.faintedSides.value.add(side);
+
+  const pokemon = isPlayer ? active.player : active.enemy;
+  const opponent = isPlayer ? active.enemy : active.player;
 
   if (pokemon?.destinyBond && opponent && opponent.hp > 0) {
-    ctx.addLog(`¡${pokemon.name} se llevó a ${opponent.name} con él!`, 'log-info', pokemon)
-    opponent.hp = 0
-    await gsapSleep(DESTINY_BOND_SLEEP_DELAY_MS)
-    await processFaint(ctx, isPlayer ? 'enemy' : 'player')
+    ctx.addLog(`¡${pokemon.name} se llevó a ${opponent.name} con él!`, 'log-info', pokemon);
+    opponent.hp = 0;
+    await gsapSleep(DESTINY_BOND_SLEEP_DELAY_MS);
+    await processFaint(ctx, isPlayer ? 'enemy' : 'player');
   }
 
   if (isPlayer) {
-    const { processPlayerFaintSequence } = await import('./battleFaintSequence.ts')
-    await processPlayerFaintSequence(ctx, pokemon || null, { terminateBattle })
+    const { processPlayerFaintSequence } = await import('./battleFaintSequence.ts');
+    await processPlayerFaintSequence(ctx, pokemon || null, { terminateBattle });
   } else if (pokemon) {
-    const { processEnemyFaintSequence } = await import('./battleFaintSequence.ts')
-    await processEnemyFaintSequence(ctx, pokemon, { processFaint, terminateBattle })
+    const { processEnemyFaintSequence } = await import('./battleFaintSequence.ts');
+    await processEnemyFaintSequence(ctx, pokemon, { processFaint, terminateBattle });
   }
 }
 
@@ -76,7 +87,7 @@ async function recordPreTerminationState(
   { win: winParam, fled }: BattleOutcomeFlags
 ): Promise<PreTerminationOutcome> {
   // If Showdown's protocol provided an explicit winnerResult, rely on it over local heuristics
-  const win = active.winnerResult ? (active.winnerResult === 'player') : winParam;
+  const win = active.winnerResult ? active.winnerResult === 'player' : winParam;
 
   active.over = true;
   ctx.faintedSides.value.clear();
@@ -146,7 +157,9 @@ interface WindowWithDebug extends Window {
 }
 
 function recordDebugReplayFinalState(ctx: BattleContext, active: ActiveBattleInstance): void {
-  const winObj = (typeof window !== 'undefined' ? window : undefined) as WindowWithDebug | undefined;
+  const winObj = (typeof window !== 'undefined' ? window : undefined) as
+    | WindowWithDebug
+    | undefined;
   if (winObj && winObj.__VITE_DEBUG__?.isScriptedReplayMode) {
     const p1 = (ctx.gs.state?.team ?? []).map((p: Pokemon) => ({
       uid: p.uid,
@@ -166,7 +179,11 @@ function recordDebugReplayFinalState(ctx: BattleContext, active: ActiveBattleIns
   }
 }
 
-async function finalizeBattleFlow(ctx: BattleContext, active: ActiveBattleInstance, wasSearching: boolean): Promise<void> {
+async function finalizeBattleFlow(
+  ctx: BattleContext,
+  active: ActiveBattleInstance,
+  wasSearching: boolean
+): Promise<void> {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
   const fsm = ctx.fsm;
 
@@ -221,7 +238,9 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
     await processBattleRewardsPhase(ctx, { win, fled });
     if (!isCurrentBattle(ctx, active)) return;
 
-    const isTrainerEncounter = Boolean(active.isTrainer || active.isRival || active.trainerName || active.isGym);
+    const isTrainerEncounter = Boolean(
+      active.isTrainer || active.isRival || active.trainerName || active.isGym
+    );
     if (isTrainerEncounter && ctx.animations?.triggerTrainerExit) {
       await ctx.animations.triggerTrainerExit();
     }
@@ -270,45 +289,49 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   }
 }
 
-
-
-import { syncTeamHP, syncAndPersist } from './battleStateSync.ts'
+import { syncTeamHP, syncAndPersist } from './battleStateSync.ts';
 
 /**
  * Intercepts fainted player active Pokemon or forceSwitch requests
  * to trigger faint animations or replacement menus, preventing simulator invalid choice crashes.
  */
 export async function validateAndInterceptFaintedPlayer(ctx: BattleContext): Promise<boolean> {
-  const active = ctx.activeBattle.value
-  if (!active) return false
+  const active = ctx.activeBattle.value;
+  if (!active) return false;
 
-  const p = active.player
-  if (!p) return false
+  const p = active.player;
+  if (!p) return false;
 
-  const { isRevivingForceSwitchRequest } = await import('./helpers/requestHelper.ts')
-  const isP1Forced = active.playerRequest?.forceSwitch?.some((x: unknown) => !!x) && !isRevivingForceSwitchRequest(active.playerRequest);
+  const { isRevivingForceSwitchRequest } = await import('./helpers/requestHelper.ts');
+  const isP1Forced =
+    active.playerRequest?.forceSwitch?.some((x: unknown) => !!x) &&
+    !isRevivingForceSwitchRequest(active.playerRequest);
   if (p.hp <= 0 || isP1Forced) {
     if (p.hp <= 0) {
-      console.warn(`[validateAndIntercept] Player Pokemon ${p.name} is fainted. Triggering processFaint sequence.`);
+      console.warn(
+        `[validateAndIntercept] Player Pokemon ${p.name} is fainted. Triggering processFaint sequence.`
+      );
       await processFaint(ctx, 'player');
     } else {
-      console.warn(`[validateAndIntercept] forceSwitch requested for active player. Transiting to replacements menu.`);
+      console.warn(
+        `[validateAndIntercept] forceSwitch requested for active player. Transiting to replacements menu.`
+      );
       await handleForceSwitch(ctx, 'player');
     }
-    return true
+    return true;
   }
-  return false
+  return false;
 }
 
 /**
  * Handles forced switch request (e.g. from Dragon Tail or Whirlwind).
  */
 export async function handleForceSwitch(ctx: BattleContext, side: BattleSide) {
-  const active = ctx.activeBattle.value
-  if (!active || active.over) return
+  const active = ctx.activeBattle.value;
+  if (!active || active.over) return;
 
-  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
-  const fsm = ctx.fsm
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
+  const fsm = ctx.fsm;
 
   if (side === 'player') {
     const hasHealthyPlayer = ctx.gs.state.team.some((mon: Pokemon) => mon && mon.hp > 0);
@@ -320,22 +343,22 @@ export async function handleForceSwitch(ctx: BattleContext, side: BattleSide) {
       return;
     }
 
-    ctx.uiStore.isBattleSwitchForced = true
-    const p = active.player
+    ctx.uiStore.isBattleSwitchForced = true;
+    const p = active.player;
     if (p) {
-      ctx.addLog(`¡${p.name} es forzado a retirarse!`, 'log-info', p)
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
-      gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player', type: 'forced-switch' })
+      ctx.addLog(`¡${p.name} es forzado a retirarse!`, 'log-info', p);
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM);
+      gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player', type: 'forced-switch' });
       if (ctx.animations?.awaitTween) {
-        await ctx.animations.awaitTween('escape-player')
+        await ctx.animations.awaitTween('escape-player');
       }
     }
     // The forced replacement menu is actionable as soon as the withdrawal
     // animation ends; it must not inherit the prior turn's UI lock.
-    ctx.isProcessing.value = false
-    ctx.isIntroAnimating.value = false
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
+    ctx.isProcessing.value = false;
+    ctx.isIntroAnimating.value = false;
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU);
   } else {
-    await handleEnemyForceSwitchExecution(ctx, active, processFaint)
+    await handleEnemyForceSwitchExecution(ctx, active, processFaint);
   }
 }

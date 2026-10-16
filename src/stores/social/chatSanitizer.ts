@@ -17,15 +17,17 @@ export interface PrivateChat {
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export type PrivateChatMap = Record<string, PrivateChat>; // open-record: User ID to private chat mapping
+
 export function sanitizePrivateChats(
-  chats: Record<string, PrivateChat> | undefined,
-  currentChats: Record<string, PrivateChat>,
+  chats: PrivateChatMap | undefined,
+  currentChats: PrivateChatMap,
   userId: string | undefined,
   sessionMode: string,
   forceCollapse = false,
   isInitialized = true
-): Record<string, PrivateChat> {
-  const sanitized: Record<string, PrivateChat> = {};
+): PrivateChatMap {
+  const sanitized: PrivateChatMap = {};
   if (!chats) return sanitized;
 
   for (const [id, chat] of Object.entries(chats)) {
@@ -42,11 +44,12 @@ export function sanitizePrivateChats(
       continue;
     }
 
-    const currentCollapsed = isInitialized && currentChats[id] ? currentChats[id].isCollapsed : true;
+    const currentCollapsed =
+      isInitialized && currentChats[id] ? currentChats[id].isCollapsed : true;
 
     sanitized[id] = {
       ...chat,
-      isCollapsed: forceCollapse ? true : currentCollapsed,
+      isCollapsed: forceCollapse ? true : currentCollapsed
     };
   }
 

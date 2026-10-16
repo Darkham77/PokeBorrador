@@ -69,8 +69,8 @@ the wrong sorts of responses being issued for the various request types, and con
 allow for flexibly specifying choices in a more human-friendly and intuitive way.
 
 ```ts
-import {ChoiceBuilder} from '@pkmn/view';
-import {Protocol} from '@pkmn/protocol';
+import { ChoiceBuilder } from '@pkmn/view';
+import { Protocol } from '@pkmn/protocol';
 
 const request = Protocol.parseRequest(str);
 const builder = new ChoiceBuilder(request);

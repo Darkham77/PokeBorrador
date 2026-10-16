@@ -23,16 +23,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
-import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
-import { splitSQLStatements, translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
+import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
+import {
+  splitSQLStatements,
+  translatePostgresToSqlite
+} from '../../../src/logic/db/sqlTranslator.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import { initTestDatabaseSchema } from './_testDbHelper.ts';
 
 enableCompileCache();
 
-export type SchemaParityRuleId =
-  | 'schema-parity-missing-table'
-  | 'schema-parity-missing-column';
+export type SchemaParityRuleId = 'schema-parity-missing-table' | 'schema-parity-missing-column';
 
 export const SCHEMA_PARITY_RULES: readonly SchemaParityRuleId[] = [
   'schema-parity-missing-table',
@@ -49,7 +50,10 @@ function cleanIdentifier(id: string): string {
   return id.replace(/["'`]/g, '').trim().toLowerCase();
 }
 
-function applyMigrationToDb(db: DatabaseSync, migration: (typeof DATABASE_MIGRATIONS)[number]): void {
+function applyMigrationToDb(
+  db: DatabaseSync,
+  migration: (typeof DATABASE_MIGRATIONS)[number]
+): void {
   const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
   const isSqliteSpec = migration.sqlite_sql !== undefined;
   const statements = splitSQLStatements(sqlSource);
@@ -61,7 +65,8 @@ function applyMigrationToDb(db: DatabaseSync, migration: (typeof DATABASE_MIGRAT
 
     try {
       db.exec(sql);
-    } catch { // catch-ok: ignored for harmless migration redundancies
+    } catch {
+      // catch-ok: ignored for harmless migration redundancies
       // Ignored for harmless migration redundancies
     }
   }
@@ -69,9 +74,11 @@ function applyMigrationToDb(db: DatabaseSync, migration: (typeof DATABASE_MIGRAT
 
 function extractSqliteTables(db: DatabaseSync): Map<string, Set<string>> {
   const sqliteTables = new Map<string, Set<string>>();
-  const tablesResult = db.prepare(`
+  const tablesResult = db
+    .prepare(`
     SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'
-  `).all() as { name: string }[];
+  `)
+    .all() as { name: string }[];
 
   for (const row of tablesResult) {
     const tableName = cleanIdentifier(row.name);
@@ -120,8 +127,10 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
         'schema-parity-missing-column': 'Columna ausente en SQLite'
       },
       ruleRemediations: {
-        'schema-parity-missing-table': 'Add matching CREATE TABLE statement in companion .sqlite.sql migration',
-        'schema-parity-missing-column': 'Add matching column definition in companion .sqlite.sql migration'
+        'schema-parity-missing-table':
+          'Add matching CREATE TABLE statement in companion .sqlite.sql migration',
+        'schema-parity-missing-column':
+          'Add matching column definition in companion .sqlite.sql migration'
       },
       coverage: {
         include: ['database/migrations/*.sql']
@@ -206,7 +215,8 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
   }
 
   private parseCreateTableStatements(content: string, pgTables: Map<string, Set<string>>): void {
-    const createTableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-zA-Z0-9_]+)\s*\(([\s\S]*?)\);/gi;
+    const createTableRegex =
+      /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-zA-Z0-9_]+)\s*\(([\s\S]*?)\);/gi;
     let match: RegExpExecArray | null;
 
     while ((match = createTableRegex.exec(content)) !== null) {
@@ -222,7 +232,8 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
   }
 
   private parseAlterTableStatements(content: string, pgTables: Map<string, Set<string>>): void {
-    const alterTableRegex = /ALTER\s+TABLE\s+(?:public\.)?([a-zA-Z0-9_]+)\s+ADD\s+COLUMN\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z0-9_]+)/gi;
+    const alterTableRegex =
+      /ALTER\s+TABLE\s+(?:public\.)?([a-zA-Z0-9_]+)\s+ADD\s+COLUMN\s+(?:IF\s+NOT\s+EXISTS\s+)?([a-zA-Z0-9_]+)/gi;
     let alterMatch: RegExpExecArray | null;
 
     while ((alterMatch = alterTableRegex.exec(content)) !== null) {
@@ -241,13 +252,13 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
     const pgTables = new Map<string, Set<string>>();
     if (!fs.existsSync(this.migrationsDir)) return pgTables;
 
-    const allSqlFiles = fs.readdirSync(this.migrationsDir).filter(f => f.endsWith('.sql'));
+    const allSqlFiles = fs.readdirSync(this.migrationsDir).filter((f) => f.endsWith('.sql'));
     for (const file of allSqlFiles) {
       this.recordScanned(path.posix.join('database/migrations', file));
     }
 
     const entries = allSqlFiles
-      .filter(f => !f.endsWith('.sqlite.sql'))
+      .filter((f) => !f.endsWith('.sqlite.sql'))
       .sort((a, b) => a.localeCompare(b));
 
     for (const file of entries) {
@@ -272,6 +283,10 @@ export class SchemaParityAuditor extends BaseAuditor<SchemaParityRuleId> {
 }
 
 // Canonical CLI Entrypoint
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new SchemaParityAuditor());
 }

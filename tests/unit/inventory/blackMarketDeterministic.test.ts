@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useShopStore, getDeterministicDailyBlackMarketItemIds } from '@/stores/inventory/shop';
 import { useGameStore } from '@/stores/game';
@@ -42,7 +42,7 @@ describe('Deterministic Black Market', () => {
 
     const firstItem = items[0]!;
     const originalBC = firstItem.bcPrice || 100;
-    const expectedPrice = Math.floor((originalBC * 50) * 0.80);
+    const expectedPrice = Math.floor(originalBC * 50 * 0.8);
 
     const initialMoney = gameStore.state.money;
     shopStore.buyBlackMarketItem(firstItem.id);

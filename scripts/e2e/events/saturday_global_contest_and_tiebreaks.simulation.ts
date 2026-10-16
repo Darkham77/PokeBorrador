@@ -22,7 +22,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-
 const EXPECTED_CLAIMED_MONEY = 55000;
 const EXPECTED_CLAIMED_BC = 350;
 const EXPECTED_GOLD_CAPS = 1;
@@ -39,7 +38,8 @@ export class SaturdayGlobalContestSimulation extends BaseEventSimulation {
   public async setupContestantsScenario(): Promise<void> {
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const { getServerTime } = await import('../../../src/logic/utils/timeUtils.ts');
 
@@ -97,7 +97,9 @@ export class SaturdayGlobalContestSimulation extends BaseEventSimulation {
 }
 
 test.describe('Saturday Global Open Contest & Tiebreaks E2E Simulation', () => {
-  test('enrolls contestants into open categories, advances time past Saturday, and claims epic awards in GUI', async ({ page }) => {
+  test('enrolls contestants into open categories, advances time past Saturday, and claims epic awards in GUI', async ({
+    page
+  }) => {
     const sim = new SaturdayGlobalContestSimulation(page, 'SaturdayChamp');
     await sim.setup();
     await sim.purgeEventState('gran_concurso_sabado');

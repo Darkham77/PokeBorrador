@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { useHomeWidgetsCollapse, type HomeWidgetId } from '@/composables/home/useHomeWidgetsCollapse'
+import {
+  useHomeWidgetsCollapse,
+  type HomeWidgetId
+} from '@/composables/home/useHomeWidgetsCollapse';
 
 defineProps<{
-  widgetId: HomeWidgetId
-}>()
+  widgetId: HomeWidgetId;
+}>();
 
-const { toggleCollapse } = useHomeWidgetsCollapse()
+const { toggleCollapse } = useHomeWidgetsCollapse();
 </script>
 
 <template>
@@ -22,7 +25,7 @@ const { toggleCollapse } = useHomeWidgetsCollapse()
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .minimize-widget-btn {
   @include widget-minimize-btn;

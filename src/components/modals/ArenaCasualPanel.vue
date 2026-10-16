@@ -75,12 +75,8 @@ async function copyRoomCode() {
       <div class="card-header">
         <span class="header-icon"><span class="emoji">⚔️</span></span>
         <div class="header-text">
-          <h3 class="panel-subtitle text-outline">
-            REGLAS DEL DUELO
-          </h3>
-          <p class="panel-desc">
-            Formato y límite de nivel para salas personalizadas
-          </p>
+          <h3 class="panel-subtitle text-outline">REGLAS DEL DUELO</h3>
+          <p class="panel-desc">Formato y límite de nivel para salas personalizadas</p>
         </div>
       </div>
 
@@ -144,20 +140,13 @@ async function copyRoomCode() {
       <div class="card-header">
         <span class="header-icon"><span class="emoji">🔑</span></span>
         <div class="header-text">
-          <h3 class="panel-subtitle text-outline">
-            SALA CON CÓDIGO (LAN / ONLINE)
-          </h3>
-          <p class="panel-desc">
-            Juega contra un amigo al instante compartiendo un código único
-          </p>
+          <h3 class="panel-subtitle text-outline">SALA CON CÓDIGO (LAN / ONLINE)</h3>
+          <p class="panel-desc">Juega contra un amigo al instante compartiendo un código único</p>
         </div>
       </div>
 
       <!-- Active Room Display -->
-      <div
-        v-if="livePvP.activeRoomCode"
-        class="active-room-box"
-      >
+      <div v-if="livePvP.activeRoomCode" class="active-room-box">
         <div class="room-active-header">
           <span class="active-badge text-outline">
             <span class="pulse-dot" />
@@ -196,20 +185,16 @@ async function copyRoomCode() {
       </div>
 
       <!-- Action Choice: Create or Join -->
-      <div
-        v-else
-        class="room-actions-grid"
-      >
+      <div v-else class="room-actions-grid">
         <div class="action-box create-box">
           <div class="box-top">
             <div class="box-icon-title">
               <span class="box-icon"><span class="emoji">🎲</span></span>
-              <h4 class="text-outline">
-                CREAR SALA
-              </h4>
+              <h4 class="text-outline">CREAR SALA</h4>
             </div>
             <p class="box-desc">
-              Genera un código de 4 caracteres con tus reglas seleccionadas y compártelo con tu rival.
+              Genera un código de 4 caracteres con tus reglas seleccionadas y compártelo con tu
+              rival.
             </p>
           </div>
           <button
@@ -228,9 +213,7 @@ async function copyRoomCode() {
           <div class="box-top">
             <div class="box-icon-title">
               <span class="box-icon"><span class="emoji">🚪</span></span>
-              <h4 class="text-outline">
-                UNIRSE A SALA
-              </h4>
+              <h4 class="text-outline">UNIRSE A SALA</h4>
             </div>
             <p class="box-desc">
               Ingresa el código que te compartió tu rival para unirte a su combate de inmediato.
@@ -242,11 +225,12 @@ async function copyRoomCode() {
               v-model="joinCodeInput"
               type="text"
               maxlength="4"
+              aria-label="Código de 4 caracteres para unirse a la sala"
               placeholder="Ej: 7ABC"
               class="code-input text-outline"
               @input="joinCodeInput = joinCodeInput.toUpperCase()"
               @keyup.enter="handleJoinRoom"
-            >
+            />
             <button
               id="arena-casual-panel-btn-isjoining-unirse"
               v-gsap-hover="'button'"
@@ -264,8 +248,8 @@ async function copyRoomCode() {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/core/_mixins' as *;
 
 $gray: #94a3b8;
 

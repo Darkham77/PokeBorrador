@@ -1,37 +1,37 @@
-import { logger } from '@/logic/utils/logger'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { useModalStore } from '@/stores/modals'
-import type { ItemId } from '@/data/inventory/items'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { MapRouteId } from '@/data/world/map-assets'
-import { resetBattleMinigameFlags } from '@/logic/battle/battleMinigames'
-import type { BattleMinigame } from '@/types/battle/battle'
+import { logger } from '@/logic/utils/logger';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useModalStore } from '@/stores/modals';
+import type { ItemId } from '@/data/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { resetBattleMinigameFlags } from '@/logic/battle/battleMinigames';
+import type { BattleMinigame, CoreBattleStatKey } from '@/types/battle/battle';
 import {
   applyFishingLevelAndIvBonus,
   type FishingDifficultyKey,
   FISHING_DIFFICULTIES
-} from '@/components/modals/fishingGameHelper'
+} from '@/components/modals/fishingGameHelper';
 
 interface BattleStoreMinigameRef {
   state?: {
-    minigame?: BattleMinigame | null
-    locationId?: MapRouteId
-    rarity?: number
-  } | null
-  attackerSide: string | null
-  activeMove: unknown
-  enemyStages: Record<string, number | undefined>
-  addLog: (text: string, type: string, icon: string) => void
-  completeBattleFlow: (flow: string) => Promise<void>
-  startEncounter: () => Promise<void>
+    minigame?: BattleMinigame | null;
+    locationId?: MapRouteId;
+    rarity?: number;
+  } | null;
+  attackerSide: string | null;
+  activeMove: unknown;
+  enemyStages: Partial<Record<CoreBattleStatKey, number>>;
+  addLog: (text: string, type: string, icon: string) => void;
+  completeBattleFlow: (flow: string) => Promise<void>;
+  startEncounter: () => Promise<void>;
 }
 
 interface MapStoreMinigameRef {
-  triggerArchaeologyRewards: (locId: MapRouteId, difficulty: string) => Promise<void>
+  triggerArchaeologyRewards: (locId: MapRouteId, difficulty: string) => Promise<void>;
 }
 
 interface UIStoreMinigameRef {
-  notify: (msg: string, icon: string) => void
+  notify: (msg: string, icon: string) => void;
 }
 
 export function useBattleMinigames(
@@ -41,107 +41,118 @@ export function useBattleMinigames(
   enemy: { value: Pokemon | null | undefined },
   resetAll: () => void
 ) {
-  const handleMinigameCancel = async () => {
-    logger.warn('BattleArenaView', 'Minigame CANCELLED by user')
+  const resetBattleMinigameState = () => {
     if (battleStore.state) {
-      resetBattleMinigameFlags(battleStore.state)
+      resetBattleMinigameFlags(battleStore.state);
     }
-    resetAll()
-    battleStore.attackerSide = null
-    battleStore.activeMove = null
-    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
-    await battleStore.completeBattleFlow('search')
-  }
+    resetAll();
+    battleStore.attackerSide = null;
+    battleStore.activeMove = null;
+    battleStore.enemyStages = {
+      atk: 0,
+      def: 0,
+      spa: 0,
+      spd: 0,
+      spe: 0,
+      accuracy: 0,
+      evasion: 0,
+      reflect: 0,
+      lightScreen: 0,
+      safeguard: 0,
+      mist: 0,
+      spikes: 0
+    };
+  };
+
+  const handleMinigameCancel = async () => {
+    logger.warn('BattleArenaView', 'Minigame CANCELLED by user');
+    resetBattleMinigameState();
+    await battleStore.completeBattleFlow('search');
+  };
 
   const handleFishingSuccess = async (difficulty: FishingDifficultyKey = 'easy') => {
-    logger.success('BattleArenaView', `Fishing SUCCESS (${difficulty})`)
-    useModalStore().close('Fishing')
+    logger.success('BattleArenaView', `Fishing SUCCESS (${difficulty})`);
+    useModalStore().close('Fishing');
 
     if (enemy.value) {
-      const cfg = FISHING_DIFFICULTIES[difficulty] || FISHING_DIFFICULTIES.easy
-      const oldLevel = enemy.value.level
-      const levelBonus = applyFishingLevelAndIvBonus(enemy.value, difficulty)
+      const cfg = FISHING_DIFFICULTIES[difficulty] || FISHING_DIFFICULTIES.easy;
+      const oldLevel = enemy.value.level;
+      const levelBonus = applyFishingLevelAndIvBonus(enemy.value, difficulty);
       if (levelBonus > 0) {
-        uiStore.notify(`¡Pesca ${cfg.label}! ${enemy.value.name} subió a Nivel ${enemy.value.level} (+${levelBonus})`, '🎣')
-        battleStore.addLog(`¡Pesca ${cfg.label}! ${enemy.value.name} subió de Nivel ${oldLevel} a ${enemy.value.level} (+${levelBonus}).`, 'log-info', '🎣')
+        uiStore.notify(
+          `¡Pesca ${cfg.label}! ${enemy.value.name} subió a Nivel ${enemy.value.level} (+${levelBonus})`,
+          '🎣'
+        );
+        battleStore.addLog(
+          `¡Pesca ${cfg.label}! ${enemy.value.name} subió de Nivel ${oldLevel} a ${enemy.value.level} (+${levelBonus}).`,
+          'log-info',
+          '🎣'
+        );
       }
       if (cfg.rerollIVs) {
-        battleStore.addLog(`¡Pesca Experta! Se aplicó un reroll de IVs a ${enemy.value.name}.`, 'log-info', '🌟')
+        battleStore.addLog(
+          `¡Pesca Experta! Se aplicó un reroll de IVs a ${enemy.value.name}.`,
+          'log-info',
+          '🌟'
+        );
       }
     }
 
     if (battleStore.state) {
-      resetBattleMinigameFlags(battleStore.state)
+      resetBattleMinigameFlags(battleStore.state);
     }
-    resetAll()
-    await battleStore.startEncounter()
-  }
+    resetAll();
+    await battleStore.startEncounter();
+  };
 
   const handleFishingFail = async () => {
-    logger.warn('BattleArenaView', 'Fishing FAIL')
-    useModalStore().close('Fishing')
-    uiStore.notify('El Pokémon escapó...', '💨')
-    battleStore.addLog('El Pokémon escapó...', 'log-info', '💨')
+    logger.warn('BattleArenaView', 'Fishing FAIL');
+    useModalStore().close('Fishing');
+    uiStore.notify('El Pokémon escapó...', '💨');
+    battleStore.addLog('El Pokémon escapó...', 'log-info', '💨');
 
-    if (battleStore.state) {
-      resetBattleMinigameFlags(battleStore.state)
-    }
-    resetAll()
-    battleStore.attackerSide = null
-    battleStore.activeMove = null
-    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+    resetBattleMinigameState();
 
-    await battleStore.completeBattleFlow('search')
-  }
+    await battleStore.completeBattleFlow('search');
+  };
 
   const handleArchaeologySuccess = async (difficulty: string) => {
-    logger.success('BattleArenaView', `Archaeology SUCCESS: ${difficulty}`)
-    useModalStore().close('Archaeology')
-    const locId = battleStore.state?.locationId || 'route1'
+    logger.success('BattleArenaView', `Archaeology SUCCESS: ${difficulty}`);
+    useModalStore().close('Archaeology');
+    const locId = battleStore.state?.locationId || 'route1';
 
-    if (battleStore.state) {
-      resetBattleMinigameFlags(battleStore.state)
-    }
-    resetAll()
-    battleStore.attackerSide = null
-    battleStore.activeMove = null
-    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+    resetBattleMinigameState();
 
-    await mapStore.triggerArchaeologyRewards(locId, difficulty)
-    await battleStore.completeBattleFlow('search')
-  }
+    await mapStore.triggerArchaeologyRewards(locId, difficulty);
+    await battleStore.completeBattleFlow('search');
+  };
 
   const handleArchaeologyFail = async () => {
-    logger.warn('BattleArenaView', 'Archaeology FAIL')
-    useModalStore().close('Archaeology')
-    const enemyId = enemy.value?.id
-    let fossilId: ItemId = 'oldamber'
-    let emoji = '💎'
+    logger.warn('BattleArenaView', 'Archaeology FAIL');
+    useModalStore().close('Archaeology');
+    const enemyId = enemy.value?.id;
+    let fossilId: ItemId = 'oldamber';
+    let emoji = '💎';
     if (enemyId === 'kabuto') {
-      fossilId = 'domefossil'
-      emoji = '🛡'
+      fossilId = 'domefossil';
+      emoji = '🛡';
     } else if (enemyId === 'omanyte') {
-      fossilId = 'helixfossil'
-      emoji = '🐚'
+      fossilId = 'helixfossil';
+      emoji = '🐚';
     }
 
-    if (battleStore.state) {
-      resetBattleMinigameFlags(battleStore.state)
-    }
-    resetAll()
-    battleStore.attackerSide = null
-    battleStore.activeMove = null
-    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+    resetBattleMinigameState();
 
-    const { getItemName, getItemById } = await import('@/data/inventory/items')
-    const fossilName = getItemName(fossilId)
-    const itemData = getItemById(fossilId)
-    const itemSprite = (itemData && itemData.sprite) ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : emoji
+    const { getItemName, getItemById } = await import('@/data/inventory/items');
+    const fossilName = getItemName(fossilId);
+    const itemData = getItemById(fossilId);
+    const itemSprite =
+      itemData && itemData.sprite ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : emoji;
 
-    uiStore.notify(`El ${fossilName} se desmoronó...`, itemSprite)
-    battleStore.addLog(`El ${fossilName} se desmoronó...`, 'log-info', fossilId)
-    await battleStore.completeBattleFlow('search')
-  }
+    uiStore.notify(`El ${fossilName} se desmoronó...`, itemSprite);
+    battleStore.addLog(`El ${fossilName} se desmoronó...`, 'log-info', fossilId);
+    await battleStore.completeBattleFlow('search');
+  };
 
   return {
     handleMinigameCancel,
@@ -149,5 +160,5 @@ export function useBattleMinigames(
     handleFishingFail,
     handleArchaeologySuccess,
     handleArchaeologyFail
-  }
+  };
 }

@@ -1,35 +1,41 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import gsap from 'gsap'
-import { useUIStore } from '@/stores/ui'
-import BaseModal from '@/components/common/BaseModal.vue'
-import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
-import TournamentRulesHeader from '@/components/team/TournamentRulesHeader.vue'
-import TeamManagementHeaderTabs from '@/components/team/TeamManagementHeaderTabs.vue'
-import type { TeamManagementTab } from '@/types/battle/pvp'
-import { useTeamManagement } from '@/composables/team/useTeamManagement'
+import { computed } from 'vue';
+import gsap from 'gsap';
+import { useUIStore } from '@/stores/ui';
+import BaseModal from '@/components/common/BaseModal.vue';
+import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue';
+import TournamentRulesHeader from '@/components/team/TournamentRulesHeader.vue';
+import TeamManagementHeaderTabs from '@/components/team/TeamManagementHeaderTabs.vue';
+import type { TeamManagementTab } from '@/types/battle/pvp';
+import { useTeamManagement } from '@/composables/team/useTeamManagement';
 
 interface Props {
-  initialTab?: TeamManagementTab
+  initialTab?: TeamManagementTab;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   initialTab: 'adventure'
-})
+});
 
-const TAB_TRANSITION_Y_PX = 4
-const TAB_TRANSITION_DURATION_SEC = 0.3
+const TAB_TRANSITION_Y_PX = 4;
+const TAB_TRANSITION_DURATION_SEC = 0.3;
 
 const onTabEnter = (el: Element, done: () => void) => {
   gsap.fromTo(
     el,
     { opacity: 0, y: TAB_TRANSITION_Y_PX },
-    { opacity: 1, y: 0, duration: TAB_TRANSITION_DURATION_SEC, ease: 'power2.out', onComplete: done }
-  )
-}
+    {
+      opacity: 1,
+      y: 0,
+      duration: TAB_TRANSITION_DURATION_SEC,
+      ease: 'power2.out',
+      onComplete: done
+    }
+  );
+};
 
-const uiStore = useUIStore()
-const isSmallScreen = computed(() => uiStore.isSmallScreen)
+const uiStore = useUIStore();
+const isSmallScreen = computed(() => uiStore.isSmallScreen);
 
 const {
   activeTab,
@@ -59,10 +65,10 @@ const {
   openItem,
   unequipItem,
   sendToBox
-} = useTeamManagement(props)
+} = useTeamManagement(props);
 
-const modalType = computed(() => (isSmallScreen.value ? 'fullscreen' : 'center'))
-const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
+const modalType = computed(() => (isSmallScreen.value ? 'fullscreen' : 'center'));
+const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'));
 </script>
 
 <template>
@@ -82,19 +88,13 @@ const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
         :pvp6-count="pvp6Count"
         :war-count="warCount"
         :max-war-slots="maxWarSlots"
-        @select-tab="(tab) => activeTab = tab"
+        @select-tab="(tab) => (activeTab = tab)"
       />
     </template>
 
     <!-- ADVENTURE SECTION -->
-    <Transition
-      :css="false"
-      @enter="onTabEnter"
-    >
-      <section
-        v-if="activeTab === 'adventure'"
-        class="tm-section-container"
-      >
+    <Transition :css="false" @enter="onTabEnter">
+      <section v-if="activeTab === 'adventure'" class="tm-section-container">
         <div class="slots-grid">
           <UnifiedTeamSlot
             v-for="(p, i) in adventureTeam"
@@ -109,7 +109,7 @@ const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
             @send-to-box="sendToBox(p)"
             @select="handleSlotSelect"
             @drag-start="handleDragStart"
-            @drag-over="(idx) => touchOverIndex = idx"
+            @drag-over="(idx) => (touchOverIndex = idx)"
             @drag-end="handleDragEnd"
             @drop-pokemon="handleDrop"
           />
@@ -118,14 +118,8 @@ const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
     </Transition>
 
     <!-- PVP SECTION -->
-    <Transition
-      :css="false"
-      @enter="onTabEnter"
-    >
-      <section
-        v-if="activeTab === 'pvp'"
-        class="tm-section-container"
-      >
+    <Transition :css="false" @enter="onTabEnter">
+      <section v-if="activeTab === 'pvp'" class="tm-section-container">
         <TournamentRulesHeader
           :theme-name="tournamentThemeName"
           :level-cap="tournamentLevelCap"
@@ -151,7 +145,7 @@ const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
             @unequip-item="unequipItem(p)"
             @select="handleSlotSelect"
             @drag-start="handleDragStart"
-            @drag-over="(idx) => touchOverIndex = idx"
+            @drag-over="(idx) => (touchOverIndex = idx)"
             @drag-end="handleDragEnd"
             @drop-pokemon="handleDrop"
           />
@@ -160,14 +154,8 @@ const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
     </Transition>
 
     <!-- PVP 6v6 SECTION -->
-    <Transition
-      :css="false"
-      @enter="onTabEnter"
-    >
-      <section
-        v-if="activeTab === 'pvp6'"
-        class="tm-section-container"
-      >
+    <Transition :css="false" @enter="onTabEnter">
+      <section v-if="activeTab === 'pvp6'" class="tm-section-container">
         <TournamentRulesHeader
           :theme-name="tournamentThemeName"
           :level-cap="tournamentLevelCap"
@@ -193,7 +181,7 @@ const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
             @unequip-item="unequipItem(p)"
             @select="handleSlotSelect"
             @drag-start="handleDragStart"
-            @drag-over="(idx) => touchOverIndex = idx"
+            @drag-over="(idx) => (touchOverIndex = idx)"
             @drag-end="handleDragEnd"
             @drop-pokemon="handleDrop"
           />
@@ -202,14 +190,8 @@ const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
     </Transition>
 
     <!-- WAR SECTION -->
-    <Transition
-      :css="false"
-      @enter="onTabEnter"
-    >
-      <section
-        v-if="activeTab === 'war'"
-        class="tm-section-container"
-      >
+    <Transition :css="false" @enter="onTabEnter">
+      <section v-if="activeTab === 'war'" class="tm-section-container">
         <div class="slots-grid">
           <UnifiedTeamSlot
             v-for="(p, i) in warTeam"
@@ -224,7 +206,7 @@ const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
             @unequip-item="unequipItem(p)"
             @select="handleSlotSelect"
             @drag-start="handleDragStart"
-            @drag-over="(idx) => touchOverIndex = idx"
+            @drag-over="(idx) => (touchOverIndex = idx)"
             @drag-end="handleDragEnd"
             @drop-pokemon="handleDrop"
           />
@@ -235,4 +217,3 @@ const modalMaxWidth = computed(() => (isSmallScreen.value ? '100dvw' : '940px'))
 </template>
 
 <style scoped src="./TeamManagementModal.styles.scss" lang="scss"></style>
-

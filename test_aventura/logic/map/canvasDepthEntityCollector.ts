@@ -64,7 +64,8 @@ export function collectStandingDepthEntities(
   if (wilderness?.props) {
     for (const prop of wilderness.props) {
       if (buildingFootprintMask[prop.y]?.[prop.x]) continue;
-      if (continent.terrainMatrix[prop.y]?.[prop.x] !== 'grass' && prop.type !== 'boulder') continue;
+      if (continent.terrainMatrix[prop.y]?.[prop.x] !== 'grass' && prop.type !== 'boulder')
+        continue;
       if ((continent.heightmap[prop.y]?.[prop.x] ?? 0) !== 0) continue;
       if (continent.resolvedMountain.occupiedFootCells[prop.y]?.[prop.x]) continue;
 
@@ -159,7 +160,10 @@ export function collectStandingDepthEntities(
       for (const prop of vig.props) {
         if (!buildingFootprintMask[prop.y]?.[prop.x]) {
           let propH = 1;
-          if (prop.prefabFile === 'poke_fountain.png' || prop.prefabFile === 'poke_street_lamp.png') {
+          if (
+            prop.prefabFile === 'poke_fountain.png' ||
+            prop.prefabFile === 'poke_street_lamp.png'
+          ) {
             propH = CANVAS_RENDERER.HEIGHT_SPAN_FOUNTAIN;
           } else if (prop.prefabFile === 'poke_port_cargo_crates_stack.png') {
             propH = CANVAS_RENDERER.HEIGHT_SPAN_CARGO;
@@ -194,7 +198,9 @@ export function collectStandingDepthEntities(
       if (mCell && mCell.elevation > 0 && mCell.role === 'floor_center') {
         const px = c * CANVAS_TILE_SIZE;
         const py = r * CANVAS_TILE_SIZE;
-        const h = Math.sin(c * CANVAS_RENDERER.RUBBLE_HASH_X + r * CANVAS_RENDERER.RUBBLE_HASH_Y) * CANVAS_RENDERER.RUBBLE_HASH_MULT;
+        const h =
+          Math.sin(c * CANVAS_RENDERER.RUBBLE_HASH_X + r * CANVAS_RENDERER.RUBBLE_HASH_Y) *
+          CANVAS_RENDERER.RUBBLE_HASH_MULT;
         const val = h - Math.floor(h);
         if (val > CANVAS_RENDERER.BOULDER_THRESHOLD) {
           standingEntities.push({
@@ -251,9 +257,10 @@ export function collectStandingDepthEntities(
         if (prop.type === 'fountain') {
           ySort = (prop.y + CANVAS_RENDERER.HEIGHT_SPAN_FOUNTAIN) * CANVAS_TILE_SIZE;
         } else if (prop.type === 'bench') {
-          ySort = (prop.prefabFile.includes('_v') || prop.prefabFile.includes('vertical'))
-            ? (prop.y + 2) * CANVAS_TILE_SIZE
-            : (prop.y + 1) * CANVAS_TILE_SIZE;
+          ySort =
+            prop.prefabFile.includes('_v') || prop.prefabFile.includes('vertical')
+              ? (prop.y + 2) * CANVAS_TILE_SIZE
+              : (prop.y + 1) * CANVAS_TILE_SIZE;
         } else if (prop.type === 'statue') {
           drawPy = py - CANVAS_RENDERER.STATUE_Y_OFFSET_PX;
           ySort = (prop.y + 2) * CANVAS_TILE_SIZE;
@@ -289,7 +296,10 @@ export function collectStandingDepthEntities(
           const cy = t.y + dy;
           const cx = t.x + dx;
           if (
-            cy < 0 || cy >= H || cx < 0 || cx >= W ||
+            cy < 0 ||
+            cy >= H ||
+            cx < 0 ||
+            cx >= W ||
             buildingFootprintMask[cy]?.[cx] ||
             wilderness?.tallGrassGrid?.[cy]?.[cx] ||
             continent.terrainMatrix[cy]?.[cx] !== 'grass' ||
@@ -329,7 +339,10 @@ export function collectStandingDepthEntities(
               const cy = ty + fdy;
               const cx = tx + fdx;
               if (
-                cy < 0 || cy >= H || cx < 0 || cx >= W ||
+                cy < 0 ||
+                cy >= H ||
+                cx < 0 ||
+                cx >= W ||
                 buildingFootprintMask[cy]?.[cx] ||
                 wilderness?.tallGrassGrid?.[cy]?.[cx] ||
                 continent.terrainMatrix[cy]?.[cx] !== 'grass' ||

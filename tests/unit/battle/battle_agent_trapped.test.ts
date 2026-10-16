@@ -1,5 +1,9 @@
-import { test, expect } from 'vitest';
-import { BattleAgent, type ChoiceRequest, type SidePokemon } from '../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
+import { test, expect } from 'vite-plus/test';
+import {
+  BattleAgent,
+  type ChoiceRequest,
+  type SidePokemon
+} from '../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
 
 test('BattleAgent should not choose voluntary switches when active pokemon is trapped', () => {
   // Configurar agente de pruebas
@@ -8,7 +12,7 @@ test('BattleAgent should not choose voluntary switches when active pokemon is tr
     'p2',
     movesToTest,
     null, // abilityTriggerMoveSlot
-    4,    // periodicSwitchEvery (dispara switch en turno 4)
+    4, // periodicSwitchEvery (dispara switch en turno 4)
     false // useItemsEnabled
   );
 
@@ -65,13 +69,7 @@ test('BattleAgent should not choose voluntary switches when active pokemon is tr
   expect(choiceTrapped).toContain('move');
 
   // Caso 2: Mismo escenario de turno 4, pero el Pokémon NO está atrapado (trapped: boolean)
-  const agentFree = new BattleAgent(
-    'p2',
-    movesToTest,
-    null,
-    4,
-    false
-  );
+  const agentFree = new BattleAgent('p2', movesToTest, null, 4, false);
 
   for (let i = 0; i < 3; i++) {
     agentFree.decide({

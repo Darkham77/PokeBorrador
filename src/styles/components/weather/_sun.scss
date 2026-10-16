@@ -6,7 +6,11 @@
     &::after {
       position: absolute;
       z-index: var(--z-low);
-      background: Radial-Gradient(ellipse at center, Rgb(255 215 0 / 0%) 45%, Rgb(255 200 0 / 35%) 100%);
+      background: Radial-Gradient(
+        ellipse at center,
+        Rgb(255 215 0 / 0%) 45%,
+        Rgb(255 200 0 / 35%) 100%
+      );
       content: '';
       inset: 0;
       box-shadow: var(--shadow-card);
@@ -22,7 +26,11 @@
     &::after {
       position: absolute;
       z-index: var(--z-low);
-      background: Radial-Gradient(ellipse at center, Rgb(255 255 255 / 0%) 35%, Rgb(255 230 100 / 45%) 100%);
+      background: Radial-Gradient(
+        ellipse at center,
+        Rgb(255 255 255 / 0%) 35%,
+        Rgb(255 230 100 / 45%) 100%
+      );
       content: '';
       inset: 0;
       box-shadow: var(--shadow-card);
@@ -43,7 +51,6 @@
       inset: 0;
       pointer-events: none;
       box-shadow: var(--shadow-card);
-
     }
   }
 }

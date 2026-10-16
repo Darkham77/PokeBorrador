@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { PokemonSet, Battle } from '@pkmn/sim';
@@ -20,7 +20,7 @@ import {
   STATUS_EMOJI_MAP,
   STATUS_SHORT_LABEL_MAP,
   STATUS_NAME_MAP,
-  STATUS_TOOLTIP_MAP,
+  STATUS_TOOLTIP_MAP
 } from '@/logic/battle/battleUiUtils';
 
 const CERTIFIED_SEED = [31, 32, 33, 34];
@@ -28,8 +28,16 @@ const E2E_MODE = () => true;
 const FUZZER_COVERAGE_FACTORY_INSTALLATIONS = 20_000;
 const BASE_STATS = { hp: 100, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 };
 const FALLBACK_SET: PokemonSet = {
-  name: 'AdapterFallback', species: 'Mew', item: '', ability: 'Synchronize', moves: ['splash'], nature: 'Serious', gender: 'M', level: 100,
-  evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+  name: 'AdapterFallback',
+  species: 'Mew',
+  item: '',
+  ability: 'Synchronize',
+  moves: ['splash'],
+  nature: 'Serious',
+  gender: 'M',
+  level: 100,
+  evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+  ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
 };
 
 const P2_ONLY_HISTORY_INDEX = 0;
@@ -38,7 +46,11 @@ const NORMAL_HISTORY_INDEX = 1;
 describe('Showdown Mappers, Adapters & Protocol Suite', () => {
   describe('Showdown spreadModify adapter installation', () => {
     it('remains usable after every shared caller installs the adapter', () => {
-      for (let installation = 0; installation < FUZZER_COVERAGE_FACTORY_INSTALLATIONS; installation++) {
+      for (
+        let installation = 0;
+        installation < FUZZER_COVERAGE_FACTORY_INSTALLATIONS;
+        installation++
+      ) {
         createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, CERTIFIED_SEED);
       }
       patchShowdownSpreadModify(E2E_MODE);
@@ -46,8 +58,40 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
 
       assert.doesNotThrow(() => {
         battle.spreadModify(BASE_STATS, FALLBACK_SET);
-        battle.setPlayer('p1', { name: 'P1', team: [{ name: 'AdapterPlayer', species: 'Mew', item: '', ability: 'Synchronize', moves: ['splash'], nature: 'Serious', gender: 'M', level: 100, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }] });
-        battle.setPlayer('p2', { name: 'P2', team: [{ name: 'AdapterEnemy', species: 'Blissey', item: '', ability: 'NaturalCure', moves: ['splash'], nature: 'Serious', gender: 'F', level: 100, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }] });
+        battle.setPlayer('p1', {
+          name: 'P1',
+          team: [
+            {
+              name: 'AdapterPlayer',
+              species: 'Mew',
+              item: '',
+              ability: 'Synchronize',
+              moves: ['splash'],
+              nature: 'Serious',
+              gender: 'M',
+              level: 100,
+              evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+              ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+            }
+          ]
+        });
+        battle.setPlayer('p2', {
+          name: 'P2',
+          team: [
+            {
+              name: 'AdapterEnemy',
+              species: 'Blissey',
+              item: '',
+              ability: 'NaturalCure',
+              moves: ['splash'],
+              nature: 'Serious',
+              gender: 'F',
+              level: 100,
+              evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+              ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+            }
+          ]
+        });
       }, 'Repeated adapter installation must preserve the original Showdown spreadModify implementation.');
     });
   });
@@ -98,7 +142,7 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
       const runner = new ShowdownBattleRunner(['move 1', 'switch 2'], ['move 3']);
       const reqP1 = { active: [{ moves: [{ id: 'tackle' }] }] };
       const choice = runner.resolveAndConsumeNextChoice('p1', reqP1);
-      
+
       expect(choice).toBe('move 1');
       expect(runner.p1ChoiceIdx).toBe(1);
     });
@@ -107,7 +151,7 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
       const runner = new ShowdownBattleRunner(['move 1'], []);
       const reqP1Wait = { wait: true };
       const choice = runner.resolveAndConsumeNextChoice('p1', reqP1Wait);
-      
+
       expect(choice).toBe('pass');
       expect(runner.p1ChoiceIdx).toBe(0);
     });
@@ -116,7 +160,7 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
       const runner = new ShowdownBattleRunner(['switch 3'], []);
       const reqP1Force = { forceSwitch: [true] };
       const choice = runner.resolveAndConsumeNextChoice('p1', reqP1Force);
-      
+
       expect(choice).toBe('switch 3');
       expect(runner.p1ChoiceIdx).toBe(1);
     });
@@ -125,7 +169,7 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
       const runner = new ShowdownBattleRunner([], []);
       const reqP1Team = { teamPreview: true };
       const choice = runner.resolveAndConsumeNextChoice('p1', reqP1Team);
-      
+
       expect(choice).toBe('team 1');
       expect(runner.p1ChoiceIdx).toBe(0);
     });
@@ -136,7 +180,11 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
       const rawShowdownItemString = 'Air Balloon';
       const canonicalItemId = requireItemId(toID(rawShowdownItemString));
 
-      assert.strictEqual(canonicalItemId, 'airballoon', 'Canonical ItemId for "Air Balloon" must be "airballoon"');
+      assert.strictEqual(
+        canonicalItemId,
+        'airballoon',
+        'Canonical ItemId for "Air Balloon" must be "airballoon"'
+      );
       assert.doesNotThrow(() => {
         getItemById(canonicalItemId);
       }, 'getItemById must succeed for normalized ItemId');
@@ -153,7 +201,7 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
         line: '|-enditem|p1a: Mew|Sitrus Berry|[eat]',
         p: () => null,
         getPoke: () => fakePoke as any,
-        getSide: () => null,
+        getSide: () => null
       } as any;
 
       assert.doesNotThrow(() => {
@@ -170,8 +218,8 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
         replayHistoryIdx: P2_ONLY_HISTORY_INDEX,
         history: [
           { p1Choice: '', p2Choice: 'switch 2' },
-          { p1Choice: 'move 3', p2Choice: 'move 1' },
-        ],
+          { p1Choice: 'move 3', p2Choice: 'move 1' }
+        ]
       };
 
       assert.equal(ShowdownBattleRunner.requireHistoryChoice(debug, 'p1'), '');
@@ -187,7 +235,7 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
     it('certified history preserves both choices for a simultaneous forced replacement', () => {
       const debug: object = {
         replayHistoryIdx: P2_ONLY_HISTORY_INDEX,
-        history: [{ p1Choice: 'switch 3', p2Choice: 'switch 2' }],
+        history: [{ p1Choice: 'switch 3', p2Choice: 'switch 2' }]
       };
 
       assert.equal(ShowdownBattleRunner.requireHistoryChoice(debug, 'p1'), 'switch 3');
@@ -198,7 +246,7 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
       const debug = {
         history: [{ p1Choice: 'move 1', p2Choice: 'move 1' }],
         replayHistoryIdx: NORMAL_HISTORY_INDEX,
-        certifiedReplayWorkerEnded: true,
+        certifiedReplayWorkerEnded: true
       };
 
       assert.equal(ShowdownBattleRunner.requirePendingHistoryEntry(debug), null);
@@ -208,19 +256,22 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
       const debug = {
         history: [{ p1Choice: 'move 1', p2Choice: 'move 1' }],
         replayHistoryIdx: NORMAL_HISTORY_INDEX,
-        certifiedReplayWorkerEnded: false,
+        certifiedReplayWorkerEnded: false
       };
 
       assert.throws(
         () => ShowdownBattleRunner.requirePendingHistoryEntry(debug),
-        /Certified replay history step is missing/,
+        /Certified replay history step is missing/
       );
     });
   });
 
   describe('ShowdownBattleEngine Replayer Forced Switch Parity', () => {
     it('should replay all certified fuzzer cases without throwing invalid choice on forced switch turns', () => {
-      const casesPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
+      const casesPath = path.resolve(
+        process.cwd(),
+        'scripts/e2e/results/fuzzer_certified_cases.json'
+      );
       if (!fs.existsSync(casesPath)) {
         return;
       }
@@ -234,7 +285,7 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
         mode: 'replayer',
         playerChoices: targetCase.playerChoices,
         enemyChoices: targetCase.enemyChoices,
-        seed: targetCase.seed,
+        seed: targetCase.seed
       });
       if (targetCase.p1Team && targetCase.p2Team) {
         engine.battle.setPlayer('p1', { team: targetCase.p1Team });
@@ -246,7 +297,7 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
         const output = engine.executeTurn({
           p1Choice: step.p1Choice,
           p2Choice: step.p2Choice,
-          certifiedHistoryStep: step,
+          certifiedHistoryStep: step
         });
         expect(output).toBeDefined();
       }
@@ -266,14 +317,15 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
 
       const mockRequest = {
         side: {
-          pokemon: [
-            { ident: 'p1a: 80be8f0b' },
-            { ident: 'p1a: 7507a15a' }
-          ]
+          pokemon: [{ ident: 'p1a: 80be8f0b' }, { ident: 'p1a: 7507a15a' }]
         }
       };
 
-      const result = ShowdownTeamMapper.injectUidsIntoRequest(mockBattle as unknown as Battle, 'p1', mockRequest);
+      const result = ShowdownTeamMapper.injectUidsIntoRequest(
+        mockBattle as unknown as Battle,
+        'p1',
+        mockRequest
+      );
 
       expect(result).toBeTruthy();
       if (result) {
@@ -286,22 +338,22 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
     it('injectUidsIntoRequest throws error on missing matching UID', () => {
       const mockBattle = {
         p1: {
-          pokemon: [
-            { uid: '80be8f0b-85e6-4893-b550-2c6e8d63bc11', name: 'Mew' }
-          ]
+          pokemon: [{ uid: '80be8f0b-85e6-4893-b550-2c6e8d63bc11', name: 'Mew' }]
         }
       };
 
       const mockRequest = {
         side: {
-          pokemon: [
-            { ident: 'p1a: 7507a15a' }
-          ]
+          pokemon: [{ ident: 'p1a: 7507a15a' }]
         }
       };
 
       expect(() => {
-        ShowdownTeamMapper.injectUidsIntoRequest(mockBattle as unknown as Battle, 'p1', mockRequest);
+        ShowdownTeamMapper.injectUidsIntoRequest(
+          mockBattle as unknown as Battle,
+          'p1',
+          mockRequest
+        );
       }).toThrow(/No UID found on simulator Pokemon instance/);
     });
   });
@@ -310,28 +362,28 @@ describe('Showdown Mappers, Adapters & Protocol Suite', () => {
     const expectedStatuses = ['brn', 'psn', 'slp', 'par', 'frz', 'tox'];
 
     it('contains mapping for every expected status in STATUS_EMOJI_MAP', () => {
-      expectedStatuses.forEach(status => {
+      expectedStatuses.forEach((status) => {
         const emoji = (STATUS_EMOJI_MAP as Record<string, string>)[status];
         assert.ok(emoji, `Missing emoji mapping for status: ${status}`);
       });
     });
 
     it('contains mapping for every expected status in STATUS_SHORT_LABEL_MAP', () => {
-      expectedStatuses.forEach(status => {
+      expectedStatuses.forEach((status) => {
         const label = (STATUS_SHORT_LABEL_MAP as Record<string, string>)[status];
         assert.ok(label, `Missing short label mapping for status: ${status}`);
       });
     });
 
     it('contains mapping for every expected status in STATUS_NAME_MAP', () => {
-      expectedStatuses.forEach(status => {
+      expectedStatuses.forEach((status) => {
         const name = (STATUS_NAME_MAP as Record<string, string>)[status];
         assert.ok(name, `Missing name mapping for status: ${status}`);
       });
     });
 
     it('contains mapping for every expected status in STATUS_TOOLTIP_MAP', () => {
-      expectedStatuses.forEach(status => {
+      expectedStatuses.forEach((status) => {
         const tooltip = (STATUS_TOOLTIP_MAP as Record<string, string>)[status];
         assert.ok(tooltip, `Missing tooltip description for status: ${status}`);
       });

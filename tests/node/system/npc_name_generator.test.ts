@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import {
   detectGenderFromSprite,
@@ -61,10 +61,16 @@ describe('npcNameGenerator', () => {
   it('generates names from respective male/female pools', () => {
     for (let i = 0; i < 20; i++) {
       const maleName = generateNpcName({ gender: 'M', includeTitle: false });
-      assert.ok((MALE_NAMES as readonly string[]).includes(maleName), `Male name ${maleName} should be in MALE_NAMES`);
+      assert.ok(
+        (MALE_NAMES as readonly string[]).includes(maleName),
+        `Male name ${maleName} should be in MALE_NAMES`
+      );
 
       const femaleName = generateNpcName({ gender: 'F', includeTitle: false });
-      assert.ok((FEMALE_NAMES as readonly string[]).includes(femaleName), `Female name ${femaleName} should be in FEMALE_NAMES`);
+      assert.ok(
+        (FEMALE_NAMES as readonly string[]).includes(femaleName),
+        `Female name ${femaleName} should be in FEMALE_NAMES`
+      );
     }
   });
 
@@ -73,6 +79,9 @@ describe('npcNameGenerator', () => {
     for (let i = 0; i < 100; i++) {
       generated.add(generateNpcName({ spriteId: 'youngster', includeTitle: false }));
     }
-    assert.ok(generated.size >= 25, `Expected high diversity, got ${generated.size} unique names out of 100`);
+    assert.ok(
+      generated.size >= 25,
+      `Expected high diversity, got ${generated.size} unique names out of 100`
+    );
   });
 });

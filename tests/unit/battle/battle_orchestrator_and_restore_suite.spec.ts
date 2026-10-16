@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { ref } from 'vue';
 import { restoreBattleState } from '@/logic/battle/orchestratorRestoreHelper';
 import * as searchLoop from '@/logic/battle/searchLoop';
@@ -108,7 +108,9 @@ describe('Battle Orchestrator & F5 State Restoration Suite', () => {
     let handleCompletionSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-      handleCompletionSpy = vi.spyOn(searchLoop, 'handleBattleFlowCompletion').mockResolvedValue(undefined);
+      handleCompletionSpy = vi
+        .spyOn(searchLoop, 'handleBattleFlowCompletion')
+        .mockResolvedValue(undefined);
     });
 
     it('should faithfully restore active combat with exact enemy, HP, stages, and logs', async () => {
@@ -126,7 +128,16 @@ describe('Battle Orchestrator & F5 State Restoration Suite', () => {
         wasSearching: true,
         playerStages: createMockStages({ atk: 1 }),
         enemyStages: createMockStages({ def: -1 }),
-        battleLogs: [{ id: '1', msg: '¡Lanzallamas!', type: 'log-info', side: 'player', icon: null, iconType: null }]
+        battleLogs: [
+          {
+            id: '1',
+            msg: '¡Lanzallamas!',
+            type: 'log-info',
+            side: 'player',
+            icon: null,
+            iconType: null
+          }
+        ]
       };
 
       await restoreBattleState(ctx, savedBattle);
@@ -180,7 +191,9 @@ describe('Battle Orchestrator & F5 State Restoration Suite', () => {
     let handleCompletionSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-      handleCompletionSpy = vi.spyOn(searchLoop, 'handleBattleFlowCompletion').mockResolvedValue(undefined);
+      handleCompletionSpy = vi
+        .spyOn(searchLoop, 'handleBattleFlowCompletion')
+        .mockResolvedValue(undefined);
     });
 
     it('restores wild encounter in search phase back to SEARCH_PHASE upon F5 when turnCount is 0', async () => {
@@ -261,13 +274,20 @@ describe('Battle Orchestrator & F5 State Restoration Suite', () => {
       const { evaluateAndUseItem } = await import('@/logic/battle/ai/heuristic/aiItemEvaluator');
       const faintedEnemy = createMockPokemon({ hp: 0, fainted: true });
       const activeBattleRef = ref<BattleState>({
-        player: createMockPokemon({ uid: 'p1', id: 'gengar', name: 'Gengar', hp: 100, maxHp: 100, fainted: false }),
+        player: createMockPokemon({
+          uid: 'p1',
+          id: 'gengar',
+          name: 'Gengar',
+          hp: 100,
+          maxHp: 100,
+          fainted: false
+        }),
         enemy: faintedEnemy,
         enemyTeam: [faintedEnemy],
         enemyInventory: { potion: 2 },
         trainerName: 'Lara',
         isTrainer: true,
-        over: false,
+        over: false
       } as unknown as BattleState);
 
       const ctx = {
@@ -281,7 +301,11 @@ describe('Battle Orchestrator & F5 State Restoration Suite', () => {
       const used = await evaluateAndUseItem(ctx, faintedEnemy);
       expect(used).toBe(false);
       expect(faintedEnemy.hp).toBe(0);
-      expect(ctx.addLog).not.toHaveBeenCalledWith(expect.stringContaining('usó Poción en Tentacruel'), expect.anything(), expect.anything());
+      expect(ctx.addLog).not.toHaveBeenCalledWith(
+        expect.stringContaining('usó Poción en Tentacruel'),
+        expect.anything(),
+        expect.anything()
+      );
     });
 
     it('handleBattleFlowCompletion("map") must clear activeBattle and persist respecting 60s rule', async () => {
@@ -382,9 +406,29 @@ describe('Battle Orchestrator & F5 State Restoration Suite', () => {
         transition: vi.fn().mockResolvedValue(undefined),
         currentState: ref('INITIALIZING')
       };
-      const deadTentacruel = createMockPokemon({ uid: 't-1', id: 'tentacruel', name: 'Tentacruel', hp: 0, fainted: true });
-      const aliveJolteon = createMockPokemon({ uid: 'j-2', id: 'jolteon', name: 'Jolteon', hp: 120, maxHp: 120, fainted: false });
-      const playerMon = createMockPokemon({ uid: 'p-1', id: 'charizard', name: 'Charizard', hp: 150, maxHp: 150, fainted: false });
+      const deadTentacruel = createMockPokemon({
+        uid: 't-1',
+        id: 'tentacruel',
+        name: 'Tentacruel',
+        hp: 0,
+        fainted: true
+      });
+      const aliveJolteon = createMockPokemon({
+        uid: 'j-2',
+        id: 'jolteon',
+        name: 'Jolteon',
+        hp: 120,
+        maxHp: 120,
+        fainted: false
+      });
+      const playerMon = createMockPokemon({
+        uid: 'p-1',
+        id: 'charizard',
+        name: 'Charizard',
+        hp: 150,
+        maxHp: 150,
+        fainted: false
+      });
 
       const battleData = {
         isTrainer: true,
@@ -501,10 +545,13 @@ describe('Battle Orchestrator & F5 State Restoration Suite', () => {
 
     it('should generate active encounter directly during search loop', async () => {
       await searchLoop.handleBattleFlowCompletion(mockSearchCtx, 'search');
-      
+
       expect(mockSearchCtx.activeBattle.value!._initialEnemy).toBeDefined();
       expect(mockSearchCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.INITIALIZING);
-      expect(mockSearchCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PREPARATION);
+      expect(mockSearchCtx.fsm.transition).toHaveBeenCalledWith(
+        BATTLE_STATES.SEARCH_PHASE,
+        BATTLE_SUBSTATES.PREPARATION
+      );
     });
 
     it('should clear escape flags before returning to the search loop', async () => {

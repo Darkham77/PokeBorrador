@@ -72,20 +72,22 @@ export interface BuildingPrefabMeta {
 const RAW_MANIFEST = manifestJson as readonly CanonicalAssetEntry[];
 
 export const CANONICAL_ASSETS_BY_ID: Record<string, CanonicalAssetEntry> = Object.freeze(
+  // open-record: Canonical GBA asset entries indexed by asset id
   RAW_MANIFEST.reduce<Record<string, CanonicalAssetEntry>>((acc, entry) => {
+    // open-record: Canonical GBA asset entries indexed by asset id
     acc[entry.id] = entry;
     return acc;
   }, {})
 );
 
 export const CANONICAL_BUILDINGS: Record<string, CanonicalAssetEntry> = Object.freeze(
-  RAW_MANIFEST.filter((e) => e.category === 'buildings').reduce<Record<string, CanonicalAssetEntry>>(
-    (acc, entry) => {
-      acc[entry.id] = entry;
-      return acc;
-    },
-    {}
-  )
+  // open-record: Canonical GBA building entries indexed by building id
+  RAW_MANIFEST.filter((e) => e.category === 'buildings').reduce<
+    Record<string, CanonicalAssetEntry> // open-record: Canonical GBA building entries indexed by building id
+  >((acc, entry) => {
+    acc[entry.id] = entry;
+    return acc;
+  }, {})
 );
 
 /**
@@ -103,7 +105,9 @@ export function getBuildingPrefabMeta(id: string): BuildingPrefabMeta {
     runtimePath: asset.runtimePath,
     width: asset.tileDimensions.w,
     height: asset.tileDimensions.h,
-    doorOffsets: asset.doorOffsets ?? [{ dx: Math.floor(asset.tileDimensions.w / 2), dy: asset.tileDimensions.h - 1 }],
+    doorOffsets: asset.doorOffsets ?? [
+      { dx: Math.floor(asset.tileDimensions.w / 2), dy: asset.tileDimensions.h - 1 }
+    ],
     collisionMask: asset.collisionMask
   };
 }

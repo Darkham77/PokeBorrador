@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/battle/BattleReplayCombatantPod.vue
- * 
+ *
  * Reusable combatant pod for battle replays (used for both P1 and P2).
  */
 
@@ -42,16 +42,9 @@ function getBallPipEmoji(options: BallPipStatus): string {
 </script>
 
 <template>
-  <div
-    class="combatant-pod"
-    :class="isPlayer ? 'player-pod' : 'enemy-pod'"
-  >
+  <div class="combatant-pod" :class="isPlayer ? 'player-pod' : 'enemy-pod'">
     <!-- If player pod, sprite is on top -->
-    <BattleReplayCombatantSprite
-      v-if="isPlayer"
-      :pokemon="activePokemon"
-      :is-player="isPlayer"
-    />
+    <BattleReplayCombatantSprite v-if="isPlayer" :pokemon="activePokemon" :is-player="isPlayer" />
 
     <div class="pod-header">
       <span class="pod-species">{{ displayName }}</span>
@@ -66,16 +59,14 @@ function getBallPipEmoji(options: BallPipStatus): string {
         :class="{ fainted: p.isFainted, active: p.isActive }"
         :title="p.name"
       >
-        <span class="emoji">{{ getBallPipEmoji({ fainted: p.isFainted, active: p.isActive }) }}</span>
+        <span class="emoji">{{
+          getBallPipEmoji({ fainted: p.isFainted, active: p.isActive })
+        }}</span>
       </span>
     </div>
 
     <!-- If enemy pod, sprite is after balls row -->
-    <BattleReplayCombatantSprite
-      v-if="!isPlayer"
-      :pokemon="activePokemon"
-      :is-player="isPlayer"
-    />
+    <BattleReplayCombatantSprite v-if="!isPlayer" :pokemon="activePokemon" :is-player="isPlayer" />
 
     <!-- Fog-of-War Revealed Details -->
     <BattleReplayFogInspectCard :pokemon="activePokemon" />
@@ -83,4 +74,3 @@ function getBallPipEmoji(options: BallPipStatus): string {
 </template>
 
 <style scoped src="./BattleReplayModal.styles.scss" lang="scss"></style>
-

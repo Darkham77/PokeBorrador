@@ -1,12 +1,13 @@
-
 import { ITEM_PRICES, INVENTORY_LEVEL_TIERS } from '../constants/items.ts';
 import type { BattleDifficulty, BattleItemEffectKind } from '@/types/battle/battle';
+import type { ItemId } from '@/data/inventory/items';
+import type { Inventory } from '@/types/inventory/items';
 
 const POKEBALL_BUDGET_HALF_RATIO = 0.5;
 const CURE_PURCHASE_ROLL_THRESHOLD = 0.8;
 
 interface PurchaseCandidate {
-  id: string;
+  id: ItemId;
   price: number;
   type: BattleItemEffectKind;
 }
@@ -49,26 +50,26 @@ function getUnlockedCandidates(maxLevel: number): PurchaseCandidate[] {
 function pickCandidateByRoll(affordable: readonly PurchaseCandidate[]): PurchaseCandidate | null {
   const roll = Math.random();
   if (roll < POKEBALL_BUDGET_HALF_RATIO) {
-    return affordable.find(c => c.type === 'heal') || affordable[0] || null;
+    return affordable.find((c) => c.type === 'heal') || affordable[0] || null;
   }
   if (roll < CURE_PURCHASE_ROLL_THRESHOLD) {
-    return affordable.find(c => c.type === 'cure') || affordable[0] || null;
+    return affordable.find((c) => c.type === 'cure') || affordable[0] || null;
   }
-  return affordable.find(c => c.type === 'revive') || affordable[0] || null;
+  return affordable.find((c) => c.type === 'revive') || affordable[0] || null;
 }
 
 function purchaseConsumables(
   recoveryBudget: number,
   maxItems: number,
   candidates: readonly PurchaseCandidate[],
-  inventory: Record<string, number>
+  inventory: Inventory
 ): number {
   let currentSpent = 0;
   let itemCount = 0;
   const sortedCandidates = candidates.toSorted((a, b) => b.price - a.price);
 
   while (itemCount < maxItems) {
-    const affordable = sortedCandidates.filter(c => (recoveryBudget - currentSpent) >= c.price);
+    const affordable = sortedCandidates.filter((c) => recoveryBudget - currentSpent >= c.price);
     if (affordable.length === 0) break;
 
     const selected = pickCandidateByRoll(affordable);
@@ -82,8 +83,8 @@ function purchaseConsumables(
   return currentSpent;
 }
 
-function getPokeballCandidates(maxLevel: number): { id: string; price: number }[] {
-  const candidates: { id: string; price: number }[] = [
+function getPokeballCandidates(maxLevel: number): { id: ItemId; price: number }[] {
+  const candidates: { id: ItemId; price: number }[] = [
     { id: 'pokeball', price: ITEM_PRICES.pokeball! }
   ];
   if (maxLevel >= INVENTORY_LEVEL_TIERS.SUPER_TIER) {
@@ -95,16 +96,12 @@ function getPokeballCandidates(maxLevel: number): { id: string; price: number }[
   return candidates;
 }
 
-function purchasePokeballs(
-  maxLevel: number,
-  pokeballBudget: number,
-  inventory: Record<string, number>
-): number {
+function purchasePokeballs(maxLevel: number, pokeballBudget: number, inventory: Inventory): number {
   let spentPokeball = 0;
   const sortedPBs = getPokeballCandidates(maxLevel).sort((a, b) => b.price - a.price);
 
   while (true) {
-    const affordable = sortedPBs.filter(c => (pokeballBudget - spentPokeball) >= c.price);
+    const affordable = sortedPBs.filter((c) => pokeballBudget - spentPokeball >= c.price);
     if (affordable.length === 0) break;
 
     const selected = affordable[0]!;
@@ -125,7 +122,7 @@ export function generateNPCInventory(
   isGym = false,
   isRival = false,
   archetype?: string
-): { inventory: Record<string, number>; remainingMoney: number } {
+): { inventory: Inventory; remainingMoney: number } {
   // 1. Determine money budget
   const isSpecial = isRival || archetype === 'policeman' || archetype === 'rocket';
   const baseBudget = calculateNPCBaseBudget(maxLevel, { isGym, isSpecial });
@@ -139,7 +136,7 @@ export function generateNPCInventory(
   const candidates = getUnlockedCandidates(maxLevel);
 
   // 4. Perform smart iterative purchases
-  const inventory: Record<string, number> = {};
+  const inventory: Inventory = {};
   let pokeballBudget = Math.floor(budget * 0.5);
   if (pokeballBudget < ITEM_PRICES.pokeball! && budget >= ITEM_PRICES.pokeball!) {
     pokeballBudget = ITEM_PRICES.pokeball!;
@@ -151,7 +148,6 @@ export function generateNPCInventory(
 
   return { inventory, remainingMoney: budget - currentSpent - spentPokeball };
 }
-
 
 export const NPC_BUDGET_CONFIG = {
   GYM_LEVEL_MULT: 100,
@@ -181,15 +177,23 @@ export function calculateNPCBaseBudget(maxLevel: number, options: NPCBudgetOptio
     return (maxLevel * NPC_BUDGET_CONFIG.GYM_LEVEL_MULT + NPC_BUDGET_CONFIG.GYM_BASE_BONUS) * 2;
   }
   if (isSpecial) {
-    return (maxLevel * NPC_BUDGET_CONFIG.SPECIAL_LEVEL_MULT + NPC_BUDGET_CONFIG.SPECIAL_BASE_BONUS) * 2;
+    return (
+      (maxLevel * NPC_BUDGET_CONFIG.SPECIAL_LEVEL_MULT + NPC_BUDGET_CONFIG.SPECIAL_BASE_BONUS) * 2
+    );
   }
-  return (maxLevel * NPC_BUDGET_CONFIG.STANDARD_LEVEL_MULT + NPC_BUDGET_CONFIG.STANDARD_BASE_BONUS) * 2;
+  return (
+    (maxLevel * NPC_BUDGET_CONFIG.STANDARD_LEVEL_MULT + NPC_BUDGET_CONFIG.STANDARD_BASE_BONUS) * 2
+  );
 }
 
 /**
  * Calculates final budget applying difficulty and random factor.
  */
-export function calculateNPCFinalBudget(baseBudget: number, difficulty: BattleDifficulty, randomFactor: number): number {
+export function calculateNPCFinalBudget(
+  baseBudget: number,
+  difficulty: BattleDifficulty,
+  randomFactor: number
+): number {
   let difficultyMult = 1.0;
   if (difficulty === 'normal') difficultyMult = NPC_BUDGET_CONFIG.DIFFICULTY_MULT_NORMAL;
   if (difficulty === 'hard') difficultyMult = 3.0;
@@ -206,7 +210,11 @@ export function calculateNPCMaxItems(
 ): number {
   const { isGym = false, isSpecial = false } = options;
   if (isGym) {
-    return difficulty === 'hard' ? NPC_BUDGET_CONFIG.GYM_MAX_ITEMS_HARD : (difficulty === 'normal' ? NPC_BUDGET_CONFIG.GYM_MAX_ITEMS_NORMAL : 4);
+    return difficulty === 'hard'
+      ? NPC_BUDGET_CONFIG.GYM_MAX_ITEMS_HARD
+      : difficulty === 'normal'
+        ? NPC_BUDGET_CONFIG.GYM_MAX_ITEMS_NORMAL
+        : 4;
   }
   if (isSpecial) {
     return NPC_BUDGET_CONFIG.SPECIAL_MAX_ITEMS;

@@ -1,101 +1,99 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useShopStore } from '@/stores/inventory/shop'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { formatCurrency } from '@/logic/utils/formatters'
-import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
-import { MAX_BAG_ITEM_QUANTITY } from '@/logic/constants/gameplay'
-import type { ItemId } from '@/data/inventory/items'
+import { computed } from 'vue';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
+import { MAX_BAG_ITEM_QUANTITY } from '@/logic/constants/gameplay';
+import type { ItemId } from '@/data/inventory/items';
 
 interface ShopItem {
-  id: ItemId
-  name: string
-  cat: string
-  price: number
-  desc: string
-  sprite: string
-  unlockLv?: number
-  market?: boolean
-  tier?: string
+  id: ItemId;
+  name: string;
+  cat: string;
+  price: number;
+  desc: string;
+  sprite: string;
+  unlockLv?: number;
+  market?: boolean;
+  tier?: string;
 }
 
 interface Props {
-  item: ShopItem
+  item: ShopItem;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const shopStore = useShopStore()
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const shopStore = useShopStore();
+const gameStore = useGameStore();
+const uiStore = useUIStore();
 
 // Reactivity for unlock status
 const isUnlocked = computed(() => {
-  return (gameStore.state.trainerLevel || 1) >= (props.item.unlockLv || 1)
-})
+  return (gameStore.state.trainerLevel || 1) >= (props.item.unlockLv || 1);
+});
 
-const ROCKET_PRICE_SURCHARGE_MULTIPLIER = 1.20
+const ROCKET_PRICE_SURCHARGE_MULTIPLIER = 1.2;
 
 // Calculate the price modifier locally (reproducing the store logic accurately)
 const priceModifier = computed(() => {
-  const playerClass = gameStore.state.playerClass
-  if (playerClass === 'rocket') return ROCKET_PRICE_SURCHARGE_MULTIPLIER
-  return 1.0
-})
+  const playerClass = gameStore.state.playerClass;
+  if (playerClass === 'rocket') return ROCKET_PRICE_SURCHARGE_MULTIPLIER;
+  return 1.0;
+});
 
 const finalPrice = computed(() => {
-  return Math.floor(props.item.price * priceModifier.value)
-})
+  return Math.floor(props.item.price * priceModifier.value);
+});
 
-const isModifiedPrice = computed(() => priceModifier.value !== 1.0)
+const isModifiedPrice = computed(() => priceModifier.value !== 1.0);
 
-const quantity = computed(() => shopStore.getQuantity(props.item.id))
-const canIncreaseQuantity = computed(() => isUnlocked.value && quantity.value < MAX_BAG_ITEM_QUANTITY)
+const quantity = computed(() => shopStore.getQuantity(props.item.id));
+const canIncreaseQuantity = computed(
+  () => isUnlocked.value && quantity.value < MAX_BAG_ITEM_QUANTITY
+);
 
-const tierLabel = computed(() => getItemTierLabel(props.item.tier))
+const tierLabel = computed(() => getItemTierLabel(props.item.tier));
 
 const handleQuantityChange = (e: Event) => {
   if (e.target) {
-    const val = Number((e.target as HTMLInputElement).value)
-    shopStore.setQuantity(props.item.id, val)
+    const val = Number((e.target as HTMLInputElement).value);
+    shopStore.setQuantity(props.item.id, val);
   }
-}
+};
 
 const adjustQuantity = (amount: number) => {
-  shopStore.setQuantity(props.item.id, quantity.value + amount)
-}
+  shopStore.setQuantity(props.item.id, quantity.value + amount);
+};
 
 const buy = () => {
   if (!isUnlocked.value) {
-    uiStore.notify('¡Objeto bloqueado! Sube tu nivel de entrenador.', '🔒')
-    return
+    uiStore.notify('¡Objeto bloqueado! Sube tu nivel de entrenador.', '🔒');
+    return;
   }
-  shopStore.buyItem(props.item.id)
-}
+  shopStore.buyItem(props.item.id);
+};
 
-const tierColor = computed(() => getItemTierColor(props.item.tier))
+const tierColor = computed(() => getItemTierColor(props.item.tier));
 
 const handleImageError = (e: Event) => {
   if (e.target) {
-    (e.target as HTMLImageElement).style.display = 'none'
+    (e.target as HTMLImageElement).style.display = 'none';
   }
-}
+};
 </script>
 
 <template>
-  <div 
+  <div
     class="shop-item-card"
     :class="[{ locked: !isUnlocked }, 'tier-' + (item.tier || 'common')]"
     :style="{ '--tier-color': tierColor }"
   >
     <!-- Tier Tag (Retro Style) -->
-    <span
-      v-if="item.tier"
-      class="tier-tag"
-      :class="'tier-' + item.tier"
-    >
+    <span v-if="item.tier" class="tier-tag" :class="'tier-' + item.tier">
       {{ tierLabel }}
     </span>
 
@@ -105,22 +103,14 @@ const handleImageError = (e: Event) => {
           :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
           :alt="item.name"
           width="32"
-        
           height="32"
           @error="handleImageError"
-        >
+        />
 
         <!-- Lock Overlay if locked -->
-        <div 
-          v-if="!isUnlocked"
-          class="item-lock-badge"
-        >
-          <p class="lock-icon emoji">
-            🔒
-          </p>
-          <p class="lock-lvl">
-            NV. {{ item.unlockLv }}
-          </p>
+        <div v-if="!isUnlocked" class="item-lock-badge">
+          <p class="lock-icon emoji">🔒</p>
+          <p class="lock-lvl">NV. {{ item.unlockLv }}</p>
         </div>
       </div>
 
@@ -133,10 +123,7 @@ const handleImageError = (e: Event) => {
           <span class="price-val">{{ formatCurrency(finalPrice) }}</span>
 
           <!-- Original price crossed out if modified -->
-          <span 
-            v-if="isModifiedPrice" 
-            class="original-price"
-          >
+          <span v-if="isModifiedPrice" class="original-price">
             ₽{{ formatCurrency(item.price) }}
           </span>
         </div>
@@ -149,10 +136,7 @@ const handleImageError = (e: Event) => {
 
     <div class="item-actions">
       <!-- Total Price Display (Only if quantity > 1) -->
-      <div 
-        v-if="quantity > 1" 
-        class="item-total-price-tag"
-      >
+      <div v-if="quantity > 1" class="item-total-price-tag">
         <span class="total-label">Total:</span>
         <span class="total-val">₽{{ formatCurrency(finalPrice * quantity) }}</span>
       </div>
@@ -160,7 +144,7 @@ const handleImageError = (e: Event) => {
       <!-- Quantity controls (Disabled if locked) -->
       <div class="qty-ctrl-group">
         <button
-          id="shop-item-card-btn-1" 
+          id="shop-item-card-btn-1"
           class="qty-btn"
           :disabled="!isUnlocked || quantity <= 1"
           @click.stop="adjustQuantity(-1)"
@@ -168,15 +152,16 @@ const handleImageError = (e: Event) => {
           -
         </button>
         <input
-          id="shop-item-card-input-quantitychange" 
-          type="number" 
+          id="shop-item-card-input-quantitychange"
+          type="number"
           class="qty-input"
           :value="quantity"
+          :aria-label="'Cantidad de ' + item.name"
           :disabled="!isUnlocked"
           @change="handleQuantityChange"
-        >
+        />
         <button
-          id="shop-item-card-btn-2" 
+          id="shop-item-card-btn-2"
           class="qty-btn"
           :disabled="!canIncreaseQuantity"
           @click.stop="adjustQuantity(1)"
@@ -207,4 +192,3 @@ const handleImageError = (e: Event) => {
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_shop_cards.scss"></style>
-

@@ -1,76 +1,92 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { recalcPokemonStats, getLegalSpeciesMoves, getRandomLegalMoves } from '@/logic/pokemon/pokemonFactory'
-import { getExpNeededPure } from '@/logic/pokemon/statsMath'
-import { generateRandomIVs, getMovesAtLevel } from '@/logic/pokemon/pokemonUtils'
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
-import { SHOP_ITEMS, requireItemId } from '@/data/inventory/items'
-import { toNatureId } from '@/data/battle/natures'
-import { requireAbilityId } from '@/data/battle/abilities'
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { getSelectableSpecies, getSelectableNatures, getSelectableAbilities } from '@/logic/utils/routeSpawnHelpers'
+import { computed, watch } from 'vue';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import {
+  recalcPokemonStats,
+  getLegalSpeciesMoves,
+  getRandomLegalMoves
+} from '@/logic/pokemon/pokemonFactory';
+import { getExpNeededPure } from '@/logic/pokemon/statsMath';
+import { generateRandomIVs, getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { SHOP_ITEMS, requireItemId } from '@/data/inventory/items';
+import { toNatureId } from '@/data/battle/natures';
+import { requireAbilityId } from '@/data/battle/abilities';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import {
+  getSelectableSpecies,
+  getSelectableNatures,
+  getSelectableAbilities
+} from '@/logic/utils/routeSpawnHelpers';
 
 // Subcomponents
-import DebugSearchSelect from './DebugSearchSelect.vue'
-import PokemonIVEditor from './PokemonIVEditor.vue'
-import PokemonMovePicker from './PokemonMovePicker.vue'
-import PokemonPreview from './PokemonPreview.vue'
-import PokemonBaseStats from './PokemonBaseStats.vue'
+import DebugSearchSelect from './DebugSearchSelect.vue';
+import PokemonIVEditor from './PokemonIVEditor.vue';
+import PokemonMovePicker from './PokemonMovePicker.vue';
+import PokemonPreview from './PokemonPreview.vue';
+import PokemonBaseStats from './PokemonBaseStats.vue';
 
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves'
-import type { PokemonStatKey, PokemonMoveId } from '@/types/pokemon/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
+import type { PokemonStatKey, PokemonMoveId } from '@/types/pokemon/pokemon';
 
 const props = defineProps<{
-  pokemon: Pokemon
-  index: number
-}>()
+  pokemon: Pokemon;
+  index: number;
+}>();
 
-const activePoke = computed(() => props.pokemon)
+const activePoke = computed(() => props.pokemon);
 
 // --- DATA LISTS FOR EDITORS ---
-const allSpecies = computed(() => getSelectableSpecies(true))
-const allNatures = getSelectableNatures()
-const allAbilities = getSelectableAbilities()
+const allSpecies = computed(() => getSelectableSpecies(true));
+const allNatures = getSelectableNatures();
+const allAbilities = getSelectableAbilities();
 const allItems = computed(() => {
   return [
     { id: '', name: 'Ninguno' },
-    ...SHOP_ITEMS
-      .filter(i => i.cat === 'combat_held' || i.cat === 'breeding_held')
-      .map(i => ({ id: i.id, name: i.name }))
-  ]
-})
-
+    ...SHOP_ITEMS.filter((i) => i.cat === 'combat_held' || i.cat === 'breeding_held').map((i) => ({
+      id: i.id,
+      name: i.name
+    }))
+  ];
+});
 
 // --- ACTIVE POKEMON EDIT COMPUTEDS ---
 const activePokeNature = computed({
   get: () => activePoke.value.nature || 'hardy',
-  set: (val: string) => { activePoke.value.nature = toNatureId(val) }
-})
+  set: (val: string) => {
+    activePoke.value.nature = toNatureId(val);
+  }
+});
 
 const activePokeAbility = computed({
   get: () => activePoke.value.ability || '',
-  set: (val: string) => { activePoke.value.ability = val ? requireAbilityId(val) : undefined }
-})
+  set: (val: string) => {
+    activePoke.value.ability = val ? requireAbilityId(val) : undefined;
+  }
+});
 
 const activePokeHeldItem = computed({
   get: () => activePoke.value.heldItem || '',
-  set: (val: string) => { activePoke.value.heldItem = val ? requireItemId(val) : null }
-})
+  set: (val: string) => {
+    activePoke.value.heldItem = val ? requireItemId(val) : null;
+  }
+});
 
 const activePokeNickname = computed({
   get: () => activePoke.value.nickname || '',
-  set: (val: string) => { activePoke.value.nickname = val }
-})
+  set: (val: string) => {
+    activePoke.value.nickname = val;
+  }
+});
 
 const activeSpeciesMoves = computed<PokemonMoveId[]>(() => {
-  return getLegalSpeciesMoves(activePoke.value.id, activePoke.value.level)
-})
+  return getLegalSpeciesMoves(activePoke.value.id, activePoke.value.level);
+});
 
 const activeBaseStats = computed(() => {
-  const data = pokemonDataProvider.getPokemonData(activePoke.value.id)
-  if (!data) return { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+  const data = pokemonDataProvider.getPokemonData(activePoke.value.id);
+  if (!data) return { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
   return {
     hp: data.hp || 0,
     atk: data.atk || 0,
@@ -78,140 +94,167 @@ const activeBaseStats = computed(() => {
     spa: data.spa || 0,
     spd: data.spd || 0,
     spe: data.spe || 0
-  }
-})
+  };
+});
 
 const activePokeMoves = computed({
   get: () => {
-    const moves = activePoke.value.moves.map(m => m?.id || null)
-    while (moves.length < 4) moves.push(null)
-    return moves
+    const moves = activePoke.value.moves.map((m) => m?.id || null);
+    while (moves.length < 4) moves.push(null);
+    return moves;
   },
   set: (val: (PokemonMoveId | null)[]) => {
-    const formatted = val.map(mId => {
-      if (!mId) return null
-      const mData = pokemonDataProvider.getMoveData(mId)
-      if (!mData) throw new Error(`[IndividualPokemonEditor] No se encontró información para el movimiento: ${mId}`)
-      return {
-        id: mId,
-        name: mData.name,
-        pp: mData.pp,
-        maxPP: mData.pp,
-        type: mData.type || 'normal',
-        power: mData.power || 0,
-        acc: mData.acc || 100,
-        cat: (mData.cat || 'physical') as MoveCategory
-      }
-    }).filter(Boolean) as Pokemon['moves']
-    activePoke.value.moves = formatted
+    const formatted = val
+      .map((mId) => {
+        if (!mId) return null;
+        const mData = pokemonDataProvider.getMoveData(mId);
+        if (!mData)
+          throw new Error(
+            `[IndividualPokemonEditor] No se encontró información para el movimiento: ${mId}`
+          );
+        return {
+          id: mId,
+          name: mData.name,
+          pp: mData.pp,
+          maxPP: mData.pp,
+          type: mData.type || 'normal',
+          power: mData.power || 0,
+          acc: mData.acc || 100,
+          cat: (mData.cat || 'physical') as MoveCategory
+        };
+      })
+      .filter(Boolean) as Pokemon['moves'];
+    activePoke.value.moves = formatted;
   }
-})
+});
 
 // --- RANDOMIZERS ---
 function randomizeActiveSpecies() {
-  const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb())
-  const randomId = requirePokemonSpeciesId(dbKeys[Math.floor(Math.random() * dbKeys.length)] || 'bulbasaur')
-  selectEditPokeSpecies({ id: randomId })
+  const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb());
+  const randomId = requirePokemonSpeciesId(
+    dbKeys[Math.floor(Math.random() * dbKeys.length)] || 'bulbasaur'
+  );
+  selectEditPokeSpecies({ id: randomId });
 }
 
 function randomizeActiveLevel() {
-  activePoke.value.level = Math.floor(Math.random() * MAX_POKEMON_LEVEL) + 1
+  activePoke.value.level = Math.floor(Math.random() * MAX_POKEMON_LEVEL) + 1;
 }
 
 function randomizeActiveNature() {
-  const randomNature = allNatures[Math.floor(Math.random() * allNatures.length)]
+  const randomNature = allNatures[Math.floor(Math.random() * allNatures.length)];
   if (randomNature) {
-    activePokeNature.value = randomNature.id
+    activePokeNature.value = randomNature.id;
   }
 }
 
 function randomizeActiveAbility() {
-  const abilities = pokemonDataProvider.getSpeciesAbilities(activePoke.value.id)
+  const abilities = pokemonDataProvider.getSpeciesAbilities(activePoke.value.id);
   if (abilities.length > 0) {
-    const randomAbility = abilities[Math.floor(Math.random() * abilities.length)]
+    const randomAbility = abilities[Math.floor(Math.random() * abilities.length)];
     if (randomAbility) {
-      activePokeAbility.value = randomAbility
+      activePokeAbility.value = randomAbility;
     }
   }
 }
 
 function randomizeActiveIVs() {
-  activePoke.value.ivs = generateRandomIVs()
-  recalcPokemonStats(activePoke.value)
+  activePoke.value.ivs = generateRandomIVs();
+  recalcPokemonStats(activePoke.value);
 }
 
 function randomizeActiveHeldItem() {
-  const randomItem = allItems.value[Math.floor(Math.random() * allItems.value.length)]
+  const randomItem = allItems.value[Math.floor(Math.random() * allItems.value.length)];
   if (randomItem) {
-    activePokeHeldItem.value = randomItem.id
+    activePokeHeldItem.value = randomItem.id;
   }
 }
 
 function randomizeActiveNickname() {
-  const names = ['POKI', 'CRACK', 'VICIADO', 'RAYO', 'TITAN', 'FURIA', 'CHISPA', 'GOKU', 'PEPE'] as const
-  const RANDOM_NICKNAME_CHANCE_THRESHOLD = 0.3 as const
-  activePokeNickname.value = Math.random() > RANDOM_NICKNAME_CHANCE_THRESHOLD ? names[Math.floor(Math.random() * names.length)] || '' : ''
+  const names = [
+    'POKI',
+    'CRACK',
+    'VICIADO',
+    'RAYO',
+    'TITAN',
+    'FURIA',
+    'CHISPA',
+    'GOKU',
+    'PEPE'
+  ] as const;
+  const RANDOM_NICKNAME_CHANCE_THRESHOLD = 0.3 as const;
+  activePokeNickname.value =
+    Math.random() > RANDOM_NICKNAME_CHANCE_THRESHOLD
+      ? names[Math.floor(Math.random() * names.length)] || ''
+      : '';
 }
 
 function selectEditPokeSpecies(p: { id: string }) {
-  const speciesId = requirePokemonSpeciesId(p.id)
-  activePoke.value.id = speciesId
-  activePoke.value.name = pokemonDataProvider.resolveSpeciesName(speciesId)
-  
+  const speciesId = requirePokemonSpeciesId(p.id);
+  activePoke.value.id = speciesId;
+  activePoke.value.name = pokemonDataProvider.resolveSpeciesName(speciesId);
+
   // Set default ability
-  const abilities = pokemonDataProvider.getSpeciesAbilities(speciesId)
+  const abilities = pokemonDataProvider.getSpeciesAbilities(speciesId);
   if (abilities.length > 0) {
-    activePoke.value.ability = abilities[0] ? requireAbilityId(abilities[0]) : undefined
+    activePoke.value.ability = abilities[0] ? requireAbilityId(abilities[0]) : undefined;
   }
 
   // Refill moves based on level
-  const defaultMoves = getMovesAtLevel(speciesId, activePoke.value.level)
-  activePokeMoves.value = defaultMoves.filter((m): m is typeof m & { id: string } => !!m?.id).map(m => requirePokemonMoveId(m.id))
-  
+  const defaultMoves = getMovesAtLevel(speciesId, activePoke.value.level);
+  activePokeMoves.value = defaultMoves
+    .filter((m): m is typeof m & { id: string } => !!m?.id)
+    .map((m) => requirePokemonMoveId(m.id));
+
   // Recalculate stats
-  recalcPokemonStats(activePoke.value)
-  activePoke.value.hp = activePoke.value.maxHp
+  recalcPokemonStats(activePoke.value);
+  activePoke.value.hp = activePoke.value.maxHp;
 }
 
 function autoFillActiveMoves() {
-  const defaultMoves = getMovesAtLevel(activePoke.value.id, activePoke.value.level)
-  activePokeMoves.value = defaultMoves.filter((m): m is typeof m & { id: string } => !!m?.id).map(m => requirePokemonMoveId(m.id))
+  const defaultMoves = getMovesAtLevel(activePoke.value.id, activePoke.value.level);
+  activePokeMoves.value = defaultMoves
+    .filter((m): m is typeof m & { id: string } => !!m?.id)
+    .map((m) => requirePokemonMoveId(m.id));
 }
 
 function randomFillActiveMoves() {
-  activePokeMoves.value = getRandomLegalMoves(activePoke.value.id, activePoke.value.level, 4)
+  activePokeMoves.value = getRandomLegalMoves(activePoke.value.id, activePoke.value.level, 4);
 }
 
-const MAX_STAT_IV_LIMIT = 31
+const MAX_STAT_IV_LIMIT = 31;
 
 function updateActiveIV(stat: PokemonStatKey, val: number) {
-  activePoke.value.ivs[stat] = Math.max(0, Math.min(MAX_STAT_IV_LIMIT, val))
-  recalcPokemonStats(activePoke.value)
+  activePoke.value.ivs[stat] = Math.max(0, Math.min(MAX_STAT_IV_LIMIT, val));
+  recalcPokemonStats(activePoke.value);
 }
 
-watch(() => activePoke.value?.level, (newLv) => {
-  if (!activePoke.value || !newLv) return
-  if (newLv > MAX_POKEMON_LEVEL) {
-    activePoke.value.level = MAX_POKEMON_LEVEL
-    newLv = MAX_POKEMON_LEVEL
-  }
-  recalcPokemonStats(activePoke.value)
-  activePoke.value.hp = activePoke.value.maxHp
-  if (newLv >= MAX_POKEMON_LEVEL) {
-    activePoke.value.exp = 0
-    activePoke.value.expNeeded = 0
-  } else {
-    activePoke.value.expNeeded = getExpNeededPure(newLv)
-    if (activePoke.value.exp >= activePoke.value.expNeeded) {
-      activePoke.value.exp = activePoke.value.expNeeded - 1
+watch(
+  () => activePoke.value?.level,
+  (newLv) => {
+    if (!activePoke.value || !newLv) return;
+    if (newLv > MAX_POKEMON_LEVEL) {
+      activePoke.value.level = MAX_POKEMON_LEVEL;
+      newLv = MAX_POKEMON_LEVEL;
+    }
+    recalcPokemonStats(activePoke.value);
+    activePoke.value.hp = activePoke.value.maxHp;
+    if (newLv >= MAX_POKEMON_LEVEL) {
+      activePoke.value.exp = 0;
+      activePoke.value.expNeeded = 0;
+    } else {
+      activePoke.value.expNeeded = getExpNeededPure(newLv);
+      if (activePoke.value.exp >= activePoke.value.expNeeded) {
+        activePoke.value.exp = activePoke.value.expNeeded - 1;
+      }
     }
   }
-})
+);
 </script>
 
 <template>
   <div class="debug-card pokemon-editor-card">
-    <label style="color: var(--yellow);">EDITAR POKÉMON #{{ index + 1 }}</label>
+    <label style="color: var(--yellow)">EDITAR POKÉMON #{{ index + 1 }}</label>
 
     <div class="pokemon-editor-vertical-flow">
       <!-- Col 1: Species & Preview -->
@@ -235,18 +278,14 @@ watch(() => activePoke.value?.level, (newLv) => {
           </template>
         </DebugSearchSelect>
 
-        <div
-          class="input-group vertical"
-          style="margin-top: 8px;"
-        >
+        <div class="input-group vertical" style="margin-top: 8px">
           <div
             class="label-row"
-            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%"
           >
-            <span
-              class="field-label"
-              style="margin-bottom: 0;"
-            >Nivel (1-{{ MAX_POKEMON_LEVEL }})</span>
+            <span class="field-label" style="margin-bottom: 0"
+              >Nivel (1-{{ MAX_POKEMON_LEVEL }})</span
+            >
             <button
               :id="`individual-editor-level-btn-${index}`"
               class="btn-magic-fill btn-random-fill"
@@ -261,7 +300,7 @@ watch(() => activePoke.value?.level, (newLv) => {
             type="number"
             min="1"
             :max="MAX_POKEMON_LEVEL"
-          >
+          />
         </div>
 
         <PokemonPreview
@@ -280,7 +319,7 @@ watch(() => activePoke.value?.level, (newLv) => {
       <!-- Col 2: Natures & Stats -->
       <div
         class="editor-sub-card"
-        style="margin-top: 12px; border-top: 1px dashed rgb(255 255 255 / 8%); padding-top: 12px;"
+        style="margin-top: 12px; border-top: 1px dashed rgb(255 255 255 / 8%); padding-top: 12px"
       >
         <DebugSearchSelect
           v-model="activePokeNature"
@@ -306,7 +345,7 @@ watch(() => activePoke.value?.level, (newLv) => {
           :options="allAbilities"
           tooltip-title="HABILIDAD"
           tooltip-desc="Selecciona la habilidad pasiva del Pokémon."
-          style="margin-top: 8px;"
+          style="margin-top: 8px"
         >
           <template #label-action>
             <button
@@ -319,18 +358,12 @@ watch(() => activePoke.value?.level, (newLv) => {
           </template>
         </DebugSearchSelect>
 
-        <div
-          class="input-group vertical"
-          style="margin-top: 8px;"
-        >
+        <div class="input-group vertical" style="margin-top: 8px">
           <div
             class="label-row"
-            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%"
           >
-            <span
-              class="field-label"
-              style="margin-bottom: 0;"
-            >Genética (IVs)</span>
+            <span class="field-label" style="margin-bottom: 0">Genética (IVs)</span>
             <button
               :id="`individual-editor-ivs-btn-${index}`"
               class="btn-magic-fill btn-random-fill"
@@ -339,19 +372,16 @@ watch(() => activePoke.value?.level, (newLv) => {
               <span class="emoji">🎲</span>
             </button>
           </div>
-          <PokemonIVEditor 
-            :ivs="activePoke.ivs" 
-            @update:iv="updateActiveIV"
-          />
+          <PokemonIVEditor :ivs="activePoke.ivs" @update:iv="updateActiveIV" />
         </div>
       </div>
 
       <!-- Col 3: Moves & Details -->
       <div
         class="editor-sub-card"
-        style="margin-top: 12px; border-top: 1px dashed rgb(255 255 255 / 8%); padding-top: 12px;"
+        style="margin-top: 12px; border-top: 1px dashed rgb(255 255 255 / 8%); padding-top: 12px"
       >
-        <PokemonMovePicker 
+        <PokemonMovePicker
           v-model="activePokeMoves"
           :species-moves="activeSpeciesMoves"
           @auto-fill="autoFillActiveMoves"
@@ -364,7 +394,7 @@ watch(() => activePoke.value?.level, (newLv) => {
           :options="allItems"
           tooltip-title="OBJETO EQUIPADO"
           tooltip-desc="Busca y selecciona un objeto para equipar al Pokémon."
-          style="margin-top: 12px;"
+          style="margin-top: 12px"
         >
           <template #label-action>
             <button
@@ -377,18 +407,12 @@ watch(() => activePoke.value?.level, (newLv) => {
           </template>
         </DebugSearchSelect>
 
-        <div
-          class="input-group vertical"
-          style="margin-top: 8px;"
-        >
+        <div class="input-group vertical" style="margin-top: 8px">
           <div
             class="label-row"
-            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%"
           >
-            <span
-              class="field-label"
-              style="margin-bottom: 0;"
-            >Apodo (Nickname)</span>
+            <span class="field-label" style="margin-bottom: 0">Apodo (Nickname)</span>
             <button
               :id="`individual-editor-nickname-btn-${index}`"
               class="btn-magic-fill btn-random-fill"
@@ -397,12 +421,12 @@ watch(() => activePoke.value?.level, (newLv) => {
               <span class="emoji">🎲</span>
             </button>
           </div>
-          <input 
+          <input
             :id="`individual-editor-nickname-input-${index}`"
-            v-model="activePokeNickname" 
-            type="text" 
+            v-model="activePokeNickname"
+            type="text"
             placeholder="Sin apodo..."
-          >
+          />
         </div>
       </div>
     </div>
@@ -410,4 +434,3 @@ watch(() => activePoke.value?.level, (newLv) => {
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_debug.scss"></style>
-

@@ -1,4 +1,5 @@
 import os from 'node:os';
+import process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
@@ -10,15 +11,19 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : Math.max(2, Math.floor(os.cpus().length / 4)),
   maxFailures: 1,
-  globalSetup: process.env.SIM_DB_DRIVER === 'postgres' ? './scripts/e2e/global_postgres_setup.ts' : undefined,
-  globalTeardown: process.env.SIM_DB_DRIVER === 'postgres' ? './scripts/e2e/global_postgres_teardown.ts' : undefined,
+  globalSetup:
+    process.env.SIM_DB_DRIVER === 'postgres' ? './scripts/e2e/global_postgres_setup.ts' : undefined,
+  globalTeardown:
+    process.env.SIM_DB_DRIVER === 'postgres'
+      ? './scripts/e2e/global_postgres_teardown.ts'
+      : undefined,
   reporter: [['./scripts/e2e/logging/playwright_fuzzer_reporter.ts']],
   timeout: 90000,
   use: {
     baseURL: 'https://localhost:5174',
     ignoreHTTPSErrors: true,
     trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
+    screenshot: 'only-on-failure'
   },
   projects: [
     {
@@ -26,19 +31,16 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: {
-          args: [
-            '--disable-features=NetworkQualityEstimator',
-            '--disable-background-networking'
-          ]
+          args: ['--disable-features=NetworkQualityEstimator', '--disable-background-networking']
         }
-      },
-    },
+      }
+    }
   ],
   webServer: {
     command: 'npx vite --port 5174 --strictPort',
     url: 'https://localhost:5174',
     ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+    timeout: 120000
+  }
 });

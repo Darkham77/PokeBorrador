@@ -1,82 +1,97 @@
-import { gsap } from 'gsap'
-import { gameBus } from '@/logic/events/gameBus'
+import { gsap } from 'gsap';
+import { gameBus } from '@/logic/events/gameBus';
 
 interface RegisterTweenDetail {
-  key: string
-  tween: gsap.core.Tween | gsap.core.Timeline
+  key: string;
+  tween: gsap.core.Tween | gsap.core.Timeline;
 }
 
 export function useBattleTweenRegistry() {
-  const activeTweens = new Map<string, gsap.core.Tween | gsap.core.Timeline>()
+  const activeTweens = new Map<string, gsap.core.Tween | gsap.core.Timeline>();
   // Pending resolvers: set when awaitTween is called before the component has mounted.
   // Resolved immediately by the REGISTER_TWEEN handler when the component fires the event.
-  const pendingTweenResolvers = new Map<string, { resolve: () => void; reject: (err: Error) => void }>()
+  const pendingTweenResolvers = new Map<
+    string,
+    { resolve: () => void; reject: (err: Error) => void }
+  >();
 
   const onRegisterTween = (e: Event) => {
-    const data = (e as CustomEvent<RegisterTweenDetail>).detail
+    const data = (e as CustomEvent<RegisterTweenDetail>).detail;
     if (data && typeof data.key === 'string' && data.tween) {
-      activeTweens.set(data.key, data.tween)
-      console.debug(`[TweenRegistry] Registered animation tween. context=${JSON.stringify({ key: data.key, pendingKeys: [...pendingTweenResolvers.keys()] })}`)
+      activeTweens.set(data.key, data.tween);
+      console.debug(
+        `[TweenRegistry] Registered animation tween. context=${JSON.stringify({ key: data.key, pendingKeys: [...pendingTweenResolvers.keys()] })}`
+      );
       // Unblock any awaitTween call that was already waiting for this key
-      const pending = pendingTweenResolvers.get(data.key)
+      const pending = pendingTweenResolvers.get(data.key);
       if (pending) {
-        pendingTweenResolvers.delete(data.key)
-        pending.resolve()
+        pendingTweenResolvers.delete(data.key);
+        pending.resolve();
       }
     }
-  }
+  };
 
   const initTweenRegistryListeners = () => {
-    cleanupTweenRegistryListeners()
-    gameBus.on('REGISTER_TWEEN', onRegisterTween)
-  }
+    cleanupTweenRegistryListeners();
+    gameBus.on('REGISTER_TWEEN', onRegisterTween);
+  };
 
   const cleanupTweenRegistryListeners = () => {
-    gameBus.off('REGISTER_TWEEN', onRegisterTween)
-    activeTweens.clear()
+    gameBus.off('REGISTER_TWEEN', onRegisterTween);
+    activeTweens.clear();
     // Fail-fast: any pending awaiter whose component never fired REGISTER_TWEEN must crash loud.
     for (const [key, { reject }] of pendingTweenResolvers) {
-      reject(new Error(`[TweenRegistry] Component never registered tween "${key}". FSM would have hung forever.`))
+      reject(
+        new Error(
+          `[TweenRegistry] Component never registered tween "${key}". FSM would have hung forever.`
+        )
+      );
     }
-    pendingTweenResolvers.clear()
-  }
+    pendingTweenResolvers.clear();
+  };
 
   const safeAwaitTween = async (tween: gsap.core.Tween | gsap.core.Timeline): Promise<void> => {
     // If the tween already completed, or was killed/detached (parent === null), unblock immediately.
-    const isActive = typeof tween.isActive === 'function' ? tween.isActive() : false
-    const progress = typeof tween.progress === 'function' ? (typeof tween.progress() === 'number' ? tween.progress() : 0) : 0
-    if (!isActive && (!tween.parent || progress === 1)) return
+    const isActive = typeof tween.isActive === 'function' ? tween.isActive() : false;
+    const progress =
+      typeof tween.progress === 'function'
+        ? typeof tween.progress() === 'number'
+          ? tween.progress()
+          : 0
+        : 0;
+    if (!isActive && (!tween.parent || progress === 1)) return;
 
     return new Promise<void>((resolve) => {
-      let resolved = false
-      let fallbackCall: gsap.core.Tween | null = null
+      let resolved = false;
+      let fallbackCall: gsap.core.Tween | null = null;
 
       const done = () => {
         if (!resolved) {
-          resolved = true
-          if (fallbackCall) fallbackCall.kill()
-          resolve()
+          resolved = true;
+          if (fallbackCall) fallbackCall.kill();
+          resolve();
         }
-      }
+      };
 
       // Preserve existing callback chains
       if (typeof tween.eventCallback === 'function') {
-        const origComplete = tween.eventCallback('onComplete')
+        const origComplete = tween.eventCallback('onComplete');
         tween.eventCallback('onComplete', () => {
-          if (typeof origComplete === 'function') origComplete()
-          done()
-        })
-        const origInterrupt = tween.eventCallback('onInterrupt')
+          if (typeof origComplete === 'function') origComplete();
+          done();
+        });
+        const origInterrupt = tween.eventCallback('onInterrupt');
         tween.eventCallback('onInterrupt', () => {
-          if (typeof origInterrupt === 'function') origInterrupt()
-          done()
-        })
+          if (typeof origInterrupt === 'function') origInterrupt();
+          done();
+        });
       }
 
-      const durationSec = typeof tween.totalDuration === 'function' ? (tween.totalDuration() || 0.5) : 0.5
-      fallbackCall = gsap.delayedCall(durationSec + 0.1, done)
-    })
-  }
+      const durationSec =
+        typeof tween.totalDuration === 'function' ? tween.totalDuration() || 0.5 : 0.5;
+      fallbackCall = gsap.delayedCall(durationSec + 0.1, done);
+    });
+  };
 
   /**
    * Awaits a GSAP tween registered by BattleCombatant via REGISTER_TWEEN.
@@ -89,46 +104,53 @@ export function useBattleTweenRegistry() {
    */
   const awaitTween = async (animKey: string): Promise<void> => {
     // Fast path: tween already registered
-    const existing = activeTweens.get(animKey)
+    const existing = activeTweens.get(animKey);
     if (existing) {
-      activeTweens.delete(animKey)
-      const isActive = typeof existing.isActive === 'function' ? existing.isActive() : false
-      const progress = typeof existing.progress === 'function' ? (typeof existing.progress() === 'number' ? existing.progress() : 0) : 0
-      const isCompleted = !isActive && (!existing.parent || progress === 1)
+      activeTweens.delete(animKey);
+      const isActive = typeof existing.isActive === 'function' ? existing.isActive() : false;
+      const progress =
+        typeof existing.progress === 'function'
+          ? typeof existing.progress() === 'number'
+            ? existing.progress()
+            : 0
+          : 0;
+      const isCompleted = !isActive && (!existing.parent || progress === 1);
       if (!isCompleted) {
-        await safeAwaitTween(existing)
-        return
+        await safeAwaitTween(existing);
+        return;
       }
     }
 
     // Slow path: event-driven wait with GSAP fallback safety
-    console.debug(`[TweenRegistry] Awaiting component tween registration. context=${JSON.stringify({ animKey, activeKeys: [...activeTweens.keys()], pendingKeys: [...pendingTweenResolvers.keys()] })}`)
-    const resolvers = Promise.withResolvers<void>()
-    const TWEEN_REGISTRATION_TIMEOUT_SEC = 0.5
+    console.debug(
+      `[TweenRegistry] Awaiting component tween registration. context=${JSON.stringify({ animKey, activeKeys: [...activeTweens.keys()], pendingKeys: [...pendingTweenResolvers.keys()] })}`
+    );
+    const resolvers = Promise.withResolvers<void>();
+    const TWEEN_REGISTRATION_TIMEOUT_SEC = 0.5;
     const fallbackTimer = gsap.delayedCall(TWEEN_REGISTRATION_TIMEOUT_SEC, () => {
-      pendingTweenResolvers.delete(animKey)
-      resolvers.resolve()
-    })
+      pendingTweenResolvers.delete(animKey);
+      resolvers.resolve();
+    });
 
     pendingTweenResolvers.set(animKey, {
       resolve: () => {
-        fallbackTimer.kill()
-        resolvers.resolve()
+        fallbackTimer.kill();
+        resolvers.resolve();
       },
       reject: (err) => {
-        fallbackTimer.kill()
-        resolvers.reject(err)
+        fallbackTimer.kill();
+        resolvers.reject(err);
       }
-    })
-    await resolvers.promise
+    });
+    await resolvers.promise;
 
     // Now await the actual GSAP tween (native GSAP coordination)
-    const tween = activeTweens.get(animKey)
+    const tween = activeTweens.get(animKey);
     if (tween) {
-      activeTweens.delete(animKey)
-      await safeAwaitTween(tween)
+      activeTweens.delete(animKey);
+      await safeAwaitTween(tween);
     }
-  }
+  };
 
   return {
     activeTweens,
@@ -137,5 +159,5 @@ export function useBattleTweenRegistry() {
     initTweenRegistryListeners,
     cleanupTweenRegistryListeners,
     awaitTween
-  }
+  };
 }

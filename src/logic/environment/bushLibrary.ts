@@ -1,8 +1,8 @@
 /**
  * src/logic/environment/bushLibrary.ts
- * 
+ *
  * DYNAMIC ENVIRONMENTAL COVERAGE LIBRARY (FORMERLY BUSHES)
- * 
+ *
  * Encapsulates pure biome selection and two-stage dice roll logic
  * using a deterministic PRNG (mulberry32).
  */
@@ -12,6 +12,7 @@ export const BUSH_LAYER_DEPTHS = ['front', 'back'] as const; // domain-ok: Indep
 export type BushLayerDepth = (typeof BUSH_LAYER_DEPTHS)[number];
 import { MAPS_BY_ROUTE_ID } from '../../data/world/maps.ts';
 import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { MAP_BIOME_KEYS, type MapBiomeKey } from '@/logic/constants/encounters';
 import { mulberry32 } from '../utils/math.ts';
 import {
   BUSH_SEED_MULTIPLIER,
@@ -30,7 +31,7 @@ export { BUSH_FAMILIES, type BushFamily };
 
 export type BushAnimationType = 'bush' | 'tree' | 'none';
 
-export const BUSH_ANIMATION_MAPPING: Record<string, BushAnimationType> = {
+export const BUSH_ANIMATION_MAPPING: Partial<Record<BushFamily, BushAnimationType>> = {
   bush: 'bush',
   bushflower: 'bush',
   cactus: 'tree',
@@ -41,7 +42,7 @@ export const BUSH_ANIMATION_MAPPING: Record<string, BushAnimationType> = {
 };
 
 export function getAnimationTypeForFamily(family: string): BushAnimationType {
-  const mapped = BUSH_ANIMATION_MAPPING[family];
+  const mapped = isBushFamily(family) ? BUSH_ANIMATION_MAPPING[family] : undefined;
   if (mapped) return mapped;
   const lower = family.toLowerCase(); // text-ok: UI text display localization string
   if (lower.startsWith('rock') || lower.startsWith('box') || lower.startsWith('crystal')) {
@@ -59,7 +60,7 @@ export interface ResolvedBushConfig {
   assetId: string; // domain-ok: Procedural visual bush asset file identifier
   family: BushFamily; // Dynamically selected family from catalog
   animationType: BushAnimationType; // Animation type
-  tintClass: string;  // 'tint-desert', 'tint-swamp', 'tint-arctic', 'tint-cave', or ''
+  tintClass: string; // 'tint-desert', 'tint-swamp', 'tint-arctic', 'tint-cave', or ''
   randomScale: number;
   flip: number;
   offsetX: number;
@@ -70,14 +71,14 @@ export interface ResolvedBushConfig {
 }
 
 interface BiomeBushWeights {
-  weights: Record<string, number>;
+  weights: Partial<Record<BushFamily, number>>;
   tint?: {
     class: string;
     families?: string[];
   };
 }
 
-export const BIOME_BUSH_CONFIG: Record<string, BiomeBushWeights> = {
+export const BIOME_BUSH_CONFIG: Partial<Record<MapBiomeKey, BiomeBushWeights>> = {
   isCrystalCave: {
     weights: {
       rock: BIOME_WEIGHT_PRESETS.DOMINANT,
@@ -94,39 +95,71 @@ export const BIOME_BUSH_CONFIG: Record<string, BiomeBushWeights> = {
     },
     tint: { class: 'tint-cave', families: ['rock'] }
   },
-  isCave:     { 
-    weights: { rock: BIOME_WEIGHT_PRESETS.GUARANTEED }, 
-    tint: { class: 'tint-cave', families: ['rock'] } 
+  isCave: {
+    weights: { rock: BIOME_WEIGHT_PRESETS.GUARANTEED },
+    tint: { class: 'tint-cave', families: ['rock'] }
   },
   isVolcanic: { weights: { rock: BIOME_WEIGHT_PRESETS.GUARANTEED } },
-  isUrban:    { weights: { box: BIOME_WEIGHT_PRESETS.GUARANTEED } },
-  isIndoors:  { weights: { box: BIOME_WEIGHT_PRESETS.GUARANTEED } },
-  isArctic:   { 
-    weights: { rock: BIOME_WEIGHT_PRESETS.DOMINANT, bushsnow: BIOME_WEIGHT_PRESETS.RARE }, 
-    tint: { class: 'tint-arctic', families: ['rock'] } 
+  isUrban: { weights: { box: BIOME_WEIGHT_PRESETS.GUARANTEED } },
+  isIndoors: { weights: { box: BIOME_WEIGHT_PRESETS.GUARANTEED } },
+  isArctic: {
+    weights: { rock: BIOME_WEIGHT_PRESETS.DOMINANT, bushsnow: BIOME_WEIGHT_PRESETS.RARE },
+    tint: { class: 'tint-arctic', families: ['rock'] }
   },
-  isDesert:   { 
-    weights: { rock: BIOME_WEIGHT_PRESETS.MAJORITY, cactus: BIOME_WEIGHT_PRESETS.REGULAR, grass: BIOME_WEIGHT_PRESETS.VERY_RARE }, 
-    tint: { class: 'tint-desert', families: ['rock'] } 
+  isDesert: {
+    weights: {
+      rock: BIOME_WEIGHT_PRESETS.MAJORITY,
+      cactus: BIOME_WEIGHT_PRESETS.REGULAR,
+      grass: BIOME_WEIGHT_PRESETS.VERY_RARE
+    },
+    tint: { class: 'tint-desert', families: ['rock'] }
   },
-  isSwamp:    { 
-    weights: { bush: BIOME_WEIGHT_PRESETS.MEDIUM, fern: BIOME_WEIGHT_PRESETS.MEDIUM, grass: BIOME_WEIGHT_PRESETS.VERY_RARE, grassflower: BIOME_WEIGHT_PRESETS.OCCASIONAL, treebroken: BIOME_WEIGHT_PRESETS.RARE }, 
-    tint: { class: 'tint-swamp' } 
+  isSwamp: {
+    weights: {
+      bush: BIOME_WEIGHT_PRESETS.MEDIUM,
+      fern: BIOME_WEIGHT_PRESETS.MEDIUM,
+      grass: BIOME_WEIGHT_PRESETS.VERY_RARE,
+      grassflower: BIOME_WEIGHT_PRESETS.OCCASIONAL,
+      treebroken: BIOME_WEIGHT_PRESETS.RARE
+    },
+    tint: { class: 'tint-swamp' }
   },
-  isMountain: { weights: { rock: BIOME_WEIGHT_PRESETS.HIGH, treebroken: BIOME_WEIGHT_PRESETS.RARE, grass: BIOME_WEIGHT_PRESETS.OCCASIONAL, bush: BIOME_WEIGHT_PRESETS.OCCASIONAL } },
-  isCoastal:  { weights: { rock: BIOME_WEIGHT_PRESETS.BALANCED, bush: BIOME_WEIGHT_PRESETS.COMMON, grass: BIOME_WEIGHT_PRESETS.RARE , grassflower: BIOME_WEIGHT_PRESETS.RARE} },
-  isForest:   { weights: { bush: BIOME_WEIGHT_PRESETS.MODERATE, bushflower: BIOME_WEIGHT_PRESETS.OCCASIONAL, grassflower: BIOME_WEIGHT_PRESETS.VERY_RARE, grass: BIOME_WEIGHT_PRESETS.RARE, fern: BIOME_WEIGHT_PRESETS.UNCOMMON, rock: BIOME_WEIGHT_PRESETS.RARE, treebroken: BIOME_WEIGHT_PRESETS.RARE } },
+  isMountain: {
+    weights: {
+      rock: BIOME_WEIGHT_PRESETS.HIGH,
+      treebroken: BIOME_WEIGHT_PRESETS.RARE,
+      grass: BIOME_WEIGHT_PRESETS.OCCASIONAL,
+      bush: BIOME_WEIGHT_PRESETS.OCCASIONAL
+    }
+  },
+  isCoastal: {
+    weights: {
+      rock: BIOME_WEIGHT_PRESETS.BALANCED,
+      bush: BIOME_WEIGHT_PRESETS.COMMON,
+      grass: BIOME_WEIGHT_PRESETS.RARE,
+      grassflower: BIOME_WEIGHT_PRESETS.RARE
+    }
+  },
+  isForest: {
+    weights: {
+      bush: BIOME_WEIGHT_PRESETS.MODERATE,
+      bushflower: BIOME_WEIGHT_PRESETS.OCCASIONAL,
+      grassflower: BIOME_WEIGHT_PRESETS.VERY_RARE,
+      grass: BIOME_WEIGHT_PRESETS.RARE,
+      fern: BIOME_WEIGHT_PRESETS.UNCOMMON,
+      rock: BIOME_WEIGHT_PRESETS.RARE,
+      treebroken: BIOME_WEIGHT_PRESETS.RARE
+    }
+  }
 };
 
-import { MAP_BIOME_KEYS } from '@/logic/constants/encounters'
-
 export function isBushFamily(val: string): val is BushFamily {
-  return (Object.keys(BUSH_FAMILIES) as readonly string[]).includes(val); // domain-ok: Open dynamic text or non-domain string payload
+  return Object.hasOwn(BUSH_FAMILIES, val);
 }
 
 export function getBiomeConfigForMap(locationId: MapRouteId): BiomeBushWeights {
   const map = isMapRouteId(locationId) ? MAPS_BY_ROUTE_ID[locationId] : undefined;
-  let activeBiomeKey = 'isPlains';
+  let activeBiomeKey: MapBiomeKey = 'isPlains';
 
   if (map) {
     for (const key of MAP_BIOME_KEYS) {
@@ -137,7 +170,9 @@ export function getBiomeConfigForMap(locationId: MapRouteId): BiomeBushWeights {
     }
   }
 
-  const defaultWeights: BiomeBushWeights = { weights: { bush: DEFAULT_PLAINS_BUSH_WEIGHT, rock: DEFAULT_PLAINS_ROCK_WEIGHT } };
+  const defaultWeights: BiomeBushWeights = {
+    weights: { bush: DEFAULT_PLAINS_BUSH_WEIGHT, rock: DEFAULT_PLAINS_ROCK_WEIGHT }
+  };
   return BIOME_BUSH_CONFIG[activeBiomeKey] ?? BIOME_BUSH_CONFIG['isPlains'] ?? defaultWeights;
 }
 
@@ -160,7 +195,7 @@ export function resolveBushesForLayer(
   const biomeConfig = getBiomeConfigForMap(mapId);
 
   // 2. Iterate over base bushes and perform two-stage dice roll
-  return baseBushes.map(b => {
+  return baseBushes.map((b) => {
     // Combined unique seed per bush and layer
     const layerOffset = layer === 'front' ? FRONT_LAYER_SEED_OFFSET : BACK_LAYER_SEED_OFFSET;
     const prng = mulberry32(sessionSeed ^ (b.id * BUSH_SEED_MULTIPLIER) ^ layerOffset);
@@ -207,8 +242,8 @@ export function resolveBushesForLayer(
     }
 
     // Deterministic random transformations
-    const scaleFactor = BUSH_BASE_SCALE + (prng() * BUSH_VAR_SCALE) + (b.id * BUSH_ID_SCALE_STEP);
-    const flip = prng() < (FLIP_CHANCE_PERCENT / 100) ? -1 : 1;
+    const scaleFactor = BUSH_BASE_SCALE + prng() * BUSH_VAR_SCALE + b.id * BUSH_ID_SCALE_STEP;
+    const flip = prng() < FLIP_CHANCE_PERCENT / 100 ? -1 : 1;
     const offsetX = Math.floor(prng() * BUSH_OFFSET_X_RANGE) - BUSH_OFFSET_X_BIAS;
 
     return {
@@ -228,7 +263,27 @@ export function getActiveBushesForMap(
   locationId: MapRouteId,
   layer: BushLayerDepth,
   sessionSeed: number,
-  baseBushes: Array<{ id: number; cls: string; scale?: number; tx?: number; ty?: number; ad?: string; ay?: string }>
+  baseBushes: Array<{
+    id: number;
+    cls: string;
+    scale?: number;
+    tx?: number;
+    ty?: number;
+    ad?: string;
+    ay?: string;
+  }>
 ): ResolvedBushConfig[] {
-  return resolveBushesForLayer(baseBushes as Array<{ id: number; cls: string; tx: number; ty: number; ad: string; ay: string }>, sessionSeed, layer, locationId);
+  return resolveBushesForLayer(
+    baseBushes as Array<{
+      id: number;
+      cls: string;
+      tx: number;
+      ty: number;
+      ad: string;
+      ay: string;
+    }>,
+    sessionSeed,
+    layer,
+    locationId
+  );
 }

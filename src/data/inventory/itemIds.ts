@@ -586,7 +586,7 @@ export const ITEM_IDS = [
   'zaphireore',
   'zapplate',
   'zinc',
-  'zoomlens',
+  'zoomlens'
 ] as const;
 
 export type ItemId = (typeof ITEM_IDS)[number];

@@ -6,7 +6,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateSettlementLayout, type SettlementTerrainContext } from '../../logic/map/cityLayoutEngine.ts';
+import {
+  generateSettlementLayout,
+  type SettlementTerrainContext
+} from '../../logic/map/cityLayoutEngine.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';

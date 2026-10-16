@@ -8,7 +8,7 @@
  * 4. Box & Selector Filtering / Sorting: Friendship sorting (asc/desc), friendship-evo and friendship-max tag filters.
  */
 
-import { describe, it, test, expect, vi } from 'vitest';
+import { describe, it, test, expect, vi } from 'vite-plus/test';
 import { safeParse } from 'valibot';
 import {
   clampFriendship,
@@ -21,19 +21,22 @@ import {
   getFriendshipTooltipDetails,
   calculateFriendshipLevelUpDelta,
   getFriendshipTransitionLog,
-  applyFriendshipDelta,
+  applyFriendshipDelta
 } from '../../../src/logic/pokemon/friendshipLogic.ts';
 import {
   isFriendshipSealTier,
   requireFriendshipSealTier,
   FRIENDSHIP_BOUNDS,
-  FRIENDSHIP_SEAL_TIERS,
+  FRIENDSHIP_SEAL_TIERS
 } from '../../../src/types/pokemon/friendship.ts';
 import {
   pokemonSchema,
-  friendshipSealTierSchema,
+  friendshipSealTierSchema
 } from '../../../src/logic/validation/subschemas/pokemonSchemas.ts';
-import { filterAndSortPokemon, type PokemonFilterCriteria } from '../../../src/logic/pokemon/pokemonSelectionFilter.ts';
+import {
+  filterAndSortPokemon,
+  type PokemonFilterCriteria
+} from '../../../src/logic/pokemon/pokemonSelectionFilter.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 function createMockPokemon(uid: string, name: string, friendship: number, id = 'pikachu'): Pokemon {
@@ -58,7 +61,7 @@ function createMockPokemon(uid: string, name: string, friendship: number, id = '
     moves: [],
     ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
     nature: 'hardy',
-    friendship,
+    friendship
   } as Pokemon;
 }
 
@@ -242,7 +245,7 @@ describe('Pokemon Friendship & Seals Suite', () => {
           spe: 55,
           type: 'electric',
           isShiny: false,
-          friendship: 160,
+          friendship: 160
         };
 
         const validResult = safeParse(pokemonSchema, basePoke);
@@ -340,7 +343,7 @@ describe('Pokemon Friendship & Seals Suite', () => {
         id: 'pikachu',
         name: 'Pikachu',
         nickname: 'Sparky',
-        friendship: 159,
+        friendship: 159
       } as unknown as Pokemon;
 
       const mockLogFn = vi.fn();
@@ -369,7 +372,7 @@ describe('Pokemon Friendship & Seals Suite', () => {
       { pokemon: p1, _source: 'box' as const, index: 0 },
       { pokemon: p2, _source: 'box' as const, index: 1 },
       { pokemon: p3, _source: 'box' as const, index: 2 },
-      { pokemon: p4, _source: 'box' as const, index: 3 },
+      { pokemon: p4, _source: 'box' as const, index: 3 }
     ];
 
     test('Sorts Pokemon by friendship descending', () => {
@@ -377,12 +380,12 @@ describe('Pokemon Friendship & Seals Suite', () => {
         searchQuery: '',
         sortBy: 'friendship',
         sortOrder: 'desc',
-        activeTags: [],
+        activeTags: []
       };
 
       const result = filterAndSortPokemon(sourceList, criteria);
-      expect(result.map(r => r.pokemon.uid)).toEqual(['u4', 'u3', 'u2', 'u1']);
-      expect(result.map(r => r.pokemon.friendship)).toEqual([255, 180, 100, 20]);
+      expect(result.map((r) => r.pokemon.uid)).toEqual(['u4', 'u3', 'u2', 'u1']);
+      expect(result.map((r) => r.pokemon.friendship)).toEqual([255, 180, 100, 20]);
     });
 
     test('Sorts Pokemon by friendship ascending', () => {
@@ -390,12 +393,12 @@ describe('Pokemon Friendship & Seals Suite', () => {
         searchQuery: '',
         sortBy: 'friendship',
         sortOrder: 'asc',
-        activeTags: [],
+        activeTags: []
       };
 
       const result = filterAndSortPokemon(sourceList, criteria);
-      expect(result.map(r => r.pokemon.uid)).toEqual(['u1', 'u2', 'u3', 'u4']);
-      expect(result.map(r => r.pokemon.friendship)).toEqual([20, 100, 180, 255]);
+      expect(result.map((r) => r.pokemon.uid)).toEqual(['u1', 'u2', 'u3', 'u4']);
+      expect(result.map((r) => r.pokemon.friendship)).toEqual([20, 100, 180, 255]);
     });
 
     test('Filters Pokemon with friendship-evo tag (friendship >= 160)', () => {
@@ -403,11 +406,11 @@ describe('Pokemon Friendship & Seals Suite', () => {
         searchQuery: '',
         sortBy: 'friendship',
         sortOrder: 'desc',
-        activeTags: ['friendship-evo'],
+        activeTags: ['friendship-evo']
       };
 
       const result = filterAndSortPokemon(sourceList, criteria);
-      expect(result.map(r => r.pokemon.uid)).toEqual(['u4', 'u3']);
+      expect(result.map((r) => r.pokemon.uid)).toEqual(['u4', 'u3']);
     });
 
     test('Filters Pokemon with friendship-max tag (friendship >= 220)', () => {
@@ -415,11 +418,11 @@ describe('Pokemon Friendship & Seals Suite', () => {
         searchQuery: '',
         sortBy: 'friendship',
         sortOrder: 'desc',
-        activeTags: ['friendship-max'],
+        activeTags: ['friendship-max']
       };
 
       const result = filterAndSortPokemon(sourceList, criteria);
-      expect(result.map(r => r.pokemon.uid)).toEqual(['u4']);
+      expect(result.map((r) => r.pokemon.uid)).toEqual(['u4']);
       expect(result[0]?.pokemon.friendship).toBe(255);
     });
   });

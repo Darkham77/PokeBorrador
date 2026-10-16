@@ -218,12 +218,12 @@ async function addWarPoints(mapId, eventType, success) {
 
   // Tabla de puntos según tipo de evento
   const PTS_TABLE = {
-    capture:        { win: 5,  lose: 1 },
-    trainer_win:    { win: 8,  lose: 2 },
-    wild_win:       { win: 2,  lose: 0 },
-    fishing:        { win: 4,  lose: 1 },
-    shiny_capture:  { win: 40, lose: 10 },
-    event:          { win: 20, lose: 5 },
+    capture: { win: 5, lose: 1 },
+    trainer_win: { win: 8, lose: 2 },
+    wild_win: { win: 2, lose: 0 },
+    fishing: { win: 4, lose: 1 },
+    shiny_capture: { win: 40, lose: 10 },
+    event: { win: 20, lose: 5 }
   };
 
   const pts = (PTS_TABLE[eventType] || { win: 2, lose: 0 })[success ? 'win' : 'lose'];
@@ -296,10 +296,10 @@ async function getMapDominanceStatus(mapId) {
     .eq('week_id', weekId)
     .eq('map_id', mapId);
 
-  const union = points?.find(p => p.faction === 'union')?.points || 0;
-  const poder = points?.find(p => p.faction === 'poder')?.points || 0;
+  const union = points?.find((p) => p.faction === 'union')?.points || 0;
+  const poder = points?.find((p) => p.faction === 'poder')?.points || 0;
   const total = union + poder;
-  const leading = total === 0 ? null : (union >= poder ? 'union' : 'poder');
+  const leading = total === 0 ? null : union >= poder ? 'union' : 'poder';
 
   // Si estamos en Fase de Dominancia, leer el resultado del fin de semana
   if (!isDisputePhase()) {
@@ -330,7 +330,7 @@ async function resolveWeekIfNeeded() {
   if (isDisputePhase()) return;
 
   // Leer todos los puntos de la semana anterior
-  const prevWeekId = getPreviousWeekId(); 
+  const prevWeekId = getPreviousWeekId();
   const { data: allPoints } = await supabase
     .from('war_points')
     .select('map_id, faction, points')
@@ -340,7 +340,7 @@ async function resolveWeekIfNeeded() {
 
   // Agrupar por mapa y determinar ganador
   const mapResults = {};
-  allPoints.forEach(row => {
+  allPoints.forEach((row) => {
     if (!mapResults[row.map_id]) mapResults[row.map_id] = { union: 0, poder: 0 };
     mapResults[row.map_id][row.faction] += row.points;
   });
@@ -402,38 +402,55 @@ async function distributeWeeklyWarCoins(weekId) {
 // Configuración de Guardianes: Pool extenso por rareza
 const GUARDIAN_POOL = {
   common: [
-    { id: 'arcanine',   lv: 45, pts: 150 }, { id: 'pidgeot',    lv: 42, pts: 150 },
-    { id: 'nidoking',   lv: 44, pts: 150 }, { id: 'nidoqueen',  lv: 44, pts: 150 },
-    { id: 'victreebel', lv: 43, pts: 150 }, { id: 'vileplume',  lv: 43, pts: 150 },
-    { id: 'sandslash',  lv: 41, pts: 150 }, { id: 'fearow',     lv: 42, pts: 150 },
-    { id: 'golem',      lv: 45, pts: 150 }, { id: 'raichu',     lv: 45, pts: 150 },
-    { id: 'weezing',    lv: 40, pts: 150 }, { id: 'muk',        lv: 40, pts: 150 },
-    { id: 'starmie',    lv: 44, pts: 150 }, { id: 'rapidash',   lv: 44, pts: 150 },
-    { id: 'hypno',      lv: 42, pts: 150 }
+    { id: 'arcanine', lv: 45, pts: 150 },
+    { id: 'pidgeot', lv: 42, pts: 150 },
+    { id: 'nidoking', lv: 44, pts: 150 },
+    { id: 'nidoqueen', lv: 44, pts: 150 },
+    { id: 'victreebel', lv: 43, pts: 150 },
+    { id: 'vileplume', lv: 43, pts: 150 },
+    { id: 'sandslash', lv: 41, pts: 150 },
+    { id: 'fearow', lv: 42, pts: 150 },
+    { id: 'golem', lv: 45, pts: 150 },
+    { id: 'raichu', lv: 45, pts: 150 },
+    { id: 'weezing', lv: 40, pts: 150 },
+    { id: 'muk', lv: 40, pts: 150 },
+    { id: 'starmie', lv: 44, pts: 150 },
+    { id: 'rapidash', lv: 44, pts: 150 },
+    { id: 'hypno', lv: 42, pts: 150 }
   ],
   rare: [
-    { id: 'gyarados',   lv: 50, pts: 300 }, { id: 'alakazam',   lv: 48, pts: 300 },
-    { id: 'machamp',    lv: 48, pts: 300 }, { id: 'gengar',     lv: 48, pts: 300 },
-    { id: 'exeggutor',  lv: 46, pts: 300 }, { id: 'pinsir',     lv: 47, pts: 300 },
-    { id: 'scyther',    lv: 47, pts: 300 }, { id: 'kangaskhan', lv: 45, pts: 300 },
-    { id: 'tauros',     lv: 45, pts: 300 }, { id: 'scyther',    lv: 46, pts: 300 },
-    { id: 'slowbro',    lv: 46, pts: 300 }, { id: 'jolteon',    lv: 48, pts: 300 },
-    { id: 'vaporeon',   lv: 48, pts: 300 }, { id: 'flareon',    lv: 48, pts: 300 }
+    { id: 'gyarados', lv: 50, pts: 300 },
+    { id: 'alakazam', lv: 48, pts: 300 },
+    { id: 'machamp', lv: 48, pts: 300 },
+    { id: 'gengar', lv: 48, pts: 300 },
+    { id: 'exeggutor', lv: 46, pts: 300 },
+    { id: 'pinsir', lv: 47, pts: 300 },
+    { id: 'scyther', lv: 47, pts: 300 },
+    { id: 'kangaskhan', lv: 45, pts: 300 },
+    { id: 'tauros', lv: 45, pts: 300 },
+    { id: 'scyther', lv: 46, pts: 300 },
+    { id: 'slowbro', lv: 46, pts: 300 },
+    { id: 'jolteon', lv: 48, pts: 300 },
+    { id: 'vaporeon', lv: 48, pts: 300 },
+    { id: 'flareon', lv: 48, pts: 300 }
   ],
   elite: [
-    { id: 'dragonite',  lv: 60, pts: 750 }, { id: 'snorlax',    lv: 55, pts: 750 },
-    { id: 'lapras',     lv: 55, pts: 750 }, { id: 'chansey',    lv: 50, pts: 750 },
-    { id: 'aerodactyl', lv: 58, pts: 750 }, { id: 'cloyster',   lv: 52, pts: 750 }
+    { id: 'dragonite', lv: 60, pts: 750 },
+    { id: 'snorlax', lv: 55, pts: 750 },
+    { id: 'lapras', lv: 55, pts: 750 },
+    { id: 'chansey', lv: 50, pts: 750 },
+    { id: 'aerodactyl', lv: 58, pts: 750 },
+    { id: 'cloyster', lv: 52, pts: 750 }
   ]
 };
 
 // Función para verificar si un mapa es Zona de Conflicto hoy
 function isConflictZone(mapId) {
   const dateStr = new Date().toISOString().split('T')[0];
-  const allMapIds = FIRE_RED_MAPS.map(m => m.id);
+  const allMapIds = FIRE_RED_MAPS.map((m) => m.id);
   // Elegir 12 mapas de forma determinística
   const zones = [];
-  let tempSeed = hashString(dateStr + "zones");
+  let tempSeed = hashString(dateStr + 'zones');
   while (zones.length < 12) {
     const idx = tempSeed % allMapIds.length;
     const mId = allMapIds[idx];
@@ -449,8 +466,8 @@ function getGuardianForMap(mapId) {
 
   const dateStr = new Date().toISOString().split('T')[0];
   const seed = hashString(dateStr + mapId);
-  
-  const rarityRand = (seed % 100);
+
+  const rarityRand = seed % 100;
   let tier = 'common';
   if (rarityRand >= 90) tier = 'elite';
   else if (rarityRand >= 60) tier = 'rare';
@@ -463,7 +480,7 @@ function getGuardianForMap(mapId) {
 function hashString(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = (hash << 5) - hash + str.charCodeAt(i);
     hash |= 0; // Convertir a 32bit int
   }
   return Math.abs(hash);
@@ -507,30 +524,28 @@ async function claimGuardianCapture(mapId, pokemon) {
   const userId = window.currentUser?.id;
   const today = new Date().toISOString().split('T')[0];
 
-  const { error } = await window.sb
-    .from('guardian_captures')
-    .insert({
-      capture_date: today,
-      map_id: mapId,
-      winner_id: userId,
-      winner_faction: state.faction,
-      pts_awarded: 150
-    });
+  const { error } = await window.sb.from('guardian_captures').insert({
+    capture_date: today,
+    map_id: mapId,
+    winner_id: userId,
+    winner_faction: state.faction,
+    pts_awarded: 150
+  });
 
   if (error) {
     // Error de red o base de datos
-    console.error("Error al registrar captura de Guardián:", error);
+    console.error('Error al registrar captura de Guardián:', error);
     return false;
   }
 
   // Éxito — marcar el Pokémon con flag de guardián
   pokemon.isGuardian = true;
   pokemon.guardianFaction = state.faction;
-  
+
   const guardianData = getGuardianForMap(mapId);
   const ptsAwarded = guardianData?.pts || 150;
 
-  await addWarPoints(mapId, 'event', true); 
+  await addWarPoints(mapId, 'event', true);
   // Los PT del Guardián (según su rareza) se suman directo al bando en Supabase
   await window.sb.rpc('add_war_points', {
     p_week_id: getCurrentWeekId(),
@@ -548,7 +563,10 @@ async function claimGuardianCapture(mapId, pokemon) {
 ```js
 // Llamar al cargar el juego y al inicio de cada semana
 async function loadActiveBonuses() {
-  if (isDisputePhase()) { state.activeBonuses = {}; return; }
+  if (isDisputePhase()) {
+    state.activeBonuses = {};
+    return;
+  }
   if (!state.faction) return;
 
   const weekId = getCurrentWeekId();
@@ -558,7 +576,7 @@ async function loadActiveBonuses() {
     .eq('week_id', weekId);
 
   state.activeBonuses = {};
-  data?.forEach(row => {
+  data?.forEach((row) => {
     if (row.winner_faction === state.faction) {
       state.activeBonuses[row.map_id] = true;
     }
@@ -694,7 +712,7 @@ function serializeState() {
     warCoinsSpent: state.warCoinsSpent,
     warDailyCap: state.warDailyCap,
     lastResolvedWeek: state.lastResolvedWeek,
-    activeBonuses: state.activeBonuses,
+    activeBonuses: state.activeBonuses
   };
 }
 ```
@@ -787,8 +805,8 @@ const domStatus = await getMapDominanceStatus(locId);
 
 let domBadge = '';
 if (domStatus.phase === 'dispute') {
-  const leadColor = domStatus.leading === 'union' ? '#44ff44' : 
-                    domStatus.leading === 'poder' ? '#ff44ff' : '#888';
+  const leadColor =
+    domStatus.leading === 'union' ? '#44ff44' : domStatus.leading === 'poder' ? '#ff44ff' : '#888';
   domBadge = `<div class="dom-badge dispute" style="border-color:${leadColor}">
     ⚔️ En disputa
   </div>`;
@@ -818,16 +836,16 @@ Agregar una nueva pestaña en el menú principal (al lado de Pokémon, Mochila, 
 <!-- Contenido del Panel de Guerra -->
 <div id="tab-war" class="tab-content" style="display:none;">
   <h2 class="pixel-title">Panel de Guerra</h2>
-  
+
   <!-- Estado de la semana -->
   <div id="war-phase-banner"></div>
-  
+
   <!-- Mapa de Kanto con colores -->
   <div id="war-kanto-map">
     <!-- Grid de mapas con color según dominancia -->
     <!-- Generado por renderWarPanel() -->
   </div>
-  
+
   <!-- Contador de mapas dominados -->
   <div id="war-score">
     <span class="union-score">⚪ Unión: <span id="union-maps">0</span> mapas</span>
@@ -857,7 +875,7 @@ async function renderWarPanel() {
   const phase = isDisputePhase() ? 'Disputa' : 'Dominancia';
 
   // Banner de fase
-  document.getElementById('war-phase-banner').innerHTML = 
+  document.getElementById('war-phase-banner').innerHTML =
     `<div class="phase-banner ${isDisputePhase() ? 'dispute' : 'dominance'}">
       ${isDisputePhase() ? '⚔️ Semana en Disputa — Lun a Vie' : '🏆 Fin de Semana de Dominancia'}
     </div>`;
@@ -868,15 +886,16 @@ async function renderWarPanel() {
     .select('map_id, winner_faction')
     .eq('week_id', weekId);
 
-  let unionMaps = 0, poderMaps = 0;
-  domData?.forEach(r => {
+  let unionMaps = 0,
+    poderMaps = 0;
+  domData?.forEach((r) => {
     if (r.winner_faction === 'union') unionMaps++;
     else poderMaps++;
   });
 
   document.getElementById('union-maps').textContent = unionMaps;
   document.getElementById('poder-maps').textContent = poderMaps;
-  document.getElementById('war-coins-count').textContent = 
+  document.getElementById('war-coins-count').textContent =
     state.warCoins - (state.warCoinsSpent || 0);
 
   // Renderizar grid de Kanto
@@ -943,7 +962,7 @@ const WAR_SHOP_ITEMS = [
     desc: 'Visible en tu perfil público',
     cost: 500,
     icon: '🏆'
-  },
+  }
 ];
 
 function renderWarShop() {
@@ -951,9 +970,11 @@ function renderWarShop() {
   document.getElementById('war-shop-coins').textContent = balance;
 
   const container = document.getElementById('war-shop-items');
-  container.innerHTML = WAR_SHOP_ITEMS
-    .filter(item => !item.factionRequired || item.factionRequired === state.faction)
-    .map(item => `
+  container.innerHTML = WAR_SHOP_ITEMS.filter(
+    (item) => !item.factionRequired || item.factionRequired === state.faction
+  )
+    .map(
+      (item) => `
       <div class="shop-item ${balance < item.cost ? 'disabled' : ''}">
         <span class="item-icon">${item.icon}</span>
         <div class="item-info">
@@ -965,17 +986,19 @@ function renderWarShop() {
           🪙 ${item.cost}
         </button>
       </div>
-    `).join('');
+    `
+    )
+    .join('');
 }
 
 async function buyWarItem(itemId) {
-  const item = WAR_SHOP_ITEMS.find(i => i.id === itemId);
+  const item = WAR_SHOP_ITEMS.find((i) => i.id === itemId);
   const balance = state.warCoins - (state.warCoinsSpent || 0);
   if (!item || balance < item.cost) return;
 
   // Aplicar efecto del ítem
   applyWarShopItem(item);
-  
+
   state.warCoinsSpent = (state.warCoinsSpent || 0) + item.cost;
   scheduleSave();
   renderWarShop();
@@ -1032,16 +1055,34 @@ Agregar al final del archivo los estilos necesarios:
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  transition: transform 0.2s, border-color 0.2s;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
 }
 
-.btn-faction.union { background: #002a00; border-color: #44ff44; }
-.btn-faction.poder { background: #2a002a; border-color: #ff44ff; }
-.btn-faction:hover { transform: scale(1.05); }
+.btn-faction.union {
+  background: #002a00;
+  border-color: #44ff44;
+}
+.btn-faction.poder {
+  background: #2a002a;
+  border-color: #ff44ff;
+}
+.btn-faction:hover {
+  transform: scale(1.05);
+}
 
-.faction-icon { font-size: 2rem; }
-.faction-name { font-family: 'Press Start 2P', monospace; font-size: 0.7rem; }
-.faction-desc { font-size: 0.6rem; color: #aaa; }
+.faction-icon {
+  font-size: 2rem;
+}
+.faction-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+}
+.faction-desc {
+  font-size: 0.6rem;
+  color: #aaa;
+}
 
 /* Badge de dominancia en mapas */
 .dom-badge {
@@ -1055,10 +1096,25 @@ Agregar al final del archivo los estilos necesarios:
   gap: 4px;
 }
 
-.dom-badge.dispute { border-color: #888; color: #ccc; background: #1a1a1a; }
-.dom-badge.dominance.winning { border-color: gold; color: gold; background: #1a1500; }
-.dom-badge.dominance.losing { border-color: #555; color: #888; background: #111; }
-.bonus-icon { color: #ffe44d; margin-left: 4px; }
+.dom-badge.dispute {
+  border-color: #888;
+  color: #ccc;
+  background: #1a1a1a;
+}
+.dom-badge.dominance.winning {
+  border-color: gold;
+  color: gold;
+  background: #1a1500;
+}
+.dom-badge.dominance.losing {
+  border-color: #555;
+  color: #888;
+  background: #111;
+}
+.bonus-icon {
+  color: #ffe44d;
+  margin-left: 4px;
+}
 
 /* Panel de guerra */
 .phase-banner {
@@ -1070,8 +1126,16 @@ Agregar al final del archivo los estilos necesarios:
   margin-bottom: 16px;
 }
 
-.phase-banner.dispute { background: #1a0f00; border: 1px solid #ff8800; color: #ff8800; }
-.phase-banner.dominance { background: #001a00; border: 1px solid #44ff44; color: #44ff44; }
+.phase-banner.dispute {
+  background: #1a0f00;
+  border: 1px solid #ff8800;
+  color: #ff8800;
+}
+.phase-banner.dominance {
+  background: #001a00;
+  border: 1px solid #44ff44;
+  color: #44ff44;
+}
 
 /* Tienda de guerra */
 .shop-item {
@@ -1084,16 +1148,40 @@ Agregar al final del archivo los estilos necesarios:
   margin-bottom: 8px;
 }
 
-.shop-item.disabled { opacity: 0.5; }
-.shop-item .item-icon { font-size: 1.5rem; }
-.shop-item .item-info { flex: 1; }
-.shop-item .item-info strong { font-size: 0.65rem; }
-.shop-item .item-info p { font-size: 0.55rem; color: #aaa; margin: 4px 0 0 0; }
+.shop-item.disabled {
+  opacity: 0.5;
+}
+.shop-item .item-icon {
+  font-size: 1.5rem;
+}
+.shop-item .item-info {
+  flex: 1;
+}
+.shop-item .item-info strong {
+  font-size: 0.65rem;
+}
+.shop-item .item-info p {
+  font-size: 0.55rem;
+  color: #aaa;
+  margin: 4px 0 0 0;
+}
 
 /* Faction badge en perfil */
-.faction-badge { font-size: 0.6rem; padding: 2px 8px; border-radius: 10px; }
-.faction-badge.union { background: #002a00; color: #66ff66; border: 1px solid #44ff44; }
-.faction-badge.poder { background: #2a002a; color: #ff66ff; border: 1px solid #ff44ff; }
+.faction-badge {
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.faction-badge.union {
+  background: #002a00;
+  color: #66ff66;
+  border: 1px solid #44ff44;
+}
+.faction-badge.poder {
+  background: #2a002a;
+  color: #ff66ff;
+  border: 1px solid #ff44ff;
+}
 ```
 
 ---

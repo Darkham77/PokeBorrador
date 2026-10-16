@@ -13,7 +13,9 @@ export function auditActiveGenSSoT(targetDir: string): GenAuditResult {
   const hardcodedGenFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(targetDir)) return { hardcodedGenFiles };
 
-  const files = getFilesRecursively(targetDir).filter(f => f.endsWith('.ts') && !f.includes('.spec.') && !f.includes('.test.'));
+  const files = getFilesRecursively(targetDir).filter(
+    (f) => f.endsWith('.ts') && !f.includes('.spec.') && !f.includes('.test.')
+  );
 
   for (const file of files) {
     const content = readFileSync(file, 'utf-8');

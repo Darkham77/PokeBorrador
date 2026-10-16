@@ -10,4 +10,5 @@ import type { PokemonSpeciesId } from './pokedex.ts';
 
 export type SpeciesGenderRule = GenderName | number;
 
-export const SPECIES_GENDERS: Partial<Record<PokemonSpeciesId, SpeciesGenderRule>> = gendersJson as Partial<Record<PokemonSpeciesId, SpeciesGenderRule>>; // open-record: Generic key-value data dictionary container
+export const SPECIES_GENDERS: Partial<Record<PokemonSpeciesId, SpeciesGenderRule>> =
+  gendersJson as Partial<Record<PokemonSpeciesId, SpeciesGenderRule>>; // open-record: Generic key-value data dictionary container

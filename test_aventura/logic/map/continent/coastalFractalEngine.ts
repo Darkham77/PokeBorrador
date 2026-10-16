@@ -124,8 +124,11 @@ export function sculptArchipelagoChain(
       islet.cx,
       islet.cy,
       {
-        radiusX: islet.radius * (ARCHIPELAGO_RADIUS_X_BASE + (i % 2) * ARCHIPELAGO_RADIUS_X_VARIANCE),
-        radiusY: islet.radius * (ARCHIPELAGO_RADIUS_Y_BASE + ((i + 1) % 2) * ARCHIPELAGO_RADIUS_Y_VARIANCE),
+        radiusX:
+          islet.radius * (ARCHIPELAGO_RADIUS_X_BASE + (i % 2) * ARCHIPELAGO_RADIUS_X_VARIANCE),
+        radiusY:
+          islet.radius *
+          (ARCHIPELAGO_RADIUS_Y_BASE + ((i + 1) % 2) * ARCHIPELAGO_RADIUS_Y_VARIANCE),
         roughness: ARCHIPELAGO_ISLET_ROUGHNESS,
         angleRad: (i * Math.PI) / 4
       },

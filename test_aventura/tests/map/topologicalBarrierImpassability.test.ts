@@ -44,11 +44,15 @@ describe.skip('Topological Barrier Encauzamiento & Route Obligation', () => {
         const elev = continent.heightmap[y]?.[x] ?? 0;
         const mCell = continent.resolvedMountain.cellDetails[y]?.[x];
         const isFoot = continent.resolvedMountain.occupiedFootCells[y]?.[x];
-        const isStair = continent.placedStairs.some(s => s.x === x && s.y === y);
+        const isStair = continent.placedStairs.some((s) => s.x === x && s.y === y);
 
         if (elev > 0 && !isStair) {
           // Plateau tops or peaks
-          if (mCell?.role === 'peak_isolated' || mCell?.role.startsWith('edge_') || mCell?.role.startsWith('corner_outer_')) {
+          if (
+            mCell?.role === 'peak_isolated' ||
+            mCell?.role.startsWith('edge_') ||
+            mCell?.role.startsWith('corner_outer_')
+          ) {
             blockedGrid[y]![x] = true;
           }
         }
@@ -93,7 +97,12 @@ describe.skip('Topological Barrier Encauzamiento & Route Obligation', () => {
 
     // E) Impassable wilderness props (boulders, fences, cuttable trees, bushes)
     for (const prop of wilderness.props) {
-      if (prop.type === 'boulder' || prop.type === 'fence_h' || prop.type === 'bush' || prop.type === 'sapling') {
+      if (
+        prop.type === 'boulder' ||
+        prop.type === 'fence_h' ||
+        prop.type === 'bush' ||
+        prop.type === 'sapling'
+      ) {
         if (prop.y >= 0 && prop.y < H && prop.x >= 0 && prop.x < W) {
           blockedGrid[prop.y]![prop.x] = true;
         }
@@ -101,16 +110,22 @@ describe.skip('Topological Barrier Encauzamiento & Route Obligation', () => {
     }
 
     // Identify Node A (Pallet Town), Node B (Viridian City), and Node C (Pewter City)
-    const pallet = pois.find(p => p.id === 'pallet')!;
-    const viridian = pois.find(p => p.id === 'viridian')!;
-    const pewter = pois.find(p => p.id === 'pewter')!;
+    const pallet = pois.find((p) => p.id === 'pallet')!;
+    const viridian = pois.find((p) => p.id === 'viridian')!;
+    const pewter = pois.find((p) => p.id === 'pewter')!;
 
     expect(pallet).toBeDefined();
     expect(viridian).toBeDefined();
     expect(pewter).toBeDefined();
 
     // Helper: BFS reachability check
-    const canReach = (startX: number, startY: number, targetX: number, targetY: number, customBlocked: boolean[][]): boolean => {
+    const canReach = (
+      startX: number,
+      startY: number,
+      targetX: number,
+      targetY: number,
+      customBlocked: boolean[][]
+    ): boolean => {
       const visited: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
       const queue: { x: number; y: number }[] = [{ x: startX, y: startY }];
       visited[startY]![startX] = true;
@@ -119,7 +134,12 @@ describe.skip('Topological Barrier Encauzamiento & Route Obligation', () => {
         const curr = queue.shift()!;
         if (curr.x === targetX && curr.y === targetY) return true;
 
-        for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+        for (const [dx, dy] of [
+          [0, 1],
+          [0, -1],
+          [1, 0],
+          [-1, 0]
+        ]) {
           const nx = curr.x + dx!;
           const ny = curr.y + dy!;
           if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
@@ -134,15 +154,27 @@ describe.skip('Topological Barrier Encauzamiento & Route Obligation', () => {
     };
 
     // Center of Pallet and Pewter
-    const palletCenter = { x: pallet.gridX + Math.floor(pallet.footprint.width / 2), y: pallet.gridY + Math.floor(pallet.footprint.height / 2) };
-    const pewterCenter = { x: pewter.gridX + Math.floor(pewter.footprint.width / 2), y: pewter.gridY + Math.floor(pewter.footprint.height / 2) };
+    const palletCenter = {
+      x: pallet.gridX + Math.floor(pallet.footprint.width / 2),
+      y: pallet.gridY + Math.floor(pallet.footprint.height / 2)
+    };
+    const pewterCenter = {
+      x: pewter.gridX + Math.floor(pewter.footprint.width / 2),
+      y: pewter.gridY + Math.floor(pewter.footprint.height / 2)
+    };
 
     // Baseline: With everything open, Pallet can reach Pewter via Viridian
-    const baselineReachable = canReach(palletCenter.x, palletCenter.y, pewterCenter.x, pewterCenter.y, blockedGrid);
+    const baselineReachable = canReach(
+      palletCenter.x,
+      palletCenter.y,
+      pewterCenter.x,
+      pewterCenter.y,
+      blockedGrid
+    );
     expect(baselineReachable).toBe(true);
 
     // NOW: Completely seal Viridian City (Node B)
-    const blockedWithSealedViridian = blockedGrid.map(row => [...row]);
+    const blockedWithSealedViridian = blockedGrid.map((row) => [...row]);
     for (let y = viridian.gridY - 2; y <= viridian.gridY + viridian.footprint.height + 2; y++) {
       for (let x = viridian.gridX - 2; x <= viridian.gridX + viridian.footprint.width + 2; x++) {
         if (y >= 0 && y < H && x >= 0 && x < W) {
@@ -153,7 +185,13 @@ describe.skip('Topological Barrier Encauzamiento & Route Obligation', () => {
 
     // MANDATE: With Node B sealed, CAN PALLET REACH PEWTER?
     // In canonical Pokémon, it MUST BE FALSE because you cannot walk through open wilderness around Viridian!
-    const shortcutPossible = canReach(palletCenter.x, palletCenter.y, pewterCenter.x, pewterCenter.y, blockedWithSealedViridian);
+    const shortcutPossible = canReach(
+      palletCenter.x,
+      palletCenter.y,
+      pewterCenter.x,
+      pewterCenter.y,
+      blockedWithSealedViridian
+    );
     expect(shortcutPossible).toBe(false);
   });
 });

@@ -49,8 +49,12 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     eventMedalsThirdDb
   );
 
-  const cachedCosmetic = computed(() => (userId.value ? chatStore.profileCosmetics[userId.value] : null));
-  const friendProfile = computed(() => (userId.value ? socialStore.friends.find((f: Friend) => f.id === userId.value) : null));
+  const cachedCosmetic = computed(() =>
+    userId.value ? chatStore.profileCosmetics[userId.value] : null
+  );
+  const friendProfile = computed(() =>
+    userId.value ? socialStore.friends.find((f: Friend) => f.id === userId.value) : null
+  );
 
   const trainerName = computed(() =>
     resolveCosmeticField(
@@ -138,11 +142,24 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const factionLabel = computed(() => resolveFactionLabel(faction.value));
   const factionColor = computed(() => resolveFactionColor(faction.value));
 
-  const createdAt = computed(() => profile.value?.created_at || (isOwnProfile.value ? Temporal.Now.instant().toString() : null));
-  const lastPlayedAt = computed(() => (isOwnProfile.value ? Temporal.Now.instant().toString() : (profile.value?.last_played_at || null)));
+  const createdAt = computed(
+    () =>
+      profile.value?.created_at || (isOwnProfile.value ? Temporal.Now.instant().toString() : null)
+  );
+  const lastPlayedAt = computed(() =>
+    isOwnProfile.value ? Temporal.Now.instant().toString() : profile.value?.last_played_at || null
+  );
 
-  const classLevel = computed(() => (isOwnProfile.value ? gameStore.state.classLevel ?? 1 : profile.value?.class_level ?? saveState.value?.classLevel ?? 1));
-  const classXP = computed(() => (isOwnProfile.value ? gameStore.state.classXP ?? 0 : profile.value?.class_xp ?? saveState.value?.classXP ?? 0));
+  const classLevel = computed(() =>
+    isOwnProfile.value
+      ? (gameStore.state.classLevel ?? 1)
+      : (profile.value?.class_level ?? saveState.value?.classLevel ?? 1)
+  );
+  const classXP = computed(() =>
+    isOwnProfile.value
+      ? (gameStore.state.classXP ?? 0)
+      : (profile.value?.class_xp ?? saveState.value?.classXP ?? 0)
+  );
   const classXPNeeded = computed(() => getXPNeededForClassLevel(classLevel.value));
 
   return {

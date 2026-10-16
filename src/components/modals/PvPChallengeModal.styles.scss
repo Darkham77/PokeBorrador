@@ -14,8 +14,17 @@
   border-radius: $radius-lg;
   background: Rgb(255 255 255 / 4%);
 
-  .label { color: Rgb(255 255 255 / 50%); font-family: var(--font-pixel); font-size: var(--font-9); }
-  .username { color: var(--amber-400); font-family: var(--font-pixel); font-size: var(--font-11); font-weight: bold; }
+  .label {
+    color: Rgb(255 255 255 / 50%);
+    font-family: var(--font-pixel);
+    font-size: var(--font-9);
+  }
+  .username {
+    color: var(--amber-400);
+    font-family: var(--font-pixel);
+    font-size: var(--font-11);
+    font-weight: bold;
+  }
 }
 
 .offline-rival-banner {
@@ -27,9 +36,22 @@
   border-radius: $radius-lg;
   background: Rgb(14 165 233 / 12%);
 
-  .banner-text { display: flex; flex-direction: column; gap: $spacing-2xs; }
-  .banner-title { color: var(--sky); font-family: var(--font-pixel); font-size: var(--font-8); letter-spacing: 0.5px; }
-  .banner-desc { color: var(--slate-400); font-family: var(--font-ui); font-size: var(--font-8); }
+  .banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xs;
+  }
+  .banner-title {
+    color: var(--sky);
+    font-family: var(--font-pixel);
+    font-size: var(--font-8);
+    letter-spacing: 0.5px;
+  }
+  .banner-desc {
+    color: var(--slate-400);
+    font-family: var(--font-ui);
+    font-size: var(--font-8);
+  }
 }
 
 /* SEASONAL THEME BANNER */
@@ -120,11 +142,24 @@
   }
 }
 
-.pvp-section { display: flex; flex-direction: column; gap: $spacing-sm; }
+.pvp-section {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
 
-.section-header-inline { display: flex; justify-content: space-between; align-items: center; }
+.section-header-inline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-.section-title { color: var(--slate-400); font-family: var(--font-pixel); font-size: var(--font-9); letter-spacing: 0.5px; }
+.section-title {
+  color: var(--slate-400);
+  font-family: var(--font-pixel);
+  font-size: var(--font-9);
+  letter-spacing: 0.5px;
+}
 
 .link-btn {
   padding: 0;
@@ -134,7 +169,9 @@
   font-family: var(--font-pixel);
   font-size: var(--font-8);
   cursor: pointer;
-  &:hover { text-decoration: underline; }
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .options-row {
@@ -160,8 +197,16 @@
     box-shadow: var(--shadow-glow-amber);
   }
 
-  .option-name { color: var(--slate-50); font-family: var(--font-pixel); font-size: var(--font-10); }
-  .option-desc { color: var(--slate-400); font-family: var(--font-ui); font-size: var(--font-9); }
+  .option-name {
+    color: var(--slate-50);
+    font-family: var(--font-pixel);
+    font-size: var(--font-10);
+  }
+  .option-desc {
+    color: var(--slate-400);
+    font-family: var(--font-ui);
+    font-size: var(--font-9);
+  }
 }
 
 .arena-card {
@@ -173,10 +218,24 @@
   border-radius: $radius-lg;
   background: Rgb(15 23 42 / 50%);
 
-  .arena-icon { font-size: var(--font-24); }
-  .arena-info { display: flex; flex-direction: column; gap: $spacing-2xs; }
-  .arena-name { color: var(--amber); font-family: var(--font-pixel); font-size: var(--font-10); }
-  .arena-desc { color: var(--slate-400); font-family: var(--font-ui); font-size: var(--font-9); }
+  .arena-icon {
+    font-size: var(--font-24);
+  }
+  .arena-info {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xs;
+  }
+  .arena-name {
+    color: var(--amber);
+    font-family: var(--font-pixel);
+    font-size: var(--font-10);
+  }
+  .arena-desc {
+    color: var(--slate-400);
+    font-family: var(--font-ui);
+    font-size: var(--font-9);
+  }
 }
 
 .team-slots-preview {
@@ -202,7 +261,12 @@
     border-color: Rgb(56 189 248 / 40%);
   }
 
-  .slot-sprite { width: 38px; height: 38px; image-rendering: pixelated; object-fit: contain; }
+  .slot-sprite {
+    width: 38px;
+    height: 38px;
+    image-rendering: pixelated;
+    object-fit: contain;
+  }
   .slot-name {
     max-width: 100%;
     color: var(--slate-300);
@@ -216,8 +280,16 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .slot-empty-icon { font-size: var(--font-14); opacity: 0.4; }
-  .slot-empty-text { color: var(--slate-500); font-family: var(--font-pixel); font-size: var(--font-7); margin-top: 2px; }
+  .slot-empty-icon {
+    font-size: var(--font-14);
+    opacity: 0.4;
+  }
+  .slot-empty-text {
+    color: var(--slate-500);
+    font-family: var(--font-pixel);
+    font-size: var(--font-7);
+    margin-top: 2px;
+  }
 }
 
 .team-warning {
@@ -241,5 +313,7 @@
   gap: $spacing-md-alt;
   margin-top: 6px;
 
-  button { min-width: 120px; }
+  button {
+    min-width: 120px;
+  }
 }

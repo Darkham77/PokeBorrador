@@ -1,73 +1,77 @@
-import { defineStore } from 'pinia'
-import { reactive, ref, shallowRef, computed, watch, type Ref } from 'vue'
-import { logger } from '@/logic/utils/logger'
-import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage'
-import { useAuthStore } from '@/stores/auth.ts'
-import { supabase } from '@/logic/db/supabase'
-import { createInitialGameState } from '@/stores/gameInitialState.ts'
-import type { GameState } from '@/types/system/game'
-import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
-import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { isGymId, type GymId } from '@/data/world/gyms'
-import { DURATION_24_HOURS_MS, BUFF_DURATION_30_MIN_MS } from '@/logic/constants/items.ts'
-import { MAX_NOTIFICATION_HISTORY_ITEMS } from '@/logic/constants/gameplay.ts'
-
+import { defineStore } from 'pinia';
+import { reactive, ref, shallowRef, computed, watch, type Ref } from 'vue';
+import { logger } from '@/logic/utils/logger';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
+import { useAuthStore } from '@/stores/auth.ts';
+import { supabase } from '@/logic/db/supabase';
+import { createInitialGameState } from '@/stores/gameInitialState.ts';
+import type { GameState } from '@/types/system/game';
+import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isGymId, type GymId } from '@/data/world/gyms';
+import { DURATION_24_HOURS_MS, BUFF_DURATION_30_MIN_MS } from '@/logic/constants/items.ts';
+import { MAX_NOTIFICATION_HISTORY_ITEMS } from '@/logic/constants/gameplay.ts';
 
 // Actions Modules
-import { useSaveActions } from '@/stores/game/actions/saveActions.ts'
-import { usePokemonActions } from '@/stores/game/actions/pokemonActions.ts'
-import { useTrainerActions } from '@/stores/game/actions/trainerActions.ts'
-import { useBreedingActions } from '@/stores/game/actions/breedingActions.ts'
-import { useTeamActions } from '@/stores/game/actions/teamActions.ts'
+import { useSaveActions } from '@/stores/game/actions/saveActions.ts';
+import { usePokemonActions } from '@/stores/game/actions/pokemonActions.ts';
+import { useTrainerActions } from '@/stores/game/actions/trainerActions.ts';
+import { useBreedingActions } from '@/stores/game/actions/breedingActions.ts';
+import { useTeamActions } from '@/stores/game/actions/teamActions.ts';
 
-import { DBRouter } from '@/logic/db/dbRouter'
-import { requireMapRouteId } from '@/data/world/map-assets'
-import { getGMT3Date } from '@/logic/utils/timeUtils'
-import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '@/types/system/gameEvents.ts'
-import { gameBus } from '@/logic/events/gameBus.ts'
-import { saveCoordinator } from '@/logic/auth/saveCoordinator.ts'
-import { saveSandboxLocalState } from '@/stores/game/actions/saveActionHelpers.ts'
+import { DBRouter } from '@/logic/db/dbRouter';
+import { requireMapRouteId } from '@/data/world/map-assets';
+import { getGMT3Date } from '@/logic/utils/timeUtils';
+import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '@/types/system/gameEvents.ts';
+import { gameBus } from '@/logic/events/gameBus.ts';
+import { saveCoordinator } from '@/logic/auth/saveCoordinator.ts';
+import { saveSandboxLocalState } from '@/stores/game/actions/saveActionHelpers.ts';
 
 export const useGameStore = defineStore('game', () => {
-  const authStore = useAuthStore()
-  const state = reactive<GameState>(createInitialGameState())
-  
-  const db = shallowRef<DBRouter>(supabase)
-  const isDataLoaded = ref(false)
-  const isEngineReady = ref(false)
-  const isSaveLocked = ref(false)
-  const isReady = computed(() => isDataLoaded.value && isEngineReady.value)
-  const isSandboxActive = ref(false)
-  const realStateBackup = ref<GameState | null>(null)
+  const authStore = useAuthStore();
+  const state = reactive<GameState>(createInitialGameState());
+
+  const db = shallowRef<DBRouter>(supabase);
+  const isDataLoaded = ref(false);
+  const isEngineReady = ref(false);
+  const isSaveLocked = ref(false);
+  const isReady = computed(() => isDataLoaded.value && isEngineReady.value);
+  const isSandboxActive = ref(false);
+  const realStateBackup = ref<GameState | null>(null);
 
   watch(isReady, (ready) => {
-    if (!ready || typeof window === 'undefined') return
-    const detail: GameStoreReadyDetail = { ready: true }
-    window.dispatchEvent(new CustomEvent<GameStoreReadyDetail>(GAME_UI_EVENTS.STORE_READY, { detail }))
-  })
+    if (!ready || typeof window === 'undefined') return;
+    const detail: GameStoreReadyDetail = { ready: true };
+    window.dispatchEvent(
+      new CustomEvent<GameStoreReadyDetail>(GAME_UI_EVENTS.STORE_READY, { detail })
+    );
+  });
 
   function updateState(newData: Partial<GameState>) {
-    if (newData.team && newData.team.length > 0) newData.starterChosen = true
-    Object.assign(state, newData)
+    if (newData.team && newData.team.length > 0) newData.starterChosen = true;
+    Object.assign(state, newData);
     // Standard state updates
-    logger.debug('STORE', 'Game state updated.')
+    logger.debug('STORE', 'Game state updated.');
   }
 
   // --- ACTIONS INITIALIZATION ---
-  
+
   // 1. Save Actions (Basics needed for others)
-  const { loadGame: rawLoad, save, scheduleSave, withBatchSave, claimAsset, fetchClaimQueue, saveBlocked, validationErrorDetails } = useSaveActions(
-    state, 
-    authStore, 
-    db as Ref<DBRouter>, 
-    updateState, 
-    isSandboxActive
-  )
+  const {
+    loadGame: rawLoad,
+    save,
+    scheduleSave,
+    withBatchSave,
+    claimAsset,
+    fetchClaimQueue,
+    saveBlocked,
+    validationErrorDetails
+  } = useSaveActions(state, authStore, db as Ref<DBRouter>, updateState, isSandboxActive);
 
   saveCoordinator.setPreLogoutHandler(async () => {
-    const store = useGameStore()
-    await store.save(false, true, true)
-  })
+    const store = useGameStore();
+    await store.save(false, true, true);
+  });
 
   // 2. Team Actions (Special teams management)
   const {
@@ -83,82 +87,92 @@ export const useGameStore = defineStore('game', () => {
     swapWarSlot,
     reorderWarTeam,
     setRankedTeam
-  } = useTeamActions(state, scheduleSave)
+  } = useTeamActions(state, scheduleSave);
 
   // 3. Pokemon Actions
-  const { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag, validateAll } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam, autoFillPvpTeam6)
+  const {
+    registerPokedex,
+    chooseStarter,
+    addPokemon,
+    removePokemon,
+    reorderTeam,
+    reorderMoves,
+    sendToBox,
+    togglePokeTag,
+    validateAll
+  } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam, autoFillPvpTeam6);
 
   // 4. Trainer Actions
-  const { addTrainerExp, checkLevelUp } = useTrainerActions(state, scheduleSave)
+  const { addTrainerExp, checkLevelUp } = useTrainerActions(state, scheduleSave);
 
   // 5. Breeding Actions
-  const { executeHatch } = useBreedingActions(state, scheduleSave, addPokemon)
+  const { executeHatch } = useBreedingActions(state, scheduleSave, addPokemon);
 
   gameBus.on('NOTIFICATION_RECORDED', (e: Event) => {
-    const detail = (e as CustomEvent).detail
+    const detail = (e as CustomEvent).detail;
     if (detail && state) {
       if (!state.notificationHistory) {
-        state.notificationHistory = []
+        state.notificationHistory = [];
       }
-      state.notificationHistory.push(detail)
+      state.notificationHistory.push(detail);
       if (state.notificationHistory.length > MAX_NOTIFICATION_HISTORY_ITEMS) {
-        state.notificationHistory.shift()
+        state.notificationHistory.shift();
       }
-      void scheduleSave()
+      void scheduleSave();
     }
-  })
+  });
 
   // Wrapper for LoadGame to manage local state
   async function loadGame(): Promise<void> {
-    const res = await rawLoad()
+    const res = await rawLoad();
 
     if (res.success) {
       // Sync time ONLY after successful load/auth
-      const { syncServerTime } = await import('@/logic/auth/timeSync')
-      await syncServerTime()
-      
-      isDataLoaded.value = true
-      isEngineReady.value = true
-      
+      const { syncServerTime } = await import('@/logic/auth/timeSync');
+      await syncServerTime();
+
+      isDataLoaded.value = true;
+      isEngineReady.value = true;
+
       // Validate all pokemon structure from DB
-      validateAll()
+      validateAll();
 
       // Clear expired routes
-      checkRouteExpirations()
+      checkRouteExpirations();
 
       // Parallel Boot Coordinator for child stores
       if (authStore.user) {
-        const { initSessionHub } = await import('@/logic/auth/sessionHub')
-        initSessionHub(authStore.user.id)
-        
+        const { initSessionHub } = await import('@/logic/auth/sessionHub');
+        initSessionHub(authStore.user.id);
+
         window.addEventListener('pv-save-lock', () => {
-          isSaveLocked.value = true
-        })
+          isSaveLocked.value = true;
+        });
 
         window.addEventListener('pv-save-unlock', () => {
-          isSaveLocked.value = false
-        })
+          isSaveLocked.value = false;
+        });
       }
 
-      gameBus.emit('GAME_DATA_LOADED', { userId: authStore.user?.id })
+      gameBus.emit('GAME_DATA_LOADED', { userId: authStore.user?.id });
     }
   }
 
   function checkRouteExpirations(): void {
-    if (!state.classData) return
-    const now = Temporal.Now.instant().epochMilliseconds
+    if (!state.classData) return;
+    const now = Temporal.Now.instant().epochMilliseconds;
 
-    let changed = false
+    let changed = false;
 
     // 1. Rocket: clear extortedRouteId when active 24h expires.
     //    Timestamp clears when FULL 24h passes (allows re-extortion).
     if (state.classData.extortedRouteTimestamp) {
-      const timestamp = Number(state.classData.extortedRouteTimestamp)
-      if ((now - timestamp) > DURATION_24_HOURS_MS) {
-        logger.info('CLASS', `Extortion cooldown fully expired. Clearing.`)
-        state.classData.extortedRouteId = null
-        state.classData.extortedRouteTimestamp = null
-        changed = true
+      const timestamp = Number(state.classData.extortedRouteTimestamp);
+      if (now - timestamp > DURATION_24_HOURS_MS) {
+        logger.info('CLASS', `Extortion cooldown fully expired. Clearing.`);
+        state.classData.extortedRouteId = null;
+        state.classData.extortedRouteTimestamp = null;
+        changed = true;
       }
     }
 
@@ -166,99 +180,104 @@ export const useGameStore = defineStore('game', () => {
     //    Timestamp persists for another 23.5h for the 24h cooldown.
     //    When FULL 24h passes from timestamp, clear the timestamp as well.
     if (state.classData.officialRouteTimestamp) {
-      const timestamp = Number(state.classData.officialRouteTimestamp)
-      if (state.classData.officialRouteId && (now - timestamp) > BUFF_DURATION_30_MIN_MS) {
-        logger.info('CLASS', `Official route patrol finished. Clearing active ID.`)
-        state.classData.officialRouteId = null
-        changed = true
+      const timestamp = Number(state.classData.officialRouteTimestamp);
+      if (state.classData.officialRouteId && now - timestamp > BUFF_DURATION_30_MIN_MS) {
+        logger.info('CLASS', `Official route patrol finished. Clearing active ID.`);
+        state.classData.officialRouteId = null;
+        changed = true;
       }
-      if ((now - timestamp) > DURATION_24_HOURS_MS) {
+      if (now - timestamp > DURATION_24_HOURS_MS) {
         // Full 24h cooldown: release timestamp to allow establishing a new route
-        state.classData.officialRouteTimestamp = null
-        changed = true
+        state.classData.officialRouteTimestamp = null;
+        changed = true;
       }
     }
 
     if (changed) {
-      scheduleSave()
+      void scheduleSave();
     }
   }
 
   async function reclaimControl() {
-    const { reclaimControl: rawReclaim } = await import('@/logic/auth/sessionHub')
-    await rawReclaim()
-    isSaveLocked.value = false
+    const { reclaimControl: rawReclaim } = await import('@/logic/auth/sessionHub');
+    await rawReclaim();
+    isSaveLocked.value = false;
   }
 
   function enterSandboxMode() {
-    if (isSandboxActive.value) return
-    realStateBackup.value = structuredClone(state) as GameState
-    
+    if (isSandboxActive.value) return;
+    realStateBackup.value = structuredClone(state) as GameState;
+
     // Clear current state and load sandbox save if it exists
-    Object.keys(state).forEach(key => {
-      delete (state as Record<string, unknown>)[key] // open-record: Generic key-value data dictionary container
-    })
-    
-    let initialSandbox = createInitialGameState()
-    const saved = safeStorage.getItem(LOCAL_STORAGE_KEYS.SANDBOX_SAVE)
+    Object.keys(state).forEach((key) => {
+      delete (state as Record<string, unknown>)[key]; // open-record: Generic key-value data dictionary container
+    });
+
+    let initialSandbox = createInitialGameState();
+    const saved = safeStorage.getItem(LOCAL_STORAGE_KEYS.SANDBOX_SAVE);
     if (saved) {
       try {
-        initialSandbox = JSON.parse(saved) as GameState
+        initialSandbox = JSON.parse(saved) as GameState;
       } catch (e) {
-        logger.error('SANDBOX', 'Error parsing sandbox save, using initial state:', e)
+        logger.error('SANDBOX', 'Error parsing sandbox save, using initial state:', e);
       }
     }
-    
-    Object.assign(state, initialSandbox)
-    isSandboxActive.value = true
-    logger.info('SANDBOX', 'Modo Sandbox activado para Test Aventura. Partida real respaldada.')
+
+    Object.assign(state, initialSandbox);
+    isSandboxActive.value = true;
+    logger.info('SANDBOX', 'Modo Sandbox activado para Test Aventura. Partida real respaldada.');
   }
 
   function exitSandboxMode() {
-    if (!isSandboxActive.value) return
-    
+    if (!isSandboxActive.value) return;
+
     // Save sandbox state locally before exiting
-    saveSandboxLocalState(state)
-    
+    saveSandboxLocalState(state);
+
     // Clear and restore real save
-    Object.keys(state).forEach(key => {
-      delete (state as Record<string, unknown>)[key] // open-record: Generic key-value data dictionary container
-    })
-    
+    Object.keys(state).forEach((key) => {
+      delete (state as Record<string, unknown>)[key]; // open-record: Generic key-value data dictionary container
+    });
+
     if (realStateBackup.value) {
-      Object.assign(state, realStateBackup.value)
-      realStateBackup.value = null
+      Object.assign(state, realStateBackup.value);
+      realStateBackup.value = null;
     } else {
-      Object.assign(state, createInitialGameState())
+      Object.assign(state, createInitialGameState());
     }
-    
-    isDataLoaded.value = false // Reset data loaded so real save gets fetched when entering normal game
-    isSandboxActive.value = false
-    logger.info('SANDBOX', 'Modo Sandbox desactivado. Partida real restaurada.')
+
+    isDataLoaded.value = false; // Reset data loaded so real save gets fetched when entering normal game
+    isSandboxActive.value = false;
+    logger.info('SANDBOX', 'Modo Sandbox desactivado. Partida real restaurada.');
   }
 
   const dailyGuardianCaptures = computed(() => {
-    const today = getGMT3Date().toPlainDate().toString()
-    const captures = state.guardianCaptures || {}
+    const today = getGMT3Date().toPlainDate().toString();
+    const captures = state.guardianCaptures || {};
     return Object.entries(captures)
-      .filter(([_, date]) => date === today)
-      .map(([mapId]) => requireMapRouteId(mapId))
-  })
+      .filter(([, date]) => date === today)
+      .map(([mapId]) => requireMapRouteId(mapId));
+  });
 
-  const pokemonByUid = computed<ReadonlyMap<string, { pokemon: Pokemon; location: PokemonStorageLocation; index: number }>>(() => {
-    const map = new Map<string, { pokemon: Pokemon; location: PokemonStorageLocation; index: number }>()
+  const pokemonByUid = computed<
+    ReadonlyMap<string, { pokemon: Pokemon; location: PokemonStorageLocation; index: number }>
+  >(() => {
+    const map = new Map<
+      string,
+      { pokemon: Pokemon; location: PokemonStorageLocation; index: number }
+    >();
     if (state.team) {
       state.team.forEach((p, idx) => {
-        if (p?.uid) map.set(p.uid, { pokemon: p, location: 'team', index: idx })
-      })
+        if (p?.uid) map.set(p.uid, { pokemon: p, location: 'team', index: idx });
+      });
     }
     if (state.box) {
       state.box.forEach((p, idx) => {
-        if (p?.uid) map.set(p.uid, { pokemon: p, location: 'box', index: idx })
-      })
+        if (p?.uid) map.set(p.uid, { pokemon: p, location: 'box', index: idx });
+      });
     }
-    return map
-  })
+    return map;
+  });
 
   const allPokemonList = computed<readonly Pokemon[]>(() => {
     const list: Pokemon[] = [];
@@ -275,45 +294,49 @@ export const useGameStore = defineStore('game', () => {
     return list;
   });
 
-  function getPokemonByUid(uid: string): Pokemon | null { // domain-ok: Open dynamic text or non-domain string payload
-    if (!uid) return null
-    return pokemonByUid.value.get(uid)?.pokemon ?? null
+  function getPokemonByUid(uid: string): Pokemon | null {
+    // domain-ok: Open dynamic text or non-domain string payload
+    if (!uid) return null;
+    return pokemonByUid.value.get(uid)?.pokemon ?? null;
   }
 
   const caughtSpeciesSet = computed<ReadonlySet<PokemonSpeciesId>>(() => {
-    const valid = (state.pokedex || []).filter(isPokemonSpeciesId)
-    return new Set(valid)
-  })
+    const valid = (state.pokedex || []).filter(isPokemonSpeciesId);
+    return new Set(valid);
+  });
 
   const seenSpeciesSet = computed<ReadonlySet<PokemonSpeciesId>>(() => {
-    const valid = (state.seenPokedex || []).filter(isPokemonSpeciesId)
-    return new Set(valid)
-  })
+    const valid = (state.seenPokedex || []).filter(isPokemonSpeciesId);
+    return new Set(valid);
+  });
 
   function isSpeciesCaught(id: PokemonSpeciesId): boolean {
-    return caughtSpeciesSet.value.has(id)
+    return caughtSpeciesSet.value.has(id);
   }
 
   function isSpeciesSeen(id: PokemonSpeciesId): boolean {
-    return seenSpeciesSet.value.has(id) || caughtSpeciesSet.value.has(id)
+    return seenSpeciesSet.value.has(id) || caughtSpeciesSet.value.has(id);
   }
 
   const defeatedGymsSet = computed<ReadonlySet<GymId>>(() => {
-    const valid = (state.defeatedGyms || []).filter(isGymId)
-    return new Set<GymId>(valid) // runtime-set: Fast O(1) membership lookup set
-  })
+    const valid = (state.defeatedGyms || []).filter(isGymId);
+    return new Set<GymId>(valid); // runtime-set: Fast O(1) membership lookup set
+  });
 
   function isGymDefeated(id: GymId): boolean {
-    return defeatedGymsSet.value.has(id)
+    return defeatedGymsSet.value.has(id);
   }
 
   // --- WATCHERS ---
-  watch(() => state.team.length, (newLen, oldLen) => {
-    if (newLen > oldLen) {
-      if (state.pvpTeam.length < 3) autoFillPvpTeam()
-      if ((state.pvpTeam6 || []).length < 6) autoFillPvpTeam6()
+  watch(
+    () => state.team.length,
+    (newLen, oldLen) => {
+      if (newLen > oldLen) {
+        if (state.pvpTeam.length < 3) autoFillPvpTeam();
+        if ((state.pvpTeam6 || []).length < 6) autoFillPvpTeam6();
+      }
     }
-  })
+  );
 
   return {
     state,
@@ -375,9 +398,13 @@ export const useGameStore = defineStore('game', () => {
     enterSandboxMode,
     exitSandboxMode,
     checkRouteExpirations
-  }
-})
+  };
+});
 
 if (typeof window !== 'undefined') {
-  (window as Window & { __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => ReturnType<typeof useGameStore> }).__VITE_DEBUG_GAME_STORE_RESOLVER__ = () => useGameStore()
+  (
+    window as Window & {
+      __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => ReturnType<typeof useGameStore>;
+    }
+  ).__VITE_DEBUG_GAME_STORE_RESOLVER__ = () => useGameStore();
 }

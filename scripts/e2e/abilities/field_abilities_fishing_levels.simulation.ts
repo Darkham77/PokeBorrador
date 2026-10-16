@@ -8,82 +8,90 @@ class FieldAbilitiesFishingLevelsSimulation extends BaseE2ESimulation {
   }
 
   public async setupOctilleryFishingLeader(): Promise<void> {
-    await this.page.evaluate(
-      async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-        const gameStore = useGameStore();
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+      const gameStore = useGameStore();
 
-        const octillery = pokemonDebugService.generate({ id: requirePokemonSpeciesId('octillery'), level: 35 });
-        octillery.ability = 'suctioncups';
-        octillery.hp = octillery.maxHp;
+      const octillery = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('octillery'),
+        level: 35
+      });
+      octillery.ability = 'suctioncups';
+      octillery.hp = octillery.maxHp;
 
-        gameStore.state.starterChosen = true;
-        gameStore.state.team = [octillery];
-        gameStore.state.box = [];
-      }
-    );
+      gameStore.state.starterChosen = true;
+      gameStore.state.team = [octillery];
+      gameStore.state.box = [];
+    });
     await this.saveGameAndAwaitExport();
   }
 
   public async setupPressureLeader(): Promise<void> {
-    await this.page.evaluate(
-      async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-        const gameStore = useGameStore();
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+      const gameStore = useGameStore();
 
-        const aerodactyl = pokemonDebugService.generate({ id: requirePokemonSpeciesId('aerodactyl'), level: 50 });
-        aerodactyl.ability = 'pressure';
-        aerodactyl.hp = aerodactyl.maxHp;
+      const aerodactyl = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('aerodactyl'),
+        level: 50
+      });
+      aerodactyl.ability = 'pressure';
+      aerodactyl.hp = aerodactyl.maxHp;
 
-        gameStore.state.starterChosen = true;
-        gameStore.state.team = [aerodactyl];
-        gameStore.state.box = [];
-      }
-    );
+      gameStore.state.starterChosen = true;
+      gameStore.state.team = [aerodactyl];
+      gameStore.state.box = [];
+    });
     await this.saveGameAndAwaitExport();
   }
 
   public async verifyFishingEncounterGenerated(): Promise<boolean> {
-    return await this.page.evaluate(
-      async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { generateEncounter } = await import('../../../src/logic/encounters/encounters.ts');
-        const gameStore = useGameStore();
+    return await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { generateEncounter } = await import('../../../src/logic/encounters/encounters.ts');
+      const gameStore = useGameStore();
 
-        const encounter = await generateEncounter('route12', {
+      const encounter = await generateEncounter(
+        'route12',
+        {
           faction: gameStore.state.faction,
           team: gameStore.state.team,
           fishingRodSecs: 3600
-        }, { forceEncounter: true });
+        },
+        { forceEncounter: true }
+      );
 
-        return encounter !== null;
-      }
-    );
+      return encounter !== null;
+    });
   }
 
   public async verifyPressureMaxLevel(): Promise<boolean> {
-    return await this.page.evaluate(
-      async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { generateEncounter } = await import('../../../src/logic/encounters/encounters.ts');
-        const gameStore = useGameStore();
+    return await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { generateEncounter } = await import('../../../src/logic/encounters/encounters.ts');
+      const gameStore = useGameStore();
 
-        const encounter = await generateEncounter('route1', {
+      const encounter = await generateEncounter(
+        'route1',
+        {
           faction: gameStore.state.faction,
           team: gameStore.state.team
-        }, { forceEncounter: true });
+        },
+        { forceEncounter: true }
+      );
 
-        if (encounter && encounter.type === 'wild' && encounter.pokemon) {
-          // Route 1 max level is 5
-          return encounter.pokemon.level >= 2 && encounter.pokemon.level <= 5;
-        }
-        return false;
+      if (encounter && encounter.type === 'wild' && encounter.pokemon) {
+        // Route 1 max level is 5
+        return encounter.pokemon.level >= 2 && encounter.pokemon.level <= 5;
       }
-    );
+      return false;
+    });
   }
 }
 

@@ -36,14 +36,20 @@ async function handleDragExpulsion(
   currentMon: Pokemon
 ): Promise<void> {
   const { store, p, e } = ctx;
-  const triggeringMoveId = store.activeMove?.value?.id || (side === 'player' ? e?.lastMove?.id || p?.lastMove?.id : p?.lastMove?.id || e?.lastMove?.id) || 'whirlwind';
+  const triggeringMoveId =
+    store.activeMove?.value?.id ||
+    (side === 'player' ? e?.lastMove?.id || p?.lastMove?.id : p?.lastMove?.id || e?.lastMove?.id) ||
+    'whirlwind';
   const forcedConfig = getForcedExitConfig(triggeringMoveId);
   const logStyle = side === 'player' ? 'log-player' : 'log-enemy';
   const logIcon = side === 'player' ? 'player' : 'enemy_trainer';
   store.addLog(forcedConfig.getExpulsionLog(currentMon.name), logStyle, logIcon);
 
   if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
-    await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM);
+    await store.fsm.transition(
+      store.BATTLE_STATES.ACTIVE_BATTLE,
+      store.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM
+    );
   }
   gameBus.emit('PLAY_ESCAPE_ANIM', { side, type: forcedConfig.escapeType, pokemon: currentMon });
   if (store.animations?.awaitTween) {
@@ -58,15 +64,19 @@ async function handleVoluntaryRecall(
 ): Promise<void> {
   const { store } = ctx;
   const active = store.activeBattle?.value;
-  const withdrawMsg = side === 'player'
-    ? `¡Bien hecho, ${currentMon.name}! ¡Regresa!`
-    : `¡${active?.trainerName || 'El entrenador'} retira a ${currentMon.name}!`;
+  const withdrawMsg =
+    side === 'player'
+      ? `¡Bien hecho, ${currentMon.name}! ¡Regresa!`
+      : `¡${active?.trainerName || 'El entrenador'} retira a ${currentMon.name}!`;
   const logStyle = side === 'player' ? 'log-info' : 'log-enemy';
   const logIcon = side === 'player' ? 'player' : 'enemy_trainer';
   store.addLog(withdrawMsg, logStyle, logIcon);
 
   if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
-    await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.POKEMON_RECALL);
+    await store.fsm.transition(
+      store.BATTLE_STATES.ACTIVE_BATTLE,
+      store.BATTLE_SUBSTATES.POKEMON_RECALL
+    );
   }
   if (store.animations?.handleWithdrawRequest) {
     await store.animations.handleWithdrawRequest({ side, pokemon: currentMon });
@@ -89,20 +99,25 @@ async function performSideWithdrawal(
   }
 
   if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
-    await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.VACATE_SEAT);
+    await store.fsm.transition(
+      store.BATTLE_STATES.ACTIVE_BATTLE,
+      store.BATTLE_SUBSTATES.VACATE_SEAT
+    );
   }
   if (exitingRef) exitingRef.value = null;
 }
 
 const DEFAULT_STAGES = {
-  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0
+  atk: 0,
+  def: 0,
+  spa: 0,
+  spd: 0,
+  spe: 0,
+  accuracy: 0,
+  evasion: 0
 } as const;
 
-function resetSideCombatantStages(
-  store: SBCtx['store'],
-  side: BattleSide,
-  target: Pokemon
-): void {
+function resetSideCombatantStages(store: SBCtx['store'], side: BattleSide, target: Pokemon): void {
   const active = store.activeBattle?.value;
   if (side === 'player') {
     if (active) active.player = target;
@@ -139,9 +154,10 @@ function logSendOutMessage(
     const logIcon = side === 'player' ? target : 'enemy_trainer';
     store.addLog(`¡${target.name} fue arrastrado al campo!`, logStyle, logIcon);
   } else if (!isSilent) {
-    const sendOutMsg = side === 'player'
-      ? `¡Adelante, ${target.name}!`
-      : `¡${active?.trainerName || 'El entrenador'} envía a ${target.name}!`;
+    const sendOutMsg =
+      side === 'player'
+        ? `¡Adelante, ${target.name}!`
+        : `¡${active?.trainerName || 'El entrenador'} envía a ${target.name}!`;
     const logStyle = side === 'player' ? 'log-player' : 'log-enemy';
     const logIcon = side === 'player' ? target : 'enemy_trainer';
     store.addLog(sendOutMsg, logStyle, logIcon);
@@ -159,9 +175,18 @@ async function performSideSendOut(
   resetSideCombatantStages(store, side, target);
 
   if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
-    await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.POKEMON_CALL);
-    await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.RENDER_BALL);
-    await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.OCCUPY_SEAT);
+    await store.fsm.transition(
+      store.BATTLE_STATES.ACTIVE_BATTLE,
+      store.BATTLE_SUBSTATES.POKEMON_CALL
+    );
+    await store.fsm.transition(
+      store.BATTLE_STATES.ACTIVE_BATTLE,
+      store.BATTLE_SUBSTATES.RENDER_BALL
+    );
+    await store.fsm.transition(
+      store.BATTLE_STATES.ACTIVE_BATTLE,
+      store.BATTLE_SUBSTATES.OCCUPY_SEAT
+    );
   }
 
   logSendOutMessage(store, side, target, { isDrag: type === 'drag', isSilent });
@@ -171,7 +196,7 @@ async function performSideSendOut(
   }
 
   const stages = (side === 'player' ? store.playerStages?.value : store.enemyStages?.value) || {};
-  applyEntryHazards(target, stages, store.addLog);
+  void applyEntryHazards(target, stages, store.addLog);
 }
 
 function handleSameMonSwitch(

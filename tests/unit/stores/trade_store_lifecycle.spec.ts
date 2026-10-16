@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useTradeStore } from '@/stores/trade';
 import { useGameStore } from '@/stores/game';
@@ -131,11 +131,13 @@ describe('Trade Store Lifecycle & Validation Suite (Tier 1)', () => {
     expect(success).toBe(false);
 
     // Already locked in another pending offer
-    tradeStore.pendingOutgoing = [{
-      id: 'trade-9',
-      status: 'pending',
-      offer_pokemon: { uid: 'poke-active' } as any
-    } as any];
+    tradeStore.pendingOutgoing = [
+      {
+        id: 'trade-9',
+        status: 'pending',
+        offer_pokemon: { uid: 'poke-active' } as any
+      } as any
+    ];
 
     tradeStore.tradeOfferPoke = {
       uid: 'poke-active',

@@ -28,9 +28,11 @@ async function main() {
 
   // 2. Read raw assets
   const files = await fs.readdir(RAW_ITEMS_DIR);
-  const pngFiles = files.filter(f => f.endsWith('.png'));
+  const pngFiles = files.filter((f) => f.endsWith('.png'));
 
-  console.log(styleText('yellow', `🖼️  Convirtiendo ${pngFiles.length} sprites de items a WebP...`));
+  console.log(
+    styleText('yellow', `🖼️  Convirtiendo ${pngFiles.length} sprites de items a WebP...`)
+  );
 
   let convertedCount = 0;
   for (const file of pngFiles) {
@@ -46,12 +48,19 @@ async function main() {
     convertedCount++;
   }
 
-  console.log(styleText('green', `✅ ${convertedCount} sprites convertidos a WebP en public/assets/sprites/items/\n`));
+  console.log(
+    styleText(
+      'green',
+      `✅ ${convertedCount} sprites convertidos a WebP en public/assets/sprites/items/\n`
+    )
+  );
 
   // 3. Update items.json
   console.log(styleText('yellow', `📦 Actualizando rutas de sprites en items.json...`));
   const rawDb = readFileSync(ITEMS_JSON_PATH, 'utf-8');
-  const db = JSON.parse(rawDb) as { SHOP_ITEMS: Array<{ id: string; sprite?: string; [key: string]: unknown }> };
+  const db = JSON.parse(rawDb) as {
+    SHOP_ITEMS: Array<{ id: string; sprite?: string; [key: string]: unknown }>;
+  };
 
   let updatedCount = 0;
   let keptCount = 0;
@@ -70,11 +79,13 @@ async function main() {
 
   console.log(styleText('green', `✅ Base de datos items.json actualizada:`));
   console.log(`   - ${styleText('bold', String(updatedCount))} items actualizados a 'items/<id>'`);
-  console.log(`   - ${styleText('gray', String(keptCount))} items conservaron su sprite de crafting/tier\n`);
+  console.log(
+    `   - ${styleText('gray', String(keptCount))} items conservaron su sprite de crafting/tier\n`
+  );
   console.log(styleText('cyan', '═══════════════════════════════════════════════════════\n'));
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
   process.exit(1);
 });

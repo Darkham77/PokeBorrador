@@ -26,10 +26,10 @@ This package can be used to determine the information required to render sprites
 **without any dependencies**:
 
 ```ts
-import {Sprites, Icons} from '@pkmn/img';
+import { Sprites, Icons } from '@pkmn/img';
 
 // Shiny Charizard sprite from FireRed / LeafGreen
-const {url, w, h, pixelated} = Sprites.getPokemon('charizard', {gen: 'gen3frlg', shiny: true});
+const { url, w, h, pixelated } = Sprites.getPokemon('charizard', { gen: 'gen3frlg', shiny: true });
 const sprite = document.createElement('img');
 sprite.src = url;
 sprite.width = w;
@@ -63,31 +63,31 @@ application (though the only overlap is likely to be the `gen` and `num` fields 
 small).
 
 ```ts
-import * as A from '@pkmn/img/adaptable';;
-import type {Data} from '@pkmn/img/data/interface';
+import * as A from '@pkmn/img/adaptable';
+import type { Data } from '@pkmn/img/data/interface';
 
 const data = import('./data');
 let DATA: Data | null;
 
-export const Sprites = new class {
+export const Sprites = new (class {
   sprites!: A.Sprites;
 
   async get() {
     if (this.sprites) return this.sprites;
     if (DATA) return (this.sprites = new A.Sprites(DATA));
-    return (this.sprites = new A.Sprites(DATA = (await data).Data));
+    return (this.sprites = new A.Sprites((DATA = (await data).Data)));
   }
-};
+})();
 
-export const Icons = new class {
+export const Icons = new (class {
   icons!: A.Icons;
 
   async get() {
     if (this.icons) return this.icons;
     if (DATA) return (this.icons = new A.Icons(DATA));
-    return (this.icons = new A.Icons(DATA = (await data).Data));
+    return (this.icons = new A.Icons((DATA = (await data).Data)));
   }
-};
+})();
 ```
 
 All methods take `protocol` and `domain` arguments in their `options` to facilitate easily **hosting

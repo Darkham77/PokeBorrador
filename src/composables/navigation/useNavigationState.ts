@@ -1,30 +1,31 @@
-import { computed } from "vue";
-import { gsap } from "gsap";
-import { useGameStore } from "@/stores/game";
-import { useUIStore } from "@/stores/ui";
-import { useSocialStore } from "@/stores/social/social";
-import { useModalStore } from "@/stores/modals";
-import { useGTSStore } from "@/stores/gts";
-import { useBreedingStore } from "@/stores/breeding";
-import { useGymsStore } from "@/stores/gyms";
-import { getItemById, isItemId } from "@/data/inventory/items";
-import { useUnifiedRewards } from "@/composables/rewards/useUnifiedRewards";
-import { categorizeHomeRewards, formatHomeTooltip } from "./homeTooltipFormatter.ts";
-import type { ClaimItem } from "@/types/system/game";
+import { computed } from 'vue';
+import { gsap } from 'gsap';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { useSocialStore } from '@/stores/social/social';
+import { useModalStore } from '@/stores/modals';
+import { useGTSStore } from '@/stores/gts';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGymsStore } from '@/stores/gyms';
+import { getItemById, isItemId } from '@/data/inventory/items';
+import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
+import { categorizeHomeRewards, formatHomeTooltip } from './homeTooltipFormatter.ts';
+import type { ClaimItem } from '@/types/system/game';
 
 const TAB_MODAL_MAP: Readonly<Record<string, string>> = {
-  bag: "Inventory",
-  market: "Shop",
-  "online-market": "GlobalMarket",
-  "trainer-shop": "BCShop",
-  "reputation-shop": "ReputationShop",
-  "black-market": "BlackMarket",
-  "war-shop": "WarShop",
-  team: "TeamManagement",
-  daycare: "Daycare",
-  missions: "EventMissions",
-  ranking: "Ranking",
-  arena: "Arena",
+  // open-record: Navigation tab to modal name mapping
+  bag: 'Inventory',
+  market: 'Shop',
+  'online-market': 'GlobalMarket',
+  'trainer-shop': 'BCShop',
+  'reputation-shop': 'ReputationShop',
+  'black-market': 'BlackMarket',
+  'war-shop': 'WarShop',
+  team: 'TeamManagement',
+  daycare: 'Daycare',
+  missions: 'EventMissions',
+  ranking: 'Ranking',
+  arena: 'Arena'
 } as const;
 
 interface SocialNotificationsSummary {
@@ -34,13 +35,13 @@ interface SocialNotificationsSummary {
 }
 
 function resolveSocialInitialTab(notifications: SocialNotificationsSummary): string {
-  if (notifications.trades > 0 && (notifications.chats + notifications.friends) === 0) {
-    return "trades";
+  if (notifications.trades > 0 && notifications.chats + notifications.friends === 0) {
+    return 'trades';
   }
   if (notifications.friends > 0 && notifications.chats === 0) {
-    return "requests";
+    return 'requests';
   }
-  return "friends";
+  return 'friends';
 }
 
 const HUD_NAV_ENTER_Y_OFFSET_PX = 20;
@@ -48,7 +49,7 @@ const HUD_NAV_LEAVE_Y_OFFSET_PX = 15;
 const HUD_NAV_INITIAL_SCALE = 0.8;
 const HUD_NAV_LEAVE_SCALE = 0.85;
 const HUD_NAV_CENTERING_X_PERCENT = -50;
-const HUD_NAV_TRANSFORM_ORIGIN_CENTER = "50% 50%";
+const HUD_NAV_TRANSFORM_ORIGIN_CENTER = '50% 50%';
 const NAV_ENTER_ANIM_DURATION_SEC = 0.2;
 const NAV_LEAVE_ANIM_DURATION_SEC = 0.15;
 
@@ -60,10 +61,16 @@ export function useNavigationState() {
   const gtsStore = useGTSStore();
   const breedingStore = useBreedingStore();
   const gymsStore = useGymsStore();
-  const { unifiedRewards, totalActionableMissions, isClassMissionReadyToDeploy, totalHomeNotifications: baseHomeNotifications } = useUnifiedRewards();
+  const {
+    unifiedRewards,
+    totalActionableMissions,
+    isClassMissionReadyToDeploy,
+    totalHomeNotifications: baseHomeNotifications
+  } = useUnifiedRewards();
 
   const readyEggsCount = computed(() => {
-    return (gameStore.state.eggs || []).filter(egg => egg.ready === true || egg.steps <= 0).length;
+    return (gameStore.state.eggs || []).filter((egg) => egg.ready === true || egg.steps <= 0)
+      .length;
   });
 
   const totalHomeNotifications = computed(() => {
@@ -77,14 +84,16 @@ export function useNavigationState() {
       dailyMissions: totalActionableMissions.value,
       classDeploy: isClassMissionReadyToDeploy.value ? 1 : 0,
       readyEggs: readyEggsCount.value,
-      rematches: gymsStore.availableRematchesCount,
+      rematches: gymsStore.availableRematchesCount
     };
     return formatHomeTooltip(counts, totalHomeNotifications.value);
   });
 
   const activeTab = computed({
     get: () => uiStore.activeTab,
-    set: (val: string) => { uiStore.activeTab = val; }
+    set: (val: string) => {
+      uiStore.activeTab = val;
+    }
   });
 
   const tradeClaimsCount = computed(() => {
@@ -104,7 +113,7 @@ export function useNavigationState() {
         const count = qty as number;
         if (count <= 0) return null;
         const found = isItemId(name) ? getItemById(name) : null;
-        if (found?.cat === "pokeballs" || name.toLowerCase().includes("ball")) {
+        if (found?.cat === 'pokeballs' || name.toLowerCase().includes('ball')) {
           return { name: found?.name || name, qty: count };
         }
         return null;
@@ -115,27 +124,27 @@ export function useNavigationState() {
   const materialItems = computed(() => {
     const inventory = gameStore.state.inventory || {};
     const list: { name: string; qty: number; tier: number; icon: string }[] = [];
-    
+
     for (const [key, qty] of Object.entries(inventory)) {
       const count = qty as number;
       if (count <= 0) continue;
       const found = isItemId(key) ? getItemById(key) : null;
       if (found) {
         let tier: number | null = null;
-        if (found.cat === "raw_material" || found.sprite?.includes("crafting/tier0/")) {
+        if (found.cat === 'raw_material' || found.sprite?.includes('crafting/tier0/')) {
           tier = 0;
-        } else if (found.cat === "refined_material" || found.sprite?.includes("crafting/tier1/")) {
+        } else if (found.cat === 'refined_material' || found.sprite?.includes('crafting/tier1/')) {
           tier = 1;
-        } else if (found.cat === "component" || found.sprite?.includes("crafting/tier2/")) {
+        } else if (found.cat === 'component' || found.sprite?.includes('crafting/tier2/')) {
           tier = 2;
         }
-        
+
         if (tier !== null) {
           list.push({
             name: found.name,
             qty: count,
             tier,
-            icon: found.icon || "📦"
+            icon: found.icon || '📦'
           });
         }
       }
@@ -145,40 +154,40 @@ export function useNavigationState() {
 
   const mochilaTooltipDescription = computed(() => {
     const lines: string[] = []; // text-ok: UI text display localization string
-    
+
     // Section 1: Poké Balls first
-    lines.push("🔴 POKÉ BALLS");
+    lines.push('🔴 POKÉ BALLS');
     if (ballsList.value.length === 0) {
-      lines.push("• Ninguna");
+      lines.push('• Ninguna');
     } else {
-      ballsList.value.forEach(i => lines.push(`• ${i.name}: ${i.qty}`));
+      ballsList.value.forEach((i) => lines.push(`• ${i.name}: ${i.qty}`));
     }
-    
-    lines.push(""); // empty line
-    
+
+    lines.push(''); // empty line
+
     // Section 2: Materials second
-    lines.push("📦 MATERIALES");
-    const t0 = materialItems.value.filter(i => i.tier === 0);
-    const t1 = materialItems.value.filter(i => i.tier === 1);
-    const t2 = materialItems.value.filter(i => i.tier === 2);
-    
+    lines.push('📦 MATERIALES');
+    const t0 = materialItems.value.filter((i) => i.tier === 0);
+    const t1 = materialItems.value.filter((i) => i.tier === 1);
+    const t2 = materialItems.value.filter((i) => i.tier === 2);
+
     if (materialItems.value.length === 0) {
-      lines.push("• Ninguno");
+      lines.push('• Ninguno');
     } else {
       if (t0.length > 0) {
-        t0.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`));
+        t0.forEach((i) => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`));
       }
       if (t1.length > 0) {
-        t1.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`));
+        t1.forEach((i) => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`));
       }
       if (t2.length > 0) {
-        t2.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`));
+        t2.forEach((i) => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`));
       }
     }
-    
-    lines.push("");
-    lines.push("Haz clic para abrir el inventario.");
-    return lines.join("\n");
+
+    lines.push('');
+    lines.push('Haz clic para abrir el inventario.');
+    return lines.join('\n');
   });
 
   const gymRematchesCount = computed(() => {
@@ -188,18 +197,19 @@ export function useNavigationState() {
   const medalsBreakdown = computed(() => {
     const defeated = gameStore.state.defeatedGyms || [];
     if (defeated.length === 0) {
-      return "No has ganado ninguna medalla todavía.\n¡Desafía a los Líderes de Gimnasio para obtenerlas!";
+      return 'No has ganado ninguna medalla todavía.\n¡Desafía a los Líderes de Gimnasio para obtenerlas!';
     }
-    
-    const earnedList = gymsStore.gyms
-      .filter(g => defeated.includes(g.id))
-      .map(g => `${g.badge} ${g.badgeName} (${g.leader})`);
-      
-    const rematchNote = gymsStore.availableRematchesCount > 0
-      ? `\n\n🔥 ¡Hay ${gymsStore.availableRematchesCount} revancha${gymsStore.availableRematchesCount > 1 ? 's' : ''} diaria${gymsStore.availableRematchesCount > 1 ? 's' : ''} disponible${gymsStore.availableRematchesCount > 1 ? 's' : ''}!`
-      : "";
 
-    return `Medallas obtenidas (${defeated.length}/8):\n${earnedList.map(item => `• ${item}`).join("\n")}${rematchNote}\n\nDesbloquean nuevas zonas y Pokémon.\n\nHaz clic para ver los Gimnasios.`;
+    const earnedList = gymsStore.gyms
+      .filter((g) => defeated.includes(g.id))
+      .map((g) => `${g.badge} ${g.badgeName} (${g.leader})`);
+
+    const rematchNote =
+      gymsStore.availableRematchesCount > 0
+        ? `\n\n🔥 ¡Hay ${gymsStore.availableRematchesCount} revancha${gymsStore.availableRematchesCount > 1 ? 's' : ''} diaria${gymsStore.availableRematchesCount > 1 ? 's' : ''} disponible${gymsStore.availableRematchesCount > 1 ? 's' : ''}!`
+        : '';
+
+    return `Medallas obtenidas (${defeated.length}/8):\n${earnedList.map((item) => `• ${item}`).join('\n')}${rematchNote}\n\nDesbloquean nuevas zonas y Pokémon.\n\nHaz clic para ver los Gimnasios.`;
   });
 
   const warehouseEggsCount = computed(() => breedingStore.warehouseEggs?.length || 0);
@@ -219,13 +229,13 @@ export function useNavigationState() {
   const eggsBreakdown = computed(() => {
     const incubating = gameStore.state.eggs || [];
     const warehouse = breedingStore.warehouseEggs || [];
-    
+
     const lines: string[] = []; // text-ok: UI text display localization string
-    
+
     if (incubating.length === 0 && warehouse.length === 0) {
-      return "No tienes huevos en incubación ni en la guardería.\n¡Haz clic para ir a la Guardería!";
+      return 'No tienes huevos en incubación ni en la guardería.\n¡Haz clic para ir a la Guardería!';
     }
-    
+
     if (incubating.length > 0) {
       lines.push(`Incubando: ${incubating.length} / 6 huevos`);
       incubating.forEach((egg, idx) => {
@@ -234,35 +244,37 @@ export function useNavigationState() {
         } else {
           const total = egg.totalSteps ?? egg.steps;
           const walked = Math.max(0, total - egg.steps);
-          lines.push(`• Huevo ${idx + 1}: ${Math.floor(walked).toLocaleString()} / ${total.toLocaleString()} pasos`);
+          lines.push(
+            `• Huevo ${idx + 1}: ${Math.floor(walked).toLocaleString()} / ${total.toLocaleString()} pasos`
+          );
         }
       });
     } else {
-      lines.push("No hay huevos en incubación.");
+      lines.push('No hay huevos en incubación.');
     }
-    
-    lines.push(""); // Separador de secciones
-    
+
+    lines.push(''); // Separador de secciones
+
     if (warehouse.length > 0) {
       lines.push(`En Guardería: ${warehouse.length} huevos sin reclamar🥚`);
     } else {
-      lines.push("No hay huevos pendientes en la Guardería.");
+      lines.push('No hay huevos pendientes en la Guardería.');
     }
-    
-    lines.push("");
-    lines.push("Haz clic para abrir la Guardería.");
-    
-    return lines.join("\n");
+
+    lines.push('');
+    lines.push('Haz clic para abrir la Guardería.');
+
+    return lines.join('\n');
   });
 
   const handleMouseEnter = (group: string) => {
-    if (window.matchMedia("(hover: hover)").matches) {
+    if (window.matchMedia('(hover: hover)').matches) {
       uiStore.openHudGroup = group;
     }
   };
 
   const handleMouseLeave = (group: string) => {
-    if (window.matchMedia("(hover: hover)").matches) {
+    if (window.matchMedia('(hover: hover)').matches) {
       if (uiStore.openHudGroup === group) {
         uiStore.openHudGroup = null;
       }
@@ -276,11 +288,13 @@ export function useNavigationState() {
       return;
     }
 
-    if (tab === "social" || tab === "friends") {
-      modalStore.open("SocialCenter", { initialTab: resolveSocialInitialTab(socialStore.notifications) });
+    if (tab === 'social' || tab === 'friends') {
+      modalStore.open('SocialCenter', {
+        initialTab: resolveSocialInitialTab(socialStore.notifications)
+      });
       return;
     }
-    
+
     activeTab.value = tab;
     uiStore.openHudGroup = null;
   };
@@ -289,12 +303,12 @@ export function useNavigationState() {
     uiStore.toggleHudGroup(name);
   };
 
-  const beforeEnter = (el: Element, position: string = "top") => {
+  const beforeEnter = (el: Element, position: string = 'top') => {
     gsap.killTweensOf(el);
-    gsap.set(el, { 
-      opacity: 0, 
+    gsap.set(el, {
+      opacity: 0,
       xPercent: HUD_NAV_CENTERING_X_PERCENT,
-      y: position === "top" ? -HUD_NAV_ENTER_Y_OFFSET_PX : HUD_NAV_ENTER_Y_OFFSET_PX,
+      y: position === 'top' ? -HUD_NAV_ENTER_Y_OFFSET_PX : HUD_NAV_ENTER_Y_OFFSET_PX,
       scale: HUD_NAV_INITIAL_SCALE,
       transformOrigin: HUD_NAV_TRANSFORM_ORIGIN_CENTER
     });
@@ -307,19 +321,19 @@ export function useNavigationState() {
       y: 0,
       scale: 1,
       duration: NAV_ENTER_ANIM_DURATION_SEC,
-      ease: "back.out(1.2)",
+      ease: 'back.out(1.2)',
       onComplete: done
     });
   };
 
-  const leave = (el: Element, position: string = "top", done?: () => void) => {
+  const leave = (el: Element, position: string = 'top', done?: () => void) => {
     gsap.killTweensOf(el);
     gsap.to(el, {
       opacity: 0,
-      y: position === "top" ? -HUD_NAV_LEAVE_Y_OFFSET_PX : HUD_NAV_LEAVE_Y_OFFSET_PX,
+      y: position === 'top' ? -HUD_NAV_LEAVE_Y_OFFSET_PX : HUD_NAV_LEAVE_Y_OFFSET_PX,
       scale: HUD_NAV_LEAVE_SCALE,
       duration: NAV_LEAVE_ANIM_DURATION_SEC,
-      ease: "power2.in",
+      ease: 'power2.in',
       onComplete: done
     });
   };

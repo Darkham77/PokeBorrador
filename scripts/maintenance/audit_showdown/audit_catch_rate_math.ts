@@ -9,7 +9,10 @@ export interface CatchRateAuditResult {
  * Compara funciones y parámetros clave de captura en battleCatchMath.ts
  * contra los identificadores canónicos usados en Showdown (statusBonus, catchRate, ballBonus).
  */
-export function auditCatchRateMath(catchMathPath: string, _showdownRefPath: string): CatchRateAuditResult {
+export function auditCatchRateMath(
+  catchMathPath: string,
+  _showdownRefPath: string
+): CatchRateAuditResult {
   const catchMathDiscrepancies: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(catchMathPath)) return { catchMathDiscrepancies };
 
@@ -20,7 +23,9 @@ export function auditCatchRateMath(catchMathPath: string, _showdownRefPath: stri
 
   for (const term of requiredTerms) {
     if (!content.includes(term)) {
-      catchMathDiscrepancies.push(`Missing canonical catch rate term: '${term}' in battleCatchMath.ts`);
+      catchMathDiscrepancies.push(
+        `Missing canonical catch rate term: '${term}' in battleCatchMath.ts`
+      );
     }
   }
 

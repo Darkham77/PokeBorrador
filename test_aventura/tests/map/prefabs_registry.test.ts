@@ -69,10 +69,11 @@ describe('PrefabsRegistryService', () => {
 
   it('loads manifest and updates O(1) registries cleanly', async () => {
     const originalFetch = globalThis.fetch;
-    globalThis.fetch = async () => ({
-      ok: true,
-      json: async () => mockManifest
-    } as unknown as Response); // cast-ok: mock Response in test
+    globalThis.fetch = async () =>
+      ({
+        ok: true,
+        json: async () => mockManifest
+      }) as unknown as Response; // cast-ok: mock Response in test
 
     try {
       const loaded = await service.loadManifest('/mock/manifest.json');
@@ -101,10 +102,11 @@ describe('PrefabsRegistryService', () => {
 
   it('filters prefabs by category with O(1) performance', async () => {
     const originalFetch = globalThis.fetch;
-    globalThis.fetch = async () => ({
-      ok: true,
-      json: async () => mockManifest
-    } as unknown as Response); // cast-ok: mock Response in test
+    globalThis.fetch = async () =>
+      ({
+        ok: true,
+        json: async () => mockManifest
+      }) as unknown as Response; // cast-ok: mock Response in test
 
     try {
       await service.loadManifest();
@@ -133,10 +135,11 @@ describe('PrefabsRegistryService', () => {
 
   it('handles fetch failure gracefully by preserving fallback cache', async () => {
     const originalFetch = globalThis.fetch;
-    globalThis.fetch = async () => ({
-      ok: false,
-      status: 404
-    } as unknown as Response); // cast-ok: mock Response in test
+    globalThis.fetch = async () =>
+      ({
+        ok: false,
+        status: 404
+      }) as unknown as Response; // cast-ok: mock Response in test
 
     try {
       const loaded = await service.loadManifest('/non_existent/manifest.json');
@@ -151,7 +154,17 @@ describe('PrefabsRegistryService', () => {
     const manifestPath = path.resolve('test_aventura/assets/prefabs/manifest.json');
     expect(fs.existsSync(manifestPath), 'manifest.json must exist').toBe(true);
     const raw = fs.readFileSync(manifestPath, 'utf-8');
-    const manifest = JSON.parse(raw) as { version: string; prefabs: Array<{ id: string; name: string; category: string; width: number; height: number; file: string }> };
+    const manifest = JSON.parse(raw) as {
+      version: string;
+      prefabs: Array<{
+        id: string;
+        name: string;
+        category: string;
+        width: number;
+        height: number;
+        file: string;
+      }>;
+    };
 
     expect(manifest.version).toBeTruthy();
     expect(manifest.prefabs.length).toBeGreaterThanOrEqual(15);
@@ -185,7 +198,10 @@ describe('PrefabsRegistryService', () => {
         for (const file of fs.readdirSync(catDir)) {
           if (file.endsWith('.png')) {
             const previousCategory = fileToCategoryMap.get(file);
-            expect(previousCategory, `Duplicate tile file "${file}" found in both "${previousCategory}" and "${category}"`).toBeUndefined();
+            expect(
+              previousCategory,
+              `Duplicate tile file "${file}" found in both "${previousCategory}" and "${category}"`
+            ).toBeUndefined();
             fileToCategoryMap.set(file, category);
           }
         }
@@ -193,4 +209,3 @@ describe('PrefabsRegistryService', () => {
     }
   });
 });
-

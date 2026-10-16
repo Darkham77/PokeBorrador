@@ -1,47 +1,49 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventory/inventory'
-import { NATURES, NATURE_DATA, toNatureId, type NatureId } from '@/data/battle/natures'
-import BaseModal from '@/components/common/BaseModal.vue'
-import gsap from 'gsap'
+import { computed } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { NATURES, NATURE_DATA, toNatureId, type NatureId } from '@/data/battle/natures';
+import BaseModal from '@/components/common/BaseModal.vue';
+import gsap from 'gsap';
 
-const uiStore = useUIStore()
-const gameStore = useGameStore()
-const inventoryStore = useInventoryStore()
+const uiStore = useUIStore();
+const gameStore = useGameStore();
+const inventoryStore = useInventoryStore();
 
 const naturePokemon = computed(() => {
-  const target = uiStore.activePokemonForNature
-  if (!target) return null
-  const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
-  return list[target.index] ?? null
-})
-const sortedNatures = NATURES.toSorted()
+  const target = uiStore.activePokemonForNature;
+  if (!target) return null;
+  const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box;
+  return list[target.index] ?? null;
+});
+const sortedNatures = NATURES.toSorted();
 
 const handleApplyNature = (nature: NatureId) => {
-  if (!naturePokemon.value) return
-  naturePokemon.value.nature = nature
-  
+  if (!naturePokemon.value) return;
+  naturePokemon.value.nature = nature;
+
   // Recalc stats
   import('@/logic/pokemon/pokemonFactory').then(({ recalcPokemonStats }) => {
     if (naturePokemon.value) {
-      recalcPokemonStats(naturePokemon.value)
-      const translatedNature = NATURE_DATA[nature].name
-      uiStore.notify(`¡La naturaleza de ${naturePokemon.value.name} cambió a ${translatedNature}!`, '✨')
+      recalcPokemonStats(naturePokemon.value);
+      const translatedNature = NATURE_DATA[nature].name;
+      uiStore.notify(
+        `¡La naturaleza de ${naturePokemon.value.name} cambió a ${translatedNature}!`,
+        '✨'
+      );
     }
     // Consume only after confirming
-    inventoryStore.removeItem('naturepatch', 1)
-    close()
-    gameStore.save()
-  })
-}
+    inventoryStore.removeItem('naturepatch', 1);
+    close();
+    gameStore.save();
+  });
+};
 
-
-const HOVER_SCALE_BTN_ENTER = 1.02
+const HOVER_SCALE_BTN_ENTER = 1.02;
 
 const onBtnEnter = (event: MouseEvent) => {
-  const el = event.currentTarget as HTMLElement
+  const el = event.currentTarget as HTMLElement;
   gsap.to(el, {
     y: -4,
     scale: HOVER_SCALE_BTN_ENTER,
@@ -50,11 +52,11 @@ const onBtnEnter = (event: MouseEvent) => {
     duration: 0.2,
     ease: 'power2.out',
     overwrite: 'auto'
-  })
-}
+  });
+};
 
 const onBtnLeave = (event: MouseEvent, isActive: boolean) => {
-  const el = event.currentTarget as HTMLElement
+  const el = event.currentTarget as HTMLElement;
   gsap.to(el, {
     y: 0,
     scale: 1,
@@ -63,28 +65,28 @@ const onBtnLeave = (event: MouseEvent, isActive: boolean) => {
     duration: 0.2,
     ease: 'power2.out',
     overwrite: 'auto'
-  })
-}
+  });
+};
 
 interface Props {
-  id?: string
-  show?: boolean
+  id?: string;
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   id: 'nature-patch-modal',
   show: true
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
 const close = () => {
-  emit('close')
-  uiStore.isNaturePatchOpen = false
-  uiStore.activePokemonForNature = null
-}
+  emit('close');
+  uiStore.isNaturePatchOpen = false;
+  uiStore.activePokemonForNature = null;
+};
 </script>
 
 <template>
@@ -106,13 +108,21 @@ const close = () => {
 
       <div class="nature-grid scrollbar">
         <button
-          v-for="n in sortedNatures" 
-          id="nature-patch-modal-btn-1" 
-          :key="n" 
+          v-for="n in sortedNatures"
+          id="nature-patch-modal-btn-1"
+          :key="n"
           class="nature-btn"
-          :class="{ active: naturePokemon && naturePokemon.nature ? toNatureId(naturePokemon.nature) === n : false }"
+          :class="{
+            active:
+              naturePokemon && naturePokemon.nature ? toNatureId(naturePokemon.nature) === n : false
+          }"
           @mouseenter="onBtnEnter"
-          @mouseleave="onBtnLeave($event, naturePokemon && naturePokemon.nature ? toNatureId(naturePokemon.nature) === n : false)"
+          @mouseleave="
+            onBtnLeave(
+              $event,
+              naturePokemon && naturePokemon.nature ? toNatureId(naturePokemon.nature) === n : false
+            )
+          "
           @click.stop="handleApplyNature(n)"
         >
           <span class="n-name">{{ NATURE_DATA[n].name }}</span>
@@ -138,7 +148,7 @@ const close = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .nature-modal-inner {
   padding: 8px 0;
@@ -168,15 +178,22 @@ const close = () => {
     text-align: left;
     cursor: pointer;
     will-change: transform;
-    
-    &.active { 
-      background: Rgb(255 214 10 / 5%); 
+
+    &.active {
+      background: Rgb(255 214 10 / 5%);
       border-color: var(--yellow);
-      .n-name { color: var(--yellow); }
+      .n-name {
+        color: var(--yellow);
+      }
     }
 
-    .n-name { display: block; color: var(--white); font-size: var(--font-14); font-weight: 800; }
-    
+    .n-name {
+      display: block;
+      color: var(--white);
+      font-size: var(--font-14);
+      font-weight: 800;
+    }
+
     .n-effects {
       display: flex;
       flex-direction: column;
@@ -190,17 +207,17 @@ const close = () => {
       gap: $spacing-xs;
       font-size: var(--font-10);
       font-weight: bold;
-      
+
       .indicator-icon {
         display: inline-block;
         font-size: var(--font-9);
         line-height: 1;
       }
-      
+
       &.mod-up {
         color: var(--green);
       }
-      
+
       &.mod-down {
         color: var(--red);
       }

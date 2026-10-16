@@ -1,9 +1,9 @@
-import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
-import { useAuthStore } from '@/stores/auth.ts'
-import { useGameStore } from '@/stores/game.ts'
-import { logger } from '@/logic/utils/logger'
-import { supabase } from '@/logic/db/supabase'
+import { defineStore } from 'pinia';
+import { ref, watch } from 'vue';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { logger } from '@/logic/utils/logger';
+import { supabase } from '@/logic/db/supabase';
 
 export interface ProfileCacheItem {
   username?: string;
@@ -15,10 +15,10 @@ export interface ProfileCacheItem {
 }
 
 export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
-  const authStore = useAuthStore()
-  const gameStore = useGameStore()
+  const authStore = useAuthStore();
+  const gameStore = useGameStore();
 
-  const profileCosmetics = ref<Record<string, ProfileCacheItem>>({})
+  const profileCosmetics = ref<Record<string, ProfileCacheItem>>({}); // open-record: User UUID to profile cosmetics cache dictionary
 
   // Sychronize trainer's own cosmetics reactively
   watch(
@@ -31,64 +31,72 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
       gameStore.state.gender
     ],
     () => {
-      if (!authStore.user) return
+      if (!authStore.user) return;
       profileCosmetics.value[authStore.user.id] = {
-        username: gameStore.state.trainer || (authStore.user.user_metadata?.username as string) || 'Entrenador',
+        username:
+          gameStore.state.trainer ||
+          (authStore.user.user_metadata?.username as string) ||
+          'Entrenador',
         player_class: gameStore.state.playerClass || 'entrenador',
         trainer_level: gameStore.state.trainerLevel || 1,
         avatar_style: gameStore.state.avatar_style || '',
         nick_style: gameStore.state.nick_style || '',
         gender: gameStore.state.gender || 'h'
-      }
+      };
     },
     { immediate: true }
-  )
+  );
 
   async function fetchMissingCosmetics(targetIds: string[] = []) {
-    if (!authStore.user) return
-    const db = supabase
+    if (!authStore.user) return;
+    const db = supabase;
 
     if (!profileCosmetics.value[authStore.user.id]) {
       profileCosmetics.value[authStore.user.id] = {
-        username: gameStore.state.trainer || (authStore.user.user_metadata?.username as string) || 'Entrenador',
+        username:
+          gameStore.state.trainer ||
+          (authStore.user.user_metadata?.username as string) ||
+          'Entrenador',
         player_class: gameStore.state.playerClass || 'entrenador',
         trainer_level: gameStore.state.trainerLevel || 1,
         avatar_style: gameStore.state.avatar_style || '',
         nick_style: gameStore.state.nick_style || '',
         gender: gameStore.state.gender || 'h'
-      }
+      };
     }
 
     // Collect all user IDs: global chat + private chat participants
-    const uniqueUserIds = new Set<string>()
-    targetIds.forEach(id => { if (id) uniqueUserIds.add(id) })
+    const uniqueUserIds = new Set<string>();
+    targetIds.forEach((id) => {
+      if (id) uniqueUserIds.add(id);
+    });
 
-    const missingIds = [...uniqueUserIds].filter(id => id && !profileCosmetics.value[id])
-    if (missingIds.length === 0) return
+    const missingIds = [...uniqueUserIds].filter((id) => id && !profileCosmetics.value[id]);
+    if (missingIds.length === 0) return;
 
     try {
       const { data, error } = (await db
         .from('profiles')
         .select('id, username, player_class, trainer_level, avatar_style, nick_style, gender')
         .in('id', missingIds)) as {
-        data: {
-          id: string;
-          username?: string | null;
-          player_class?: string | null;
-          trainer_level?: number | null;
-          avatar_style?: string | null;
-          nick_style?: string | null;
-          gender?: string | null;
-        }[] | null;
+        data:
+          | {
+              id: string;
+              username?: string | null;
+              player_class?: string | null;
+              trainer_level?: number | null;
+              avatar_style?: string | null;
+              nick_style?: string | null;
+              gender?: string | null;
+            }[]
+          | null;
         error: unknown;
       };
 
       if (!error && data) {
-        const profilesMap = Object.fromEntries(
-          data.map(prof => [prof.id, prof])
-        );
+        const profilesMap = Object.fromEntries(data.map((prof) => [prof.id, prof]));
 
-        missingIds.forEach(id => {
+        missingIds.forEach((id) => {
           const p = profilesMap[id];
           const fallbackName = id.startsWith('local_') ? id.replace('local_', '') : 'Entrenador';
           const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
@@ -112,5 +120,5 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
   return {
     profileCosmetics,
     fetchMissingCosmetics
-  }
-})
+  };
+});

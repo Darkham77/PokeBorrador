@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/events/MissionCardActiveOperation.vue
- * 
+ *
  * Subcomponent rendering the active deployment progress, countdown, and assigned Pokémon.
  */
 
@@ -40,18 +40,12 @@ defineProps<{
       />
     </div>
 
-    <div
-      v-if="activePokemonInfo"
-      class="operation-detail-row"
-    >
+    <div v-if="activePokemonInfo" class="operation-detail-row">
       <span class="detail-label">ASIGNADO:</span>
       <span class="detail-val">{{ activePokemonInfo }}</span>
     </div>
 
-    <div
-      v-if="activeGuaranteedReward && !hasRewardsList"
-      class="operation-detail-row"
-    >
+    <div v-if="activeGuaranteedReward && !hasRewardsList" class="operation-detail-row">
       <span class="detail-label">BOTÍN FIJADO:</span>
       <span class="detail-val is-reward">{{ activeGuaranteedReward }}</span>
     </div>

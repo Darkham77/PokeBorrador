@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import {
   createDefaultEvs,
@@ -199,4 +199,3 @@ describe('evMath - Pure Effort Value Mathematics & Bounds', () => {
     assert.strictEqual(resZero.totalCleared, 0);
   });
 });
-

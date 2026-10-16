@@ -11,14 +11,17 @@ export default async function globalPostgresSetup(): Promise<void> {
     console.log('\n[Playwright] Preparing ephemeral PostgreSQL container for simulation...');
     const result = await ensurePostgresTestContainerReady();
     if (!result.isReady) {
-      throw new Error('[Playwright] Failed to initialize ephemeral PostgreSQL test container in Docker.');
+      throw new Error(
+        '[Playwright] Failed to initialize ephemeral PostgreSQL test container in Docker.'
+      );
     }
 
     try {
       await fetch('http://localhost:5174/');
       await fetch('http://localhost:5174/src/main.ts');
       await fetch('http://localhost:5174/src/views/game/MainGameView.vue');
-    } catch { // catch-ok: non-blocking pre-warm request failure
+    } catch {
+      // catch-ok: non-blocking pre-warm request failure
       // Non-blocking pre-warm
     }
   }

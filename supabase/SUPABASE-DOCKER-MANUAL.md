@@ -36,12 +36,12 @@ If you are new to these topics, consider starting with the [managed Supabase pla
 
 ### Required Tools
 
-| Tool | Installation |
-| ------------- | ------------- |
-| **Git** | <https://git-scm.com/downloads> |
-| **Docker Desktop** (Windows/macOS) | <https://docs.docker.com/desktop/install/windows-install/> |
-| **Docker Engine + Compose** (Linux VPS) | <https://docs.docker.com/engine/install/> |
-| **OpenSSL** | Included in Git Bash / WSL / Linux |
+| Tool                                    | Installation                                               |
+| --------------------------------------- | ---------------------------------------------------------- |
+| **Git**                                 | <https://git-scm.com/downloads>                            |
+| **Docker Desktop** (Windows/macOS)      | <https://docs.docker.com/desktop/install/windows-install/> |
+| **Docker Engine + Compose** (Linux VPS) | <https://docs.docker.com/engine/install/>                  |
+| **OpenSSL**                             | Included in Git Bash / WSL / Linux                         |
 
 ---
 
@@ -49,12 +49,12 @@ If you are new to these topics, consider starting with the [managed Supabase pla
 
 Minimum requirements to run all Supabase components (development and medium production workloads):
 
-| Resource | Recommended Minimum |
-| --------- | ------------------- |
-| CPU | 2 cores |
-| RAM | 4 GB |
-| Disk | 20 GB SSD |
-| OS | Ubuntu 22.04 LTS / Debian 12 / Windows with WSL2 |
+| Resource | Recommended Minimum                              |
+| -------- | ------------------------------------------------ |
+| CPU      | 2 cores                                          |
+| RAM      | 4 GB                                             |
+| Disk     | 20 GB SSD                                        |
+| OS       | Ubuntu 22.04 LTS / Debian 12 / Windows with WSL2 |
 
 > **Tip:** If you do not need services like Logflare (Analytics), Realtime, Storage, imgproxy, or Edge Runtime (Functions), you can remove them from `docker-compose.yml` to reduce required system resources.
 
@@ -134,11 +134,11 @@ Inspect output from both scripts and verify `.env` before proceeding.
 
 Edit these variables in `.env`:
 
-| Variable | Description | Example |
-| ---------- | ------------- | --------- |
+| Variable              | Description                                            | Example                   |
+| --------------------- | ------------------------------------------------------ | ------------------------- |
 | `SUPABASE_PUBLIC_URL` | Base URL for internet access (Dashboard, API, Storage) | `http://your-ip.com:8000` |
-| `API_EXTERNAL_URL` | Used by Auth for redirect callbacks | `http://your-ip.com:8000` |
-| `SITE_URL` | Default redirect URL for Auth | `http://your-ip.com:3000` |
+| `API_EXTERNAL_URL`    | Used by Auth for redirect callbacks                    | `http://your-ip.com:8000` |
+| `SITE_URL`            | Default redirect URL for Auth                          | `http://your-ip.com:3000` |
 
 **Understanding `<your-domain>`:**
 
@@ -149,14 +149,14 @@ Edit these variables in `.env`:
 
 After running scripts, important credentials in `.env` are:
 
-| Variable | Usage |
-| ---------- | ----- |
-| `POSTGRES_PASSWORD` | DB Password (for connection strings and psql) |
-| `SUPABASE_PUBLISHABLE_KEY` | Public API key for frontend (new key system) |
-| `SUPABASE_SECRET_KEY` | Secret API key for server — **NEVER expose in frontend** |
-| `SUPABASE_PUBLIC_URL` | URL passed as `supabaseUrl` to client libraries |
-| `ANON_KEY` | (Legacy) Public API key with limited permissions |
-| `SERVICE_ROLE_KEY` | (Legacy) API key with full DB access — **NEVER expose** |
+| Variable                   | Usage                                                    |
+| -------------------------- | -------------------------------------------------------- |
+| `POSTGRES_PASSWORD`        | DB Password (for connection strings and psql)            |
+| `SUPABASE_PUBLISHABLE_KEY` | Public API key for frontend (new key system)             |
+| `SUPABASE_SECRET_KEY`      | Secret API key for server — **NEVER expose in frontend** |
+| `SUPABASE_PUBLIC_URL`      | URL passed as `supabaseUrl` to client libraries          |
+| `ANON_KEY`                 | (Legacy) Public API key with limited permissions         |
+| `SERVICE_ROLE_KEY`         | (Legacy) API key with full DB access — **NEVER expose**  |
 
 > Generated keys expire in **5 years**. You can inspect them at [jwt.io](https://jwt.io) using your `JWT_SECRET`.
 
@@ -220,11 +220,11 @@ docker compose down
 
 By default, the dashboard is accessible on port `8000` through the API gateway (Kong).
 
-| Environment | URL |
-| --------- | ----- |
-| Local | <http://localhost:8000> |
-| VPS / Server | http://\<your-ip\>:8000 |
-| With Domain | http://\<your-domain\>:8000 |
+| Environment  | URL                         |
+| ------------ | --------------------------- |
+| Local        | <http://localhost:8000>     |
+| VPS / Server | http://\<your-ip\>:8000     |
+| With Domain  | http://\<your-domain\>:8000 |
 
 Log in using credentials set in [Studio Authentication](#step-44--studio-authentication-dashboard).
 
@@ -303,12 +303,12 @@ See [Self-Hosted Edge Functions Guide](https://supabase.com/docs/guides/self-hos
 
 All APIs are exposed through the same API gateway (Kong) on port `8000`:
 
-| Service | URL |
-| ---------- | ----- |
-| REST (PostgREST) | `http://<your-domain>:8000/rest/v1/` |
-| Auth | `http://<your-domain>:8000/auth/v1/` |
-| Storage | `http://<your-domain>:8000/storage/v1/` |
-| Realtime | `http://<your-domain>:8000/realtime/v1/` |
+| Service          | URL                                      |
+| ---------------- | ---------------------------------------- |
+| REST (PostgREST) | `http://<your-domain>:8000/rest/v1/`     |
+| Auth             | `http://<your-domain>:8000/auth/v1/`     |
+| Storage          | `http://<your-domain>:8000/storage/v1/`  |
+| Realtime         | `http://<your-domain>:8000/realtime/v1/` |
 
 ---
 
@@ -380,21 +380,21 @@ rm -rf volumes/storage
 
 Supabase is built on open-source tools:
 
-| Service | Description |
-| ---------- | ------------- |
-| **Studio** | Administration web dashboard |
-| **Kong** | API gateway |
-| **Auth** | JWT authentication API |
-| **PostgREST** | Converts Postgres schema to RESTful API |
-| **Realtime** | Listens to Postgres changes and broadcasts events |
-| **Storage** | RESTful API for S3-compatible file storage |
-| **imgproxy** | Fast and secure on-the-fly image transformations |
-| **postgres-meta** | REST API to manage Postgres configuration |
-| **Postgres** | Primary relational database engine |
-| **Edge Runtime** | Server for Edge Functions (Deno) |
-| **Logflare** | Log management platform |
-| **Vector** | Observability data pipeline |
-| **Supavisor** | High-performance Postgres connection pooler |
+| Service           | Description                                       |
+| ----------------- | ------------------------------------------------- |
+| **Studio**        | Administration web dashboard                      |
+| **Kong**          | API gateway                                       |
+| **Auth**          | JWT authentication API                            |
+| **PostgREST**     | Converts Postgres schema to RESTful API           |
+| **Realtime**      | Listens to Postgres changes and broadcasts events |
+| **Storage**       | RESTful API for S3-compatible file storage        |
+| **imgproxy**      | Fast and secure on-the-fly image transformations  |
+| **postgres-meta** | REST API to manage Postgres configuration         |
+| **Postgres**      | Primary relational database engine                |
+| **Edge Runtime**  | Server for Edge Functions (Deno)                  |
+| **Logflare**      | Log management platform                           |
+| **Vector**        | Observability data pipeline                       |
+| **Supavisor**     | High-performance Postgres connection pooler       |
 
 ### Changing Database Password
 
@@ -422,24 +422,24 @@ Follow [Postgres Password Guidelines](https://supabase.com/docs/guides/database/
 
 If using legacy API key architecture, configure in `.env`:
 
-| Variable | Description |
-| ---------- | ------------- |
-| `JWT_SECRET` | Used by Auth, PostgREST, and services to sign and verify JWT tokens |
-| `ANON_KEY` | Client-side API key with public permissions (`anon` role) |
-| `SERVICE_ROLE_KEY` | Server-side API key with full privileges (`service_role` role) |
+| Variable           | Description                                                         |
+| ------------------ | ------------------------------------------------------------------- |
+| `JWT_SECRET`       | Used by Auth, PostgREST, and services to sign and verify JWT tokens |
+| `ANON_KEY`         | Client-side API key with public permissions (`anon` role)           |
+| `SERVICE_ROLE_KEY` | Server-side API key with full privileges (`service_role` role)      |
 
 ### Available System Secrets
 
-| Secret | Length | Generation Command |
-| -------- | ---------- | ------------ |
-| `SECRET_KEY_BASE` | min 64 chars | `openssl rand -base64 48` |
-| `VAULT_ENC_KEY` | exactly 32 chars | `openssl rand -hex 16` |
-| `PG_META_CRYPTO_KEY` | min 32 chars | `openssl rand -base64 24` |
-| `LOGFLARE_PUBLIC_ACCESS_TOKEN` | min 32 chars | `openssl rand -base64 24` |
-| `LOGFLARE_PRIVATE_ACCESS_TOKEN` | min 32 chars | `openssl rand -base64 24` |
-| `S3_PROTOCOL_ACCESS_KEY_ID` | — | `openssl rand -hex 16` |
-| `S3_PROTOCOL_ACCESS_KEY_SECRET` | — | `openssl rand -hex 32` |
-| `MINIO_ROOT_PASSWORD` | 8+ chars | `openssl rand -hex 16` |
+| Secret                          | Length           | Generation Command        |
+| ------------------------------- | ---------------- | ------------------------- |
+| `SECRET_KEY_BASE`               | min 64 chars     | `openssl rand -base64 48` |
+| `VAULT_ENC_KEY`                 | exactly 32 chars | `openssl rand -hex 16`    |
+| `PG_META_CRYPTO_KEY`            | min 32 chars     | `openssl rand -base64 24` |
+| `LOGFLARE_PUBLIC_ACCESS_TOKEN`  | min 32 chars     | `openssl rand -base64 24` |
+| `LOGFLARE_PRIVATE_ACCESS_TOKEN` | min 32 chars     | `openssl rand -base64 24` |
+| `S3_PROTOCOL_ACCESS_KEY_ID`     | —                | `openssl rand -hex 16`    |
+| `S3_PROTOCOL_ACCESS_KEY_SECRET` | —                | `openssl rand -hex 32`    |
+| `MINIO_ROOT_PASSWORD`           | 8+ chars         | `openssl rand -hex 16`    |
 
 ### Configuring Email Server (SMTP)
 
@@ -484,14 +484,14 @@ On macOS, Docker Desktop bind mounts have known limitations (lack of `xattr` sup
 
 All secrets reside in `.env` by default. **For production, using an external secrets manager is strongly recommended:**
 
-| Tool | Link |
-| ------------- | ------ |
-| **Doppler** | <https://www.doppler.com/> |
-| **Infisical** | <https://infisical.com/> |
-| **Azure Key Vault** | <https://docs.microsoft.com/azure/key-vault> |
-| **AWS Secrets Manager** | <https://aws.amazon.com/secrets-manager/> |
-| **GCP Secret Manager** | <https://cloud.google.com/secret-manager> |
-| **HashiCorp Vault** | <https://www.hashicorp.com/products/vault> |
+| Tool                    | Link                                         |
+| ----------------------- | -------------------------------------------- |
+| **Doppler**             | <https://www.doppler.com/>                   |
+| **Infisical**           | <https://infisical.com/>                     |
+| **Azure Key Vault**     | <https://docs.microsoft.com/azure/key-vault> |
+| **AWS Secrets Manager** | <https://aws.amazon.com/secrets-manager/>    |
+| **GCP Secret Manager**  | <https://cloud.google.com/secret-manager>    |
+| **HashiCorp Vault**     | <https://www.hashicorp.com/products/vault>   |
 
 ---
 

@@ -100,8 +100,8 @@ describe('boardwalkBridgesIntegrity (Error 8)', () => {
       routeNet.bridgeGrid
     );
 
-    const bridgeBlits = blitPlan.instructions.filter((inst) =>
-      inst.filename.includes('bridge') || inst.filename.includes('boardwalk')
+    const bridgeBlits = blitPlan.instructions.filter(
+      (inst) => inst.filename.includes('bridge') || inst.filename.includes('boardwalk')
     );
 
     expect(bridgeBlits.length).toBeGreaterThan(0);

@@ -1,12 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { CONFIG } from '../config';
-import {
-  BattleLogEntry,
-  BattleRecord,
-  Decision,
-  StrategicState,
-} from '../types';
+import { BattleLogEntry, BattleRecord, Decision, StrategicState } from '../types';
 
 export class BattleLogger {
   private record: BattleRecord;
@@ -19,7 +14,7 @@ export class BattleLogger {
       startTime: Date.now(),
       turns: [],
       myTeam: [],
-      opponentTeam: [],
+      opponentTeam: []
     };
     this.ensureLogDir();
   }
@@ -40,17 +35,13 @@ export class BattleLogger {
     this.currentTurnMessages.push(message);
   }
 
-  logTurn(
-    turn: number,
-    strategicState?: StrategicState,
-    decision?: Decision
-  ): void {
+  logTurn(turn: number, strategicState?: StrategicState, decision?: Decision): void {
     const entry: BattleLogEntry = {
       turn,
       timestamp: Date.now(),
       strategicState,
       decision,
-      rawMessages: [...this.currentTurnMessages],
+      rawMessages: [...this.currentTurnMessages]
     };
     this.record.turns.push(entry);
     this.currentTurnMessages = [];
@@ -79,11 +70,13 @@ export class BattleLogger {
     const filepath = path.join(CONFIG.logging.dir, filename);
 
     // Convert Maps/Sets to plain objects for JSON serialization
-    const serializable = JSON.parse(JSON.stringify(this.record, (_key, value) => {
-      if (value instanceof Map) return Object.fromEntries(value);
-      if (value instanceof Set) return [...value];
-      return value;
-    }));
+    const serializable = JSON.parse(
+      JSON.stringify(this.record, (_key, value) => {
+        if (value instanceof Map) return Object.fromEntries(value);
+        if (value instanceof Set) return [...value];
+        return value;
+      })
+    );
 
     const data = JSON.stringify(serializable, null, 2);
     // Write asynchronously to avoid blocking the decision loop

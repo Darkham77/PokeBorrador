@@ -1,28 +1,33 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
-import { useInventoryStore } from '@/stores/inventory/inventory'
-import { useGameStore } from '@/stores/game'
-import { useBagDataLoader } from '@/loaders/bagDataLoader'
-import { formatCurrency } from '@/logic/utils/formatters'
-import { gsap } from 'gsap'
-import BagItemCard from '@/components/inventory/BagItemCard.vue'
-import { ITEM_CATEGORIES, type BagMainTab } from '@/types/inventory/items'
+import { computed, watch } from 'vue';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { useGameStore } from '@/stores/game';
+import { useBagDataLoader } from '@/loaders/bagDataLoader';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { gsap } from 'gsap';
+import BagItemCard from '@/components/inventory/BagItemCard.vue';
+import { ITEM_CATEGORIES, type BagMainTab } from '@/types/inventory/items';
 
-const inventoryStore = useInventoryStore()
-const gameStore = useGameStore()
-const { data: _bagSummary } = useBagDataLoader()
+const inventoryStore = useInventoryStore();
+const gameStore = useGameStore();
+const { data: _bagSummary } = useBagDataLoader();
 
 // Niveles superiores de categorización
 const activeMainTab = computed({
   get: () => inventoryStore.activeMainTab,
-  set: (val) => { inventoryStore.activeMainTab = val }
-})
+  set: (val) => {
+    inventoryStore.activeMainTab = val;
+  }
+});
 
-const _BAG_SUBCATEGORY_FILTERS = ['todos', ...ITEM_CATEGORIES] as const
-type BagSubcategoryFilter = (typeof _BAG_SUBCATEGORY_FILTERS)[number]
+const _BAG_SUBCATEGORY_FILTERS = ['todos', ...ITEM_CATEGORIES] as const;
+type BagSubcategoryFilter = (typeof _BAG_SUBCATEGORY_FILTERS)[number];
 
 // Definition of subcategories by main tab
-const subcategoriesByMainTab: Record<BagMainTab, { id: BagSubcategoryFilter; label: string; icon: string }[]> = {
+const subcategoriesByMainTab: Record<
+  BagMainTab,
+  { id: BagSubcategoryFilter; label: string; icon: string }[]
+> = {
   productos: [
     { id: 'todos', label: 'Todo', icon: '📦' },
     { id: 'stones', label: 'Piedras', icon: '💎' },
@@ -41,92 +46,92 @@ const subcategoriesByMainTab: Record<BagMainTab, { id: BagSubcategoryFilter; lab
     { id: 'refined_material', label: 'Materia Refinada', icon: '🪙' },
     { id: 'component', label: 'Componentes', icon: '⚙️' }
   ]
-}
+};
 
 const currentSubcategories = computed(() => {
-  return subcategoriesByMainTab[activeMainTab.value]
-})
+  return subcategoriesByMainTab[activeMainTab.value];
+});
 
 // Watch main tab change to reset subcategory
 watch(activeMainTab, () => {
-  inventoryStore.activeCategory = 'todos'
-})
+  inventoryStore.activeCategory = 'todos';
+});
 
-import type { ItemId } from '@/data/inventory/items'
+import type { ItemId } from '@/data/inventory/items';
 
 const filteredBagItems = computed(() => {
-  return inventoryStore.bagItems
-})
+  return inventoryStore.bagItems;
+});
 
 const onUseItem = (itemId: ItemId) => {
-  inventoryStore.useItem(itemId)
-}
+  inventoryStore.useItem(itemId);
+};
 
 // GSAP Interactions
 const onMainTabClick = (tabId: BagMainTab) => {
-  activeMainTab.value = tabId
-}
+  activeMainTab.value = tabId;
+};
 
 const onTabClick = (catId: BagSubcategoryFilter) => {
-  inventoryStore.activeCategory = catId
-}
+  inventoryStore.activeCategory = catId;
+};
 
 const onItemClick = (itemId: ItemId, qty: number, event: MouseEvent) => {
   if (inventoryStore.bagSellMode) {
-    inventoryStore.toggleBagSellItem(itemId, qty)
-    const target = event.currentTarget as HTMLElement
-    const isSelected = !!inventoryStore.bagSellSelected[itemId]
-    
+    inventoryStore.toggleBagSellItem(itemId, qty);
+    const target = event.currentTarget as HTMLElement;
+    const isSelected = !!inventoryStore.bagSellSelected[itemId];
+
     gsap.to(target, {
       borderColor: isSelected ? 'var(--green-bright)' : 'rgba(255, 255, 255, 0.08)',
       backgroundColor: isSelected ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255, 255, 255, 0.06)',
       duration: 0.2,
       overwrite: 'auto'
-    })
+    });
   }
-}
+};
 
 const onSellModeMouseEnter = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
+  const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     duration: 0.2,
     ease: 'power2.out',
     overwrite: 'auto'
-  })
-}
+  });
+};
 
 const onSellModeMouseLeave = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
+  const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     duration: 0.2,
     ease: 'power2.out',
     overwrite: 'auto'
-  })
-}
+  });
+};
 
 const onMainTabMouseEnter = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
+  const target = event.currentTarget as HTMLElement;
   if (!target.classList.contains('active')) {
     gsap.to(target, {
       color: '#ffffff',
       duration: 0.2,
       overwrite: 'auto'
-    })
+    });
   }
-}
+};
 
 const onMainTabMouseLeave = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
+  const target = event.currentTarget as HTMLElement;
   if (!target.classList.contains('active')) {
     gsap.to(target, {
       color: 'var(--gray)',
       duration: 0.2,
       overwrite: 'auto'
-    })
+    });
   }
-}
+};
 </script>
 
 <template>
@@ -138,9 +143,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
           <span class="emoji">🎒</span>
           <h1>Mochila</h1>
         </div>
-        <div class="money-badge">
-          ₽{{ formatCurrency(gameStore.state.money) }}
-        </div>
+        <div class="money-badge">₽{{ formatCurrency(gameStore.state.money) }}</div>
       </div>
 
       <!-- Top-Level Tabs -->
@@ -171,17 +174,18 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
       <div class="controls-section">
         <div class="search-bar">
           <input
-            id="bag-view-input-searchquery" 
-            v-model="inventoryStore.searchQuery" 
-            type="text" 
+            id="bag-view-input-searchquery"
+            v-model="inventoryStore.searchQuery"
+            type="text"
             placeholder="Buscar objeto..."
+            aria-label="Buscar objeto"
             class="search-input"
-          >
+          />
         </div>
         <div class="tabs-row scroll-hide">
           <button
-            v-for="cat in currentSubcategories" 
-            id="bag-view-btn-cat-label" 
+            v-for="cat in currentSubcategories"
+            id="bag-view-btn-cat-label"
             :key="cat.id"
             :class="['tab-btn', { active: inventoryStore.activeCategory === cat.id }]"
             @click.stop="onTabClick(cat.id)"
@@ -192,17 +196,17 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
       </div>
 
       <!-- Sell Mode Overlay (Sticky) -->
-      <div
-        v-if="inventoryStore.bagSellMode"
-        class="sell-actions"
-      >
+      <div v-if="inventoryStore.bagSellMode" class="sell-actions">
         <div class="sell-info">
-          MODO VENTA: <span class="text-green">Ganancia +₽{{ formatCurrency(inventoryStore.getBagSellTotalGain()) }}</span>
+          MODO VENTA:
+          <span class="text-green"
+            >Ganancia +₽{{ formatCurrency(inventoryStore.getBagSellTotalGain()) }}</span
+          >
         </div>
         <div class="sell-buttons">
           <button
-            id="bag-view-btn-confirmar-venta" 
-            class="btn-vicio-success btn-vicio-sm" 
+            id="bag-view-btn-confirmar-venta"
+            class="btn-vicio-success btn-vicio-sm"
             :disabled="Object.keys(inventoryStore.bagSellSelected).length === 0"
             @click.stop="inventoryStore.confirmBagSell"
           >
@@ -220,18 +224,12 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 
       <!-- Items Grid -->
       <div class="items-wrapper scroll-custom">
-        <div
-          v-if="filteredBagItems.length === 0"
-          class="empty-state"
-        >
+        <div v-if="filteredBagItems.length === 0" class="empty-state">
           <span class="emoji empty-icon">🔍</span>
           <p>No se encontraron objetos en esta categoría.</p>
         </div>
 
-        <div
-          v-else
-          class="items-grid"
-        >
+        <div v-else class="items-grid">
           <BagItemCard
             v-for="item in filteredBagItems"
             id="bag-view-bagitemcard-itemclick"
@@ -243,16 +241,16 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
             @use="onUseItem"
             @click="onItemClick(item.id, Number(item.qty), $event)"
             @qty-click="inventoryStore.toggleBagSellItem(item.id, Number(item.qty))"
-            @update-qty="(val: number | string) => inventoryStore.updateBagSellQty(item.id, val, Number(item.qty))"
+            @update-qty="
+              (val: number | string) =>
+                inventoryStore.updateBagSellQty(item.id, val, Number(item.qty))
+            "
           />
         </div>
       </div>
 
       <!-- Footer -->
-      <div
-        v-if="!inventoryStore.bagSellMode"
-        class="bag-footer"
-      >
+      <div v-if="!inventoryStore.bagSellMode" class="bag-footer">
         <button
           id="bag-view-btn-vender-objetos"
           class="btn-sell-mode"
@@ -268,14 +266,15 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .bag-view {
   display: flex;
   justify-content: center;
   padding: 0;
-  background: Radial-Gradient(circle at top left, Rgb(59 130 246 / 5%), transparent),
-              Radial-Gradient(circle at bottom right, Rgb(16 185 129 / 5%), transparent);
+  background:
+    Radial-Gradient(circle at top left, Rgb(59 130 246 / 5%), transparent),
+    Radial-Gradient(circle at bottom right, Rgb(16 185 129 / 5%), transparent);
 }
 
 .bag-container {
@@ -347,7 +346,9 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
   font-size: var(--font-16);
 }
 
-.icon { font-size: var(--font-24); }
+.icon {
+  font-size: var(--font-24);
+}
 
 .money-badge {
   @include pixelated;
@@ -427,7 +428,10 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
   background: Rgb(16 185 129 / 10%);
 }
 
-.sell-buttons { display: flex; gap: $spacing-sm; }
+.sell-buttons {
+  display: flex;
+  gap: $spacing-sm;
+}
 
 .btn-sell-mode {
   @include pixelated;
@@ -441,11 +445,12 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
   font-size: var(--font-10);
   cursor: pointer;
 }
-
 </style>
 
 <style lang="scss">
 .scroll-hide {
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 </style>

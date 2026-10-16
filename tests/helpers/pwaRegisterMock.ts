@@ -1,3 +1,3 @@
 export function registerSW() {
-  return () => Promise.resolve()
+  return () => Promise.resolve();
 }

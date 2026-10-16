@@ -4,7 +4,7 @@
 // Run: npm run test (vitest)
 // ============================================================
 
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect } from 'vite-plus/test';
 import { heuristicDecision } from '@/logic/battle/ai/heuristic/heuristicEngine';
 import { HeuristicDamageCalculator } from '@/logic/battle/ai/heuristic/damageCalculator';
 import { InferenceEngine } from '@/logic/battle/ai/heuristic/inferenceEngine';
@@ -15,7 +15,7 @@ import type {
   HeuristicPokemonMove,
   StrategicState,
   DamageMatchup,
-  DamageResult,
+  DamageResult
 } from '@/logic/battle/ai/heuristic/types';
 import type { PokemonMoveId } from '@/data/battle/moves';
 
@@ -33,7 +33,7 @@ function makeMove(id: PokemonMoveId): HeuristicPokemonMove {
     accuracy: 100,
     pp: 10,
     maxpp: 10,
-    target: 'normal',
+    target: 'normal'
   };
 }
 
@@ -51,7 +51,12 @@ function makePokemon(overrides: Partial<HeuristicPokemonState> = {}): HeuristicP
     types: ['fire', 'flying'],
     baseStats: { hp: 150, atk: 109, def: 80, spa: 130, spd: 85, spe: 100 },
     stats: { hp: 150, atk: 109, def: 80, spa: 130, spd: 85, spe: 100 },
-    moves: [makeMove('flamethrower'), makeMove('airslash'), makeMove('earthquake'), makeMove('dragonpulse')],
+    moves: [
+      makeMove('flamethrower'),
+      makeMove('airslash'),
+      makeMove('earthquake'),
+      makeMove('dragonpulse')
+    ],
     knownMoves: ['flamethrower'],
     ability: 'blaze',
     knownAbility: 'blaze',
@@ -60,13 +65,13 @@ function makePokemon(overrides: Partial<HeuristicPokemonState> = {}): HeuristicP
     itemConsumed: false,
     boosts: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0 },
     volatiles: new Set(),
-    ...overrides,
+    ...overrides
   };
 }
 
 function makeSnapshot(
   myActive: HeuristicPokemonState,
-  oppActive: HeuristicPokemonState,
+  oppActive: HeuristicPokemonState
 ): HeuristicBattleSnapshot {
   return {
     turn: 1,
@@ -75,15 +80,15 @@ function makeSnapshot(
       id: 'p2',
       pokemon: [myActive],
       activePokemon: myActive,
-      sideConditions: new Map(),
+      sideConditions: new Map()
     },
     opponentSide: {
       id: 'p1',
       pokemon: [oppActive],
       activePokemon: oppActive,
-      sideConditions: new Map(),
+      sideConditions: new Map()
     },
-    field: { weather: null, terrain: null, trickRoom: false, tailwind: { p1: 0, p2: 0 } },
+    field: { weather: null, terrain: null, trickRoom: false, tailwind: { p1: 0, p2: 0 } }
   };
 }
 
@@ -91,23 +96,46 @@ function makeStrategic(): StrategicState {
   return {
     winConditions: [],
     threats: [],
-    position: { score: 0, factors: { pokemonAdvantage: 0, hpAdvantage: 0, hazardAdvantage: 0, speedAdvantage: 0, typeMatchupAdvantage: 0, statusAdvantage: 0, winConditionViability: 0 } },
-    sackOrder: [],
+    position: {
+      score: 0,
+      factors: {
+        pokemonAdvantage: 0,
+        hpAdvantage: 0,
+        hazardAdvantage: 0,
+        speedAdvantage: 0,
+        typeMatchupAdvantage: 0,
+        statusAdvantage: 0,
+        winConditionViability: 0
+      }
+    },
+    sackOrder: []
   };
 }
 
-function makeMatchup(myBest: Partial<DamageResult> = {}, oppBest: Partial<DamageResult> = {}): DamageMatchup {
-  const base: DamageResult = { move: 'tackle', attacker: 'a', defender: 'b', minPercent: 0, maxPercent: 0, isOHKO: false, is2HKO: false, priority: 0 };
+function makeMatchup(
+  myBest: Partial<DamageResult> = {},
+  oppBest: Partial<DamageResult> = {}
+): DamageMatchup {
+  const base: DamageResult = {
+    move: 'tackle',
+    attacker: 'a',
+    defender: 'b',
+    minPercent: 0,
+    maxPercent: 0,
+    isOHKO: false,
+    is2HKO: false,
+    priority: 0
+  };
   return {
     myAttacking: [{ ...base, move: 'tackle', ...myBest }],
-    oppAttacking: [{ ...base, move: 'tackle', ...oppBest }],
+    oppAttacking: [{ ...base, move: 'tackle', ...oppBest }]
   };
 }
 
 const AVAILABLE: HeuristicMoveInfo[] = [
   { id: 'flamethrower', pp: 15, disabled: false },
   { id: 'airslash', pp: 15, disabled: false },
-  { id: 'earthquake', pp: 10, disabled: false },
+  { id: 'earthquake', pp: 10, disabled: false }
 ];
 
 // ──────────────────────────────────────────
@@ -122,12 +150,26 @@ describe('heuristicDecision — layer coverage', () => {
     const myMon = makePokemon();
     const oppMon = makePokemon({ name: 'Blissey', species: 'blissey', hpPercent: 5, hp: 5 });
     const snapshot = makeSnapshot(myMon, oppMon);
-    const matchup = makeMatchup({ move: 'quickattack', isOHKO: true, priority: 1, maxPercent: 110 });
+    const matchup = makeMatchup({
+      move: 'quickattack',
+      isOHKO: true,
+      priority: 1,
+      maxPercent: 110
+    });
     const available: HeuristicMoveInfo[] = [
       { id: 'quickattack', pp: 30, disabled: false },
-      { id: 'flamethrower', pp: 15, disabled: false },
+      { id: 'flamethrower', pp: 15, disabled: false }
     ];
-    const result = heuristicDecision(snapshot, matchup, makeStrategic(), available, [], calc, inference, false);
+    const result = heuristicDecision(
+      snapshot,
+      matchup,
+      makeStrategic(),
+      available,
+      [],
+      calc,
+      inference,
+      false
+    );
 
     expect(result).not.toBeNull();
     expect(result?.type).toBe('move');
@@ -136,12 +178,32 @@ describe('heuristicDecision — layer coverage', () => {
   });
 
   test('Layer 4: guaranteed OHKO when we outspeed', () => {
-    const myMon = makePokemon({ stats: { hp: 150, atk: 109, def: 80, spa: 130, spd: 85, spe: 130 } });
-    const oppMon = makePokemon({ name: 'Snorlax', species: 'snorlax', stats: { hp: 300, atk: 100, def: 100, spa: 65, spd: 100, spe: 30 } });
+    const myMon = makePokemon({
+      stats: { hp: 150, atk: 109, def: 80, spa: 130, spd: 85, spe: 130 }
+    });
+    const oppMon = makePokemon({
+      name: 'Snorlax',
+      species: 'snorlax',
+      stats: { hp: 300, atk: 100, def: 100, spa: 65, spd: 100, spe: 30 }
+    });
     const snapshot = makeSnapshot(myMon, oppMon);
-    const matchup = makeMatchup({ move: 'flamethrower', isOHKO: true, maxPercent: 120, minPercent: 105 });
+    const matchup = makeMatchup({
+      move: 'flamethrower',
+      isOHKO: true,
+      maxPercent: 120,
+      minPercent: 105
+    });
 
-    const result = heuristicDecision(snapshot, matchup, makeStrategic(), AVAILABLE, [], calc, inference, false);
+    const result = heuristicDecision(
+      snapshot,
+      matchup,
+      makeStrategic(),
+      AVAILABLE,
+      [],
+      calc,
+      inference,
+      false
+    );
 
     expect(result).not.toBeNull();
     expect(result?.type).toBe('move');
@@ -155,7 +217,16 @@ describe('heuristicDecision — layer coverage', () => {
     const snapshot = makeSnapshot(myMon, oppMon);
     const matchup = makeMatchup({ move: 'flamethrower', maxPercent: 65, minPercent: 55 });
 
-    const result = heuristicDecision(snapshot, matchup, makeStrategic(), AVAILABLE, [], calc, inference, false);
+    const result = heuristicDecision(
+      snapshot,
+      matchup,
+      makeStrategic(),
+      AVAILABLE,
+      [],
+      calc,
+      inference,
+      false
+    );
 
     expect(result).not.toBeNull();
     expect(result?.type).toBe('move');
@@ -171,10 +242,19 @@ describe('heuristicDecision — layer coverage', () => {
 
     const matchup = makeMatchup(
       { move: 'flamethrower', maxPercent: 15, minPercent: 10 },
-      { move: 'earthquake', maxPercent: 75, minPercent: 65 },
+      { move: 'earthquake', maxPercent: 75, minPercent: 65 }
     );
 
-    const result = heuristicDecision(snapshot, matchup, makeStrategic(), AVAILABLE, [switchCandidate], calc, inference, false);
+    const result = heuristicDecision(
+      snapshot,
+      matchup,
+      makeStrategic(),
+      AVAILABLE,
+      [switchCandidate],
+      calc,
+      inference,
+      false
+    );
     // Either switch or a fallback move — both are valid for this matchup
     if (result !== null) {
       expect(['move', 'switch']).toContain(result.type);
@@ -188,10 +268,19 @@ describe('heuristicDecision — layer coverage', () => {
     // Damage ~22-28% both sides — below all heuristic thresholds
     const matchup = makeMatchup(
       { move: 'tackle', maxPercent: 25, minPercent: 20 },
-      { move: 'tackle', maxPercent: 28, minPercent: 22 },
+      { move: 'tackle', maxPercent: 28, minPercent: 22 }
     );
 
-    const result = heuristicDecision(snapshot, matchup, makeStrategic(), AVAILABLE, [], calc, inference, false);
+    const result = heuristicDecision(
+      snapshot,
+      matchup,
+      makeStrategic(),
+      AVAILABLE,
+      [],
+      calc,
+      inference,
+      false
+    );
     expect(result).toBeNull();
   });
 
@@ -202,10 +291,19 @@ describe('heuristicDecision — layer coverage', () => {
     const matchup = makeMatchup({ move: 'flamethrower', isOHKO: true, maxPercent: 110 });
     const availableDisabled: HeuristicMoveInfo[] = [
       { id: 'flamethrower', pp: 0, disabled: true },
-      { id: 'airslash', pp: 15, disabled: false },
+      { id: 'airslash', pp: 15, disabled: false }
     ];
 
-    const result = heuristicDecision(snapshot, matchup, makeStrategic(), availableDisabled, [], calc, inference, false);
+    const result = heuristicDecision(
+      snapshot,
+      matchup,
+      makeStrategic(),
+      availableDisabled,
+      [],
+      calc,
+      inference,
+      false
+    );
     if (result?.type === 'move') {
       expect(result.moveId).not.toBe('flamethrower');
     }

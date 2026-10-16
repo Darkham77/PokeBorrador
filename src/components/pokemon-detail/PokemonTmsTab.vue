@@ -1,45 +1,44 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
-import { GAME_TMS, TM_COMPAT_SETS } from '@/data/pokemon/pokedex'
-import { useUIStore } from '@/stores/ui'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
-import { toPokemonType } from '@/data/battle/types'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { ref, computed } from 'vue';
+import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants';
+import { GAME_TMS, TM_COMPAT_SETS } from '@/data/pokemon/pokedex';
+import { useUIStore } from '@/stores/ui';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
+import { toPokemonType } from '@/data/battle/types';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 interface Props {
-  speciesId: PokemonSpeciesId
+  speciesId: PokemonSpeciesId;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const ui = useUIStore()
+const ui = useUIStore();
 
-const tmSearchQuery = ref('')
-const tmSortBy = ref('id')
+const tmSearchQuery = ref('');
+const tmSortBy = ref('id');
 
 const tms = computed(() => {
-  const compatSet = TM_COMPAT_SETS[props.speciesId]
+  const compatSet = TM_COMPAT_SETS[props.speciesId];
 
-  const allTms = GAME_TMS.map(tm => ({
+  const allTms = GAME_TMS.map((tm) => ({
     ...tm,
     isCompatible: compatSet?.has(tm.id) ?? false
-  }))
+  }));
 
-  let filtered = allTms
+  let filtered = allTms;
   if (tmSearchQuery.value) {
-    const q = tmSearchQuery.value.toLowerCase()
-    filtered = allTms.filter(tm =>
-      tm.name.toLowerCase().includes(q) ||
-      tm.id.toLowerCase().includes(q)
-    )
+    const q = tmSearchQuery.value.toLowerCase();
+    filtered = allTms.filter(
+      (tm) => tm.name.toLowerCase().includes(q) || tm.id.toLowerCase().includes(q)
+    );
   }
 
   return filtered.toSorted((a, b) => {
-    if (tmSortBy.value === 'name') return a.name.localeCompare(b.name)
-    return a.id.localeCompare(b.id, undefined, { numeric: true })
-  })
-})
+    if (tmSortBy.value === 'name') return a.name.localeCompare(b.name);
+    return a.id.localeCompare(b.id, undefined, { numeric: true });
+  });
+});
 </script>
 
 <template>
@@ -51,9 +50,10 @@ const tms = computed(() => {
           id="pokemon-tms-tab-input-tmsearchquery"
           v-model="tmSearchQuery"
           type="text"
+          aria-label="Buscar Máquina Técnica (MT)"
           placeholder="Buscar MT..."
           class="tm-search-input"
-        >
+        />
       </div>
       <div class="sort-box">
         <button
@@ -80,22 +80,18 @@ const tms = computed(() => {
         v-for="tm in tms"
         id="pokemon-tms-tab-div-1"
         :key="tm.id"
+        role="button"
+        tabindex="0"
         class="tm-item clickable-item"
         :class="{ incompatible: !tm.isCompatible }"
         @click.stop="ui.openMoveDetail(tm.moveId)"
       >
-        <div
-          class="tm-id"
-          :style="{ background: PDEX_TYPE_COLORS[toPokemonType(tm.type)] }"
-        >
+        <div class="tm-id" :style="{ background: PDEX_TYPE_COLORS[toPokemonType(tm.type)] }">
           {{ tm.id }}
         </div>
         <div class="tm-info">
           <span class="tm-name">{{ tm.name }}</span>
-          <PokemonTypeTag
-            :type="toPokemonType(tm.type)"
-            size="sm"
-          />
+          <PokemonTypeTag :type="toPokemonType(tm.type)" size="sm" />
         </div>
         <div class="tm-check">
           <span class="emoji">{{ tm.isCompatible ? '✓' : '✕' }}</span>
@@ -106,5 +102,5 @@ const tms = computed(() => {
 </template>
 
 <style lang="scss">
-@use "@/styles/components/pokedex-detail";
+@use '@/styles/components/pokedex-detail';
 </style>

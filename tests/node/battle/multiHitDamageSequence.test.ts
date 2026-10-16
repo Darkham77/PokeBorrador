@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -85,7 +85,9 @@ describe('Multi-Hit Damage Sequence - Unit Tests', () => {
     const logs: string[] = [];
     const mockStore: Partial<BattleContext> = {
       activeBattle: activeBattleRef as any,
-      addLog: (msg: string) => { logs.push(msg); },
+      addLog: (msg: string) => {
+        logs.push(msg);
+      },
       animations: {
         handleShakeRequest: vi.fn().mockResolvedValue(undefined)
       } as any

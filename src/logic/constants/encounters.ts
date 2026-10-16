@@ -3,6 +3,8 @@
  * Centralized constant definitions for wild encounter rates, repel modifiers, and fishing budgets.
  */
 
+import type { ShowdownWeatherId } from '@/logic/weather/weatherRegistry';
+
 /** Encounter rate modifier applied when a standard Repel item is active (-50%). */
 export const REPEL_ENCOUNTER_RATE_MODIFIER = -50;
 
@@ -14,14 +16,23 @@ export const MAX_REPEL_ENCOUNTER_RATE_MODIFIER = -100;
 
 /** Standard map biome keys array for environmental lookups. */
 export const MAP_BIOME_KEYS = [
-  'isArctic', 'isIndoors', 'isUrban', 'isVolcanic', 'isCrystalCave', 'isCave',
-  'isDesert', 'isSwamp', 'isMountain',
-  'isCoastal', 'isForest', 'isPlains'
+  'isArctic',
+  'isIndoors',
+  'isUrban',
+  'isVolcanic',
+  'isCrystalCave',
+  'isCave',
+  'isDesert',
+  'isSwamp',
+  'isMountain',
+  'isCoastal',
+  'isForest',
+  'isPlains'
 ] as const;
 export type MapBiomeKey = (typeof MAP_BIOME_KEYS)[number];
 
 /** Weather map normalization dictionary for Showdown weather IDs. */
-export const WEATHER_MAP: Record<string, string> = {
+export const WEATHER_MAP: Partial<Record<ShowdownWeatherId, string>> = {
   sunnyday: 'Sun',
   desolateland: 'Desolate Land',
   raindance: 'Rain',
@@ -29,7 +40,7 @@ export const WEATHER_MAP: Record<string, string> = {
   sandstorm: 'Sandstorm',
   hail: 'Hail',
   snow: 'Snow',
-  deltastream: 'Delta Stream',
+  deltastream: 'Delta Stream'
 };
 
 /** Spawn budget weight for fishing with a Super Rod. */
@@ -48,16 +59,35 @@ export const DEFAULT_VISITOR_SPAWN_WEIGHT = 10;
 
 /** Setup boost move IDs for Heuristic AI evaluation. */
 const SETUP_MOVES_LIST = [
-  'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
-  'shellsmash', 'bulkup', 'bellydrum', 'coil', 'shiftgear', 'workup',
+  'swordsdance',
+  'nastyplot',
+  'dragondance',
+  'calmmind',
+  'quiverdance',
+  'shellsmash',
+  'bulkup',
+  'bellydrum',
+  'coil',
+  'shiftgear',
+  'workup'
 ] as const;
 export const SETUP_MOVES: ReadonlySet<string> = new Set<string>(SETUP_MOVES_LIST); // runtime-set: Fast O(1) membership lookup set
 
 /** Priority move IDs for Heuristic AI threat calculation. */
 const PRIORITY_MOVES_LIST = [
-  'extremespeed', 'suckerpunch', 'machpunch', 'bulletpunch', 'iceshard',
-  'shadowsneak', 'aquajet', 'accelerock', 'watershuriken', 'firstimpression',
-  'grassyglide', 'thunderclap', 'jetpunch',
+  'extremespeed',
+  'suckerpunch',
+  'machpunch',
+  'bulletpunch',
+  'iceshard',
+  'shadowsneak',
+  'aquajet',
+  'accelerock',
+  'watershuriken',
+  'firstimpression',
+  'grassyglide',
+  'thunderclap',
+  'jetpunch'
 ] as const;
 export const PRIORITY_MOVES: ReadonlySet<string> = new Set<string>(PRIORITY_MOVES_LIST); // runtime-set: Fast O(1) membership lookup set
 
@@ -74,11 +104,10 @@ export const THREAT_WEIGHT_SETUP = 0.15;
 export const THREAT_WEIGHT_DEFENSIVE_WALL = 0.15;
 
 /** Debug 50% trainer encounter override probability. */
-export const DEBUG_TRAINER_OVERRIDE_CHANCE = 0.50;
+export const DEBUG_TRAINER_OVERRIDE_CHANCE = 0.5;
 
 /** Debug 80% guardian encounter override probability. */
-export const DEBUG_GUARDIAN_OVERRIDE_CHANCE = 0.80;
-
+export const DEBUG_GUARDIAN_OVERRIDE_CHANCE = 0.8;
 
 /** Maximum attempts for repellent level-filtered wild encounter selection. */
 export const REPELLENT_MAX_ATTEMPTS = 10;
@@ -96,7 +125,7 @@ export const DEFAULT_ARCHAEOLOGY_MIN_LEVEL = 15;
 export const DEFAULT_ARCHAEOLOGY_MAX_LEVEL = 25;
 
 /** Fishing weight multiplier applied during rainy weather conditions. */
-export const RAINY_WEATHER_FISHING_MULTIPLIER = 1.20;
+export const RAINY_WEATHER_FISHING_MULTIPLIER = 1.2;
 
 /** Base weight for ground encounters. */
 export const GROUND_ENCOUNTER_BASE_WEIGHT = 100;
@@ -119,9 +148,6 @@ export const LEGENDARY_RATE_CAP_DENOMINATOR = 99;
 /** Replacement weight for visitor species assigned weight -1. */
 export const VISITOR_WEIGHT_REPLACEMENT_VALUE = 5;
 
-/** Standard 100 multiplier for converting fraction to percentage. */
-export const PERCENTAGE_SCALE_FACTOR = 100;
-
 /** Default spawn rate weight when omitted. */
 export const DEFAULT_SPAWN_RATE_WEIGHT = 10;
 
@@ -130,6 +156,9 @@ export const DEFAULT_WEATHER_MULTIPLIER_NORMAL = 1.0;
 
 /** Debug trainer encounter chance percentage (50%). */
 export const DEBUG_TRAINER_CHANCE_PERCENT = 50;
+
+/** Debug guardian encounter chance percentage (80%). */
+export const DEBUG_GUARDIAN_CHANCE_PERCENT = 80;
 
 /** Percentage multiplier factor (100). */
 export const PERCENTAGE_MULTIPLIER_FACTOR = 100;

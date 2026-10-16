@@ -7,7 +7,9 @@
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
-  filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85)));
+  filter: Drop-Shadow(
+    calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85))
+  );
 }
 
 .team-view-container {
@@ -17,7 +19,9 @@
   font-family: var(--font-pixel);
   box-sizing: border-box;
   --frame-border: #253352;
-  box-shadow: 0 40px 100px Rgba(0, 0, 0, 0.9), inset 0 0 20px Rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 40px 100px Rgba(0, 0, 0, 0.9),
+    inset 0 0 20px Rgba(0, 0, 0, 0.5);
 }
 
 .team-header-row {
@@ -45,7 +49,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  &:hover { color: var(--white); background: Rgba(255, 255, 255, 0.12); }
+  &:hover {
+    color: var(--white);
+    background: Rgba(255, 255, 255, 0.12);
+  }
 }
 
 .team-mode-btn {

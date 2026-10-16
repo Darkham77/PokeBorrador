@@ -28,7 +28,11 @@ function handlePoliceArrest(
     ctx.gs.state.money = Math.max(0, prevMoney - bailAmount);
     const moneyPaid = prevMoney - ctx.gs.state.money;
 
-    ctx.addLog(`¡Bajo arresto por ${officerName}! Pagaste ₽${moneyPaid} de fianza.`, 'log-error', 'player');
+    ctx.addLog(
+      `¡Bajo arresto por ${officerName}! Pagaste ₽${moneyPaid} de fianza.`,
+      'log-error',
+      'player'
+    );
     uiStore.notify(`Fianza pagada: ₽${moneyPaid}`, '🚨');
   }
 }
@@ -48,7 +52,10 @@ async function handlePoliceTheft(
   if (!stolen) return;
 
   const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
-  const safeLevel = Math.max(1, Math.min(MAX_POKEMON_LEVEL, stolen.level || DEFAULT_STOLEN_POKEMON_LEVEL));
+  const safeLevel = Math.max(
+    1,
+    Math.min(MAX_POKEMON_LEVEL, stolen.level || DEFAULT_STOLEN_POKEMON_LEVEL)
+  );
   const clone = makePokemon(stolen.id, safeLevel);
   if (clone) {
     clone.caught = true;
@@ -57,8 +64,8 @@ async function handlePoliceTheft(
     ctx.addLog(`¡Robaste el ${clone.name} de ${officerName}!`, 'log-success', 'player');
     uiStore.notify(`¡Robaste un ${clone.name}!`, '🏴‍☠️');
 
-    const audioStore = await import('@/stores/audio').then(m => m.useAudioStore());
-    audioStore.play('steal');
+    const audioStore = await import('@/stores/audio').then((m) => m.useAudioStore());
+    void audioStore.play('steal');
   }
 }
 
@@ -87,7 +94,10 @@ export async function handlePoliceResolution(
 export async function animatePlayerAutoSwap(
   ctx: BattleContext,
   active: NonNullable<BattleContext['activeBattle']['value']>,
-  isCurrentBattle: (ctx: BattleContext, battle: NonNullable<BattleContext['activeBattle']['value']>) => boolean
+  isCurrentBattle: (
+    ctx: BattleContext,
+    battle: NonNullable<BattleContext['activeBattle']['value']>
+  ) => boolean
 ): Promise<void> {
   const firstHealthy = ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0);
   const oldPlayer = active.player;
@@ -96,11 +106,14 @@ export async function animatePlayerAutoSwap(
   if (needsSwap && firstHealthy) {
     if (oldPlayer && oldPlayer.hp > 0) ctx.exitingPlayer.value = oldPlayer;
     active.player = firstHealthy;
-    active.playerTeamIndex = ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === firstHealthy.uid);
+    active.playerTeamIndex = ctx.gs.state.team.findIndex(
+      (p: Pokemon) => p.uid === firstHealthy.uid
+    );
 
-    const withdrawPromise = oldPlayer && oldPlayer.hp > 0 && ctx.animations?.handleCatchRequest
-      ? ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPlayer })
-      : Promise.resolve();
+    const withdrawPromise =
+      oldPlayer && oldPlayer.hp > 0 && ctx.animations?.handleCatchRequest
+        ? ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPlayer })
+        : Promise.resolve();
 
     const sendOutPromise = ctx.animations?.handleReleaseRequest
       ? ctx.animations.handleReleaseRequest({ side: 'player', pokemon: firstHealthy })
@@ -111,7 +124,9 @@ export async function animatePlayerAutoSwap(
     ctx.exitingPlayer.value = null;
   } else if (firstHealthy && !oldPlayer) {
     active.player = firstHealthy;
-    active.playerTeamIndex = ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === firstHealthy.uid);
+    active.playerTeamIndex = ctx.gs.state.team.findIndex(
+      (p: Pokemon) => p.uid === firstHealthy.uid
+    );
     if (ctx.animations?.handleReleaseRequest) {
       await ctx.animations.handleReleaseRequest({ side: 'player', pokemon: firstHealthy });
     }
@@ -124,10 +139,10 @@ function pickNextEnemySwitchCandidate(
   active: NonNullable<BattleContext['activeBattle']['value']>,
   ctx: BattleContext
 ): Pokemon | null {
-  if (!active.enemyTeam) return null
-  const activeUidPerShowdown = active.enemyRequest?.side?.pokemon?.find((p) => p?.active)?.uid
-  const activeUidToExclude = activeUidPerShowdown ?? active.enemy?.uid
-  const activePlayer = active.player || active.enemyTeam[0]
+  if (!active.enemyTeam) return null;
+  const activeUidPerShowdown = active.enemyRequest?.side?.pokemon?.find((p) => p?.active)?.uid;
+  const activeUidToExclude = activeUidPerShowdown ?? active.enemy?.uid;
+  const activePlayer = active.player || active.enemyTeam[0];
 
   if (activePlayer) {
     const bestIdx = findBestSwitchIndex(
@@ -136,24 +151,24 @@ function pickNextEnemySwitchCandidate(
       activeUidToExclude ?? '',
       ctx,
       'faint_replacement'
-    )
+    );
     if (bestIdx !== -1) {
-      return active.enemyTeam[bestIdx] || null
+      return active.enemyTeam[bestIdx] || null;
     }
   }
-  return active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null
+  return active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null;
 }
 
 async function recallActiveEnemy(
   ctx: BattleContext,
   currentEnemy: Pokemon | null | undefined
 ): Promise<void> {
-  if (!currentEnemy) return
-  await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POKEMON_RECALL)
+  if (!currentEnemy) return;
+  await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POKEMON_RECALL);
   if (ctx.animations?.handleCatchRequest) {
-    await ctx.animations.handleCatchRequest({ side: 'enemy', pokemon: currentEnemy })
+    await ctx.animations.handleCatchRequest({ side: 'enemy', pokemon: currentEnemy });
   } else {
-    gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
+    gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' });
   }
 }
 
@@ -162,25 +177,25 @@ async function executeWorkerEnemySwitch(
   active: NonNullable<BattleContext['activeBattle']['value']>,
   nextEnemy: Pokemon
 ): Promise<void> {
-  if (!getShowdownWorker() || !active.enemyTeam) return
+  if (!getShowdownWorker() || !active.enemyTeam) return;
 
-  let p2Choice = `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`
+  let p2Choice = `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`;
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-    const certifiedChoice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p2')
+    const certifiedChoice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p2');
     if (certifiedChoice.startsWith('switch ')) {
-      p2Choice = certifiedChoice
+      p2Choice = certifiedChoice;
     }
   }
-  const result = await executeTurnInWorker('', p2Choice, true, false)
-  active.playerRequest = result.p1Request
-  active.enemyRequest = result.p2Request
+  const result = await executeTurnInWorker('', p2Choice, true, false);
+  active.playerRequest = result.p1Request;
+  active.enemyRequest = result.p2Request;
 
-  const filteredLogs = filterShowdownLogs(result.logs)
+  const filteredLogs = filterShowdownLogs(result.logs);
   for (const logLine of filteredLogs) {
-    await parseShowdownLogLine(ctx, logLine, filteredLogs)
+    await parseShowdownLogLine(ctx, logLine, filteredLogs);
   }
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-    ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
+    ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__);
   }
 }
 
@@ -190,16 +205,19 @@ async function deployNextEnemy(
   nextEnemy: Pokemon,
   onFaint: (ctx: BattleContext, side: BattleSide) => Promise<void>
 ): Promise<void> {
-  active.enemy = nextEnemy
+  active.enemy = nextEnemy;
   if (ctx.animations?.handleReleaseRequest) {
-    await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
+    await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy });
   } else {
-    gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
+    gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy });
   }
 
   if (nextEnemy.hp <= 0) {
-    await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-    await onFaint(ctx, 'enemy')
+    await ctx.fsm.transition(
+      ctx.BATTLE_STATES.ACTIVE_BATTLE,
+      ctx.BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
+    );
+    await onFaint(ctx, 'enemy');
   }
 }
 
@@ -208,11 +226,11 @@ export async function handleEnemyForceSwitchExecution(
   active: NonNullable<BattleContext['activeBattle']['value']>,
   onFaint: (ctx: BattleContext, side: BattleSide) => Promise<void>
 ): Promise<void> {
-  const nextEnemy = pickNextEnemySwitchCandidate(active, ctx)
-  if (!nextEnemy) return
+  const nextEnemy = pickNextEnemySwitchCandidate(active, ctx);
+  if (!nextEnemy) return;
 
-  await recallActiveEnemy(ctx, active.enemy)
-  await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POKEMON_CALL)
-  await executeWorkerEnemySwitch(ctx, active, nextEnemy)
-  await deployNextEnemy(ctx, active, nextEnemy, onFaint)
+  await recallActiveEnemy(ctx, active.enemy);
+  await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POKEMON_CALL);
+  await executeWorkerEnemySwitch(ctx, active, nextEnemy);
+  await deployNextEnemy(ctx, active, nextEnemy, onFaint);
 }

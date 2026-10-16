@@ -1,23 +1,28 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import BaseModal from '@/components/common/BaseModal.vue'
-import { useGameStore } from '@/stores/game'
-import { useLivePvPStore } from '@/stores/livePvP'
-import { useUIStore } from '@/stores/ui'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getSeasonalThemeForMonth } from '@/data/system/rankedData'
-import { isPokemonLegalForTheme, autoFillLegalTeamForTheme } from '@/logic/pvp/pvpTeamHelper'
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
-import type { Friend } from '@/stores/social/social'
-import type { PvpMatchFormat, PvpLevelRule, PvpChallengeConfig, PvpMatchMode } from '@/types/battle/pvp'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import { ref, computed } from 'vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useUIStore } from '@/stores/ui';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
+import { isPokemonLegalForTheme, autoFillLegalTeamForTheme } from '@/logic/pvp/pvpTeamHelper';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import type { Friend } from '@/stores/social/social';
+import type {
+  PvpMatchFormat,
+  PvpLevelRule,
+  PvpChallengeConfig,
+  PvpMatchMode
+} from '@/types/battle/pvp';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
-  id?: string
-  show?: boolean
-  friend?: Friend
-  opponentId?: string
-  opponentName?: string
+  id?: string;
+  show?: boolean;
+  friend?: Friend;
+  opponentId?: string;
+  opponentName?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -26,124 +31,130 @@ const props = withDefaults(defineProps<Props>(), {
   friend: undefined,
   opponentId: '',
   opponentName: 'Rival'
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const gameStore = useGameStore()
-const livePvPStore = useLivePvPStore()
-const uiStore = useUIStore()
+const gameStore = useGameStore();
+const livePvPStore = useLivePvPStore();
+const uiStore = useUIStore();
 
-const selectedMode = ref<PvpMatchMode>('ranked')
-const selectedFormat = ref<PvpMatchFormat>('6v6')
-const selectedLevelRule = ref<PvpLevelRule>('flat50')
+const selectedMode = ref<PvpMatchMode>('ranked');
+const selectedFormat = ref<PvpMatchFormat>('6v6');
+const selectedLevelRule = ref<PvpLevelRule>('flat50');
 
-const targetId = computed(() => props.friend?.id || props.opponentId)
-const targetName = computed(() => props.friend?.username || props.opponentName || 'Rival')
-const isOpponentOffline = computed(() => props.friend?.isOnline === false)
+const targetId = computed(() => props.friend?.id || props.opponentId);
+const targetName = computed(() => props.friend?.username || props.opponentName || 'Rival');
+const isOpponentOffline = computed(() => props.friend?.isOnline === false);
 
 // Seasonal Monthly Theme
-const currentMonth = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).month
-const currentTheme = computed(() => getSeasonalThemeForMonth(currentMonth))
+const currentMonth = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).month;
+const currentTheme = computed(() => getSeasonalThemeForMonth(currentMonth));
 
 function setMode(mode: PvpMatchMode) {
-  selectedMode.value = mode
+  selectedMode.value = mode;
   if (mode === 'ranked') {
-    selectedFormat.value = '6v6'
-    selectedLevelRule.value = 'flat50'
+    selectedFormat.value = '6v6';
+    selectedLevelRule.value = 'flat50';
   }
 }
 
 const pokemonByUid = computed(() => {
-  const map = new Map<string, Pokemon>()
+  const map = new Map<string, Pokemon>();
   for (const p of gameStore.state.team || []) {
-    if (p) map.set(p.uid, p)
+    if (p) map.set(p.uid, p);
   }
   for (const p of gameStore.state.box || []) {
-    if (p) map.set(p.uid, p)
+    if (p) map.set(p.uid, p);
   }
-  return map
-})
+  return map;
+});
 
-const requiredCount = computed(() => (selectedFormat.value === '6v6' ? 6 : 3))
+const requiredCount = computed(() => (selectedFormat.value === '6v6' ? 6 : 3));
 
 const activeTeam = computed<(Pokemon | null)[]>(() => {
-  const uids = (selectedFormat.value === '6v6' ? gameStore.state.pvpTeam6 : gameStore.state.pvpTeam) || []
-  const count = requiredCount.value
-  const slots: (Pokemon | null)[] = []
+  const uids =
+    (selectedFormat.value === '6v6' ? gameStore.state.pvpTeam6 : gameStore.state.pvpTeam) || [];
+  const count = requiredCount.value;
+  const slots: (Pokemon | null)[] = [];
   for (let i = 0; i < count; i++) {
-    const uid = uids[i]
-    slots.push((uid ? pokemonByUid.value.get(uid) : null) || null)
+    const uid = uids[i];
+    slots.push((uid ? pokemonByUid.value.get(uid) : null) || null);
   }
-  return slots
-})
+  return slots;
+});
 
 const hasIllegalPokemon = computed(() => {
-  return activeTeam.value.some(p => p && p.isIllegal)
-})
+  return activeTeam.value.some((p) => p && p.isIllegal);
+});
 
 const isTeamComplete = computed(() => {
-  const validPokes = activeTeam.value.filter((p): p is Pokemon => p !== null && p.hp > 0)
-  return validPokes.length >= requiredCount.value
-})
+  const validPokes = activeTeam.value.filter((p): p is Pokemon => p !== null && p.hp > 0);
+  return validPokes.length >= requiredCount.value;
+});
 
 const teamLegality = computed(() => {
-  if (selectedMode.value !== 'ranked') return { isLegal: true, illegalCount: 0 }
-  const theme = currentTheme.value
-  let illegalCount = 0
+  if (selectedMode.value !== 'ranked') return { isLegal: true, illegalCount: 0 };
+  const theme = currentTheme.value;
+  let illegalCount = 0;
   for (const p of activeTeam.value) {
     if (p && !isPokemonLegalForTheme(p, theme)) {
-      illegalCount++
+      illegalCount++;
     }
   }
   return {
     isLegal: illegalCount === 0,
     illegalCount
-  }
-})
+  };
+});
 
 const canSend = computed(() => {
-  return Boolean(targetId.value)
-    && isTeamComplete.value
-    && !hasIllegalPokemon.value
-    && (selectedMode.value !== 'ranked' || teamLegality.value.isLegal)
-})
+  return (
+    Boolean(targetId.value) &&
+    isTeamComplete.value &&
+    !hasIllegalPokemon.value &&
+    (selectedMode.value !== 'ranked' || teamLegality.value.isLegal)
+  );
+});
 
 function handleAutoFillLegalTeam() {
   const allPokes = [
     ...((gameStore.state.team || []) as (Pokemon | null)[]),
     ...((gameStore.state.box || []) as (Pokemon | null)[])
-  ].filter((p): p is Pokemon => p != null)
+  ].filter((p): p is Pokemon => p != null);
 
-  const legalPokes = autoFillLegalTeamForTheme(allPokes, currentTheme.value, requiredCount.value)
+  const legalPokes = autoFillLegalTeamForTheme(allPokes, currentTheme.value, requiredCount.value);
   if (legalPokes.length < requiredCount.value) {
-    uiStore.notify(`Solo se encontraron ${legalPokes.length}/${requiredCount.value} Pokémon legales para la temática.`, '⚠️')
+    uiStore.notify(
+      `Solo se encontraron ${legalPokes.length}/${requiredCount.value} Pokémon legales para la temática.`,
+      '⚠️'
+    );
   }
 
-  const uids = legalPokes.map(p => p.uid)
+  const uids = legalPokes.map((p) => p.uid);
   if (selectedFormat.value === '6v6') {
-    gameStore.state.pvpTeam6 = uids
+    gameStore.state.pvpTeam6 = uids;
   } else {
-    gameStore.state.pvpTeam = uids
+    gameStore.state.pvpTeam = uids;
   }
-  gameStore.save(false)
-  uiStore.notify('¡Equipo autocompletado con Pokémon legales!', '✨')
+  gameStore.save(false);
+  uiStore.notify('¡Equipo autocompletado con Pokémon legales!', '✨');
 }
 
 function getSpriteUrl(pokemon: Pokemon | null | undefined): string {
-  if (!pokemon) return ''
-  return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id)
+  if (!pokemon) return '';
+  return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id);
 }
 
 function openTeamManagement() {
-  emit('close')
-  uiStore.toggleTeamManagement()
+  emit('close');
+  uiStore.toggleTeamManagement();
 }
 
 async function handleSendChallenge() {
-  if (!canSend.value || !targetId.value) return
+  if (!canSend.value || !targetId.value) return;
 
   const config: PvpChallengeConfig = {
     format: selectedFormat.value,
@@ -153,10 +164,10 @@ async function handleSendChallenge() {
     },
     mode: selectedMode.value,
     isAsynchronous: isOpponentOffline.value
-  }
+  };
 
-  emit('close')
-  await livePvPStore.sendInvite(targetId.value, targetName.value, config)
+  emit('close');
+  await livePvPStore.sendInvite(targetId.value, targetName.value, config);
 }
 </script>
 
@@ -174,14 +185,13 @@ async function handleSendChallenge() {
         <span class="username">{{ targetName }}</span>
       </div>
 
-      <div
-        v-if="isOpponentOffline"
-        class="offline-rival-banner"
-      >
+      <div v-if="isOpponentOffline" class="offline-rival-banner">
         <span class="emoji">🛡️</span>
         <div class="banner-text">
           <span class="banner-title">RIVAL DESCONECTADO (COMBATE ASÍNCRONO)</span>
-          <span class="banner-desc">Competirás contra su equipo activo controlado por la IA competitiva.</span>
+          <span class="banner-desc"
+            >Competirás contra su equipo activo controlado por la IA competitiva.</span
+          >
         </div>
       </div>
 
@@ -213,17 +223,14 @@ async function handleSendChallenge() {
       </div>
 
       <!-- SEASONAL THEME BANNER -->
-      <div
-        v-if="selectedMode === 'ranked'"
-        class="seasonal-theme-banner"
-      >
+      <div v-if="selectedMode === 'ranked'" class="seasonal-theme-banner">
         <img
           :src="getAssetUrl(ASSET_TYPES.BANNER, currentTheme.bannerImage)"
           :alt="currentTheme.name"
           class="theme-banner-img"
           width="32"
           height="32"
-        >
+        />
         <div class="theme-banner-overlay">
           <div class="theme-badge-row">
             <span class="theme-pill">TEMÁTICA DEL MES</span>
@@ -304,7 +311,11 @@ async function handleSendChallenge() {
       <!-- TEAM PREVIEW & VALIDATION -->
       <div class="pvp-section">
         <div class="section-header-inline">
-          <label class="section-title">EQUIPO SELECCIONADO ({{ activeTeam.filter(p => p && p.hp > 0).length }}/{{ requiredCount }})</label>
+          <label class="section-title"
+            >EQUIPO SELECCIONADO ({{ activeTeam.filter((p) => p && p.hp > 0).length }}/{{
+              requiredCount
+            }})</label
+          >
           <button
             id="pv-pchallenge-modal-btn-gestionar-equipo"
             class="link-btn"
@@ -326,10 +337,9 @@ async function handleSendChallenge() {
                 :src="getSpriteUrl(activeTeam[index - 1])"
                 :alt="activeTeam[index - 1]?.name || 'Pokemon'"
                 class="slot-sprite"
-              
                 width="32"
                 height="32"
-              >
+              />
               <span class="slot-name">{{ activeTeam[index - 1]?.name }}</span>
             </template>
             <template v-else>
@@ -340,13 +350,13 @@ async function handleSendChallenge() {
         </div>
 
         <!-- THEME LEGALITY WARNING & AUTOFILL -->
-        <div
-          v-if="selectedMode === 'ranked' && !teamLegality.isLegal"
-          class="theme-warning-banner"
-        >
+        <div v-if="selectedMode === 'ranked' && !teamLegality.isLegal" class="theme-warning-banner">
           <div class="warning-text-wrap">
             <span class="emoji">⚠️</span>
-            <span>{{ teamLegality.illegalCount }} Pokémon no cumplen la temática {{ currentTheme.name }}.</span>
+            <span
+              >{{ teamLegality.illegalCount }} Pokémon no cumplen la temática
+              {{ currentTheme.name }}.</span
+            >
           </div>
           <button
             id="btn-pvp-autofill-legal"
@@ -358,16 +368,11 @@ async function handleSendChallenge() {
           </button>
         </div>
 
-        <div
-          v-if="!isTeamComplete"
-          class="team-warning"
-        >
-          <span class="emoji">⚠️</span> Tu equipo de PvP {{ selectedFormat }} necesita {{ requiredCount }} Pokémon sanos para poder desafiar.
+        <div v-if="!isTeamComplete" class="team-warning">
+          <span class="emoji">⚠️</span> Tu equipo de PvP {{ selectedFormat }} necesita
+          {{ requiredCount }} Pokémon sanos para poder desafiar.
         </div>
-        <div
-          v-else-if="hasIllegalPokemon"
-          class="team-warning danger"
-        >
+        <div v-else-if="hasIllegalPokemon" class="team-warning danger">
           <span class="emoji">⚠️</span> Tu equipo seleccionado contiene Pokémon ilegales.
         </div>
       </div>

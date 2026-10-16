@@ -1,5 +1,4 @@
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <footer class="modal-footer-premium">
@@ -8,5 +7,5 @@
 </template>
 
 <style lang="scss">
-@use "@/styles/components/base-modal" as *;
+@use '@/styles/components/base-modal' as *;
 </style>

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, nextTick } from 'vue'
-import { useSocialStore } from '@/stores/social/social'
-import { useChatStore } from '@/stores/social/chat'
-import { useTradeStore } from '@/stores/trade'
-import { useUIStore } from '@/stores/ui'
-import { useModalStore } from '@/stores/modals'
-import TrainerCard from './TrainerCard.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { gsap } from 'gsap'
+import { computed, onMounted, ref, watch, nextTick } from 'vue';
+import { useSocialStore } from '@/stores/social/social';
+import { useChatStore } from '@/stores/social/chat';
+import { useTradeStore } from '@/stores/trade';
+import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
+import TrainerCard from './TrainerCard.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { gsap } from 'gsap';
 
-import type { Friend } from '@/stores/social/social'
+import type { Friend } from '@/stores/social/social';
 
 const FRIEND_CARD_INITIAL_OPACITY = 0;
 const FRIEND_CARD_INITIAL_X_OFFSET = -20;
@@ -17,34 +17,38 @@ const FRIEND_CARD_INITIAL_SCALE = 0.95;
 const FRIEND_CARD_ANIM_DURATION_SEC = 0.45;
 const FRIEND_CARD_ANIM_STAGGER_SEC = 0.06;
 
-const socialStore = useSocialStore()
-const chatStore = useChatStore()
-const tradeStore = useTradeStore()
-const uiStore = useUIStore()
-const modalStore = useModalStore()
+const socialStore = useSocialStore();
+const chatStore = useChatStore();
+const tradeStore = useTradeStore();
+const uiStore = useUIStore();
+const modalStore = useModalStore();
 
 function openTrainerProfile(userId: string) {
-  uiStore.open('TrainerProfile', { userId })
+  uiStore.open('TrainerProfile', { userId });
 }
 
 function openPvPChallenge(friend: Friend) {
-  modalStore.open('PvPChallenge', { friend })
+  modalStore.open('PvPChallenge', { friend });
 }
 
-const listRef = ref<HTMLElement | null>(null)
+const listRef = ref<HTMLElement | null>(null);
 
-const filteredFriends = computed(() => socialStore.friends)
+const filteredFriends = computed(() => socialStore.friends);
 
 function openChat(friend: Friend) {
-  chatStore.openChat(friend.id, friend.username)
+  chatStore.openChat(friend.id, friend.username);
 }
 
 function isChatActive(friendId: string) {
-  return chatStore.activeChatId === friendId && chatStore.privateChats[friendId] && !chatStore.privateChats[friendId].isCollapsed
+  return (
+    chatStore.activeChatId === friendId &&
+    chatStore.privateChats[friendId] &&
+    !chatStore.privateChats[friendId].isCollapsed
+  );
 }
 
 function openTrade(friend: Friend) {
-  tradeStore.openTradeModal(friend.id, friend.username)
+  tradeStore.openTradeModal(friend.id, friend.username);
 }
 
 function confirmRemoveFriend(friend: Friend) {
@@ -55,21 +59,21 @@ function confirmRemoveFriend(friend: Friend) {
     cancelText: 'CANCELAR',
     type: 'danger',
     onConfirm: () => {
-      socialStore.removeFriend(friend.id)
+      socialStore.removeFriend(friend.id);
     }
-  })
+  });
 }
 
 const getUnreadCount = (friendId: string | number) => {
-  return chatStore.privateChats[friendId]?.unreadCount || 0
-}
+  return chatStore.privateChats[friendId]?.unreadCount || 0;
+};
 
 function animateCards() {
   nextTick(() => {
-    if (!listRef.value) return
-    const cards = listRef.value.querySelectorAll('.trainer-card')
+    if (!listRef.value) return;
+    const cards = listRef.value.querySelectorAll('.trainer-card');
     if (cards.length > 0) {
-      gsap.killTweensOf(cards)
+      gsap.killTweensOf(cards);
       gsap.from(cards, {
         opacity: FRIEND_CARD_INITIAL_OPACITY,
         x: FRIEND_CARD_INITIAL_X_OFFSET,
@@ -78,33 +82,31 @@ function animateCards() {
         stagger: FRIEND_CARD_ANIM_STAGGER_SEC,
         ease: 'back.out(1.2)',
         clearProps: 'opacity,x,scale'
-      })
+      });
     }
-  })
+  });
 }
 
 onMounted(() => {
-  animateCards()
-})
+  animateCards();
+});
 
-watch(() => filteredFriends.value.map((f: Friend) => f.id).join(','), () => {
-  animateCards()
-})
+watch(
+  () => filteredFriends.value.map((f: Friend) => f.id).join(','),
+  () => {
+    animateCards();
+  }
+);
 
 defineEmits<{
-  (e: 'search-tab'): void
-}>()
+  (e: 'search-tab'): void;
+}>();
 </script>
 
 <template>
   <div class="social-tab-content">
-    <div
-      v-if="socialStore.friends.length === 0"
-      class="empty-state"
-    >
-      <div class="icon emoji">
-        👥
-      </div>
+    <div v-if="socialStore.friends.length === 0" class="empty-state">
+      <div class="icon emoji">👥</div>
       <p>Aún no tenés amigos agregados.</p>
       <button
         id="social-friends-tab-btn-buscar-entrenadores"
@@ -115,11 +117,7 @@ defineEmits<{
       </button>
     </div>
 
-    <div
-      v-else
-      ref="listRef"
-      class="friends-list"
-    >
+    <div v-else ref="listRef" class="friends-list">
       <TrainerCard
         v-for="friend in filteredFriends"
         id="social-friends-tab-trainercard-1"
@@ -129,19 +127,12 @@ defineEmits<{
         @click-profile="openTrainerProfile"
       >
         <template #avatar-overlay>
-          <div
-            class="status-dot"
-            :class="{ online: friend.isOnline }"
-          />
+          <div class="status-dot" :class="{ online: friend.isOnline }" />
         </template>
 
         <template #actions>
           <div class="friend-actions">
-            <PVTooltip
-              title="CHAT"
-              description="Enviar mensaje privado."
-              position="top"
-            >
+            <PVTooltip title="CHAT" description="Enviar mensaje privado." position="top">
               <button
                 v-gsap-hover
                 class="action-btn chat"
@@ -149,30 +140,25 @@ defineEmits<{
                 @click.stop="openChat(friend)"
               >
                 <span class="emoji">💬</span>
-                <span 
-                  v-if="getUnreadCount(friend.id) > 0" 
-                  class="hud-notification-badge"
-                >{{ getUnreadCount(friend.id) }}</span>
+                <span v-if="getUnreadCount(friend.id) > 0" class="hud-notification-badge">{{
+                  getUnreadCount(friend.id)
+                }}</span>
               </button>
             </PVTooltip>
 
-            <PVTooltip
-              title="INTERCAMBIO"
-              description="Solicitar comercio Pokémon."
-              position="top"
-            >
-              <button
-                v-gsap-hover
-                class="action-btn trade"
-                @click.stop="openTrade(friend)"
-              >
+            <PVTooltip title="INTERCAMBIO" description="Solicitar comercio Pokémon." position="top">
+              <button v-gsap-hover class="action-btn trade" @click.stop="openTrade(friend)">
                 <span class="emoji">🔄</span>
               </button>
             </PVTooltip>
 
             <PVTooltip
               :title="friend.isOnline ? 'DESAFÍO PVP' : 'DESAFÍO (DESCONECTADO)'"
-              :description="friend.isOnline ? 'Desafiar a un combate PvP en tiempo real.' : 'El entrenador debe estar conectado para combatir.'"
+              :description="
+                friend.isOnline
+                  ? 'Desafiar a un combate PvP en tiempo real.'
+                  : 'El entrenador debe estar conectado para combatir.'
+              "
               position="top"
             >
               <button
@@ -185,11 +171,7 @@ defineEmits<{
               </button>
             </PVTooltip>
 
-            <PVTooltip
-              title="ELIMINAR"
-              description="Quitar de tu lista de amigos."
-              position="top"
-            >
+            <PVTooltip title="ELIMINAR" description="Quitar de tu lista de amigos." position="top">
               <button
                 v-gsap-hover
                 class="action-btn remove"
@@ -206,5 +188,5 @@ defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/social-friends-tab";
+@use '@/styles/components/social-friends-tab';
 </style>

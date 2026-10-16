@@ -110,7 +110,10 @@ export class InferenceEngine {
   }
 
   /** Get likely unrevealed moves for an opponent Pokemon */
-  getLikelyUnrevealed(species: string, threshold: number = 0.3): Array<{ move: string; probability: number }> {
+  getLikelyUnrevealed(
+    species: string,
+    threshold: number = 0.3
+  ): Array<{ move: string; probability: number }> {
     const id = toId(species);
     return this.trackers.get(id)?.getLikelyUnrevealedMoves(threshold) ?? [];
   }
@@ -126,17 +129,13 @@ export class InferenceEngine {
     const lines: string[] = [];
     lines.push(`Opponent ${active.name} likely moves:`);
 
-    const moves = [...info.likelyMoves.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6);
+    const moves = [...info.likelyMoves.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
 
     for (const [move, prob] of moves) {
       lines.push(`  ${move} (${Math.round(prob * 100)}%)`);
     }
 
-    const items = [...info.likelyItem.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3);
+    const items = [...info.likelyItem.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
 
     if (items.length > 0 && items[0][1] < 1.0) {
       lines.push('Likely item:');

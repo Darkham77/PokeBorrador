@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import type { CategoryGroup } from '@/composables/events/usePastEventAwards'
-import type { PendingAward } from '@/types/system/stores'
-import PastEventWinnerItem from './PastEventWinnerItem.vue'
-import PastEventAwardRow from './PastEventAwardRow.vue'
+import type { CategoryGroup } from '@/composables/events/usePastEventAwards';
+import type { PendingAward } from '@/types/system/stores';
+import PastEventWinnerItem from './PastEventWinnerItem.vue';
+import PastEventAwardRow from './PastEventAwardRow.vue';
 
 interface Props {
-  catGroup: CategoryGroup
-  categoryIcon: string
-  award?: PendingAward | null
-  prize: Record<string, unknown> | null // open-record: Generic key-value data dictionary container
-  isClaimable: boolean
+  catGroup: CategoryGroup;
+  categoryIcon: string;
+  award?: PendingAward | null;
+  prize: Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
+  isClaimable: boolean;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'claim', awardId: string): void
-  (e: 'discard', awardId?: string, categoryName?: string): void
-  (e: 'hover', event: MouseEvent, isEntering: boolean): void
-  (e: 'discardHover', event: MouseEvent, isEntering: boolean): void
-}>()
+  (e: 'claim', awardId: string): void;
+  (e: 'discard', awardId?: string, categoryName?: string): void;
+  (e: 'hover', event: MouseEvent, isEntering: boolean): void;
+  (e: 'discardHover', event: MouseEvent, isEntering: boolean): void;
+}>();
 </script>
 
 <template>

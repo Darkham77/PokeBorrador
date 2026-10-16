@@ -1,7 +1,7 @@
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/mixins' as *;
 
 // src/styles/components/pokemon-detail/_tms.scss
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .tms-pane {
   .tm-controls {
@@ -20,9 +20,12 @@
       align-items: center;
       gap: $spacing-md-alt;
       flex: 1;
-      
-        & .icon { font-size: var(--font-14); opacity: 0.5; }
-      
+
+      & .icon {
+        font-size: var(--font-14);
+        opacity: 0.5;
+      }
+
       .tm-search-input {
         border: none;
         background: none;
@@ -31,15 +34,17 @@
         font-size: var(--font-13);
         flex: 1;
         outline: none;
-        
-        &::placeholder { color: Rgb(255 255 255 / 20%); }
+
+        &::placeholder {
+          color: Rgb(255 255 255 / 20%);
+        }
       }
     }
 
     .sort-box {
       display: flex;
       gap: $spacing-xs;
-      
+
       & .sort-btn {
         @include pixelated;
 
@@ -50,8 +55,7 @@
         color: Rgb(255 255 255 / 40%);
         font-size: var(--font-8);
         cursor: pointer;
-        
-        
+
         &.active {
           background: var(--yellow);
           color: $black;
@@ -66,7 +70,7 @@
     display: grid;
     gap: $spacing-md;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    
+
     .tm-item {
       display: flex;
       align-items: center;
@@ -75,19 +79,18 @@
       border: 1px solid Rgb(255 255 255 / 5%);
       border-radius: $radius-2xl;
       background: Rgb(255 255 255 / 4%);
-      
+
       &:hover:not(.incompatible) {
         background: Rgb(255 255 255 / 8%);
         transform: Translatey(-2px);
       }
-      
-      
+
       &.incompatible {
         opacity: 0.4;
         will-change: transform, filter, opacity;
-  filter: Grayscale(0.8);
+        filter: Grayscale(0.8);
       }
-      
+
       .tm-id {
         @include pixelated;
 
@@ -103,22 +106,27 @@
         font-weight: 900;
         box-shadow: var(--shadow-card);
       }
-      
+
       .tm-info {
         display: flex;
         flex-direction: column;
         align-items: flex-start; // Prevent stretching
         flex: 1;
-        
-        .tm-name { color: $white; font-size: var(--font-11); font-weight: 800; margin-bottom: 2px; }
+
+        .tm-name {
+          color: $white;
+          font-size: var(--font-11);
+          font-weight: 800;
+          margin-bottom: 2px;
+        }
       }
-      
+
       .tm-check {
         color: var(--yellow);
         font-size: var(--font-12);
         font-weight: 900;
       }
-      
+
       &.clickable-item {
         cursor: pointer;
       }

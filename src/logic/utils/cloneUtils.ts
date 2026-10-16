@@ -43,7 +43,8 @@ export function deepToRaw<T>(source: T): T {
   }
 
   const res: Record<string, unknown> = {}; // open-record: Generic key-value data dictionary container
-  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) { // open-record: Generic key-value data dictionary container
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    // open-record: Generic key-value data dictionary container
     res[key] = deepToRaw(value);
   }
   return res as T;

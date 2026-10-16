@@ -19,8 +19,12 @@ const store = useRegionalContinentStudioStore();
 
 const MAP_DIMENSIONS = [64, 128, 256, 400] as const;
 
-const oceanWaterPercentText = computed(() => `${Math.round(store.oceanWaterPercentage * PERCENT_BASE_MULTIPLIER)}%`);
-const mountainPercentText = computed(() => `${Math.round(store.mountainPercentage * PERCENT_BASE_MULTIPLIER)}%`);
+const oceanWaterPercentText = computed(
+  () => `${Math.round(store.oceanWaterPercentage * PERCENT_BASE_MULTIPLIER)}%`
+);
+const mountainPercentText = computed(
+  () => `${Math.round(store.mountainPercentage * PERCENT_BASE_MULTIPLIER)}%`
+);
 
 function handleSliderChange(): void {
   store.triggerRegenerationDebounced(SLIDER_DEBOUNCE_DELAY_MS);
@@ -39,10 +43,7 @@ function handleSliderChange(): void {
         class="status-indicator"
         :class="{ 'is-loading': store.isGenerating }"
       >
-        <span
-          v-gsap-loop="{ effect: 'pulse', active: store.isGenerating }"
-          class="dot"
-        />
+        <span v-gsap-loop="{ effect: 'pulse', active: store.isGenerating }" class="dot" />
         <span class="text">{{ store.isGenerating ? 'Generando...' : 'Listo' }}</span>
       </div>
     </header>
@@ -92,7 +93,7 @@ function handleSliderChange(): void {
             type="number"
             class="seed-input"
             @input="handleSliderChange"
-          >
+          />
           <button
             id="btn-random-seed"
             type="button"
@@ -115,7 +116,10 @@ function handleSliderChange(): void {
             type="button"
             class="dim-btn"
             :class="{ active: store.mapDimension === dim }"
-            @click="store.mapDimension = dim; handleSliderChange()"
+            @click="
+              store.mapDimension = dim;
+              handleSliderChange();
+            "
           >
             {{ dim }}²
           </button>
@@ -163,9 +167,10 @@ function handleSliderChange(): void {
           min="0.20"
           max="0.55"
           step="0.01"
+          aria-label="Océano perimetral"
           class="range-slider"
           @input="handleSliderChange"
-        >
+        />
       </div>
 
       <div class="slider-field">
@@ -180,9 +185,10 @@ function handleSliderChange(): void {
           min="0.10"
           max="0.38"
           step="0.01"
+          aria-label="Cordilleras de montaña"
           class="range-slider"
           @input="handleSliderChange"
-        >
+        />
       </div>
 
       <div class="slider-field">
@@ -197,9 +203,10 @@ function handleSliderChange(): void {
           min="0"
           max="8"
           step="1"
+          aria-label="Lagos interiores"
           class="range-slider"
           @input="handleSliderChange"
-        >
+        />
       </div>
     </section>
 
@@ -219,9 +226,10 @@ function handleSliderChange(): void {
           min="10"
           max="26"
           step="1"
+          aria-label="Densidad de POIs"
           class="range-slider"
           @input="handleSliderChange"
-        >
+        />
       </div>
 
       <div class="checkbox-field">
@@ -230,8 +238,9 @@ function handleSliderChange(): void {
             id="check-allow-bridges"
             v-model="store.allowBridges"
             type="checkbox"
+            aria-label="Permitir puentes sobre agua"
             @change="handleSliderChange"
-          >
+          />
           <span>Permitir Puentes sobre Agua</span>
         </label>
       </div>

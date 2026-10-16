@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -7,7 +7,10 @@ import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 
-const BACKUP_FILE = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
+const BACKUP_FILE = path.resolve(
+  process.cwd(),
+  'tests/node/fixtures/server_franco_backup_fixture.json'
+);
 
 function initAuditDatabase(): DatabaseSync {
   const db = new DatabaseSync(':memory:');
@@ -20,15 +23,26 @@ function initAuditDatabase(): DatabaseSync {
 
 function seedRawGameSaves(db: DatabaseSync, gameSaves: Array<Record<string, unknown>>): void {
   db.exec('BEGIN TRANSACTION;');
-  const insertSave = db.prepare('INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)');
+  const insertSave = db.prepare(
+    'INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)'
+  );
   for (const save of gameSaves) {
-    const dataStr = typeof save.save_data === 'string' ? save.save_data : JSON.stringify(save.save_data);
-    insertSave.run(save.user_id as string, dataStr, (save.last_save_id as string) || '', (save.updated_at as string) || '');
+    const dataStr =
+      typeof save.save_data === 'string' ? save.save_data : JSON.stringify(save.save_data);
+    insertSave.run(
+      save.user_id as string,
+      dataStr,
+      (save.last_save_id as string) || '',
+      (save.updated_at as string) || ''
+    );
   }
   db.exec('COMMIT;');
 }
 
-function applySqliteMigration(db: DatabaseSync, migration: (typeof DATABASE_MIGRATIONS)[number]): void {
+function applySqliteMigration(
+  db: DatabaseSync,
+  migration: (typeof DATABASE_MIGRATIONS)[number]
+): void {
   if (!migration.sqlite_sql?.trim()) return;
   try {
     db.exec(migration.sqlite_sql);
@@ -43,7 +57,10 @@ function applySqliteMigration(db: DatabaseSync, migration: (typeof DATABASE_MIGR
         const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
         const isMissing = msg.includes('no such column');
         if (!isDuplicate && !isMissing) {
-          throw new Error(`CRITICAL: Error al aplicar migración oficial ${migration.id}: ${(e as Error).message}`, { cause: e });
+          throw new Error(
+            `CRITICAL: Error al aplicar migración oficial ${migration.id}: ${(e as Error).message}`,
+            { cause: e }
+          );
         }
       }
     }
@@ -70,7 +87,12 @@ interface AuditPokemon {
   moves?: Array<{ id?: string; name?: string }>;
 }
 
-function validatePokemonDex(poke: AuditPokemon, userId: string, errors: string[], warnings: string[]): void {
+function validatePokemonDex(
+  poke: AuditPokemon,
+  userId: string,
+  errors: string[],
+  warnings: string[]
+): void {
   const tag = `[User: ${userId}] Pokémon: ${poke.name || poke.species || poke.id} (Lvl ${poke.level ?? '?'})`;
 
   if (!poke.species) {
@@ -104,7 +126,10 @@ function validatePokemonDex(poke: AuditPokemon, userId: string, errors: string[]
   }
 }
 
-function auditMigratedSaves(migratedSaves: Array<{ user_id: string; save_data: string }>): { errors: string[]; warnings: string[] } {
+function auditMigratedSaves(migratedSaves: Array<{ user_id: string; save_data: string }>): {
+  errors: string[];
+  warnings: string[];
+} {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -117,14 +142,20 @@ function auditMigratedSaves(migratedSaves: Array<{ user_id: string; save_data: s
     }
     if (!saveData) continue;
 
-    const allPokes = [...(saveData.team || []), ...(saveData.box || [])].filter(Boolean) as AuditPokemon[];
+    const allPokes = [...(saveData.team || []), ...(saveData.box || [])].filter(
+      Boolean
+    ) as AuditPokemon[];
     for (const poke of allPokes) {
       validatePokemonDex(poke, row.user_id, errors, warnings);
     }
   }
 
   if (errors.length > 0) {
-    console.error(`[Save Audit] Encontrados ${errors.length} errores de compatibilidad en el backup migrado:\n` + errors.slice(0, 25).join('\n') + (errors.length > 25 ? `\n... y ${errors.length - 25} errores más.` : ''));
+    console.error(
+      `[Save Audit] Encontrados ${errors.length} errores de compatibilidad en el backup migrado:\n` +
+        errors.slice(0, 25).join('\n') +
+        (errors.length > 25 ? `\n... y ${errors.length - 25} errores más.` : '')
+    );
   }
 
   return { errors, warnings };

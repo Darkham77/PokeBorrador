@@ -1,36 +1,42 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { isAwardClaimable } from '@/logic/events/eventValidators'
-import type { PendingAward } from '@/types/system/stores'
-import type { Event as GameEvent } from '@/logic/events/eventEngine'
+import { computed } from 'vue';
+import { isAwardClaimable } from '@/logic/events/eventValidators';
+import type { PendingAward } from '@/types/system/stores';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 
 interface Props {
-  pendingMyAwards: PendingAward[]
-  allMyAwardsCount: number
-  isClaimed?: boolean
-  isWinner?: boolean
-  allEvents: GameEvent[]
-  isClaimingAll?: boolean
+  pendingMyAwards: PendingAward[];
+  allMyAwardsCount: number;
+  isClaimed?: boolean;
+  isWinner?: boolean;
+  allEvents: GameEvent[];
+  isClaimingAll?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isClaimed: false,
   isWinner: false,
   isClaimingAll: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'claimAll'): void
-  (e: 'claim', awardId: string): void
-  (e: 'discard', awardId: string): void
-  (e: 'btnHover', event: MouseEvent, isEntering: boolean): void
-  (e: 'discardHover', event: MouseEvent, isEntering: boolean): void
-}>()
+  (e: 'claimAll'): void;
+  (e: 'claim', awardId: string): void;
+  (e: 'discard', awardId: string): void;
+  (e: 'btnHover', event: MouseEvent, isEntering: boolean): void;
+  (e: 'discardHover', event: MouseEvent, isEntering: boolean): void;
+}>();
 
-const isClaimAllVisible = computed(() => props.pendingMyAwards.length > 1)
-const singlePendingAward = computed(() => props.pendingMyAwards.length === 1 ? props.pendingMyAwards[0] : null)
-const isSingleAwardClaimable = computed(() => singlePendingAward.value ? isAwardClaimable(singlePendingAward.value, props.allEvents) : false)
-const isClaimedBadgeVisible = computed(() => props.isClaimed || (props.allMyAwardsCount > 0 && props.pendingMyAwards.length === 0))
+const isClaimAllVisible = computed(() => props.pendingMyAwards.length > 1);
+const singlePendingAward = computed(() =>
+  props.pendingMyAwards.length === 1 ? props.pendingMyAwards[0] : null
+);
+const isSingleAwardClaimable = computed(() =>
+  singlePendingAward.value ? isAwardClaimable(singlePendingAward.value, props.allEvents) : false
+);
+const isClaimedBadgeVisible = computed(
+  () => props.isClaimed || (props.allMyAwardsCount > 0 && props.pendingMyAwards.length === 0)
+);
 </script>
 
 <template>
@@ -74,19 +80,11 @@ const isClaimedBadgeVisible = computed(() => props.isClaimed || (props.allMyAwar
       </button>
     </template>
 
-    <div
-      v-else-if="isClaimedBadgeVisible"
-      class="claimed-badge"
-    >
+    <div v-else-if="isClaimedBadgeVisible" class="claimed-badge">
       <span class="emoji">✓</span> RECLAMADA
     </div>
 
-    <div
-      v-else-if="props.isWinner"
-      class="winner-badge"
-    >
-      <span class="emoji">🏆</span> GANADOR
-    </div>
+    <div v-else-if="props.isWinner" class="winner-badge"><span class="emoji">🏆</span> GANADOR</div>
   </div>
 </template>
 

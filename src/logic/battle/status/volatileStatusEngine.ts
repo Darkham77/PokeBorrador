@@ -33,7 +33,13 @@ async function handlePartiallyTrappedTick(
   side: BattleSide
 ): Promise<void> {
   const dmg = Math.max(MIN_VOLATILE_DAMAGE, Math.floor(pokemon.maxHp / TRAPPED_DAMAGE_DIVISOR));
-  await applyVolatileDamageEffect(pokemon, ctx, side, dmg, `¡${pokemon.name} sufre por el atrapamiento! (-${dmg} HP)`);
+  await applyVolatileDamageEffect(
+    pokemon,
+    ctx,
+    side,
+    dmg,
+    `¡${pokemon.name} sufre por el atrapamiento! (-${dmg} HP)`
+  );
 }
 
 async function handleYawnExpiration(
@@ -57,10 +63,7 @@ async function handleYawnExpiration(
   }
 }
 
-function handleLockedMoveExpiration(
-  pokemon: Pokemon,
-  ctx: BattleContext
-): void {
+function handleLockedMoveExpiration(pokemon: Pokemon, ctx: BattleContext): void {
   delete pokemon.volatileCounters?.['lockedmove'];
   if (pokemon.confused) return;
 
@@ -73,10 +76,7 @@ function handleLockedMoveExpiration(
   ctx.addLog(`¡${pokemon.name} se calmó, pero terminó confundido!`, 'log-info', pokemon);
 }
 
-function handlePartiallyTrappedExpiration(
-  pokemon: Pokemon,
-  ctx: BattleContext
-): void {
+function handlePartiallyTrappedExpiration(pokemon: Pokemon, ctx: BattleContext): void {
   delete pokemon.volatileCounters?.['partiallytrapped'];
   ctx.addLog(`¡${pokemon.name} se liberó del atrapamiento!`, 'log-info', pokemon);
 }
@@ -125,7 +125,8 @@ function handleDisabledTurns(pokemon: Pokemon, addLogFn: BattleContext['addLog']
   if ((pokemon.disabledTurns ?? 0) > 0) {
     pokemon.disabledTurns = (pokemon.disabledTurns ?? 0) - 1;
     if (pokemon.disabledTurns <= 0) {
-      addLogFn(`¡${pokemon.name} ya puede usar ${pokemon.disabledMove || 'su movimiento'} de nuevo!`, 'log-info', pokemon);
+      const moveName = pokemon.disabledMove?.name || 'su movimiento';
+      addLogFn(`¡${pokemon.name} ya puede usar ${moveName} de nuevo!`, 'log-info', pokemon);
       pokemon.disabledMove = null;
     }
   }
@@ -155,7 +156,8 @@ function handleThrashTurns(pokemon: Pokemon, addLogFn: BattleContext['addLog']):
     pokemon.thrashTurns = (pokemon.thrashTurns ?? 0) - 1;
     if (pokemon.thrashTurns <= 0) {
       addLogFn(`¡${pokemon.name} se calmó, pero terminó confundido!`, 'log-info', pokemon);
-      pokemon.confused = MIN_CONFUSION_TURNS + Math.floor(Math.random() * RANDOM_CONFUSION_TURNS_RANGE);
+      pokemon.confused =
+        MIN_CONFUSION_TURNS + Math.floor(Math.random() * RANDOM_CONFUSION_TURNS_RANGE);
     }
   }
 }
@@ -167,7 +169,11 @@ export function processControlTurns(pokemon: Pokemon, addLogFn: BattleContext['a
   handleThrashTurns(pokemon, addLogFn);
 }
 
-async function handleBoundDamage(pokemon: Pokemon, ctx: BattleContext, side: BattleSide): Promise<void> {
+async function handleBoundDamage(
+  pokemon: Pokemon,
+  ctx: BattleContext,
+  side: BattleSide
+): Promise<void> {
   if ((pokemon.bound ?? 0) <= 0) return;
 
   pokemon.bound = (pokemon.bound ?? 0) - 1;
@@ -177,10 +183,20 @@ async function handleBoundDamage(pokemon: Pokemon, ctx: BattleContext, side: Bat
   }
 
   const dmg = Math.max(MIN_VOLATILE_DAMAGE, Math.floor(pokemon.maxHp / BOUND_DAMAGE_DIVISOR));
-  await applyVolatileDamageEffect(pokemon, ctx, side, dmg, `¡${pokemon.name} sufre por la atadura! (-${dmg} HP)`);
+  await applyVolatileDamageEffect(
+    pokemon,
+    ctx,
+    side,
+    dmg,
+    `¡${pokemon.name} sufre por la atadura! (-${dmg} HP)`
+  );
 }
 
-async function handleIngrainHeal(pokemon: Pokemon, ctx: BattleContext, side: BattleSide): Promise<void> {
+async function handleIngrainHeal(
+  pokemon: Pokemon,
+  ctx: BattleContext,
+  side: BattleSide
+): Promise<void> {
   if (!pokemon.ingrain || pokemon.hp <= 0 || pokemon.hp >= pokemon.maxHp) return;
 
   const heal = Math.max(MIN_VOLATILE_HEAL, Math.floor(pokemon.maxHp / INGRAIN_HEAL_DIVISOR));
@@ -195,18 +211,32 @@ function handlePerishSongTick(pokemon: Pokemon, ctx: BattleContext): void {
   if ((pokemon.perishSongCount ?? 0) <= 0) return;
 
   pokemon.perishSongCount = (pokemon.perishSongCount ?? 0) - 1;
-  ctx.addLog(`¡La cuenta de Canto Mortal de ${pokemon.name} bajó a ${pokemon.perishSongCount}!`, 'log-info', pokemon);
+  ctx.addLog(
+    `¡La cuenta de Canto Mortal de ${pokemon.name} bajó a ${pokemon.perishSongCount}!`,
+    'log-info',
+    pokemon
+  );
   if (pokemon.perishSongCount === 0) {
     pokemon.hp = 0;
     ctx.addLog(`¡El destino de ${pokemon.name} se cumplió!`, 'log-info', pokemon);
   }
 }
 
-async function handleCurseDamage(pokemon: Pokemon, ctx: BattleContext, side: BattleSide): Promise<void> {
+async function handleCurseDamage(
+  pokemon: Pokemon,
+  ctx: BattleContext,
+  side: BattleSide
+): Promise<void> {
   if (!pokemon.cursed || pokemon.hp <= 0) return;
 
   const dmg = Math.max(MIN_VOLATILE_DAMAGE, Math.floor(pokemon.maxHp / CURSE_DAMAGE_DIVISOR));
-  await applyVolatileDamageEffect(pokemon, ctx, side, dmg, `¡${pokemon.name} sufre por la maldición! (-${dmg} HP)`);
+  await applyVolatileDamageEffect(
+    pokemon,
+    ctx,
+    side,
+    dmg,
+    `¡${pokemon.name} sufre por la maldición! (-${dmg} HP)`
+  );
 }
 
 export async function processVolatileDamageAndHeal(

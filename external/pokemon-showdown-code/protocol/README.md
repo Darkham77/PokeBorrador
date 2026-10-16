@@ -36,7 +36,7 @@ available on the `Protocol` class. [`@pkmn/client`](../client)'s
 implementation might look like.
 
 ```ts
-import {Protocol, Args, KWArgs} from '@pkmn/protocol';
+import { Protocol, Args, KWArgs } from '@pkmn/protocol';
 
 class BoostHandler implements Protocol.Handler {
   '|-boost|'(args: Args['|-boost|'], kwArgs: KWArgs['|-boost|']) {
@@ -64,7 +64,7 @@ domain-specific verification (ie. it will verify an `ID` is received, but does n
 `ID` refers to a known object etc).
 
 ```ts
-import {Verifier} from '@pkmn/protocol/verifier'
+import { Verifier } from '@pkmn/protocol/verifier';
 
 console.log(Verifier.verify(protocol));
 ```
@@ -77,7 +77,7 @@ subdirectory of the main `@pkmn/protocol` package - see the
 
 ```json
 {
- "compilerOptions": {
+  "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@pkmn/protocol/*": ["node_modules/@pkmn/protocol/build/*"]

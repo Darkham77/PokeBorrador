@@ -3,7 +3,7 @@ import { modifyStatStage } from '@/logic/pokemon/statsMath.ts';
 import { MIN_BATTLE_STAT_STAGE, MAX_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay';
 import { SHOWDOWN_BOOST_STAT_KEYS, type ShowdownBoostStatKey } from '@/types/pokemon/pokemon.ts';
 
-/** 
+/**
  * NATIVE SHOWDOWN STAT STAGE KEYS
  * Showdown natively emits: atk, def, spa, spd, spe, accuracy, evasion
  */
@@ -25,7 +25,10 @@ function resetStages(stages: Record<ShowdownBoostStatKey, number> | undefined) {
   }
 }
 
-function copyStages(src: Record<ShowdownBoostStatKey, number> | undefined, tgt: Record<ShowdownBoostStatKey, number> | undefined) {
+function copyStages(
+  src: Record<ShowdownBoostStatKey, number> | undefined,
+  tgt: Record<ShowdownBoostStatKey, number> | undefined
+) {
   if (!src || !tgt) return;
   for (const key of SHOWDOWN_BOOST_STAT_KEYS) {
     tgt[key] = src[key] || 0;
@@ -46,9 +49,10 @@ function applyBoostOrSet(ctx: SBCtx, isSet: boolean): boolean {
       } else {
         modifyStatStage(stages, stat, amount);
       }
-      const msg = amount === MAX_BATTLE_STAT_STAGE
-        ? `¡El ${stat.toUpperCase()} de ${target.name} se maximizó!` // text-ok: Combat stat maximized log message
-        : `¡El ${stat.toUpperCase()} de ${target.name} aumentó!`; // text-ok: UI text display localization string
+      const msg =
+        amount === MAX_BATTLE_STAT_STAGE
+          ? `¡El ${stat.toUpperCase()} de ${target.name} se maximizó!` // text-ok: Combat stat maximized log message
+          : `¡El ${stat.toUpperCase()} de ${target.name} aumentó!`; // text-ok: UI text display localization string
       store.addLog(msg, 'log-info', target);
     }
   }
@@ -134,7 +138,11 @@ function applyCopyBoost(ctx: SBCtx): boolean {
   const source = getPoke(parts[3] || '');
   if (recipient && source) {
     copyStages(getTargetStages(ctx, source), getTargetStages(ctx, recipient));
-    store.addLog(`¡${recipient.name} copió los cambios de stats de ${source.name}!`, 'log-info', recipient);
+    store.addLog(
+      `¡${recipient.name} copió los cambios de stats de ${source.name}!`,
+      'log-info',
+      recipient
+    );
   }
   return true;
 }
@@ -169,9 +177,10 @@ function applyClearDirectionalBoost(ctx: SBCtx, direction: BoostDirection): bool
   const stages = getTargetStages(ctx, target);
   const cleared = clearDirectionalStages(stages, direction);
   if (cleared) {
-    const msg = direction === 'positive'
-      ? `¡Los aumentos de ${target.name} fueron robados!`
-      : `¡Las bajadas de stats de ${target.name} fueron eliminadas!`;
+    const msg =
+      direction === 'positive'
+        ? `¡Los aumentos de ${target.name} fueron robados!`
+        : `¡Las bajadas de stats de ${target.name} fueron eliminadas!`;
     store.addLog(msg, 'log-info', target);
   }
 
@@ -179,16 +188,17 @@ function applyClearDirectionalBoost(ctx: SBCtx, direction: BoostDirection): bool
 }
 
 const STAGE_HANDLERS: Record<string, (ctx: SBCtx) => boolean> = {
-  '-boost': ctx => applyBoostOrSet(ctx, false),
-  '-setboost': ctx => applyBoostOrSet(ctx, true),
+  // open-record: Showdown stage event handlers dispatch table
+  '-boost': (ctx) => applyBoostOrSet(ctx, false),
+  '-setboost': (ctx) => applyBoostOrSet(ctx, true),
   '-unboost': applyUnboost,
   '-swapboost': applySwapBoost,
   '-invertboost': applyInvertBoost,
   '-clearboost': applyClearBoost,
   '-clearallboost': applyClearAllBoost,
   '-copyboost': applyCopyBoost,
-  '-clearpositiveboost': ctx => applyClearDirectionalBoost(ctx, 'positive'),
-  '-clearnegativeboost': ctx => applyClearDirectionalBoost(ctx, 'negative'),
+  '-clearpositiveboost': (ctx) => applyClearDirectionalBoost(ctx, 'positive'),
+  '-clearnegativeboost': (ctx) => applyClearDirectionalBoost(ctx, 'negative')
 };
 
 /**

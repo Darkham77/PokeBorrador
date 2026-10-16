@@ -85,14 +85,18 @@ export class TilesRegistryService {
   /**
    * Loads the lightweight manifest index (~10 KB) without downloading large tile datasets
    */
-  public async loadManifest(manifestUrl = '/test_aventura/assets/tiles/manifest.json'): Promise<TilesManifest> {
+  public async loadManifest(
+    manifestUrl = '/test_aventura/assets/tiles/manifest.json'
+  ): Promise<TilesManifest> {
     if (!manifestUrl.startsWith('/') || manifestUrl.includes('..')) {
       throw new Error(`[TilesRegistry] Disallowed manifest URL: ${manifestUrl}`);
     }
     // fallow-ignore-next-line security-sink
     const res = await fetch(manifestUrl);
     if (!res.ok) {
-      throw new Error(`[TilesRegistry] Failed to fetch tiles manifest: ${res.status} ${res.statusText}`);
+      throw new Error(
+        `[TilesRegistry] Failed to fetch tiles manifest: ${res.status} ${res.statusText}`
+      );
     }
     const manifest = (await res.json()) as TilesManifest;
     this.manifest = manifest;
@@ -103,7 +107,10 @@ export class TilesRegistryService {
   /**
    * Lazily downloads and indexes a single category on-demand
    */
-  public async loadCategory(category: TileCategory, baseUrl = '/test_aventura/assets/tiles/'): Promise<void> {
+  public async loadCategory(
+    category: TileCategory,
+    baseUrl = '/test_aventura/assets/tiles/'
+  ): Promise<void> {
     if (this.loadedCategories.has(category)) return;
 
     const relPath = this.manifest?.categories[category]?.file_path || `${category}/registry.json`;
@@ -115,7 +122,9 @@ export class TilesRegistryService {
     // fallow-ignore-next-line security-sink
     const res = await fetch(fullUrl);
     if (!res.ok) {
-      throw new Error(`[TilesRegistry] Failed to fetch category ${category} from ${fullUrl}: ${res.status}`);
+      throw new Error(
+        `[TilesRegistry] Failed to fetch category ${category} from ${fullUrl}: ${res.status}`
+      );
     }
 
     const data = (await res.json()) as TilesRegistryJson;
@@ -126,10 +135,13 @@ export class TilesRegistryService {
   /**
    * Ensures a list of categories are loaded in parallel before rendering
    */
-  public async ensureCategoriesLoaded(categories: readonly TileCategory[], baseUrl = '/test_aventura/assets/tiles/'): Promise<void> {
-    const pending = categories.filter(c => !this.loadedCategories.has(c));
+  public async ensureCategoriesLoaded(
+    categories: readonly TileCategory[],
+    baseUrl = '/test_aventura/assets/tiles/'
+  ): Promise<void> {
+    const pending = categories.filter((c) => !this.loadedCategories.has(c));
     if (pending.length === 0) return;
-    await Promise.all(pending.map(c => this.loadCategory(c, baseUrl)));
+    await Promise.all(pending.map((c) => this.loadCategory(c, baseUrl)));
   }
 
   /**
@@ -254,12 +266,18 @@ export class TilesRegistryService {
       pool = this.getTilesByCategory(filterOptions.category);
       if (filterOptions.tags && filterOptions.tags.length > 0) {
         pool = this.applyFilters(pool, filterOptions);
-      } else if (filterOptions.subcategory || filterOptions.collision !== undefined || filterOptions.source) {
+      } else if (
+        filterOptions.subcategory ||
+        filterOptions.collision !== undefined ||
+        filterOptions.source
+      ) {
         pool = this.applyFilters(pool, filterOptions);
       }
     } else if (filterOptions?.tags && filterOptions.tags.length > 0) {
       const firstTag = filterOptions.tags[0];
-      pool = firstTag ? this.getTilesByTag(firstTag, filterOptions) : this.applyFilters(this.allTiles, filterOptions);
+      pool = firstTag
+        ? this.getTilesByTag(firstTag, filterOptions)
+        : this.applyFilters(this.allTiles, filterOptions);
     } else if (filterOptions) {
       pool = this.applyFilters(this.allTiles, filterOptions);
     } else {
@@ -300,13 +318,13 @@ export class TilesRegistryService {
   }
 
   private applyFilters(tiles: readonly TileMetadata[], filters: TileFilterOptions): TileMetadata[] {
-    return tiles.filter(tile => {
+    return tiles.filter((tile) => {
       if (filters.category && tile.category !== filters.category) return false;
       if (filters.subcategory && tile.subcategory !== filters.subcategory) return false;
       if (filters.collision !== undefined && tile.collision !== filters.collision) return false;
       if (filters.source && tile.source !== filters.source) return false;
       if (filters.tags && filters.tags.length > 0) {
-        const hasAllTags = filters.tags.every(t => tile.tags.includes(t));
+        const hasAllTags = filters.tags.every((t) => tile.tags.includes(t));
         if (!hasAllTags) return false;
       }
       return true;
@@ -317,17 +335,20 @@ export class TilesRegistryService {
 // Global Singleton for application & map engine use
 export const defaultTilesRegistry = new TilesRegistryService();
 
-
-
-export function getTilesByTag(tag: string, filterOptions?: TileFilterOptions): readonly TileMetadata[] {
+export function getTilesByTag(
+  tag: string,
+  filterOptions?: TileFilterOptions
+): readonly TileMetadata[] {
   return defaultTilesRegistry.getTilesByTag(tag, filterOptions);
 }
 
-export function getRandomTile(filterOptions?: TileFilterOptions): TileMetadata | null { // result-ok: Estructura o identificador procedural de aventura
+export function getRandomTile(filterOptions?: TileFilterOptions): TileMetadata | null {
+  // result-ok: Estructura o identificador procedural de aventura
   return defaultTilesRegistry.getRandomTile(filterOptions);
 }
 
-export function getTileById(id: string): TileMetadata | undefined { // result-ok: Estructura o identificador procedural de aventura
+export function getTileById(id: string): TileMetadata | undefined {
+  // result-ok: Estructura o identificador procedural de aventura
   return defaultTilesRegistry.getTileById(id);
 }
 

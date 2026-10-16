@@ -1,6 +1,6 @@
-@use "@/styles/core/tools" as *;
-@use "@/styles/tokens/colors" as *;
-@use "@/styles/components/pokemon-detail/_vicio-panes";
+@use '@/styles/core/tools' as *;
+@use '@/styles/tokens/colors' as *;
+@use '@/styles/components/pokemon-detail/_vicio-panes';
 
 // Re-expose component styles locally to preserve styles when rendered inside BattleMovesGrid
 .move-slot-wrapper {
@@ -10,7 +10,7 @@
   align-items: stretch;
   width: 100%;
   min-height: 52px;
-  border: 1px solid var(--m-type-color); 
+  border: 1px solid var(--m-type-color);
   border-radius: $radius-xl;
   overflow: hidden;
   box-sizing: border-box;
@@ -42,7 +42,7 @@
     will-change: transform, filter, opacity;
     filter: Grayscale(1);
     cursor: not-allowed;
-    
+
     .move-info-zone {
       pointer-events: none;
     }
@@ -140,7 +140,7 @@
     opacity: 0.6;
     cursor: default;
     border-style: dotted;
-    
+
     &:hover {
       transform: none;
       box-shadow: none;
@@ -169,7 +169,7 @@
   }
 }
 
-.move-card-vicio { 
+.move-card-vicio {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -178,7 +178,7 @@
 
   &:disabled:not(.is-draggable) {
     cursor: not-allowed;
-    
+
     &:hover {
       transform: none;
       box-shadow: none;
@@ -198,7 +198,7 @@
 .empty-move-placeholder-wrap {
   width: 100%;
   height: 100%;
-  
+
   :deep(.pv-tooltip-wrapper) {
     display: flex;
     width: 100%;
@@ -222,7 +222,7 @@
     opacity: 0.7;
     letter-spacing: 1px;
   }
-  
+
   .empty-text {
     font-size: var(--font-10);
     font-weight: 900;

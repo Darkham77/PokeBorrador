@@ -1,172 +1,172 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useBattleStore } from '@/stores/battle/battle'
-import { useUIStore } from '@/stores/ui'
-import { useModalStore } from '@/stores/modals'
+import { computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
 
-import { requireItemId, getItemById, type ItemId } from '@/data/inventory/items'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { isValidTarget } from '@/logic/items/itemEffects'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { ItemTier } from '@/types/inventory/items'
+import { requireItemId, getItemById, type ItemId } from '@/data/inventory/items';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { isValidTarget } from '@/logic/items/itemEffects';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { ItemTier } from '@/types/inventory/items';
 
-const gameStore = useGameStore()
-const battleStore = useBattleStore()
-const uiStore = useUIStore()
-const modalStore = useModalStore()
-
+const gameStore = useGameStore();
+const battleStore = useBattleStore();
+const uiStore = useUIStore();
+const modalStore = useModalStore();
 
 interface BattleItem {
-  id: ItemId
-  name: string
-  desc: string
-  cat: string
-  sprite: string
-  qty: number
-  tier?: ItemTier
+  id: ItemId;
+  name: string;
+  desc: string;
+  cat: string;
+  sprite: string;
+  qty: number;
+  tier?: ItemTier;
 }
 
-const inventory = computed(() => gameStore.state.inventory || {})
+const inventory = computed(() => gameStore.state.inventory || {});
 
 const battleItems = computed<BattleItem[]>(() => {
-  const items: BattleItem[] = []
+  const items: BattleItem[] = [];
   Object.entries(inventory.value).forEach(([name, qty]) => {
-    const count = qty as number
-    if (count <= 0) return
-    const itemData = getItemById(name)
-    if (!itemData) return
-    
-    if (itemData.nonCombat) return
-    if (itemData.cat === 'potions' || (itemData.cat === 'pokeballs' && (battleStore.uiConfig ? battleStore.uiConfig.allowCatch : true))) {
-      items.push({ 
-        ...itemData, 
+    const count = qty as number;
+    if (count <= 0) return;
+    const itemData = getItemById(name);
+    if (!itemData) return;
+
+    if (itemData.nonCombat) return;
+    if (
+      itemData.cat === 'potions' ||
+      (itemData.cat === 'pokeballs' &&
+        (battleStore.uiConfig ? battleStore.uiConfig.allowCatch : true))
+    ) {
+      items.push({
+        ...itemData,
         id: requireItemId(itemData.id),
         qty: count,
         desc: itemData.desc ?? '',
         sprite: itemData.sprite ?? '',
         tier: (itemData.tier || 'common') as ItemTier
-      })
+      });
     }
-  })
-  
-  return items.toSorted((a, b) => {
-    const isAPotion = a.cat === 'potions'
-    const isBPotion = b.cat === 'potions'
-    if (isAPotion !== isBPotion) return isAPotion ? -1 : 1
-    return a.name.localeCompare(b.name)
-  })
-})
+  });
 
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
+  return items.toSorted((a, b) => {
+    const isAPotion = a.cat === 'potions';
+    const isBPotion = b.cat === 'potions';
+    if (isAPotion !== isBPotion) return isAPotion ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+});
+
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
 
 const canUseItems = computed(() => {
-  const p = battleStore.state?.player
-  if (!p) return false
-  
-  if (battleStore.isProcessing || battleStore.isIntroAnimating) return false
-  if (battleStore.currentSubState !== 'WAIT_INPUT') return false
-  
+  const p = battleStore.state?.player;
+  if (!p) return false;
+
+  if (battleStore.isProcessing || battleStore.isIntroAnimating) return false;
+  if (battleStore.currentSubState !== 'WAIT_INPUT') return false;
+
   if (isPokemonLocked(p)) {
-    return false
+    return false;
   }
-  
-  return true
-})
+
+  return true;
+});
 
 const handleUseItem = (item: BattleItem) => {
-  if (battleStore.isProcessing || battleStore.isIntroAnimating) return
-  if (!canUseItems.value) return
+  if (battleStore.isProcessing || battleStore.isIntroAnimating) return;
+  if (!canUseItems.value) return;
 
-  const dbItem = getItemById(item.id)
-  if (!dbItem) return
+  const dbItem = getItemById(item.id);
+  if (!dbItem) return;
 
   // 1. Pokéballs: Direct usage
   if (dbItem.cat === 'pokeballs') {
-    battleStore.useItemInBattle(dbItem.id)
-    return
+    battleStore.useItemInBattle(dbItem.id);
+    return;
   }
 
   // 2. Target Selection Items: Search for valid targets
-  const validTargets = (gameStore.state.team || []).filter(p => isValidTarget(dbItem.id, p))
-  
+  const validTargets = (gameStore.state.team || []).filter((p) => isValidTarget(dbItem.id, p));
+
   if (validTargets.length === 0) {
-    uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒')
-    return
+    uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒');
+    return;
   }
 
   // 3. Open target selection modal
   modalStore.open('PokemonSelection', {
     title: `USAR ${dbItem.name?.toUpperCase()}`,
-    isBattleSwitch: false, 
+    isBattleSwitch: false,
     includeTeam: true,
     autoConfirm: true,
     allowDead: dbItem.id.toLowerCase().includes('revive'),
-    allowedIds: validTargets.map(p => p.uid),
+    allowedIds: validTargets.map((p) => p.uid),
     activePokemonUid: battleStore.isBattleActive ? battleStore.player?.uid : null,
     onConfirm: (selected: unknown) => {
-      const selectedPokes = selected as Pokemon[]
+      const selectedPokes = selected as Pokemon[];
       if (selectedPokes && selectedPokes.length > 0) {
-        const index = (gameStore.state.team || []).findIndex(p => p.uid === selectedPokes[0]!.uid)
+        const index = (gameStore.state.team || []).findIndex(
+          (p) => p.uid === selectedPokes[0]!.uid
+        );
         if (index !== -1) {
-          battleStore.useItemInBattle(dbItem.id, index)
+          battleStore.useItemInBattle(dbItem.id, index);
         }
       }
     }
-  })
-}
+  });
+};
 
 const getTierColor = (t?: string) => {
-  if (t === 'common') return '#94a3b8'
-  if (t === 'rare') return 'var(--blue)'
-  if (t === 'epic') return 'var(--purple)'
-  if (t === 'legend') return 'var(--yellow)'
-  return '#94a3b8'
-}
+  if (t === 'common') return '#94a3b8';
+  if (t === 'rare') return 'var(--blue)';
+  if (t === 'epic') return 'var(--purple)';
+  if (t === 'legend') return 'var(--yellow)';
+  return '#94a3b8';
+};
 </script>
 
 <template>
-  <div 
-    class="battle-quick-bag premium-frame"
-  >
+  <div class="battle-quick-bag premium-frame">
     <div class="quick-bag-grid">
       <div
         v-for="item in battleItems"
         :id="`battle-item-${item.id}`"
         :key="item.id"
-        :class="['quick-item-card', 'tier-' + (item.tier || 'common'), { 'is-disabled': !canUseItems }]"
+        :class="[
+          'quick-item-card',
+          'tier-' + (item.tier || 'common'),
+          { 'is-disabled': !canUseItems }
+        ]"
         :data-item-id="item.id"
         :style="{ '--tier-color': getTierColor(item.tier) }"
+        role="button"
+        tabindex="0"
         @click.stop="handleUseItem(item)"
       >
-        <PVTooltip
-          :title="item.name"
-          :description="item.desc"
-          position="left"
-        >
+        <PVTooltip :title="item.name" :description="item.desc" position="left">
           <div class="card-inner">
             <div class="item-bg-glow" />
             <div class="item-sprite-wrap">
-              <img 
-                :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)" 
+              <img
+                :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
                 class="item-sprite"
                 :alt="item.name"
                 width="32"
                 height="32"
-              >
+              />
             </div>
-            <div class="item-qty-badge">
-              x{{ item.qty }}
-            </div>
+            <div class="item-qty-badge">x{{ item.qty }}</div>
           </div>
         </PVTooltip>
       </div>
 
-      <div
-        v-if="battleItems.length === 0"
-        class="empty-bag-overlay"
-      >
+      <div v-if="battleItems.length === 0" class="empty-bag-overlay">
         <span class="emoji empty-icon">🎒</span>
         <span class="empty-text">SIN OBJETOS</span>
       </div>
@@ -175,7 +175,7 @@ const getTierColor = (t?: string) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .battle-quick-bag {
   @include gpu-layer;
@@ -198,7 +198,10 @@ const getTierColor = (t?: string) => {
   position: relative;
   display: grid;
   gap: $spacing-sm;
-  grid-template-columns: repeat(auto-fill, 76px); // Rellena con más columnas de 76px si el espacio lo permite
+  grid-template-columns: repeat(
+    auto-fill,
+    76px
+  ); // Rellena con más columnas de 76px si el espacio lo permite
   width: 100%;
   min-height: 100%;
   padding: 12px 10px 10px;
@@ -212,7 +215,7 @@ const getTierColor = (t?: string) => {
   z-index: calc(var(--z-base) + 1);
   display: flex;
   justify-content: center;
-  align-items: center; 
+  align-items: center;
   padding: 0;
   border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: $radius-xl;
@@ -245,7 +248,7 @@ const getTierColor = (t?: string) => {
   align-items: center;
   width: 100%;
   height: 100%;
-  
+
   .item-bg-glow {
     position: absolute;
     z-index: var(--z-base);
@@ -265,17 +268,15 @@ const getTierColor = (t?: string) => {
   width: 40px;
   height: 40px;
   transform: Translatey(-8px); // Subir un poco más el sprite
-  
+
   .item-sprite {
     @include sprite-render;
 
     position: absolute;
-    min-width: 60px; 
+    min-width: 60px;
     min-height: 60px;
     will-change: transform, filter, opacity;
-    filter: 
-      Drop-Shadow(0 4px 8px Rgb(0 0 0 / 50%))
-      Brightness(1.1); 
+    filter: Drop-Shadow(0 4px 8px Rgb(0 0 0 / 50%)) Brightness(1.1);
     pointer-events: none;
   }
 }
@@ -289,10 +290,10 @@ const getTierColor = (t?: string) => {
   bottom: -6px; // Aire por debajo del contenedor
   left: 50%;
   z-index: var(--z-low);
-  width: max-content; 
+  width: max-content;
   padding: 1px 6px;
   border: 1px solid var(--yellow);
-  border-radius: $radius-sm; 
+  border-radius: $radius-sm;
   background: Rgb(0 0 0 / 85%);
   color: var(--white);
   font-size: var(--font-8);
@@ -310,8 +311,14 @@ const getTierColor = (t?: string) => {
   opacity: 0.2;
   inset: 0;
   pointer-events: none;
-  
-  .empty-icon { font-size: var(--font-24); margin-bottom: 4px; }
-  .empty-text { @include pixelated; font-size: var(--font-8); }
+
+  .empty-icon {
+    font-size: var(--font-24);
+    margin-bottom: 4px;
+  }
+  .empty-text {
+    @include pixelated;
+    font-size: var(--font-8);
+  }
 }
 </style>

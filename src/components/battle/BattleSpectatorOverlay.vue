@@ -1,30 +1,27 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useLivePvPStore } from '@/stores/livePvP'
+import { computed } from 'vue';
+import { useLivePvPStore } from '@/stores/livePvP';
 
 interface Props {
-  viewerCount?: number
+  viewerCount?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   viewerCount: 1
-})
+});
 
-const livePvP = useLivePvPStore()
-const phase = computed(() => livePvP.battleState.phase)
+const livePvP = useLivePvPStore();
+const phase = computed(() => livePvP.battleState.phase);
 
 const statusText = computed(() => {
-  if (phase.value === 'faint_switch') return '¡Esperando cambio tras debilitamiento!'
-  if (phase.value === 'resolving') return 'Resolviendo turno en tiempo real...'
-  return 'Esperando elecciones de los entrenadores...'
-})
+  if (phase.value === 'faint_switch') return '¡Esperando cambio tras debilitamiento!';
+  if (phase.value === 'resolving') return 'Resolviendo turno en tiempo real...';
+  return 'Esperando elecciones de los entrenadores...';
+});
 </script>
 
 <template>
-  <div
-    id="battle-spectator-overlay"
-    class="spectator-overlay"
-  >
+  <div id="battle-spectator-overlay" class="spectator-overlay">
     <div class="spectator-badge-container">
       <div class="live-indicator">
         <span class="pulse-dot" />
@@ -43,7 +40,7 @@ const statusText = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .spectator-overlay {
   display: flex;

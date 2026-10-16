@@ -1,71 +1,67 @@
 <script setup lang="ts">
-import type { CSSProperties } from 'vue'
-import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
+import type { CSSProperties } from 'vue';
+import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 
 interface Props {
-  showGuides?: boolean
-  worldStyles: CSSProperties
+  showGuides?: boolean;
+  worldStyles: CSSProperties;
 }
 
 withDefaults(defineProps<Props>(), {
   showGuides: false
-})
+});
 
-const { 
-  ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY, 
-  SAFE_ZONE_WIDTH, SAFE_ZONE_HEIGHT, 
-  SAFE_ZONE_X, SAFE_ZONE_Y 
-} = WORLD_CONSTANTS
+const {
+  ENTITY_SIZE_PLAYER,
+  ENTITY_SIZE_ENEMY,
+  SAFE_ZONE_WIDTH,
+  SAFE_ZONE_HEIGHT,
+  SAFE_ZONE_X,
+  SAFE_ZONE_Y
+} = WORLD_CONSTANTS;
 
-const p1Anchor = getCombatantPosition('player')
-const p2Anchor = getCombatantPosition('enemy')
+const p1Anchor = getCombatantPosition('player');
+const p2Anchor = getCombatantPosition('enemy');
 </script>
 
 <template>
-  <div
-    class="map-virtual-world"
-    :class="{ 'debug-mode': showGuides }"
-    :style="worldStyles"
-  >
+  <div class="map-virtual-world" :class="{ 'debug-mode': showGuides }" :style="worldStyles">
     <!-- Standard Content Layer -->
     <div class="virtual-content">
       <slot />
     </div>
 
     <!-- Centralized Debug Guides Layer -->
-    <div
-      v-if="showGuides"
-      class="camera-debug-guides"
-    >
+    <div v-if="showGuides" class="camera-debug-guides">
       <div class="map-border" />
-      <div 
-        class="safe-zone-box" 
+      <div
+        class="safe-zone-box"
         :data-label="`SAFE ZONE (${SAFE_ZONE_WIDTH}x${SAFE_ZONE_HEIGHT}u)`"
-        :style="{ 
-          left: SAFE_ZONE_X + 'px', 
-          top: SAFE_ZONE_Y + 'px', 
-          width: SAFE_ZONE_WIDTH + 'px', 
-          height: SAFE_ZONE_HEIGHT + 'px' 
+        :style="{
+          left: SAFE_ZONE_X + 'px',
+          top: SAFE_ZONE_Y + 'px',
+          width: SAFE_ZONE_WIDTH + 'px',
+          height: SAFE_ZONE_HEIGHT + 'px'
         }"
       />
 
       <!-- Entity Anchors -->
-      <div 
-        class="entity-anchor p1" 
-        :style="{ 
-          left: p1Anchor.x + 'px', 
-          top: p1Anchor.y + 'px', 
-          width: ENTITY_SIZE_PLAYER + 'px', 
-          height: ENTITY_SIZE_PLAYER + 'px' 
+      <div
+        class="entity-anchor p1"
+        :style="{
+          left: p1Anchor.x + 'px',
+          top: p1Anchor.y + 'px',
+          width: ENTITY_SIZE_PLAYER + 'px',
+          height: ENTITY_SIZE_PLAYER + 'px'
         }"
       />
-      <div 
-        class="entity-anchor p2" 
-        :style="{ 
-          left: p2Anchor.x + 'px', 
-          top: p2Anchor.y + 'px', 
-          width: ENTITY_SIZE_ENEMY + 'px', 
-          height: ENTITY_SIZE_ENEMY + 'px' 
+      <div
+        class="entity-anchor p2"
+        :style="{
+          left: p2Anchor.x + 'px',
+          top: p2Anchor.y + 'px',
+          width: ENTITY_SIZE_ENEMY + 'px',
+          height: ENTITY_SIZE_ENEMY + 'px'
         }"
       />
     </div>
@@ -73,7 +69,7 @@ const p2Anchor = getCombatantPosition('enemy')
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .map-virtual-world {
   @include pixelated;
@@ -86,8 +82,8 @@ const p2Anchor = getCombatantPosition('enemy')
   pointer-events: none;
 
   &.debug-mode {
-    background-color: rgb(var(--red-rgb, 255, 69, 58), 0.05);
-    outline: 4px solid rgb(255 0 0 / 30%);
+    background-color: Rgb(var(--red-rgb, 255, 69, 58), 0.05);
+    outline: 4px solid Rgb(255 0 0 / 30%);
   }
 }
 

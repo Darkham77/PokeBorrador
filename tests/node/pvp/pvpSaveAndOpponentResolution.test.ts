@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { computed } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { useGameStore } from '@/stores/game';
@@ -29,7 +29,7 @@ describe('PvP Save Validation & Opponent Resolution (Tier 1)', () => {
   describe('1. Boolean Coercion and Save Validation', () => {
     it('should serialize passiveTeamActive as a strict boolean when assigned numeric 1 or boolean true', () => {
       const gs = useGameStore();
-      
+
       // Simulate SQLite returning numeric 1
       (gs.state as unknown as Record<string, unknown>).passiveTeamActive = 1;
 
@@ -82,13 +82,16 @@ describe('PvP Save Validation & Opponent Resolution (Tier 1)', () => {
     });
 
     it('should use rival dialogue selection in useBattleTrainerVisuals for PvP when quote is not predefined', () => {
-      const battleRef = computed(() => ({
-        isPvP: true,
-        isTrainer: true,
-        trainerName: 'Darkham',
-        trainerSprite: 'cazabichos' as const,
-        trainerGender: 'h' as const
-      } as BattleState));
+      const battleRef = computed(
+        () =>
+          ({
+            isPvP: true,
+            isTrainer: true,
+            trainerName: 'Darkham',
+            trainerSprite: 'cazabichos' as const,
+            trainerGender: 'h' as const
+          }) as BattleState
+      );
 
       const { trainerDialogText } = useBattleTrainerVisuals(battleRef);
       expect(typeof trainerDialogText.value).toBe('string');

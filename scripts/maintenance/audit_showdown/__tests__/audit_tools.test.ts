@@ -30,11 +30,17 @@ test('Audit Tools Integrity Suite - Zero False Positives', () => {
   assert.ok(Array.isArray(genRes.hardcodedGenFiles));
 
   // 3. Audit Catch Rate Math
-  const catchRes = auditCatchRateMath('src/logic/battle/battleCatchMath.ts', 'external/pokemon-showdown-code/sim');
+  const catchRes = auditCatchRateMath(
+    'src/logic/battle/battleCatchMath.ts',
+    'external/pokemon-showdown-code/sim'
+  );
   assert.ok(Array.isArray(catchRes.catchMathDiscrepancies));
 
   // 4. Audit FSM Event Parity
-  const fsmEventRes = auditFSMEventParity('src/logic/battle/showdown.worker.ts', 'src/stores/battle.ts');
+  const fsmEventRes = auditFSMEventParity(
+    'src/logic/battle/showdown.worker.ts',
+    'src/stores/battle.ts'
+  );
   assert.ok(Array.isArray(fsmEventRes.unhandledWorkerEvents));
 
   // 5. Audit FSM Substate Parity
@@ -58,15 +64,24 @@ test('Audit Tools Integrity Suite - Zero False Positives', () => {
   assert.ok(Array.isArray(execRes.duplicatedExecutorFiles));
 
   // 10. Audit Showdown Ability Data
-  const abilityRes = auditShowdownAbilityData('external/pokemon-showdown-code/data/abilities.ts', 'src/logic/battle/actions');
+  const abilityRes = auditShowdownAbilityData(
+    'external/pokemon-showdown-code/data/abilities.ts',
+    'src/logic/battle/actions'
+  );
   assert.ok(Array.isArray(abilityRes.unhandledAbilities));
 
   // 11. Audit Showdown Item Data
-  const itemRes = auditShowdownItemData('external/pokemon-showdown-code/data/items.ts', 'src/logic/battle');
+  const itemRes = auditShowdownItemData(
+    'external/pokemon-showdown-code/data/items.ts',
+    'src/logic/battle'
+  );
   assert.ok(Array.isArray(itemRes.unhandledBattleItems));
 
   // 12. Audit Showdown Move Mechanics
-  const moveRes = auditShowdownMoveMechanics('external/pokemon-showdown-code/data/moves.ts', 'src/logic/battle/showdownBridgeCore.ts');
+  const moveRes = auditShowdownMoveMechanics(
+    'external/pokemon-showdown-code/data/moves.ts',
+    'src/logic/battle/showdownBridgeCore.ts'
+  );
   assert.ok(Array.isArray(moveRes.missingMoveExecutors));
 
   // 13. Audit Showdown Status Null

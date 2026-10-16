@@ -15,7 +15,10 @@ export function sanitizeNumericFields(sanitizedData: SaveDataDto, issues: string
   }
 }
 
-export function sanitizeInventoryQuantities(inventory: Record<string, number> | undefined, issues: string[]): void {
+export function sanitizeInventoryQuantities(
+  inventory: Record<string, number> | undefined, // open-record: Unsanitized raw save inventory payload with dynamic item IDs
+  issues: string[]
+): void {
   if (!inventory) return;
   for (const item of Object.keys(inventory)) {
     const qty = inventory[item];
@@ -49,9 +52,9 @@ export function filterDuplicateUids(sanitizedData: SaveDataDto): void {
 export function parseMarketSoldSeenIds(rawIds: unknown): string[] {
   if (!Array.isArray(rawIds)) return [];
   const validIds = (rawIds as (string | number)[])
-    .map(id => (id !== null && id !== undefined ? String(id).trim() : ''))
-    .filter(id => id.length > 0 && !id.includes('invalid'));
-  return [...new Set(validIds)];
+    .map((id) => (id !== null && id !== undefined ? String(id).trim() : ''))
+    .filter((id) => id.length > 0 && !id.includes('invalid'));
+  return Array.from(new Set(validIds));
 }
 
 export function sanitizeMarketSoldIds(data: SaveDataDto): void {
@@ -59,4 +62,3 @@ export function sanitizeMarketSoldIds(data: SaveDataDto): void {
     data.marketSoldSeenIds = parseMarketSoldSeenIds(data.marketSoldSeenIds);
   }
 }
-

@@ -22,13 +22,14 @@ const uiStore = useUIStore();
 const gameStore = useGameStore();
 
 const isCriador = computed(() => gameStore.state.playerClass === 'criador');
-const isLevelAdequate = computed(() => (gameStore.state.classLevel || 1) >= CRIADOR_CLASS_MIN_LEVEL);
+const isLevelAdequate = computed(
+  () => (gameStore.state.classLevel || 1) >= CRIADOR_CLASS_MIN_LEVEL
+);
 
 const getPokemonName = (id: string) => {
-  const specId = requirePokemonSpeciesId(id)
-  return POKEMON_DB[specId]?.name || 'Huevo'
-}
-
+  const specId = requirePokemonSpeciesId(id);
+  return POKEMON_DB[specId]?.name || 'Huevo';
+};
 
 // Cooldown countdown for scanner (Available 1 time per day)
 const cooldownText = ref('');
@@ -63,14 +64,18 @@ const checkCooldown = () => {
 
   cooldownText.value = `ESCANER IV EN COOLDOWN: ${hours}:${minutes}:${seconds}`;
 
-const GSAP_COOLDOWN_TICKER_DELAY_SEC = 1;
+  const GSAP_COOLDOWN_TICKER_DELAY_SEC = 1;
 
   // Schedule next update using GSAP delayedCall recursively
   cooldownTicker = gsap.delayedCall(GSAP_COOLDOWN_TICKER_DELAY_SEC, checkCooldown);
 };
 
 watch(
-  [() => gameStore.state.playerClass, () => gameStore.state.classLevel, () => gameStore.state.classData?.lastEggScanDate],
+  [
+    () => gameStore.state.playerClass,
+    () => gameStore.state.classLevel,
+    () => gameStore.state.classData?.lastEggScanDate
+  ],
   () => {
     if (cooldownTicker) {
       cooldownTicker.kill();
@@ -87,19 +92,20 @@ onUnmounted(() => {
 
 const handleClaim = (egg: DaycareEgg) => {
   // Early slot guard — show toast immediately without opening any dialog
-  const regularEggs = (gameStore.state.eggs || []).filter(e => !e.isNpc);
+  const regularEggs = (gameStore.state.eggs || []).filter((e) => !e.isNpc);
   if (regularEggs.length >= MAX_INVENTORY_EGGS_LIMIT) {
     uiStore.notify('Tu incubadora está llena. Puedes llevar un máximo de 6 huevos.', '🥚');
     return;
   }
 
-  const cost = egg.inherited_ivs?._cost as number || 0;
+  const cost = (egg.inherited_ivs?._cost as number) || 0;
   const isScanned = !!egg.inherited_ivs?._scanned;
   const displayName = isScanned ? `huevo de ${getPokemonName(egg.species)}` : 'Huevo Pokémon';
-  
+
   const lastScan = gameStore.state.classData?.lastEggScanDate;
   const todayStr = Temporal.Now.instant().toString().split('T')[0] || '';
-  const canScan = isCriador.value && isLevelAdequate.value && (!lastScan || !lastScan.startsWith(todayStr));
+  const canScan =
+    isCriador.value && isLevelAdequate.value && (!lastScan || !lastScan.startsWith(todayStr));
 
   if (canScan && !isScanned) {
     uiStore.openConfirm({
@@ -145,8 +151,6 @@ const handleDeleteEgg = (egg: DaycareEgg) => {
     }
   });
 };
-
-
 </script>
 
 <template>
@@ -155,42 +159,29 @@ const handleDeleteEgg = (egg: DaycareEgg) => {
       <div class="info">
         <h3>Almacén de Huevos</h3>
         <p>Huevos esperando a ser recogidos</p>
-        <div 
-          v-if="cooldownText" 
-          class="scanner-cooldown-text"
-        >
+        <div v-if="cooldownText" class="scanner-cooldown-text">
           {{ cooldownText }}
         </div>
       </div>
-      <div
-        class="count-badge"
-        :class="{ empty: breedingStore.warehouseEggs.length === 0 }"
-      >
+      <div class="count-badge" :class="{ empty: breedingStore.warehouseEggs.length === 0 }">
         {{ breedingStore.warehouseEggs.length }} / {{ MAX_WAREHOUSE_EGGS_CAPACITY }}
       </div>
     </header>
 
-    <div
-      v-if="breedingStore.warehouseEggs.length === 0"
-      class="empty-state"
-    >
+    <div v-if="breedingStore.warehouseEggs.length === 0" class="empty-state">
       <div class="icon">
         <img
           :src="getAssetUrl(ASSET_TYPES.POKEMON, 'egg')"
           alt="Huevo"
           class="egg-sprite-empty"
-        
           width="32"
           height="32"
-        >
+        />
       </div>
       <p>El almacén está vacío. ¡Put a criar a tus Pokémon!</p>
     </div>
 
-    <div
-      v-else
-      class="egg-grid"
-    >
+    <div v-else class="egg-grid">
       <EggWarehouseCard
         v-for="egg in breedingStore.warehouseEggs"
         :key="egg.id"

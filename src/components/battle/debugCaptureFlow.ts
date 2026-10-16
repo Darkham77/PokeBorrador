@@ -31,9 +31,9 @@ async function playThrowAndHit(
   isCritical: boolean
 ): Promise<void> {
   if (isCritical) {
-    audio.play('criticalThrow');
+    void audio.play('criticalThrow');
   }
-  audio.play('ballHit');
+  void audio.play('ballHit');
 
   if (anims?.handleCatchRequest) {
     await anims.handleCatchRequest({ side: 'enemy', ballId, isCritical });
@@ -60,7 +60,7 @@ async function playShakes(
   shakeCount: number
 ): Promise<void> {
   for (let i = 0; i < shakeCount; i++) {
-    audio.play('wobble');
+    void audio.play('wobble');
     if (anims?.handleShakeRequest) {
       await anims.handleShakeRequest({ side: 'enemy' });
     } else {
@@ -111,7 +111,7 @@ export async function executeDebugCaptureFlow(options: DebugCaptureOptions): Pro
   const shakeCount = isCritical ? 1 : DEBUG_CATCH_SHAKE_COUNT;
   await playShakes(audio, anims, shakeCount);
 
-  audio.play('caught');
+  void audio.play('caught');
   const successMessage = isCritical
     ? `¡Ya está! ¡${enemy.name} atrapado con captura crítica!`
     : `¡Ya está! ¡${enemy.name} atrapado!`;

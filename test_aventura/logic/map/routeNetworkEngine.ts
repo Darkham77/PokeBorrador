@@ -16,17 +16,8 @@
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 import { stampPortDockPier } from './portDockPierEngine.ts';
-import type {
-  POINode,
-  RouteEdge,
-  RouteWaypoint,
-  RouteType
-} from '../../types/map/poiTypes.ts';
-import {
-  computeOceanGrid,
-  findPathAStar,
-  getBestGateway
-} from './routePathfinding.ts';
+import type { POINode, RouteEdge, RouteWaypoint, RouteType } from '../../types/map/poiTypes.ts';
+import { computeOceanGrid, findPathAStar, getBestGateway } from './routePathfinding.ts';
 export { computeOceanGrid };
 import { buildRouteChain } from './routeChainTopology.ts';
 export { buildRouteChain };
@@ -98,18 +89,29 @@ function spliceRouteGatesIntoChain(
       splicedChain.splice(
         bestEdgeIdx,
         1,
-        { fromIndex: targetEdge.fromIndex, toIndex: i, distance: Math.hypot(nodes[targetEdge.fromIndex]!.gridX - gateNode.gridX, nodes[targetEdge.fromIndex]!.gridY - gateNode.gridY) },
-        { fromIndex: i, toIndex: targetEdge.toIndex, distance: Math.hypot(gateNode.gridX - nodes[targetEdge.toIndex]!.gridX, gateNode.gridY - nodes[targetEdge.toIndex]!.gridY) }
+        {
+          fromIndex: targetEdge.fromIndex,
+          toIndex: i,
+          distance: Math.hypot(
+            nodes[targetEdge.fromIndex]!.gridX - gateNode.gridX,
+            nodes[targetEdge.fromIndex]!.gridY - gateNode.gridY
+          )
+        },
+        {
+          fromIndex: i,
+          toIndex: targetEdge.toIndex,
+          distance: Math.hypot(
+            gateNode.gridX - nodes[targetEdge.toIndex]!.gridX,
+            gateNode.gridY - nodes[targetEdge.toIndex]!.gridY
+          )
+        }
       );
       handledStubs.add(i);
     }
   }
 }
 
-function buildGraphEdgesWithGates(
-  nodes: readonly POINode[],
-  maxDist: number
-): GraphEdgeWithMeta[] {
+function buildGraphEdgesWithGates(nodes: readonly POINode[], maxDist: number): GraphEdgeWithMeta[] {
   const graphEdges = buildRouteChain(nodes, maxDist);
   const allEdges: GraphEdgeWithMeta[] = [];
   const splicedChain = [...graphEdges.chain];
@@ -119,12 +121,21 @@ function buildGraphEdgesWithGates(
 
   for (let i = 0; i < splicedChain.length; i++) {
     const e = splicedChain[i]!;
-    allEdges.push({ fromIndex: e.fromIndex, toIndex: e.toIndex, routeNumber: i + 1, edgeRouteType: 'road' });
+    allEdges.push({
+      fromIndex: e.fromIndex,
+      toIndex: e.toIndex,
+      routeNumber: i + 1,
+      edgeRouteType: 'road'
+    });
   }
 
   for (const stub of graphEdges.stubs) {
     if (!handledStubs.has(stub.secondaryIndex)) {
-      allEdges.push({ fromIndex: stub.nearestPrimaryIndex, toIndex: stub.secondaryIndex, edgeRouteType: 'trail' });
+      allEdges.push({
+        fromIndex: stub.nearestPrimaryIndex,
+        toIndex: stub.secondaryIndex,
+        edgeRouteType: 'trail'
+      });
     }
   }
 
@@ -183,7 +194,14 @@ interface CorridorNeighborParams {
   H: number;
 }
 
-function stampCorridorWidthNeighbor({ pt, isHorizontal, continentMap, pathGrid, W, H }: CorridorNeighborParams): void {
+function stampCorridorWidthNeighbor({
+  pt,
+  isHorizontal,
+  continentMap,
+  pathGrid,
+  W,
+  H
+}: CorridorNeighborParams): void {
   if (isHorizontal) {
     if (pt.y + 1 < H && continentMap.cells[pt.y + 1]![pt.x]!.terrain !== 'water') {
       pathGrid[pt.y + 1]![pt.x] = true;
@@ -252,8 +270,14 @@ function traceAllRouteEdges({
     id: n.id,
     x1: n.type === 'dungeon_forest' ? n.gridX : n.gridX + 1,
     y1: n.type === 'dungeon_forest' ? n.gridY : n.gridY + 1,
-    x2: n.type === 'dungeon_forest' ? n.gridX + n.footprint.width - 1 : n.gridX + n.footprint.width - 2,
-    y2: n.type === 'dungeon_forest' ? n.gridY + n.footprint.height - 1 : n.gridY + n.footprint.height - 2
+    x2:
+      n.type === 'dungeon_forest'
+        ? n.gridX + n.footprint.width - 1
+        : n.gridX + n.footprint.width - 2,
+    y2:
+      n.type === 'dungeon_forest'
+        ? n.gridY + n.footprint.height - 1
+        : n.gridY + n.footprint.height - 2
   }));
 
   for (const ge of allEdges) {
@@ -304,7 +328,9 @@ function traceAllRouteEdges({
         nodeA.type === 'port_dock' ||
         nodeB.type === 'port_dock';
 
-      const maxBridgeSpan = connectsMaritimePOI ? MARITIME_POI_BRIDGE_SPAN : MAX_CANONICAL_BRIDGE_SPAN;
+      const maxBridgeSpan = connectsMaritimePOI
+        ? MARITIME_POI_BRIDGE_SPAN
+        : MAX_CANONICAL_BRIDGE_SPAN;
       const isSurfRoute = maxWaterRun > maxBridgeSpan;
 
       let routeType: RouteType = ge.edgeRouteType;
@@ -364,7 +390,7 @@ export function generateRouteNetwork(
   const W = continentMap.width;
   const H = continentMap.height;
   const allowBridges = options?.allowBridges ?? true;
-  const maxDist = options?.maxConnectionDistance ?? (Math.max(W, H) * DEFAULT_CONNECTION_DIST_FACTOR);
+  const maxDist = options?.maxConnectionDistance ?? Math.max(W, H) * DEFAULT_CONNECTION_DIST_FACTOR;
 
   const pathGrid: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
   const bridgeGrid: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));

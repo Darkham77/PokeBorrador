@@ -1,4 +1,4 @@
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/mixins' as *;
 
 // src/styles/components/_modals.scss
 @use '../core/tools' as *;
@@ -7,7 +7,8 @@
 // Use BaseModal component for all standard modals
 
 /* Shared Pixel Icons */
-.pixel-icon-money, .pixel-icon-coin {
+.pixel-icon-money,
+.pixel-icon-coin {
   @include pixelated;
   @include pixelated;
 
@@ -18,7 +19,7 @@
   height: 20px;
   border-radius: $radius-sm;
   font-size: var(--font-10);
-  
+
   &.secondary {
     border: 1px solid Rgb(255 214 10 / 20%);
     background: Rgb(255 214 10 / 10%);
@@ -52,10 +53,14 @@
   max-height: 90dvh;
   border: 1px solid Rgb(255 255 255 / 10%);
   border-radius: $radius-4xl;
-  background: linear-gradient(180deg, var(--bg-modal-top, #161a2e) 0%, var(--bg-modal-bottom, #0a0c14) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--bg-modal-top, #161a2e) 0%,
+    var(--bg-modal-bottom, #0a0c14) 100%
+  );
   overflow: hidden;
   box-shadow: var(--shadow-2xl);
-  
+
   @media (width <= 600px) {
     width: 95dvw;
     height: 95dvh;

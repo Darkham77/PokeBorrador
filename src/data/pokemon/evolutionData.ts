@@ -31,16 +31,22 @@ function isTradeEvolutionSpeciesId(id: string): id is TradeEvolutionSpeciesId {
 export function getLevelEvolution(id: string): { level: number; to: PokemonSpeciesId } | null {
   if (!isLevelEvolutionSpeciesId(id)) return null;
   const evolution = EVOLUTION_TABLE[id as keyof typeof EVOLUTION_TABLE]; // domain-ok: Open dynamic text or non-domain string payload
-  if (!evolution || Array.isArray(evolution) || !('level' in evolution) || typeof evolution.level !== 'number') {
+  if (
+    !evolution ||
+    Array.isArray(evolution) ||
+    !('level' in evolution) ||
+    typeof evolution.level !== 'number'
+  ) {
     return null;
   }
   return {
     level: evolution.level,
-    to: requirePokemonSpeciesId(evolution.to),
+    to: requirePokemonSpeciesId(evolution.to)
   };
 }
 
-export function getTradeEvolution(id: string): PokemonSpeciesId | null { // result-ok: Operation result wrapper payload
+export function getTradeEvolution(id: string): PokemonSpeciesId | null {
+  // result-ok: Operation result wrapper payload
   if (!isTradeEvolutionSpeciesId(id)) return null;
   return requirePokemonSpeciesId(TRADE_EVOLUTIONS[id as keyof typeof TRADE_EVOLUTIONS]); // domain-ok: Open dynamic text or non-domain string payload
 }
@@ -63,9 +69,16 @@ export function getStoneEvolution(id: string): { stone: string; to: PokemonSpeci
   return null;
 }
 
-function populateEvolutionTablePreEvolutions(map: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>>): void {
+function populateEvolutionTablePreEvolutions(
+  map: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>>
+): void {
   for (const [from, evo] of Object.entries(EVOLUTION_TABLE)) {
-    if (evo && typeof evo === 'object' && 'to' in evo && typeof (evo as { to: string }).to === 'string') {
+    if (
+      evo &&
+      typeof evo === 'object' &&
+      'to' in evo &&
+      typeof (evo as { to: string }).to === 'string'
+    ) {
       if (isPokemonSpeciesId(from) && isPokemonSpeciesId((evo as { to: string }).to)) {
         map[requirePokemonSpeciesId((evo as { to: string }).to)] = requirePokemonSpeciesId(from);
       }
@@ -73,18 +86,28 @@ function populateEvolutionTablePreEvolutions(map: Partial<Record<PokemonSpeciesI
   }
 }
 
-function populateStoneEvolutionPreEvolutions(map: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>>): void {
+function populateStoneEvolutionPreEvolutions(
+  map: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>>
+): void {
   for (const [fromKey, evo] of Object.entries(STONE_EVOLUTIONS)) {
-    if (evo && typeof evo === 'object' && 'to' in evo && typeof (evo as { to: string }).to === 'string') {
+    if (
+      evo &&
+      typeof evo === 'object' &&
+      'to' in evo &&
+      typeof (evo as { to: string }).to === 'string'
+    ) {
       const baseSpecies = fromKey.includes('_') ? (fromKey.split('_')[0] ?? fromKey) : fromKey;
       if (isPokemonSpeciesId(baseSpecies) && isPokemonSpeciesId((evo as { to: string }).to)) {
-        map[requirePokemonSpeciesId((evo as { to: string }).to)] = requirePokemonSpeciesId(baseSpecies);
+        map[requirePokemonSpeciesId((evo as { to: string }).to)] =
+          requirePokemonSpeciesId(baseSpecies);
       }
     }
   }
 }
 
-function populateTradeEvolutionPreEvolutions(map: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>>): void {
+function populateTradeEvolutionPreEvolutions(
+  map: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>>
+): void {
   for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {
     if (typeof to === 'string' && isPokemonSpeciesId(from) && isPokemonSpeciesId(to)) {
       map[requirePokemonSpeciesId(to)] = requirePokemonSpeciesId(from);
@@ -100,8 +123,10 @@ function buildPreEvolutionMap(): Partial<Record<PokemonSpeciesId, PokemonSpecies
   return map;
 }
 
-const PRE_EVOLUTION_MAP: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> = Object.freeze(buildPreEvolutionMap());
+const PRE_EVOLUTION_MAP: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> =
+  Object.freeze(buildPreEvolutionMap());
 
-export function getPreEvolution(speciesId: PokemonSpeciesId): PokemonSpeciesId | null { // domain-ok: Open dynamic text or non-domain string payload
+export function getPreEvolution(speciesId: PokemonSpeciesId): PokemonSpeciesId | null {
+  // domain-ok: Open dynamic text or non-domain string payload
   return PRE_EVOLUTION_MAP[speciesId] ?? null;
 }

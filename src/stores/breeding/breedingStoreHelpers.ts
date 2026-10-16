@@ -4,10 +4,7 @@
  * Modular helper functions and calculations for the Daycare / Breeding store.
  */
 
-import {
-  BASE_SHINY_DENOMINATOR,
-  EGG_SCANNER_MIN_CLASS_LEVEL
-} from '@/logic/constants/gameplay.ts';
+import { BASE_SHINY_DENOMINATOR, EGG_SCANNER_MIN_CLASS_LEVEL } from '@/logic/constants/gameplay.ts';
 import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData.ts';
 import { eggFactory } from '@/logic/breeding/eggFactory.ts';
 import {
@@ -56,7 +53,10 @@ export function calculateNextEggTime(
   const interval = (EGG_SPAWN_INTERVAL_MS as Record<number, number>)[compatibilityLevel];
   if (!interval) return null;
 
-  if (!hasValidBreedingVigor(slotA?.pokemon ?? null) || !hasValidBreedingVigor(slotB?.pokemon ?? null)) {
+  if (
+    !hasValidBreedingVigor(slotA?.pokemon ?? null) ||
+    !hasValidBreedingVigor(slotB?.pokemon ?? null)
+  ) {
     return null;
   }
 
@@ -70,7 +70,9 @@ export function calculateNextEggTime(
 // ─── Daycare Load Helpers ─────────────────────────────────────────────────────
 
 function loadWarehouseEggsFromLocalStorage(userId: string): DaycareEgg[] {
-  const stored = safeStorage.getItem(`${LOCAL_STORAGE_KEYS.DAYCARE_WAREHOUSE_EGGS_PREFIX}${userId}`);
+  const stored = safeStorage.getItem(
+    `${LOCAL_STORAGE_KEYS.DAYCARE_WAREHOUSE_EGGS_PREFIX}${userId}`
+  );
   if (!stored) return [];
 
   try {
@@ -85,19 +87,27 @@ export function restoreWarehouseEggs(
   userId: string
 ): DaycareEgg[] {
   if (Array.isArray(persistedWarehouse) && persistedWarehouse.length > 0) {
-    const validEggs = persistedWarehouse.filter((e): e is DaycareEgg => 'isEgg' in e && Boolean(e.isEgg));
-    safeStorage.setItem(`${LOCAL_STORAGE_KEYS.DAYCARE_WAREHOUSE_EGGS_PREFIX}${userId}`, JSON.stringify(validEggs));
+    const validEggs = persistedWarehouse.filter(
+      (e): e is DaycareEgg => 'isEgg' in e && Boolean(e.isEgg)
+    );
+    safeStorage.setItem(
+      `${LOCAL_STORAGE_KEYS.DAYCARE_WAREHOUSE_EGGS_PREFIX}${userId}`,
+      JSON.stringify(validEggs)
+    );
     return validEggs;
   }
 
   return loadWarehouseEggsFromLocalStorage(userId);
 }
 
-function resolveSlotIndex(p: Pokemon, slots: DaycareSlot[]): { slotIndex: number; modified: boolean } {
+function resolveSlotIndex(
+  p: Pokemon,
+  slots: DaycareSlot[]
+): { slotIndex: number; modified: boolean } {
   if (typeof p.daycareSlot === 'number' && p.daycareSlot >= 0) {
     return { slotIndex: p.daycareSlot, modified: false };
   }
-  const emptyIdx = slots.findIndex(s => s.pokemon === null);
+  const emptyIdx = slots.findIndex((s) => s.pokemon === null);
   const slotIndex = emptyIdx !== -1 ? emptyIdx : 0;
   p.daycareSlot = slotIndex;
   return { slotIndex, modified: true };
@@ -149,22 +159,44 @@ function isSpeciesEligibleForBreeding(pokemon: Pokemon): boolean {
   return maxVig > 0 && !isFossil && !isLegendary;
 }
 
-export function validateDaycareDeposit(pokemon: Pokemon, isDebugMode: boolean): DepositValidationResult {
+export function validateDaycareDeposit(
+  pokemon: Pokemon,
+  isDebugMode: boolean
+): DepositValidationResult {
   if (pokemon.hp <= 0) {
-    return { canDeposit: false, reason: 'No puedes depositar un Pokémon debilitado en la Guardería.', icon: '⚠️' };
+    return {
+      canDeposit: false,
+      reason: 'No puedes depositar un Pokémon debilitado en la Guardería.',
+      icon: '⚠️'
+    };
   }
 
   if (!isSpeciesEligibleForBreeding(pokemon)) {
-    return { canDeposit: false, reason: 'Este Pokémon no tiene vigor y no puede reproducirse en la Guardería.', icon: '⚠️' };
+    return {
+      canDeposit: false,
+      reason: 'Este Pokémon no tiene vigor y no puede reproducirse en la Guardería.',
+      icon: '⚠️'
+    };
   }
 
   if (isBabyPokemonSpeciesId(pokemon.id)) {
-    return { canDeposit: false, reason: 'Los Pokémon bebé no pueden reproducirse en la Guardería.', icon: '⚠️' };
+    return {
+      canDeposit: false,
+      reason: 'Los Pokémon bebé no pueden reproducirse en la Guardería.',
+      icon: '⚠️'
+    };
   }
 
-  if (pokemon.isIllegal || !checkPokemonLegality(pokemon, { allowUnreleased: isDebugMode }).isLegal) {
+  if (
+    pokemon.isIllegal ||
+    !checkPokemonLegality(pokemon, { allowUnreleased: isDebugMode }).isLegal
+  ) {
     pokemon.isIllegal = true;
-    return { canDeposit: false, reason: 'No puedes depositar un Pokémon ilegal en la Guardería.', icon: '⚠️' };
+    return {
+      canDeposit: false,
+      reason: 'No puedes depositar un Pokémon ilegal en la Guardería.',
+      icon: '⚠️'
+    };
   }
 
   if (pokemon.onMission || pokemon.onDefense) {
@@ -216,7 +248,10 @@ export function canGenerateEgg(
 
 export function isEggSpeciesEligible(speciesId: PokemonSpeciesId): boolean {
   if (isEnabledPokemonId(speciesId)) return true;
-  if (typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'))) {
+  if (
+    typeof window !== 'undefined' &&
+    Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'))
+  ) {
     return true;
   }
   return false;
@@ -302,7 +337,11 @@ export function validateEggScanEligibility(
     return { canScan: false, reason: 'Solo los Criadores pueden escanear huevos.', icon: '🔒' };
   }
   if (classLevel < EGG_SCANNER_MIN_CLASS_LEVEL) {
-    return { canScan: false, reason: `Necesitas nivel ${EGG_SCANNER_MIN_CLASS_LEVEL} de Criador para usar el escáner.`, icon: '🔒' };
+    return {
+      canScan: false,
+      reason: `Necesitas nivel ${EGG_SCANNER_MIN_CLASS_LEVEL} de Criador para usar el escáner.`,
+      icon: '🔒'
+    };
   }
   const todayStr = Temporal.Now.instant().toString().split('T')[0] || '';
   if (lastEggScanDate && lastEggScanDate.startsWith(todayStr)) {

@@ -17,7 +17,12 @@ if (process.execPath) {
 export function setupTestTeamGenerators(): void {
   registerTeamGeneratorHandler(async (type, payload) => {
     if (type === 'TRAINER') {
-      const opts = payload as { level: number; teamSize: number; allowedSpecies: Iterable<string>; aceSpeciesId?: string };
+      const opts = payload as {
+        level: number;
+        teamSize: number;
+        allowedSpecies: Iterable<string>;
+        aceSpeciesId?: string;
+      };
       return TrainerTeamGenerator.generateTeam({
         level: opts.level,
         teamSize: opts.teamSize,
@@ -25,12 +30,19 @@ export function setupTestTeamGenerators(): void {
         aceSpeciesId: opts.aceSpeciesId as PokemonSpeciesId | undefined
       });
     } else {
-      const opts = payload as { level: number; teamSize: number; aceSpeciesId: string; allowedSpecies?: Iterable<string> };
+      const opts = payload as {
+        level: number;
+        teamSize: number;
+        aceSpeciesId: string;
+        allowedSpecies?: Iterable<string>;
+      };
       return RivalTeamGenerator.generateTeam({
         level: opts.level,
         teamSize: opts.teamSize,
         aceSpeciesId: opts.aceSpeciesId as PokemonSpeciesId,
-        allowedSpecies: opts.allowedSpecies ? new Set(opts.allowedSpecies as PokemonSpeciesId[]) : undefined
+        allowedSpecies: opts.allowedSpecies
+          ? new Set(opts.allowedSpecies as PokemonSpeciesId[])
+          : undefined
       });
     }
   });
@@ -42,7 +54,8 @@ export function setupTestTeamGenerators(): void {
 export function setupTemporalMock(): void {
   if (typeof globalThis.Temporal !== 'undefined') {
     const originalNow = globalThis.Temporal.Now;
-    const timeZoneId = () => (typeof originalNow?.timeZoneId === 'function' ? originalNow.timeZoneId() : 'UTC');
+    const timeZoneId = () =>
+      typeof originalNow?.timeZoneId === 'function' ? originalNow.timeZoneId() : 'UTC';
     const mockedNow = Object.create(originalNow);
     mockedNow.timeZoneId = timeZoneId;
     mockedNow.instant = () => globalThis.Temporal.Instant.fromEpochMilliseconds(Date.now());

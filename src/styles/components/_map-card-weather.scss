@@ -1,9 +1,9 @@
 // src/styles/components/_map-card-weather.scss
 @use '../core/tools' as *;
-@use "weather/rain";
-@use "weather/snow";
-@use "weather/sand";
-@use "weather/sun";
+@use 'weather/rain';
+@use 'weather/snow';
+@use 'weather/sand';
+@use 'weather/sun';
 
 .weather-overlay {
   position: absolute;
@@ -17,6 +17,3 @@
 .atmospheric-spawn {
   position: relative;
 }
-
-
-

@@ -8,10 +8,7 @@
  * autotiled coastlines/mountains, and full GBA urban layouts.
  */
 
-import type {
-  ContinentMapResult,
-  ContinentCellDetails
-} from '../continentGenerator.ts';
+import type { ContinentMapResult, ContinentCellDetails } from '../continentGenerator.ts';
 import {
   resolveWaterCoastGrid,
   type WaterTerrainKind,
@@ -32,11 +29,7 @@ import {
   buildZeroCopyPreviewBuffer,
   type RegionalGenerationPipelineResult
 } from '../continentGenerator.worker.ts';
-import type {
-  POINode,
-  RouteEdge,
-  RouteWaypoint
-} from '../../../types/map/poiTypes.ts';
+import type { POINode, RouteEdge, RouteWaypoint } from '../../../types/map/poiTypes.ts';
 import {
   sculptOrganicIsland,
   sculptArchipelagoChain,
@@ -118,8 +111,11 @@ function sculptKantoTerrain(
     if (y <= KANTO_TERRAIN_CONFIG.WEST_INDIGO_MAX_Y) {
       baseWestX = KANTO_TERRAIN_CONFIG.WEST_INDIGO_BASE_X;
     } else if (y <= KANTO_TERRAIN_CONFIG.WEST_GULF_MAX_Y) {
-      const t = (y - KANTO_TERRAIN_CONFIG.WEST_INDIGO_MAX_Y) / KANTO_TERRAIN_CONFIG.WEST_GULF_SPAN_Y;
-      baseWestX = KANTO_TERRAIN_CONFIG.WEST_INDIGO_BASE_X + Math.sin(t * Math.PI) * KANTO_TERRAIN_CONFIG.WEST_GULF_SWEEP_AMPLITUDE;
+      const t =
+        (y - KANTO_TERRAIN_CONFIG.WEST_INDIGO_MAX_Y) / KANTO_TERRAIN_CONFIG.WEST_GULF_SPAN_Y;
+      baseWestX =
+        KANTO_TERRAIN_CONFIG.WEST_INDIGO_BASE_X +
+        Math.sin(t * Math.PI) * KANTO_TERRAIN_CONFIG.WEST_GULF_SWEEP_AMPLITUDE;
     } else if (y <= KANTO_TERRAIN_CONFIG.WEST_ROUTE22_MAX_Y) {
       baseWestX = KANTO_TERRAIN_CONFIG.WEST_ROUTE22_BASE_X;
     } else if (y <= KANTO_TERRAIN_CONFIG.WEST_WOODS_MAX_Y) {
@@ -137,8 +133,10 @@ function sculptKantoTerrain(
     } else if (y <= KANTO_TERRAIN_CONFIG.EAST_LAVENDER_MAX_Y) {
       baseEastX = KANTO_TERRAIN_CONFIG.EAST_LAVENDER_BASE_X;
     } else if (y <= KANTO_TERRAIN_CONFIG.EAST_COASTAL_MAX_Y) {
-      const t = (y - KANTO_TERRAIN_CONFIG.EAST_LAVENDER_MAX_Y) / KANTO_TERRAIN_CONFIG.EAST_COASTAL_SPAN_Y;
-      baseEastX = KANTO_TERRAIN_CONFIG.EAST_LAVENDER_BASE_X - t * KANTO_TERRAIN_CONFIG.EAST_COASTAL_TAPER;
+      const t =
+        (y - KANTO_TERRAIN_CONFIG.EAST_LAVENDER_MAX_Y) / KANTO_TERRAIN_CONFIG.EAST_COASTAL_SPAN_Y;
+      baseEastX =
+        KANTO_TERRAIN_CONFIG.EAST_LAVENDER_BASE_X - t * KANTO_TERRAIN_CONFIG.EAST_COASTAL_TAPER;
     } else {
       baseEastX = KANTO_TERRAIN_CONFIG.EAST_FUCHSIA_BASE_X;
     }
@@ -154,53 +152,122 @@ function sculptKantoTerrain(
     });
 
     const westX = Math.max(KANTO_TERRAIN_CONFIG.BORDER_PADDING, Math.round(baseWestX + westOffset));
-    const eastX = Math.min(W - KANTO_TERRAIN_CONFIG.BORDER_PADDING, Math.round(baseEastX + eastOffset));
+    const eastX = Math.min(
+      W - KANTO_TERRAIN_CONFIG.BORDER_PADDING,
+      Math.round(baseEastX + eastOffset)
+    );
 
     for (let x = westX; x <= eastX; x++) {
       // 0. Northern ocean undulating falloff
-      const northDisplacement = sampleCoastalDisplacement(noise, x, KANTO_TERRAIN_CONFIG.NORTH_OCEAN_REF_Y, {
-        amplitude: KANTO_TERRAIN_CONFIG.NORTH_OCEAN_AMP,
-        scale: KANTO_TERRAIN_CONFIG.NORTH_OCEAN_SCALE
-      });
+      const northDisplacement = sampleCoastalDisplacement(
+        noise,
+        x,
+        KANTO_TERRAIN_CONFIG.NORTH_OCEAN_REF_Y,
+        {
+          amplitude: KANTO_TERRAIN_CONFIG.NORTH_OCEAN_AMP,
+          scale: KANTO_TERRAIN_CONFIG.NORTH_OCEAN_SCALE
+        }
+      );
       if (y < KANTO_TERRAIN_CONFIG.MAINLAND_MIN_Y + northDisplacement) continue;
 
       // 1. Northwest ocean falloff (north of Indigo)
       if (y < KANTO_TERRAIN_CONFIG.NW_OCEAN_MAX_Y && x < KANTO_TERRAIN_CONFIG.NW_OCEAN_MAX_X) {
-        if (Math.hypot(x - KANTO_TERRAIN_CONFIG.NW_OCEAN_CENTER_X, y - KANTO_TERRAIN_CONFIG.NW_OCEAN_CENTER_Y) > KANTO_TERRAIN_CONFIG.NW_OCEAN_RADIUS) continue;
+        if (
+          Math.hypot(
+            x - KANTO_TERRAIN_CONFIG.NW_OCEAN_CENTER_X,
+            y - KANTO_TERRAIN_CONFIG.NW_OCEAN_CENTER_Y
+          ) > KANTO_TERRAIN_CONFIG.NW_OCEAN_RADIUS
+        )
+          continue;
       }
 
       // 2. Cerulean Bay
-      if (y < KANTO_TERRAIN_CONFIG.CERULEAN_BAY_MAX_Y && x < KANTO_TERRAIN_CONFIG.CERULEAN_BAY_MAX_X) {
+      if (
+        y < KANTO_TERRAIN_CONFIG.CERULEAN_BAY_MAX_Y &&
+        x < KANTO_TERRAIN_CONFIG.CERULEAN_BAY_MAX_X
+      ) {
         const capeDist = Math.hypot(
-          (x - KANTO_TERRAIN_CONFIG.CERULEAN_BAY_CENTER_X) / KANTO_TERRAIN_CONFIG.CERULEAN_BAY_RADIUS_X,
-          (y - KANTO_TERRAIN_CONFIG.CERULEAN_BAY_CENTER_Y) / KANTO_TERRAIN_CONFIG.CERULEAN_BAY_RADIUS_Y
+          (x - KANTO_TERRAIN_CONFIG.CERULEAN_BAY_CENTER_X) /
+            KANTO_TERRAIN_CONFIG.CERULEAN_BAY_RADIUS_X,
+          (y - KANTO_TERRAIN_CONFIG.CERULEAN_BAY_CENTER_Y) /
+            KANTO_TERRAIN_CONFIG.CERULEAN_BAY_RADIUS_Y
         );
-        if (capeDist > 1.0 && y < KANTO_TERRAIN_CONFIG.CERULEAN_BAY_INNER_Y && x > KANTO_TERRAIN_CONFIG.CERULEAN_BAY_MIN_X) continue;
+        if (
+          capeDist > 1.0 &&
+          y < KANTO_TERRAIN_CONFIG.CERULEAN_BAY_INNER_Y &&
+          x > KANTO_TERRAIN_CONFIG.CERULEAN_BAY_MIN_X
+        )
+          continue;
       }
 
       // 3. Cerulean Cape eastern ocean
-      if (y < KANTO_TERRAIN_CONFIG.EAST_CAPE_MAX_Y && x > KANTO_TERRAIN_CONFIG.EAST_CAPE_BASE_X) continue;
+      if (y < KANTO_TERRAIN_CONFIG.EAST_CAPE_MAX_Y && x > KANTO_TERRAIN_CONFIG.EAST_CAPE_BASE_X)
+        continue;
 
       // 4. Vermilion Bay & Harbor
-      if (y >= KANTO_TERRAIN_CONFIG.VERMILION_BAY_MIN_Y && x >= KANTO_TERRAIN_CONFIG.VERMILION_BAY_MIN_X && x <= KANTO_TERRAIN_CONFIG.VERMILION_BAY_MAX_X) {
-        const bayNoise = fbm2D(noise, x * KANTO_TERRAIN_CONFIG.VERMILION_BAY_NOISE_SCALE, y * KANTO_TERRAIN_CONFIG.VERMILION_BAY_NOISE_SCALE, { octaves: 2 }) * 2;
-        const leftShore = KANTO_TERRAIN_CONFIG.VERMILION_BAY_LEFT_SHORE + Math.sin((y - KANTO_TERRAIN_CONFIG.VERMILION_BAY_MIN_Y) * KANTO_TERRAIN_CONFIG.VERMILION_BAY_FREQ_LEFT) * 2 + bayNoise;
-        const rightShore = KANTO_TERRAIN_CONFIG.VERMILION_BAY_RIGHT_SHORE - Math.sin((y - KANTO_TERRAIN_CONFIG.VERMILION_BAY_MIN_Y) * KANTO_TERRAIN_CONFIG.VERMILION_BAY_FREQ_RIGHT) * 2 - bayNoise;
+      if (
+        y >= KANTO_TERRAIN_CONFIG.VERMILION_BAY_MIN_Y &&
+        x >= KANTO_TERRAIN_CONFIG.VERMILION_BAY_MIN_X &&
+        x <= KANTO_TERRAIN_CONFIG.VERMILION_BAY_MAX_X
+      ) {
+        const bayNoise =
+          fbm2D(
+            noise,
+            x * KANTO_TERRAIN_CONFIG.VERMILION_BAY_NOISE_SCALE,
+            y * KANTO_TERRAIN_CONFIG.VERMILION_BAY_NOISE_SCALE,
+            { octaves: 2 }
+          ) * 2;
+        const leftShore =
+          KANTO_TERRAIN_CONFIG.VERMILION_BAY_LEFT_SHORE +
+          Math.sin(
+            (y - KANTO_TERRAIN_CONFIG.VERMILION_BAY_MIN_Y) *
+              KANTO_TERRAIN_CONFIG.VERMILION_BAY_FREQ_LEFT
+          ) *
+            2 +
+          bayNoise;
+        const rightShore =
+          KANTO_TERRAIN_CONFIG.VERMILION_BAY_RIGHT_SHORE -
+          Math.sin(
+            (y - KANTO_TERRAIN_CONFIG.VERMILION_BAY_MIN_Y) *
+              KANTO_TERRAIN_CONFIG.VERMILION_BAY_FREQ_RIGHT
+          ) *
+            2 -
+          bayNoise;
         if (x >= leftShore && x <= rightShore) continue;
       }
 
       // 5. Cycling Road Marine Sound
-      if (y >= KANTO_TERRAIN_CONFIG.SOUND_MIN_Y && y <= KANTO_TERRAIN_CONFIG.SOUND_MAX_Y && x >= KANTO_TERRAIN_CONFIG.SOUND_MIN_X && x <= KANTO_TERRAIN_CONFIG.SOUND_MAX_X) {
+      if (
+        y >= KANTO_TERRAIN_CONFIG.SOUND_MIN_Y &&
+        y <= KANTO_TERRAIN_CONFIG.SOUND_MAX_Y &&
+        x >= KANTO_TERRAIN_CONFIG.SOUND_MIN_X &&
+        x <= KANTO_TERRAIN_CONFIG.SOUND_MAX_X
+      ) {
         const soundDist = Math.hypot(
           (x - KANTO_TERRAIN_CONFIG.SOUND_CENTER_X) / KANTO_TERRAIN_CONFIG.SOUND_RADIUS_X,
           (y - KANTO_TERRAIN_CONFIG.SOUND_CENTER_Y) / KANTO_TERRAIN_CONFIG.SOUND_RADIUS_Y
         );
-        const soundNoise = fbm2D(noise, x * KANTO_TERRAIN_CONFIG.SOUND_NOISE_SCALE, y * KANTO_TERRAIN_CONFIG.SOUND_NOISE_SCALE, { octaves: 2 }) * KANTO_TERRAIN_CONFIG.SOUND_NOISE_WEIGHT;
-        if (soundDist + soundNoise < 1.0 || (y >= KANTO_TERRAIN_CONFIG.SOUND_OUTLET_MIN_Y && x <= KANTO_TERRAIN_CONFIG.SOUND_OUTLET_MAX_X)) continue;
+        const soundNoise =
+          fbm2D(
+            noise,
+            x * KANTO_TERRAIN_CONFIG.SOUND_NOISE_SCALE,
+            y * KANTO_TERRAIN_CONFIG.SOUND_NOISE_SCALE,
+            { octaves: 2 }
+          ) * KANTO_TERRAIN_CONFIG.SOUND_NOISE_WEIGHT;
+        if (
+          soundDist + soundNoise < 1.0 ||
+          (y >= KANTO_TERRAIN_CONFIG.SOUND_OUTLET_MIN_Y &&
+            x <= KANTO_TERRAIN_CONFIG.SOUND_OUTLET_MAX_X)
+        )
+          continue;
       }
 
       // 6. South Sea Channel
-      if (y >= KANTO_TERRAIN_CONFIG.SOUTH_SEA_MIN_Y && x >= KANTO_TERRAIN_CONFIG.SOUTH_SEA_MIN_X && x <= KANTO_TERRAIN_CONFIG.SOUTH_SEA_MAX_X) {
+      if (
+        y >= KANTO_TERRAIN_CONFIG.SOUTH_SEA_MIN_Y &&
+        x >= KANTO_TERRAIN_CONFIG.SOUTH_SEA_MIN_X &&
+        x <= KANTO_TERRAIN_CONFIG.SOUTH_SEA_MAX_X
+      ) {
         continue;
       }
 
@@ -227,7 +294,10 @@ function sculptKantoTerrain(
         amplitude: KANTO_TERRAIN_CONFIG.CAPE_AMP,
         scale: KANTO_TERRAIN_CONFIG.CAPE_SCALE
       });
-      if (y >= KANTO_TERRAIN_CONFIG.CAPE_START_Y + capeDisplacement && y <= KANTO_TERRAIN_CONFIG.CAPE_END_Y) {
+      if (
+        y >= KANTO_TERRAIN_CONFIG.CAPE_START_Y + capeDisplacement &&
+        y <= KANTO_TERRAIN_CONFIG.CAPE_END_Y
+      ) {
         terrain[y]![x] = 'grass';
       }
     }
@@ -247,20 +317,44 @@ function sculptKantoTerrain(
     KANTO_PRESET_SEED
   );
 
-  for (let y = KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MIN_Y; y <= KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MAX_Y; y++) {
-    for (let x = KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MIN_X; x <= KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MAX_X; x++) {
+  for (
+    let y = KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MIN_Y;
+    y <= KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MAX_Y;
+    y++
+  ) {
+    for (
+      let x = KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MIN_X;
+      x <= KANTO_TERRAIN_CONFIG.CINNABAR_TOWN_MAX_X;
+      x++
+    ) {
       terrain[y]![x] = 'grass';
     }
   }
 
   // Volcanic caldera plateau in northern half of Cinnabar town
-  for (let y = KANTO_TERRAIN_CONFIG.CINNABAR_PLATEAU_MIN_Y; y <= KANTO_TERRAIN_CONFIG.CINNABAR_PLATEAU_MAX_Y; y++) {
-    for (let x = KANTO_TERRAIN_CONFIG.CINNABAR_PLATEAU_MIN_X; x <= KANTO_TERRAIN_CONFIG.CINNABAR_PLATEAU_MAX_X; x++) {
+  for (
+    let y = KANTO_TERRAIN_CONFIG.CINNABAR_PLATEAU_MIN_Y;
+    y <= KANTO_TERRAIN_CONFIG.CINNABAR_PLATEAU_MAX_Y;
+    y++
+  ) {
+    for (
+      let x = KANTO_TERRAIN_CONFIG.CINNABAR_PLATEAU_MIN_X;
+      x <= KANTO_TERRAIN_CONFIG.CINNABAR_PLATEAU_MAX_X;
+      x++
+    ) {
       heightmap[y]![x] = 1;
     }
   }
-  for (let y = KANTO_TERRAIN_CONFIG.CINNABAR_GROUND_MIN_Y; y <= KANTO_TERRAIN_CONFIG.CINNABAR_GROUND_MAX_Y; y++) {
-    for (let x = KANTO_TERRAIN_CONFIG.CINNABAR_GROUND_MIN_X; x <= KANTO_TERRAIN_CONFIG.CINNABAR_GROUND_MAX_X; x++) {
+  for (
+    let y = KANTO_TERRAIN_CONFIG.CINNABAR_GROUND_MIN_Y;
+    y <= KANTO_TERRAIN_CONFIG.CINNABAR_GROUND_MAX_Y;
+    y++
+  ) {
+    for (
+      let x = KANTO_TERRAIN_CONFIG.CINNABAR_GROUND_MIN_X;
+      x <= KANTO_TERRAIN_CONFIG.CINNABAR_GROUND_MAX_X;
+      x++
+    ) {
       heightmap[y]![x] = 0;
     }
   }
@@ -289,17 +383,43 @@ function sculptKantoTerrain(
     KANTO_TERRAIN_CONFIG.RIVER_SEED
   );
 
-  carveOrganicLake(terrain, KANTO_TERRAIN_CONFIG.VIRIDIAN_POND.x, KANTO_TERRAIN_CONFIG.VIRIDIAN_POND.y, KANTO_TERRAIN_CONFIG.VIRIDIAN_POND.radius, KANTO_TERRAIN_CONFIG.VIRIDIAN_POND.roughness, KANTO_TERRAIN_CONFIG.VIRIDIAN_POND.seed);
-  carveOrganicLake(terrain, KANTO_TERRAIN_CONFIG.ROUTE22_POND.x, KANTO_TERRAIN_CONFIG.ROUTE22_POND.y, KANTO_TERRAIN_CONFIG.ROUTE22_POND.radius, KANTO_TERRAIN_CONFIG.ROUTE22_POND.roughness, KANTO_TERRAIN_CONFIG.ROUTE22_POND.seed);
+  carveOrganicLake(
+    terrain,
+    KANTO_TERRAIN_CONFIG.VIRIDIAN_POND.x,
+    KANTO_TERRAIN_CONFIG.VIRIDIAN_POND.y,
+    KANTO_TERRAIN_CONFIG.VIRIDIAN_POND.radius,
+    KANTO_TERRAIN_CONFIG.VIRIDIAN_POND.roughness,
+    KANTO_TERRAIN_CONFIG.VIRIDIAN_POND.seed
+  );
+  carveOrganicLake(
+    terrain,
+    KANTO_TERRAIN_CONFIG.ROUTE22_POND.x,
+    KANTO_TERRAIN_CONFIG.ROUTE22_POND.y,
+    KANTO_TERRAIN_CONFIG.ROUTE22_POND.radius,
+    KANTO_TERRAIN_CONFIG.ROUTE22_POND.roughness,
+    KANTO_TERRAIN_CONFIG.ROUTE22_POND.seed
+  );
 
   applyNaturalBeaches(terrain);
 
   // 7. Continuous Mountain Cordilleras: Northern & Western Frontier Spines
-  for (let y = KANTO_TERRAIN_CONFIG.BORDER_PADDING; y < H - KANTO_TERRAIN_CONFIG.BORDER_PADDING; y++) {
-    for (let x = KANTO_TERRAIN_CONFIG.BORDER_PADDING; x < W - KANTO_TERRAIN_CONFIG.BORDER_PADDING; x++) {
+  for (
+    let y = KANTO_TERRAIN_CONFIG.BORDER_PADDING;
+    y < H - KANTO_TERRAIN_CONFIG.BORDER_PADDING;
+    y++
+  ) {
+    for (
+      let x = KANTO_TERRAIN_CONFIG.BORDER_PADDING;
+      x < W - KANTO_TERRAIN_CONFIG.BORDER_PADDING;
+      x++
+    ) {
       if (terrain[y]![x] !== 'grass') continue;
 
-      if (KANTO_TERRAIN_CONFIG.FLAT_RESERVES.some((r) => x >= r.x1 && x <= r.x2 && y >= r.y1 && y <= r.y2)) {
+      if (
+        KANTO_TERRAIN_CONFIG.FLAT_RESERVES.some(
+          (r) => x >= r.x1 && x <= r.x2 && y >= r.y1 && y <= r.y2
+        )
+      ) {
         continue;
       }
 
@@ -319,7 +439,13 @@ function sculptKantoTerrain(
         if (d < minDistWest) minDistWest = d;
       }
 
-      const mNoise = fbm2D(noise, x * KANTO_TERRAIN_CONFIG.MOUNTAIN_NOISE_SCALE, y * KANTO_TERRAIN_CONFIG.MOUNTAIN_NOISE_SCALE, { octaves: 2 }) * KANTO_TERRAIN_CONFIG.MOUNTAIN_NOISE_WEIGHT;
+      const mNoise =
+        fbm2D(
+          noise,
+          x * KANTO_TERRAIN_CONFIG.MOUNTAIN_NOISE_SCALE,
+          y * KANTO_TERRAIN_CONFIG.MOUNTAIN_NOISE_SCALE,
+          { octaves: 2 }
+        ) * KANTO_TERRAIN_CONFIG.MOUNTAIN_NOISE_WEIGHT;
 
       if (minDistNorth + mNoise < KANTO_TERRAIN_CONFIG.NORTH_RIDGE_MAX_DIST) {
         heightmap[y]![x] = 1;
@@ -329,15 +455,38 @@ function sculptKantoTerrain(
         heightmap[y]![x] = 1;
       }
 
-      if (Math.hypot((x - KANTO_TERRAIN_CONFIG.INDIGO_MASSIF.cx) / KANTO_TERRAIN_CONFIG.INDIGO_MASSIF.rx, (y - KANTO_TERRAIN_CONFIG.INDIGO_MASSIF.cy) / KANTO_TERRAIN_CONFIG.INDIGO_MASSIF.ry) + mNoise * KANTO_TERRAIN_CONFIG.MASSIF_NOISE_WEIGHT < 1.0) {
+      if (
+        Math.hypot(
+          (x - KANTO_TERRAIN_CONFIG.INDIGO_MASSIF.cx) / KANTO_TERRAIN_CONFIG.INDIGO_MASSIF.rx,
+          (y - KANTO_TERRAIN_CONFIG.INDIGO_MASSIF.cy) / KANTO_TERRAIN_CONFIG.INDIGO_MASSIF.ry
+        ) +
+          mNoise * KANTO_TERRAIN_CONFIG.MASSIF_NOISE_WEIGHT <
+        1.0
+      ) {
         heightmap[y]![x] = 1;
       }
 
-      if (Math.hypot((x - KANTO_TERRAIN_CONFIG.MT_MOON_MASSIF.cx) / KANTO_TERRAIN_CONFIG.MT_MOON_MASSIF.rx, (y - KANTO_TERRAIN_CONFIG.MT_MOON_MASSIF.cy) / KANTO_TERRAIN_CONFIG.MT_MOON_MASSIF.ry) + mNoise * KANTO_TERRAIN_CONFIG.MASSIF_NOISE_WEIGHT < 1.0) {
+      if (
+        Math.hypot(
+          (x - KANTO_TERRAIN_CONFIG.MT_MOON_MASSIF.cx) / KANTO_TERRAIN_CONFIG.MT_MOON_MASSIF.rx,
+          (y - KANTO_TERRAIN_CONFIG.MT_MOON_MASSIF.cy) / KANTO_TERRAIN_CONFIG.MT_MOON_MASSIF.ry
+        ) +
+          mNoise * KANTO_TERRAIN_CONFIG.MASSIF_NOISE_WEIGHT <
+        1.0
+      ) {
         heightmap[y]![x] = 1;
       }
 
-      if (Math.hypot((x - KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_MASSIF.cx) / KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_MASSIF.rx, (y - KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_MASSIF.cy) / KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_MASSIF.ry) + mNoise * KANTO_TERRAIN_CONFIG.MASSIF_NOISE_WEIGHT < 1.0) {
+      if (
+        Math.hypot(
+          (x - KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_MASSIF.cx) /
+            KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_MASSIF.rx,
+          (y - KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_MASSIF.cy) /
+            KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_MASSIF.ry
+        ) +
+          mNoise * KANTO_TERRAIN_CONFIG.MASSIF_NOISE_WEIGHT <
+        1.0
+      ) {
         heightmap[y]![x] = 1;
       }
     }
@@ -351,7 +500,12 @@ function sculptKantoTerrain(
     readonly maxX: number;
   }
 
-  const applyCaveNiche = (cliff: CaveNicheBoundary, ground: CaveNicheBoundary, cliffElev = 1, groundElev = 0): void => {
+  const applyCaveNiche = (
+    cliff: CaveNicheBoundary,
+    ground: CaveNicheBoundary,
+    cliffElev = 1,
+    groundElev = 0
+  ): void => {
     for (let y = cliff.minY; y <= cliff.maxY; y++) {
       for (let x = cliff.minX; x <= cliff.maxX; x++) {
         if (terrain[y]?.[x] === 'grass') heightmap[y]![x] = cliffElev;
@@ -367,24 +521,56 @@ function sculptKantoTerrain(
   applyCaveNiche(KANTO_TERRAIN_CONFIG.MT_MOON_WEST_CLIFF, KANTO_TERRAIN_CONFIG.MT_MOON_WEST_GROUND);
   applyCaveNiche(KANTO_TERRAIN_CONFIG.MT_MOON_EAST_CLIFF, KANTO_TERRAIN_CONFIG.MT_MOON_EAST_GROUND);
 
-  for (let y = KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_CLIFF.minY; y <= KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_CLIFF.maxY; y++) {
-    for (let x = KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_CLIFF.minX; x <= KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_CLIFF.maxX; x++) {
+  for (
+    let y = KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_CLIFF.minY;
+    y <= KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_CLIFF.maxY;
+    y++
+  ) {
+    for (
+      let x = KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_CLIFF.minX;
+      x <= KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_CLIFF.maxX;
+      x++
+    ) {
       terrain[y]![x] = 'grass';
       heightmap[y]![x] = 1;
     }
   }
-  for (let y = KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_GROUND.minY; y <= KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_GROUND.maxY; y++) {
-    for (let x = KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_GROUND.minX; x <= KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_GROUND.maxX; x++) {
+  for (
+    let y = KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_GROUND.minY;
+    y <= KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_GROUND.maxY;
+    y++
+  ) {
+    for (
+      let x = KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_GROUND.minX;
+      x <= KANTO_TERRAIN_CONFIG.ROCK_TUNNEL_NORTH_GROUND.maxX;
+      x++
+    ) {
       if (terrain[y]?.[x] === 'grass') heightmap[y]![x] = 0;
     }
   }
 
   applyCaveNiche(KANTO_TERRAIN_CONFIG.DIGLETT_CLIFF, KANTO_TERRAIN_CONFIG.DIGLETT_GROUND);
-  applyCaveNiche(KANTO_TERRAIN_CONFIG.VICTORY_ROAD_LOWER_CLIFF, KANTO_TERRAIN_CONFIG.VICTORY_ROAD_LOWER_GROUND);
-  applyCaveNiche(KANTO_TERRAIN_CONFIG.VICTORY_ROAD_UPPER_RIDGE, KANTO_TERRAIN_CONFIG.VICTORY_ROAD_UPPER_PLATEAU, 2, 1);
+  applyCaveNiche(
+    KANTO_TERRAIN_CONFIG.VICTORY_ROAD_LOWER_CLIFF,
+    KANTO_TERRAIN_CONFIG.VICTORY_ROAD_LOWER_GROUND
+  );
+  applyCaveNiche(
+    KANTO_TERRAIN_CONFIG.VICTORY_ROAD_UPPER_RIDGE,
+    KANTO_TERRAIN_CONFIG.VICTORY_ROAD_UPPER_PLATEAU,
+    2,
+    1
+  );
 
-  for (let y = KANTO_TERRAIN_CONFIG.POWER_PLANT_CHANNEL.minY; y <= KANTO_TERRAIN_CONFIG.POWER_PLANT_CHANNEL.maxY; y++) {
-    for (let x = KANTO_TERRAIN_CONFIG.POWER_PLANT_CHANNEL.minX; x <= KANTO_TERRAIN_CONFIG.POWER_PLANT_CHANNEL.maxX; x++) {
+  for (
+    let y = KANTO_TERRAIN_CONFIG.POWER_PLANT_CHANNEL.minY;
+    y <= KANTO_TERRAIN_CONFIG.POWER_PLANT_CHANNEL.maxY;
+    y++
+  ) {
+    for (
+      let x = KANTO_TERRAIN_CONFIG.POWER_PLANT_CHANNEL.minX;
+      x <= KANTO_TERRAIN_CONFIG.POWER_PLANT_CHANNEL.maxX;
+      x++
+    ) {
       terrain[y]![x] = 'water';
     }
   }
@@ -404,13 +590,21 @@ function sculptJohtoTerrain(
   const heightmap: number[][] = Array.from({ length: H }, () => Array(W).fill(0));
 
   for (let y = JOHTO_TERRAIN_CONFIG.MAINLAND_MIN_Y; y <= JOHTO_TERRAIN_CONFIG.MAINLAND_MAX_Y; y++) {
-    for (let x = JOHTO_TERRAIN_CONFIG.MAINLAND_MIN_X; x <= JOHTO_TERRAIN_CONFIG.MAINLAND_MAX_X; x++) {
+    for (
+      let x = JOHTO_TERRAIN_CONFIG.MAINLAND_MIN_X;
+      x <= JOHTO_TERRAIN_CONFIG.MAINLAND_MAX_X;
+      x++
+    ) {
       terrain[y]![x] = 'grass';
     }
   }
 
   for (let y = JOHTO_TERRAIN_CONFIG.CIANWOOD_MIN_Y; y <= JOHTO_TERRAIN_CONFIG.CIANWOOD_MAX_Y; y++) {
-    for (let x = JOHTO_TERRAIN_CONFIG.CIANWOOD_MIN_X; x <= JOHTO_TERRAIN_CONFIG.CIANWOOD_MAX_X; x++) {
+    for (
+      let x = JOHTO_TERRAIN_CONFIG.CIANWOOD_MIN_X;
+      x <= JOHTO_TERRAIN_CONFIG.CIANWOOD_MAX_X;
+      x++
+    ) {
       terrain[y]![x] = 'grass';
     }
   }
@@ -421,8 +615,16 @@ function sculptJohtoTerrain(
     }
   }
 
-  for (let y = JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MIN_Y; y <= JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MAX_Y; y++) {
-    for (let x = JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MIN_X; x <= JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MAX_X; x++) {
+  for (
+    let y = JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MIN_Y;
+    y <= JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MAX_Y;
+    y++
+  ) {
+    for (
+      let x = JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MIN_X;
+      x <= JOHTO_TERRAIN_CONFIG.LAKE_RAGE_MAX_X;
+      x++
+    ) {
       terrain[y]![x] = 'water';
     }
   }
@@ -442,15 +644,31 @@ function sculptJohtoTerrain(
     }
   }
 
-  for (let y = JOHTO_TERRAIN_CONFIG.MT_SILVER_MIN_Y; y <= JOHTO_TERRAIN_CONFIG.MT_SILVER_MAX_Y; y++) {
-    for (let x = JOHTO_TERRAIN_CONFIG.MT_SILVER_MIN_X; x <= JOHTO_TERRAIN_CONFIG.MT_SILVER_MAX_X; x++) {
+  for (
+    let y = JOHTO_TERRAIN_CONFIG.MT_SILVER_MIN_Y;
+    y <= JOHTO_TERRAIN_CONFIG.MT_SILVER_MAX_Y;
+    y++
+  ) {
+    for (
+      let x = JOHTO_TERRAIN_CONFIG.MT_SILVER_MIN_X;
+      x <= JOHTO_TERRAIN_CONFIG.MT_SILVER_MAX_X;
+      x++
+    ) {
       heightmap[y]![x] = 1;
       terrain[y]![x] = 'grass';
     }
   }
 
-  for (let y = JOHTO_TERRAIN_CONFIG.MT_MORTAR_MIN_Y; y <= JOHTO_TERRAIN_CONFIG.MT_MORTAR_MAX_Y; y++) {
-    for (let x = JOHTO_TERRAIN_CONFIG.MT_MORTAR_MIN_X; x <= JOHTO_TERRAIN_CONFIG.MT_MORTAR_MAX_X; x++) {
+  for (
+    let y = JOHTO_TERRAIN_CONFIG.MT_MORTAR_MIN_Y;
+    y <= JOHTO_TERRAIN_CONFIG.MT_MORTAR_MAX_Y;
+    y++
+  ) {
+    for (
+      let x = JOHTO_TERRAIN_CONFIG.MT_MORTAR_MIN_X;
+      x <= JOHTO_TERRAIN_CONFIG.MT_MORTAR_MAX_X;
+      x++
+    ) {
       heightmap[y]![x] = 1;
       terrain[y]![x] = 'grass';
     }
@@ -486,12 +704,7 @@ export function buildCanonicalRegionMap(
     seed,
     defaultPalette: 'brown'
   });
-  const placedStairs: MountainStairLocation[] =
-    presetId === 'kanto'
-      ? [
-          { x: 53, y: 221 }
-        ]
-      : [];
+  const placedStairs: MountainStairLocation[] = presetId === 'kanto' ? [{ x: 53, y: 221 }] : [];
   const mountainResult = resolveMountainMapGrid(heightmap, {
     palette: 'brown',
     paletteMatrix: geologicalClusters.paletteMatrix,
@@ -581,7 +794,12 @@ export function buildCanonicalRegionMap(
       type: bp.type,
       urbanScale: bp.urbanScale,
       footprint: { width: bp.width, height: bp.height },
-      terrainPreference: bp.type === 'cave_entrance' ? 'mountain_wall' : bp.type === 'port_dock' ? 'coast_water' : 'flat_grass',
+      terrainPreference:
+        bp.type === 'cave_entrance'
+          ? 'mountain_wall'
+          : bp.type === 'port_dock'
+            ? 'coast_water'
+            : 'flat_grass',
       gridX: bp.gridX,
       gridY: bp.gridY,
       elevation: bp.elevation ?? 0,
@@ -651,7 +869,10 @@ export function buildCanonicalRegionMap(
         waypoints = [
           { x: startX, y: startY },
           { x: startX, y: ROUTE_WAYPOINTS_CONFIG.KANTO_R19_WATER_Y },
-          { x: endX + ROUTE_WAYPOINTS_CONFIG.KANTO_R19_WATER_X_OFFSET, y: ROUTE_WAYPOINTS_CONFIG.KANTO_R19_WATER_Y },
+          {
+            x: endX + ROUTE_WAYPOINTS_CONFIG.KANTO_R19_WATER_X_OFFSET,
+            y: ROUTE_WAYPOINTS_CONFIG.KANTO_R19_WATER_Y
+          },
           { x: endX, y: endY }
         ];
       } else if (rb.id === 'kanto_r20') {
@@ -728,19 +949,14 @@ export function buildCanonicalRegionMap(
         { x: endX, y: endY }
       ];
     } else if (rb.id === 'kanto_r22_23') {
-      waypoints = [
-        { x: startX, y: startY },
-        ...ROUTE_WAYPOINTS_CONFIG.ROUTE22_23_POINTS
-      ];
+      waypoints = [{ x: startX, y: startY }, ...ROUTE_WAYPOINTS_CONFIG.ROUTE22_23_POINTS];
     } else if (rb.id === 'kanto_victory_road') {
       waypoints = [
         { x: startX, y: startY },
         { x: endX, y: endY }
       ];
     } else if (rb.id === 'kanto_indigo_avenue') {
-      waypoints = [
-        ...ROUTE_WAYPOINTS_CONFIG.INDIGO_AVENUE_POINTS
-      ];
+      waypoints = [...ROUTE_WAYPOINTS_CONFIG.INDIGO_AVENUE_POINTS];
     } else {
       const astar = findPathAStar(
         continent,
@@ -873,7 +1089,8 @@ export function buildCanonicalRegionMap(
   };
 
   const transitableGrid = computeTransitableGrid(continent, pathGrid, bridgeGrid, pois);
-  (continent as { transitableGrid?: readonly (readonly boolean[])[] }).transitableGrid = transitableGrid;
+  (continent as { transitableGrid?: readonly (readonly boolean[])[] }).transitableGrid =
+    transitableGrid;
 
   const wilderness = generateWildernessLayer(continent, pois, pathGrid, {
     seed,

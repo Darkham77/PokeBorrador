@@ -5,13 +5,10 @@ import type { DBRouter } from './dbRouter.ts';
 import type { DBCompatibilityResponse } from '@/types/system/database';
 import type { LoadingStore } from './sqliteEngine.ts';
 
-declare const __APP_VERSION__: string;
-
 /**
  * DB Compatibility Check
  * Ensures the client version is not greater than the DB version.
  */
-
 
 async function getOptionalLoadingStore(): Promise<LoadingStore | null> {
   try {
@@ -37,15 +34,20 @@ function parseDbVersionValue(rawValue: unknown): number {
   }
 
   const valObj = parsedRaw as Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
-  const parsed = (typeof parsedRaw === 'object' && valObj !== null && 'db_version' in valObj)
-    ? parseInt((valObj.db_version as string | number) + '' || '0')
-    : parseInt((parsedRaw as string | number) + '' || '0');
+  const parsed =
+    typeof parsedRaw === 'object' && valObj !== null && 'db_version' in valObj
+      ? parseInt((valObj.db_version as string | number) + '' || '0')
+      : parseInt((parsedRaw as string | number) + '' || '0');
   return isNaN(parsed) ? 0 : parsed;
 }
 
 function handleCompatError(e: unknown, routerMode: string): DBCompatibilityResponse {
   if (isE2EEnvironment() || routerMode === 'offline') {
-    logger.warn('DBRouter', 'Compatibility check offline/E2E lookup warning:', (e as Error).message);
+    logger.warn(
+      'DBRouter',
+      'Compatibility check offline/E2E lookup warning:',
+      (e as Error).message
+    );
     return { compatible: true, client: CLIENT_DB_VERSION, db: CLIENT_DB_VERSION };
   }
   logger.error('DBRouter', 'Compatibility check failed.', (e as Error).message);
@@ -60,7 +62,12 @@ function handleCompatError(e: unknown, routerMode: string): DBCompatibilityRespo
 export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatibilityResponse> {
   const loadingStore = await getOptionalLoadingStore();
   if (loadingStore) {
-    loadingStore.start('db_compat', 'Verificando Versión...', 'Comprobando compatibilidad de DB', false);
+    loadingStore.start(
+      'db_compat',
+      'Verificando Versión...',
+      'Comprobando compatibilidad de DB',
+      false
+    );
   }
 
   try {
@@ -129,13 +136,15 @@ function isDevBypassAllowed(): boolean {
   );
 }
 
-export async function checkAppVersionCompatibility(router: DBRouter): Promise<AppCompatibilityResponse> {
+export async function checkAppVersionCompatibility(
+  router: DBRouter
+): Promise<AppCompatibilityResponse> {
   const clientVer = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.5.0';
   if (isE2EEnvironment()) {
     return { compatible: true, client: clientVer, server: clientVer };
   }
   let serverVer = '';
-  
+
   try {
     const { data, error } = await router
       .from('system_config')
@@ -158,7 +167,10 @@ export async function checkAppVersionCompatibility(router: DBRouter): Promise<Ap
 
   if (clientVer === serverVer || isDevBypassAllowed()) {
     if (clientVer !== serverVer) {
-      logger.warn('DBRouter', `[DEV] Mismatch de versión ignorado en modo desarrollo (Cliente: ${clientVer} vs Servidor: ${serverVer})`);
+      logger.warn(
+        'DBRouter',
+        `[DEV] Mismatch de versión ignorado en modo desarrollo (Cliente: ${clientVer} vs Servidor: ${serverVer})`
+      );
     }
     return { compatible: true, client: clientVer, server: serverVer };
   }

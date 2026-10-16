@@ -10,7 +10,7 @@ import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
  */
 
 export function calculateBaseExp(enemyPoke: Pokemon) {
-  return Math.floor(enemyPoke.level * 4)
+  return Math.floor(enemyPoke.level * 4);
 }
 
 const TRAINER_OR_GYM_MONEY_MULTIPLIER = 20 as const;
@@ -27,13 +27,13 @@ export interface RewardOptions {
   isGym?: boolean;
 }
 
-export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<string>, options: RewardOptions = {}) {
-  const { 
-    isActive = false, 
-    classMult = 1, 
-    totalExpMult = 1, 
-    participantsSet = null 
-  } = options
+export function processExpGain(
+  p: Pokemon,
+  baseExp: number,
+  _participants: Set<string>,
+  options: RewardOptions = {}
+) {
+  const { isActive = false, classMult = 1, totalExpMult = 1, participantsSet = null } = options;
 
   // Strict Gen 6-9 Rule: Fainted Pokemon (0 HP) never receive Exp
   if ((p.hp !== undefined && p.hp <= 0) || p.fainted === true) {
@@ -49,26 +49,26 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
   // Active combatants or expshare holders receive 100% share; benched living members receive 50%
   const isParticipant = isActive || (participantsSet?.has(p.uid) ?? false);
   const isHoldingExpShare = p.heldItem === 'expshare';
-  const share = (isParticipant || isHoldingExpShare) ? 1 : 0.5;
+  const share = isParticipant || isHoldingExpShare ? 1 : 0.5;
 
   const gained = Math.floor(baseExp * share * classMult * totalExpMult);
-  p.exp += gained
+  p.exp += gained;
 
-  let levelUp = false
-  let levelsGained = 0
-  let tempLevel = p.level
-  let tempExpNeeded = p.expNeeded
+  let levelUp = false;
+  let levelsGained = 0;
+  let tempLevel = p.level;
+  let tempExpNeeded = p.expNeeded;
 
   while (tempExpNeeded > 0 && p.exp >= tempExpNeeded && tempLevel < MAX_POKEMON_LEVEL) {
-    p.exp -= tempExpNeeded
-    levelUp = true
-    levelsGained++
-    tempLevel++
-    tempExpNeeded = getExpNeededPure(tempLevel)
+    p.exp -= tempExpNeeded;
+    levelUp = true;
+    levelsGained++;
+    tempLevel++;
+    tempExpNeeded = getExpNeededPure(tempLevel);
   }
 
   if (levelUp) {
-    p.expNeeded = tempExpNeeded
+    p.expNeeded = tempExpNeeded;
   }
 
   if (tempLevel >= MAX_POKEMON_LEVEL) {
@@ -76,17 +76,22 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
     p.expNeeded = 0;
   }
 
-  return { gained, levelUp, levelsGained }
+  return { gained, levelUp, levelsGained };
 }
 
 export function calculateMoneyGain(enemyPoke: Pokemon, options: RewardOptions = {}) {
-  const { bcMult = 1, totalMoneyMult = 1, isTrainer = false, isGym = false } = options
-  const multiplier = (isTrainer || isGym) ? TRAINER_OR_GYM_MONEY_MULTIPLIER : WILD_BATTLE_MONEY_MULTIPLIER
-  const baseMoney = enemyPoke.level * multiplier * bcMult
-  return Math.floor(baseMoney * totalMoneyMult)
+  const { bcMult = 1, totalMoneyMult = 1, isTrainer = false, isGym = false } = options;
+  const multiplier =
+    isTrainer || isGym ? TRAINER_OR_GYM_MONEY_MULTIPLIER : WILD_BATTLE_MONEY_MULTIPLIER;
+  const baseMoney = enemyPoke.level * multiplier * bcMult;
+  return Math.floor(baseMoney * totalMoneyMult);
 }
 
-export function processEvGain(p: Pokemon, enemyPoke: Pokemon, _participantsSet?: Set<string> | null): EvGainResult | null {
+export function processEvGain(
+  p: Pokemon,
+  enemyPoke: Pokemon,
+  _participantsSet?: Set<string> | null
+): EvGainResult | null {
   // Strict Gen 6-9 Rule: Fainted Pokemon (0 HP) never receive EVs
   if ((p.hp !== undefined && p.hp <= 0) || p.fainted === true) {
     return null;
@@ -101,6 +106,3 @@ export function processEvGain(p: Pokemon, enemyPoke: Pokemon, _participantsSet?:
   p.evs = result.updatedEvs;
   return result;
 }
-
-
-

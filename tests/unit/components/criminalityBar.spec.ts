@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import CriminalityBar from '@/components/ui/CriminalityBar.vue';
@@ -51,7 +51,7 @@ describe('CriminalityBar.vue', () => {
     const wrapper = mountBar();
     expect(wrapper.find('#criminality-bar').exists()).toBe(true);
     expect(wrapper.find('#criminality-percent-label').text()).toBe('0%');
-    
+
     const fillEl = wrapper.find('#criminality-bar-fill');
     expect(fillEl.attributes('style')).toContain('height: 0%');
   });
@@ -65,7 +65,7 @@ describe('CriminalityBar.vue', () => {
 
     const wrapper = mountBar();
     expect(wrapper.find('#criminality-percent-label').text()).toBe('50%');
-    
+
     const fillEl = wrapper.find('#criminality-bar-fill');
     expect(fillEl.attributes('style')).toContain('height: 50%');
     expect(wrapper.find('.glow-effect').exists()).toBe(false);
@@ -80,7 +80,7 @@ describe('CriminalityBar.vue', () => {
 
     const wrapper = mountBar();
     expect(wrapper.find('#criminality-percent-label').text()).toBe('100%');
-    
+
     const fillEl = wrapper.find('#criminality-bar-fill');
     expect(fillEl.attributes('style')).toContain('height: 100%');
     expect(wrapper.find('.glow-effect').exists()).toBe(true);
@@ -117,4 +117,3 @@ describe('CriminalityBar.vue', () => {
     expect(wrapper.find('#criminality-bar-fill').attributes('style')).toContain('height: 100%');
   });
 });
-

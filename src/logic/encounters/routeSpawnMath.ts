@@ -1,4 +1,9 @@
-import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId, isLegendaryPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import {
+  isPokemonSpeciesId,
+  requirePokemonSpeciesId,
+  type PokemonSpeciesId,
+  isLegendaryPokemonSpeciesId
+} from '@/data/pokemon/pokedex';
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
 import { redistributeWeatherSpawns } from '@/logic/utils/routeSpawnHelpers';
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
@@ -6,7 +11,12 @@ import { getGMT3Date } from '@/logic/utils/timeUtils';
 import { DAY_PHASES, type DayPhase } from '@/types/system/time';
 import type { MapLocation } from '@/types/pokemon/encounters';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { resolveWeeklyRotation, safeParse, type Event as GameEvent, type EventConfig } from '@/logic/events/eventEngine';
+import {
+  resolveWeeklyRotation,
+  safeParse,
+  type Event as GameEvent,
+  type EventConfig
+} from '@/logic/events/eventEngine';
 import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 import {
   DEFAULT_EXCLUSIVE_SPAWN_WEIGHT,
@@ -16,13 +26,18 @@ import {
   DEFAULT_WEATHER_MULTIPLIER_NORMAL
 } from '@/logic/constants/encounters';
 
-export type WeightedSpeciesSource = PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>> | Record<string, number>;
+export type WeightedSpeciesSource =
+  | PokemonSpeciesId[]
+  | Partial<Record<PokemonSpeciesId, number>>
+  | Record<string, number>; // open-record: Flexible raw species weight mapping
 
-export function getSpeciesEntries(source: WeightedSpeciesSource): Array<{ id: PokemonSpeciesId; weight?: number }> {
-  if (Array.isArray(source)) return source.map(id => ({ id }));
+export function getSpeciesEntries(
+  source: WeightedSpeciesSource
+): Array<{ id: PokemonSpeciesId; weight?: number }> {
+  if (Array.isArray(source)) return source.map((id) => ({ id }));
   return Object.entries(source).map(([rawId, weight]) => ({
     id: requirePokemonSpeciesId(rawId),
-    weight,
+    weight
   }));
 }
 
@@ -97,17 +112,34 @@ function injectWeatherSpawns(
   if (!wConfig) return;
 
   if (wConfig.exclusive) {
-    injectWeatherEntries(getSpeciesEntries(wConfig.exclusive), cycle, weather, DEFAULT_EXCLUSIVE_SPAWN_WEIGHT, pool, rates);
+    injectWeatherEntries(
+      getSpeciesEntries(wConfig.exclusive),
+      cycle,
+      weather,
+      DEFAULT_EXCLUSIVE_SPAWN_WEIGHT,
+      pool,
+      rates
+    );
   }
   if (wConfig.visitors) {
-    injectWeatherEntries(getSpeciesEntries(wConfig.visitors), cycle, weather, DEFAULT_VISITOR_SPAWN_WEIGHT, pool, rates);
+    injectWeatherEntries(
+      getSpeciesEntries(wConfig.visitors),
+      cycle,
+      weather,
+      DEFAULT_VISITOR_SPAWN_WEIGHT,
+      pool,
+      rates
+    );
   }
 }
 
 function extractEventSpecies(ev: GameEvent): PokemonSpeciesId[] {
   const cfg = safeParse(ev.config) as EventConfig;
   if (!ev.active || !cfg?.ignoreTimeRestrictions) return [];
-  const rotation = cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations ? resolveWeeklyRotation(cfg, getGMT3Date()) : null;
+  const rotation =
+    cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations
+      ? resolveWeeklyRotation(cfg, getGMT3Date())
+      : null;
   const rawSpecies = rotation?.species ?? cfg.species;
   if (!rawSpecies || rawSpecies === '*') return [];
   return rawSpecies
@@ -158,7 +190,11 @@ function injectTicketSpawns(
   pool: PokemonSpeciesId[],
   rates: number[]
 ): void {
-  if (tickets?.articunoTicketSecs && tickets.articunoTicketSecs > 0 && loc.id === 'seafoam_islands') {
+  if (
+    tickets?.articunoTicketSecs &&
+    tickets.articunoTicketSecs > 0 &&
+    loc.id === 'seafoam_islands'
+  ) {
     if (!pool.includes('articuno')) {
       pool.push('articuno');
       rates.push(ARTICUNO_TICKET_SPAWN_WEIGHT);
@@ -213,7 +249,7 @@ export function clampLegendaryRates(pool: PokemonSpeciesId[], rates: number[]): 
 
   const cap = sumOtherRates / LEGENDARY_RATE_CAP_DENOMINATOR;
 
-  legendaryIndices.forEach(idx => {
+  legendaryIndices.forEach((idx) => {
     if ((rates[idx] || 0) > cap) {
       rates[idx] = cap;
     }
@@ -240,7 +276,9 @@ export function getFinalGroundRates(
         wConfig = loc.weather[family];
       }
     }
-    const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : [];
+    const exclusives = wConfig?.exclusive
+      ? getSpeciesEntries(wConfig.exclusive).map((entry) => entry.id)
+      : [];
     redistributeWeatherSpawns(rates, pool, weather, exclusives);
   }
 
@@ -249,7 +287,12 @@ export function getFinalGroundRates(
   return { pool, rates };
 }
 
-export function applyAtmosphericStatus(pokemon: Pokemon, loc: MapLocation, weather: WeatherId, selectedId: PokemonSpeciesId): void {
+export function applyAtmosphericStatus(
+  pokemon: Pokemon,
+  loc: MapLocation,
+  weather: WeatherId,
+  selectedId: PokemonSpeciesId
+): void {
   let weatherCfg = loc.weather?.[weather];
   if (!weatherCfg && weather !== 'clear') {
     const family = requireWeatherFamilyId(weather);
@@ -257,14 +300,19 @@ export function applyAtmosphericStatus(pokemon: Pokemon, loc: MapLocation, weath
       weatherCfg = loc.weather[family];
     }
   }
-  const visitors = weatherCfg?.visitors ? getSpeciesEntries(weatherCfg.visitors).map(entry => entry.id) : [];
-  const exclusives = weatherCfg?.exclusive ? getSpeciesEntries(weatherCfg.exclusive).map(entry => entry.id) : [];
+  const visitors = weatherCfg?.visitors
+    ? getSpeciesEntries(weatherCfg.visitors).map((entry) => entry.id)
+    : [];
+  const exclusives = weatherCfg?.exclusive
+    ? getSpeciesEntries(weatherCfg.exclusive).map((entry) => entry.id)
+    : [];
   const isVisitor = Boolean(weatherCfg?.visitors && visitors.includes(selectedId));
   const isExclusive = Boolean(weatherCfg?.exclusive && exclusives.includes(selectedId));
   const multiplier = getWeatherMultiplier(selectedId, weather);
   const isBuffed = !isVisitor && !isExclusive && multiplier > DEFAULT_WEATHER_MULTIPLIER_NORMAL;
-  const isDebuffed = !isVisitor && !isExclusive && multiplier < DEFAULT_WEATHER_MULTIPLIER_NORMAL && multiplier > 0;
-  
+  const isDebuffed =
+    !isVisitor && !isExclusive && multiplier < DEFAULT_WEATHER_MULTIPLIER_NORMAL && multiplier > 0;
+
   if (isVisitor || isExclusive || isBuffed || isDebuffed) {
     pokemon.isAtmospheric = true;
     pokemon.weatherOrigin = weather;
@@ -273,9 +321,9 @@ export function applyAtmosphericStatus(pokemon: Pokemon, loc: MapLocation, weath
 }
 
 export interface SpawnPoolResult {
-  generic: PokemonSpeciesId[]
-  specific: PokemonSpeciesId[]
-  rates: Partial<Record<PokemonSpeciesId, number>>
+  generic: PokemonSpeciesId[];
+  specific: PokemonSpeciesId[];
+  rates: Partial<Record<PokemonSpeciesId, number>>;
 }
 
 export function getMapSpawnPoolData(

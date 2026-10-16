@@ -136,7 +136,10 @@ describe('coastalSettlementAndForestClearing', () => {
     expect(cityLamps.length).toBeGreaterThanOrEqual(4);
     for (let i = 0; i < cityLamps.length; i++) {
       for (let j = i + 1; j < cityLamps.length; j++) {
-        const dist = Math.hypot(cityLamps[i]!.x - cityLamps[j]!.x, cityLamps[i]!.y - cityLamps[j]!.y);
+        const dist = Math.hypot(
+          cityLamps[i]!.x - cityLamps[j]!.x,
+          cityLamps[i]!.y - cityLamps[j]!.y
+        );
         expect(dist).toBeGreaterThanOrEqual(4.0);
       }
     }
@@ -219,7 +222,11 @@ describe('coastalSettlementAndForestClearing', () => {
     // is stamped AFTER that building (2.5D depth ordering invariant)
     let verifiedPairs = 0;
     for (const poi of pois) {
-      if (poi.urbanLayout && poi.urbanLayout.buildings.length > 0 && poi.urbanLayout.props.length > 0) {
+      if (
+        poi.urbanLayout &&
+        poi.urbanLayout.buildings.length > 0 &&
+        poi.urbanLayout.props.length > 0
+      ) {
         for (const b of poi.urbanLayout.buildings) {
           const bIdx = instructions.findIndex(
             (inst: { filename: string; px: number; py: number }) =>
@@ -272,8 +279,8 @@ describe('coastalSettlementAndForestClearing', () => {
       wilderness
     );
 
-    const viridianTrees = instructions.filter((inst: { filename: string }) =>
-      inst.filename === 'tree_viridian_forest.png'
+    const viridianTrees = instructions.filter(
+      (inst: { filename: string }) => inst.filename === 'tree_viridian_forest.png'
     );
 
     expect(viridianTrees.length).toBeGreaterThan(0);

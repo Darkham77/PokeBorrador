@@ -15,7 +15,11 @@ import {
   type MapType
 } from './proceduralMapGenerator.ts';
 import type { MapNode } from '../adventure/mapData.ts';
-import type { CityGenerationConfig, UrbanScale, CanonicalThemeSource } from '../../types/map/adventureWorldTypes.ts';
+import type {
+  CityGenerationConfig,
+  UrbanScale,
+  CanonicalThemeSource
+} from '../../types/map/adventureWorldTypes.ts';
 
 export interface NodeLocalMapOptions {
   readonly width?: number;
@@ -44,7 +48,9 @@ const DENSITY_TOWN = 7 as const;
 /**
  * Infers canonical city scale and features from node ID or geographical name.
  */
-export function inferCanonicalCityConfig(node: MapNode & { id?: string; cityConfig?: CityGenerationConfig }): CityGenerationConfig {
+export function inferCanonicalCityConfig(
+  node: MapNode & { id?: string; cityConfig?: CityGenerationConfig }
+): CityGenerationConfig {
   if (node.cityConfig) return node.cityConfig;
 
   const name = node.name.toLowerCase();
@@ -60,7 +66,12 @@ export function inferCanonicalCityConfig(node: MapNode & { id?: string; cityConf
     };
   }
 
-  if (id === 'lavender' || id === 'cherrygrove' || id === 'azalea' || /lavanda|cerezo|azalea|lavender/i.test(name)) {
+  if (
+    id === 'lavender' ||
+    id === 'cherrygrove' ||
+    id === 'azalea' ||
+    /lavanda|cerezo|azalea|lavender/i.test(name)
+  ) {
     return {
       scale: 'village',
       buildingDensity: 5,
@@ -80,7 +91,12 @@ export function inferCanonicalCityConfig(node: MapNode & { id?: string; cityConf
     };
   }
 
-  if (id === 'celadon' || id === 'fuchsia' || id === 'goldenrod' || /azulona|fucsia|trigal|celadon|fuchsia/i.test(name)) {
+  if (
+    id === 'celadon' ||
+    id === 'fuchsia' ||
+    id === 'goldenrod' ||
+    /azulona|fucsia|trigal|celadon|fuchsia/i.test(name)
+  ) {
     return {
       scale: 'city',
       buildingDensity: DENSITY_CITY,
@@ -110,22 +126,31 @@ export function generateLocalMapForNode(
   const isCity = node.type === 'city' || node.type === 'league';
   const cityConfig = options?.cityConfig ?? (isCity ? inferCanonicalCityConfig(node) : undefined);
 
-  const defaultDims = (cityConfig ? SCALE_DIMENSIONS[cityConfig.scale] : undefined) ?? { width: DEFAULT_LOCAL_MAP_WIDTH, height: DEFAULT_LOCAL_MAP_HEIGHT };
+  const defaultDims = (cityConfig ? SCALE_DIMENSIONS[cityConfig.scale] : undefined) ?? {
+    width: DEFAULT_LOCAL_MAP_WIDTH,
+    height: DEFAULT_LOCAL_MAP_HEIGHT
+  };
   const width = options?.width ?? defaultDims.width;
   const height = options?.height ?? defaultDims.height;
   const theme: CanonicalThemeSource = options?.theme ?? 'firered';
 
   // Deterministic seed derivation from graph coordinates and node attributes
-  const nodeSeed = (baseSeed + Math.abs(node.x * 31 + node.y * 17) + (node.hasCenter ? 101 : 0)) % 1000000;
+  const nodeSeed =
+    (baseSeed + Math.abs(node.x * 31 + node.y * 17) + (node.hasCenter ? 101 : 0)) % 1000000;
 
   const nodeNameLower = node.name.toLowerCase();
   const isWaterRoute = node.type === 'route_water';
   const isPoi = node.type === 'poi';
 
   // Semantic attribute detection based on canonical Pokémon geography
-  const hasCoastalWater = /celeste|carm[ií]n|olivo|orqu[ií]dea|canela|vermilion|cerulean|olivine|cianwood|cinnabar/i.test(nodeNameLower);
+  const hasCoastalWater =
+    /celeste|carm[ií]n|olivo|orqu[ií]dea|canela|vermilion|cerulean|olivine|cianwood|cinnabar/i.test(
+      nodeNameLower
+    );
   const hasLakeWater = /lago|pozo|mar|lake|well/i.test(nodeNameLower);
-  const hasHills = isPoi || /plateada|pewter|endrino|blackthorn|moon|t[uú]nel|roca|silver|victoria/i.test(nodeNameLower);
+  const hasHills =
+    isPoi ||
+    /plateada|pewter|endrino|blackthorn|moon|t[uú]nel|roca|silver|victoria/i.test(nodeNameLower);
   const isForest = /bosque|forest/i.test(nodeNameLower);
 
   const mapType: MapType = isCity ? 'town' : 'route';

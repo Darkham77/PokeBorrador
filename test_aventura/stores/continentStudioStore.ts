@@ -74,13 +74,17 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
 
   // Drag & Drop visual state (transient 60 FPS local position overrides)
   const draggedNodeId = ref<string | null>(null);
-  const dragVisualPositions = ref<Record<string, DragVisualPosition>>({});
+  const dragVisualPositions = ref<Record<string, DragVisualPosition>>({}); // open-record: Transient drag visual coordinates dictionary indexed by node id
 
   // Urban elements & project profiles state
-  const selectedUrbanElement = ref<{ readonly type: UrbanElementType; readonly id: string } | null>(null);
+  const selectedUrbanElement = ref<{ readonly type: UrbanElementType; readonly id: string } | null>(
+    null
+  );
   const projectName = ref<string>('Kanto Regional Map');
   const activeProjectId = ref<string | null>(null);
-  const savedProfiles = ref<readonly { readonly id: string; readonly name: string }[]>(loadProfileListFromStorage());
+  const savedProfiles = ref<readonly { readonly id: string; readonly name: string }[]>(
+    loadProfileListFromStorage()
+  );
   const canUndo = ref<boolean>(false);
   const canRedo = ref<boolean>(false);
 
@@ -99,8 +103,12 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
   let workerInstance: Worker | null = null;
 
   // Pixel Dimensions (viewBox = "0 0 widthPx heightPx")
-  const widthPx = computed(() => (continentMap.value?.width ?? mapDimension.value) * CANVAS_TILE_SIZE);
-  const heightPx = computed(() => (continentMap.value?.height ?? mapDimension.value) * CANVAS_TILE_SIZE);
+  const widthPx = computed(
+    () => (continentMap.value?.width ?? mapDimension.value) * CANVAS_TILE_SIZE
+  );
+  const heightPx = computed(
+    () => (continentMap.value?.height ?? mapDimension.value) * CANVAS_TILE_SIZE
+  );
 
   // Selected POI node object
   const selectedPOI = computed<POINode | null>(() => {
@@ -299,7 +307,9 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
     selectedRouteId.value = id;
   }
 
-  function selectUrbanElement(el: { readonly type: UrbanElementType; readonly id: string } | null): void {
+  function selectUrbanElement(
+    el: { readonly type: UrbanElementType; readonly id: string } | null
+  ): void {
     selectedUrbanElement.value = el;
   }
 
@@ -316,7 +326,9 @@ export const useRegionalContinentStudioStore = defineStore('regionalContinentStu
   function movePropInPOI(nodeId: string, propId: string, x: number, y: number): void {
     const node = pois.value.find((p) => p.id === nodeId);
     if (!node?.urbanLayout) return;
-    const p = node.urbanLayout.props.find((item) => (item.id ?? `prop_${item.x}_${item.y}`) === propId);
+    const p = node.urbanLayout.props.find(
+      (item) => (item.id ?? `prop_${item.x}_${item.y}`) === propId
+    );
     if (p) {
       (p as { x: number; y: number }).x = x;
       (p as { x: number; y: number }).y = y;

@@ -1,5 +1,5 @@
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/map-card-weather" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/map-card-weather' as *;
 
 .sprite-wrapper {
   position: relative;
@@ -21,7 +21,7 @@
   pointer-events: none;
   image-rendering: auto !important;
   will-change: transform, opacity;
-  
+
   // Mask properties to colorize monochrome assets on the fly
   mask-size: contain;
   mask-repeat: no-repeat;
@@ -29,7 +29,7 @@
 
   &.rare-aura {
     z-index: calc(var(--z-map-floor) + 1);
-    
+
     &:not(.is-pre-rendered) {
       background-color: Rgb(255 0 0 / 90%);
       mask-image: var(--flare-2-url);
@@ -52,7 +52,7 @@
 
   &.atmospheric-aura {
     z-index: var(--z-map-floor);
-    
+
     &:not(.is-pre-rendered) {
       background-color: Rgb(0 255 255 / 85%);
       mask-image: var(--flare-1-url);

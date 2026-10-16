@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test';
 import {
   matchesCoreFilters,
   matchesIvFilters,
@@ -8,8 +8,8 @@ import {
   matchesTotalPowerFilter,
   matchesAllBoxFilters,
   type BoxFilterStateData
-} from '@/composables/pokemon/boxFilterPredicates'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+} from '@/composables/pokemon/boxFilterPredicates';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('boxFilterPredicates', () => {
   const baseFilter: BoxFilterStateData = {
@@ -42,8 +42,8 @@ describe('boxFilterPredicates', () => {
     friendshipMax: 255,
     friendshipSealTier: 'all',
     friendshipEvoReady: false,
-    friendshipMaxOnly: false,
-  }
+    friendshipMaxOnly: false
+  };
 
   const dummyPokemon: Pokemon = {
     id: 'pikachu',
@@ -56,46 +56,48 @@ describe('boxFilterPredicates', () => {
     hp: 100,
     maxHp: 100,
     moves: [],
-    tags: ['favorite'],
-  } as unknown as Pokemon
+    tags: ['favorite']
+  } as unknown as Pokemon;
 
   it('matches core filters (level, search, type)', () => {
-    expect(matchesCoreFilters(dummyPokemon, baseFilter)).toBe(true)
-    expect(matchesCoreFilters(dummyPokemon, { ...baseFilter, levelMin: 60 })).toBe(false)
-    expect(matchesCoreFilters(dummyPokemon, { ...baseFilter, search: 'pika' })).toBe(true)
-    expect(matchesCoreFilters(dummyPokemon, { ...baseFilter, search: 'char' })).toBe(false)
-    expect(matchesCoreFilters(dummyPokemon, { ...baseFilter, type: 'electric' })).toBe(true)
-    expect(matchesCoreFilters(dummyPokemon, { ...baseFilter, type: 'water' })).toBe(false)
-  })
+    expect(matchesCoreFilters(dummyPokemon, baseFilter)).toBe(true);
+    expect(matchesCoreFilters(dummyPokemon, { ...baseFilter, levelMin: 60 })).toBe(false);
+    expect(matchesCoreFilters(dummyPokemon, { ...baseFilter, search: 'pika' })).toBe(true);
+    expect(matchesCoreFilters(dummyPokemon, { ...baseFilter, search: 'char' })).toBe(false);
+    expect(matchesCoreFilters(dummyPokemon, { ...baseFilter, type: 'electric' })).toBe(true);
+    expect(matchesCoreFilters(dummyPokemon, { ...baseFilter, type: 'water' })).toBe(false);
+  });
 
   it('matches IV filters and checks for max 31 IV', () => {
-    expect(matchesIvFilters(dummyPokemon, baseFilter)).toBe(true)
-    expect(matchesIvFilters(dummyPokemon, { ...baseFilter, ivAny31: true })).toBe(true)
-    expect(matchesIvFilters(dummyPokemon, { ...baseFilter, ivHP: 31 })).toBe(true)
-    expect(matchesIvFilters(dummyPokemon, { ...baseFilter, ivATK: 25 })).toBe(false)
-  })
+    expect(matchesIvFilters(dummyPokemon, baseFilter)).toBe(true);
+    expect(matchesIvFilters(dummyPokemon, { ...baseFilter, ivAny31: true })).toBe(true);
+    expect(matchesIvFilters(dummyPokemon, { ...baseFilter, ivHP: 31 })).toBe(true);
+    expect(matchesIvFilters(dummyPokemon, { ...baseFilter, ivATK: 25 })).toBe(false);
+  });
 
   it('matches EV filters', () => {
-    expect(matchesEvFilters(dummyPokemon, baseFilter)).toBe(true)
-    expect(matchesEvFilters(dummyPokemon, { ...baseFilter, evHP: 50 })).toBe(true)
-    expect(matchesEvFilters(dummyPokemon, { ...baseFilter, evHP: 150 })).toBe(false)
-  })
+    expect(matchesEvFilters(dummyPokemon, baseFilter)).toBe(true);
+    expect(matchesEvFilters(dummyPokemon, { ...baseFilter, evHP: 50 })).toBe(true);
+    expect(matchesEvFilters(dummyPokemon, { ...baseFilter, evHP: 150 })).toBe(false);
+  });
 
   it('matches tags filters', () => {
-    expect(matchesTagsFilter(dummyPokemon, [])).toBe(true)
-    expect(matchesTagsFilter(dummyPokemon, ['favorite'])).toBe(true)
-    expect(matchesTagsFilter(dummyPokemon, ['shiny'])).toBe(false)
-  })
+    expect(matchesTagsFilter(dummyPokemon, [])).toBe(true);
+    expect(matchesTagsFilter(dummyPokemon, ['favorite'])).toBe(true);
+    expect(matchesTagsFilter(dummyPokemon, ['shiny'])).toBe(false);
+  });
 
   it('matches friendship and total power filters', () => {
-    expect(matchesFriendshipFilters(dummyPokemon, baseFilter)).toBe(true)
-    expect(matchesFriendshipFilters(dummyPokemon, { ...baseFilter, friendshipMin: 200 })).toBe(false)
-    expect(matchesTotalPowerFilter(dummyPokemon, 0, 1000)).toBe(true)
-    expect(matchesTotalPowerFilter(dummyPokemon, 1500, 2000)).toBe(false)
-  })
+    expect(matchesFriendshipFilters(dummyPokemon, baseFilter)).toBe(true);
+    expect(matchesFriendshipFilters(dummyPokemon, { ...baseFilter, friendshipMin: 200 })).toBe(
+      false
+    );
+    expect(matchesTotalPowerFilter(dummyPokemon, 0, 1000)).toBe(true);
+    expect(matchesTotalPowerFilter(dummyPokemon, 1500, 2000)).toBe(false);
+  });
 
   it('matches all box filters cleanly', () => {
-    expect(matchesAllBoxFilters(dummyPokemon, baseFilter)).toBe(true)
-    expect(matchesAllBoxFilters(dummyPokemon, { ...baseFilter, levelMin: 80 })).toBe(false)
-  })
-})
+    expect(matchesAllBoxFilters(dummyPokemon, baseFilter)).toBe(true);
+    expect(matchesAllBoxFilters(dummyPokemon, { ...baseFilter, levelMin: 80 })).toBe(false);
+  });
+});

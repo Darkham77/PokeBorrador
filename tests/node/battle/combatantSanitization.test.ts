@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { serializePokemonTeam, deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 

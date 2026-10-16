@@ -20,12 +20,12 @@
   color: var(--yellow);
   font-size: var(--font-11);
   line-height: 1.2;
-  text-shadow: 
-    -1px -1px 0 #000,  
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000,
-     0  2px 0 #000; // Mantener la profundidad original sumada al contorno
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 2px 0 #000; // Mantener la profundidad original sumada al contorno
 
   margin-bottom: 2px;
 }
@@ -39,21 +39,24 @@
   font-size: var(--font-8);
   line-height: 1.2;
   text-align: center;
-  text-shadow: 
-    -1px -1px 0 #000,  
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
 }
 
 // Map Card Specific Layout Overrides for Pills
 .location-tag {
   position: absolute;
-  top: 6px;   // Aligned with guardian badge (top: 6px)
+  top: 6px; // Aligned with guardian badge (top: 6px)
   right: 8px; // Aligned with grid right edge (right: 8px)
 }
 
-.tag-locked { color: Rgb(255 110 110 / 100%); border-color: Rgb(255 110 110 / 30%); }
+.tag-locked {
+  color: Rgb(255 110 110 / 100%);
+  border-color: Rgb(255 110 110 / 30%);
+}
 
 .map-left-pills-container {
   position: absolute;
@@ -71,4 +74,3 @@
 .dom-badge {
   display: block;
 }
-

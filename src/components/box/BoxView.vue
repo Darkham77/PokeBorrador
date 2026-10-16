@@ -1,149 +1,152 @@
 <script setup lang="ts">
-
-import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useBoxStore } from '@/stores/box'
-import { useUIStore } from '@/stores/ui'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { useBoxFilters } from '@/composables/pokemon/useBoxFilters'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { POKEMON_BOX_SLOT_CAPACITY, DEFAULT_POKEMON_BOX_COUNT } from '@/logic/constants/gameplay'
+import { computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useBoxStore } from '@/stores/box';
+import { useUIStore } from '@/stores/ui';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useBoxFilters } from '@/composables/pokemon/useBoxFilters';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { POKEMON_BOX_SLOT_CAPACITY, DEFAULT_POKEMON_BOX_COUNT } from '@/logic/constants/gameplay';
 
 // Sub-componentes
-import BoxHeader from './BoxHeader.vue'
-import BoxTabs from './BoxTabs.vue'
-import BoxFilters from './BoxFilters.vue'
-import BoxGrid from './BoxGrid.vue'
-import BoxModeActionsBar from './BoxModeActionsBar.vue'
+import BoxHeader from './BoxHeader.vue';
+import BoxTabs from './BoxTabs.vue';
+import BoxFilters from './BoxFilters.vue';
+import BoxGrid from './BoxGrid.vue';
+import BoxModeActionsBar from './BoxModeActionsBar.vue';
 
-const gameStore = useGameStore()
-const boxStore = useBoxStore()
-const uiStore = useUIStore()
-const classStore = usePlayerClassStore()
-const gs = computed(() => gameStore.state)
+const gameStore = useGameStore();
+const boxStore = useBoxStore();
+const uiStore = useUIStore();
+const classStore = usePlayerClassStore();
+const gs = computed(() => gameStore.state);
 
 // Clase Rocket: fuente canónica reactiva
-const isRocket = computed(() => classStore.playerClass === 'rocket')
+const isRocket = computed(() => classStore.playerClass === 'rocket');
 
 // Store-bound state
-const currentBoxIndex = computed(() => boxStore.currentBoxIndex)
-const isRocketMode = computed(() => boxStore.boxRocketMode)
-const rocketSelection = computed(() => boxStore.boxRocketSelected)
+const currentBoxIndex = computed(() => boxStore.currentBoxIndex);
+const isRocketMode = computed(() => boxStore.boxRocketMode);
+const rocketSelection = computed(() => boxStore.boxRocketSelected);
 const activeModeSelectedCount = computed(() => {
-  return isRocketMode.value ? boxStore.boxRocketSelected.length : boxStore.boxReleaseSelected.length
-})
+  return isRocketMode.value
+    ? boxStore.boxRocketSelected.length
+    : boxStore.boxReleaseSelected.length;
+});
 
 // ----- ESTADO Y FILTROS -----
-const { 
-  filters, 
-  isFiltersOpen, 
-  sortMode, 
+const {
+  filters,
+  isFiltersOpen,
+  sortMode,
   sortDirection,
-  hasActiveFilters, 
-  processedBoxList, 
-  resetFilters 
-} = useBoxFilters(computed(() => gs.value.box))
+  hasActiveFilters,
+  processedBoxList,
+  resetFilters
+} = useBoxFilters(computed(() => gs.value.box));
 
-const maxCapacity = computed(() => (gs.value.boxCount || DEFAULT_POKEMON_BOX_COUNT) * POKEMON_BOX_SLOT_CAPACITY)
+const maxCapacity = computed(
+  () => (gs.value.boxCount || DEFAULT_POKEMON_BOX_COUNT) * POKEMON_BOX_SLOT_CAPACITY
+);
 
 const displayList = computed(() => {
-  const list = processedBoxList.value || []
-  const isSorted = sortMode.value !== 'none'
-  
+  const list = processedBoxList.value || [];
+  const isSorted = sortMode.value !== 'none';
+
   if (hasActiveFilters.value || isSorted) {
     // Already filtered or sorted list (no nulls if filtered, but let's be safe)
-    return list.filter((item): item is { p: Pokemon, index: number } => item.p != null)
+    return list.filter((item): item is { p: Pokemon; index: number } => item.p != null);
   } else {
-    const start = currentBoxIndex.value * POKEMON_BOX_SLOT_CAPACITY
-    const slice = list.slice(start, start + POKEMON_BOX_SLOT_CAPACITY)
-    return slice.filter((item): item is { p: Pokemon, index: number } => item.p != null)
+    const start = currentBoxIndex.value * POKEMON_BOX_SLOT_CAPACITY;
+    const slice = list.slice(start, start + POKEMON_BOX_SLOT_CAPACITY);
+    return slice.filter((item): item is { p: Pokemon; index: number } => item.p != null);
   }
-})
+});
 
 // ----- ACCIONES -----
 const switchBox = (i: number) => {
-  sortMode.value = 'none'
-  boxStore.switchBox(i)
-}
+  sortMode.value = 'none';
+  boxStore.switchBox(i);
+};
 
 const toggleRocketMode = () => {
-  boxStore.toggleBoxRocketMode()
-}
+  boxStore.toggleBoxRocketMode();
+};
 
 const toggleReleaseMode = () => {
-  boxStore.toggleBoxReleaseMode()
-}
+  boxStore.toggleBoxReleaseMode();
+};
 
-const getBoxBuyCost = () => boxStore.getBoxBuyCost()
+const getBoxBuyCost = () => boxStore.getBoxBuyCost();
 
-const MAX_PURCHASABLE_BOXES_LIMIT = 10
+const MAX_PURCHASABLE_BOXES_LIMIT = 10;
 
 const buyNewBox = () => {
-  const cost = getBoxBuyCost()
-  if (gs.value.boxCount >= MAX_PURCHASABLE_BOXES_LIMIT) return
-  
+  const cost = getBoxBuyCost();
+  if (gs.value.boxCount >= MAX_PURCHASABLE_BOXES_LIMIT) return;
+
   uiStore.openConfirm({
     title: 'COMPRAR CAJA',
     message: `¿Querés gastar ₱${cost.toLocaleString()} para comprar la Caja ${(gs.value.boxCount || 4) + 1}?`,
     onConfirm: () => {
-      const res = boxStore.buyNewBox()
+      const res = boxStore.buyNewBox();
       if (res.success) {
-        uiStore.notify(`¡Compraste la Caja ${res.boxNum}!`, '💰')
+        uiStore.notify(`¡Compraste la Caja ${res.boxNum}!`, '💰');
       } else {
-        uiStore.notify(res.msg || 'No se pudo comprar la caja.', '❌')
+        uiStore.notify(res.msg || 'No se pudo comprar la caja.', '❌');
       }
     }
-  })
-}
+  });
+};
 
 const handleConfirmRocketSell = () => {
-  const value = boxStore.getRocketSellValue()
-  const count = boxStore.boxRocketSelected.length
-  if (count === 0) return
-  
+  const value = boxStore.getRocketSellValue();
+  const count = boxStore.boxRocketSelected.length;
+  if (count === 0) return;
+
   uiStore.openConfirm({
     title: 'VENDER AL TEAM ROCKET',
     message: `¿Vender ${count} Pokémon por ₽${value.toLocaleString()} al Team Rocket?`,
     onConfirm: () => {
-      const res = boxStore.doBoxRocketSell()
-      uiStore.notify(`¡${res.count} Pokémon vendidos por ₽${res.value.toLocaleString()}! 🚀`, '🚀')
+      const res = boxStore.doBoxRocketSell();
+      uiStore.notify(`¡${res.count} Pokémon vendidos por ₽${res.value.toLocaleString()}! 🚀`, '🚀');
     }
-  })
-}
+  });
+};
 
 const handleConfirmRelease = () => {
-  const count = boxStore.boxReleaseSelected.length
-  if (count === 0) return
-  
+  const count = boxStore.boxReleaseSelected.length;
+  if (count === 0) return;
+
   uiStore.openConfirm({
     title: 'LIBERAR POKÉMON',
     message: `¿Estás seguro de que querés liberar ${count} Pokémon? Esta acción es permanente.`,
     onConfirm: () => {
-      const names = boxStore.doBoxRelease()
-      uiStore.notify(`¡${names.length} Pokémon liberados! 🌿`, '🌿')
+      const names = boxStore.doBoxRelease();
+      uiStore.notify(`¡${names.length} Pokémon liberados! 🌿`, '🌿');
     }
-  })
-}
+  });
+};
 
 const handlePokemonClick = (index: number) => {
-  const pokemon = gs.value.box[index]
-  if (!pokemon) return
+  const pokemon = gs.value.box[index];
+  if (!pokemon) return;
 
   if (isRocketMode.value || boxStore.boxReleaseMode) {
     if (pokemon.onMission || pokemon.inDaycare || pokemon.onDefense) {
-      uiStore.notify('Este Pokémon está ocupado y no puede seleccionarse.', '🔒')
-      return
+      uiStore.notify('Este Pokémon está ocupado y no puede seleccionarse.', '🔒');
+      return;
     }
 
     if (isRocketMode.value) {
-      boxStore.toggleBoxRocketSelect(index)
+      boxStore.toggleBoxRocketSelect(index);
     } else {
-      boxStore.toggleBoxReleaseSelect(index)
+      boxStore.toggleBoxReleaseSelect(index);
     }
   } else {
-    uiStore.open('BoxPokemonMenu', { boxIndex: index })
+    uiStore.open('BoxPokemonMenu', { boxIndex: index });
   }
-}
+};
 </script>
 
 <template>
@@ -151,9 +154,7 @@ const handlePokemonClick = (index: number) => {
     <BoxHeader
       :count="gs.box?.length || 0"
       :max="maxCapacity"
-      :hint="isRocketMode 
-        ? 'Venta en Mercado Negro activa.' 
-        : 'Intercambio con equipo disponible.'"
+      :hint="isRocketMode ? 'Venta en Mercado Negro activa.' : 'Intercambio con equipo disponible.'"
     />
 
     <BoxTabs
@@ -164,10 +165,7 @@ const handlePokemonClick = (index: number) => {
       @buy="buyNewBox"
     >
       <template #extra>
-        <div
-          v-if="!isRocketMode && !boxStore.boxReleaseMode"
-          class="mode-trigger-bar-inline"
-        >
+        <div v-if="!isRocketMode && !boxStore.boxReleaseMode" class="mode-trigger-bar-inline">
           <PVTooltip
             v-if="isRocket"
             title="MODO MERCADO NEGRO"
@@ -224,7 +222,7 @@ const handlePokemonClick = (index: number) => {
     <BoxGrid
       :display-list="displayList"
       :selection="isRocketMode ? rocketSelection : boxStore.boxReleaseSelected"
-      :selection-type="isRocketMode ? 'rocket' : (boxStore.boxReleaseMode ? 'release' : null)"
+      :selection-type="isRocketMode ? 'rocket' : boxStore.boxReleaseMode ? 'release' : null"
       :is-box-empty="!gs.box || gs.box.length === 0"
       :has-active-filters="hasActiveFilters"
       @pokemon-click="handlePokemonClick"
@@ -233,8 +231,8 @@ const handlePokemonClick = (index: number) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/views/box";
-@use "@/styles/core/tools" as *;
+@use '@/styles/views/box';
+@use '@/styles/core/tools' as *;
 
 .mode-trigger-bar-inline {
   display: flex;
@@ -250,4 +248,3 @@ const handlePokemonClick = (index: number) => {
   @include btn-vicio('secondary', 'sm');
 }
 </style>
-

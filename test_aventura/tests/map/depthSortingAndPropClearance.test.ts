@@ -24,7 +24,9 @@ import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 import type { WildernessLayerResult } from '../../logic/map/wildernessVegetationEngine.ts';
 
 function createMockContinent(W = 32, H = 32): ContinentMapResult {
-  const terrainMatrix: WaterTerrainKind[][] = Array.from({ length: H }, () => Array(W).fill('grass'));
+  const terrainMatrix: WaterTerrainKind[][] = Array.from({ length: H }, () =>
+    Array(W).fill('grass')
+  );
   const heightmap: number[][] = Array.from({ length: H }, () => Array(W).fill(0));
   return {
     width: W,
@@ -113,7 +115,13 @@ describe('2.5D Depth Sorting (Y = Z) & Prop Clearance', () => {
     };
 
     const pathGrid = Array.from({ length: H }, () => Array(W).fill(false));
-    const { instructions } = buildMapBlitInstructions(continent, [poiNode], pathGrid, undefined, wilderness);
+    const { instructions } = buildMapBlitInstructions(
+      continent,
+      [poiNode],
+      pathGrid,
+      undefined,
+      wilderness
+    );
 
     let treeNorthIdx = -1;
     let houseIdx = -1;
@@ -159,7 +167,13 @@ describe('2.5D Depth Sorting (Y = Z) & Prop Clearance', () => {
     };
 
     const pathGrid = Array.from({ length: H }, () => Array(W).fill(false));
-    const { instructions } = buildMapBlitInstructions(continent, [], pathGrid, undefined, wilderness);
+    const { instructions } = buildMapBlitInstructions(
+      continent,
+      [],
+      pathGrid,
+      undefined,
+      wilderness
+    );
 
     const treeIndices: number[] = [];
     instructions.forEach((inst, idx) => {

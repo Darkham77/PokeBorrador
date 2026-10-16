@@ -26,7 +26,7 @@ import type { ProgressionResult } from '../progressionBarrierEngine.ts';
 export interface ExportSvgOptions {
   readonly width: number;
   readonly height: number;
-  readonly nodes: Record<string, ContinentNode>;
+  readonly nodes: Record<string, ContinentNode>; // open-record: Continent nodes dictionary indexed by node id
   readonly connections: readonly ContinentConnection[];
 }
 
@@ -36,7 +36,7 @@ const TOPOLOGY_NODE_RADIUS = {
   SECONDARY: 14,
   STARTER: 16,
   LEAGUE: 22,
-  GYM_CITY: 18,
+  GYM_CITY: 18
 } as const;
 const TOPOLOGY_LABEL_FONT_SIZE = 12 as const;
 const GATEHOUSE_ICON_Y_OFFSET = 12 as const;
@@ -96,7 +96,9 @@ export function importRoutesFromSvg(svgContent: string): SvgImportResult {
   let width: number = DEFAULT_SVG_VIEWPORT_DIMENSION;
   let height: number = DEFAULT_SVG_VIEWPORT_DIMENSION;
 
-  const viewBoxMatch = svgContent.match(/viewBox=["']\s*([-\d.]+)\s+([-\d.]+)\s+([\d.]+)\s+([\d.]+)\s*["']/i);
+  const viewBoxMatch = svgContent.match(
+    /viewBox=["']\s*([-\d.]+)\s+([-\d.]+)\s+([\d.]+)\s+([\d.]+)\s*["']/i
+  );
   if (viewBoxMatch?.[3] && viewBoxMatch[4]) {
     width = parseFloat(viewBoxMatch[3]);
     height = parseFloat(viewBoxMatch[4]);
@@ -107,7 +109,7 @@ export function importRoutesFromSvg(svgContent: string): SvgImportResult {
     if (heightMatch?.[1]) height = parseFloat(heightMatch[1]);
   }
 
-  const nodes: Record<string, ContinentNode> = {};
+  const nodes: Record<string, ContinentNode> = {}; // open-record: Extracted continent nodes dictionary indexed by node id
 
   // 2. Extract Cities / Nodes
   // Strategy A: Look for <g class="city-node" ...> or <g id="..." data-name="...">
@@ -123,7 +125,9 @@ export function importRoutesFromSvg(svgContent: string): SvgImportResult {
     const scaleMatch = attrs.match(/\bdata-scale=["']([^"']+)["']/i);
 
     // Extract cx, cy from nested circle
-    const circleMatch = inner.match(/<circle\b[^>]*\bcx=["']([\d.]+)["'][^>]*\bcy=["']([\d.]+)["']/i);
+    const circleMatch = inner.match(
+      /<circle\b[^>]*\bcx=["']([\d.]+)["'][^>]*\bcy=["']([\d.]+)["']/i
+    );
     if (circleMatch?.[1] && circleMatch[2]) {
       const cx = parseFloat(circleMatch[1]);
       const cy = parseFloat(circleMatch[2]);
@@ -358,9 +362,7 @@ export interface ExportPokemonTopologySvgOptions {
  * Serializes the complete Pokémon topology graph (embedded nodes, orthogonal corridors,
  * surf routes, wormhole tunnels, HM barriers, and gatehouse checkpoints) into semantic SVG.
  */
-export function exportPokemonTopologyToSvg(
-  options: ExportPokemonTopologySvgOptions
-): string {
+export function exportPokemonTopologyToSvg(options: ExportPokemonTopologySvgOptions): string {
   const { embedded, properties, progression: _progression, tileScale = 16 } = options;
   const svgW = embedded.width * tileScale;
   const svgH = embedded.height * tileScale;
@@ -393,7 +395,9 @@ export function exportPokemonTopologyToSvg(
     const isSurf = corr.kind === 'surf_route';
     const isCycle = corr.kind === 'cycle';
     const strokeColor = isSurf ? '#38bdf8' : isCycle ? '#f59e0b' : '#fbbf24';
-    const strokeWidth = prop ? Math.max(4, prop.width * (tileScale / TOPOLOGY_CORRIDOR_SCALE_DIVISOR)) : 6;
+    const strokeWidth = prop
+      ? Math.max(4, prop.width * (tileScale / TOPOLOGY_CORRIDOR_SCALE_DIVISOR))
+      : 6;
     const dashArray = isSurf ? 'stroke-dasharray="8,6"' : isCycle ? 'stroke-dasharray="10,5"' : '';
 
     corridorsMarkup += `    <polyline id="${corr.id}" class="corridor ${corr.kind}" points="${pts}" stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" fill="none" ${dashArray} />\n`;
@@ -484,4 +488,3 @@ ${corridorsMarkup}  </g>
 ${nodesMarkup}  </g>
 </svg>`;
 }
-

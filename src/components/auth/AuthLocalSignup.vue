@@ -1,29 +1,25 @@
 <script setup lang="ts">
-import { useInputAnimations } from '@/composables/ui/useInputAnimations'
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import type { GenderId } from '@/types/system/game'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { useInputAnimations } from '@/composables/ui/useInputAnimations';
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import type { GenderId } from '@/types/system/game';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
-  loading: boolean
-  usernameValue: string
-  genderValue: GenderId
+  loading: boolean;
+  usernameValue: string;
+  genderValue: GenderId;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'update:usernameValue', val: string): void
-  (e: 'update:genderValue', val: GenderId): void
-  (e: 'localSignup'): void
-}>()
+  (e: 'update:usernameValue', val: string): void;
+  (e: 'update:genderValue', val: GenderId): void;
+  (e: 'localSignup'): void;
+}>();
 
-const {
-  handleInputEnter,
-  handleInputLeave,
-  handleInputFocus,
-  handleInputBlur
-} = useInputAnimations()
+const { handleInputEnter, handleInputLeave, handleInputFocus, handleInputBlur } =
+  useInputAnimations();
 </script>
 
 <template>
@@ -34,6 +30,7 @@ const {
       class="auth-input"
       type="text"
       placeholder="Nombre de Entrenador"
+      aria-label="Nombre de Entrenador"
       maxlength="20"
       @input="emit('update:usernameValue', ($event.target as HTMLInputElement).value)"
       @keyup.enter="emit('localSignup')"
@@ -41,7 +38,7 @@ const {
       @blur="handleInputBlur"
       @mouseenter="handleInputEnter"
       @mouseleave="handleInputLeave"
-    >
+    />
 
     <div class="gender-selection-row">
       <button
@@ -50,11 +47,7 @@ const {
         :class="{ active: genderValue === 'h' }"
         @click.prevent.stop="emit('update:genderValue', 'h')"
       >
-        <PVGenderBadge
-          gender="h"
-          is-trainer
-          size="sm"
-        /> MASCULINO
+        <PVGenderBadge gender="h" is-trainer size="sm" /> MASCULINO
       </button>
       <button
         id="auth-local-signup-btn-2"
@@ -62,11 +55,7 @@ const {
         :class="{ active: genderValue === 'm' }"
         @click.prevent.stop="emit('update:genderValue', 'm')"
       >
-        <PVGenderBadge
-          gender="m"
-          is-trainer
-          size="sm"
-        /> FEMENINO
+        <PVGenderBadge gender="m" is-trainer size="sm" /> FEMENINO
       </button>
     </div>
 
@@ -82,18 +71,17 @@ const {
         class="auth-btn-icon"
         draggable="false"
         aria-hidden="true"
-      
         width="16"
         height="16"
-      >
+      />
       <span>NUEVA PARTIDA</span>
     </button>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .local-signup-form {
   width: 100%;

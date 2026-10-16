@@ -25,9 +25,13 @@ export interface EvolutionTargetInfo {
   trade?: boolean;
 }
 
-export type EvolutionTableMap = Record<PokemonSpeciesId, EvolutionTargetInfo | EvolutionTargetInfo[]>;
+export type EvolutionTableMap = Record<
+  PokemonSpeciesId,
+  EvolutionTargetInfo | EvolutionTargetInfo[]
+>;
 
 /**
  * Strongly-typed evolution database wrapper.
  */
-export const EVOLUTION_TABLE: Partial<EvolutionTableMap> = dbJson.EVOLUTION_TABLE as Partial<EvolutionTableMap>;
+export const EVOLUTION_TABLE: Partial<EvolutionTableMap> =
+  dbJson.EVOLUTION_TABLE as Partial<EvolutionTableMap>;

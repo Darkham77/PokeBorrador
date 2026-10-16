@@ -1,4 +1,4 @@
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/mixins' as *;
 @use '../../core/tools' as *;
 
 @mixin hud-pill-base {
@@ -21,7 +21,8 @@
   &.money-pill {
     background: Rgb(107 203 119 / 12%);
     border-color: Rgb(107 203 119 / 25%);
-    .pill-value, .currency-icon-money {
+    .pill-value,
+    .currency-icon-money {
       color: var(--green);
       text-shadow: 0 0 8px Rgb(107 203 119 / 40%);
     }
@@ -30,7 +31,9 @@
   &.bc-pill {
     background: Rgb(199 125 255 / 12%);
     border-color: Rgb(199 125 255 / 25%);
-    .pill-value, .currency-icon-bc, .fa-coins {
+    .pill-value,
+    .currency-icon-bc,
+    .fa-coins {
       color: var(--purple);
       text-shadow: 0 0 8px Rgb(199 125 255 / 50%);
     }
@@ -39,7 +42,8 @@
   &.badge-pill {
     background: Rgb(255 217 61 / 12%);
     border-color: Rgb(255 217 61 / 25%);
-    .pill-value, .fa-medal {
+    .pill-value,
+    .fa-medal {
       color: var(--yellow);
       text-shadow: 0 0 8px Rgb(255 217 61 / 50%);
     }
@@ -63,7 +67,8 @@
   &.egg-pill {
     background: Rgb(180 140 80 / 12%);
     border-color: Rgb(180 140 80 / 25%);
-    .pill-value, span:first-child {
+    .pill-value,
+    span:first-child {
       color: Rgb(180 140 80 / 100%);
       text-shadow: 0 0 8px Rgb(180 140 80 / 50%);
     }
@@ -107,19 +112,20 @@
     transform: Translatey(-3px);
   }
 
-  i, span:first-child {
+  i,
+  span:first-child {
     @include flex-center;
 
-    height: 24px; 
+    height: 24px;
     font-size: var(--font-18);
     margin-bottom: 0;
-    &.currency-icon-money { 
-      font-family: $font-family-emoji !important; 
+    &.currency-icon-money {
+      font-family: $font-family-emoji !important;
       font-size: var(--font-22);
     }
   }
 
-    & .pill-value {
+  & .pill-value {
     @include pixelated;
 
     display: block;
@@ -133,17 +139,27 @@
   }
 
   &.badge-pill {
-    i { color: var(--yellow); }
-    & .pill-value { color: var(--yellow); }
+    i {
+      color: var(--yellow);
+    }
+    & .pill-value {
+      color: var(--yellow);
+    }
   }
 
   &.ball-pill {
-    & .pill-value { color: var(--red); }
+    & .pill-value {
+      color: var(--red);
+    }
   }
 
   &.egg-pill {
-    i { color: Rgb(188 142 100 / 100%); }
-    & .pill-value { color: Rgb(188 142 100 / 100%); }
+    i {
+      color: Rgb(188 142 100 / 100%);
+    }
+    & .pill-value {
+      color: Rgb(188 142 100 / 100%);
+    }
   }
 }
 
@@ -170,8 +186,9 @@
   &:active {
     transform: Scale(0.95);
   }
-  
-  span:first-child, i {
+
+  span:first-child,
+  i {
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -200,7 +217,9 @@
     border-color: var(--yellow) !important;
     box-shadow: var(--shadow-card);
 
-    span:not(:first-child, .hud-notification-badge) { color: var(--yellow) !important; }
+    span:not(:first-child, .hud-notification-badge) {
+      color: var(--yellow) !important;
+    }
   }
 }
 

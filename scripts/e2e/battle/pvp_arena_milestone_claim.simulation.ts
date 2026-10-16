@@ -40,7 +40,9 @@ class PvpArenaMilestoneSimWrapper extends BaseE2ESimulation {
 test.describe('PvP Arena Milestone In-Modal Claim Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('displays RECLAMAR button in coliseum, claims in-modal without closing, and persists after F5', async ({ page }) => {
+  test('displays RECLAMAR button in coliseum, claims in-modal without closing, and persists after F5', async ({
+    page
+  }) => {
     const sim = new PvpArenaMilestoneSimWrapper(page, 'PvpMilestoneUser');
     await sim.setup();
     await sim.setupPlayerRankedElo(SIM_PLAYER_INITIAL_ELO);
@@ -72,6 +74,8 @@ test.describe('PvP Arena Milestone In-Modal Claim Simulation', () => {
     const milestoneSectionAfterF5 = page.locator('.milestone-track');
     await expect(milestoneSectionAfterF5).toBeVisible({ timeout: 10000 });
     await expect(milestoneSectionAfterF5).toContainText('RECLAMADO');
-    await expect(page.locator('#arena-milestone-track-btn-claim-bronce_1000')).toHaveCount(0, { timeout: 10000 });
+    await expect(page.locator('#arena-milestone-track-btn-claim-bronce_1000')).toHaveCount(0, {
+      timeout: 10000
+    });
   });
 });

@@ -1,54 +1,38 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { RankedPodiumWinner } from '@/types/battle/pvp'
+import { computed } from 'vue';
+import type { RankedPodiumWinner } from '@/types/battle/pvp';
 
 const props = defineProps<{
-  podiumWinners: RankedPodiumWinner[]
-  loading?: boolean
-}>()
+  podiumWinners: RankedPodiumWinner[];
+  loading?: boolean;
+}>();
 
-const PODIUM_PODESTAL_CAPACITY = 3
+const PODIUM_PODESTAL_CAPACITY = 3;
 
-const hasExtendedWinners = computed(() => props.podiumWinners.length > PODIUM_PODESTAL_CAPACITY)
-const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL_CAPACITY))
+const hasExtendedWinners = computed(() => props.podiumWinners.length > PODIUM_PODESTAL_CAPACITY);
+const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL_CAPACITY));
 </script>
 
 <template>
   <div class="podium-container">
-    <div
-      v-if="loading"
-      class="loader"
-    >
-      <div
-        v-gsap-loop="'spin'"
-        class="spinner"
-      />
+    <div v-if="loading" class="loader">
+      <div v-gsap-loop="'spin'" class="spinner" />
       <p>Cargando Salón de la Fama...</p>
     </div>
 
-    <div
-      v-else-if="podiumWinners.length === 0"
-      class="podium-empty-card"
-    >
+    <div v-else-if="podiumWinners.length === 0" class="podium-empty-card">
       <span class="podium-empty-icon emoji">👑</span>
-      <h4 class="podium-empty-title">
-        SALÓN DE LA FAMA EN DISPUTA
-      </h4>
+      <h4 class="podium-empty-title">SALÓN DE LA FAMA EN DISPUTA</h4>
       <p class="podium-empty-desc">
-        La temporada actual sigue en curso. Al finalizar el mes, los mejores 10 entrenadores del ranking global serán inmortalizados en este podio histórico.
+        La temporada actual sigue en curso. Al finalizar el mes, los mejores 10 entrenadores del
+        ranking global serán inmortalizados en este podio histórico.
       </p>
     </div>
 
-    <div
-      v-else
-      class="podium-display"
-    >
+    <div v-else class="podium-display">
       <div class="podium-steps-container">
         <!-- 2ND PLACE -->
-        <div
-          v-if="podiumWinners[1]"
-          class="podium-step step-second"
-        >
+        <div v-if="podiumWinners[1]" class="podium-step step-second">
           <span class="podium-crown emoji">🥈</span>
           <span class="podium-player-name">{{ podiumWinners[1].username }}</span>
           <span class="podium-elo">{{ podiumWinners[1].elo }} LP</span>
@@ -58,10 +42,7 @@ const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL
         </div>
 
         <!-- 1ST PLACE -->
-        <div
-          v-if="podiumWinners[0]"
-          class="podium-step step-first"
-        >
+        <div v-if="podiumWinners[0]" class="podium-step step-first">
           <span class="podium-crown emoji">👑</span>
           <span class="podium-player-name">{{ podiumWinners[0].username }}</span>
           <span class="podium-elo">{{ podiumWinners[0].elo }} LP</span>
@@ -71,10 +52,7 @@ const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL
         </div>
 
         <!-- 3RD PLACE -->
-        <div
-          v-if="podiumWinners[2]"
-          class="podium-step step-third"
-        >
+        <div v-if="podiumWinners[2]" class="podium-step step-third">
           <span class="podium-crown emoji">🥉</span>
           <span class="podium-player-name">{{ podiumWinners[2].username }}</span>
           <span class="podium-elo">{{ podiumWinners[2].elo }} LP</span>
@@ -85,15 +63,8 @@ const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL
       </div>
 
       <!-- REST OF TOP 10 -->
-      <div
-        v-if="hasExtendedWinners"
-        class="podium-rest-list"
-      >
-        <div
-          v-for="winner in extendedWinners"
-          :key="winner.user_id"
-          class="podium-rest-item"
-        >
+      <div v-if="hasExtendedWinners" class="podium-rest-list">
+        <div v-for="winner in extendedWinners" :key="winner.user_id" class="podium-rest-item">
           <span class="rest-rank">#{{ winner.rank }}</span>
           <span class="rest-name">{{ winner.username }}</span>
           <span class="rest-tier">{{ winner.tier }}</span>
@@ -122,9 +93,22 @@ const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL
   background: Rgb(15 23 42 / 60%);
   text-align: center;
 
-  .podium-empty-icon { font-size: var(--font-32); }
-  .podium-empty-title { margin: 0; color: var(--amber); font-family: var(--font-pixel); font-size: var(--font-10); }
-  .podium-empty-desc { max-width: 320px; color: var(--slate-400); font-family: var(--font-ui); font-size: var(--font-9); line-height: 1.4; }
+  .podium-empty-icon {
+    font-size: var(--font-32);
+  }
+  .podium-empty-title {
+    margin: 0;
+    color: var(--amber);
+    font-family: var(--font-pixel);
+    font-size: var(--font-10);
+  }
+  .podium-empty-desc {
+    max-width: 320px;
+    color: var(--slate-400);
+    font-family: var(--font-ui);
+    font-size: var(--font-9);
+    line-height: 1.4;
+  }
 }
 
 .podium-display {
@@ -148,7 +132,9 @@ const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL
   gap: $spacing-xs;
   width: 90px;
 
-  .podium-crown { font-size: var(--font-18); }
+  .podium-crown {
+    font-size: var(--font-18);
+  }
   .podium-player-name {
     max-width: 100%;
     color: var(--slate-50);
@@ -161,7 +147,12 @@ const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .podium-elo { color: var(--amber); font-family: var(--font-ui); font-size: var(--font-8); font-weight: bold; }
+  .podium-elo {
+    color: var(--amber);
+    font-family: var(--font-ui);
+    font-size: var(--font-8);
+    font-weight: bold;
+  }
 
   .pedestal {
     display: flex;
@@ -169,12 +160,29 @@ const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL
     align-items: center;
     width: 100%;
     border-radius: $radius-md $radius-md 0 0;
-    .pedestal-num { color: Rgb(255 255 255 / 80%); font-family: var(--font-pixel); font-size: var(--font-16); font-weight: bold; }
+    .pedestal-num {
+      color: Rgb(255 255 255 / 80%);
+      font-family: var(--font-pixel);
+      font-size: var(--font-16);
+      font-weight: bold;
+    }
   }
 
-  &.step-first .pedestal { height: 70px; border: 1px solid var(--amber); background: Linear-Gradient(180deg, var(--amber-dark), var(--amber-dark)); }
-  &.step-second .pedestal { height: 50px; border: 1px solid var(--slate-300); background: Linear-Gradient(180deg, var(--slate-400), var(--slate-700)); }
-  &.step-third .pedestal { height: 35px; border: 1px solid var(--amber-dark); background: Linear-Gradient(180deg, var(--amber-dark), var(--darker)); }
+  &.step-first .pedestal {
+    height: 70px;
+    border: 1px solid var(--amber);
+    background: Linear-Gradient(180deg, var(--amber-dark), var(--amber-dark));
+  }
+  &.step-second .pedestal {
+    height: 50px;
+    border: 1px solid var(--slate-300);
+    background: Linear-Gradient(180deg, var(--slate-400), var(--slate-700));
+  }
+  &.step-third .pedestal {
+    height: 35px;
+    border: 1px solid var(--amber-dark);
+    background: Linear-Gradient(180deg, var(--amber-dark), var(--darker));
+  }
 }
 
 .podium-rest-list {
@@ -193,10 +201,24 @@ const extendedWinners = computed(() => props.podiumWinners.slice(PODIUM_PODESTAL
   background: Rgb(255 255 255 / 2%);
   font-size: var(--font-9);
 
-  .rest-rank { width: 24px; color: var(--slate-500); font-family: var(--font-pixel); }
-  .rest-name { color: var(--slate-50); font-family: var(--font-pixel); flex: 1; }
-  .rest-tier { color: var(--slate-400); margin-right: 10px; }
-  .rest-elo { color: var(--amber-dark); font-weight: bold; }
+  .rest-rank {
+    width: 24px;
+    color: var(--slate-500);
+    font-family: var(--font-pixel);
+  }
+  .rest-name {
+    color: var(--slate-50);
+    font-family: var(--font-pixel);
+    flex: 1;
+  }
+  .rest-tier {
+    color: var(--slate-400);
+    margin-right: 10px;
+  }
+  .rest-elo {
+    color: var(--amber-dark);
+    font-weight: bold;
+  }
 }
 
 .loader {

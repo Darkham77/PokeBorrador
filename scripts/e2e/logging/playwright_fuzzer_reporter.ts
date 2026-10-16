@@ -58,7 +58,10 @@ function recordFailedTestCheckpoint(test: TestCase, result: TestResult): void {
       if (suiteName.toLowerCase() === 'batchsimulationharness.ts' && test.parent) {
         let p: typeof test.parent | undefined = test.parent;
         while (p) {
-          if (p.location?.file && path.basename(p.location.file).toLowerCase() !== 'batchsimulationharness.ts') {
+          if (
+            p.location?.file &&
+            path.basename(p.location.file).toLowerCase() !== 'batchsimulationharness.ts'
+          ) {
             suiteRelativePath = path.relative(process.cwd(), p.location.file);
             suiteName = path.basename(p.location.file);
             break;
@@ -67,7 +70,9 @@ function recordFailedTestCheckpoint(test: TestCase, result: TestResult): void {
         }
       }
 
-      const driver = (process.env.SIM_DB_DRIVER === 'postgres' ? 'postgres' : 'sqlite') as SimDriver;
+      const driver = (
+        process.env.SIM_DB_DRIVER === 'postgres' ? 'postgres' : 'sqlite'
+      ) as SimDriver;
       const batchMatch = test.title.match(/lote de fuzzer #(\d+)/i);
       const failedBatchIndex = batchMatch ? Number(batchMatch[1]) : undefined;
 
@@ -76,10 +81,11 @@ function recordFailedTestCheckpoint(test: TestCase, result: TestResult): void {
         driver,
         failedTestTitle: test.title,
         failedBatchIndex,
-        errorSnippet: result.error?.message?.slice(0, 300),
+        errorSnippet: result.error?.message?.slice(0, 300)
       });
     }
-  } catch { // catch-ok: non-fatal checkpoint recording error
+  } catch {
+    // catch-ok: non-fatal checkpoint recording error
     // Non-fatal
   }
 }
@@ -92,12 +98,14 @@ export default class PlaywrightFuzzerReporter implements Reporter {
 
   onBegin(config: FullConfig, suite: Suite) {
     const offset = process.env.SIM_TEST_OFFSET ? parseInt(process.env.SIM_TEST_OFFSET, 10) : 0;
-    const totalOverride = process.env.SIM_TOTAL_TESTS ? parseInt(process.env.SIM_TOTAL_TESTS, 10) : 0;
+    const totalOverride = process.env.SIM_TOTAL_TESTS
+      ? parseInt(process.env.SIM_TOTAL_TESTS, 10)
+      : 0;
     const pendingTests = suite.allTests().length;
-    this.totalTests = totalOverride > 0 ? totalOverride : (pendingTests + offset);
+    this.totalTests = totalOverride > 0 ? totalOverride : pendingTests + offset;
     // When all tests (including skipped ones) are registered statically in Playwright (pendingTests >= totalTests),
     // Playwright dispatches onTestEnd for every skipped test. Initializing completedTests to offset causes double-counting.
-    this.completedTests = (pendingTests >= this.totalTests && offset > 0) ? 0 : offset;
+    this.completedTests = pendingTests >= this.totalTests && offset > 0 ? 0 : offset;
     this.startTime = Temporal.Now.instant().epochMilliseconds;
     const firstTest = suite.allTests()[0];
     if (firstTest?.location?.file) {
@@ -107,10 +115,14 @@ export default class PlaywrightFuzzerReporter implements Reporter {
     logSync('─'.repeat(80));
     if (offset > 0) {
       const remainingCount = Math.max(0, this.totalTests - offset);
-      logSync(`🚀 [SIMULATION] Reanudando suite en test ${offset + 1}/${this.totalTests} (${remainingCount} restantes) usando ${config.workers} workers concurrentes...`);
+      logSync(
+        `🚀 [SIMULATION] Reanudando suite en test ${offset + 1}/${this.totalTests} (${remainingCount} restantes) usando ${config.workers} workers concurrentes...`
+      );
       logSync(`📅 [SIMULATION] Fecha y hora de inicio: ${startFormatted}\n`);
     } else {
-      logSync(`🚀 [SIMULATION] Iniciando suite con ${this.totalTests} tests usando ${config.workers} workers concurrentes...`);
+      logSync(
+        `🚀 [SIMULATION] Iniciando suite con ${this.totalTests} tests usando ${config.workers} workers concurrentes...`
+      );
       logSync(`📅 [SIMULATION] Fecha y hora de inicio: ${startFormatted}\n`);
     }
   }
@@ -128,13 +140,19 @@ export default class PlaywrightFuzzerReporter implements Reporter {
     const paddedPercent = `${percent}`.padStart(3, ' ');
 
     if (result.status === 'passed') {
-      logSync(`✅ [WORKER-${workerIndex}] [${paddedPercent}%] (${this.completedTests}/${this.totalTests}) Completado: ${test.title} (${durationSec}s)`);
+      logSync(
+        `✅ [WORKER-${workerIndex}] [${paddedPercent}%] (${this.completedTests}/${this.totalTests}) Completado: ${test.title} (${durationSec}s)`
+      );
     } else if (result.status === 'skipped') {
-      logSync(`⏭️ [WORKER-${workerIndex}] [${paddedPercent}%] (${this.completedTests}/${this.totalTests}) Omitido: ${test.title}`);
+      logSync(
+        `⏭️ [WORKER-${workerIndex}] [${paddedPercent}%] (${this.completedTests}/${this.totalTests}) Omitido: ${test.title}`
+      );
     } else if (result.status === 'interrupted') {
       logSync(`⚠️ [WORKER-${workerIndex}] Interrumpido: ${test.title}`);
     } else {
-      logSync(`❌ [WORKER-${workerIndex}] [${paddedPercent}%] (${this.completedTests}/${this.totalTests}) FALLÓ: ${test.title} (${durationSec}s)`);
+      logSync(
+        `❌ [WORKER-${workerIndex}] [${paddedPercent}%] (${this.completedTests}/${this.totalTests}) FALLÓ: ${test.title} (${durationSec}s)`
+      );
       logFailedTestOutput(result);
       recordFailedTestCheckpoint(test, result);
     }
@@ -149,7 +167,13 @@ export default class PlaywrightFuzzerReporter implements Reporter {
 
   onStdOut(chunk: string | Buffer) {
     const text = chunk.toString();
-    if (text.includes('▶️') || text.includes('⚔️') || text.includes('✅') || text.includes('❌') || text.includes('⚠️')) {
+    if (
+      text.includes('▶️') ||
+      text.includes('⚔️') ||
+      text.includes('✅') ||
+      text.includes('❌') ||
+      text.includes('⚠️')
+    ) {
       logSync(text.trimEnd());
     }
   }
@@ -162,14 +186,19 @@ export default class PlaywrightFuzzerReporter implements Reporter {
   }
 
   onEnd(result: FullResult) {
-    const totalSec = ((Temporal.Now.instant().epochMilliseconds - this.startTime) / 1000).toFixed(1);
+    const totalSec = ((Temporal.Now.instant().epochMilliseconds - this.startTime) / 1000).toFixed(
+      1
+    );
     const icon = result.status === 'passed' ? '✨' : '❌';
-    logSync(`\n${icon} [SIMULATION] Suite finalizada con estado: ${result.status.toUpperCase()} (${this.completedTests}/${this.totalTests} ejecutados en ${totalSec}s)\n`);
+    logSync(
+      `\n${icon} [SIMULATION] Suite finalizada con estado: ${result.status.toUpperCase()} (${this.completedTests}/${this.totalTests} ejecutados en ${totalSec}s)\n`
+    );
 
     if (result.status === 'passed' && this.activeSuiteName) {
       try {
         clearSuiteCheckpoint(this.activeSuiteName);
-      } catch { // catch-ok: non-fatal checkpoint cleanup error
+      } catch {
+        // catch-ok: non-fatal checkpoint cleanup error
         // Non-fatal
       }
     }

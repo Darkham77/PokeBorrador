@@ -14,74 +14,74 @@ import { styleText, parseArgs } from 'node:util';
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 
 const AUDIT_ITEM_MAPPING: Record<string, string> = {
-  'pocion': 'potion',
-  'super_pocion': 'super-potion',
-  'hiper_pocion': 'hyper-potion',
-  'pocion_max': 'max-potion',
-  'revivir_max': 'max-revive',
-  'quemadura': 'burn-heal',
-  'despertar': 'awakening',
-  'cura_total': 'full-heal',
-  'elixir': 'ether',
-  'elixirmax': 'max-elixir',
-  'piedra_fuego': 'fire-stone',
-  'piedra_agua': 'water-stone',
-  'piedra_trueno': 'thunder-stone',
-  'piedra_hoja': 'leaf-stone',
-  'piedra_luna': 'moon-stone',
-  'pokeball': 'poke-ball',
-  'pokéball': 'poke-ball',
-  'superball': 'great-ball',
-  'greatball': 'great-ball',
+  pocion: 'potion',
+  super_pocion: 'super-potion',
+  hiper_pocion: 'hyper-potion',
+  pocion_max: 'max-potion',
+  revivir_max: 'max-revive',
+  quemadura: 'burn-heal',
+  despertar: 'awakening',
+  cura_total: 'full-heal',
+  elixir: 'ether',
+  elixirmax: 'max-elixir',
+  piedra_fuego: 'fire-stone',
+  piedra_agua: 'water-stone',
+  piedra_trueno: 'thunder-stone',
+  piedra_hoja: 'leaf-stone',
+  piedra_luna: 'moon-stone',
+  pokeball: 'poke-ball',
+  pokéball: 'poke-ball',
+  superball: 'great-ball',
+  greatball: 'great-ball',
   'super-ball': 'great-ball',
   'super ball': 'great-ball',
   'súper ball': 'great-ball',
-  'ultraball': 'ultra-ball',
+  ultraball: 'ultra-ball',
   'ultra-ball': 'ultra-ball',
   'ultra ball': 'ultra-ball',
-  'masterball': 'master-ball',
+  masterball: 'master-ball',
   'master-ball': 'master-ball',
   'master ball': 'master-ball',
-  'netball': 'net-ball',
+  netball: 'net-ball',
   'net-ball': 'net-ball',
-  'duskball': 'dusk-ball',
+  duskball: 'dusk-ball',
   'dusk-ball': 'dusk-ball',
-  'turnoball': 'timer-ball',
-  'timerball': 'timer-ball',
+  turnoball: 'timer-ball',
+  timerball: 'timer-ball',
   'timer-ball': 'timer-ball',
   'turno ball': 'timer-ball',
-  'repelente': 'repel',
-  'super_repel': 'super-repel',
-  'max_repel': 'max-repel',
-  'huevo_suerte': 'lucky-egg',
-  'huevo_suerte_pequeño': 'lucky-egg',
-  'compartir_exp': 'exp-share',
-  'restos': 'leftovers',
-  'cascabel_concha': 'shell-bell',
-  'cinta_elegida': 'choice-band',
-  'banda_focus': 'focus-sash',
-  'lente_zoom': 'scope-lens',
-  'caramelo_raro': 'rare-candy',
-  'subida_de_pp': 'pp-up',
-  'moneda_amuleto': 'amulet-coin',
-  'bola_luminosa': 'light-ball',
-  'hueso_grueso': 'thick-club',
-  'palo': 'stick',
-  'polvo_metálico': 'metal-powder',
-  'cuchara_torcida': 'twisted-spoon',
-  'hechizo': 'spell-tag',
-  'pesa_recia': 'power-weight',
-  'brazal_recia': 'power-bracer',
-  'cinto_recia': 'power-belt',
-  'lente_recia': 'power-lens',
-  'banda_recia': 'power-band',
-  'franja_recia': 'power-anklet',
-  'lazo_destino': 'destiny-knot',
-  'piedra_eterna': 'everstone',
-  'restaurador_vigor': 'rare-candy',
-  'lemonade': 'lemonade',
-  'refresco': 'soda-pop',
-  'limonada': 'lemonade'
+  repelente: 'repel',
+  super_repel: 'super-repel',
+  max_repel: 'max-repel',
+  huevo_suerte: 'lucky-egg',
+  huevo_suerte_pequeño: 'lucky-egg',
+  compartir_exp: 'exp-share',
+  restos: 'leftovers',
+  cascabel_concha: 'shell-bell',
+  cinta_elegida: 'choice-band',
+  banda_focus: 'focus-sash',
+  lente_zoom: 'scope-lens',
+  caramelo_raro: 'rare-candy',
+  subida_de_pp: 'pp-up',
+  moneda_amuleto: 'amulet-coin',
+  bola_luminosa: 'light-ball',
+  hueso_grueso: 'thick-club',
+  palo: 'stick',
+  polvo_metálico: 'metal-powder',
+  cuchara_torcida: 'twisted-spoon',
+  hechizo: 'spell-tag',
+  pesa_recia: 'power-weight',
+  brazal_recia: 'power-bracer',
+  cinto_recia: 'power-belt',
+  lente_recia: 'power-lens',
+  banda_recia: 'power-band',
+  franja_recia: 'power-anklet',
+  lazo_destino: 'destiny-knot',
+  piedra_eterna: 'everstone',
+  restaurador_vigor: 'rare-candy',
+  lemonade: 'lemonade',
+  refresco: 'soda-pop',
+  limonada: 'lemonade'
 };
 
 interface AuditResult {
@@ -94,23 +94,59 @@ interface AuditResult {
 }
 
 const POKE_API_KEYWORD_MATCHERS = [
-  'potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers',
-  'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl',
-  'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket',
-  'radar', 'awakening'
+  'potion',
+  'revive',
+  'heal',
+  'ether',
+  'elixir',
+  'antidote',
+  'share',
+  'leftovers',
+  'bell',
+  'band',
+  'sash',
+  'lens',
+  'candy',
+  'up',
+  'egg',
+  'nugget',
+  'pearl',
+  'dust',
+  'piece',
+  'spoon',
+  'tag',
+  'powder',
+  'club',
+  'light',
+  'stick',
+  'ticket',
+  'radar',
+  'awakening'
 ] as const;
 
 function isPokeApiSprite(spriteKey: string, mappedKey: string): boolean {
   if (AUDIT_ITEM_MAPPING[spriteKey] !== undefined) return true;
   if (!isNaN(Number(spriteKey))) return true;
-  if (spriteKey.includes('-') || spriteKey.includes('ball') || spriteKey.includes('stone') || spriteKey.includes('repel') || spriteKey.includes('fossil')) {
+  if (
+    spriteKey.includes('-') ||
+    spriteKey.includes('ball') ||
+    spriteKey.includes('stone') ||
+    spriteKey.includes('repel') ||
+    spriteKey.includes('fossil')
+  ) {
     return true;
   }
-  return POKE_API_KEYWORD_MATCHERS.some(k => mappedKey.includes(k));
+  return POKE_API_KEYWORD_MATCHERS.some((k) => mappedKey.includes(k));
 }
 
-function buildItemPathsToCheck(itemSprite: string, spriteKey: string, mappedKey: string, publicDir: string): string[] {
-  const pathsToCheck: string[] = [ // no-domain: Non-domain utility collection or data structure
+function buildItemPathsToCheck(
+  itemSprite: string,
+  spriteKey: string,
+  mappedKey: string,
+  publicDir: string
+): string[] {
+  const pathsToCheck: string[] = [
+    // no-domain: Non-domain utility collection or data structure
     path.join(publicDir, 'assets/sprites', `${itemSprite}.webp`),
     path.join(publicDir, 'assets/sprites', `${itemSprite}.png`)
   ];
@@ -127,7 +163,8 @@ async function checkIfAnyPathExists(paths: string[]): Promise<boolean> {
     try {
       await fs.access(p);
       return true;
-    } catch { // catch-ok: path does not exist, continue search
+    } catch {
+      // catch-ok: path does not exist, continue search
     }
   }
   return false;
@@ -140,7 +177,10 @@ function resolveItemShops(item: (typeof SHOP_ITEMS)[number]): string[] {
   return shops;
 }
 
-async function auditSingleShopItem(item: (typeof SHOP_ITEMS)[number], publicDir: string): Promise<AuditResult | null> {
+async function auditSingleShopItem(
+  item: (typeof SHOP_ITEMS)[number],
+  publicDir: string
+): Promise<AuditResult | null> {
   if (!item.sprite) return null;
   const spriteKey = item.sprite.replace(/\.(png|webp|jpg|jpeg|gif|bmp)$/i, '').toLowerCase();
   const mappedKey = AUDIT_ITEM_MAPPING[spriteKey] ?? spriteKey;
@@ -160,27 +200,47 @@ async function auditSingleShopItem(item: (typeof SHOP_ITEMS)[number], publicDir:
 
 function printMissingItemsDetail(allMissing: readonly AuditResult[], isSummary: boolean): void {
   if (allMissing.length === 0) {
-    console.log(styleText('green', '\n🎉 ¡Excelente! Todas las imágenes de ítems de ambas tiendas están presentes físicamente en el sistema.'));
+    console.log(
+      styleText(
+        'green',
+        '\n🎉 ¡Excelente! Todas las imágenes de ítems de ambas tiendas están presentes físicamente en el sistema.'
+      )
+    );
     return;
   }
   if (isSummary) {
-    console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${allMissing.length} imágenes de ítems faltantes.`));
+    console.log(
+      styleText(
+        'cyan',
+        `\n[INFO] Modo resumen activo: ${allMissing.length} imágenes de ítems faltantes.`
+      )
+    );
     return;
   }
   console.log(styleText('red', '\n⚠️ DETALLE DE IMÁGENES FALTANTES:'));
   const limit = 30;
   const toPrint = allMissing.slice(0, limit);
-  toPrint.forEach(i => {
+  toPrint.forEach((i) => {
     console.log(`   - 🚫 ${styleText('bold', i.name)} (ID: ${i.id})`);
     console.log(`        Tiendas:       ${i.shops.join(' y ') || 'Ninguna (Solo Base)'}`);
-    i.expectedPaths.forEach(p => {
+    i.expectedPaths.forEach((p) => {
       const relPath = path.relative(process.cwd(), p);
       console.log(`        Ruta esperada: ${styleText('underline', relPath)}`);
     });
   });
   if (allMissing.length > limit) {
-    console.log(styleText('cyan', `\n[INFO] Se muestran solo las primeras ${limit} de un total de ${allMissing.length} imágenes faltantes para evitar saturar la terminal.`));
-    console.log(styleText('cyan', `👉 Para guardar el reporte completo a un archivo: npm run assets:audit:items -- --output=scratch/item_assets_report.txt`));
+    console.log(
+      styleText(
+        'cyan',
+        `\n[INFO] Se muestran solo las primeras ${limit} de un total de ${allMissing.length} imágenes faltantes para evitar saturar la terminal.`
+      )
+    );
+    console.log(
+      styleText(
+        'cyan',
+        `👉 Para guardar el reporte completo a un archivo: npm run assets:audit:items -- --output=scratch/item_assets_report.txt`
+      )
+    );
   }
 }
 
@@ -194,7 +254,7 @@ async function main() {
   });
 
   console.log(styleText('bold', '\n--- 🔎 ITEM IMAGE ASSETS AUDIT ---'));
-  
+
   const publicDir = path.resolve(process.cwd(), 'public');
   const results: AuditResult[] = [];
 
@@ -204,14 +264,14 @@ async function main() {
   }
 
   // Group and print stats
-  const localShopItems = results.filter(r => r.shops.includes('Poké Market (Local)'));
-  const bcShopItems = results.filter(r => r.shops.includes('BC Shop (Battle Club)'));
+  const localShopItems = results.filter((r) => r.shops.includes('Poké Market (Local)'));
+  const bcShopItems = results.filter((r) => r.shops.includes('BC Shop (Battle Club)'));
 
-  const localFound = localShopItems.filter(r => r.found).length;
-  const localMissing = localShopItems.filter(r => !r.found);
+  const localFound = localShopItems.filter((r) => r.found).length;
+  const localMissing = localShopItems.filter((r) => !r.found);
 
-  const bcFound = bcShopItems.filter(r => r.found).length;
-  const bcMissing = bcShopItems.filter(r => !r.found);
+  const bcFound = bcShopItems.filter((r) => r.found).length;
+  const bcMissing = bcShopItems.filter((r) => !r.found);
 
   console.log(`\n🏬 ${styleText('bold', 'POKÉ MARKET (TIENDA LOCAL):')}`);
   console.log(`   📦 Total ítems con sprite: ${localShopItems.length}`);
@@ -225,7 +285,7 @@ async function main() {
 
   console.log('\n════════════════════════════════════════════════');
 
-  const allMissing = results.filter(r => !r.found);
+  const allMissing = results.filter((r) => !r.found);
   printMissingItemsDetail(allMissing, Boolean(values.summary));
 
   if (values.output) {
@@ -236,9 +296,9 @@ async function main() {
       `Total BC Shop: ${bcShopItems.length} (Missing: ${bcMissing.length})`,
       `\nDetailed Missing Items:`
     ];
-    allMissing.forEach(i => {
+    allMissing.forEach((i) => {
       lines.push(`- [MISSING] ${i.name} (ID: ${i.id}) [Shops: ${i.shops.join(', ') || 'None'}]`);
-      i.expectedPaths.forEach(p => lines.push(`  Expected: ${path.relative(process.cwd(), p)}`));
+      i.expectedPaths.forEach((p) => lines.push(`  Expected: ${path.relative(process.cwd(), p)}`));
     });
     await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
     console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));

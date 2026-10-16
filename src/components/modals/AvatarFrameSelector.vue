@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import { useCosmeticsStore } from '@/stores/player/cosmetics'
-import { useGameStore } from '@/stores/game'
-import { useAuthStore } from '@/stores/auth'
-import AvatarFrameCard from './AvatarFrameCard.vue'
+import { ref, computed } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import { useCosmeticsStore } from '@/stores/player/cosmetics';
+import { useGameStore } from '@/stores/game';
+import { useAuthStore } from '@/stores/auth';
+import AvatarFrameCard from './AvatarFrameCard.vue';
 
 import {
   isCosmeticStyleLocked,
@@ -14,27 +14,27 @@ import {
   type ShapeFilterOption,
   type LockableCosmeticStyle,
   type CosmeticPlayerContext
-} from './cosmeticsFilterHelper'
+} from './cosmeticsFilterHelper';
 
-const uiStore = useUIStore()
-const cosmeticsStore = useCosmeticsStore()
-const gameStore = useGameStore()
-const authStore = useAuthStore()
+const uiStore = useUIStore();
+const cosmeticsStore = useCosmeticsStore();
+const gameStore = useGameStore();
+const authStore = useAuthStore();
 
-const activeShapeFilter = ref<ShapeFilterOption>('all')
+const activeShapeFilter = ref<ShapeFilterOption>('all');
 
 const filteredAvatarStyles = computed(() => {
-  return filterAvatarStylesByShape(cosmeticsStore.allAvatarStyles, activeShapeFilter.value)
-})
+  return filterAvatarStylesByShape(cosmeticsStore.allAvatarStyles, activeShapeFilter.value);
+});
 
 const isLocal = computed(() => {
-  const hn = typeof window !== 'undefined' ? window.location.hostname : undefined
-  return checkIsLocalEnvironment(import.meta.env.DEV, hn)
-})
+  const hn = typeof window !== 'undefined' ? window.location.hostname : undefined;
+  return checkIsLocalEnvironment(import.meta.env.DEV, hn);
+});
 
 const isAdmin = computed(() => {
-  return authStore.user?.role === 'admin' || isLocal.value
-})
+  return authStore.user?.role === 'admin' || isLocal.value;
+});
 
 const playerContext = computed<CosmeticPlayerContext>(() => ({
   playerClass: gameStore.state.playerClass,
@@ -42,20 +42,20 @@ const playerContext = computed<CosmeticPlayerContext>(() => ({
   trainerLevel: gameStore.state.trainerLevel,
   faction: gameStore.state.faction,
   isAdmin: isAdmin.value
-}))
+}));
 
 const isAvatarLocked = (style: LockableCosmeticStyle) => {
-  return isCosmeticStyleLocked(style, playerContext.value)
-}
+  return isCosmeticStyleLocked(style, playerContext.value);
+};
 
 const selectAvatar = (style: LockableCosmeticStyle) => {
-  const lockNotice = resolveCosmeticLockNotification(style, 'marco', playerContext.value)
+  const lockNotice = resolveCosmeticLockNotification(style, 'marco', playerContext.value);
   if (lockNotice) {
-    uiStore.notify(lockNotice, '🔒')
-    return
+    uiStore.notify(lockNotice, '🔒');
+    return;
   }
-  cosmeticsStore.equipAvatarStyle(style.id)
-}
+  cosmeticsStore.equipAvatarStyle(style.id);
+};
 </script>
 
 <template>
@@ -64,34 +64,32 @@ const selectAvatar = (style: LockableCosmeticStyle) => {
       <h3>Bordes de Avatar</h3>
       <span class="badge">FOTO DE PERFIL</span>
     </div>
-    <p class="section-desc">
-      Marcos especiales para destacar tu presencia.
-    </p>
+    <p class="section-desc">Marcos especiales para destacar tu presencia.</p>
 
     <!-- Filtro de Formas de Marcos -->
     <div class="shape-filter-tabs">
       <button
-        id="avatar-frame-selector-btn-todos" 
+        id="avatar-frame-selector-btn-todos"
         type="button"
-        class="filter-tab-btn" 
+        class="filter-tab-btn"
         :class="{ active: activeShapeFilter === 'all' }"
         @click.stop="activeShapeFilter = 'all'"
       >
         Todos
       </button>
       <button
-        id="avatar-frame-selector-btn-circulares" 
+        id="avatar-frame-selector-btn-circulares"
         type="button"
-        class="filter-tab-btn" 
+        class="filter-tab-btn"
         :class="{ active: activeShapeFilter === 'circular' }"
         @click.stop="activeShapeFilter = 'circular'"
       >
         <span class="emoji">🔴</span> Circulares
       </button>
       <button
-        id="avatar-frame-selector-btn-cuadrados" 
+        id="avatar-frame-selector-btn-cuadrados"
         type="button"
-        class="filter-tab-btn" 
+        class="filter-tab-btn"
         :class="{ active: activeShapeFilter === 'square' }"
         @click.stop="activeShapeFilter = 'square'"
       >
@@ -116,7 +114,7 @@ const selectAvatar = (style: LockableCosmeticStyle) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_cosmetics-shared";
+@use '@/styles/components/_cosmetics-shared';
 
 .avatar-preview-box {
   display: flex;

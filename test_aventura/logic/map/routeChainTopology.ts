@@ -12,10 +12,7 @@
  *   4. Secondary loop injection for surf/cycling shortcuts.
  */
 
-import {
-  isPrimaryNode,
-  type POINode
-} from '../../types/map/poiTypes.ts';
+import { isPrimaryNode, type POINode } from '../../types/map/poiTypes.ts';
 
 const TWO_OPT_IMPROVEMENT_EPSILON = 0.01 as const;
 const MIN_CHAIN_LENGTH_FOR_SECONDARY_LOOPS = 6 as const;
@@ -29,9 +26,21 @@ export function buildRouteChain(
   nodes: readonly POINode[],
   maxConnectionDistance?: number
 ): {
-  readonly chain: readonly { readonly fromIndex: number; readonly toIndex: number; readonly distance: number }[];
-  readonly stubs: readonly { readonly secondaryIndex: number; readonly nearestPrimaryIndex: number; readonly distance: number }[];
-  readonly loops: readonly { readonly fromIndex: number; readonly toIndex: number; readonly distance: number }[];
+  readonly chain: readonly {
+    readonly fromIndex: number;
+    readonly toIndex: number;
+    readonly distance: number;
+  }[];
+  readonly stubs: readonly {
+    readonly secondaryIndex: number;
+    readonly nearestPrimaryIndex: number;
+    readonly distance: number;
+  }[];
+  readonly loops: readonly {
+    readonly fromIndex: number;
+    readonly toIndex: number;
+    readonly distance: number;
+  }[];
 } {
   const primaryIndices: number[] = [];
   const secondaryIndices: number[] = [];
@@ -225,7 +234,7 @@ function addSecondaryLoops(
   }
 
   // Sort by best shortcut ratio (highest chain distance / lowest euclidean distance)
-  candidates.sort((a, b) => (b.chainDist / b.euclidean) - (a.chainDist / a.euclidean));
+  candidates.sort((a, b) => b.chainDist / b.euclidean - a.chainDist / a.euclidean);
 
   const usedNodes = new Set<number>();
   for (const cand of candidates) {
@@ -234,8 +243,9 @@ function addSecondaryLoops(
 
     // Verify the edge doesn't already exist in the chain
     const exists = existingChain.some(
-      (e) => (e.fromIndex === cand.fromIdx && e.toIndex === cand.toIdx) ||
-             (e.fromIndex === cand.toIdx && e.toIndex === cand.fromIdx)
+      (e) =>
+        (e.fromIndex === cand.fromIdx && e.toIndex === cand.toIdx) ||
+        (e.fromIndex === cand.toIdx && e.toIndex === cand.fromIdx)
     );
     if (exists) continue;
 

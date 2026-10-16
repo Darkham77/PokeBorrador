@@ -7,15 +7,37 @@ function toId(text: string): string {
 }
 
 const SETUP_MOVES = new Set([
-  'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
-  'shellsmash', 'bulkup', 'irondefense', 'bellydrum', 'coil',
-  'shiftgear', 'workup', 'agility', 'autotomize', 'tailglow',
+  'swordsdance',
+  'nastyplot',
+  'dragondance',
+  'calmmind',
+  'quiverdance',
+  'shellsmash',
+  'bulkup',
+  'irondefense',
+  'bellydrum',
+  'coil',
+  'shiftgear',
+  'workup',
+  'agility',
+  'autotomize',
+  'tailglow'
 ]);
 
 const PRIORITY_MOVES = new Set([
-  'extremespeed', 'aquajet', 'bulletpunch', 'iceshard', 'machpunch',
-  'quickattack', 'shadowsneak', 'suckerpunch', 'grassyglide', 'jetpunch',
-  'fakeout', 'firstimpression', 'accelerock',
+  'extremespeed',
+  'aquajet',
+  'bulletpunch',
+  'iceshard',
+  'machpunch',
+  'quickattack',
+  'shadowsneak',
+  'suckerpunch',
+  'grassyglide',
+  'jetpunch',
+  'fakeout',
+  'firstimpression',
+  'accelerock'
 ]);
 
 /**
@@ -28,16 +50,16 @@ export function evaluateWinConditions(
   calc: DamageCalculator,
   inference: InferenceEngine
 ): WinCondition[] {
-  const myAlive = state.mySide.pokemon.filter(p => !p.fainted);
-  const oppAlive = state.opponentSide.pokemon.filter(p => !p.fainted);
+  const myAlive = state.mySide.pokemon.filter((p) => !p.fainted);
+  const oppAlive = state.opponentSide.pokemon.filter((p) => !p.fainted);
 
   if (myAlive.length === 0 || oppAlive.length === 0) return [];
 
   const conditions: WinCondition[] = [];
 
   for (const pokemon of myAlive) {
-    const hasSetup = pokemon.moves.some(m => SETUP_MOVES.has(toId(m)));
-    const hasPriority = pokemon.moves.some(m => PRIORITY_MOVES.has(toId(m)));
+    const hasSetup = pokemon.moves.some((m) => SETUP_MOVES.has(toId(m)));
+    const hasPriority = pokemon.moves.some((m) => PRIORITY_MOVES.has(toId(m)));
 
     let speedAdvantageCount = 0;
     let canKOCount = 0;
@@ -62,9 +84,16 @@ export function evaluateWinConditions(
       for (const move of pokemon.moves) {
         try {
           const dmg = calc.calcDamage(pokemon, opp, move, state.field);
-          if (dmg.isOHKO) { canKO = true; break; }
-          if (dmg.is2HKO) { coverageScore += 0.3; }
-        } catch { /* skip */ }
+          if (dmg.isOHKO) {
+            canKO = true;
+            break;
+          }
+          if (dmg.is2HKO) {
+            coverageScore += 0.3;
+          }
+        } catch {
+          /* skip */
+        }
       }
       if (canKO) canKOCount++;
 
@@ -79,7 +108,9 @@ export function evaluateWinConditions(
           if (dmg.isOHKO) {
             threats.push(`${opp.name}: ${moveId}`);
           }
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
       }
 
       // Defensive survivability
@@ -87,7 +118,9 @@ export function evaluateWinConditions(
         try {
           const d = calc.calcDamage(opp, pokemon, m, state.field);
           return Math.max(max, d.maxPercent);
-        } catch { return max; }
+        } catch {
+          return max;
+        }
       }, 0);
       if (bestOppDmg < 40) defensiveScore += 0.2;
     }
@@ -96,25 +129,26 @@ export function evaluateWinConditions(
     const speedFactor = speedAdvantageCount / numOpp;
     const koFactor = canKOCount / numOpp;
     const setupFactor = hasSetup ? 0.15 : 0;
-    const priorityFactor = hasPriority ? 0.10 : 0;
+    const priorityFactor = hasPriority ? 0.1 : 0;
     const hpFactor = (pokemon.hpPercent / 100) * 0.15;
     const defFactor = Math.min(defensiveScore, 0.2);
 
-    const score = Math.min(1.0,
-      (speedFactor * 0.20) +
-      (koFactor * 0.30) +
-      (coverageScore / numOpp * 0.10) +
-      setupFactor +
-      priorityFactor +
-      hpFactor +
-      defFactor
+    const score = Math.min(
+      1.0,
+      speedFactor * 0.2 +
+        koFactor * 0.3 +
+        (coverageScore / numOpp) * 0.1 +
+        setupFactor +
+        priorityFactor +
+        hpFactor +
+        defFactor
     );
 
     conditions.push({
       pokemon: pokemon.name,
       score,
       requiresSetup: hasSetup && pokemon.boosts.atk <= 0 && pokemon.boosts.spa <= 0,
-      threatsRemaining: threats.slice(0, 3),
+      threatsRemaining: threats.slice(0, 3)
     });
   }
 

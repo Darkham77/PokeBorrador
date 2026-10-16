@@ -15,14 +15,17 @@ interface PokedexLoaderData {
   readonly loadedAt: number;
 }
 
-export const usePokedexDataLoader = defineBasicLoader('/pokedex', async (): Promise<PokedexLoaderData> => {
-  const gameStore = useGameStore();
-  const pokedex = gameStore.state.pokedex || [];
-  const seenPokedex = gameStore.state.seenPokedex || [];
+export const usePokedexDataLoader = defineBasicLoader(
+  '/pokedex',
+  async (): Promise<PokedexLoaderData> => {
+    const gameStore = useGameStore();
+    const pokedex = gameStore.state.pokedex || [];
+    const seenPokedex = gameStore.state.seenPokedex || [];
 
-  return {
-    caughtCount: pokedex.length,
-    seenCount: seenPokedex.length,
-    loadedAt: Temporal.Now.instant().epochMilliseconds
-  };
-});
+    return {
+      caughtCount: pokedex.length,
+      seenCount: seenPokedex.length,
+      loadedAt: Temporal.Now.instant().epochMilliseconds
+    };
+  }
+);

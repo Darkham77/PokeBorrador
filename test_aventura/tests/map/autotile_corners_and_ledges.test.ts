@@ -9,7 +9,16 @@ export function resolve9SliceCorner(
   hasS: boolean,
   hasW: boolean,
   hasE: boolean
-): 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'top' | 'bottom' | 'left' | 'right' | 'center' {
+):
+  | 'topLeft'
+  | 'topRight'
+  | 'bottomLeft'
+  | 'bottomRight'
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'center' {
   // Corners MUST be evaluated before single cardinal edges
   if (!hasN && !hasW && (hasS || hasE)) return 'topLeft';
   if (!hasN && !hasE && (hasS || hasW)) return 'topRight';
@@ -28,7 +37,10 @@ export function resolve9SliceCorner(
 /**
  * 3-piece ledge resolution helper matching the new kantoTileEngine ledge resolver.
  */
-export function resolveLedgePiece(hasLedgeLeft: boolean, hasLedgeRight: boolean): 'left' | 'mid' | 'right' | 'single' {
+export function resolveLedgePiece(
+  hasLedgeLeft: boolean,
+  hasLedgeRight: boolean
+): 'left' | 'mid' | 'right' | 'single' {
   if (!hasLedgeLeft && hasLedgeRight) return 'left';
   if (hasLedgeLeft && !hasLedgeRight) return 'right';
   if (hasLedgeLeft && hasLedgeRight) return 'mid';

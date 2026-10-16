@@ -1,9 +1,8 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { AuthUser } from '@/types/auth/auth'
-import type { GameState, NotificationItem, GenderId } from '@/types/system/game'
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
-
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import type { AuthUser } from '@/types/auth/auth';
+import type { GameState, NotificationItem, GenderId, GameStatKey } from '@/types/system/game';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 
 interface ProfileData {
   username: string;
@@ -13,7 +12,7 @@ interface ProfileData {
   badges: number;
   money: number;
   battleCoins: number;
-  stats: Record<string, number | string>;
+  stats: Partial<Record<GameStatKey, number | string>>;
   faction: string | null;
   nick_style: string;
   notificationHistory: NotificationItem[];
@@ -38,38 +37,46 @@ export const useProfileStore = defineStore('profile', () => {
     lastSave: 'Sin datos',
     last_renamed_at: undefined,
     gender: 'h'
-  })
+  });
 
   function updateProfile(data: Partial<ProfileData>) {
-    profileData.value = { ...profileData.value, ...data }
+    profileData.value = { ...profileData.value, ...data };
   }
 
   function syncProfileFromAuth(user: AuthUser, state: GameState) {
-    if (!user) return
+    if (!user) return;
 
-    let lastSaveStr = 'Sin datos'
+    let lastSaveStr = 'Sin datos';
     try {
-      const lsKey = 'pokemon_local_save_' + user.id
-      const lsRaw = localStorage.getItem(lsKey)
+      const lsKey = 'pokemon_local_save_' + user.id;
+      const lsRaw = localStorage.getItem(lsKey);
       if (lsRaw) {
         const parsed = JSON.parse(lsRaw) as { _last_updated?: string | number };
         if (parsed._last_updated) {
-          const temporalInstant = Temporal.Instant.fromEpochMilliseconds(Number(parsed._last_updated))
-          const zdt = temporalInstant.toZonedDateTimeISO(GAME_TIMEZONE)
-          const day = String(zdt.day).padStart(2, '0')
-          const month = String(zdt.month).padStart(2, '0')
-          const year = zdt.year
-          const hour = String(zdt.hour).padStart(2, '0')
-          const minute = String(zdt.minute).padStart(2, '0')
-          const second = String(zdt.second).padStart(2, '0')
-          lastSaveStr = `${day}/${month}/${year} ${hour}:${minute}:${second}`
+          const temporalInstant = Temporal.Instant.fromEpochMilliseconds(
+            Number(parsed._last_updated)
+          );
+          const zdt = temporalInstant.toZonedDateTimeISO(GAME_TIMEZONE);
+          const day = String(zdt.day).padStart(2, '0');
+          const month = String(zdt.month).padStart(2, '0');
+          const year = zdt.year;
+          const hour = String(zdt.hour).padStart(2, '0');
+          const minute = String(zdt.minute).padStart(2, '0');
+          const second = String(zdt.second).padStart(2, '0');
+          lastSaveStr = `${day}/${month}/${year} ${hour}:${minute}:${second}`;
         }
       }
     } catch (e) {
-      throw new Error(`[ProfileStore] Error reading localStorage save metadata: ${(e as Error).message}`, { cause: e })
+      throw new Error(
+        `[ProfileStore] Error reading localStorage save metadata: ${(e as Error).message}`,
+        { cause: e }
+      );
     }
 
-    const lastRenamedAt = state.last_renamed_at || (user.user_metadata?.last_renamed_at as string | undefined) || profileData.value.last_renamed_at
+    const lastRenamedAt =
+      state.last_renamed_at ||
+      (user.user_metadata?.last_renamed_at as string | undefined) ||
+      profileData.value.last_renamed_at;
 
     updateProfile({
       username: state.trainer || (user.user_metadata?.username as string) || 'Entrenador',
@@ -85,12 +92,12 @@ export const useProfileStore = defineStore('profile', () => {
       lastSave: lastSaveStr,
       last_renamed_at: lastRenamedAt,
       gender: state.gender || 'h'
-    })
+    });
   }
 
   return {
     profileData,
     updateProfile,
     syncProfileFromAuth
-  }
-})
+  };
+});

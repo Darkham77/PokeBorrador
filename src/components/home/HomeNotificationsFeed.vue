@@ -1,80 +1,77 @@
 <script setup lang="ts">
-import { computed, useTemplateRef, onMounted, onUnmounted, nextTick } from 'vue'
-import { gsap } from 'gsap'
-import { useGameStore } from '@/stores/game'
-import { formatTime } from '@/logic/utils/timeUtils'
-import type { NotificationItem } from '@/types/system/game'
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
+import { computed, useTemplateRef, onMounted, onUnmounted, nextTick } from 'vue';
+import { gsap } from 'gsap';
+import { useGameStore } from '@/stores/game';
+import { formatTime } from '@/logic/utils/timeUtils';
+import type { NotificationItem } from '@/types/system/game';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
-const gameStore = useGameStore()
-const feedRef = useTemplateRef<HTMLElement>('feedRef')
-let gsapCtx: gsap.Context | null = null
+const gameStore = useGameStore();
+const feedRef = useTemplateRef<HTMLElement>('feedRef');
+let gsapCtx: gsap.Context | null = null;
 
 const history = computed<NotificationItem[]>(() => {
-  const raw = (gameStore.state.notificationHistory || []) as (NotificationItem & { msg?: string })[]
+  const raw = (gameStore.state.notificationHistory || []) as (NotificationItem & {
+    msg?: string;
+  })[];
   return raw
-    .filter(n => {
-      const text = `${n.message || ''} ${n.msg || ''} ${n.title || ''}`.toLowerCase()
-      return !text.includes('bienvenido')
+    .filter((n) => {
+      const text = `${n.message || ''} ${n.msg || ''} ${n.title || ''}`.toLowerCase();
+      return !text.includes('bienvenido');
     })
-    .toReversed()
-})
+    .toReversed();
+});
 
 function getIcon(n: NotificationItem): string {
-  const metaIcon = n.meta?.['icon']
-  if (typeof metaIcon === 'string' && metaIcon) return metaIcon
-  if (n.title && n.title.length <= 4) return n.title
-  return '🔔'
+  const metaIcon = n.meta?.['icon'];
+  if (typeof metaIcon === 'string' && metaIcon) return metaIcon;
+  if (n.title && n.title.length <= 4) return n.title;
+  return '🔔';
 }
 
 function getText(n: NotificationItem & { msg?: string }): string {
-  return n.message || n.msg || ''
+  return n.message || n.msg || '';
 }
 
 function getTimestamp(n: NotificationItem): number {
-  return n.timestamp || 0
+  return n.timestamp || 0;
 }
 
 function animateList() {
   if (gsapCtx) {
-    gsapCtx.revert()
+    gsapCtx.revert();
   }
   gsapCtx = gsap.context(() => {
-    const items = feedRef.value?.querySelectorAll('.notif-row')
+    const items = feedRef.value?.querySelectorAll('.notif-row');
     if (items && items.length > 0) {
       const NOTIF_ROW_ENTRANCE_OFFSET_X_PX = -8 as const;
       gsap.fromTo(
         items,
         { opacity: 0, x: NOTIF_ROW_ENTRANCE_OFFSET_X_PX },
         { opacity: 1, x: 0, duration: 0.25, stagger: 0.03, ease: 'power2.out' }
-      )
+      );
     }
-  }, feedRef.value || undefined)
+  }, feedRef.value || undefined);
 }
 
 onMounted(() => {
-  nextTick(animateList)
-})
+  nextTick(animateList);
+});
 
 onUnmounted(() => {
   if (gsapCtx) {
-    gsapCtx.revert()
+    gsapCtx.revert();
   }
-})
+});
 </script>
 
 <template>
-  <div
-    ref="feedRef"
-    class="home-notifications-feed"
-  >
+  <div ref="feedRef" class="home-notifications-feed">
     <!-- Header -->
     <div class="feed-header-row">
       <div class="header-left">
         <span class="emoji">📜</span>
-        <h3 class="feed-title">
-          HISTORIAL DE ACTIVIDAD ({{ history.length }}/50)
-        </h3>
+        <h3 class="feed-title">HISTORIAL DE ACTIVIDAD ({{ history.length }}/50)</h3>
       </div>
       <div class="header-actions">
         <HomeWidgetMinimizeBtn widget-id="notifications" />
@@ -92,10 +89,7 @@ onUnmounted(() => {
         <span class="emoji notif-icon">{{ getIcon(n) }}</span>
         <div class="notif-content">
           <div class="notif-text">
-            <strong
-              v-if="n.title && n.title !== getIcon(n)"
-              class="notif-title"
-            >
+            <strong v-if="n.title && n.title !== getIcon(n)" class="notif-title">
               {{ n.title }}:
             </strong>
             {{ getText(n) }}
@@ -105,10 +99,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Empty State -->
-      <div
-        v-if="history.length === 0"
-        class="empty-feed"
-      >
+      <div v-if="history.length === 0" class="empty-feed">
         <span class="emoji empty-icon">📭</span>
         <span class="empty-text">Sin actividad reciente registrada.</span>
       </div>
@@ -117,7 +108,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .home-notifications-feed {
   display: flex;

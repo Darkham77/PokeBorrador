@@ -6,7 +6,7 @@
  * and unified status / weather badge filtering.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { defineComponent, ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
@@ -84,18 +84,20 @@ describe('Pokemon Sprite Loop Animation Speed - Unit Tests', () => {
     };
 
     let hookResult!: ReturnType<typeof useBattleCombatantSpriteLoop>;
-    const wrapper = mount(defineComponent({
-      setup() {
-        hookResult = useBattleCombatantSpriteLoop({
-          props,
-          spriteRef,
-          isAnimated,
-          frames,
-          variationMeta
-        });
-        return () => null;
-      }
-    }));
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          hookResult = useBattleCombatantSpriteLoop({
+            props,
+            spriteRef,
+            isAnimated,
+            frames,
+            variationMeta
+          });
+          return () => null;
+        }
+      })
+    );
 
     const { currentMode, idleCyclesTarget, animateSpritesheet } = hookResult;
 
@@ -195,19 +197,27 @@ describe('useBattleCombatantState helpers', () => {
     const spriteRef = ref<HTMLElement | null>(null);
     const emit = () => {};
 
-    const stateSeat1 = useBattleCombatantState({
-      side: 'player',
-      pokemon: pokemonA,
-      position: { x: 100, y: 200 },
-      baseSize: 300
-    } as any, emit, spriteRef);
+    const stateSeat1 = useBattleCombatantState(
+      {
+        side: 'player',
+        pokemon: pokemonA,
+        position: { x: 100, y: 200 },
+        baseSize: 300
+      } as any,
+      emit,
+      spriteRef
+    );
 
-    const stateSeat3 = useBattleCombatantState({
-      side: 'ally',
-      pokemon: pokemonB,
-      position: { x: 150, y: 250 },
-      baseSize: 300
-    } as any, emit, spriteRef);
+    const stateSeat3 = useBattleCombatantState(
+      {
+        side: 'ally',
+        pokemon: pokemonB,
+        position: { x: 150, y: 250 },
+        baseSize: 300
+      } as any,
+      emit,
+      spriteRef
+    );
 
     expect(stateSeat1.cacheKey.value).toBe('player-100-200-uid_seat1');
     expect(stateSeat3.cacheKey.value).toBe('ally-150-250-uid_seat3');
@@ -225,7 +235,7 @@ describe('useCombatantStatus - Weather display filtering', () => {
 
   it('should not show a weather status tag if the weather in Gen 3 is none', () => {
     const battleStore = useBattleStore();
-    
+
     battleStore.state = {
       weather: {
         type: 'none',
@@ -253,7 +263,9 @@ describe('useCombatantStatus - Weather display filtering', () => {
 
     const { unifiedStatuses } = useCombatantStatus(pokemonRef, battleStore, isPlayer);
 
-    const weatherStatus = unifiedStatuses.value.find(s => s.id === 'fog' || s.title?.toLowerCase().includes('niebla'));
+    const weatherStatus = unifiedStatuses.value.find(
+      (s) => s.id === 'fog' || s.title?.toLowerCase().includes('niebla')
+    );
     expect(weatherStatus).toBeUndefined();
   });
 
@@ -287,11 +299,12 @@ describe('useCombatantStatus - Weather display filtering', () => {
 
     const { unifiedStatuses } = useCombatantStatus(pokemonRef, battleStore, isPlayer);
 
-    const weatherStatus = unifiedStatuses.value.find(s => 
-      s.description?.toLowerCase().includes('niebla') || 
-      s.description?.toLowerCase().includes('bruma') ||
-      s.title?.toLowerCase().includes('niebla') ||
-      s.title?.toLowerCase().includes('bruma')
+    const weatherStatus = unifiedStatuses.value.find(
+      (s) =>
+        s.description?.toLowerCase().includes('niebla') ||
+        s.description?.toLowerCase().includes('bruma') ||
+        s.title?.toLowerCase().includes('niebla') ||
+        s.title?.toLowerCase().includes('bruma')
     );
     expect(weatherStatus).toBeDefined();
   });

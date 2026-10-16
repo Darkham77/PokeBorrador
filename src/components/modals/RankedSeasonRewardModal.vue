@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
-import { gsap } from 'gsap'
-import BaseModal from '@/components/common/BaseModal.vue'
-import RankedSeasonPrizeItem from './RankedSeasonPrizeItem.vue'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { RANKED_TIERS, type RankedTierCode } from '@/logic/pvp/rankedEngine'
-import { calculateSoftResetElo } from '@/logic/pvp/eloRatingMath'
-import { makePokemon } from '@/logic/pokemon/pokemonFactory'
-import { isPokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { RankedSeasonMedal } from '@/types/battle/pvp'
-import type { RankedTierId } from '@/data/system/rankedData'
+import { ref, computed, watch, nextTick } from 'vue';
+import { gsap } from 'gsap';
+import BaseModal from '@/components/common/BaseModal.vue';
+import RankedSeasonPrizeItem from './RankedSeasonPrizeItem.vue';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { RANKED_TIERS, type RankedTierCode } from '@/logic/pvp/rankedEngine';
+import { calculateSoftResetElo } from '@/logic/pvp/eloRatingMath';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { RankedSeasonMedal } from '@/types/battle/pvp';
+import type { RankedTierId } from '@/data/system/rankedData';
 
 interface AwardItem {
-  id: string
-  prize: Record<string, unknown>
+  id: string;
+  prize: Record<string, unknown>;
 }
 
 interface Props {
-  id?: string
-  show?: boolean
-  seasonName?: string
-  tier?: string
-  rank?: number
-  finalElo?: number
-  awards?: AwardItem[]
+  id?: string;
+  show?: boolean;
+  seasonName?: string;
+  tier?: string;
+  rank?: number;
+  finalElo?: number;
+  awards?: AwardItem[];
 }
 
-const DEFAULT_PREVIEW_FINAL_ELO = 1650 as const
+const DEFAULT_PREVIEW_FINAL_ELO = 1650 as const;
 
 const props = withDefaults(defineProps<Props>(), {
   id: undefined,
@@ -37,27 +37,27 @@ const props = withDefaults(defineProps<Props>(), {
   rank: undefined,
   finalElo: DEFAULT_PREVIEW_FINAL_ELO,
   awards: () => []
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'claimed'): void
-}>()
+  (e: 'close'): void;
+  (e: 'claimed'): void;
+}>();
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const gameStore = useGameStore();
+const uiStore = useUIStore();
 
-const isClaiming = ref(false)
-const isClaimed = ref(false)
+const isClaiming = ref(false);
+const isClaimed = ref(false);
 
-const tierCode = computed(() => (props.tier || 'bronce').toUpperCase() as RankedTierCode)
-const TOP_PODIUM_RANK_THRESHOLD = 10
+const tierCode = computed(() => (props.tier || 'bronce').toUpperCase() as RankedTierCode);
+const TOP_PODIUM_RANK_THRESHOLD = 10;
 
-const tierInfo = computed(() => RANKED_TIERS[tierCode.value] || RANKED_TIERS.BRONCE)
-const softResetElo = computed(() => calculateSoftResetElo(props.finalElo))
+const tierInfo = computed(() => RANKED_TIERS[tierCode.value] || RANKED_TIERS.BRONCE);
+const softResetElo = computed(() => calculateSoftResetElo(props.finalElo));
 
-const tierColor = computed(() => tierInfo.value.color)
-const isTopPodium = computed(() => Boolean(props.rank && props.rank <= TOP_PODIUM_RANK_THRESHOLD))
+const tierColor = computed(() => tierInfo.value.color);
+const isTopPodium = computed(() => Boolean(props.rank && props.rank <= TOP_PODIUM_RANK_THRESHOLD));
 
 // Animation on modal show
 watch(
@@ -65,37 +65,47 @@ watch(
   (val) => {
     if (val) {
       nextTick(() => {
-        const badge = document.querySelector('.reward-tier-badge')
-        const items = document.querySelectorAll('.reward-prize-item')
+        const badge = document.querySelector('.reward-tier-badge');
+        const items = document.querySelectorAll('.reward-prize-item');
         if (badge) {
-          gsap.fromTo(badge, { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' })
+          gsap.fromTo(
+            badge,
+            { scale: 0.6, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }
+          );
         }
         if (items.length > 0) {
           const PRIZE_ITEM_ENTRANCE_OFFSET_Y_PX = 15 as const;
-          gsap.fromTo(items, { y: PRIZE_ITEM_ENTRANCE_OFFSET_Y_PX, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.08, ease: 'power2.out' })
+          gsap.fromTo(
+            items,
+            { y: PRIZE_ITEM_ENTRANCE_OFFSET_Y_PX, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.35, stagger: 0.08, ease: 'power2.out' }
+          );
         }
-      })
+      });
     }
   },
   { immediate: true }
-)
+);
 
 function applyLocalAward(award: AwardItem, finalElo: number) {
-  if (!award.prize) return
+  if (!award.prize) return;
   const prize = award.prize as {
-    type?: string
-    season?: string
-    tier?: RankedTierId
-    species?: string
-    level?: number
-    shiny?: boolean
-    battleCoins?: number
-    amount?: number
-  }
+    type?: string;
+    season?: string;
+    tier?: RankedTierId;
+    species?: string;
+    level?: number;
+    shiny?: boolean;
+    battleCoins?: number;
+    amount?: number;
+  };
 
   if (prize.type === 'ranked_medal' && prize.season && prize.tier) {
-    const existingMedals = gameStore.state.rankedMedals || []
-    const hasMedal = existingMedals.some(m => m.seasonName === prize.season && m.tier === prize.tier)
+    const existingMedals = gameStore.state.rankedMedals || [];
+    const hasMedal = existingMedals.some(
+      (m) => m.seasonName === prize.season && m.tier === prize.tier
+    );
     if (!hasMedal) {
       const newMedal: RankedSeasonMedal = {
         id: `medal_${award.id}`,
@@ -104,56 +114,58 @@ function applyLocalAward(award: AwardItem, finalElo: number) {
         tier: prize.tier,
         finalElo,
         awardedAt: Temporal.Now.instant().toString()
-      }
-      gameStore.state.rankedMedals = [...existingMedals, newMedal]
+      };
+      gameStore.state.rankedMedals = [...existingMedals, newMedal];
     }
-    return
+    return;
   }
 
   if (prize.type === 'pokemon' && prize.species && isPokemonSpeciesId(prize.species)) {
-    const hasPoke = (gameStore.state.box || []).some(p => p?.id === prize.species && p?.isShiny === prize.shiny)
-    if (hasPoke) return
-    const newPoke = makePokemon(prize.species, prize.level || 50)
+    const hasPoke = (gameStore.state.box || []).some(
+      (p) => p?.id === prize.species && p?.isShiny === prize.shiny
+    );
+    if (hasPoke) return;
+    const newPoke = makePokemon(prize.species, prize.level || 50);
     if (newPoke) {
-      newPoke.isShiny = Boolean(prize.shiny)
-      gameStore.state.box = [...(gameStore.state.box || []), newPoke]
+      newPoke.isShiny = Boolean(prize.shiny);
+      gameStore.state.box = [...(gameStore.state.box || []), newPoke];
     }
-    return
+    return;
   }
 
   if (prize.type === 'bc' || prize.battleCoins) {
-    const amount = prize.battleCoins || prize.amount || 0
-    gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + amount
+    const amount = prize.battleCoins || prize.amount || 0;
+    gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + amount;
   }
 }
 
 async function handleClaimAll() {
-  if (isClaiming.value || isClaimed.value) return
+  if (isClaiming.value || isClaimed.value) return;
 
-  isClaiming.value = true
+  isClaiming.value = true;
   try {
     for (const award of props.awards) {
       if (award.id && !award.id.startsWith('local_') && gameStore.db) {
-        await gameStore.db.rpc('claim_award', { p_award_id: award.id })
+        await gameStore.db.rpc('claim_award', { p_award_id: award.id });
       } else {
-        applyLocalAward(award, props.finalElo)
+        applyLocalAward(award, props.finalElo);
       }
     }
 
-    await gameStore.save(true)
-    isClaimed.value = true
-    uiStore.notify('¡Recompensas de temporada reclamadas con éxito!', '🎉')
-    emit('claimed')
-    emit('close')
+    await gameStore.save(true);
+    isClaimed.value = true;
+    uiStore.notify('¡Recompensas de temporada reclamadas con éxito!', '🎉');
+    emit('claimed');
+    emit('close');
   } catch (_err) {
-    uiStore.notify('Error al reclamar recompensas.', '❌')
+    uiStore.notify('Error al reclamar recompensas.', '❌');
   } finally {
-    isClaiming.value = false
+    isClaiming.value = false;
   }
 }
 
 function handleClose() {
-  emit('close')
+  emit('close');
 }
 </script>
 
@@ -170,46 +182,26 @@ function handleClose() {
     <div class="ranked-season-reward-content">
       <!-- Season Header & Tier Badge -->
       <div class="season-celebration-header">
-        <h3
-          id="ranked-reward-title"
-          class="season-title"
-        >
+        <h3 id="ranked-reward-title" class="season-title">
           {{ props.seasonName }}
         </h3>
-        <p class="season-subtitle">
-          ¡Temporada clasificada concluida!
-        </p>
+        <p class="season-subtitle">¡Temporada clasificada concluida!</p>
 
-        <div
-          class="reward-tier-badge"
-          :style="{ borderColor: tierColor }"
-        >
+        <div class="reward-tier-badge" :style="{ borderColor: tierColor }">
           <img
             v-if="tierInfo.sprite"
             :src="tierInfo.sprite"
             :alt="tierInfo.name"
             class="tier-sprite-badge"
-          
             width="32"
             height="32"
-          >
-          <span
-            v-else
-            class="emoji tier-icon"
-          >{{ tierInfo.icon }}</span>
+          />
+          <span v-else class="emoji tier-icon">{{ tierInfo.icon }}</span>
           <div class="tier-details">
-            <span
-              class="tier-name"
-              :style="{ color: tierColor }"
-            >{{ tierInfo.name }}</span>
+            <span class="tier-name" :style="{ color: tierColor }">{{ tierInfo.name }}</span>
             <span class="final-elo">{{ props.finalElo }} LP</span>
           </div>
-          <div
-            v-if="isTopPodium"
-            class="top-podium-pill podium-tag"
-          >
-            PODIO #{{ props.rank }}
-          </div>
+          <div v-if="isTopPodium" class="top-podium-pill podium-tag">PODIO #{{ props.rank }}</div>
         </div>
       </div>
 
@@ -224,9 +216,7 @@ function handleClose() {
 
       <!-- Unlocked Prizes Shelf -->
       <div class="unlocked-prizes-section">
-        <h4 class="section-heading">
-          RECOMPENSAS DESBLOQUEADAS ({{ props.awards.length }})
-        </h4>
+        <h4 class="section-heading">RECOMPENSAS DESBLOQUEADAS ({{ props.awards.length }})</h4>
 
         <div class="prizes-list awards-grid">
           <RankedSeasonPrizeItem
@@ -245,18 +235,9 @@ function handleClose() {
           :disabled="isClaiming || isClaimed || props.awards.length === 0"
           @click="handleClaimAll"
         >
-          <span
-            v-if="isClaiming"
-            class="emoji"
-          >⏳ RECLAMANDO...</span>
-          <span
-            v-else-if="isClaimed"
-            class="emoji"
-          >✓ RECLAMADO</span>
-          <span
-            v-else
-            class="emoji"
-          >🎁 RECLAMAR RECOMPENSAS</span>
+          <span v-if="isClaiming" class="emoji">⏳ RECLAMANDO...</span>
+          <span v-else-if="isClaimed" class="emoji">✓ RECLAMADO</span>
+          <span v-else class="emoji">🎁 RECLAMAR RECOMPENSAS</span>
         </button>
       </div>
     </div>
@@ -264,7 +245,7 @@ function handleClose() {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_profile-shared";
+@use '@/styles/components/_profile-shared';
 
 .ranked-season-reward-content {
   display: flex;

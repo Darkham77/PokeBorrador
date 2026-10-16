@@ -18,7 +18,7 @@ export function parseReplayLogDesync(logFilePath: string): DesyncAnalysis {
       failedTurn: null,
       seatId: null,
       mismatchReason: 'Log file not found',
-      divergingLogLine: '',
+      divergingLogLine: ''
     };
   }
 
@@ -42,7 +42,7 @@ export function parseReplayLogDesync(logFilePath: string): DesyncAnalysis {
         failedTurn: currentTurn,
         seatId,
         mismatchReason: line.trim(),
-        divergingLogLine: line,
+        divergingLogLine: line
       };
     }
   }
@@ -51,6 +51,6 @@ export function parseReplayLogDesync(logFilePath: string): DesyncAnalysis {
     failedTurn: currentTurn,
     seatId,
     mismatchReason: 'No explicit desync token found in log',
-    divergingLogLine: '',
+    divergingLogLine: ''
   };
 }

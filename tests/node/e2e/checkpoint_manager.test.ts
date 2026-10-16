@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, afterEach } from 'vitest';
+import { describe, it, beforeEach, afterEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,7 +10,7 @@ import {
   getMasterCheckpoint,
   clearSuiteCheckpoint,
   clearAllCheckpoints,
-  isCleanRequested,
+  isCleanRequested
 } from '../../../scripts/e2e/helpers/e2eCheckpointManager.ts';
 
 const CHECKPOINT_FILE_PATH = path.resolve(process.cwd(), 'scratch/e2e_checkpoints_manager.json');
@@ -50,7 +50,7 @@ describe('E2E Checkpoint Manager Unit Tests', () => {
       driver: 'sqlite',
       failedBatchIndex: 47,
       failedCaseId: 'case-2aa5ab635183',
-      errorSnippet: 'Timeout waiting for battle-ready-for-input',
+      errorSnippet: 'Timeout waiting for battle-ready-for-input'
     });
 
     const master = getMasterCheckpoint();
@@ -68,7 +68,7 @@ describe('E2E Checkpoint Manager Unit Tests', () => {
   it('clears individual suite checkpoint and updates master', () => {
     recordSuiteFailure('battle_flee_and_teleport.simulation.ts', {
       suiteRelativePath: 'scripts/e2e/battle/battle_flee_and_teleport.simulation.ts',
-      driver: 'postgres',
+      driver: 'postgres'
     });
 
     assert.ok(getSuiteCheckpoint('battle_flee_and_teleport.simulation.ts') !== null);
@@ -90,7 +90,7 @@ describe('E2E Checkpoint Manager Unit Tests', () => {
       suiteIndex: 5,
       suiteName: 'test.simulation.ts',
       suiteRelativePath: 'scripts/e2e/test.simulation.ts',
-      driver: 'sqlite',
+      driver: 'sqlite'
     });
 
     assert.ok(fs.existsSync(CHECKPOINT_FILE_PATH));
@@ -104,7 +104,7 @@ describe('E2E Checkpoint Manager Unit Tests', () => {
       driver: 'sqlite',
       failedBatchIndex: 109,
       failedCaseId: 'case-initial-fail',
-      errorSnippet: 'Failed to fetch module',
+      errorSnippet: 'Failed to fetch module'
     });
 
     recordSuiteFailure('battle_fsm_sync.simulation.ts', {
@@ -112,7 +112,7 @@ describe('E2E Checkpoint Manager Unit Tests', () => {
       driver: 'sqlite',
       failedBatchIndex: 194,
       failedCaseId: 'case-interrupted',
-      errorSnippet: 'page.evaluate: Test ended.',
+      errorSnippet: 'page.evaluate: Test ended.'
     });
 
     const cp = getSuiteCheckpoint('battle_fsm_sync.simulation.ts');
@@ -127,7 +127,7 @@ describe('E2E Checkpoint Manager Unit Tests', () => {
       driver: 'sqlite',
       failedBatchIndex: 194,
       failedCaseId: 'case-interrupted',
-      errorSnippet: 'page.evaluate: Test ended.',
+      errorSnippet: 'page.evaluate: Test ended.'
     });
 
     const cp = getSuiteCheckpoint('battle_fsm_sync.simulation.ts');

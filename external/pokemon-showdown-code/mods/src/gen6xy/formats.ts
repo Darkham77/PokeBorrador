@@ -7,6 +7,6 @@ export const Formats = [
     gameType: 'doubles',
     searchShow: false,
     bestOfDefault: true,
-    ruleset: [ 'Flat Rules', 'Kalos Pokedex', 'Min Source Gen = 6' ]
+    ruleset: ['Flat Rules', 'Kalos Pokedex', 'Min Source Gen = 6']
   }
 ];

@@ -1,4 +1,4 @@
-import { describe, it, vi, beforeEach } from 'vitest';
+import { describe, it, vi, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 
@@ -96,17 +96,20 @@ describe('Magikarp Contest Scoring & Tiebreaker Rules', () => {
       }
     };
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO events_config (id, name, icon, type, active, manual, config, description)
       VALUES (?, ?, ?, ?, 1, 0, ?, ?)
-    `, [
-      'hora_magikarp_shiny_tie',
-      'Hora Magikarp Shiny Tie',
-      '🎣',
-      'competition',
-      JSON.stringify(eventConfig),
-      'Test de desempate Shiny vs Normal'
-    ]);
+    `,
+      [
+        'hora_magikarp_shiny_tie',
+        'Hora Magikarp Shiny Tie',
+        '🎣',
+        'competition',
+        JSON.stringify(eventConfig),
+        'Test de desempate Shiny vs Normal'
+      ]
+    );
 
     const p1Data = {
       species: 'magikarp',
@@ -126,38 +129,48 @@ describe('Magikarp Contest Scoring & Tiebreaker Rules', () => {
       obtained_at: 200000
     };
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO competition_entries (id, event_id, player_id, player_name, player_email, pokemon_uid, data, submitted_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      'entry_p1',
-      'hora_magikarp_shiny_tie',
-      'user_normal',
-      'Trainer_Normal',
-      'normal@test.com',
-      'poke_norm',
-      JSON.stringify(p1Data),
-      '2026-08-26T12:00:00Z'
-    ]);
+    `,
+      [
+        'entry_p1',
+        'hora_magikarp_shiny_tie',
+        'user_normal',
+        'Trainer_Normal',
+        'normal@test.com',
+        'poke_norm',
+        JSON.stringify(p1Data),
+        '2026-08-26T12:00:00Z'
+      ]
+    );
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO competition_entries (id, event_id, player_id, player_name, player_email, pokemon_uid, data, submitted_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      'entry_p2',
-      'hora_magikarp_shiny_tie',
-      'user_shiny',
-      'Trainer_Shiny',
-      'shiny@test.com',
-      'poke_shiny',
-      JSON.stringify(p2Data),
-      '2026-08-26T12:05:00Z'
-    ]);
+    `,
+      [
+        'entry_p2',
+        'hora_magikarp_shiny_tie',
+        'user_shiny',
+        'Trainer_Shiny',
+        'shiny@test.com',
+        'poke_shiny',
+        JSON.stringify(p2Data),
+        '2026-08-26T12:05:00Z'
+      ]
+    );
 
-    const res = await emulateAwardEventAutomated(mockSqliteDb, { target_event_id: 'hora_magikarp_shiny_tie' });
+    const res = await emulateAwardEventAutomated(mockSqliteDb, {
+      target_event_id: 'hora_magikarp_shiny_tie'
+    });
     assert.strictEqual(res.error, null);
 
-    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', ['hora_magikarp_shiny_tie']);
+    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', [
+      'hora_magikarp_shiny_tie'
+    ]);
     const winners = JSON.parse((resultRows[0] as { winners: string }).winners) as Array<{
       rank: string;
       player_id: string;
@@ -188,17 +201,20 @@ describe('Magikarp Contest Scoring & Tiebreaker Rules', () => {
       }
     };
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO events_config (id, name, icon, type, active, manual, config, description)
       VALUES (?, ?, ?, ?, 1, 0, ?, ?)
-    `, [
-      'hora_magikarp_date_tie',
-      'Hora Magikarp Date Tie',
-      '🎣',
-      'competition',
-      JSON.stringify(eventConfig),
-      'Test de desempate por fecha de captura'
-    ]);
+    `,
+      [
+        'hora_magikarp_date_tie',
+        'Hora Magikarp Date Tie',
+        '🎣',
+        'competition',
+        JSON.stringify(eventConfig),
+        'Test de desempate por fecha de captura'
+      ]
+    );
 
     const entries = [
       { id: 'user_young', ivs: 140, is_shiny: false, obtained_at: 300000, name: 'Trainer_Young' },
@@ -207,25 +223,38 @@ describe('Magikarp Contest Scoring & Tiebreaker Rules', () => {
     ];
 
     for (const p of entries) {
-      await queryLocal(`
+      await queryLocal(
+        `
         INSERT INTO competition_entries (id, event_id, player_id, player_name, player_email, pokemon_uid, data, submitted_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
-        `entry_${p.id}`,
-        'hora_magikarp_date_tie',
-        p.id,
-        p.name,
-        `${p.id}@test.com`,
-        `poke_${p.id}`,
-        JSON.stringify({ species: 'magikarp', name: 'Magikarp', total_ivs: p.ivs, is_shiny: p.is_shiny, obtained_at: p.obtained_at }),
-        '2026-08-26T12:00:00Z'
-      ]);
+      `,
+        [
+          `entry_${p.id}`,
+          'hora_magikarp_date_tie',
+          p.id,
+          p.name,
+          `${p.id}@test.com`,
+          `poke_${p.id}`,
+          JSON.stringify({
+            species: 'magikarp',
+            name: 'Magikarp',
+            total_ivs: p.ivs,
+            is_shiny: p.is_shiny,
+            obtained_at: p.obtained_at
+          }),
+          '2026-08-26T12:00:00Z'
+        ]
+      );
     }
 
-    const res = await emulateAwardEventAutomated(mockSqliteDb, { target_event_id: 'hora_magikarp_date_tie' });
+    const res = await emulateAwardEventAutomated(mockSqliteDb, {
+      target_event_id: 'hora_magikarp_date_tie'
+    });
     assert.strictEqual(res.error, null);
 
-    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', ['hora_magikarp_date_tie']);
+    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', [
+      'hora_magikarp_date_tie'
+    ]);
     const winners = JSON.parse((resultRows[0] as { winners: string }).winners) as Array<{
       rank: string;
       player_id: string;
@@ -256,50 +285,75 @@ describe('Magikarp Contest Scoring & Tiebreaker Rules', () => {
       }
     };
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO events_config (id, name, icon, type, active, manual, config, description)
       VALUES (?, ?, ?, ?, 1, 0, ?, ?)
-    `, [
-      'hora_magikarp_score_priority',
-      'Hora Magikarp Score Priority',
-      '🎣',
-      'competition',
-      JSON.stringify(eventConfig),
-      'Test de prioridad absoluta de puntuacion'
-    ]);
+    `,
+      [
+        'hora_magikarp_score_priority',
+        'Hora Magikarp Score Priority',
+        '🎣',
+        'competition',
+        JSON.stringify(eventConfig),
+        'Test de prioridad absoluta de puntuacion'
+      ]
+    );
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO competition_entries (id, event_id, player_id, player_name, player_email, pokemon_uid, data, submitted_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      'entry_p1',
-      'hora_magikarp_score_priority',
-      'user_high_normal',
-      'Trainer_High',
-      'high@test.com',
-      'poke_high',
-      JSON.stringify({ species: 'magikarp', name: 'Magikarp', total_ivs: 160, is_shiny: false, obtained_at: 500000 }),
-      '2026-08-26T12:00:00Z'
-    ]);
+    `,
+      [
+        'entry_p1',
+        'hora_magikarp_score_priority',
+        'user_high_normal',
+        'Trainer_High',
+        'high@test.com',
+        'poke_high',
+        JSON.stringify({
+          species: 'magikarp',
+          name: 'Magikarp',
+          total_ivs: 160,
+          is_shiny: false,
+          obtained_at: 500000
+        }),
+        '2026-08-26T12:00:00Z'
+      ]
+    );
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO competition_entries (id, event_id, player_id, player_name, player_email, pokemon_uid, data, submitted_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      'entry_p2',
-      'hora_magikarp_score_priority',
-      'user_shiny_lower',
-      'Trainer_Shiny',
-      'shiny@test.com',
-      'poke_shiny_low',
-      JSON.stringify({ species: 'magikarp', name: 'Magikarp', total_ivs: 150, is_shiny: true, obtained_at: 100000 }),
-      '2026-08-26T12:05:00Z'
-    ]);
+    `,
+      [
+        'entry_p2',
+        'hora_magikarp_score_priority',
+        'user_shiny_lower',
+        'Trainer_Shiny',
+        'shiny@test.com',
+        'poke_shiny_low',
+        JSON.stringify({
+          species: 'magikarp',
+          name: 'Magikarp',
+          total_ivs: 150,
+          is_shiny: true,
+          obtained_at: 100000
+        }),
+        '2026-08-26T12:05:00Z'
+      ]
+    );
 
-    const res = await emulateAwardEventAutomated(mockSqliteDb, { target_event_id: 'hora_magikarp_score_priority' });
+    const res = await emulateAwardEventAutomated(mockSqliteDb, {
+      target_event_id: 'hora_magikarp_score_priority'
+    });
     assert.strictEqual(res.error, null);
 
-    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', ['hora_magikarp_score_priority']);
+    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', [
+      'hora_magikarp_score_priority'
+    ]);
     const winners = JSON.parse((resultRows[0] as { winners: string }).winners) as Array<{
       rank: string;
       player_id: string;

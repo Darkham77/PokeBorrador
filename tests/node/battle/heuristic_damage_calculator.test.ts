@@ -1,7 +1,10 @@
-import { describe, it, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { HeuristicDamageCalculator } from '../../../src/logic/battle/ai/heuristic/damageCalculator.ts';
-import type { HeuristicBattleSnapshot, HeuristicMoveInfo } from '../../../src/logic/battle/ai/heuristic/types.ts';
+import type {
+  HeuristicBattleSnapshot,
+  HeuristicMoveInfo
+} from '../../../src/logic/battle/ai/heuristic/types.ts';
 
 describe('HeuristicAI - HeuristicDamageCalculator Unit Tests', () => {
   let calc: HeuristicDamageCalculator;
@@ -89,12 +92,12 @@ describe('HeuristicAI - HeuristicDamageCalculator Unit Tests', () => {
   it('should apply STAB modifiers when move matches attacker type', () => {
     const validMoves: HeuristicMoveInfo[] = [
       { id: 'thunderbolt', pp: 15, disabled: false }, // Electric (STAB)
-      { id: 'quickattack', pp: 30, disabled: false }   // Normal (no STAB)
+      { id: 'quickattack', pp: 30, disabled: false } // Normal (no STAB)
     ];
 
     const matchup = calc.calcMatchup(snapshot, validMoves);
-    const tboltResult = matchup.myAttacking.find(m => m.move === 'thunderbolt')!;
-    const quickResult = matchup.myAttacking.find(m => m.move === 'quickattack')!;
+    const tboltResult = matchup.myAttacking.find((m) => m.move === 'thunderbolt')!;
+    const quickResult = matchup.myAttacking.find((m) => m.move === 'quickattack')!;
 
     // Debido al STAB y potencia base, Thunderbolt debe tener una estimación significativamente mayor
     assert.ok(tboltResult.maxPercent > quickResult.maxPercent);

@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue'
-import { gsap } from 'gsap'
-import { useGymsStore } from '@/stores/gyms'
-import { useGameStore } from '@/stores/game'
-import GymCard from '@/components/gyms/GymCard.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { GymId, Gym } from '@/data/world/gyms'
-import type { BattleDifficulty } from '@/types/battle/battle'
+import { onMounted, reactive } from 'vue';
+import { gsap } from 'gsap';
+import { useGymsStore } from '@/stores/gyms';
+import { useGameStore } from '@/stores/game';
+import GymCard from '@/components/gyms/GymCard.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { GymId, Gym } from '@/data/world/gyms';
+import type { BattleDifficulty } from '@/types/battle/battle';
 
-const gymsStore = useGymsStore()
-const gameStore = useGameStore()
+const gymsStore = useGymsStore();
+const gameStore = useGameStore();
 
 // Local state for difficulties to keep them reactive per card
-const cardDifficulties = reactive<Partial<Record<GymId, BattleDifficulty>>>({})
+const cardDifficulties = reactive<Partial<Record<GymId, BattleDifficulty>>>({});
 
 onMounted(() => {
   gymsStore.gyms.forEach((gym: Gym) => {
-    cardDifficulties[gym.id] = 'easy'
-  })
-})
+    cardDifficulties[gym.id] = 'easy';
+  });
+});
 
 const handleBadgeEnter = (e: MouseEvent) => {
   gsap.to(e.currentTarget, {
@@ -29,12 +29,12 @@ const handleBadgeEnter = (e: MouseEvent) => {
     ease: 'back.out(1.7)',
     filter: 'none',
     opacity: 1
-  })
-}
+  });
+};
 
 const handleBadgeLeave = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
-  const isActive = el.classList.contains('active')
+  const el = e.currentTarget as HTMLElement;
+  const isActive = el.classList.contains('active');
   gsap.to(el, {
     scale: isActive ? 1.1 : 1,
     y: isActive ? -2 : 0,
@@ -42,33 +42,22 @@ const handleBadgeLeave = (e: MouseEvent) => {
     ease: 'power2.out',
     filter: isActive ? 'none' : 'Grayscale(1) Opacity(0.3)',
     opacity: isActive ? 1 : 0.3
-  })
-}
+  });
+};
 </script>
 
 <template>
   <div class="pv-gyms-view">
     <div class="pv-region-selector">
-      <button
-        id="gyms-view-btn-kanto"
-        class="region-tab active"
-      >
+      <button id="gyms-view-btn-kanto" class="region-tab active">
         <span class="region-indicator" />
         KANTO
       </button>
-      <button
-        id="gyms-view-btn-johto-pr-ximamente"
-        class="region-tab locked"
-        disabled
-      >
+      <button id="gyms-view-btn-johto-pr-ximamente" class="region-tab locked" disabled>
         <span class="emoji lock-icon">🔒</span>
         JOHTO (PRÓXIMAMENTE)
       </button>
-      <button
-        id="gyms-view-btn-hoenn-pr-ximamente"
-        class="region-tab locked"
-        disabled
-      >
+      <button id="gyms-view-btn-hoenn-pr-ximamente" class="region-tab locked" disabled>
         <span class="emoji lock-icon">🔒</span>
         HOENN (PRÓXIMAMENTE)
       </button>
@@ -76,40 +65,32 @@ const handleBadgeLeave = (e: MouseEvent) => {
 
     <div class="pv-gyms-header">
       <div class="header-left">
-        <h1 class="view-title">
-          <span class="emoji">🏆</span> LÍDERES DE GIMNASIO
-        </h1>
+        <h1 class="view-title"><span class="emoji">🏆</span> LÍDERES DE GIMNASIO</h1>
         <p class="view-desc">
-          Derrota a los 8 líderes de Kanto para acceder a la Liga Pokémon. Cada líder otorga una medalla única y una MT especial.
+          Derrota a los 8 líderes de Kanto para acceder a la Liga Pokémon. Cada líder otorga una
+          medalla única y una MT especial.
         </p>
       </div>
 
       <div class="badge-summary">
-        <div class="badge-title">
-          TUS MEDALLAS
-        </div>
+        <div class="badge-title">TUS MEDALLAS</div>
         <div class="badge-list">
-          <PVTooltip 
-            v-for="gym in gymsStore.gyms" 
-            :key="gym.id"
-            :title="gym.badgeName"
-          >
+          <PVTooltip v-for="gym in gymsStore.gyms" :key="gym.id" :title="gym.badgeName">
             <button
-              id="gyms-view-btn-1" 
+              id="gyms-view-btn-1"
               class="badge-item"
               :class="{ active: gymsStore.isGymDefeated(gym.id) }"
               @mouseenter="handleBadgeEnter"
               @mouseleave="handleBadgeLeave"
               @click.stop
             >
-              <img 
-                :src="getAssetUrl(ASSET_TYPES.BADGE, gym.id)" 
+              <img
+                :src="getAssetUrl(ASSET_TYPES.BADGE, gym.id)"
                 :alt="gym.badgeName"
                 class="badge-img"
-              
                 width="32"
                 height="32"
-              >
+              />
             </button>
           </PVTooltip>
         </div>
@@ -130,7 +111,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pv-gyms-view {
   padding: 0 0 40px;
@@ -201,7 +182,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
   padding: 30px;
   border-radius: $radius-4xl;
   margin-bottom: 40px;
-  
+
   @media (width <= 1024px) {
     flex-direction: column;
     align-items: center;
@@ -288,7 +269,6 @@ const handleBadgeLeave = (e: MouseEvent) => {
     filter: none;
     border-color: var(--yellow);
     box-shadow: var(--shadow-card);
-
   }
 }
 

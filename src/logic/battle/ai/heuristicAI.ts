@@ -13,7 +13,11 @@ import { HeuristicDamageCalculator } from './heuristic/damageCalculator.ts';
 import { InferenceEngine } from './heuristic/inferenceEngine.ts';
 import { buildSnapshot } from './heuristic/snapshotBuilder.ts';
 import { evaluateStrategicState } from './heuristic/strategyEvaluator.ts';
-import { pickBestSwitch, hasViableSwitchCounter, type SwitchEvaluationMode } from './heuristic/heuristicEngine.ts';
+import {
+  pickBestSwitch,
+  hasViableSwitchCounter,
+  type SwitchEvaluationMode
+} from './heuristic/heuristicEngine.ts';
 import { ACTIVE_GENERATION } from '../../../data/system/constants.ts';
 import type { GenerationNum } from '@smogon/calc';
 import {
@@ -47,10 +51,17 @@ export class HeuristicAI implements CombatAI {
   // CombatAI interface
   // ──────────────────────────────────────────
 
-  decideMove(enemy: Pokemon, _player: Pokemon, _playerStages: BattleStages, isWild = false, store?: BattleContext): Move | null {
+  decideMove(
+    enemy: Pokemon,
+    _player: Pokemon,
+    _playerStages: BattleStages,
+    isWild = false,
+    store?: BattleContext
+  ): Move | null {
     const battle = store?.activeBattle?.value ?? null;
     const config = resolveAIConfig(battle ? { ...battle, isWild } : { isWild });
-    const isWildBattle = isWild || Boolean(battle && !battle.isTrainer && !battle.isGym && !battle.isPvP);
+    const isWildBattle =
+      isWild || Boolean(battle && !battle.isTrainer && !battle.isGym && !battle.isPvP);
 
     const dittoMove = tryWildDittoTransform(enemy, isWildBattle);
     if (dittoMove) return dittoMove;
@@ -69,8 +80,13 @@ export class HeuristicAI implements CombatAI {
     return pickHeuristicMoveChoice(snapshot, validMoves, config, enemy, this.calc, this.inference);
   }
 
-  shouldSwitch(_enemy: Pokemon, _player: Pokemon, enemyTeam: Pokemon[] | undefined, store?: BattleContext): boolean {
-    if (!enemyTeam || enemyTeam.filter(p => p.hp > 0).length <= 1) return false;
+  shouldSwitch(
+    _enemy: Pokemon,
+    _player: Pokemon,
+    enemyTeam: Pokemon[] | undefined,
+    store?: BattleContext
+  ): boolean {
+    if (!enemyTeam || enemyTeam.filter((p) => p.hp > 0).length <= 1) return false;
 
     const battle = store?.activeBattle?.value ?? null;
     const config = resolveAIConfig(battle);
@@ -92,11 +108,16 @@ export class HeuristicAI implements CombatAI {
 
     if (!snapshot) return false;
 
-    const switchOptions = snapshot.mySide.pokemon.filter((p: HeuristicBattleSnapshot['mySide']['pokemon'][number]) => !p.active && p.hp > 0);
+    const switchOptions = snapshot.mySide.pokemon.filter(
+      (p: HeuristicBattleSnapshot['mySide']['pokemon'][number]) => !p.active && p.hp > 0
+    );
     const oppActive = snapshot.opponentSide.activePokemon;
 
     // Crucial anti-loop gate: NEVER switch if no bench Pokémon is a viable safe counter!
-    if (!oppActive || !hasViableSwitchCounter(snapshot, switchOptions, this.calc, this.inference, oppActive)) {
+    if (
+      !oppActive ||
+      !hasViableSwitchCounter(snapshot, switchOptions, this.calc, this.inference, oppActive)
+    ) {
       return false;
     }
 
@@ -124,13 +145,24 @@ export class HeuristicAI implements CombatAI {
 
     const candidates = snapshot.mySide.pokemon.filter((p) => !p.active && p.hp > 0);
     const strategic = evaluateStrategicState(snapshot, this.calc, this.inference);
-    const decision = pickBestSwitch(snapshot, candidates, strategic, this.calc, this.inference, oppActive, mode);
+    const decision = pickBestSwitch(
+      snapshot,
+      candidates,
+      strategic,
+      this.calc,
+      this.inference,
+      oppActive,
+      mode
+    );
 
     if (decision?.type === 'switch' && decision.switchTeamIndex !== undefined) {
       // Map heuristic team index back to the project's enemyTeam array
       const heuristicPoke = snapshot.mySide.pokemon[decision.switchTeamIndex];
       if (heuristicPoke) {
-        const idx = enemyTeam.findIndex(p => p.hp > 0 && p.uid !== currentEnemyUid && (p.nickname || p.name) === heuristicPoke.name);
+        const idx = enemyTeam.findIndex(
+          (p) =>
+            p.hp > 0 && p.uid !== currentEnemyUid && (p.nickname || p.name) === heuristicPoke.name
+        );
         if (idx !== -1) return idx;
       }
     }
@@ -148,7 +180,7 @@ export class HeuristicAI implements CombatAI {
   // ──────────────────────────────────────────
 
   private fallbackSwitchIndex(enemyTeam: Pokemon[], currentEnemyUid: string): number {
-    const idx = enemyTeam.findIndex(p => p.hp > 0 && p.uid !== currentEnemyUid);
+    const idx = enemyTeam.findIndex((p) => p.hp > 0 && p.uid !== currentEnemyUid);
     return idx;
   }
 }

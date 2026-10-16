@@ -11,12 +11,17 @@ import {
 } from './trainerProfileResolver.ts';
 import type { RankedSeasonMedal, BattleReplayRecord } from '@/types/battle/pvp.ts';
 
-const PROFILE_COLUMNS = 'id, username, email, faction, player_class, trainer_level, avatar_style, nick_style, pvp_wins, pvp_losses, elo_rating, created_at, gender, playtime, last_played_at, ranked_max_elo, class_level, class_xp, box_count, pvp_draws, longest_streak, shiny_count, max_damage, total_battles, trade_volume, capture_attempts';
-const REPLAY_COLUMNS = 'id, battle_code, season_id, theme_id, p1_data, p2_data, turns_count, winner_side, choice_stream, initial_seed, is_top10_archived, views_count, created_at';
+const PROFILE_COLUMNS =
+  'id, username, email, faction, player_class, trainer_level, avatar_style, nick_style, pvp_wins, pvp_losses, elo_rating, created_at, gender, playtime, last_played_at, ranked_max_elo, class_level, class_xp, box_count, pvp_draws, longest_streak, shiny_count, max_damage, total_battles, trade_volume, capture_attempts';
+const REPLAY_COLUMNS =
+  'id, battle_code, season_id, theme_id, p1_data, p2_data, turns_count, winner_side, choice_stream, initial_seed, is_top10_archived, views_count, created_at';
 const AWARDS_QUERY_LIMIT = 100;
 const ENTRIES_QUERY_LIMIT = 500;
 
-export function useTrainerProfileFetcher(userId: ComputedRef<string | null | undefined>, isOwnProfile: ComputedRef<boolean>) {
+export function useTrainerProfileFetcher(
+  userId: ComputedRef<string | null | undefined>,
+  isOwnProfile: ComputedRef<boolean>
+) {
   const gameStore = useGameStore();
 
   const loading = ref(!isOwnProfile.value);
@@ -34,8 +39,17 @@ export function useTrainerProfileFetcher(userId: ComputedRef<string | null | und
     const [profRes, awardsRes, compEntryRes, replaysRes] = await Promise.all([
       db.from('profiles').select(PROFILE_COLUMNS).eq('id', id).maybeSingle(),
       db.from('awards').select('prize, event_id').eq('winner_id', id).limit(AWARDS_QUERY_LIMIT),
-      db.from('competition_entries').select('event_id').eq('player_id', id).limit(ENTRIES_QUERY_LIMIT),
-      db.from('battle_replays').select(REPLAY_COLUMNS).or(`p1_user_id.eq.${id},p2_user_id.eq.${id}`).order('created_at', { ascending: false }).limit(5)
+      db
+        .from('competition_entries')
+        .select('event_id')
+        .eq('player_id', id)
+        .limit(ENTRIES_QUERY_LIMIT),
+      db
+        .from('battle_replays')
+        .select(REPLAY_COLUMNS)
+        .or(`p1_user_id.eq.${id},p2_user_id.eq.${id}`)
+        .order('created_at', { ascending: false })
+        .limit(5)
     ]);
 
     if (profRes.data) {
@@ -73,7 +87,11 @@ export function useTrainerProfileFetcher(userId: ComputedRef<string | null | und
     try {
       const [awardsRes, compEntryRes] = await Promise.all([
         db.from('awards').select('prize, event_id').eq('winner_id', id).limit(AWARDS_QUERY_LIMIT),
-        db.from('competition_entries').select('event_id').eq('player_id', id).limit(ENTRIES_QUERY_LIMIT)
+        db
+          .from('competition_entries')
+          .select('event_id')
+          .eq('player_id', id)
+          .limit(ENTRIES_QUERY_LIMIT)
       ]);
       if (awardsRes.data) {
         rankedMedals.value = extractRankedMedals(awardsRes.data, saveState.value?.rankedMedals);
@@ -111,7 +129,10 @@ export function useTrainerProfileFetcher(userId: ComputedRef<string | null | und
       try {
         await fetchOwnProfileStats(id, db);
       } catch (err) {
-        logger.warn('[useTrainerProfile] Error en background fetch de estadísticas de eventos:', err);
+        logger.warn(
+          '[useTrainerProfile] Error en background fetch de estadísticas de eventos:',
+          err
+        );
       }
       return;
     }
@@ -137,11 +158,11 @@ export function useTrainerProfileFetcher(userId: ComputedRef<string | null | und
   };
 
   onMounted(() => {
-    fetchData();
+    void fetchData();
   });
 
   watch(userId, () => {
-    fetchData();
+    void fetchData();
   });
 
   return {

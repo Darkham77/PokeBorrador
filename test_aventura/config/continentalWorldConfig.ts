@@ -6,6 +6,8 @@
  * urban maquette placement, and road rasterization thresholds.
  */
 
+import type { UrbanScale } from '../types/map/continentTypes.ts';
+
 export const MULBERRY32_CONFIG = {
   stateIncrement: 0x6d2b79f5,
   shift15: 15,
@@ -25,9 +27,9 @@ export const CONTINENTAL_SEED_OFFSETS = {
 } as const;
 
 export const CONTINENTAL_ISLAND_TEMPLATES = [
-  { baseX: 0.65, baseY: -0.60, baseR: 0.16, rVariance: 0.06, coordJitter: 0.2, centerOffset: 0.5 },
+  { baseX: 0.65, baseY: -0.6, baseR: 0.16, rVariance: 0.06, coordJitter: 0.2, centerOffset: 0.5 },
   { baseX: -0.65, baseY: 0.55, baseR: 0.15, rVariance: 0.05, coordJitter: 0.2, centerOffset: 0.5 },
-  { baseX: 0.60, baseY: 0.62, baseR: 0.15, rVariance: 0.05, coordJitter: 0.2, centerOffset: 0.5 }
+  { baseX: 0.6, baseY: 0.62, baseR: 0.15, rVariance: 0.05, coordJitter: 0.2, centerOffset: 0.5 }
 ] as const;
 
 export const CONTINENTAL_NOISE_CONFIG = {
@@ -47,8 +49,8 @@ export const CONTINENTAL_NOISE_CONFIG = {
   coastFbm: { octaves: 4, scale: 0.05, persistence: 0.5 },
   bayOffset: 300,
   bayFbm: { octaves: 2, scale: 0.025, persistence: 0.5 },
-  bayPenaltyThreshold: -0.20,
-  bayPenaltyOffset: 0.20,
+  bayPenaltyThreshold: -0.2,
+  bayPenaltyOffset: 0.2,
   bayPenaltyMultiplier: 1.5,
   coastWeight: 0.35,
   islandInfluenceFactor: 0.75,
@@ -57,10 +59,10 @@ export const CONTINENTAL_NOISE_CONFIG = {
   ridgeFbm: { octaves: 4, scale: 0.038, persistence: 0.55 },
   mountainBaseThreshold: 0.86,
   mountainFactor: 0.15,
-  mountainWaterClearance: 0.10,
+  mountainWaterClearance: 0.1,
   moistOffset: 200,
   moistFbm: { octaves: 3, scale: 0.045, persistence: 0.55 },
-  forestBaseThreshold: 0.10,
+  forestBaseThreshold: 0.1,
   forestPercentOffset: 25,
   forestFactor: 0.25
 } as const;
@@ -69,8 +71,8 @@ export const CONTINENTAL_URBAN_SCATTER_CONFIG = {
   defaultTargetCount: 12,
   minDistancePx: 380,
   maxAttempts: 1500,
-  edgeMarginRatio: 0.10,
-  innerSpreadRatio: 0.80,
+  edgeMarginRatio: 0.1,
+  innerSpreadRatio: 0.8,
   relaxationAttemptThreshold: 400,
   clearanceDistInitial: 2,
   clearanceDistRelaxed: 1,
@@ -116,18 +118,37 @@ export interface MaquettePropTemplate {
   readonly dy: number;
 }
 
-export const CONTINENTAL_MAQUETTE_LAYOUTS: Record<string, {
-  readonly buildings: readonly MaquetteBuildingTemplate[];
-  readonly props: readonly MaquettePropTemplate[];
-}> = {
+export const CONTINENTAL_MAQUETTE_LAYOUTS: Record<
+  UrbanScale,
+  {
+    readonly buildings: readonly MaquetteBuildingTemplate[];
+    readonly props: readonly MaquettePropTemplate[];
+  }
+> = {
   metropolis: {
     buildings: [
       { style: 'silph_tower', dx: -144, dy: -260, w: 288, h: 320, door: { x: 4, y: 9 } },
       { style: 'gym_gold', dx: -240, dy: 80, w: 192, h: 160, door: { x: 3, y: 4 } },
       { style: 'pokecenter', dx: 80, dy: 80, w: 160, h: 160, door: { x: 2, y: 4 } },
       { style: 'pokemart', dx: 80, dy: -100, w: 128, h: 128, door: { x: 2, y: 3 } },
-      { style: 'house_blue', dx: -240, dy: -100, w: 160, h: 160, door: { x: 2, y: 4 }, houseSlot: { offset: 1, fallback: 'house_blue' } },
-      { style: 'house_red', dx: -80, dy: 260, w: 160, h: 160, door: { x: 2, y: 4 }, houseSlot: { offset: 2, fallback: 'house_red' } }
+      {
+        style: 'house_blue',
+        dx: -240,
+        dy: -100,
+        w: 160,
+        h: 160,
+        door: { x: 2, y: 4 },
+        houseSlot: { offset: 1, fallback: 'house_blue' }
+      },
+      {
+        style: 'house_red',
+        dx: -80,
+        dy: 260,
+        w: 160,
+        h: 160,
+        door: { x: 2, y: 4 },
+        houseSlot: { offset: 2, fallback: 'house_red' }
+      }
     ],
     props: [
       { style: 'poke_street_lamp', dx: -60, dy: -20 },
@@ -143,7 +164,15 @@ export const CONTINENTAL_MAQUETTE_LAYOUTS: Record<string, {
       { style: 'gym', dx: -180, dy: -90, w: 192, h: 160, door: { x: 3, y: 4 } },
       { style: 'pokecenter', dx: 30, dy: -90, w: 160, h: 160, door: { x: 2, y: 4 } },
       { style: 'pokemart', dx: 50, dy: 90, w: 128, h: 128, door: { x: 2, y: 3 } },
-      { style: 'house_green', dx: -170, dy: 90, w: 160, h: 160, door: { x: 2, y: 4 }, houseSlot: { offset: 0, fallback: 'house_green' } }
+      {
+        style: 'house_green',
+        dx: -170,
+        dy: 90,
+        w: 160,
+        h: 160,
+        door: { x: 2, y: 4 },
+        houseSlot: { offset: 0, fallback: 'house_green' }
+      }
     ],
     props: [
       { style: 'poke_street_lamp', dx: -10, dy: -20 },
@@ -157,7 +186,15 @@ export const CONTINENTAL_MAQUETTE_LAYOUTS: Record<string, {
       { style: 'pokecenter', dx: -170, dy: -80, w: 160, h: 160, door: { x: 2, y: 4 } },
       { style: 'pokemart', dx: 40, dy: -80, w: 128, h: 128, door: { x: 2, y: 3 } },
       { style: 'house_blue', dx: -170, dy: 100, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: 'house_orange', dx: 40, dy: 100, w: 160, h: 160, door: { x: 2, y: 4 }, houseSlot: { offset: 3, fallback: 'house_orange' } }
+      {
+        style: 'house_orange',
+        dx: 40,
+        dy: 100,
+        w: 160,
+        h: 160,
+        door: { x: 2, y: 4 },
+        houseSlot: { offset: 3, fallback: 'house_orange' }
+      }
     ],
     props: [
       { style: 'poke_street_lamp', dx: -5, dy: -20 },
@@ -169,7 +206,15 @@ export const CONTINENTAL_MAQUETTE_LAYOUTS: Record<string, {
     buildings: [
       { style: 'pokecenter', dx: -170, dy: -80, w: 160, h: 160, door: { x: 2, y: 4 } },
       { style: 'house_red', dx: 30, dy: -80, w: 160, h: 160, door: { x: 2, y: 4 } },
-      { style: 'cottage', dx: -70, dy: 100, w: 160, h: 160, door: { x: 2, y: 4 }, houseSlot: { offset: 4, fallback: 'cottage' } }
+      {
+        style: 'cottage',
+        dx: -70,
+        dy: 100,
+        w: 160,
+        h: 160,
+        door: { x: 2, y: 4 },
+        houseSlot: { offset: 4, fallback: 'cottage' }
+      }
     ],
     props: [
       { style: 'poke_fence_picket', dx: 5, dy: -30 },

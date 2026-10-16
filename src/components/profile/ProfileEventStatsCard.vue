@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { formatCurrency } from '@/logic/utils/formatters'
+import { formatCurrency } from '@/logic/utils/formatters';
 
 interface Props {
-  participations?: number
-  medalsTotal?: number
-  firstPlace?: number
-  secondPlace?: number
-  thirdPlace?: number
-  handleStatEnter?: (e: MouseEvent) => void
-  handleStatLeave?: (e: MouseEvent) => void
+  participations?: number;
+  medalsTotal?: number;
+  firstPlace?: number;
+  secondPlace?: number;
+  thirdPlace?: number;
+  handleStatEnter?: (e: MouseEvent) => void;
+  handleStatLeave?: (e: MouseEvent) => void;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -19,16 +19,14 @@ withDefaults(defineProps<Props>(), {
   thirdPlace: 0,
   handleStatEnter: undefined,
   handleStatLeave: undefined
-})
+});
 
-const formatNum = (num: number) => formatCurrency(num)
+const formatNum = (num: number) => formatCurrency(num);
 </script>
 
 <template>
   <div class="profile-section-card event-stats-card">
-    <div class="section-label">
-      TORNEOS Y COMPETICIONES DE EVENTOS
-    </div>
+    <div class="section-label">TORNEOS Y COMPETICIONES DE EVENTOS</div>
 
     <!-- Fila Principal: Participaciones y Medallas Totales -->
     <div class="stats-grid main-event-grid">
@@ -102,10 +100,10 @@ const formatNum = (num: number) => formatCurrency(num)
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/cosmetics" as *;
-@use "@/styles/components/_profile-shared.scss" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/cosmetics' as *;
+@use '@/styles/components/_profile-shared.scss' as *;
 
 .event-stats-card {
   display: flex;

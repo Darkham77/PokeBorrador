@@ -2,7 +2,7 @@
  * tests/unit/world/world_assets_and_map_card_suite.spec.ts
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { mount } from '@vue/test-utils';
 import { computed, ref } from 'vue';
@@ -11,7 +11,12 @@ import path from 'node:path';
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import * as resolver from '@/logic/utils/assetResolver';
-import { normalizeFaction, checkPlayerWinner, calculateSpawnGrid, isMapExtortable } from '@/logic/map/mapCardHelper';
+import {
+  normalizeFaction,
+  checkPlayerWinner,
+  calculateSpawnGrid,
+  isMapExtortable
+} from '@/logic/map/mapCardHelper';
 import MapCard from '@/components/map/MapCard.vue';
 import { useUIStore } from '@/stores/ui';
 import { useGameStore } from '@/stores/game';
@@ -75,77 +80,90 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
 
     describe('AssetService: Pokemon Routing', () => {
       it('debe resolver sprites base desde PokeAPI usando el mapeo interno (localizado)', () => {
-        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'bulbasaur'))
-          .toBe('/assets/sprites/pokemon/static/1.webp');
+        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'bulbasaur')).toBe(
+          '/assets/sprites/pokemon/static/1.webp'
+        );
       });
 
       it('debe soportar variantes Shiny (localizado)', () => {
-        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu', { isShiny: true }))
-          .toBe('/assets/sprites/pokemon/static/shiny/25.webp');
+        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu', { isShiny: true })).toBe(
+          '/assets/sprites/pokemon/static/shiny/25.webp'
+        );
       });
 
       it('debe soportar variantes de espalda (Back) (localizado)', () => {
-        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'mew', { isBack: true }))
-          .toBe('/assets/sprites/pokemon/static/back/151.webp');
+        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'mew', { isBack: true })).toBe(
+          '/assets/sprites/pokemon/static/back/151.webp'
+        );
       });
 
       it('debe combinar Shiny + Back correctamente (localizado)', () => {
-        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'charizard', { isShiny: true, isBack: true }))
-          .toBe('/assets/sprites/pokemon/static/back/shiny/6.webp');
+        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'charizard', { isShiny: true, isBack: true })).toBe(
+          '/assets/sprites/pokemon/static/back/shiny/6.webp'
+        );
       });
 
       it('debe manejar huevos como ítems especiales (localizado)', () => {
-        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'egg_water'))
-          .toBe('/assets/sprites/egg.webp');
+        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'egg_water')).toBe('/assets/sprites/egg.webp');
       });
     });
 
     describe('AssetService: Map Routing', () => {
       it('debe resolver mapas normales', () => {
-        expect(getAssetUrl(ASSET_TYPES.MAP, 'ruta1', { cycle: 'day' }))
-          .toBe('/assets/maps/ruta1_dia.webp');
+        expect(getAssetUrl(ASSET_TYPES.MAP, 'ruta1', { cycle: 'day' })).toBe(
+          '/assets/maps/ruta1_dia.webp'
+        );
       });
 
       it('debe agregar el sufijo _mobile si isLowPower está activo', () => {
-        expect(getAssetUrl(ASSET_TYPES.MAP, 'ruta1', { cycle: 'day', isLowPower: true }))
-          .toBe('/assets/maps/ruta1_dia_mobile.webp');
+        expect(getAssetUrl(ASSET_TYPES.MAP, 'ruta1', { cycle: 'day', isLowPower: true })).toBe(
+          '/assets/maps/ruta1_dia_mobile.webp'
+        );
       });
     });
 
     describe('AssetService: Item Routing', () => {
       it('debe resolver la URL del sprite a partir de su ID de ítem en inglés o ruta relativa', () => {
-        expect(getAssetUrl(ASSET_TYPES.ITEM, 'superpotion'))
-          .toBe('/assets/sprites/crafting/tier3/superpotion.webp');
-        expect(getAssetUrl(ASSET_TYPES.ITEM, 'healthmochi'))
-          .toBe('/assets/sprites/crafting/tier3/healthmochi.webp');
-        expect(getAssetUrl(ASSET_TYPES.ITEM, 'crafting/tier0/coalore'))
-          .toBe('/assets/sprites/crafting/tier0/coalore.webp');
+        expect(getAssetUrl(ASSET_TYPES.ITEM, 'superpotion')).toBe(
+          '/assets/sprites/crafting/tier3/superpotion.webp'
+        );
+        expect(getAssetUrl(ASSET_TYPES.ITEM, 'healthmochi')).toBe(
+          '/assets/sprites/crafting/tier3/healthmochi.webp'
+        );
+        expect(getAssetUrl(ASSET_TYPES.ITEM, 'crafting/tier0/coalore')).toBe(
+          '/assets/sprites/crafting/tier0/coalore.webp'
+        );
       });
 
       it('debe devolver la ruta estándar en tier3 si no está en SHOP_ITEMS', () => {
-        expect(getAssetUrl(ASSET_TYPES.ITEM, 'custom_item'))
-          .toBe('/assets/sprites/crafting/tier3/custom_item.webp');
+        expect(getAssetUrl(ASSET_TYPES.ITEM, 'custom_item')).toBe(
+          '/assets/sprites/crafting/tier3/custom_item.webp'
+        );
       });
     });
 
     describe('AssetService: Trainer Routing', () => {
       it('debe usar activos locales para líderes de gimnasio (anteriormente externos)', () => {
-        expect(getAssetUrl(ASSET_TYPES.TRAINER, 'brock'))
-          .toBe('/assets/sprites/npc/brock.webp');
+        expect(getAssetUrl(ASSET_TYPES.TRAINER, 'brock')).toBe('/assets/sprites/npc/brock.webp');
       });
 
       it('debe usar activos locales para otros entrenadores (sin LOD)', () => {
         vi.stubGlobal('innerWidth', 400);
-        expect(getAssetUrl(ASSET_TYPES.TRAINER, 'hero'))
-          .toBe('/assets/sprites/npc/hero.webp');
+        expect(getAssetUrl(ASSET_TYPES.TRAINER, 'hero')).toBe('/assets/sprites/npc/hero.webp');
       });
     });
 
     describe('AssetService: Raw URLs and Test Paths', () => {
       it('debe devolver la URL o ruta intacta si empieza con http, data:, o /test aventura/', () => {
-        expect(getAssetUrl(ASSET_TYPES.MAP, 'https://example.com/image.png')).toBe('https://example.com/image.png');
-        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'data:image/png;base64,123')).toBe('data:image/png;base64,123');
-        expect(getAssetUrl(ASSET_TYPES.MAP, '/test aventura/imagenes/Pallet_Town_FRLG.png')).toBe('/test aventura/imagenes/Pallet_Town_FRLG.png');
+        expect(getAssetUrl(ASSET_TYPES.MAP, 'https://example.com/image.png')).toBe(
+          'https://example.com/image.png'
+        );
+        expect(getAssetUrl(ASSET_TYPES.POKEMON, 'data:image/png;base64,123')).toBe(
+          'data:image/png;base64,123'
+        );
+        expect(getAssetUrl(ASSET_TYPES.MAP, '/test aventura/imagenes/Pallet_Town_FRLG.png')).toBe(
+          '/test aventura/imagenes/Pallet_Town_FRLG.png'
+        );
       });
     });
 
@@ -153,7 +171,7 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
       it('no debe devolver sufijo independientemente del ancho', () => {
         vi.stubGlobal('innerWidth', 400);
         expect(resolver.getResolutionSuffix()).toBe('');
-        
+
         vi.stubGlobal('innerWidth', 1200);
         expect(resolver.getResolutionSuffix()).toBe('');
       });
@@ -209,7 +227,7 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
         expect(grid10.rows).toBe(3);
         expect(grid10.totalSlots).toBe(12);
       });
-      
+
       it('should handle zero spawns', () => {
         const grid = calculateSpawnGrid(0);
         expect(grid.totalSlots).toBe(0);
@@ -223,22 +241,32 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
           name: 'Bosque Viridian',
           wild: { morning: ['pikachu'] }
         };
-        expect(isMapExtortable(mockMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(true);
+        expect(isMapExtortable(mockMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(
+          true
+        );
       });
 
       it('should return false for cities, gyms, and leagues', () => {
         const cityMap = { id: 'pallet_town', wild: { morning: ['pikachu'] } };
         const gymMap = { id: 'pewter_gym', wild: { morning: ['pikachu'] } };
         const leagueMap = { id: 'indigo_plateau_league', wild: { morning: ['pikachu'] } };
-        
-        expect(isMapExtortable(cityMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(false);
-        expect(isMapExtortable(gymMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(false);
-        expect(isMapExtortable(leagueMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(false);
+
+        expect(isMapExtortable(cityMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(
+          false
+        );
+        expect(isMapExtortable(gymMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(
+          false
+        );
+        expect(isMapExtortable(leagueMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(
+          false
+        );
       });
 
       it('should return false if map has no wild spawns', () => {
         const noWildMap = { id: 'route1', wild: {} };
-        expect(isMapExtortable(noWildMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(false);
+        expect(isMapExtortable(noWildMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(
+          false
+        );
       });
     });
   });
@@ -252,18 +280,21 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
       setActivePinia(createPinia());
       uiStore = useUIStore();
       gameStore = useGameStore();
-      
+
       gameStore.state = {
         pokedex: [] as string[],
         seenPokedex: [] as string[],
         faction: 'power'
       } as unknown as typeof gameStore.state;
 
-      pokeDataSpy = vi.spyOn(pokemonDataProvider, 'getPokemonData').mockImplementation((id: string) => ({
-        id,
-        name: id.toUpperCase(),
-        type: 'normal'
-      } as unknown as ReturnType<typeof pokemonDataProvider.getPokemonData>));
+      pokeDataSpy = vi.spyOn(pokemonDataProvider, 'getPokemonData').mockImplementation(
+        (id: string) =>
+          ({
+            id,
+            name: id.toUpperCase(),
+            type: 'normal'
+          }) as unknown as ReturnType<typeof pokemonDataProvider.getPokemonData>
+      );
     });
 
     afterEach(() => {
@@ -280,15 +311,21 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
         guardian: { id: 'pidgey', captured: false },
         winner: 'neutral'
       },
-      spawnPool: { generic: ['pidgey', 'rattata'], specific: [] as string[], rates: {} as Record<string, number> }
+      spawnPool: {
+        generic: ['pidgey', 'rattata'],
+        specific: [] as string[],
+        rates: {} as Record<string, number>
+      }
     };
 
     it('renders guardian as silhouette if not seen', async () => {
-      const wrapper = mount(MapCard, { props: defaultProps as unknown as InstanceType<typeof MapCard>['$props'] });
+      const wrapper = mount(MapCard, {
+        props: defaultProps as unknown as InstanceType<typeof MapCard>['$props']
+      });
       await wrapper.vm.$nextTick();
       const guardianImg = wrapper.find('.guardian-mini-sprite');
       const vm = wrapper.vm as unknown as MapCardInstance;
-      
+
       expect(guardianImg.classes()).toContain('spawn-silhouette');
       expect(vm.processedGuardian.name).toBe('Desconocido');
     });
@@ -297,10 +334,12 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
       const guardianId = requirePokemonSpeciesId(defaultProps.dominance.guardian.id);
       gameStore.state.seenPokedex = [guardianId];
       gameStore.state.pokedex = [];
-      
-      const wrapper = mount(MapCard, { props: defaultProps as unknown as InstanceType<typeof MapCard>['$props'] });
+
+      const wrapper = mount(MapCard, {
+        props: defaultProps as unknown as InstanceType<typeof MapCard>['$props']
+      });
       const vm = wrapper.vm as unknown as MapCardInstance;
-      
+
       expect(vm.processedGuardian.isSeen).toBe(true);
       expect(vm.processedGuardian.name).toBe(guardianId.toUpperCase());
       expect(vm.processedGuardian.typeInfo).toContain('NORMAL');
@@ -309,24 +348,28 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
     it('shows ??? if never seen', async () => {
       gameStore.state.seenPokedex = [];
       gameStore.state.pokedex = [];
-      
-      const wrapper = mount(MapCard, { props: defaultProps as unknown as InstanceType<typeof MapCard>['$props'] });
+
+      const wrapper = mount(MapCard, {
+        props: defaultProps as unknown as InstanceType<typeof MapCard>['$props']
+      });
       const vm = wrapper.vm as unknown as MapCardInstance;
-      
+
       expect(vm.processedGuardian.isSeen).toBe(false);
       expect(vm.processedGuardian.name).toBe('Desconocido');
     });
 
     it('reveals info but keeps silhouettes in "seen" debug mode', async () => {
       uiStore.debugPokedexMode = 'seen';
-      const wrapper = mount(MapCard, { props: defaultProps as unknown as InstanceType<typeof MapCard>['$props'] });
+      const wrapper = mount(MapCard, {
+        props: defaultProps as unknown as InstanceType<typeof MapCard>['$props']
+      });
       await wrapper.vm.$nextTick();
       const guardianImg = wrapper.find('.guardian-mini-sprite');
       const vm = wrapper.vm as unknown as MapCardInstance;
-      
+
       expect(guardianImg.classes()).toContain('spawn-silhouette');
       expect(vm.processedGuardian.name).toBe('PIDGEY');
-      
+
       const spawns = vm.processedGrid.filter((s: { id: string }) => s.id);
       expect(spawns[0]!.isSeen).toBe(true);
       expect(spawns[0]!.isCaught).toBe(false);
@@ -335,14 +378,16 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
 
     it('removes silhouettes and adds badges in "caught" debug mode', async () => {
       uiStore.debugPokedexMode = 'caught';
-      const wrapper = mount(MapCard, { props: defaultProps as unknown as InstanceType<typeof MapCard>['$props'] });
+      const wrapper = mount(MapCard, {
+        props: defaultProps as unknown as InstanceType<typeof MapCard>['$props']
+      });
       await wrapper.vm.$nextTick();
       const guardianImg = wrapper.find('.guardian-mini-sprite');
       const vm = wrapper.vm as unknown as MapCardInstance;
-      
+
       expect(guardianImg.classes()).not.toContain('spawn-silhouette');
       expect(vm.processedGuardian.isCaught).toBe(true);
-      
+
       const spawns = vm.processedGrid.filter((s: { id: string }) => s.id);
       expect(spawns[0]!.isCaught).toBe(true);
     });
@@ -351,7 +396,9 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
   describe('World Helpers & Subsystems', () => {
     describe('biomeHelper - getMapBiomeAndTags', () => {
       it('should return default biome and empty tags if location does not exist', () => {
-        const res = getMapBiomeAndTags('non-existent-location' as unknown as import('@/data/world/map-assets').MapRouteId);
+        const res = getMapBiomeAndTags(
+          'non-existent-location' as unknown as import('@/data/world/map-assets').MapRouteId
+        );
         expect(res.activeBiome).toBe('isPlains');
         expect(res.mapTags).toEqual([]);
       });
@@ -368,8 +415,12 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
         const storage: Record<string, string> = {};
         vi.stubGlobal('localStorage', {
           getItem: vi.fn((key: string) => (storage[key] as string | undefined) || null),
-          setItem: vi.fn((key: string, val: string | number) => { storage[key] = val.toString(); }),
-          clear: vi.fn(() => { for (const k in storage) delete storage[k]; })
+          setItem: vi.fn((key: string, val: string | number) => {
+            storage[key] = val.toString();
+          }),
+          clear: vi.fn(() => {
+            for (const k in storage) delete storage[k];
+          })
         });
         setActivePinia(createPinia());
       });
@@ -382,8 +433,11 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
           seenPokedex: []
         };
 
-        const result = restoreFossil('omanyte', state as unknown as Parameters<typeof restoreFossil>[1]);
-        
+        const result = restoreFossil(
+          'omanyte',
+          state as unknown as Parameters<typeof restoreFossil>[1]
+        );
+
         expect(result.pokemon.id).toBe('omanyte');
         expect(result.pokemon.level).toBe(1);
         expect(result.sentTo).toBe('team');
@@ -399,8 +453,11 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
           seenPokedex: []
         };
 
-        const result = restoreFossil('aerodactyl', state as unknown as Parameters<typeof restoreFossil>[1]);
-        
+        const result = restoreFossil(
+          'aerodactyl',
+          state as unknown as Parameters<typeof restoreFossil>[1]
+        );
+
         expect(result.sentTo).toBe('box');
         expect(state.box.length).toBe(1);
         expect(state.team.length).toBe(6);
@@ -414,7 +471,7 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
 
       it('debe priorizar clima del combate y luego restaurar al clima actual del mapa (avanzando la hora)', () => {
         const mapStore = useMapStore();
-        
+
         const mapWeatherSource = ref('clear');
         mapStore.setGlobalWeather(null);
 
@@ -424,7 +481,11 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
         });
 
         const computedWeather = computed(() => {
-          if (battleState.value?.weather && battleState.value.weather.type !== 'clear' && battleState.value.weather.type !== 'none') {
+          if (
+            battleState.value?.weather &&
+            battleState.value.weather.type !== 'clear' &&
+            battleState.value.weather.type !== 'none'
+          ) {
             return battleState.value.weather.visual || battleState.value.weather.type;
           }
           return mapStore.globalWeather || mapWeatherSource.value;
@@ -433,7 +494,7 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
         expect(computedWeather.value).toBe('clear');
 
         battleState.value.weather = { type: 'rain', visual: 'rain', turns: 5 };
-        
+
         expect(computedWeather.value).toBe('rain');
         expect(mapStore.globalWeather).toBeNull();
 
@@ -463,7 +524,10 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
       });
 
       it('AtmosphereLayer component source should not reference nonexistent noise_texture_1.png', () => {
-        const componentPath = path.resolve(process.cwd(), 'src/components/common/AtmosphereLayer.vue');
+        const componentPath = path.resolve(
+          process.cwd(),
+          'src/components/common/AtmosphereLayer.vue'
+        );
         const source = fs.readFileSync(componentPath, 'utf-8');
 
         expect(source.includes('noise_texture_1.png')).toBe(false);
@@ -481,8 +545,13 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
           playerClass: 'entrenador' as const,
           classLevel: 10
         };
-        const chances = getNpcEncounterChances('route1', state as unknown as Parameters<typeof getNpcEncounterChances>[1], {}, []);
-        const trainerInfo = chances.find(c => c.type === 'trainer');
+        const chances = getNpcEncounterChances(
+          'route1',
+          state as unknown as Parameters<typeof getNpcEncounterChances>[1],
+          {},
+          []
+        );
+        const trainerInfo = chances.find((c) => c.type === 'trainer');
         expect(trainerInfo).toBeDefined();
         expect(trainerInfo?.chance).toBe(8);
       });
@@ -495,8 +564,13 @@ describe('World Domain: Assets, Map Card & World Helpers Suite', () => {
           classLevel: 50,
           classData: { criminality: 120 }
         };
-        const chances = getNpcEncounterChances('route1', state as unknown as Parameters<typeof getNpcEncounterChances>[1], {}, []);
-        const policeInfo = chances.find(c => c.type === 'police');
+        const chances = getNpcEncounterChances(
+          'route1',
+          state as unknown as Parameters<typeof getNpcEncounterChances>[1],
+          {},
+          []
+        );
+        const policeInfo = chances.find((c) => c.type === 'police');
         expect(policeInfo).toBeDefined();
         expect(policeInfo?.chance).toBe(12);
       });

@@ -15,21 +15,27 @@ type StatKey = 'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe'; // lib-duplicate-ok
 type EvYield = Partial<Record<StatKey, number>>;
 
 const POKEMONDB_URL = 'https://pokemondb.net/ev/all';
-const BULBAPEDIA_URL = 'https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_effort_value_yield_in_Generation_IX';
+const BULBAPEDIA_URL =
+  'https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_effort_value_yield_in_Generation_IX';
 
 const STAT_COLUMNS_POKEMONDB: readonly StatKey[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe']; // lib-duplicate-ok: Canonical stat keys matching Pokemon Showdown StatID
 
 async function fetchHtml(url: string): Promise<string | null> {
   try {
     const parsed = new URL(url);
-    if (parsed.protocol !== 'https:' || !['pokemondb.net', 'bulbapedia.bulbagarden.net'].includes(parsed.hostname)) {
+    if (
+      parsed.protocol !== 'https:' ||
+      !['pokemondb.net', 'bulbapedia.bulbagarden.net'].includes(parsed.hostname)
+    ) {
       throw new Error(`Untrusted host for EV yields scraping: ${parsed.hostname}`);
     }
     const response = await fetch(parsed.href, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5'
       }
     });
     if (!response.ok) {
@@ -44,10 +50,17 @@ async function fetchHtml(url: string): Promise<string | null> {
 }
 
 function cleanString(str: string): string {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
 }
 
-function parsePokemonDbRow(match: RegExpExecArray): { baseId: string; fullId: string; evs: EvYield } {
+function parsePokemonDbRow(match: RegExpExecArray): {
+  baseId: string;
+  fullId: string;
+  evs: EvYield;
+} {
   const mainName = match[1]?.trim() || '';
   const subText = match[2]?.trim() || '';
   const fullName = subText ? `${mainName} ${subText}` : mainName;
@@ -72,7 +85,8 @@ function parsePokemonDb(html: string): Map<string, EvYield> {
   const map = new Map<string, EvYield>();
 
   // Match table rows in PokemonDB
-  const rowRegex = /<tr[^>]*>[\s\S]*?<a class="ent-name"[^>]*>([^<]+)<\/a>(?:<br>\s*<small class="text-muted">([^<]+)<\/small>)?[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<\/tr>/g;
+  const rowRegex =
+    /<tr[^>]*>[\s\S]*?<a class="ent-name"[^>]*>([^<]+)<\/a>(?:<br>\s*<small class="text-muted">([^<]+)<\/small>)?[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<td class="[^"]*cell-total[^"]*">([^<]*)<\/td>[\s\S]*?<\/tr>/g;
 
   let match: RegExpExecArray | null;
   while ((match = rowRegex.exec(html)) !== null) {
@@ -90,7 +104,11 @@ function parsePokemonDb(html: string): Map<string, EvYield> {
 
 const BULBAPEDIA_STATS = STAT_COLUMNS_POKEMONDB;
 
-function parseBulbapediaRow(match: RegExpExecArray): { baseId: string; fullId: string; evs: EvYield } {
+function parseBulbapediaRow(match: RegExpExecArray): {
+  baseId: string;
+  fullId: string;
+  evs: EvYield;
+} {
   const name = match[1]?.trim() || '';
   const formText = match[2]?.trim() || '';
   const fullName = formText ? `${name} ${formText}` : name;
@@ -111,7 +129,8 @@ function parseBulbapediaRow(match: RegExpExecArray): { baseId: string; fullId: s
 
 function parseBulbapedia(html: string): Map<string, EvYield> {
   const map = new Map<string, EvYield>();
-  const rowRegex = /<tr[^>]*>[\s\S]*?<td[^>]*>.*?<\/td>[\s\S]*?<td[^>]*><a[^>]*>([^<]+)<\/a>(?:<small>([^<]+)<\/small>)?<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<\/tr>/g;
+  const rowRegex =
+    /<tr[^>]*>[\s\S]*?<td[^>]*>.*?<\/td>[\s\S]*?<td[^>]*><a[^>]*>([^<]+)<\/a>(?:<small>([^<]+)<\/small>)?<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<\/tr>/g;
 
   let match: RegExpExecArray | null;
   while ((match = rowRegex.exec(html)) !== null) {
@@ -127,7 +146,10 @@ function parseBulbapedia(html: string): Map<string, EvYield> {
   return map;
 }
 
-async function loadScrapedEvDatasets(): Promise<{ pdbData: Map<string, EvYield>; bulbaData: Map<string, EvYield> }> {
+async function loadScrapedEvDatasets(): Promise<{
+  pdbData: Map<string, EvYield>;
+  bulbaData: Map<string, EvYield>;
+}> {
   console.log('Fetching EV Yield data from PokemonDB...');
   const pdbHtml = await fetchHtml(POKEMONDB_URL);
   const pdbData = pdbHtml ? parsePokemonDb(pdbHtml) : new Map<string, EvYield>();
@@ -145,7 +167,10 @@ async function loadScrapedEvDatasets(): Promise<{ pdbData: Map<string, EvYield>;
   return { pdbData, bulbaData };
 }
 
-function findPrefixOrPartialMatch(cleanId: string, dataMap: Map<string, EvYield>): EvYield | undefined {
+function findPrefixOrPartialMatch(
+  cleanId: string,
+  dataMap: Map<string, EvYield>
+): EvYield | undefined {
   for (const [key, value] of dataMap.entries()) {
     if (key.startsWith(cleanId) || cleanId.startsWith(key)) {
       return value;
@@ -165,7 +190,17 @@ function resolveSpeciesEvYield(
   ev = findPrefixOrPartialMatch(cleanId, pdbData) || findPrefixOrPartialMatch(cleanId, bulbaData);
   if (ev) return { ev, isFallback: false };
 
-  const prefixes = ['mega', 'gmax', 'alola', 'galar', 'hisui', 'paldea', 'totem', 'primal', 'origin'] as const; // no-domain: Non-domain utility collection or data structure
+  const prefixes = [
+    'mega',
+    'gmax',
+    'alola',
+    'galar',
+    'hisui',
+    'paldea',
+    'totem',
+    'primal',
+    'origin'
+  ] as const; // no-domain: Non-domain utility collection or data structure
   for (const p of prefixes) {
     if (cleanId.includes(p)) {
       const stripped = cleanId.replace(p, '');
@@ -201,7 +236,9 @@ export async function generateEvYields() {
     }
   }
 
-  console.log(`Matched ${matched}/${allSpeciesKeys.length} species (Fallback to base: ${fallbackToBase}).`);
+  console.log(
+    `Matched ${matched}/${allSpeciesKeys.length} species (Fallback to base: ${fallbackToBase}).`
+  );
   if (missing.length > 0) {
     console.warn(`Missing EV yields for ${missing.length} species:`, missing.slice(0, 20));
   }

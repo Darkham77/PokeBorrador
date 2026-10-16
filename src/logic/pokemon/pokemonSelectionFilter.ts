@@ -21,9 +21,12 @@ export function filterAndSortPokemon(
   sourceList: FilterablePokemonItem[],
   criteria: PokemonFilterCriteria
 ) {
-  const filtered = sourceList.filter(item => matchesPokemonCriteria(item, criteria));
+  const filtered = sourceList.filter((item) => matchesPokemonCriteria(item, criteria));
 
-  if (criteria.isBattleSwitch && (!criteria.sortBy || criteria.sortBy === 'index' || criteria.sortBy === 'recent')) {
+  if (
+    criteria.isBattleSwitch &&
+    (!criteria.sortBy || criteria.sortBy === 'index' || criteria.sortBy === 'recent')
+  ) {
     return filtered.sort((a, b) => a.index - b.index);
   }
 
@@ -32,8 +35,8 @@ export function filterAndSortPokemon(
     const valB = getPokemonSortMetric(b, criteria.sortBy);
 
     if (valA === valB) {
-      return criteria.sortOrder === 'desc' 
-        ? b.pokemon.uid.localeCompare(a.pokemon.uid) 
+      return criteria.sortOrder === 'desc'
+        ? b.pokemon.uid.localeCompare(a.pokemon.uid)
         : a.pokemon.uid.localeCompare(b.pokemon.uid);
     }
     return criteria.sortOrder === 'desc' ? valB - valA : valA - valB;

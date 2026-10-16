@@ -54,10 +54,10 @@ Battle animations (faint, withdraw, send_out, status_hit) MUST be triggered via 
 
 ```ts
 // Standard Animation Trigger
-gameBus.emit('animation', { 
-  type: 'faint', 
-  target: 'player', 
-  index: 0 
+gameBus.emit('animation', {
+  type: 'faint',
+  target: 'player',
+  index: 0
 });
 ```
 

@@ -19,31 +19,35 @@ export function evaluatePosition(
   const myAlive = battleState.getAliveCount(state.mySide);
   const oppAlive = battleState.getAliveCount(state.opponentSide);
   const totalMons = myAlive + oppAlive;
-  const pokemonAdvantage = totalMons > 0
-    ? ((myAlive - oppAlive) / Math.max(totalMons, 1))
-    : 0;
+  const pokemonAdvantage = totalMons > 0 ? (myAlive - oppAlive) / Math.max(totalMons, 1) : 0;
 
   // 2. HP advantage (average HP percentage)
-  const myAlivePokemon = state.mySide.pokemon.filter(p => !p.fainted);
-  const oppAlivePokemon = state.opponentSide.pokemon.filter(p => !p.fainted);
+  const myAlivePokemon = state.mySide.pokemon.filter((p) => !p.fainted);
+  const oppAlivePokemon = state.opponentSide.pokemon.filter((p) => !p.fainted);
 
-  const myAvgHp = myAlivePokemon.length > 0
-    ? myAlivePokemon.reduce((sum, p) => sum + p.hpPercent, 0) / myAlivePokemon.length
-    : 0;
-  const oppAvgHp = oppAlivePokemon.length > 0
-    ? oppAlivePokemon.reduce((sum, p) => sum + p.hpPercent, 0) / oppAlivePokemon.length
-    : 0;
+  const myAvgHp =
+    myAlivePokemon.length > 0
+      ? myAlivePokemon.reduce((sum, p) => sum + p.hpPercent, 0) / myAlivePokemon.length
+      : 0;
+  const oppAvgHp =
+    oppAlivePokemon.length > 0
+      ? oppAlivePokemon.reduce((sum, p) => sum + p.hpPercent, 0) / oppAlivePokemon.length
+      : 0;
   const hpAdvantage = (myAvgHp - oppAvgHp) / 100; // -1 to +1
 
   // 3. Hazards advantage (positive = we have hazards up on them, they don't on us)
   const oppHazards = countHazardLayers(state.opponentSide.sideConditions);
   const myHazards = countHazardLayers(state.mySide.sideConditions);
-  const hazardAdvantage = Math.max(-1, Math.min(1,
-    (oppHazards - myHazards) / 5 // normalized
-  ));
+  const hazardAdvantage = Math.max(
+    -1,
+    Math.min(
+      1,
+      (oppHazards - myHazards) / 5 // normalized
+    )
+  );
 
   // 4. Speed advantage (how many matchups we outspeed)
-  const oppSide = state.myPlayer === 'p1' ? 'p2' as const : 'p1' as const;
+  const oppSide = state.myPlayer === 'p1' ? ('p2' as const) : ('p1' as const);
   let speedWins = 0;
   let speedTotal = 0;
   for (const my of myAlivePokemon) {
@@ -54,9 +58,10 @@ export function evaluatePosition(
       if (mySpeed > oppSpeed) speedWins++;
     }
   }
-  const speedAdvantage = speedTotal > 0
-    ? (speedWins / speedTotal - 0.5) * 2 // center around 0
-    : 0;
+  const speedAdvantage =
+    speedTotal > 0
+      ? (speedWins / speedTotal - 0.5) * 2 // center around 0
+      : 0;
 
   // 5. Type matchup advantage (simplified: check active matchup)
   let typeMatchupAdvantage = 0;
@@ -71,40 +76,44 @@ export function evaluatePosition(
       try {
         const dmg = calc.calcDamage(myActive, oppActive, move, state.field);
         ourBest = Math.max(ourBest, dmg.maxPercent);
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
     for (const move of oppActive.knownMoves) {
       try {
         const dmg = calc.calcDamage(oppActive, myActive, move, state.field);
         theirBest = Math.max(theirBest, dmg.maxPercent);
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
-    typeMatchupAdvantage = Math.max(-1, Math.min(1,
-      (ourBest - theirBest) / 100
-    ));
+    typeMatchupAdvantage = Math.max(-1, Math.min(1, (ourBest - theirBest) / 100));
   }
 
   // 6. Status advantage
-  const myStatused = myAlivePokemon.filter(p => p.status !== null).length;
-  const oppStatused = oppAlivePokemon.filter(p => p.status !== null).length;
-  const statusAdvantage = Math.max(-1, Math.min(1,
-    (oppStatused - myStatused) / 3
-  ));
+  const myStatused = myAlivePokemon.filter((p) => p.status !== null).length;
+  const oppStatused = oppAlivePokemon.filter((p) => p.status !== null).length;
+  const statusAdvantage = Math.max(-1, Math.min(1, (oppStatused - myStatused) / 3));
 
   // 7. Win condition viability
   const bestWinCondition = winConditions.length > 0 ? winConditions[0].score : 0;
   const winConditionViability = (bestWinCondition - 0.5) * 2; // center around 0
 
   // Weighted final score
-  const score = Math.max(-1.0, Math.min(1.0,
-    (pokemonAdvantage * w.pokemonAdvantage) +
-    (hpAdvantage * w.hpAdvantage) +
-    (hazardAdvantage * w.hazardAdvantage) +
-    (speedAdvantage * w.speedAdvantage) +
-    (typeMatchupAdvantage * w.typeMatchupAdvantage) +
-    (statusAdvantage * w.statusAdvantage) +
-    (winConditionViability * w.winConditionViability)
-  ));
+  const score = Math.max(
+    -1.0,
+    Math.min(
+      1.0,
+      pokemonAdvantage * w.pokemonAdvantage +
+        hpAdvantage * w.hpAdvantage +
+        hazardAdvantage * w.hazardAdvantage +
+        speedAdvantage * w.speedAdvantage +
+        typeMatchupAdvantage * w.typeMatchupAdvantage +
+        statusAdvantage * w.statusAdvantage +
+        winConditionViability * w.winConditionViability
+    )
+  );
 
   return {
     score,
@@ -115,8 +124,8 @@ export function evaluatePosition(
       speedAdvantage,
       typeMatchupAdvantage,
       statusAdvantage,
-      winConditionViability,
-    },
+      winConditionViability
+    }
   };
 }
 

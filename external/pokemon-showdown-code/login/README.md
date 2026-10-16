@@ -90,21 +90,25 @@ perfectly functional for use with `@pkmn/login`:
 ```ts
 import * as https from 'https';
 
-import {Action, Actions} from '@pkmn/login';
+import { Action, Actions } from '@pkmn/login';
 
 function fetch(action: Action) {
   return new Promise((resolve, reject) => {
     let buf = '';
-    const req = https.request(action.url, {
-      method: action.method,
-      headers: action.headers
-    }, res => {
-      if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
-      res.on('data', d => {
-        buf += d;
-      });
-      res.on('end', () => resolve(buf));
-    });
+    const req = https.request(
+      action.url,
+      {
+        method: action.method,
+        headers: action.headers
+      },
+      (res) => {
+        if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
+        res.on('data', (d) => {
+          buf += d;
+        });
+        res.on('end', () => resolve(buf));
+      }
+    );
     req.on('error', reject);
     req.write(action.data);
     req.end();
@@ -112,7 +116,7 @@ function fetch(action: Action) {
 }
 
 async function onChallstr() {
-  const action = Actions.login({username: 'User Name', password: 'password', challstr});
+  const action = Actions.login({ username: 'User Name', password: 'password', challstr });
   const cmd = action.onResponse(await fetch(action));
   if (cmd) ws.send(cmd);
 }
@@ -157,15 +161,17 @@ HTTP requests ([Node.js includes `fetch` as of v18](https://nodejs.org/dist/late
 ```ts
 import fetch from 'node-fetch';
 
-import {Actions} from '@pkmn/login';
+import { Actions } from '@pkmn/login';
 
 async function onChallstr() {
-  const action = Actions.login({username: 'User Name', password: 'password', challstr});
-  const response = await (await fetch(action.url, {
-    method: action.method,
-    headers: action.headers,
-    body: action.data,
-  })).text();
+  const action = Actions.login({ username: 'User Name', password: 'password', challstr });
+  const response = await (
+    await fetch(action.url, {
+      method: action.method,
+      headers: action.headers,
+      body: action.data
+    })
+  ).text();
   const cmd = action.onResponse(response);
   if (cmd) ws.send(cmd);
 }
@@ -179,16 +185,16 @@ to work in the browser or on Node.js:
 ```ts
 import axios from 'axios';
 
-import {Actions} from '@pkmn/login';
+import { Actions } from '@pkmn/login';
 
 async function onChallstr() {
-  const action = Actions.login({username: 'User Name', password: 'password', challstr});
+  const action = Actions.login({ username: 'User Name', password: 'password', challstr });
   const response = await axios({
     url: action.url,
     method: action.method,
     headers: action.headers,
     data: action.data,
-    responseType: action.responseType,
+    responseType: action.responseType
   });
   const cmd = action.onResponse(response);
   if (cmd) ws.send(cmd);

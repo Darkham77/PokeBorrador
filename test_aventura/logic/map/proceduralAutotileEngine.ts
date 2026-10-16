@@ -2,10 +2,7 @@
 
 import type { TileCollision } from './tilesRegistry.ts';
 import type { MapCell } from '../../types/map/proceduralMapTypes.ts';
-import type {
-  MultitileTemplate,
-  ThemeBiomePalette
-} from './proceduralBiomePalettes.ts';
+import type { MultitileTemplate, ThemeBiomePalette } from './proceduralBiomePalettes.ts';
 
 export function overlapsPath(
   sx: number,

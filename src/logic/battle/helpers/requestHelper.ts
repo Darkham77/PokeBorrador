@@ -1,6 +1,13 @@
 import type { ShowdownRequestType } from '@/types/battle/battle';
 
-export const REQUEST_KINDS = ['none', 'team-preview', 'force-switch', 'revive-target', 'move', 'wait'] as const;
+export const REQUEST_KINDS = [
+  'none',
+  'team-preview',
+  'force-switch',
+  'revive-target',
+  'move',
+  'wait'
+] as const;
 export type RequestKind = (typeof REQUEST_KINDS)[number];
 
 export interface ChoiceRequestPokemon {
@@ -59,12 +66,12 @@ export interface ChoiceRequest {
 export function isRevivingForceSwitchRequest(req: unknown): boolean {
   if (!req || typeof req !== 'object') return false;
   const request = req as ChoiceRequest;
-  const hasRevivingForceSwitch = request.forceSwitch?.some(
-    (entry) => typeof entry === 'object' && entry !== null && entry.reviving === true
-  ) ?? false;
-  const hasRevivingActivePokemon = request.side?.pokemon.some(
-    (pokemon) => pokemon.active && pokemon.reviving === true
-  ) ?? false;
+  const hasRevivingForceSwitch =
+    request.forceSwitch?.some(
+      (entry) => typeof entry === 'object' && entry !== null && entry.reviving === true
+    ) ?? false;
+  const hasRevivingActivePokemon =
+    request.side?.pokemon.some((pokemon) => pokemon.active && pokemon.reviving === true) ?? false;
   return hasRevivingForceSwitch || hasRevivingActivePokemon;
 }
 
@@ -76,7 +83,7 @@ export function classifyRequest(req: unknown): RequestKind {
   const cReq = req as ChoiceRequest;
   if (cReq.wait) return 'wait';
   if (cReq.teamPreview) return 'team-preview';
-  if (cReq.forceSwitch && Array.isArray(cReq.forceSwitch) && cReq.forceSwitch.some(x => !!x)) {
+  if (cReq.forceSwitch && Array.isArray(cReq.forceSwitch) && cReq.forceSwitch.some((x) => !!x)) {
     if (isRevivingForceSwitchRequest(cReq)) return 'revive-target';
     return 'force-switch';
   }

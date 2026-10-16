@@ -32,8 +32,8 @@ import type { WaterTerrainKind } from './waterAutotileEngine.ts';
 
 const CHOKE_SEARCH_MIN_Y_RATIO = 0.25 as const;
 const CHOKE_SEARCH_MAX_Y_RATIO = 0.65 as const;
-const CHOKE_SEARCH_MIN_X_RATIO = 0.20 as const;
-const CHOKE_SEARCH_MAX_X_RATIO = 0.80 as const;
+const CHOKE_SEARCH_MIN_X_RATIO = 0.2 as const;
+const CHOKE_SEARCH_MAX_X_RATIO = 0.8 as const;
 const CHOKE_SEARCH_STEP = 3 as const;
 
 export interface PlainSettlementsContext {
@@ -43,7 +43,13 @@ export interface PlainSettlementsContext {
   readonly isAreaFree: (x: number, y: number, w: number, h: number, margin?: number) => boolean;
   readonly markAreaOccupied: (x: number, y: number, w: number, h: number) => void;
   readonly getMinDistanceToPlaced: (x: number, y: number) => number;
-  readonly computeNodeGateways: (x: number, y: number, w: number, h: number, type: POINode['type']) => POIGateway[];
+  readonly computeNodeGateways: (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    type: POINode['type']
+  ) => POIGateway[];
   readonly getSettlementContext: () => SettlementTerrainContext;
   readonly baseMinSettlementDist: number;
 }
@@ -227,8 +233,14 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
   for (const tmpl of plainTemplates) {
     if (placedNodes.some((n) => n.id === tmpl.id)) continue;
 
-    if (tmpl.id === 'cinnabar_island_city' && continentMap.archipelagoIslands && continentMap.archipelagoIslands.length > 0) {
-      const island = continentMap.archipelagoIslands.find((i) => i.role === 'port_city') ?? continentMap.archipelagoIslands[0]!;
+    if (
+      tmpl.id === 'cinnabar_island_city' &&
+      continentMap.archipelagoIslands &&
+      continentMap.archipelagoIslands.length > 0
+    ) {
+      const island =
+        continentMap.archipelagoIslands.find((i) => i.role === 'port_city') ??
+        continentMap.archipelagoIslands[0]!;
       const iW = CINNABAR_ISLAND_FOOTPRINT_WIDTH;
       const iH = CINNABAR_ISLAND_FOOTPRINT_HEIGHT;
       const posX = island.cx - Math.floor(iW / 2);
@@ -275,33 +287,98 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
 
     const isCompact = Math.min(W, H) <= COMPACT_MAP_THRESHOLD;
     const baseDist = isCompact
-      ? (tmpl.type === 'metropolis' ? COMPACT_METROPOLIS_MIN_DIST : tmpl.type === 'city' ? COMPACT_CITY_MIN_DIST : tmpl.type === 'town' ? COMPACT_TOWN_MIN_DIST : COMPACT_DEFAULT_MIN_DIST)
-      : (tmpl.type === 'metropolis' ? STANDARD_METROPOLIS_MIN_DIST : tmpl.type === 'city' ? STANDARD_CITY_MIN_DIST : tmpl.type === 'town' ? STANDARD_TOWN_MIN_DIST : STANDARD_DEFAULT_MIN_DIST);
+      ? tmpl.type === 'metropolis'
+        ? COMPACT_METROPOLIS_MIN_DIST
+        : tmpl.type === 'city'
+          ? COMPACT_CITY_MIN_DIST
+          : tmpl.type === 'town'
+            ? COMPACT_TOWN_MIN_DIST
+            : COMPACT_DEFAULT_MIN_DIST
+      : tmpl.type === 'metropolis'
+        ? STANDARD_METROPOLIS_MIN_DIST
+        : tmpl.type === 'city'
+          ? STANDARD_CITY_MIN_DIST
+          : tmpl.type === 'town'
+            ? STANDARD_TOWN_MIN_DIST
+            : STANDARD_DEFAULT_MIN_DIST;
     let effMinDist = Math.max(baseMinSettlementDist, baseDist);
 
     let currentWidth = tmpl.width;
     let currentHeight = tmpl.height;
 
     const preferredBuffer = tmpl.type === 'metropolis' ? 2 : 1;
-    let plainCandidates = findCandidatesWithBuffer(continentMap, currentWidth, currentHeight, preferredBuffer, effMinDist, isAreaFree, getMinDistanceToPlaced, W, H);
+    let plainCandidates = findCandidatesWithBuffer(
+      continentMap,
+      currentWidth,
+      currentHeight,
+      preferredBuffer,
+      effMinDist,
+      isAreaFree,
+      getMinDistanceToPlaced,
+      W,
+      H
+    );
     if (plainCandidates.length === 0 && preferredBuffer > 0) {
-      plainCandidates = findCandidatesWithBuffer(continentMap, currentWidth, currentHeight, 0, effMinDist, isAreaFree, getMinDistanceToPlaced, W, H);
+      plainCandidates = findCandidatesWithBuffer(
+        continentMap,
+        currentWidth,
+        currentHeight,
+        0,
+        effMinDist,
+        isAreaFree,
+        getMinDistanceToPlaced,
+        W,
+        H
+      );
     }
     if (plainCandidates.length === 0 && tmpl.type === 'metropolis') {
       for (const size of METROPOLIS_FALLBACK_SIZES) {
         currentWidth = size.w;
         currentHeight = size.h;
-        plainCandidates = findCandidatesWithBuffer(continentMap, currentWidth, currentHeight, 0, effMinDist, isAreaFree, getMinDistanceToPlaced, W, H);
+        plainCandidates = findCandidatesWithBuffer(
+          continentMap,
+          currentWidth,
+          currentHeight,
+          0,
+          effMinDist,
+          isAreaFree,
+          getMinDistanceToPlaced,
+          W,
+          H
+        );
         if (plainCandidates.length > 0) break;
       }
     }
-    if (plainCandidates.length === 0 && effMinDist > (isCompact ? FALLBACK_MIN_DISTANCE_COMPACT : FALLBACK_MIN_DISTANCE_DEFAULT)) {
+    if (
+      plainCandidates.length === 0 &&
+      effMinDist > (isCompact ? FALLBACK_MIN_DISTANCE_COMPACT : FALLBACK_MIN_DISTANCE_DEFAULT)
+    ) {
       effMinDist = isCompact ? FALLBACK_MIN_DISTANCE_COMPACT : FALLBACK_MIN_DISTANCE_DEFAULT;
-      plainCandidates = findCandidatesWithBuffer(continentMap, currentWidth, currentHeight, 0, effMinDist, isAreaFree, getMinDistanceToPlaced, W, H);
+      plainCandidates = findCandidatesWithBuffer(
+        continentMap,
+        currentWidth,
+        currentHeight,
+        0,
+        effMinDist,
+        isAreaFree,
+        getMinDistanceToPlaced,
+        W,
+        H
+      );
     }
     if (plainCandidates.length === 0 && effMinDist > 3) {
       effMinDist = 3;
-      plainCandidates = findCandidatesWithBuffer(continentMap, currentWidth, currentHeight, 0, effMinDist, isAreaFree, getMinDistanceToPlaced, W, H);
+      plainCandidates = findCandidatesWithBuffer(
+        continentMap,
+        currentWidth,
+        currentHeight,
+        0,
+        effMinDist,
+        isAreaFree,
+        getMinDistanceToPlaced,
+        W,
+        H
+      );
     }
 
     if (plainCandidates.length > 0) {
@@ -332,7 +409,13 @@ export function placePlainSettlements(ctx: PlainSettlementsContext): void {
         }
       }
 
-      const gateways = computeNodeGateways(chosen.x, chosen.y, currentWidth, currentHeight, tmpl.type);
+      const gateways = computeNodeGateways(
+        chosen.x,
+        chosen.y,
+        currentWidth,
+        currentHeight,
+        tmpl.type
+      );
       const node: POINode = {
         id: tmpl.id,
         name: tmpl.name,
@@ -384,7 +467,11 @@ export function placeRouteGateCheckpoints(ctx: PlainSettlementsContext): void {
         const candX = southGw.x - Math.floor(gW / 2);
         const candY = southGw.y + 6;
         const inBounds = candY + gH < H - 4 && candX >= 4 && candX + gW < W - 4;
-        if (inBounds && isAreaFree(candX, candY, gW, gH, 1) && isAreaFlatGrass(continentMap, candX, candY, gW, gH)) {
+        if (
+          inBounds &&
+          isAreaFree(candX, candY, gW, gH, 1) &&
+          isAreaFlatGrass(continentMap, candX, candY, gW, gH)
+        ) {
           const midX = candX + Math.floor(gW / 2);
           const gateways: POIGateway[] = [
             { x: midX, y: candY, direction: 'north' },
@@ -412,11 +499,22 @@ export function placeRouteGateCheckpoints(ctx: PlainSettlementsContext): void {
     }
 
     if (!gatePlaced) {
-      for (let y = Math.floor(H * CHOKE_SEARCH_MIN_Y_RATIO); y < Math.floor(H * CHOKE_SEARCH_MAX_Y_RATIO); y += CHOKE_SEARCH_STEP) {
-        for (let x = Math.floor(W * CHOKE_SEARCH_MIN_X_RATIO); x < Math.floor(W * CHOKE_SEARCH_MAX_X_RATIO); x += CHOKE_SEARCH_STEP) {
+      for (
+        let y = Math.floor(H * CHOKE_SEARCH_MIN_Y_RATIO);
+        y < Math.floor(H * CHOKE_SEARCH_MAX_Y_RATIO);
+        y += CHOKE_SEARCH_STEP
+      ) {
+        for (
+          let x = Math.floor(W * CHOKE_SEARCH_MIN_X_RATIO);
+          x < Math.floor(W * CHOKE_SEARCH_MAX_X_RATIO);
+          x += CHOKE_SEARCH_STEP
+        ) {
           if (!isAreaFree(x, y, gW, gH, 1)) continue;
           if (!isAreaFlatGrass(continentMap, x, y, gW, gH)) continue;
-          if (getMinDistanceToPlaced(x + Math.floor(gW / 2), y + Math.floor(gH / 2)) < GATE_MIN_DISTANCE_TO_SETTLEMENT) {
+          if (
+            getMinDistanceToPlaced(x + Math.floor(gW / 2), y + Math.floor(gH / 2)) <
+            GATE_MIN_DISTANCE_TO_SETTLEMENT
+          ) {
             continue;
           }
 

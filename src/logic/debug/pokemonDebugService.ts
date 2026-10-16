@@ -1,5 +1,3 @@
-
-
 import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import { getExpNeededPure } from '@/logic/pokemon/statsMath.ts';
 import { useGameStore } from '@/stores/game';
@@ -7,7 +5,12 @@ import { useBattleStore } from '@/stores/battle/battle';
 import { useUIStore } from '@/stores/ui';
 import { useModalStore } from '@/stores/modals';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Pokemon, PokemonEgg, PokemonGender, PokemonGenderName } from '@/types/pokemon/pokemon';
+import type {
+  Pokemon,
+  PokemonEgg,
+  PokemonGender,
+  PokemonGenderName
+} from '@/types/pokemon/pokemon';
 import { logger } from '../utils/logger.ts';
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { requirePokemonMoveId, type MoveCategory, type PokemonMoveId } from '@/data/battle/moves';
@@ -26,41 +29,44 @@ const EGG_TICKET_BONUS_HOURS = 24;
 const SECS_PER_HOUR = 3600;
 
 interface DebugPokemon extends Pokemon {
-  mapId?: MapRouteId | null
-  minigameDifficulty?: MinigameDifficultySelection | null
+  mapId?: MapRouteId | null;
+  minigameDifficulty?: MinigameDifficultySelection | null;
 }
 
 interface GenerateParams {
-  id?: PokemonSpeciesId
-  level?: number
-  ivs?: Partial<Pokemon['ivs']> | null
-  evs?: Partial<Pokemon['evs']> | null
-  isShiny?: boolean
-  isGuardian?: boolean
-  nature?: NatureId | null
-  ability?: AbilityId | null
-  gender?: PokemonGenderName | null
-  moves?: PokemonMoveId[] | null
-  nickname?: string | null
-  friendship?: number
-  heldItem?: ItemId | null
-  mapId?: MapRouteId | null
-  protocol?: string | null
-  name?: string | null
-  uid?: string
-  minigameDifficulty?: MinigameDifficultySelection | null
+  id?: PokemonSpeciesId;
+  level?: number;
+  ivs?: Partial<Pokemon['ivs']> | null;
+  evs?: Partial<Pokemon['evs']> | null;
+  isShiny?: boolean;
+  isGuardian?: boolean;
+  nature?: NatureId | null;
+  ability?: AbilityId | null;
+  gender?: PokemonGenderName | null;
+  moves?: PokemonMoveId[] | null;
+  nickname?: string | null;
+  friendship?: number;
+  heldItem?: ItemId | null;
+  mapId?: MapRouteId | null;
+  protocol?: string | null;
+  name?: string | null;
+  uid?: string;
+  minigameDifficulty?: MinigameDifficultySelection | null;
 }
 
 function requireMoveIdsForDebugEgg(pokemon: Pokemon) {
   return pokemon.moves.map((move) => {
     if (!move?.id) {
-      throw new Error(`[debug] Cannot create egg for ${pokemon.id}: move slot is missing a canonical Showdown move id.`);
+      throw new Error(
+        `[debug] Cannot create egg for ${pokemon.id}: move slot is missing a canonical Showdown move id.`
+      );
     }
     return requirePokemonMoveId(move.id);
   });
 }
 
 const GENDER_MAP: Record<string, PokemonGender> = {
+  // open-record: Loose user/debug gender input normalization map
   male: 'm',
   female: 'f',
   genderless: null,
@@ -78,20 +84,25 @@ function buildDebugMoves(moves: PokemonMoveId[]): Pokemon['moves'] {
       const mData = pokemonDataProvider.getMoveData(mName);
       const basePp = mData?.pp || DEFAULT_DEBUG_MOVE_PP;
       const maxPp = Math.floor(basePp * 1.6);
-      return { 
+      return {
         id: mData?.id || mName,
-        name: mData?.name || mName, 
-        pp: maxPp, 
+        name: mData?.name || mName,
+        pp: maxPp,
         maxPP: maxPp,
         type: mData?.type || 'normal',
         power: mData?.power || 0,
         acc: mData?.acc || DEFAULT_DEBUG_MOVE_ACC,
         cat: (mData?.cat || 'physical') as MoveCategory
       };
-    }).slice(0, 4);
+    })
+    .slice(0, 4);
 }
 
-function applyDebugOverrides(p: Pokemon, params: GenerateParams, mappedGender?: PokemonGender): void {
+function applyDebugOverrides(
+  p: Pokemon,
+  params: GenerateParams,
+  mappedGender?: PokemonGender
+): void {
   if (params.ability) {
     p.ability = requireAbilityId(params.ability);
   }
@@ -172,14 +183,17 @@ async function executeHatchSilentProtocol(
   await game.save(false);
 }
 
-async function executeEggWarehouseProtocol(p: Pokemon, ui: ReturnType<typeof useUIStore>): Promise<void> {
+async function executeEggWarehouseProtocol(
+  p: Pokemon,
+  ui: ReturnType<typeof useUIStore>
+): Promise<void> {
   const { useBreedingStore } = await import('@/stores/breeding');
   const breedingStore = useBreedingStore();
   const { getEggSpecies } = await import('@/logic/breeding/breedingEngine');
   const eggSpecies = getEggSpecies(p.id);
   const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider');
   const babyName = pokemonDataProvider.resolveSpeciesName(eggSpecies);
-  
+
   const { eggFactory } = await import('@/logic/breeding/eggFactory');
   const egg = eggFactory.createDaycareEgg({
     species: eggSpecies,
@@ -191,12 +205,12 @@ async function executeEggWarehouseProtocol(p: Pokemon, ui: ReturnType<typeof use
     isShiny: !!p.isShiny,
     cost: 0
   });
-  
+
   breedingStore.warehouseEggs.push(egg);
   if (breedingStore.saveWarehouseEggs) {
     breedingStore.saveWarehouseEggs();
   }
-  
+
   ui.notify(`[DEBUG] Huevo de ${babyName} añadido al almacén de la guardería`, '🥚');
 }
 
@@ -208,19 +222,22 @@ async function executeHatchAnimProtocol(
   const { getEggSpecies } = await import('@/logic/breeding/breedingEngine');
   const eggSpecies = getEggSpecies(p.id);
   const { makePokemon, recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory');
-  const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
-  
+  const isDebugMode =
+    typeof window !== 'undefined' &&
+    Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+
   let babyPokemon = p;
   if (p.id !== eggSpecies || p.level !== 1) {
-    babyPokemon = makePokemon(eggSpecies, 1, {
-      isShiny: p.isShiny,
-      isGuardian: p.isGuardian,
-      nature: p.nature,
-      abilitySlot: (p as Pokemon & { abilityIndex?: number }).abilityIndex || 0,
-      gender: p.gender,
-      obtainedMethod: 'egg',
-      bypassWhitelist: isDebugMode
-    }) || p;
+    babyPokemon =
+      makePokemon(eggSpecies, 1, {
+        isShiny: p.isShiny,
+        isGuardian: p.isGuardian,
+        nature: p.nature,
+        abilitySlot: (p as Pokemon & { abilityIndex?: number }).abilityIndex || 0,
+        gender: p.gender,
+        obtainedMethod: 'egg',
+        bypassWhitelist: isDebugMode
+      }) || p;
     if (p.ivs) {
       babyPokemon.ivs = { ...babyPokemon.ivs, ...p.ivs };
     }
@@ -228,27 +245,31 @@ async function executeHatchAnimProtocol(
     babyPokemon.hp = babyPokemon.maxHp;
   }
   babyPokemon.obtainedMethod = 'egg';
-  
+
   // Add to game state silently first
   game.addPokemon(babyPokemon, { notify: false });
-  
+
   // Trigger Vue Modal Sequence
   ui.open('HatchAnimation', { pokemon: babyPokemon });
 }
 
-async function executeFishingProtocol(p: Pokemon, ui: ReturnType<typeof useUIStore>): Promise<void> {
+async function executeFishingProtocol(
+  p: Pokemon,
+  ui: ReturnType<typeof useUIStore>
+): Promise<void> {
   const { showFishingIntro, startFishingMinigame } = await import('@/logic/encounters/encounterUI');
   const battleStore = useBattleStore();
-  const diffOverride = (p as DebugPokemon).minigameDifficulty && (p as DebugPokemon).minigameDifficulty !== 'auto'
-    ? (p as DebugPokemon).minigameDifficulty!
-    : undefined;
+  const diffOverride =
+    (p as DebugPokemon).minigameDifficulty && (p as DebugPokemon).minigameDifficulty !== 'auto'
+      ? (p as DebugPokemon).minigameDifficulty!
+      : undefined;
   showFishingIntro(p, FISHING_DEBUG_DIFFICULTY, () => {
     startFishingMinigame(
       p,
       FISHING_DEBUG_DIFFICULTY,
       async () => {
         ui.notify(`¡Pesca exitosa! Iniciando combate...`, '🎣');
-        await battleStore._startBattle(p, { 
+        await battleStore._startBattle(p, {
           locationId: (p as DebugPokemon).mapId || requireMapRouteId('route12'),
           isDebug: true,
           minigame: 'fishing'
@@ -264,19 +285,24 @@ async function executeFishingProtocol(p: Pokemon, ui: ReturnType<typeof useUISto
   });
 }
 
-async function executeArchaeologyProtocol(p: Pokemon, ui: ReturnType<typeof useUIStore>): Promise<void> {
-  const { showArchaeologyIntro, startArchaeologyMinigame } = await import('@/logic/encounters/encounterUI');
+async function executeArchaeologyProtocol(
+  p: Pokemon,
+  ui: ReturnType<typeof useUIStore>
+): Promise<void> {
+  const { showArchaeologyIntro, startArchaeologyMinigame } =
+    await import('@/logic/encounters/encounterUI');
   const battleStore = useBattleStore();
-  const diffOverride = (p as DebugPokemon).minigameDifficulty && (p as DebugPokemon).minigameDifficulty !== 'auto'
-    ? (p as DebugPokemon).minigameDifficulty!
-    : undefined;
+  const diffOverride =
+    (p as DebugPokemon).minigameDifficulty && (p as DebugPokemon).minigameDifficulty !== 'auto'
+      ? (p as DebugPokemon).minigameDifficulty!
+      : undefined;
   showArchaeologyIntro(p, ARCHAEOLOGY_DEBUG_DIFFICULTY, () => {
     startArchaeologyMinigame(
       p,
       ARCHAEOLOGY_DEBUG_DIFFICULTY,
       async () => {
         ui.notify(`¡Excavación exitosa! Iniciando combate...`, '⛏️');
-        await battleStore._startBattle(p, { 
+        await battleStore._startBattle(p, {
           locationId: (p as DebugPokemon).mapId || requireMapRouteId('mt_moon'),
           isDebug: true,
           minigame: 'archaeology'
@@ -313,17 +339,23 @@ export const pokemonDebugService = {
     } = params;
 
     const mappedGender = gender ? GENDER_MAP[gender] : undefined;
-    const isEgg = protocol === 'hatch' || protocol === 'hatch_anim' || protocol === 'egg_anim' || protocol === 'egg_silent';
-    const p = makePokemon(id, level, { 
-      isShiny, 
-      nature: nature || undefined, 
-      ability: ability || undefined, 
-      gender: mappedGender, 
+    const isEgg =
+      protocol === 'hatch' ||
+      protocol === 'hatch_anim' ||
+      protocol === 'egg_anim' ||
+      protocol === 'egg_silent';
+    const p = makePokemon(id, level, {
+      isShiny,
+      nature: nature || undefined,
+      ability: ability || undefined,
+      gender: mappedGender,
       heldItem: heldItem || undefined,
       obtainedMethod: isEgg ? 'egg' : 'wild',
       bypassWhitelist: true
     });
-    if (!p) { throw new Error(`[pokemonDebugService] Failed to generate debug Pokemon '${id}'`); }
+    if (!p) {
+      throw new Error(`[pokemonDebugService] Failed to generate debug Pokemon '${id}'`);
+    }
 
     applyDebugOverrides(p, params, mappedGender);
 
@@ -380,18 +412,21 @@ export const pokemonDebugService = {
 
     // 1. Force flee if there's an active battle
     if (battleStore.isBattleActive) {
-      logger.warn('DEBUG', 'Combate activo detectado. Forzando huida del anterior para iniciar el nuevo...');
+      logger.warn(
+        'DEBUG',
+        'Combate activo detectado. Forzando huida del anterior para iniciar el nuevo...'
+      );
       await battleStore.endBattle(false, true);
     }
 
     logger.debug('DEBUG', `Triggering encounter with ${p.name} at ${routeId}`);
-    
+
     // Register as seen
     const game = useGameStore();
     game.registerPokedex(p.id, false);
 
     // Start battle
-    await battleStore._startBattle(p, { 
+    await battleStore._startBattle(p, {
       locationId: routeId,
       isDebug: true
     });

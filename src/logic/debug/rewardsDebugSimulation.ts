@@ -72,12 +72,14 @@ export async function simulatePastEventAndMissionsReward(
     gameStore.db,
     authStore.user,
     isOnlineDb,
-    gtsStore ? (listing) => {
-      gtsStore.salesHistory = [
-        listing,
-        ...(gtsStore.salesHistory || []).filter(l => String(l.id) !== listing.id)
-      ];
-    } : undefined
+    gtsStore
+      ? (listing) => {
+          gtsStore.salesHistory = [
+            listing,
+            ...(gtsStore.salesHistory || []).filter((l) => String(l.id) !== listing.id)
+          ];
+        }
+      : undefined
   );
 
   // 4. Inject Ranked Season Milestones & Payout
@@ -88,17 +90,21 @@ export async function simulatePastEventAndMissionsReward(
     isOnlineDb,
     nowZdt,
     pvpStore?.currentSeasonRules?.name,
-    pvpStore ? (targetElo, unlockedMilestones) => {
-      pvpStore.maxElo = targetElo;
-      pvpStore.elo = targetElo;
-      const updatedRewards = (pvpStore.rewardsClaimed || []).filter(id => !isRankedRewardMilestoneId(id) || !unlockedMilestones.has(id));
-      pvpStore.rewardsClaimed = updatedRewards;
-      return updatedRewards;
-    } : undefined,
+    pvpStore
+      ? (targetElo, unlockedMilestones) => {
+          pvpStore.maxElo = targetElo;
+          pvpStore.elo = targetElo;
+          const updatedRewards = (pvpStore.rewardsClaimed || []).filter(
+            (id) => !isRankedRewardMilestoneId(id) || !unlockedMilestones.has(id)
+          );
+          pvpStore.rewardsClaimed = updatedRewards;
+          return updatedRewards;
+        }
+      : undefined,
     (award) => {
       eventStore.pendingAwards = [
         award,
-        ...(eventStore.pendingAwards || []).filter(a => a.id !== award.id)
+        ...(eventStore.pendingAwards || []).filter((a) => a.id !== award.id)
       ];
     }
   );
@@ -137,17 +143,23 @@ export async function clearDebugSimulatedRewards(
   await clearSimulatedGts(
     gameStore.state,
     gameStore.db,
-    gtsStore ? () => {
-      gtsStore.salesHistory = (gtsStore.salesHistory || []).filter(l => (l.data as { name?: string })?.name !== 'nugget');
-    } : undefined
+    gtsStore
+      ? () => {
+          gtsStore.salesHistory = (gtsStore.salesHistory || []).filter(
+            (l) => (l.data as { name?: string })?.name !== 'nugget'
+          );
+        }
+      : undefined
   );
 
   clearSimulatedRankedState(
     gameStore.state,
-    pvpStore ? () => {
-      pvpStore.maxElo = DEFAULT_RESET_ELO;
-      pvpStore.elo = DEFAULT_RESET_ELO;
-    } : undefined
+    pvpStore
+      ? () => {
+          pvpStore.maxElo = DEFAULT_RESET_ELO;
+          pvpStore.elo = DEFAULT_RESET_ELO;
+        }
+      : undefined
   );
 
   await gameStore.save(false);

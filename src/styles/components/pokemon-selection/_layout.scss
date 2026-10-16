@@ -1,7 +1,7 @@
 // src/styles/components/pokemon-selection/_layout.scss
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
-body .selection-container { 
+body .selection-container {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -118,7 +118,7 @@ body .selection-container {
     font-size: var(--font-9);
     cursor: pointer;
     flex-shrink: 0;
-    
+
     &:hover {
       background: Rgb(255 255 255 / 8%);
       transform: Scale(1.05);
@@ -141,7 +141,7 @@ body .selection-container {
       border-color: Rgb(255 255 255 / 3%);
       cursor: not-allowed;
       pointer-events: none;
-      
+
       &:hover {
         background: transparent;
         transform: none;
@@ -161,8 +161,11 @@ body .selection-container {
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
- 
-    &::-webkit-scrollbar { display: none; height: 0; }
+
+    &::-webkit-scrollbar {
+      display: none;
+      height: 0;
+    }
 
     &.is-compact {
       flex-wrap: wrap;
@@ -198,7 +201,7 @@ body .selection-container {
       min-width: max-content;
       flex-shrink: 0 !important;
     }
-    
+
     button {
       display: inline-flex;
       align-items: center;
@@ -219,7 +222,7 @@ body .selection-container {
         background: Rgb(255 255 255 / 6%);
         opacity: 0.9;
         border-color: Rgb(255 255 255 / 15%);
-        
+
         .icon {
           transform: Scale(1.1);
         }
@@ -228,11 +231,11 @@ body .selection-container {
       .emoji {
         display: inline-flex;
         justify-content: center;
-        align-items: center; 
+        align-items: center;
         font-size: var(--font-8);
         line-height: 1;
       }
-      
+
       .ps-tag-label {
         @include pixelated;
 
@@ -251,7 +254,7 @@ body .selection-container {
         transform: none;
         filter: Grayscale(0);
         border-width: 1px;
-        
+
         .ps-tag-label {
           color: var(--white);
         }
@@ -262,56 +265,72 @@ body .selection-container {
         color: var(--tag-fav);
         border-color: var(--tag-fav);
         box-shadow: var(--shadow-glow-yellow-sm);
-        .ps-tag-label { color: var(--tag-fav); }
+        .ps-tag-label {
+          color: var(--tag-fav);
+        }
       }
       &.active.ps-tag-breed {
         background: Rgb(255 77 77 / 5%);
         color: var(--tag-breed);
         border-color: var(--tag-breed);
         box-shadow: var(--shadow-glow-yellow-sm);
-        .ps-tag-label { color: var(--tag-breed); }
+        .ps-tag-label {
+          color: var(--tag-breed);
+        }
       }
       &.active.ps-tag-competitive {
         background: Rgb(52 199 89 / 5%);
         color: var(--tag-competitive);
         border-color: var(--tag-competitive);
         box-shadow: var(--shadow-glow-yellow-sm);
-        .ps-tag-label { color: var(--tag-competitive); }
+        .ps-tag-label {
+          color: var(--tag-competitive);
+        }
       }
       &.active.ps-tag-trade {
         background: Rgb(175 82 222 / 5%);
         color: var(--tag-trade);
         border-color: var(--tag-trade);
         box-shadow: var(--shadow-glow-yellow-sm);
-        .ps-tag-label { color: var(--tag-trade); }
+        .ps-tag-label {
+          color: var(--tag-trade);
+        }
       }
       &.active.ps-tag-iv31 {
         background: Rgb(0 229 255 / 5%);
         color: var(--tag-iv31);
         border-color: var(--tag-iv31);
         box-shadow: var(--shadow-glow-yellow-sm);
-        .ps-tag-label { color: var(--tag-iv31); }
+        .ps-tag-label {
+          color: var(--tag-iv31);
+        }
       }
       &.active.ps-tag-shiny {
         background: Rgb(255 179 0 / 5%);
         color: var(--tag-shiny);
         border-color: var(--tag-shiny);
         box-shadow: var(--shadow-glow-yellow-sm);
-        .ps-tag-label { color: var(--tag-shiny); }
+        .ps-tag-label {
+          color: var(--tag-shiny);
+        }
       }
       &.active.ps-tag-compatible {
         background: Rgb(255 45 85 / 8%);
         color: var(--tag-compatible);
         border-color: var(--tag-compatible);
         box-shadow: var(--shadow-glow-yellow-sm);
-        .ps-tag-label { color: var(--tag-compatible); }
+        .ps-tag-label {
+          color: var(--tag-compatible);
+        }
       }
       &.active.ps-tag-hatched {
         background: Rgb(255 149 0 / 5%);
         color: var(--tag-hatched);
         border-color: var(--tag-hatched);
         box-shadow: var(--shadow-glow-yellow-sm);
-        .ps-tag-label { color: var(--tag-hatched); }
+        .ps-tag-label {
+          color: var(--tag-hatched);
+        }
       }
     }
 
@@ -365,7 +384,7 @@ body .selection-container {
     opacity: 0.6;
     cursor: pointer;
     will-change: transform, filter, opacity;
-  filter: Grayscale(1);
+    filter: Grayscale(1);
 
     &:hover {
       background: Rgb(255 255 255 / 8%);
@@ -395,7 +414,7 @@ body .selection-container {
       opacity: 1;
       border-color: var(--yellow);
       will-change: transform, filter, opacity;
-  filter: Grayscale(0);
+      filter: Grayscale(0);
       box-shadow: var(--shadow-glow-yellow-sm);
     }
   }
@@ -425,12 +444,11 @@ body .selection-container {
       opacity: 0.5;
       transform: none;
       will-change: transform, filter, opacity;
-  filter: Grayscale(1);
+      filter: Grayscale(1);
       cursor: not-allowed;
       box-shadow: none;
     }
   }
-
 }
 
 .empty-state {
@@ -489,7 +507,7 @@ body .selection-container {
       outline: none;
       border-color: var(--yellow);
     }
-    
+
     &::placeholder {
       color: Rgb(255 255 255 / 20%);
     }

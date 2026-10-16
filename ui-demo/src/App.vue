@@ -1,50 +1,50 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { updatePixelScale, setCornerModel, type CornerModelId } from './logic/pixelEngine.ts'
+import { ref, onMounted, onUnmounted } from 'vue';
+import { updatePixelScale, setCornerModel, type CornerModelId } from './logic/pixelEngine.ts';
 
-import Sec1NavigationTabs from './sections/Sec1NavigationTabs.vue'
-import Sec2FormControls from './sections/Sec2FormControls.vue'
-import Sec3InventorySlots from './sections/Sec3InventorySlots.vue'
-import Sec4ActionButtons from './sections/Sec4ActionButtons.vue'
-import Sec5DialogsModals from './sections/Sec5DialogsModals.vue'
-import Sec6CombatHud from './sections/Sec6CombatHud.vue'
-import Sec7ElementalPills from './sections/Sec7ElementalPills.vue'
-import Sec8LoginDemo from './sections/Sec8LoginDemo.vue'
-import Sec9TeamCards from './sections/Sec9TeamCards.vue'
-import Sec10SelectionModal from './sections/Sec10SelectionModal.vue'
-import Sec11BattleDock from './sections/Sec11BattleDock.vue'
-import Sec12PokemonDetail from './sections/Sec12PokemonDetail.vue'
-import Sec13InventoryModal from './sections/Sec13InventoryModal.vue'
-import Sec14InputsShowcase from './sections/Sec14InputsShowcase.vue'
-import Sec15LiveInspector from './sections/Sec15LiveInspector.vue'
+import Sec1NavigationTabs from './sections/Sec1NavigationTabs.vue';
+import Sec2FormControls from './sections/Sec2FormControls.vue';
+import Sec3InventorySlots from './sections/Sec3InventorySlots.vue';
+import Sec4ActionButtons from './sections/Sec4ActionButtons.vue';
+import Sec5DialogsModals from './sections/Sec5DialogsModals.vue';
+import Sec6CombatHud from './sections/Sec6CombatHud.vue';
+import Sec7ElementalPills from './sections/Sec7ElementalPills.vue';
+import Sec8LoginDemo from './sections/Sec8LoginDemo.vue';
+import Sec9TeamCards from './sections/Sec9TeamCards.vue';
+import Sec10SelectionModal from './sections/Sec10SelectionModal.vue';
+import Sec11BattleDock from './sections/Sec11BattleDock.vue';
+import Sec12PokemonDetail from './sections/Sec12PokemonDetail.vue';
+import Sec13InventoryModal from './sections/Sec13InventoryModal.vue';
+import Sec14InputsShowcase from './sections/Sec14InputsShowcase.vue';
+import Sec15LiveInspector from './sections/Sec15LiveInspector.vue';
 
-const _UI_DEMO_THEMES = ['theme-vicio-dark', 'theme-wingull-light', 'theme-cyber-neon'] as const
-type UiDemoThemeId = typeof _UI_DEMO_THEMES[number]
+const _UI_DEMO_THEMES = ['theme-vicio-dark', 'theme-wingull-light', 'theme-cyber-neon'] as const;
+type UiDemoThemeId = (typeof _UI_DEMO_THEMES)[number];
 
-const currentTheme = ref<UiDemoThemeId>('theme-vicio-dark')
-const currentPixelSize = ref<number>(3)
-const currentCornerModel = ref<CornerModelId>('bresenham')
+const currentTheme = ref<UiDemoThemeId>('theme-vicio-dark');
+const currentPixelSize = ref<number>(3);
+const currentCornerModel = ref<CornerModelId>('bresenham');
 
 const cornerModels = [
   { id: 'bresenham', label: 'Curva' },
   { id: 'chamfer', label: 'Chaflán' },
   { id: 'wide', label: 'Curva Amplia' }
-] as const
+] as const;
 
-const isSelectionModalOpen = ref(false)
-const isInventoryModalOpen = ref(false)
+const isSelectionModalOpen = ref(false);
+const isInventoryModalOpen = ref(false);
 
 const themes: readonly { id: UiDemoThemeId; name: string }[] = [
   { id: 'theme-vicio-dark', name: 'Vicio Dark' },
   { id: 'theme-wingull-light', name: 'Wingull GBA Light' },
   { id: 'theme-cyber-neon', name: 'Cyber Neon' }
-] as const
+] as const;
 
 const pixelSizes = [
   { px: 2, label: '2px' },
   { px: 3, label: '3px (Canónico)' },
   { px: 4, label: '4px' }
-] as const
+] as const;
 
 const navSections = [
   { id: 'sec-1', label: '1. Pestañas' },
@@ -62,49 +62,49 @@ const navSections = [
   { id: 'sec-13', label: '13. Mochila' },
   { id: 'sec-14', label: '14. Inputs' },
   { id: 'sec-15', label: '15. Inspector' }
-] as const
+] as const;
 
 function setTheme(theme: UiDemoThemeId) {
-  currentTheme.value = theme
+  currentTheme.value = theme;
   if (typeof document !== 'undefined') {
-    document.body.className = theme
+    document.body.className = theme;
   }
 }
 
 function setPixelScale(px: number) {
-  currentPixelSize.value = px
-  updatePixelScale(px, currentCornerModel.value)
+  currentPixelSize.value = px;
+  updatePixelScale(px, currentCornerModel.value);
 }
 
 function onSelectCornerModel(m: CornerModelId) {
-  currentCornerModel.value = m
-  setCornerModel(m)
+  currentCornerModel.value = m;
+  setCornerModel(m);
 }
 
 function scrollTo(id: string) {
-  const el = document.getElementById(id)
+  const el = document.getElementById(id);
   if (el) {
-    el.scrollIntoView({ behavior: 'smooth' })
+    el.scrollIntoView({ behavior: 'smooth' });
   }
 }
 
 function openSelectionModal() {
-  isSelectionModalOpen.value = true
+  isSelectionModalOpen.value = true;
 }
 
 function closeSelectionModal() {
-  isSelectionModalOpen.value = false
+  isSelectionModalOpen.value = false;
 }
 
 function openInventoryModal() {
-  isInventoryModalOpen.value = true
+  isInventoryModalOpen.value = true;
 }
 
 function closeInventoryModal() {
-  isInventoryModalOpen.value = false
+  isInventoryModalOpen.value = false;
 }
 
-const sec12Ref = ref<InstanceType<typeof Sec12PokemonDetail> | null>(null)
+const sec12Ref = ref<InstanceType<typeof Sec12PokemonDetail> | null>(null);
 
 const POKEDEX_PIKACHU = 25 as const;
 const POKEDEX_CHARIZARD = 6 as const;
@@ -112,32 +112,32 @@ const POKEDEX_GENGAR = 94 as const;
 
 function onSelectPokemon(uid: string) {
   if (uid.includes('pika')) {
-    sec12Ref.value?.openDetailFor({ id: POKEDEX_PIKACHU, name: 'PIKACHU' })
+    sec12Ref.value?.openDetailFor({ id: POKEDEX_PIKACHU, name: 'PIKACHU' });
   } else if (uid.includes('char')) {
-    sec12Ref.value?.openDetailFor({ id: POKEDEX_CHARIZARD, name: 'CHARIZARD' })
+    sec12Ref.value?.openDetailFor({ id: POKEDEX_CHARIZARD, name: 'CHARIZARD' });
   } else if (uid.includes('gengar')) {
-    sec12Ref.value?.openDetailFor({ id: POKEDEX_GENGAR, name: 'GENGAR' })
+    sec12Ref.value?.openDetailFor({ id: POKEDEX_GENGAR, name: 'GENGAR' });
   } else {
-    sec12Ref.value?.openDetailFor({ id: POKEDEX_PIKACHU, name: 'PIKACHU' })
+    sec12Ref.value?.openDetailFor({ id: POKEDEX_PIKACHU, name: 'PIKACHU' });
   }
 }
 
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
-    closeSelectionModal()
-    closeInventoryModal()
+    closeSelectionModal();
+    closeInventoryModal();
   }
 }
 
 onMounted(() => {
-  setTheme(currentTheme.value)
-  setPixelScale(currentPixelSize.value)
-  window.addEventListener('keydown', onKeydown)
-})
+  setTheme(currentTheme.value);
+  setPixelScale(currentPixelSize.value);
+  window.addEventListener('keydown', onKeydown);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', onKeydown)
-})
+  window.removeEventListener('keydown', onKeydown);
+});
 </script>
 
 <template>
@@ -231,108 +231,59 @@ onUnmounted(() => {
 
     <!-- CONTENEDOR PRINCIPAL DEL CATÁLOGO -->
     <main class="catalog-container">
-      <div
-        id="sec-1"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-1" class="demo-section-wrapper">
         <Sec1NavigationTabs />
       </div>
-      <div
-        id="sec-2"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-2" class="demo-section-wrapper">
         <Sec2FormControls />
       </div>
-      <div
-        id="sec-3"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-3" class="demo-section-wrapper">
         <Sec3InventorySlots />
       </div>
-      <div
-        id="sec-4"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-4" class="demo-section-wrapper">
         <Sec4ActionButtons />
       </div>
-      <div
-        id="sec-5"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-5" class="demo-section-wrapper">
         <Sec5DialogsModals />
       </div>
-      <div
-        id="sec-6"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-6" class="demo-section-wrapper">
         <Sec6CombatHud />
       </div>
-      <div
-        id="sec-7"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-7" class="demo-section-wrapper">
         <Sec7ElementalPills />
       </div>
-      <div
-        id="sec-8"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-8" class="demo-section-wrapper">
         <Sec8LoginDemo />
       </div>
-      <div
-        id="sec-9"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-9" class="demo-section-wrapper">
         <Sec9TeamCards
           @open-selection="openSelectionModal"
           @open-inventory="openInventoryModal"
           @select-pokemon="onSelectPokemon"
         />
       </div>
-      <div
-        id="sec-10"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-10" class="demo-section-wrapper">
         <Sec10SelectionModal @open-floating="openSelectionModal" />
       </div>
-      <div
-        id="sec-11"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-11" class="demo-section-wrapper">
         <Sec11BattleDock />
       </div>
-      <div
-        id="sec-12"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-12" class="demo-section-wrapper">
         <Sec12PokemonDetail ref="sec12Ref" />
       </div>
-      <div
-        id="sec-13"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-13" class="demo-section-wrapper">
         <Sec13InventoryModal @open-floating="openInventoryModal" />
       </div>
-      <div
-        id="sec-14"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-14" class="demo-section-wrapper">
         <Sec14InputsShowcase />
       </div>
-      <div
-        id="sec-15"
-        class="demo-section-wrapper"
-      >
+      <div id="sec-15" class="demo-section-wrapper">
         <Sec15LiveInspector />
       </div>
     </main>
 
     <!-- MODAL FLOTANTE: SELECTOR DE POKÉMON -->
-    <div
-      v-if="isSelectionModalOpen"
-      class="pv-modal-backdrop"
-      @click.self="closeSelectionModal"
-    >
+    <div v-if="isSelectionModalOpen" class="pv-modal-backdrop" @click.self="closeSelectionModal">
       <div class="pv-floating-modal-dialog">
         <Sec10SelectionModal
           :is-floating="true"
@@ -343,16 +294,9 @@ onUnmounted(() => {
     </div>
 
     <!-- MODAL FLOTANTE: MOCHILA / INVENTARIO -->
-    <div
-      v-if="isInventoryModalOpen"
-      class="pv-modal-backdrop"
-      @click.self="closeInventoryModal"
-    >
+    <div v-if="isInventoryModalOpen" class="pv-modal-backdrop" @click.self="closeInventoryModal">
       <div class="pv-floating-modal-dialog">
-        <Sec13InventoryModal
-          :is-floating="true"
-          @close="closeInventoryModal"
-        />
+        <Sec13InventoryModal :is-floating="true" @close="closeInventoryModal" />
       </div>
     </div>
   </div>

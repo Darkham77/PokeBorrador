@@ -1,13 +1,26 @@
 import {
-  BoostID, Effect, ID, Move, MoveName,
-  Specie, SpeciesName, StatID, TypeName, toID,
+  BoostID,
+  Effect,
+  ID,
+  Move,
+  MoveName,
+  Specie,
+  SpeciesName,
+  StatID,
+  TypeName,
+  toID
 } from '@pkmn/data';
 import {
-  Args, KWArgs, PokemonDetails, PokemonIdent, PokemonSearchID, Protocol,
+  Args,
+  KWArgs,
+  PokemonDetails,
+  PokemonIdent,
+  PokemonSearchID,
+  Protocol
 } from '@pkmn/protocol';
 
-import {Battle, NA, NULL} from './battle';
-import {LastItemEffect} from './pokemon';
+import { Battle, NA, NULL } from './battle';
+import { LastItemEffect } from './pokemon';
 
 const BOOSTS: BoostID[] = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'];
 const CONSUMED: LastItemEffect[] = ['eaten', 'popped', 'consumed', 'held up'];
@@ -55,9 +68,9 @@ export class Handler implements Protocol.Handler {
       case 'multi':
       case 'freeforall':
         this.battle.pokemonControlled = 1;
-        // @ts-ignore readonly
+        // @ts-expect-error readonly
         if (!this.battle.p3) this.battle.p3 = this.battle.createSide(3);
-        // @ts-ignore readonly
+        // @ts-expect-error readonly
         if (!this.battle.p4) this.battle.p4 = this.battle.createSide(4);
         this.battle.p3.foe = this.battle.p2;
         this.battle.p4.foe = this.battle.p1;
@@ -153,7 +166,7 @@ export class Handler implements Protocol.Handler {
   }
 
   '|updatepoke|'(args: Args['|updatepoke|']) {
-    const {name, siden, pokemonid} = this.battle.parsePokemonId(args[1]);
+    const { name, siden, pokemonid } = this.battle.parsePokemonId(args[1]);
     const side = this.battle.sides[siden];
     for (let i = 0; i < side.team.length; i++) {
       const pokemon = side.team[i];
@@ -181,7 +194,7 @@ export class Handler implements Protocol.Handler {
     const slot = poke.slot;
     if (args[3]) poke.healthParse(args[3]);
     poke.removeVolatile('itemremoved' as ID);
-    poke.terastallized = (/tera:([a-z]+)$/i.exec(args[2]))?.[1] as TypeName || undefined;
+    poke.terastallized = (/tera:([a-z]+)$/i.exec(args[2])?.[1] as TypeName) || undefined;
     if (args[0] === 'switch') {
       const from = this.battle.get('conditions', kwArgs?.from);
       if (poke.side.active[slot]) {
@@ -243,8 +256,10 @@ export class Handler implements Protocol.Handler {
       if (ofPoke) ofPoke.activateAbility(fromEffect);
       if (fromEffect.kind === 'Item') {
         const itemPoke = ofPoke || poke;
-        if (itemPoke.lastItem !== fromEffect.id &&
-          !CONSUMED.includes(itemPoke.lastItemEffect as LastItemEffect)) {
+        if (
+          itemPoke.lastItem !== fromEffect.id &&
+          !CONSUMED.includes(itemPoke.lastItemEffect as LastItemEffect)
+        ) {
           itemPoke.item = fromEffect.id;
         }
       }
@@ -263,9 +278,11 @@ export class Handler implements Protocol.Handler {
     if (fromEffect) {
       const ofpoke = this.battle.getPokemon(kwArgs.of);
       (ofpoke || poke).activateAbility(fromEffect);
-      if (fromEffect.kind === 'Item' &&
+      if (
+        fromEffect.kind === 'Item' &&
         !CONSUMED.includes(poke.lastItemEffect as LastItemEffect) &&
-        poke.lastItem !== fromEffect.id) {
+        poke.lastItem !== fromEffect.id
+      ) {
         poke.item = fromEffect.id;
       }
       if (revival) {
@@ -300,10 +317,7 @@ export class Handler implements Protocol.Handler {
     return this.boost(args, kwArgs);
   }
 
-  private boost(
-    args: Args['|-boost|' | '|-unboost|'],
-    kwArgs: KWArgs['|-boost|' | '|-unboost|']
-  ) {
+  private boost(args: Args['|-boost|' | '|-unboost|'], kwArgs: KWArgs['|-boost|' | '|-unboost|']) {
     const poke = this.battle.getPokemon(args[1])!;
     const boost = args[2];
     if (this.battle.gen.num === 1 && boost === 'spd') return;
@@ -334,7 +348,7 @@ export class Handler implements Protocol.Handler {
   '|-swapboost|'(args: Args['|-swapboost|']) {
     const poke = this.battle.getPokemon(args[1])!;
     const poke2 = this.battle.getPokemon(args[2])!;
-    const boosts = args[3] ? args[3].split(', ') as BoostID[] : BOOSTS;
+    const boosts = args[3] ? (args[3].split(', ') as BoostID[]) : BOOSTS;
     for (const boost of boosts) {
       const tmp = poke.boosts[boost];
       poke.boosts[boost] = poke2.boosts[boost];
@@ -367,7 +381,7 @@ export class Handler implements Protocol.Handler {
       const fromEffect = this.battle.get('conditions', kwArgs.from);
       poke.activateAbility(fromEffect);
     }
-    const boosts = args[3] ? args[3].split(', ') as BoostID[] : BOOSTS;
+    const boosts = args[3] ? (args[3].split(', ') as BoostID[]) : BOOSTS;
     for (const boost of boosts) {
       poke.boosts[boost] = poke2.boosts[boost];
       if (!poke.boosts[boost]) delete poke.boosts[boost];
@@ -432,17 +446,23 @@ export class Handler implements Protocol.Handler {
     const ofPoke = this.battle.getPokemon(kwArgs.of);
     (ofPoke || poke).activateAbility(effect);
     switch (effect?.id) {
-      case 'quickguard': case 'wideguard': case 'craftyshield': case 'matblock':
+      case 'quickguard':
+      case 'wideguard':
+      case 'craftyshield':
+      case 'matblock':
         return void poke.side.addSideCondition(effect, false);
-      case 'protect': return poke.addVolatile('protect' as ID, {duration: 'turn'});
-      case 'safetygoggles': case 'protectivepads': case 'abilityshield':
+      case 'protect':
+        return poke.addVolatile('protect' as ID, { duration: 'turn' });
+      case 'safetygoggles':
+      case 'protectivepads':
+      case 'abilityshield':
         return void (poke.item = effect.id);
     }
   }
 
   '|-mustrecharge|'(args: Args['|-mustrecharge|']) {
     const poke = this.battle.getPokemon(args[1])!;
-    poke.addVolatile('mustrecharge' as ID, {duration: 'move'});
+    poke.addVolatile('mustrecharge' as ID, { duration: 'move' });
   }
 
   '|-status|'(args: Args['|-status|'], kwArgs: KWArgs['|-status|']) {
@@ -458,7 +478,7 @@ export class Handler implements Protocol.Handler {
     if (fromEffect?.kind === 'Item') ofpoke.item = fromEffect.id;
 
     if (status === 'tox') {
-      poke.statusState.toxicTurns = (fromEffect?.name === 'Toxic Orb' ? -1 : 0);
+      poke.statusState.toxicTurns = fromEffect?.name === 'Toxic Orb' ? -1 : 0;
     } else if (status === 'slp' && fromEffect?.id === 'rest') {
       poke.statusState.sleepTurns = 0; // for Gen 2 use through Sleep Talk
     }
@@ -471,10 +491,17 @@ export class Handler implements Protocol.Handler {
     if (poke) {
       poke.status = undefined;
       switch (status) {
-        case 'brn': case 'par': case 'frz': break;
-        case 'tox': case 'psn': return void (poke.statusState.toxicTurns = 0);
-        case 'slp': return void (poke.statusState.sleepTurns = 0);
-        default: return poke.removeVolatile('confusion' as ID);
+        case 'brn':
+        case 'par':
+        case 'frz':
+          break;
+        case 'tox':
+        case 'psn':
+          return void (poke.statusState.toxicTurns = 0);
+        case 'slp':
+          return void (poke.statusState.sleepTurns = 0);
+        default:
+          return poke.removeVolatile('confusion' as ID);
       }
     }
   }
@@ -497,7 +524,7 @@ export class Handler implements Protocol.Handler {
 
     if (!poke) {
       if (fromEffect.id === 'frisk') {
-        const possibleTargets = ofPoke!.side.foe.active.filter(p => p !== null);
+        const possibleTargets = ofPoke!.side.foe.active.filter((p) => p !== null);
         if (possibleTargets.length === 1) {
           poke = possibleTargets[0]!;
         } else {
@@ -520,10 +547,12 @@ export class Handler implements Protocol.Handler {
         case 'pickup':
           poke.activateAbility('Pickup');
         // falls through
-        case 'recycle': return void (poke.itemEffect = 'found');
+        case 'recycle':
+          return void (poke.itemEffect = 'found');
         case 'frisk':
           ofPoke!.activateAbility('Frisk');
-          if (poke && poke !== ofPoke) { // used for gen 6
+          if (poke && poke !== ofPoke) {
+            // used for gen 6
             poke.itemEffect = 'frisked';
           }
           return;
@@ -533,7 +562,7 @@ export class Handler implements Protocol.Handler {
         // falls through
         case 'thief':
         case 'covet':
-        // simulate the removal of the item from the ofpoke
+          // simulate the removal of the item from the ofpoke
           ofPoke!.item = '';
           ofPoke!.itemEffect = '';
           ofPoke!.lastItem = item.id;
@@ -543,8 +572,11 @@ export class Handler implements Protocol.Handler {
         case 'harvest':
           poke.itemEffect = 'harvested';
           return poke.activateAbility('Harvest');
-        case 'bestow': return void (poke.itemEffect = 'bestowed');
-        case 'switcheroo': case 'trick': return void (poke.itemEffect = 'tricked');
+        case 'bestow':
+          return void (poke.itemEffect = 'bestowed');
+        case 'switcheroo':
+        case 'trick':
+          return void (poke.itemEffect = 'tricked');
       }
     }
   }
@@ -572,7 +604,8 @@ export class Handler implements Protocol.Handler {
       this.battle.lastMove = item.id;
     } else if (fromEffect.id) {
       switch (fromEffect.id) {
-        case 'fling': return void (poke.lastItemEffect = 'flung');
+        case 'fling':
+          return void (poke.lastItemEffect = 'flung');
         case 'knockoff': {
           if (this.battle.gen.num <= 4) {
             poke.itemEffect = 'knocked off';
@@ -581,9 +614,12 @@ export class Handler implements Protocol.Handler {
           }
           return;
         }
-        case 'stealeat': return void (poke.lastItemEffect = 'stolen');
-        case 'gem': return void (poke.lastItemEffect = 'consumed');
-        case 'incinerate': return void (poke.lastItemEffect = 'incinerated');
+        case 'stealeat':
+          return void (poke.lastItemEffect = 'stolen');
+        case 'gem':
+          return void (poke.lastItemEffect = 'consumed');
+        case 'incinerate':
+          return void (poke.lastItemEffect = 'incinerated');
       }
     } else {
       switch (item.id) {
@@ -591,9 +627,12 @@ export class Handler implements Protocol.Handler {
           poke.lastItemEffect = 'popped';
           poke.removeVolatile('airballoon' as ID);
           return;
-        case 'focussash': return void (poke.lastItemEffect = 'consumed');
-        case 'redcard': return void (poke.lastItemEffect = 'held up');
-        default: return void (poke.lastItemEffect = 'consumed');
+        case 'focussash':
+          return void (poke.lastItemEffect = 'consumed');
+        case 'redcard':
+          return void (poke.lastItemEffect = 'held up');
+        default:
+          return void (poke.lastItemEffect = 'consumed');
       }
     }
   }
@@ -657,12 +696,13 @@ export class Handler implements Protocol.Handler {
     }
 
     poke.speciesForme = newSpeciesForme;
-    poke.ability = poke.baseAbility = (species.abilities ? toID(species.abilities['0']) : '');
+    poke.ability = poke.baseAbility = species.abilities ? toID(species.abilities['0']) : '';
 
     poke.details = args[2];
     poke.searchid = (args[1].substr(0, 2) +
       args[1].substr(args[1].indexOf(':')) +
-      '|' + args[2]) as PokemonSearchID;
+      '|' +
+      args[2]) as PokemonSearchID;
   }
 
   '|-transform|'(args: Args['|-transform|'], kwArgs: KWArgs['|-transform|']) {
@@ -673,7 +713,7 @@ export class Handler implements Protocol.Handler {
 
     if (!kwArgs.silent) poke.activateAbility(fromEffect);
 
-    poke.boosts = {...poke2.boosts};
+    poke.boosts = { ...poke2.boosts };
     poke.copyTypesFrom(poke2, true);
     poke.ability = poke2.ability;
     poke.timesAttacked = poke2.timesAttacked;
@@ -682,8 +722,8 @@ export class Handler implements Protocol.Handler {
     const shiny = poke2.shiny;
     const gender = poke2.gender;
     const level = poke.level;
-    poke.addVolatile('transform' as ID, {pokemon, shiny, gender, level});
-    poke.addVolatile('formechange' as ID, {speciesForme});
+    poke.addVolatile('transform' as ID, { pokemon, shiny, gender, level });
+    poke.addVolatile('formechange' as ID, { speciesForme });
     for (const moveSlot of poke2.moveSlots) {
       poke.rememberMove(moveSlot.name, 0);
     }
@@ -704,7 +744,7 @@ export class Handler implements Protocol.Handler {
     }
 
     // the formechange volatile reminds us to revert the sprite change on switch-out
-    poke.addVolatile('formechange' as ID, {speciesForme});
+    poke.addVolatile('formechange' as ID, { speciesForme });
   }
 
   '|-mega|'(args: Args['|-mega|']) {
@@ -747,17 +787,17 @@ export class Handler implements Protocol.Handler {
     (ofPoke || poke).activateAbility(fromEffect);
 
     if (effect.id.startsWith('stockpile')) {
-      poke.addVolatile('stockpile' as ID, {level: +effect.id.charAt(effect.id.length - 1)});
+      poke.addVolatile('stockpile' as ID, { level: +effect.id.charAt(effect.id.length - 1) });
       return;
     } else if (effect.id.startsWith('protosynthesis')) {
-      poke.addVolatile('protosynthesis' as ID, {stat: effect.id.slice(-3) as StatID});
+      poke.addVolatile('protosynthesis' as ID, { stat: effect.id.slice(-3) as StatID });
       return;
     } else if (effect.id.startsWith('quarkdrive')) {
-      poke.addVolatile('quarkdrive' as ID, {stat: effect.id.slice(-3) as StatID});
+      poke.addVolatile('quarkdrive' as ID, { stat: effect.id.slice(-3) as StatID });
       return;
     } else if (effect.id.startsWith('perish')) {
       poke.addVolatile('perishsong' as ID, {
-        duration: +effect.id.charAt(effect.id.length - 1),
+        duration: +effect.id.charAt(effect.id.length - 1)
       });
       return;
     }
@@ -769,11 +809,11 @@ export class Handler implements Protocol.Handler {
           poke.copyTypesFrom(ofPoke);
         } else {
           poke.removeVolatile('typeadd' as ID);
-          poke.addVolatile('typechange' as ID, {apparentType: sanitizeName(args[3]) || '???'});
+          poke.addVolatile('typechange' as ID, { apparentType: sanitizeName(args[3]) || '???' });
         }
         break;
       case 'typeadd':
-        poke.addVolatile('typeadd' as ID, {type: sanitizeName(args[3]) as TypeName});
+        poke.addVolatile('typeadd' as ID, { type: sanitizeName(args[3]) as TypeName });
         break;
       case 'dynamax':
         poke.addVolatile('dynamax' as ID, args[3] ? {} : undefined);
@@ -782,19 +822,23 @@ export class Handler implements Protocol.Handler {
         if (poke.volatiles.autotomize) {
           poke.volatiles.autotomize.level!++;
         } else {
-          poke.addVolatile('autotomize' as ID, {level: 1});
+          poke.addVolatile('autotomize' as ID, { level: 1 });
         }
         break;
       case 'smackdown':
         poke.removeVolatile('magnetrise' as ID);
         poke.removeVolatile('telekinesis' as ID);
         break;
-      case 'futuresight': case 'doomdesire':
+      case 'futuresight':
+      case 'doomdesire':
         poke.side.addSideCondition(effect, false);
         break;
     }
-    if (!(effect.id === 'typechange' && poke.terastallized) &&
-				effect.id !== 'futuresight' && effect.id !== 'doomdesire') {
+    if (
+      !(effect.id === 'typechange' && poke.terastallized) &&
+      effect.id !== 'futuresight' &&
+      effect.id !== 'doomdesire'
+    ) {
       poke.addVolatile(effect.id);
     }
   }
@@ -816,7 +860,7 @@ export class Handler implements Protocol.Handler {
     const poke = this.battle.getPokemon(args[1])!;
     const effect = this.battle.get('conditions', args[2]);
     if (effect.id === 'roost' && !poke.types.includes('Flying')) return;
-    poke.addVolatile(effect.id, {duration: 'turn'});
+    poke.addVolatile(effect.id, { duration: 'turn' });
     if (effect.id === 'focuspunch' || effect.id === 'shelltrap') {
       poke.rememberMove(effect.name as MoveName, 0);
     }
@@ -825,7 +869,7 @@ export class Handler implements Protocol.Handler {
   '|-singlemove|'(args: Args['|-singlemove|']) {
     const poke = this.battle.getPokemon(args[1])!;
     const effect = this.battle.get('conditions', args[2]);
-    poke.addVolatile(effect.id, {duration: 'move'});
+    poke.addVolatile(effect.id, { duration: 'move' });
   }
 
   '|-activate|'(args: Args['|-activate|'], kwArgs: KWArgs['|-activate|']) {
@@ -871,7 +915,8 @@ export class Handler implements Protocol.Handler {
         poke!.removeVolatile('magnetrise' as ID);
         poke!.removeVolatile('telekinesis' as ID);
         break;
-      case 'skillswap': case 'wanderingspirit': {
+      case 'skillswap':
+      case 'wanderingspirit': {
         if (this.battle.gen.num <= 4) break;
         const pokeability = toID(kwArgs.ability) || poke2!.ability;
         const targetability = toID(kwArgs.ability2) || poke!.ability;
@@ -893,7 +938,7 @@ export class Handler implements Protocol.Handler {
       // ability activations
       case 'electromorphosis':
       case 'windpower':
-        poke!.addVolatile('charge' as ID, {duration: 'move'});
+        poke!.addVolatile('charge' as ID, { duration: 'move' });
         break;
       case 'forewarn':
         if (poke2) {
@@ -921,7 +966,9 @@ export class Handler implements Protocol.Handler {
       case 'mysteryberry':
         poke!.rememberMove(kwArgs.move!, effect.id === 'leppaberry' ? -10 : -5);
         break;
-      case 'focusband': case 'quickclaw': case 'abilityshield':
+      case 'focusband':
+      case 'quickclaw':
+      case 'abilityshield':
         poke!.item = effect.id;
         break;
     }
@@ -976,6 +1023,9 @@ export class Handler implements Protocol.Handler {
 function sanitizeName(name: any) {
   if (!name) return '';
   return ('' + name)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
     .slice(0, 50);
 }

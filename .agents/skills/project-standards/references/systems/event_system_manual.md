@@ -85,7 +85,7 @@ Every competition metric has a designated semantic icon:
 - **IVs**: `🧬` (DNA)
 - **Friendship**: `💖` (Sparkling Heart)
 - **Level**: `⭐` (Star)
-Hardcoding generic icons (such as DNA `🧬` for physical dimensions) across category chips or preview cards is strictly forbidden.
+  Hardcoding generic icons (such as DNA `🧬` for physical dimensions) across category chips or preview cards is strictly forbidden.
 
 ### Award Title & Category Pill Separation
 

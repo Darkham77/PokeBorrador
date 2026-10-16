@@ -1,71 +1,59 @@
 <script setup lang="ts">
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
 
 interface PokedexPokemon {
-  dexNum: number | string
-  name: string
-  spriteUrl: string
-  isSeen: boolean
-  isCaught: boolean
-  isShiny?: boolean
-  isGuardian?: boolean
-  aura?: string
+  dexNum: number | string;
+  name: string;
+  spriteUrl: string;
+  isSeen: boolean;
+  isCaught: boolean;
+  isShiny?: boolean;
+  isGuardian?: boolean;
+  aura?: string;
 }
 
 interface Props {
-  p: PokedexPokemon
+  p: PokedexPokemon;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 defineEmits<{
-  (e: 'click', event: MouseEvent): void
-}>()
+  (e: 'click', event: MouseEvent): void;
+}>();
 </script>
 
 <template>
   <div
-    id="pokedex-pokemon-card-div-1" 
+    id="pokedex-pokemon-card-div-1"
+    role="button"
+    tabindex="0"
     class="pdx-pokemon-card"
-    :class="{ 
-      'is-caught': p.isCaught, 
+    :class="{
+      'is-caught': p.isCaught,
       'is-unseen': !p.isSeen,
-      'has-sprite': p.isSeen 
+      'has-sprite': p.isSeen
     }"
     @click.stop="$emit('click', $event)"
   >
     <div class="card-bg" />
-    <div class="dex-number">
-      #{{ p.dexNum }}
-    </div>
+    <div class="dex-number">#{{ p.dexNum }}</div>
 
     <div class="pdex-sprite-container">
       <template v-if="p.isSeen">
-        <PVSpriteFX
-          :is-shiny="p.isShiny"
-          :is-guardian="p.isGuardian"
-          :sparkle-count="5"
-        >
-          <img 
+        <PVSpriteFX :is-shiny="p.isShiny" :is-guardian="p.isGuardian" :sparkle-count="5">
+          <img
             :src="p.spriteUrl"
-            :alt="p.name" 
+            :alt="p.name"
             class="pdx-pokemon-sprite"
-            :class="[
-              { 'silhouette': !p.isCaught },
-              p.aura ? `aura-${p.aura}-mini` : ''
-            ]"
+            :class="[{ silhouette: !p.isCaught }, p.aura ? `aura-${p.aura}-mini` : '']"
             width="32"
             height="32"
-          >
+          />
         </PVSpriteFX>
       </template>
 
-      <div
-        v-else
-        class="unknown-placeholder"
-      >
-        ?
-      </div>
+      <div v-else class="unknown-placeholder">?</div>
     </div>
 
     <div class="card-footer">
@@ -75,5 +63,5 @@ defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/views/pokedex" as *;
+@use '@/styles/views/pokedex' as *;
 </style>

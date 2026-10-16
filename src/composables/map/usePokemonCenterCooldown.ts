@@ -30,7 +30,10 @@ export function usePokemonCenterCooldown() {
   };
 
   const handleCooldownClick = () => {
-    uiStore.notify(`El Centro Pokémon está cerrado por mantenimiento. Reabre en ${cooldownFormatted.value}.`, '🏥');
+    uiStore.notify(
+      `El Centro Pokémon está cerrado por mantenimiento. Reabre en ${cooldownFormatted.value}.`,
+      '🏥'
+    );
   };
 
   const cooldownFormatted = computed(() => {

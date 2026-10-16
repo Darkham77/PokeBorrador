@@ -1,72 +1,76 @@
 <script setup lang="ts">
-const GSAP_ANIM_Y_OFFSET_PX = 15
-const GSAP_ANIM_SCALE_START = 0.95
-const GSAP_ANIM_GRID_DURATION_SEC = 0.4
-const GSAP_ANIM_GRID_STAGGER_SEC = 0.04
-import { ref, computed, watch, nextTick } from 'vue'
-import { gsap } from 'gsap'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import BaseModal from '@/components/common/BaseModal.vue'
-import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
-import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
-import ReputationShopItemCard from './reputation-shop/ReputationShopItemCard.vue'
-import { getItemById, type ItemId } from '@/data/inventory/items'
-import type { ItemTier } from '@/types/inventory/items'
+const GSAP_ANIM_Y_OFFSET_PX = 15;
+const GSAP_ANIM_SCALE_START = 0.95;
+const GSAP_ANIM_GRID_DURATION_SEC = 0.4;
+const GSAP_ANIM_GRID_STAGGER_SEC = 0.04;
+import { ref, computed, watch, nextTick } from 'vue';
+import { gsap } from 'gsap';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import BaseModal from '@/components/common/BaseModal.vue';
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
+import ReputationShopItemCard from './reputation-shop/ReputationShopItemCard.vue';
+import { getItemById, type ItemId } from '@/data/inventory/items';
+import type { ItemTier } from '@/types/inventory/items';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const gameStore = useGameStore();
+const uiStore = useUIStore();
 
-const isSmallScreen = computed(() => uiStore.isSmallScreen)
+const isSmallScreen = computed(() => uiStore.isSmallScreen);
 
 interface ReputationShopItem {
-  id: string
-  repCost: number
-  givesId: ItemId
-  givesQty: number
-  tier: ItemTier
-  cat: string
+  id: string;
+  repCost: number;
+  givesId: ItemId;
+  givesQty: number;
+  tier: ItemTier;
+  cat: string;
 }
 
 function resolveItemName(item: ReputationShopItem): string {
-  const catalogItem = getItemById(item.givesId)
-  return catalogItem.name
+  const catalogItem = getItemById(item.givesId);
+  return catalogItem.name;
 }
 
 function resolveItemDesc(item: ReputationShopItem): string {
-  const catalogItem = getItemById(item.givesId)
+  const catalogItem = getItemById(item.givesId);
   if (!catalogItem.desc) {
-    throw new Error(`El objeto '${item.givesId}' de la Tienda de Reputación no tiene descripción configurada en el catálogo.`)
+    throw new Error(
+      `El objeto '${item.givesId}' de la Tienda de Reputación no tiene descripción configurada en el catálogo.`
+    );
   }
-  return catalogItem.desc
+  return catalogItem.desc;
 }
 
 function resolveItemSprite(item: ReputationShopItem): string {
-  const catalogItem = getItemById(item.givesId)
+  const catalogItem = getItemById(item.givesId);
   if (!catalogItem.sprite) {
-    throw new Error(`El objeto '${item.givesId}' de la Tienda de Reputación no tiene sprite configurado en el catálogo.`)
+    throw new Error(
+      `El objeto '${item.givesId}' de la Tienda de Reputación no tiene sprite configurado en el catálogo.`
+    );
   }
-  return catalogItem.sprite
+  return catalogItem.sprite;
 }
 
-const REP_COST_ULTRABALL = 15 as const
-const REP_COST_TM_EARTHQUAKE = 50 as const
-const REP_COST_REVIVE = 20 as const
-const REP_COST_FULL_HEAL = 15 as const
-const REP_COST_IV_SCANNER = 40 as const
-const REP_COST_STAR_PIECE = 30 as const
+const REP_COST_ULTRABALL = 15 as const;
+const REP_COST_TM_EARTHQUAKE = 50 as const;
+const REP_COST_REVIVE = 20 as const;
+const REP_COST_FULL_HEAL = 15 as const;
+const REP_COST_IV_SCANNER = 40 as const;
+const REP_COST_STAR_PIECE = 30 as const;
 
 const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   {
@@ -117,91 +121,98 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
     tier: 'rare',
     cat: 'otros'
   }
-]
+];
 
 const reputation = computed(() => {
-  return Number(gameStore.state.classData?.reputation) || 0
-})
+  return Number(gameStore.state.classData?.reputation) || 0;
+});
 
-const activeTab = ref('todos')
-const search = ref('')
-const sortKey = ref<'name' | 'price' | 'rarity'>('name')
-const sortOrder = ref<'asc' | 'desc'>('asc')
-const gridRef = ref<HTMLElement | null>(null)
+const activeTab = ref('todos');
+const search = ref('');
+const sortKey = ref<'name' | 'price' | 'rarity'>('name');
+const sortOrder = ref<'asc' | 'desc'>('asc');
+const gridRef = ref<HTMLElement | null>(null);
 
-const filteredItems = computed<(ReputationShopItem & { name: string; desc: string; sprite: string })[]>(() => {
-  const items = REPUTATION_SHOP_ITEMS.filter(item => {
-    if (activeTab.value !== 'todos' && item.cat !== activeTab.value) return false
-    if (search.value && !resolveItemName(item).toLowerCase().includes(search.value.toLowerCase())) return false
-    return true
-  }).map(item => ({
+const filteredItems = computed<
+  (ReputationShopItem & { name: string; desc: string; sprite: string })[]
+>(() => {
+  const items = REPUTATION_SHOP_ITEMS.filter((item) => {
+    if (activeTab.value !== 'todos' && item.cat !== activeTab.value) return false;
+    if (search.value && !resolveItemName(item).toLowerCase().includes(search.value.toLowerCase()))
+      return false;
+    return true;
+  }).map((item) => ({
     ...item,
     name: resolveItemName(item),
     desc: resolveItemDesc(item),
-    sprite: resolveItemSprite(item),
-  }))
+    sprite: resolveItemSprite(item)
+  }));
 
   return items.toSorted((a, b) => {
-    let comp: number
+    let comp: number;
     if (sortKey.value === 'price') {
-      comp = (a.repCost || 0) - (b.repCost || 0)
+      comp = (a.repCost || 0) - (b.repCost || 0);
     } else if (sortKey.value === 'rarity') {
-      const tiers: Record<string, number> = { common: 0, rare: 1, epic: 2, legend: 3 }
-      const aT = tiers[a.tier || 'common'] ?? 0
-      const bT = tiers[b.tier || 'common'] ?? 0
-      comp = bT - aT
+      const tiers: Record<ItemTier, number> = { common: 0, rare: 1, epic: 2, legend: 3 };
+      const aT = tiers[a.tier || 'common'] ?? 0;
+      const bT = tiers[b.tier || 'common'] ?? 0;
+      comp = bT - aT;
     } else {
-      comp = a.name.localeCompare(b.name)
+      comp = a.name.localeCompare(b.name);
     }
-    return sortOrder.value === 'asc' ? comp : -comp
-  })
-})
+    return sortOrder.value === 'asc' ? comp : -comp;
+  });
+});
 
 const availableCategories = computed<string[]>(() => {
-  const cats = new Set<string>()
+  const cats = new Set<string>();
   for (const item of REPUTATION_SHOP_ITEMS) {
-    cats.add(item.cat)
+    cats.add(item.cat);
   }
-  return Array.from(cats)
-})
+  return Array.from(cats);
+});
 
 const animateGrid = () => {
   nextTick(() => {
-    if (!gridRef.value) return
-    const cards = gridRef.value.querySelectorAll('.rep-shop-item-card')
+    if (!gridRef.value) return;
+    const cards = gridRef.value.querySelectorAll('.rep-shop-item-card');
     if (cards.length > 0) {
-      gsap.killTweensOf(cards)
-      gsap.fromTo(cards, 
+      gsap.killTweensOf(cards);
+      gsap.fromTo(
+        cards,
         { opacity: 0, y: GSAP_ANIM_Y_OFFSET_PX, scale: GSAP_ANIM_SCALE_START },
-        { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          duration: GSAP_ANIM_GRID_DURATION_SEC, 
-          stagger: GSAP_ANIM_GRID_STAGGER_SEC, 
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: GSAP_ANIM_GRID_DURATION_SEC,
+          stagger: GSAP_ANIM_GRID_STAGGER_SEC,
           ease: 'power1.out',
           clearProps: 'transform,scale'
         }
-      )
+      );
     }
-  })
-}
+  });
+};
 
 watch([activeTab, search], () => {
-  animateGrid()
-})
+  animateGrid();
+});
 
-watch(() => props.show, (val) => {
-  if (val) {
-    activeTab.value = 'todos'
-    search.value = ''
-    animateGrid()
+watch(
+  () => props.show,
+  (val) => {
+    if (val) {
+      activeTab.value = 'todos';
+      search.value = '';
+      animateGrid();
+    }
   }
-})
+);
 
 const close = () => {
-  emit('close')
-}
+  emit('close');
+};
 </script>
 
 <template>
@@ -265,32 +276,24 @@ const close = () => {
             <!-- Center star vertically using SVG -->
             <svg
               viewBox="0 0 24 24"
-              style=" display: block;width: 10px; height: 10px;"
+              style="display: block; width: 10px; height: 10px"
               fill="currentColor"
             >
-              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+              <polygon
+                points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+              />
             </svg>
           </template>
         </ShopSearchControls>
 
         <!-- Rejilla de Objetos -->
         <div class="rep-shop-grid-wrapper custom-scrollbar">
-          <div 
-            v-if="filteredItems.length > 0"
-            class="rep-shop-premium-grid"
-          >
-            <ReputationShopItemCard
-              v-for="item in filteredItems"
-              :key="item.id"
-              :item="item"
-            />
+          <div v-if="filteredItems.length > 0" class="rep-shop-premium-grid">
+            <ReputationShopItemCard v-for="item in filteredItems" :key="item.id" :item="item" />
           </div>
 
           <!-- Empty State -->
-          <div
-            v-else
-            class="shop-empty-state"
-          >
+          <div v-else class="shop-empty-state">
             <span class="emoji empty-icon">🔍</span>
             <div class="empty-text">
               <h3>Sin resultados</h3>
@@ -304,6 +307,6 @@ const close = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/components/shop" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/components/shop' as *;
 </style>

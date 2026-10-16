@@ -20,23 +20,35 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
     await this.page.evaluate(
       async (opts) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-        
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
+
         const gameStore = useGameStore();
 
         const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
         // Caterpie frágil (no cumplirá nivel alto si se requiere)
-        const babyCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: opts.babyLevel });
+        const babyCaterpie = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('caterpie'),
+          level: opts.babyLevel
+        });
         babyCaterpie.nickname = 'BABY_CATERPIE';
 
         // Caterpie experto
-        const masterCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: opts.masterLevel });
+        const masterCaterpie = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('caterpie'),
+          level: opts.masterLevel
+        });
         masterCaterpie.nickname = 'MASTER_CATERPIE';
 
         // Para evitar que el Save Shield bloquee el guardado:
         gameStore.state.starterChosen = true;
-        gameStore.state.team = [pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: opts.activeLevel })];
+        gameStore.state.team = [
+          pokemonDebugService.generate({
+            id: requirePokemonSpeciesId('caterpie'),
+            level: opts.activeLevel
+          })
+        ];
 
         // Agregar ambos a la caja
         gameStore.state.box = [babyCaterpie, masterCaterpie];
@@ -97,7 +109,11 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
     });
   }
 
-  public async getInventoryState(): Promise<{ hasMaster: boolean; hasBaby: boolean; candyQty: number }> {
+  public async getInventoryState(): Promise<{
+    hasMaster: boolean;
+    hasBaby: boolean;
+    candyQty: number;
+  }> {
     return await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const gameStore = useGameStore();
@@ -110,7 +126,9 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
 }
 
 test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
-  test('should view daily missions, attempt with invalid pokemon, and complete with valid pokemon', async ({ page }) => {
+  test('should view daily missions, attempt with invalid pokemon, and complete with valid pokemon', async ({
+    page
+  }) => {
     const sim = new DaycareMissionsSimulation(page, 'MissionsUser');
 
     // 1. Setup session y login
@@ -136,7 +154,11 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const store = useGameStore().state;
       const allPkmn = [...(store.team || []), ...(store.box || [])];
-      const caterpie = allPkmn.find((p) => p !== null && (p.nickname === 'MASTER_CATERPIE' || (p.id === 'caterpie' && (p.level || 0) >= 30)));
+      const caterpie = allPkmn.find(
+        (p) =>
+          p !== null &&
+          (p.nickname === 'MASTER_CATERPIE' || (p.id === 'caterpie' && (p.level || 0) >= 30))
+      );
       if (!caterpie || !caterpie.uid) {
         throw new Error('[daycare_missions] MASTER_CATERPIE missing from team and box state');
       }
@@ -147,14 +169,19 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
     await masterOption.waitFor({ state: 'visible', timeout: SIMULATION_SELECTION_TIMEOUT_MS });
     await clickResilient(masterOption);
 
-    await expect.poll(async () => {
-      return await sim.getCompletedStatus();
-    }, { timeout: SIMULATION_COMPLETION_TIMEOUT_MS }).toBe(true);
+    await expect
+      .poll(
+        async () => {
+          return await sim.getCompletedStatus();
+        },
+        { timeout: SIMULATION_COMPLETION_TIMEOUT_MS }
+      )
+      .toBe(true);
 
     const stateCheck = await sim.getInventoryState();
 
     expect(stateCheck.hasMaster).toBe(false); // Removido
-    expect(stateCheck.hasBaby).toBe(true);    // Conservado
-    expect(stateCheck.candyQty).toBe(1);      // Recibió premio
+    expect(stateCheck.hasBaby).toBe(true); // Conservado
+    expect(stateCheck.candyQty).toBe(1); // Recibió premio
   });
 });

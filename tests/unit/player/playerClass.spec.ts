@@ -1,17 +1,15 @@
-
-
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { useGameStore } from '@/stores/game'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleContext } from '@/types/battle/battleContext'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { setActivePinia, createPinia } from 'pinia';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useGameStore } from '@/stores/game';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleContext } from '@/types/battle/battleContext';
 
 vi.mock('@/logic/db/supabase', () => ({
   supabase: {
     from: vi.fn(() => ({
-      select: vi.fn(() => ({ 
-        eq: vi.fn(() => ({ 
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
           single: vi.fn(() => Promise.resolve({ data: { db_version: 2 }, error: null })),
           order: vi.fn(() => ({ single: vi.fn() }))
         }))
@@ -19,81 +17,87 @@ vi.mock('@/logic/db/supabase', () => ({
     })),
     getServerTime: vi.fn(() => Promise.resolve(Temporal.Now.instant().epochMilliseconds))
   }
-}))
-
+}));
 
 vi.mock('@/stores/auth', () => ({
   useAuthStore: () => ({
     user: { id: 'test-user', db_version: 2 },
     sessionMode: 'offline'
   })
-}))
+}));
 
 vi.mock('@/logic/auth/saveService', () => ({
   saveGame: vi.fn(() => Promise.resolve({ success: true }))
-}))
+}));
 
 const inventoryMock = {
   addItem: vi.fn()
-}
+};
 vi.mock('@/stores/inventory/inventory', () => ({
   useInventoryStore: vi.fn(() => inventoryMock)
-}))
+}));
 
 describe('Player Class Logic (V3)', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-    vi.clearAllMocks()
-  })
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
 
   it('debe permitir seleccionar una clase inicial gratuitamente', async () => {
-    const classStore = usePlayerClassStore()
-    const gameStore = useGameStore()
+    const classStore = usePlayerClassStore();
+    const gameStore = useGameStore();
 
-    const result = await classStore.selectClass('rocket')
-    
-    expect(result.success).toBe(true)
-    expect(gameStore.state.playerClass).toBe('rocket')
-    expect(gameStore.state.classLevel).toBe(1)
-  })
+    const result = await classStore.selectClass('rocket');
+
+    expect(result.success).toBe(true);
+    expect(gameStore.state.playerClass).toBe('rocket');
+    expect(gameStore.state.classLevel).toBe(1);
+  });
 
   it('debe cobrar Battle Coins al cambiar de clase', async () => {
-    const classStore = usePlayerClassStore()
-    const gameStore = useGameStore()
+    const classStore = usePlayerClassStore();
+    const gameStore = useGameStore();
 
-    gameStore.state.playerClass = 'rocket'
-    gameStore.state.battleCoins = 15000
+    gameStore.state.playerClass = 'rocket';
+    gameStore.state.battleCoins = 15000;
 
-    const result = await classStore.selectClass('cazabichos')
-    
-    expect(result.success).toBe(true)
-    expect(gameStore.state.playerClass).toBe('cazabichos')
-    expect(gameStore.state.battleCoins).toBe(5000)
-  })
+    const result = await classStore.selectClass('cazabichos');
+
+    expect(result.success).toBe(true);
+    expect(gameStore.state.playerClass).toBe('cazabichos');
+    expect(gameStore.state.battleCoins).toBe(5000);
+  });
 
   it('debe manejar el nivel de criminalidad correctamente (Rocket)', () => {
-    const classStore = usePlayerClassStore()
-    const gameStore = useGameStore()
+    const classStore = usePlayerClassStore();
+    const gameStore = useGameStore();
 
-    gameStore.state.playerClass = 'rocket'
-    classStore.addCriminality(20)
-    
-    expect(gameStore.state.classData.criminality).toBe(20)
-    
-    classStore.addCriminality(90) // Total 110 -> Sin límite artificial
-    expect(gameStore.state.classData.criminality).toBe(110)
-  })
+    gameStore.state.playerClass = 'rocket';
+    classStore.addCriminality(20);
+
+    expect(gameStore.state.classData.criminality).toBe(20);
+
+    classStore.addCriminality(90); // Total 110 -> Sin límite artificial
+    expect(gameStore.state.classData.criminality).toBe(110);
+  });
 
   it('debe sacrificar al Pokémon y devolver el item en misiones Rocket', async () => {
-    const classStore = usePlayerClassStore()
-    const gameStore = useGameStore()
+    const classStore = usePlayerClassStore();
+    const gameStore = useGameStore();
 
-    gameStore.state.playerClass = 'rocket'
-    gameStore.state.money = 0
+    gameStore.state.playerClass = 'rocket';
+    gameStore.state.money = 0;
     gameStore.state.box = [
-      { id: 'pidgey', uid: 'pidgey_1', name: 'Pidgey', level: 10, heldItem: 'firestone', onMission: true } as unknown as Pokemon
-    ]
-    
+      {
+        id: 'pidgey',
+        uid: 'pidgey_1',
+        name: 'Pidgey',
+        level: 10,
+        heldItem: 'firestone',
+        onMission: true
+      } as unknown as Pokemon
+    ];
+
     gameStore.state.classData.activeMission = {
       id: 'mission_6h',
       startedAt: Temporal.Now.instant().epochMilliseconds - 10000,
@@ -101,39 +105,41 @@ describe('Player Class Logic (V3)', () => {
       targetPokemonIdx: 0,
       targetPokemonUid: 'pidgey_1',
       projectedReward: 500
-    }
+    };
 
-    await classStore.collectMission()
+    await classStore.collectMission();
 
-    expect(gameStore.state.box.length).toBe(0)
-    expect(gameStore.state.money).toBe(500)
-    expect(gameStore.state.classData.blackMarketSales).toBe(1)
-    expect(inventoryMock.addItem).toHaveBeenCalledWith('firestone', 1)
-  })
+    expect(gameStore.state.box.length).toBe(0);
+    expect(gameStore.state.money).toBe(500);
+    expect(gameStore.state.classData.blackMarketSales).toBe(1);
+    expect(inventoryMock.addItem).toHaveBeenCalledWith('firestone', 1);
+  });
 
   it('debe calcular modificadores correctamente (PvP Balance)', () => {
-    const classStore = usePlayerClassStore()
-    const gameStore = useGameStore()
+    const classStore = usePlayerClassStore();
+    const gameStore = useGameStore();
 
-    gameStore.state.playerClass = 'entrenador'
-    expect(classStore.getModifier('expMult')).toBe(1.1)
+    gameStore.state.playerClass = 'entrenador';
+    expect(classStore.getModifier('expMult')).toBe(1.1);
 
     // Activar PvP
-    gameStore.state.activeBattle = { isPvP: true } as unknown as typeof gameStore.state.activeBattle
-    expect(classStore.getModifier('expMult')).toBe(1.0)
-  })
+    gameStore.state.activeBattle = {
+      isPvP: true
+    } as unknown as typeof gameStore.state.activeBattle;
+    expect(classStore.getModifier('expMult')).toBe(1.0);
+  });
 
   it('debe aplicar la fianza de policía correctamente en la derrota según nivel y criminalidad', async () => {
-    const gameStore = useGameStore()
-    const { terminateBattle } = await import('@/logic/battle/resolution')
-    const { BATTLE_STATES, BATTLE_SUBSTATES } = await import('@/logic/battle/battleStateMachine')
+    const gameStore = useGameStore();
+    const { terminateBattle } = await import('@/logic/battle/resolution');
+    const { BATTLE_STATES, BATTLE_SUBSTATES } = await import('@/logic/battle/battleStateMachine');
 
     // Mock minimal de BattleContext
     const mockFsm = {
       currentState: { value: BATTLE_STATES.ACTIVE_BATTLE },
       currentSubState: { value: BATTLE_SUBSTATES.CHECK_OUTCOME },
       transition: vi.fn()
-    }
+    };
     const mockCtx = {
       gs: gameStore,
       fsm: mockFsm,
@@ -159,152 +165,152 @@ describe('Player Class Logic (V3)', () => {
       addLog: vi.fn(),
       waitForLogs: vi.fn().mockResolvedValue(true),
       completeBattleFlow: vi.fn()
-    } as unknown as BattleContext
+    } as unknown as BattleContext;
 
     // Caso 1: Nivel 10, Criminalidad 100% -> Debe cobrar 8000
-    gameStore.state.playerClass = 'rocket'
-    gameStore.state.classLevel = 10
-    gameStore.state.classData.criminality = 100
-    gameStore.state.money = 200000
+    gameStore.state.playerClass = 'rocket';
+    gameStore.state.classLevel = 10;
+    gameStore.state.classData.criminality = 100;
+    gameStore.state.money = 200000;
 
-    await terminateBattle(mockCtx, false, false) // Derrota (win = false, fled = false)
-    expect(gameStore.state.money).toBe(192000) // 200000 - 8000
-    expect(gameStore.state.classData.criminality).toBe(0) // Se limpia la criminalidad
+    await terminateBattle(mockCtx, false, false); // Derrota (win = false, fled = false)
+    expect(gameStore.state.money).toBe(192000); // 200000 - 8000
+    expect(gameStore.state.classData.criminality).toBe(0); // Se limpia la criminalidad
 
     // Caso 2: Nivel 5, Criminalidad 100% -> Debe cobrar 2000
-    gameStore.state.classLevel = 5
-    gameStore.state.classData.criminality = 100
-    gameStore.state.money = 20000
+    gameStore.state.classLevel = 5;
+    gameStore.state.classData.criminality = 100;
+    gameStore.state.money = 20000;
 
     // Restauramos el estado del mock de batalla
     if (mockCtx.activeBattle.value) {
-      mockCtx.activeBattle.value.over = false
+      mockCtx.activeBattle.value.over = false;
     }
-    await terminateBattle(mockCtx, false, false)
-    expect(gameStore.state.money).toBe(18000) // 20000 - 2000
+    await terminateBattle(mockCtx, false, false);
+    expect(gameStore.state.money).toBe(18000); // 20000 - 2000
 
     // Caso 3: Nivel 10, Criminalidad 200% -> Debe cobrar 16000
-    gameStore.state.classLevel = 10
-    gameStore.state.classData.criminality = 200
-    gameStore.state.money = 20000
+    gameStore.state.classLevel = 10;
+    gameStore.state.classData.criminality = 200;
+    gameStore.state.money = 20000;
 
     if (mockCtx.activeBattle.value) {
-      mockCtx.activeBattle.value.over = false
+      mockCtx.activeBattle.value.over = false;
     }
-    await terminateBattle(mockCtx, false, false)
-    expect(gameStore.state.money).toBe(4000) // 20000 - 16000
+    await terminateBattle(mockCtx, false, false);
+    expect(gameStore.state.money).toBe(4000); // 20000 - 16000
 
     // Caso 4: Bancarrota (Nivel 30, Criminalidad 100% -> ₽72000, pero jugador sólo tiene ₽50000)
-    gameStore.state.classLevel = 30
-    gameStore.state.classData.criminality = 100
-    gameStore.state.money = 50000
+    gameStore.state.classLevel = 30;
+    gameStore.state.classData.criminality = 100;
+    gameStore.state.money = 50000;
 
     if (mockCtx.activeBattle.value) {
-      mockCtx.activeBattle.value.over = false
+      mockCtx.activeBattle.value.over = false;
     }
-    await terminateBattle(mockCtx, false, false)
-    expect(gameStore.state.money).toBe(0) // Se queda en 0
-  })
+    await terminateBattle(mockCtx, false, false);
+    expect(gameStore.state.money).toBe(0); // Se queda en 0
+  });
 
   it('debe calcular las fórmulas matemáticas de policía y dificultad con clampeo estricto en classMath', async () => {
-    const { 
-      calculatePoliceBonusLevel, 
-      calculatePoliceEffectiveLevel, 
-      calculatePoliceTeamSize, 
-      calculatePoliceBail, 
-      calculatePoliceEncounterChance 
-    } = await import('@/logic/player/classMath')
+    const {
+      calculatePoliceBonusLevel,
+      calculatePoliceEffectiveLevel,
+      calculatePoliceTeamSize,
+      calculatePoliceBail,
+      calculatePoliceEncounterChance
+    } = await import('@/logic/player/classMath');
 
     // 1. Bonus Level (+1 cada 10% de exceso)
-    expect(calculatePoliceBonusLevel(0)).toBe(0)
-    expect(calculatePoliceBonusLevel(100)).toBe(0)
-    expect(calculatePoliceBonusLevel(120)).toBe(2)
-    expect(calculatePoliceBonusLevel(150)).toBe(5)
-    expect(calculatePoliceBonusLevel(200)).toBe(10)
-    expect(calculatePoliceBonusLevel(300)).toBe(20)
+    expect(calculatePoliceBonusLevel(0)).toBe(0);
+    expect(calculatePoliceBonusLevel(100)).toBe(0);
+    expect(calculatePoliceBonusLevel(120)).toBe(2);
+    expect(calculatePoliceBonusLevel(150)).toBe(5);
+    expect(calculatePoliceBonusLevel(200)).toBe(10);
+    expect(calculatePoliceBonusLevel(300)).toBe(20);
 
     // 2. Nivel Efectivo con Clampeo (base + 5 + bonus, max 100)
     // Ruta baja (base 5): 5 + 5 + 0 = 10
-    expect(calculatePoliceEffectiveLevel(5, 100)).toBe(10)
+    expect(calculatePoliceEffectiveLevel(5, 100)).toBe(10);
     // Ruta baja con 150% (exceso 50 -> +5): 5 + 5 + 5 = 15
-    expect(calculatePoliceEffectiveLevel(5, 150)).toBe(15)
+    expect(calculatePoliceEffectiveLevel(5, 150)).toBe(15);
     // Ruta media (base 40) con 200% (exceso 100 -> +10): 40 + 5 + 10 = 55
-    expect(calculatePoliceEffectiveLevel(40, 200)).toBe(55)
+    expect(calculatePoliceEffectiveLevel(40, 200)).toBe(55);
     // Ruta alta (base 90) con 300% (exceso 200 -> +20): 90 + 5 + 20 = 115 -> CLAMP A 100
-    expect(calculatePoliceEffectiveLevel(90, 300)).toBe(100)
+    expect(calculatePoliceEffectiveLevel(90, 300)).toBe(100);
     // Criminalidad extrema (1000%) en ruta 80: 80 + 5 + 90 = 175 -> CLAMP A 100
-    expect(calculatePoliceEffectiveLevel(80, 1000)).toBe(100)
+    expect(calculatePoliceEffectiveLevel(80, 1000)).toBe(100);
 
     // 3. Tamaño del Equipo Policial
-    expect(calculatePoliceTeamSize(100, () => 0)).toBe(3)
-    expect(calculatePoliceTeamSize(100, () => 0.9)).toBe(4)
-    expect(calculatePoliceTeamSize(150, () => 0)).toBe(4)
-    expect(calculatePoliceTeamSize(150, () => 0.9)).toBe(5)
-    expect(calculatePoliceTeamSize(200)).toBe(6) // SWAT full squad
-    expect(calculatePoliceTeamSize(300)).toBe(6)
+    expect(calculatePoliceTeamSize(100, () => 0)).toBe(3);
+    expect(calculatePoliceTeamSize(100, () => 0.9)).toBe(4);
+    expect(calculatePoliceTeamSize(150, () => 0)).toBe(4);
+    expect(calculatePoliceTeamSize(150, () => 0.9)).toBe(5);
+    expect(calculatePoliceTeamSize(200)).toBe(6); // SWAT full squad
+    expect(calculatePoliceTeamSize(300)).toBe(6);
 
     // 4. Fianza
-    expect(calculatePoliceBail(5, 100)).toBe(2000)
-    expect(calculatePoliceBail(10, 150)).toBe(12000) // 100 * 80 * 1.5 = 12000
+    expect(calculatePoliceBail(5, 100)).toBe(2000);
+    expect(calculatePoliceBail(10, 150)).toBe(12000); // 100 * 80 * 1.5 = 12000
 
     // 5. Probabilidad de encuentro
-    expect(calculatePoliceEncounterChance(100, 1)).toBe(10)
-    expect(calculatePoliceEncounterChance(200, 1)).toBe(20)
-    expect(calculatePoliceEncounterChance(250, 1)).toBe(25)
-  })
+    expect(calculatePoliceEncounterChance(100, 1)).toBe(10);
+    expect(calculatePoliceEncounterChance(200, 1)).toBe(20);
+    expect(calculatePoliceEncounterChance(250, 1)).toBe(25);
+  });
 
   it('debe ser completamente persistente el cambio de clase tras el guardado y recarga del estado', async () => {
-    const { serializeState } = await import('@/logic/auth/saveSerializer')
-    const { validateAndSanitize } = await import('@/logic/auth/saveSanitizer')
+    const { serializeState } = await import('@/logic/auth/saveSerializer');
+    const { validateAndSanitize } = await import('@/logic/auth/saveSanitizer');
 
-    const classStore = usePlayerClassStore()
-    const gameStore = useGameStore()
+    const classStore = usePlayerClassStore();
+    const gameStore = useGameStore();
 
     // 1. Estado inicial sin clase
-    expect(gameStore.state.playerClass).toBeNull()
+    expect(gameStore.state.playerClass).toBeNull();
 
     // 2. Jugador elige clase 'cazabichos'
-    const selectRes = await classStore.selectClass('cazabichos')
-    expect(selectRes.success).toBe(true)
-    expect(gameStore.state.playerClass).toBe('cazabichos')
-    expect(gameStore.state.classLevel).toBe(1)
+    const selectRes = await classStore.selectClass('cazabichos');
+    expect(selectRes.success).toBe(true);
+    expect(gameStore.state.playerClass).toBe('cazabichos');
+    expect(gameStore.state.classLevel).toBe(1);
 
     // 3. Jugador gana XP de clase
-    classStore.addXP(500)
-    expect(gameStore.state.classXP).toBeGreaterThanOrEqual(0)
+    classStore.addXP(500);
+    expect(gameStore.state.classXP).toBeGreaterThanOrEqual(0);
 
     // 4. Se serializa la partida (lo que ejecuta el motor en gameStore.save())
-    const serializedSave = serializeState(gameStore.state)
-    expect(serializedSave.playerClass).toBe('cazabichos')
-    expect(serializedSave.classLevel).toBe(gameStore.state.classLevel)
-    expect(serializedSave.classXP).toBe(gameStore.state.classXP)
+    const serializedSave = serializeState(gameStore.state);
+    expect(serializedSave.playerClass).toBe('cazabichos');
+    expect(serializedSave.classLevel).toBe(gameStore.state.classLevel);
+    expect(serializedSave.classXP).toBe(gameStore.state.classXP);
 
     // 5. Se sanitiza y valida el payload (lo que ejecuta loadService al cargar desde BD/OPFS)
-    const sanitizeResult = validateAndSanitize(serializedSave)
-    expect(sanitizeResult.valid).toBe(true)
-    if (!sanitizeResult.valid) return
+    const sanitizeResult = validateAndSanitize(serializedSave);
+    expect(sanitizeResult.valid).toBe(true);
+    if (!sanitizeResult.valid || !sanitizeResult.data) return;
 
-    expect(sanitizeResult.data.playerClass).toBe('cazabichos')
+    expect(sanitizeResult.data.playerClass).toBe('cazabichos');
 
     // 6. Simular recarga web (nuevo GameStore restaurando desde la partida cargada)
-    setActivePinia(createPinia())
-    const freshGameStore = useGameStore()
-    const freshClassStore = usePlayerClassStore()
+    setActivePinia(createPinia());
+    const freshGameStore = useGameStore();
+    const freshClassStore = usePlayerClassStore();
 
     // Al inicio del reload la clase vuelve al estado por defecto hasta que se hidrata la partida
-    expect(freshGameStore.state.playerClass).toBeNull()
+    expect(freshGameStore.state.playerClass).toBeNull();
 
     // Se hidrata el estado con los datos cargados de la BD
     freshGameStore.updateState({
       playerClass: sanitizeResult.data.playerClass,
       classLevel: sanitizeResult.data.classLevel,
-      classXP: sanitizeResult.data.classXP,
-    })
+      classXP: sanitizeResult.data.classXP
+    });
 
     // 7. Verificación de persistencia tras recarga
-    expect(freshGameStore.state.playerClass).toBe('cazabichos')
-    expect(freshClassStore.playerClass).toBe('cazabichos')
-    expect(freshClassStore.currentClassDef?.name).toBe('Cazabichos')
-    expect(freshGameStore.state.classLevel).toBe(serializedSave.classLevel)
-  })
-})
+    expect(freshGameStore.state.playerClass).toBe('cazabichos');
+    expect(freshClassStore.playerClass).toBe('cazabichos');
+    expect(freshClassStore.currentClassDef?.name).toBe('Cazabichos');
+    expect(freshGameStore.state.classLevel).toBe(serializedSave.classLevel);
+  });
+});

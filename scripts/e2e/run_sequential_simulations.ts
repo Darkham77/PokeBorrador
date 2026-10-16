@@ -15,7 +15,7 @@ import {
   getMasterCheckpoint,
   getSuiteCheckpoint,
   recordMasterSuiteFailure,
-  recordMasterSuiteProgress,
+  recordMasterSuiteProgress
 } from './helpers/e2eCheckpointManager.ts';
 
 interface SimulationTarget {
@@ -97,24 +97,34 @@ function discoverPlaywrightTargets(): SimulationTarget[] {
         countMap.set(resolvedPath, (countMap.get(resolvedPath) || 0) + countSpecs(topSuite));
       }
     }
-  } catch { // catch-ok: fallback to default count 1 if spec listing fails
+  } catch {
+    // catch-ok: fallback to default count 1 if spec listing fails
     // Fallback to default count 1
   }
 
-  return allFiles.map((fullPath) => {
-    const resolvedFullPath = path.resolve(fullPath);
-    return buildTarget(fullPath, countMap.get(resolvedFullPath) || 1);
-  }).sort((a, b) => {
-    if (a.caseCount !== b.caseCount) return a.caseCount - b.caseCount;
-    return a.relativePath.localeCompare(b.relativePath);
-  });
+  return allFiles
+    .map((fullPath) => {
+      const resolvedFullPath = path.resolve(fullPath);
+      return buildTarget(fullPath, countMap.get(resolvedFullPath) || 1);
+    })
+    .sort((a, b) => {
+      if (a.caseCount !== b.caseCount) return a.caseCount - b.caseCount;
+      return a.relativePath.localeCompare(b.relativePath);
+    });
 }
 
 function parseCoverageReportFile(resultsDir: string, file: string): number {
   try {
-    const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>;
+    const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<
+      string,
+      unknown
+    >;
     const summary = (data.summary || data) as Record<string, unknown>;
-    const count = summary.totalMoves ?? summary.totalItems ?? summary.totalAbilities ?? (file.includes('scenarios') ? summary.total : undefined);
+    const count =
+      summary.totalMoves ??
+      summary.totalItems ??
+      summary.totalAbilities ??
+      (file.includes('scenarios') ? summary.total : undefined);
     return typeof count === 'number' ? count : 0;
   } catch {
     return 0;
@@ -123,7 +133,10 @@ function parseCoverageReportFile(resultsDir: string, file: string): number {
 
 function parseCertifiedCasesFile(resultsDir: string, file: string): number {
   try {
-    const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>;
+    const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<
+      string,
+      unknown
+    >;
     let batches = 0;
     for (const val of Object.values(data)) {
       if (Array.isArray(val)) {
@@ -164,7 +177,13 @@ function getFuzzerSummary(): { elementCount: number; batchCount: number } {
 const targets: SimulationTarget[] = discoverPlaywrightTargets();
 
 const args = process.argv.slice(2);
-const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['table', 'list', 'json', 'list-markdown', 'help'].includes(a) ? `--${a}` : a));
+const normalized = args.map((a) =>
+  a.includes('=') && !a.startsWith('-')
+    ? `--${a}`
+    : ['table', 'list', 'json', 'list-markdown', 'help'].includes(a)
+      ? `--${a}`
+      : a
+);
 
 const { values, positionals } = parseArgs({
   args: normalized,
@@ -184,31 +203,46 @@ const { values, positionals } = parseArgs({
   strict: false
 });
 
-const rawDriver = (values.driver as string) || (args.find(a => a.startsWith('driver='))?.split('=')[1]);
+const rawDriver =
+  (values.driver as string) || args.find((a) => a.startsWith('driver='))?.split('=')[1];
 const selectedDriver: 'dual' | 'sqlite' | 'postgres' =
   rawDriver === 'sqlite' || rawDriver === 'postgres' || rawDriver === 'dual'
     ? rawDriver
-    : (process.env.SIM_DB_DRIVER === 'postgres' ? 'postgres' : (process.env.SIM_DB_DRIVER === 'sqlite' ? 'sqlite' : 'dual'));
+    : process.env.SIM_DB_DRIVER === 'postgres'
+      ? 'postgres'
+      : process.env.SIM_DB_DRIVER === 'sqlite'
+        ? 'sqlite'
+        : 'dual';
 
-const rawFilter = (values.filter as string) || (args.find(a => a.startsWith('filter='))?.split('=')[1]);
-const rawFrom = (values.from as string) || (args.find(a => a.startsWith('from='))?.split('=')[1]);
+const rawFilter =
+  (values.filter as string) || args.find((a) => a.startsWith('filter='))?.split('=')[1];
+const rawFrom = (values.from as string) || args.find((a) => a.startsWith('from='))?.split('=')[1];
 
 const isClean = isCleanRequested(args) || values.clean === true || values.reset === true;
 if (isClean) {
   if (rawFilter) {
     clearSuiteCheckpoint(rawFilter);
-    console.log(`🧹 [CHECKPOINT] Checkpoint individual limpiado para suite "${rawFilter}". Cursor maestro preservado.\n`);
+    console.log(
+      `🧹 [CHECKPOINT] Checkpoint individual limpiado para suite "${rawFilter}". Cursor maestro preservado.\n`
+    );
   } else {
     clearAllCheckpoints();
-    console.log('🧹 [CHECKPOINT] Checkpoints limpiados: se ejecutará desde el inicio ignorando fallos previos.\n');
+    console.log(
+      '🧹 [CHECKPOINT] Checkpoints limpiados: se ejecutará desde el inicio ignorando fallos previos.\n'
+    );
   }
 }
 
 const activeTargets: SimulationTarget[] = rawFilter
-  ? targets.filter(t => t.name.toLowerCase().includes(rawFilter.toLowerCase()) || t.relativePath.toLowerCase().includes(rawFilter.toLowerCase()))
+  ? targets.filter(
+      (t) =>
+        t.name.toLowerCase().includes(rawFilter.toLowerCase()) ||
+        t.relativePath.toLowerCase().includes(rawFilter.toLowerCase())
+    )
   : targets;
 
-const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+const isHelp =
+  values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
 if (isHelp) {
   console.log(`
 Uso:
@@ -231,13 +265,21 @@ if (values.table || values['list-markdown'] || positionals.includes('table')) {
   const fuzzerSummary = getFuzzerSummary();
   const totalPlaywrightTests = activeTargets.reduce((sum, t) => sum + t.caseCount, 0);
 
-  console.log('| # | Suite / Archivo de Simulación | Casos / Elementos | Driver SQLite | Driver PostgreSQL | Estado |');
+  console.log(
+    '| # | Suite / Archivo de Simulación | Casos / Elementos | Driver SQLite | Driver PostgreSQL | Estado |'
+  );
   console.log('|:---|:---|:---|:---|:---|:---|');
-  console.log(`| **0** | \`scripts/e2e/fuzzer/runners/run_all_fuzzers.ts\` | **${fuzzerSummary.elementCount} elementos** / ${fuzzerSummary.batchCount} batallas | 🟢 **100% PASS** | 🟢 **100% PASS** | 🟢 **100% PASS** |`);
+  console.log(
+    `| **0** | \`scripts/e2e/fuzzer/runners/run_all_fuzzers.ts\` | **${fuzzerSummary.elementCount} elementos** / ${fuzzerSummary.batchCount} batallas | 🟢 **100% PASS** | 🟢 **100% PASS** | 🟢 **100% PASS** |`
+  );
   activeTargets.forEach((target, index) => {
-    console.log(`| **${index + 1}** | \`${target.relativePath}\` | **${target.caseCount}** tests | ⏳ Pendiente | ⏳ Pendiente | ⏳ Pendiente |`);
+    console.log(
+      `| **${index + 1}** | \`${target.relativePath}\` | **${target.caseCount}** tests | ⏳ Pendiente | ⏳ Pendiente | ⏳ Pendiente |`
+    );
   });
-  console.log(`| **Final** | \`scripts/e2e/run_sequential_simulations.ts\` | **${totalPlaywrightTests} tests totales** en ${activeTargets.length} suites | \`npm run sim:e2e driver=sqlite\` | \`npm run sim:e2e driver=postgres\` | ⏳ Pendiente tras validación individual |`);
+  console.log(
+    `| **Final** | \`scripts/e2e/run_sequential_simulations.ts\` | **${totalPlaywrightTests} tests totales** en ${activeTargets.length} suites | \`npm run sim:e2e driver=sqlite\` | \`npm run sim:e2e driver=postgres\` | ⏳ Pendiente tras validación individual |`
+  );
   process.exit(0);
 }
 
@@ -248,9 +290,13 @@ if (values.json || positionals.includes('json')) {
 
 if (values.list || positionals.includes('list')) {
   const fuzzerSummary = getFuzzerSummary();
-  console.log(`📋 Total de suites E2E detectadas: ${activeTargets.length} suites (${activeTargets.reduce((sum, t) => sum + t.caseCount, 0)} tests Playwright + ${fuzzerSummary.elementCount} elementos en Fuzzer)`);
+  console.log(
+    `📋 Total de suites E2E detectadas: ${activeTargets.length} suites (${activeTargets.reduce((sum, t) => sum + t.caseCount, 0)} tests Playwright + ${fuzzerSummary.elementCount} elementos en Fuzzer)`
+  );
   activeTargets.forEach((target, index) => {
-    console.log(`  ${index + 1}. [${target.name}] (${target.caseCount} tests) -> ${target.command}`);
+    console.log(
+      `  ${index + 1}. [${target.name}] (${target.caseCount} tests) -> ${target.command}`
+    );
   });
   process.exit(0);
 }
@@ -293,13 +339,17 @@ async function startPersistentViteServer(): Promise<ChildProcess | null> {
   logger.progress(`🚀 Inicializando servidor web persistente en ${VITE_URL}...`);
   const viteBin = path.resolve(process.cwd(), 'node_modules/vite/bin/vite.js');
   let viteStderr = '';
-  const viteProcess = spawn(process.execPath, [viteBin, '--port', String(VITE_PORT), '--strictPort'], {
-    stdio: ['ignore', 'ignore', 'pipe'],
-    env: {
-      ...process.env,
-      NO_UPDATE_NOTIFIER: '1'
+  const viteProcess = spawn(
+    process.execPath,
+    [viteBin, '--port', String(VITE_PORT), '--strictPort'],
+    {
+      stdio: ['ignore', 'ignore', 'pipe'],
+      env: {
+        ...process.env,
+        NO_UPDATE_NOTIFIER: '1'
+      }
     }
-  });
+  );
   viteProcess.stderr?.on('data', (chunk: Buffer | string) => {
     viteStderr += chunk.toString();
   });
@@ -307,7 +357,9 @@ async function startPersistentViteServer(): Promise<ChildProcess | null> {
   const startTime = Temporal.Now.instant().epochMilliseconds;
   while (Temporal.Now.instant().epochMilliseconds - startTime < HEALTH_CHECK_TIMEOUT_MS) {
     if (await probeViteServer(VITE_URL)) {
-      logger.progress(`🔥 Servidor Vite persistente pre-calentado y listo en ${VITE_URL} (${((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1)}s).\n`);
+      logger.progress(
+        `🔥 Servidor Vite persistente pre-calentado y listo en ${VITE_URL} (${((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1)}s).\n`
+      );
       return viteProcess;
     }
     await new Promise((resolve) => setTimeout(resolve, HEALTH_CHECK_INTERVAL_MS));
@@ -315,9 +367,10 @@ async function startPersistentViteServer(): Promise<ChildProcess | null> {
 
   viteProcess.kill('SIGKILL');
   const details = viteStderr.trim() ? ` Detalle: ${viteStderr.trim()}` : '';
-  throw new Error(`[SIMULATION-RUNNER] Timeout esperando que el servidor Vite en ${VITE_URL} responda.${details}`);
+  throw new Error(
+    `[SIMULATION-RUNNER] Timeout esperando que el servidor Vite en ${VITE_URL} responda.${details}`
+  );
 }
-
 
 function stopPersistentViteServer(viteProcess: ChildProcess | null): void {
   if (viteProcess && !viteProcess.killed) {
@@ -365,7 +418,11 @@ function runCommandStreamed(command: string, extraEnv: Record<string, string> = 
       const lines = stdoutBuffer.split('\n');
       stdoutBuffer = lines.pop() ?? '';
       for (const line of lines) {
-        if (!line.includes('npm notice') && !line.includes('[WebServer] npm notice') && line.trim()) {
+        if (
+          !line.includes('npm notice') &&
+          !line.includes('[WebServer] npm notice') &&
+          line.trim()
+        ) {
           console.log(line);
         }
       }
@@ -377,17 +434,29 @@ function runCommandStreamed(command: string, extraEnv: Record<string, string> = 
       const lines = stderrBuffer.split('\n');
       stderrBuffer = lines.pop() ?? '';
       for (const line of lines) {
-        if (!line.includes('npm notice') && !line.includes('[WebServer] npm notice') && line.trim()) {
+        if (
+          !line.includes('npm notice') &&
+          !line.includes('[WebServer] npm notice') &&
+          line.trim()
+        ) {
           console.error(line);
         }
       }
     });
 
     child.on('close', (code) => {
-      if (stdoutBuffer.trim() && !stdoutBuffer.includes('npm notice') && !stdoutBuffer.includes('[WebServer] npm notice')) {
+      if (
+        stdoutBuffer.trim() &&
+        !stdoutBuffer.includes('npm notice') &&
+        !stdoutBuffer.includes('[WebServer] npm notice')
+      ) {
         console.log(stdoutBuffer.trim());
       }
-      if (stderrBuffer.trim() && !stderrBuffer.includes('npm notice') && !stderrBuffer.includes('[WebServer] npm notice')) {
+      if (
+        stderrBuffer.trim() &&
+        !stderrBuffer.includes('npm notice') &&
+        !stderrBuffer.includes('[WebServer] npm notice')
+      ) {
         console.error(stderrBuffer.trim());
       }
       if (code === 0) {
@@ -405,21 +474,32 @@ function runCommandStreamed(command: string, extraEnv: Record<string, string> = 
 
 async function initSequentialEnvironment(isPostgresNeeded: boolean): Promise<ChildProcess | null> {
   logger.progress('\n==================================================');
-  logger.progress(`🚀 DISPOSITIVO DE SIMULACIONES E2E SECUENCIAL (Modo: ${selectedDriver.toUpperCase()})`);
+  logger.progress(
+    `🚀 DISPOSITIVO DE SIMULACIONES E2E SECUENCIAL (Modo: ${selectedDriver.toUpperCase()})`
+  );
   logger.progress(`📅 Fecha y hora de inicio: ${formatExecutionTimestamp()}`);
   logger.progress('==================================================');
-  logger.progress(`📋 Se detectaron dinámicamente ${activeTargets.length} archivos de simulación E2E (Ordenados de menor a mayor cantidad de casos):`);
+  logger.progress(
+    `📋 Se detectaron dinámicamente ${activeTargets.length} archivos de simulación E2E (Ordenados de menor a mayor cantidad de casos):`
+  );
   activeTargets.forEach((target, index) => {
-    logger.progress(`  ${index + 1}. [${target.name}] (${target.caseCount} caso/s) -> ${target.command}`);
+    logger.progress(
+      `  ${index + 1}. [${target.name}] (${target.caseCount} caso/s) -> ${target.command}`
+    );
   });
   logger.progress('==================================================\n');
 
   if (isPostgresNeeded) {
-    const { ensurePostgresTestContainerReady } = await import('../testing/postgres_test_container.ts');
-    logger.progress('🐳 Inicializando contenedor efímero de PostgreSQL/Supabase para la suite secuencial...');
+    const { ensurePostgresTestContainerReady } =
+      await import('../testing/postgres_test_container.ts');
+    logger.progress(
+      '🐳 Inicializando contenedor efímero de PostgreSQL/Supabase para la suite secuencial...'
+    );
     const result = await ensurePostgresTestContainerReady();
     if (!result.isReady) {
-      throw new Error('[SIMULATION-RUNNER] Falló la preparación del contenedor PostgreSQL efímero.');
+      throw new Error(
+        '[SIMULATION-RUNNER] Falló la preparación del contenedor PostgreSQL efímero.'
+      );
     }
     process.env.KEEP_POSTGRES_ALIVE = 'true';
   }
@@ -430,8 +510,20 @@ async function initSequentialEnvironment(isPostgresNeeded: boolean): Promise<Chi
     stopPersistentViteServer(persistentVite);
     if (isPostgresNeeded) {
       try {
-        spawnSync('docker', ['stop', '-t', '1', 'pokevicio-test-gateway', 'pokevicio-test-postgrest', 'pokevicio-test-postgres'], { stdio: 'ignore' });
-      } catch { // catch-ok: ignore failure when stopping docker test containers on exit
+        spawnSync(
+          'docker',
+          [
+            'stop',
+            '-t',
+            '1',
+            'pokevicio-test-gateway',
+            'pokevicio-test-postgrest',
+            'pokevicio-test-postgres'
+          ],
+          { stdio: 'ignore' }
+        );
+      } catch {
+        // catch-ok: ignore failure when stopping docker test containers on exit
       }
     }
   };
@@ -446,15 +538,19 @@ function resolveFromFlagCheckpoint(): number | null {
   if (!rawFrom) return null;
   const fromQuery = rawFrom.toLowerCase();
   const fromNumeric = Number.parseInt(rawFrom, 10);
-  const fromIdx = !Number.isNaN(fromNumeric) && fromNumeric >= 1 && fromNumeric <= activeTargets.length
-    ? fromNumeric - 1
-    : activeTargets.findIndex(t =>
-        t.name.toLowerCase().includes(fromQuery) ||
-        t.relativePath.toLowerCase().includes(fromQuery)
-      );
+  const fromIdx =
+    !Number.isNaN(fromNumeric) && fromNumeric >= 1 && fromNumeric <= activeTargets.length
+      ? fromNumeric - 1
+      : activeTargets.findIndex(
+          (t) =>
+            t.name.toLowerCase().includes(fromQuery) ||
+            t.relativePath.toLowerCase().includes(fromQuery)
+        );
   if (fromIdx !== -1) {
     logger.progress('--------------------------------------------------');
-    logger.progress(`⏩ [FROM] Reanudando corrida secuencial desde suite ${fromIdx + 1}/${activeTargets.length}: [${activeTargets[fromIdx]!.name}]...`);
+    logger.progress(
+      `⏩ [FROM] Reanudando corrida secuencial desde suite ${fromIdx + 1}/${activeTargets.length}: [${activeTargets[fromIdx]!.name}]...`
+    );
     logger.progress('--------------------------------------------------\n');
     return fromIdx;
   }
@@ -467,7 +563,9 @@ function resolveSingleTargetCheckpoint(): 'postgres' | null {
   const cp = getSuiteCheckpoint(target.name);
   if (cp) {
     logger.progress('--------------------------------------------------');
-    logger.progress(`🔄 Checkpoint detectado para "${target.name}": reanudando desde motor [${cp.driver.toUpperCase()}]${cp.failedBatchIndex ? ` (lote #${cp.failedBatchIndex})` : ''}...`);
+    logger.progress(
+      `🔄 Checkpoint detectado para "${target.name}": reanudando desde motor [${cp.driver.toUpperCase()}]${cp.failedBatchIndex ? ` (lote #${cp.failedBatchIndex})` : ''}...`
+    );
     logger.progress(`💡 Tip: Usa 'clean=true' o 'reset=true' para forzar la ejecución desde cero.`);
     logger.progress('--------------------------------------------------\n');
     if (selectedDriver === 'dual' && cp.driver === 'postgres') {
@@ -477,7 +575,10 @@ function resolveSingleTargetCheckpoint(): 'postgres' | null {
   return null;
 }
 
-function resolveMasterSuiteCheckpoint(): { startSuiteIndex: number; startingDriverForFirstSuite: 'sqlite' | 'postgres' | null } | null {
+function resolveMasterSuiteCheckpoint(): {
+  startSuiteIndex: number;
+  startingDriverForFirstSuite: 'sqlite' | 'postgres' | null;
+} | null {
   const masterCp = getMasterCheckpoint();
   if (!masterCp) return null;
   const resumeIdx = activeTargets.findIndex(
@@ -487,14 +588,20 @@ function resolveMasterSuiteCheckpoint(): { startSuiteIndex: number; startingDriv
   );
   if (resumeIdx !== -1) {
     logger.progress('--------------------------------------------------');
-    logger.progress(`🔄 Checkpoint maestro detectado: reanudando corrida desde Suite ${resumeIdx + 1}/${activeTargets.length} [${activeTargets[resumeIdx]!.name}] (${masterCp.driver.toUpperCase()})...`);
-    const startingDriver: 'sqlite' | 'postgres' | null = masterCp.driver === 'dual' ? null : masterCp.driver;
+    logger.progress(
+      `🔄 Checkpoint maestro detectado: reanudando corrida desde Suite ${resumeIdx + 1}/${activeTargets.length} [${activeTargets[resumeIdx]!.name}] (${masterCp.driver.toUpperCase()})...`
+    );
+    const startingDriver: 'sqlite' | 'postgres' | null =
+      masterCp.driver === 'dual' ? null : masterCp.driver;
     return { startSuiteIndex: resumeIdx, startingDriverForFirstSuite: startingDriver };
   }
   return null;
 }
 
-function resolveStartingCheckpoint(): { startSuiteIndex: number; startingDriverForFirstSuite: 'sqlite' | 'postgres' | null } {
+function resolveStartingCheckpoint(): {
+  startSuiteIndex: number;
+  startingDriverForFirstSuite: 'sqlite' | 'postgres' | null;
+} {
   const fromIdx = resolveFromFlagCheckpoint();
   if (fromIdx !== null) {
     return { startSuiteIndex: fromIdx, startingDriverForFirstSuite: null };
@@ -526,18 +633,26 @@ async function executeDualDriverTarget(
 ): Promise<void> {
   let sqliteSec = '0.0';
   if (!skipSqlite) {
-    logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [1/2 SQLite] Ejecutando: ${target.name}...`);
+    logger.progressPercent(
+      suiteDisplayIdx,
+      totalDisplayCount,
+      `▶️ [1/2 SQLite] Ejecutando: ${target.name}...`
+    );
     const sqliteStart = Temporal.Now.instant().epochMilliseconds;
     try {
       await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'sqlite' });
     } catch (_err: unknown) {
-      const durationSec = ((Temporal.Now.instant().epochMilliseconds - sqliteStart) / 1000).toFixed(1);
-      logger.error(`\n❌ [${i + 1}/${activeTargets.length}] FAIL en [SQLite]: "${target.name}" ha fallado tras ${durationSec}s.`);
+      const durationSec = ((Temporal.Now.instant().epochMilliseconds - sqliteStart) / 1000).toFixed(
+        1
+      );
+      logger.error(
+        `\n❌ [${i + 1}/${activeTargets.length}] FAIL en [SQLite]: "${target.name}" ha fallado tras ${durationSec}s.`
+      );
       recordMasterSuiteFailure({
         suiteIndex: i,
         suiteName: target.name,
         suiteRelativePath: target.relativePath,
-        driver: 'sqlite',
+        driver: 'sqlite'
       });
       logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo en SQLite.\n`);
       process.exit(1);
@@ -548,32 +663,46 @@ async function executeDualDriverTarget(
         suiteIndex: i,
         suiteName: target.name,
         suiteRelativePath: target.relativePath,
-        driver: 'postgres',
+        driver: 'postgres'
       });
     }
   } else {
-    logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `⏭️ [1/2 SQLite] Omitido por checkpoint previo: "${target.name}" ya superó SQLite.`);
+    logger.progressPercent(
+      suiteDisplayIdx,
+      totalDisplayCount,
+      `⏭️ [1/2 SQLite] Omitido por checkpoint previo: "${target.name}" ya superó SQLite.`
+    );
   }
 
-  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [2/2 PostgreSQL] Ejecutando: ${target.name}...`);
+  logger.progressPercent(
+    suiteDisplayIdx,
+    totalDisplayCount,
+    `▶️ [2/2 PostgreSQL] Ejecutando: ${target.name}...`
+  );
   const pgStart = Temporal.Now.instant().epochMilliseconds;
   try {
     await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'postgres' });
   } catch (_err: unknown) {
     const durationSec = ((Temporal.Now.instant().epochMilliseconds - pgStart) / 1000).toFixed(1);
-    logger.error(`\n❌ [${suiteDisplayIdx}/${totalDisplayCount}] FAIL en [PostgreSQL]: "${target.name}" ha fallado tras ${durationSec}s.`);
+    logger.error(
+      `\n❌ [${suiteDisplayIdx}/${totalDisplayCount}] FAIL en [PostgreSQL]: "${target.name}" ha fallado tras ${durationSec}s.`
+    );
     recordMasterSuiteFailure({
       suiteIndex: i,
       suiteName: target.name,
       suiteRelativePath: target.relativePath,
-      driver: 'postgres',
+      driver: 'postgres'
     });
     logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo en PostgreSQL.\n`);
     process.exit(1);
   }
   const pgSec = ((Temporal.Now.instant().epochMilliseconds - pgStart) / 1000).toFixed(1);
 
-  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `🎉 DUAL PASS: ${target.name} (SQLite: ${sqliteSec}s | Postgres: ${pgSec}s)`);
+  logger.progressPercent(
+    suiteDisplayIdx,
+    totalDisplayCount,
+    `🎉 DUAL PASS: ${target.name} (SQLite: ${sqliteSec}s | Postgres: ${pgSec}s)`
+  );
 
   if (!rawFilter && i + 1 < activeTargets.length) {
     const nextTarget = activeTargets[i + 1]!;
@@ -582,7 +711,7 @@ async function executeDualDriverTarget(
       suiteName: nextTarget.name,
       suiteRelativePath: nextTarget.relativePath,
       driver: 'sqlite',
-      completedSuiteName: target.name,
+      completedSuiteName: target.name
     });
   }
 }
@@ -594,12 +723,20 @@ async function executeSingleDriverTarget(
   totalDisplayCount: number
 ): Promise<void> {
   const driverName = selectedDriver === 'postgres' ? 'PostgreSQL' : 'SQLite';
-  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [${driverName}] Ejecutando: ${target.name}...`);
+  logger.progressPercent(
+    suiteDisplayIdx,
+    totalDisplayCount,
+    `▶️ [${driverName}] Ejecutando: ${target.name}...`
+  );
   const startTime = Temporal.Now.instant().epochMilliseconds;
   try {
     await runCommandStreamed(target.command, { SIM_DB_DRIVER: selectedDriver });
     const durationSec = ((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1);
-    logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `✅ PASS: ${target.name} (${durationSec}s)`);
+    logger.progressPercent(
+      suiteDisplayIdx,
+      totalDisplayCount,
+      `✅ PASS: ${target.name} (${durationSec}s)`
+    );
 
     if (!rawFilter && i + 1 < activeTargets.length) {
       const nextTarget = activeTargets[i + 1]!;
@@ -608,17 +745,19 @@ async function executeSingleDriverTarget(
         suiteName: nextTarget.name,
         suiteRelativePath: nextTarget.relativePath,
         driver: selectedDriver,
-        completedSuiteName: target.name,
+        completedSuiteName: target.name
       });
     }
   } catch (_err: unknown) {
     const durationSec = ((Temporal.Now.instant().epochMilliseconds - startTime) / 1000).toFixed(1);
-    logger.error(`\n❌ [${i + 1}/${activeTargets.length}] FAIL en [${driverName}]: "${target.name}" ha fallado tras ${durationSec}s.`);
+    logger.error(
+      `\n❌ [${i + 1}/${activeTargets.length}] FAIL en [${driverName}]: "${target.name}" ha fallado tras ${durationSec}s.`
+    );
     recordMasterSuiteFailure({
       suiteIndex: i,
       suiteName: target.name,
       suiteRelativePath: target.relativePath,
-      driver: selectedDriver,
+      driver: selectedDriver
     });
     logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo.\n`);
     process.exit(1);
@@ -632,7 +771,11 @@ async function executeIntraSuiteCleanPass(
   totalDisplayCount: number
 ): Promise<void> {
   logger.progress('--------------------------------------------------');
-  logger.progressPercent(i + 1, activeTargets.length, `🔍 [6B: Intra-Suite Clean Pass] Verificando regresión limpia desde CERO para: "${target.name}"...`);
+  logger.progressPercent(
+    i + 1,
+    activeTargets.length,
+    `🔍 [6B: Intra-Suite Clean Pass] Verificando regresión limpia desde CERO para: "${target.name}"...`
+  );
   logger.progress('--------------------------------------------------');
 
   clearSuiteCheckpoint(target.name);
@@ -644,51 +787,70 @@ async function executeIntraSuiteCleanPass(
     TEST_CASE: '',
     TEST_CASE_ID: '',
     TEST_START_FROM_INDEX: '',
-    TEST_START_FROM_CASE_ID: '',
+    TEST_START_FROM_CASE_ID: ''
   };
 
-  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [6B 1/2 SQLite] Ejecutando corrida limpia desde CERO para: "${target.name}"...`);
+  logger.progressPercent(
+    suiteDisplayIdx,
+    totalDisplayCount,
+    `▶️ [6B 1/2 SQLite] Ejecutando corrida limpia desde CERO para: "${target.name}"...`
+  );
   const cleanSqliteStart = Temporal.Now.instant().epochMilliseconds;
   try {
     await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'sqlite', ...cleanEnv });
   } catch (_err: unknown) {
-    logger.error(`\n❌ [6B: REGRESIÓN EN SQLITE] "${target.name}" falló en su validación limpia desde CERO en SQLite.`);
+    logger.error(
+      `\n❌ [6B: REGRESIÓN EN SQLITE] "${target.name}" falló en su validación limpia desde CERO en SQLite.`
+    );
     recordMasterSuiteFailure({
       suiteIndex: i,
       suiteName: target.name,
       suiteRelativePath: target.relativePath,
-      driver: 'sqlite',
+      driver: 'sqlite'
     });
     process.exit(1);
   }
-  const cleanSqliteSec = ((Temporal.Now.instant().epochMilliseconds - cleanSqliteStart) / 1000).toFixed(1);
+  const cleanSqliteSec = (
+    (Temporal.Now.instant().epochMilliseconds - cleanSqliteStart) /
+    1000
+  ).toFixed(1);
 
-  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `▶️ [6B 2/2 PostgreSQL] Ejecutando corrida limpia desde CERO para: "${target.name}"...`);
+  logger.progressPercent(
+    suiteDisplayIdx,
+    totalDisplayCount,
+    `▶️ [6B 2/2 PostgreSQL] Ejecutando corrida limpia desde CERO para: "${target.name}"...`
+  );
   const cleanPgStart = Temporal.Now.instant().epochMilliseconds;
   try {
     await runCommandStreamed(target.command, { SIM_DB_DRIVER: 'postgres', ...cleanEnv });
   } catch (_err: unknown) {
-    logger.error(`\n❌ [6B: REGRESIÓN EN POSTGRESQL] "${target.name}" falló en su validación limpia desde CERO en PostgreSQL.`);
+    logger.error(
+      `\n❌ [6B: REGRESIÓN EN POSTGRESQL] "${target.name}" falló en su validación limpia desde CERO en PostgreSQL.`
+    );
     recordMasterSuiteFailure({
       suiteIndex: i,
       suiteName: target.name,
       suiteRelativePath: target.relativePath,
-      driver: 'postgres',
+      driver: 'postgres'
     });
     process.exit(1);
   }
   const cleanPgSec = ((Temporal.Now.instant().epochMilliseconds - cleanPgStart) / 1000).toFixed(1);
 
-  logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `✨ [6B: 100% DUAL CLEAN ZERO PASS] "${target.name}" superó la prueba limpia desde CERO en ambos motores (SQLite: ${cleanSqliteSec}s | Postgres: ${cleanPgSec}s)`);
+  logger.progressPercent(
+    suiteDisplayIdx,
+    totalDisplayCount,
+    `✨ [6B: 100% DUAL CLEAN ZERO PASS] "${target.name}" superó la prueba limpia desde CERO en ambos motores (SQLite: ${cleanSqliteSec}s | Postgres: ${cleanPgSec}s)`
+  );
 
-  const fullIdx = targets.findIndex(t => t.name === target.name);
+  const fullIdx = targets.findIndex((t) => t.name === target.name);
   if (fullIdx !== -1 && fullIdx + 1 < targets.length) {
     const nextTarget = targets[fullIdx + 1]!;
     recordMasterSuiteProgress({
       suiteIndex: fullIdx + 1,
       suiteName: nextTarget.name,
       suiteRelativePath: nextTarget.relativePath,
-      driver: 'sqlite',
+      driver: 'sqlite'
     });
   }
 }
@@ -706,10 +868,13 @@ async function runAllSequentialSuites(): Promise<void> {
       const target = activeTargets[i]!;
       const isFirstSuite = i === startSuiteIndex;
       const initialCp = getSuiteCheckpoint(target.name);
-      const wasResumed = Boolean((isFirstSuite && startingDriverForFirstSuite !== null) || Boolean(initialCp));
-      const skipSqlite = isFirstSuite && selectedDriver === 'dual' && startingDriverForFirstSuite === 'postgres';
+      const wasResumed = Boolean(
+        (isFirstSuite && startingDriverForFirstSuite !== null) || Boolean(initialCp)
+      );
+      const skipSqlite =
+        isFirstSuite && selectedDriver === 'dual' && startingDriverForFirstSuite === 'postgres';
 
-      const globalIdx = targets.findIndex(t => t.name === target.name);
+      const globalIdx = targets.findIndex((t) => t.name === target.name);
       const suiteDisplayIdx = globalIdx !== -1 ? globalIdx + 1 : i + 1;
       const totalDisplayCount = rawFilter ? targets.length : activeTargets.length;
 
@@ -733,11 +898,15 @@ async function runAllSequentialSuites(): Promise<void> {
     }
 
     logger.progress('\n==================================================');
-    logger.progress(`🎉 ¡TODAS LAS ${activeTargets.length} SUITES DE SIMULACIÓN E2E HAN PASADO EXITOSAMENTE EN MODO ${selectedDriver.toUpperCase()}! (${passedCount}/${activeTargets.length})`);
+    logger.progress(
+      `🎉 ¡TODAS LAS ${activeTargets.length} SUITES DE SIMULACIÓN E2E HAN PASADO EXITOSAMENTE EN MODO ${selectedDriver.toUpperCase()}! (${passedCount}/${activeTargets.length})`
+    );
     logger.progress('==================================================\n');
     process.exit(0);
   } catch (error) {
-    logger.error(`💥 Error fatal durante el dispositivo de simulaciones: ${(error as Error).message}`);
+    logger.error(
+      `💥 Error fatal durante el dispositivo de simulaciones: ${(error as Error).message}`
+    );
     process.exit(1);
   } finally {
     stopPersistentViteServer(persistentVite);
@@ -745,7 +914,8 @@ async function runAllSequentialSuites(): Promise<void> {
       try {
         const { stopPostgresTestContainer } = await import('../testing/postgres_test_container.ts');
         stopPostgresTestContainer();
-      } catch { // catch-ok: ignore failure when stopping postgres container in finally block
+      } catch {
+        // catch-ok: ignore failure when stopping postgres container in finally block
       }
     }
     logger.stopIntercepting();

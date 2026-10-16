@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { safeParse } from 'valibot';
 import {
@@ -39,20 +39,43 @@ import {
 
 describe('Domain Schemas & DTO Type Governance Exhaustive Test', () => {
   it('validates auth and user schemas directly', () => {
-    assert.ok(safeParse(userProfileSchema, { id: 'u1', username: 'AshKetchum', level: 10, is_banned: false, coins: 100 }).success);
+    assert.ok(
+      safeParse(userProfileSchema, {
+        id: 'u1',
+        username: 'AshKetchum',
+        level: 10,
+        is_banned: false,
+        coins: 100
+      }).success
+    );
     assert.ok(safeParse(trainerNameSchema, 'TrainerAsh').success);
-    assert.ok(safeParse(authLoginSchema, { email: 'ash@kanto.org', password: 'password123' }).success);
-    assert.ok(safeParse(authRegisterSchema, { email: 'misty@cerulean.org', password: 'password123', username: 'MistyWater' }).success);
-    assert.ok(safeParse(authPasswordResetSchema, { password: 'newPassword123', confirmPassword: 'newPassword123' }).success);
-    assert.ok(safeParse(chatMessageSchema, {
-      id: 'c1',
-      user_id: 'u1',
-      username: 'Ash',
-      message: 'Hello',
-      player_class: 'trainer',
-      trainer_level: 10,
-      created_at: '2026-08-18T00:00:00.000Z'
-    }).success);
+    assert.ok(
+      safeParse(authLoginSchema, { email: 'ash@kanto.org', password: 'password123' }).success
+    );
+    assert.ok(
+      safeParse(authRegisterSchema, {
+        email: 'misty@cerulean.org',
+        password: 'password123',
+        username: 'MistyWater'
+      }).success
+    );
+    assert.ok(
+      safeParse(authPasswordResetSchema, {
+        password: 'newPassword123',
+        confirmPassword: 'newPassword123'
+      }).success
+    );
+    assert.ok(
+      safeParse(chatMessageSchema, {
+        id: 'c1',
+        user_id: 'u1',
+        username: 'Ash',
+        message: 'Hello',
+        player_class: 'trainer',
+        trainer_level: 10,
+        created_at: '2026-08-18T00:00:00.000Z'
+      }).success
+    );
   });
 
   it('validates IV and EV schemas within boundaries', () => {
@@ -70,7 +93,15 @@ describe('Domain Schemas & DTO Type Governance Exhaustive Test', () => {
     const effect = { type: 'damage', status: 'par' as const, stages: 1, chance: 100 };
     assert.ok(safeParse(moveEffectSchema, effect).success);
 
-    const move = { id: 'tackle', name: 'Tackle', power: 40, acc: 100, cat: 'physical' as const, pp: 35, maxPP: 35 };
+    const move = {
+      id: 'tackle',
+      name: 'Tackle',
+      power: 40,
+      acc: 100,
+      cat: 'physical' as const,
+      pp: 35,
+      maxPP: 35
+    };
     assert.ok(safeParse(moveSchema, move).success);
   });
 
@@ -210,67 +241,71 @@ describe('Domain Schemas & DTO Type Governance Exhaustive Test', () => {
     };
     assert.ok(safeParse(activeBattleSchema, battle).success);
 
-    assert.ok(safeParse(saveDataSchema, {
-      trainer: 'Ash',
-      gender: 'h' as const,
-      badges: 1,
-      balls: 5,
-      money: 1000,
-      battleCoins: 50,
-      trainerLevel: 5,
-      trainerExp: 100,
-      trainerExpNeeded: 200,
-      inventory: { pokeball: 5, potion: 2 },
-      team: [{
-        uid: 'poke-valid-1',
-        id: 'pikachu',
-        species: 'pikachu',
-        name: 'Pikachu',
-        level: 25,
-        exp: 1000,
-        expNeeded: 2000,
-        hp: 60,
-        maxHp: 60,
-        atk: 55,
-        def: 40,
-        spa: 50,
-        spd: 50,
-        spe: 90,
-        type: 'electric',
-        isShiny: false,
-        friendship: 70,
-        nature: 'hardy',
-        gender: 'm' as const,
-        status: '' as const,
-        ability: 'static'
-      }],
-      box: [],
-      eggs: [],
-      pokedex: ['pikachu'],
-      seenPokedex: ['pikachu'],
-      defeatedGyms: ['pewter'],
-      starterChosen: true,
-      eloRating: 1000,
-      pvpStats: { wins: 0, losses: 0, draws: 0 },
-      rankedMaxElo: 1000,
-      passiveTeamActive: false,
-      daycare_mission_refreshes: 3,
-      boxCount: 4,
-      classLevel: 1,
-      classXP: 0,
-      classData: {
-        captureStreak: 0,
-        longestStreak: 0,
-        reputation: 0,
-        blackMarketSales: 0,
-        criminality: 0,
-        kitCaptures: 0
-      },
-      warCoins: 0,
-      warCoinsSpent: 0,
-      lastPokemonCenterHeal: 0,
-      playtime: 120
-    }).success);
+    assert.ok(
+      safeParse(saveDataSchema, {
+        trainer: 'Ash',
+        gender: 'h' as const,
+        badges: 1,
+        balls: 5,
+        money: 1000,
+        battleCoins: 50,
+        trainerLevel: 5,
+        trainerExp: 100,
+        trainerExpNeeded: 200,
+        inventory: { pokeball: 5, potion: 2 },
+        team: [
+          {
+            uid: 'poke-valid-1',
+            id: 'pikachu',
+            species: 'pikachu',
+            name: 'Pikachu',
+            level: 25,
+            exp: 1000,
+            expNeeded: 2000,
+            hp: 60,
+            maxHp: 60,
+            atk: 55,
+            def: 40,
+            spa: 50,
+            spd: 50,
+            spe: 90,
+            type: 'electric',
+            isShiny: false,
+            friendship: 70,
+            nature: 'hardy',
+            gender: 'm' as const,
+            status: '' as const,
+            ability: 'static'
+          }
+        ],
+        box: [],
+        eggs: [],
+        pokedex: ['pikachu'],
+        seenPokedex: ['pikachu'],
+        defeatedGyms: ['pewter'],
+        starterChosen: true,
+        eloRating: 1000,
+        pvpStats: { wins: 0, losses: 0, draws: 0 },
+        rankedMaxElo: 1000,
+        passiveTeamActive: false,
+        daycare_mission_refreshes: 3,
+        boxCount: 4,
+        classLevel: 1,
+        classXP: 0,
+        classData: {
+          captureStreak: 0,
+          longestStreak: 0,
+          reputation: 0,
+          blackMarketSales: 0,
+          criminality: 0,
+          kitCaptures: 0
+        },
+        warCoins: 0,
+        warCoinsSpent: 0,
+        lastPokemonCenterHeal: 0,
+        playtime: 120
+      }).success
+    );
   });
 
   it('verifies DTO typing compiles safely', () => {

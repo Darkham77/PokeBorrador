@@ -11,13 +11,8 @@
 
 import { SimplexNoise } from './noise/simplexNoise.ts';
 import type { EmbeddedTopologyGraph } from '../../types/map/pokemonGraphTypes.ts';
-import {
-  sanitizeWaterTerrainMatrix,
-  type WaterTerrainKind
-} from './waterAutotileEngine.ts';
-import {
-  resolveMountainMapGrid
-} from './mountainAutotileEngine.ts';
+import { sanitizeWaterTerrainMatrix, type WaterTerrainKind } from './waterAutotileEngine.ts';
+import { resolveMountainMapGrid } from './mountainAutotileEngine.ts';
 import type {
   ContinentGeneratorOptions,
   ContinentMapResult,
@@ -42,38 +37,12 @@ import {
 } from '../../config/studioConstants.ts';
 import { CONTINENT_SCULPT } from '../../config/continentSculptingConfig.ts';
 
-interface BfsQueueCell {
-  readonly x: number;
-  readonly y: number;
-  readonly d: number;
-}
-
-function runBfsDistanceField(
-  queue: BfsQueueCell[],
-  dist: number[][],
-  width: number,
-  height: number,
-  maxDistance: number,
-  isBlocked?: (x: number, y: number) => boolean
-): void {
-  let head = 0;
-  while (head < queue.length) {
-    const curr = queue[head++]!;
-    if (curr.d >= maxDistance) continue;
-
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = curr.x + dx!;
-      const ny = curr.y + dy!;
-      if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-        if (isBlocked && isBlocked(nx, ny)) continue;
-        if (dist[ny]![nx]! > curr.d + 1) {
-          dist[ny]![nx] = curr.d + 1;
-          queue.push({ x: nx, y: ny, d: curr.d + 1 });
-        }
-      }
-    }
-  }
-}
+import {
+  computeGridDistanceField,
+  floodFillGrid,
+  type GridBfsQueueItem,
+  type GridPoint
+} from '../utils/gridBfsUtils.ts';
 
 export interface PerimeterBeachOptions {
   readonly variableBeach?: boolean;
@@ -92,8 +61,12 @@ export function distributePerimeterBeach(
 ): void {
   const H = matrix.length;
   const W = matrix[0]?.length ?? 0;
-  const isVariable = typeof seedOrOptions === 'object' ? (seedOrOptions.variableBeach ?? false) : false;
-  const seed = typeof seedOrOptions === 'number' ? seedOrOptions : (seedOrOptions?.seed ?? CONTINENT_DEFAULT_SEED);
+  const isVariable =
+    typeof seedOrOptions === 'object' ? (seedOrOptions.variableBeach ?? false) : false;
+  const seed =
+    typeof seedOrOptions === 'number'
+      ? seedOrOptions
+      : (seedOrOptions?.seed ?? CONTINENT_DEFAULT_SEED);
   const prng = isVariable ? new SimplexNoise(seed + 99) : null;
 
   // Precompute target beach width per cell
@@ -108,7 +81,7 @@ export function distributePerimeterBeach(
 
   // Multi-source BFS from ocean water cells
   const dist: number[][] = Array.from({ length: H }, () => Array(W).fill(Infinity));
-  const queue: BfsQueueCell[] = [];
+  const queue: GridBfsQueueItem[] = [];
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -120,7 +93,7 @@ export function distributePerimeterBeach(
   }
 
   const maxPossibleWidth = beachWidth + 2;
-  runBfsDistanceField(queue, dist, W, H, maxPossibleWidth);
+  computeGridDistanceField(queue, dist, W, H, maxPossibleWidth);
 
   // Turn land within targetWidth of ocean water into sand.
   // Invariant: dist <= 1 is ALWAYS turned into sand (since targetWidth >= 1),
@@ -174,30 +147,18 @@ export function removeOrphanTiles(
       }
 
       // BFS to find connected component of land cells
-      const component: { x: number; y: number }[] = [];
-      const queue: { x: number; y: number }[] = [{ x, y }];
+      const component: GridPoint[] = [];
+      const queue: GridPoint[] = [{ x, y }];
       visited[y]![x] = true;
 
-      let head = 0;
-      while (head < queue.length) {
-        const curr = queue[head++]!;
-        component.push(curr);
-
-        for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-          const nx = curr.x + dx!;
-          const ny = curr.y + dy!;
-          if (
-            nx >= 0 && nx < W &&
-            ny >= 0 && ny < H &&
-            !visited[ny]![nx] &&
-            matrix[ny]![nx] !== 'water' &&
-            matrix[ny]![nx] !== 'water_deep'
-          ) {
-            visited[ny]![nx] = true;
-            queue.push({ x: nx, y: ny });
-          }
-        }
-      }
+      floodFillGrid(
+        queue,
+        visited,
+        W,
+        H,
+        (nx, ny) => matrix[ny]![nx] !== 'water' && matrix[ny]![nx] !== 'water_deep',
+        (curr) => component.push(curr)
+      );
 
       components.push(component);
     }
@@ -274,8 +235,16 @@ export function carveInlandLakes(
 
   // Find candidate centroids for lakes
   const candidates: { x: number; y: number; score: number }[] = [];
-  for (let y = CONTINENT_SCULPT.LAKE_SEARCH_MARGIN; y < H - CONTINENT_SCULPT.LAKE_SEARCH_MARGIN; y++) {
-    for (let x = CONTINENT_SCULPT.LAKE_SEARCH_MARGIN; x < W - CONTINENT_SCULPT.LAKE_SEARCH_MARGIN; x++) {
+  for (
+    let y = CONTINENT_SCULPT.LAKE_SEARCH_MARGIN;
+    y < H - CONTINENT_SCULPT.LAKE_SEARCH_MARGIN;
+    y++
+  ) {
+    for (
+      let x = CONTINENT_SCULPT.LAKE_SEARCH_MARGIN;
+      x < W - CONTINENT_SCULPT.LAKE_SEARCH_MARGIN;
+      x++
+    ) {
       if (clearance[y]![x]! >= minClearanceReq) {
         const n = noise.noise2D(x * 0.1, y * 0.1);
         candidates.push({ x, y, score: clearance[y]![x]! + n * 2.0 });
@@ -290,9 +259,7 @@ export function carveInlandLakes(
     if (placedLakes.length >= lakeCount) break;
 
     // Minimum distance between multiple lakes
-    const tooClose = placedLakes.some(
-      (l) => Math.hypot(l.x - cand.x, l.y - cand.y) < minLakeDist
-    );
+    const tooClose = placedLakes.some((l) => Math.hypot(l.x - cand.x, l.y - cand.y) < minLakeDist);
     if (tooClose) continue;
 
     placedLakes.push(cand);
@@ -333,7 +300,9 @@ function generateGraphEnvelopeLandmass(
 
   // 1. Identify designated coastal port gym city (or southernmost gym city)
   const MIN_SOUTHERN_PORT_GRID_Y = 180;
-  const gymCandidates = embedded.nodes.filter((n) => n.role === 'gym_city' || n.role === 'port_city');
+  const gymCandidates = embedded.nodes.filter(
+    (n) => n.role === 'gym_city' || n.role === 'port_city'
+  );
   let designatedPortNode = gymCandidates.find((n) => n.hasPort || n.role === 'port_city');
   if (!designatedPortNode || designatedPortNode.gridY < MIN_SOUTHERN_PORT_GRID_Y) {
     let maxGridY = -1;
@@ -348,7 +317,7 @@ function generateGraphEnvelopeLandmass(
   // Ensure exactly the designated coastal port node has hasPort = true
   if (designatedPortNode) {
     for (const n of embedded.nodes) {
-      (n as { hasPort?: boolean }).hasPort = (n.id === designatedPortNode.id);
+      (n as { hasPort?: boolean }).hasPort = n.id === designatedPortNode.id;
     }
   }
 
@@ -358,8 +327,14 @@ function generateGraphEnvelopeLandmass(
     if (corridor.kind !== 'surf_route') continue;
     for (const pt of corridor.pathCells) {
       // Perturb radius with simplex noise for natural organic coastal straits
-      const n = prng.noise2D(pt.x * CONTINENT_SCULPT.SURF_NOISE_SCALE, pt.y * CONTINENT_SCULPT.SURF_NOISE_SCALE);
-      const rad = Math.max(CONTINENT_SCULPT.SURF_MIN_RADIUS, Math.round(CONTINENT_SCULPT.SURF_BASE_RADIUS + n * CONTINENT_SCULPT.SURF_NOISE_AMP));
+      const n = prng.noise2D(
+        pt.x * CONTINENT_SCULPT.SURF_NOISE_SCALE,
+        pt.y * CONTINENT_SCULPT.SURF_NOISE_SCALE
+      );
+      const rad = Math.max(
+        CONTINENT_SCULPT.SURF_MIN_RADIUS,
+        Math.round(CONTINENT_SCULPT.SURF_BASE_RADIUS + n * CONTINENT_SCULPT.SURF_NOISE_AMP)
+      );
       for (let dy = -rad; dy <= rad; dy++) {
         for (let dx = -rad; dx <= rad; dx++) {
           if (dx * dx + dy * dy <= rad * rad) {
@@ -400,7 +375,7 @@ function generateGraphEnvelopeLandmass(
 
   // 2. Multi-source BFS from all terrestrial nodes and non-surf corridors
   const dist: number[][] = Array.from({ length: H }, () => Array(W).fill(Infinity));
-  const queue: { x: number; y: number; d: number }[] = [];
+  const queue: GridBfsQueueItem[] = [];
 
   // Seed terrestrial nodes with full footprint (excluding surfWaterMask harbor bay)
   for (const node of embedded.nodes) {
@@ -429,7 +404,7 @@ function generateGraphEnvelopeLandmass(
 
   // Multi-source BFS outwards to compute continuous network proximity
   const maxBuffer = 55;
-  runBfsDistanceField(queue, dist, W, H, maxBuffer, (nx, ny) => !!surfWaterMask[ny]![nx]);
+  computeGridDistanceField(queue, dist, W, H, maxBuffer, (nx, ny) => !!surfWaterMask[ny]![nx]);
 
   // Base continental radius buffer: 28 tiles around network (bridges 50-60 tile inter-city gaps cleanly)
   const baseBuffer = 28;
@@ -465,7 +440,7 @@ function generateGraphEnvelopeLandmass(
   // 2. Seal Interior Holes: Flood-fill outer ocean from all 4 borders
   // Any water cell NOT reachable from the outer border ocean is an interior depression: convert to grass!
   const visitedOcean: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
-  const oceanQueue: { x: number; y: number }[] = [];
+  const oceanQueue: GridPoint[] = [];
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -478,23 +453,7 @@ function generateGraphEnvelopeLandmass(
     }
   }
 
-  let oHead = 0;
-  while (oHead < oceanQueue.length) {
-    const curr = oceanQueue[oHead++]!;
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = curr.x + dx!;
-      const ny = curr.y + dy!;
-      if (
-        nx >= 0 && nx < W &&
-        ny >= 0 && ny < H &&
-        !visitedOcean[ny]![nx] &&
-        matrix[ny]![nx] === 'water'
-      ) {
-        visitedOcean[ny]![nx] = true;
-        oceanQueue.push({ x: nx, y: ny });
-      }
-    }
-  }
+  floodFillGrid(oceanQueue, visitedOcean, W, H, (nx, ny) => matrix[ny]![nx] === 'water');
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -524,10 +483,18 @@ export function sculptContinentFromGraph(
   // Guarantee all nodes remain on solid land with comfortable buffer
   for (const node of embedded.nodes) {
     const pad = 4;
-    const isPort = (node.hasPort || node.role === 'port_city');
+    const isPort = node.hasPort || node.role === 'port_city';
     const padSouth = isPort ? 0 : pad;
-    for (let y = Math.max(2, node.gridY - pad); y < Math.min(H - 2, node.gridY + node.height + padSouth); y++) {
-      for (let x = Math.max(2, node.gridX - pad); x < Math.min(W - 2, node.gridX + node.width + pad); x++) {
+    for (
+      let y = Math.max(2, node.gridY - pad);
+      y < Math.min(H - 2, node.gridY + node.height + padSouth);
+      y++
+    ) {
+      for (
+        let x = Math.max(2, node.gridX - pad);
+        x < Math.min(W - 2, node.gridX + node.width + pad);
+        x++
+      ) {
         rawMatrix[y]![x] = 'grass';
       }
     }
@@ -570,16 +537,21 @@ export function sculptContinentFromGraph(
   }
 
   // 3. Continuous Beach Buffer
-  const variableBeach = options?.variableBeach ?? (Math.min(W, H) >= 80);
+  const variableBeach = options?.variableBeach ?? Math.min(W, H) >= 80;
   distributePerimeterBeach(rawMatrix, beachWidth, { variableBeach, seed });
 
   // 4. Remove orphan tiles < 4 cells, allow multi-island/bay geography
   removeOrphanTiles(rawMatrix, 4, false);
 
   // 4b. Generate Maritime Archipelago (Pillar 1)
-  const withArchipelago = options?.withArchipelago ?? (Math.min(W, H) >= 200);
+  const withArchipelago = options?.withArchipelago ?? Math.min(W, H) >= 200;
   const archipelagoIslands = withArchipelago
-    ? generateArchipelagoIslands(rawMatrix, { width: W, height: H, seed, count: options?.islandCount ?? 4 })
+    ? generateArchipelagoIslands(rawMatrix, {
+        width: W,
+        height: H,
+        seed,
+        count: options?.islandCount ?? 4
+      })
     : [];
 
   // 5. Inland Freshwater Lakes in open spaces
@@ -606,8 +578,16 @@ export function sculptContinentFromGraph(
   // Re-ensure non-surf corridors and nodes are transitable grass (coastal ports preserve beaches)
   for (const node of embedded.nodes) {
     if (node.role === 'port_city' || node.hasPort) continue;
-    for (let y = Math.max(1, node.gridY - 2); y < Math.min(H - 1, node.gridY + node.height + 2); y++) {
-      for (let x = Math.max(1, node.gridX - 2); x < Math.min(W - 1, node.gridX + node.width + 2); x++) {
+    for (
+      let y = Math.max(1, node.gridY - 2);
+      y < Math.min(H - 1, node.gridY + node.height + 2);
+      y++
+    ) {
+      for (
+        let x = Math.max(1, node.gridX - 2);
+        x < Math.min(W - 1, node.gridX + node.width + 2);
+        x++
+      ) {
         if (sanitizedWaterMatrix[y]![x] !== 'water_deep') {
           sanitizedWaterMatrix[y]![x] = 'grass';
         }
@@ -619,7 +599,10 @@ export function sculptContinentFromGraph(
     if (corridor.kind === 'surf_route' || corridor.kind === 'wormhole_tunnel') continue;
     for (const cell of corridor.pathCells) {
       if (cell.x >= 1 && cell.x < W - 1 && cell.y >= 1 && cell.y < H - 1) {
-        if (sanitizedWaterMatrix[cell.y]![cell.x] === 'water' || sanitizedWaterMatrix[cell.y]![cell.x] === 'water_deep') {
+        if (
+          sanitizedWaterMatrix[cell.y]![cell.x] === 'water' ||
+          sanitizedWaterMatrix[cell.y]![cell.x] === 'water_deep'
+        ) {
           sanitizedWaterMatrix[cell.y]![cell.x] = 'grass';
         }
       }
@@ -664,20 +647,17 @@ export function sculptContinentFromGraph(
     }
   }
 
-  const continentalMountains = generateContinentalMountains(
-    sanitizedWaterMatrix,
-    {
-      ...options,
-      width: W,
-      height: H,
-      seed,
-      macroBiomeGrid: macroBiomes.biomeGrid,
-      settlementExclusionZones,
-      leaguePlateauZone,
-      caveLocations,
-      withStairs: options?.withStairs ?? true
-    }
-  );
+  const continentalMountains = generateContinentalMountains(sanitizedWaterMatrix, {
+    ...options,
+    width: W,
+    height: H,
+    seed,
+    macroBiomeGrid: macroBiomes.biomeGrid,
+    settlementExclusionZones,
+    leaguePlateauZone,
+    caveLocations,
+    withStairs: options?.withStairs ?? true
+  });
   const { sanitizedHeightmap, geologicalClusters } = continentalMountains;
   let { placedStairs } = continentalMountains;
 
@@ -685,18 +665,14 @@ export function sculptContinentFromGraph(
   const shouldDrainRiver = options?.withRiver ?? (W >= 128 && H >= 128);
   let riverDrainage: ProceduralRiverDrainageResult | undefined;
   if (shouldDrainRiver) {
-    riverDrainage = generateProceduralRiverDrainage(
-      sanitizedWaterMatrix,
-      sanitizedHeightmap,
-      {
-        seed,
-        placedStairs,
-        settlementExclusionZones: [
-          ...settlementExclusionZones,
-          ...(leaguePlateauZone ? [leaguePlateauZone] : [])
-        ]
-      }
-    );
+    riverDrainage = generateProceduralRiverDrainage(sanitizedWaterMatrix, sanitizedHeightmap, {
+      seed,
+      placedStairs,
+      settlementExclusionZones: [
+        ...settlementExclusionZones,
+        ...(leaguePlateauZone ? [leaguePlateauZone] : [])
+      ]
+    });
     if (riverDrainage.riverCarved) {
       const unStairsResolved = resolveMountainMapGrid(sanitizedHeightmap, {
         palette: options?.mountainPalette ?? 'brown',

@@ -44,7 +44,8 @@ function reserveGatehouseBuilding(
   poi: POINode,
   reserveArea: AreaReservationFn
 ): void {
-  const isHoriz = poi.facing === 'east' || poi.facing === 'west' || b.prefabFile.includes('horizontal');
+  const isHoriz =
+    poi.facing === 'east' || poi.facing === 'west' || b.prefabFile.includes('horizontal');
   if (isHoriz) {
     reserveArea(b.x, b.y, b.width, b.height - 2);
   } else {
@@ -54,13 +55,15 @@ function reserveGatehouseBuilding(
   }
 }
 
-function reserveLeagueBuilding(
-  b: SettlementBuilding,
-  reserveArea: AreaReservationFn
-): void {
+function reserveLeagueBuilding(b: SettlementBuilding, reserveArea: AreaReservationFn): void {
   reserveArea(b.x, b.y, b.width + 1, CANVAS_RENDERER.LEAGUE_RESERVE_TOP_ROWS);
   reserveArea(b.x, b.y + CANVAS_RENDERER.LEAGUE_RESERVE_BOTTOM_OFFSET_Y, 5, 2);
-  reserveArea(b.x + CANVAS_RENDERER.LEAGUE_RESERVE_RIGHT_WING_OFFSET_X, b.y + CANVAS_RENDERER.LEAGUE_RESERVE_BOTTOM_OFFSET_Y, 5, 2);
+  reserveArea(
+    b.x + CANVAS_RENDERER.LEAGUE_RESERVE_RIGHT_WING_OFFSET_X,
+    b.y + CANVAS_RENDERER.LEAGUE_RESERVE_BOTTOM_OFFSET_Y,
+    5,
+    2
+  );
 }
 
 function reservePortDockBuilding(
@@ -100,7 +103,12 @@ function reservePortDockBuilding(
     reserveIfGround(gx - 3, gy - 2, 3, 2);
     reserveIfGround(gx - 3, gy + 4, 3, 2);
   } else if (facing === 'north') {
-    reserveIfGround(gx + CANVAS_RENDERER.PORT_DOCK_RESERVE_OFFSET_X, gy + poi.footprint.height, 3, 2);
+    reserveIfGround(
+      gx + CANVAS_RENDERER.PORT_DOCK_RESERVE_OFFSET_X,
+      gy + poi.footprint.height,
+      3,
+      2
+    );
     reserveIfGround(gx - 3, gy + poi.footprint.height, 3, 2);
   }
 }
@@ -161,7 +169,8 @@ function renderTallGrassLayer(
   for (let r = 0; r < H; r++) {
     for (let c = 0; c < W; c++) {
       if (buildingFootprintMask[r]?.[c]) continue;
-      if (continent.terrainMatrix[r]?.[c] !== 'grass' || (continent.heightmap[r]?.[c] ?? 0) !== 0) continue;
+      if (continent.terrainMatrix[r]?.[c] !== 'grass' || (continent.heightmap[r]?.[c] ?? 0) !== 0)
+        continue;
       if (wilderness.tallGrassGrid[r]?.[c]) {
         addBlit('poke_tall_grass.png', c * CANVAS_TILE_SIZE, r * CANVAS_TILE_SIZE);
       }

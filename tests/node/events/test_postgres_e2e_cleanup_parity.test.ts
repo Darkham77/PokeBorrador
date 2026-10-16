@@ -7,7 +7,7 @@
  * and PostgreSQL, preventing state leakage and unexpected modal triggers (e.g. MoveLearning).
  */
 
-import { it } from 'vitest';
+import { it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { describeWithDatabase } from '../../dbTestHelper.ts';
 
@@ -34,7 +34,8 @@ describeWithDatabase('E2E Pre-test Cleanup Parity', (engine, getDb) => {
         await sql`INSERT INTO competition_entries (event_id, category_id, player_id, player_name, player_email, pokemon_uid, data) VALUES ('torneo_pesca', 'ivs', ${testUserId}, ${testUsername}, ${userEmail}, 'uid-test-1', ${sql.json({ score: 100 })}) ON CONFLICT (event_id, category_id, player_id) DO NOTHING`;
 
         // Verify seeded state exists
-        const [saveBefore] = await sql`SELECT user_id FROM game_saves WHERE user_id = ${testUserId}`;
+        const [saveBefore] =
+          await sql`SELECT user_id FROM game_saves WHERE user_id = ${testUserId}`;
         assert.ok(saveBefore, 'Seeded game_saves must exist prior to cleanup');
 
         // 2. Execute simulated base_simulation cleanup routine for PostgreSQL
@@ -45,10 +46,19 @@ describeWithDatabase('E2E Pre-test Cleanup Parity', (engine, getDb) => {
 
         // 3. Verify that game_saves is now cleanly wiped
         const [saveAfter] = await sql`SELECT user_id FROM game_saves WHERE user_id = ${testUserId}`;
-        assert.strictEqual(saveAfter, undefined, 'game_saves must be completely wiped for test user to prevent state leakage');
+        assert.strictEqual(
+          saveAfter,
+          undefined,
+          'game_saves must be completely wiped for test user to prevent state leakage'
+        );
 
-        const [entryAfter] = await sql`SELECT id FROM competition_entries WHERE player_name = ${testUsername}`;
-        assert.strictEqual(entryAfter, undefined, 'competition_entries must be wiped for test user');
+        const [entryAfter] =
+          await sql`SELECT id FROM competition_entries WHERE player_name = ${testUsername}`;
+        assert.strictEqual(
+          entryAfter,
+          undefined,
+          'competition_entries must be wiped for test user'
+        );
       } finally {
         await sql.end();
       }

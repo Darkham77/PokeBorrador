@@ -18,10 +18,14 @@ import './showdownWeatherInjection.ts';
  * updating reactive battle state and triggering logs/UI.
  * Delegates handling to sub-modules by event category.
  */
-export async function parseShowdownLogLine(store: BattleContext, line: string, turnLogs?: string[]) {
+export async function parseShowdownLogLine(
+  store: BattleContext,
+  line: string,
+  turnLogs?: string[]
+) {
   if (!line || !line.startsWith('|')) return;
 
-  const parts = line.split('|').map(p => p.trim());
+  const parts = line.split('|').map((p) => p.trim());
   const type = parts[1];
 
   const battle = store.activeBattle.value;
@@ -42,21 +46,33 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
 
   const getSide = (rawId: string): BattleSide | null => parseBattleSide(rawId);
   const getPoke = (rawId: string): Pokemon | null =>
-    determineCombatantFromLog(rawId, line, store.activeBattle.value, parseBattleSide(rawId) === 'player' ? p : e);
+    determineCombatantFromLog(
+      rawId,
+      line,
+      store.activeBattle.value,
+      parseBattleSide(rawId) === 'player' ? p : e
+    );
 
   const ctx: SBCtx = { store, type: type ?? '', parts, line, p, e, turnLogs, getSide, getPoke };
 
   try {
     const handled =
-      await handleCoreEvents(ctx) ||
+      (await handleCoreEvents(ctx)) ||
       handleStageEvents(ctx) ||
-      await handleFieldEvents(ctx) ||
-      await handleMiscEvents(ctx);
+      (await handleFieldEvents(ctx)) ||
+      (await handleMiscEvents(ctx));
 
     if (!handled) {
-      logger.debug('ShowdownBridge', `Línea de log de Showdown sin parseador visual específico: ${line}`);
+      logger.debug(
+        'ShowdownBridge',
+        `Línea de log de Showdown sin parseador visual específico: ${line}`
+      );
     }
   } catch (error) {
-    logger.error('ShowdownBridge', `Error al parsear línea de log: ${line}`, (error as Error).message);
+    logger.error(
+      'ShowdownBridge',
+      `Error al parsear línea de log: ${line}`,
+      (error as Error).message
+    );
   }
 }

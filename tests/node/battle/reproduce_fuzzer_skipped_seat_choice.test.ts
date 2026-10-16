@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { Battle } from '@pkmn/sim';
 import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
@@ -89,10 +89,14 @@ describe('Showdown Skipped Seat Choice - Reproduction Test', () => {
       }
     );
 
-    const p2Seat = seats.find(s => s.id === 'p2');
+    const p2Seat = seats.find((s) => s.id === 'p2');
     assert.ok(p2Seat, 'P2 seat must exist');
     assert.strictEqual(p2Seat.skip, true);
-    assert.strictEqual(resolveChoiceCalledForP2, false, 'resolveChoice must NOT be called for skipped seat');
+    assert.strictEqual(
+      resolveChoiceCalledForP2,
+      false,
+      'resolveChoice must NOT be called for skipped seat'
+    );
     assert.strictEqual(p2Seat.choice, 'pass');
   });
 });

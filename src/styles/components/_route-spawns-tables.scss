@@ -1,5 +1,5 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .spawns-report-scroll {
   display: flex;
@@ -258,7 +258,8 @@
   font-family: var(--font-pixel);
   font-size: var(--font-8);
 
-  &.visitor-text, &.exclusive-text {
+  &.visitor-text,
+  &.exclusive-text {
     background: Rgb(255 255 255 / 10%);
     color: var(--white);
   }
@@ -329,7 +330,7 @@
 
   .fill {
     height: 100%;
-    
+
     &.base-fill {
       border-radius: $radius-xs-alt 0 0 $radius-xs-alt;
       background: var(--blue-500, #3a86ff); // Azul base para probabilidad estándar no alterada

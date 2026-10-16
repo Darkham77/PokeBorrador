@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { gsap } from 'gsap'
+import { ref, onMounted } from 'vue';
+import { gsap } from 'gsap';
 
-const _AUTH_MODES = ['login', 'signup'] as const
-type AuthMode = typeof _AUTH_MODES[number]
+const _AUTH_MODES = ['login', 'signup'] as const;
+type AuthMode = (typeof _AUTH_MODES)[number];
 
-const _SERVER_MODES = ['online', 'local'] as const
-type ServerMode = typeof _SERVER_MODES[number]
+const _SERVER_MODES = ['online', 'local'] as const;
+type ServerMode = (typeof _SERVER_MODES)[number];
 
-const authMode = ref<AuthMode>('login')
-const serverMode = ref<ServerMode>('online')
-const selectedServer = ref('Poké Vicio Oficial (Global)')
-const email = ref('')
-const password = ref('')
-const logoRef = ref<HTMLElement | null>(null)
+const authMode = ref<AuthMode>('login');
+const serverMode = ref<ServerMode>('online');
+const selectedServer = ref('Poké Vicio Oficial (Global)');
+const email = ref('');
+const password = ref('');
+const logoRef = ref<HTMLElement | null>(null);
 const LOGO_BOB_Y_OFFSET = -6 as const;
 
 onMounted(() => {
@@ -24,16 +24,16 @@ onMounted(() => {
       repeat: -1,
       yoyo: true,
       ease: 'sine.inOut'
-    })
+    });
   }
-})
+});
 
 function switchAuth(mode: AuthMode) {
-  authMode.value = mode
+  authMode.value = mode;
 }
 
 function switchServer(mode: ServerMode) {
-  serverMode.value = mode
+  serverMode.value = mode;
 }
 </script>
 
@@ -46,29 +46,19 @@ function switchServer(mode: ServerMode) {
 
     <div class="login-container">
       <!-- LOGO VICIO CON GSAP FLOTANTE -->
-      <div
-        ref="logoRef"
-        class="login-logo"
-      >
+      <div ref="logoRef" class="login-logo">
         <img
           src="/assets/fondo/logo 1.webp"
           alt="Poké Vicio"
-          @error="($event.target as HTMLElement).style.display='none'"
-        >
-        <div class="logo-text-fallback">
-          POKÉ VICIO
-        </div>
+          @error="($event.target as HTMLElement).style.display = 'none'"
+        />
+        <div class="logo-text-fallback">POKÉ VICIO</div>
       </div>
 
       <!-- CAJA DE LOGIN CON MARCO CANÓNICO GBA -->
       <div class="pv-panel-wrap has-cast-shadow">
-        <div
-          class="pv-frame-panel pv-panel-surface"
-          style="padding: 44px 26px 26px;"
-        >
-          <div class="auth-sub">
-            Te reto a dejar de jugarlo
-          </div>
+        <div class="pv-frame-panel pv-panel-surface" style="padding: 44px 26px 26px">
+          <div class="auth-sub">Te reto a dejar de jugarlo</div>
 
           <!-- TABS INICIAR SESIÓN / REGISTRO -->
           <div class="pv-tab-row">
@@ -93,9 +83,7 @@ function switchServer(mode: ServerMode) {
           </div>
 
           <!-- SELECTOR SERVIDOR MODO -->
-          <div class="server-label">
-            SERVIDOR
-          </div>
+          <div class="server-label">SERVIDOR</div>
           <div class="pv-server-row">
             <button
               v-gsap-hover="'button'"
@@ -118,22 +106,16 @@ function switchServer(mode: ServerMode) {
           </div>
 
           <!-- DROPDOWN SELECCIONAR SERVIDOR -->
-          <div style="margin-bottom: 12px;">
+          <div style="margin-bottom: 12px">
             <div class="server-meta-row">
               <span>SELECCIONAR SERVIDOR</span>
               <span class="server-status-red">
                 <span>Inalcanzable</span>
-                <span
-                  class="emoji"
-                  style="font-size: var(--font-11);"
-                >📡</span>
+                <span class="emoji" style="font-size: var(--font-11)">📡</span>
               </span>
             </div>
             <div class="pv-frame-control pv-input-wrap">
-              <select
-                v-model="selectedServer"
-                class="pv-input pv-select"
-              >
+              <select v-model="selectedServer" class="pv-input pv-select">
                 <option>Poké Vicio Oficial (Global)</option>
                 <option>Servidor Franco (Dev)</option>
                 <option>Servidor Local (Offline)</option>
@@ -149,7 +131,7 @@ function switchServer(mode: ServerMode) {
               class="pv-input"
               placeholder="Email"
               autocomplete="email"
-            >
+            />
           </div>
 
           <!-- INPUT CONTRASEÑA -->
@@ -160,7 +142,7 @@ function switchServer(mode: ServerMode) {
               class="pv-input"
               placeholder="Contraseña"
               autocomplete="current-password"
-            >
+            />
           </div>
 
           <!-- BOTÓN ENTRAR -->
@@ -175,45 +157,16 @@ function switchServer(mode: ServerMode) {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <circle
-                cx="8"
-                cy="8"
-                r="7"
-                stroke="#121214"
-                stroke-width="2"
-                fill="#ef4444"
-              />
-              <path
-                d="M1 8H15V15H1V8Z"
-                fill="#f4f4f5"
-              />
-              <line
-                x1="1"
-                y1="8"
-                x2="15"
-                y2="8"
-                stroke="#121214"
-                stroke-width="2"
-              />
-              <circle
-                cx="8"
-                cy="8"
-                r="3"
-                fill="#121214"
-              />
-              <circle
-                cx="8"
-                cy="8"
-                r="1.5"
-                fill="#f4f4f5"
-              />
+              <circle cx="8" cy="8" r="7" stroke="#121214" stroke-width="2" fill="#ef4444" />
+              <path d="M1 8H15V15H1V8Z" fill="#f4f4f5" />
+              <line x1="1" y1="8" x2="15" y2="8" stroke="#121214" stroke-width="2" />
+              <circle cx="8" cy="8" r="3" fill="#121214" />
+              <circle cx="8" cy="8" r="1.5" fill="#f4f4f5" />
             </svg>
             <span class="text-outline">{{ authMode === 'signup' ? 'REGISTRARSE' : 'ENTRAR' }}</span>
           </button>
 
-          <div class="auth-version">
-            POKÉ VICIO ENGINE v0.5.0 — GBA THEME 3PX
-          </div>
+          <div class="auth-version">POKÉ VICIO ENGINE v0.5.0 — GBA THEME 3PX</div>
         </div>
       </div>
     </div>
@@ -221,19 +174,15 @@ function switchServer(mode: ServerMode) {
     <!-- PANEL DE SHOWCASE DE BOTONES UNIFICADOS -->
     <div
       class="pv-panel-wrap has-cast-shadow"
-      style="max-width: 820px; width: 100%; margin: 20px auto 0;"
+      style="max-width: 820px; width: 100%; margin: 20px auto 0"
     >
-      <div
-        class="pv-frame-panel pv-panel-surface"
-        style="padding: 20px 24px;"
-      >
+      <div class="pv-frame-panel pv-panel-surface" style="padding: 20px 24px">
         <h3 class="showcase-title">
-          <span class="emoji">🔘</span> <span>SHOWCASE DE BOTONES PARAMETRIZABLES (7 VARIANTES):</span>
+          <span class="emoji">🔘</span>
+          <span>SHOWCASE DE BOTONES PARAMETRIZABLES (7 VARIANTES):</span>
         </h3>
 
-        <div class="sub-label">
-          1. Variantes de Color Semánticas:
-        </div>
+        <div class="sub-label">1. Variantes de Color Semánticas:</div>
         <div class="pill-cluster mb-16">
           <button
             v-gsap-hover="'button'"
@@ -286,9 +235,7 @@ function switchServer(mode: ServerMode) {
           </button>
         </div>
 
-        <div class="sub-label">
-          2. Escalas de Tamaño Parametrizables (XS, SM, MD, LG):
-        </div>
+        <div class="sub-label">2. Escalas de Tamaño Parametrizables (XS, SM, MD, LG):</div>
         <div class="pill-cluster">
           <button
             v-gsap-hover="'button'"
@@ -318,11 +265,7 @@ function switchServer(mode: ServerMode) {
           >
             LG (Batalla / Iniciar)
           </button>
-          <button
-            type="button"
-            class="pv-frame-btn pv-btn pv-btn-primary pv-btn-sm"
-            disabled
-          >
+          <button type="button" class="pv-frame-btn pv-btn pv-btn-primary pv-btn-sm" disabled>
             Disabled State
           </button>
         </div>

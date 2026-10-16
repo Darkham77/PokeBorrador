@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { useModalStore } from '@/stores/modals'
-import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
+import { computed } from 'vue';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useModalStore } from '@/stores/modals';
+import ProfileXpCard from '@/components/profile/ProfileXpCard.vue';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
-const classStore = usePlayerClassStore()
-const modalStore = useModalStore()
+const classStore = usePlayerClassStore();
+const modalStore = useModalStore();
 
-const currentClass = computed(() => classStore.currentClassDef)
-const classLevel = computed(() => classStore.classLevel)
+const currentClass = computed(() => classStore.currentClassDef);
+const classLevel = computed(() => classStore.classLevel);
 
 const openClassSelection = () => {
-  modalStore.open('ClassSelection')
-}
+  modalStore.open('ClassSelection');
+};
 </script>
 
 <template>
@@ -27,10 +27,18 @@ const openClassSelection = () => {
         <span class="emoji card-icon">{{ currentClass?.icon || '🎓' }}</span>
         <div class="title-text-group">
           <h3 class="card-title">
-            {{ currentClass ? `ESPECIALIZACIÓN: ${currentClass.name.toUpperCase()}` : 'MAESTRÍA DE CLASE' }}
+            {{
+              currentClass
+                ? `ESPECIALIZACIÓN: ${currentClass.name.toUpperCase()}`
+                : 'MAESTRÍA DE CLASE'
+            }}
           </h3>
           <span class="class-sub">
-            {{ currentClass ? `Rango Nivel ${classLevel} · Progresión y Desbloqueos de Rol` : 'Elige tu rol para desbloquear ventajas exclusivas' }}
+            {{
+              currentClass
+                ? `Rango Nivel ${classLevel} · Progresión y Desbloqueos de Rol`
+                : 'Elige tu rol para desbloquear ventajas exclusivas'
+            }}
           </span>
         </div>
       </div>
@@ -41,15 +49,9 @@ const openClassSelection = () => {
     </div>
 
     <!-- Class Info Body (when class is chosen) -->
-    <div
-      v-if="currentClass"
-      class="class-xp-cards-layout"
-    >
+    <div v-if="currentClass" class="class-xp-cards-layout">
       <!-- 1. Nivel y Experiencia Cuenta -->
-      <ProfileXpCard
-        title="Nivel y Experiencia Cuenta"
-        :hide-unlocks="true"
-      />
+      <ProfileXpCard title="Nivel y Experiencia Cuenta" :hide-unlocks="true" />
 
       <!-- 2. Nivel y Experiencia Clase & Próximos Desbloqueos -->
       <ProfileXpCard
@@ -78,13 +80,12 @@ const openClassSelection = () => {
       <span class="emoji no-class-icon">🎓</span>
       <div class="no-class-info">
         <span class="no-class-title">¡Elige tu Especialización de Entrenador!</span>
-        <span class="no-class-sub">Selecciona entre Entrenador, Criador, Cazabichos o Equipo Rocket para desbloquear ventajas únicas.</span>
+        <span class="no-class-sub"
+          >Selecciona entre Entrenador, Criador, Cazabichos o Equipo Rocket para desbloquear
+          ventajas únicas.</span
+        >
       </div>
-      <button
-        id="home-class-missions-widget-btn-elegir-clase"
-        v-gsap-hover
-        class="no-class-btn"
-      >
+      <button id="home-class-missions-widget-btn-elegir-clase" v-gsap-hover class="no-class-btn">
         ELEGIR CLASE
       </button>
     </div>
@@ -92,7 +93,7 @@ const openClassSelection = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .home-class-missions-widget {
   @include home-section-card;

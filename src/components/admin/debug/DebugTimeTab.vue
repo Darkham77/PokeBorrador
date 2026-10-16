@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
  * src/components/admin/debug/DebugTimeTab.vue
- * 
+ *
  * Simple wrapper for TimeDebugControls in the Admin Panel.
  */
-import TimeDebugControls from './shared/TimeDebugControls.vue'
+import TimeDebugControls from './shared/TimeDebugControls.vue';
 </script>
 
 <template>
@@ -14,5 +14,5 @@ import TimeDebugControls from './shared/TimeDebugControls.vue'
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/debug";
+@use '@/styles/components/debug';
 </style>

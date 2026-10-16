@@ -29,7 +29,7 @@ export const SHADOW_EDITOR_VIEWS = ['Front', 'Back'] as const;
 export type ShadowEditorView = (typeof SHADOW_EDITOR_VIEWS)[number];
 
 function resolveAnimPath(
-  pGroup: Record<string, readonly number[]>,
+  pGroup: Record<string, readonly number[]>, // open-record: Asset sprite file paths catalog
   view: ShadowEditorView,
   shinyFolderSuffix: string,
   numVal: number,
@@ -44,7 +44,7 @@ function resolveAnimPath(
 }
 
 function buildPokemonEntities(
-  pGroup: Record<string, readonly number[]>,
+  pGroup: Record<string, readonly number[]>, // open-record: Asset sprite file paths catalog
   isShiny: boolean,
   getPrecalculatedFeet: FeetLookupFn
 ): EditorEntity[] {
@@ -107,7 +107,8 @@ function buildPokemonEntities(
     // Check Female Variant
     const femaleFrontSubKey = `animated/Front${shinyFolderSuffix}/${numVal}i_f`;
     const baseFemaleFrontSubKey = `animated/Front/${numVal}i_f`;
-    const hasFemaleFrontAnim = Object.hasOwn(pGroup, femaleFrontSubKey) || Object.hasOwn(pGroup, baseFemaleFrontSubKey);
+    const hasFemaleFrontAnim =
+      Object.hasOwn(pGroup, femaleFrontSubKey) || Object.hasOwn(pGroup, baseFemaleFrontSubKey);
 
     if (hasFemaleFrontAnim) {
       const femaleFrontPath = `/assets/sprites/pokemon/${femaleFrontSubKey}.webp`; // asset-url-ok: dev sprite catalog key
@@ -130,7 +131,8 @@ function buildPokemonEntities(
 
       const femaleBackSubKey = `animated/Back${shinyFolderSuffix}/${numVal}i_f`;
       const baseFemaleBackSubKey = `animated/Back/${numVal}i_f`;
-      const hasFemaleBackAnim = Object.hasOwn(pGroup, femaleBackSubKey) || Object.hasOwn(pGroup, baseFemaleBackSubKey);
+      const hasFemaleBackAnim =
+        Object.hasOwn(pGroup, femaleBackSubKey) || Object.hasOwn(pGroup, baseFemaleBackSubKey);
 
       if (hasFemaleBackAnim) {
         const femaleBackPath = `/assets/sprites/pokemon/${femaleBackSubKey}.webp`; // asset-url-ok: dev sprite catalog key
@@ -158,7 +160,7 @@ function buildPokemonEntities(
 }
 
 function buildNpcEntities(
-  nGroup: Record<string, readonly number[]>,
+  nGroup: Record<string, readonly number[]>, // open-record: Asset sprite file paths catalog
   getPrecalculatedFeet: FeetLookupFn
 ): EditorEntity[] {
   const list: EditorEntity[] = [];
@@ -188,7 +190,7 @@ function buildNpcEntities(
 }
 
 function buildTrainerEntities(
-  tGroup: Record<string, readonly number[]>,
+  tGroup: Record<string, readonly number[]>, // open-record: Asset sprite file paths catalog
   getPrecalculatedFeet: FeetLookupFn
 ): EditorEntity[] {
   const list: EditorEntity[] = [];

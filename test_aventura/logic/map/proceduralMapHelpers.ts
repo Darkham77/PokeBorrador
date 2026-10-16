@@ -31,10 +31,7 @@ import {
   ROUTE_TURN_NORTH_RATIO,
   ROUTE_TURN_SOUTH_RATIO
 } from '../../config/proceduralMapConfig.ts';
-import {
-  stampStructureInternal,
-  registerStructureEntities
-} from './structureStamper.ts';
+import { stampStructureInternal, registerStructureEntities } from './structureStamper.ts';
 
 /**
  * Resolves map dimensional bounds and generation flags
@@ -63,7 +60,11 @@ export function resolveMapSettings(options: ProceduralMapOptions): {
     mapType = options.type;
   } else if (options.withTown === false) {
     mapType = 'route';
-  } else if (theme === 'firered' && width >= DEFAULT_TOWN_MIN_DIMENSION && height >= DEFAULT_TOWN_MIN_DIMENSION) {
+  } else if (
+    theme === 'firered' &&
+    width >= DEFAULT_TOWN_MIN_DIMENSION &&
+    height >= DEFAULT_TOWN_MIN_DIMENSION
+  ) {
     mapType = 'town';
   }
 
@@ -74,7 +75,9 @@ export function resolveMapSettings(options: ProceduralMapOptions): {
 
   const waterPercent = withWater ? (options.waterPercent ?? DEFAULT_WATER_PERCENT) : 0;
   const mountainPercent = withHills ? (options.mountainPercent ?? DEFAULT_MOUNTAIN_PERCENT) : 0;
-  const forestPercent = withVegetation ? (options.forestPercent ?? DEFAULT_PROCEDURAL_FOREST_PERCENT) : 0;
+  const forestPercent = withVegetation
+    ? (options.forestPercent ?? DEFAULT_PROCEDURAL_FOREST_PERCENT)
+    : 0;
 
   return {
     width,
@@ -164,7 +167,17 @@ export function stampCustomStructures(options: {
   warps: MapWarp[];
   spawns: MapSpawn[];
 }): void {
-  const { structures, elevationLayer, collisionGrid, objectLayer, width, height, registry, warps, spawns } = options;
+  const {
+    structures,
+    elevationLayer,
+    collisionGrid,
+    objectLayer,
+    width,
+    height,
+    registry,
+    warps,
+    spawns
+  } = options;
   if (!structures || structures.length === 0) return;
 
   for (const item of structures) {
@@ -195,7 +208,10 @@ export function carveRouteCorridors(
   const pathWidth = Math.min(3, Math.max(2, Math.floor(width / ROUTE_PATH_WIDTH_DIVISOR)));
   const startX = Math.max(
     pathWidth + 3,
-    Math.min(width - pathWidth - 4, Math.floor(width * (ROUTE_START_X_BASE_RATIO + (prng() - 0.5) * ROUTE_START_X_VARIANCE_RATIO)))
+    Math.min(
+      width - pathWidth - 4,
+      Math.floor(width * (ROUTE_START_X_BASE_RATIO + (prng() - 0.5) * ROUTE_START_X_VARIANCE_RATIO))
+    )
   );
   const endX = Math.max(
     pathWidth + 3,
@@ -222,7 +238,12 @@ export function carveRouteCorridors(
   };
 
   // 1. South vertical leg: from bottom (height - 1) up to turnY1
-  stampRect(startX - Math.floor(pathWidth / 2), turnY1, startX + Math.ceil(pathWidth / 2) - 1, height - 1);
+  stampRect(
+    startX - Math.floor(pathWidth / 2),
+    turnY1,
+    startX + Math.ceil(pathWidth / 2) - 1,
+    height - 1
+  );
 
   // 2. Horizontal connector between turnY1 and middle leg
   stampRect(

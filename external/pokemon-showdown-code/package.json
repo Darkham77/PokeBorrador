@@ -1,8 +1,18 @@
 {
   "name": "ps",
   "private": true,
-  "repository": "github:pkmn/ps",
   "license": "MIT",
+  "repository": "github:pkmn/ps",
+  "scripts": {
+    "lint": "subpkg run lint && eslint build import",
+    "fix": "subpkg run fix && eslint --fix build import",
+    "compile": "subpkg run compile",
+    "build": "subpkg run build",
+    "start": "subpkg run start",
+    "test": "subpkg run test",
+    "test:integration": "npm test && npm -C integration test",
+    "postinstall": "subpkg install && npm -C integration install --install-links=false"
+  },
   "dependencies": {
     "@pkmn/eslint-config": "^9.28.0",
     "@types/jest": "^30.0.0",
@@ -18,8 +28,8 @@
     "terser": "^5.48.0",
     "ts-jest": "^29.4.11",
     "tsup": "^8.5.1",
-    "typescript-eslint": "^8.60.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.1"
   },
   "subPackages": [
     "types",
@@ -36,15 +46,5 @@
     "img",
     "view",
     "login"
-  ],
-  "scripts": {
-    "lint": "subpkg run lint && eslint build import",
-    "fix": "subpkg run fix && eslint --fix build import",
-    "compile": "subpkg run compile",
-    "build": "subpkg run build",
-    "start": "subpkg run start",
-    "test": "subpkg run test",
-    "test:integration": "npm test && npm -C integration test",
-    "postinstall": "subpkg install && npm -C integration install --install-links=false"
-  }
+  ]
 }

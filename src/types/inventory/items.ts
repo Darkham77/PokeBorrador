@@ -1,7 +1,20 @@
 import type { PokemonMoveId } from '@/types/pokemon/pokemon';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { ItemId } from '@/data/inventory/items';
-export const ITEM_CATEGORIES = ['pokeballs', 'potions', 'stones', 'combat_held', 'breeding_held', 'raw_material', 'refined_material', 'component', 'machinery', 'tools', 'tms', 'otros'] as const;
+export const ITEM_CATEGORIES = [
+  'pokeballs',
+  'potions',
+  'stones',
+  'combat_held',
+  'breeding_held',
+  'raw_material',
+  'refined_material',
+  'component',
+  'machinery',
+  'tools',
+  'tms',
+  'otros'
+] as const;
 export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
 
 export const BAG_MAIN_TABS = ['productos', 'materiales'] as const;
@@ -19,10 +32,32 @@ export type ItemTier = (typeof ITEM_TIERS)[number];
 export const ITEM_KINDS = ['held', 'usable', 'stone', 'booster'] as const;
 export type ItemKind = (typeof ITEM_KINDS)[number];
 
-export const EVOLUTION_STONE_KINDS = ['fire', 'water', 'thunder', 'leaf', 'moon', 'sun', 'oval'] as const;
+export const EVOLUTION_STONE_KINDS = [
+  'fire',
+  'water',
+  'thunder',
+  'leaf',
+  'moon',
+  'sun',
+  'oval'
+] as const;
 export type EvolutionStoneKind = (typeof EVOLUTION_STONE_KINDS)[number];
 
-export const ITEM_EFFECT_RESULT_TYPES = ['heal', 'status_cure', 'stat_boost', 'revive', 'evolution', 'generic', 'relearner', 'levelup', 'learn_move', 'pp_up', 'ppmax', 'nature_patch', 'ability_pill'] as const;
+export const ITEM_EFFECT_RESULT_TYPES = [
+  'heal',
+  'status_cure',
+  'stat_boost',
+  'revive',
+  'evolution',
+  'generic',
+  'relearner',
+  'levelup',
+  'learn_move',
+  'pp_up',
+  'ppmax',
+  'nature_patch',
+  'ability_pill'
+] as const;
 export type ItemEffectResultType = (typeof ITEM_EFFECT_RESULT_TYPES)[number];
 
 export interface Item {

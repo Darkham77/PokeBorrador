@@ -4,23 +4,32 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, normalizePosixPath , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, normalizePosixPath, createRuleCapabilities } from '@francogp/auditor';
 import { collectFsmFiles } from './_fsmParityParser.ts';
 
 enableCompileCache();
 
 const IMPL_SRC_ROOT = path.resolve(process.cwd(), 'src');
-const IMPL_MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+const IMPL_MANUAL_PATH = path.resolve(
+  process.cwd(),
+  '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md'
+);
 const IMPL_FSM_PATH = path.join(IMPL_SRC_ROOT, 'logic/battle/battleStateMachine.ts');
 const FSM_AUDIT_CHECK_INDEX_TEN_LABEL_TEXT = 'CHECK 10';
 const LOG_PREVIEW_TRUNCATE_LENGTH = 60;
 
 export async function discoverFsmRelatedFiles() {
   const allFiles = collectFsmFiles(IMPL_SRC_ROOT);
-  const relevant: { path: string, content: string }[] = [];
+  const relevant: { path: string; content: string }[] = [];
   for (const file of allFiles) {
     const content = await fs.readFile(file, 'utf-8');
-    if (content.includes('fsm.transition') || content.includes('isSubState') || content.includes('BATTLE_SUBSTATES') || content.includes('BATTLE_STATES') || content.includes('battleStore.fsm')) {
+    if (
+      content.includes('fsm.transition') ||
+      content.includes('isSubState') ||
+      content.includes('BATTLE_SUBSTATES') ||
+      content.includes('BATTLE_STATES') ||
+      content.includes('battleStore.fsm')
+    ) {
       relevant.push({ path: file, content });
     }
   }
@@ -35,9 +44,10 @@ export function parseMermaid(manualCode: string) {
   while ((m = blockRx.exec(manualCode)) !== null) {
     const block = m[1] || '';
     if (!block.includes('stateDiagram-v2')) continue;
-    block.split('\n').forEach(line => {
+    block.split('\n').forEach((line) => {
       const clean = line.trim();
-      if (!clean || clean.startsWith('note') || clean.startsWith('%%') || clean.startsWith('[*]')) return;
+      if (!clean || clean.startsWith('note') || clean.startsWith('%%') || clean.startsWith('[*]'))
+        return;
       const defMatch = clean.match(/state\s+(?:"[^"]*"\s+as\s+)?([A-Za-z0-9_]+)/);
       if (defMatch?.[1]) states.add(defMatch[1]);
       const transMatch = clean.match(/^([A-Za-z0-9_]+)\s+-->\s+([A-Za-z0-9_]+)/);
@@ -64,7 +74,10 @@ export interface FsmConstantsInfo {
 const _FSM_STATE_LEVELS = ['TOP', 'SUB'] as const;
 type FsmStateLevel = (typeof _FSM_STATE_LEVELS)[number];
 
-function resolveFsmBlockTransition(line: string, currentBlock: FsmStateLevel | null): FsmStateLevel | null {
+function resolveFsmBlockTransition(
+  line: string,
+  currentBlock: FsmStateLevel | null
+): FsmStateLevel | null {
   if (line.includes('export const BATTLE_STATES =')) return 'TOP';
   if (line.includes('export const BATTLE_SUBSTATES =')) return 'SUB';
   if (currentBlock && line.includes('} as const;')) return null;
@@ -79,8 +92,9 @@ function checkSuppressionComment(
   invalidSuppressionErrors: string[]
 ): void {
   const sameLineComment = line.includes('fsm-unused-ok') || line.includes('fsm-ignore');
-  const prevLineComment = prevLine && (prevLine.includes('fsm-unused-ok') || prevLine.includes('fsm-ignore'));
-  const commentLine = sameLineComment ? line : (prevLineComment ? prevLine : '');
+  const prevLineComment =
+    prevLine && (prevLine.includes('fsm-unused-ok') || prevLine.includes('fsm-ignore'));
+  const commentLine = sameLineComment ? line : prevLineComment ? prevLine : '';
 
   if (!commentLine) return;
 
@@ -88,7 +102,9 @@ function checkSuppressionComment(
   const reason = match?.[1]?.trim() ?? '';
   const MIN_SUPPRESSION_REASON_LENGTH = 5;
   if (!reason || reason.length < MIN_SUPPRESSION_REASON_LENGTH) {
-    invalidSuppressionErrors.push(`[CHECK 2] Supresión inválida para '${key}': Se requiere un comentario explicando el motivo técnico (ej. // fsm-unused-ok: motivo técnico).`);
+    invalidSuppressionErrors.push(
+      `[CHECK 2] Supresión inválida para '${key}': Se requiere un comentario explicando el motivo técnico (ej. // fsm-unused-ok: motivo técnico).`
+    );
   } else {
     suppressedKeys.add(key);
   }
@@ -194,27 +210,37 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
         'fsm-invalid-suppression': 'Supresión inválida en FSM'
       },
       ruleRemediations: {
-        'fsm-mermaid-missing-in-js': 'Implement Mermaid state in battleStateMachine or update manual diagram',
-        'fsm-unused-constant': 'Remove unused FSM constant or integrate it into battle transition logic',
+        'fsm-mermaid-missing-in-js':
+          'Implement Mermaid state in battleStateMachine or update manual diagram',
+        'fsm-unused-constant':
+          'Remove unused FSM constant or integrate it into battle transition logic',
         'fsm-orphan-substate': 'Connect substate to valid parent states in transition map',
         'fsm-non-atomic-timer': 'Replace raw setTimeout with atomic GSAP tweens or battle timeline',
         'fsm-unawaited-substate': 'Add await to async substate handler calls',
-        'fsm-missing-idempotency-guard': 'Add idempotency guard to prevent re-entrant transition execution',
+        'fsm-missing-idempotency-guard':
+          'Add idempotency guard to prevent re-entrant transition execution',
         'fsm-missing-seat-rule': 'Ensure dynamic seat dispatch handles all active battle seats',
-        'fsm-missing-level-up-cycle': 'Include level-up check in post-battle victory/reward handler',
+        'fsm-missing-level-up-cycle':
+          'Include level-up check in post-battle victory/reward handler',
         'fsm-missing-persistence-mode': 'Map battle mode to corresponding persistence save routine',
-        'fsm-nonexistent-state-reference': 'Fix reference to undefined state key in battleStateMachine',
+        'fsm-nonexistent-state-reference':
+          'Fix reference to undefined state key in battleStateMachine',
         'fsm-invalid-suppression': 'Provide descriptive reason for fsm suppression comment'
       },
       requiredFiles: [IMPL_MANUAL_PATH, IMPL_FSM_PATH],
       coverage: {
-        include: ['src/**/*.{ts,vue}', '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md']
+        include: [
+          'src/**/*.{ts,vue}',
+          '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md'
+        ]
       }
     });
   }
 
   public override async runAudit(): Promise<void> {
-    this.recordScanned('.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+    this.recordScanned(
+      '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md'
+    );
     this.recordScanned('src/logic/battle/battleStateMachine.ts');
 
     let allKeys = new Set<string>();
@@ -235,8 +261,11 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
       for (const f of discovered.allFiles) {
         this.recordScanned(normalizePosixPath(path.relative(this.projectRoot, f)));
       }
-      externalCode = fileData.filter(f => !f.path.includes('battleStateMachine.ts')).map(d => d.content).join('\n\n');
-      allCode = fileData.map(d => d.content).join('\n\n');
+      externalCode = fileData
+        .filter((f) => !f.path.includes('battleStateMachine.ts'))
+        .map((d) => d.content)
+        .join('\n\n');
+      allCode = fileData.map((d) => d.content).join('\n\n');
 
       const parsedMermaid = parseMermaid(manualCode);
       mermaidStates = parsedMermaid.states;
@@ -261,7 +290,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 
     // 1. Mermaid -> JS
     this.runSubAuditorSync('fsm-mermaid-missing-in-js', () => {
-      mermaidStates.forEach(s => {
+      mermaidStates.forEach((s) => {
         if (!allKeys.has(s)) {
           this.addViolation({
             ruleId: 'fsm-mermaid-missing-in-js',
@@ -277,7 +306,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 
     // 2. Uso de Constantes
     this.runSubAuditorSync('fsm-unused-constant', () => {
-      allKeys.forEach(k => {
+      allKeys.forEach((k) => {
         if (suppressedKeys.has(k)) return;
         const usageRx = new RegExp(`(?:\\.|'|")(${k})(?:'|")?`, 'g');
         if (!externalCode.match(usageRx)) {
@@ -295,9 +324,12 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 
     // 3. Subestados (Referencias de transiciones)
     this.runSubAuditorSync('fsm-orphan-substate', () => {
-      substates.forEach(s => {
+      substates.forEach((s) => {
         if (suppressedKeys.has(s)) return;
-        const refRx = new RegExp(`(?:isSubState|fsm\\.transition|emit|SUBSTATES)\\s*\\(\\s*[^)]*${s}|['"]${s}['"]`, 'g');
+        const refRx = new RegExp(
+          `(?:isSubState|fsm\\.transition|emit|SUBSTATES)\\s*\\(\\s*[^)]*${s}|['"]${s}['"]`,
+          'g'
+        );
         if (!externalCode.match(refRx)) {
           this.addViolation({
             ruleId: 'fsm-orphan-substate',
@@ -313,11 +345,15 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 
     // 4. Timers Ciegos
     this.runSubAuditorSync('fsm-non-atomic-timer', () => {
-      fileData.forEach(file => {
+      fileData.forEach((file) => {
         file.content.split('\n').forEach((line, idx) => {
           const t = line.trim();
           if (!t.includes('setTimeout') || t.startsWith('//')) return;
-          const isAtomic = t.includes('await new Promise') || t.startsWith('await') || t.includes('return new Promise') || t.includes('=>');
+          const isAtomic =
+            t.includes('await new Promise') ||
+            t.startsWith('await') ||
+            t.includes('return new Promise') ||
+            t.includes('=>');
           if (!isAtomic) {
             this.addViolation({
               ruleId: 'fsm-non-atomic-timer',
@@ -335,7 +371,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
     // 5. Sincronización Mandatoria (await)
     this.runSubAuditorSync('fsm-unawaited-substate', () => {
       const FSM_CONTEXT_SLICE_CHARS = 300;
-      syncRequired.forEach(sub => {
+      syncRequired.forEach((sub) => {
         const usageRx = new RegExp(`(?:\\.|'|")(${sub})(?:'|")?`, 'g');
         let um: RegExpExecArray | null;
         let found = false;
@@ -363,7 +399,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 
     // 6. Guardas de Idempotencia
     this.runSubAuditorSync('fsm-missing-idempotency-guard', () => {
-      ['isProcessing', 'handleFaint', 'faintedSides'].forEach(g => {
+      ['isProcessing', 'handleFaint', 'faintedSides'].forEach((g) => {
         if (!allCode.includes(g)) {
           this.addViolation({
             ruleId: 'fsm-missing-idempotency-guard',
@@ -379,7 +415,8 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 
     // 7. Regla de Asientos (HUD)
     this.runSubAuditorSync('fsm-missing-seat-rule', () => {
-      const seatRuleRx = /!s\?\.enemy\s*&&\s*!s\?\._initialEnemy|!battleStore\.state\.enemy|battleStore\.state\.enemy\s*===\s*null|!battleStore\.state\?\.enemy|!s\?\.enemy/;
+      const seatRuleRx =
+        /!s\?\.enemy\s*&&\s*!s\?\._initialEnemy|!battleStore\.state\.enemy|battleStore\.state\.enemy\s*===\s*null|!battleStore\.state\?\.enemy|!s\?\.enemy/;
       if (!seatRuleRx.test(allCode)) {
         this.addViolation({
           ruleId: 'fsm-missing-seat-rule',
@@ -394,7 +431,13 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 
     // 8. Ciclo Level Up
     this.runSubAuditorSync('fsm-missing-level-up-cycle', () => {
-      if (!(allCode.includes('levelUpPokemon') && allCode.includes('CHECK_PENDING') && allCode.includes('pendingMoves'))) {
+      if (
+        !(
+          allCode.includes('levelUpPokemon') &&
+          allCode.includes('CHECK_PENDING') &&
+          allCode.includes('pendingMoves')
+        )
+      ) {
         this.addViolation({
           ruleId: 'fsm-missing-level-up-cycle',
           severity: 'error',
@@ -408,7 +451,12 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 
     // 9. Persistencia
     this.runSubAuditorSync('fsm-missing-persistence-mode', () => {
-      if (!(allCode.includes('persistenceMode') && (allCode.includes("'SINGLE'") || allCode.includes('"SINGLE"')))) {
+      if (
+        !(
+          allCode.includes('persistenceMode') &&
+          (allCode.includes("'SINGLE'") || allCode.includes('"SINGLE"'))
+        )
+      ) {
         this.addViolation({
           ruleId: 'fsm-missing-persistence-mode',
           severity: 'error',
@@ -422,7 +470,7 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 
     // 10. Referencias a Estados/Subestados Inexistentes (Código Basura)
     this.runSubAuditorSync('fsm-nonexistent-state-reference', () => {
-      fileData.forEach(file => {
+      fileData.forEach((file) => {
         const lines = file.content.split('\n');
         const relFile = normalizePosixPath(path.relative(process.cwd(), file.path));
         lines.forEach((line, idx) => {
@@ -443,10 +491,16 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
           }
 
           // 10b. Literales de texto en llamadas a FSM
-          const fsmCallMatches = line.matchAll(/(?:transition|isSubState|isState|currentState\.value\s*===\s*|currentState\s*===\s*|state\s*===\s*)\(\s*(?:[^,]+,\s*)?['"]([A-Z0-9_]+)['"]/g);
+          const fsmCallMatches = line.matchAll(
+            /(?:transition|isSubState|isState|currentState\.value\s*===\s*|currentState\s*===\s*|state\s*===\s*)\(\s*(?:[^,]+,\s*)?['"]([A-Z0-9_]+)['"]/g
+          );
           for (const match of fsmCallMatches) {
             const stateName = match[1];
-            if (stateName && !allKeys.has(stateName) && !['SINGLE', 'PLAYER', 'ENEMY', 'ACTIVE'].includes(stateName)) {
+            if (
+              stateName &&
+              !allKeys.has(stateName) &&
+              !['SINGLE', 'PLAYER', 'ENEMY', 'ACTIVE'].includes(stateName)
+            ) {
               this.addViolation({
                 ruleId: 'fsm-nonexistent-state-reference',
                 severity: 'error',
@@ -469,6 +523,10 @@ export class FsmImplementationAuditor extends BaseAuditor<FsmImplementationRuleI
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new FsmImplementationAuditor());
 }

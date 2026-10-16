@@ -17,7 +17,7 @@ export function auditShowdownItemData(itemsPath: string, battleLogicDir: string)
   }
 
   const itemsContent = readFileSync(itemsPath, 'utf-8');
-  const files = getFilesRecursively(battleLogicDir).filter(f => f.endsWith('.ts'));
+  const files = getFilesRecursively(battleLogicDir).filter((f) => f.endsWith('.ts'));
   let aggregatedContent = '';
 
   for (const file of files) {
@@ -25,7 +25,9 @@ export function auditShowdownItemData(itemsPath: string, battleLogicDir: string)
   }
 
   // Extrae dinámicamente IDs de ítems de combate en Showdown
-  const battleItems = Array.from(itemsContent.matchAll(/([a-z0-9]+):\s*\{[^}]*isBerry:\s*true/gi)).map(m => m[1]);
+  const battleItems = Array.from(
+    itemsContent.matchAll(/([a-z0-9]+):\s*\{[^}]*isBerry:\s*true/gi)
+  ).map((m) => m[1]);
 
   for (const itemId of battleItems) {
     if (itemId && !aggregatedContent.includes(itemId.toLowerCase())) {

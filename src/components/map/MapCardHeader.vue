@@ -1,17 +1,14 @@
 <script setup lang="ts">
 defineProps<{
-  name: string
-  desc: string
-  isFastMode?: boolean
-  isPerformanceMode?: boolean
-}>()
+  name: string;
+  desc: string;
+  isFastMode?: boolean;
+  isPerformanceMode?: boolean;
+}>();
 </script>
 
 <template>
-  <div
-    v-if="!(isFastMode ?? isPerformanceMode)"
-    class="location-header"
-  >
+  <div v-if="!(isFastMode ?? isPerformanceMode)" class="location-header">
     <div class="location-name">
       {{ name }}
     </div>
@@ -22,4 +19,3 @@ defineProps<{
 </template>
 
 <style scoped lang="scss" src="./MapCard.styles.scss"></style>
-

@@ -14,9 +14,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-import {
-  CANONICAL_BUILDINGS
-} from '../../logic/map/canonicalAssetsRegistry.ts';
+import { CANONICAL_BUILDINGS } from '../../logic/map/canonicalAssetsRegistry.ts';
 
 const ROOT_DIR = process.cwd();
 
@@ -65,8 +63,14 @@ describe('buildingPrefabsIntegrity', () => {
       }
     }
 
-    expect(unkeyedPurple, `Found ${unkeyedPurple} unkeyed purple (#9933cc) pixels in ${gymGold!.runtimePath}`).toBe(0);
-    expect(unkeyedMagenta, `Found ${unkeyedMagenta} unkeyed magenta (#ff00ff) pixels in ${gymGold!.runtimePath}`).toBe(0);
+    expect(
+      unkeyedPurple,
+      `Found ${unkeyedPurple} unkeyed purple (#9933cc) pixels in ${gymGold!.runtimePath}`
+    ).toBe(0);
+    expect(
+      unkeyedMagenta,
+      `Found ${unkeyedMagenta} unkeyed magenta (#ff00ff) pixels in ${gymGold!.runtimePath}`
+    ).toBe(0);
   });
 
   it('guarantees all registered canonical buildings have valid dimensions and zero unkeyed chroma', async () => {
@@ -102,12 +106,21 @@ describe('buildingPrefabsIntegrity', () => {
         }
       }
 
-      expect(unkeyedChroma, `Building ${b.id} (${b.runtimePath}) has ${unkeyedChroma} unkeyed chroma pixels`).toBe(0);
+      expect(
+        unkeyedChroma,
+        `Building ${b.id} (${b.runtimePath}) has ${unkeyedChroma} unkeyed chroma pixels`
+      ).toBe(0);
     }
   });
 
   it('guarantees freestanding canonical buildings have intact sloping roofs with zero horizontal decapitation', async () => {
-    const slopingRoofBuildings = ['gym_gold', 'poke_condo_block', 'pokecenter', 'pokemart', 'lab_oak'];
+    const slopingRoofBuildings = [
+      'gym_gold',
+      'poke_condo_block',
+      'pokecenter',
+      'pokemart',
+      'lab_oak'
+    ];
     for (const id of slopingRoofBuildings) {
       const b = CANONICAL_BUILDINGS[id];
       expect(b, `Building ${id} must exist in CANONICAL_BUILDINGS`).toBeDefined();
@@ -136,7 +149,10 @@ describe('buildingPrefabsIntegrity', () => {
     expect(fs.existsSync(statuePath), `Statue must be eradicated from ${statuePath}`).toBe(false);
 
     // Verify left-facing street lamp has pristine alpha transparency
-    const lampLeftPath = path.resolve(ROOT_DIR, 'test_aventura/assets/canon/props/poke_street_lamp_left.png');
+    const lampLeftPath = path.resolve(
+      ROOT_DIR,
+      'test_aventura/assets/canon/props/poke_street_lamp_left.png'
+    );
     expect(fs.existsSync(lampLeftPath), `Lamp left must exist at ${lampLeftPath}`).toBe(true);
 
     const { data: lampData, info: lampInfo } = await sharp(lampLeftPath)
@@ -158,10 +174,11 @@ describe('buildingPrefabsIntegrity', () => {
       ROOT_DIR,
       'test_aventura/assets/canon/infrastructure/poke_dock_wood_pier_canonical.png'
     );
-    expect(fs.existsSync(dockPierPath), `Canonical dock pier must exist at ${dockPierPath}`).toBe(true);
+    expect(fs.existsSync(dockPierPath), `Canonical dock pier must exist at ${dockPierPath}`).toBe(
+      true
+    );
     const dockMeta = await sharp(dockPierPath).metadata();
     expect(dockMeta.width).toBe(96);
     expect(dockMeta.height).toBe(128);
   });
 });
-

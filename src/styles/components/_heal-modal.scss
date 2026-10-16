@@ -1,5 +1,5 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/variables" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/variables' as *;
 
 .heal-modal-inner {
   padding: 8px 0;
@@ -35,19 +35,21 @@
   border-radius: $radius-3xl;
   background: Rgb(255 255 255 / 3%);
   overflow: visible; // Critical for PVSpriteFX particles
-  
+
   &.empty {
     opacity: 0.3;
     border-style: dashed;
   }
-  
+
   &.active {
     background: Rgb(255 255 255 / 6%);
     opacity: 1;
 
-    .type-aura { opacity: 0.3; }
-    .poke-sprite { 
-      filter: Grayscale(0) Brightness(1); 
+    .type-aura {
+      opacity: 0.3;
+    }
+    .poke-sprite {
+      filter: Grayscale(0) Brightness(1);
     }
   }
 
@@ -59,7 +61,7 @@
     .type-aura {
       opacity: 0.6;
     }
-    
+
     .poke-sprite {
       filter: Brightness(1.2);
     }
@@ -137,7 +139,7 @@
   border: 1px solid Rgb(239 68 68 / 20%);
   border-radius: $radius-2xl;
   background: Rgb(239 68 68 / 5%);
-  
+
   .cost-label {
     @include pixelated;
 
@@ -146,7 +148,7 @@
     margin-bottom: 12px;
     letter-spacing: 1px;
   }
-  
+
   .price-tag {
     @include pixelated;
 
@@ -154,7 +156,7 @@
     font-size: var(--font-20);
     text-shadow: 0 0 15px Rgb(255 255 255 / 20%);
   }
-  
+
   .rocket-surcharge {
     @include pixelated;
 
@@ -188,7 +190,7 @@
   color: Rgb(255 255 255 / 40%);
   font-size: var(--font-8);
   cursor: pointer;
-  
+
   &:hover:not(:disabled) {
     background: Rgb(255 255 255 / 8%);
     color: var(--white);

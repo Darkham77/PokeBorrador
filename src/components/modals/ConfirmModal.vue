@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import BaseModal from '@/components/common/BaseModal.vue'
+import { ref } from 'vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 
 interface Props {
-  show?: boolean
-  title?: string
-  message?: string
-  confirmText?: string
-  cancelText?: string
-  type?: string
-  variant?: string
-  onConfirm?: () => void
-  onCancel?: () => void
+  show?: boolean;
+  title?: string;
+  message?: string;
+  confirmText?: string;
+  cancelText?: string;
+  type?: string;
+  variant?: string;
+  onConfirm?: () => void;
+  onCancel?: () => void;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -24,27 +24,27 @@ withDefaults(defineProps<Props>(), {
   variant: 'modern',
   onConfirm: undefined,
   onCancel: undefined
-})
+});
 
 const emit = defineEmits<{
-  (e: 'confirm'): void
-  (e: 'cancel'): void
-  (e: 'close'): void
-}>()
+  (e: 'confirm'): void;
+  (e: 'cancel'): void;
+  (e: 'close'): void;
+}>();
 
-const clicked = ref(false)
+const clicked = ref(false);
 
 const handleConfirm = () => {
-  if (clicked.value) return
-  clicked.value = true
-  emit('confirm')
-  emit('close')
-}
+  if (clicked.value) return;
+  clicked.value = true;
+  emit('confirm');
+  emit('close');
+};
 
 const handleCancel = () => {
-  emit('cancel')
-  emit('close')
-}
+  emit('cancel');
+  emit('close');
+};
 </script>
 
 <template>
@@ -62,16 +62,12 @@ const handleCancel = () => {
 
     <template #footer>
       <div class="confirm-footer">
-        <button 
-          id="cancel-modal-btn"
-          class="btn-cancel" 
-          @click.stop="handleCancel"
-        >
+        <button id="cancel-modal-btn" class="btn-cancel" @click.stop="handleCancel">
           {{ cancelText }}
         </button>
-        <button 
+        <button
           id="confirm-modal-btn"
-          class="btn-confirm" 
+          class="btn-confirm"
           :class="{ 'is-danger': type === 'danger' }"
           :disabled="clicked"
           @click.stop="handleConfirm"
@@ -84,13 +80,13 @@ const handleCancel = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "sass:math";
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use 'sass:math';
+@use '@/styles/core/tools' as *;
 
 .confirm-body {
   padding: 24px;
-  
+
   p {
     margin: 0;
     color: Rgb(255 255 255 / 80%);
@@ -122,7 +118,7 @@ const handleCancel = () => {
       background: Linear-Gradient(135deg, $coin-gold, #b8860b);
       color: $black;
       box-shadow: var(--shadow-card);
-      
+
       &:hover {
         background: Linear-Gradient(135deg, $white, $coin-gold);
 
@@ -135,7 +131,7 @@ const handleCancel = () => {
 .confirm-footer {
   display: flex;
   gap: $spacing-md;
-  
+
   button {
     @include pixelated;
 
@@ -146,13 +142,12 @@ const handleCancel = () => {
     font-weight: 700;
     flex: 1;
     cursor: pointer;
-    
-    
+
     &:active {
       // Handled by GSAP
     }
   }
-  
+
   .btn-cancel {
     background: Rgb(255 255 255 / 5%);
     color: Rgb(255 255 255 / 50%);
@@ -161,11 +156,11 @@ const handleCancel = () => {
       color: var(--white);
     }
   }
-  
+
   .btn-confirm {
     @include btn-vicio-primary;
 
-    padding: 14px; 
+    padding: 14px;
 
     &.is-danger {
       background: Linear-Gradient(135deg, var(--red), var(--red-600));

@@ -1,9 +1,10 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/cosmetics" as *;
-@use "@/styles/components/_profile-shared.scss" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/cosmetics' as *;
+@use '@/styles/components/_profile-shared.scss' as *;
 
-.loading-state, .error-state {
+.loading-state,
+.error-state {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -13,7 +14,8 @@
   text-align: center;
   flex: 1;
 
-  .loading-text, .error-message {
+  .loading-text,
+  .error-message {
     @include pixelated;
 
     color: Rgb(255 255 255 / 60%);
@@ -86,8 +88,10 @@
       font-weight: normal;
       text-decoration: none;
       text-shadow: none;
-      
-      &:hover { text-decoration: underline; }
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 
@@ -130,7 +134,6 @@
   border-radius: $radius-xl;
   background: Linear-Gradient(180deg, Rgb(82 53 31 / 80%) 0%, Rgb(56 36 21 / 90%) 100%);
   box-shadow: var(--shadow-card);
-
 }
 
 .badge-item {
@@ -165,7 +168,7 @@
 
 .trainer-profile-modal {
   border-left: 2px solid Rgb(255 255 255 / 5%) !important;
-  
+
   :deep(.modal-scrollable-content) {
     background: transparent !important;
   }

@@ -8,7 +8,9 @@ type GameStoreInstance = ReturnType<typeof useGameStore>;
 
 const SELL_ALL_QUANTITY_TOKEN = 999 as const;
 
-export function calculateBagSellTotalGain(bagSellSelected: Record<string, number>): number {
+export function calculateBagSellTotalGain(
+  bagSellSelected: Partial<Record<ItemId, number>>
+): number {
   let total = 0;
   Object.entries(bagSellSelected).forEach(([id, q]) => {
     if (isItemId(id) && typeof q === 'number') {
@@ -21,7 +23,7 @@ export function calculateBagSellTotalGain(bagSellSelected: Record<string, number
 
 export function confirmBagSellAction(
   gameStore: GameStoreInstance,
-  bagSellSelected: Record<string, number>
+  bagSellSelected: Partial<Record<ItemId, number>>
 ): number | false {
   const selectedEntries = Object.entries(bagSellSelected);
   if (selectedEntries.length === 0) return false;
@@ -43,11 +45,15 @@ export function confirmBagSellAction(
 
   gameStore.state.inventory = { ...inv };
   gameStore.state.money += totalGain;
-  gameStore.save();
+  void gameStore.save();
   return totalGain;
 }
 
-export function removeItemAction(gameStore: GameStoreInstance, itemId: ItemId, qty: number = 1): void {
+export function removeItemAction(
+  gameStore: GameStoreInstance,
+  itemId: ItemId,
+  qty: number = 1
+): void {
   const inv = gameStore.state.inventory;
   if (!inv || !inv[itemId]) return;
 
@@ -60,7 +66,7 @@ export function removeItemAction(gameStore: GameStoreInstance, itemId: ItemId, q
   }
 
   gameStore.state.inventory = { ...inv };
-  gameStore.save(false);
+  void gameStore.save(false);
 }
 
 export function addItemAction(gameStore: GameStoreInstance, itemId: ItemId, qty: number = 1): void {
@@ -69,10 +75,14 @@ export function addItemAction(gameStore: GameStoreInstance, itemId: ItemId, qty:
 
   inventory[itemId] = (inventory[itemId] || 0) + qty;
   gameStore.state.inventory = { ...inventory };
-  gameStore.save(false);
+  void gameStore.save(false);
 }
 
-export function sellItemAction(gameStore: GameStoreInstance, itemId: ItemId, qty: number = 1): void {
+export function sellItemAction(
+  gameStore: GameStoreInstance,
+  itemId: ItemId,
+  qty: number = 1
+): void {
   const itemInfo = getItemById(itemId);
 
   const inventoryQty = gameStore.state.inventory[itemId] || 0;
@@ -82,7 +92,7 @@ export function sellItemAction(gameStore: GameStoreInstance, itemId: ItemId, qty
 
   removeItemAction(gameStore, itemId, sellQty);
   gameStore.state.money += gain;
-  gameStore.save(false);
+  void gameStore.save(false);
 }
 
 export async function processBatchActionHandler(
@@ -138,7 +148,7 @@ export function equipItemAction(
   }
 
   gameStore.state.inventory = { ...inv };
-  gameStore.save();
+  void gameStore.save();
   return true;
 }
 
@@ -158,6 +168,6 @@ export function unequipItemAction(
   pokemon.heldItem = null;
 
   gameStore.state.inventory = { ...inv };
-  gameStore.save();
+  void gameStore.save();
   return item;
 }

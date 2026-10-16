@@ -1,6 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { DatabaseSync } from 'node:sqlite';
-import { auditAndRepairSaveData, repairAccountsInSqlite } from '../../../scripts/maintenance/repair_account_legality.ts';
+import {
+  auditAndRepairSaveData,
+  repairAccountsInSqlite
+} from '../../../scripts/maintenance/repair_account_legality.ts';
 import type { SaveDataDto } from '../../../src/logic/validation/schemas.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
@@ -54,7 +57,9 @@ describe('Event Pokémon Recovery Integrity Test (Tier 2)', () => {
     expect(mockSaveData.team[0]?.onEvent).toBe(false);
     expect(mockSaveData.box[0]?.onEvent).toBe(false);
     expect((mockSaveData.daycareWarehouse as Pokemon[])[0]?.onEvent).toBe(false);
-    expect(result.details.some(d => d.includes('liberado de evento concluido/legacy'))).toBe(true);
+    expect(result.details.some((d) => d.includes('liberado de evento concluido/legacy'))).toBe(
+      true
+    );
   });
 
   it('repairAccountsInSqlite restores stuck Pokémon in SQLite database saves without data loss', () => {
@@ -97,7 +102,10 @@ describe('Event Pokémon Recovery Integrity Test (Tier 2)', () => {
       ]
     };
 
-    db.prepare('INSERT INTO game_saves (user_id, save_data) VALUES (?, ?)').run('user_test_event', JSON.stringify(initialSave));
+    db.prepare('INSERT INTO game_saves (user_id, save_data) VALUES (?, ?)').run(
+      'user_test_event',
+      JSON.stringify(initialSave)
+    );
 
     const summary = repairAccountsInSqlite({
       dbInstance: db,
@@ -108,7 +116,9 @@ describe('Event Pokémon Recovery Integrity Test (Tier 2)', () => {
     expect(summary.accountsAudited).toBe(1);
     expect(summary.accountsRepaired).toBe(1);
 
-    const row = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get('user_test_event') as { save_data: string };
+    const row = db
+      .prepare('SELECT save_data FROM game_saves WHERE user_id = ?')
+      .get('user_test_event') as { save_data: string };
     const parsedSave = JSON.parse(row.save_data);
 
     expect(parsedSave.team[0].onEvent).toBe(false);

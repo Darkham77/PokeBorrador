@@ -5,7 +5,7 @@
 
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleSide } from '@/types/battle/battle';
+import type { BattleSide, BattleConditionKey } from '@/types/battle/battle';
 import { getStatusIcon, processPrimaryStatusDamage } from './status/primaryStatusEngine.ts';
 import {
   processVolatileCounters,
@@ -21,7 +21,7 @@ async function processWishCondition(
   pokemon: Pokemon,
   ctx: BattleContext,
   side: BattleSide,
-  sideConds: Record<string, { turns?: number }>
+  sideConds: Partial<Record<BattleConditionKey, { turns?: number }>>
 ): Promise<void> {
   delete sideConds['wish'];
   if (pokemon.hp <= 0) return;
@@ -59,7 +59,11 @@ async function processSideConditions(
  * Processes permanent and temporary effects at end of turn.
  * @returns True if Pokémon remains in battle, false if fainted
  */
-export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: BattleSide | 'info' = 'info') {
+export async function tickStatus(
+  pokemon: Pokemon,
+  ctx: BattleContext,
+  role: BattleSide | 'info' = 'info'
+) {
   if (!pokemon) return false;
 
   // 0. Process Volatile Counters (e.g. yawn, partiallytrapped)
@@ -70,7 +74,7 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: Bat
 
   // 1. Temporary control effects (disabled, encore, taunt, thrash)
   processControlTurns(pokemon, ctx.addLog);
-  
+
   // 2. Persistent status conditions (Damage)
   const hasPrimaryDamage = await processPrimaryStatusDamage(pokemon, ctx, role);
   if (hasPrimaryDamage) return true;
@@ -102,16 +106,16 @@ export async function tickLeechSeed(pokemon: Pokemon, opponent: Pokemon, ctx: Ba
     const heal = dmg;
     opponent.hp = Math.min(opponent.maxHp, opponent.hp + heal);
     ctx.addLog(`¡${opponent.name} recuperó salud!`, 'log-info', opponent);
-    
+
     const healPromise = ctx.animations?.handleHealRequest
       ? ctx.animations.handleHealRequest({ side: sideOpp })
       : Promise.resolve();
-      
+
     await Promise.all([blinkPromise, healPromise]);
   } else {
     await blinkPromise;
   }
-  
+
   return true;
 }
 
@@ -151,7 +155,7 @@ function resetBasicVolatiles(poke: Pokemon): void {
   poke.identified = false;
   poke.furyCutterCount = 0;
   if (Array.isArray(poke.moves)) {
-    poke.moves.forEach(m => {
+    poke.moves.forEach((m) => {
       if (m && m.pp > 0) {
         m.disabled = false;
       }

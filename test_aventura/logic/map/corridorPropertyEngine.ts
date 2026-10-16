@@ -22,7 +22,7 @@ import type { ContinentMapResult } from './continentGenerator.ts';
 const TERRAIN_INFLUENCE_THRESHOLDS = {
   MOUNTAIN_RATIO: 0.15,
   COASTAL_RATIO: 0.15,
-  FOREST_RATIO: 0.12,
+  FOREST_RATIO: 0.12
 } as const;
 
 const GATEHOUSE_MIN_CORRIDOR_LENGTH = 12 as const;
@@ -96,11 +96,12 @@ function sampleSurroundingTerrain(
 // Gatehouse Checkpoint Placement Helper
 // ---------------------------------------------------------------------------
 
-function computeGatehouseLocations(
-  corridor: EmbeddedCorridor
-): { x: number; y: number }[] {
+function computeGatehouseLocations(corridor: EmbeddedCorridor): { x: number; y: number }[] {
   // Wormholes and short stubs don't need surface gatehouses
-  if (corridor.kind === 'wormhole_tunnel' || corridor.pathCells.length < GATEHOUSE_MIN_CORRIDOR_LENGTH) {
+  if (
+    corridor.kind === 'wormhole_tunnel' ||
+    corridor.pathCells.length < GATEHOUSE_MIN_CORRIDOR_LENGTH
+  ) {
     return [];
   }
 
@@ -146,15 +147,26 @@ export function enrichCorridorProperties(
     const fromChainIdx = embedded.mainChainOrder.indexOf(corridor.fromId);
     const isMainChain =
       corridor.kind === 'main_chain' ||
-      (mainChainSet.has(corridor.fromId) && mainChainSet.has(corridor.toId) && Math.abs(toChainIdx - fromChainIdx) === 1);
+      (mainChainSet.has(corridor.fromId) &&
+        mainChainSet.has(corridor.toId) &&
+        Math.abs(toChainIdx - fromChainIdx) === 1);
 
     const maxProgressionIdx = Math.max(0, toChainIdx, fromChainIdx);
     const difficulty = Number(
-      Math.min(1.0, Math.max(0.1, maxProgressionIdx / Math.max(1, embedded.mainChainOrder.length - 1))).toFixed(2)
+      Math.min(
+        1.0,
+        Math.max(0.1, maxProgressionIdx / Math.max(1, embedded.mainChainOrder.length - 1))
+      ).toFixed(2)
     );
 
     // 3. Emergent Width (earlier routes are wide and inviting, late routes are narrow & challenging)
-    let width = Math.max(3, Math.min(CORRIDOR_MAX_WIDTH, Math.round(CORRIDOR_BASE_WIDTH - difficulty * CORRIDOR_WIDTH_DIFFICULTY_FACTOR)));
+    let width = Math.max(
+      3,
+      Math.min(
+        CORRIDOR_MAX_WIDTH,
+        Math.round(CORRIDOR_BASE_WIDTH - difficulty * CORRIDOR_WIDTH_DIFFICULTY_FACTOR)
+      )
+    );
 
     // Surf routes have wide water channels
     if (corridor.kind === 'surf_route') {
@@ -174,7 +186,9 @@ export function enrichCorridorProperties(
     // 5. Emerging Props
     const isShortcutLoop = corridor.kind === 'cycle' || corridor.kind === 'surf_route';
     const hasOneWayLedges = isShortcutLoop || (influence === 'mountain' && difficulty >= 0.4);
-    const tallGrassDensity = Number(Math.max(0.2, Math.min(0.9, 0.85 - difficulty * 0.45)).toFixed(2));
+    const tallGrassDensity = Number(
+      Math.max(0.2, Math.min(0.9, 0.85 - difficulty * 0.45)).toFixed(2)
+    );
 
     // 6. Gatehouse Checkpoint Placement (T4.3)
     const gatehouses = computeGatehouseLocations(corridor);

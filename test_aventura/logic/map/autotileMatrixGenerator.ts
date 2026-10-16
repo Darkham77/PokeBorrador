@@ -25,18 +25,11 @@ import {
   BASE_GRASS_TILE
 } from './waterAutotileEngine.ts';
 
-import {
-  CANONICAL_DIRT_PATH_BRUSH
-} from './pathAutotileEngine.ts';
+import { CANONICAL_DIRT_PATH_BRUSH } from './pathAutotileEngine.ts';
 
-import {
-  CANONICAL_MINT_GRASS_BRUSH
-} from './macroBiomeAutotileEngine.ts';
+import { CANONICAL_MINT_GRASS_BRUSH } from './macroBiomeAutotileEngine.ts';
 
-import {
-  resolveMountainAutotileCell,
-  type ElevationMatrix
-} from './mountainAutotileEngine.ts';
+import { resolveMountainAutotileCell, type ElevationMatrix } from './mountainAutotileEngine.ts';
 
 /**
  * Bitmask flag positions in 3x3 grid around center (1,1):
@@ -61,9 +54,17 @@ const BIT_OFFSETS = {
  */
 export function bitmaskTo3x3Grid(bitmask: number, centerVal = true): boolean[][] {
   return [
-    [(bitmask & BIT_OFFSETS.NW) !== 0, (bitmask & BIT_OFFSETS.N) !== 0, (bitmask & BIT_OFFSETS.NE) !== 0],
+    [
+      (bitmask & BIT_OFFSETS.NW) !== 0,
+      (bitmask & BIT_OFFSETS.N) !== 0,
+      (bitmask & BIT_OFFSETS.NE) !== 0
+    ],
     [(bitmask & BIT_OFFSETS.W) !== 0, centerVal, (bitmask & BIT_OFFSETS.E) !== 0],
-    [(bitmask & BIT_OFFSETS.SW) !== 0, (bitmask & BIT_OFFSETS.S) !== 0, (bitmask & BIT_OFFSETS.SE) !== 0]
+    [
+      (bitmask & BIT_OFFSETS.SW) !== 0,
+      (bitmask & BIT_OFFSETS.S) !== 0,
+      (bitmask & BIT_OFFSETS.SE) !== 0
+    ]
   ];
 }
 
@@ -83,7 +84,11 @@ export function grid3x3ToBitmask(grid: readonly (readonly boolean[])[]): number 
   return mask;
 }
 
-function buildCase(bitmask: number, category: BitmaskRoleCategory, label: string): CanonicalBitmaskCase {
+function buildCase(
+  bitmask: number,
+  category: BitmaskRoleCategory,
+  label: string
+): CanonicalBitmaskCase {
   return {
     bitmask,
     category,
@@ -113,59 +118,167 @@ export const CANONICAL_47_BITMASKS: readonly CanonicalBitmaskCase[] = [
   // 4. Outer Corners (2 Adjacent Cardinals)
   // Outer NW: S + E
   buildCase(BIT_OFFSETS.S | BIT_OFFSETS.E, 'outer_corner', 'Esquina Ext. NO (Sin diag)'),
-  buildCase(BIT_OFFSETS.S | BIT_OFFSETS.E | BIT_OFFSETS.SE, 'outer_corner', 'Esquina Ext. NO (Con diag SE)'),
+  buildCase(
+    BIT_OFFSETS.S | BIT_OFFSETS.E | BIT_OFFSETS.SE,
+    'outer_corner',
+    'Esquina Ext. NO (Con diag SE)'
+  ),
   // Outer NE: S + W
   buildCase(BIT_OFFSETS.S | BIT_OFFSETS.W, 'outer_corner', 'Esquina Ext. NE (Sin diag)'),
-  buildCase(BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.SW, 'outer_corner', 'Esquina Ext. NE (Con diag SW)'),
+  buildCase(
+    BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.SW,
+    'outer_corner',
+    'Esquina Ext. NE (Con diag SW)'
+  ),
   // Outer SW: N + E
   buildCase(BIT_OFFSETS.N | BIT_OFFSETS.E, 'outer_corner', 'Esquina Ext. SO (Sin diag)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.E | BIT_OFFSETS.NE, 'outer_corner', 'Esquina Ext. SO (Con diag NE)'),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.E | BIT_OFFSETS.NE,
+    'outer_corner',
+    'Esquina Ext. SO (Con diag NE)'
+  ),
   // Outer SE: N + W
   buildCase(BIT_OFFSETS.N | BIT_OFFSETS.W, 'outer_corner', 'Esquina Ext. SE (Sin diag)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.W | BIT_OFFSETS.NW, 'outer_corner', 'Esquina Ext. SE (Con diag NW)'),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.W | BIT_OFFSETS.NW,
+    'outer_corner',
+    'Esquina Ext. SE (Con diag NW)'
+  ),
 
   // 5. Cardinal Edges (3 Cardinals)
   // Edge North (S + W + E)
   buildCase(BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E, 'edge', 'Borde Norte (Sin diags)'),
-  buildCase(BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SW, 'edge', 'Borde Norte (Diag SW)'),
-  buildCase(BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SE, 'edge', 'Borde Norte (Diag SE)'),
-  buildCase(BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SW | BIT_OFFSETS.SE, 'edge', 'Borde Norte (Ambas diags)'),
+  buildCase(
+    BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SW,
+    'edge',
+    'Borde Norte (Diag SW)'
+  ),
+  buildCase(
+    BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SE,
+    'edge',
+    'Borde Norte (Diag SE)'
+  ),
+  buildCase(
+    BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SW | BIT_OFFSETS.SE,
+    'edge',
+    'Borde Norte (Ambas diags)'
+  ),
 
   // Edge South (N + W + E)
   buildCase(BIT_OFFSETS.N | BIT_OFFSETS.W | BIT_OFFSETS.E, 'edge', 'Borde Sur (Sin diags)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW, 'edge', 'Borde Sur (Diag NW)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NE, 'edge', 'Borde Sur (Diag NE)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW | BIT_OFFSETS.NE, 'edge', 'Borde Sur (Ambas diags)'),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW,
+    'edge',
+    'Borde Sur (Diag NW)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NE,
+    'edge',
+    'Borde Sur (Diag NE)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW | BIT_OFFSETS.NE,
+    'edge',
+    'Borde Sur (Ambas diags)'
+  ),
 
   // Edge West (N + S + E)
   buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.E, 'edge', 'Borde Oeste (Sin diags)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.E | BIT_OFFSETS.NE, 'edge', 'Borde Oeste (Diag NE)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.E | BIT_OFFSETS.SE, 'edge', 'Borde Oeste (Diag SE)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.E | BIT_OFFSETS.NE | BIT_OFFSETS.SE, 'edge', 'Borde Oeste (Ambas diags)'),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.E | BIT_OFFSETS.NE,
+    'edge',
+    'Borde Oeste (Diag NE)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.E | BIT_OFFSETS.SE,
+    'edge',
+    'Borde Oeste (Diag SE)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.E | BIT_OFFSETS.NE | BIT_OFFSETS.SE,
+    'edge',
+    'Borde Oeste (Ambas diags)'
+  ),
 
   // Edge East (N + S + W)
   buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W, 'edge', 'Borde Este (Sin diags)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.NW, 'edge', 'Borde Este (Diag NW)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.SW, 'edge', 'Borde Este (Diag SW)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.NW | BIT_OFFSETS.SW, 'edge', 'Borde Este (Ambas diags)'),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.NW,
+    'edge',
+    'Borde Este (Diag NW)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.SW,
+    'edge',
+    'Borde Este (Diag SW)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.NW | BIT_OFFSETS.SW,
+    'edge',
+    'Borde Este (Ambas diags)'
+  ),
 
   // 6. Fully Surrounded (4 Cardinals + combinations of Diagonals)
   // All 4 diagonals missing
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E, 'inner_corner', '4 Esquinas Int. Faltantes'),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E,
+    'inner_corner',
+    '4 Esquinas Int. Faltantes'
+  ),
 
   // 3 diagonals missing (1 present)
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW, 'inner_corner', 'Diag NW (3 Int. Faltantes)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NE, 'inner_corner', 'Diag NE (3 Int. Faltantes)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SW, 'inner_corner', 'Diag SW (3 Int. Faltantes)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SE, 'inner_corner', 'Diag SE (3 Int. Faltantes)'),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW,
+    'inner_corner',
+    'Diag NW (3 Int. Faltantes)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NE,
+    'inner_corner',
+    'Diag NE (3 Int. Faltantes)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SW,
+    'inner_corner',
+    'Diag SW (3 Int. Faltantes)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SE,
+    'inner_corner',
+    'Diag SE (3 Int. Faltantes)'
+  ),
 
   // 2 diagonals missing (adjacent or opposite)
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW | BIT_OFFSETS.NE, 'inner_corner', 'Diags Norte (NW+NE)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SW | BIT_OFFSETS.SE, 'inner_corner', 'Diags Sur (SW+SE)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW | BIT_OFFSETS.SW, 'inner_corner', 'Diags Oeste (NW+SW)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NE | BIT_OFFSETS.SE, 'inner_corner', 'Diags Este (NE+SE)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW | BIT_OFFSETS.SE, 'inner_corner', 'Diags Cruzadas (NW+SE)'),
-  buildCase(BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NE | BIT_OFFSETS.SW, 'inner_corner', 'Diags Cruzadas (NE+SW)'),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW | BIT_OFFSETS.NE,
+    'inner_corner',
+    'Diags Norte (NW+NE)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.SW | BIT_OFFSETS.SE,
+    'inner_corner',
+    'Diags Sur (SW+SE)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW | BIT_OFFSETS.SW,
+    'inner_corner',
+    'Diags Oeste (NW+SW)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NE | BIT_OFFSETS.SE,
+    'inner_corner',
+    'Diags Este (NE+SE)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NW | BIT_OFFSETS.SE,
+    'inner_corner',
+    'Diags Cruzadas (NW+SE)'
+  ),
+  buildCase(
+    BIT_OFFSETS.N | BIT_OFFSETS.S | BIT_OFFSETS.W | BIT_OFFSETS.E | BIT_OFFSETS.NE | BIT_OFFSETS.SW,
+    'inner_corner',
+    'Diags Cruzadas (NE+SW)'
+  ),
 
   // 1 diagonal missing (Inner Corners)
   buildCase(255 ^ BIT_OFFSETS.NW, 'inner_corner', 'Esquina Int. NO (Falta NW)'),

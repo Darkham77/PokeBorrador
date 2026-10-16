@@ -5,21 +5,28 @@ const assert = require('assert').strict;
 const ps = {
   BattleStreams: require('../../../vendor/pokemon-showdown/dist/sim/battle-stream'),
   Teams: require('../../../vendor/pokemon-showdown/dist/sim').Teams,
-  RandomPlayerAI:
-    require('../../../vendor/pokemon-showdown/dist/sim/tools/random-player-ai').RandomPlayerAI,
+  RandomPlayerAI: require('../../../vendor/pokemon-showdown/dist/sim/tools/random-player-ai')
+    .RandomPlayerAI
 };
-const {Generations} = require('@pkmn/data');
-const {Verifier} = require('@pkmn/protocol/verifier');
-const {TeamGenerators} = require('@pkmn/randoms');
+const { Generations } = require('@pkmn/data');
+const { Verifier } = require('@pkmn/protocol/verifier');
+const { TeamGenerators } = require('@pkmn/randoms');
 const pkmn = require('@pkmn/sim');
 
 pkmn.Teams.setGeneratorFactory(TeamGenerators);
 
 const FORMATS = [
-  'gen9randombattle', 'gen9monotyperandombattle',
-  'gen8randombattle', 'gen8randomdoublesbattle',
-  'gen7randombattle', /* 'gen7randomdoublesbattle', */ 'gen6randombattle', 'gen5randombattle',
-  'gen4randombattle', 'gen3randombattle', 'gen2randombattle', 'gen1randombattle',
+  'gen9randombattle',
+  'gen9monotyperandombattle',
+  'gen8randombattle',
+  'gen8randomdoublesbattle',
+  'gen7randombattle',
+  /* 'gen7randomdoublesbattle', */ 'gen6randombattle',
+  'gen5randombattle',
+  'gen4randombattle',
+  'gen3randombattle',
+  'gen2randombattle',
+  'gen1randombattle'
 ];
 
 class MultiRandomRunner {
@@ -29,8 +36,8 @@ class MultiRandomRunner {
 
     this.totalGames = options.totalGames;
 
-    this.prng = (options.prng && !Array.isArray(options.prng))
-      ? options.prng : new pkmn.PRNG(options.prng);
+    this.prng =
+      options.prng && !Array.isArray(options.prng) ? options.prng : new pkmn.PRNG(options.prng);
     this.options.prng = this.prng;
 
     this.format = options.format;
@@ -52,14 +59,16 @@ class MultiRandomRunner {
       }
 
       const seed = this.prng.getSeed();
-      const game = new Runner(this.gens, Object.assign({format}, this.options)).run().catch(err => {
-        failures++;
-        console.error(
-          `Run \`node integration/test sim 1 --format=${format} --seed=${seed}\` ` +
-          `to debug (optionally with \`--output\` and/or \`--input\` for more info):\n`,
-          err
-        );
-      });
+      const game = new Runner(this.gens, Object.assign({ format }, this.options))
+        .run()
+        .catch((err) => {
+          failures++;
+          console.error(
+            `Run \`node integration/test sim 1 --format=${format} --seed=${seed}\` ` +
+              `to debug (optionally with \`--output\` and/or \`--input\` for more info):\n`,
+            err
+          );
+        });
 
       await game;
       games.push(game);
@@ -98,8 +107,8 @@ class Runner {
     this.gens = gens;
     this.format = options.format;
 
-    this.prng = (options.prng && !Array.isArray(options.prng))
-      ? options.prng : new pkmn.PRNG(options.prng);
+    this.prng =
+      options.prng && !Array.isArray(options.prng) ? options.prng : new pkmn.PRNG(options.prng);
     this.p1options = options.p1options;
     this.p2options = options.p2options;
 
@@ -113,10 +122,12 @@ class Runner {
     const pkmnStream = new PkmnRawStream();
 
     const game = this.runGame(this.format, psStream, pkmnStream);
-    return !this.error ? game : game.catch(err => {
-      console.log(`${psStream.rawInputLog.join('\n')}\n\n${pkmnStream.rawInputLog.join('\n')}`);
-      throw err;
-    });
+    return !this.error
+      ? game
+      : game.catch((err) => {
+          console.log(`${psStream.rawInputLog.join('\n')}\n\n${pkmnStream.rawInputLog.join('\n')}`);
+          throw err;
+        });
   }
 
   async runGame(format, psStream, pkmnStream) {
@@ -126,35 +137,36 @@ class Runner {
     const gen = this.gens.get(+format[3]);
     const formatid =
       format.slice(0, 4) + (format.includes('doubles') ? 'doublescustomgame' : 'customgame');
-    const spec = {formatid, seed: this.prng.getSeed()};
+    const spec = { formatid, seed: this.prng.getSeed() };
 
     const teamSeed1 = this.newSeed();
     const teamSeed2 = this.newSeed();
 
-    const psTeam1 = ps.Teams.generate(format, {seed: teamSeed1});
-    const psTeam2 = ps.Teams.generate(format, {seed: teamSeed2});
+    const psTeam1 = ps.Teams.generate(format, { seed: teamSeed1 });
+    const psTeam2 = ps.Teams.generate(format, { seed: teamSeed2 });
 
-    const pkmnTeam1 = pkmn.Teams.generate(format, {seed: teamSeed1});
-    const pkmnTeam2 = pkmn.Teams.generate(format, {seed: teamSeed2});
+    const pkmnTeam1 = pkmn.Teams.generate(format, { seed: teamSeed1 });
+    const pkmnTeam2 = pkmn.Teams.generate(format, { seed: teamSeed2 });
 
     assert.deepStrictEqual(pkmnTeam1, psTeam1);
     assert.deepStrictEqual(pkmnTeam2, psTeam2);
 
-    const p1spec = {name: 'Bot 1', ...this.p1options, team: pkmn.Teams.pack(pkmnTeam1)};
-    const p2spec = {name: 'Bot 2', ...this.p2options, team: pkmn.Teams.pack(pkmnTeam2)};
+    const p1spec = { name: 'Bot 1', ...this.p1options, team: pkmn.Teams.pack(pkmnTeam1) };
+    const p2spec = { name: 'Bot 2', ...this.p2options, team: pkmn.Teams.pack(pkmnTeam2) };
 
     // TODO: remove once PS implements Revival Blessing correctly
     if (p1spec.team.includes('revivalblessing') || p2spec.team.includes('revivalblessing')) return;
 
-    const p1options = {seed: this.newSeed(), move: 0.7, mega: 0.6, ...this.p1options};
-    const p2options = {seed: this.newSeed(), move: 0.7, mega: 0.6, ...this.p2options};
+    const p1options = { seed: this.newSeed(), move: 0.7, mega: 0.6, ...this.p1options };
+    const p2options = { seed: this.newSeed(), move: 0.7, mega: 0.6, ...this.p2options };
 
     const psBot1 = new ps.RandomPlayerAI(psStreams.p1, p1options).start();
     const psBot2 = new ps.RandomPlayerAI(psStreams.p2, p2options).start();
     const pkmnBot1 = new pkmn.RandomPlayerAI(pkmnStreams.p1, p1options).start();
     const pkmnBot2 = new pkmn.RandomPlayerAI(pkmnStreams.p2, p2options).start();
 
-    const start = `>start ${JSON.stringify(spec)}\n` +
+    const start =
+      `>start ${JSON.stringify(spec)}\n` +
       `>player p1 ${JSON.stringify(p1spec)}\n` +
       `>player p2 ${JSON.stringify(p2spec)}`;
 
@@ -176,8 +188,14 @@ class Runner {
     assert.deepStrictEqual(pkmnStream.rawInputLog, psStream.rawInputLog);
 
     return Promise.all([
-      psStreams.omniscient.writeEnd(), pkmnStreams.omniscient.writeEnd(),
-      psBot1, psBot2, pkmnBot1, pkmnBot2, psStart, pkmnStart,
+      psStreams.omniscient.writeEnd(),
+      pkmnStreams.omniscient.writeEnd(),
+      psBot1,
+      psBot2,
+      pkmnBot1,
+      pkmnBot2,
+      psStart,
+      pkmnStart
     ]);
   }
 
@@ -188,7 +206,7 @@ class Runner {
       Math.floor(this.prng.random() * 0x10000),
       Math.floor(this.prng.random() * 0x10000),
       Math.floor(this.prng.random() * 0x10000),
-      Math.floor(this.prng.random() * 0x10000),
+      Math.floor(this.prng.random() * 0x10000)
     ];
   }
 }
@@ -224,10 +242,12 @@ class AsyncIterableStreams {
     this.a = a;
     this.b = b;
   }
-  [Symbol.asyncIterator]() { return this; }
+  [Symbol.asyncIterator]() {
+    return this;
+  }
   async next() {
     const ab = await Promise.all([this.a.next(), this.b.next()]);
-    return {value: [ab[0].value, ab[1].value], done: ab[0].done || ab[1].done};
+    return { value: [ab[0].value, ab[1].value], done: ab[0].done || ab[1].done };
   }
 }
 

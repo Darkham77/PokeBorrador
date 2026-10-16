@@ -17,12 +17,12 @@
 
 ### Optimization Principles
 
-| Technique | Purpose |
-| :--- | :--- |
-| **Frustum culling** | Don't render off-screen |
-| **Occlusion culling** | Don't render hidden |
-| **LOD** | Less detail at distance |
-| **Batching** | Combine draw calls |
+| Technique             | Purpose                 |
+| :-------------------- | :---------------------- |
+| **Frustum culling**   | Don't render off-screen |
+| **Occlusion culling** | Don't render hidden     |
+| **LOD**               | Less detail at distance |
+| **Batching**          | Combine draw calls      |
 
 ---
 
@@ -30,11 +30,11 @@
 
 ### Shader Types
 
-| Type | Purpose |
-| :--- | :--- |
-| **Vertex** | Position, normals |
-| **Fragment/Pixel** | Color, lighting |
-| **Compute** | General computation |
+| Type               | Purpose             |
+| :----------------- | :------------------ |
+| **Vertex**         | Position, normals   |
+| **Fragment/Pixel** | Color, lighting     |
+| **Compute**        | General computation |
 
 ### When to Write Custom Shaders
 
@@ -49,12 +49,12 @@
 
 ### Collision Shapes
 
-| Shape | Use Case |
-| :--- | :--- |
-| **Box** | Buildings, crates |
-| **Sphere** | Balls, quick checks |
-| **Capsule** | Characters |
-| **Mesh** | Terrain (expensive) |
+| Shape       | Use Case            |
+| :---------- | :------------------ |
+| **Box**     | Buildings, crates   |
+| **Sphere**  | Balls, quick checks |
+| **Capsule** | Characters          |
+| **Mesh**    | Terrain (expensive) |
 
 ### Principles
 
@@ -68,12 +68,12 @@
 
 ### Camera Types
 
-| Type | Use |
-| :--- | :--- |
-| **Third-person** | Action, adventure |
-| **First-person** | Immersive, FPS |
-| **Isometric** | Strategy, RPG |
-| **Orbital** | Inspection, editors |
+| Type             | Use                 |
+| :--------------- | :------------------ |
+| **Third-person** | Action, adventure   |
+| **First-person** | Immersive, FPS      |
+| **Isometric**    | Strategy, RPG       |
+| **Orbital**      | Inspection, editors |
 
 ### Camera Feel
 
@@ -88,12 +88,12 @@
 
 ### Light Types
 
-| Type | Use |
-| :--- | :--- |
-| **Directional** | Sun, moon |
-| **Point** | Lamps, torches |
-| **Spot** | Flashlight, stage |
-| **Ambient** | Base illumination |
+| Type            | Use               |
+| :-------------- | :---------------- |
+| **Directional** | Sun, moon         |
+| **Point**       | Lamps, torches    |
+| **Spot**        | Flashlight, stage |
+| **Ambient**     | Base illumination |
 
 ### Performance Consideration
 
@@ -107,22 +107,22 @@
 
 ### LOD Strategy
 
-| Distance | Model |
-| :--- | :--- |
-| Near | Full detail |
-| Medium | 50% triangles |
-| Far | 25% or billboard |
+| Distance | Model            |
+| :------- | :--------------- |
+| Near     | Full detail      |
+| Medium   | 50% triangles    |
+| Far      | 25% or billboard |
 
 ---
 
 ## 7. Anti-Patterns
 
-| ❌ Don't | ✅ Do |
-| :--- | :--- |
-| Mesh colliders everywhere | Simple shapes |
+| ❌ Don't                    | ✅ Do                 |
+| :-------------------------- | :-------------------- |
+| Mesh colliders everywhere   | Simple shapes         |
 | Real-time shadows on mobile | Baked or blob shadows |
-| One LOD for all distances | Distance-based LOD |
-| Unoptimized shaders | Profile and simplify |
+| One LOD for all distances   | Distance-based LOD    |
+| Unoptimized shaders         | Profile and simplify  |
 
 ---
 

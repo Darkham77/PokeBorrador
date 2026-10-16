@@ -1,40 +1,43 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { gsap } from 'gsap'
-import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue'
-import { useSocialStore } from '@/stores/social/social'
-import { useUIStore } from '@/stores/ui'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import { getEloTier } from '@/logic/pvp/rankedEngine'
-import { resolveFactionColor } from '@/components/modals/trainerProfileResolver'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { useRankCardHover, RANK_ANIM_FAST_DURATION_SEC } from '@/composables/arena/useRankCardHover'
-import type { RankingSortKey } from '@/types/system/game'
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { gsap } from 'gsap';
+import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue';
+import { useSocialStore } from '@/stores/social/social';
+import { useUIStore } from '@/stores/ui';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import { getEloTier } from '@/logic/pvp/rankedEngine';
+import { resolveFactionColor } from '@/components/modals/trainerProfileResolver';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import {
+  useRankCardHover,
+  RANK_ANIM_FAST_DURATION_SEC
+} from '@/composables/arena/useRankCardHover';
+import type { RankingSortKey } from '@/types/system/game';
 import {
   isValidFaction,
   resolveCleanPlayerClass,
   resolveLeaderboardRankBadge,
   resolveLeaderboardScore,
   resolveLeaderboardFactionLabel
-} from './arenaLeaderboardHelper'
+} from './arenaLeaderboardHelper';
 
-const socialStore = useSocialStore()
-const uiStore = useUIStore()
+const socialStore = useSocialStore();
+const uiStore = useUIStore();
 
-const activeSort = ref<RankingSortKey>('elo_rating')
-const listRef = ref<HTMLElement | null>(null)
+const activeSort = ref<RankingSortKey>('elo_rating');
+const listRef = ref<HTMLElement | null>(null);
 
 const loadLeaderboard = async () => {
-  await socialStore.fetchLeaderboard(activeSort.value)
+  await socialStore.fetchLeaderboard(activeSort.value);
   nextTick(() => {
-    animateList()
-  })
-}
+    animateList();
+  });
+};
 
 const animateList = () => {
-  if (!listRef.value) return
-  const cards = listRef.value.querySelectorAll('.rank-card')
-  if (cards.length === 0) return
+  if (!listRef.value) return;
+  const cards = listRef.value.querySelectorAll('.rank-card');
+  if (cards.length === 0) return;
 
   gsap.fromTo(
     cards,
@@ -48,19 +51,19 @@ const animateList = () => {
       ease: 'power2.out',
       clearProps: 'transform,opacity'
     }
-  )
-}
+  );
+};
 
 const openTrainerProfile = (userId: string) => {
-  uiStore.open('TrainerProfile', { userId })
-}
+  uiStore.open('TrainerProfile', { userId });
+};
 
 const displayPlayers = computed(() => {
   return socialStore.leaderboard.map((player, index) => {
-    const rankBadge = resolveLeaderboardRankBadge(index)
-    const tier = getEloTier(player.elo)
-    const hasFaction = isValidFaction(player.faction)
-    const scoreText = resolveLeaderboardScore(activeSort.value, player)
+    const rankBadge = resolveLeaderboardRankBadge(index);
+    const tier = getEloTier(player.elo);
+    const hasFaction = isValidFaction(player.faction);
+    const scoreText = resolveLeaderboardScore(activeSort.value, player);
     return {
       ...player,
       rankBadge,
@@ -71,43 +74,42 @@ const displayPlayers = computed(() => {
       factionColor: hasFaction ? resolveFactionColor(player.faction!) : '',
       playerClassText: resolveCleanPlayerClass(player.playerClass),
       scoreText
-    }
-  })
-})
+    };
+  });
+});
 
-const { handleCardEnter, handleCardLeave } = useRankCardHover()
+const { handleCardEnter, handleCardLeave } = useRankCardHover();
 
 const handleTabEnter = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
-  if (el.classList.contains('active')) return
+  const el = e.currentTarget as HTMLElement;
+  if (el.classList.contains('active')) return;
   gsap.to(el, {
     color: '#ffffff',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     duration: RANK_ANIM_FAST_DURATION_SEC,
     ease: 'power2.out'
-  })
-}
+  });
+};
 
 const handleTabLeave = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
-  if (el.classList.contains('active')) return
+  const el = e.currentTarget as HTMLElement;
+  if (el.classList.contains('active')) return;
   gsap.to(el, {
     color: 'rgba(255, 255, 255, 0.4)',
     backgroundColor: 'transparent',
     duration: RANK_ANIM_FAST_DURATION_SEC,
     ease: 'power2.out',
     clearProps: 'color,backgroundColor'
-  })
-}
+  });
+};
 
 onMounted(() => {
-  loadLeaderboard()
-})
+  loadLeaderboard();
+});
 
 watch(activeSort, () => {
-  loadLeaderboard()
-})
-
+  loadLeaderboard();
+});
 </script>
 
 <template>
@@ -115,9 +117,7 @@ watch(activeSort, () => {
     <!-- Header Row -->
     <div class="leaderboard-header-row">
       <div class="header-title-wrap">
-        <h3 class="section-title text-outline">
-          <span class="emoji">🏆</span> SALÓN DE LA FAMA
-        </h3>
+        <h3 class="section-title text-outline"><span class="emoji">🏆</span> SALÓN DE LA FAMA</h3>
         <span class="sub-title">Top 100 entrenadores globales</span>
       </div>
 
@@ -166,30 +166,22 @@ watch(activeSort, () => {
 
     <!-- Leaderboard Container -->
     <div class="leaderboard-container">
-      <div
-        v-if="socialStore.leaderboardLoading"
-        class="loading-view"
-      >
+      <div v-if="socialStore.leaderboardLoading" class="loading-view">
         <div class="retro-spinner" />
         <p>Consultando el Salón de la Fama...</p>
       </div>
 
-      <div
-        v-else-if="socialStore.leaderboard.length === 0"
-        class="empty-view"
-      >
+      <div v-else-if="socialStore.leaderboard.length === 0" class="empty-view">
         No hay datos de entrenadores disponibles.
       </div>
 
-      <div
-        v-else
-        ref="listRef"
-        class="leaderboard-list"
-      >
+      <div v-else ref="listRef" class="leaderboard-list">
         <div
           v-for="(player, index) in displayPlayers"
           :id="`arena-leaderboard-card-${player.id}`"
           :key="player.id"
+          role="button"
+          tabindex="0"
           class="rank-card"
           :class="`rank-${index + 1}`"
           @click.stop="openTrainerProfile(player.id)"
@@ -198,14 +190,10 @@ watch(activeSort, () => {
         >
           <!-- Rank Placement & Tier Medal Sprite -->
           <div class="rank-badge">
-            <span
-              v-if="player.rankBadge.isPodium"
-              class="emoji crown"
-            >{{ player.rankBadge.emoji }}</span>
-            <span
-              v-else
-              class="rank-digits text-outline"
-            >
+            <span v-if="player.rankBadge.isPodium" class="emoji crown">{{
+              player.rankBadge.emoji
+            }}</span>
+            <span v-else class="rank-digits text-outline">
               {{ player.rankBadge.digitText }}
             </span>
             <img
@@ -213,23 +201,16 @@ watch(activeSort, () => {
               :alt="player.tierName"
               class="ranked-medal-mini pixel-art"
               :title="`Rango: ${player.tierName}`"
-            
               width="32"
               height="32"
-            >
+            />
           </div>
 
           <!-- Avatar -->
           <div class="avatar-container">
-            <TrainerAvatar
-              :profile="player"
-              :size="36"
-            >
+            <TrainerAvatar :profile="player" :size="36">
               <template #overlay>
-                <div
-                  class="status-dot"
-                  :class="{ online: player.isOnline }"
-                />
+                <div class="status-dot" :class="{ online: player.isOnline }" />
               </template>
             </TrainerAvatar>
           </div>
@@ -272,7 +253,7 @@ watch(activeSort, () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .arena-leaderboard-section {
   display: flex;

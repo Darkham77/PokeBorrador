@@ -9,11 +9,23 @@ import path from 'node:path';
 import { Dex } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 import movesJson from '../../src/data/battle/moves.json' with { type: 'json' };
-import { requirePokemonMoveId, type PokemonMoveId, type MoveCategory } from '../../src/data/battle/moves.ts';
+import {
+  requirePokemonMoveId,
+  type PokemonMoveId,
+  type MoveCategory
+} from '../../src/data/battle/moves.ts';
 
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/data/battle/movesData.json');
 
-const SHOWDOWN_BOOST_STAT_KEYS = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'] as const;
+const SHOWDOWN_BOOST_STAT_KEYS = [
+  'atk',
+  'def',
+  'spa',
+  'spd',
+  'spe',
+  'accuracy',
+  'evasion'
+] as const;
 export type ShowdownBoostStatKey = (typeof SHOWDOWN_BOOST_STAT_KEYS)[number];
 
 export interface StaticMoveEffect {
@@ -56,7 +68,9 @@ export interface StaticMoveEntry {
   sound?: boolean;
 }
 
-function cleanBoosts(boosts?: Partial<Record<ShowdownBoostStatKey, number>>): Partial<Record<ShowdownBoostStatKey, number>> | undefined {
+function cleanBoosts(
+  boosts?: Partial<Record<ShowdownBoostStatKey, number>>
+): Partial<Record<ShowdownBoostStatKey, number>> | undefined {
   if (!boosts) return undefined;
   const res: Partial<Record<ShowdownBoostStatKey, number>> = {};
   for (const k of SHOWDOWN_BOOST_STAT_KEYS) {
@@ -90,7 +104,9 @@ const DRAGON_RAGE_FIXED_DAMAGE = 40;
 type ShowdownMove = NonNullable<ReturnType<ReturnType<typeof Dex.forGen>['moves']['get']>>;
 
 function applyMoveEffects(entry: StaticMoveEntry, move: ShowdownMove): void {
-  const boosts = cleanBoosts(move.boosts as Partial<Record<ShowdownBoostStatKey, number>> | undefined);
+  const boosts = cleanBoosts(
+    move.boosts as Partial<Record<ShowdownBoostStatKey, number>> | undefined
+  );
   if (boosts) entry.boosts = boosts;
   if (move.status) entry.status = move.status;
   if (move.volatileStatus) entry.volatileStatus = move.volatileStatus;
@@ -107,7 +123,7 @@ function applyMoveEffects(entry: StaticMoveEntry, move: ShowdownMove): void {
   }
 
   if (move.secondaries && move.secondaries.length > 0) {
-    entry.secondaries = move.secondaries.map(s => cleanEffect(s as RawEffect)).filter(Boolean);
+    entry.secondaries = move.secondaries.map((s) => cleanEffect(s as RawEffect)).filter(Boolean);
   }
 
   const selfHit = cleanEffect(move.self as RawEffect | null | undefined);
@@ -121,7 +137,9 @@ function applySpecialMoveFlags(id: string, entry: StaticMoveEntry, move: Showdow
   }
   if (move.drain) entry.drain = true;
   if (move.multihit) {
-    entry.hits = Array.isArray(move.multihit) ? [move.multihit[0] ?? 2, move.multihit[1] ?? 5] : move.multihit;
+    entry.hits = Array.isArray(move.multihit)
+      ? [move.multihit[0] ?? 2, move.multihit[1] ?? 5]
+      : move.multihit;
   }
   if (move.ohko) entry.ohko = true;
   if (move.damage === 'level') {
@@ -181,7 +199,11 @@ function buildFallbackMoveEntry(id: string, name: string): StaticMoveEntry {
   };
 }
 
-function buildMoveEntry(id: string, trans: { name?: string }, move: ShowdownMove | undefined): StaticMoveEntry {
+function buildMoveEntry(
+  id: PokemonMoveId,
+  trans: { name?: string },
+  move: ShowdownMove | undefined
+): StaticMoveEntry {
   const fallbackName = move?.exists ? move.name : id;
   const espName = trans.name ? trans.name : fallbackName;
 
@@ -210,16 +232,18 @@ export async function generateMovesDatabase(): Promise<void> {
   for (const [id, trans] of Object.entries(movesJson)) {
     const move = Dex.forGen(ACTIVE_GENERATION).moves.get(id);
     const moveId = requirePokemonMoveId(id);
-    result[moveId] = buildMoveEntry(id, trans, move as ShowdownMove | undefined);
+    result[moveId] = buildMoveEntry(moveId, trans, move as ShowdownMove | undefined);
   }
 
   const jsonContent = JSON.stringify(result, null, 2);
   await fs.writeFile(OUTPUT_FILE, jsonContent, 'utf8');
-  console.log(`⚡ [MovesDB Generator] Generado ${OUTPUT_FILE} (${Object.keys(result).length} movimientos).`);
+  console.log(
+    `⚡ [MovesDB Generator] Generado ${OUTPUT_FILE} (${Object.keys(result).length} movimientos).`
+  );
 }
 
 if (process.argv[1]?.endsWith('generate_moves_db.ts')) {
-  generateMovesDatabase().catch(err => {
+  generateMovesDatabase().catch((err) => {
     console.error('❌ [MovesDB Generator] Error fatal:', err);
     process.exit(1);
   });

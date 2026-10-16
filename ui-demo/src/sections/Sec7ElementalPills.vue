@@ -18,7 +18,7 @@ const elementalTypes = [
   { id: 'bug', label: 'BICHO' },
   { id: 'ghost', label: 'FANTASMA' },
   { id: 'steel', label: 'ACERO' }
-] as const
+] as const;
 
 const statuses = [
   { id: 'par', label: 'PAR' },
@@ -26,7 +26,7 @@ const statuses = [
   { id: 'brn', label: 'BRN' },
   { id: 'frz', label: 'FRZ' },
   { id: 'slp', label: 'SLP' }
-] as const
+] as const;
 </script>
 
 <template>
@@ -38,9 +38,7 @@ const statuses = [
 
     <div class="pv-panel-wrap has-cast-shadow">
       <div class="pv-frame-panel pv-panel-surface">
-        <div class="sub-label">
-          LOS 18 TIPOS ELEMENTALES (MICRO-BISEL PIXELADO NIVEL 1):
-        </div>
+        <div class="sub-label">LOS 18 TIPOS ELEMENTALES (MICRO-BISEL PIXELADO NIVEL 1):</div>
         <div class="pill-cluster mb-16">
           <span
             v-for="t in elementalTypes"
@@ -53,9 +51,7 @@ const statuses = [
           </span>
         </div>
 
-        <div class="sub-label">
-          ESTADOS ALTERADOS &amp; GLIFOS DE GÉNERO CENTRADOS:
-        </div>
+        <div class="sub-label">ESTADOS ALTERADOS &amp; GLIFOS DE GÉNERO CENTRADOS:</div>
         <div class="pill-cluster">
           <span
             v-for="st in statuses"

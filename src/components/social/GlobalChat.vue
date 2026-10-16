@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { ref, onMounted, nextTick, computed, watch } from 'vue';
 import { gsap } from 'gsap';
 import { useDocumentListener } from '@/composables/ui/useWindowListener';
@@ -23,7 +22,9 @@ const uiStore = useUIStore();
 
 const isOpen = computed({
   get: () => uiStore.isChatOpen,
-  set: (val: boolean) => { uiStore.isChatOpen = val }
+  set: (val: boolean) => {
+    uiStore.isChatOpen = val;
+  }
 });
 const newMessage = ref('');
 const messagesContainer = ref<HTMLDivElement | null>(null);
@@ -35,7 +36,7 @@ const canWrite = computed(() => canTrainerParticipateInGlobalChat(gameStore.stat
 
 const displayMessages = computed(() => {
   const cosmetics = chatStore.profileCosmetics;
-  return chatStore.globalMessages.map(msg => ({
+  return chatStore.globalMessages.map((msg) => ({
     raw: msg,
     visuals: resolveChatMessageVisuals(msg, cosmetics)
   }));
@@ -67,22 +68,25 @@ function scrollToBottom() {
 }
 
 // Auto-scroll when new messages arrive if panel is open
-watch(() => chatStore.globalMessages.length, () => {
-  if (isOpen.value) {
-    nextTick(scrollToBottom);
+watch(
+  () => chatStore.globalMessages.length,
+  () => {
+    if (isOpen.value) {
+      nextTick(scrollToBottom);
+    }
+    chatStore.fetchMissingCosmetics();
   }
-  chatStore.fetchMissingCosmetics();
-});
+);
 
 function handleOutsideClick(e: Event) {
   if (!isOpen.value || !chatPanelRef.value) return;
-  
+
   const target = e.target as Node;
-  
+
   // Check if click is outside the panel and the toggle button
   const isInsidePanel = chatPanelRef.value.contains(target);
   const isToggleButton = chatToggleRef.value?.contains(target);
-  
+
   if (!isInsidePanel && !isToggleButton) {
     isOpen.value = false;
   }
@@ -94,11 +98,18 @@ function openTrainerProfile(userId?: string) {
 }
 
 const onMessageEnter = (el: Element, done: () => void) => {
-  gsap.fromTo(el,
+  gsap.fromTo(
+    el,
     { scale: 0.9, opacity: 0 },
-    { scale: 1.0, opacity: 1, duration: MESSAGE_ANIM_DURATION_SEC, ease: `back.out(${MESSAGE_ANIM_OVERSHOOT})`, onComplete: done }
-  )
-}
+    {
+      scale: 1.0,
+      opacity: 1,
+      duration: MESSAGE_ANIM_DURATION_SEC,
+      ease: `back.out(${MESSAGE_ANIM_OVERSHOOT})`,
+      onComplete: done
+    }
+  );
+};
 
 onMounted(async () => {
   chatStore.initGlobalChat();
@@ -112,9 +123,9 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   <div class="global-chat-root">
     <!-- Toggle Button -->
     <button
-      id="global-chat-btn-chat" 
+      id="global-chat-btn-chat"
       ref="chatToggleRef"
-      class="chat-toggle-btn" 
+      class="chat-toggle-btn"
       :class="{ 'has-unread': !isOpen && chatStore.globalMessages.length > 0 }"
       @click.stop="toggleChat"
     >
@@ -133,34 +144,18 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
       padding="raw"
       @close="toggleChat"
     >
-      <section 
-        ref="chatPanelRef"
-        class="chat-panel"
-      >
-        <div
-          ref="messagesContainer"
-          class="messages-list custom-scrollbar-vicio"
-        >
-          <div
-            v-if="chatStore.globalMessages.length === 0"
-            class="empty-state"
-          >
+      <section ref="chatPanelRef" class="chat-panel">
+        <div ref="messagesContainer" class="messages-list custom-scrollbar-vicio">
+          <div v-if="chatStore.globalMessages.length === 0" class="empty-state">
             No hay mensajes aún...
           </div>
 
-          <TransitionGroup
-            :css="false"
-            @enter="onMessageEnter"
-          >
-            <div 
-              v-for="item in displayMessages" 
-              :key="item.raw.id" 
-              class="message-row"
-            >
+          <TransitionGroup :css="false" @enter="onMessageEnter">
+            <div v-for="item in displayMessages" :key="item.raw.id" class="message-row">
               <TrainerAvatar
-                id="global-chat-traineravatar-1" 
-                :player-class="item.visuals.playerClass" 
-                :level="item.visuals.level" 
+                id="global-chat-traineravatar-1"
+                :player-class="item.visuals.playerClass"
+                :level="item.visuals.level"
                 :avatar-style="item.visuals.avatarStyle"
                 :gender="item.visuals.gender"
                 :size="32"
@@ -174,8 +169,11 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
                     v-gsap-nick="item.visuals.nickStyle"
                     class="username clickable-username"
                     :class="item.visuals.nickStyle"
+                    role="button"
+                    tabindex="0"
                     @click.stop="openTrainerProfile(item.raw.user_id)"
-                  >{{ item.visuals.username }}</span>
+                    >{{ item.visuals.username }}</span
+                  >
                   <span class="time">{{ item.visuals.time }}</span>
                 </div>
                 <p class="text">
@@ -193,36 +191,31 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
         <footer class="chat-footer">
           <div class="input-container">
             <input
-              id="global-chat-input-newmessage" 
+              id="global-chat-input-newmessage"
               ref="inputField"
               v-model="newMessage"
-              type="text" 
-              :placeholder="canWrite ? 'Habla con el mundo...' : `Nivel ${GLOBAL_CHAT_MIN_LEVEL} requerido`"
+              type="text"
+              :placeholder="
+                canWrite ? 'Habla con el mundo...' : `Nivel ${GLOBAL_CHAT_MIN_LEVEL} requerido`
+              "
+              aria-label="Mensaje del chat global"
               :disabled="!canWrite"
               :maxlength="GLOBAL_CHAT_MAX_CHARS"
               @keydown.enter="handleSendMessage"
-            >
+            />
             <button
-              id="global-chat-btn-3" 
-              class="send-btn" 
+              id="global-chat-btn-3"
+              class="send-btn"
               :disabled="!canWrite || !newMessage.trim()"
               @click.stop="handleSendMessage"
             >
               <span class="emoji">➤</span>
             </button>
           </div>
-          <p
-            v-if="!canWrite"
-            class="hint-error"
-          >
+          <p v-if="!canWrite" class="hint-error">
             Subí a nivel {{ GLOBAL_CHAT_MIN_LEVEL }} para participar.
           </p>
-          <p
-            v-else
-            class="hint"
-          >
-            {{ newMessage.length }}/{{ GLOBAL_CHAT_MAX_CHARS }}
-          </p>
+          <p v-else class="hint">{{ newMessage.length }}/{{ GLOBAL_CHAT_MAX_CHARS }}</p>
         </footer>
       </section>
     </BaseModal>
@@ -230,8 +223,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "sass:string";
+@use '@/styles/core/_mixins' as *;
+@use 'sass:string';
 
 .global-chat-root {
   position: relative;
@@ -256,8 +249,10 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     border-color: var(--purple-light);
   }
 
-  .icon { font-size: var(--font-18); }
-  .label { 
+  .icon {
+    font-size: var(--font-18);
+  }
+  .label {
     @include pixelated;
 
     font-size: var(--font-8);
@@ -270,8 +265,12 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     min-width: 60px;
     padding: 8px;
 
-    .icon { font-size: var(--font-16); }
-    .label { font-size: var(--font-6); }
+    .icon {
+      font-size: var(--font-16);
+    }
+    .label {
+      font-size: var(--font-6);
+    }
   }
 }
 
@@ -311,10 +310,18 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   @include chat-message-meta;
 
   .username {
-    &.rocket { color: Rgb(248 113 113 / 100%); }
-    &.cazabichos { color: Rgb(74 222 128 / 100%); }
-    &.criador { color: Rgb(192 132 252 / 100%); }
-    &.entrenador { color: Rgb(96 165 250 / 100%); }
+    &.rocket {
+      color: Rgb(248 113 113 / 100%);
+    }
+    &.cazabichos {
+      color: Rgb(74 222 128 / 100%);
+    }
+    &.criador {
+      color: Rgb(192 132 252 / 100%);
+    }
+    &.entrenador {
+      color: Rgb(96 165 250 / 100%);
+    }
   }
 }
 
@@ -343,8 +350,13 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     flex: 1;
     outline: none;
 
-    &:focus { border-color: var(--purple-light); }
-    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    &:focus {
+      border-color: var(--purple-light);
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 
   .send-btn {
@@ -356,8 +368,13 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     color: $white;
     cursor: pointer;
 
-    &:hover:not(:disabled) { background: Rgb(157 78 221 / 100%); transform: Scale(1.05); }
-    &:disabled { opacity: 0.3; }
+    &:hover:not(:disabled) {
+      background: Rgb(157 78 221 / 100%);
+      transform: Scale(1.05);
+    }
+    &:disabled {
+      opacity: 0.3;
+    }
   }
 
   %hint-base {

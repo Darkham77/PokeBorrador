@@ -15,17 +15,17 @@
  */
 
 import type { ContinentMapResult } from './continentGenerator.ts';
-import type {
-  POINode,
-  POIGateway
-} from '../../types/map/poiTypes.ts';
+import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
 import type { SettlementTerrainContext } from './cityLayoutEngine.ts';
 import { placePokemonLeague } from './pokemonLeaguePlacementEngine.ts';
 import { placeCoastalHarborDocks } from './coastalHarborPlacementEngine.ts';
 import { placeWaterLandmarks } from './waterLandmarkPlacementEngine.ts';
 import { placeDungeonForests } from './forestPlacementEngine.ts';
 import { placeCaveEntrances } from './cavePlacementEngine.ts';
-import { placePlainSettlements, placeRouteGateCheckpoints } from './settlementPlainPlacementEngine.ts';
+import {
+  placePlainSettlements,
+  placeRouteGateCheckpoints
+} from './settlementPlainPlacementEngine.ts';
 
 export interface POIPlacementOptions {
   readonly seed?: number;
@@ -35,10 +35,7 @@ export interface POIPlacementOptions {
   readonly targetUrbanSettlements?: number;
 }
 
-import {
-  REGIONAL_POI_CATALOG,
-  generateProceduralPOICatalog
-} from './regionalPoiCatalog.ts';
+import { REGIONAL_POI_CATALOG, generateProceduralPOICatalog } from './regionalPoiCatalog.ts';
 
 import {
   DEFAULT_POI_TARGET_COUNT,
@@ -61,7 +58,10 @@ export function placeRegionalPOIs(
 ): readonly POINode[] {
   const generationMode = options?.generationMode ?? 'preset';
   const targetCount = options?.targetCount ?? DEFAULT_POI_TARGET_COUNT;
-  const activeCatalog = generationMode === 'procedural' ? generateProceduralPOICatalog(targetCount) : REGIONAL_POI_CATALOG;
+  const activeCatalog =
+    generationMode === 'procedural'
+      ? generateProceduralPOICatalog(targetCount)
+      : REGIONAL_POI_CATALOG;
   const W = continentMap.width;
   const H = continentMap.height;
   const baseMinSettlementDist = options?.minSettlementDistance ?? DEFAULT_MIN_SETTLEMENT_DISTANCE;

@@ -23,7 +23,8 @@ class CatchBreakoutWhiteoutSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(async (bossLevel) => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const invStore = useInventoryStore();
@@ -44,38 +45,44 @@ class CatchBreakoutWhiteoutSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupWhiteoutScenario(): Promise<void> {
-    await this.page.evaluate(async ({ pLevel, pHp, pMaxHp, enemyLevel }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+    await this.page.evaluate(
+      async ({ pLevel, pHp, pMaxHp, enemyLevel }) => {
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
 
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
+        const gameStore = useGameStore();
+        const battleStore = useBattleStore();
 
-      const p1 = pokemonDebugService.generate({ id: 'pikachu', level: pLevel });
-      p1.hp = pHp;
-      p1.maxHp = pMaxHp;
-      gameStore.state.team = [p1];
-      gameStore.state.starterChosen = true;
+        const p1 = pokemonDebugService.generate({ id: 'pikachu', level: pLevel });
+        p1.hp = pHp;
+        p1.maxHp = pMaxHp;
+        gameStore.state.team = [p1];
+        gameStore.state.starterChosen = true;
 
-      const bossEnemy = pokemonDebugService.generate({ id: 'dragonite', level: enemyLevel });
+        const bossEnemy = pokemonDebugService.generate({ id: 'dragonite', level: enemyLevel });
 
-      await battleStore.startBattle(bossEnemy, {
-        isTrainer: false,
-        locationId: 'route1'
-      });
-    }, {
-      pLevel: WHITEOUT_TEST_LEVEL,
-      pHp: WHITEOUT_TEST_INITIAL_HP,
-      pMaxHp: WHITEOUT_TEST_MAX_HP,
-      enemyLevel: BOSS_DRAGONITE_LEVEL
-    });
+        await battleStore.startBattle(bossEnemy, {
+          isTrainer: false,
+          locationId: 'route1'
+        });
+      },
+      {
+        pLevel: WHITEOUT_TEST_LEVEL,
+        pHp: WHITEOUT_TEST_INITIAL_HP,
+        pMaxHp: WHITEOUT_TEST_MAX_HP,
+        enemyLevel: BOSS_DRAGONITE_LEVEL
+      }
+    );
     await awaitBattleReadyForInput(this.page);
   }
 }
 
 test.describe('Battle Catch Breakout and Whiteout Defeat Simulations', () => {
-  test('should handle Pokéball breakout on full HP legendary and resume battle smoothly', async ({ page }) => {
+  test('should handle Pokéball breakout on full HP legendary and resume battle smoothly', async ({
+    page
+  }) => {
     const sim = new CatchBreakoutWhiteoutSimWrapper(page, 'TestCatchBreakout');
     await sim.setup();
     await sim.setupWildBossEncounter();
@@ -92,7 +99,9 @@ test.describe('Battle Catch Breakout and Whiteout Defeat Simulations', () => {
     await sim.forceFleeDebugger();
   });
 
-  test('should display defeat modal and allow clean return to map when all player Pokémon faint', async ({ page }) => {
+  test('should display defeat modal and allow clean return to map when all player Pokémon faint', async ({
+    page
+  }) => {
     const sim = new CatchBreakoutWhiteoutSimWrapper(page, 'TestWhiteoutDefeat');
     await sim.setup();
     await sim.setupWhiteoutScenario();

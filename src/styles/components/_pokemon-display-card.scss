@@ -1,6 +1,6 @@
-@use "@/styles/core/fx" as *;
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/badges" as *;
+@use '@/styles/core/fx' as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/badges' as *;
 
 .pokemon-display-card {
   @include premium-card-hover(var(--tier-color, $blue), 1.02, -5px);
@@ -13,11 +13,15 @@
   border-color: var(--tier-color, Rgb(255 255 255 / 15%));
   cursor: pointer;
   user-select: none;
-  &:hover .pokemon-sprite { @include pokemon-sprite-hover-standard; }
+  &:hover .pokemon-sprite {
+    @include pokemon-sprite-hover-standard;
+  }
 
   &.disable-click {
     cursor: grab;
-    &:active { cursor: grabbing; }
+    &:active {
+      cursor: grabbing;
+    }
   }
 
   &.is-premium-tier {
@@ -30,9 +34,11 @@
     background: Rgb(30 41 59 / 60%) !important;
     animation: none !important;
     box-shadow: var(--shadow-card);
-    
 
-    &::before, &::after { display: none !important; }
+    &::before,
+    &::after {
+      display: none !important;
+    }
 
     & .pokemon-sprite {
       transform: none;
@@ -54,10 +60,10 @@
       padding-left: 32px;
     }
     & .sprite-section {
-      padding-left: 18px; 
+      padding-left: 18px;
     }
     & .hp-container {
-      padding-left: 12px; 
+      padding-left: 12px;
     }
   }
 
@@ -112,7 +118,8 @@
     align-items: flex-start;
     gap: $spacing-xs;
 
-    .tags-col, .items-col {
+    .tags-col,
+    .items-col {
       @include gpu-layer;
 
       display: flex;
@@ -128,19 +135,23 @@
 
     .tag-badge {
       color: var(--tag-color, Rgb(204 204 204 / 100%));
-      font-size: var(--font-7); 
+      font-size: var(--font-7);
       font-weight: 900;
       letter-spacing: -1px;
     }
-    
-    .shiny-icon { color: var(--yellow); }
+
+    .shiny-icon {
+      color: var(--yellow);
+    }
   }
 
-  .badges-spacer { height: 24px; }
+  .badges-spacer {
+    height: 24px;
+  }
 
   & .sprite-section {
     position: relative;
-    z-index: var(--z-base); 
+    z-index: var(--z-base);
     display: flex;
     justify-content: center;
     align-items: flex-end;
@@ -151,14 +162,14 @@
     & .pokemon-sprite {
       @include pokemon-sprite-base-standard;
 
-      width: 120px; 
+      width: 120px;
       height: 120px;
       will-change: transform;
       margin-bottom: -12px; // Push sprite down to absorb blank canvas space at the bottom
     }
   }
 
-  & .pokemon-info { 
+  & .pokemon-info {
     position: relative;
     z-index: var(--z-base);
     width: 85%;
@@ -190,8 +201,10 @@
         color: var(--white);
         font-size: var(--font-8);
         letter-spacing: 0.5px;
-        text-shadow: 0 2px 4px Rgb(0 0 0 / 80%), 0 0 10px Rgb(0 0 0 / 50%);
-        
+        text-shadow:
+          0 2px 4px Rgb(0 0 0 / 80%),
+          0 0 10px Rgb(0 0 0 / 50%);
+
         &.is-species {
           text-transform: uppercase;
         }
@@ -204,7 +217,6 @@
         font-size: var(--font-7);
         text-transform: uppercase;
       }
-
     }
 
     .pdc-types {
@@ -235,10 +247,16 @@
       @include will-animate(width);
 
       height: 100%;
-      
-      &.hp-high { background: Linear-Gradient(90deg, Rgb(34 197 94 / 100%), Rgb(134 239 172 / 100%)); }
-      &.hp-mid { background: Linear-Gradient(90deg, Rgb(234 179 8 / 100%), Rgb(253 224 71 / 100%)); }
-      &.hp-low { background: Linear-Gradient(90deg, Rgb(239 68 68 / 100%), Rgb(252 165 165 / 100%)); }
+
+      &.hp-high {
+        background: Linear-Gradient(90deg, Rgb(34 197 94 / 100%), Rgb(134 239 172 / 100%));
+      }
+      &.hp-mid {
+        background: Linear-Gradient(90deg, Rgb(234 179 8 / 100%), Rgb(253 224 71 / 100%));
+      }
+      &.hp-low {
+        background: Linear-Gradient(90deg, Rgb(239 68 68 / 100%), Rgb(252 165 165 / 100%));
+      }
     }
 
     .hp-stats {
@@ -262,9 +280,15 @@
       padding: 4px 6px;
       border-radius: $radius-sm;
       font-size: var(--font-8);
-      
-      &.obedience { background: var(--red); color: var(--white); }
-      &.mission { background: var(--yellow); color: var(--black); }
+
+      &.obedience {
+        background: var(--red);
+        color: var(--white);
+      }
+      &.mission {
+        background: var(--yellow);
+        color: var(--black);
+      }
     }
   }
 
@@ -366,7 +390,9 @@
         }
       }
 
-      &.full-width-btn { grid-column: span 1; }
+      &.full-width-btn {
+        grid-column: span 1;
+      }
 
       :global(.theme-wingull-light) &,
       :global(body.theme-wingull-light) & {
@@ -402,7 +428,11 @@
   }
 }
 
-.on-mission { opacity: 0.6; filter: Grayscale(0.5); will-change: filter; }
+.on-mission {
+  opacity: 0.6;
+  filter: Grayscale(0.5);
+  will-change: filter;
+}
 
 @media (width <= 580px) {
   .pokemon-display-card {

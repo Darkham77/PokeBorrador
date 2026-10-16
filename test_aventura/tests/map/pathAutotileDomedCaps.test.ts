@@ -13,10 +13,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  resolvePathGrid,
-  sanitizePathGridWidth
-} from '../../logic/map/pathAutotileEngine.ts';
+import { resolvePathGrid, sanitizePathGridWidth } from '../../logic/map/pathAutotileEngine.ts';
 
 describe('pathAutotileDomedCaps', () => {
   it('resolves a 2-tile wide vertical path with symmetrical domed caps on both ends', () => {

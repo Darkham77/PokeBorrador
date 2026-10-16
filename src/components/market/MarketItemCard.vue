@@ -1,82 +1,84 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { gsap } from 'gsap'
-import type { ItemTier } from '@/types/inventory/items'
+import { computed } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { gsap } from 'gsap';
+import type { ItemTier } from '@/types/inventory/items';
 
 interface InventoryItem {
-  id: string
-  name: string
-  qty: number
-  desc: string
-  price?: number
-  tier?: ItemTier
+  id: string;
+  name: string;
+  qty: number;
+  desc: string;
+  price?: number;
+  tier?: ItemTier;
 }
 
 const props = defineProps<{
-  item: InventoryItem
-  isSelected: boolean
-  gtsStats?: { min: number; max: number; avg: number }
-}>()
+  item: InventoryItem;
+  isSelected: boolean;
+  gtsStats?: { min: number; max: number; avg: number };
+}>();
 
 defineEmits<{
-  (e: 'select'): void
-}>()
+  (e: 'select'): void;
+}>();
 
 // Expose to template
-const _getAssetUrl = getAssetUrl
+const _getAssetUrl = getAssetUrl;
 
-const tierClass = computed(() => `tier-${props.item.tier || 'common'}`)
+const tierClass = computed(() => `tier-${props.item.tier || 'common'}`);
 const tierLabel = computed(() => {
-  const labels: Record<string, string> = {
+  const labels: Record<ItemTier, string> = {
     common: 'Común',
     rare: 'Raro',
     epic: 'Épico',
     legend: 'Legendario'
-  }
-  return labels[props.item.tier || 'common']
-})
+  };
+  return labels[props.item.tier || 'common'];
+});
 
 const tierTooltipDesc = computed(() => {
-  const tier = `• ${tierLabel.value}`
-  return props.item.desc ? `${tier}\n${props.item.desc}` : tier
-})
+  const tier = `• ${tierLabel.value}`;
+  return props.item.desc ? `${tier}\n${props.item.desc}` : tier;
+});
 
 const tierColor = computed(() => {
-  const tier = props.item.tier || 'common'
-  if (tier === 'rare') return '#3b82f6'
-  if (tier === 'epic') return '#a855f7'
-  if (tier === 'legend') return 'var(--yellow)'
-  return '#94a3b8'
-})
+  const tier = props.item.tier || 'common';
+  if (tier === 'rare') return '#3b82f6';
+  if (tier === 'epic') return '#a855f7';
+  if (tier === 'legend') return 'var(--yellow)';
+  return '#94a3b8';
+});
 
 function onItemMouseEnter(e: MouseEvent): void {
   if (e.currentTarget) {
-    gsap.to(e.currentTarget, { x: 4, duration: 0.2, ease: 'power1.out' })
+    gsap.to(e.currentTarget, { x: 4, duration: 0.2, ease: 'power1.out' });
   }
 }
 
 function onItemMouseLeave(e: MouseEvent): void {
   if (e.currentTarget) {
-    gsap.to(e.currentTarget, { x: 0, duration: 0.2, ease: 'power1.out' })
+    gsap.to(e.currentTarget, { x: 0, duration: 0.2, ease: 'power1.out' });
   }
 }
 
 function onItemImgError(e: Event): void {
-  const target = e.target as HTMLImageElement | null
+  const target = e.target as HTMLImageElement | null;
   if (target) {
-    target.src = _getAssetUrl(ASSET_TYPES.ITEM, 'potion')
+    target.src = _getAssetUrl(ASSET_TYPES.ITEM, 'potion');
   }
 }
 </script>
 
 <template>
   <div
-    id="market-item-card-div-1" 
+    id="market-item-card-div-1"
     class="selectable-item-card"
-    :class="[ { selected: isSelected }, tierClass ]"
+    :class="[{ selected: isSelected }, tierClass]"
     :style="{ '--tier-color': tierColor }"
+    role="button"
+    tabindex="0"
     @click.stop="$emit('select')"
     @mouseenter="onItemMouseEnter"
     @mouseleave="onItemMouseLeave"
@@ -90,15 +92,14 @@ function onItemImgError(e: Event): void {
     >
       <div class="item-visual">
         <div class="item-bg-glow" />
-        <img 
-          :src="_getAssetUrl(ASSET_TYPES.ITEM, item.id)" 
+        <img
+          :src="_getAssetUrl(ASSET_TYPES.ITEM, item.id)"
           :alt="item.name || 'Objeto'"
           class="i-sprite pixelated"
           width="32"
-        
           height="32"
           @error="onItemImgError"
-        >
+        />
       </div>
       <div class="item-details">
         <span class="i-name">{{ item.name }}</span>
@@ -163,7 +164,7 @@ function onItemImgError(e: Event): void {
 </template>
 
 <style lang="scss" scoped>
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .selectable-item-card {
   position: relative;
@@ -238,7 +239,7 @@ function onItemImgError(e: Event): void {
     background: Rgb(56 189 248 / 10%);
     border-color: Rgb(56 189 248 / 50%) !important;
     box-shadow: var(--shadow-glow-amber);
-    
+
     .selection-indicator .check-circle {
       background: Rgb(56 189 248 / 100%);
       color: var(--white);
@@ -349,36 +350,56 @@ function onItemImgError(e: Event): void {
     &.shop-pill {
       background: Linear-Gradient(135deg, var(--emerald-500), var(--emerald-500));
       border-color: var(--emerald);
-      .pill-label { color: var(--green-light); }
-      .pill-amount { color: var(--green-light); }
+      .pill-label {
+        color: var(--green-light);
+      }
+      .pill-amount {
+        color: var(--green-light);
+      }
     }
 
     &.min-pill {
       background: Linear-Gradient(135deg, var(--sky-dark), var(--sky-dark));
       border-color: var(--sky);
-      .pill-label { color: var(--sky); }
-      .pill-amount { color: var(--blue-300); }
+      .pill-label {
+        color: var(--sky);
+      }
+      .pill-amount {
+        color: var(--blue-300);
+      }
     }
 
     &.avg-pill {
       background: Linear-Gradient(135deg, var(--purple-600), var(--purple-600));
       border-color: var(--purple-400);
-      .pill-label { color: var(--purple-400); }
-      .pill-amount { color: var(--slate-50); }
+      .pill-label {
+        color: var(--purple-400);
+      }
+      .pill-amount {
+        color: var(--slate-50);
+      }
     }
 
     &.max-pill {
       background: Linear-Gradient(135deg, var(--orange-500), var(--orange-500));
       border-color: var(--orange-500);
-      .pill-label { color: var(--orange-400); }
-      .pill-amount { color: var(--amber-300); }
+      .pill-label {
+        color: var(--orange-400);
+      }
+      .pill-amount {
+        color: var(--amber-300);
+      }
     }
 
     &.no-gts-pill {
       background: Rgb(255 255 255 / 5%);
       border-color: Rgb(255 255 255 / 10%);
-      .pill-label { color: var(--slate-400); }
-      .pill-amount { color: var(--slate-300); }
+      .pill-label {
+        color: var(--slate-400);
+      }
+      .pill-amount {
+        color: var(--slate-300);
+      }
     }
   }
 

@@ -43,7 +43,12 @@ describe('Reproduction Test for <CASE_ID>', () => {
     // 5. Assert clean battle completion and winner parity
     expect(battle.ended).toBe(true);
     if (match.finalState?.winner) {
-      const expected = match.finalState.winner === 'p1' ? 'Player' : (match.finalState.winner === 'p2' ? 'NPC-Enemy' : match.finalState.winner);
+      const expected =
+        match.finalState.winner === 'p1'
+          ? 'Player'
+          : match.finalState.winner === 'p2'
+            ? 'NPC-Enemy'
+            : match.finalState.winner;
       expect(battle.winner).toBe(expected);
     }
   });

@@ -1,2 +1,2 @@
-export {FormatsData} from './formats-data';
-export {Scripts} from './scripts';
+export { FormatsData } from './formats-data';
+export { Scripts } from './scripts';

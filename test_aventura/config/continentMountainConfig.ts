@@ -21,8 +21,8 @@ export const RIDGE_SECONDARY_WEIGHT = 0.15 as const;
 // --- Valley Suppression Factors ---
 export const VALLEY_CENTER_SCALE_RATIO = 0.45 as const;
 export const VALLEY_SUPP_RADIUS_LARGE = 0.35 as const;
-export const VALLEY_SUPP_RADIUS_SMALL = 0.20 as const;
-export const VALLEY_SECONDARY_SUPPRESSION_FACTOR = 0.50 as const;
+export const VALLEY_SUPP_RADIUS_SMALL = 0.2 as const;
+export const VALLEY_SECONDARY_SUPPRESSION_FACTOR = 0.5 as const;
 
 // --- Quantile & Tier Thresholds ---
 export const MIN_MOUNTAIN_PERCENT_CLAMP = 0.12 as const;

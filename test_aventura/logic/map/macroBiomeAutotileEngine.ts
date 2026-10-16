@@ -74,7 +74,8 @@ export interface ResolvedMacroBiomeMapResult {
 /**
  * Maps a macro biome to its canonical 13-tile autotile brush set.
  */
-function getBrushForMacroBiome(biome: MacroBiome): WaterCoastBrushSet | null { // result-ok: Estructura o identificador procedural de aventura
+function getBrushForMacroBiome(biome: MacroBiome): WaterCoastBrushSet | null {
+  // result-ok: Estructura o identificador procedural de aventura
   switch (biome) {
     case 'mint_highland':
       return CANONICAL_MINT_GRASS_BRUSH;
@@ -103,8 +104,11 @@ export function resolveMacroBiomeAutotile(
   const cellDetails: (ResolvedMacroBiomeCell | null)[][] = Array.from({ length: H }, () =>
     Array(W).fill(null)
   );
-  const primaryTiles: string[][] = Array.from({ length: H }, () => // no-domain: Estructura o identificador procedural de aventura
-    Array(W).fill('poke_grass_plain.png') // no-domain: Estructura o identificador procedural de aventura
+  const primaryTiles = Array.from(
+    { length: H },
+    () =>
+      // no-domain: Estructura o identificador procedural de aventura
+      Array(W).fill('poke_grass_plain.png') // no-domain: Estructura o identificador procedural de aventura
   );
 
   for (let y = 0; y < H; y++) {

@@ -1,11 +1,17 @@
 import { toID } from '@/logic/utils/strings.ts';
 import type { SBCtx } from './showdownBridgeCtx.ts';
-import type { Move, Pokemon, PokemonStatus } from '../../types/pokemon/pokemon.ts';
+import {
+  isPokemonStatus,
+  type Move,
+  type Pokemon,
+  type PokemonStatus
+} from '../../types/pokemon/pokemon.ts';
 import { requirePokemonMoveId, type MoveCategory, type PokemonMoveId } from '@/data/battle/moves';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { isMatchingUid } from './showdownUidMapper.ts';
 import type { BattleContext } from '../../types/battle/battleContext.ts';
 import type { BattleSide, BattleWinnerResult } from '../../types/battle/battle.ts';
+import { RADIX_DECIMAL } from '@/logic/constants/gameplay.ts';
 
 function syncMatchingPokemon(team: (Pokemon | null)[] | undefined, target: Pokemon) {
   if (!team) return;
@@ -39,7 +45,8 @@ function formatDamageFromLog(victimName: string, fromClause: string): string {
     return `¡${victimName} sufrió daño por ${weatherName}!`;
   }
   if (fromLower.includes('leech seed')) return `¡${victimName} fue dañado por las Drenadoras!`;
-  if (fromLower.includes('stealth rock') || fromLower.includes('spikes')) return `¡${victimName} sufrió daño por las trampa(s)!`;
+  if (fromLower.includes('stealth rock') || fromLower.includes('spikes'))
+    return `¡${victimName} sufrió daño por las trampa(s)!`;
   if (fromLower.includes('item:')) {
     const itemName = fromClause.split('item:')[1]?.trim() || 'Objeto';
     return `¡${victimName} sufrió daño por ${itemName}!`;
@@ -47,25 +54,24 @@ function formatDamageFromLog(victimName: string, fromClause: string): string {
   return `¡${victimName} recibió daño!`;
 }
 
-const STATUS_MESSAGES: Record<string, string> = {
+const STATUS_MESSAGES: Partial<Record<PokemonStatus, string>> = {
   brn: 'fue quemado!',
   psn: 'fue envenenado!',
   tox: 'fue gravemente envenenado!',
   slp: 'se quedó dormido!',
   par: 'fue paralizado! ¡Quizás no pueda moverse!',
-  frz: 'fue congelado!',
+  frz: 'fue congelado!'
 };
 
-const CURE_STATUS_MESSAGES: Record<string, string> = {
+const CURE_STATUS_MESSAGES: Partial<Record<PokemonStatus, string>> = {
   slp: 'se despertó!',
   frz: 'se descongeló!',
   brn: 'se curó de la quemadura!',
   psn: 'se curó del envenenamiento!',
   tox: 'se curó del envenenamiento!',
-  par: 'se curó de la parálisis!',
+  par: 'se curó de la parálisis!'
 };
 
-const RADIX_DECIMAL = 10 as const;
 const SHOWDOWN_PARSED_FALLBACK_HP = 0 as const;
 
 function parseShowdownHp(hpString: string, currentMaxHp: number): number {
@@ -92,10 +98,12 @@ async function handleDamageToken(ctx: SBCtx): Promise<boolean> {
   const hpString = parts[3] || '';
   if (victim && hpString) {
     victim.hp = parseShowdownHp(hpString, victim.maxHp);
-    const fromClause = parts.find(part => part.startsWith('[from]'));
+    const fromClause = parts.find((part) => part.startsWith('[from]'));
     const isSilent = line.includes('[silent]');
     if (!isSilent) {
-      const logMsg = fromClause ? formatDamageFromLog(victim.name, fromClause) : `¡${victim.name} recibió daño!`;
+      const logMsg = fromClause
+        ? formatDamageFromLog(victim.name, fromClause)
+        : `¡${victim.name} recibió daño!`;
       store.addLog(logMsg, 'log-info', victim);
     }
     const side = victim === p ? 'player' : 'enemy';
@@ -116,8 +124,9 @@ function handleHealToken(ctx: SBCtx): boolean {
     if (target.hp > 0) {
       target.fainted = false;
     }
-    const fromClause = parts.find(part => part.startsWith('[from]'));
-    if (fromClause && fromClause.toLowerCase().includes('drain')) { // text-ok: UI text display localization string
+    const fromClause = parts.find((part) => part.startsWith('[from]'));
+    if (fromClause && fromClause.toLowerCase().includes('drain')) {
+      // text-ok: UI text display localization string
       store.addLog(`¡${target.name} absorbió salud!`, 'log-info', target);
     } else {
       store.addLog(`¡${target.name} recuperó salud!`, 'log-info', target);
@@ -152,9 +161,12 @@ function handleStatusToken(ctx: SBCtx): boolean {
   const target = getPoke(parts[2] || '');
   const statusType = parts[3] || '';
   if (target && statusType) {
-    target.status = statusType as PokemonStatus;
-    const desc = STATUS_MESSAGES[statusType];
-    const msg = desc ? `¡${target.name} ${desc}` : `¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`; // text-ok: UI text display localization string
+    target.status = isPokemonStatus(statusType) ? statusType : '';
+    const desc =
+      isPokemonStatus(statusType) && statusType !== '' ? STATUS_MESSAGES[statusType] : undefined;
+    const msg = desc
+      ? `¡${target.name} ${desc}`
+      : `¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`; // text-ok: UI text display localization string
     store.addLog(msg, 'log-info', target);
     syncCombatantToTeam(store, target);
   }
@@ -168,7 +180,10 @@ function handleCureStatusToken(ctx: SBCtx): boolean {
   const curedStatus = parts[3] || '';
   if (target) {
     target.status = '';
-    const desc = CURE_STATUS_MESSAGES[curedStatus];
+    const desc =
+      isPokemonStatus(curedStatus) && curedStatus !== ''
+        ? CURE_STATUS_MESSAGES[curedStatus]
+        : undefined;
     const msg = desc ? `¡${target.name} ${desc}` : `¡${target.name} se curó de su estado alterado!`;
     store.addLog(msg, 'log-info', target);
     syncCombatantToTeam(store, target);
@@ -193,8 +208,8 @@ function updateAttackerMoveVolatiles(
   };
   attacker.lastMove = lastMove;
 
-  const hasPrepareThisTurn = turnLogs?.some(l => {
-    const lp = l.split('|').map(x => x.trim());
+  const hasPrepareThisTurn = turnLogs?.some((l) => {
+    const lp = l.split('|').map((x) => x.trim());
     return lp[1] === '-prepare' && getSide?.(lp[2] || '') === side;
   });
 
@@ -213,7 +228,9 @@ function updateAttackerMoveVolatiles(
     if (attacker.disabledTurns === 0) {
       attacker.disabledMove = null;
       if (attacker.moves) {
-        attacker.moves.forEach(m => { if (m) m.disabled = false; });
+        attacker.moves.forEach((m) => {
+          if (m) m.disabled = false;
+        });
       }
     }
   }
@@ -263,10 +280,22 @@ async function handleMoveToken(ctx: SBCtx): Promise<boolean> {
 
   if (attacker && side) {
     const style = attacker === p ? 'log-player' : 'log-enemy';
-    store.addLog(`¡${attacker.name} usó ${translatedName}!${isFromEffect ? ' (efecto)' : ''}`, style, attacker);
+    store.addLog(
+      `¡${attacker.name} usó ${translatedName}!${isFromEffect ? ' (efecto)' : ''}`,
+      style,
+      attacker
+    );
     const cleanMoveId = requirePokemonMoveId(toID(moveId));
 
-    updateAttackerMoveVolatiles(attacker, side, cleanMoveId, translatedName, moveData, turnLogs, getSide);
+    updateAttackerMoveVolatiles(
+      attacker,
+      side,
+      cleanMoveId,
+      translatedName,
+      moveData,
+      turnLogs,
+      getSide
+    );
 
     if (!isMissed) {
       await playMoveAnimationSequence(store, side, cleanMoveId, translatedName, moveData);
@@ -306,16 +335,23 @@ function handlePrepareToken(ctx: SBCtx): boolean {
   return true;
 }
 
-
-
 function handleCureStatusAllToken(ctx: SBCtx): boolean {
   const { store } = ctx;
   if (store.activeBattle.value) {
     const battle = store.activeBattle.value;
-    if (battle.playerTeam) battle.playerTeam.forEach((mon: Pokemon | null) => { if (mon) mon.status = ''; });
-    if (battle.enemyTeam) battle.enemyTeam.forEach((mon: Pokemon | null) => { if (mon) mon.status = ''; });
+    if (battle.playerTeam)
+      battle.playerTeam.forEach((mon: Pokemon | null) => {
+        if (mon) mon.status = '';
+      });
+    if (battle.enemyTeam)
+      battle.enemyTeam.forEach((mon: Pokemon | null) => {
+        if (mon) mon.status = '';
+      });
   }
-  store.addLog('¡Todos los Pokémon del equipo fueron curados de sus problemas de estado!', 'log-info');
+  store.addLog(
+    '¡Todos los Pokémon del equipo fueron curados de sus problemas de estado!',
+    'log-info'
+  );
   return true;
 }
 
@@ -355,7 +391,9 @@ function handleWinTieToken(ctx: SBCtx): boolean {
     winnerResult = 'tie';
   } else {
     const playerNames = store.activeBattle.value?.playerNames || {};
-    const isPlayerWin = winnerName.split(/\s*&\s*/).some(name => playerNames[name.trim()] === 'player') || winnerName === 'Player';
+    const isPlayerWin =
+      winnerName.split(/\s*&\s*/).some((name) => playerNames[name.trim()] === 'player') ||
+      winnerName === 'Player';
     if (isPlayerWin) {
       source = 'player';
       winnerResult = 'player';
@@ -365,12 +403,16 @@ function handleWinTieToken(ctx: SBCtx): boolean {
     store.activeBattle.value.over = true;
     store.activeBattle.value.winnerResult = winnerResult;
   }
-  const msg = type === 'tie' ? '¡El combate ha terminado en empate!' : `¡El combate ha terminado! Ganador: ${winnerName}`;
+  const msg =
+    type === 'tie'
+      ? '¡El combate ha terminado en empate!'
+      : `¡El combate ha terminado! Ganador: ${winnerName}`;
   store.addLog(msg, 'log-info', source);
   return true;
 }
 
 const CORE_EVENT_DISPATCHER: Record<string, (ctx: SBCtx) => Promise<boolean> | boolean> = {
+  // open-record: Showdown core protocol event dispatch table
   move: handleMoveToken,
   '-prepare': handlePrepareToken,
   '-damage': handleDamageToken,
@@ -388,15 +430,23 @@ const CORE_EVENT_DISPATCHER: Record<string, (ctx: SBCtx) => Promise<boolean> | b
   teampreview: () => true,
   start: () => true,
   poke: () => true,
-  clearpoke: () => true,
+  clearpoke: () => true
 };
 
 const IGNORED_ENEMY_LOG_TOKENS = [
-  'move', '-damage', '-heal', '-status', '-curestatus', '-sethp', 'faint'
+  'move',
+  '-damage',
+  '-heal',
+  '-status',
+  '-curestatus',
+  '-sethp',
+  'faint'
 ] as const;
-type IgnoredEnemyLogToken = typeof IGNORED_ENEMY_LOG_TOKENS[number];
+type IgnoredEnemyLogToken = (typeof IGNORED_ENEMY_LOG_TOKENS)[number];
 
-const IGNORED_ENEMY_LOG_TYPES: ReadonlySet<IgnoredEnemyLogToken> = new Set(IGNORED_ENEMY_LOG_TOKENS);
+const IGNORED_ENEMY_LOG_TYPES: ReadonlySet<IgnoredEnemyLogToken> = new Set(
+  IGNORED_ENEMY_LOG_TOKENS
+);
 
 /**
  * Dispatches core combat events (move, damage, heal, faint, status, etc.) via Strategy Action Map.

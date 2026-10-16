@@ -1,4 +1,3 @@
-
 /**
  * Virtual World Coordinator (Spatial Standardization)
  * Source of truth for all virtual units, scaling, and positioning logic.
@@ -34,14 +33,18 @@ export const WORLD_CONSTANTS = {
   // Action/Safe Zone (Center of the world)
   SAFE_ZONE_WIDTH: SAFE_ZONE_WIDTH_PX,
   SAFE_ZONE_HEIGHT: SAFE_ZONE_HEIGHT_PX,
-  get SAFE_ZONE_X(): number { return (this.MAP_WIDTH - this.SAFE_ZONE_WIDTH) / 2 },
-  get SAFE_ZONE_Y(): number { return (this.MAP_HEIGHT - this.SAFE_ZONE_HEIGHT) / 2 },
+  get SAFE_ZONE_X(): number {
+    return (this.MAP_WIDTH - this.SAFE_ZONE_WIDTH) / 2;
+  },
+  get SAFE_ZONE_Y(): number {
+    return (this.MAP_HEIGHT - this.SAFE_ZONE_HEIGHT) / 2;
+  },
 
   // Action focus point
   TARGET_X: ACTION_TARGET_X_PX,
   get TARGET_Y(): number {
     // Aligned to bottom: The bottom of the safe zone coincides with the bottom of the visible units
-    return (this.SAFE_ZONE_Y + this.SAFE_ZONE_HEIGHT) - (this.VISIBLE_UNITS_Y / 2)
+    return this.SAFE_ZONE_Y + this.SAFE_ZONE_HEIGHT - this.VISIBLE_UNITS_Y / 2;
   },
 
   // Camera Constraints
@@ -62,20 +65,36 @@ export const WORLD_CONSTANTS = {
   BASE_POKEBALL_SIZE_ENEMY: BASE_POKEBALL_SIZE_ENEMY_PX,
   SHADOW_WIDTH: SHADOW_WIDTH_PX,
   SHADOW_HEIGHT: SHADOW_HEIGHT_PX,
-  
-  /** 
-   * Default entity size (400px by default) 
+
+  /**
+   * Default entity size (400px by default)
    * Calculated as BASE_ENTITY_SIZE * OBJECT_SCALE
    */
-  get ENTITY_SIZE(): number { return this.BASE_ENTITY_SIZE * this.OBJECT_SCALE },
-  get ENTITY_SIZE_PLAYER(): number { return this.BASE_ENTITY_SIZE_PLAYER * this.OBJECT_SCALE },
-  get STANDING_TRAINER_SIZE_PLAYER(): number { return this.BASE_STANDING_TRAINER_SIZE_PLAYER * this.OBJECT_SCALE },
-  get ENTITY_SIZE_ENEMY(): number { return this.BASE_ENTITY_SIZE_ENEMY * this.OBJECT_SCALE },
-  get BUSH_SIZE(): number { return this.BASE_BUSH_SIZE * this.OBJECT_SCALE },
-  get PREVIEW_SIZE(): number { return this.BASE_PREVIEW_SIZE * this.OBJECT_SCALE },
-  get POKEBALL_SIZE_PLAYER(): number { return this.BASE_POKEBALL_SIZE_PLAYER * this.OBJECT_SCALE },
-  get POKEBALL_SIZE_ENEMY(): number { return this.BASE_POKEBALL_SIZE_ENEMY * this.OBJECT_SCALE }
-}
+  get ENTITY_SIZE(): number {
+    return this.BASE_ENTITY_SIZE * this.OBJECT_SCALE;
+  },
+  get ENTITY_SIZE_PLAYER(): number {
+    return this.BASE_ENTITY_SIZE_PLAYER * this.OBJECT_SCALE;
+  },
+  get STANDING_TRAINER_SIZE_PLAYER(): number {
+    return this.BASE_STANDING_TRAINER_SIZE_PLAYER * this.OBJECT_SCALE;
+  },
+  get ENTITY_SIZE_ENEMY(): number {
+    return this.BASE_ENTITY_SIZE_ENEMY * this.OBJECT_SCALE;
+  },
+  get BUSH_SIZE(): number {
+    return this.BASE_BUSH_SIZE * this.OBJECT_SCALE;
+  },
+  get PREVIEW_SIZE(): number {
+    return this.BASE_PREVIEW_SIZE * this.OBJECT_SCALE;
+  },
+  get POKEBALL_SIZE_PLAYER(): number {
+    return this.BASE_POKEBALL_SIZE_PLAYER * this.OBJECT_SCALE;
+  },
+  get POKEBALL_SIZE_ENEMY(): number {
+    return this.BASE_POKEBALL_SIZE_ENEMY * this.OBJECT_SCALE;
+  }
+};
 
 export type WorldConstantKey = keyof typeof WORLD_CONSTANTS;
 
@@ -85,14 +104,14 @@ import type { CSSProperties } from 'vue';
  * Normalizes coordinates into the 3000x3000px virtual space.
  */
 export function toVirtualStyles(x: number, y: number, w?: number, h?: number): CSSProperties {
-  const scale = WORLD_CONSTANTS.OBJECT_SCALE
+  const scale = WORLD_CONSTANTS.OBJECT_SCALE;
   return {
     position: 'absolute',
     left: `${x}px`,
     top: `${y}px`,
     width: w !== undefined ? `${w * scale}px` : undefined,
     height: h !== undefined ? `${h * scale}px` : undefined
-  }
+  };
 }
 
 import type { BattleSide } from '@/types/battle/battle';
@@ -101,18 +120,18 @@ import type { BattleSide } from '@/types/battle/battle';
  * Returns the standard position for a combatant side.
  */
 export function getCombatantPosition(side: BattleSide): { x: number; y: number } {
-  const { SAFE_ZONE_X, SAFE_ZONE_Y, SAFE_ZONE_WIDTH, SAFE_ZONE_HEIGHT } = WORLD_CONSTANTS
+  const { SAFE_ZONE_X, SAFE_ZONE_Y, SAFE_ZONE_WIDTH, SAFE_ZONE_HEIGHT } = WORLD_CONSTANTS;
   if (side === 'player') {
-    const size = WORLD_CONSTANTS.ENTITY_SIZE_PLAYER
+    const size = WORLD_CONSTANTS.ENTITY_SIZE_PLAYER;
     return {
       x: SAFE_ZONE_X,
       y: SAFE_ZONE_Y + SAFE_ZONE_HEIGHT - size
-    }
+    };
   }
   // Enemy (p2)
-  const size = WORLD_CONSTANTS.ENTITY_SIZE_ENEMY
+  const size = WORLD_CONSTANTS.ENTITY_SIZE_ENEMY;
   return {
     x: SAFE_ZONE_X + SAFE_ZONE_WIDTH - size,
     y: SAFE_ZONE_Y
-  }
+  };
 }

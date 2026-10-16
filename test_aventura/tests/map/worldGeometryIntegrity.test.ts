@@ -42,7 +42,10 @@ describe('World Geometry & Settlement Structural Integrity', () => {
     for (const prop of built.props) {
       if (prop === fountain) continue;
       const key = `${prop.x}_${prop.y}`;
-      expect(fCells.has(key), `Prop ${prop.type} at (${prop.x},${prop.y}) overlaps 3x3 fountain`).toBe(false);
+      expect(
+        fCells.has(key),
+        `Prop ${prop.type} at (${prop.x},${prop.y}) overlaps 3x3 fountain`
+      ).toBe(false);
     }
   });
 
@@ -63,16 +66,21 @@ describe('World Geometry & Settlement Structural Integrity', () => {
 
       for (const poi of pois) {
         // 1. POI Name Uniqueness Invariant
-        expect(seenPoiNames.has(poi.name), `Duplicate POI name "${poi.name}" detected in seed ${seed}`).toBe(false);
+        expect(
+          seenPoiNames.has(poi.name),
+          `Duplicate POI name "${poi.name}" detected in seed ${seed}`
+        ).toBe(false);
         seenPoiNames.add(poi.name);
 
         // 2. Cave Entrance Placement Invariant
         if (poi.type === 'cave_entrance') {
           const mCell = continent.resolvedMountain.cellDetails[poi.gridY]?.[poi.gridX];
-          const isSouthWall = mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'));
+          const isSouthWall =
+            mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'));
           const frontElev = continent.heightmap[poi.gridY + 1]?.[poi.gridX] ?? 0;
           const frontTerrain = continent.terrainMatrix[poi.gridY + 1]?.[poi.gridX];
-          const frontIsGround = frontElev === 0 && frontTerrain !== 'water' && frontTerrain !== 'water_deep';
+          const frontIsGround =
+            frontElev === 0 && frontTerrain !== 'water' && frontTerrain !== 'water_deep';
 
           if (!isSouthWall || !frontIsGround) {
             invalidCaveCount++;
@@ -133,8 +141,13 @@ describe('World Geometry & Settlement Structural Integrity', () => {
         }
       }
 
-      expect(mixedElevationBuildingCount, `Seed ${seed} has buildings with mixed elevation`).toBe(0);
-      expect(cliffOverlappingBuildingCount, `Seed ${seed} has buildings overlapping cliff edges or foot cells`).toBe(0);
+      expect(mixedElevationBuildingCount, `Seed ${seed} has buildings with mixed elevation`).toBe(
+        0
+      );
+      expect(
+        cliffOverlappingBuildingCount,
+        `Seed ${seed} has buildings overlapping cliff edges or foot cells`
+      ).toBe(0);
       expect(overlappingBuildingCount, `Seed ${seed} has mutually overlapping buildings`).toBe(0);
       expect(propOverlappingBuildingCount, `Seed ${seed} has props overlapping buildings`).toBe(0);
       expect(invalidCaveCount, `Seed ${seed} has caves not anchored to south cliff wall`).toBe(0);

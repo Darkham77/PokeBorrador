@@ -40,15 +40,24 @@ describe('Mountain Stairs & Route Network Integrity (Paso 4 / Error 4)', () => {
         for (let dx = 0; dx <= 1; dx++) {
           const cell = continent.cells[stair.y + dy]?.[stair.x + dx];
           expect(cell, `Cell at (${stair.x + dx}, ${stair.y + dy}) must exist`).toBeDefined();
-          expect(cell?.isStair, `Cell at (${stair.x + dx}, ${stair.y + dy}) must have isStair=true`).toBe(true);
-          expect(cell?.isWalkable, `Cell at (${stair.x + dx}, ${stair.y + dy}) must have isWalkable=true`).toBe(true);
+          expect(
+            cell?.isStair,
+            `Cell at (${stair.x + dx}, ${stair.y + dy}) must have isStair=true`
+          ).toBe(true);
+          expect(
+            cell?.isWalkable,
+            `Cell at (${stair.x + dx}, ${stair.y + dy}) must have isWalkable=true`
+          ).toBe(true);
         }
       }
     }
   });
 
   it('guarantees zero props or vegetation blocking stair corridors (clear landings)', () => {
-    const blockedLandings: Array<{ stair: { x: number; y: number }; prop: { x: number; y: number; type: string } }> = [];
+    const blockedLandings: Array<{
+      stair: { x: number; y: number };
+      prop: { x: number; y: number; type: string };
+    }> = [];
 
     for (const stair of continent.placedStairs) {
       for (const prop of wilderness.props) {
@@ -81,7 +90,12 @@ describe('Mountain Stairs & Route Network Integrity (Paso 4 / Error 4)', () => {
   });
 
   it('ensures every mountain stair connects its lower and upper landings to the pathGrid', () => {
-    const disconnectedStairs: Array<{ x: number; y: number; lowerConnected: boolean; upperConnected: boolean }> = [];
+    const disconnectedStairs: Array<{
+      x: number;
+      y: number;
+      lowerConnected: boolean;
+      upperConnected: boolean;
+    }> = [];
 
     for (const stair of continent.placedStairs) {
       const lowerConnected =

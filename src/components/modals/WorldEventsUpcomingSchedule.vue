@@ -1,38 +1,43 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { getUpcomingEventOccurrences, getEventDisplayName, type Event as GameEvent, type UpcomingEventOccurrence } from '@/logic/events/eventEngine'
-import { getServerInstant, GAME_TIMEZONE } from '@/logic/utils/timeUtils'
+import { computed } from 'vue';
+import {
+  getUpcomingEventOccurrences,
+  getEventDisplayName,
+  type Event as GameEvent,
+  type UpcomingEventOccurrence
+} from '@/logic/events/eventEngine';
+import { getServerInstant, GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 
 interface Props {
-  allEvents: GameEvent[]
+  allEvents: GameEvent[];
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  openEventDetail: [event: GameEvent, occurrence?: UpcomingEventOccurrence]
-}>()
+  openEventDetail: [event: GameEvent, occurrence?: UpcomingEventOccurrence];
+}>();
 
 const upcomingOccurrences = computed(() => {
-  return getUpcomingEventOccurrences(props.allEvents || [], getServerInstant(), 7)
-})
+  return getUpcomingEventOccurrences(props.allEvents || [], getServerInstant(), 7);
+});
 
 interface UpcomingDayGroup {
-  dateKey: string
-  dateLabel: string
-  dayName: string
-  isToday: boolean
-  occurrences: UpcomingEventOccurrence[]
+  dateKey: string;
+  dateLabel: string;
+  dayName: string;
+  isToday: boolean;
+  occurrences: UpcomingEventOccurrence[];
 }
 
 const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
-  const groups: UpcomingDayGroup[] = []
-  const map = new Map<string, UpcomingDayGroup>()
+  const groups: UpcomingDayGroup[] = [];
+  const map = new Map<string, UpcomingDayGroup>();
 
   for (const occ of upcomingOccurrences.value) {
-    const zdt = occ.startInstant.toZonedDateTimeISO(GAME_TIMEZONE)
-    const dateKey = `${zdt.year}-${String(zdt.month).padStart(2, '0')}-${String(zdt.day).padStart(2, '0')}`
-    
+    const zdt = occ.startInstant.toZonedDateTimeISO(GAME_TIMEZONE);
+    const dateKey = `${zdt.year}-${String(zdt.month).padStart(2, '0')}-${String(zdt.day).padStart(2, '0')}`;
+
     const group = map.getOrInsertComputed(dateKey, () => {
       const newGroup: UpcomingDayGroup = {
         dateKey,
@@ -40,22 +45,19 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
         dayName: occ.dayName,
         isToday: occ.dateLabel === 'Hoy',
         occurrences: []
-      }
-      groups.push(newGroup)
-      return newGroup
-    })
-    group.occurrences.push(occ)
+      };
+      groups.push(newGroup);
+      return newGroup;
+    });
+    group.occurrences.push(occ);
   }
 
-  return groups
-})
+  return groups;
+});
 </script>
 
 <template>
-  <div
-    id="upcoming-events-schedule-section"
-    class="events-section-block upcoming-section"
-  >
+  <div id="upcoming-events-schedule-section" class="events-section-block upcoming-section">
     <div class="events-section-header">
       <div class="section-title-wrap">
         <h3 class="events-section-title">
@@ -67,24 +69,14 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
     </div>
 
     <div class="upcoming-events-grid">
-      <div 
-        v-if="upcomingDayGroups.length === 0" 
-        class="no-events"
-      >
+      <div v-if="upcomingDayGroups.length === 0" class="no-events">
         No hay eventos programados para los próximos 7 días.
       </div>
 
-      <div
-        v-for="group in upcomingDayGroups"
-        :key="group.dateKey"
-        class="upcoming-day-group"
-      >
+      <div v-for="group in upcomingDayGroups" :key="group.dateKey" class="upcoming-day-group">
         <!-- Day Group Header Divider with Line -->
         <div class="day-group-header">
-          <span
-            class="day-group-badge pixelated"
-            :class="{ 'is-today': group.isToday }"
-          >
+          <span class="day-group-badge pixelated" :class="{ 'is-today': group.isToday }">
             {{ group.dateLabel }} · {{ group.dayName }}
           </span>
           <div class="day-group-line" />
@@ -96,6 +88,8 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
             v-for="occ in group.occurrences"
             id="world-events-upcoming-schedule-div-1"
             :key="`${occ.event.id}-${occ.startInstant.epochMilliseconds}`"
+            role="button"
+            tabindex="0"
             class="upcoming-event-card"
             :class="{ 'is-active': occ.isActiveNow }"
             @click.stop="emit('openEventDetail', occ.event, occ)"
@@ -110,21 +104,19 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
                   {{ occ.event.icon || '🎁' }}
                 </div>
                 <div class="upcoming-texts">
-                  <span class="upcoming-title pixelated">{{ getEventDisplayName(occ.event, occ) }}</span>
+                  <span class="upcoming-title pixelated">{{
+                    getEventDisplayName(occ.event, occ)
+                  }}</span>
                   <span class="upcoming-desc">{{ occ.event.description }}</span>
                 </div>
               </div>
             </div>
 
             <div class="upcoming-right-column">
-              <span
-                v-if="occ.isActiveNow"
-                class="status-live pixelated"
-              ><span class="emoji">🟢</span> ACTIVO AHORA</span>
-              <span
-                v-else
-                class="status-starts pixelated"
-              >{{ occ.startsInLabel }}</span>
+              <span v-if="occ.isActiveNow" class="status-live pixelated"
+                ><span class="emoji">🟢</span> ACTIVO AHORA</span
+              >
+              <span v-else class="status-starts pixelated">{{ occ.startsInLabel }}</span>
               <button
                 id="world-events-upcoming-schedule-btn-reglas-y-premios"
                 class="retro-btn details-btn pixelated"
@@ -141,7 +133,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
 </template>
 
 <style lang="scss" scoped>
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .events-section-block {
   display: flex;

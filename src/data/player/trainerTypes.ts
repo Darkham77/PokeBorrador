@@ -67,13 +67,22 @@ export interface TrainerTypeRawConfig {
 }
 
 const EXCLUDED_LEGENDARY_IDS = [
-  'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
-  'raikou', 'entei', 'suicune', 'lugia', 'hooh', 'celebi'
+  'articuno',
+  'zapdos',
+  'moltres',
+  'mewtwo',
+  'mew',
+  'raikou',
+  'entei',
+  'suicune',
+  'lugia',
+  'hooh',
+  'celebi'
 ] as const;
 const EXCLUDED_LEGENDARY_IDS_SET: ReadonlySet<string> = new Set(EXCLUDED_LEGENDARY_IDS); // runtime-set: Fast O(1) membership lookup set
 
 const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
-  'caza_bichos': {
+  caza_bichos: {
     name: 'Caza Bichos',
     sprite: 'bugcatcher',
     archetype: 'caza_bichos' as NpcArchetype,
@@ -81,7 +90,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     types: ['bug'],
     matchMode: 'any_type'
   },
-  'ornitologo': {
+  ornitologo: {
     name: 'Ornitólogo',
     sprite: 'birdkeeper',
     archetype: 'ornitologo' as NpcArchetype,
@@ -89,7 +98,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     types: ['flying'],
     matchMode: 'any_type'
   },
-  'cientifico': {
+  cientifico: {
     name: 'Científico',
     sprite: 'scientist',
     archetype: 'cientifico' as NpcArchetype,
@@ -97,7 +106,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     types: ['electric', 'poison', 'steel'],
     extraPool: ['porygon', 'ditto', 'voltorb', 'electrode']
   },
-  'luchador': {
+  luchador: {
     name: 'Luchador',
     sprite: 'blackbelt',
     archetype: 'luchador' as NpcArchetype,
@@ -105,7 +114,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     types: ['fighting'],
     matchMode: 'any_type'
   },
-  'pescador': {
+  pescador: {
     name: 'Pescador',
     sprite: 'fisherman',
     archetype: 'pescador' as NpcArchetype,
@@ -113,7 +122,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     types: ['water'],
     matchMode: 'any_type'
   },
-  'nadador': {
+  nadador: {
     name: 'Nadador',
     sprite: 'swimmer',
     archetype: 'nadador' as NpcArchetype,
@@ -121,15 +130,25 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     types: ['water'],
     matchMode: 'any_type'
   },
-  'domador': {
+  domador: {
     name: 'Domador',
     sprite: 'tamer-gen3',
     archetype: 'domador' as NpcArchetype,
     aiPreset: 'tactical',
     types: ['fire', 'dragon'],
-    extraPool: ['tauros', 'kangaskhan', 'dodrio', 'persian', 'primeape', 'growlithe', 'arcanine', 'ponyta', 'rapidash']
+    extraPool: [
+      'tauros',
+      'kangaskhan',
+      'dodrio',
+      'persian',
+      'primeape',
+      'growlithe',
+      'arcanine',
+      'ponyta',
+      'rapidash'
+    ]
   },
-  'medium': {
+  medium: {
     name: 'Médium',
     sprite: 'psychic',
     archetype: 'medium' as NpcArchetype,
@@ -137,7 +156,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     types: ['psychic', 'ghost'],
     matchMode: 'any_type'
   },
-  'motorista': {
+  motorista: {
     name: 'Motorista',
     sprite: 'biker',
     archetype: 'motorista' as NpcArchetype,
@@ -145,7 +164,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     types: ['poison', 'fire'],
     extraPool: ['electabuzz', 'magmar', 'koffing', 'weezing', 'grimer', 'muk', 'ekans', 'arbok']
   },
-  'montanero': {
+  montanero: {
     name: 'Montañero',
     sprite: 'hiker',
     archetype: 'montanero' as NpcArchetype,
@@ -153,30 +172,80 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     types: ['rock', 'ground'],
     matchMode: 'any_type'
   },
-  'rocket': {
+  rocket: {
     name: 'Recluta Rocket',
     sprite: 'rocketgrunt',
     archetype: 'rocket' as NpcArchetype,
     aiPreset: 'elite',
     types: ['poison', 'dark'],
-    extraPool: ['rattata', 'raticate', 'meowth', 'persian', 'drowzee', 'hypno', 'machop', 'machoke', 'zubat', 'golbat', 'koffing', 'weezing', 'grimer', 'muk', 'ekans', 'arbok']
+    extraPool: [
+      'rattata',
+      'raticate',
+      'meowth',
+      'persian',
+      'drowzee',
+      'hypno',
+      'machop',
+      'machoke',
+      'zubat',
+      'golbat',
+      'koffing',
+      'weezing',
+      'grimer',
+      'muk',
+      'ekans',
+      'arbok'
+    ]
   },
-  'criador': {
+  criador: {
     name: 'Criador Pokémon',
     sprite: 'pokemonbreeder',
     archetype: 'criador' as NpcArchetype,
     aiPreset: 'intermediate',
     types: ['normal', 'fairy', 'grass'],
-    extraPool: ['pichu', 'cleffa', 'igglybuff', 'togepi', 'tyrogue', 'smoochum', 'elekid', 'magby', 'eevee', 'chansey', 'oddish', 'bellsprout', 'growlithe', 'poliwag', 'caterpie', 'weedle']
+    extraPool: [
+      'pichu',
+      'cleffa',
+      'igglybuff',
+      'togepi',
+      'tyrogue',
+      'smoochum',
+      'elekid',
+      'magby',
+      'eevee',
+      'chansey',
+      'oddish',
+      'bellsprout',
+      'growlithe',
+      'poliwag',
+      'caterpie',
+      'weedle'
+    ]
   },
-  'aristocrata': {
+  aristocrata: {
     name: 'Aristócrata',
     sprite: 'gentleman',
     archetype: 'aristocrata' as NpcArchetype,
     aiPreset: 'elite',
-    extraPool: ['meowth', 'persian', 'growlithe', 'arcanine', 'eevee', 'vaporeon', 'jolteon', 'flareon', 'clefairy', 'clefable', 'ninetales', 'rapidash', 'dragonair', 'lapras', 'chansey']
+    extraPool: [
+      'meowth',
+      'persian',
+      'growlithe',
+      'arcanine',
+      'eevee',
+      'vaporeon',
+      'jolteon',
+      'flareon',
+      'clefairy',
+      'clefable',
+      'ninetales',
+      'rapidash',
+      'dragonair',
+      'lapras',
+      'chansey'
+    ]
   },
-  'ranger': {
+  ranger: {
     name: 'Ranger Pokémon',
     sprite: 'pokemonranger',
     archetype: 'ranger' as NpcArchetype,
@@ -184,36 +253,71 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     types: ['grass', 'ground', 'bug'],
     matchMode: 'any_type'
   },
-  'pokefan': {
+  pokefan: {
     name: 'Pokéfan',
     sprite: 'pokefan',
     archetype: 'pokefan' as NpcArchetype,
     aiPreset: 'novice',
-    extraPool: ['pikachu', 'raichu', 'jigglypuff', 'wigglytuff', 'clefairy', 'clefable', 'meowth', 'eevee', 'psyduck', 'togepi', 'pichu', 'snorlax']
+    extraPool: [
+      'pikachu',
+      'raichu',
+      'jigglypuff',
+      'wigglytuff',
+      'clefairy',
+      'clefable',
+      'meowth',
+      'eevee',
+      'psyduck',
+      'togepi',
+      'pichu',
+      'snorlax'
+    ]
   },
-  'policeman': {
+  policeman: {
     name: 'Oficial de Policía',
     sprite: 'policeman',
     archetype: 'policeman' as NpcArchetype,
     aiPreset: 'elite',
-    extraPool: ['growlithe', 'arcanine', 'machop', 'machoke', 'machamp', 'magnemite', 'magneton', 'pidgeot']
+    extraPool: [
+      'growlithe',
+      'arcanine',
+      'machop',
+      'machoke',
+      'machamp',
+      'magnemite',
+      'magneton',
+      'pidgeot'
+    ]
   },
-  'artista': {
+  artista: {
     name: 'Artista',
     sprite: 'artist',
     archetype: 'artista' as NpcArchetype,
     aiPreset: 'intermediate',
     types: ['grass', 'fairy'],
-    extraPool: ['bellsprout', 'weepinbell', 'victreebel', 'oddish', 'gloom', 'vileplume', 'tangela', 'vulpix', 'ninetales', 'clefairy', 'jigglypuff', 'ditto']
+    extraPool: [
+      'bellsprout',
+      'weepinbell',
+      'victreebel',
+      'oddish',
+      'gloom',
+      'vileplume',
+      'tangela',
+      'vulpix',
+      'ninetales',
+      'clefairy',
+      'jigglypuff',
+      'ditto'
+    ]
   },
-  'rival': {
+  rival: {
     name: 'Entrenador Élite',
     sprite: 'youngster-masters',
     archetype: 'rival' as NpcArchetype,
     aiPreset: 'rival',
     pool: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras']
   },
-  'default': {
+  default: {
     name: 'Joven',
     sprite: 'youngster',
     archetype: 'default' as NpcArchetype,
@@ -229,12 +333,12 @@ function speciesMatchesTrainerType(
   mode: TrainerTypeMatchMode
 ): boolean {
   if (mode === 'pure_type') {
-    return specTypes.length === 1 && allowedTypes.has(specTypes[0]!)
+    return specTypes.length === 1 && allowedTypes.has(specTypes[0]!);
   }
   if (mode === 'primary_type') {
-    return Boolean(specTypes[0] && allowedTypes.has(specTypes[0]))
+    return Boolean(specTypes[0] && allowedTypes.has(specTypes[0]));
   }
-  return specTypes.some(t => allowedTypes.has(t))
+  return specTypes.some((t) => allowedTypes.has(t));
 }
 
 function filterSpeciesForTrainer(
@@ -243,13 +347,15 @@ function filterSpeciesForTrainer(
   excluded: Set<PokemonSpeciesId>,
   mode: TrainerTypeMatchMode
 ): boolean {
-  if (excluded.has(speciesId) || EXCLUDED_LEGENDARY_IDS_SET.has(speciesId)) return false
-  if (!isPokemonDbSpeciesId(speciesId)) return false
-  const baseData = POKEMON_DB[speciesId]
-  if (!baseData) return false
+  if (excluded.has(speciesId) || EXCLUDED_LEGENDARY_IDS_SET.has(speciesId)) return false;
+  if (!isPokemonDbSpeciesId(speciesId)) return false;
+  const baseData = POKEMON_DB[speciesId];
+  if (!baseData) return false;
 
-  const specTypes: readonly PokemonType[] = baseData.type2 ? [baseData.type, baseData.type2] : [baseData.type]
-  return speciesMatchesTrainerType(specTypes, allowedTypes, mode)
+  const specTypes: readonly PokemonType[] = baseData.type2
+    ? [baseData.type, baseData.type2]
+    : [baseData.type];
+  return speciesMatchesTrainerType(specTypes, allowedTypes, mode);
 }
 
 function resolveTrainerPool(
@@ -258,35 +364,39 @@ function resolveTrainerPool(
   enabledSet: ReadonlySet<string>
 ): readonly PokemonSpeciesId[] {
   if (def.pool && def.pool.length > 0) {
-    return Object.freeze(def.pool.filter((id: PokemonSpeciesId) => enabledSet.has(id)))
+    return Object.freeze(def.pool.filter((id: PokemonSpeciesId) => enabledSet.has(id)));
   }
 
-  const matched = new Set<PokemonSpeciesId>() // runtime-set: Fast O(1) membership lookup set
-  const allowedTypes = new Set<PokemonType>(def.types ? def.types : []) // runtime-set: Fast O(1) membership lookup set
-  const excluded = new Set<PokemonSpeciesId>(def.excludedSpecies ? def.excludedSpecies : []) // runtime-set: Fast O(1) membership lookup set
-  const mode = def.matchMode ?? 'any_type'
+  const matched = new Set<PokemonSpeciesId>(); // runtime-set: Fast O(1) membership lookup set
+  const allowedTypes = new Set<PokemonType>(def.types ? def.types : []); // runtime-set: Fast O(1) membership lookup set
+  const excluded = new Set<PokemonSpeciesId>(def.excludedSpecies ? def.excludedSpecies : []); // runtime-set: Fast O(1) membership lookup set
+  const mode = def.matchMode ?? 'any_type';
 
   if (allowedTypes.size > 0) {
     for (const speciesId of enabledList) {
       if (filterSpeciesForTrainer(speciesId, allowedTypes, excluded, mode)) {
-        matched.add(speciesId)
+        matched.add(speciesId);
       }
     }
   }
 
   if (def.extraPool) {
     for (const extraId of def.extraPool) {
-      if (enabledSet.has(extraId) && !excluded.has(extraId) && !EXCLUDED_LEGENDARY_IDS_SET.has(extraId)) {
-        matched.add(extraId)
+      if (
+        enabledSet.has(extraId) &&
+        !excluded.has(extraId) &&
+        !EXCLUDED_LEGENDARY_IDS_SET.has(extraId)
+      ) {
+        matched.add(extraId);
       }
     }
   }
 
   if (matched.size === 0) {
-    matched.add('rattata')
+    matched.add('rattata');
   }
 
-  return Object.freeze([...matched])
+  return Object.freeze([...matched]);
 }
 
 /**
@@ -294,24 +404,26 @@ function resolveTrainerPool(
  * based on elemental types, match criteria, and extra thematic pools filtered by enabled species.
  */
 function computeTrainerTypes(): Record<TrainerTypeKey, TrainerTypeDefinition> {
-  const result: Partial<Record<TrainerTypeKey, TrainerTypeDefinition>> = {}
+  const result: Partial<Record<TrainerTypeKey, TrainerTypeDefinition>> = {};
 
-  const enabledList: readonly PokemonSpeciesId[] = (typeof ENABLED_POKEMON_IDS !== 'undefined' && Array.isArray(ENABLED_POKEMON_IDS))
-    ? ENABLED_POKEMON_IDS
-    : ['rattata', 'pidgey', 'caterpie', 'weedle']
-  const enabledSet: ReadonlySet<string> = (typeof ENABLED_POKEMON_IDS_SET !== 'undefined' && ENABLED_POKEMON_IDS_SET instanceof Set)
-    ? ENABLED_POKEMON_IDS_SET
-    : new Set(enabledList)
+  const enabledList: readonly PokemonSpeciesId[] =
+    typeof ENABLED_POKEMON_IDS !== 'undefined' && Array.isArray(ENABLED_POKEMON_IDS)
+      ? ENABLED_POKEMON_IDS
+      : ['rattata', 'pidgey', 'caterpie', 'weedle'];
+  const enabledSet: ReadonlySet<string> =
+    typeof ENABLED_POKEMON_IDS_SET !== 'undefined' && ENABLED_POKEMON_IDS_SET instanceof Set
+      ? ENABLED_POKEMON_IDS_SET
+      : new Set(enabledList);
 
   for (const key of TRAINER_TYPE_KEYS) {
-    const def = RAW_TRAINER_CONFIGS[key]
+    const def = RAW_TRAINER_CONFIGS[key];
     result[key] = {
       ...def,
       pool: resolveTrainerPool(def, enabledList, enabledSet)
-    }
+    };
   }
 
-  return Object.freeze(result as Record<TrainerTypeKey, TrainerTypeDefinition>)
+  return Object.freeze(result as Record<TrainerTypeKey, TrainerTypeDefinition>);
 }
 
 export const TRAINER_TYPES: Record<TrainerTypeKey, TrainerTypeDefinition> = computeTrainerTypes();
@@ -339,4 +451,3 @@ export function getTrainerAIPreset(raw: string): AIPresetKey {
   }
   return 'intermediate';
 }
-

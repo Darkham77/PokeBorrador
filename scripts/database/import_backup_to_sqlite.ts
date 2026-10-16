@@ -8,7 +8,7 @@ import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 console.log(styleText('bold', '\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---'));
 
 const args = process.argv.slice(2);
-const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
+const normalized = args.map((a) => (a.includes('=') && !a.startsWith('-') ? `--${a}` : a));
 
 const { values, positionals } = parseArgs({
   args: normalized,
@@ -21,19 +21,33 @@ const { values, positionals } = parseArgs({
   strict: false
 });
 
-const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+const isHelp =
+  values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
 if (isHelp) {
-  console.log(styleText('cyan', `\n📖 USO: npm run database:local-import [server=<perfil> | file=<ruta_json>]`));
+  console.log(
+    styleText(
+      'cyan',
+      `\n📖 USO: npm run database:local-import [server=<perfil> | file=<ruta_json>]`
+    )
+  );
   console.log(styleText('gray', '\nOpciones disponibles:'));
-  console.log(styleText('gray', '  server=<perfil> : Nombre del perfil para importar su respaldo más reciente.'));
-  console.log(styleText('gray', '  file=<ruta>     : Ruta directa al archivo JSON de respaldo a importar.'));
+  console.log(
+    styleText(
+      'gray',
+      '  server=<perfil> : Nombre del perfil para importar su respaldo más reciente.'
+    )
+  );
+  console.log(
+    styleText('gray', '  file=<ruta>     : Ruta directa al archivo JSON de respaldo a importar.')
+  );
   process.exit(0);
 }
 
 let backupPath = typeof values.file === 'string' ? values.file : undefined; // singleton-ok: Singleton instance state container
 
 if (!backupPath) {
-  const serverNameInput = typeof values.server === 'string' ? values.server : (positionals[0] || 'official_prod');
+  const serverNameInput =
+    typeof values.server === 'string' ? values.server : positionals[0] || 'official_prod';
   let serverName = serverNameInput;
   const envPath = path.resolve(process.cwd(), '.env');
   if (fs.existsSync(envPath)) {
@@ -56,24 +70,34 @@ if (!backupPath) {
 
   const backupDir = path.resolve('database/backups', serverName);
   if (!fs.existsSync(backupDir)) {
-    console.error(styleText('red', `❌ Error: El directorio de backups para "${serverName}" no existe en ${backupDir}`));
+    console.error(
+      styleText(
+        'red',
+        `❌ Error: El directorio de backups para "${serverName}" no existe en ${backupDir}`
+      )
+    );
     process.exit(1);
   }
 
-  const files = fs.readdirSync(backupDir).filter(f => f.endsWith('.json'));
+  const files = fs.readdirSync(backupDir).filter((f) => f.endsWith('.json'));
   if (files.length === 0) {
-    console.error(styleText('red', `❌ Error: No se encontraron archivos de backup (.json) en ${backupDir}`));
+    console.error(
+      styleText('red', `❌ Error: No se encontraron archivos de backup (.json) en ${backupDir}`)
+    );
     process.exit(1);
   }
 
   files.sort();
-  const upgradedFiles = files.filter(f => f.includes('_upgraded.json')).sort();
-  const latestBackupFile = upgradedFiles.length > 0 ? upgradedFiles[upgradedFiles.length - 1]! : files[files.length - 1]!;
+  const upgradedFiles = files.filter((f) => f.includes('_upgraded.json')).sort();
+  const latestBackupFile =
+    upgradedFiles.length > 0 ? upgradedFiles[upgradedFiles.length - 1]! : files[files.length - 1]!;
   backupPath = path.join(backupDir, latestBackupFile);
   console.log(styleText('cyan', `📂 Respaldo detectado para [${serverName}]: ${latestBackupFile}`));
 } else {
   if (!fs.existsSync(backupPath)) {
-    console.error(styleText('red', `❌ Error: El archivo de backup especificado no existe en ${backupPath}`));
+    console.error(
+      styleText('red', `❌ Error: El archivo de backup especificado no existe en ${backupPath}`)
+    );
     process.exit(1);
   }
   console.log(styleText('cyan', `📂 Importando archivo específico: ${backupPath}`));
@@ -147,7 +171,7 @@ function replaceUserIds(value: unknown, mapping: Map<string, string>): unknown {
     return value;
   }
   if (Array.isArray(value)) {
-    return value.map(item => replaceUserIds(item, mapping));
+    return value.map((item) => replaceUserIds(item, mapping));
   }
   if (value !== null && typeof value === 'object') {
     const newObj: Record<string, unknown> = {};
@@ -161,64 +185,68 @@ function replaceUserIds(value: unknown, mapping: Map<string, string>): unknown {
 }
 
 const INVENTORY_ALIASES: Readonly<Record<string, string>> = {
-  'potion': 'Poción',
-  'pocion': 'Poción',
-  'pocian': 'Poción',
-  'pociaon': 'Poción',
-  'superpotion': 'Súper Poción',
-  'superpocion': 'Súper Poción',
-  'hyperpotion': 'Hiper Poción',
-  'hiperpocion': 'Hiper Poción',
-  'maxpotion': 'Poción Máxima',
-  'pocionmaxima': 'Poción Máxima',
-  'firestone': 'Piedra Fuego',
-  'waterstone': 'Piedra Agua',
-  'thunderstone': 'Piedra Trueno',
-  'leafstone': 'Piedra Hoja',
-  'moonstone': 'Piedra Lunar',
-  'sunstone': 'Piedra Solar',
-  'vigorcandy': 'Caramelo de vigor',
-  'repel': 'Repelente',
-  'iman': 'Imán',
-  'elixir': 'Elixir',
-  'subidapp': 'Subida de PP',
-  'subidadepp': 'Subida de PP',
-  'mttoxico': 'MT06 Tóxico',
-  'ocasoball': 'Ocaso Ball',
-  'turnoball': 'Turno Ball',
-  'ultraball': 'Ultra Ball',
-  'masterball': 'Master Ball',
-  'superball': 'Súper Ball',
-  'pokeball': 'Pokéball',
-  'pokaball': 'Pokéball',
-  'brazalrecio': 'Brazal Recio',
-  'brazalrecia': 'Brazal Recio',
-  'cintorecio': 'Cinto Recio',
-  'cintorecia': 'Cinto Recio',
-  'pesarecia': 'Pesa Recia',
-  'bandarecia': 'Banda Recia',
-  'lenterecia': 'Lente Recia',
-  'franjarecia': 'Franja Recia',
-  'bayadeoro': 'Baya de Oro',
-  'bayaoro': 'Baya de Oro',
-  'piedraeterna': 'Piedra Eterna',
-  'lazodestino': 'Lazo Destino',
-  'caramelovigor': 'Caramelo de vigor',
-  'fishingrod': 'Caña de pescar',
-  'fishingrodgood': 'Caña Buena',
-  'fishingrodsuper': 'Supercaña',
-  'pickaxe': 'Pico de excavación',
-  'pickaxesilver': 'Pico Bueno',
-  'pickaxegold': 'Superpico',
-  'brush': 'Pincel de excavación',
-  'brushgood': 'Pincel Buena',
-  'brushsuper': 'Superpincel',
-  'carbon': 'Carbón vegetal',
-  'carbonvegetal': 'Carbón vegetal'
+  potion: 'Poción',
+  pocion: 'Poción',
+  pocian: 'Poción',
+  pociaon: 'Poción',
+  superpotion: 'Súper Poción',
+  superpocion: 'Súper Poción',
+  hyperpotion: 'Hiper Poción',
+  hiperpocion: 'Hiper Poción',
+  maxpotion: 'Poción Máxima',
+  pocionmaxima: 'Poción Máxima',
+  firestone: 'Piedra Fuego',
+  waterstone: 'Piedra Agua',
+  thunderstone: 'Piedra Trueno',
+  leafstone: 'Piedra Hoja',
+  moonstone: 'Piedra Lunar',
+  sunstone: 'Piedra Solar',
+  vigorcandy: 'Caramelo de vigor',
+  repel: 'Repelente',
+  iman: 'Imán',
+  elixir: 'Elixir',
+  subidapp: 'Subida de PP',
+  subidadepp: 'Subida de PP',
+  mttoxico: 'MT06 Tóxico',
+  ocasoball: 'Ocaso Ball',
+  turnoball: 'Turno Ball',
+  ultraball: 'Ultra Ball',
+  masterball: 'Master Ball',
+  superball: 'Súper Ball',
+  pokeball: 'Pokéball',
+  pokaball: 'Pokéball',
+  brazalrecio: 'Brazal Recio',
+  brazalrecia: 'Brazal Recio',
+  cintorecio: 'Cinto Recio',
+  cintorecia: 'Cinto Recio',
+  pesarecia: 'Pesa Recia',
+  bandarecia: 'Banda Recia',
+  lenterecia: 'Lente Recia',
+  franjarecia: 'Franja Recia',
+  bayadeoro: 'Baya de Oro',
+  bayaoro: 'Baya de Oro',
+  piedraeterna: 'Piedra Eterna',
+  lazodestino: 'Lazo Destino',
+  caramelovigor: 'Caramelo de vigor',
+  fishingrod: 'Caña de pescar',
+  fishingrodgood: 'Caña Buena',
+  fishingrodsuper: 'Supercaña',
+  pickaxe: 'Pico de excavación',
+  pickaxesilver: 'Pico Bueno',
+  pickaxegold: 'Superpico',
+  brush: 'Pincel de excavación',
+  brushgood: 'Pincel Buena',
+  brushsuper: 'Superpincel',
+  carbon: 'Carbón vegetal',
+  carbonvegetal: 'Carbón vegetal'
 };
 
 function resolveNormalizedItemName(name: string): string {
-  const norm = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  const norm = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
   return INVENTORY_ALIASES[norm] || name;
 }
 
@@ -227,7 +255,7 @@ function migrateInventoryKeys(inventory: Record<string, number>): Record<string,
   for (const item of SHOP_ITEMS) {
     itemMapping[item.name] = item.id;
   }
-  const validIds = new Set<string>(SHOP_ITEMS.map(i => i.id));
+  const validIds = new Set<string>(SHOP_ITEMS.map((i) => i.id));
   validIds.add('bicycle');
 
   const newInv: Record<string, number> = {};
@@ -256,7 +284,9 @@ function isTimestampedSaveDataPayload(val: unknown): val is TimestampedSaveDataP
 
 function transformSaveData(val: unknown, mapping: Map<string, string>): unknown {
   try {
-    const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as { inventory?: Record<string, number> } | null;
+    const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as {
+      inventory?: Record<string, number>;
+    } | null;
     if (parsed?.inventory && typeof parsed.inventory === 'object') {
       parsed.inventory = migrateInventoryKeys(parsed.inventory);
     }
@@ -271,7 +301,12 @@ function transformSaveData(val: unknown, mapping: Map<string, string>): unknown 
   }
 }
 
-function transformColumnValue(tableName: string, col: string, val: unknown, mapping: Map<string, string>): unknown {
+function transformColumnValue(
+  tableName: string,
+  col: string,
+  val: unknown,
+  mapping: Map<string, string>
+): unknown {
   if (tableName === 'game_saves' && col === 'save_data') {
     return transformSaveData(val, mapping);
   }
@@ -355,16 +390,15 @@ using db = new DatabaseSync(dbPath);
 console.log('⚡ Inicializando esquemas de tablas...');
 db.exec('PRAGMA foreign_keys = OFF;');
 
-const ALL_SCHEMAS = [
-  ...TABLES_SCHEMA,
-  '_migrations (id TEXT PRIMARY KEY, applied_at TEXT)'
-];
+const ALL_SCHEMAS = [...TABLES_SCHEMA, '_migrations (id TEXT PRIMARY KEY, applied_at TEXT)'];
 
-ALL_SCHEMAS.forEach(schema => {
+ALL_SCHEMAS.forEach((schema) => {
   try {
     db.exec(`CREATE TABLE IF NOT EXISTS ${schema};`);
   } catch (e) {
-    console.error(`⚠️ Error al crear tabla con esquema: ${schema.split(' ')[0]} - ${(e as Error).message}`);
+    console.error(
+      `⚠️ Error al crear tabla con esquema: ${schema.split(' ')[0]} - ${(e as Error).message}`
+    );
   }
 });
 
@@ -372,28 +406,33 @@ ALL_SCHEMAS.forEach(schema => {
 const tableColumns = new Map<string, Set<string>>();
 const tableIntPk = new Map<string, boolean>();
 
-ALL_SCHEMAS.forEach(schemaStr => {
+ALL_SCHEMAS.forEach((schemaStr) => {
   const parts = schemaStr.split('(');
   if (parts.length < 2) return;
   const tableName = parts[0]!.replace('CREATE TABLE IF NOT EXISTS', '').trim();
-  
-  const info = db.prepare(`PRAGMA table_info(${tableName});`).all() as Array<{ name: string; type: string; pk: number }>;
+
+  const info = db.prepare(`PRAGMA table_info(${tableName});`).all() as Array<{
+    name: string;
+    type: string;
+    pk: number;
+  }>;
   if (info.length === 0) return;
-  
+
   const colSet = new Set<string>();
   let hasIntPkId = false;
-  
+
   for (const col of info) {
     const colName = col.name;
     const colType = col.type;
     const isPk = col.pk;
-    
+
     colSet.add(colName);
-    if (colName === 'id' && colType.toUpperCase() === 'INTEGER' && isPk === 1) { // string-ok: Internal string formatting or DOM token identifier
+    if (colName === 'id' && colType.toUpperCase() === 'INTEGER' && isPk === 1) {
+      // string-ok: Internal string formatting or DOM token identifier
       hasIntPkId = true;
     }
   }
-  
+
   tableColumns.set(tableName, colSet);
   tableIntPk.set(tableName, hasIntPkId);
 });
@@ -408,13 +447,17 @@ for (const tableName of Object.keys(backupData.data)) {
   const hasIntPkId = tableIntPk.get(tableName) || false;
 
   if (!validCols) {
-    console.log(`⚠️ Saltando tabla "${tableName}" (no definida en el esquema de la base de datos local)`);
+    console.log(
+      `⚠️ Saltando tabla "${tableName}" (no definida en el esquema de la base de datos local)`
+    );
     continue;
   }
 
   // Mapear y filtrar cada fila
   const transformedRows = rows
-    .map((r: unknown) => transformRow(r as Record<string, unknown>, tableName, idMap, validCols, hasIntPkId)) // open-record: Generic key-value data dictionary container
+    .map((r: unknown) =>
+      transformRow(r as Record<string, unknown>, tableName, idMap, validCols, hasIntPkId)
+    ) // open-record: Generic key-value data dictionary container
     .filter((row: Record<string, unknown>) => Object.keys(row).length > 0);
 
   if (transformedRows.length === 0) continue;
@@ -423,26 +466,30 @@ for (const tableName of Object.keys(backupData.data)) {
   const columns = Object.keys(transformedRows[0]!);
   const placeholders = columns.map(() => '?').join(', ');
   const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders});`;
-  
+
   try {
     const stmt = db.prepare(sql);
     db.exec('BEGIN TRANSACTION;');
     for (const row of transformedRows) {
-      const values = columns.map(col => {
+      const values = columns.map((col) => {
         const val = row[col];
         if (val === null || val === undefined) return null;
-        if (typeof val === 'string' || typeof val === 'number' || typeof val === 'bigint') return val;
+        if (typeof val === 'string' || typeof val === 'number' || typeof val === 'bigint')
+          return val;
         if (val instanceof Uint8Array) return val;
         return String(val);
       }) as (string | number | bigint | Uint8Array | null)[];
       stmt.run(...values);
     }
     db.exec('COMMIT;');
-    console.log(`✅ Tabla [${tableName}] importada con éxito: ${transformedRows.length} registros.`);
+    console.log(
+      `✅ Tabla [${tableName}] importada con éxito: ${transformedRows.length} registros.`
+    );
   } catch (err) {
     try {
       db.exec('ROLLBACK;');
-    } catch { // catch-ok: ignore rollback error if transaction was not active
+    } catch {
+      // catch-ok: ignore rollback error if transaction was not active
       // Ignorar si no había transacción activa
     }
     console.error(`❌ Error al importar la tabla [${tableName}]: ${(err as Error).message}`);

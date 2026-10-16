@@ -6,7 +6,7 @@ import {
   DamageResult,
   DamageMatchup,
   MoveInfo,
-  FieldState,
+  FieldState
 } from '../types';
 import { logDebug } from '../logging/logger';
 
@@ -16,10 +16,19 @@ function toId(text: string): string {
 
 // Priority move map (positive = priority)
 const PRIORITY_MAP: Record<string, number> = {
-  extremespeed: 2, fakeout: 3, firstimpression: 2,
-  accelerock: 1, aquajet: 1, bulletpunch: 1, iceshard: 1,
-  machpunch: 1, quickattack: 1, shadowsneak: 1,
-  suckerpunch: 1, grassyglide: 1, jetpunch: 1,
+  extremespeed: 2,
+  fakeout: 3,
+  firstimpression: 2,
+  accelerock: 1,
+  aquajet: 1,
+  bulletpunch: 1,
+  iceshard: 1,
+  machpunch: 1,
+  quickattack: 1,
+  shadowsneak: 1,
+  suckerpunch: 1,
+  grassyglide: 1,
+  jetpunch: 1
 };
 
 // ============================================================
@@ -148,9 +157,12 @@ export class DamageCalculator {
     // The calc library needs curHP relative to the Pokemon's calculated maxHP,
     // so we pass the percentage and let it resolve after construction
     const estimatedMaxHp = p.maxHp > 0 && p.maxHp !== 100 ? p.maxHp : 0;
-    const curHP = estimatedMaxHp > 0
-      ? p.hp  // actual HP known (our Pokemon)
-      : (p.hpPercent > 0 ? Math.max(1, Math.round(p.hpPercent * 3)) : 0); // estimate for opponent
+    const curHP =
+      estimatedMaxHp > 0
+        ? p.hp // actual HP known (our Pokemon)
+        : p.hpPercent > 0
+          ? Math.max(1, Math.round(p.hpPercent * 3))
+          : 0; // estimate for opponent
     const options: any = {
       level: p.level || 80,
       curHP,
@@ -159,11 +171,11 @@ export class DamageCalculator {
         def: p.boosts.def,
         spa: p.boosts.spa,
         spd: p.boosts.spd,
-        spe: p.boosts.spe,
+        spe: p.boosts.spe
       },
       // Random battles use 84 EVs per stat by default
       evs: { hp: 84, atk: 84, def: 84, spa: 84, spd: 84, spe: 84 },
-      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
     };
 
     if (p.ability) options.ability = p.knownAbility || p.ability;
@@ -178,7 +190,7 @@ export class DamageCalculator {
       // Fallback: try without options that might cause issues
       return new Pokemon(this.gen, species, {
         level: p.level || 80,
-        evs: { hp: 84, atk: 84, def: 84, spa: 84, spd: 84, spe: 84 },
+        evs: { hp: 84, atk: 84, def: 84, spa: 84, spd: 84, spe: 84 }
       });
     }
   }
@@ -188,17 +200,23 @@ export class DamageCalculator {
 
     if (f.weather) {
       const weatherMap: Record<string, string> = {
-        sunnyday: 'Sun', desolateland: 'Harsh Sunshine',
-        raindance: 'Rain', primordialsea: 'Heavy Rain',
-        sandstorm: 'Sand', snowscape: 'Snow', hail: 'Hail',
+        sunnyday: 'Sun',
+        desolateland: 'Harsh Sunshine',
+        raindance: 'Rain',
+        primordialsea: 'Heavy Rain',
+        sandstorm: 'Sand',
+        snowscape: 'Snow',
+        hail: 'Hail'
       };
       options.weather = weatherMap[f.weather] || undefined;
     }
 
     if (f.terrain) {
       const terrainMap: Record<string, string> = {
-        electricterrain: 'Electric', grassyterrain: 'Grassy',
-        mistyterrain: 'Misty', psychicterrain: 'Psychic',
+        electricterrain: 'Electric',
+        grassyterrain: 'Grassy',
+        mistyterrain: 'Misty',
+        psychicterrain: 'Psychic'
       };
       options.terrain = terrainMap[f.terrain] || undefined;
     }
@@ -208,8 +226,12 @@ export class DamageCalculator {
 
   private statusToCalc(status: string): string {
     const map: Record<string, string> = {
-      brn: 'brn', par: 'par', psn: 'psn',
-      tox: 'tox', slp: 'slp', frz: 'frz',
+      brn: 'brn',
+      par: 'par',
+      psn: 'psn',
+      tox: 'tox',
+      slp: 'slp',
+      frz: 'frz'
     };
     return map[status] || '';
   }
@@ -226,7 +248,7 @@ export class DamageCalculator {
       ironmoth: 'Iron Moth',
       irontreads: 'Iron Treads',
       greattusk: 'Great Tusk',
-      roaringmoon: 'Roaring Moon',
+      roaringmoon: 'Roaring Moon'
     };
     return speciesMap[species] || species.charAt(0).toUpperCase() + species.slice(1);
   }
@@ -240,7 +262,12 @@ export class DamageCalculator {
   // Result parsing
   // ────────────────────────────────────────
 
-  private parseResult(result: Result, moveId: string, attacker: string, defender: string): DamageResult {
+  private parseResult(
+    result: Result,
+    moveId: string,
+    attacker: string,
+    defender: string
+  ): DamageResult {
     const damage = result.damage;
     let minDmg = 0;
     let maxDmg = 0;
@@ -265,9 +292,7 @@ export class DamageCalculator {
     const minPercent = defenderMaxHp > 0 ? (minDmg / defenderMaxHp) * 100 : 0;
     const maxPercent = defenderMaxHp > 0 ? (maxDmg / defenderMaxHp) * 100 : 0;
 
-    const curHpPercent = defenderMaxHp > 0
-      ? (result.defender.curHP() / defenderMaxHp) * 100
-      : 100;
+    const curHpPercent = defenderMaxHp > 0 ? (result.defender.curHP() / defenderMaxHp) * 100 : 100;
 
     return {
       move: moveId,
@@ -279,7 +304,7 @@ export class DamageCalculator {
       maxPercent,
       isOHKO: minPercent >= curHpPercent,
       is2HKO: minPercent * 2 >= curHpPercent,
-      priority: PRIORITY_MAP[toId(moveId)] || 0,
+      priority: PRIORITY_MAP[toId(moveId)] || 0
     };
   }
 
@@ -294,7 +319,7 @@ export class DamageCalculator {
       maxPercent: 0,
       isOHKO: false,
       is2HKO: false,
-      priority: PRIORITY_MAP[toId(moveId)] || 0,
+      priority: PRIORITY_MAP[toId(moveId)] || 0
     };
   }
 
@@ -312,9 +337,11 @@ export class DamageCalculator {
     const defItem = defender.knownItem || defender.item || '';
     const atkAbility = attacker.knownAbility || attacker.ability || '';
     const defAbility = defender.knownAbility || defender.ability || '';
-    return `${attacker.species}:${atkAbility}:${atkItem}:${attacker.status}:${JSON.stringify(attacker.boosts)}|` +
+    return (
+      `${attacker.species}:${atkAbility}:${atkItem}:${attacker.status}:${JSON.stringify(attacker.boosts)}|` +
       `${defender.species}:${defAbility}:${defItem}:${defender.status}:${defender.hpPercent.toFixed(0)}:${JSON.stringify(defender.boosts)}|` +
-      `${moveId}|${field.weather}:${field.terrain}:${field.trickRoom}`;
+      `${moveId}|${field.weather}:${field.terrain}:${field.trickRoom}`
+    );
   }
 
   private addToCache(key: string, result: DamageResult): void {
@@ -339,8 +366,8 @@ export class DamageCalculator {
 
     // Apply boost multiplier
     const boost = pokemon.boosts.spe;
-    if (boost > 0) speed = Math.floor(speed * (2 + boost) / 2);
-    else if (boost < 0) speed = Math.floor(speed * 2 / (2 - boost));
+    if (boost > 0) speed = Math.floor((speed * (2 + boost)) / 2);
+    else if (boost < 0) speed = Math.floor((speed * 2) / (2 - boost));
 
     // Paralysis halves speed
     if (pokemon.status === 'par') speed = Math.floor(speed * 0.5);

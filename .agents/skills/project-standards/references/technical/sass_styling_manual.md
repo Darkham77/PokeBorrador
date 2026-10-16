@@ -117,7 +117,7 @@ Global built-in functions are deprecated in Dart Sass 2.0+ and will be removed i
 **Example:**
 
 ```scss
-@use "sass:math";
+@use 'sass:math';
 
 .card {
   width: math.percentage(0.5);
@@ -196,13 +196,13 @@ All game-specific content **MUST** be strictly Pixel Art to preserve the game's 
   - **MANDATORY Pixel Fonts**: `Pokemon FireRed LeafGreen` (or `VT323`/`Silkscreen` ONLY if special characters like `@` or extra symbols are strictly required).
   - **MANDATORY Typography Mixin**: Any text element using a pixel font **MUST** include `@include pixelated;` (from `_layout.scss`) to disable browser font-smoothing (`font-smooth: never`) and ensure sharp glyph edges. (Do not confuse with `@mixin sprite-render`, which is exclusively for images/sprites).
 
-| UI Level | Element Type | Style Requirement | Recommended Font |
-| :--- | :--- | :--- | :--- |
-| **Game Heart** | Pokémon Names, Stats, Level, Moves | **PIXELATED** (Sharp) | `Pokemon FireRed LeafGreen` |
-| **Game Heart** | Battle Log, Dialogs, NPC names | **PIXELATED** (Sharp) | `Pokemon FireRed LeafGreen` (fallback to `VT323` / `Silkscreen` only for special characters) |
-| **Game Heart** | Modal Headers (Titles), Tab Labels | **PIXELATED** (Sharp) | `Pokemon FireRed LeafGreen` |
-| **Modern Shell** | Secondary Info, Settings, Debug Consoles | **SMOOTH** (Antialiased) | `Outfit` / `Inter` |
-| **Modern Shell** | Technical Logs, Trade History, Credits | **SMOOTH** (Antialiased) | `Outfit` / `Inter` |
+| UI Level         | Element Type                             | Style Requirement        | Recommended Font                                                                             |
+| :--------------- | :--------------------------------------- | :----------------------- | :------------------------------------------------------------------------------------------- |
+| **Game Heart**   | Pokémon Names, Stats, Level, Moves       | **PIXELATED** (Sharp)    | `Pokemon FireRed LeafGreen`                                                                  |
+| **Game Heart**   | Battle Log, Dialogs, NPC names           | **PIXELATED** (Sharp)    | `Pokemon FireRed LeafGreen` (fallback to `VT323` / `Silkscreen` only for special characters) |
+| **Game Heart**   | Modal Headers (Titles), Tab Labels       | **PIXELATED** (Sharp)    | `Pokemon FireRed LeafGreen`                                                                  |
+| **Modern Shell** | Secondary Info, Settings, Debug Consoles | **SMOOTH** (Antialiased) | `Outfit` / `Inter`                                                                           |
+| **Modern Shell** | Technical Logs, Trade History, Credits   | **SMOOTH** (Antialiased) | `Outfit` / `Inter`                                                                           |
 
 - **Restriction**: Smooth fonts like `Outfit` or `Inter` are reserved ONLY for administrative headers or meta-UI that is secondary to the game experience. Any text that represents a "Game Object" or "Trainer HUD Action" **MUST** be pixelated.
 
@@ -230,6 +230,7 @@ The primary game font (`Pokemon FireRed LeafGreen`) has tall ascenders and deep 
 If you detect a "smooth" modern aesthetic used for game content, you **MUST** issue a structured warning to the user.
 
 **Warning Template (Example):**
+
 > [!CAUTION]
 > **STYLE NON-COMPLIANCE DETECTED**
 > The current implementation of `[Component Name]` uses modern SVG icons/smooth fonts for game data. This violates the **Hybrid Retro-Modern Mandate**.
@@ -267,7 +268,7 @@ When refactoring legacy or generic components:
   - **SASS vs CSS Variables**: SASS color functions (like `color.scale`, `lighten()`, `darken()`) cannot process `var(--color)`. For interactive highlights/hovers, use static SASS fallbacks (e.g. `$yellow`) for calculations while maintaining the CSS variable for the main render to support dynamic themes.
   - **Variable Isolation**: In high-density or dynamically scoped components (e.g., within specialized filters or grids), if core SASS variables are not reliably available without manual imports, use **Direct Hex Values** to ensure visual stability and prevent "Color not defined" build errors.
   - **Inheritance vs Mixins**: Avoid using `@extend` for classes defined in external stylesheets (e.g., `.m-type-tag`) inside global or modular components. If the base stylesheet is not included in every build chunk, `@extend` will fail. Use the underlying mixin directly (e.g., `@include type-pill;`) instead.
-  - **`@use 'X' as *` is NOT a safe fix for `@extend` failures**: Adding `@use './other-module' as *;` to a stylesheet to make a missing selector available for `@extend` re-exports *all* styles from that module into the current scope. This can inject unexpected `display`, `flex`, or `grid` rules that cascade into sibling elements and break layouts in unpredictable ways. **The correct fix is always to extract the shared style into a mixin** and `@include` it in both files.
+  - **`@use 'X' as *` is NOT a safe fix for `@extend` failures**: Adding `@use './other-module' as *;` to a stylesheet to make a missing selector available for `@extend` re-exports _all_ styles from that module into the current scope. This can inject unexpected `display`, `flex`, or `grid` rules that cascade into sibling elements and break layouts in unpredictable ways. **The correct fix is always to extract the shared style into a mixin** and `@include` it in both files.
 - **Standard RGB Injection**: For every dynamic color property (e.g., `--tier-color`, `--modal-accent`), a corresponding RGB channel variable (e.g., `--tier-color-rgb`) MUST be injected. This is the ONLY approved way to apply variable opacities in SASS while maintaining reactivity.
   - ✅ `background: Rgba(var(--modal-accent-rgb), 0.2);`
 - **Identity Preservation**: SCSS rules MUST NOT override or strip visual identity markers (like tier borders) in any resource state (e.g., performance mode). Use CSS variables to ensure these markers persist and remain "owned" by the component.
@@ -308,14 +309,16 @@ When refactoring legacy or generic components:
     ```scss
     scrollbar-width: none; // Modern standard (Firefox)
     -ms-overflow-style: none; // Legacy (IE/Edge)
-    &::-webkit-scrollbar { display: none; } // Webkit (Chrome/Safari)
+    &::-webkit-scrollbar {
+      display: none;
+    } // Webkit (Chrome/Safari)
     ```
 
 - **Hiding HTML5 Number Input Spinners**:
   - **Rule**: To prevent visual collision and layout breaks on centered numeric inputs, standard HTML5 number input up/down spin buttons MUST be hidden using browser-specific properties:
 
     ```scss
-    input[type="number"] {
+    input[type='number'] {
       -moz-appearance: textfield; // Firefox
       &::-webkit-outer-spin-button,
       &::-webkit-inner-spin-button {
@@ -368,7 +371,7 @@ Avoid spreading definitions for the same component across multiple files. This i
       --move-card-max-width: 200px;
       --move-panel-gap: 12px;
       --move-panel-max-width: calc((var(--move-card-max-width) * 2) + var(--move-panel-gap));
-      
+
       max-width: var(--move-panel-max-width);
     }
     ```

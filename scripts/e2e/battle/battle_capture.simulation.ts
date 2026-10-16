@@ -31,27 +31,31 @@ class CaptureSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupScenario(speciesId: string, level: number): Promise<void> {
-    await this.page.evaluate(async ({ specId, lvl }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-      const { requireItemId } = await import('../../../src/data/inventory/items.ts');
+    await this.page.evaluate(
+      async ({ specId, lvl }) => {
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+        const { requireItemId } = await import('../../../src/data/inventory/items.ts');
 
-      const invStore = useInventoryStore();
-      await invStore.addItem(requireItemId('masterball'), 5);
+        const invStore = useInventoryStore();
+        await invStore.addItem(requireItemId('masterball'), 5);
 
-      const wildPoke = pokemonDebugService.generate({
-        id: requirePokemonSpeciesId(specId),
-        level: lvl
-      });
+        const wildPoke = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId(specId),
+          level: lvl
+        });
 
-      const battleStore = useBattleStore();
-      await battleStore.startBattle(wildPoke, {
-        isTrainer: false,
-        locationId: 'route1'
-      });
-    }, { specId: speciesId, lvl: level });
+        const battleStore = useBattleStore();
+        await battleStore.startBattle(wildPoke, {
+          isTrainer: false,
+          locationId: 'route1'
+        });
+      },
+      { specId: speciesId, lvl: level }
+    );
     await awaitBattleReadyForInput(this.page);
   }
 
@@ -60,39 +64,43 @@ class CaptureSimWrapper extends BaseBattleSimulation {
     dittoLevel = 5,
     dittoAbility: AbilityId = 'limber'
   ): Promise<void> {
-    await this.page.evaluate(async ({ pCfg, dLvl, dAbility }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-      const { requireItemId } = await import('../../../src/data/inventory/items.ts');
-      const { requireAbilityId } = await import('../../../src/data/battle/abilities.ts');
+    await this.page.evaluate(
+      async ({ pCfg, dLvl, dAbility }) => {
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+        const { requireItemId } = await import('../../../src/data/inventory/items.ts');
+        const { requireAbilityId } = await import('../../../src/data/battle/abilities.ts');
 
-      const invStore = useInventoryStore();
-      await invStore.addItem(requireItemId('masterball'), 5);
+        const invStore = useInventoryStore();
+        await invStore.addItem(requireItemId('masterball'), 5);
 
-      const gameStore = useGameStore();
-      const playerPoke = pokemonDebugService.generate({
-        id: requirePokemonSpeciesId(pCfg.speciesId),
-        level: pCfg.level,
-        moves: pCfg.moves
-      });
-      gameStore.state.team = [playerPoke];
+        const gameStore = useGameStore();
+        const playerPoke = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId(pCfg.speciesId),
+          level: pCfg.level,
+          moves: pCfg.moves
+        });
+        gameStore.state.team = [playerPoke];
 
-      const wildDitto = pokemonDebugService.generate({
-        id: requirePokemonSpeciesId('ditto'),
-        level: dLvl,
-        ability: requireAbilityId(dAbility),
-        moves: ['transform']
-      });
+        const wildDitto = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('ditto'),
+          level: dLvl,
+          ability: requireAbilityId(dAbility),
+          moves: ['transform']
+        });
 
-      const battleStore = useBattleStore();
-      await battleStore.startBattle(wildDitto, {
-        isTrainer: false,
-        locationId: 'route1'
-      });
-    }, { pCfg: playerConfig, dLvl: dittoLevel, dAbility: dittoAbility });
+        const battleStore = useBattleStore();
+        await battleStore.startBattle(wildDitto, {
+          isTrainer: false,
+          locationId: 'route1'
+        });
+      },
+      { pCfg: playerConfig, dLvl: dittoLevel, dAbility: dittoAbility }
+    );
     await awaitBattleReadyForInput(this.page);
   }
 
@@ -102,8 +110,9 @@ class CaptureSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', () => {
-
-  test('debería capturar un Pidgey salvaje con Master Ball y verificar que mantiene estadísticas, moves en español y sin errores', async ({ page }) => {
+  test('debería capturar un Pidgey salvaje con Master Ball y verificar que mantiene estadísticas, moves en español y sin errores', async ({
+    page
+  }) => {
     const sim = new CaptureSimWrapper(page, 'TestPlayer1');
     await sim.setup();
     await sim.setupScenario('pidgey', 2);
@@ -112,20 +121,38 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
 
     const pidgeyData = await page.evaluate(() => {
       const store = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
-      const p = (store?.state?.team as Array<{ id?: string; level?: number; moves?: { id: string; name?: string }[]; maxHp?: number; atk?: number } | null> | undefined)
-        ?.find((mon: { id?: string } | null) => mon?.id === 'pidgey');
+      const p = (
+        store?.state?.team as
+          | Array<{
+              id?: string;
+              level?: number;
+              moves?: { id: string; name?: string }[];
+              maxHp?: number;
+              atk?: number;
+            } | null>
+          | undefined
+      )?.find((mon: { id?: string } | null) => mon?.id === 'pidgey');
       return p ? { id: p.id, level: p.level, moves: p.moves, maxHp: p.maxHp, atk: p.atk } : null;
     });
 
     expect(pidgeyData).not.toBeNull();
     expect(pidgeyData!.level).toBe(2);
-    expect((pidgeyData!.moves as Array<{ id: string; name?: string } | null | undefined>).find((m: { id: string; name?: string } | null | undefined) => m?.id === 'tackle')?.name).toBe('Placaje');
+    expect(
+      (pidgeyData!.moves as Array<{ id: string; name?: string } | null | undefined>).find(
+        (m: { id: string; name?: string } | null | undefined) => m?.id === 'tackle'
+      )?.name
+    ).toBe('Placaje');
   });
 
-  test('debería capturar un Ditto transformado tras forzar su transformación en T1 por la IA salvaje y verificar reversión limpia de moves y stats', async ({ page }) => {
+  test('debería capturar un Ditto transformado tras forzar su transformación en T1 por la IA salvaje y verificar reversión limpia de moves y stats', async ({
+    page
+  }) => {
     const sim = new CaptureSimWrapper(page, 'TestPlayerDittoCapture');
     await sim.setup();
-    await sim.setupWildDittoBattle({ speciesId: 'pikachu', level: 5, moves: ['growl', 'thundershock'] }, 5);
+    await sim.setupWildDittoBattle(
+      { speciesId: 'pikachu', level: 5, moves: ['growl', 'thundershock'] },
+      5
+    );
 
     // Verificar que antes de iniciar el turno Ditto salvaje NO está transformado
     const preTurnState = await page.evaluate(() => {
@@ -164,9 +191,28 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
     // Validar en el equipo del jugador que el Pokémon capturado es el Ditto original con sus stats y moves limpios
     const dittoData = await page.evaluate(() => {
       const store = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
-      const p = (store?.state?.team as Array<{ id?: string; level?: number; moves?: { id: string; name?: string }[]; maxHp?: number; atk?: number; isTransformed?: boolean } | null> | undefined)
-        ?.find((mon: { id?: string } | null) => mon?.id === 'ditto');
-      return p ? { id: p.id, level: p.level, moves: p.moves, maxHp: p.maxHp, atk: p.atk, isTransformed: p.isTransformed } : null;
+      const p = (
+        store?.state?.team as
+          | Array<{
+              id?: string;
+              level?: number;
+              moves?: { id: string; name?: string }[];
+              maxHp?: number;
+              atk?: number;
+              isTransformed?: boolean;
+            } | null>
+          | undefined
+      )?.find((mon: { id?: string } | null) => mon?.id === 'ditto');
+      return p
+        ? {
+            id: p.id,
+            level: p.level,
+            moves: p.moves,
+            maxHp: p.maxHp,
+            atk: p.atk,
+            isTransformed: p.isTransformed
+          }
+        : null;
     });
 
     expect(dittoData).not.toBeNull();
@@ -178,7 +224,9 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
     expect(dittoData!.moves![0]?.name).toBe('Transformación');
   });
 
-  test('debería soportar Ditto con Habilidad Oculta Imposter autotransformándose en Turno 0 y capturarse limpiamente', async ({ page }) => {
+  test('debería soportar Ditto con Habilidad Oculta Imposter autotransformándose en Turno 0 y capturarse limpiamente', async ({
+    page
+  }) => {
     const sim = new CaptureSimWrapper(page, 'TestPlayerDittoImposter');
     await sim.setup();
     // Iniciar combate con Ditto salvaje con habilidad oculta 'imposter' contra Pikachu
@@ -210,9 +258,28 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
     // Validar en el equipo del jugador que el Pokémon capturado es el Ditto original con sus stats y moves limpios
     const dittoData = await page.evaluate(() => {
       const store = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
-      const p = (store?.state?.team as Array<{ id?: string; level?: number; moves?: { id: string; name?: string }[]; maxHp?: number; atk?: number; isTransformed?: boolean } | null> | undefined)
-        ?.find((mon: { id?: string } | null) => mon?.id === 'ditto');
-      return p ? { id: p.id, level: p.level, moves: p.moves, maxHp: p.maxHp, atk: p.atk, isTransformed: p.isTransformed } : null;
+      const p = (
+        store?.state?.team as
+          | Array<{
+              id?: string;
+              level?: number;
+              moves?: { id: string; name?: string }[];
+              maxHp?: number;
+              atk?: number;
+              isTransformed?: boolean;
+            } | null>
+          | undefined
+      )?.find((mon: { id?: string } | null) => mon?.id === 'ditto');
+      return p
+        ? {
+            id: p.id,
+            level: p.level,
+            moves: p.moves,
+            maxHp: p.maxHp,
+            atk: p.atk,
+            isTransformed: p.isTransformed
+          }
+        : null;
     });
 
     expect(dittoData).not.toBeNull();
@@ -224,11 +291,16 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
     expect(dittoData!.moves![0]?.name).toBe('Transformación');
   });
 
-  test('debería enfrentar a un Ditto salvaje, forzar su transformación en T1 por la IA salvaje, continuar el combate normalmente y derrotarlo', async ({ page }) => {
+  test('debería enfrentar a un Ditto salvaje, forzar su transformación en T1 por la IA salvaje, continuar el combate normalmente y derrotarlo', async ({
+    page
+  }) => {
     const sim = new CaptureSimWrapper(page, 'TestPlayerDittoDefeat');
     await sim.setup();
     // Jugador con Pikachu nivel 50: Gruñido (movimiento 0, no letal) y Surf (movimiento 1, letal en T2 sin inmunidad de Pararrayos)
-    await sim.setupWildDittoBattle({ speciesId: 'pikachu', level: 50, moves: ['growl', 'surf'] }, 5);
+    await sim.setupWildDittoBattle(
+      { speciesId: 'pikachu', level: 50, moves: ['growl', 'surf'] },
+      5
+    );
 
     // Turno 1: Jugador usa Gruñido (#move-btn-0). La IA salvaje de Ditto DEBE usar Transformación obligatoriamente
     await armBattleReadyForInput(page);
@@ -253,7 +325,9 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
     await awaitBattleFlowCompletion(page);
   });
 
-  test('debería capturar a un Ditto salvaje transformado contra rival con habilidad Pressure sin error de habilidad ilegal', async ({ page }) => {
+  test('debería capturar a un Ditto salvaje transformado contra rival con habilidad Pressure sin error de habilidad ilegal', async ({
+    page
+  }) => {
     const sim = new CaptureSimWrapper(page, 'TestPlayerDittoPressure');
     await sim.setup();
     // Jugador con Zapdos nivel 50 (habilidad 'pressure'), movimientos: ['roost', 'thunderbolt']
@@ -262,7 +336,8 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const { requireItemId } = await import('../../../src/data/inventory/items.ts');
       const { requireAbilityId } = await import('../../../src/data/battle/abilities.ts');
@@ -318,9 +393,19 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
     // Validar en el equipo del jugador que el Pokémon capturado es un Ditto legal, sin crash ni habilidad Pressure
     const dittoInTeam = await page.evaluate(() => {
       const store = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
-      const p = (store?.state?.team as Array<{ id?: string; ability?: string; isTransformed?: boolean; moves?: { id: string }[] } | null> | undefined)
-        ?.find((mon: { id?: string } | null) => mon?.id === 'ditto');
-      return p ? { id: p.id, ability: p.ability, isTransformed: p.isTransformed, moves: p.moves } : null;
+      const p = (
+        store?.state?.team as
+          | Array<{
+              id?: string;
+              ability?: string;
+              isTransformed?: boolean;
+              moves?: { id: string }[];
+            } | null>
+          | undefined
+      )?.find((mon: { id?: string } | null) => mon?.id === 'ditto');
+      return p
+        ? { id: p.id, ability: p.ability, isTransformed: p.isTransformed, moves: p.moves }
+        : null;
     });
 
     expect(dittoInTeam).not.toBeNull();
@@ -331,7 +416,9 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
     expect(dittoInTeam!.moves?.[0]?.id).toBe('transform');
   });
 
-  test('debería jugar una secuencia de 3 combates seguidos capturando y usando los Pokémon capturados con sus movimientos reales', async ({ page }) => {
+  test('debería jugar una secuencia de 3 combates seguidos capturando y usando los Pokémon capturados con sus movimientos reales', async ({
+    page
+  }) => {
     const sim = new CaptureSimWrapper(page, 'TestMultiBattle');
     await sim.setup();
     await sim.setupScenario('pidgey', 3);
@@ -342,8 +429,13 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
     await sim.setupScenario('rattata', 3);
 
     const activeMoves = await page.evaluate(() => {
-      const moves = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.moves ?? [];
-      return (moves as Array<{ id: string; name?: string } | null | undefined>).map((m: { id: string; name?: string } | null | undefined) => m ? { id: m.id, name: m.name ?? '' } : null).filter(Boolean);
+      const moves =
+        (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.moves ?? [];
+      return (moves as Array<{ id: string; name?: string } | null | undefined>)
+        .map((m: { id: string; name?: string } | null | undefined) =>
+          m ? { id: m.id, name: m.name ?? '' } : null
+        )
+        .filter(Boolean);
     });
     expect(activeMoves).toContainEqual({ id: 'tackle', name: 'Placaje' });
 
@@ -356,21 +448,29 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
     await sim.setupScenario('caterpie', 2);
 
     const rattataMoves = await page.evaluate(() => {
-      const moves = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.moves ?? [];
-      return (moves as Array<{ id: string; name?: string } | null | undefined>).map((m: { id: string; name?: string } | null | undefined) => m ? { id: m.id, name: m.name ?? '' } : null).filter(Boolean);
+      const moves =
+        (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.moves ?? [];
+      return (moves as Array<{ id: string; name?: string } | null | undefined>)
+        .map((m: { id: string; name?: string } | null | undefined) =>
+          m ? { id: m.id, name: m.name ?? '' } : null
+        )
+        .filter(Boolean);
     });
     expect(rattataMoves).toContainEqual({ id: 'tackle', name: 'Placaje' });
   });
 
-  test('debería asegurar que todos los movimientos tengan una animación y categoría mapeada correctamente', async ({ page }) => {
+  test('debería asegurar que todos los movimientos tengan una animación y categoría mapeada correctamente', async ({
+    page
+  }) => {
     const sim = new CaptureSimWrapper(page, 'TestPlayer3');
     await sim.setup();
 
     const moveIdsToCheck = Object.keys(MOVE_TRANSLATIONS_ES);
     const unregisteredCategories = await page.evaluate(async (ids) => {
       const missing: string[] = []; // no-domain: Non-domain utility collection or data structure
-      const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider');
-      
+      const { pokemonDataProvider } =
+        await import('../../../src/logic/providers/pokemonDataProvider');
+
       ids.forEach((id) => {
         try {
           const md = pokemonDataProvider.getMoveData(id);

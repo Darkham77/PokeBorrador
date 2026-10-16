@@ -1,20 +1,26 @@
-import {PokemonSet, StatsTable} from '@pkmn/types';
+import { PokemonSet, StatsTable } from '@pkmn/types';
 
-import {Sets, _import, _unpack} from '../sets';
+import { Sets, _import, _unpack } from '../sets';
 
-import {GEN} from './data';
+import { GEN } from './data';
 
 function imported(s: string) {
-  return s.split('\n').map(x => x.trim()).filter(x => x).join('\n');
+  return s
+    .split('\n')
+    .map((x) => x.trim())
+    .filter((x) => x)
+    .join('\n');
 }
 
 function exported(s: string) {
-  return s.split('\n')
-    .map((x) => x.trim())
-    .filter(x => x)
-    .map(x => x + '  ')
-    .join('\n') +
-      '\n\n';
+  return (
+    s
+      .split('\n')
+      .map((x) => x.trim())
+      .filter((x) => x)
+      .map((x) => x + '  ')
+      .join('\n') + '\n\n'
+  );
 }
 
 describe('Sets', () => {
@@ -30,8 +36,7 @@ describe('Sets', () => {
         - Protect
         - Seismic Toss`;
 
-      expect(Sets.toString(Sets.fromString(imported(blissey))))
-        .toEqual(exported(blissey));
+      expect(Sets.toString(Sets.fromString(imported(blissey)))).toEqual(exported(blissey));
     });
 
     it('marowak (gen 2)', () => {
@@ -51,8 +56,7 @@ describe('Sets', () => {
         - Frustration
         - Swords Dance`);
 
-      expect(Sets.exportSet(Sets.importSet(marowakIn, GEN[2]), GEN[2]))
-        .toEqual(marowakOut);
+      expect(Sets.exportSet(Sets.importSet(marowakIn, GEN[2]), GEN[2])).toEqual(marowakOut);
     });
 
     it('magnezone', () => {
@@ -84,8 +88,7 @@ describe('Sets', () => {
         - Hidden Power [Flying]
         - Volt Switch`);
 
-      expect(Sets.exportSet(Sets.importSet(magnezoneIn)))
-        .toEqual(magnezoneOut);
+      expect(Sets.exportSet(Sets.importSet(magnezoneIn))).toEqual(magnezoneOut);
     });
 
     it('tauros (rby)', () => {
@@ -96,8 +99,7 @@ describe('Sets', () => {
         - Earthquake
         - Hyper Beam`;
 
-      expect(Sets.exportSet(Sets.importSet(imported(tauros))))
-        .toEqual(exported(tauros));
+      expect(Sets.exportSet(Sets.importSet(imported(tauros)))).toEqual(exported(tauros));
     });
 
     it('fake', () => {
@@ -109,8 +111,7 @@ describe('Sets', () => {
         - Fake Move 3
         - Hidden Power [Fake]`;
 
-      expect(Sets.exportSet(Sets.importSet(imported(fake))))
-        .toEqual(exported(fake));
+      expect(Sets.exportSet(Sets.importSet(imported(fake)))).toEqual(exported(fake));
     });
 
     it('nothing', () => {
@@ -136,8 +137,9 @@ describe('Sets', () => {
     });
 
     it('tangrowth (packed in)', () => {
-      const tangrowthIn = 'Tangrowth||AssaultVest|H|GigaDrain,KnockOff' +
-          ',PowerWhip,Earthquake|Sassy|248,,8,,252,||,30,30,,,|||,Ice,';
+      const tangrowthIn =
+        'Tangrowth||AssaultVest|H|GigaDrain,KnockOff' +
+        ',PowerWhip,Earthquake|Sassy|248,,8,,252,||,30,30,,,|||,Ice,';
       const tangrowthOut = exported(`
         Tangrowth @ Assault Vest
         Ability: Regenerator
@@ -184,8 +186,7 @@ describe('Sets', () => {
         - Hidden Power [Flying]
         - Volt Switch`);
 
-      const u =
-        _unpack((Sets.pack(Sets.importSet(magnezoneIn, GEN[7]))) + ']').set!;
+      const u = _unpack(Sets.pack(Sets.importSet(magnezoneIn, GEN[7])) + ']').set!;
       expect(Sets.exportSet(u, GEN[7])).toEqual(magnezoneOut);
     });
 
@@ -283,28 +284,33 @@ describe('Sets', () => {
     });
 
     it('bad types', () => {
-      let suicune = {name: 'Suicune', pokeball: 'Cherish Ball'} as PokemonSet;
+      let suicune = { name: 'Suicune', pokeball: 'Cherish Ball' } as PokemonSet;
       const u = Sets.unpack(Sets.pack(suicune))!;
-      expect(Sets.exportSet(u)).toEqual(exported(`Suicune
-        Pokeball: Cherish Ball`));
-      expect(Sets.exportSet(suicune)).toEqual(exported(`Suicune
-        Pokeball: Cherish Ball`));
+      expect(Sets.exportSet(u)).toEqual(
+        exported(`Suicune
+        Pokeball: Cherish Ball`)
+      );
+      expect(Sets.exportSet(suicune)).toEqual(
+        exported(`Suicune
+        Pokeball: Cherish Ball`)
+      );
 
       suicune = {
         name: 'Suicune',
-        ivs: {hp: undefined} as unknown as StatsTable,
-        moves: ['Hidden Power Bug'],
+        ivs: { hp: undefined } as unknown as StatsTable,
+        moves: ['Hidden Power Bug']
       } as PokemonSet;
-      expect(Sets.exportSet(suicune))
-        .toEqual(exported('Suicune\n- Hidden Power [Bug]'));
+      expect(Sets.exportSet(suicune)).toEqual(exported('Suicune\n- Hidden Power [Bug]'));
 
       suicune = {
         name: 'Suicune',
-        moves: ['Hidden Power [Bug]', 'hiddenpowerdark'],
+        moves: ['Hidden Power [Bug]', 'hiddenpowerdark']
       } as PokemonSet;
-      expect(Sets.exportSet(suicune)).toEqual(exported(`Suicune
+      expect(Sets.exportSet(suicune)).toEqual(
+        exported(`Suicune
         - Hidden Power [Bug]
-        - Hidden Power [Dark]`));
+        - Hidden Power [Dark]`)
+      );
     });
   });
 
@@ -335,8 +341,7 @@ describe('Sets', () => {
       - Shadow Ball
       - Recover`;
 
-    const fj =
-      Sets.fromJSON(Sets.toJSON(Sets.importSet(imported(malakazam)) as PokemonSet))!;
+    const fj = Sets.fromJSON(Sets.toJSON(Sets.importSet(imported(malakazam)) as PokemonSet))!;
     expect(Sets.exportSet(fj)).toEqual(exported(malakazam));
 
     expect(Sets.fromJSON('foo')).toBeUndefined();

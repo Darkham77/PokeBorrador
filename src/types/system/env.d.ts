@@ -1,16 +1,37 @@
 import type { SideID } from '@pkmn/sim';
-import type { ShowdownPlayerRequest, BattleStages, BattleSide, BattleMinigame } from '../battle/battle.ts';
+import type {
+  ShowdownPlayerRequest,
+  BattleStages,
+  BattleSide,
+  BattleMinigame
+} from '../battle/battle.ts';
 import type { BattleStateName, BattleSubStateName } from '../../logic/battle/battleStateMachine.ts';
-import type { BattleForcedSwitchDetail, BattleReadyForInputDetail } from '../battle/battleEvents.ts';
+import type {
+  BattleForcedSwitchDetail,
+  BattleReadyForInputDetail
+} from '../battle/battleEvents.ts';
 import type { GameStoreReadyDetail } from './gameEvents.ts';
 
 export const FILE_SYSTEM_HANDLE_KINDS = ['file', 'directory'] as const;
 export type FileSystemHandleKind = (typeof FILE_SYSTEM_HANDLE_KINDS)[number];
 
-export const TEMPORAL_DURATION_UNITS = ['milliseconds', 'seconds', 'minutes', 'hours', 'days'] as const;
+export const TEMPORAL_DURATION_UNITS = [
+  'milliseconds',
+  'seconds',
+  'minutes',
+  'hours',
+  'days'
+] as const;
 export type TemporalDurationUnit = (typeof TEMPORAL_DURATION_UNITS)[number];
 
-export const FORCED_ENCOUNTER_TYPES = ['none', 'wild', 'trainer', 'rival', 'fishing', 'archaeology'] as const;
+export const FORCED_ENCOUNTER_TYPES = [
+  'none',
+  'wild',
+  'trainer',
+  'rival',
+  'fishing',
+  'archaeology'
+] as const;
 export type ForcedEncounterType = (typeof FORCED_ENCOUNTER_TYPES)[number];
 
 export const E2E_DATABASE_DRIVERS = ['sqlite', 'postgres'] as const;
@@ -148,8 +169,20 @@ declare global {
       enemyRequest?: ShowdownPlayerRequest;
       player?: DebugPokemon | null;
       enemy?: DebugPokemon | null;
-      playerTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string | null }> | null;
-      enemyTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted?: boolean }> | null;
+      playerTeam?: Array<{
+        uid: string;
+        name: string;
+        hp: number;
+        maxHp: number;
+        status?: string | null;
+      }> | null;
+      enemyTeam?: Array<{
+        uid: string;
+        name: string;
+        hp: number;
+        maxHp: number;
+        fainted?: boolean;
+      }> | null;
       p1SlotOrder?: string[]; // domain-ok: Open dynamic text or non-domain string payload
       activeBattle?: {
         player?: DebugPokemon | null;
@@ -190,9 +223,24 @@ declare global {
     setFreezeClock?: (freeze?: boolean) => void;
     setFixedTime?: (epochHour: number, cycle?: string, weather?: string) => void;
     playerChoices?: string[]; // domain-ok: Open dynamic text or non-domain string payload
-    waitForBattleReady?: (timeoutMs?: number, options?: { skipImmediate?: boolean }) => Promise<import('../battle/battleEvents.ts').BattleReadyForInputDetail>;
-    getScriptedReplayReadiness?: () => import('../battle/battleEvents.ts').BattleReadyForInputDetail & { isReady: boolean };
-    certifiedReplayIntroDiagnostics?: { isIntroInProgress: boolean; isWildEntryAnimation: boolean; wildRevealActive: boolean; isEmerging: boolean; upcomingIsEmerging: boolean; trainerAnimState: import('@/composables/battle/useBattleTrainerAnimations').TrainerAnimationState | null; isCaptureSequenceActive: boolean };
+    waitForBattleReady?: (
+      timeoutMs?: number,
+      options?: { skipImmediate?: boolean }
+    ) => Promise<import('../battle/battleEvents.ts').BattleReadyForInputDetail>;
+    getScriptedReplayReadiness?: () => import('../battle/battleEvents.ts').BattleReadyForInputDetail & {
+      isReady: boolean;
+    };
+    certifiedReplayIntroDiagnostics?: {
+      isIntroInProgress: boolean;
+      isWildEntryAnimation: boolean;
+      wildRevealActive: boolean;
+      isEmerging: boolean;
+      upcomingIsEmerging: boolean;
+      trainerAnimState:
+        | import('@/composables/battle/useBattleTrainerAnimations').TrainerAnimationState
+        | null;
+      isCaptureSequenceActive: boolean;
+    };
     useItemInBattle?: (itemId: import('@/data/inventory/items').ItemId, targetUid: string) => void;
     healAll?: () => void;
     forceFlee?: () => void | Promise<void>;
@@ -210,12 +258,26 @@ declare global {
     archaeologyChancePct?: number | null;
     fastRankedDelay?: boolean;
     testResetShowdownWorker?: () => void;
-    useBattleStore?: () => { state: Record<string, unknown> | null; isBattleActive: boolean; fsm?: { currentState: string }; startBattle: (mon: unknown, opts?: unknown) => Promise<void> } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    useGameStore?: () => { state: { team: unknown[]; starterChosen: boolean; money?: number } } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    useBattleStore?: () => {
+      state: Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
+      isBattleActive: boolean;
+      fsm?: { currentState: string };
+      startBattle: (mon: unknown, opts?: unknown) => Promise<void>;
+    } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    useGameStore?: () => {
+      state: { team: unknown[]; starterChosen: boolean; money?: number };
+    } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
     useLoadingStore?: () => { isLoading: (key?: string) => boolean } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
     useMapStore?: () => { setGlobalWeather: (weather: string) => void } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    useModalStore?: () => { open: (name: string, props?: Record<string, unknown>) => string | null; close: (identifier: string) => void; stack?: Array<{ id: string; name: string; closing?: boolean }> }; // open-record: Generic key-value data dictionary container
-    useUIStore?: () => { isBattleSwitchForced: boolean; notify: (msg: string, icon?: string) => void };
+    useModalStore?: () => {
+      open: (name: string, props?: Record<string, unknown>) => string | null; // open-record: Generic key-value data dictionary container
+      close: (identifier: string) => void;
+      stack?: Array<{ id: string; name: string; closing?: boolean }>;
+    }; // open-record: Generic key-value data dictionary container
+    useUIStore?: () => {
+      isBattleSwitchForced: boolean;
+      notify: (msg: string, icon?: string) => void;
+    };
     pokemonDebugService?: { generate: (config: unknown) => unknown };
     certifiedReplayWorkerEnded?: boolean;
     certifiedReplayWorkerFinalState?: unknown;
@@ -238,7 +300,10 @@ declare global {
   interface Window {
     __VITE_DEBUG__?: ViteDebugApi;
     __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
-    drawBattleBackground?: (locationId: import('@/data/world/map-assets').MapRouteId, cycle: string) => void;
+    drawBattleBackground?: (
+      locationId: import('@/data/world/map-assets').MapRouteId,
+      cycle: string
+    ) => void;
     pwa_app_mounted?: boolean;
     initSqlJs?: (options?: unknown) => Promise<unknown>;
     __GTS_SIMULATION__?: boolean;
@@ -248,13 +313,20 @@ declare global {
     __E2E_BATTLE_FORCED_SWITCH__?: Promise<BattleForcedSwitchDetail>;
     __E2E_BATTLE_READY_FOR_INPUT__?: Promise<BattleReadyForInputDetail>;
     __E2E_GAME_STORE_READY__?: Promise<GameStoreReadyDetail>;
-    __E2E_STARTER_SELECT_READY__?: Promise<import('@/types/system/gameEvents').StarterSelectReadyDetail>;
+    __E2E_STARTER_SELECT_READY__?: Promise<
+      import('@/types/system/gameEvents').StarterSelectReadyDetail
+    >;
     __STARTER_SELECT_READY__?: boolean;
     __showdownWorker__?: Worker;
-    __SIMULATOR_BATTLE__?: { p1?: { active?: Array<{ hp?: number }> }; p2?: { active?: Array<{ hp?: number }> } };
+    __SIMULATOR_BATTLE__?: {
+      p1?: { active?: Array<{ hp?: number }> };
+      p2?: { active?: Array<{ hp?: number }> };
+    };
     __VITE_DEBUG_BREEDING_STORE_RESOLVER__?: () => unknown;
     __VITE_DEBUG_MAP_STORE_RESOLVER__?: () => DebugMapStore | undefined;
-    __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => ReturnType<typeof import('@/stores/game').useGameStore>;
+    __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => ReturnType<
+      typeof import('@/stores/game').useGameStore
+    >;
     showGameError?: (error: Error | string, context?: Record<string, unknown>) => void; // domain-ok: Open dynamic text or non-domain string payload // string-ok: Internal string formatting or DOM token identifier // open-record: Generic key-value data dictionary container
     __CURRENT_BATTLE_WEATHER__?: string; // domain-ok: Open dynamic text or non-domain string payload
     __WEATHER_SESSION_SEED__?: number;
@@ -265,6 +337,7 @@ declare global {
   var __VITE_DEBUG__: ViteDebugApi | undefined;
   var __E2E__: boolean | undefined;
   var __E2E_DRIVER__: E2eDatabaseDriver | undefined;
+  var __APP_VERSION__: string;
 }
 
 export {};

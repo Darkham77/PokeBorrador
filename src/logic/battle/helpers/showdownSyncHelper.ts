@@ -25,12 +25,16 @@ export function clearPokemonFromFaintQueue(side: unknown, p: unknown): void {
  * Avoids duplicate mapping code in switchAction.ts and showdownWorkerClient.ts.
  */
 export function extractTeamHpAndStatus(team: Array<MinimalPokemonState | null>): {
+  // open-record: Dynamic Pokemon UID mapped to HP
   hps: Record<string, number>;
+  // open-record: Dynamic Pokemon UID mapped to status ID
   statuses: Record<string, string>;
 } {
+  // open-record: Dynamic Pokemon UID mapped to HP accumulator
   const hps: Record<string, number> = {};
+  // open-record: Dynamic Pokemon UID mapped to status ID accumulator
   const statuses: Record<string, string> = {};
-  team.forEach(p => {
+  team.forEach((p) => {
     if (p && p.uid) {
       hps[p.uid] = p.hp ?? 0;
       statuses[p.uid] = p.status ?? '';
@@ -52,12 +56,15 @@ function syncFaintedPokemon(side: Side, p: NonNullable<Side['pokemon'][number]>)
 function syncPokemonStatus(
   p: NonNullable<Side['pokemon'][number]>,
   uid: string,
+  // open-record: Dynamic Pokemon UID mapped to status ID
   statuses?: Record<string, string>
 ): void {
   const rawStatus = statuses ? findMatchingValue(uid, statuses) : undefined;
   if (rawStatus !== undefined) {
     const targetStatus = (rawStatus || '') as ID;
-    console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} (uid:${uid}), current status: "${p.status}", targetStatus: "${targetStatus}"`);
+    console.debug(
+      `[SYNC-SIDE-STATUS] Mon: ${p.name} (uid:${uid}), current status: "${p.status}", targetStatus: "${targetStatus}"`
+    );
     const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
     if (targetStatus === '' && typeof cureFn === 'function') {
       cureFn.call(p, true);
@@ -83,6 +90,7 @@ function syncLivingPokemon(
   p: NonNullable<Side['pokemon'][number]>,
   uid: string,
   clientHp: number,
+  // open-record: Dynamic Pokemon UID mapped to status ID
   statuses?: Record<string, string>
 ): void {
   p.hp = Math.min(clientHp, p.maxhp);
@@ -98,11 +106,19 @@ function syncLivingPokemon(
  */
 export function syncSidePokemon(
   side: Side,
+  // open-record: Dynamic Pokemon UID mapped to HP
   hps: Record<string, number>,
+  // open-record: Dynamic Pokemon UID mapped to status ID
   statuses?: Record<string, string>
 ): void {
-  console.debug(`[SYNC-SIDE] Side ${side.id}: before sync, pokemon:`, side.pokemon.map(p => `${p?.name} (uid:${p ? Reflect.get(p, 'uid') : undefined}, hp:${p?.hp}, maxhp:${p?.maxhp}, fainted:${p?.fainted})`));
-  side.pokemon.forEach(p => {
+  console.debug(
+    `[SYNC-SIDE] Side ${side.id}: before sync, pokemon:`,
+    side.pokemon.map(
+      (p) =>
+        `${p?.name} (uid:${p ? Reflect.get(p, 'uid') : undefined}, hp:${p?.hp}, maxhp:${p?.maxhp}, fainted:${p?.fainted})`
+    )
+  );
+  side.pokemon.forEach((p) => {
     if (!p) return;
     const uid = Reflect.get(p, 'uid') as string | undefined;
     const clientHp = uid ? findMatchingValue(uid, hps) : undefined;
@@ -114,6 +130,12 @@ export function syncSidePokemon(
       syncLivingPokemon(side, p, uid!, clientHp, statuses);
     }
   });
-  console.debug(`[SYNC-SIDE] Side ${side.id}: after sync, pokemon:`, side.pokemon.map(p => `${p?.name} (uid:${p ? Reflect.get(p, 'uid') : undefined}, hp:${p?.hp}, maxhp:${p?.maxhp}, fainted:${p?.fainted})`));
-  Reflect.set(side, 'pokemonLeft', side.pokemon.filter(p => p && !p.fainted).length);
+  console.debug(
+    `[SYNC-SIDE] Side ${side.id}: after sync, pokemon:`,
+    side.pokemon.map(
+      (p) =>
+        `${p?.name} (uid:${p ? Reflect.get(p, 'uid') : undefined}, hp:${p?.hp}, maxhp:${p?.maxhp}, fainted:${p?.fainted})`
+    )
+  );
+  Reflect.set(side, 'pokemonLeft', side.pokemon.filter((p) => p && !p.fainted).length);
 }

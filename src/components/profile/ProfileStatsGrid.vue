@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { formatCurrency } from '@/logic/utils/formatters'
-import { useStatHover } from '@/composables/ui/useStatHover'
+import { formatCurrency } from '@/logic/utils/formatters';
+import { useStatHover } from '@/composables/ui/useStatHover';
 
 interface Stats {
-  wins?: number
-  trainersDefeated?: number
+  wins?: number;
+  trainersDefeated?: number;
 }
 
 interface Props {
-  stats: Stats
-  level: number
-  badges: number
-  money?: number
-  battleCoins?: number
+  stats: Stats;
+  level: number;
+  badges: number;
+  money?: number;
+  battleCoins?: number;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
-const formatNum = (num: number) => formatCurrency(num)
+const formatNum = (num: number) => formatCurrency(num);
 
 const { handleStatEnter, handleStatLeave } = useStatHover({
   money: {
@@ -28,44 +28,28 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
     border: 'rgba(199, 125, 255, 0.2)',
     background: 'linear-gradient(135deg, rgba(199, 125, 255, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
   }
-})
+});
 </script>
 
 <template>
   <div class="profile-stat-grid-legacy">
-    <div 
-      class="legacy-stat-item"
-      @mouseenter="handleStatEnter"
-      @mouseleave="handleStatLeave"
-    >
+    <div class="legacy-stat-item" @mouseenter="handleStatEnter" @mouseleave="handleStatLeave">
       <span class="legacy-stat-val">{{ level }}</span>
       <span class="legacy-stat-lbl">Nivel</span>
     </div>
-    <div 
-      class="legacy-stat-item"
-      @mouseenter="handleStatEnter"
-      @mouseleave="handleStatLeave"
-    >
+    <div class="legacy-stat-item" @mouseenter="handleStatEnter" @mouseleave="handleStatLeave">
       <span class="legacy-stat-val">{{ badges }}</span>
       <span class="legacy-stat-lbl">Medallas</span>
     </div>
-    <div 
-      class="legacy-stat-item"
-      @mouseenter="handleStatEnter"
-      @mouseleave="handleStatLeave"
-    >
+    <div class="legacy-stat-item" @mouseenter="handleStatEnter" @mouseleave="handleStatLeave">
       <span class="legacy-stat-val">{{ stats?.wins ?? 0 }}</span>
       <span class="legacy-stat-lbl">Vics. Salvaje</span>
     </div>
-    <div 
-      class="legacy-stat-item"
-      @mouseenter="handleStatEnter"
-      @mouseleave="handleStatLeave"
-    >
+    <div class="legacy-stat-item" @mouseenter="handleStatEnter" @mouseleave="handleStatLeave">
       <span class="legacy-stat-val">{{ stats?.trainersDefeated ?? 0 }}</span>
       <span class="legacy-stat-lbl">Entr. Derrotados</span>
     </div>
-    <div 
+    <div
       class="legacy-stat-item highlight money"
       @mouseenter="handleStatEnter"
       @mouseleave="handleStatLeave"
@@ -76,7 +60,7 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
       </span>
       <span class="legacy-stat-lbl">Dinero</span>
     </div>
-    <div 
+    <div
       class="legacy-stat-item highlight bc"
       @mouseenter="handleStatEnter"
       @mouseleave="handleStatLeave"
@@ -91,7 +75,7 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .profile-stat-grid-legacy {
   display: grid;
@@ -121,7 +105,7 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
     &.money {
       background: Linear-Gradient(135deg, Rgb(107 203 119 / 5%) 0%, Rgb(15 23 42 / 40%) 100%);
       border-color: Rgb(107 203 119 / 20%);
-      
+
       .legacy-stat-val {
         color: $green;
         text-shadow: 0 0 10px Rgb(107 203 119 / 40%);
@@ -130,11 +114,11 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
         color: $green;
       }
     }
-    
+
     &.bc {
       background: Linear-Gradient(135deg, Rgb(199 125 255 / 5%) 0%, Rgb(15 23 42 / 40%) 100%);
       border-color: Rgb(199 125 255 / 20%);
-      
+
       .legacy-stat-val {
         color: $purple;
         text-shadow: 0 0 10px Rgb(199 125 255 / 50%);
@@ -147,7 +131,7 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
     &.reputation {
       background: Linear-Gradient(135deg, Rgb(74 222 128 / 5%) 0%, Rgb(15 23 42 / 40%) 100%);
       border-color: Rgb(74 222 128 / 20%);
-      
+
       .legacy-stat-val {
         color: var(--green-light);
         text-shadow: 0 0 10px Rgb(74 222 128 / 50%);

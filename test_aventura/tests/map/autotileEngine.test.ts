@@ -62,9 +62,14 @@ describe('autotileEngine', () => {
 
     // The surrounding 8 cells must now be beach borders (shorelines)
     const neighbors = [
-      [1, 1], [2, 1], [3, 1],
-      [1, 2],         [3, 2],
-      [1, 3], [2, 3], [3, 3]
+      [1, 1],
+      [2, 1],
+      [3, 1],
+      [1, 2],
+      [3, 2],
+      [1, 3],
+      [2, 3],
+      [3, 3]
     ];
 
     for (const [nx, ny] of neighbors) {

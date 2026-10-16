@@ -1,32 +1,32 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, useTemplateRef } from 'vue'
+import { ref, computed, watch, nextTick, useTemplateRef } from 'vue';
 
 const SPRITE_SWAP_STRETCH_Y = 1.5;
 const SPRITE_SWAP_SQUEEZE_X = 0.15;
 const SPRITE_SWAP_IN_DURATION_SEC = 0.18;
 const SPRITE_SWAP_OUT_DURATION_SEC = 0.25;
-import gsap from 'gsap'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import VirtualEntity from './VirtualEntity.vue'
-import CombatShadow from './CombatShadow.vue'
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import type { BattleCombatantProps, CombatantAnimTrigger } from '@/types/battle/battle'
-import { useBattleCombatantAnims } from './useBattleCombatantAnims.ts'
-import { useBattleCombatantState } from './useBattleCombatantState.ts'
-import { useBattleCombatantSpriteLoop } from './useBattleCombatantSpriteLoop.ts'
-import { computeCombatantVolatiles } from './combatantVolatilesHelper.ts'
-import BattleGroundHazards from './BattleGroundHazards.vue'
-import CombatantSpriteLayer from './CombatantSpriteLayer.vue'
-import CombatantTrappedBall from './CombatantTrappedBall.vue'
+import gsap from 'gsap';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import VirtualEntity from './VirtualEntity.vue';
+import CombatShadow from './CombatShadow.vue';
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
+import type { BattleCombatantProps, CombatantAnimTrigger } from '@/types/battle/battle';
+import { useBattleCombatantAnims } from './useBattleCombatantAnims.ts';
+import { useBattleCombatantState, FX_RADIUS_MULTIPLIER } from './useBattleCombatantState.ts';
+import { useBattleCombatantSpriteLoop } from './useBattleCombatantSpriteLoop.ts';
+import { computeCombatantVolatiles } from './combatantVolatilesHelper.ts';
+import BattleGroundHazards from './BattleGroundHazards.vue';
+import CombatantSpriteLayer from './CombatantSpriteLayer.vue';
+import CombatantTrappedBall from './CombatantTrappedBall.vue';
 
 // Referencias DOM
-const spriteRef = useTemplateRef<HTMLElement>('spriteRef')
-const spriteRotationRef = useTemplateRef<HTMLElement>('spriteRotationRef')
-const shadowWrapperRef = useTemplateRef<HTMLElement>('shadowWrapperRef')
-const pokeballImgRef = ref<HTMLImageElement | null>(null)
-const idleWrapperRef = useTemplateRef<HTMLElement>('idleWrapperRef')
+const spriteRef = useTemplateRef<HTMLElement>('spriteRef');
+const spriteRotationRef = useTemplateRef<HTMLElement>('spriteRotationRef');
+const shadowWrapperRef = useTemplateRef<HTMLElement>('shadowWrapperRef');
+const pokeballImgRef = ref<HTMLImageElement | null>(null);
+const idleWrapperRef = useTemplateRef<HTMLElement>('idleWrapperRef');
 
-const DEFAULT_GROUND_Y_PERCENT = '75%'
+const DEFAULT_GROUND_Y_PERCENT = '75%';
 
 const props = withDefaults(defineProps<BattleCombatantProps>(), {
   pokemon: null,
@@ -56,15 +56,14 @@ const props = withDefaults(defineProps<BattleCombatantProps>(), {
   zIndex: undefined,
   targetPosition: null,
   hideStatusOverlay: false
-})
+});
 
-const volatilesProps = computed(() => computeCombatantVolatiles(props.pokemon, props.stages))
-
+const volatilesProps = computed(() => computeCombatantVolatiles(props.pokemon, props.stages));
 
 const emit = defineEmits<{
-  (e: 'load', size: { w: number; h: number }): void
-  (e: 'animationEnd', type: CombatantAnimTrigger): void
-}>()
+  (e: 'load', size: { w: number; h: number }): void;
+  (e: 'animationEnd', type: CombatantAnimTrigger): void;
+}>();
 
 // Consume state extracted into composable
 const {
@@ -97,10 +96,10 @@ const {
   idleKey,
   variationKey,
   variationMeta
-} = useBattleCombatantState(props, emit, spriteRef)
+} = useBattleCombatantState(props, emit, spriteRef);
 
-const idleImageUrl = ref('')
-const variationImageUrl = ref('')
+const idleImageUrl = ref('');
+const variationImageUrl = ref('');
 
 const { currentMode, idleCyclesTarget, animateSpritesheet } = useBattleCombatantSpriteLoop({
   props,
@@ -108,27 +107,30 @@ const { currentMode, idleCyclesTarget, animateSpritesheet } = useBattleCombatant
   isAnimated,
   frames,
   variationMeta
-})
+});
 
 const updateAnimatedImageUrls = () => {
-  if (!props.pokemon) return
+  if (!props.pokemon) return;
 
-  const spriteId = props.pokemon.form && props.pokemon.form !== 'normal' ? `${props.pokemon.id}-${props.pokemon.form}` : props.pokemon.id
+  const spriteId =
+    props.pokemon.form && props.pokemon.form !== 'normal'
+      ? `${props.pokemon.id}-${props.pokemon.form}`
+      : props.pokemon.id;
   const baseAssetUrl = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, {
     isShiny: !!props.pokemon.isShiny,
     isBack: props.side === 'player',
-    isAnimated: true,
-  })
+    isAnimated: true
+  });
 
   const getAnimatedUrl = (baseUrl: string, key: string | null) => {
-    if (!key || !baseUrl) return ''
-    const filename = key.replace(/_back$/, '')
-    return baseUrl.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`)
-  }
+    if (!key || !baseUrl) return '';
+    const filename = key.replace(/_back$/, '');
+    return baseUrl.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`);
+  };
 
-  idleImageUrl.value = getAnimatedUrl(baseAssetUrl, idleKey.value)
-  variationImageUrl.value = getAnimatedUrl(baseAssetUrl, variationKey.value)
-}
+  idleImageUrl.value = getAnimatedUrl(baseAssetUrl, idleKey.value);
+  variationImageUrl.value = getAnimatedUrl(baseAssetUrl, variationKey.value);
+};
 
 watch(
   [
@@ -142,43 +144,42 @@ watch(
     isAnimated
   ],
   () => {
-    idleCyclesTarget.value = Math.floor(Math.random() * 2) + 3
-    currentMode.value = 'idle'
-    updateAnimatedImageUrls()
+    idleCyclesTarget.value = Math.floor(Math.random() * 2) + 3;
+    currentMode.value = 'idle';
+    updateAnimatedImageUrls();
     nextTick(() => {
-      animateSpritesheet()
-    })
+      animateSpritesheet();
+    });
   },
   { immediate: true, deep: true }
-)
+);
 
 // Watcher for in-place visual transformation of the same Pokémon (using GSAP)
 watch(
   [() => props.pokemon?.id, () => props.pokemon?.form, () => props.pokemon?.uid],
   (newVal, oldVal) => {
-    const isSamePokemon = Boolean(newVal[2] && oldVal[2] && newVal[2] === oldVal[2])
+    const isSamePokemon = Boolean(newVal[2] && oldVal[2] && newVal[2] === oldVal[2]);
     if (isSamePokemon && oldVal[0] && (newVal[0] !== oldVal[0] || newVal[1] !== oldVal[1])) {
-      const el = spriteRotationRef.value
-      if (!el) return
-      
-      const tl = gsap.timeline()
+      const el = spriteRotationRef.value;
+      if (!el) return;
+
+      const tl = gsap.timeline();
       tl.to(el, {
         scaleY: SPRITE_SWAP_STRETCH_Y,
         scaleX: SPRITE_SWAP_SQUEEZE_X,
         filter: 'brightness(4) contrast(1.5)',
         duration: SPRITE_SWAP_IN_DURATION_SEC,
         ease: 'power2.in'
-      })
-      .to(el, {
+      }).to(el, {
         scaleY: 1,
         scaleX: 1,
         filter: 'brightness(1) contrast(1)',
         duration: SPRITE_SWAP_OUT_DURATION_SEC,
         ease: 'back.out(2)'
-      })
+      });
     }
   }
-)
+);
 
 // Inicializar animaciones de combate
 useBattleCombatantAnims(
@@ -191,24 +192,21 @@ useBattleCombatantAnims(
   getSpriteFeetOrigin,
   getBallTargetCoords,
   wasCaptured
-)
-
-
+);
 
 const setPokeballImgRef = (el: HTMLImageElement | null) => {
-  pokeballImgRef.value = el
-}
+  pokeballImgRef.value = el;
+};
 
-const SPRITE_SIZE_SCALE_FACTOR = 2
-const FX_RADIUS_MULTIPLIER = 1.25
-const PERCENT_COORDINATE_SCALE = 100
+const SPRITE_SIZE_SCALE_FACTOR = 2;
+const PERCENT_COORDINATE_SCALE = 100;
 
-const combatantSpriteSize = computed(() => displaySize.value * SPRITE_SIZE_SCALE_FACTOR)
-const combatantFxRadius = computed(() => fxRadius.value * FX_RADIUS_MULTIPLIER)
+const combatantSpriteSize = computed(() => displaySize.value * SPRITE_SIZE_SCALE_FACTOR);
+const combatantFxRadius = computed(() => fxRadius.value * FX_RADIUS_MULTIPLIER);
 const combatantSpriteStyle = computed(() => {
-  const sizePx = `${combatantSpriteSize.value}px`
-  const translateX = -(feetPoints.value.feetX * PERCENT_COORDINATE_SCALE)
-  const translateY = -(feetPoints.value.feetY * PERCENT_COORDINATE_SCALE)
+  const sizePx = `${combatantSpriteSize.value}px`;
+  const translateX = -(feetPoints.value.feetX * PERCENT_COORDINATE_SCALE);
+  const translateY = -(feetPoints.value.feetY * PERCENT_COORDINATE_SCALE);
   return {
     width: sizePx,
     height: sizePx,
@@ -216,8 +214,8 @@ const combatantSpriteStyle = computed(() => {
     left: '50%',
     top: localGroundY.value,
     transform: `translate(${translateX}%, ${translateY}%)`
-  }
-})
+  };
+});
 </script>
 
 <template>
@@ -236,20 +234,21 @@ const combatantSpriteStyle = computed(() => {
       ref="spriteRef"
       class="sprite-animator"
       :style="{ '--fx-scale': fxScale }"
-      :class="[{ 
-        'is-attacking': isAttacking,
-        'is-technical-hidden': hidden || animState === 'trapped' || isCaptureSuccess || wasCaptured,
-        'releasing': animState === 'releasing'
-      }, getAttackAnimClass]"
+      :class="[
+        {
+          'is-attacking': isAttacking,
+          'is-technical-hidden':
+            hidden || animState === 'trapped' || isCaptureSuccess || wasCaptured,
+          releasing: animState === 'releasing'
+        },
+        getAttackAnimClass
+      ]"
     >
       <!-- Sombra integrada -->
-      <div
-        ref="shadowWrapperRef"
-        class="combat-shadow-wrapper"
-      >
-        <CombatShadow 
-          v-if="shadowKey" 
-          :shadow-id="shadowKey" 
+      <div ref="shadowWrapperRef" class="combat-shadow-wrapper">
+        <CombatShadow
+          v-if="shadowKey"
+          :shadow-id="shadowKey"
           :sprite-size="combatantSpriteSize"
           :shadow-scale="feetPoints.shadowScale"
           :style="{ '--shadow-y': localGroundY, '--shadow-z-index': '1' }"
@@ -272,12 +271,14 @@ const combatantSpriteStyle = computed(() => {
         <div
           ref="idleWrapperRef"
           class="sprite-idle-wrapper"
-          :class="[{ 
-            'is-floating-species': isFloating, 
-            'energy-catching': animState === 'catching', 
-            'energy-releasing': animState === 'releasing'
-          }]"
-          :style="{ 
+          :class="[
+            {
+              'is-floating-species': isFloating,
+              'energy-catching': animState === 'catching',
+              'energy-releasing': animState === 'releasing'
+            }
+          ]"
+          :style="{
             '--shadow-y': localGroundY,
             '--side-dir': isEnemy ? '-1' : '1'
           }"

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import type { ShowdownBoostStatKey } from '@/types/pokemon/pokemon';
 
 // We test clearDirectionalStages logic directly
@@ -7,7 +7,15 @@ function clearDirectionalStages(
   direction: 'positive' | 'negative'
 ): boolean {
   if (!stages) return false;
-  const keys: readonly ShowdownBoostStatKey[] = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'];
+  const keys: readonly ShowdownBoostStatKey[] = [
+    'atk',
+    'def',
+    'spa',
+    'spd',
+    'spe',
+    'accuracy',
+    'evasion'
+  ];
   let cleared = false;
   for (const key of keys) {
     const val = stages[key] || 0;

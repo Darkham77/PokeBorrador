@@ -1,5 +1,5 @@
-@use "@/styles/core/tools" as *;
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/core/mixins' as *;
 
 .rank-card {
   display: flex;
@@ -46,9 +46,15 @@
     color: var(--slate-400);
     font-size: var(--font-8);
 
-    &.top-1 { color: var(--amber-dark); }
-    &.top-2 { color: var(--slate-300); }
-    &.top-3 { color: var(--amber-dark); }
+    &.top-1 {
+      color: var(--amber-dark);
+    }
+    &.top-2 {
+      color: var(--slate-300);
+    }
+    &.top-3 {
+      color: var(--amber-dark);
+    }
   }
 
   .ranked-medal-mini {

@@ -63,7 +63,10 @@ function loadInitialState(): Record<HomeWidgetId, boolean> {
       }
     }
   } catch (err) {
-    logger.warn('[useHomeWidgetsCollapse] JSON corrupto en localStorage, usando estado por defecto:', err);
+    logger.warn(
+      '[useHomeWidgetsCollapse] JSON corrupto en localStorage, usando estado por defecto:',
+      err
+    );
   }
 
   return initial;

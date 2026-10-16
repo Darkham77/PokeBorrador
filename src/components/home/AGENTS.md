@@ -38,7 +38,7 @@ Poké Vicio Development Team.
 - **Zero Text Evasion on Visual Glitches Mandate**: When text appears visually clipped, chopped, or distorted in the UI, developers MUST NEVER alter, delete, or paraphrase the textual copy to avoid characters with descenders (such as removing words with `j`). The root cause is ALWAYS CSS container bounds, overflow restrictions, or inadequate line-height, and MUST be resolved cleanly at the CSS/layout level.
 - **Generic Collapsed Widget Notification Badges & Pills System (`HomeCollapsibleWidget.vue`)**: When collapsed, every widget must render its pending notifications count or active indicator using the official red rounded notification pill (`.hud-notification-badge.collapse-pill-badge`, `#ef4444`, white pixel font 8px, border-radius 9999px) without parentheses. The badge count is automatically resolved from `@/composables/home/useHomeWidgetBadges.ts` unless explicitly overridden via the `:badge` prop.
 - **Prohibition of Faux-Bold on Pixel Fonts & Multi-Column Item Card Name Wrapping**:
-  - Elements styled with `@include pixelated;` or `var(--font-pixel)` MUST NEVER declare artificial font weights (`font-weight: 700`, `800`, `900` or `bold`). Pixel art fonts are bitmap-aligned monospace typography with no native bold variants; applying artificial weight forces browsers to apply *faux-bold* by dilating pixel glyphs, clipping ascenders/descenders against line boundaries and cutting off uppercase top edges (e.g. `MERCADO NEGRO`) and descenders (`p`, `g`, `y`).
+  - Elements styled with `@include pixelated;` or `var(--font-pixel)` MUST NEVER declare artificial font weights (`font-weight: 700`, `800`, `900` or `bold`). Pixel art fonts are bitmap-aligned monospace typography with no native bold variants; applying artificial weight forces browsers to apply _faux-bold_ by dilating pixel glyphs, clipping ascenders/descenders against line boundaries and cutting off uppercase top edges (e.g. `MERCADO NEGRO`) and descenders (`p`, `g`, `y`).
   - Mini-cards in multi-column widgets (e.g. 3-column shop previews in `HomeBlackMarketWidget.vue`) MUST NOT use single-line ellipsis truncation (`white-space: nowrap; text-overflow: ellipsis;`) for item/entity names, which cuts off compound names (e.g. `Anticongela...`, `Cascabel Co...`). Item names must declare 2-line clamping (`display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 22px; word-break: break-word;`) with `line-height: 1.35;` and `@include pixelated;`, ensuring full text visibility and uniform card heights.
 
 ## Key Files
@@ -76,4 +76,4 @@ Poké Vicio Development Team.
 
 ## Child DOX Index
 
-- *This directory contains specialized domain logic and files with no subdirectories.*
+- _This directory contains specialized domain logic and files with no subdirectories._

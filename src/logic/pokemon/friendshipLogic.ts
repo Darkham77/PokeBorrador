@@ -10,7 +10,7 @@ import {
   FRIENDSHIP_SEAL_MAP,
   type FriendshipLogTone,
   type FriendshipSealMetadata,
-  type FriendshipSealTier,
+  type FriendshipSealTier
 } from '@/types/pokemon/friendship.ts';
 import type { StatModifierDirection } from '@/types/battle/tooltip.ts';
 
@@ -50,7 +50,9 @@ export function clampFriendship(value: number | undefined | null): number {
 /**
  * Resolves the 5-tier Friendship Seal metadata for a given friendship value.
  */
-export function resolveFriendshipSeal(friendship: number | undefined | null): FriendshipSealMetadata {
+export function resolveFriendshipSeal(
+  friendship: number | undefined | null
+): FriendshipSealMetadata {
   const clamped = clampFriendship(friendship);
   if (clamped >= FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD) {
     return FRIENDSHIP_SEAL_MAP.best_friends;
@@ -70,7 +72,9 @@ export function resolveFriendshipSeal(friendship: number | undefined | null): Fr
 /**
  * Resolves the tier ID directly for quick filtering or comparisons.
  */
-export function resolveFriendshipSealTier(friendship: number | undefined | null): FriendshipSealTier {
+export function resolveFriendshipSealTier(
+  friendship: number | undefined | null
+): FriendshipSealTier {
   return resolveFriendshipSeal(friendship).id;
 }
 
@@ -91,13 +95,18 @@ export function calculateReturnPower(friendship: number | undefined | null): num
  */
 export function calculateFrustrationPower(friendship: number | undefined | null): number {
   const clamped = clampFriendship(friendship);
-  return Math.max(1, Math.floor((FRIENDSHIP_BOUNDS.MAX - clamped) / RETURN_FRUSTRATION_POWER_DIVISOR));
+  return Math.max(
+    1,
+    Math.floor((FRIENDSHIP_BOUNDS.MAX - clamped) / RETURN_FRUSTRATION_POWER_DIVISOR)
+  );
 }
 
 /**
  * Resolves single-player combat perks unlocked by deep friendship (threshold >= 220).
  */
-export function getFriendshipCombatPerks(friendship: number | undefined | null): FriendshipCombatPerks {
+export function getFriendshipCombatPerks(
+  friendship: number | undefined | null
+): FriendshipCombatPerks {
   const clamped = clampFriendship(friendship);
   const isActive = clamped >= FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD;
 
@@ -106,7 +115,7 @@ export function getFriendshipCombatPerks(friendship: number | undefined | null):
     endureThreshold: isActive,
     statusCleanseChance: isActive ? FRIENDSHIP_PERK_STATUS_CLEANSE_CHANCE : 0,
     criticalStageBoost: isActive ? 1 : 0,
-    expMultiplier: isActive ? FRIENDSHIP_PERK_EXP_MULTIPLIER : 1.0,
+    expMultiplier: isActive ? FRIENDSHIP_PERK_EXP_MULTIPLIER : 1.0
   };
 }
 
@@ -120,9 +129,7 @@ export function isReadyForFriendshipEvolution(
   if (!pokemon) return false;
   const clamped = clampFriendship(pokemon.friendship);
   const threshold =
-    activeGen >= 8
-      ? FRIENDSHIP_BOUNDS.GEN_8_EVO_THRESHOLD
-      : FRIENDSHIP_BOUNDS.LEGACY_EVO_THRESHOLD;
+    activeGen >= 8 ? FRIENDSHIP_BOUNDS.GEN_8_EVO_THRESHOLD : FRIENDSHIP_BOUNDS.LEGACY_EVO_THRESHOLD;
   return clamped >= threshold;
 }
 
@@ -141,9 +148,7 @@ export function getFriendshipTooltipDetails(
   const perks = getFriendshipCombatPerks(val);
 
   const evoThreshold =
-    activeGen >= 8
-      ? FRIENDSHIP_BOUNDS.GEN_8_EVO_THRESHOLD
-      : FRIENDSHIP_BOUNDS.LEGACY_EVO_THRESHOLD;
+    activeGen >= 8 ? FRIENDSHIP_BOUNDS.GEN_8_EVO_THRESHOLD : FRIENDSHIP_BOUNDS.LEGACY_EVO_THRESHOLD;
 
   const evolutionMessage = isEvoReady
     ? `¡Listo para evolucionar por amistad al subir de nivel! (Umbral alcanzado: ${val}/${evoThreshold})`
@@ -163,7 +168,7 @@ export function getFriendshipTooltipDetails(
     returnPower,
     frustrationPower,
     combatPerks: perks,
-    combatPerksSummary,
+    combatPerksSummary
   };
 }
 
@@ -172,7 +177,10 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 /**
  * Calculates friendship gain on level up based on current friendship and Soothe Bell.
  */
-export function calculateFriendshipLevelUpDelta(currentFriendship: number, hasSootheBell = false): number {
+export function calculateFriendshipLevelUpDelta(
+  currentFriendship: number,
+  hasSootheBell = false
+): number {
   let baseGain = 2;
   if (currentFriendship < FRIENDSHIP_BOUNDS.COMRADE_MIN) {
     baseGain = 5;
@@ -194,11 +202,13 @@ export interface FriendshipTransitionLog {
  * Checks if a change in friendship crosses a significant tier boundary,
  * and generates the appropriate combat log announcement.
  */
-export function getFriendshipTransitionLog( // result-ok: Operation result wrapper payload
+export function getFriendshipTransitionLog(
+  // result-ok: Operation result wrapper payload
   oldFriendship: number | undefined | null,
   newFriendship: number | undefined | null,
   pokemonName: string
-): FriendshipTransitionLog | null { // result-ok: Operation result wrapper payload
+): FriendshipTransitionLog | null {
+  // result-ok: Operation result wrapper payload
   const oldClamped = clampFriendship(oldFriendship);
   const newClamped = clampFriendship(newFriendship);
   const oldTier = resolveFriendshipSealTier(oldClamped);
@@ -217,7 +227,7 @@ export function getFriendshipTransitionLog( // result-ok: Operation result wrapp
           type: 'log-info',
           direction: 'up',
           oldTier,
-          newTier,
+          newTier
         };
       case 'comrade':
         return {
@@ -225,7 +235,7 @@ export function getFriendshipTransitionLog( // result-ok: Operation result wrapp
           type: 'log-info',
           direction: 'up',
           oldTier,
-          newTier,
+          newTier
         };
       case 'radiant_prism':
         return {
@@ -233,7 +243,7 @@ export function getFriendshipTransitionLog( // result-ok: Operation result wrapp
           type: 'log-player',
           direction: 'up',
           oldTier,
-          newTier,
+          newTier
         };
       case 'best_friends':
         return {
@@ -241,7 +251,7 @@ export function getFriendshipTransitionLog( // result-ok: Operation result wrapp
           type: 'log-player',
           direction: 'up',
           oldTier,
-          newTier,
+          newTier
         };
       default:
         return null;
@@ -255,7 +265,7 @@ export function getFriendshipTransitionLog( // result-ok: Operation result wrapp
           type: 'log-error',
           direction: 'down',
           oldTier,
-          newTier,
+          newTier
         };
       case 'comrade':
         return {
@@ -263,7 +273,7 @@ export function getFriendshipTransitionLog( // result-ok: Operation result wrapp
           type: 'log-error',
           direction: 'down',
           oldTier,
-          newTier,
+          newTier
         };
       case 'sprout':
         return {
@@ -271,7 +281,7 @@ export function getFriendshipTransitionLog( // result-ok: Operation result wrapp
           type: 'log-error',
           direction: 'down',
           oldTier,
-          newTier,
+          newTier
         };
       case 'distrust':
         return {
@@ -279,7 +289,7 @@ export function getFriendshipTransitionLog( // result-ok: Operation result wrapp
           type: 'log-error',
           direction: 'down',
           oldTier,
-          newTier,
+          newTier
         };
       default:
         return null;
@@ -289,11 +299,7 @@ export function getFriendshipTransitionLog( // result-ok: Operation result wrapp
 
 import type { BattleSource } from '@/types/battle/battle';
 
-export type FriendshipLogFn = (
-  msg: string,
-  type: string,
-  source?: BattleSource | null
-) => void;
+export type FriendshipLogFn = (msg: string, type: string, source?: BattleSource | null) => void;
 
 /**
  * Applies a friendship change to a Pokémon, clamps it, and optionally emits a battle log if a tier boundary is crossed.
@@ -307,7 +313,11 @@ export function applyFriendshipDelta(
   const newFriendship = clampFriendship(oldFriendship + delta);
   pokemon.friendship = newFriendship;
 
-  const transition = getFriendshipTransitionLog(oldFriendship, newFriendship, pokemon.nickname || pokemon.name);
+  const transition = getFriendshipTransitionLog(
+    oldFriendship,
+    newFriendship,
+    pokemon.nickname || pokemon.name
+  );
   if (transition && addLogFn) {
     addLogFn(transition.message, transition.type, pokemon);
   }
@@ -319,7 +329,7 @@ export const FRIENDSHIP_WALK_CONSTANTS = {
   CYCLE_STEPS: 128,
   SUCCESS_PROBABILITY: 0.5,
   BASE_GAIN: 1,
-  SOOTHE_BELL_BONUS: 1,
+  SOOTHE_BELL_BONUS: 1
 } as const;
 
 /**
@@ -376,7 +386,7 @@ export function processWalkingFriendshipStepAccumulation(
       recipient: null,
       remainingSteps: 0,
       rewardedPokemon: null,
-      gain: 0,
+      gain: 0
     };
   }
 
@@ -408,7 +418,6 @@ export function processWalkingFriendshipStepAccumulation(
     recipient,
     remainingSteps: totalSteps,
     rewardedPokemon,
-    gain: totalGain,
+    gain: totalGain
   };
 }
-

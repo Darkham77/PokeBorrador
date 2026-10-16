@@ -1,6 +1,6 @@
 /**
  * scripts/auditors/domain_data/validate_moves.ts
- * 
+ *
  * MOVE INTEGRITY VALIDATOR (Node.js 26+ Native)
  * Validates learnset moves against Gen 3 Showdown Dex and local Spanish translations.
  */
@@ -10,7 +10,7 @@ import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
-import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { MOVE_TRANSLATIONS_ES, type PokemonMoveId } from '../../../src/data/battle/moves.ts';
 
@@ -89,7 +89,7 @@ const SPECIAL_EFFECTS: Record<string, string> = {
   reversal: 'hp_scale',
   water_spout: 'hp_scale_high',
   snore: 'flinch_30',
-  hyper_beam: 'recharge',
+  hyper_beam: 'recharge'
 };
 
 interface SecondaryEffectInput {
@@ -130,7 +130,10 @@ function resolveSecondaryEffect(sec: SecondaryEffectInput): string | undefined {
   return undefined;
 }
 
-function resolveSelfBoostEffect(self: { boosts?: Partial<Record<string, number>>; chance?: number }): string | undefined {
+function resolveSelfBoostEffect(self: {
+  boosts?: Partial<Record<string, number>>;
+  chance?: number;
+}): string | undefined {
   if (!self.boosts) return undefined;
   const entries = Object.entries(self.boosts);
   if (entries.length === 0) return undefined;
@@ -246,7 +249,7 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
         }
       }
 
-      learnsetMoves.forEach(moveId => {
+      learnsetMoves.forEach((moveId) => {
         const move = g3.moves.get(moveId);
         if (!move || !move.exists) {
           this.addViolation({
@@ -262,7 +265,7 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
     });
 
     this.runSubAuditorSync('move-missing-translation', () => {
-      learnsetMoves.forEach(moveId => {
+      learnsetMoves.forEach((moveId) => {
         const move = g3.moves.get(moveId);
         if (!move || !move.exists) return;
 
@@ -291,9 +294,12 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
             registeredEffects.add(k[1]!);
           }
 
-          learnsetMoves.forEach(moveId => this.validateMoveEffectDescription(moveId as PokemonMoveId, g3, registeredEffects));
+          learnsetMoves.forEach((moveId) =>
+            this.validateMoveEffectDescription(moveId as PokemonMoveId, g3, registeredEffects)
+          );
         }
-      } catch { // catch-ok: optional dex data parsing error fallback
+      } catch {
+        // catch-ok: optional dex data parsing error fallback
         // Ignored
       }
     });
@@ -303,6 +309,10 @@ export class MoveAuditor extends BaseAuditor<MoveRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new MoveAuditor());
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useGameStore } from '@/stores/game';
 import { useBattleStore } from '@/stores/battle/battle';
@@ -53,9 +53,9 @@ describe('Unified Combatant Rewards Log (Tier 1)', () => {
       initialFriendships: {
         [nidorino.uid]: 70,
         [blastoise.uid]: 80,
-        [faintedMon.uid]: 70,
+        [faintedMon.uid]: 70
       },
-      over: true,
+      over: true
     } as unknown as typeof battleStore.state;
 
     const loggedEntries: Array<{ msg: string; source: unknown }> = [];
@@ -70,7 +70,7 @@ describe('Unified Combatant Rewards Log (Tier 1)', () => {
       classMult: 1,
       totalExpMult: 1,
       totalExpMultWithoutEvent: 1,
-      eventExpMultiplier: 1,
+      eventExpMultiplier: 1
     });
 
     // Check that faintedMon was completely omitted from the reward logs
@@ -133,9 +133,9 @@ describe('Unified Combatant Rewards Log (Tier 1)', () => {
       _rewardCombatants: [enemy],
       locationId: 'route1',
       initialFriendships: {
-        [maxEvMon.uid]: 100,
+        [maxEvMon.uid]: 100
       },
-      over: true,
+      over: true
     } as unknown as typeof battleStore.state;
 
     const loggedEntries: Array<{ msg: string; source: unknown }> = [];
@@ -150,7 +150,7 @@ describe('Unified Combatant Rewards Log (Tier 1)', () => {
       classMult: 1,
       totalExpMult: 1,
       totalExpMultWithoutEvent: 1,
-      eventExpMultiplier: 1,
+      eventExpMultiplier: 1
     });
 
     const pokeLogs = loggedEntries.filter(
@@ -192,9 +192,9 @@ describe('Unified Combatant Rewards Log (Tier 1)', () => {
       _rewardCombatants: [enemy],
       locationId: 'route1',
       initialFriendships: {
-        [lowLevelMon.uid]: 70,
+        [lowLevelMon.uid]: 70
       },
-      over: true,
+      over: true
     } as unknown as typeof battleStore.state;
 
     const loggedEntries: Array<{ msg: string; source: unknown }> = [];
@@ -209,7 +209,7 @@ describe('Unified Combatant Rewards Log (Tier 1)', () => {
       classMult: 1,
       totalExpMult: 1,
       totalExpMultWithoutEvent: 1,
-      eventExpMultiplier: 1,
+      eventExpMultiplier: 1
     });
 
     const pokeLogs = loggedEntries.filter(

@@ -1,10 +1,10 @@
-import type { Pokemon, PokemonIVs, PokemonMoveId } from '@/types/pokemon/pokemon'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { NatureId } from '@/data/battle/natures'
-import type { ItemId } from '@/data/inventory/items'
-import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
+import type { Pokemon, PokemonIVs, PokemonMoveId } from '@/types/pokemon/pokemon';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { NatureId } from '@/data/battle/natures';
+import type { ItemId } from '@/data/inventory/items';
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 
-import type { TrainerTypeKey } from '@/data/player/trainerTypes'
+import type { TrainerTypeKey } from '@/data/player/trainerTypes';
 
 export const BREEDING_ACTIVITY_SOURCES = ['battle', 'capture', 'gym', 'minigame'] as const;
 export type BreedingActivitySource = (typeof BREEDING_ACTIVITY_SOURCES)[number];

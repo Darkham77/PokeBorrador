@@ -1,37 +1,37 @@
 <script setup lang="ts">
-import { ref, inject, computed, type ComputedRef } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
-import PokemonDisplayTopRow from '@/components/pokemon/PokemonDisplayTopRow.vue'
-import PokemonDisplayActionFooter from '@/components/pokemon/PokemonDisplayActionFooter.vue'
-import { useUIStore } from '@/stores/ui'
-import { useElementVisibility } from '@/composables/ui/useElementVisibility'
-import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { getPokemonVisualBadges, type PokemonTagId } from '@/logic/constants/tags'
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
-import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities'
+import { ref, inject, computed, type ComputedRef } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
+import PokemonDisplayTopRow from '@/components/pokemon/PokemonDisplayTopRow.vue';
+import PokemonDisplayActionFooter from '@/components/pokemon/PokemonDisplayActionFooter.vue';
+import { useUIStore } from '@/stores/ui';
+import { useElementVisibility } from '@/composables/ui/useElementVisibility';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { getPokemonVisualBadges, type PokemonTagId } from '@/logic/constants/tags';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
+import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities';
 import {
   calculateHpData,
   resolveCardStatusIndicators,
   resolveVisibleCardActions,
   resolvePokemonCardClasses
-} from '@/components/pokemon/pokemonDisplayCardHelper'
+} from '@/components/pokemon/pokemonDisplayCardHelper';
 
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface Props {
-  pokemon: Pokemon
-  index?: number
-  isPvp?: boolean
-  maxObeyLv?: number
+  pokemon: Pokemon;
+  index?: number;
+  isPvp?: boolean;
+  maxObeyLv?: number;
   // Permite configurar qué botones se muestran: 'item', 'details', 'box'
-  actions?: string[]
-  disableCardClick?: boolean
-  isRuleViolated?: boolean
-  ruleViolationReason?: string
+  actions?: string[];
+  disableCardClick?: boolean;
+  isRuleViolated?: boolean;
+  ruleViolationReason?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -42,67 +42,71 @@ const props = withDefaults(defineProps<Props>(), {
   disableCardClick: false,
   isRuleViolated: false,
   ruleViolationReason: ''
-})
+});
 
 const emit = defineEmits<{
-  openDetail: [index: number]
-  openItem: [index: number]
-  unequipItem: [index: number]
-  sendToBox: [index: number]
-  select: [index: number]
-  'toggle-tag': [tagId: PokemonTagId]
-}>()
+  openDetail: [index: number];
+  openItem: [index: number];
+  unequipItem: [index: number];
+  sendToBox: [index: number];
+  select: [index: number];
+  'toggle-tag': [tagId: PokemonTagId];
+}>();
 
-const cardRef = ref(null)
-const { isVisible } = useElementVisibility(cardRef)
-const uiStore = useUIStore()
+const cardRef = ref(null);
+const { isVisible } = useElementVisibility(cardRef);
+const uiStore = useUIStore();
 
 // Hierarchy & Performance Injections
-const isModalFast = inject<ComputedRef<boolean> | null>('isModalFastMode', null) ?? inject<ComputedRef<boolean> | null>('isModalPerformanceMode', null)
-const isModalTop = inject<ComputedRef<boolean> | null>('isModalTop', null)
+const isModalFast =
+  inject<ComputedRef<boolean> | null>('isModalFastMode', null) ??
+  inject<ComputedRef<boolean> | null>('isModalPerformanceMode', null);
+const isModalTop = inject<ComputedRef<boolean> | null>('isModalTop', null);
 
 /**
  * Determines whether this component is inside the modal that the user has active in the foreground.
  */
 const isForeground = computed(() => {
-  if (isModalTop !== null) return isModalTop.value
+  if (isModalTop !== null) return isModalTop.value;
   if (isModalFast !== null) {
-    return isModalFast.value === false
+    return isModalFast.value === false;
   }
-  return false
-})
+  return false;
+});
 
 const isPerformanceActive = computed(() => {
-  if (uiStore.isSimplifiedModalsMode) return true
+  if (uiStore.isSimplifiedModalsMode) return true;
   if (isModalFast !== null) {
-    return isModalFast.value
+    return isModalFast.value;
   }
-  return uiStore.isFastMode
-})
+  return uiStore.isFastMode;
+});
 
-const hpData = computed(() => calculateHpData(props.pokemon.hp, props.pokemon.maxHp))
+const hpData = computed(() => calculateHpData(props.pokemon.hp, props.pokemon.maxHp));
 
-const tierInfo = computed(() => getPokemonTier(props.pokemon))
-const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59')
+const tierInfo = computed(() => getPokemonTier(props.pokemon));
+const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59');
 
-const badgesCount = computed(() => getPokemonVisualBadges(props.pokemon).length)
-const hasBadges = computed(() => badgesCount.value > 0)
-const hasManyBadges = computed(() => badgesCount.value >= 6)
+const badgesCount = computed(() => getPokemonVisualBadges(props.pokemon).length);
+const hasBadges = computed(() => badgesCount.value > 0);
+const hasManyBadges = computed(() => badgesCount.value >= 6);
 
-const disobeys = computed(() => props.pokemon.level > props.maxObeyLv)
+const disobeys = computed(() => props.pokemon.level > props.maxObeyLv);
 
 const spriteUrl = computed(() => {
-  return getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
-    isShiny: props.pokemon.isShiny 
-  })
-})
+  return getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
+    isShiny: props.pokemon.isShiny
+  });
+});
 
-const totalPower = computed(() => calculateTotalPower(props.pokemon))
-const fieldPassive = computed(() => getFieldPassiveBadges(props.pokemon))
-const statusIndicators = computed(() => resolveCardStatusIndicators(props.pokemon, fieldPassive.value))
-const visibleActions = computed(() => resolveVisibleCardActions(props.actions, props.isPvp))
+const totalPower = computed(() => calculateTotalPower(props.pokemon));
+const fieldPassive = computed(() => getFieldPassiveBadges(props.pokemon));
+const statusIndicators = computed(() =>
+  resolveCardStatusIndicators(props.pokemon, fieldPassive.value)
+);
+const visibleActions = computed(() => resolveVisibleCardActions(props.actions, props.isPvp));
 
-const isPremiumTier = computed(() => tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+')
+const isPremiumTier = computed(() => tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+');
 
 const cardClasses = computed(() => {
   return resolvePokemonCardClasses(props.pokemon, {
@@ -112,20 +116,22 @@ const cardClasses = computed(() => {
     isPerformanceActive: isPerformanceActive.value,
     isPremiumTier: isPremiumTier.value,
     isRuleViolated: props.isRuleViolated
-  })
-})
+  });
+});
 
-const violationReason = computed(() => props.ruleViolationReason || 'No cumple las reglas')
-const isIllegalPokemon = computed(() => Boolean(props.pokemon.isIllegal))
-const illegalTitle = computed(() => props.pokemon.illegalReasons?.join('\n') || 'Pokémon Ilegal')
-const isFxEnabled = computed(() => Boolean(isVisible.value && (!isPerformanceActive.value || isForeground.value)))
-const isSpeciesName = computed(() => !props.pokemon.nickname)
-const displayName = computed(() => props.pokemon.nickname || props.pokemon.name)
-const typePillsSize = computed(() => (props.pokemon.type2 ? 'ssm' : 'sm'))
+const violationReason = computed(() => props.ruleViolationReason || 'No cumple las reglas');
+const isIllegalPokemon = computed(() => Boolean(props.pokemon.isIllegal));
+const illegalTitle = computed(() => props.pokemon.illegalReasons?.join('\n') || 'Pokémon Ilegal');
+const isFxEnabled = computed(() =>
+  Boolean(isVisible.value && (!isPerformanceActive.value || isForeground.value))
+);
+const isSpeciesName = computed(() => !props.pokemon.nickname);
+const displayName = computed(() => props.pokemon.nickname || props.pokemon.name);
+const typePillsSize = computed(() => (props.pokemon.type2 ? 'ssm' : 'sm'));
 
 function handleCardClick() {
   if (!props.disableCardClick) {
-    emit('openDetail', props.index)
+    emit('openDetail', props.index);
   }
 }
 </script>
@@ -134,19 +140,18 @@ function handleCardClick() {
   <div
     id="pokemon-display-card-div-cardref"
     ref="cardRef"
+    role="button"
+    tabindex="0"
     :data-pokemon-uid="pokemon.uid"
     :class="[cardClasses, { 'disable-click': disableCardClick }]"
-    :style="{ 
+    :style="{
       '--tier-color': tierInfo.color,
       '--tier-color-rgb': tierColorRgb
     }"
     @click.stop="handleCardClick"
   >
     <!-- Rule Violation Cartel -->
-    <div
-      v-if="props.isRuleViolated"
-      class="rule-violation-cartel text-outline"
-    >
+    <div v-if="props.isRuleViolated" class="rule-violation-cartel text-outline">
       <span class="emoji">⚠️</span>
       <span class="violation-reason-text">{{ violationReason }}</span>
     </div>
@@ -162,11 +167,7 @@ function handleCardClick() {
 
     <!-- Sprite Section -->
     <div class="sprite-section">
-      <div
-        v-if="isIllegalPokemon"
-        class="pokemon-illegal-danger-badge"
-        :title="illegalTitle"
-      >
+      <div v-if="isIllegalPokemon" class="pokemon-illegal-danger-badge" :title="illegalTitle">
         <span class="emoji danger-icon">⚠️</span>
         <span class="danger-label">ILEGAL</span>
       </div>
@@ -177,45 +178,24 @@ function handleCardClick() {
         :is-guardian="pokemon.isGuardian"
         :sparkle-count="5"
       >
-        <img
-          :src="spriteUrl"
-          :alt="pokemon.name"
-          class="pokemon-sprite"
-          width="32"
-          height="32"
-        >
+        <img :src="spriteUrl" :alt="pokemon.name" class="pokemon-sprite" width="32" height="32" />
       </PVSpriteFX>
     </div>
 
     <!-- Info Section -->
     <div class="pokemon-info">
-      <div
-        class="name-line"
-        :class="{ 'has-nickname': pokemon.nickname }"
-      >
+      <div class="name-line" :class="{ 'has-nickname': pokemon.nickname }">
         <div class="pdc-name-stack">
-          <span
-            class="pdc-pokemon-name"
-            :class="{ 'is-species': isSpeciesName }"
-          >{{ displayName }}</span>
-          <span
-            v-if="pokemon.nickname"
-            class="pdc-species-subtitle"
-          >{{ pokemon.name }}</span>
+          <span class="pdc-pokemon-name" :class="{ 'is-species': isSpeciesName }">{{
+            displayName
+          }}</span>
+          <span v-if="pokemon.nickname" class="pdc-species-subtitle">{{ pokemon.name }}</span>
         </div>
-        <PVGenderBadge
-          v-if="pokemon.gender"
-          :gender="pokemon.gender"
-          size="md"
-        />
+        <PVGenderBadge v-if="pokemon.gender" :gender="pokemon.gender" size="md" />
       </div>
 
       <!-- Types Pills -->
-      <PokemonTypePills 
-        :pokemon="pokemon" 
-        :size="typePillsSize"
-        class="pdc-types"
-      />
+      <PokemonTypePills :pokemon="pokemon" :size="typePillsSize" class="pdc-types" />
 
       <div class="level-line">
         <span class="m-badge-level">Nv. {{ pokemon.level }}</span>
@@ -230,18 +210,12 @@ function handleCardClick() {
 
       <!-- Status Labels (Floating) -->
       <div class="status-labels">
-        <span
-          v-if="disobeys"
-          class="status-tag obedience"
-        >NV ALTO</span>
+        <span v-if="disobeys" class="status-tag obedience">NV ALTO</span>
       </div>
 
       <div class="hp-container">
         <div class="hp-bar-outer">
-          <div
-            :class="['hp-bar-inner', hpData.hpClass]"
-            :style="{ width: hpData.pctWidth }"
-          />
+          <div :class="['hp-bar-inner', hpData.hpClass]" :style="{ width: hpData.pctWidth }" />
         </div>
         <div class="hp-stats">
           {{ hpData.text }}
@@ -265,7 +239,7 @@ function handleCardClick() {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/pokemon-display-card" as *;
+@use '@/styles/components/pokemon-display-card' as *;
 
 .pokemon-illegal-danger-badge {
   display: flex;

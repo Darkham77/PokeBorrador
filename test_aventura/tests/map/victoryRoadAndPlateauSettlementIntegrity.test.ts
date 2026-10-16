@@ -44,13 +44,19 @@ describe('Victory Road, Plateau Settlement & Urban Tall Grass Integrity', () => 
     expect(lowerEdge, 'Route must connect to lower cave entrance').toBeDefined();
 
     // Path connects upper cave exit east to central avenue and north to League
-    expect(routeNetwork.pathGrid[42]?.[upperCave!.gridX], 'Path must exist at upper cave doorstep').toBe(true);
+    expect(
+      routeNetwork.pathGrid[42]?.[upperCave!.gridX],
+      'Path must exist at upper cave doorstep'
+    ).toBe(true);
     expect(routeNetwork.pathGrid[42]?.[42], 'Path must connect to central avenue').toBe(true);
     expect(routeNetwork.pathGrid[37]?.[42], 'Path must reach League palace avenue').toBe(true);
 
     // Mountain surface between entrance and exit (latitude 45 to 53) must have NO surface path
     for (let y = 46; y <= 53; y++) {
-      expect(routeNetwork.pathGrid[y]?.[42], `Mountain surface at y=${y} must be pristine (no surface road)`).toBe(false);
+      expect(
+        routeNetwork.pathGrid[y]?.[42],
+        `Mountain surface at y=${y} must be pristine (no surface road)`
+      ).toBe(false);
     }
   });
 
@@ -69,7 +75,10 @@ describe('Victory Road, Plateau Settlement & Urban Tall Grass Integrity', () => 
               { dx: -1, dy: 0 },
               { dx: 1, dy: 0 }
             ].filter((n) => routeNetwork.bridgeGrid[y + n.dy]?.[x + n.dx]);
-            expect(bNeighbors.length, `Bridge at (${x},${y}) must not be an isolated 1-cell strip`).toBeGreaterThanOrEqual(2);
+            expect(
+              bNeighbors.length,
+              `Bridge at (${x},${y}) must not be an isolated 1-cell strip`
+            ).toBeGreaterThanOrEqual(2);
           }
         }
       }
@@ -97,10 +106,16 @@ describe('Victory Road, Plateau Settlement & Urban Tall Grass Integrity', () => 
 
     // Must have a south-facing mountain stair connecting the elevated plateau to the ground
     const cinnabarStairs = continent.placedStairs.filter(
-      (st) => st.x >= cinnabar!.gridX - 2 && st.x <= cinnabar!.gridX + cinnabar!.footprint.width + 2 &&
-              st.y >= cinnabar!.gridY - 2 && st.y <= cinnabar!.gridY + cinnabar!.footprint.height + 2
+      (st) =>
+        st.x >= cinnabar!.gridX - 2 &&
+        st.x <= cinnabar!.gridX + cinnabar!.footprint.width + 2 &&
+        st.y >= cinnabar!.gridY - 2 &&
+        st.y <= cinnabar!.gridY + cinnabar!.footprint.height + 2
     );
-    expect(cinnabarStairs.length, 'Cinnabar Island must have mountain stairs').toBeGreaterThanOrEqual(1);
+    expect(
+      cinnabarStairs.length,
+      'Cinnabar Island must have mountain stairs'
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it('guarantees 100% zero tall grass tiles inside any urban footprint across both Kanto and procedural maps', () => {

@@ -4,4 +4,3 @@
  */
 export const DAY_PHASES = ['morning', 'day', 'dusk', 'night'] as const;
 export type DayPhase = (typeof DAY_PHASES)[number];
-

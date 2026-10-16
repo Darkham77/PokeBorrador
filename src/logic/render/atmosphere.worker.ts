@@ -1,6 +1,6 @@
 /**
  * src/logic/render/atmosphere.worker.ts
- * 
+ *
  * Web Worker for OffscreenCanvas weather noise/mist rendering.
  * Animates shifting mist/fog noise textures off-thread.
  */
@@ -38,13 +38,13 @@ const ATMOSPHERE_OPACITY_PRESETS = {
   SAND_OP2: 0.55,
   SUN_MIN: 0.35,
   SUN_MAX: 0.45,
-  INTENSE_SUN_MIN: 0.50,
+  INTENSE_SUN_MIN: 0.5,
   INTENSE_SUN_MAX: 0.65,
   HEATWAVE_MIN: 0.65,
-  HEATWAVE_MAX: 0.80,
+  HEATWAVE_MAX: 0.8,
   SUN_SECONDARY_FACTOR: 0.85,
   INTENSE_SUN_SECONDARY_FACTOR: 0.9,
-  HEATWAVE_SECONDARY_FACTOR: 0.95,
+  HEATWAVE_SECONDARY_FACTOR: 0.95
 } as const;
 
 /** Physics divisors for fog/mist drift speed calculations. */
@@ -74,7 +74,7 @@ const ATMOSPHERE_DRIFT = {
   HEAT_SHIMMER_FREQ_1: 6,
   HEAT_SHIMMER_FREQ_2: 8,
   HEAT_SHIMMER_AMP_1: 8,
-  HEAT_SHIMMER_AMP_2: 6,
+  HEAT_SHIMMER_AMP_2: 6
 } as const;
 
 /** Pulse cycle duration in seconds for non-strong weather. */
@@ -85,15 +85,16 @@ const ATMOSPHERE_CYCLE_DURATION_STRONG_BASE = 1.5;
 let canvas: OffscreenCanvas | null = null; // singleton-ok: Singleton instance state container
 let ctx: OffscreenCanvasRenderingContext2D | null = null; // singleton-ok: Singleton instance state container
 let isPaused = false; // singleton-ok: Singleton instance state container
-let params: AtmosphereParams = { // singleton-ok: Singleton instance state container
+let params: AtmosphereParams = {
+  // singleton-ok: Singleton instance state container
   weather: 'clear',
   isLowPower: false,
   animSeed: 0.5,
   speedMultiplier: 1
 };
 
-const patterns: Record<string, CanvasPattern> = {};
-const textures: Record<string, ImageBitmap> = {};
+const patterns: Record<string, CanvasPattern> = {}; // open-record: Dynamic texture pattern cache keyed by asset URL
+const textures: Record<string, ImageBitmap> = {}; // open-record: Dynamic bitmap cache keyed by asset URL
 
 let lastTime = 0; // singleton-ok: Singleton instance state container
 const textureOffsets = {
@@ -108,55 +109,94 @@ interface AtmosphereDrift {
   driftY2: number;
 }
 
-function calculateAtmosphereDrift(w: string, animSeed: number, speedMultiplier = 1): AtmosphereDrift {
-  const speedVar = (ATMOSPHERE_SPEED_VAR_BASE + (animSeed * ATMOSPHERE_SPEED_VAR_SCALE)) * speedMultiplier;
+function calculateAtmosphereDrift(
+  w: string,
+  animSeed: number,
+  speedMultiplier = 1
+): AtmosphereDrift {
+  const speedVar =
+    (ATMOSPHERE_SPEED_VAR_BASE + animSeed * ATMOSPHERE_SPEED_VAR_SCALE) * speedMultiplier;
   if (w === 'fog' || w === 'mist') {
-    const fogFastDen = ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT);
-    const fogSlowDen = ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT);
+    const fogFastDen =
+      ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR *
+      (ATMOSPHERE_DRIFT.SEED_FAST_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT);
+    const fogSlowDen =
+      ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR *
+      (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT);
     return {
       driftX1: (TEXTURE_TILE_SIZE_BASE * speedVar) / fogFastDen,
       driftY1: (TEXTURE_TILE_SIZE_BASE * speedVar) / fogFastDen,
       driftX2: (TEXTURE_TILE_SIZE_LARGE * speedVar) / fogSlowDen,
-      driftY2: (TEXTURE_TILE_SIZE_LARGE * speedVar) / fogSlowDen,
+      driftY2: (TEXTURE_TILE_SIZE_LARGE * speedVar) / fogSlowDen
     };
   }
   if (w === 'wind') {
     return {
-      driftX1: (-TEXTURE_TILE_SIZE_BASE * speedVar) / (ATMOSPHERE_DRIFT.WIND_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT)),
+      driftX1:
+        (-TEXTURE_TILE_SIZE_BASE * speedVar) /
+        (ATMOSPHERE_DRIFT.WIND_DIVISOR *
+          (ATMOSPHERE_DRIFT.SEED_FAST_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT)),
       driftY1: 0,
-      driftX2: (-TEXTURE_TILE_SIZE_LARGE * speedVar) / (ATMOSPHERE_DRIFT.WIND_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT)),
-      driftY2: 0,
+      driftX2:
+        (-TEXTURE_TILE_SIZE_LARGE * speedVar) /
+        (ATMOSPHERE_DRIFT.WIND_DIVISOR *
+          (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT)),
+      driftY2: 0
     };
   }
   if (w === 'dust_storm') {
     return {
-      driftX1: (-TEXTURE_TILE_SIZE_BASE * speedVar) / (ATMOSPHERE_DRIFT.DUST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT)),
+      driftX1:
+        (-TEXTURE_TILE_SIZE_BASE * speedVar) /
+        (ATMOSPHERE_DRIFT.DUST_DIVISOR *
+          (ATMOSPHERE_DRIFT.SEED_FAST_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT)),
       driftY1: 0,
-      driftX2: (-TEXTURE_TILE_SIZE_LARGE * speedVar) / (ATMOSPHERE_DRIFT.DUST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT)),
-      driftY2: 0,
+      driftX2:
+        (-TEXTURE_TILE_SIZE_LARGE * speedVar) /
+        (ATMOSPHERE_DRIFT.DUST_DIVISOR *
+          (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT)),
+      driftY2: 0
     };
   }
   if (w === 'sandstorm' || w === 'strong_winds') {
-    const factor = w === 'strong_winds' ? ATMOSPHERE_DRIFT.SAND_FACTOR_STRONG : ATMOSPHERE_DRIFT.SAND_FACTOR_NORMAL;
-    const dur1 = ((ATMOSPHERE_DRIFT.SAND_SEED_BASE + animSeed * ATMOSPHERE_DRIFT.SAND_SEED_MULT) * factor) / speedMultiplier;
+    const factor =
+      w === 'strong_winds'
+        ? ATMOSPHERE_DRIFT.SAND_FACTOR_STRONG
+        : ATMOSPHERE_DRIFT.SAND_FACTOR_NORMAL;
+    const dur1 =
+      ((ATMOSPHERE_DRIFT.SAND_SEED_BASE + animSeed * ATMOSPHERE_DRIFT.SAND_SEED_MULT) * factor) /
+      speedMultiplier;
     const seed2 = (animSeed * ATMOSPHERE_DRIFT.GOLDEN_RATIO) % 1;
-    const dur2 = (dur1 * (ATMOSPHERE_DRIFT.SAND_DUR2_BASE + seed2 * ATMOSPHERE_DRIFT.SAND_DUR2_MULT));
+    const dur2 = dur1 * (ATMOSPHERE_DRIFT.SAND_DUR2_BASE + seed2 * ATMOSPHERE_DRIFT.SAND_DUR2_MULT);
     return {
       driftX1: -TEXTURE_TILE_SIZE_LARGE / dur1,
       driftY1: 0,
       driftX2: -TEXTURE_TILE_SIZE_HUGE / dur2,
-      driftY2: 0,
+      driftY2: 0
     };
   }
   if (w === 'sun' || w === 'intense_sun' || w === 'heatwave') {
-    const heatFactor = w === 'heatwave'
-      ? ATMOSPHERE_DRIFT.HEAT_FACTOR_HEATWAVE
-      : (w === 'intense_sun' ? ATMOSPHERE_DRIFT.HEAT_FACTOR_INTENSE : ATMOSPHERE_DRIFT.HEAT_FACTOR_SUN);
+    const heatFactor =
+      w === 'heatwave'
+        ? ATMOSPHERE_DRIFT.HEAT_FACTOR_HEATWAVE
+        : w === 'intense_sun'
+          ? ATMOSPHERE_DRIFT.HEAT_FACTOR_INTENSE
+          : ATMOSPHERE_DRIFT.HEAT_FACTOR_SUN;
     return {
-      driftX1: Math.sin(animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ) * ATMOSPHERE_DRIFT.HEAT_WAVE_X_MULT_1 * speedVar * heatFactor,
-      driftY1: (-TEXTURE_TILE_SIZE_BASE * speedVar * heatFactor) / ATMOSPHERE_DRIFT.HEAT_DRIFT_Y_DIVISOR_1,
-      driftX2: -Math.cos(animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ) * ATMOSPHERE_DRIFT.HEAT_WAVE_X_MULT_2 * speedVar * heatFactor,
-      driftY2: (-TEXTURE_TILE_SIZE_LARGE * speedVar * heatFactor) / ATMOSPHERE_DRIFT.HEAT_DRIFT_Y_DIVISOR_2,
+      driftX1:
+        Math.sin(animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ) *
+        ATMOSPHERE_DRIFT.HEAT_WAVE_X_MULT_1 *
+        speedVar *
+        heatFactor,
+      driftY1:
+        (-TEXTURE_TILE_SIZE_BASE * speedVar * heatFactor) / ATMOSPHERE_DRIFT.HEAT_DRIFT_Y_DIVISOR_1,
+      driftX2:
+        -Math.cos(animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ) *
+        ATMOSPHERE_DRIFT.HEAT_WAVE_X_MULT_2 *
+        speedVar *
+        heatFactor,
+      driftY2:
+        (-TEXTURE_TILE_SIZE_LARGE * speedVar * heatFactor) / ATMOSPHERE_DRIFT.HEAT_DRIFT_Y_DIVISOR_2
     };
   }
   return { driftX1: 0, driftY1: 0, driftX2: 0, driftY2: 0 };
@@ -175,23 +215,37 @@ const CANVAS_SUPPORTED_WEATHERS = [
 ] as const;
 const CANVAS_SUPPORTED_WEATHERS_SET: ReadonlySet<string> = new Set(CANVAS_SUPPORTED_WEATHERS);
 
-function calculateAtmosphereOpacity(w: string, pulse: number, isLowPower: boolean): { op1: number; op2: number } {
+function calculateAtmosphereOpacity(
+  w: string,
+  pulse: number,
+  isLowPower: boolean
+): { op1: number; op2: number } {
   if (w === 'fog') {
-    const op = ATMOSPHERE_OPACITY_PRESETS.FOG_MIN + (ATMOSPHERE_OPACITY_PRESETS.FOG_MAX - ATMOSPHERE_OPACITY_PRESETS.FOG_MIN) * pulse;
+    const op =
+      ATMOSPHERE_OPACITY_PRESETS.FOG_MIN +
+      (ATMOSPHERE_OPACITY_PRESETS.FOG_MAX - ATMOSPHERE_OPACITY_PRESETS.FOG_MIN) * pulse;
     return { op1: op, op2: op };
   }
   if (w === 'mist') {
-    const baseOp = isLowPower ? ATMOSPHERE_OPACITY_PRESETS.MIST_LOW_POWER_BASE : ATMOSPHERE_OPACITY_PRESETS.MIST_NORMAL_BASE;
-    const maxOp = isLowPower ? ATMOSPHERE_OPACITY_PRESETS.MIST_LOW_POWER_MAX : ATMOSPHERE_OPACITY_PRESETS.MIST_NORMAL_MAX;
+    const baseOp = isLowPower
+      ? ATMOSPHERE_OPACITY_PRESETS.MIST_LOW_POWER_BASE
+      : ATMOSPHERE_OPACITY_PRESETS.MIST_NORMAL_BASE;
+    const maxOp = isLowPower
+      ? ATMOSPHERE_OPACITY_PRESETS.MIST_LOW_POWER_MAX
+      : ATMOSPHERE_OPACITY_PRESETS.MIST_NORMAL_MAX;
     const op = baseOp + (maxOp - baseOp) * pulse;
     return { op1: op, op2: op };
   }
   if (w === 'wind') {
-    const op = ATMOSPHERE_OPACITY_PRESETS.WIND_MIN + (ATMOSPHERE_OPACITY_PRESETS.WIND_MAX - ATMOSPHERE_OPACITY_PRESETS.WIND_MIN) * pulse;
+    const op =
+      ATMOSPHERE_OPACITY_PRESETS.WIND_MIN +
+      (ATMOSPHERE_OPACITY_PRESETS.WIND_MAX - ATMOSPHERE_OPACITY_PRESETS.WIND_MIN) * pulse;
     return { op1: op, op2: op };
   }
   if (w === 'strong_winds') {
-    const op = ATMOSPHERE_OPACITY_PRESETS.STRONG_MIN + (ATMOSPHERE_OPACITY_PRESETS.STRONG_MAX - ATMOSPHERE_OPACITY_PRESETS.STRONG_MIN) * pulse;
+    const op =
+      ATMOSPHERE_OPACITY_PRESETS.STRONG_MIN +
+      (ATMOSPHERE_OPACITY_PRESETS.STRONG_MAX - ATMOSPHERE_OPACITY_PRESETS.STRONG_MIN) * pulse;
     return { op1: op, op2: op };
   }
   if (w === 'dust_storm') {
@@ -201,15 +255,22 @@ function calculateAtmosphereOpacity(w: string, pulse: number, isLowPower: boolea
     return { op1: ATMOSPHERE_OPACITY_PRESETS.SAND_OP1, op2: ATMOSPHERE_OPACITY_PRESETS.SAND_OP2 };
   }
   if (w === 'sun') {
-    const op = ATMOSPHERE_OPACITY_PRESETS.SUN_MIN + (ATMOSPHERE_OPACITY_PRESETS.SUN_MAX - ATMOSPHERE_OPACITY_PRESETS.SUN_MIN) * pulse;
+    const op =
+      ATMOSPHERE_OPACITY_PRESETS.SUN_MIN +
+      (ATMOSPHERE_OPACITY_PRESETS.SUN_MAX - ATMOSPHERE_OPACITY_PRESETS.SUN_MIN) * pulse;
     return { op1: op, op2: op * ATMOSPHERE_OPACITY_PRESETS.SUN_SECONDARY_FACTOR };
   }
   if (w === 'intense_sun') {
-    const op = ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MIN + (ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MAX - ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MIN) * pulse;
+    const op =
+      ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MIN +
+      (ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MAX - ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_MIN) *
+        pulse;
     return { op1: op, op2: op * ATMOSPHERE_OPACITY_PRESETS.INTENSE_SUN_SECONDARY_FACTOR };
   }
   if (w === 'heatwave') {
-    const op = ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MIN + (ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MAX - ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MIN) * pulse;
+    const op =
+      ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MIN +
+      (ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MAX - ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_MIN) * pulse;
     return { op1: op, op2: op * ATMOSPHERE_OPACITY_PRESETS.HEATWAVE_SECONDARY_FACTOR };
   }
   return { op1: ATMOSPHERE_OPACITY_PRESETS.WIND_MAX, op2: ATMOSPHERE_OPACITY_PRESETS.WIND_MIN };
@@ -233,19 +294,27 @@ function render(time: number) {
   }
 
   const speedMult = params.speedMultiplier || 1;
-  const { driftX1, driftY1, driftX2, driftY2 } = calculateAtmosphereDrift(w, params.animSeed, speedMult);
+  const { driftX1, driftY1, driftX2, driftY2 } = calculateAtmosphereDrift(
+    w,
+    params.animSeed,
+    speedMult
+  );
 
   // Opacity & Pulsing logic
   const isStrong = w === 'strong_winds';
-  const cycleDuration = isStrong ? (ATMOSPHERE_CYCLE_DURATION_STRONG_BASE + params.animSeed) : ATMOSPHERE_CYCLE_DURATION_CALM;
-  const pulse = (Math.sin((time / MILLISECONDS_PER_SECOND) * FULL_CIRCLE_RAD / cycleDuration) + 1) / 2;
+  const cycleDuration = isStrong
+    ? ATMOSPHERE_CYCLE_DURATION_STRONG_BASE + params.animSeed
+    : ATMOSPHERE_CYCLE_DURATION_CALM;
+  const pulse =
+    (Math.sin(((time / MILLISECONDS_PER_SECOND) * FULL_CIRCLE_RAD) / cycleDuration) + 1) / 2;
 
   const { op1, op2 } = calculateAtmosphereOpacity(w, pulse, params.isLowPower);
 
   // Target sizes based on original CSS
   const isSand = w === 'sandstorm';
   const isHeat = w === 'sun' || w === 'intense_sun' || w === 'heatwave';
-  const targetSize1 = (isSand || isStrong || isHeat) ? TEXTURE_TILE_SIZE_LARGE : TEXTURE_TILE_SIZE_BASE;
+  const targetSize1 =
+    isSand || isStrong || isHeat ? TEXTURE_TILE_SIZE_LARGE : TEXTURE_TILE_SIZE_BASE;
   const targetSize2 = TEXTURE_TILE_SIZE_LARGE;
 
   const bitmap1 = textures.noise1;
@@ -253,42 +322,73 @@ function render(time: number) {
   const noise1 = patterns.noise1;
   const noise2 = patterns.noise2;
 
-  const scale1 = bitmap1 ? (targetSize1 / bitmap1.width) : 1;
-  const scale2 = bitmap2 ? (targetSize2 / bitmap2.width) : 1;
+  const scale1 = bitmap1 ? targetSize1 / bitmap1.width : 1;
+  const scale2 = bitmap2 ? targetSize2 / bitmap2.width : 1;
 
-  const heatFactor = w === 'heatwave'
-    ? ATMOSPHERE_DRIFT.HEAT_FACTOR_HEATWAVE
-    : (w === 'intense_sun' ? ATMOSPHERE_DRIFT.HEAT_FACTOR_INTENSE : ATMOSPHERE_DRIFT.HEAT_FACTOR_SUN);
+  const heatFactor =
+    w === 'heatwave'
+      ? ATMOSPHERE_DRIFT.HEAT_FACTOR_HEATWAVE
+      : w === 'intense_sun'
+        ? ATMOSPHERE_DRIFT.HEAT_FACTOR_INTENSE
+        : ATMOSPHERE_DRIFT.HEAT_FACTOR_SUN;
 
   const heatShimmerX1 = isHeat
-    ? Math.sin((time / MILLISECONDS_PER_SECOND) * ATMOSPHERE_DRIFT.HEAT_SHIMMER_FREQ_1 + params.animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ) * ATMOSPHERE_DRIFT.HEAT_SHIMMER_AMP_1 * heatFactor
+    ? Math.sin(
+        (time / MILLISECONDS_PER_SECOND) * ATMOSPHERE_DRIFT.HEAT_SHIMMER_FREQ_1 +
+          params.animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ
+      ) *
+      ATMOSPHERE_DRIFT.HEAT_SHIMMER_AMP_1 *
+      heatFactor
     : 0;
   const heatShimmerX2 = isHeat
-    ? Math.cos((time / MILLISECONDS_PER_SECOND) * ATMOSPHERE_DRIFT.HEAT_SHIMMER_FREQ_2 + params.animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ) * ATMOSPHERE_DRIFT.HEAT_SHIMMER_AMP_2 * heatFactor
+    ? Math.cos(
+        (time / MILLISECONDS_PER_SECOND) * ATMOSPHERE_DRIFT.HEAT_SHIMMER_FREQ_2 +
+          params.animSeed * ATMOSPHERE_DRIFT.HEAT_WAVE_FREQ
+      ) *
+      ATMOSPHERE_DRIFT.HEAT_SHIMMER_AMP_2 *
+      heatFactor
     : 0;
 
   // Layer 1
   if (noise1) {
     textureOffsets.layer1.x += driftX1 * (dt / MILLISECONDS_PER_SECOND);
     textureOffsets.layer1.y += driftY1 * (dt / MILLISECONDS_PER_SECOND);
-    drawPattern(noise1, scale1, textureOffsets.layer1.x + heatShimmerX1, textureOffsets.layer1.y, op1);
+    drawPattern(
+      noise1,
+      scale1,
+      textureOffsets.layer1.x + heatShimmerX1,
+      textureOffsets.layer1.y,
+      op1
+    );
   }
 
   // Layer 2
   if (!params.isLowPower && noise2 && !isStrong) {
     textureOffsets.layer2.x += driftX2 * (dt / MILLISECONDS_PER_SECOND);
     textureOffsets.layer2.y += driftY2 * (dt / MILLISECONDS_PER_SECOND);
-    drawPattern(noise2, scale2, textureOffsets.layer2.x + heatShimmerX2, textureOffsets.layer2.y, op2);
+    drawPattern(
+      noise2,
+      scale2,
+      textureOffsets.layer2.x + heatShimmerX2,
+      textureOffsets.layer2.y,
+      op2
+    );
   }
 
   requestAnimationFrame(render);
 }
 
-function drawPattern(pattern: CanvasPattern, scale: number, offsetX: number, offsetY: number, opacity: number) {
+function drawPattern(
+  pattern: CanvasPattern,
+  scale: number,
+  offsetX: number,
+  offsetY: number,
+  opacity: number
+) {
   const localCanvas = canvas;
   const localCtx = ctx;
   if (!localCtx || !localCanvas) return;
-  
+
   const matrix = new DOMMatrix();
   matrix.translateSelf(offsetX, offsetY);
   matrix.scaleSelf(scale, scale);
@@ -297,11 +397,17 @@ function drawPattern(pattern: CanvasPattern, scale: number, offsetX: number, off
   localCtx.globalAlpha = opacity;
   localCtx.fillStyle = pattern;
   localCtx.fillRect(0, 0, localCanvas.width, localCanvas.height);
-  
+
   localCtx.globalAlpha = 1.0;
 }
 
-export const ATMOSPHERE_WORKER_ACTIONS = ['INIT', 'RESIZE', 'UPDATE_PARAMS', 'PAUSE', 'RESUME'] as const;
+export const ATMOSPHERE_WORKER_ACTIONS = [
+  'INIT',
+  'RESIZE',
+  'UPDATE_PARAMS',
+  'PAUSE',
+  'RESUME'
+] as const;
 export type AtmosphereWorkerAction = (typeof ATMOSPHERE_WORKER_ACTIONS)[number];
 
 interface AtmosphereWorkerMessage {
@@ -380,5 +486,3 @@ self.onmessage = async (event: MessageEvent) => {
       break;
   }
 };
-
-export {};

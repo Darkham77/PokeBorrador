@@ -1,17 +1,21 @@
 // src/styles/components/_shop_cards.scss
-@use "@/styles/core/mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .shop-item-card {
   @extend %shop-card-unified-base;
   @include shop-item-card($yellow);
-  &:hover:not(.locked) { @include shop-card-hover($yellow); }
+  &:hover:not(.locked) {
+    @include shop-card-hover($yellow);
+  }
 }
 
 .bc-shop-item-card {
   @extend %shop-card-unified-base;
   @include shop-item-card(#c084fc);
-  &:hover:not(.locked) { @include shop-card-hover(#c084fc); }
+  &:hover:not(.locked) {
+    @include shop-card-hover(#c084fc);
+  }
 
   .item-price-wrapper {
     .currency-symbol {
@@ -27,7 +31,11 @@
   .item-actions .buy-btn {
     @include btn-shop-buy(#c084fc);
     &:hover:not(:disabled) {
-      background: linear-gradient(135deg, var(--purple-500, #a855f7) 0%, var(--purple-600, #7c3aed) 100%) !important;
+      background: linear-gradient(
+        135deg,
+        var(--purple-500, #a855f7) 0%,
+        var(--purple-600, #7c3aed) 100%
+      ) !important;
       color: var(--white) !important;
     }
   }
@@ -45,7 +53,9 @@
   border: 1px solid Rgb(239 68 68 / 20%);
   border-radius: $radius-xl;
   background: Rgb(20 10 10 / 80%) !important; // keep thematic dark background
-  &:hover:not(.locked) { @include shop-card-hover(#ef4444); }
+  &:hover:not(.locked) {
+    @include shop-card-hover(#ef4444);
+  }
 
   .item-price-wrapper {
     color: var(--red-light) !important;
@@ -103,7 +113,9 @@
 .rep-shop-item-card {
   @extend %shop-card-unified-base;
   @include shop-item-card(#3b82f6);
-  &:hover:not(.locked) { @include shop-card-hover(#3b82f6); }
+  &:hover:not(.locked) {
+    @include shop-card-hover(#3b82f6);
+  }
 
   .item-price-wrapper.rep-price {
     display: flex;
@@ -154,11 +166,28 @@
     border-radius: $radius-lg;
     font-size: var(--font-7);
     font-weight: bold;
-    
-    &.tier-common { border: 1px solid Rgb(148 163 184 / 15%); background: Rgb(148 163 184 / 8%); color: var(--slate-400); }
-    &.tier-rare { border: 1px solid Rgb(59 130 246 / 15%); background: Rgb(59 130 246 / 8%); color: var(--blue-400); }
-    &.tier-epic { border: 1px solid Rgb(168 85 247 / 15%); background: Rgb(168 85 247 / 8%); color: var(--purple-400); }
-    &.tier-legend { border: 1px solid var(--yellow-light); background: var(--yellow); color: var(--black); font-weight: bold; }
+
+    &.tier-common {
+      border: 1px solid Rgb(148 163 184 / 15%);
+      background: Rgb(148 163 184 / 8%);
+      color: var(--slate-400);
+    }
+    &.tier-rare {
+      border: 1px solid Rgb(59 130 246 / 15%);
+      background: Rgb(59 130 246 / 8%);
+      color: var(--blue-400);
+    }
+    &.tier-epic {
+      border: 1px solid Rgb(168 85 247 / 15%);
+      background: Rgb(168 85 247 / 8%);
+      color: var(--purple-400);
+    }
+    &.tier-legend {
+      border: 1px solid var(--yellow-light);
+      background: var(--yellow);
+      color: var(--black);
+      font-weight: bold;
+    }
   }
 
   &.locked {
@@ -184,7 +213,7 @@
     border-radius: $radius-xl;
     background: Rgb(255 255 255 / 3%);
     flex-shrink: 0;
-    
+
     img {
       @include pixelated;
 
@@ -312,7 +341,7 @@
         letter-spacing: 0.5px;
       }
     }
-    
+
     .qty-ctrl-group {
       display: flex;
       align-items: center;
@@ -321,11 +350,11 @@
       border-radius: $radius-lg-alt;
       background: Rgb(0 0 0 / 25%);
       overflow: hidden;
-      
+
       .qty-btn {
         display: flex;
         justify-content: center;
-        align-items: center; 
+        align-items: center;
         width: 28px;
         height: 100%;
         border: none;
@@ -336,8 +365,8 @@
         cursor: pointer;
         outline: none;
 
-        &:hover:not(:disabled) { 
-          background: Rgb(255 255 255 / 5%); 
+        &:hover:not(:disabled) {
+          background: Rgb(255 255 255 / 5%);
           color: var(--white);
         }
 
@@ -346,8 +375,8 @@
           cursor: not-allowed;
         }
       }
-      
-      .qty-input { 
+
+      .qty-input {
         width: 36px;
         height: 100%;
         border: none;
@@ -358,7 +387,9 @@
         text-align: center;
         outline: none;
 
-        &::-webkit-inner-spin-button { display: none; }
+        &::-webkit-inner-spin-button {
+          display: none;
+        }
       }
     }
 

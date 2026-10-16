@@ -2,7 +2,11 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
-import { generateMission, validateMissionPokemon, isPokemonEligibleForMission } from '@/logic/breeding/missionEngine';
+import {
+  generateMission,
+  validateMissionPokemon,
+  isPokemonEligibleForMission
+} from '@/logic/breeding/missionEngine';
 import { getItemById, isItemId } from '@/data/inventory/items';
 import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { logger } from '@/logic/utils/logger';
@@ -12,7 +16,10 @@ import type { DaycareMission } from '@/types/breeding/breeding';
 function isValidDaycareMission(m: unknown): m is DaycareMission {
   if (!m || typeof m !== 'object') return false;
   const mission = m as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-  const reward = (mission.reward && typeof mission.reward === 'object') ? mission.reward as Record<string, unknown> : null; // open-record: Generic key-value data dictionary container
+  const reward =
+    mission.reward && typeof mission.reward === 'object'
+      ? (mission.reward as Record<string, unknown>)
+      : null; // open-record: Generic key-value data dictionary container
   return (
     typeof mission.date === 'string' &&
     typeof mission.targetId === 'string' &&
@@ -35,16 +42,20 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
 
   const dailyMissions = computed<DaycareMission[]>({
     get: () => gameStore.state.daycare_missions || [],
-    set: (val) => { gameStore.state.daycare_missions = val; }
+    set: (val) => {
+      gameStore.state.daycare_missions = val;
+    }
   });
 
   const missionRefreshes = computed<number>({
     get: () => gameStore.state.daycare_mission_refreshes || 0,
-    set: (val) => { gameStore.state.daycare_mission_refreshes = val }
+    set: (val) => {
+      gameStore.state.daycare_mission_refreshes = val;
+    }
   });
 
   const fulfillableMissionsCount = computed(() => {
-    const missions = dailyMissions.value.filter(m => !m.completed);
+    const missions = dailyMissions.value.filter((m) => !m.completed);
     if (missions.length === 0) return 0;
 
     const team = gameStore.state.team || [];
@@ -67,11 +78,14 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     const today = getGMT3Date().toPlainDate().toString();
     const missions = dailyMissions.value;
     const lastDate = missions.length > 0 && missions[0] ? missions[0].date : '';
-    const hasCorrupted = missions.length === 0 || missions.some(m => !isValidDaycareMission(m));
+    const hasCorrupted = missions.length === 0 || missions.some((m) => !isValidDaycareMission(m));
 
     if (lastDate !== today || hasCorrupted) {
       if (hasCorrupted && missions.length > 0) {
-        logger.warn('daycareMissions', 'Corrupted daycare mission detected in daily reset. Regenerating fresh missions.');
+        logger.warn(
+          'daycareMissions',
+          'Corrupted daycare mission detected in daily reset. Regenerating fresh missions.'
+        );
       }
       regenerateMissions(today);
       missionRefreshes.value = 3;
@@ -88,7 +102,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     }
 
     dailyMissions.value = [m1, m2];
-    gameStore.scheduleSave();
+    void gameStore.scheduleSave();
   }
 
   function refreshMissions() {
@@ -127,11 +141,14 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     }
 
     mission.completed = true;
-    incrementRecordKey(gameStore.state.inventory, mission.reward.id, mission.reward.qty)
-    
+    incrementRecordKey(gameStore.state.inventory, mission.reward.id, mission.reward.qty);
+
     const itemData = getItemById(mission.reward.id);
-    uiStore.notify(`¡Misión completada! Recibiste ${itemData.name} x${mission.reward.qty}`, itemData.icon || '🎁');
-    gameStore.scheduleSave();
+    uiStore.notify(
+      `¡Misión completada! Recibiste ${itemData.name} x${mission.reward.qty}`,
+      itemData.icon || '🎁'
+    );
+    void gameStore.scheduleSave();
   }
 
   return {

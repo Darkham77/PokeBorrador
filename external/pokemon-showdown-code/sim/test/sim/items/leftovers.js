@@ -6,23 +6,24 @@ const common = require('./../../common');
 let battle;
 
 describe('Leftovers [Gen 2]', () => {
-	afterEach(() => {
-		battle.destroy();
-	});
+  afterEach(() => {
+    battle.destroy();
+  });
 
-	it('should heal after switch', () => {
-		battle = common.gen(2).createBattle([[
-			{ species: 'Blissey', item: 'leftovers', moves: ['healbell'] },
-			{ species: 'Magikarp', level: 1, moves: ['splash'] },
-		], [
-			{ species: "Miltank", moves: ['seismictoss'] },
-		]]);
-		const holder = battle.p1.active[0];
-		battle.makeChoices('move healbell', 'move seismictoss');
-		assert.equal(holder.hp, 590);
+  it('should heal after switch', () => {
+    battle = common.gen(2).createBattle([
+      [
+        { species: 'Blissey', item: 'leftovers', moves: ['healbell'] },
+        { species: 'Magikarp', level: 1, moves: ['splash'] }
+      ],
+      [{ species: 'Miltank', moves: ['seismictoss'] }]
+    ]);
+    const holder = battle.p1.active[0];
+    battle.makeChoices('move healbell', 'move seismictoss');
+    assert.equal(holder.hp, 590);
 
-		battle.makeChoices('switch 2', 'move seismictoss');
-		battle.makeChoices('switch 2', '');
-		assert.equal(holder.hp, 630);
-	});
+    battle.makeChoices('switch 2', 'move seismictoss');
+    battle.makeChoices('switch 2', '');
+    assert.equal(holder.hp, 630);
+  });
 });

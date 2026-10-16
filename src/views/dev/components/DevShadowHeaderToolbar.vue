@@ -5,11 +5,7 @@
  * Header toolbar and rebuild banner for the Developer Shadow Calibration View.
  */
 
-import {
-  MIN_SPRITE_ZOOM,
-  MAX_SPRITE_ZOOM,
-  SPRITE_ZOOM_STEP
-} from '../useShadowEditor.ts';
+import { MIN_SPRITE_ZOOM, MAX_SPRITE_ZOOM, SPRITE_ZOOM_STEP } from '../useShadowEditor.ts';
 import {
   MIN_SHADOW_WIDTH_RATIO,
   MAX_SHADOW_WIDTH_RATIO,
@@ -63,9 +59,7 @@ defineEmits<{
   <header class="editor-header">
     <div class="header-left">
       <div class="header-title-box">
-        <h1 class="header-title">
-          CALIBRADOR DE SOMBRAS (DEV)
-        </h1>
+        <h1 class="header-title">CALIBRADOR DE SOMBRAS (DEV)</h1>
         <span class="header-subtitle">
           Ajuste de pies (feetX, feetY) y elevación de vuelo precalculados
         </span>
@@ -93,10 +87,7 @@ defineEmits<{
 
       <!-- Global Shadow Visual Controls (Ancho, Alto, Pixelado) -->
       <div class="global-shadow-toolbar">
-        <div
-          class="shadow-slider-box"
-          title="Ajustar relación de ancho de la sombra base"
-        >
+        <div class="shadow-slider-box" title="Ajustar relación de ancho de la sombra base">
           <span class="shadow-slider-label">Sombra Ancho: {{ shadowWidthPercent }}</span>
           <input
             id="dev-shadow-header-toolbar-input-1"
@@ -106,8 +97,9 @@ defineEmits<{
             :min="MIN_SHADOW_WIDTH_RATIO"
             :max="MAX_SHADOW_WIDTH_RATIO"
             :step="SHADOW_WIDTH_RATIO_STEP"
+            aria-label="Sombra Ancho"
             @input="$emit('update:widthRatio', Number(($event.target as HTMLInputElement).value))"
-          >
+          />
           <button
             id="dev-shadow-header-toolbar-btn-emit"
             type="button"
@@ -132,8 +124,9 @@ defineEmits<{
             :min="MIN_SHADOW_HEIGHT_RATIO"
             :max="MAX_SHADOW_HEIGHT_RATIO"
             :step="SHADOW_HEIGHT_RATIO_STEP"
+            aria-label="Sombra Alto"
             @input="$emit('update:heightRatio', Number(($event.target as HTMLInputElement).value))"
-          >
+          />
           <button
             id="dev-shadow-header-toolbar-btn-emit-2"
             type="button"
@@ -158,8 +151,9 @@ defineEmits<{
             :min="MIN_SHADOW_PIXELATION"
             :max="MAX_SHADOW_PIXELATION"
             :step="SHADOW_PIXELATION_STEP"
+            aria-label="Pixelado de sombra"
             @input="$emit('update:pixelation', Number(($event.target as HTMLInputElement).value))"
-          >
+          />
           <button
             id="dev-shadow-header-toolbar-btn-emit-3"
             type="button"
@@ -183,9 +177,10 @@ defineEmits<{
           :min="MIN_SPRITE_ZOOM"
           :max="MAX_SPRITE_ZOOM"
           :step="SPRITE_ZOOM_STEP"
+          aria-label="Zoom de sprites y sombras"
           title="Ajustar zoom de sprites y sombras para edición detallada"
           @input="$emit('update:spriteZoom', Number(($event.target as HTMLInputElement).value))"
-        >
+        />
         <button
           id="dev-shadow-header-toolbar-btn-emit-4"
           type="button"
@@ -198,10 +193,7 @@ defineEmits<{
       </div>
 
       <!-- Overrides Counter Badge -->
-      <div
-        class="modified-counter"
-        :class="{ 'has-modifications': modifiedCount > 0 }"
-      >
+      <div class="modified-counter" :class="{ 'has-modifications': modifiedCount > 0 }">
         {{ modifiedCount }} overrides
       </div>
 
@@ -239,28 +231,22 @@ defineEmits<{
         @click="$emit('save')"
       >
         <span v-if="saveButtonState === 'saving'"><span class="emoji">⏳</span> Guardando...</span>
-        <span v-else-if="saveButtonState === 'unsaved'"><span class="emoji">💾</span> Guardar Cambios *</span>
+        <span v-else-if="saveButtonState === 'unsaved'"
+          ><span class="emoji">💾</span> Guardar Cambios *</span
+        >
         <span v-else><span class="emoji">✅</span> Guardado</span>
       </button>
     </div>
   </header>
 
   <!-- Real-time DB Rebuild Progress Banner (SSE) -->
-  <div
-    v-if="isProgressVisible"
-    class="rebuild-progress-banner"
-  >
+  <div v-if="isProgressVisible" class="rebuild-progress-banner">
     <div class="progress-meta">
-      <span class="progress-status-msg">
-        <span class="pulse-dot" /> {{ rebuildMessage }}
-      </span>
+      <span class="progress-status-msg"> <span class="pulse-dot" /> {{ rebuildMessage }} </span>
       <span class="progress-percent-val">{{ rebuildProgress }}%</span>
     </div>
     <div class="progress-track-bg">
-      <div
-        class="progress-fill-bar"
-        :style="{ width: `${rebuildProgress}%` }"
-      />
+      <div class="progress-fill-bar" :style="{ width: `${rebuildProgress}%` }" />
     </div>
   </div>
 </template>

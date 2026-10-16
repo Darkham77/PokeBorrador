@@ -5,10 +5,7 @@ import {
 } from '../../logic/map/canonicalBridgeEngine.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
-import {
-  generateRouteNetwork,
-  computeOceanGrid
-} from '../../logic/map/routeNetworkEngine.ts';
+import { generateRouteNetwork, computeOceanGrid } from '../../logic/map/routeNetworkEngine.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('canonicalBridgeEngine', () => {
@@ -295,8 +292,10 @@ describe('canonicalBridgeEngine', () => {
     const blits = resolveCanonicalBridges(bridgeGrid, terrainGrid);
     expect(blits.length).toBeGreaterThan(0);
     // Should have corner or directional tiles at junction
-    const files = new Set(blits.map(b => b.file));
-    const hasCornerOrBridge = Array.from(files).some(f => f.includes('bridge') || f.includes('corner'));
+    const files = new Set(blits.map((b) => b.file));
+    const hasCornerOrBridge = Array.from(files).some(
+      (f) => f.includes('bridge') || f.includes('corner')
+    );
     expect(hasCornerOrBridge).toBe(true);
   });
 
@@ -338,14 +337,14 @@ describe('canonicalBridgeEngine', () => {
     });
 
     const pois = placeRegionalPOIs(continent, { targetCount: 18, seed: 42 });
-    const waterLandmark = pois.find(p => p.type === 'water_landmark');
+    const waterLandmark = pois.find((p) => p.type === 'water_landmark');
     expect(waterLandmark).toBeDefined();
 
     const routeNet = generateRouteNetwork(continent, pois, { allowBridges: true });
 
     // Check if any edge touches the water landmark
     const landmarkEdges = routeNet.edges.filter(
-      e => e.fromNodeId === waterLandmark?.id || e.toNodeId === waterLandmark?.id
+      (e) => e.fromNodeId === waterLandmark?.id || e.toNodeId === waterLandmark?.id
     );
 
     if (landmarkEdges.length > 0) {
@@ -406,7 +405,7 @@ describe('canonicalBridgeEngine', () => {
     });
 
     const pois = placeRegionalPOIs(continent, { targetCount: 18, seed: 42 });
-    const portDocks = pois.filter(p => p.type === 'port_dock');
+    const portDocks = pois.filter((p) => p.type === 'port_dock');
     expect(portDocks.length).toBeGreaterThan(0);
 
     const routeNet = generateRouteNetwork(continent, pois, { allowBridges: true });
@@ -424,11 +423,19 @@ describe('canonicalBridgeEngine', () => {
               const row = pierRows.get(y) ?? [];
               row.push(x);
               pierRows.set(y, row);
-            } else if (facing === 'south' && y >= dock.gridY + dock.footprint.height && Math.abs(x - dock.gridX) <= 5) {
+            } else if (
+              facing === 'south' &&
+              y >= dock.gridY + dock.footprint.height &&
+              Math.abs(x - dock.gridX) <= 5
+            ) {
               const row = pierRows.get(y) ?? [];
               row.push(x);
               pierRows.set(y, row);
-            } else if (facing === 'east' && x >= dock.gridX + dock.footprint.width && Math.abs(y - dock.gridY) <= 5) {
+            } else if (
+              facing === 'east' &&
+              x >= dock.gridX + dock.footprint.width &&
+              Math.abs(y - dock.gridY) <= 5
+            ) {
               const col = pierCols.get(x) ?? [];
               col.push(y);
               pierCols.set(x, col);
@@ -714,7 +721,9 @@ describe('canonicalBridgeEngine', () => {
       expect(portDocks.length).toBe(1);
 
       for (const dock of portDocks) {
-        expect(dock.buildingFile).toMatch(/^(poke_port_vermilion_gate(_(north|west|east))?|poke_port_lighthouse_beacon)\.png$/);
+        expect(dock.buildingFile).toMatch(
+          /^(poke_port_vermilion_gate(_(north|west|east))?|poke_port_lighthouse_beacon)\.png$/
+        );
       }
     }
   });

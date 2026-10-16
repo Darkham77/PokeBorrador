@@ -6,7 +6,7 @@
  * execution parity across both SQLite and PostgreSQL.
  */
 
-import { it, expect, vi } from 'vitest';
+import { it, expect, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { describeWithDatabase } from '../../dbTestHelper.ts';
@@ -20,7 +20,10 @@ vi.mock('@/logic/db/sqliteEngine.ts', () => ({
     const isSelect = trimmed.toUpperCase().startsWith('SELECT');
     const stmt = memoryDb.prepare(sql);
     if (isSelect) {
-      return stmt.all(...(params as (string | number | bigint | null)[])) as Record<string, unknown>[];
+      return stmt.all(...(params as (string | number | bigint | null)[])) as Record<
+        string,
+        unknown
+      >[];
     }
     stmt.run(...(params as (string | number | bigint | null)[]));
     return [];
@@ -59,9 +62,18 @@ describeWithDatabase('Passive Battle Persistence Parity', (engine, getDb) => {
           WHERE table_schema = ${schema} AND table_name = 'passive_teams'
         `;
 
-        assert.ok(teamCols.find(c => c.column_name === 'user_id'), 'passive_teams must have user_id');
-        assert.ok(teamCols.find(c => c.column_name === 'team_data'), 'passive_teams must have team_data');
-        assert.ok(teamCols.find(c => c.column_name === 'is_active'), 'passive_teams must have is_active');
+        assert.ok(
+          teamCols.find((c) => c.column_name === 'user_id'),
+          'passive_teams must have user_id'
+        );
+        assert.ok(
+          teamCols.find((c) => c.column_name === 'team_data'),
+          'passive_teams must have team_data'
+        );
+        assert.ok(
+          teamCols.find((c) => c.column_name === 'is_active'),
+          'passive_teams must have is_active'
+        );
 
         const reportCols = await sql`
           SELECT column_name, data_type
@@ -69,10 +81,22 @@ describeWithDatabase('Passive Battle Persistence Parity', (engine, getDb) => {
           WHERE table_schema = ${schema} AND table_name = 'passive_battle_reports'
         `;
 
-        assert.ok(reportCols.find(c => c.column_name === 'user_id'), 'passive_battle_reports must have user_id');
-        assert.ok(reportCols.find(c => c.column_name === 'opponent_id'), 'passive_battle_reports must have opponent_id');
-        assert.ok(reportCols.find(c => c.column_name === 'result'), 'passive_battle_reports must have result');
-        assert.ok(reportCols.find(c => c.column_name === 'report_data'), 'passive_battle_reports must have report_data');
+        assert.ok(
+          reportCols.find((c) => c.column_name === 'user_id'),
+          'passive_battle_reports must have user_id'
+        );
+        assert.ok(
+          reportCols.find((c) => c.column_name === 'opponent_id'),
+          'passive_battle_reports must have opponent_id'
+        );
+        assert.ok(
+          reportCols.find((c) => c.column_name === 'result'),
+          'passive_battle_reports must have result'
+        );
+        assert.ok(
+          reportCols.find((c) => c.column_name === 'report_data'),
+          'passive_battle_reports must have report_data'
+        );
 
         // 2. Setup auth.users and defender profile
         await sql`
@@ -109,7 +133,11 @@ describeWithDatabase('Passive Battle Persistence Parity', (engine, getDb) => {
         assert.strictEqual(activeTeams[0]!.is_active, true);
 
         // 4. Record passive battle result (defender loses 16 ELO)
-        const reportData = { opponent: 'AttackerRed', turns: 4, endedAt: Temporal.Now.instant().toString() };
+        const reportData = {
+          opponent: 'AttackerRed',
+          turns: 4,
+          endedAt: Temporal.Now.instant().toString()
+        };
         await sql`
           INSERT INTO public.passive_battle_reports (user_id, opponent_id, result, report_data, created_at)
           VALUES (${defenderId}, ${attackerId}, 'defeat', ${sql.json(reportData)}, NOW())
@@ -122,7 +150,8 @@ describeWithDatabase('Passive Battle Persistence Parity', (engine, getDb) => {
         `;
 
         // 5. Verify updated ELO and report insertion
-        const [updatedProfile] = await sql`SELECT elo_rating FROM public.profiles WHERE id = ${defenderId}`;
+        const [updatedProfile] =
+          await sql`SELECT elo_rating FROM public.profiles WHERE id = ${defenderId}`;
         assert.strictEqual(updatedProfile!.elo_rating, 1184);
 
         const reports = await sql`
@@ -142,13 +171,20 @@ describeWithDatabase('Passive Battle Persistence Parity', (engine, getDb) => {
           SET elo_rating = GREATEST(1000, COALESCE(elo_rating, 1000) - 500)
           WHERE id = ${defenderId}
         `;
-        const [flooredProfile] = await sql`SELECT elo_rating FROM public.profiles WHERE id = ${defenderId}`;
+        const [flooredProfile] =
+          await sql`SELECT elo_rating FROM public.profiles WHERE id = ${defenderId}`;
         assert.strictEqual(flooredProfile!.elo_rating, 1000);
       } finally {
-        await sql`DELETE FROM public.passive_battle_reports WHERE user_id = ${defenderId}`.catch(() => {});
+        await sql`DELETE FROM public.passive_battle_reports WHERE user_id = ${defenderId}`.catch(
+          () => {}
+        );
         await sql`DELETE FROM public.passive_teams WHERE user_id = ${defenderId}`.catch(() => {});
-        await sql`DELETE FROM public.profiles WHERE id IN (${defenderId}, ${attackerId})`.catch(() => {});
-        await sql`DELETE FROM auth.users WHERE id IN (${defenderId}, ${attackerId})`.catch(() => {});
+        await sql`DELETE FROM public.profiles WHERE id IN (${defenderId}, ${attackerId})`.catch(
+          () => {}
+        );
+        await sql`DELETE FROM auth.users WHERE id IN (${defenderId}, ${attackerId})`.catch(
+          () => {}
+        );
         await sql.end();
       }
     } else {
@@ -186,8 +222,14 @@ describeWithDatabase('Passive Battle Persistence Parity', (engine, getDb) => {
       const sqliteMock: SQLiteDatabase = {} as SQLiteDatabase;
 
       // Test active passive team retrieval
-      const activeStmt = memoryDb.prepare('SELECT user_id, team_data, elo_rating, is_active FROM passive_teams WHERE is_active = 1 AND user_id = ?');
-      const activeRows = activeStmt.all(defenderId) as Array<{ user_id: string; team_data: string; is_active: number }>;
+      const activeStmt = memoryDb.prepare(
+        'SELECT user_id, team_data, elo_rating, is_active FROM passive_teams WHERE is_active = 1 AND user_id = ?'
+      );
+      const activeRows = activeStmt.all(defenderId) as Array<{
+        user_id: string;
+        team_data: string;
+        is_active: number;
+      }>;
       expect(activeRows).toHaveLength(1);
       expect(activeRows[0]?.is_active).toBe(1);
 
@@ -212,8 +254,14 @@ describeWithDatabase('Passive Battle Persistence Parity', (engine, getDb) => {
       expect(profileRow.elo_rating).toBe(1184);
 
       // Verify report in passive_battle_reports
-      const reportStmt = memoryDb.prepare('SELECT user_id, opponent_id, result, report_data FROM passive_battle_reports WHERE user_id = ?');
-      const reportRows = reportStmt.all(defenderId) as Array<{ user_id: string; opponent_id: string; result: string }>;
+      const reportStmt = memoryDb.prepare(
+        'SELECT user_id, opponent_id, result, report_data FROM passive_battle_reports WHERE user_id = ?'
+      );
+      const reportRows = reportStmt.all(defenderId) as Array<{
+        user_id: string;
+        opponent_id: string;
+        result: string;
+      }>;
       expect(reportRows).toHaveLength(1);
       expect(reportRows[0]?.result).toBe('defeat');
       expect(reportRows[0]?.opponent_id).toBe(attackerId);

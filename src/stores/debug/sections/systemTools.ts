@@ -1,22 +1,22 @@
-import type { DebugSystem } from '@/types/system/debug.ts'
-import type { PokemonStorageLocation } from '@/types/pokemon/pokemon'
+import type { DebugSystem } from '@/types/system/debug.ts';
+import type { PokemonStorageLocation } from '@/types/pokemon/pokemon';
 
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { useModalStore } from '@/stores/modals'
-import { useErrorStore } from '@/stores/errorStore'
-import { useEventStore } from '@/stores/events'
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
+import { useErrorStore } from '@/stores/errorStore';
+import { useEventStore } from '@/stores/events';
 
-import { logger } from '@/logic/utils/logger'
-import { gsap } from 'gsap'
+import { logger } from '@/logic/utils/logger';
+import { gsap } from 'gsap';
 
 const DEBUG_MODAL_STACK_DELAY_SEC = 0.5;
 
 export function registerSystemTools(debug: DebugSystem) {
-  const game = useGameStore()
-  const ui = useUIStore()
-  const modalStore = useModalStore()
-  const errorStore = useErrorStore()
+  const game = useGameStore();
+  const ui = useUIStore();
+  const modalStore = useModalStore();
+  const errorStore = useErrorStore();
 
   // MODALS
   debug.register({
@@ -26,12 +26,13 @@ export function registerSystemTools(debug: DebugSystem) {
     category: 'modals',
     action: async (count: number = 5) => {
       for (let i = 1; i <= count; i++) {
-        modalStore.open('DebugStackTest', { number: i })
-        if (i < count) await new Promise(resolve => gsap.delayedCall(DEBUG_MODAL_STACK_DELAY_SEC, resolve))
+        modalStore.open('DebugStackTest', { number: i });
+        if (i < count)
+          await new Promise((resolve) => gsap.delayedCall(DEBUG_MODAL_STACK_DELAY_SEC, resolve));
       }
     },
     description: 'Abre múltiples ventanas modales secuencialmente para probar el sistema de capas.'
-  })
+  });
 
   debug.register({
     id: 'modal-close-all',
@@ -39,11 +40,11 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'closeAllModals',
     category: 'modals',
     action: () => {
-      modalStore.closeAll()
-      ui.notify('Todas las ventanas cerradas', '🚪')
+      modalStore.closeAll();
+      ui.notify('Todas las ventanas cerradas', '🚪');
     },
     description: 'Cierra todas las ventanas modales activas.'
-  })
+  });
 
   debug.register({
     id: 'modal-test-pos',
@@ -51,13 +52,14 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'openTestModal',
     category: 'modals',
     action: (type: string = 'center') => {
-      modalStore.open('DebugStackTest', { 
+      modalStore.open('DebugStackTest', {
         number: Math.floor(Math.random() * 100),
-        type 
-      })
+        type
+      });
     },
-    description: 'Abre un modal de prueba con el posicionamiento especificado (top, down, left, right, fullscreen, center).'
-  })
+    description:
+      'Abre un modal de prueba con el posicionamiento especificado (top, down, left, right, fullscreen, center).'
+  });
 
   debug.register({
     id: 'core-trigger-error',
@@ -68,10 +70,10 @@ export function registerSystemTools(debug: DebugSystem) {
       errorStore.setError(new Error('Error de prueba desde CLI Debug'), {
         type: 'CLI Test Error',
         source: 'debugStore.js'
-      })
+      });
     },
     description: 'Simula un error global para probar el sistema de logs y notificaciones.'
-  })
+  });
 
   // ADMIN
   debug.register({
@@ -80,18 +82,18 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'saveEvent',
     category: 'admin',
     action: async (eventData: Record<string, unknown>) => {
-      const { error } = await game.db.from('events_config').upsert(eventData)
-      if (error) throw error
-      ui.notify('Evento guardado (CLI)', '✅')
+      const { error } = await game.db.from('events_config').upsert(eventData);
+      if (error) throw error;
+      ui.notify('Evento guardado (CLI)', '✅');
       try {
-        const eventStore = useEventStore()
-        await eventStore.fetchEvents()
+        const eventStore = useEventStore();
+        await eventStore.fetchEvents();
       } catch (e) {
-        logger.warn('DEBUG', `Failed to reload events: ${(e as Error).message}`)
+        logger.warn('DEBUG', `Failed to reload events: ${(e as Error).message}`);
       }
     },
     description: 'Guarda o actualiza la configuración de un evento.'
-  })
+  });
 
   debug.register({
     id: 'admin-save-ranked-rules',
@@ -104,12 +106,12 @@ export function registerSystemTools(debug: DebugSystem) {
         season_name: rules.seasonName,
         config: { ...rules },
         updated_at: Temporal.Now.instant().toString()
-      })
-      if (error) throw error
-      ui.notify('Reglas Ranked guardadas (CLI)', '🏆')
+      });
+      if (error) throw error;
+      ui.notify('Reglas Ranked guardadas (CLI)', '🏆');
     },
     description: 'Guarda las reglas actuales de la temporada Ranked.'
-  })
+  });
 
   debug.register({
     id: 'admin-award-event',
@@ -119,15 +121,15 @@ export function registerSystemTools(debug: DebugSystem) {
     action: async (eventId: string = 'hora_magikarp') => {
       const { data, error } = await game.db.rpc('fn_award_event_automated', {
         target_event_id: eventId
-      })
-      if (error) throw error
-      ui.notify(`Evento '${eventId}' premiado y finalizado`, '🎁')
-      const eventStore = useEventStore()
-      await eventStore.fetchEvents()
-      return data
+      });
+      if (error) throw error;
+      ui.notify(`Evento '${eventId}' premiado y finalizado`, '🎁');
+      const eventStore = useEventStore();
+      await eventStore.fetchEvents();
+      return data;
     },
     description: 'Calcula el podio y entrega las recompensas del evento especificado.'
-  })
+  });
 
   debug.register({
     id: 'admin-close-season',
@@ -137,13 +139,13 @@ export function registerSystemTools(debug: DebugSystem) {
     action: async (seasonName: string) => {
       const { data, error } = await game.db.rpc('fn_award_ranked_season_automated', {
         target_season_name: seasonName
-      })
-      if (error) throw error
-      const result = data as { players_count: number }
-      ui.notify(`Temporada cerrada: ${result.players_count} premiados`, '🏆')
+      });
+      if (error) throw error;
+      const result = data as { players_count: number };
+      ui.notify(`Temporada cerrada: ${result.players_count} premiados`, '🏆');
     },
     description: 'Cierra la temporada Ranked actual y entrega premios automáticamente.'
-  })
+  });
 
   // EMERGENCY
   debug.register({
@@ -152,12 +154,12 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'factoryResetLocal',
     category: 'emergency',
     action: () => {
-      localStorage.clear()
-      sessionStorage.clear()
-      window.location.reload()
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.reload();
     },
     description: 'Limpia todo el estado local (localStorage/sessionStorage) y reinicia la página.'
-  })
+  });
 
   debug.register({
     id: 'emergency-force-sync',
@@ -165,11 +167,11 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'forceSyncCloud',
     category: 'emergency',
     action: async () => {
-      await game.save(true, true, true)
-      ui.notify('Sincronización forzada completada', '🔄')
+      await game.save(true, true, true);
+      ui.notify('Sincronización forzada completada', '🔄');
     },
     description: 'Fuerza el guardado inmediato en la nube saltándose el debounce.'
-  })
+  });
 
   // NAVIGATION
   debug.register({
@@ -178,11 +180,11 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'navigate',
     category: 'navigation',
     action: (tabId: string) => {
-      ui.activeTab = tabId
-      ui.notify(`Navegando a: ${tabId.toUpperCase()}`, '🚀') // text-ok: UI text display localization string
+      ui.activeTab = tabId;
+      ui.notify(`Navegando a: ${tabId.toUpperCase()}`, '🚀'); // text-ok: UI text display localization string
     },
     description: 'Cambia la pestaña principal activa (map, pc, battle, etc).'
-  })
+  });
 
   debug.register({
     id: 'nav-modal-open',
@@ -190,10 +192,10 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'openModal',
     category: 'navigation',
     action: (name: string, props: Record<string, unknown> = {}) => {
-      ui.open(name, props)
+      ui.open(name, props);
     },
     description: 'Abre cualquier ventana modal por su nombre.'
-  })
+  });
 
   debug.register({
     id: 'nav-modal-close',
@@ -201,11 +203,11 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'closeModal',
     category: 'navigation',
     action: (name?: string) => {
-      if (name) ui.close(name)
-      else ui.closeModal()
+      if (name) ui.close(name);
+      else ui.closeModal();
     },
     description: 'Cierra una modal específica o la de más arriba.'
-  })
+  });
 
   debug.register({
     id: 'nav-library-tab',
@@ -213,10 +215,10 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'setLibraryTab',
     category: 'navigation',
     action: (tabId: string) => {
-      ui.libraryTab = tabId
+      ui.libraryTab = tabId;
     },
     description: 'Cambia la pestaña activa dentro de la Librería/Pokedex.'
-  })
+  });
 
   debug.register({
     id: 'nav-inspect-poke',
@@ -224,13 +226,13 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'inspectPokemon',
     category: 'navigation',
     action: (index: number, context: PokemonStorageLocation = 'team') => {
-      const pokes = context === 'team' ? game.state.team : game.state.box
-      const p = pokes[index]
-      if (p) ui.openPokemonDetail(p, index, context)
-      else logger.warn('DEBUG', `No hay pokemon en ${context}[${index}]`)
+      const pokes = context === 'team' ? game.state.team : game.state.box;
+      const p = pokes[index];
+      if (p) ui.openPokemonDetail(p, index, context);
+      else logger.warn('DEBUG', `No hay pokemon en ${context}[${index}]`);
     },
     description: 'Abre el detalle de un pokemon específico por índice y contexto.'
-  })
+  });
 
   debug.register({
     id: 'nav-social-center',
@@ -238,10 +240,10 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'openSocialCenter',
     category: 'navigation',
     action: () => {
-      ui.open('SocialCenter')
+      ui.open('SocialCenter');
     },
     description: 'Abre directamente el menú del Centro Social.'
-  })
+  });
 
   debug.register({
     id: 'nav-hud-group',
@@ -249,10 +251,10 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'toggleHud',
     category: 'navigation',
     action: (group: string) => {
-      ui.toggleHudGroup(group)
+      ui.toggleHudGroup(group);
     },
     description: 'Alterna la visibilidad de grupos del HUD (MARKET, POKEMON, etc).'
-  })
+  });
 
   // CORE
   debug.register({
@@ -262,5 +264,5 @@ export function registerSystemTools(debug: DebugSystem) {
     category: 'core',
     action: () => game,
     description: 'Retorna la instancia reactiva del game store para inspección.'
-  })
+  });
 }

@@ -16,7 +16,12 @@
 import fs from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { BaseAuditor, normalizePosixPath, parseVueSfc , createRuleCapabilities} from '@francogp/auditor';
+import {
+  BaseAuditor,
+  normalizePosixPath,
+  parseVueSfc,
+  createRuleCapabilities
+} from '@francogp/auditor';
 
 export type AssetUsageRuleId =
   | 'asset-hardcoded-path-template'
@@ -37,12 +42,14 @@ export const ASSET_USAGE_RULES: readonly AssetUsageRuleId[] = [
   'asset-physical-file-missing'
 ];
 
-const EXEMPT_DATA_FILES = new Set([ // runtime-set: Fast O(1) membership lookup set
+const EXEMPT_DATA_FILES = new Set([
+  // runtime-set: Fast O(1) membership lookup set
   'pokemonFeetDatabase.ts',
   'spriteMapping.ts'
 ]);
 
-const EXEMPT_LOGIC_FILES = new Set([ // runtime-set: Fast O(1) membership lookup set
+const EXEMPT_LOGIC_FILES = new Set([
+  // runtime-set: Fast O(1) membership lookup set
   'assetService.ts',
   'assetResolver.ts'
 ]);
@@ -87,17 +94,21 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         'asset-physical-file-missing': 'Archivo no encontrado en disco'
       },
       ruleRemediations: {
-        'asset-hardcoded-path-template': 'Use getAssetUrl(ASSET_TYPES.<CATEGORY>, id) instead of hardcoding asset path in templates',
-        'asset-literal-bound-src': 'Use getAssetUrl(ASSET_TYPES.<CATEGORY>, id) instead of literal asset path in :src',
+        'asset-hardcoded-path-template':
+          'Use getAssetUrl(ASSET_TYPES.<CATEGORY>, id) instead of hardcoding asset path in templates',
+        'asset-literal-bound-src':
+          'Use getAssetUrl(ASSET_TYPES.<CATEGORY>, id) instead of literal asset path in :src',
         'asset-direct-banner-binding': 'Wrap banner image access through getAssetUrl()',
-        'asset-unmediated-logic-path': 'Resolve asset paths via assetService rather than direct string paths',
-        'asset-hardcoded-data-path': 'Store domain asset IDs instead of hardcoded file paths in data files',
-        'asset-hardcoded-style-path': 'Use CSS variables or dynamic background bindings with getAssetUrl()',
-        'asset-physical-file-missing': 'Provide the missing asset file in public/assets or verify file path'
+        'asset-unmediated-logic-path':
+          'Resolve asset paths via assetService rather than direct string paths',
+        'asset-hardcoded-data-path':
+          'Store domain asset IDs instead of hardcoded file paths in data files',
+        'asset-hardcoded-style-path':
+          'Use CSS variables or dynamic background bindings with getAssetUrl()',
+        'asset-physical-file-missing':
+          'Provide the missing asset file in public/assets or verify file path'
       },
-      requiredFiles: [
-        path.resolve(process.cwd(), 'src/logic/services/assetService.ts')
-      ],
+      requiredFiles: [path.resolve(process.cwd(), 'src/logic/services/assetService.ts')],
       coverage: {
         include: [
           'src/components/**/*.vue',
@@ -133,7 +144,8 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       const template = sfc.template.content;
 
       this.runSubAuditorSync('asset-hardcoded-path-template', () => {
-        const staticSrcRegex = /(?:<img|<source|<video)[^>]*\s+src=["']\/(?:assets|sprites|public)\/[^"']+["']/gi;
+        const staticSrcRegex =
+          /(?:<img|<source|<video)[^>]*\s+src=["']\/(?:assets|sprites|public)\/[^"']+["']/gi;
         let match: RegExpExecArray | null;
         while ((match = staticSrcRegex.exec(template)) !== null) {
           this.addViolation({
@@ -163,7 +175,8 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
       });
 
       this.runSubAuditorSync('asset-direct-banner-binding', () => {
-        const rawBannerBindingRegex = /:src=["'](?:currentTheme|resolvedTheme|theme)\.bannerImage["']/gi;
+        const rawBannerBindingRegex =
+          /:src=["'](?:currentTheme|resolvedTheme|theme)\.bannerImage["']/gi;
         let match: RegExpExecArray | null;
         while ((match = rawBannerBindingRegex.exec(template)) !== null) {
           this.addViolation({
@@ -265,7 +278,11 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         const lines = content.split('\n');
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
-          if (!line || line.includes('// asset-url-ok') || line.includes('// domain-ok: Asset path URI string')) {
+          if (
+            !line ||
+            line.includes('// asset-url-ok') ||
+            line.includes('// domain-ok: Asset path URI string')
+          ) {
             continue;
           }
 
@@ -298,7 +315,9 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
           this.verifiedAssets++;
           const rawBanner = bMatch[1];
           if (!rawBanner) continue;
-          const cleanBanner = rawBanner.replace(/^\/?assets\/ui\/events\//, '').replace(/\.webp$/, '');
+          const cleanBanner = rawBanner
+            .replace(/^\/?assets\/ui\/events\//, '')
+            .replace(/\.webp$/, '');
           const bannerPath = path.join(eventsDir, `${cleanBanner}.webp`);
 
           if (!existsSync(bannerPath)) {
@@ -314,7 +333,9 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
         }
       });
     } catch (err) {
-      this.context.addWarning(`Could not verify seasonal tournament banners: ${(err as Error).message}`);
+      this.context.addWarning(
+        `Could not verify seasonal tournament banners: ${(err as Error).message}`
+      );
     }
   }
 
@@ -332,6 +353,10 @@ export class AssetUsageAuditor extends BaseAuditor<AssetUsageRuleId> {
   }
 }
 
-if (process.argv[1] && (process.argv[1].endsWith('validate_asset_usage.ts') || process.argv[1].endsWith('validate_asset_usage.js'))) {
+if (
+  process.argv[1] &&
+  (process.argv[1].endsWith('validate_asset_usage.ts') ||
+    process.argv[1].endsWith('validate_asset_usage.js'))
+) {
   await BaseAuditor.runCli(new AssetUsageAuditor());
 }

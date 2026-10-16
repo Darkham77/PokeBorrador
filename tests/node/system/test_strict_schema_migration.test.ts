@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
@@ -48,12 +48,16 @@ describe('Strict Schema Static SQLite Migration', () => {
     `);
 
     // Load and run the companion SQLite migration
-    const migrationSqlPath = path.resolve('database/migrations/20260818080000_normalize_strict_schemas.sqlite.sql');
+    const migrationSqlPath = path.resolve(
+      'database/migrations/20260818080000_normalize_strict_schemas.sqlite.sql'
+    );
     const migrationSql = fs.readFileSync(migrationSqlPath, 'utf8');
     db.exec(migrationSql);
 
     // Retrieve migrated save
-    const row = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get('user_1') as { save_data: string };
+    const row = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get('user_1') as {
+      save_data: string;
+    };
     assert.ok(row, 'Row should exist in game_saves');
     const migrated = JSON.parse(row.save_data);
 

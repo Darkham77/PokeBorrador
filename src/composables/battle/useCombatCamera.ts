@@ -1,8 +1,8 @@
-import { ref, onMounted, onUnmounted, computed, watch, type CSSProperties, type Ref } from 'vue'
-import { useResizeObserver } from '@vueuse/core'
-import { gameBus } from '@/logic/events/gameBus'
-import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-import { useBattleStore } from '@/stores/battle/battle'
+import { ref, onMounted, onUnmounted, computed, watch, type CSSProperties, type Ref } from 'vue';
+import { useResizeObserver } from '@vueuse/core';
+import { gameBus } from '@/logic/events/gameBus';
+import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
+import { useBattleStore } from '@/stores/battle/battle';
 
 const COVER_SAFETY_MARGIN = 1.02;
 const MIN_ZOOM_FALLBACK = 0.5;
@@ -18,39 +18,42 @@ const DEFAULT_INITIAL_HEIGHT_PX = 766;
  * Implements a dynamic 2D camera system based on docs/architecture/combat_camera.md
  */
 export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
-  const battleStore = useBattleStore()
+  const battleStore = useBattleStore();
   // Reactive State
-  const vpWidth = ref(0)
-  const vpHeight = ref(0)
-  const camWidth = ref(0)
-  const camHeight = ref(0)
-  const tx = ref(0)
-  const ty = ref(0)
-  const scale = ref(1)
+  const vpWidth = ref(0);
+  const vpHeight = ref(0);
+  const camWidth = ref(0);
+  const camHeight = ref(0);
+  const tx = ref(0);
+  const ty = ref(0);
+  const scale = ref(1);
 
-  const showGuides = computed(() => battleStore.debugShowGuides)
-  const debugZoom = computed(() => battleStore.debugZoom)
+  const showGuides = computed(() => battleStore.debugShowGuides);
+  const debugZoom = computed(() => battleStore.debugZoom);
 
   const minZoom = computed(() => {
-    if (!camWidth.value || !camHeight.value) return MIN_ZOOM_FALLBACK
-    const cw = camWidth.value
-    const ch = camHeight.value
-    const scaleX = cw / WORLD_CONSTANTS.VISIBLE_UNITS_X
-    const scaleY = ch / WORLD_CONSTANTS.VISIBLE_UNITS_Y
-    const baseScale = Math.min(scaleX, scaleY)
-    if (baseScale <= 0) return MIN_ZOOM_FALLBACK
+    if (!camWidth.value || !camHeight.value) return MIN_ZOOM_FALLBACK;
+    const cw = camWidth.value;
+    const ch = camHeight.value;
+    const scaleX = cw / WORLD_CONSTANTS.VISIBLE_UNITS_X;
+    const scaleY = ch / WORLD_CONSTANTS.VISIBLE_UNITS_Y;
+    const baseScale = Math.min(scaleX, scaleY);
+    if (baseScale <= 0) return MIN_ZOOM_FALLBACK;
 
     // Minimum scale required so that the 3000x3000px map completely covers the viewport
-    const minScaleX = cw / WORLD_CONSTANTS.MAP_WIDTH
-    const minScaleY = ch / (WORLD_CONSTANTS.TARGET_Y * 2)
-    const coverScale = Math.max(minScaleX, minScaleY) * COVER_SAFETY_MARGIN
-    const minRatio = coverScale / baseScale
-    return Math.min(MAX_ZOOM_CEILING, Math.max(MIN_ZOOM_FLOOR, Math.ceil(minRatio * ZOOM_ROUNDING_FACTOR) / ZOOM_ROUNDING_FACTOR))
-  })
+    const minScaleX = cw / WORLD_CONSTANTS.MAP_WIDTH;
+    const minScaleY = ch / (WORLD_CONSTANTS.TARGET_Y * 2);
+    const coverScale = Math.max(minScaleX, minScaleY) * COVER_SAFETY_MARGIN;
+    const minRatio = coverScale / baseScale;
+    return Math.min(
+      MAX_ZOOM_CEILING,
+      Math.max(MIN_ZOOM_FLOOR, Math.ceil(minRatio * ZOOM_ROUNDING_FACTOR) / ZOOM_ROUNDING_FACTOR)
+    );
+  });
 
   watch(debugZoom, () => {
-    updateCamera(vpWidth.value, vpHeight.value)
-  })
+    updateCamera(vpWidth.value, vpHeight.value);
+  });
 
   // Computed Styles
   const cameraStyles = computed<CSSProperties>(() => ({
@@ -62,9 +65,10 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     display: 'flex' as const,
     alignItems: 'center' as const,
     justifyContent: 'center' as const
-  }))
+  }));
 
   const worldStyles = computed<CSSProperties & Record<string, string | number>>(() => ({
+    // open-record: Custom CSS variables dictionary
     position: 'absolute' as const,
     top: '0',
     left: '0',
@@ -78,100 +82,103 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     '--obj-scale': WORLD_CONSTANTS.OBJECT_SCALE,
     '--bush-size': WORLD_CONSTANTS.BUSH_SIZE,
     '--preview-size': WORLD_CONSTANTS.PREVIEW_SIZE
-  }))
+  }));
 
   const updateCamera = (width: number, height: number) => {
     // Stability Filter: Ignore zero dimensions or browser initialization values
-    if (!width || !height || width < MIN_VIEWPORT_SIZE_PX || height < MIN_VIEWPORT_SIZE_PX) return
+    if (!width || !height || width < MIN_VIEWPORT_SIZE_PX || height < MIN_VIEWPORT_SIZE_PX) return;
 
-    let cw = width
-    let ch = height
+    let cw = width;
+    let ch = height;
 
     // Keep aspect ratio within manual boundaries
-    const ratio = cw / ch
+    const ratio = cw / ch;
     if (ratio > WORLD_CONSTANTS.RATIO_MAX) {
-      cw = ch * WORLD_CONSTANTS.RATIO_MAX
+      cw = ch * WORLD_CONSTANTS.RATIO_MAX;
     } else if (ratio < WORLD_CONSTANTS.RATIO_MIN) {
-      ch = cw / WORLD_CONSTANTS.RATIO_MIN
+      ch = cw / WORLD_CONSTANTS.RATIO_MIN;
     }
 
-    camWidth.value = cw
-    camHeight.value = ch
+    camWidth.value = cw;
+    camHeight.value = ch;
 
     // Scale calculation strictly based on manual specifications (VisibleX/Y)
-    const scaleX = cw / WORLD_CONSTANTS.VISIBLE_UNITS_X
-    const scaleY = ch / WORLD_CONSTANTS.VISIBLE_UNITS_Y
-    const baseScale = Math.min(scaleX, scaleY)
+    const scaleX = cw / WORLD_CONSTANTS.VISIBLE_UNITS_X;
+    const scaleY = ch / WORLD_CONSTANTS.VISIBLE_UNITS_Y;
+    const baseScale = Math.min(scaleX, scaleY);
 
     // Dynamic clamping so minimum zoom never reveals letterboxing
-    const minScaleX = cw / WORLD_CONSTANTS.MAP_WIDTH
-    const minScaleY = ch / (WORLD_CONSTANTS.TARGET_Y * 2)
-    const coverScale = Math.max(minScaleX, minScaleY) * COVER_SAFETY_MARGIN
-    const minRatio = baseScale > 0 ? coverScale / baseScale : MIN_ZOOM_FALLBACK
-    const currentMinZoom = Math.min(MAX_ZOOM_CEILING, Math.max(MIN_ZOOM_FLOOR, Math.ceil(minRatio * ZOOM_ROUNDING_FACTOR) / ZOOM_ROUNDING_FACTOR))
+    const minScaleX = cw / WORLD_CONSTANTS.MAP_WIDTH;
+    const minScaleY = ch / (WORLD_CONSTANTS.TARGET_Y * 2);
+    const coverScale = Math.max(minScaleX, minScaleY) * COVER_SAFETY_MARGIN;
+    const minRatio = baseScale > 0 ? coverScale / baseScale : MIN_ZOOM_FALLBACK;
+    const currentMinZoom = Math.min(
+      MAX_ZOOM_CEILING,
+      Math.max(MIN_ZOOM_FLOOR, Math.ceil(minRatio * ZOOM_ROUNDING_FACTOR) / ZOOM_ROUNDING_FACTOR)
+    );
 
     if (battleStore.debugZoom < currentMinZoom) {
-      battleStore.debugZoom = currentMinZoom
+      battleStore.debugZoom = currentMinZoom;
     }
 
-    const effectiveZoom = Math.max(currentMinZoom, battleStore.debugZoom)
-    const currentScale = Math.max(coverScale, baseScale * effectiveZoom)
-    scale.value = currentScale
+    const effectiveZoom = Math.max(currentMinZoom, battleStore.debugZoom);
+    const currentScale = Math.max(coverScale, baseScale * effectiveZoom);
+    scale.value = currentScale;
 
     // Focal Point (Bottom-Alignment Centering)
     // Tx/Ty displacement centers coordinator TARGET_X/Y in physical viewport center,
     // with strict boundary clamping to guarantee map always covers 100% of viewport
-    const desiredTx = (cw / 2) - (WORLD_CONSTANTS.TARGET_X * currentScale)
-    const desiredTy = (ch / 2) - (WORLD_CONSTANTS.TARGET_Y * currentScale)
-    const minTx = cw - (WORLD_CONSTANTS.MAP_WIDTH * currentScale)
-    const minTy = ch - (WORLD_CONSTANTS.MAP_HEIGHT * currentScale)
+    const desiredTx = cw / 2 - WORLD_CONSTANTS.TARGET_X * currentScale;
+    const desiredTy = ch / 2 - WORLD_CONSTANTS.TARGET_Y * currentScale;
+    const minTx = cw - WORLD_CONSTANTS.MAP_WIDTH * currentScale;
+    const minTy = ch - WORLD_CONSTANTS.MAP_HEIGHT * currentScale;
 
-    tx.value = Math.min(0, Math.max(minTx, desiredTx))
-    ty.value = Math.min(0, Math.max(minTy, desiredTy))
-  }
+    tx.value = Math.min(0, Math.max(minTx, desiredTx));
+    ty.value = Math.min(0, Math.max(minTy, desiredTy));
+  };
 
-  let onToggleGuides: () => void
-  let onToggleZoom: () => void
+  let onToggleGuides: () => void;
+  let onToggleZoom: () => void;
 
   useResizeObserver(viewportRef, (entries) => {
     requestAnimationFrame(() => {
       for (const entry of entries) {
-        const { width, height } = entry.contentRect
-        vpWidth.value = width
-        vpHeight.value = height
-        updateCamera(width, height)
+        const { width, height } = entry.contentRect;
+        vpWidth.value = width;
+        vpHeight.value = height;
+        updateCamera(width, height);
       }
-    })
-  })
+    });
+  });
 
   onMounted(() => {
     if (viewportRef.value) {
       // Avoid getBoundingClientRect() to prevent Forced Reflows.
       // Use clientWidth/clientHeight for static non-blocking initialization.
-      const w = viewportRef.value.clientWidth || DEFAULT_INITIAL_WIDTH_PX
-      const h = viewportRef.value.clientHeight || DEFAULT_INITIAL_HEIGHT_PX
-      vpWidth.value = w
-      vpHeight.value = h
-      updateCamera(w, h)
+      const w = viewportRef.value.clientWidth || DEFAULT_INITIAL_WIDTH_PX;
+      const h = viewportRef.value.clientHeight || DEFAULT_INITIAL_HEIGHT_PX;
+      vpWidth.value = w;
+      vpHeight.value = h;
+      updateCamera(w, h);
     }
 
     onToggleGuides = () => {
-      battleStore.debugShowGuides = !battleStore.debugShowGuides
-    }
+      battleStore.debugShowGuides = !battleStore.debugShowGuides;
+    };
 
     onToggleZoom = () => {
-      battleStore.debugZoom = battleStore.debugZoom === 1 ? minZoom.value : 1
-      updateCamera(vpWidth.value, vpHeight.value)
-    }
+      battleStore.debugZoom = battleStore.debugZoom === 1 ? minZoom.value : 1;
+      updateCamera(vpWidth.value, vpHeight.value);
+    };
 
-    gameBus.on('TOGGLE_CAMERA_GUIDES', onToggleGuides)
-    gameBus.on('TOGGLE_DEBUG_ZOOM', onToggleZoom)
-  })
+    gameBus.on('TOGGLE_CAMERA_GUIDES', onToggleGuides);
+    gameBus.on('TOGGLE_DEBUG_ZOOM', onToggleZoom);
+  });
 
   onUnmounted(() => {
-    if (onToggleGuides) gameBus.off('TOGGLE_CAMERA_GUIDES', onToggleGuides)
-    if (onToggleZoom) gameBus.off('TOGGLE_DEBUG_ZOOM', onToggleZoom)
-  })
+    if (onToggleGuides) gameBus.off('TOGGLE_CAMERA_GUIDES', onToggleGuides);
+    if (onToggleZoom) gameBus.off('TOGGLE_DEBUG_ZOOM', onToggleZoom);
+  });
 
   return {
     cameraStyles,
@@ -180,5 +187,5 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     scale,
     minZoom,
     objectScale: WORLD_CONSTANTS.OBJECT_SCALE
-  }
+  };
 }

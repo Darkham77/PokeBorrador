@@ -30,15 +30,15 @@ AI difficulty is fully parametrized through `AIConfig` presets declared in `src/
 
 ### 1. Difficulty Presets Table
 
-| Preset | errorRate | switchAggressiveness | switchCooldownTurns | useInference | useStrategicEval | Target Trainers / Modes |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `wild` | 50% | 0% | 2 | false | false | Wild Pokémon encounters |
-| `novice` | 20% | 15% | 2 | false | false | Youngster, Bug Catcher, Lass, Fisher |
-| `intermediate` | 10% | 30% | 2 | true | true | Hiker, Sailor, Camper, Picnicker |
-| `tactical` | 5% | 55% | 2 | true | true | Bird Keeper, Juggler, Psychic, Scientist, Gambler, Super Nerd, Engineer, Tamer |
-| `elite` | 2% | 75% | 2 | true | true | Black Belt, Cooltrainer, Cue Ball, Biker |
-| `gym` | 0% | 70% | 1 | true | true | Gym Leaders & Gym Trainers |
-| `rival` | **0%** | **85%** | **1** | true | true | Rival (Blue), Champion, & PvP Passive Defense |
+| Preset         | errorRate | switchAggressiveness | switchCooldownTurns | useInference | useStrategicEval | Target Trainers / Modes                                                        |
+| :------------- | :-------- | :------------------- | :------------------ | :----------- | :--------------- | :----------------------------------------------------------------------------- |
+| `wild`         | 50%       | 0%                   | 2                   | false        | false            | Wild Pokémon encounters                                                        |
+| `novice`       | 20%       | 15%                  | 2                   | false        | false            | Youngster, Bug Catcher, Lass, Fisher                                           |
+| `intermediate` | 10%       | 30%                  | 2                   | true         | true             | Hiker, Sailor, Camper, Picnicker                                               |
+| `tactical`     | 5%        | 55%                  | 2                   | true         | true             | Bird Keeper, Juggler, Psychic, Scientist, Gambler, Super Nerd, Engineer, Tamer |
+| `elite`        | 2%        | 75%                  | 2                   | true         | true             | Black Belt, Cooltrainer, Cue Ball, Biker                                       |
+| `gym`          | 0%        | 70%                  | 1                   | true         | true             | Gym Leaders & Gym Trainers                                                     |
+| `rival`        | **0%**    | **85%**              | **1**               | true         | true             | Rival (Blue), Champion, & PvP Passive Defense                                  |
 
 ### 2. The Apex Rival Invariant
 
@@ -94,7 +94,7 @@ export function hasViableSwitchCounter(
   candidates: Pokemon[],
   opponent: Pokemon,
   calc: HeuristicDamageCalculator
-): boolean
+): boolean;
 ```
 
 A bench Pokémon qualifies as a viable counter **ONLY** if:

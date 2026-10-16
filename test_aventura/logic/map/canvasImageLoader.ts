@@ -11,6 +11,7 @@ import { CANONICAL_ASSETS_BY_ID } from './canonicalAssetsRegistry.ts';
 const imageCache = new Map<string, HTMLImageElement>();
 
 const FALLBACK_TILE_MAP: Record<string, string> = {
+  // open-record: Asset file name fallback dictionary
   'poke_cliff_brown_inner_nw.png': 'poke_cliff_brown_edge_n.png',
   'poke_cliff_brown_inner_ne.png': 'poke_cliff_brown_edge_n.png',
   'poke_cliff_brown_inner_sw.png': 'poke_cliff_brown_foot.png',
@@ -41,7 +42,9 @@ export function resolveTileUrl(filename: string): string {
   // Safe fallback mapping for missing geological/coastal variants
   const fallback = FALLBACK_TILE_MAP[filename];
   if (fallback) {
-    console.warn(`[CanvasImageLoader] Warning: Asset "${filename}" unmapped in manifest, safely falling back to "${fallback}"`);
+    console.warn(
+      `[CanvasImageLoader] Warning: Asset "${filename}" unmapped in manifest, safely falling back to "${fallback}"`
+    );
     const fbBaseId = fallback.replace(/\.png$/, '');
     const fbAsset = CANONICAL_ASSETS_BY_ID[fbBaseId];
     if (fbAsset) {
@@ -81,7 +84,9 @@ function loadTileImage(filename: string): Promise<HTMLImageElement | null> {
       resolve(img);
     };
     img.onerror = (): void => {
-      console.error(`[CanvasTileRenderer] Missing canonical Essentials asset: ${filename} (attempted ${primaryUrl})`);
+      console.error(
+        `[CanvasTileRenderer] Missing canonical Essentials asset: ${filename} (attempted ${primaryUrl})`
+      );
       resolve(null);
     };
   });

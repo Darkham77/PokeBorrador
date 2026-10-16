@@ -6,6 +6,7 @@
 
 import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { spawnSync, spawn } from 'node:child_process';
@@ -45,7 +46,10 @@ export const SUPABASE_TEST_SERVICE_KEY = createSignedJwt({
 });
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
-const BASELINE_FILE = path.resolve(process.cwd(), 'database/migrations/20240416000000_baseline_schema.sql');
+const BASELINE_FILE = path.resolve(
+  process.cwd(),
+  'database/migrations/20240416000000_baseline_schema.sql'
+);
 const DOCKER_INFO_TIMEOUT_MS = 10000;
 const DOCKER_START_POLL_ATTEMPTS = 15;
 const POSTGRES_CONNECT_TIMEOUT_SEC = 10;
@@ -64,14 +68,18 @@ export interface DockerDiscovery {
 function findDockerInSystemPath(isWin: boolean): string | null {
   const checkCmd = isWin ? 'where.exe' : 'which';
   try {
-    const res = spawnSync(checkCmd, ['docker'], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
+    const res = spawnSync(checkCmd, ['docker'], {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    });
     if (res.status === 0 && res.stdout) {
       const firstLine = res.stdout.trim().split('\n')[0]?.trim();
       if (firstLine && fs.existsSync(firstLine)) {
         return firstLine;
       }
     }
-  } catch { // catch-ok: ignore and proceed to fallback paths
+  } catch {
+    // catch-ok: ignore and proceed to fallback paths
   }
   return null;
 }
@@ -84,10 +92,16 @@ function getPlatformDockerFallbackCandidates(isWin: boolean): string[] {
     const programFilesX86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)'; // cross-platform-ok
 
     if (localAppData) {
-      fallbackCandidates.push(path.join(localAppData, 'Programs', 'DockerDesktop', 'resources', 'bin', 'docker.exe'));
+      fallbackCandidates.push(
+        path.join(localAppData, 'Programs', 'DockerDesktop', 'resources', 'bin', 'docker.exe')
+      );
     }
-    fallbackCandidates.push(path.join(programFiles, 'Docker', 'Docker', 'resources', 'bin', 'docker.exe'));
-    fallbackCandidates.push(path.join(programFilesX86, 'Docker', 'Docker', 'resources', 'bin', 'docker.exe'));
+    fallbackCandidates.push(
+      path.join(programFiles, 'Docker', 'Docker', 'resources', 'bin', 'docker.exe')
+    );
+    fallbackCandidates.push(
+      path.join(programFilesX86, 'Docker', 'Docker', 'resources', 'bin', 'docker.exe')
+    );
   } else {
     fallbackCandidates.push(
       '/usr/bin/docker',
@@ -96,8 +110,9 @@ function getPlatformDockerFallbackCandidates(isWin: boolean): string[] {
       '/opt/homebrew/bin/docker',
       '/usr/local/homebrew/bin/docker'
     );
-    if (process.env.HOME && !process.env.HOME.includes('..')) {
-      fallbackCandidates.push(path.join(path.resolve(process.env.HOME), '.docker', 'bin', 'docker'));
+    const homeDir = os.homedir();
+    if (homeDir) {
+      fallbackCandidates.push(path.join(homeDir, '.docker', 'bin', 'docker'));
     }
   }
   return fallbackCandidates;
@@ -142,7 +157,12 @@ export function isDockerDaemonRunning(dockerBin: string): boolean {
  */
 export async function tryStartDockerDaemon(dockerBin: string): Promise<boolean> {
   const isWin = process.platform === 'win32';
-  console.log(styleText('cyan', '⏳ Docker detectado pero el daemon está inactivo. Intentando iniciar el servicio de Docker...'));
+  console.log(
+    styleText(
+      'cyan',
+      '⏳ Docker detectado pero el daemon está inactivo. Intentando iniciar el servicio de Docker...'
+    )
+  );
 
   try {
     if (isWin) {
@@ -152,12 +172,16 @@ export async function tryStartDockerDaemon(dockerBin: string): Promise<boolean> 
         path.join(localAppData, 'Programs', 'DockerDesktop', 'Docker Desktop.exe'),
         path.join(programFiles, 'Docker', 'Docker', 'Docker Desktop.exe')
       ];
-      const foundExe = desktopExes.find(e => fs.existsSync(e));
+      const foundExe = desktopExes.find((e) => fs.existsSync(e));
       if (foundExe) {
         const detached = spawn(foundExe, [], { detached: true, stdio: 'ignore' });
         detached.unref();
       } else {
-        spawnSync('powershell.exe', ['-Command', 'Start-Service com.docker.service -ErrorAction SilentlyContinue'], { stdio: 'ignore' });
+        spawnSync(
+          'powershell.exe',
+          ['-Command', 'Start-Service com.docker.service -ErrorAction SilentlyContinue'],
+          { stdio: 'ignore' }
+        );
       }
     } else if (process.platform === 'darwin') {
       spawn('open', ['-a', 'Docker'], { detached: true, stdio: 'ignore' }).unref();
@@ -166,19 +190,25 @@ export async function tryStartDockerDaemon(dockerBin: string): Promise<boolean> 
       spawnSync('systemctl', ['--user', 'start', 'docker'], { stdio: 'ignore' });
       spawnSync('sudo', ['systemctl', 'start', 'docker'], { stdio: 'ignore' });
     }
-  } catch { // catch-ok: ignore and proceed to poll
+  } catch {
+    // catch-ok: ignore and proceed to poll
     // Ignore and proceed to poll
   }
 
   for (let i = 1; i <= DOCKER_START_POLL_ATTEMPTS; i++) {
-    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
     if (isDockerDaemonRunning(dockerBin)) {
       console.log(styleText('green', `✅ Docker daemon iniciado exitosamente (${i}s).`));
       return true;
     }
   }
 
-  console.log(styleText('yellow', '⚠️  No se pudo iniciar el servicio de Docker automáticamente en el tiempo límite.'));
+  console.log(
+    styleText(
+      'yellow',
+      '⚠️  No se pudo iniciar el servicio de Docker automáticamente en el tiempo límite.'
+    )
+  );
   return false;
 }
 
@@ -210,7 +240,11 @@ export async function inspectDocker(): Promise<DockerDiscovery> {
  * Applies SQL migrations to the PostgreSQL test database.
  */
 export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
-  const sql = postgres(dbUrl, { max: 1, connect_timeout: POSTGRES_CONNECT_TIMEOUT_SEC, onnotice: () => {} });
+  const sql = postgres(dbUrl, {
+    max: 1,
+    connect_timeout: POSTGRES_CONNECT_TIMEOUT_SEC,
+    onnotice: () => {}
+  });
   try {
     // 1. Prepare environment: extensions, roles, auth schema, and publication
     await sql.unsafe(`
@@ -313,7 +347,7 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
       WHERE table_schema = 'public' AND table_name IN ('profiles', 'system_config', '_migrations')
     `;
 
-    const existingTables = tables.map(t => t.table_name as string);
+    const existingTables = tables.map((t) => t.table_name as string);
     if (existingTables.length === 0) {
       const baselineContent = await fsPromises.readFile(BASELINE_FILE, 'utf-8');
       await sql.unsafe(baselineContent);
@@ -325,10 +359,12 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
 
     // 3. Apply patch migrations
     const appliedRows = await sql`SELECT id FROM public._migrations`;
-    const appliedIds = new Set(appliedRows.map(r => r.id as string));
+    const appliedIds = new Set(appliedRows.map((r) => r.id as string));
 
     const files = (await fsPromises.readdir(MIGRATIONS_DIR))
-      .filter(f => f.endsWith('.sql') && !f.includes('baseline_schema') && !f.includes('.sqlite.'))
+      .filter(
+        (f) => f.endsWith('.sql') && !f.includes('baseline_schema') && !f.includes('.sqlite.')
+      )
       .sort((a, b) => a.localeCompare(b));
 
     for (const filename of files) {
@@ -338,11 +374,26 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
         let sqlContent = await fsPromises.readFile(filePath, 'utf-8');
 
         // Apply Postgres dialect adapters
-        sqlContent = sqlContent.replace(/created_at NOT LIKE/g, 'CAST(created_at AS TEXT) NOT LIKE');
-        sqlContent = sqlContent.replace(/SET created_at = REPLACE\(created_at, ' ', 'T'\) \|\| 'Z'/g, "SET created_at = CAST(REPLACE(CAST(created_at AS TEXT), ' ', 'T') || 'Z' AS TIMESTAMPTZ)");
-        sqlContent = sqlContent.replace(/DROP TABLE IF EXISTS events_config;/g, 'DROP TABLE IF EXISTS events_config CASCADE;');
-        sqlContent = sqlContent.replace(/WHERE user_id = '(local_[^']+)'/g, "WHERE user_id::text = '$1'");
-        sqlContent = sqlContent.replace(/ADD COLUMN (?!IF NOT EXISTS)/g, 'ADD COLUMN IF NOT EXISTS ');
+        sqlContent = sqlContent.replace(
+          /created_at NOT LIKE/g,
+          'CAST(created_at AS TEXT) NOT LIKE'
+        );
+        sqlContent = sqlContent.replace(
+          /SET created_at = REPLACE\(created_at, ' ', 'T'\) \|\| 'Z'/g,
+          "SET created_at = CAST(REPLACE(CAST(created_at AS TEXT), ' ', 'T') || 'Z' AS TIMESTAMPTZ)"
+        );
+        sqlContent = sqlContent.replace(
+          /DROP TABLE IF EXISTS events_config;/g,
+          'DROP TABLE IF EXISTS events_config CASCADE;'
+        );
+        sqlContent = sqlContent.replace(
+          /WHERE user_id = '(local_[^']+)'/g,
+          "WHERE user_id::text = '$1'"
+        );
+        sqlContent = sqlContent.replace(
+          /ADD COLUMN (?!IF NOT EXISTS)/g,
+          'ADD COLUMN IF NOT EXISTS '
+        );
 
         try {
           await sql.begin(async (tx) => {
@@ -351,7 +402,9 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
           });
         } catch (patchErr: unknown) {
           const pMsg = patchErr instanceof Error ? patchErr.message : String(patchErr);
-          console.error(`❌ Fallo crítico al aplicar migración ${migrationId} en PostgreSQL efímero: ${pMsg}`);
+          console.error(
+            `❌ Fallo crítico al aplicar migración ${migrationId} en PostgreSQL efímero: ${pMsg}`
+          );
           throw patchErr;
         }
       }
@@ -395,7 +448,8 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
     // Notify PostgREST to reload its schema cache
     try {
       await sql.unsafe("NOTIFY pgrst, 'reload schema';");
-    } catch { // catch-ok: ignore notification error if pgrst is restarting
+    } catch {
+      // catch-ok: ignore notification error if pgrst is restarting
       // Ignore notification error if pgrst is restarting
     }
   } finally {
@@ -403,162 +457,227 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
   }
 }
 
-  /**
-   * Waits for PostgreSQL server to be ready for connections.
-   */
-  export async function waitForPostgres(dbUrl: string, maxRetries = POSTGRES_READY_MAX_RETRIES): Promise<boolean> {
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        const sql = postgres(dbUrl, { max: 1, connect_timeout: POSTGRES_PING_TIMEOUT_SEC });
-        await sql`SELECT 1`;
-        await sql.end();
-        return true;
-      } catch {
-        await new Promise(resolve => setTimeout(resolve, POSTGRES_POLL_INTERVAL_MS));
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Waits for PostgREST HTTP REST server to be ready through the gateway.
-   */
-  export async function waitForPostgrest(maxRetries = POSTGRES_READY_MAX_RETRIES): Promise<boolean> {
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        const res = await fetch(`${POSTGREST_URL}/rest/v1/system_config`, {
-          headers: { apikey: SUPABASE_TEST_ANON_KEY }
-        });
-        if (res.ok || res.status === HTTP_STATUS_OK) {
-          return true;
-        }
-      } catch { // catch-ok: retry if postgrest ping failed during startup poll
-        // Retry
-      }
-      await new Promise(resolve => setTimeout(resolve, POSTGRES_POLL_INTERVAL_MS));
-    }
-    return false;
-  }
-
-  /**
-   * Stops and removes the ephemeral PostgreSQL, PostgREST & Gateway test containers.
-   */
-  export function stopPostgresTestContainer(dockerBin?: string | null): void {
-    const bin = dockerBin || findDockerBinary();
-    if (bin) {
-      try {
-        spawnSync(bin, ['rm', '-f', GATEWAY_CONTAINER_NAME], { stdio: 'ignore' });
-        spawnSync(bin, ['rm', '-f', POSTGREST_CONTAINER_NAME], { stdio: 'ignore' });
-        spawnSync(bin, ['rm', '-f', CONTAINER_NAME], { stdio: 'ignore' });
-      } catch { // catch-ok: ignore cleanup error on container removal
-        // Ignore cleanup error
-      }
-    }
-  }
-
-  /**
-   * Ensures the ephemeral PostgreSQL & PostgREST Docker containers are running, responsive,
-   * and updated with all database schema migrations.
-   */
-  export async function ensurePostgresTestContainerReady(forceRecreate = false): Promise<{
-    isReady: boolean;
-    postgresUrl: string;
-    postgrestUrl: string;
-    dockerBin: string | null;
-  }> {
-    const dockerInfo = await inspectDocker();
-    const dockerBin = dockerInfo.dockerBin;
-
-    if (!dockerInfo.isRunning || !dockerBin) {
-      return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
-    }
-
-    // 0. Quick check: if already running and healthy, reuse without container/network recreation churn
-    if (!forceRecreate) {
-      const isPgRunning = await waitForPostgres(POSTGRES_URL, 3);
-      const isPostgrestRunning = await waitForPostgrest(3);
-      if (isPgRunning && isPostgrestRunning) {
-        console.log(styleText('green', '✅ Pila Supabase (PostgreSQL + PostgREST + Gateway) ya activa y lista en RAM.'));
-        try {
-          await applyMigrationsToPostgres(POSTGRES_URL);
-        } catch (migErr) {
-          console.error(styleText('red', `❌ Error al aplicar migraciones incrementales en PostgreSQL: ${(migErr as Error).message}`));
-        }
-        return { isReady: true, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
-      }
-    }
-
-    console.log(styleText('cyan', `🐳 Docker activo detectado (${dockerBin}). Preparando pila Supabase (PostgreSQL + PostgREST + Gateway)...`));
-
-    // 1. Ensure docker network exists
-    spawnSync(dockerBin, ['network', 'create', DOCKER_NETWORK], { stdio: 'ignore' });
-
-    // 2. Remove lingering containers
-    spawnSync(dockerBin, ['rm', '-f', GATEWAY_CONTAINER_NAME], { stdio: 'ignore' });
-    spawnSync(dockerBin, ['rm', '-f', POSTGREST_CONTAINER_NAME], { stdio: 'ignore' });
-    spawnSync(dockerBin, ['rm', '-f', CONTAINER_NAME], { stdio: 'ignore' });
-
-    // 3. Run PostgreSQL container with tmpfs on RAM for maximum speed
-    const runPgRes = spawnSync(dockerBin, [
-      'run', '-d',
-      '--name', CONTAINER_NAME,
-      '--network', DOCKER_NETWORK,
-      '-p', `${POSTGRES_PORT}:5432`,
-      '-e', 'POSTGRES_PASSWORD=postgres',
-      '-e', 'POSTGRES_USER=postgres',
-      '-e', 'POSTGRES_DB=postgres',
-      '--tmpfs', '/var/lib/postgresql/data:rw',
-      'postgres:17-alpine',
-      '-c', 'synchronous_commit=off',
-      '-c', 'fsync=off',
-      '-c', 'full_page_writes=off',
-      '-c', 'max_connections=200'
-    ], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] });
-
-    if (runPgRes.status !== 0) {
-      console.log(styleText('yellow', `⚠️  No se pudo iniciar el contenedor PostgreSQL: ${runPgRes.stderr?.trim() || 'Error desconocido'}`));
-      return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
-    }
-
-    const isPgReady = await waitForPostgres(POSTGRES_URL);
-    if (!isPgReady) {
-      console.log(styleText('yellow', '⚠️  PostgreSQL no respondió a tiempo.'));
-      return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
-    }
-
+/**
+ * Waits for PostgreSQL server to be ready for connections.
+ */
+export async function waitForPostgres(
+  dbUrl: string,
+  maxRetries = POSTGRES_READY_MAX_RETRIES
+): Promise<boolean> {
+  for (let i = 0; i < maxRetries; i++) {
     try {
-      await applyMigrationsToPostgres(POSTGRES_URL);
-      console.log(styleText('green', '✅ PostgreSQL listo y migraciones aplicadas.'));
-    } catch (migErr) {
-      console.error(styleText('red', `❌ Error al aplicar migraciones en PostgreSQL: ${(migErr as Error).message}`));
-      return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+      const sql = postgres(dbUrl, { max: 1, connect_timeout: POSTGRES_PING_TIMEOUT_SEC });
+      await sql`SELECT 1`;
+      await sql.end();
+      return true;
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, POSTGRES_POLL_INTERVAL_MS));
     }
+  }
+  return false;
+}
 
-    // 4. Run PostgREST container connected to PostgreSQL via Docker network
-    const runPostgrestRes = spawnSync(dockerBin, [
-      'run', '-d',
-      '--name', POSTGREST_CONTAINER_NAME,
-      '--network', DOCKER_NETWORK,
-      '-e', `PGRST_DB_URI=postgres://authenticator:postgres@${CONTAINER_NAME}:5432/postgres`,
-      '-e', 'PGRST_DB_SCHEMAS=public,storage',
-      '-e', 'PGRST_DB_ANON_ROLE=anon',
-      '-e', `PGRST_JWT_SECRET=${JWT_SECRET}`,
-      '-e', 'PGRST_DB_USE_BUILTIN_RAISE=true',
-      '-e', 'PGRST_DB_POOL=50',
-      '-e', 'PGRST_DB_POOL_TIMEOUT=30',
+/**
+ * Waits for PostgREST HTTP REST server to be ready through the gateway.
+ */
+export async function waitForPostgrest(maxRetries = POSTGRES_READY_MAX_RETRIES): Promise<boolean> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const res = await fetch(`${POSTGREST_URL}/rest/v1/system_config`, {
+        headers: { apikey: SUPABASE_TEST_ANON_KEY }
+      });
+      if (res.ok || res.status === HTTP_STATUS_OK) {
+        return true;
+      }
+    } catch {
+      // catch-ok: retry if postgrest ping failed during startup poll
+      // Retry
+    }
+    await new Promise((resolve) => setTimeout(resolve, POSTGRES_POLL_INTERVAL_MS));
+  }
+  return false;
+}
+
+/**
+ * Stops and removes the ephemeral PostgreSQL, PostgREST & Gateway test containers.
+ */
+export function stopPostgresTestContainer(dockerBin?: string | null): void {
+  const bin = dockerBin || findDockerBinary();
+  if (bin) {
+    try {
+      spawnSync(bin, ['rm', '-f', GATEWAY_CONTAINER_NAME], { stdio: 'ignore' });
+      spawnSync(bin, ['rm', '-f', POSTGREST_CONTAINER_NAME], { stdio: 'ignore' });
+      spawnSync(bin, ['rm', '-f', CONTAINER_NAME], { stdio: 'ignore' });
+    } catch {
+      // catch-ok: ignore cleanup error on container removal
+      // Ignore cleanup error
+    }
+  }
+}
+
+/**
+ * Ensures the ephemeral PostgreSQL & PostgREST Docker containers are running, responsive,
+ * and updated with all database schema migrations.
+ */
+export async function ensurePostgresTestContainerReady(forceRecreate = false): Promise<{
+  isReady: boolean;
+  postgresUrl: string;
+  postgrestUrl: string;
+  dockerBin: string | null;
+}> {
+  const dockerInfo = await inspectDocker();
+  const dockerBin = dockerInfo.dockerBin;
+
+  if (!dockerInfo.isRunning || !dockerBin) {
+    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+  }
+
+  // 0. Quick check: if already running and healthy, reuse without container/network recreation churn
+  if (!forceRecreate) {
+    const isPgRunning = await waitForPostgres(POSTGRES_URL, 3);
+    const isPostgrestRunning = await waitForPostgrest(3);
+    if (isPgRunning && isPostgrestRunning) {
+      console.log(
+        styleText(
+          'green',
+          '✅ Pila Supabase (PostgreSQL + PostgREST + Gateway) ya activa y lista en RAM.'
+        )
+      );
+      try {
+        await applyMigrationsToPostgres(POSTGRES_URL);
+      } catch (migErr) {
+        console.error(
+          styleText(
+            'red',
+            `❌ Error al aplicar migraciones incrementales en PostgreSQL: ${(migErr as Error).message}`
+          )
+        );
+      }
+      return { isReady: true, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+    }
+  }
+
+  console.log(
+    styleText(
+      'cyan',
+      `🐳 Docker activo detectado (${dockerBin}). Preparando pila Supabase (PostgreSQL + PostgREST + Gateway)...`
+    )
+  );
+
+  // 1. Ensure docker network exists
+  spawnSync(dockerBin, ['network', 'create', DOCKER_NETWORK], { stdio: 'ignore' });
+
+  // 2. Remove lingering containers
+  spawnSync(dockerBin, ['rm', '-f', GATEWAY_CONTAINER_NAME], { stdio: 'ignore' });
+  spawnSync(dockerBin, ['rm', '-f', POSTGREST_CONTAINER_NAME], { stdio: 'ignore' });
+  spawnSync(dockerBin, ['rm', '-f', CONTAINER_NAME], { stdio: 'ignore' });
+
+  // 3. Run PostgreSQL container with tmpfs on RAM for maximum speed
+  const runPgRes = spawnSync(
+    dockerBin,
+    [
+      'run',
+      '-d',
+      '--name',
+      CONTAINER_NAME,
+      '--network',
+      DOCKER_NETWORK,
+      '-p',
+      `${POSTGRES_PORT}:5432`,
+      '-e',
+      'POSTGRES_PASSWORD=postgres',
+      '-e',
+      'POSTGRES_USER=postgres',
+      '-e',
+      'POSTGRES_DB=postgres',
+      '--tmpfs',
+      '/var/lib/postgresql/data:rw',
+      'postgres:17-alpine',
+      '-c',
+      'synchronous_commit=off',
+      '-c',
+      'fsync=off',
+      '-c',
+      'full_page_writes=off',
+      '-c',
+      'max_connections=200'
+    ],
+    { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }
+  );
+
+  if (runPgRes.status !== 0) {
+    console.log(
+      styleText(
+        'yellow',
+        `⚠️  No se pudo iniciar el contenedor PostgreSQL: ${runPgRes.stderr?.trim() || 'Error desconocido'}`
+      )
+    );
+    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+  }
+
+  const isPgReady = await waitForPostgres(POSTGRES_URL);
+  if (!isPgReady) {
+    console.log(styleText('yellow', '⚠️  PostgreSQL no respondió a tiempo.'));
+    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+  }
+
+  try {
+    await applyMigrationsToPostgres(POSTGRES_URL);
+    console.log(styleText('green', '✅ PostgreSQL listo y migraciones aplicadas.'));
+  } catch (migErr) {
+    console.error(
+      styleText(
+        'red',
+        `❌ Error al aplicar migraciones en PostgreSQL: ${(migErr as Error).message}`
+      )
+    );
+    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+  }
+
+  // 4. Run PostgREST container connected to PostgreSQL via Docker network
+  const runPostgrestRes = spawnSync(
+    dockerBin,
+    [
+      'run',
+      '-d',
+      '--name',
+      POSTGREST_CONTAINER_NAME,
+      '--network',
+      DOCKER_NETWORK,
+      '-e',
+      `PGRST_DB_URI=postgres://authenticator:postgres@${CONTAINER_NAME}:5432/postgres`,
+      '-e',
+      'PGRST_DB_SCHEMAS=public,storage',
+      '-e',
+      'PGRST_DB_ANON_ROLE=anon',
+      '-e',
+      `PGRST_JWT_SECRET=${JWT_SECRET}`,
+      '-e',
+      'PGRST_DB_USE_BUILTIN_RAISE=true',
+      '-e',
+      'PGRST_DB_POOL=50',
+      '-e',
+      'PGRST_DB_POOL_TIMEOUT=30',
       'postgrest/postgrest:v14.17'
-    ], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] });
+    ],
+    { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }
+  );
 
-    if (runPostgrestRes.status !== 0) {
-      console.log(styleText('yellow', `⚠️  No se pudo iniciar el contenedor PostgREST: ${runPostgrestRes.stderr?.trim() || 'Error desconocido'}`));
-      return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
-    }
+  if (runPostgrestRes.status !== 0) {
+    console.log(
+      styleText(
+        'yellow',
+        `⚠️  No se pudo iniciar el contenedor PostgREST: ${runPostgrestRes.stderr?.trim() || 'Error desconocido'}`
+      )
+    );
+    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+  }
 
-    // 5. Run Nginx Gateway container (exposing standard Supabase port 54321)
-    const confDir = path.resolve(process.cwd(), 'scratch');
-    await fsPromises.mkdir(confDir, { recursive: true });
-    const confPath = path.resolve(confDir, 'test_gateway.conf');
-    const nginxConf = `events {}
+  // 5. Run Nginx Gateway container (exposing standard Supabase port 54321)
+  const confDir = path.resolve(process.cwd(), 'scratch');
+  await fsPromises.mkdir(confDir, { recursive: true });
+  const confPath = path.resolve(confDir, 'test_gateway.conf');
+  const nginxConf = `events {}
 http {
   server {
     listen 54321;
@@ -575,28 +694,49 @@ http {
   }
 }
 `;
-    await fsPromises.writeFile(confPath, nginxConf, 'utf-8');
+  await fsPromises.writeFile(confPath, nginxConf, 'utf-8');
 
-    const runGatewayRes = spawnSync(dockerBin, [
-      'run', '-d',
-      '--name', GATEWAY_CONTAINER_NAME,
-      '--network', DOCKER_NETWORK,
-      '-p', `${POSTGREST_PORT}:54321`,
-      '-v', `${confPath}:/etc/nginx/nginx.conf:ro`,
+  const runGatewayRes = spawnSync(
+    dockerBin,
+    [
+      'run',
+      '-d',
+      '--name',
+      GATEWAY_CONTAINER_NAME,
+      '--network',
+      DOCKER_NETWORK,
+      '-p',
+      `${POSTGREST_PORT}:54321`,
+      '-v',
+      `${confPath}:/etc/nginx/nginx.conf:ro`,
       'nginx:alpine'
-    ], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] });
+    ],
+    { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }
+  );
 
-    if (runGatewayRes.status !== 0) {
-      console.log(styleText('yellow', `⚠️  No se pudo iniciar el contenedor Gateway: ${runGatewayRes.stderr?.trim() || 'Error desconocido'}`));
-      return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
-    }
-
-    const isPostgrestReady = await waitForPostgrest();
-    if (!isPostgrestReady) {
-      console.log(styleText('yellow', '⚠️  PostgREST Gateway no respondió a tiempo en el puerto 54321.'));
-      return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
-    }
-
-    console.log(styleText('green', `✅ Pila Supabase (PostgreSQL :${POSTGRES_PORT} + PostgREST + Gateway :${POSTGREST_PORT}) lista en RAM.`));
-    return { isReady: true, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+  if (runGatewayRes.status !== 0) {
+    console.log(
+      styleText(
+        'yellow',
+        `⚠️  No se pudo iniciar el contenedor Gateway: ${runGatewayRes.stderr?.trim() || 'Error desconocido'}`
+      )
+    );
+    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
   }
+
+  const isPostgrestReady = await waitForPostgrest();
+  if (!isPostgrestReady) {
+    console.log(
+      styleText('yellow', '⚠️  PostgREST Gateway no respondió a tiempo en el puerto 54321.')
+    );
+    return { isReady: false, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+  }
+
+  console.log(
+    styleText(
+      'green',
+      `✅ Pila Supabase (PostgreSQL :${POSTGRES_PORT} + PostgREST + Gateway :${POSTGREST_PORT}) lista en RAM.`
+    )
+  );
+  return { isReady: true, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
+}

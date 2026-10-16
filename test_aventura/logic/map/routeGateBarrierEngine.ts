@@ -118,7 +118,10 @@ function tryAddBarrierTree(
     const minW = Math.max(treeWidth, other.width);
     if (dy < 2 && dx < minW) return;
     if (dx < minW && dy < Math.max(treeHeight, other.height)) return;
-    if (other.prefabFile === 'poke_tree_oak_yellow.png' && Math.hypot(treeX - other.x, treeY - other.y) < YELLOW_OAK_MIN_DISTANCE) {
+    if (
+      other.prefabFile === 'poke_tree_oak_yellow.png' &&
+      Math.hypot(treeX - other.x, treeY - other.y) < YELLOW_OAK_MIN_DISTANCE
+    ) {
       return;
     }
   }
@@ -134,7 +137,12 @@ function tryAddBarrierTree(
 }
 
 function isCellAdjacentToWater(x: number, y: number, continent: ContinentMapResult): boolean {
-  for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]] as const) {
+  for (const [dx, dy] of [
+    [0, 1],
+    [0, -1],
+    [1, 0],
+    [-1, 0]
+  ] as const) {
     const nx = x + dx;
     const ny = y + dy;
     const terr = continent.terrainMatrix[ny]?.[nx];
@@ -163,14 +171,18 @@ function tryAddBarrierProp(
   const terr = continent.terrainMatrix[y]?.[x];
   if (terr === 'water' || terr === 'water_deep') return false;
 
-  if (isCellAdjacentToMountainStairs(x, y, continent.resolvedMountain.cellDetails, W, H)) return false;
-  if (continent.placedStairs.some((s) => Math.abs(s.x - x) <= 1 && Math.abs(s.y - y) <= 1)) return false;
+  if (isCellAdjacentToMountainStairs(x, y, continent.resolvedMountain.cellDetails, W, H))
+    return false;
+  if (continent.placedStairs.some((s) => Math.abs(s.x - x) <= 1 && Math.abs(s.y - y) <= 1))
+    return false;
 
   // Spacing check: all props must maintain >= 2.0 distance from other props,
   // except contiguous segments of the same fence run (same row for fence_h, same col for fence_v)
   for (const p of props) {
-    const isContiguousHFence = type === 'fence_h' && p.type === 'fence_h' && p.y === y && Math.abs(p.x - x) === 1;
-    const isContiguousVFence = type === 'fence_v' && p.type === 'fence_v' && p.x === x && Math.abs(p.y - y) === 1;
+    const isContiguousHFence =
+      type === 'fence_h' && p.type === 'fence_h' && p.y === y && Math.abs(p.x - x) === 1;
+    const isContiguousVFence =
+      type === 'fence_v' && p.type === 'fence_v' && p.x === x && Math.abs(p.y - y) === 1;
     if (isContiguousHFence || isContiguousVFence) {
       continue;
     }
@@ -261,8 +273,8 @@ export function verifyRouteGateAntiBypass(params: RouteGateBarrierParams): boole
   const b = gate.urbanLayout?.buildings[0];
   const bx = b ? b.x : gate.gridX + (isHorizontal ? 1 : 2);
   const by = b ? b.y : gate.gridY + (isHorizontal ? 2 : 1);
-  const bw = b ? b.width : (isHorizontal ? 8 : 6);
-  const bh = b ? b.height : (isHorizontal ? 5 : 7);
+  const bw = b ? b.width : isHorizontal ? 8 : 6;
+  const bh = b ? b.height : isHorizontal ? 5 : 7;
 
   if (isHorizontal) {
     // Search window around the horizontal gatehouse (West to East)
@@ -372,8 +384,8 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
   const b = gate.urbanLayout?.buildings[0];
   const bx = b ? b.x : gate.gridX + (isHorizontal ? 1 : 2);
   const by = b ? b.y : gate.gridY + (isHorizontal ? 2 : 1);
-  const bw = b ? b.width : (isHorizontal ? 8 : 6);
-  const bh = b ? b.height : (isHorizontal ? 5 : 7);
+  const bw = b ? b.width : isHorizontal ? 8 : 6;
+  const bh = b ? b.height : isHorizontal ? 5 : 7;
 
   if (isHorizontal) {
     // ------------------------------------------------------------------------
@@ -406,7 +418,19 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
 
       if (fencesPlacedNorth < fenceRunLen) {
-        if (!placeFlankFenceStep('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask, trees, gate)) {
+        if (
+          !placeFlankFenceStep(
+            'fence_v',
+            barrierX,
+            curY,
+            'poke_fence_white_v_left.png',
+            continent,
+            props,
+            blockedMask,
+            trees,
+            gate
+          )
+        ) {
           break;
         }
         fencesPlacedNorth++;
@@ -414,7 +438,19 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
         if ((by - 1 - curY) % 3 === 0) {
           tryAddBarrierTree(barrierX - 1, curY - 3, continent, trees, blockedMask);
         }
-        if (!placeFlankFenceStep('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask, trees, gate)) {
+        if (
+          !placeFlankFenceStep(
+            'fence_v',
+            barrierX,
+            curY,
+            'poke_fence_white_v_left.png',
+            continent,
+            props,
+            blockedMask,
+            trees,
+            gate
+          )
+        ) {
           break;
         }
       }
@@ -431,7 +467,19 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
 
       if (fencesPlacedSouth < fenceRunLen) {
-        if (!placeFlankFenceStep('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask, trees, gate)) {
+        if (
+          !placeFlankFenceStep(
+            'fence_v',
+            barrierX,
+            curY,
+            'poke_fence_white_v_left.png',
+            continent,
+            props,
+            blockedMask,
+            trees,
+            gate
+          )
+        ) {
           break;
         }
         fencesPlacedSouth++;
@@ -439,7 +487,19 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
         if ((curY - (by + bh)) % 3 === 0) {
           tryAddBarrierTree(barrierX - 1, curY, continent, trees, blockedMask);
         }
-        if (!placeFlankFenceStep('fence_v', barrierX, curY, 'poke_fence_white_v_left.png', continent, props, blockedMask, trees, gate)) {
+        if (
+          !placeFlankFenceStep(
+            'fence_v',
+            barrierX,
+            curY,
+            'poke_fence_white_v_left.png',
+            continent,
+            props,
+            blockedMask,
+            trees,
+            gate
+          )
+        ) {
           break;
         }
       }
@@ -505,7 +565,18 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       candidates.sort((a, b) => a.diff - b.diff);
       let placed = false;
       for (const cand of candidates) {
-        if (tryAddBarrierProp('fence_v', cand.x, cand.y, 'poke_fence_white_v_left.png', continent, props, blockedMask, true)) {
+        if (
+          tryAddBarrierProp(
+            'fence_v',
+            cand.x,
+            cand.y,
+            'poke_fence_white_v_left.png',
+            continent,
+            props,
+            blockedMask,
+            true
+          )
+        ) {
           placed = true;
           break;
         }
@@ -541,7 +612,19 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
 
       if (fencesPlacedLeft < fenceRunLen) {
-        if (!placeFlankFenceStep('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask, trees, gate)) {
+        if (
+          !placeFlankFenceStep(
+            'fence_h',
+            curX,
+            barrierY,
+            'poke_fence_white_h_mid.png',
+            continent,
+            props,
+            blockedMask,
+            trees,
+            gate
+          )
+        ) {
           break;
         }
         fencesPlacedLeft++;
@@ -549,7 +632,19 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
         if ((bx - 1 - curX) % 3 === 0) {
           tryAddBarrierTree(curX - 1, barrierY - 3, continent, trees, blockedMask);
         }
-        if (!placeFlankFenceStep('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask, trees, gate)) {
+        if (
+          !placeFlankFenceStep(
+            'fence_h',
+            curX,
+            barrierY,
+            'poke_fence_white_h_mid.png',
+            continent,
+            props,
+            blockedMask,
+            trees,
+            gate
+          )
+        ) {
           break;
         }
       }
@@ -566,7 +661,19 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       if (h > 0 || isFoot || t === 'water' || t === 'water_deep') break;
 
       if (fencesPlacedRight < fenceRunLen) {
-        if (!placeFlankFenceStep('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask, trees, gate)) {
+        if (
+          !placeFlankFenceStep(
+            'fence_h',
+            curX,
+            barrierY,
+            'poke_fence_white_h_mid.png',
+            continent,
+            props,
+            blockedMask,
+            trees,
+            gate
+          )
+        ) {
           break;
         }
         fencesPlacedRight++;
@@ -574,7 +681,19 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
         if ((curX - (bx + bw)) % 3 === 0) {
           tryAddBarrierTree(curX, barrierY - 3, continent, trees, blockedMask);
         }
-        if (!placeFlankFenceStep('fence_h', curX, barrierY, 'poke_fence_white_h_mid.png', continent, props, blockedMask, trees, gate)) {
+        if (
+          !placeFlankFenceStep(
+            'fence_h',
+            curX,
+            barrierY,
+            'poke_fence_white_h_mid.png',
+            continent,
+            props,
+            blockedMask,
+            trees,
+            gate
+          )
+        ) {
           break;
         }
       }
@@ -640,7 +759,18 @@ export function sealRouteGateFlankBarriers(options: SealRouteGateOptions): void 
       candidates.sort((a, b) => a.diff - b.diff);
       let placed = false;
       for (const cand of candidates) {
-        if (tryAddBarrierProp('fence_h', cand.x, cand.y, 'poke_fence_white_h_mid.png', continent, props, blockedMask, true)) {
+        if (
+          tryAddBarrierProp(
+            'fence_h',
+            cand.x,
+            cand.y,
+            'poke_fence_white_h_mid.png',
+            continent,
+            props,
+            blockedMask,
+            true
+          )
+        ) {
           placed = true;
           break;
         }

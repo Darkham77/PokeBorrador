@@ -123,7 +123,7 @@ export function splitSQLStatements(sql: string): string[] {
   }
 
   if (ctx.current.trim()) ctx.statements.push(ctx.current.trim());
-  return ctx.statements.filter(s => s.length > 0);
+  return ctx.statements.filter((s) => s.length > 0);
 }
 
 const SQL_SKIP_PATTERNS = [
@@ -151,59 +151,65 @@ export function translatePostgresToSqlite(sql: string): string {
   if (!sql) return '';
   const cleanSql = sql.trim();
   const upperSql = cleanSql.toUpperCase(); // text-ok: UI text display localization string
-  
+
   // Logic Skipping for PostgreSQL-only constructs
-  if (SQL_SKIP_PATTERNS.some(pattern => upperSql.startsWith(pattern))) {
+  if (SQL_SKIP_PATTERNS.some((pattern) => upperSql.startsWith(pattern))) {
     return '';
   }
 
-  if (upperSql.startsWith('ALTER TABLE') && (
-    upperSql.includes('ENABLE ROW LEVEL SECURITY') ||
-    upperSql.includes('FORCE ROW LEVEL SECURITY') ||
-    upperSql.includes('REPLICA IDENTITY')
-  )) {
+  if (
+    upperSql.startsWith('ALTER TABLE') &&
+    (upperSql.includes('ENABLE ROW LEVEL SECURITY') ||
+      upperSql.includes('FORCE ROW LEVEL SECURITY') ||
+      upperSql.includes('REPLICA IDENTITY'))
+  ) {
     return '';
   }
 
-  return cleanSql
-    .replace(/public\./gi, '')
-    // 1. Types & Casts
-    .replace(/\bJSONB\b/gi, 'TEXT')
-    .replace(/\bUUID\b/gi, 'TEXT')
-    .replace(/\bTIMESTAMPTZ\b/gi, 'TEXT')
-    .replace(/\bTIMESTAMP\b/gi, 'TEXT')
-    .replace(/\bBIGINT\b/gi, 'INTEGER')
-    .replace(/\b(BIGSERIAL|SERIAL)\s+PRIMARY\s+KEY\b/gi, 'INTEGER PRIMARY KEY AUTOINCREMENT')
-    .replace(/\b(BIGSERIAL|SERIAL)\b/gi, 'INTEGER')
-    .replace(/::[a-z0-9]+/gi, '')
-    // 2. Functions
-    .replace(/\bNOW\(\)/gi, "strftime('%Y-%m-%dT%H:%M:%SZ', 'now')")
-    .replace(/\bgen_random_uuid\(\)/gi, "hex(randomblob(16))")
-    .replace(/\bEXTRACT\(epoch\s+FROM\s+([^)]+)\)/gi, "unixepoch($1)")
-    .replace(/\bARRAY_AGG\b/gi, "json_group_array")
-    .replace(/\bstring_agg\b/gi, "group_concat")
-    .replace(/\bjsonb_build_object\b/gi, "json_object")
-    .replace(/\bjsonb_set\b/gi, "json_set")
-    .replace(/\bjsonb_agg\b/gi, "json_group_array")
-    .replace(/\bjsonb_object_agg\b/gi, "json_group_object")
-    .replace(/\bjsonb_build_array\b/gi, "json_array")
-    .replace(/\bjsonb_array_elements\b/gi, "json_each")
-    .replace(/\bjsonb_array_length\b/gi, "json_array_length")
-    .replace(/\bto_jsonb\b/gi, "json")
-    .replace(/\bjsonb_(\w+)\b/gi, "json_$1")
-    .replace(/\bSUBSTRING\b/gi, "SUBSTR")
-    // 3. Operators & Constants
-    .replace(/\bTRUE\b/gi, '1')
-    .replace(/\bFALSE\b/gi, '0')
-    .replace(/->>/g, '->>')
-    .replace(/->/g, '->')
-    // 4. SQL Patterns
-    .replace(/FOR\s+UPDATE/gi, '')
-    .replace(/DEFAULT\s+strftime\('%Y-%m-%dT%H:%M:%SZ',\s*'now'\)/gi, "DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))")
-    .replace(/DEFAULT\s+hex\(randomblob\(16\)\)/gi, "DEFAULT (hex(randomblob(16)))")
-    .replace(/RAISE\s+EXCEPTION\s+'[^']*'/gi, 'SELECT 1')
-    .replace(/\bADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\b/gi, 'ADD COLUMN')
-    // 5. References & Schemas
-    .replace(/REFERENCES\s+auth\.users/gi, 'REFERENCES profiles')
-    .trim();
+  return (
+    cleanSql
+      .replace(/public\./gi, '')
+      // 1. Types & Casts
+      .replace(/\bJSONB\b/gi, 'TEXT')
+      .replace(/\bUUID\b/gi, 'TEXT')
+      .replace(/\bTIMESTAMPTZ\b/gi, 'TEXT')
+      .replace(/\bTIMESTAMP\b/gi, 'TEXT')
+      .replace(/\bBIGINT\b/gi, 'INTEGER')
+      .replace(/\b(BIGSERIAL|SERIAL)\s+PRIMARY\s+KEY\b/gi, 'INTEGER PRIMARY KEY AUTOINCREMENT')
+      .replace(/\b(BIGSERIAL|SERIAL)\b/gi, 'INTEGER')
+      .replace(/::[a-z0-9]+/gi, '')
+      // 2. Functions
+      .replace(/\bNOW\(\)/gi, "strftime('%Y-%m-%dT%H:%M:%SZ', 'now')")
+      .replace(/\bgen_random_uuid\(\)/gi, 'hex(randomblob(16))')
+      .replace(/\bEXTRACT\(epoch\s+FROM\s+([^)]+)\)/gi, 'unixepoch($1)')
+      .replace(/\bARRAY_AGG\b/gi, 'json_group_array')
+      .replace(/\bstring_agg\b/gi, 'group_concat')
+      .replace(/\bjsonb_build_object\b/gi, 'json_object')
+      .replace(/\bjsonb_set\b/gi, 'json_set')
+      .replace(/\bjsonb_agg\b/gi, 'json_group_array')
+      .replace(/\bjsonb_object_agg\b/gi, 'json_group_object')
+      .replace(/\bjsonb_build_array\b/gi, 'json_array')
+      .replace(/\bjsonb_array_elements\b/gi, 'json_each')
+      .replace(/\bjsonb_array_length\b/gi, 'json_array_length')
+      .replace(/\bto_jsonb\b/gi, 'json')
+      .replace(/\bjsonb_(\w+)\b/gi, 'json_$1')
+      .replace(/\bSUBSTRING\b/gi, 'SUBSTR')
+      // 3. Operators & Constants
+      .replace(/\bTRUE\b/gi, '1')
+      .replace(/\bFALSE\b/gi, '0')
+      .replace(/->>/g, '->>')
+      .replace(/->/g, '->')
+      // 4. SQL Patterns
+      .replace(/FOR\s+UPDATE/gi, '')
+      .replace(
+        /DEFAULT\s+strftime\('%Y-%m-%dT%H:%M:%SZ',\s*'now'\)/gi,
+        "DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
+      )
+      .replace(/DEFAULT\s+hex\(randomblob\(16\)\)/gi, 'DEFAULT (hex(randomblob(16)))')
+      .replace(/RAISE\s+EXCEPTION\s+'[^']*'/gi, 'SELECT 1')
+      .replace(/\bADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\b/gi, 'ADD COLUMN')
+      // 5. References & Schemas
+      .replace(/REFERENCES\s+auth\.users/gi, 'REFERENCES profiles')
+      .trim()
+  );
 }

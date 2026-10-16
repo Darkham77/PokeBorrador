@@ -11,7 +11,8 @@ export const PLAYER_CLASSES = {
     icon: '🚀',
     color: '#ef4444',
     colorDark: '#991b1b',
-    description: 'Vive en las sombras. Vende, roba y contrabandea para amasar fortuna. Alto riesgo, alta recompensa.',
+    description:
+      'Vive en las sombras. Vende, roba y contrabandea para amasar fortuna. Alto riesgo, alta recompensa.',
     bonuses: [
       '💰 Mercado Negro: vendé Pokémon de la caja directo por ₽',
       '🎯 Robo Rápido: 15-30% de chance de robar un ítem al iniciar batalla vs entrenador',
@@ -27,23 +28,23 @@ export const PLAYER_CLASSES = {
     ],
     modifiers: {
       expMult: 1.0,
-      bcMult: 0.90,
+      bcMult: 0.9,
       healCostMult: 2.0,
       daycareCostMult: 1.0,
       catchMult: 1.0,
-      shopDiscount: 0.20
+      shopDiscount: 0.2
     },
     technicalBonuses: [
-      "Venta directa en PC: ₽500 + (Nivel Seleccionado x 10). Pokémon de Tier alta dan bonos extra.",
-      "15% de probabilidad base. Escala a 30% al alcanzar el nivel 15 de clase. Solo vs Entrenadores NPC.",
-      "Aplica un modificador de x0.80 al precio de todos los objetos en la Tienda del Entrenador.",
-      "Cada día se elige una ruta al azar. En esa ruta, ganarás x1.5 de dinero al derrotar entrenadores NPC genéricos.",
-      "Al derrotar al Oficial de Policía en batalla, hay un 5% de probabilidad de robarle aleatoriamente uno de los Pokémon que utilizó y enviarlo a tu PC (requiere espacio)."
+      'Venta directa en PC: ₽500 + (Nivel Seleccionado x 10). Pokémon de Tier alta dan bonos extra.',
+      '15% de probabilidad base. Escala a 30% al alcanzar el nivel 15 de clase. Solo vs Entrenadores NPC.',
+      'Aplica un modificador de x0.80 al precio de todos los objetos en la Tienda del Entrenador.',
+      'Cada día se elige una ruta al azar. En esa ruta, ganarás x1.5 de dinero al derrotar entrenadores NPC genéricos.',
+      'Al derrotar al Oficial de Policía en batalla, hay un 5% de probabilidad de robarle aleatoriamente uno de los Pokémon que utilizó y enviarlo a tu PC (requiere espacio).'
     ],
     technicalPenalties: [
-      "El servicio de enfermería básico tiene un recargo del 100% (x2) por ser miembro del Team Rocket.",
-      "Tus patrocinadores te dan un 10% menos de Battle Coins por batalla debido a tu mala reputación.",
-      "Los PokéMart oficiales detectan tu afiliación y aplican un recargo del +20% en todos los precios."
+      'El servicio de enfermería básico tiene un recargo del 100% (x2) por ser miembro del Team Rocket.',
+      'Tus patrocinadores te dan un 10% menos de Battle Coins por batalla debido a tu mala reputación.',
+      'Los PokéMart oficiales detectan tu afiliación y aplican un recargo del +20% en todos los precios.'
     ],
     avatarSpriteId: 'rocket',
     showdownSpriteId: 'rocket'
@@ -54,7 +55,8 @@ export const PLAYER_CLASSES = {
     icon: '🦗',
     color: '#22c55e',
     colorDark: '#15803d',
-    description: 'Maestro del campo. Acumula rachas de capturas para aumentar las chances de Shiny e IVs altos. Vive en la naturaleza.',
+    description:
+      'Maestro del campo. Acumula rachas de capturas para aumentar las chances de Shiny e IVs altos. Vive en la naturaleza.',
     bonuses: [
       '⚡ Racha de Capturas: cada captura seguida aumenta Shiny rate e IVs (máx x4)',
       '🦋 Sinergia Bicho: +5% catchRate por Pokémon Bicho en el equipo (máx +30%)',
@@ -70,23 +72,23 @@ export const PLAYER_CLASSES = {
     ],
     modifiers: {
       expMult: 1.0,
-      expMultTrainer: 0.80,
+      expMultTrainer: 0.8,
       bcMult: 0.85,
       healCostMult: 1.0,
       daycareCostMult: 1.5,
       catchMult: 1.0
     },
     technicalBonuses: [
-      "Cada captura del mismo tipo suma +1 racha. +1 racha = +15% Shiny rate y +5 IVs garantizados (máx multiplicador x4.0).",
-      "Bono de +5% de Catch Rate por cada Pokémon tipo Bicho en tu equipo activo (Bonificador máximo: +30%).",
-      "Al ser un experto en el campo, por cada 10 Pokémon salvajes capturados, encontrás 1 Poké Ball extra en el equipo del Kit de Campo.",
-      "Probabilidad de 0.5% por paso (10% en Safari) de forzar la aparición de un Pokémon raro (Scyther/Pinsir).",
-      "Al capturar un Pokémon tipo Bicho, hay un 20% de probabilidad de recibir un segundo ejemplar idéntico en la caja."
+      'Cada captura del mismo tipo suma +1 racha. +1 racha = +15% Shiny rate y +5 IVs garantizados (máx multiplicador x4.0).',
+      'Bono de +5% de Catch Rate por cada Pokémon tipo Bicho en tu equipo activo (Bonificador máximo: +30%).',
+      'Al ser un experto en el campo, por cada 10 Pokémon salvajes capturados, encontrás 1 Poké Ball extra en el equipo del Kit de Campo.',
+      'Probabilidad de 0.5% por paso (10% en Safari) de forzar la aparición de un Pokémon raro (Scyther/Pinsir).',
+      'Al capturar un Pokémon tipo Bicho, hay un 20% de probabilidad de recibir un segundo ejemplar idéntico en la caja.'
     ],
     technicalPenalties: [
-      "Tu enfoque en la naturaleza te hace menos eficiente entrenando contra otros humanos (x0.80 EXP).",
-      "Los premios en metálico se reducen un 15% debido a tu falta de patrocinio oficial.",
-      "La infraestructura de la guardería no está adaptada para tus métodos de crianza rústicos (x1.50 costo)."
+      'Tu enfoque en la naturaleza te hace menos eficiente entrenando contra otros humanos (x0.80 EXP).',
+      'Los premios en metálico se reducen un 15% debido a tu falta de patrocinio oficial.',
+      'La infraestructura de la guardería no está adaptada para tus métodos de crianza rústicos (x1.50 costo).'
     ],
     avatarSpriteId: 'cazabichos',
     showdownSpriteId: 'cazabichos'
@@ -97,7 +99,8 @@ export const PLAYER_CLASSES = {
     icon: '🏅',
     color: '#3b82f6',
     colorDark: '#1d4ed8',
-    description: 'El camino legítimo. Sube de nivel más rápido, domina los gimnasios y acumula Reputación que desbloquea tiendas exclusivas.',
+    description:
+      'El camino legítimo. Sube de nivel más rápido, domina los gimnasios y acumula Reputación que desbloquea tiendas exclusivas.',
     bonuses: [
       '📈 +10% EXP en todos los combates',
       '🏆 +30% Battle Coins en victorias de Gimnasio',
@@ -112,24 +115,24 @@ export const PLAYER_CLASSES = {
       '🚫 Sin acceso al Mercado Negro'
     ],
     modifiers: {
-      expMult: 1.10,
+      expMult: 1.1,
       bcMult: 1.0,
-      bcGymMult: 1.30,
+      bcGymMult: 1.3,
       healCostMult: 1.0,
       daycareCostMult: 1.5,
       catchMult: 1.0
     },
     technicalBonuses: [
-      "Multiplicador fijo de x1.10 a toda la experiencia base ganada al derrotar Pokémon salvajes o entrenadores.",
-      "Bono de x1.30 a las Battle Coins obtenidas exclusivamente en batallas de Gimnasio / Líderes.",
-      "Ganas 10 REP por cada victoria en Gimnasio. Los puntos se usan en la Tienda de Reputación.",
+      'Multiplicador fijo de x1.10 a toda la experiencia base ganada al derrotar Pokémon salvajes o entrenadores.',
+      'Bono de x1.30 a las Battle Coins obtenidas exclusivamente en batallas de Gimnasio / Líderes.',
+      'Ganas 10 REP por cada victoria en Gimnasio. Los puntos se usan en la Tienda de Reputación.',
       "Una vez cada 24h podés marcar una ruta como 'Oficial'. Durante 30 min, cada combate en esa ruta otorga +1 Reputation.",
-      "Si has derrotado a todos los Líderes de Gimnasio en dificultad Difícil al menos una vez, la probabilidad de que aparezca el Rival se duplica."
+      'Si has derrotado a todos los Líderes de Gimnasio en dificultad Difícil al menos una vez, la probabilidad de que aparezca el Rival se duplica.'
     ],
     technicalPenalties: [
-      "Tu ética profesional te impide capturar Pokémon genéticamente perfectos con facilidad (-10% Catch Rate si IV > 120).",
-      "Prefieres el entrenamiento en campo; el mantenimiento en guardería te resulta más costoso (x1.50).",
-      "Como figura pública, no puedes ser visto operando en mercados de dudosa legalidad."
+      'Tu ética profesional te impide capturar Pokémon genéticamente perfectos con facilidad (-10% Catch Rate si IV > 120).',
+      'Prefieres el entrenamiento en campo; el mantenimiento en guardería te resulta más costoso (x1.50).',
+      'Como figura pública, no puedes ser visto operando en mercados de dudosa legalidad.'
     ],
     avatarSpriteId: 'entrenador',
     showdownSpriteId: 'entrenador'
@@ -140,7 +143,8 @@ export const PLAYER_CLASSES = {
     icon: '🧬',
     color: '#a855f7',
     colorDark: '#7e22ce',
-    description: 'Maestro genético. Produce los Pokémon con mejores IVs y habilidades del servidor. Domina el meta competitivo desde la guardería.',
+    description:
+      'Maestro genético. Produce los Pokémon con mejores IVs y habilidades del servidor. Domina el meta competitivo desde la guardería.',
     bonuses: [
       '🧬 Lazo Destino: Hereda 4 IVs aleatorios de los padres (vs 3 normal).',
       '🥚 Incubación Rápida: Los pasos para eclosionar se reducen un 25%.',
@@ -149,27 +153,24 @@ export const PLAYER_CLASSES = {
       '🔍 Escáner de Huevos: Escanea y revela los IVs y el Grado de un Huevo del Almacén (1 vez al día).'
     ],
     bonusLevels: [1, 1, 5, 5, 20],
-    penalties: [
-      '📉 -10% EXP en todos los combates',
-      '🚫 Sin acceso al Mercado Negro'
-    ],
+    penalties: ['📉 -10% EXP en todos los combates', '🚫 Sin acceso al Mercado Negro'],
     modifiers: {
-      expMult: 0.90,
+      expMult: 0.9,
       bcMult: 1.0,
       healCostMult: 1.0,
       daycareCostMult: 1.0,
       catchMult: 1.0
     },
     technicalBonuses: [
-      "Al criar, se eligen 4 IVs aleatorios de entre los 12 disponibles de los padres (normalmente son solo 3).",
-      "El contador de pasos requerido para que un huevo eclosione se reduce en un 25%.",
-      "Cada eclosión tiene un 15% de posibilidad de recuperar 1 punto de vigor en uno de los padres en la guardería.",
-      "Muestra la Naturaleza (Modificadores de Stats) del Pokémon rival directamente en el HUD de batalla.",
-      "Permite revelar por completo la genética (IVs y Grado de IVs) de un huevo depositado en el Almacén de la Guardería. Limitado a un escaneo diario."
+      'Al criar, se eligen 4 IVs aleatorios de entre los 12 disponibles de los padres (normalmente son solo 3).',
+      'El contador de pasos requerido para que un huevo eclosione se reduce en un 25%.',
+      'Cada eclosión tiene un 15% de posibilidad de recuperar 1 punto de vigor en uno de los padres en la guardería.',
+      'Muestra la Naturaleza (Modificadores de Stats) del Pokémon rival directamente en el HUD de batalla.',
+      'Permite revelar por completo la genética (IVs y Grado de IVs) de un huevo depositado en el Almacén de la Guardería. Limitado a un escaneo diario.'
     ],
     technicalPenalties: [
-      "Tu enfoque en la genética te aleja del fragor de la batalla (x0.90 EXP global).",
-      "Como científico respetable, no posees los contactos necesarios para entrar al Mercado Negro."
+      'Tu enfoque en la genética te aleja del fragor de la batalla (x0.90 EXP global).',
+      'Como científico respetable, no posees los contactos necesarios para entrar al Mercado Negro.'
     ],
     avatarSpriteId: 'criador',
     showdownSpriteId: 'criador'
@@ -177,6 +178,7 @@ export const PLAYER_CLASSES = {
 } as const;
 
 export type PlayerClassId = keyof typeof PLAYER_CLASSES;
+export const DEFAULT_PLAYER_CLASS: PlayerClassId = 'entrenador';
 
 export function isPlayerClassId(value: unknown): value is PlayerClassId {
   return typeof value === 'string' && value in PLAYER_CLASSES;
@@ -191,16 +193,16 @@ export function requirePlayerClassId(value: string): PlayerClassId {
  * CLASS_MISSIONS: Idle mission definitions by duration.
  */
 export const CLASS_MISSIONS = [
-  { id: 'mission_6h',  durationHs: 6,  reqLv: 1,  name: 'Misión Básica (6h)',     color: '#22c55e' },
-  { id: 'mission_12h', durationHs: 12, reqLv: 15, name: 'Misión Avanzada (12h)',  color: '#3b82f6' },
-  { id: 'mission_24h', durationHs: 24, reqLv: 25, name: 'Misión Experta (24h)',   color: '#a855f7' }
+  { id: 'mission_6h', durationHs: 6, reqLv: 1, name: 'Misión Básica (6h)', color: '#22c55e' },
+  { id: 'mission_12h', durationHs: 12, reqLv: 15, name: 'Misión Avanzada (12h)', color: '#3b82f6' },
+  { id: 'mission_24h', durationHs: 24, reqLv: 25, name: 'Misión Experta (24h)', color: '#a855f7' }
 ] as const;
 
 export type ClassMission = (typeof CLASS_MISSIONS)[number];
 export type MissionId = ClassMission['id'];
 
 export const CLASS_MISSIONS_BY_ID: Readonly<Record<MissionId, ClassMission>> = Object.freeze(
-  Object.fromEntries(CLASS_MISSIONS.map(m => [m.id, m])) as Record<MissionId, ClassMission>
+  Object.fromEntries(CLASS_MISSIONS.map((m) => [m.id, m])) as Record<MissionId, ClassMission>
 );
 
 export function isMissionId(value: string): value is MissionId {

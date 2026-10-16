@@ -14,10 +14,10 @@ import {
   StatsTable,
   StatusName,
   TypeName,
-  Weather,
+  Weather
 } from '@pkmn/types';
 
-export type {ID} from '@pkmn/types';
+export type { ID } from '@pkmn/types';
 
 export namespace Protocol {
   export type PositionLetter = 'a' | 'b' | 'c';
@@ -112,7 +112,7 @@ export namespace Protocol {
    * `ability: ` and `item: ` respectively, whereas all other effects are unprefixed. For example,
    * `move: Spectral Thief` or `confusion`.
    */
-  export type EffectName = string & As<'EffectName'> | MoveEffectName;
+  export type EffectName = (string & As<'EffectName'>) | MoveEffectName;
   /** The name of a move 'effect', prefixed with `move: `. */
   export type MoveEffectName = string & As<'MoveEffectName'>;
   /** The name of a Pokemon species (unprefixed). */
@@ -201,7 +201,13 @@ export namespace Protocol {
   export type Reason = StatusName | 'partiallytrapped' | 'flinch' | 'nopp' | 'recharge';
 
   export type QueryType =
-    'userdetails' | 'roomlist' | 'rooms' | 'laddertop' | 'roominfo' | 'savereplay' | 'debug';
+    | 'userdetails'
+    | 'roomlist'
+    | 'rooms'
+    | 'laddertop'
+    | 'roominfo'
+    | 'savereplay'
+    | 'debug';
 
   /** An unparsed JSON string containing `Challenges` information. */
   export type ChallengesJSON = string & As<'ChallengesJSON'>;
@@ -256,8 +262,8 @@ export namespace Protocol {
    * If the challenge is accepted, you will receive a room initialization message.
    */
   export interface Challenges {
-    challengesFrom: {[userid in ID]: ID};
-    challengeTo: null | {o: Username; format: ID};
+    challengesFrom: { [userid in ID]: ID };
+    challengeTo: null | { o: Username; format: ID };
   }
 
   /**
@@ -284,7 +290,7 @@ export namespace Protocol {
    */
   export interface SearchState {
     searching: ID[];
-    games: {[roomid in RoomID]: RoomTitle};
+    games: { [roomid in RoomID]: RoomTitle };
   }
 
   /** A JSON object that reflects the custom user groups configured on the server. */
@@ -318,7 +324,7 @@ export namespace Protocol {
     isJoined?: boolean;
     generator?: Generator;
     playerCap?: number;
-    bracketData?: {[key: string]: any};
+    bracketData?: { [key: string]: any };
     challenges?: Username[];
     challengeBys?: Username[];
     challenged?: Username[];
@@ -337,7 +343,7 @@ export namespace Protocol {
     results: Username[];
     format: FormatName;
     generator: Generator;
-    bracketData: {[key: string]: any};
+    bracketData: { [key: string]: any };
   }
 
   export type Request = MoveRequest | SwitchRequest | TeamRequest | WaitRequest;
@@ -391,20 +397,24 @@ export namespace Protocol {
     }
 
     export interface ActivePokemon {
-      moves: Array<{
-        name: 'Recharge';
-        id: 'recharge';
-      } | {
-        name: MoveName;
-        id: ID;
-      } | {
-        name: MoveName;
-        id: ID;
-        pp: number;
-        maxpp: number;
-        target: MoveTarget;
-        disabled?: boolean;
-      }>;
+      moves: Array<
+        | {
+            name: 'Recharge';
+            id: 'recharge';
+          }
+        | {
+            name: MoveName;
+            id: ID;
+          }
+        | {
+            name: MoveName;
+            id: ID;
+            pp: number;
+            maxpp: number;
+            target: MoveTarget;
+            disabled?: boolean;
+          }
+      >;
       maxMoves?: Array<{
         // name: MoveName;
         id: ID;
@@ -546,8 +556,8 @@ export namespace Protocol {
      * or their username by default).
      */
     '|notify|':
-    | readonly ['notify', NotificationTitle, Message?] |
-    readonly ['notify', NotificationTitle, Message, HighlightToken];
+      | readonly ['notify', NotificationTitle, Message?]
+      | readonly ['notify', NotificationTitle, Message, HighlightToken];
     /**
      * `|:|TIMESTAMP`
      *
@@ -704,16 +714,16 @@ export namespace Protocol {
     '|selectorhtml|': readonly ['selectorhtml', SelectorName, HTML];
     '|refresh|': readonly ['refresh'];
     '|tempnotify|':
-    | readonly ['tempnotify', TempNotifyName, Message] |
-    readonly ['tempnotify', TempNotifyName, Message, Message] |
-    readonly ['tempnotify', TempNotifyName, Message, Message, string];
+      | readonly ['tempnotify', TempNotifyName, Message]
+      | readonly ['tempnotify', TempNotifyName, Message, Message]
+      | readonly ['tempnotify', TempNotifyName, Message, Message, string];
     '|tempnotifyoff|': readonly ['tempnotifyoff', TempNotifyName];
     '|noinit|':
-    | readonly ['noinit', 'joinfailed' | 'namerequired' | 'nonexistent', Message] |
-    readonly ['noinit', 'rename', RoomID, RoomTitle];
+      | readonly ['noinit', 'joinfailed' | 'namerequired' | 'nonexistent', Message]
+      | readonly ['noinit', 'rename', RoomID, RoomTitle];
     '|hidelines|':
-    | readonly ['hidelines', 'delete' | 'hide', ID, Num] |
-    readonly ['hidelines', 'unlink', ID];
+      | readonly ['hidelines', 'delete' | 'hide', ID, Num]
+      | readonly ['hidelines', 'unlink', ID];
     '|expire|': readonly ['expire'] | readonly ['expire', Message];
     '|askreg|': readonly ['askreg', ID];
   }
@@ -783,7 +793,7 @@ export namespace Protocol {
      * `|tournament|disqualify|USER`
      *
      * `USER` was disqualified from the tournament.
-    */
+     */
     '|tournament|disqualify|': readonly ['tournament', 'disqualify', Username];
     /**
      * `|tournament|battlestart|USER1|USER2|ROOMID`
@@ -801,9 +811,16 @@ export namespace Protocol {
      * and the bracket type does not support draws. Otherwise, it will be `success`.
      */
     '|tournament|battleend|':
-    | readonly [
-      'tournament', 'battleend', Username, Username, 'win' | 'loss' | 'draw', Score, 'success',
-    ] | readonly ['tournament', 'battleend', Username, Username, 'draw', Score, 'fail'];
+      | readonly [
+          'tournament',
+          'battleend',
+          Username,
+          Username,
+          'win' | 'loss' | 'draw',
+          Score,
+          'success'
+        ]
+      | readonly ['tournament', 'battleend', Username, Username, 'draw', Score, 'fail'];
     /**
      * `|tournament|end|JSON`
      *
@@ -826,8 +843,8 @@ export namespace Protocol {
      * auto-start was turned off.
      */
     '|tournament|autostart|':
-    | readonly ['tournament', 'autostart', 'on', Num] |
-    readonly ['tournament', 'autostart', 'off'];
+      | readonly ['tournament', 'autostart', 'on', Num]
+      | readonly ['tournament', 'autostart', 'off'];
     /**
      * `|tournament|autodq|on|TIMEOUT`
      * `|tournament|autodq|off`
@@ -840,8 +857,8 @@ export namespace Protocol {
      * disqualified for inactivity.
      */
     '|tournament|autodq|':
-    | readonly ['tournament', 'autodq', 'on' | 'target', Num] |
-    readonly ['tournament', 'autodq', 'off'];
+      | readonly ['tournament', 'autodq', 'on' | 'target', Num]
+      | readonly ['tournament', 'autodq', 'off'];
   }
 
   export type TournamentArgName = keyof TournamentArgs;
@@ -861,8 +878,8 @@ export namespace Protocol {
      *     displayed in rated battles and when the player is first introduced otherwise it's blank.
      */
     '|player|':
-    | readonly ['player', Player] |
-    readonly ['player', Player, Username, AvatarIdent | '', Num | ''];
+      | readonly ['player', Player]
+      | readonly ['player', Player, Username, AvatarIdent | '', Num | ''];
     /**
      * `|teamsize|PLAYER|NUMBER`
      *
@@ -1042,8 +1059,8 @@ export namespace Protocol {
      * fainted) Pokémon on that side.
      */
     '|move|':
-    | readonly ['move', PokemonIdent, MoveName] |
-    readonly ['move', PokemonIdent, MoveName | 'recharge', PokemonIdent | 'null' | ''];
+      | readonly ['move', PokemonIdent, MoveName]
+      | readonly ['move', PokemonIdent, MoveName | 'recharge', PokemonIdent | 'null' | ''];
     /**
      * `|switch|POKEMON|DETAILS|HP STATUS`
      *
@@ -1102,10 +1119,13 @@ export namespace Protocol {
      * paralysis, Disable, etc). Sometimes, the move it was trying to use is given.
      */
     '|cant|':
-    | readonly ['cant', PokemonIdent, Reason | AbilityName | EffectName | MoveName] |
-    readonly [
-      'cant', PokemonIdent, Reason | AbilityName | EffectName | MoveName, EffectName | MoveName,
-    ];
+      | readonly ['cant', PokemonIdent, Reason | AbilityName | EffectName | MoveName]
+      | readonly [
+          'cant',
+          PokemonIdent,
+          Reason | AbilityName | EffectName | MoveName,
+          EffectName | MoveName
+        ];
     /**
      * `|faint|POKEMON`
      *
@@ -1130,8 +1150,8 @@ export namespace Protocol {
      * Syntax is the same as `|switch|`, though with `SPECIES` in lieu of `DETAILS`.
      */
     '|-formechange|':
-    | readonly ['-formechange', PokemonIdent, SpeciesName] |
-    readonly ['-formechange', PokemonIdent, SpeciesName, ''];
+      | readonly ['-formechange', PokemonIdent, SpeciesName]
+      | readonly ['-formechange', PokemonIdent, SpeciesName, ''];
     /**
      * `|-fail|POKEMON|ACTION`
      *
@@ -1140,9 +1160,9 @@ export namespace Protocol {
      * because they're blocked by another effect should use `-block` instead.
      */
     '|-fail|':
-    | readonly ['-fail', PokemonIdent] |
-    readonly ['-fail', PokemonIdent, EffectName | MoveName | StatusName] |
-    readonly ['-fail', PokemonIdent, 'unboost', StatDisplayName | BoostID];
+      | readonly ['-fail', PokemonIdent]
+      | readonly ['-fail', PokemonIdent, EffectName | MoveName | StatusName]
+      | readonly ['-fail', PokemonIdent, 'unboost', StatDisplayName | BoostID];
     /**
      * `|-block|POKEMON|EFFECT|MOVE|ATTACKER`
      *
@@ -1151,9 +1171,9 @@ export namespace Protocol {
      * case that it's not `EFFECT` (for instance, an ally with Aroma Veil.)
      */
     '|-block|':
-    | readonly ['-block', PokemonIdent, EffectName] |
-    readonly ['-block', PokemonIdent, EffectName | MoveName, MoveName | ''] |
-    readonly ['-block', PokemonIdent, EffectName, MoveName, PokemonIdent | ''];
+      | readonly ['-block', PokemonIdent, EffectName]
+      | readonly ['-block', PokemonIdent, EffectName | MoveName, MoveName | '']
+      | readonly ['-block', PokemonIdent, EffectName, MoveName, PokemonIdent | ''];
     /**
      * `|-notarget|POKEMON`
      *
@@ -1190,8 +1210,8 @@ export namespace Protocol {
      * The specified Pokémon `POKEMON` now has `HP` hit points.
      */
     '|-sethp|':
-    | readonly ['-sethp', PokemonIdent, PokemonHPStatus] |
-    readonly ['-sethp', PokemonIdent, Num, PokemonIdent, Num];
+      | readonly ['-sethp', PokemonIdent, PokemonHPStatus]
+      | readonly ['-sethp', PokemonIdent, Num, PokemonIdent, Num];
     /**
      * `|-status|POKEMON|STATUS`
      *
@@ -1237,8 +1257,8 @@ export namespace Protocol {
      * example: Guard Swap, Heart Swap).
      */
     '|-swapboost|':
-    | readonly ['-swapboost', PokemonIdent, PokemonIdent] |
-    readonly ['-swapboost', PokemonIdent, PokemonIdent, BoostIDs];
+      | readonly ['-swapboost', PokemonIdent, PokemonIdent]
+      | readonly ['-swapboost', PokemonIdent, PokemonIdent, BoostIDs];
     /**
      * `|-invertboost|POKEMON`
      *
@@ -1263,8 +1283,12 @@ export namespace Protocol {
      * Clear the positive boosts from the `TARGET` Pokémon due to an `EFFECT` of the `POKEMON`
      * Pokémon. (For example: 'move: Spectral Thief').
      */
-    '|-clearpositiveboost|':
-    readonly ['-clearpositiveboost', PokemonIdent, PokemonIdent, EffectName];
+    '|-clearpositiveboost|': readonly [
+      '-clearpositiveboost',
+      PokemonIdent,
+      PokemonIdent,
+      EffectName
+    ];
     /**
      * `|-clearnegativeboost|POKEMON`
      *
@@ -1278,8 +1302,8 @@ export namespace Protocol {
      * Copy the boosts from `SOURCE` Pokémon to `TARGET` Pokémon (For example: Psych Up).
      */
     '|-copyboost|':
-    | readonly ['-copyboost', PokemonIdent, PokemonIdent] |
-    readonly ['-copyboost', PokemonIdent, PokemonIdent, BoostIDs];
+      | readonly ['-copyboost', PokemonIdent, PokemonIdent]
+      | readonly ['-copyboost', PokemonIdent, PokemonIdent, BoostIDs];
     /**
      * `|-weather|WEATHER`
      *
@@ -1329,12 +1353,12 @@ export namespace Protocol {
      * on the `POKEMON` Pokémon by `EFFECT`. (For example: confusion, Taunt, Substitute).
      */
     '|-start|':
-    | readonly ['-start', PokemonIdent, 'Dynamax'] |
-    readonly ['-start', PokemonIdent, 'Dynamax', 'Gmax' | ''] |
-    readonly ['-start', PokemonIdent, EffectName | MoveName] |
-    readonly ['-start', PokemonIdent, EffectName, MoveName] |
-    readonly ['-start', PokemonIdent, 'typechange', Types?] |
-    readonly ['-start', PokemonIdent, 'typeadd', TypeName];
+      | readonly ['-start', PokemonIdent, 'Dynamax']
+      | readonly ['-start', PokemonIdent, 'Dynamax', 'Gmax' | '']
+      | readonly ['-start', PokemonIdent, EffectName | MoveName]
+      | readonly ['-start', PokemonIdent, EffectName, MoveName]
+      | readonly ['-start', PokemonIdent, 'typechange', Types?]
+      | readonly ['-start', PokemonIdent, 'typeadd', TypeName];
     /**
      * `|-end|POKEMON|EFFECT`
      *
@@ -1346,30 +1370,31 @@ export namespace Protocol {
      *
      * A move has dealt a critical hit against the `POKEMON`.
      */
-    '|-crit|': readonly ['-crit', PokemonIdent] |
-      readonly ['-crit', PokemonIdent, Num];
+    '|-crit|': readonly ['-crit', PokemonIdent] | readonly ['-crit', PokemonIdent, Num];
     /**
      * `|-supereffective|POKEMON`
      *
      * A move was super effective against the `POKEMON`.
      */
-    '|-supereffective|': readonly ['-supereffective', PokemonIdent] |
-      readonly ['-supereffective', PokemonIdent, Num];
+    '|-supereffective|':
+      | readonly ['-supereffective', PokemonIdent]
+      | readonly ['-supereffective', PokemonIdent, Num];
     /**
      * `|-resisted|POKEMON`
      *
      * A move was not very effective against the `POKEMON`.
      */
-    '|-resisted|': readonly ['-resisted', PokemonIdent] |
-        readonly ['--resisted', PokemonIdent, Num];
+    '|-resisted|':
+      | readonly ['-resisted', PokemonIdent]
+      | readonly ['--resisted', PokemonIdent, Num];
     /**
      * `|-immune|POKEMON`
      *
      * The `POKEMON` was immune to a move.
      */
     '|-immune|':
-    | readonly ['-immune', PokemonIdent] |
-    readonly ['-immune', PokemonIdent, 'confusion'];
+      | readonly ['-immune', PokemonIdent]
+      | readonly ['-immune', PokemonIdent, 'confusion'];
     /**
      * `|-item|POKEMON|ITEM|[from]EFFECT`
      *
@@ -1422,17 +1447,22 @@ export namespace Protocol {
      * `EFFECT`.
      */
     '|-ability|':
-    | readonly ['-ability', PokemonIdent, AbilityName] |
-    readonly ['-ability', PokemonIdent, AbilityName, AbilityName | Side | PokemonIdent | 'boost'] |
-    readonly ['-ability', PokemonIdent, AbilityName, AbilityName, PokemonIdent];
+      | readonly ['-ability', PokemonIdent, AbilityName]
+      | readonly [
+          '-ability',
+          PokemonIdent,
+          AbilityName,
+          AbilityName | Side | PokemonIdent | 'boost'
+        ]
+      | readonly ['-ability', PokemonIdent, AbilityName, AbilityName, PokemonIdent];
     /**
      * `|-endability|POKEMON`
      *
      * The `POKEMON` has had its ability suppressed by Gastro Acid.
      */
     '|-endability|':
-    | readonly ['-endability', PokemonIdent] |
-    readonly ['-endability', PokemonIdent, AbilityName | 'none'];
+      | readonly ['-endability', PokemonIdent]
+      | readonly ['-endability', PokemonIdent, AbilityName | 'none'];
     /**
      * `|-transform|POKEMON|TARGET`
      *
@@ -1482,14 +1512,14 @@ export namespace Protocol {
      * the "restored" message as `-activate`.
      */
     '|-activate|':
-    | readonly ['-activate', PokemonIdent | '', EffectName] |
-    readonly [
-      '-activate',
-      PokemonIdent,
-      EffectName | AbilityName | MoveName | '',
-      ItemName | MoveName | AbilityName | Num | PokemonIdent | '',
-    ] |
-    readonly ['-activate', PokemonIdent, EffectName, AbilityName | '', AbilityName | ''];
+      | readonly ['-activate', PokemonIdent | '', EffectName]
+      | readonly [
+          '-activate',
+          PokemonIdent,
+          EffectName | AbilityName | MoveName | '',
+          ItemName | MoveName | AbilityName | Num | PokemonIdent | ''
+        ]
+      | readonly ['-activate', PokemonIdent, EffectName, AbilityName | '', AbilityName | ''];
     '|-fieldactivate|': readonly ['-fieldactivate', EffectName];
     /**
      * `|-hint|MESSAGE`
@@ -1534,8 +1564,8 @@ export namespace Protocol {
      * Dig, Fly).
      */
     '|-prepare|':
-    | readonly ['-prepare', PokemonIdent, MoveName] |
-    readonly ['-prepare', PokemonIdent, MoveName, PokemonIdent];
+      | readonly ['-prepare', PokemonIdent, MoveName]
+      | readonly ['-prepare', PokemonIdent, MoveName, PokemonIdent];
     /**
      * `|-mustrecharge|POKEMON`
      *
@@ -1571,84 +1601,80 @@ export namespace Protocol {
   export type BattleMinorArgName = keyof BattleMinorArgs;
   export type BattleMinorArgType = BattleMinorArgs[BattleMinorArgName];
 
-  export type BattleArgs =
-    BattleInitArgs &
-    BattleProgressArgs &
-    BattleMajorArgs &
-    BattleMinorArgs;
+  export type BattleArgs = BattleInitArgs & BattleProgressArgs & BattleMajorArgs & BattleMinorArgs;
   export type BattleArgName =
-    | BattleInitArgName |
-    BattleProgressArgName |
-    BattleMajorArgName |
-    BattleMinorArgName;
+    | BattleInitArgName
+    | BattleProgressArgName
+    | BattleMajorArgName
+    | BattleMinorArgName;
   export type BattleArgType = BattleArgs[BattleArgName];
 
   export type BattleArgsKWArgsTypes = {
-    'ability': AbilityName;
-    'ability2': AbilityName;
+    ability: AbilityName;
+    ability2: AbilityName;
     /**
      * `[anim] MOVE2`
      *
      * Use the animation of `MOVE2` instead.
      */
-    'anim': MoveName;
-    'block': MoveName;
-    'broken': true;
-    'consumed': true;
-    'damage': true;
-    'eat': true;
-    'fail': true;
-    'fatigue': true;
-    'forme': true;
+    anim: MoveName;
+    block: MoveName;
+    broken: true;
+    consumed: true;
+    damage: true;
+    eat: true;
+    fail: true;
+    fatigue: true;
+    forme: true;
     /** `[from] EFFECT` */
-    'from': EffectName | MoveName | AbilityName;
-    'fromitem': true;
-    'heavy': true;
-    'item': ItemName;
+    from: EffectName | MoveName | AbilityName;
+    fromitem: true;
+    heavy: true;
+    item: ItemName;
     /**
      * `[miss]`
      *
      * The move missed.
      */
-    'miss': true;
-    'move': MoveName | ID;
-    'msg': true;
-    'name': Nickname;
-    'notarget': true;
-    'number': Num;
+    miss: true;
+    move: MoveName | ID;
+    msg: true;
+    name: Nickname;
+    notarget: true;
+    number: Num;
     /** `[of] SOURCE` */
-    'of': PokemonIdent | '';
-    'ohko': true;
-    'persistent': true;
+    of: PokemonIdent | '';
+    ohko: true;
+    persistent: true;
     /**
      * `[silent]`
      *
      * Suppress message.
      */
-    'silent': true;
-    'source': true;
-    'spread': Slots | true;
+    silent: true;
+    source: true;
+    spread: Slots | true;
     /**
      * `[still]`
      *
      * Suppress animation.
      */
-    'still': true;
-    'thaw': true;
-    'upkeep': true;
-    'weak': true;
-    'weaken': true;
-    'wisher': Nickname;
-    'zeffect': true;
-    'premajor': true;
+    still: true;
+    thaw: true;
+    upkeep: true;
+    weak: true;
+    weaken: true;
+    wisher: Nickname;
+    zeffect: true;
+    premajor: true;
   } & {
-    'already': true;
-    'anim': AnimationName | 'prepare';
-    'identify': true;
-    'interrupt': true;
-    'multiple': true;
-    'partiallytrapped': true;
-    'prepare': true;
+    already: true;
+    anim: AnimationName | 'prepare';
+    identify: true;
+    interrupt: true;
+    multiple: true;
+    partiallytrapped: true;
+    prepare: true;
   };
 
   export type GeneralKWArgNames = 'from' | 'of' | 'still' | 'silent';
@@ -1659,9 +1685,20 @@ export namespace Protocol {
     '|swap|': GeneralKWArgNames;
     '|switch|': GeneralKWArgNames;
     '|detailschange|': GeneralKWArgNames;
-    '|-activate|': GeneralKWArgNames |
-    'ability' | 'ability2' | 'block' | 'broken' | 'damage' | 'item' |
-    'move' | 'number' | 'consumed' | 'name' | 'fromitem' | 'source';
+    '|-activate|':
+      | GeneralKWArgNames
+      | 'ability'
+      | 'ability2'
+      | 'block'
+      | 'broken'
+      | 'damage'
+      | 'item'
+      | 'move'
+      | 'number'
+      | 'consumed'
+      | 'name'
+      | 'fromitem'
+      | 'source';
     '|-ability|': GeneralKWArgNames | 'move' | 'weaken' | 'fail';
     '|-block|': GeneralKWArgNames;
     '|-boost|': GeneralKWArgNames | 'multiple' | 'zeffect';
@@ -1691,8 +1728,14 @@ export namespace Protocol {
     '|-sideend|': GeneralKWArgNames;
     '|-singlemove|': GeneralKWArgNames | 'zeffect';
     '|-singleturn|': GeneralKWArgNames | 'zeffect';
-    '|-start|': GeneralKWArgNames |
-    'already' | 'damage' | 'block' | 'fatigue' | 'upkeep' | 'zeffect';
+    '|-start|':
+      | GeneralKWArgNames
+      | 'already'
+      | 'damage'
+      | 'block'
+      | 'fatigue'
+      | 'upkeep'
+      | 'zeffect';
     '|-status|': GeneralKWArgNames;
     '|-swapboost|': GeneralKWArgNames;
     '|-transform|': GeneralKWArgNames | 'msg';
@@ -1704,27 +1747,23 @@ export namespace Protocol {
   export type BattleArgsWithKWArgName = keyof BattleArgsWithKWArgs;
   export type BattleArgsWithKWArgType = BattleArgsWithKWArgs[BattleArgsWithKWArgName];
 
-  export type BattleArgKWArgs<T extends BattleArgName> =
-    Readonly< T extends BattleArgsWithKWArgName
-      ? {[K in BattleArgsWithKWArgs[T]]?: BattleArgsKWArgsTypes[K] | undefined}
-      : {}>; // eslint-disable-line @typescript-eslint/no-empty-object-type
+  export type BattleArgKWArgs<T extends BattleArgName> = Readonly<
+    T extends BattleArgsWithKWArgName
+      ? { [K in BattleArgsWithKWArgs[T]]?: BattleArgsKWArgsTypes[K] | undefined }
+      : {}
+  >; // eslint-disable-line @typescript-eslint/no-empty-object-type
 
-  export type BattleArgsKWArgs = {[T in BattleArgName]: BattleArgKWArgs<T>};
+  export type BattleArgsKWArgs = { [T in BattleArgName]: BattleArgKWArgs<T> };
   export type BattleArgsKWArgName = BattleArgName;
   export type BattleArgsKWArgType = BattleArgsKWArgs[Protocol.BattleArgsWithKWArgName];
 
-  export type Args = Readonly<
-  RoomArgs &
-  GlobalArgs &
-  TournamentArgs &
-  MiscArgs &
-  BattleArgs>;
+  export type Args = Readonly<RoomArgs & GlobalArgs & TournamentArgs & MiscArgs & BattleArgs>;
   export type ArgName =
-    | RoomArgName |
-    GlobalArgName |
-    TournamentArgName |
-    MiscArgName |
-    BattleArgName;
+    | RoomArgName
+    | GlobalArgName
+    | TournamentArgName
+    | MiscArgName
+    | BattleArgName;
 
   export type ArgType = Args[ArgName];
 
@@ -1898,57 +1937,233 @@ function toID(s: string): ID {
   return ('' + s).toLowerCase().replace(/[^a-z0-9]+/g, '') as ID;
 }
 
-export const ignoreKwArgsSimple = new Set(['chatmsg', 'chatmsg-raw', 'raw', 'error', 'html',
-  'inactive', 'inactiveoff', 'warning', 'title', 'formats', 'selectorhtml',
-  'pagehtml', 'fieldhtml', 'controlshtml', 'bigerror', 'debug', 'tier',
-  'challstr', 'popup', '', 'customgroups', 'notify']);
+export const ignoreKwArgsSimple = new Set([
+  'chatmsg',
+  'chatmsg-raw',
+  'raw',
+  'error',
+  'html',
+  'inactive',
+  'inactiveoff',
+  'warning',
+  'title',
+  'formats',
+  'selectorhtml',
+  'pagehtml',
+  'fieldhtml',
+  'controlshtml',
+  'bigerror',
+  'debug',
+  'tier',
+  'challstr',
+  'popup',
+  '',
+  'customgroups',
+  'notify'
+]);
 
-export const Protocol = new class {
+export const Protocol = new (class {
   // NOTE: An object is used here to get TypeScript to perform exhaustiveness checking
-  ARGS: {[k in Protocol.ArgName]: 1} = {
-    '|init|': 1, '|title|': 1, '|users|': 1, '||': 1, '|html|': 1, '|uhtml|': 1, '|pagehtml|': 1,
-    '|uhtmlchange|': 1, '|join|': 1, '|leave|': 1, '|name|': 1, '|chat|': 1, '|notify|': 1,
-    '|:|': 1, '|c:|': 1, '|t:|': 1, '|battle|': 1, '|popup|': 1, '|pm|': 1, '|usercount|': 1,
-    '|nametaken|': 1, '|challstr|': 1, '|updateuser|': 1, '|formats|': 1, '|updatesearch|': 1,
-    '|message|': 1, '|updatechallenges|': 1, '|queryresponse|': 1, '|unlink|': 1, '|raw|': 1,
-    '|error|': 1, '|bigerror|': 1, '|chatmsg|': 1, '|chatmsg-raw|': 1, '|controlshtml|': 1,
-    '|fieldhtml|': 1, '|debug|': 1, '|deinit|': 1, '|selectorhtml|': 1, '|refresh|': 1,
-    '|tempnotify|': 1, '|tempnotifyoff|': 1, '|noinit|': 1, '|hidelines|': 1, '|expire|': 1,
-    '|askreg|': 1, '|tournament|create|': 1, '|tournament|update|': 1, '|tournament|updateEnd|': 1,
-    '|tournament|error|': 1, '|tournament|forceend|': 1, '|tournament|join|': 1,
-    '|tournament|leave|': 1, '|tournament|replace|': 1, '|tournament|start|': 1,
-    '|tournament|disqualify|': 1, '|tournament|battlestart|': 1, '|tournament|battleend|': 1,
-    '|tournament|end|': 1, '|tournament|scouting|': 1, '|tournament|autostart|': 1,
-    '|tournament|autodq|': 1, '|player|': 1, '|teamsize|': 1, '|gametype|': 1, '|gen|': 1,
-    '|tier|': 1, '|rated|': 1, '|seed|': 1, '|rule|': 1, '|teampreview|': 1, '|custom|': 1,
-    '|clearpoke|': 1, '|poke|': 1, '|start|': 1, '|badge|': 1, '|done|': 1, '|request|': 1,
+  ARGS: { [k in Protocol.ArgName]: 1 } = {
+    '|init|': 1,
+    '|title|': 1,
+    '|users|': 1,
+    '||': 1,
+    '|html|': 1,
+    '|uhtml|': 1,
+    '|pagehtml|': 1,
+    '|uhtmlchange|': 1,
+    '|join|': 1,
+    '|leave|': 1,
+    '|name|': 1,
+    '|chat|': 1,
+    '|notify|': 1,
+    '|:|': 1,
+    '|c:|': 1,
+    '|t:|': 1,
+    '|battle|': 1,
+    '|popup|': 1,
+    '|pm|': 1,
+    '|usercount|': 1,
+    '|nametaken|': 1,
+    '|challstr|': 1,
+    '|updateuser|': 1,
+    '|formats|': 1,
+    '|updatesearch|': 1,
+    '|message|': 1,
+    '|updatechallenges|': 1,
+    '|queryresponse|': 1,
+    '|unlink|': 1,
+    '|raw|': 1,
+    '|error|': 1,
+    '|bigerror|': 1,
+    '|chatmsg|': 1,
+    '|chatmsg-raw|': 1,
+    '|controlshtml|': 1,
+    '|fieldhtml|': 1,
+    '|debug|': 1,
+    '|deinit|': 1,
+    '|selectorhtml|': 1,
+    '|refresh|': 1,
+    '|tempnotify|': 1,
+    '|tempnotifyoff|': 1,
+    '|noinit|': 1,
+    '|hidelines|': 1,
+    '|expire|': 1,
+    '|askreg|': 1,
+    '|tournament|create|': 1,
+    '|tournament|update|': 1,
+    '|tournament|updateEnd|': 1,
+    '|tournament|error|': 1,
+    '|tournament|forceend|': 1,
+    '|tournament|join|': 1,
+    '|tournament|leave|': 1,
+    '|tournament|replace|': 1,
+    '|tournament|start|': 1,
+    '|tournament|disqualify|': 1,
+    '|tournament|battlestart|': 1,
+    '|tournament|battleend|': 1,
+    '|tournament|end|': 1,
+    '|tournament|scouting|': 1,
+    '|tournament|autostart|': 1,
+    '|tournament|autodq|': 1,
+    '|player|': 1,
+    '|teamsize|': 1,
+    '|gametype|': 1,
+    '|gen|': 1,
+    '|tier|': 1,
+    '|rated|': 1,
+    '|seed|': 1,
+    '|rule|': 1,
+    '|teampreview|': 1,
+    '|custom|': 1,
+    '|clearpoke|': 1,
+    '|poke|': 1,
+    '|start|': 1,
+    '|badge|': 1,
+    '|done|': 1,
+    '|request|': 1,
     '|inactive|': 1,
-    '|inactiveoff|': 1, '|upkeep|': 1, '|turn|': 1, '|win|': 1, '|tie|': 1, '|move|': 1,
-    '|switch|': 1, '|drag|': 1, '|detailschange|': 1, '|replace|': 1, '|swap|': 1, '|cant|': 1,
-    '|faint|': 1, '|-formechange|': 1, '|-fail|': 1, '|-block|': 1, '|-notarget|': 1, '|-miss|': 1,
-    '|-damage|': 1, '|-heal|': 1, '|-sethp|': 1, '|-status|': 1, '|-curestatus|': 1,
-    '|-cureteam|': 1, '|-boost|': 1, '|-unboost|': 1, '|-setboost|': 1, '|-swapboost|': 1,
-    '|-invertboost|': 1, '|-clearboost|': 1, '|-clearallboost|': 1, '|-clearpositiveboost|': 1,
-    '|-ohko|': 1, '|-clearnegativeboost|': 1, '|-copyboost|': 1, '|-weather|': 1,
-    '|-fieldstart|': 1, '|-fieldend|': 1, '|-sidestart|': 1, '|-sideend|': 1, '|-start|': 1,
-    '|-end|': 1, '|-crit|': 1, '|-supereffective|': 1, '|-resisted|': 1, '|-immune|': 1,
-    '|-item|': 1, '|-enditem|': 1, '|-ability|': 1, '|-endability|': 1, '|-transform|': 1,
-    '|-mega|': 1, '|-primal|': 1, '|-burst|': 1, '|-zpower|': 1, '|-zbroken|': 1, '|-activate|': 1,
-    '|-fieldactivate|': 1, '|-hint|': 1, '|-center|': 1, '|-message|': 1, '|-combine|': 1,
-    '|-waiting|': 1, '|-prepare|': 1, '|-mustrecharge|': 1, '|-hitcount|': 1, '|-singlemove|': 1,
-    '|-singleturn|': 1, '|-anim|': 1, '|warning|': 1, '|-candynamax|': 1, '|updatepoke|': 1,
-    '|-swapsideconditions|': 1, '|-terastallize|': 1, '|sentchoice|': 1, '|customgroups|': 1,
-  };
-  ARGS_WITH_KWARGS: {[k in Protocol.ArgsWithKWArgName]: 1} = {
-    '|move|': 1, '|switch|': 1, '|cant|': 1, '|detailschange|': 1, '|-formechange|': 1,
-    '|-fail|': 1, '|-block|': 1, '|-damage|': 1, '|-heal|': 1, '|-sethp|': 1, '|-status|': 1,
-    '|swap|': 1, '|-curestatus|': 1, '|-cureteam|': 1, '|-boost|': 1, '|-unboost|': 1,
-    '|-setboost|': 1, '|-swapboost|': 1, '|-invertboost|': 1, '|-clearnegativeboost|': 1,
-    '|-weather|': 1, '|-fieldstart|': 1, '|-fieldend|': 1, '|-sidestart|': 1, '|-singlemove|': 1,
-    '|-prepare|': 1, '|-sideend|': 1, '|-start|': 1, '|-end|': 1, '|-immune|': 1, '|-item|': 1,
-    '|-enditem|': 1, '|-ability|': 1, '|-endability|': 1, '|-transform|': 1, '|-activate|': 1,
-    '|-singleturn|': 1, '|-clearallboost|': 1, '|-anim|': 1, '|-copyboost|': 1, '|-clearboost|': 1,
+    '|inactiveoff|': 1,
+    '|upkeep|': 1,
+    '|turn|': 1,
+    '|win|': 1,
+    '|tie|': 1,
+    '|move|': 1,
+    '|switch|': 1,
+    '|drag|': 1,
+    '|detailschange|': 1,
+    '|replace|': 1,
+    '|swap|': 1,
+    '|cant|': 1,
+    '|faint|': 1,
+    '|-formechange|': 1,
+    '|-fail|': 1,
+    '|-block|': 1,
+    '|-notarget|': 1,
     '|-miss|': 1,
+    '|-damage|': 1,
+    '|-heal|': 1,
+    '|-sethp|': 1,
+    '|-status|': 1,
+    '|-curestatus|': 1,
+    '|-cureteam|': 1,
+    '|-boost|': 1,
+    '|-unboost|': 1,
+    '|-setboost|': 1,
+    '|-swapboost|': 1,
+    '|-invertboost|': 1,
+    '|-clearboost|': 1,
+    '|-clearallboost|': 1,
+    '|-clearpositiveboost|': 1,
+    '|-ohko|': 1,
+    '|-clearnegativeboost|': 1,
+    '|-copyboost|': 1,
+    '|-weather|': 1,
+    '|-fieldstart|': 1,
+    '|-fieldend|': 1,
+    '|-sidestart|': 1,
+    '|-sideend|': 1,
+    '|-start|': 1,
+    '|-end|': 1,
+    '|-crit|': 1,
+    '|-supereffective|': 1,
+    '|-resisted|': 1,
+    '|-immune|': 1,
+    '|-item|': 1,
+    '|-enditem|': 1,
+    '|-ability|': 1,
+    '|-endability|': 1,
+    '|-transform|': 1,
+    '|-mega|': 1,
+    '|-primal|': 1,
+    '|-burst|': 1,
+    '|-zpower|': 1,
+    '|-zbroken|': 1,
+    '|-activate|': 1,
+    '|-fieldactivate|': 1,
+    '|-hint|': 1,
+    '|-center|': 1,
+    '|-message|': 1,
+    '|-combine|': 1,
+    '|-waiting|': 1,
+    '|-prepare|': 1,
+    '|-mustrecharge|': 1,
+    '|-hitcount|': 1,
+    '|-singlemove|': 1,
+    '|-singleturn|': 1,
+    '|-anim|': 1,
+    '|warning|': 1,
+    '|-candynamax|': 1,
+    '|updatepoke|': 1,
+    '|-swapsideconditions|': 1,
+    '|-terastallize|': 1,
+    '|sentchoice|': 1,
+    '|customgroups|': 1
+  };
+  ARGS_WITH_KWARGS: { [k in Protocol.ArgsWithKWArgName]: 1 } = {
+    '|move|': 1,
+    '|switch|': 1,
+    '|cant|': 1,
+    '|detailschange|': 1,
+    '|-formechange|': 1,
+    '|-fail|': 1,
+    '|-block|': 1,
+    '|-damage|': 1,
+    '|-heal|': 1,
+    '|-sethp|': 1,
+    '|-status|': 1,
+    '|swap|': 1,
+    '|-curestatus|': 1,
+    '|-cureteam|': 1,
+    '|-boost|': 1,
+    '|-unboost|': 1,
+    '|-setboost|': 1,
+    '|-swapboost|': 1,
+    '|-invertboost|': 1,
+    '|-clearnegativeboost|': 1,
+    '|-weather|': 1,
+    '|-fieldstart|': 1,
+    '|-fieldend|': 1,
+    '|-sidestart|': 1,
+    '|-singlemove|': 1,
+    '|-prepare|': 1,
+    '|-sideend|': 1,
+    '|-start|': 1,
+    '|-end|': 1,
+    '|-immune|': 1,
+    '|-item|': 1,
+    '|-enditem|': 1,
+    '|-ability|': 1,
+    '|-endability|': 1,
+    '|-transform|': 1,
+    '|-activate|': 1,
+    '|-singleturn|': 1,
+    '|-clearallboost|': 1,
+    '|-anim|': 1,
+    '|-copyboost|': 1,
+    '|-clearboost|': 1,
+    '|-miss|': 1
   };
 
   *parse(data: string) {
@@ -1959,17 +2174,17 @@ export const Protocol = new class {
         roomid = line.slice(1) as Protocol.RoomID;
         continue;
       } else if (line) {
-        const {args, kwArgs} = this.parseBattleLine(line);
-        yield {roomid, args, kwArgs};
+        const { args, kwArgs } = this.parseBattleLine(line);
+        yield { roomid, args, kwArgs };
       }
     }
   }
 
   key(args: Protocol.ArgType, raw = false): Protocol.ArgName | undefined {
-    const key = (args[0] === 'tournament'
-      ? `|${args[0]}|${args[1]}|`
-      : `|${args[0]}|`) as Protocol.ArgName;
-    return (raw || key in this.ARGS) ? key : undefined;
+    const key = (
+      args[0] === 'tournament' ? `|${args[0]}|${args[1]}|` : `|${args[0]}|`
+    ) as Protocol.ArgName;
+    return raw || key in this.ARGS ? key : undefined;
   }
 
   parseLine(line: string, noDefault?: boolean): Protocol.ArgType | null {
@@ -1979,20 +2194,24 @@ export const Protocol = new class {
     const cmd = line.slice(1, index);
     if (ignoreKwArgsSimple.has(cmd)) return upgradeArgs([cmd, line.slice(index + 1)]);
     switch (cmd) {
-      case 'c': case 'chat': case 'uhtml': case 'uhtmlchange': {
-      // three parts
+      case 'c':
+      case 'chat':
+      case 'uhtml':
+      case 'uhtmlchange': {
+        // three parts
         const index2a = line.indexOf('|', index + 1);
         return upgradeArgs([cmd, line.slice(index + 1, index2a), line.slice(index2a + 1)]);
       }
-      case 'c:': case 'pm': {
-      // four parts
+      case 'c:':
+      case 'pm': {
+        // four parts
         const index2b = line.indexOf('|', index + 1);
         const index3b = line.indexOf('|', index2b + 1);
         return upgradeArgs([
           cmd,
           line.slice(index + 1, index2b),
           line.slice(index2b + 1, index3b),
-          line.slice(index3b + 1),
+          line.slice(index3b + 1)
         ]);
       }
     }
@@ -2002,10 +2221,10 @@ export const Protocol = new class {
 
   parseBattleLine(line: string) {
     let args = Protocol.parseLine(line, true) as [string, ...string[]];
-    if (args) return {args: args as Protocol.ArgType, kwArgs: {}};
+    if (args) return { args: args as Protocol.ArgType, kwArgs: {} };
 
     args = line.slice(1).split('|') as [string, ...string[]];
-    const kwArgs: {[kw: string]: string | true} = {};
+    const kwArgs: { [kw: string]: string | true } = {};
     while (args.length > 1) {
       const lastArg = args[args.length - 1];
       if (lastArg.charAt(0) !== '[') break;
@@ -2017,7 +2236,8 @@ export const Protocol = new class {
     }
 
     return upgradeBattleArgs({
-      args: upgradeArgs(args), kwArgs,
+      args: upgradeArgs(args),
+      kwArgs
     }) as {
       args: Protocol.BattleArgType;
       kwArgs: Protocol.BattleArgsKWArgType;
@@ -2039,7 +2259,7 @@ export const Protocol = new class {
       letter = position.charAt(2) as Protocol.PositionLetter;
     }
 
-    return {player, position: letter, name};
+    return { player, position: letter, name };
   }
 
   parseDetails(
@@ -2056,7 +2276,7 @@ export const Protocol = new class {
     output.level = 100;
     output.shiny = false;
     output.gender = undefined;
-    output.ident = !isTeamPreview ? ident : '' as Protocol.PokemonIdent;
+    output.ident = !isTeamPreview ? ident : ('' as Protocol.PokemonIdent);
     output.searchid = (!isTeamPreview ? `${ident}|${details}` : '') as Protocol.PokemonSearchID;
 
     const splitDetails = details.split(', ');
@@ -2124,15 +2344,16 @@ export const Protocol = new class {
   }
 
   parseEffect(
-    effect?: string, fn = (s: string) => s.trim()
-  ): {name: string; type?: 'move' | 'item' | 'ability'} {
-    if (!effect) return {name: fn('')};
+    effect?: string,
+    fn = (s: string) => s.trim()
+  ): { name: string; type?: 'move' | 'item' | 'ability' } {
+    if (!effect) return { name: fn('') };
     if (effect.startsWith('item:') || effect.startsWith('move:')) {
-      return {name: fn(effect.slice(5)), type: effect.slice(0, 4) as 'move' | 'item'};
+      return { name: fn(effect.slice(5)), type: effect.slice(0, 4) as 'move' | 'item' };
     } else if (effect.startsWith('ability:')) {
-      return {name: fn(effect.slice(8)), type: 'ability'};
+      return { name: fn(effect.slice(8)), type: 'ability' };
     }
-    return {name: fn(effect)};
+    return { name: fn(effect) };
   }
 
   parseRequest(json: Protocol.RequestJSON) {
@@ -2166,7 +2387,8 @@ export const Protocol = new class {
 
     if (request.active) {
       request.active = request.active.map((active: any, i: number) =>
-        request.side.pokemon[i].fainted ? null : active);
+        request.side.pokemon[i].fainted ? null : active
+      );
       for (const active of request.active) {
         if (!active) continue;
         for (const move of active.moves) {
@@ -2232,29 +2454,37 @@ export const Protocol = new class {
         status = status.slice(1);
       }
     }
-    return {group, name, away, status};
+    return { group, name, away, status };
   }
-};
+})();
 
 function upgradeArgs<T extends Protocol.ArgType>(args: [string, ...string[]]): T {
   switch (args[0]) {
-    case 'name': case 'n': case 'N': {
+    case 'name':
+    case 'n':
+    case 'N': {
       const [cmd, user, oldid] = args;
       return ['name', user, oldid, cmd === 'N'] as const as unknown as T;
     }
-    case 'chat': case 'c': {
+    case 'chat':
+    case 'c': {
       const [, user, message] = args;
       return ['chat', user, message] as const as unknown as T;
     }
-    case 'join': case 'j': case 'J': {
+    case 'join':
+    case 'j':
+    case 'J': {
       const [cmd, user] = args;
       return ['join', user, cmd === 'J'] as const as unknown as T;
     }
-    case 'leave': case 'l': case 'L': {
+    case 'leave':
+    case 'l':
+    case 'L': {
       const [cmd, user] = args;
       return ['leave', user, cmd === 'L'] as const as unknown as T;
     }
-    case 'battle': case 'b': {
+    case 'battle':
+    case 'b': {
       const [, roomid, user1, user2] = args;
       return ['battle', roomid, user1, user2] as const as unknown as T;
     }
@@ -2263,76 +2493,116 @@ function upgradeArgs<T extends Protocol.ArgType>(args: [string, ...string[]]): T
 }
 
 const ACTIVATE_BLOCKABLE = new Set([
-  'ingrain', 'quickguard', 'wideguard', 'craftyshield', 'matblock',
-  'protect', 'mist', 'safeguard', 'electricterrain', 'mistyterrain',
-  'psychicterrain', 'telepathy', 'stickyhold', 'suctioncups', 'aromaveil',
-  'flowerveil', 'sweetveil', 'disguise', 'safetygoggles', 'protectivepads',
+  'ingrain',
+  'quickguard',
+  'wideguard',
+  'craftyshield',
+  'matblock',
+  'protect',
+  'mist',
+  'safeguard',
+  'electricterrain',
+  'mistyterrain',
+  'psychicterrain',
+  'telepathy',
+  'stickyhold',
+  'suctioncups',
+  'aromaveil',
+  'flowerveil',
+  'sweetveil',
+  'disguise',
+  'safetygoggles',
+  'protectivepads'
 ]);
 const CANT_BLOCKABLE = new Set([
-  'ability: Damp', 'ability: Dazzling', 'ability: Queenly Majesty', 'ability: Armor Tail',
+  'ability: Damp',
+  'ability: Dazzling',
+  'ability: Queenly Majesty',
+  'ability: Armor Tail'
 ]);
 const STARTABLE = new Set([
-  'thundercage', 'clamp', 'whirlpool', 'firespin', 'magmastorm',
-  'sandtomb', 'infestation', 'trapped', 'bind', 'snaptrap', 'wrap',
+  'thundercage',
+  'clamp',
+  'whirlpool',
+  'firespin',
+  'magmastorm',
+  'sandtomb',
+  'infestation',
+  'trapped',
+  'bind',
+  'snaptrap',
+  'wrap'
 ]);
 const NUMBERABLE = new Set([
-  'eeriespell', 'gmaxdepletion', 'spite', 'grudge',
-  'forewarn', 'sketch', 'leppaberry', 'mysteryberry',
+  'eeriespell',
+  'gmaxdepletion',
+  'spite',
+  'grudge',
+  'forewarn',
+  'sketch',
+  'leppaberry',
+  'mysteryberry'
 ]);
 const HEALING = new Set(['dryskin', 'eartheater', 'voltabsorb', 'waterabsorb']);
 
-function upgradeBattleArgs({args, kwArgs}: {
+function upgradeBattleArgs({
+  args,
+  kwArgs
+}: {
   args: Protocol.BattleArgType;
-  kwArgs: {[kw: string]: string | true | undefined};
-}): {args: Protocol.BattleArgType; kwArgs: Protocol.BattleArgsKWArgType} {
+  kwArgs: { [kw: string]: string | true | undefined };
+}): { args: Protocol.BattleArgType; kwArgs: Protocol.BattleArgsKWArgType } {
   switch (args[0]) {
     case '-activate': {
-      if (kwArgs.item || kwArgs.move || kwArgs.number || kwArgs.ability) return {args, kwArgs};
+      if (kwArgs.item || kwArgs.move || kwArgs.number || kwArgs.ability) return { args, kwArgs };
       const [, pokemon, e, arg3, arg4] = args;
       const effect = e as Protocol.EffectName;
 
       const target = kwArgs.of as Protocol.PokemonIdent | '';
       const id = Protocol.parseEffect(effect, toID).name;
 
-      if (kwArgs.block) return {args: ['-fail', pokemon as Protocol.PokemonIdent], kwArgs};
+      if (kwArgs.block) return { args: ['-fail', pokemon as Protocol.PokemonIdent], kwArgs };
       if (id === 'sturdy') {
-        return {args: ['-activate', pokemon, 'ability: Sturdy' as Protocol.EffectName], kwArgs};
+        return { args: ['-activate', pokemon, 'ability: Sturdy' as Protocol.EffectName], kwArgs };
       }
       if (id === 'wonderguard') {
         return {
           args: ['-immune', pokemon as Protocol.PokemonIdent],
-          kwArgs: {from: 'ability: Wonder Guard'} as Protocol.BattleArgsKWArgType,
+          kwArgs: { from: 'ability: Wonder Guard' } as Protocol.BattleArgsKWArgType
         };
       }
       if (id === 'beatup' && kwArgs.of) {
-        return {args, kwArgs: {name: kwArgs.of as Protocol.Nickname}};
+        return { args, kwArgs: { name: kwArgs.of as Protocol.Nickname } };
       }
       if (ACTIVATE_BLOCKABLE.has(id)) {
         if (target) {
           kwArgs.of = pokemon;
-          return {args: ['-block', target, effect, arg3 as Protocol.MoveName || ''], kwArgs};
+          return { args: ['-block', target, effect, (arg3 as Protocol.MoveName) || ''], kwArgs };
         }
         return {
           args: [
-            '-block', pokemon as Protocol.PokemonIdent, effect, arg3 as Protocol.MoveName || '',
+            '-block',
+            pokemon as Protocol.PokemonIdent,
+            effect,
+            (arg3 as Protocol.MoveName) || ''
           ],
-          kwArgs,
+          kwArgs
         };
       }
 
       if (id === 'charge') {
         return {
           args: ['-singlemove', pokemon as Protocol.PokemonIdent, 'Charge' as Protocol.MoveName],
-          kwArgs: {of: target || undefined},
+          kwArgs: { of: target || undefined }
         };
       }
       if (STARTABLE.has(id)) {
         return {
           args: ['-start', pokemon as Protocol.PokemonIdent, effect],
-          kwArgs: {of: target as Protocol.PokemonIdent || ''} as Protocol.BattleArgsKWArgType,
+          kwArgs: { of: (target as Protocol.PokemonIdent) || '' } as Protocol.BattleArgsKWArgType
         };
       }
-      if (id === 'fairylock') return {args: ['-fieldactivate', effect], kwArgs: {}};
+      if (id === 'fairylock') return { args: ['-fieldactivate', effect], kwArgs: {} };
 
       if (id === 'symbiosis' || id === 'poltergeist') {
         kwArgs.item = arg3;
@@ -2342,7 +2612,7 @@ function upgradeBattleArgs({args, kwArgs}: {
         kwArgs.ability = arg3;
         kwArgs.ability2 = arg4;
       } else if (id === 'wanderingspirit') {
-      // FIXME: workaround for an interaction between Wandering Spirit and Protective Pads
+        // FIXME: workaround for an interaction between Wandering Spirit and Protective Pads
         if (arg3) {
           kwArgs.ability = arg3;
           kwArgs.ability2 = arg4;
@@ -2351,9 +2621,9 @@ function upgradeBattleArgs({args, kwArgs}: {
             args: [
               '-ability',
               pokemon as Protocol.PokemonIdent,
-              'Wandering Spirit' as Protocol.AbilityName,
+              'Wandering Spirit' as Protocol.AbilityName
             ],
-            kwArgs: {},
+            kwArgs: {}
           };
         }
       } else if (NUMBERABLE.has(id)) {
@@ -2365,9 +2635,9 @@ function upgradeBattleArgs({args, kwArgs}: {
           '-activate',
           pokemon as Protocol.PokemonIdent,
           effect,
-          target as Protocol.PokemonIdent || '',
+          (target as Protocol.PokemonIdent) || ''
         ],
-        kwArgs,
+        kwArgs
       };
     }
     case '-start': {
@@ -2389,9 +2659,9 @@ function upgradeBattleArgs({args, kwArgs}: {
             pokemon,
             effect as Protocol.EffectName,
             move as Protocol.MoveName,
-            kwArgs.of as Protocol.PokemonIdent || '',
+            (kwArgs.of as Protocol.PokemonIdent) || ''
           ],
-          kwArgs: {},
+          kwArgs: {}
         };
       }
       break;
@@ -2403,28 +2673,29 @@ function upgradeBattleArgs({args, kwArgs}: {
     }
     case 'gen': {
       const [, num] = args;
-      return {args: ['gen', Number(num) as GenerationNum], kwArgs: {}};
+      return { args: ['gen', Number(num) as GenerationNum], kwArgs: {} };
     }
-    // @ts-ignore
+    // @ts-expect-error
     case '-restoreboost': {
-      // @ts-ignore
+      // @ts-expect-error
       args[0] = '-clearnegativeboost';
       break;
     }
     case '-weather': {
-      // @ts-ignore
+      // @ts-expect-error
       if (args[1] === 'Snow') args[1] = 'Snowscape';
       break;
     }
-    // @ts-ignore
+    // @ts-expect-error
     case '-nothing':
-    // OLD: |-nothing
-    // NEW: |-activate||move:Splash
+      // OLD: |-nothing
+      // NEW: |-activate||move:Splash
       args = [
-        '-activate', '' as Protocol.PokemonIdent,
-        'move: Splash' as Protocol.EffectName,
+        '-activate',
+        '' as Protocol.PokemonIdent,
+        'move: Splash' as Protocol.EffectName
       ] as Protocol.Args['|-activate|'];
   }
 
-  return {args, kwArgs};
+  return { args, kwArgs };
 }

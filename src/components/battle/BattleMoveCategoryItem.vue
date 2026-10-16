@@ -1,49 +1,68 @@
 <script setup lang="ts">
-import type { Move } from '@/types/pokemon/pokemon'
+import type { Move } from '@/types/pokemon/pokemon';
 
 defineProps<{
-  move: Move
-  moveData: Move | null
-}>()
+  move: Move;
+  moveData: Move | null;
+}>();
 </script>
 
 <template>
   <div class="detail-item">
     <span class="d-label pixelated">CAT:</span>
     <span class="d-val pixelated">
-      <span class="cat-full"><span class="emoji">{{ moveData?.cat === 'physical' ? '⚔️' : moveData?.cat === 'special' ? '✨' : '🔮' }}</span> {{ moveData?.cat === 'physical' ? 'Físico' : moveData?.cat === 'special' ? 'Especial' : 'Estado' }}</span>
-      <span class="cat-short"><span class="emoji">{{ moveData?.cat === 'physical' ? '⚔️' : moveData?.cat === 'special' ? '✨' : '🔮' }}</span> {{ moveData?.cat === 'physical' ? 'FIS' : moveData?.cat === 'special' ? 'ESP' : 'EST' }}</span>
+      <span class="cat-full"
+        ><span class="emoji">{{
+          moveData?.cat === 'physical' ? '⚔️' : moveData?.cat === 'special' ? '✨' : '🔮'
+        }}</span>
+        {{
+          moveData?.cat === 'physical'
+            ? 'Físico'
+            : moveData?.cat === 'special'
+              ? 'Especial'
+              : 'Estado'
+        }}</span
+      >
+      <span class="cat-short"
+        ><span class="emoji">{{
+          moveData?.cat === 'physical' ? '⚔️' : moveData?.cat === 'special' ? '✨' : '🔮'
+        }}</span>
+        {{
+          moveData?.cat === 'physical' ? 'FIS' : moveData?.cat === 'special' ? 'ESP' : 'EST'
+        }}</span
+      >
     </span>
   </div>
   <div class="mv-pp-wrap">
     <span class="mv-pp-label pixelated">PP</span>
     <span class="mv-pp-val pixelated">
-      <span
-        v-if="move.id === 'struggle'"
-        class="emoji"
-      >♾️</span>
+      <span v-if="move.id === 'struggle'" class="emoji">♾️</span>
       <template v-else>{{ move.pp }}/{{ move.maxPP }}</template>
     </span>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-@use "@/styles/tokens/colors" as *;
-@use "@/styles/components/_move-detail-item.scss" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/tokens/colors' as *;
+@use '@/styles/components/_move-detail-item.scss' as *;
 
 .detail-item {
   @include move-detail-item;
 
-  .cat-short { 
-    display: none; 
+  .cat-short {
+    display: none;
 
-    @media (width <= 560px) { display: inline; }
+    @media (width <= 560px) {
+      display: inline;
+    }
   }
-  .cat-full { 
-    display: inline; 
+  .cat-full {
+    display: inline;
 
-    @media (width <= 560px) { display: none; }
+    @media (width <= 560px) {
+      display: none;
+    }
   }
 }
 
@@ -52,20 +71,26 @@ defineProps<{
   flex-direction: column;
   align-items: flex-end;
   gap: $spacing-2xs;
-  
-  .mv-pp-label { 
-    color: var(--yellow); 
-    font-size: var(--font-6); 
-    opacity: 0.7; 
 
-    @media (width <= 560px) { min-width: 25px; font-size: var(--font-5); opacity: 0.6; }
+  .mv-pp-label {
+    color: var(--yellow);
+    font-size: var(--font-6);
+    opacity: 0.7;
+
+    @media (width <= 560px) {
+      min-width: 25px;
+      font-size: var(--font-5);
+      opacity: 0.6;
+    }
   }
-  .mv-pp-val { 
-    color: $white; 
-    font-size: var(--font-7); 
-    font-weight: 900; 
+  .mv-pp-val {
+    color: $white;
+    font-size: var(--font-7);
+    font-weight: 900;
 
-    @media (width <= 560px) { font-size: var(--font-6); }
+    @media (width <= 560px) {
+      font-size: var(--font-6);
+    }
   }
 
   @media (width <= 560px) {

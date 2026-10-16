@@ -1,6 +1,6 @@
 /**
  * src/data/battle/abilities.ts
- * 
+ *
  * Wrapper to export ABILITY_TRANSLATIONS_ES loaded from JSON.
  */
 import dbJson from './abilities.json' with { type: 'json' };
@@ -17,8 +17,12 @@ export function requireAbilityId(value: string): AbilityId {
   throw new Error(`[abilities] Invalid ability id: ${value}`);
 }
 
-export const ABILITIES_BY_SPANISH_NAME: Readonly<Record<string, AbilityId>> = Object.freeze( // open-record: Generic key-value data dictionary container
+export const ABILITIES_BY_SPANISH_NAME: Readonly<Record<string, AbilityId>> = Object.freeze(
+  // open-record: Generic key-value data dictionary container
   Object.fromEntries(
-    Object.entries(ABILITY_TRANSLATIONS_ES).map(([id, trans]) => [trans.name.toLowerCase(), requireAbilityId(id)])
+    Object.entries(ABILITY_TRANSLATIONS_ES).map(([id, trans]) => [
+      trans.name.toLowerCase(),
+      requireAbilityId(id)
+    ])
   )
 );

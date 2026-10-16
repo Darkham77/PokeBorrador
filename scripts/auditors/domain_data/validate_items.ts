@@ -1,6 +1,6 @@
 /**
  * scripts/auditors/domain_data/validate_items.ts
- * 
+ *
  * ITEM VALIDATOR SCRIPT (Node.js 26+)
  * Validates integrity of SHOP_ITEMS and HEALING_ITEMS across:
  *   - src/data/inventory/items.json  -> SHOP_ITEMS[]
@@ -11,11 +11,11 @@ import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 
 enableCompileCache();
 
-const SHOP_FILE   = path.resolve(process.cwd(), 'src/data/inventory/items.json');
+const SHOP_FILE = path.resolve(process.cwd(), 'src/data/inventory/items.json');
 const BATTLE_FILE = path.resolve(process.cwd(), 'src/logic/items/itemEffects.ts');
 const ITEM_EFFECT_FILES = [
   'src/logic/items/itemEffects.ts',
@@ -65,21 +65,52 @@ export const ITEM_RULES: readonly ItemRuleId[] = [
   'item-sprite-collision'
 ] as const;
 
-const MUST_BE_USABLE = new Set([
-  'pociones', 'potions', 'utility', 'booster', 'stones', 'stone'
-]);
+const MUST_BE_USABLE = new Set(['pociones', 'potions', 'utility', 'booster', 'stones', 'stone']);
 const MUST_NOT_BE_USABLE = new Set([
-  'held', 'combat_held', 'pokeballs', 'breeding', 'breeding_held', 'raw_material',
-  'refined_material', 'component', 'machinery', 'tms'
+  'held',
+  'combat_held',
+  'pokeballs',
+  'breeding',
+  'breeding_held',
+  'raw_material',
+  'refined_material',
+  'component',
+  'machinery',
+  'tms'
 ]);
 const REQUIRED_FIELDS = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price'] as const;
 const VALID_CATS = new Set([
-  'pociones', 'potions', 'utility', 'tools', 'booster', 'especial', 'held', 'combat_held',
-  'pokeballs', 'stones', 'stone', 'breeding', 'breeding_held', 'healing', 'tm', 'special',
-  'raw_material', 'refined_material', 'component', 'machinery', 'tms', 'otros'
+  'pociones',
+  'potions',
+  'utility',
+  'tools',
+  'booster',
+  'especial',
+  'held',
+  'combat_held',
+  'pokeballs',
+  'stones',
+  'stone',
+  'breeding',
+  'breeding_held',
+  'healing',
+  'tm',
+  'special',
+  'raw_material',
+  'refined_material',
+  'component',
+  'machinery',
+  'tms',
+  'otros'
 ]);
 const ALLOWED_USABLE_HELD = new Set([
-  'vigorrestorer', 'pomegberry', 'kelpsyberry', 'qualotberry', 'hondewberry', 'grepaberry', 'tamatoberry'
+  'vigorrestorer',
+  'pomegberry',
+  'kelpsyberry',
+  'qualotberry',
+  'hondewberry',
+  'grepaberry',
+  'tamatoberry'
 ]);
 const FORBIDDEN_DESC_PATTERNS = [
   /\bholder('s)?\b/i,
@@ -105,7 +136,7 @@ const FORBIDDEN_DESC_PATTERNS = [
   /\bwhen held\b/i,
   /\bis (calculated|raised|lowered)\b/i,
   /\bno competitive use\b/i,
-  /\bchanges its forme\b/i,
+  /\bchanges its forme\b/i
 ];
 const FORBIDDEN_NAME_PATTERNS = [
   /\b(Berry|Sweet|Plate|Orb|Specs|Vest|Herb|Policy|Drive|Memory|Mirror|Feather|Cap|Incense|Belt|Glasses)\b/i
@@ -113,7 +144,7 @@ const FORBIDDEN_NAME_PATTERNS = [
 
 export class ItemAuditor extends BaseAuditor<ItemRuleId> {
   private validateRequiredFields(item: ShopItem, tag: string): void {
-    REQUIRED_FIELDS.forEach(f => {
+    REQUIRED_FIELDS.forEach((f) => {
       const val = item[f];
       if (val == null || val === '') {
         this.addViolation({
@@ -130,7 +161,11 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
 
   private validateItemSprite(item: ShopItem, tag: string): void {
     if (!item.sprite) return;
-    const physicalPath = path.resolve(process.cwd(), 'public/assets/sprites', `${item.sprite}.webp`);
+    const physicalPath = path.resolve(
+      process.cwd(),
+      'public/assets/sprites',
+      `${item.sprite}.webp`
+    );
     if (!existsSync(physicalPath)) {
       this.addViolation({
         ruleId: 'item-sprite-not-found',
@@ -236,7 +271,7 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
   }
 
   private validatePhantomHealing(shopItemIds: Set<string>, healingItems: Set<string>): void {
-    healingItems.forEach(id => {
+    healingItems.forEach((id) => {
       if (id.startsWith('MT')) return;
       if (!shopItemIds.has(id)) {
         this.addViolation({
@@ -253,7 +288,7 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
 
   private validateSpriteCollisions(shopItems: readonly ShopItem[]): void {
     const spriteToItems = new Map<string, string[]>();
-    shopItems.forEach(item => {
+    shopItems.forEach((item) => {
       const sprite = item.sprite?.trim();
       if (!sprite) return;
       if (!spriteToItems.has(sprite)) {
@@ -312,18 +347,25 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
         'item-sprite-collision': 'Colisión de sprites en ítems'
       },
       ruleRemediations: {
-        'item-missing-field': 'Add required field (id, name, cat, sprite, icon, desc, price) in items.json',
+        'item-missing-field':
+          'Add required field (id, name, cat, sprite, icon, desc, price) in items.json',
         'item-sprite-not-found': 'Add missing sprite webp asset or update sprite property',
         'item-unknown-category': 'Use an allowed category from VALID_CATS in items.json',
-        'item-missing-healing-effect': 'Register item handler in itemEffects.ts or itemEffectsRegistry.ts',
+        'item-missing-healing-effect':
+          'Register item handler in itemEffects.ts or itemEffectsRegistry.ts',
         'item-invalid-healing-effect': 'Correct healing effect implementation signature',
         'item-missing-held-type': 'Define held item type or category',
         'item-english-desc-leak': 'Translate English terms in description into Spanish',
         'item-english-name-leak': 'Translate English item name into Spanish',
-        'item-phantom-healing': 'Remove unused healing entry or register corresponding item in items.json',
+        'item-phantom-healing':
+          'Remove unused healing entry or register corresponding item in items.json',
         'item-sprite-collision': 'Assign unique sprite path to resolve duplicate sprite usage'
       },
-      requiredFiles: [SHOP_FILE, BATTLE_FILE, ...ITEM_EFFECT_FILES.map(f => path.resolve(process.cwd(), f))],
+      requiredFiles: [
+        SHOP_FILE,
+        BATTLE_FILE,
+        ...ITEM_EFFECT_FILES.map((f) => path.resolve(process.cwd(), f))
+      ],
       coverage: {
         include: ['src/data/inventory/items.json', ...ITEM_EFFECT_FILES]
       }
@@ -340,7 +382,7 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
     let shopItems: ShopItem[] = [];
 
     await this.runSubAuditor('item-missing-field', async () => {
-      const healingRegex = /^\s*['"]([a-z0-9_]+)['"]\s*:\s*/gm;
+      const healingRegex = /^\s*['"]?([a-z0-9_]+)['"]?\s*:\s*/gm;
       for (const relPath of ITEM_EFFECT_FILES) {
         const fullPath = path.resolve(process.cwd(), relPath);
         if (existsSync(fullPath)) {
@@ -357,41 +399,59 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
       const jsonData = JSON.parse(jsonRaw) as { SHOP_ITEMS?: unknown[] };
       const rawShopItems = (jsonData.SHOP_ITEMS ?? []) as Record<string, unknown>[];
       shopItems = rawShopItems
-        .filter(item => typeof item === 'object' && item !== null && typeof item['id'] === 'string')
+        .filter(
+          (item) => typeof item === 'object' && item !== null && typeof item['id'] === 'string'
+        )
         .map((item, idx) => ({ ...item, id: item['id'] as string, _line: idx + 1 }));
 
-      shopItems.forEach(item => this.validateRequiredFields(item, `[${item.id} (line ~${item._line})]`));
+      shopItems.forEach((item) =>
+        this.validateRequiredFields(item, `[${item.id} (line ~${item._line})]`)
+      );
     });
 
     this.runSubAuditorSync('item-sprite-not-found', () => {
-      shopItems.forEach(item => this.validateItemSprite(item, `[${item.id} (line ~${item._line})]`));
+      shopItems.forEach((item) =>
+        this.validateItemSprite(item, `[${item.id} (line ~${item._line})]`)
+      );
     });
 
     this.runSubAuditorSync('item-unknown-category', () => {
-      shopItems.forEach(item => this.validateCategory(item, `[${item.id} (line ~${item._line})]`));
+      shopItems.forEach((item) =>
+        this.validateCategory(item, `[${item.id} (line ~${item._line})]`)
+      );
     });
 
     this.runSubAuditorSync('item-missing-healing-effect', () => {
-      shopItems.forEach(item => this.validateMissingHealing(item, `[${item.id} (line ~${item._line})]`, healingItems));
+      shopItems.forEach((item) =>
+        this.validateMissingHealing(item, `[${item.id} (line ~${item._line})]`, healingItems)
+      );
     });
 
     this.runSubAuditorSync('item-invalid-healing-effect', () => {
-      shopItems.forEach(item => this.validateInvalidHealing(item, `[${item.id} (line ~${item._line})]`, healingItems));
+      shopItems.forEach((item) =>
+        this.validateInvalidHealing(item, `[${item.id} (line ~${item._line})]`, healingItems)
+      );
     });
 
     this.runSubAuditorSync('item-missing-held-type', () => {
-      shopItems.forEach(item => this.validateHeldType(item, `[${item.id} (line ~${item._line})]`));
+      shopItems.forEach((item) =>
+        this.validateHeldType(item, `[${item.id} (line ~${item._line})]`)
+      );
     });
 
     this.runSubAuditorSync('item-english-desc-leak', () => {
-      shopItems.forEach(item => this.validateDescLeak(item, `[${item.id} (line ~${item._line})]`));
+      shopItems.forEach((item) =>
+        this.validateDescLeak(item, `[${item.id} (line ~${item._line})]`)
+      );
     });
 
     this.runSubAuditorSync('item-english-name-leak', () => {
-      shopItems.forEach(item => this.validateNameLeak(item, `[${item.id} (line ~${item._line})]`));
+      shopItems.forEach((item) =>
+        this.validateNameLeak(item, `[${item.id} (line ~${item._line})]`)
+      );
     });
 
-    const shopItemIds = new Set(shopItems.map(i => i.id));
+    const shopItemIds = new Set(shopItems.map((i) => i.id));
     this.runSubAuditorSync('item-phantom-healing', () => {
       this.validatePhantomHealing(shopItemIds, healingItems);
     });
@@ -406,6 +466,10 @@ export class ItemAuditor extends BaseAuditor<ItemRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new ItemAuditor());
 }

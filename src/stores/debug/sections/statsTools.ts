@@ -1,15 +1,15 @@
-import type { DebugSystem } from '@/types/system/debug.ts'
-import { GYM_IDS, isGymId, requireGymId, type GymId } from '@/data/world/gyms'
+import type { DebugSystem } from '@/types/system/debug.ts';
+import { GYM_IDS, isGymId, requireGymId, type GymId } from '@/data/world/gyms';
 
-import { logger } from '@/logic/utils/logger'
-import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { useProfileStore } from '@/stores/player/profile'
-import { TRAINER_RANKS } from '@/data/player/trainer'
-import { requireFactionId } from '@/types/system/game'
-import { requirePlayerClassId } from '@/data/player/playerClasses'
-import type { BattleDifficulty } from '@/types/battle/battle'
+import { logger } from '@/logic/utils/logger';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { useProfileStore } from '@/stores/player/profile';
+import { TRAINER_RANKS } from '@/data/player/trainer';
+import { requireFactionId } from '@/types/system/game';
+import { requirePlayerClassId } from '@/data/player/playerClasses';
+import type { BattleDifficulty } from '@/types/battle/battle';
 
 const GYM_DIFFICULTY_LEVEL_EASY = 15 as const;
 const GYM_DIFFICULTY_LEVEL_NORMAL = 35 as const;
@@ -17,8 +17,8 @@ const GYM_DIFFICULTY_LEVEL_HARD = 75 as const;
 const GYM_SIMULATED_MONEY_PER_LEVEL = 10 as const;
 
 export function registerStatsTools(debug: DebugSystem) {
-  const game = useGameStore()
-  const ui = useUIStore()
+  const game = useGameStore();
+  const ui = useUIStore();
 
   debug.register({
     id: 'stats-toggle-fast-ranked',
@@ -26,12 +26,12 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'toggleFastRankedDelay',
     category: 'stats',
     action: () => {
-      debug.fastRankedDelay = !debug.fastRankedDelay
-      ui.notify(`Debug: Demora Ranked ${debug.fastRankedDelay ? '5s' : '60s'}`, '⏱️')
-      return debug.fastRankedDelay
+      debug.fastRankedDelay = !debug.fastRankedDelay;
+      ui.notify(`Debug: Demora Ranked ${debug.fastRankedDelay ? '5s' : '60s'}`, '⏱️');
+      return debug.fastRankedDelay;
     },
     description: 'Alterna la demora para entrar a Ranked entre 5s y 60s.'
-  })
+  });
 
   debug.register({
     id: 'stats-set-money',
@@ -39,12 +39,12 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setMoney',
     category: 'stats',
     action: (val: number) => {
-      game.state.money = val
-      ui.notify(`Debug: Dinero ajustado a ${val}`, '💰')
-      game.saveGame(false)
+      game.state.money = val;
+      ui.notify(`Debug: Dinero ajustado a ${val}`, '💰');
+      void game.saveGame(false);
     },
     description: 'Establece el dinero del jugador.'
-  })
+  });
 
   debug.register({
     id: 'stats-set-exp',
@@ -52,12 +52,12 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setExp',
     category: 'stats',
     action: (val: number) => {
-      game.state.trainerExp = val
-      ui.notify(`Debug: Experiencia ajustada a ${val}`, '📈')
-      game.saveGame(false)
+      game.state.trainerExp = val;
+      ui.notify(`Debug: Experiencia ajustada a ${val}`, '📈');
+      void game.saveGame(false);
     },
     description: 'Establece la experiencia actual del entrenador.'
-  })
+  });
 
   debug.register({
     id: 'stats-set-level',
@@ -65,17 +65,17 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setLevel',
     category: 'stats',
     action: (val: number) => {
-      game.state.trainerLevel = val
-      const idx = Math.min(val - 1, TRAINER_RANKS.length - 1)
-      const rank = TRAINER_RANKS[idx]
+      game.state.trainerLevel = val;
+      const idx = Math.min(val - 1, TRAINER_RANKS.length - 1);
+      const rank = TRAINER_RANKS[idx];
       if (rank) {
-        game.state.trainerExpNeeded = rank.expNeeded
+        game.state.trainerExpNeeded = rank.expNeeded;
       }
-      ui.notify(`Debug: Nivel ajustado a ${val}`, '⭐')
-      game.saveGame(false)
+      ui.notify(`Debug: Nivel ajustado a ${val}`, '⭐');
+      void game.saveGame(false);
     },
     description: 'Establece el nivel del entrenador.'
-  })
+  });
 
   debug.register({
     id: 'stats-set-class-level',
@@ -83,12 +83,12 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setClassLevel',
     category: 'stats',
     action: (val: number) => {
-      game.state.classLevel = val
-      ui.notify(`Debug: Nivel de clase ajustado a ${val}`, '🎓')
-      game.saveGame(false)
+      game.state.classLevel = val;
+      ui.notify(`Debug: Nivel de clase ajustado a ${val}`, '🎓');
+      void game.saveGame(false);
     },
     description: 'Establece el nivel de la clase activa del jugador.'
-  })
+  });
 
   debug.register({
     id: 'stats-set-reputation',
@@ -104,14 +104,14 @@ export function registerStatsTools(debug: DebugSystem) {
           blackMarketSales: 0,
           criminality: 0,
           blackMarketDaily: { date: '', items: [], purchased: [] }
-        }
+        };
       }
-      game.state.classData.reputation = val
-      ui.notify(`Debug: Reputación ajustada a ${val}`, '🎖️')
-      game.saveGame(false)
+      game.state.classData.reputation = val;
+      ui.notify(`Debug: Reputación ajustada a ${val}`, '🎖️');
+      void game.saveGame(false);
     },
     description: 'Establece la reputación del jugador.'
-  })
+  });
 
   debug.register({
     id: 'stats-set-battle-coins',
@@ -119,12 +119,12 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setBattleCoins',
     category: 'stats',
     action: (val: number) => {
-      game.state.battleCoins = val
-      ui.notify(`Debug: Battle Coins ajustados a ${val}`, '🪙')
-      game.saveGame(false)
+      game.state.battleCoins = val;
+      ui.notify(`Debug: Battle Coins ajustados a ${val}`, '🪙');
+      void game.saveGame(false);
     },
     description: 'Establece las Battle Coins (BC) del jugador.'
-  })
+  });
 
   debug.register({
     id: 'stats-set-war-coins',
@@ -132,20 +132,20 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setWarCoins',
     category: 'stats',
     action: (val: number) => {
-      game.state.warCoins = val
-      import('@/stores/war').then(({ useWarStore }) => {
+      game.state.warCoins = val;
+      void import('@/stores/war').then(({ useWarStore }) => {
         try {
-          const warStore = useWarStore()
-          warStore.warCoins = val
+          const warStore = useWarStore();
+          warStore.warCoins = val;
         } catch (e) {
-          console.warn('Failed to update ELO in warStore:', e)
+          console.warn('Failed to update ELO in warStore:', e);
         }
-      })
-      ui.notify(`Debug: Monedas de Guerra ajustadas a ${val}`, '⚡')
-      game.saveGame(false)
+      });
+      ui.notify(`Debug: Monedas de Guerra ajustadas a ${val}`, '⚡');
+      void game.saveGame(false);
     },
     description: 'Establece las Monedas de Guerra del jugador.'
-  })
+  });
 
   debug.register({
     id: 'stats-set-elo',
@@ -153,12 +153,12 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setElo',
     category: 'stats',
     action: (val: number) => {
-      game.state.eloRating = val
-      ui.notify(`Debug: ELO ajustado a ${val}`, '📊')
-      game.saveGame(false)
+      game.state.eloRating = val;
+      ui.notify(`Debug: ELO ajustado a ${val}`, '📊');
+      void game.saveGame(false);
     },
     description: 'Establece el ELO del jugador para PvP.'
-  })
+  });
 
   debug.register({
     id: 'stats-set-badges',
@@ -167,22 +167,28 @@ export function registerStatsTools(debug: DebugSystem) {
     category: 'stats',
     action: (val: number | string | string[]) => {
       if (typeof val === 'number') {
-        const count = Math.max(0, Math.min(8, val))
-        game.state.defeatedGyms = [...GYM_IDS.slice(0, count)]
-        game.state.badges = count
+        const count = Math.max(0, Math.min(8, val));
+        game.state.defeatedGyms = GYM_IDS.slice(0, count);
+        game.state.badges = count;
       } else if (Array.isArray(val)) {
-        game.state.defeatedGyms = val.filter(isGymId)
-        game.state.badges = game.state.defeatedGyms.length
+        game.state.defeatedGyms = val.filter(isGymId);
+        game.state.badges = game.state.defeatedGyms.length;
       } else if (typeof val === 'string' && val) {
-        const list = val.split(',').map(s => s.trim().toLowerCase()).filter(isGymId)
-        game.state.defeatedGyms = list
-        game.state.badges = list.length
+        const list = val
+          .split(',')
+          .map((s) => s.trim().toLowerCase())
+          .filter(isGymId);
+        game.state.defeatedGyms = list;
+        game.state.badges = list.length;
       }
-      ui.notify(`Debug: Medallas ajustadas a ${game.state.badges} (${game.state.defeatedGyms.join(', ') || 'ninguna'})`, '🏆')
-      game.saveGame(false)
+      ui.notify(
+        `Debug: Medallas ajustadas a ${game.state.badges} (${game.state.defeatedGyms.join(', ') || 'ninguna'})`,
+        '🏆'
+      );
+      void game.saveGame(false);
     },
     description: 'Establece el número de medallas del entrenador.'
-  })
+  });
 
   debug.register({
     id: 'stats-win-gym',
@@ -190,53 +196,64 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'winGym',
     category: 'stats',
     action: async (gymId: GymId, difficulty: BattleDifficulty = 'easy') => {
-      const resolvedGymId = requireGymId(gymId)
-      const gymsStore = (await import('@/stores/gyms')).useGymsStore()
-      const gym = gymsStore.gyms.find(g => g.id === resolvedGymId)
-      if (!gym) return
-      
-      const isFirstWin = !game.state.defeatedGyms.includes(resolvedGymId)
-      
+      const resolvedGymId = requireGymId(gymId);
+      const gymsStore = (await import('@/stores/gyms')).useGymsStore();
+      const gym = gymsStore.gyms.find((g) => g.id === resolvedGymId);
+      if (!gym) return;
+
+      const isFirstWin = !game.state.defeatedGyms.includes(resolvedGymId);
+
       if (isFirstWin) {
-        game.state.defeatedGyms.push(resolvedGymId)
-        game.state.badges = game.state.defeatedGyms.length
-        
-        const tm = gym.rewardTM
+        game.state.defeatedGyms.push(resolvedGymId);
+        game.state.badges = game.state.defeatedGyms.length;
+
+        const tm = gym.rewardTM;
         if (tm) {
-          import('@/data/inventory/items').then(({ getItemById }) => {
-            const itemObj = getItemById(tm)
-            game.state.inventory[itemObj.id] = (game.state.inventory[itemObj.id] || 0) + 1
-          })
+          void import('@/data/inventory/items').then(({ getItemById }) => {
+            const itemObj = getItemById(tm);
+            game.state.inventory[itemObj.id] = (game.state.inventory[itemObj.id] || 0) + 1;
+          });
         }
       }
 
       // Save difficulty-specific progress
-      if (!game.state.gymProgress[resolvedGymId] || typeof game.state.gymProgress[resolvedGymId] !== 'object') {
-        game.state.gymProgress[resolvedGymId] = { easy: false, normal: false, hard: false, attempts: 0 }
+      if (
+        !game.state.gymProgress[resolvedGymId] ||
+        typeof game.state.gymProgress[resolvedGymId] !== 'object'
+      ) {
+        game.state.gymProgress[resolvedGymId] = {
+          easy: false,
+          normal: false,
+          hard: false,
+          attempts: 0
+        };
       }
-      const progress = game.state.gymProgress[resolvedGymId]
-      progress[difficulty] = true
-      progress.attempts++
+      const progress = game.state.gymProgress[resolvedGymId];
+      progress[difficulty] = true;
+      progress.attempts++;
 
       // Simulate additional rewards based on difficulty (approximate EXP and Money)
-      const diffLevels: Record<string, number> = {
+      const diffLevels: Record<BattleDifficulty, number> = {
         easy: GYM_DIFFICULTY_LEVEL_EASY,
         normal: GYM_DIFFICULTY_LEVEL_NORMAL,
-        hard: GYM_DIFFICULTY_LEVEL_HARD,
+        hard: GYM_DIFFICULTY_LEVEL_HARD
       };
       const level = diffLevels[difficulty] || GYM_DIFFICULTY_LEVEL_EASY;
-      const moneyGained = level * GYM_SIMULATED_MONEY_PER_LEVEL * (difficulty === 'hard' ? 3 : difficulty === 'normal' ? 2 : 1);
-      game.state.money += moneyGained
-      
-      const msg = isFirstWin 
+      const moneyGained =
+        level *
+        GYM_SIMULATED_MONEY_PER_LEVEL *
+        (difficulty === 'hard' ? 3 : difficulty === 'normal' ? 2 : 1);
+      game.state.money += moneyGained;
+
+      const msg = isFirstWin
         ? `¡Victoria Simulada (${difficulty.toUpperCase()})! Recibiste la ${gym.badgeName}${gym.rewardTM ? ` y la ${gym.rewardTM}` : ''}. +₱${moneyGained}` // text-ok: Debug tool simulated victory notification
         : `¡Reafirmación Simulada (${difficulty.toUpperCase()})! Ganaste ₱${moneyGained} y experiencia para tu equipo.`; // text-ok: UI text display localization string
 
-      ui.notify(msg, '🏆')
-      game.saveGame(false)
+      ui.notify(msg, '🏆');
+      void game.saveGame(false);
     },
     description: 'Simula la victoria de un gimnasio y otorga sus recompensas.'
-  })
+  });
 
   debug.register({
     id: 'stats-reset-badges',
@@ -244,15 +261,14 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'resetBadges',
     category: 'stats',
     action: () => {
-      game.state.defeatedGyms = []
-      game.state.gymProgress = {}
-      game.state.badges = 0
-      ui.notify('Progreso de gimnasios reseteado.', '🔄')
-      game.saveGame(false)
+      game.state.defeatedGyms = [];
+      game.state.gymProgress = {};
+      game.state.badges = 0;
+      ui.notify('Progreso de gimnasios reseteado.', '🔄');
+      void game.saveGame(false);
     },
     description: 'Elimina todas las medallas y reinicia el progreso de gimnasios.'
-  })
-
+  });
 
   debug.register({
     id: 'stats-set-faction',
@@ -260,12 +276,12 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setFaction',
     category: 'stats',
     action: (f: string) => {
-      game.state.faction = (f === 'none' || f === 'null') ? null : requireFactionId(f)
-      ui.notify(`Debug: Facción cambiada a ${f}`, '🛡️')
-      game.saveGame(false)
+      game.state.faction = f === 'none' || f === 'null' ? null : requireFactionId(f);
+      ui.notify(`Debug: Facción cambiada a ${f}`, '🛡️');
+      void game.saveGame(false);
     },
     description: 'Cambia la facción del jugador (magma, aqua, rocket, etc).'
-  })
+  });
 
   debug.register({
     id: 'stats-set-class',
@@ -273,21 +289,21 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setPlayerClass',
     category: 'stats',
     action: (c: string) => {
-      const isNone = c === 'none' || c === 'null' || !c
-      const targetClass = isNone ? null : requirePlayerClassId(c)
-      game.state.playerClass = targetClass
+      const isNone = c === 'none' || c === 'null' || !c;
+      const targetClass = isNone ? null : requirePlayerClassId(c);
+      game.state.playerClass = targetClass;
       if (isNone) {
-        game.state.classLevel = 1
-        game.state.classXP = 0
+        game.state.classLevel = 1;
+        game.state.classXP = 0;
         if (game.state.classData) {
-          game.state.classData.activeMission = null
+          game.state.classData.activeMission = null;
         }
       }
-      ui.notify(`Debug: Clase cambiada a ${targetClass || 'ninguna'}`, '🎭')
-      game.saveGame(false)
+      ui.notify(`Debug: Clase cambiada a ${targetClass || 'ninguna'}`, '🎭');
+      void game.saveGame(false);
     },
     description: 'Establece la clase activa del jugador.'
-  })
+  });
 
   debug.register({
     id: 'stats-clear-cooldowns',
@@ -296,36 +312,40 @@ export function registerStatsTools(debug: DebugSystem) {
     category: 'stats',
     action: () => {
       if (game.state.classData) {
-        game.state.classData.lastEggScanDate = null
-        game.state.classData.extortedRouteId = null
-        game.state.classData.extortedRouteTimestamp = null
-        game.state.classData.officialRouteId = null
-        game.state.classData.officialRouteTimestamp = null
+        game.state.classData.lastEggScanDate = null;
+        game.state.classData.extortedRouteId = null;
+        game.state.classData.extortedRouteTimestamp = null;
+        game.state.classData.officialRouteId = null;
+        game.state.classData.officialRouteTimestamp = null;
         // Also clear active mission cooldowns if any
-        game.state.classData.activeMission = null
+        game.state.classData.activeMission = null;
       }
-      game.state.lastPokemonCenterHeal = 0
-      game.state.last_renamed_at = undefined
-      const profile = useProfileStore()
-      profile.profileData.last_renamed_at = undefined
-      profile.updateProfile({ last_renamed_at: undefined })
+      game.state.lastPokemonCenterHeal = 0;
+      game.state.last_renamed_at = undefined;
+      const profile = useProfileStore();
+      profile.profileData.last_renamed_at = undefined;
+      profile.updateProfile({ last_renamed_at: undefined });
 
-      const localUserStr = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER)
+      const localUserStr = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER);
       if (localUserStr) {
         try {
-          const lu = JSON.parse(localUserStr) as { user_metadata?: Record<string, unknown> }
+          const lu = JSON.parse(localUserStr) as { user_metadata?: Record<string, unknown> };
           if (lu.user_metadata) {
-            delete lu.user_metadata.last_renamed_at
-            safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(lu))
+            delete lu.user_metadata.last_renamed_at;
+            safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(lu));
           }
         } catch (_e: unknown) {
           logger.warn('Failed to clean last_renamed_at from local user', _e);
         }
       }
 
-      ui.notify('Debug: Cooldowns eliminados con éxito (clases, Centro Pokémon, misiones y cambio de identidad).', '⚡')
-      game.saveGame(false)
+      ui.notify(
+        'Debug: Cooldowns eliminados con éxito (clases, Centro Pokémon, misiones y cambio de identidad).',
+        '⚡'
+      );
+      void game.saveGame(false);
     },
-    description: 'Elimina todos los cooldowns activos de cualquier clase (escaneo de IVs, extorsión, rutas preferidas, misiones), Centro Pokémon y reinicia el cooldown de cambio de nombre y género.'
-  })
+    description:
+      'Elimina todos los cooldowns activos de cualquier clase (escaneo de IVs, extorsión, rutas preferidas, misiones), Centro Pokémon y reinicia el cooldown de cambio de nombre y género.'
+  });
 }

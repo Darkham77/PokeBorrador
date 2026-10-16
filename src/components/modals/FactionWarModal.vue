@@ -1,67 +1,67 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui'
-import { computed, onMounted, watch } from 'vue'
-import gsap from 'gsap'
-import BaseModal from '@/components/common/BaseModal.vue'
-import { useWarStore } from '@/stores/war'
-import { useGameStore } from '@/stores/game'
-import { useModalStore } from '@/stores/modals'
-import WarDashboard from '@/components/war/WarDashboard.vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { isFactionId } from '@/types/system/game'
+import { useUIStore } from '@/stores/ui';
+import { computed, onMounted, watch } from 'vue';
+import gsap from 'gsap';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { useWarStore } from '@/stores/war';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import WarDashboard from '@/components/war/WarDashboard.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { isFactionId } from '@/types/system/game';
 
 // Expose to template
-const getAssetUrlLocal = getAssetUrl
+const getAssetUrlLocal = getAssetUrl;
 
 const handleImgError = (e: Event) => {
-  (e.target as HTMLImageElement).style.display = 'none'
-}
+  (e.target as HTMLImageElement).style.display = 'none';
+};
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  close: []
-}>()
+  close: [];
+}>();
 
-const warStore = useWarStore()
-const gameStore = useGameStore()
-const modalStore = useModalStore()
+const warStore = useWarStore();
+const gameStore = useGameStore();
+const modalStore = useModalStore();
 
-const ui = useUIStore()
-const isSmallScreen = computed(() => ui.isSmallScreen)
+const ui = useUIStore();
+const isSmallScreen = computed(() => ui.isSmallScreen);
 
 onMounted(async () => {
-  await warStore.loadWarData()
-})
+  await warStore.loadWarData();
+});
 
 // Watch global faction state changes to dynamically update war data
 watch(
   () => gameStore.state.faction,
   async (newFaction) => {
-    warStore.faction = isFactionId(newFaction) ? newFaction : null
-    await warStore.loadWarData()
+    warStore.faction = isFactionId(newFaction) ? newFaction : null;
+    await warStore.loadWarData();
   }
-)
+);
 
 // Dynamic accent color based on user's active faction
 const accentColor = computed(() => {
-  if (warStore.faction === 'union') return '#3b82f6'
-  if (warStore.faction === 'poder') return '#ef4444'
-  return 'var(--yellow)'
-})
+  if (warStore.faction === 'union') return '#3b82f6';
+  if (warStore.faction === 'poder') return '#ef4444';
+  return 'var(--yellow)';
+});
 
 const openFactionChoice = () => {
-  modalStore.open('FactionChoice')
-}
+  modalStore.open('FactionChoice');
+};
 
 function onDashboardEnter(el: Element, done: () => void): void {
-  gsap.fromTo(el, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, onComplete: done })
+  gsap.fromTo(el, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, onComplete: done });
 }
 </script>
 
@@ -82,7 +82,9 @@ function onDashboardEnter(el: Element, done: () => void): void {
           <span class="emoji">⚔️</span>
           <div class="title-text-wrap">
             <span class="main-title">DOMINANCIA DE KANTO</span>
-            <span class="sub-title">Guerra de Facciones - Temporada {{ warStore.currentWeekId }}</span>
+            <span class="sub-title"
+              >Guerra de Facciones - Temporada {{ warStore.currentWeekId }}</span
+            >
           </div>
         </div>
       </div>
@@ -90,10 +92,7 @@ function onDashboardEnter(el: Element, done: () => void): void {
 
     <div class="faction-war-content-inner custom-scrollbar">
       <!-- 1. Screen for players with no faction selected -->
-      <div
-        v-if="!warStore.faction"
-        class="no-faction-container"
-      >
+      <div v-if="!warStore.faction" class="no-faction-container">
         <div class="welcome-card">
           <div class="card-glow" />
           <div class="card-inner">
@@ -104,10 +103,9 @@ function onDashboardEnter(el: Element, done: () => void): void {
                 class="faction-logo union-logo"
                 alt="Team Unión"
                 width="32"
-              
                 height="32"
                 @error="handleImgError"
-              >
+              />
               <span class="vs-text">VS</span>
               <img
                 v-gsap-loop="{ effect: 'bounce', y: -8, duration: 3, delay: 1.5 }"
@@ -115,41 +113,32 @@ function onDashboardEnter(el: Element, done: () => void): void {
                 class="faction-logo poder-logo"
                 alt="Team Poder"
                 width="32"
-              
                 height="32"
                 @error="handleImgError"
-              >
+              />
             </div>
 
             <h2>¡ELIGE TU DESTINO!</h2>
 
             <p class="description">
-              Kanto se encuentra dividida. El <strong>Team Unión</strong> busca la armonía y compañerismo, mientras el <strong>Team Poder</strong> persigue la máxima eficiencia y fuerza.
+              Kanto se encuentra dividida. El <strong>Team Unión</strong> busca la armonía y
+              compañerismo, mientras el <strong>Team Poder</strong> persigue la máxima eficiencia y
+              fuerza.
             </p>
 
             <p class="benefit">
-              Únete a un bando para luchar por el control territorial de los mapas, acumular puntos semanales y conseguir valiosas recompensas.
+              Únete a un bando para luchar por el control territorial de los mapas, acumular puntos
+              semanales y conseguir valiosas recompensas.
             </p>
 
-            <button
-              class="select-faction-btn"
-              @click.stop="openFactionChoice"
-            >
-              ELEGIR BANDO
-            </button>
+            <button class="select-faction-btn" @click.stop="openFactionChoice">ELEGIR BANDO</button>
           </div>
         </div>
       </div>
 
       <!-- 2. Active Faction Dashboard -->
-      <Transition
-        :css="false"
-        @enter="onDashboardEnter"
-      >
-        <div
-          v-if="warStore.faction"
-          class="active-dashboard-wrapper"
-        >
+      <Transition :css="false" @enter="onDashboardEnter">
+        <div v-if="warStore.faction" class="active-dashboard-wrapper">
           <WarDashboard />
         </div>
       </Transition>
@@ -158,7 +147,7 @@ function onDashboardEnter(el: Element, done: () => void): void {
 </template>
 
 <style lang="scss" scoped>
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .faction-war-modal-header {
   display: flex;
@@ -304,6 +293,4 @@ function onDashboardEnter(el: Element, done: () => void): void {
     @include btn-vicio('primary', 'md');
   }
 }
-
 </style>
-

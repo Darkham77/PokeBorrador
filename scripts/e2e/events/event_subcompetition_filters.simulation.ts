@@ -19,7 +19,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-
 export class EventSubcompetitionFiltersSimulation extends BaseEventSimulation {
   constructor(page: Page, username: string = 'FilterPro') {
     super(page, username);
@@ -35,7 +34,8 @@ export class EventSubcompetitionFiltersSimulation extends BaseEventSimulation {
   public async setupFilterScenario(): Promise<void> {
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const { getServerTime } = await import('../../../src/logic/utils/timeUtils.ts');
 
@@ -100,7 +100,9 @@ export class EventSubcompetitionFiltersSimulation extends BaseEventSimulation {
 }
 
 test.describe('World Events Sub-Competition Filters E2E Simulation', () => {
-  test('enforces strict species, timeframe, and category scoping filters in PokemonSelectionModal', async ({ page }) => {
+  test('enforces strict species, timeframe, and category scoping filters in PokemonSelectionModal', async ({
+    page
+  }) => {
     const sim = new EventSubcompetitionFiltersSimulation(page, 'FilterPro');
     await sim.setup();
 
@@ -170,7 +172,9 @@ test.describe('World Events Sub-Competition Filters E2E Simulation', () => {
       // Select Shellder into weight_shellder slot
       await shellderCard.click();
       await expect(modal).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-      await expect(shellderWeightChip).toHaveClass(/enrolled/, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await expect(shellderWeightChip).toHaveClass(/enrolled/, {
+        timeout: MAX_PER_ACTION_TIMEOUT_MS
+      });
 
       // 7. Test Mutual Exclusion / Non-Duplication:
       // Clicking the already-enrolled ivs chip should open the slot action modal, NOT re-enroll

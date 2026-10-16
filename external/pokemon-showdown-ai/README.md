@@ -227,7 +227,7 @@ please keep TypeScript strict, add proper types, and follow the existing module 
 
 **⚡ built for trainers who'd rather code than click**
 
-*no manual input • no handholding • no mercy • no cap*
+_no manual input • no handholding • no mercy • no cap_
 
 **© 2025 pokemon-showdown-ai** • built because clicking buttons in a pokemon game is beneath us 🎮
 

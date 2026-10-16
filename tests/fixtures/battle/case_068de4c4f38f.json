@@ -26,12 +26,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "absorb",
-        "accelerock",
-        "acid",
-        "acidarmor"
-      ],
+      "moves": ["absorb", "accelerock", "acid", "acidarmor"],
       "uid": "9ffc7397-c8f3-4069-b023-0d0d8304031e",
       "stats": {
         "maxHp": 342,
@@ -66,12 +61,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "acidspray",
-        "acrobatics",
-        "acupressure",
-        "aerialace"
-      ],
+      "moves": ["acidspray", "acrobatics", "acupressure", "aerialace"],
       "uid": "74cc2d8f-6301-4f39-a26f-c1cf6f08bf3f",
       "stats": {
         "maxHp": 342,
@@ -106,12 +96,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "aeroblast",
-        "afteryou",
-        "agility",
-        "aircutter"
-      ],
+      "moves": ["aeroblast", "afteryou", "agility", "aircutter"],
       "uid": "7cfcf7e1-c20d-40af-a134-18ee2baa2b6b",
       "stats": {
         "maxHp": 342,
@@ -146,12 +131,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "airslash",
-        "alluringvoice",
-        "allyswitch",
-        "amnesia"
-      ],
+      "moves": ["airslash", "alluringvoice", "allyswitch", "amnesia"],
       "uid": "a600bdf6-ed6b-4dbe-bfa9-1e801e98f71c",
       "stats": {
         "maxHp": 342,
@@ -186,12 +166,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "ancientpower",
-        "appleacid",
-        "aquacutter",
-        "aquajet"
-      ],
+      "moves": ["ancientpower", "appleacid", "aquacutter", "aquajet"],
       "uid": "34a27da2-5e44-4693-b027-5f885e101e87",
       "stats": {
         "maxHp": 342,
@@ -226,12 +201,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "aquaring",
-        "aquastep",
-        "aquatail",
-        "armorcannon"
-      ],
+      "moves": ["aquaring", "aquastep", "aquatail", "armorcannon"],
       "uid": "f8f605c0-6144-4c4a-9002-08f6c236a859",
       "stats": {
         "maxHp": 342,
@@ -268,12 +238,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "b47acc51-f016-4d80-b14b-655c530c2b34",
       "stats": {
         "maxHp": 651,
@@ -308,12 +273,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "c42c960b-7a8f-4a33-9cdf-b944a760688e",
       "stats": {
         "maxHp": 651,
@@ -348,12 +308,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "c22287eb-5cfd-4d78-8ac9-42d8e01636ee",
       "stats": {
         "maxHp": 651,
@@ -388,12 +343,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "876d8eda-1339-4923-b4d5-d1a95f50b529",
       "stats": {
         "maxHp": 651,
@@ -428,12 +378,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "768fd98c-066f-45bd-bfcf-5dd84f3cbf10",
       "stats": {
         "maxHp": 651,
@@ -468,12 +413,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "ee7da3dc-c66b-4339-85b1-dde5161ef976",
       "stats": {
         "maxHp": 651,
@@ -519,12 +459,7 @@
     "cloudnine",
     "colorchange"
   ],
-  "seed": [
-    18588,
-    21544,
-    54523,
-    34263
-  ],
+  "seed": [18588, 21544, 54523, 34263],
   "playerChoices": [
     "move 1",
     "move 2",

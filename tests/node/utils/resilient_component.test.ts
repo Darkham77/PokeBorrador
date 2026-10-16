@@ -1,10 +1,13 @@
-import { describe, it, vi } from "vitest";
-import assert from "node:assert/strict";
-import { resilientRouteComponent, defineResilientAsyncComponent } from "../../../src/logic/utils/resilientComponent.ts";
+import { describe, it, vi } from 'vite-plus/test';
+import assert from 'node:assert/strict';
+import {
+  resilientRouteComponent,
+  defineResilientAsyncComponent
+} from '../../../src/logic/utils/resilientComponent.ts';
 
-describe("Resilient Component & Dynamic Route Loader", () => {
-  it("successfully loads module on first attempt", async () => {
-    const mockModule = { default: { name: "TestComponent" } };
+describe('Resilient Component & Dynamic Route Loader', () => {
+  it('successfully loads module on first attempt', async () => {
+    const mockModule = { default: { name: 'TestComponent' } };
     const loader = vi.fn().mockResolvedValue(mockModule);
 
     const resilient = resilientRouteComponent(loader);
@@ -14,13 +17,13 @@ describe("Resilient Component & Dynamic Route Loader", () => {
     assert.strictEqual(loader.mock.calls.length, 1);
   });
 
-  it("retries and recovers when initial attempts throw Failed to fetch", async () => {
-    const mockModule = { default: { name: "RecoveredComponent" } };
+  it('retries and recovers when initial attempts throw Failed to fetch', async () => {
+    const mockModule = { default: { name: 'RecoveredComponent' } };
     let calls = 0;
     const loader = vi.fn().mockImplementation(async () => {
       calls++;
       if (calls < 3) {
-        throw new TypeError("Failed to fetch dynamically imported module: /test.vue");
+        throw new TypeError('Failed to fetch dynamically imported module: /test.vue');
       }
       return mockModule;
     });
@@ -32,8 +35,8 @@ describe("Resilient Component & Dynamic Route Loader", () => {
     assert.strictEqual(calls, 3);
   });
 
-  it("fails when retries are exhausted", async () => {
-    const loader = vi.fn().mockRejectedValue(new TypeError("Persistent network failure"));
+  it('fails when retries are exhausted', async () => {
+    const loader = vi.fn().mockRejectedValue(new TypeError('Persistent network failure'));
 
     const resilient = resilientRouteComponent(loader, 2);
     await assert.rejects(async () => {
@@ -41,14 +44,14 @@ describe("Resilient Component & Dynamic Route Loader", () => {
     }, /Persistent network failure/);
   });
 
-  it("defineResilientAsyncComponent returns a valid async component definition", () => {
+  it('defineResilientAsyncComponent returns a valid async component definition', () => {
     const loader = vi.fn().mockResolvedValue({ default: {} });
     const asyncComp = defineResilientAsyncComponent(loader);
     assert.ok(asyncComp);
   });
 
-  it("propagates immediately if error is an unexpected runtime error not related to network or chunk load", async () => {
-    const syntaxError = new SyntaxError("Unexpected token in imported module");
+  it('propagates immediately if error is an unexpected runtime error not related to network or chunk load', async () => {
+    const syntaxError = new SyntaxError('Unexpected token in imported module');
     const loader = vi.fn().mockRejectedValue(syntaxError);
 
     const resilient = resilientRouteComponent(loader, 3);
@@ -57,8 +60,8 @@ describe("Resilient Component & Dynamic Route Loader", () => {
     }, /Unexpected token/);
   });
 
-  it("handles custom retry count and delay defaults safely", async () => {
-    const mockModule = { default: { name: "DefaultRetriesComp" } };
+  it('handles custom retry count and delay defaults safely', async () => {
+    const mockModule = { default: { name: 'DefaultRetriesComp' } };
     const loader = vi.fn().mockResolvedValue(mockModule);
 
     const resilient = resilientRouteComponent(loader);
@@ -66,4 +69,3 @@ describe("Resilient Component & Dynamic Route Loader", () => {
     assert.deepStrictEqual(result, mockModule);
   });
 });
-

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useGameStore } from '@/stores/game';
 import { usePvPStore } from '@/stores/pvp';
@@ -7,18 +7,19 @@ import { saveCoordinator } from '@/logic/auth/saveCoordinator';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Passive Defense Logout & Rollback Prevention Suite', () => {
-  const createTestPokemon = (uid: string, name: string, level = 50): Pokemon => ({
-    uid,
-    id: 'pikachu',
-    name,
-    level,
-    hp: 100,
-    maxHp: 100,
-    moves: ['thunderbolt'],
-    ability: 'static',
-    stats: { hp: 100, atk: 55, def: 40, spa: 50, spd: 50, spe: 90 },
-    isIllegal: false
-  } as unknown as Pokemon);
+  const createTestPokemon = (uid: string, name: string, level = 50): Pokemon =>
+    ({
+      uid,
+      id: 'pikachu',
+      name,
+      level,
+      hp: 100,
+      maxHp: 100,
+      moves: ['thunderbolt'],
+      ability: 'static',
+      stats: { hp: 100, atk: 55, def: 40, spa: 50, spd: 50, spe: 90 },
+      isIllegal: false
+    }) as unknown as Pokemon;
 
   let mockDb: {
     from: ReturnType<typeof vi.fn>;
@@ -89,7 +90,9 @@ describe('Passive Defense Logout & Rollback Prevention Suite', () => {
           }))
         };
       }),
-      rpc: vi.fn().mockResolvedValue({ data: { success: true, last_save_id: 'save-123' }, error: null })
+      rpc: vi
+        .fn()
+        .mockResolvedValue({ data: { success: true, last_save_id: 'save-123' }, error: null })
     };
   });
 
@@ -111,7 +114,11 @@ describe('Passive Defense Logout & Rollback Prevention Suite', () => {
     const pvpStore = usePvPStore();
     const authStore = useAuthStore();
 
-    authStore.user = { id: 'local_angianemar', email: 'angianemar@local', db_version: 3 } as unknown as typeof authStore.user;
+    authStore.user = {
+      id: 'local_angianemar',
+      email: 'angianemar@local',
+      db_version: 3
+    } as unknown as typeof authStore.user;
     (gameStore as unknown as { db: typeof mockDb }).db = mockDb;
 
     const pokes = [
@@ -123,7 +130,7 @@ describe('Passive Defense Logout & Rollback Prevention Suite', () => {
       createTestPokemon('p-6', 'Blastoise')
     ];
     gameStore.state.team = pokes;
-    gameStore.state.pvpTeam6 = pokes.map(p => p.uid);
+    gameStore.state.pvpTeam6 = pokes.map((p) => p.uid);
 
     expect(gameStore.state.passiveTeamActive).toBe(false);
     expect(pvpStore.passiveTeamActive).toBe(false);
@@ -139,7 +146,11 @@ describe('Passive Defense Logout & Rollback Prevention Suite', () => {
     const gameStore = useGameStore();
     const authStore = useAuthStore();
 
-    authStore.user = { id: 'local_angianemar', email: 'angianemar@local', db_version: 3 } as unknown as typeof authStore.user;
+    authStore.user = {
+      id: 'local_angianemar',
+      email: 'angianemar@local',
+      db_version: 3
+    } as unknown as typeof authStore.user;
     gameStore.isDataLoaded = true;
     gameStore.isEngineReady = true;
     const saveSpy = vi.spyOn(gameStore, 'save').mockResolvedValue({ success: true });
@@ -155,7 +166,11 @@ describe('Passive Defense Logout & Rollback Prevention Suite', () => {
     const pvpStore = usePvPStore();
     const authStore = useAuthStore();
 
-    authStore.user = { id: 'local_angianemar', email: 'angianemar@local', db_version: 3 } as unknown as typeof authStore.user;
+    authStore.user = {
+      id: 'local_angianemar',
+      email: 'angianemar@local',
+      db_version: 3
+    } as unknown as typeof authStore.user;
     (gameStore as unknown as { db: typeof mockDb }).db = mockDb;
 
     // Adventure team contains an over-level mon (level 70) which would fail season rules if fallen back to!
@@ -172,7 +187,7 @@ describe('Passive Defense Logout & Rollback Prevention Suite', () => {
       createTestPokemon('p-6', 'Blastoise', 50)
     ];
     gameStore.state.box = eligibleDefenseMons;
-    gameStore.state.pvpTeam6 = eligibleDefenseMons.map(p => p.uid);
+    gameStore.state.pvpTeam6 = eligibleDefenseMons.map((p) => p.uid);
 
     await pvpStore.loadPvPData();
 

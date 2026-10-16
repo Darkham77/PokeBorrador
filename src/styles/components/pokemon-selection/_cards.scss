@@ -1,5 +1,5 @@
 // src/styles/components/pokemon-selection/_cards.scss
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .ps-vertical-list {
   @include smooth-scroll;
@@ -11,7 +11,9 @@
   padding: 12px 20px 20px;
   flex: 1;
   overflow-y: auto;
-  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
 }
 
 .list-item {
@@ -24,7 +26,7 @@
   padding: 14px;
   cursor: pointer;
   overflow: hidden;
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 
 .poke-preview-container {
@@ -54,7 +56,6 @@
     height: 86px;
     will-change: transform, filter, opacity;
     filter: Drop-Shadow(0 4px 8px Rgb(0 0 0 / 50%));
-    
   }
 }
 
@@ -120,7 +121,7 @@
         color: var(--white);
         font-size: var(--font-8);
         font-weight: 800;
-        
+
         &.is-species {
           text-transform: uppercase;
         }
@@ -143,7 +144,7 @@
       display: flex;
       align-items: center;
       gap: $spacing-md;
-      
+
       &.types-line {
         .source-tag {
           margin-left: auto;

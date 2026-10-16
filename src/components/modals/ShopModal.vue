@@ -1,55 +1,48 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui'
-import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import BaseModal from '@/components/common/BaseModal.vue'
-import { formatCurrency } from '@/logic/utils/formatters'
-import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
+import { useUIStore } from '@/stores/ui';
+import { computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { formatCurrency } from '@/logic/utils/formatters';
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
 
 // Sub-components
-import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
-import ShopItemCard from './shop/ShopItemCard.vue'
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
+import ShopItemCard from './shop/ShopItemCard.vue';
 
 interface Props {
-  show?: boolean
-  initialCategory?: string
+  show?: boolean;
+  initialCategory?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   initialCategory: 'todos'
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const gameStore = useGameStore()
+const gameStore = useGameStore();
 
-const ui = useUIStore()
-const isSmallScreen = computed(() => ui.isSmallScreen)
+const ui = useUIStore();
+const isSmallScreen = computed(() => ui.isSmallScreen);
 
-import { useShopLogic } from '@/composables/inventory/useShopLogic'
-import { toRef } from 'vue'
+import { useShopLogic } from '@/composables/inventory/useShopLogic';
+import { toRef } from 'vue';
 
-const {
-  activeMainTab,
-  activeTab,
-  search,
-  sortKey,
-  sortOrder,
-  filteredItems,
-  availableCategories
-} = useShopLogic({
-  isBCShop: false,
-  initialCategory: props.initialCategory,
-  show: toRef(props, 'show'),
-  cardSelector: '.shop-item-card'
-})
+const { activeMainTab, activeTab, search, sortKey, sortOrder, filteredItems, availableCategories } =
+  useShopLogic({
+    isBCShop: false,
+    initialCategory: props.initialCategory,
+    show: toRef(props, 'show'),
+    cardSelector: '.shop-item-card'
+  });
 
 const close = () => {
-  emit('close')
-}
+  emit('close');
+};
 </script>
 
 <template>
@@ -101,16 +94,16 @@ const close = () => {
       <div class="shop-main">
         <!-- Pestañas Principales en el modal de Tienda -->
         <div class="modal-main-tabs">
-          <button 
-            class="modal-tab-btn" 
-            :class="{ active: activeMainTab === 'productos' }" 
+          <button
+            class="modal-tab-btn"
+            :class="{ active: activeMainTab === 'productos' }"
             @click.stop="activeMainTab = 'productos'"
           >
             Productos
           </button>
-          <button 
-            class="modal-tab-btn" 
-            :class="{ active: activeMainTab === 'materiales' }" 
+          <button
+            class="modal-tab-btn"
+            :class="{ active: activeMainTab === 'materiales' }"
             @click.stop="activeMainTab = 'materiales'"
           >
             Materiales
@@ -126,22 +119,12 @@ const close = () => {
 
         <!-- Rejilla de Objetos -->
         <div class="shop-grid-wrapper custom-scrollbar">
-          <div 
-            v-if="filteredItems.length > 0"
-            class="shop-premium-grid"
-          >
-            <ShopItemCard
-              v-for="item in filteredItems"
-              :key="item.id"
-              :item="item"
-            />
+          <div v-if="filteredItems.length > 0" class="shop-premium-grid">
+            <ShopItemCard v-for="item in filteredItems" :key="item.id" :item="item" />
           </div>
 
           <!-- Empty State -->
-          <section
-            v-else
-            class="shop-empty-state"
-          >
+          <section v-else class="shop-empty-state">
             <span class="emoji empty-icon">🔍</span>
             <div class="empty-text">
               <h3>Sin resultados</h3>
@@ -155,8 +138,8 @@ const close = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/components/shop" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/components/shop' as *;
 
 .modal-main-tabs {
   display: flex;

@@ -1,5 +1,5 @@
 // test-fragmentation-ok: Isolated single-purpose regression test for battle scenario clean state eval
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { resetSimulationToCleanState } from '../../../scripts/e2e/helpers/battleScenarioSetupHelper.ts';
 
 import type { Page } from '@playwright/test';

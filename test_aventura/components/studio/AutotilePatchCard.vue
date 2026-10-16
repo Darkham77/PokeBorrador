@@ -10,10 +10,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { preloadTileImages, getImageCache } from '../../logic/map/canvasImageLoader.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
-import type {
-  RealContinentPatch,
-  ResolvedPatchCell
-} from '../../types/map/autotileStudioTypes.ts';
+import type { RealContinentPatch, ResolvedPatchCell } from '../../types/map/autotileStudioTypes.ts';
 
 const props = defineProps<{
   readonly patch: RealContinentPatch;
@@ -21,8 +18,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'toggleCellFlag', payload: { readonly patch: RealContinentPatch; readonly cell: ResolvedPatchCell }): void;
-  (e: 'editCellNote', payload: { readonly patch: RealContinentPatch; readonly cell: ResolvedPatchCell }): void;
+  (
+    e: 'toggleCellFlag',
+    payload: { readonly patch: RealContinentPatch; readonly cell: ResolvedPatchCell }
+  ): void;
+  (
+    e: 'editCellNote',
+    payload: { readonly patch: RealContinentPatch; readonly cell: ResolvedPatchCell }
+  ): void;
 }>();
 
 const gridSizePx = computed(() => {
@@ -46,7 +49,9 @@ const categoryIcon = computed(() => {
 });
 
 const HIGH_TIER_ELEVATION_THRESHOLD = 2;
-const isHighTierElevation = computed(() => (props.patch.maxElevationInPatch ?? 0) >= HIGH_TIER_ELEVATION_THRESHOLD);
+const isHighTierElevation = computed(
+  () => (props.patch.maxElevationInPatch ?? 0) >= HIGH_TIER_ELEVATION_THRESHOLD
+);
 
 function getCellId(cell: ResolvedPatchCell): string {
   return `s${props.patch.seed}_x${cell.x ?? props.patch.centerX}_y${cell.y ?? props.patch.centerY}`;
@@ -144,11 +149,9 @@ watch(
   >
     <!-- Header with Coordinates and Category -->
     <div class="card-header">
-      <div
-        class="coord-badge"
-        title="Coordenadas centrales en el mapa"
-      >
-        <span class="emoji-inline">{{ categoryIcon }}</span> ({{ patch.centerX }}, {{ patch.centerY }})
+      <div class="coord-badge" title="Coordenadas centrales en el mapa">
+        <span class="emoji-inline">{{ categoryIcon }}</span> ({{ patch.centerX }},
+        {{ patch.centerY }})
       </div>
       <div
         v-if="patch.category === 'mountain_cliff'"
@@ -156,24 +159,26 @@ watch(
         :class="{ 'high-tier': isHighTierElevation }"
         :title="patch.description"
       >
-        <span v-if="patch.mountainSubtype === 'stairs'"><span class="emoji-inline">🪜</span> Escalera</span>
-        <span v-else-if="isHighTierElevation"><span class="emoji-inline">🏔️</span> Piso {{ patch.maxElevationInPatch }}</span>
+        <span v-if="patch.mountainSubtype === 'stairs'"
+          ><span class="emoji-inline">🪜</span> Escalera</span
+        >
+        <span v-else-if="isHighTierElevation"
+          ><span class="emoji-inline">🏔️</span> Piso {{ patch.maxElevationInPatch }}</span
+        >
         <span v-else><span class="emoji-inline">⛰️</span> Piso 1</span>
       </div>
-      <div
-        class="patch-status-badge"
-        :class="{ 'error-active': flaggedCountInPatch > 0 }"
-      >
-        <span v-if="flaggedCountInPatch > 0"><span class="emoji-inline">⚠️</span> {{ flaggedCountInPatch }} error{{ flaggedCountInPatch > 1 ? 'es' : '' }}</span>
+      <div class="patch-status-badge" :class="{ 'error-active': flaggedCountInPatch > 0 }">
+        <span v-if="flaggedCountInPatch > 0"
+          ><span class="emoji-inline">⚠️</span> {{ flaggedCountInPatch }} error{{
+            flaggedCountInPatch > 1 ? 'es' : ''
+          }}</span
+        >
         <span v-else><span class="emoji-inline">⚪</span> OK</span>
       </div>
     </div>
 
     <!-- Title of the geographic transition -->
-    <div
-      class="patch-title"
-      :title="patch.title"
-    >
+    <div class="patch-title" :title="patch.title">
       {{ patch.title }}
     </div>
 
@@ -186,20 +191,11 @@ watch(
       }"
     >
       <!-- Authentic 2D Canvas rendering continent graphics with multi-tile prefabs -->
-      <canvas
-        ref="canvasRef"
-        :width="gridSizePx"
-        :height="gridSizePx"
-        class="patch-canvas"
-      />
+      <canvas ref="canvasRef" :width="gridSizePx" :height="gridSizePx" class="patch-canvas" />
 
       <!-- Interactive transparent cell grid for hovering and flagging -->
       <div class="interactive-grid">
-        <div
-          v-for="(row, rIdx) in patch.cells"
-          :key="`row-${rIdx}`"
-          class="grid-row"
-        >
+        <div v-for="(row, rIdx) in patch.cells" :key="`row-${rIdx}`" class="grid-row">
           <div
             v-for="(cell, cIdx) in row"
             id="autotile-patch-card-div-cellclick"
@@ -210,18 +206,14 @@ watch(
               'is-flagged-tile': isCellFlagged(cell)
             }"
             :title="`(${cell.x}, ${cell.y}) - ${cell.filename} — Clic para marcar/desmarcar`"
+            role="button"
+            tabindex="0"
             @click="onCellClick(cell)"
           >
             <!-- Center indicator ring -->
-            <div
-              v-if="cell.isCenter"
-              class="center-focus-ring"
-            />
+            <div v-if="cell.isCenter" class="center-focus-ring" />
             <!-- Red marker pin for flagged individual tile -->
-            <div
-              v-if="isCellFlagged(cell)"
-              class="tile-flag-indicator"
-            >
+            <div v-if="isCellFlagged(cell)" class="tile-flag-indicator">
               <span class="emoji-inline">⚠️</span>
             </div>
           </div>
@@ -232,7 +224,11 @@ watch(
     <!-- Footer Description & Note -->
     <div class="card-footer">
       <span class="patch-hint">
-        {{ flaggedCountInPatch > 0 ? `${flaggedCountInPatch} marcado(s)` : 'Clic en un tile para marcar' }}
+        {{
+          flaggedCountInPatch > 0
+            ? `${flaggedCountInPatch} marcado(s)`
+            : 'Clic en un tile para marcar'
+        }}
       </span>
       <button
         v-if="flaggedCountInPatch > 0"

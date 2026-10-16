@@ -10,10 +10,7 @@ import { isEnabledPokemonId } from '@/data/system/constants';
 import type { MoveCategory } from '@/data/battle/moves';
 import type { Move } from '@/types/pokemon/pokemon';
 import type { LearnsetMove } from '@/types/system/database';
-import {
-  MAX_LEARNED_MOVES_SLOTS,
-  DEFAULT_ACCURACY_BASE_STAT
-} from '@/logic/constants/gameplay';
+import { MAX_LEARNED_MOVES_SLOTS, DEFAULT_ACCURACY_BASE_STAT } from '@/logic/constants/gameplay';
 
 /**
  * Get moves a pokemon knows at a given level (up to 4, most recent)
@@ -23,11 +20,11 @@ export function getMovesAtLevel(id: string, level: number, bypassWhitelist = fal
   const allPotentialMoves: LearnsetMove[] = [];
   const seenNames = new Set<string>();
 
-  history.forEach(spId => {
+  history.forEach((spId) => {
     if (!bypassWhitelist && !isEnabledPokemonId(spId)) return;
     const db = pokemonDataProvider.getPokemonData(spId, bypassWhitelist);
     if (db && db.learnset) {
-      (db.learnset as LearnsetMove[]).forEach(m => {
+      (db.learnset as LearnsetMove[]).forEach((m) => {
         if (m.lv <= level) {
           allPotentialMoves.push(m);
         }
@@ -47,14 +44,16 @@ export function getMovesAtLevel(id: string, level: number, bypassWhitelist = fal
   }
 
   const last4 = uniqueMoves.slice(-MAX_LEARNED_MOVES_SLOTS);
-  return last4.map(m => {
-    if (!m.id) throw new Error(`[getMovesAtLevel] El movimiento en el learnset no tiene un ID válido.`);
+  return last4.map((m) => {
+    if (!m.id)
+      throw new Error(`[getMovesAtLevel] El movimiento en el learnset no tiene un ID válido.`);
     const moveData = pokemonDataProvider.getMoveData(m.id);
-    if (!moveData) throw new Error(`[getMovesAtLevel] No se encontró información para el movimiento: ${m.id}`);
-    return { 
+    if (!moveData)
+      throw new Error(`[getMovesAtLevel] No se encontró información para el movimiento: ${m.id}`);
+    return {
       id: m.id,
-      name: moveData.name || '???', 
-      pp: m.pp || moveData.pp, 
+      name: moveData.name || '???',
+      pp: m.pp || moveData.pp,
       maxPP: m.pp || moveData.pp,
       type: moveData.type || 'normal',
       power: moveData.power || 0,

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 interface Props {
   stats: {
-    seen: number
-    caught: number
-    total: number
-  }
+    seen: number;
+    caught: number;
+    total: number;
+  };
 }
 
-defineProps<Props>()
+defineProps<Props>();
 </script>
 
 <template>
@@ -15,12 +15,8 @@ defineProps<Props>()
     <div class="header-layout">
       <!-- Izquierda: Títulos apilados -->
       <div class="header-left">
-        <h1 class="header-main-title">
-          POKÉDEX NACIONAL
-        </h1>
-        <h2 class="header-sub-title">
-          REGIÓN DE KANTO &amp; JOHTO
-        </h2>
+        <h1 class="header-main-title">POKÉDEX NACIONAL</h1>
+        <h2 class="header-sub-title">REGIÓN DE KANTO &amp; JOHTO</h2>
       </div>
 
       <!-- Derecha: Stats Integrados -->
@@ -35,7 +31,9 @@ defineProps<Props>()
 
           <div class="stat-group highlight">
             <span class="badge-label">CAPTURADOS:</span>
-            <span class="badge-value">{{ stats.caught }} <small>/ {{ stats.total }}</small></span>
+            <span class="badge-value"
+              >{{ stats.caught }} <small>/ {{ stats.total }}</small></span
+            >
           </div>
         </div>
       </div>
@@ -44,13 +42,12 @@ defineProps<Props>()
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/_premium-header-shared";
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/_premium-header-shared';
 
 .pokedex-header-premium {
   @include premium-header;
 }
-
 
 .integrated-badge {
   .stat-group {
@@ -64,16 +61,22 @@ defineProps<Props>()
       text-shadow: 0 0 8px Rgb(255 215 0 / 30%);
     }
 
-    .badge-label { @include pixelated; color: var(--gray); font-size: var(--font-6); }
-    .badge-value { 
-      @include pixelated; 
+    .badge-label {
+      @include pixelated;
+      color: var(--gray);
+      font-size: var(--font-6);
+    }
+    .badge-value {
+      @include pixelated;
 
-      color: var(--white); 
+      color: var(--white);
       font-size: var(--font-8);
-      
-      small { font-size: var(--font-6); opacity: 0.6; }
+
+      small {
+        font-size: var(--font-6);
+        opacity: 0.6;
+      }
     }
   }
 }
 </style>
-

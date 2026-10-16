@@ -21,7 +21,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-
 const EXPECTED_CLAIMED_MONEY = 26000;
 const EXPECTED_CLAIMED_BC = 160;
 const EXPECTED_GOLD_CAPS = 1;
@@ -38,13 +37,16 @@ export class EventAwardsGuiLifecycleSimulation extends BaseEventSimulation {
   public async setupContestantsScenario(): Promise<void> {
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const { GAME_TIMEZONE } = await import('../../../src/logic/utils/timeUtils.ts');
 
       const gameStore = useGameStore();
       const currentSimTime = Number(
-        Temporal.PlainDateTime.from('2026-08-11T19:00:00').toZonedDateTime(GAME_TIMEZONE).toInstant().epochMilliseconds
+        Temporal.PlainDateTime.from('2026-08-11T19:00:00')
+          .toZonedDateTime(GAME_TIMEZONE)
+          .toInstant().epochMilliseconds
       );
 
       // Initial wallet and inventory state
@@ -97,7 +99,9 @@ export class EventAwardsGuiLifecycleSimulation extends BaseEventSimulation {
 }
 
 test.describe('World Events Awards GUI Lifecycle E2E Simulation', () => {
-  test('enrolls contestants, awards via server procedure, claims 1st award in GUI, and discards 2nd award via ConfirmModal', async ({ page }) => {
+  test('enrolls contestants, awards via server procedure, claims 1st award in GUI, and discards 2nd award via ConfirmModal', async ({
+    page
+  }) => {
     const sim = new EventAwardsGuiLifecycleSimulation(page, 'AwardMaster');
     await sim.setup();
 

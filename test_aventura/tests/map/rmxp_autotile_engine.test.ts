@@ -4,11 +4,7 @@ import { resolveRmxpSubtiles } from '../../logic/map/kantoTileEngine.ts';
 describe('RMXP Autotile Resolution Engine', () => {
   it('resolves an isolated single tile with 4 outer corners', () => {
     // 3x3 grid with only center cell having cellType 1
-    const grid = [
-      new Uint8Array([0, 0, 0]),
-      new Uint8Array([0, 1, 0]),
-      new Uint8Array([0, 0, 0])
-    ];
+    const grid = [new Uint8Array([0, 0, 0]), new Uint8Array([0, 1, 0]), new Uint8Array([0, 0, 0])];
 
     const subtiles = resolveRmxpSubtiles(grid, 1, 1, 1);
 
@@ -24,11 +20,7 @@ describe('RMXP Autotile Resolution Engine', () => {
 
   it('resolves a fully surrounded center tile with 4 center subtiles', () => {
     // 3x3 grid completely filled with 1
-    const grid = [
-      new Uint8Array([1, 1, 1]),
-      new Uint8Array([1, 1, 1]),
-      new Uint8Array([1, 1, 1])
-    ];
+    const grid = [new Uint8Array([1, 1, 1]), new Uint8Array([1, 1, 1]), new Uint8Array([1, 1, 1])];
 
     const subtiles = resolveRmxpSubtiles(grid, 1, 1, 1);
 
@@ -44,11 +36,7 @@ describe('RMXP Autotile Resolution Engine', () => {
 
   it('resolves inner corner when orthogonal neighbors match but diagonal does not', () => {
     // Top-left diagonal missing (NW is 0), others are 1
-    const grid = [
-      new Uint8Array([0, 1, 1]),
-      new Uint8Array([1, 1, 1]),
-      new Uint8Array([1, 1, 1])
-    ];
+    const grid = [new Uint8Array([0, 1, 1]), new Uint8Array([1, 1, 1]), new Uint8Array([1, 1, 1])];
 
     const subtiles = resolveRmxpSubtiles(grid, 1, 1, 1);
 
@@ -62,11 +50,7 @@ describe('RMXP Autotile Resolution Engine', () => {
 
   it('resolves straight vertical and horizontal corridors correctly', () => {
     // Vertical column (N and S match, W and E do not)
-    const grid = [
-      new Uint8Array([0, 1, 0]),
-      new Uint8Array([0, 1, 0]),
-      new Uint8Array([0, 1, 0])
-    ];
+    const grid = [new Uint8Array([0, 1, 0]), new Uint8Array([0, 1, 0]), new Uint8Array([0, 1, 0])];
 
     const subtiles = resolveRmxpSubtiles(grid, 1, 1, 1);
 

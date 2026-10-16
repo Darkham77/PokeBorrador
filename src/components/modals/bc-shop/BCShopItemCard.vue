@@ -1,87 +1,83 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useShopStore } from '@/stores/inventory/shop'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { formatCurrency } from '@/logic/utils/formatters'
-import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
-import type { ItemId } from '@/data/inventory/items'
+import { computed } from 'vue';
+import { useShopStore } from '@/stores/inventory/shop';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver';
+import type { ItemId } from '@/data/inventory/items';
 
 interface ShopItem {
-  id: ItemId
-  name: string
-  cat: string
-  bcPrice?: number
-  price?: number
-  desc: string
-  sprite: string
-  unlockLv?: number
-  tier?: string
-  icon?: string
+  id: ItemId;
+  name: string;
+  cat: string;
+  bcPrice?: number;
+  price?: number;
+  desc: string;
+  sprite: string;
+  unlockLv?: number;
+  tier?: string;
+  icon?: string;
 }
 
 interface Props {
-  item: ShopItem
+  item: ShopItem;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const shopStore = useShopStore()
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const shopStore = useShopStore();
+const gameStore = useGameStore();
+const uiStore = useUIStore();
 
 // Reactivity for unlock status
 const isUnlocked = computed(() => {
-  return (gameStore.state.trainerLevel || 1) >= (props.item.unlockLv || 1)
-})
+  return (gameStore.state.trainerLevel || 1) >= (props.item.unlockLv || 1);
+});
 
-const BATTLE_COINS_PRICE_CONVERSION_DIVISOR = 30
+const BATTLE_COINS_PRICE_CONVERSION_DIVISOR = 30;
 
 const itemBCPrice = computed(() => {
-  if (props.item.bcPrice !== undefined) return props.item.bcPrice
-  return props.item.price ? Math.ceil(props.item.price / BATTLE_COINS_PRICE_CONVERSION_DIVISOR) : 0
-})
+  if (props.item.bcPrice !== undefined) return props.item.bcPrice;
+  return props.item.price ? Math.ceil(props.item.price / BATTLE_COINS_PRICE_CONVERSION_DIVISOR) : 0;
+});
 
 const hasEnoughBC = computed(() => {
-  return (gameStore.state.battleCoins || 0) >= itemBCPrice.value
-})
+  return (gameStore.state.battleCoins || 0) >= itemBCPrice.value;
+});
 
 const buy = () => {
   if (!isUnlocked.value) {
-    uiStore.notify('¡Objeto bloqueado! Sube tu nivel de entrenador.', '🔒')
-    return
+    uiStore.notify('¡Objeto bloqueado! Sube tu nivel de entrenador.', '🔒');
+    return;
   }
   if (!hasEnoughBC.value) {
-    uiStore.notify('No tienes suficientes Battle Coins.', '🪙')
-    return
+    uiStore.notify('No tienes suficientes Battle Coins.', '🪙');
+    return;
   }
-  shopStore.buyItemBC(props.item.id)
-}
+  shopStore.buyItemBC(props.item.id);
+};
 
-const tierLabel = computed(() => getItemTierLabel(props.item.tier))
+const tierLabel = computed(() => getItemTierLabel(props.item.tier));
 
-const tierColor = computed(() => getItemTierColor(props.item.tier))
+const tierColor = computed(() => getItemTierColor(props.item.tier));
 
 const handleImageError = (e: Event) => {
   if (e.target) {
-    (e.target as HTMLImageElement).style.display = 'none'
+    (e.target as HTMLImageElement).style.display = 'none';
   }
-}
+};
 </script>
 
 <template>
-  <div 
+  <div
     class="bc-shop-item-card"
     :class="[{ locked: !isUnlocked }, 'tier-' + (item.tier || 'common')]"
     :style="{ '--tier-color': tierColor }"
   >
     <!-- Tier Tag (Retro Style) -->
-    <span
-      v-if="item.tier"
-      class="tier-tag"
-      :class="'tier-' + item.tier"
-    >
+    <span v-if="item.tier" class="tier-tag" :class="'tier-' + item.tier">
       {{ tierLabel }}
     </span>
 
@@ -92,16 +88,12 @@ const handleImageError = (e: Event) => {
           :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
           :alt="item.name"
           width="32"
-        
           height="32"
           @error="handleImageError"
-        >
+        />
 
         <!-- Lock Overlay if locked -->
-        <div 
-          v-if="!isUnlocked"
-          class="item-lock-badge"
-        >
+        <div v-if="!isUnlocked" class="item-lock-badge">
           <span class="emoji lock-icon">🔒</span>
           <span class="lock-lvl">NV. {{ item.unlockLv }}</span>
         </div>
@@ -146,4 +138,3 @@ const handleImageError = (e: Event) => {
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_shop_cards.scss"></style>
-

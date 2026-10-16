@@ -38,14 +38,20 @@ describe('macroBiomeAutotileEngine (Tier 1 RED-to-GREEN)', () => {
     );
 
     it('resolves perimeter outer convex corners with CANONICAL_MINT_GRASS_BRUSH', () => {
-      const result: ResolvedMacroBiomeMapResult = resolveMacroBiomeAutotile(biomeGrid, terrainMatrix);
+      const result: ResolvedMacroBiomeMapResult = resolveMacroBiomeAutotile(
+        biomeGrid,
+        terrainMatrix
+      );
 
       // (1, 1) is North-West outer corner
       const nw = result.cellDetails[1]?.[1];
       expect(nw).toBeDefined();
       expect(nw?.role).toBe('corner_outer_nw');
       expect(nw?.primaryTile).toBe(CANONICAL_MINT_GRASS_BRUSH.cornerOuterNW);
-      expect(nw?.layerStack).toEqual(['poke_grass_plain.png', CANONICAL_MINT_GRASS_BRUSH.cornerOuterNW]);
+      expect(nw?.layerStack).toEqual([
+        'poke_grass_plain.png',
+        CANONICAL_MINT_GRASS_BRUSH.cornerOuterNW
+      ]);
 
       // (3, 1) is North-East outer corner
       const ne = result.cellDetails[1]?.[3];

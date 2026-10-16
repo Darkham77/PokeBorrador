@@ -5,12 +5,15 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 
 enableCompileCache();
 
 const DIAGRAM_SRC_ROOT = path.resolve(process.cwd(), 'src');
-const DIAGRAM_MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+const DIAGRAM_MANUAL_PATH = path.resolve(
+  process.cwd(),
+  '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md'
+);
 const DIAGRAM_FSM_PATH = path.join(DIAGRAM_SRC_ROOT, 'logic/battle/battleStateMachine.ts');
 
 export interface FsmTransition {
@@ -20,7 +23,7 @@ export interface FsmTransition {
 
 export function parseMermaid(manualCode: string) {
   const states = new Set<string>();
-  const transitions: FsmTransition[] = []; 
+  const transitions: FsmTransition[] = [];
 
   const blockRx = /```mermaid\n([\s\S]*?)```/g;
   let blockMatch: RegExpExecArray | null;
@@ -29,27 +32,33 @@ export function parseMermaid(manualCode: string) {
     const block = blockMatch[1] || '';
     if (!block.includes('stateDiagram-v2')) continue;
 
-    block.split('\n').forEach(rawLine => {
+    block.split('\n').forEach((rawLine) => {
       const line = rawLine.trim();
       if (!line || line.startsWith('note') || line.startsWith('%%')) return;
 
       const aliasM = line.match(/^state\s+"[^"]*"\s+as\s+([A-Za-z0-9_]+)/);
-      if (aliasM?.[1]) { states.add(aliasM[1]); return; }
+      if (aliasM?.[1]) {
+        states.add(aliasM[1]);
+        return;
+      }
 
       const stateM = line.match(/^state\s+([A-Za-z0-9_]+)/);
-      if (stateM?.[1]) { states.add(stateM[1]); }
+      if (stateM?.[1]) {
+        states.add(stateM[1]);
+      }
 
       const transM = line.match(/^([A-Za-z0-9_[\]*]+)\s+-->\s+([A-Za-z0-9_[\]*]+)/);
       if (transM?.[1] && transM[2]) {
         const from = transM[1] === '[*]' ? '__START__' : transM[1];
         const to = transM[2] === '[*]' ? '__END__' : transM[2];
-        states.add(from); states.add(to);
+        states.add(from);
+        states.add(to);
         if (from !== '__START__' && to !== '__END__') transitions.push({ from, to });
       }
     });
   }
 
-  ['__START__', '__END__', 'choice'].forEach(s => states.delete(s));
+  ['__START__', '__END__', 'choice'].forEach((s) => states.delete(s));
   return { states, transitions };
 }
 
@@ -63,16 +72,21 @@ export function parseJsFsm(fsmCode: string) {
     while ((km = keyRx.exec(m[2]!)) !== null) if (km?.[1]) allKeys.add(km[1]);
   }
 
-  const jsTransitions: { from: string; to: string }[] = []; 
-  const vtBlock = fsmCode.match(/const validTransitions\s*:\s*Record<string,\s*(?:string\[\]|ReadonlySet<string>|Set<string>)>?\s*=\s*\{([\s\S]*?)\};/);
+  const jsTransitions: { from: string; to: string }[] = [];
+  const vtBlock = fsmCode.match(
+    /const validTransitions\s*:\s*Record<string,\s*(?:string\[\]|ReadonlySet<string>|Set<string>)>?\s*=\s*\{([\s\S]*?)\};/
+  );
   if (vtBlock?.[1]) {
-    const rowRx = /\[(?:BATTLE_STATES|BATTLE_SUBSTATES)\.([A-Z0-9_]+)\]\s*:\s*(?:new Set\()?\[([^\]]+)\]\)?/g;
+    const rowRx =
+      /\[(?:BATTLE_STATES|BATTLE_SUBSTATES)\.([A-Z0-9_]+)\]\s*:\s*(?:new Set\()?\[([^\]]+)\]\)?/g;
     let row: RegExpExecArray | null;
     while ((row = rowRx.exec(vtBlock[1])) !== null) {
       if (row?.[1] && row[2]) {
         const from = row[1];
-        const toAll = Array.from(row[2].matchAll(/(?:BATTLE_STATES|BATTLE_SUBSTATES)\.([A-Z0-9_]+)/g)).map(x => x[1]!);
-        toAll.forEach(to => jsTransitions.push({ from, to }));
+        const toAll = Array.from(
+          row[2].matchAll(/(?:BATTLE_STATES|BATTLE_SUBSTATES)\.([A-Z0-9_]+)/g)
+        ).map((x) => x[1]!);
+        toAll.forEach((to) => jsTransitions.push({ from, to }));
       }
     }
   }
@@ -121,19 +135,27 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
         'fsm-transition-missing-in-js': 'Transición Mermaid ausente en TS'
       },
       ruleRemediations: {
-        'fsm-state-missing-in-js': 'Define missing state in battleStateMachine.ts or remove from Mermaid diagram',
-        'fsm-undocumented-js-state': 'Document TypeScript FSM state in Mermaid architecture diagram',
-        'fsm-transition-missing-in-js': 'Add missing transition in battleStateMachine validTransitions map'
+        'fsm-state-missing-in-js':
+          'Define missing state in battleStateMachine.ts or remove from Mermaid diagram',
+        'fsm-undocumented-js-state':
+          'Document TypeScript FSM state in Mermaid architecture diagram',
+        'fsm-transition-missing-in-js':
+          'Add missing transition in battleStateMachine validTransitions map'
       },
       requiredFiles: [DIAGRAM_MANUAL_PATH, DIAGRAM_FSM_PATH],
       coverage: {
-        include: ['.agents/skills/project-standards/references/battle/battle_mechanics_manual.md', 'src/logic/battle/battleStateMachine.ts']
+        include: [
+          '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md',
+          'src/logic/battle/battleStateMachine.ts'
+        ]
       }
     });
   }
 
   public override async runAudit(): Promise<void> {
-    this.recordScanned('.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+    this.recordScanned(
+      '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md'
+    );
     this.recordScanned('src/logic/battle/battleStateMachine.ts');
 
     let mermaidStates = new Set<string>();
@@ -155,7 +177,7 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
       jsKeys = parsedJs.allKeys;
       jsTransitions = parsedJs.jsTransitions;
 
-      const missing = Array.from(mermaidStates).filter(s => !jsKeys.has(s));
+      const missing = Array.from(mermaidStates).filter((s) => !jsKeys.has(s));
       for (const s of missing) {
         this.addViolation({
           ruleId: 'fsm-state-missing-in-js',
@@ -186,7 +208,9 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
     ]);
 
     this.runSubAuditorSync('fsm-undocumented-js-state', () => {
-      const undocumented = Array.from(jsKeys).filter(s => !mermaidStates.has(s) && !IGNORED_JS_STATES.has(s));
+      const undocumented = Array.from(jsKeys).filter(
+        (s) => !mermaidStates.has(s) && !IGNORED_JS_STATES.has(s)
+      );
       for (const s of undocumented) {
         this.addViolation({
           ruleId: 'fsm-undocumented-js-state',
@@ -202,12 +226,16 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
     // [CHECK 2] Transiciones Top-Level
     const topLevelRx = /export const BATTLE_STATES\s*=\s*\{([\s\S]*?)\}/;
     const tlm = fsmCode.match(topLevelRx);
-    const topLevelJs = new Set(tlm?.[1] ? Array.from(tlm[1].matchAll(/([A-Z][A-Z0-9_]+)\s*:/g)).map(x => x[1]!) : []);
+    const topLevelJs = new Set(
+      tlm?.[1] ? Array.from(tlm[1].matchAll(/([A-Z][A-Z0-9_]+)\s*:/g)).map((x) => x[1]!) : []
+    );
 
     this.runSubAuditorSync('fsm-transition-missing-in-js', () => {
-      const topTransitions = mermaidTransitions.filter(t => topLevelJs.has(t.from) && topLevelJs.has(t.to));
+      const topTransitions = mermaidTransitions.filter(
+        (t) => topLevelJs.has(t.from) && topLevelJs.has(t.to)
+      );
       for (const mt of topTransitions) {
-        const exists = jsTransitions.some(jt => jt.from === mt.from && jt.to === mt.to);
+        const exists = jsTransitions.some((jt) => jt.from === mt.from && jt.to === mt.to);
         if (!exists) {
           this.addViolation({
             ruleId: 'fsm-transition-missing-in-js',
@@ -229,6 +257,10 @@ export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new FsmDiagramAuditor());
 }

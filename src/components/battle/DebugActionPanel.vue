@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import DebugActionPanelQuickButtons from './DebugActionPanelQuickButtons.vue'
-import { gameBus } from '@/logic/events/gameBus'
-import { useDebugBattleActions } from './useDebugBattleActions'
-import { useCombatShadowStore } from '@/stores/battle/combatShadows'
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import DebugActionPanelQuickButtons from './DebugActionPanelQuickButtons.vue';
+import { gameBus } from '@/logic/events/gameBus';
+import { useDebugBattleActions } from './useDebugBattleActions';
+import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 
 const emit = defineEmits<{
-  (event: 'close'): void
-}>()
+  (event: 'close'): void;
+}>();
 
-const shadowStore = useCombatShadowStore()
+const shadowStore = useCombatShadowStore();
 
 const {
   battleStore,
@@ -26,7 +26,7 @@ const {
   incrementSwap,
   decrementSwap,
   toggleStatus
-} = useDebugBattleActions()
+} = useDebugBattleActions();
 </script>
 
 <template>
@@ -34,11 +34,7 @@ const {
     <div class="debug-header">
       <span class="emoji">🕹️</span>
       <span class="title">BATTLE ACTIONS &amp; DEBUG</span>
-      <button
-        id="battle-debug-menu-close-btn"
-        class="close-mini"
-        @click.stop="emit('close')"
-      >
+      <button id="battle-debug-menu-close-btn" class="close-mini" @click.stop="emit('close')">
         <span class="emoji">✕</span>
       </button>
     </div>
@@ -49,11 +45,11 @@ const {
 
       <!-- ENVIRONMENT & BEHAVIOR -->
       <div class="debug-section">
-        <div class="section-label">
-          Environment &amp; Behavior
-        </div>
+        <div class="section-label">Environment &amp; Behavior</div>
         <div class="btn-grid">
-          <PVTooltip description="Binocs: Ver el Pokémon en COLOR (Binoculares) o en SILUETA (Normal)">
+          <PVTooltip
+            description="Binocs: Ver el Pokémon en COLOR (Binoculares) o en SILUETA (Normal)"
+          >
             <button
               id="battle-debug-binoculars-btn"
               class="mini-btn"
@@ -79,9 +75,7 @@ const {
 
       <!-- PLAYER SECTION -->
       <div class="debug-section">
-        <div class="section-label">
-          Player Controls
-        </div>
+        <div class="section-label">Player Controls</div>
         <div class="btn-grid">
           <button
             id="battle-debug-player-shiny-btn"
@@ -117,9 +111,10 @@ const {
               min="1"
               class="swap-input base-id-input"
               placeholder="ID"
+              aria-label="ID Pokémon Jugador"
               @change="updateVisualSwap('player')"
               @click.stop
-            >
+            />
             <button
               id="battle-debug-player-swap-inc-btn"
               class="swap-btn"
@@ -136,35 +131,29 @@ const {
             class="swap-input-mini variant-input"
             placeholder="Var"
             title="Variante (ej. 1, mega, alola)"
+            aria-label="Variante Pokémon Jugador"
             @change="updateVisualSwap('player')"
             @click.stop
-          >
+          />
           <select
             id="battle-debug-player-gender-select"
             v-model="playerGender"
             class="swap-select-mini gender-input"
             title="Género"
+            aria-label="Género Pokémon Jugador"
             @change="updateVisualSwap('player')"
             @click.stop
           >
-            <option value="">
-              Género
-            </option>
-            <option value="m">
-              Macho
-            </option>
-            <option value="f">
-              Hembra
-            </option>
+            <option value="">Género</option>
+            <option value="m">Macho</option>
+            <option value="f">Hembra</option>
           </select>
         </div>
       </div>
 
       <!-- ENEMY SECTION -->
       <div class="debug-section">
-        <div class="section-label">
-          Enemy Controls
-        </div>
+        <div class="section-label">Enemy Controls</div>
         <div class="btn-grid">
           <button
             id="battle-debug-enemy-shiny-btn"
@@ -200,9 +189,10 @@ const {
               min="1"
               class="swap-input base-id-input"
               placeholder="ID"
+              aria-label="ID Pokémon Rival"
               @change="updateVisualSwap('enemy')"
               @click.stop
-            >
+            />
             <button
               id="battle-debug-enemy-swap-inc-btn"
               class="swap-btn"
@@ -219,26 +209,22 @@ const {
             class="swap-input-mini variant-input"
             placeholder="Var"
             title="Variante (ej. 1, mega, alola)"
+            aria-label="Variante Pokémon Rival"
             @change="updateVisualSwap('enemy')"
             @click.stop
-          >
+          />
           <select
             id="battle-debug-enemy-gender-select"
             v-model="enemyGender"
             class="swap-select-mini gender-input"
             title="Género"
+            aria-label="Género Pokémon Rival"
             @change="updateVisualSwap('enemy')"
             @click.stop
           >
-            <option value="">
-              Género
-            </option>
-            <option value="m">
-              Macho
-            </option>
-            <option value="f">
-              Hembra
-            </option>
+            <option value="">Género</option>
+            <option value="m">Macho</option>
+            <option value="f">Hembra</option>
           </select>
         </div>
         <div class="catch-buttons-group">
@@ -254,9 +240,7 @@ const {
 
       <!-- CAMERA -->
       <div class="debug-section">
-        <div class="section-label">
-          Camera Controls
-        </div>
+        <div class="section-label">Camera Controls</div>
         <div class="btn-grid-4">
           <button
             id="battle-debug-cam-guides-btn"
@@ -303,9 +287,7 @@ const {
         </div>
       </div>
 
-      <div class="debug-footer">
-        <span class="emoji">●</span> VITE_DEBUG ACTIVE
-      </div>
+      <div class="debug-footer"><span class="emoji">●</span> VITE_DEBUG ACTIVE</div>
     </div>
   </div>
 </template>

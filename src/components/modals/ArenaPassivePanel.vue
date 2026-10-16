@@ -12,10 +12,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 <template>
   <div class="arena-passive-panel">
-    <HomePassiveDefenseWidget
-      :in-modal="true"
-      :columns="props.columns"
-    />
+    <HomePassiveDefenseWidget :in-modal="true" :columns="props.columns" />
   </div>
 </template>
 

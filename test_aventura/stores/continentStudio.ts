@@ -75,6 +75,7 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
   // 2. Active Project Management
   const initialProject = createPresetProject('kanto');
   const projects = ref<Record<string, ContinentProject>>({
+    // open-record: Continent studio projects reactive dictionary indexed by project id
     [initialProject.id]: initialProject
   });
   const activeProjectId = ref<string>(initialProject.id);
@@ -89,7 +90,10 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
   const cachedGenResult = ref<GeneratedContinentResult | null>(null);
 
   function ensureGeneratedResult(): GeneratedContinentResult {
-    if (!cachedGenResult.value || cachedGenResult.value.dimensions.width !== activeProject.value.config.dimensions.width) {
+    if (
+      !cachedGenResult.value ||
+      cachedGenResult.value.dimensions.width !== activeProject.value.config.dimensions.width
+    ) {
       cachedGenResult.value = generateContinent(activeProject.value.config);
     }
     return cachedGenResult.value;
@@ -162,9 +166,7 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
     presetId?: 'kanto' | 'johto' | 'archipelago' | 'glacial',
     dimensions?: ContinentDimensions
   ): ContinentProject {
-    const proj = presetId
-      ? createPresetProject(presetId)
-      : createBlankProject(name, dimensions);
+    const proj = presetId ? createPresetProject(presetId) : createBlankProject(name, dimensions);
 
     const namedProj: ContinentProject = { ...proj, name: name || proj.name };
     projects.value[namedProj.id] = namedProj;
@@ -394,7 +396,7 @@ export const useContinentStudioStore = defineStore('continentStudio', () => {
 
   function paintTerrainBrush(centerGx: number, centerGy: number): void {
     pushHistory();
-    const currentTerrain = { ...(activeProject.value.customTerrain ?? {}) };
+    const currentTerrain = { ...activeProject.value.customTerrain };
     const half = Math.floor(terrainBrushSize.value / 2);
     for (let dy = -half; dy < -half + terrainBrushSize.value; dy++) {
       for (let dx = -half; dx < -half + terrainBrushSize.value; dx++) {

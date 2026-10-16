@@ -1,108 +1,121 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { gsap } from 'gsap'
-import BattleInfoCardLevelRow from './BattleInfoCardLevelRow.vue'
-import BattleInfoCardStatusContainer from './BattleInfoCardStatusContainer.vue'
-import BattleInfoCardIvRadar from './BattleInfoCardIvRadar.vue'
-import PartyPreviewGrid from './PartyPreviewGrid.vue'
-import HPBar from './HPBar.vue'
-import { useBattleStore } from '@/stores/battle/battle'
-import type { PartySlotStatus } from '@/types/battle/battle'
-import { useProfileStore } from '@/stores/player/profile'
-import { supabase } from '@/logic/db/supabase'
-import { getStatBreakdown } from '@/logic/battle/battleEngine'
-import { useCombatantStatus } from '@/composables/battle/useCombatantStatus'
+import { computed, ref, watch } from 'vue';
+import { gsap } from 'gsap';
+import BattleInfoCardLevelRow from './BattleInfoCardLevelRow.vue';
+import BattleInfoCardStatusContainer from './BattleInfoCardStatusContainer.vue';
+import BattleInfoCardIvRadar from './BattleInfoCardIvRadar.vue';
+import PartyPreviewGrid from './PartyPreviewGrid.vue';
+import HPBar from './HPBar.vue';
+import { useBattleStore } from '@/stores/battle/battle';
+import type { PartySlotStatus } from '@/types/battle/battle';
+import { useProfileStore } from '@/stores/player/profile';
+import { supabase } from '@/logic/db/supabase';
+import { getStatBreakdown } from '@/logic/battle/battleEngine';
+import { useCombatantStatus } from '@/composables/battle/useCombatantStatus';
 
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
 
 interface Props {
-  pokemon?: Pokemon | null
-  isPlayer?: boolean
-  isScrambled?: boolean
+  pokemon?: Pokemon | null;
+  isPlayer?: boolean;
+  isScrambled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   pokemon: null,
   isPlayer: false,
   isScrambled: false
-})
+});
 
-const p = computed(() => props.pokemon as Pokemon)
-const battleStore = useBattleStore()
-const profileStore = useProfileStore()
-import { useGameStore } from '@/stores/game'
-const gameStore = useGameStore()
+const p = computed(() => props.pokemon as Pokemon);
+const battleStore = useBattleStore();
+const profileStore = useProfileStore();
+import { useGameStore } from '@/stores/game';
+const gameStore = useGameStore();
 
 const ivTotal = computed(() => {
-  return calculateTotalIVs(p.value?.ivs)
-})
+  return calculateTotalIVs(p.value?.ivs);
+});
 
 const pokemonTierInfo = computed(() => {
-  if (!p.value) return null
-  return getPokemonTier(p.value)
-})
+  if (!p.value) return null;
+  return getPokemonTier(p.value);
+});
 
 const isIvScannerActive = computed(() => {
-  return (gameStore.state.ivScannerSecs || 0) > 0
-})
+  return (gameStore.state.ivScannerSecs || 0) > 0;
+});
 
 const isAdmin = computed(() => {
-  return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && Boolean(Reflect.get(window, '__ADMIN_DEBUG__'))) || supabase.isLocal
-})
+  return (
+    profileStore.profileData.isAdmin ||
+    (typeof window !== 'undefined' && Boolean(Reflect.get(window, '__ADMIN_DEBUG__'))) ||
+    supabase.isLocal
+  );
+});
 
 const showStatsTable = computed(() => {
-  return props.isPlayer || isIvScannerActive.value || isAdmin.value
-})
+  return props.isPlayer || isIvScannerActive.value || isAdmin.value;
+});
 
 const isTrainerOrGymOrPvP = computed(() => {
   return battleStore.uiConfig
     ? !battleStore.uiConfig.isWild
-    : Boolean(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)
-})
+    : Boolean(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP);
+});
 
-const cardRef = ref<HTMLElement | null>(null)
+const cardRef = ref<HTMLElement | null>(null);
 
-import BattleInfoCardHeader from './BattleInfoCardHeader.vue'
+import BattleInfoCardHeader from './BattleInfoCardHeader.vue';
 
 // --- XP MANAGEMENT AND LEVEL UP (Phase 3) ---
-const isLevelingUp = ref(false)
+const isLevelingUp = ref(false);
 
-const GSAP_LEVEL_UP_CARD_SCALE_BOOST = 1.05
-const GSAP_LEVEL_UP_FLASH_DURATION_SEC = 0.15
+const GSAP_LEVEL_UP_CARD_SCALE_BOOST = 1.05;
+const GSAP_LEVEL_UP_FLASH_DURATION_SEC = 0.15;
 
-watch(() => p.value.level, (newLevel, oldLevel) => {
-  if (oldLevel && newLevel > oldLevel) {
-    // 1. Flash effect with GSAP
-    if (cardRef.value) {
-      gsap.fromTo(cardRef.value, 
-        { filter: 'Brightness(1) contrast(1)', scale: 1 },
-        { 
-          filter: 'Brightness(2) contrast(1.2)', 
-          scale: GSAP_LEVEL_UP_CARD_SCALE_BOOST, 
-          duration: GSAP_LEVEL_UP_FLASH_DURATION_SEC, 
-          yoyo: true, 
-          repeat: 3, 
-          ease: 'power2.inOut',
-          onComplete: () => {
-            gsap.set(cardRef.value, { clearProps: 'filter,scale' })
-            isLevelingUp.value = false
+watch(
+  () => p.value.level,
+  (newLevel, oldLevel) => {
+    if (oldLevel && newLevel > oldLevel) {
+      // 1. Flash effect with GSAP
+      if (cardRef.value) {
+        gsap.fromTo(
+          cardRef.value,
+          { filter: 'Brightness(1) contrast(1)', scale: 1 },
+          {
+            filter: 'Brightness(2) contrast(1.2)',
+            scale: GSAP_LEVEL_UP_CARD_SCALE_BOOST,
+            duration: GSAP_LEVEL_UP_FLASH_DURATION_SEC,
+            yoyo: true,
+            repeat: 3,
+            ease: 'power2.inOut',
+            onComplete: () => {
+              gsap.set(cardRef.value, { clearProps: 'filter,scale' });
+              isLevelingUp.value = false;
+            }
           }
-        }
-      )
+        );
+      }
+      isLevelingUp.value = true;
     }
-    isLevelingUp.value = true
-  }
-}, { immediate: false })
+  },
+  { immediate: false }
+);
 
 // Combat states and stages orchestration hook
-const { unifiedStatuses, volatileStatuses } = useCombatantStatus(p, battleStore, computed(() => props.isPlayer))
+const { unifiedStatuses, volatileStatuses } = useCombatantStatus(
+  p,
+  battleStore,
+  computed(() => props.isPlayer)
+);
 
 defineExpose({
   unifiedStatuses,
   volatileStatuses
-})
+});
 
 const adminStatConfig = [
   { key: 'atk', label: 'ATK', icon: '⚔️' },
@@ -110,86 +123,77 @@ const adminStatConfig = [
   { key: 'spa', label: 'SPA', icon: '🔮' },
   { key: 'spd', label: 'SPD', icon: '✨' },
   { key: 'spe', label: 'SPE', icon: '⚡' }
-]
+];
 
 const getStatModifier = (key: string) => {
-  const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
-  if (!stages) return 0
-  return (stages as Record<string, number>)[key] || 0 // open-record: Generic key-value data dictionary container
-}
+  const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages;
+  if (!stages) return 0;
+  return (stages as Record<string, number>)[key] || 0; // open-record: Generic key-value data dictionary container
+};
 
-import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath'
+import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath';
 
 const getBreakdown = (key: string) => {
-  const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
-  const weather = battleStore.state?.weather
-  const statKey: StatIDExceptHP = isStatIdExceptHP(key) ? key : 'atk'
-  return getStatBreakdown(p.value, statKey, stages, weather || null)
-}
+  const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages;
+  const weather = battleStore.state?.weather;
+  const statKey: StatIDExceptHP = isStatIdExceptHP(key) ? key : 'atk';
+  return getStatBreakdown(p.value, statKey, stages, weather || null);
+};
 
 const showTeamBalls = computed(() => {
   // In trainer, gym, or PvP battles, show the available Pokéballs row.
   if (battleStore.uiConfig) {
-    return !battleStore.uiConfig.isWild
+    return !battleStore.uiConfig.isWild;
   }
-  return !!(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)
-})
+  return !!(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP);
+});
 
-const MAX_TEAM_CAPACITY = 6
+const MAX_TEAM_CAPACITY = 6;
 
 const teamBallsStatus = computed(() => {
-  if (!battleStore.state) return []
-  const team = props.isPlayer 
-    ? ((battleStore.state.playerTeam && battleStore.state.playerTeam.length > 0) ? battleStore.state.playerTeam : (gameStore.state.team || []))
-    : (battleStore.state.enemyTeam || [])
-  
-  const statuses: PartySlotStatus[] = []
+  if (!battleStore.state) return [];
+  const team = props.isPlayer
+    ? battleStore.state.playerTeam && battleStore.state.playerTeam.length > 0
+      ? battleStore.state.playerTeam
+      : gameStore.state.team || []
+    : battleStore.state.enemyTeam || [];
+
+  const statuses: PartySlotStatus[] = [];
   for (let i = 0; i < MAX_TEAM_CAPACITY; i++) {
     if (i < team.length) {
-      const poke = team[i]
+      const poke = team[i];
       if (poke && poke.hp > 0) {
-        statuses.push('active')
+        statuses.push('active');
       } else {
-        statuses.push('fainted')
+        statuses.push('fainted');
       }
     } else {
-      statuses.push('empty')
+      statuses.push('empty');
     }
   }
-  return statuses
-})
+  return statuses;
+});
 </script>
 
 <template>
-  <div 
+  <div
     ref="cardRef"
-    class="glass-card battle-info-card" 
+    class="glass-card battle-info-card"
     :class="[
-      isPlayer ? 'player-card' : 'enemy-card', 
-      { 
+      isPlayer ? 'player-card' : 'enemy-card',
+      {
         'is-admin-view': isAdmin,
         'is-leveling-up': isLevelingUp
       }
     ]"
   >
     <div class="card-content-wrapper">
-      <BattleInfoCardHeader
-        :pokemon="p"
-        :is-player="isPlayer"
-        :is-scrambled="isScrambled"
-      />
+      <BattleInfoCardHeader :pokemon="p" :is-player="isPlayer" :is-scrambled="isScrambled" />
 
-      <BattleInfoCardLevelRow
-        :pokemon="p"
-        :is-player="isPlayer"
-        :is-scrambled="isScrambled"
-      />
+      <BattleInfoCardLevelRow :pokemon="p" :is-player="isPlayer" :is-scrambled="isScrambled" />
 
       <!-- Poké Balls Status Row for Trainers/NPCs/PvP -->
-      <PartyPreviewGrid
-        v-if="showTeamBalls"
-        :team-balls-status="teamBallsStatus"
-      />
+      <PartyPreviewGrid v-if="showTeamBalls" :team-balls-status="teamBallsStatus" />
 
       <HPBar
         :hp="p.hp"

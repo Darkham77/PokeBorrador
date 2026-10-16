@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/modals/spawns/RouteSpawnsTerrainFeatures.vue
- * 
+ *
  * Modular sub-panel rendering terrain features, chances, and class-specific route actions.
  */
 
@@ -40,15 +40,31 @@ const emit = defineEmits<{
 }>();
 
 const specialBonus = computed(() =>
-  resolveSpecialRouteBonus({ isOfficialActive: props.isOfficialRouteActive, isExtortedActive: props.isExtortedRouteActive }, props.timeRemainingText)
+  resolveSpecialRouteBonus(
+    {
+      isOfficialActive: props.isOfficialRouteActive,
+      isExtortedActive: props.isExtortedRouteActive
+    },
+    props.timeRemainingText
+  )
 );
 
 const fishingFeature = computed(() =>
-  resolveActivityTerrainFeature(props.map.fishing, props.activeFishingChance, props.baseFishingChance, '🎣')
+  resolveActivityTerrainFeature(
+    props.map.fishing,
+    props.activeFishingChance,
+    props.baseFishingChance,
+    '🎣'
+  )
 );
 
 const archaeologyFeature = computed(() =>
-  resolveActivityTerrainFeature(props.map.archaeology, props.activeArchaeologyChance, props.baseArchaeologyChance, '⛏️')
+  resolveActivityTerrainFeature(
+    props.map.archaeology,
+    props.activeArchaeologyChance,
+    props.baseArchaeologyChance,
+    '⛏️'
+  )
 );
 
 const canExtort = computed(() => isMapExtortable(props.map));
@@ -60,7 +76,9 @@ const classAction = computed(() =>
     isOfficialCooldown: props.isOfficialRouteOnCooldown,
     cooldownText: props.cooldownRemainingText,
     isExtortedActive: props.isExtortedRouteActive,
-    extortedOtherRoute: Boolean(props.activeExtortedRouteId && props.activeExtortedRouteId !== props.map.id)
+    extortedOtherRoute: Boolean(
+      props.activeExtortedRouteId && props.activeExtortedRouteId !== props.map.id
+    )
   })
 );
 
@@ -85,10 +103,7 @@ function handleActionClick() {
       </div>
 
       <!-- Active special route bonus indicators in route stats -->
-      <div
-        v-if="specialBonus"
-        class="terrain-item benefit-active-item"
-      >
+      <div v-if="specialBonus" class="terrain-item benefit-active-item">
         <span :class="['label', specialBonus.cssClass]">{{ specialBonus.label }}</span>
         <span :class="['value font-bold', specialBonus.cssClass]">
           {{ specialBonus.description }}
@@ -99,9 +114,11 @@ function handleActionClick() {
         <span class="label">Caminar:</span>
         <span class="value">
           <span class="emoji">🚶</span> Caminando —
-          <b :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance)">{{ activeTerrestrialChance }}%</b>
+          <b :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance)"
+            >{{ activeTerrestrialChance }}%</b
+          >
           <span
-            style="font-size: var(--font-9); margin-left: 4px;"
+            style="font-size: var(--font-9); margin-left: 4px"
             :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance) || 'gray-text'"
           >
             (Base: {{ baseTerrestrialChance }}%)
@@ -111,55 +128,41 @@ function handleActionClick() {
 
       <div class="terrain-item">
         <span class="label">Pesca:</span>
-        <span
-          v-if="fishingFeature.isAvailable"
-          class="value"
-        >
+        <span v-if="fishingFeature.isAvailable" class="value">
           <span class="emoji">🎣</span> {{ fishingFeature.levelText }} —
-          <b :class="getProbClass(activeFishingChance, baseFishingChance)">{{ activeFishingChance }}%</b>
+          <b :class="getProbClass(activeFishingChance, baseFishingChance)"
+            >{{ activeFishingChance }}%</b
+          >
           <span
-            style="font-size: var(--font-9); margin-left: 4px;"
+            style="font-size: var(--font-9); margin-left: 4px"
             :class="getProbClass(activeFishingChance, baseFishingChance) || 'gray-text'"
           >
             (Base: {{ baseFishingChance }}%)
           </span>
         </span>
-        <span
-          v-else
-          class="value gray-text"
-        ><span class="emoji">❌</span> No disponible</span>
+        <span v-else class="value gray-text"><span class="emoji">❌</span> No disponible</span>
       </div>
 
       <div class="terrain-item">
         <span class="label">Arqueología:</span>
-        <span
-          v-if="archaeologyFeature.isAvailable"
-          class="value"
-        >
+        <span v-if="archaeologyFeature.isAvailable" class="value">
           <span class="emoji">⛏️</span> {{ archaeologyFeature.levelText }} —
-          <b :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance)">{{ activeArchaeologyChance }}%</b>
+          <b :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance)"
+            >{{ activeArchaeologyChance }}%</b
+          >
           <span
-            style="font-size: var(--font-9); margin-left: 4px;"
+            style="font-size: var(--font-9); margin-left: 4px"
             :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance) || 'gray-text'"
           >
             (Base: {{ baseArchaeologyChance }}%)
           </span>
         </span>
-        <span
-          v-else
-          class="value gray-text"
-        ><span class="emoji">❌</span> No disponible</span>
+        <span v-else class="value gray-text"><span class="emoji">❌</span> No disponible</span>
       </div>
 
       <!-- Class specific button actions in RouteSpawnsModal -->
-      <div
-        v-if="canExtort && classAction"
-        class="class-actions-container"
-      >
-        <div
-          v-if="classAction.kind === 'cooldown'"
-          class="cooldown-tag"
-        >
+      <div v-if="canExtort && classAction" class="class-actions-container">
+        <div v-if="classAction.kind === 'cooldown'" class="cooldown-tag">
           {{ classAction.text }}
         </div>
         <button

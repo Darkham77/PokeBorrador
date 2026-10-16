@@ -1,59 +1,70 @@
-import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
-import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import { useAuthStore } from '@/stores/auth.ts'
-import { useGameStore } from '@/stores/game.ts'
-import { useUIStore } from '@/stores/ui.ts'
-import { useAudioStore } from '@/stores/audio.ts'
-import { logger } from '@/logic/utils/logger'
-import { setLatestCommittedSaveId } from '@/logic/auth/saveService.ts'
-import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen, GTS_MAX_ACTIVE_LISTINGS, GTS_MARKET_FEE, GTS_EXPLORE_LISTINGS_LIMIT, GTS_SALES_HISTORY_LIMIT } from '@/logic/economy/market'
-import type { MarketFilters, MarketListing, MarketListingType } from '@/logic/economy/market'
-import type { GameState, ClaimItem } from '@/types/system/game'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
-import { isPokemonBusy } from '@/logic/constants/tags.ts'
-import { GTS_MAX_PRICE_FILTER, MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay.ts'
+import { defineStore } from 'pinia';
+import { ref, computed, watch } from 'vue';
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useAudioStore } from '@/stores/audio.ts';
+import { logger } from '@/logic/utils/logger';
+import { setLatestCommittedSaveId } from '@/logic/auth/saveService.ts';
+import {
+  applyMarketFilters,
+  markMarketSoldSeen,
+  isMarketSoldSeen,
+  GTS_MAX_ACTIVE_LISTINGS,
+  GTS_MARKET_FEE,
+  GTS_EXPLORE_LISTINGS_LIMIT,
+  GTS_SALES_HISTORY_LIMIT
+} from '@/logic/economy/market';
+import type { MarketFilters, MarketListing, MarketListingType } from '@/logic/economy/market';
+import type { GameState, ClaimItem } from '@/types/system/game';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
+import { isPokemonBusy } from '@/logic/constants/tags.ts';
+import { GTS_MAX_PRICE_FILTER, MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay.ts';
 
-const MARKET_LISTING_COLUMNS = 'id, seller_id, seller_name, buyer_id, listing_type, price, status, data, created_at'
+const MARKET_LISTING_COLUMNS =
+  'id, seller_id, seller_name, buyer_id, listing_type, price, status, data, created_at';
 
 export const useGTSStore = defineStore('gts', () => {
-  const auth = useAuthStore()
-  const game = useGameStore()
-  const ui = useUIStore()
-  const audio = useAudioStore()
+  const auth = useAuthStore();
+  const game = useGameStore();
+  const ui = useUIStore();
+  const audio = useAudioStore();
 
   // State
-  const listings = ref<MarketListing[]>([])
-  const myListings = ref<MarketListing[]>([])
-  const salesHistory = ref<MarketListing[]>([])
-  
+  const listings = ref<MarketListing[]>([]);
+  const myListings = ref<MarketListing[]>([]);
+  const salesHistory = ref<MarketListing[]>([]);
+
   const pendingSalesClaims = computed(() => {
     return (game.state.claimQueue || []).filter(
       (c: ClaimItem) => c.source_type === 'gts' && c.asset_data?.type === 'money'
-    )
-  })
+    );
+  });
 
   const pendingPurchaseClaims = computed(() => {
     return (game.state.claimQueue || []).filter(
-      (c: ClaimItem) => (c.source_type === 'gts' || c.source_type === 'gts_cancel') && c.asset_data?.type !== 'money'
-    )
-  })
+      (c: ClaimItem) =>
+        (c.source_type === 'gts' || c.source_type === 'gts_cancel') &&
+        c.asset_data?.type !== 'money'
+    );
+  });
 
   const allPendingGtsClaims = computed(() => {
     return (game.state.claimQueue || []).filter(
       (c: ClaimItem) => c.source_type === 'gts' || c.source_type === 'gts_cancel'
-    )
-  })
+    );
+  });
 
-  const unclaimedSalesCount = computed(() => pendingSalesClaims.value.length)
-  const unclaimedPurchasesCount = computed(() => pendingPurchaseClaims.value.length)
-  const unclaimedGtsCount = computed(() => allPendingGtsClaims.value.length)
+  const unclaimedSalesCount = computed(() => pendingSalesClaims.value.length);
+  const unclaimedPurchasesCount = computed(() => pendingPurchaseClaims.value.length);
+  const unclaimedGtsCount = computed(() => allPendingGtsClaims.value.length);
 
-  const loading = ref(false)
-  const isLoaded = ref(false)
-  let inFlightPromise: Promise<void> | null = null
-  const publishing = ref(false)
+  const loading = ref(false);
+  const isLoaded = ref(false);
+  let inFlightPromise: Promise<void> | null = null;
+  const publishing = ref(false);
 
   const filters = ref<MarketFilters>({
     mode: 'pokemon',
@@ -68,58 +79,64 @@ export const useGTSStore = defineStore('gts', () => {
     ivTotalMax: MAX_TOTAL_IVS_STAT_SUM,
     ivAny31: false,
     itemCat: 'all'
-  })
+  });
 
-  let salesChannel: RealtimeChannel | null = null
+  let salesChannel: RealtimeChannel | null = null;
 
   // Getters
   const filteredListings = computed(() => {
-    return applyMarketFilters(listings.value, filters.value, 'explore')
-  })
+    return applyMarketFilters(listings.value, filters.value, 'explore');
+  });
 
   const activeMyListings = computed(() => {
-    return myListings.value.filter(l => l.status === 'active')
-  })
+    return myListings.value.filter((l) => l.status === 'active');
+  });
 
   // Actions
   async function fetchListings(force = false) {
-    if (!force && isLoaded.value) return
-    if (inFlightPromise) return inFlightPromise
+    if (!force && isLoaded.value) return;
+    if (inFlightPromise) return inFlightPromise;
 
-    loading.value = true
+    loading.value = true;
     inFlightPromise = (async () => {
       try {
-        const { data, error } = await game.db.from('market_listings')
+        const { data, error } = (await game.db
+          .from('market_listings')
           .select(MARKET_LISTING_COLUMNS)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
-          .limit(GTS_EXPLORE_LISTINGS_LIMIT) as { data: MarketListing[] | null, error: { message: string } | null }
-        
+          .limit(GTS_EXPLORE_LISTINGS_LIMIT)) as {
+          data: MarketListing[] | null;
+          error: { message: string } | null;
+        };
+
         if (!error) {
-          listings.value = data || []
-          isLoaded.value = true
+          listings.value = data || [];
+          isLoaded.value = true;
         }
       } finally {
-        loading.value = false
-        inFlightPromise = null
+        loading.value = false;
+        inFlightPromise = null;
       }
-    })()
-    return inFlightPromise
+    })();
+    return inFlightPromise;
   }
 
   async function fetchUserData() {
-    const currentUserUid = auth.currentUserId // uuid-ok: User account auth identifier
-    if (!game.db) return
+    const currentUserUid = auth.currentUserId; // uuid-ok: User account auth identifier
+    if (!game.db) return;
 
     try {
-      await game.fetchClaimQueue()
-      const mineRes = await game.db.from('market_listings')
+      await game.fetchClaimQueue();
+      const mineRes = await game.db
+        .from('market_listings')
         ?.select(MARKET_LISTING_COLUMNS)
         ?.eq('seller_id', currentUserUid)
         ?.neq('status', 'sold')
         ?.order('created_at', { ascending: false })
         ?.limit(GTS_EXPLORE_LISTINGS_LIMIT);
-      const histRes = await game.db.from('market_listings')
+      const histRes = await game.db
+        .from('market_listings')
         ?.select(MARKET_LISTING_COLUMNS)
         ?.eq('seller_id', currentUserUid)
         ?.eq('status', 'sold')
@@ -129,255 +146,300 @@ export const useGTSStore = defineStore('gts', () => {
       const mineListings = mineRes?.data as MarketListing[] | null; // domain-ok: Open dynamic text or non-domain string payload
       const histListings = histRes?.data as MarketListing[] | null; // domain-ok: Open dynamic text or non-domain string payload
 
-      myListings.value = mineListings || []
+      myListings.value = mineListings || [];
 
       // Merge fetched history with existing in-memory sales history (e.g. simulated or current session sales)
-      const mergedMap = new Map<string, MarketListing>()
+      const mergedMap = new Map<string, MarketListing>();
       if (histListings) {
         for (const item of histListings) {
-          mergedMap.set(String(item.id), item)
+          mergedMap.set(String(item.id), item);
         }
       }
       for (const item of salesHistory.value) {
         if (!mergedMap.has(String(item.id))) {
           if (item.seller_id === currentUserUid || item.seller_id === 'local_user') {
-            mergedMap.set(String(item.id), item)
+            mergedMap.set(String(item.id), item);
           }
         }
       }
-      salesHistory.value = Array.from(mergedMap.values()).slice(0, GTS_SALES_HISTORY_LIMIT)
+      salesHistory.value = Array.from(mergedMap.values()).slice(0, GTS_SALES_HISTORY_LIMIT);
 
       // Check for new sales
       if (histListings && histListings.length > 0) {
-        let updatedStats = false
-        histListings.forEach(sale => {
+        let updatedStats = false;
+        histListings.forEach((sale) => {
           if (!isMarketSoldSeen(String(sale.id), game.state)) {
-            ui.notify(`¡Tu ${sale.data.name} se vendió por ₽${sale.price.toLocaleString()}!`, '💰')
-            markMarketSoldSeen(String(sale.id), game.state)
-            
+            ui.notify(`¡Tu ${sale.data.name} se vendió por ₽${sale.price.toLocaleString()}!`, '💰');
+            markMarketSoldSeen(String(sale.id), game.state);
+
             if (!game.state.stats) {
-              game.state.stats = {}
+              game.state.stats = {};
             }
-            game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1
-            updatedStats = true
+            game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1;
+            updatedStats = true;
           }
-        })
+        });
         if (updatedStats) {
-          game.save(false)
+          void game.save(false);
         }
       }
     } catch (err) {
-      logger.warn('GTS', `fetchUserData ignored error: ${(err as Error).message}`)
+      logger.warn('GTS', `fetchUserData ignored error: ${(err as Error).message}`);
     }
   }
 
   function initRealtime() {
-    if (auth.sessionMode === 'offline' || !auth.user) return
-    if (salesChannel) return
-    
-    const channelName = `market-sales-${auth.user.id}`
-    const db = game.db
-    if (!db) return
+    if (auth.sessionMode === 'offline' || !auth.user) return;
+    if (salesChannel) return;
 
-    salesChannel = db.channel(channelName)
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'market_listings',
-        filter: `seller_id=eq.${auth.user.id}`
-      }, (payload: RealtimePostgresChangesPayload<MarketListing>) => {
-        const newRecord = payload.new as MarketListing | undefined
-        const oldRecord = payload.old as Partial<MarketListing> | undefined
-        if (newRecord?.status === 'sold' && oldRecord?.status !== 'sold') {
-          ui.notify('¡ Venta realizada en el GTS !', '💰')
-          audio.play('money')
-          
-          if (!game.state.stats) {
-            game.state.stats = {}
+    const channelName = `market-sales-${auth.user.id}`;
+    const db = game.db;
+    if (!db) return;
+
+    salesChannel = db
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'market_listings',
+          filter: `seller_id=eq.${auth.user.id}`
+        },
+        (payload: RealtimePostgresChangesPayload<MarketListing>) => {
+          const newRecord = payload.new as MarketListing | undefined;
+          const oldRecord = payload.old as Partial<MarketListing> | undefined;
+          if (newRecord?.status === 'sold' && oldRecord?.status !== 'sold') {
+            ui.notify('¡ Venta realizada en el GTS !', '💰');
+            void audio.play('money');
+
+            if (!game.state.stats) {
+              game.state.stats = {};
+            }
+            game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1;
+            void game.save(false);
+
+            void fetchUserData();
           }
-          game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1
-          game.save(false)
-          
-          fetchUserData()
         }
-      })
-      .subscribe()
+      )
+      .subscribe();
   }
 
   function stopRealtime() {
     if (salesChannel) {
-      salesChannel.unsubscribe()
-      salesChannel = null
+      void salesChannel.unsubscribe();
+      salesChannel = null;
     }
   }
 
   async function buyListing(listing: MarketListing) {
     if (game.state.money < listing.price) {
-      ui.notify('Saldo insuficiente', '💸')
-      return false
+      ui.notify('Saldo insuficiente', '💸');
+      return false;
     }
 
     try {
-      ui.setLoading(true)
-      
+      ui.setLoading(true);
+
       // MANDATORY: Pre-Action Flush
-      ui.notify('Sincronizando fondos...', '🔄')
-      await game.save(false)
+      ui.notify('Sincronizando fondos...', '🔄');
+      await game.save(false);
 
-      const { data: newSave, error } = await game.db.rpc('buy_listing_v2', {
+      const { data: newSave, error } = (await game.db.rpc('buy_listing_v2', {
         p_listing_id: listing.id
-      }) as { data: GameState | null, error: { message: string } | null }
+      })) as { data: GameState | null; error: { message: string } | null };
 
-      if (error) throw error
+      if (error) throw error;
 
       if (newSave) {
-        game.updateState(newSave)
-        
+        game.updateState(newSave);
+
         if (!game.state.stats) {
-          game.state.stats = {}
+          game.state.stats = {};
         }
-        game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1
+        game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1;
         if (auth.user) {
-          const { data: saveRow } = await game.db.from('game_saves').select('last_save_id').eq('user_id', auth.user.id).single() as { data: { last_save_id?: string } | null }
+          const { data: saveRow } = (await game.db
+            .from('game_saves')
+            .select('last_save_id')
+            .eq('user_id', auth.user.id)
+            .single()) as { data: { last_save_id?: string } | null };
           if (saveRow?.last_save_id) {
-            auth.user.last_save_id = saveRow.last_save_id
-            setLatestCommittedSaveId(saveRow.last_save_id)
+            auth.user.last_save_id = saveRow.last_save_id;
+            setLatestCommittedSaveId(saveRow.last_save_id);
           }
         }
-        await game.save(false)
-        
-        ui.notify('¡ Compra exitosa ! Objeto enviado a tus Reclamos.', '✅')
-        await game.fetchClaimQueue()
-        fetchListings()
-        return true
+        await game.save(false);
+
+        ui.notify('¡ Compra exitosa ! Objeto enviado a tus Reclamos.', '✅');
+        await game.fetchClaimQueue();
+        void fetchListings();
+        return true;
       }
-      return false
+      return false;
     } catch (e) {
-      const err = e as Error
-      logger.warn('GTS', `Error en la compra: ${err.message}`)
-      ui.notify(err.message || 'Error en la compra', '❌')
-      return false
+      const err = e as Error;
+      logger.warn('GTS', `Error en la compra: ${err.message}`);
+      ui.notify(err.message || 'Error en la compra', '❌');
+      return false;
     } finally {
-      ui.setLoading(false)
+      ui.setLoading(false);
     }
   }
 
-  async function publishListing(type: MarketListingType, selection: Pokemon | { name: string; qty: number }, price: number) {
+  async function publishListing(
+    type: MarketListingType,
+    selection: Pokemon | { name: string; qty: number },
+    price: number
+  ) {
     if (activeMyListings.value.length >= GTS_MAX_ACTIVE_LISTINGS) {
-      ui.notify(`Límite de publicaciones alcanzado (${GTS_MAX_ACTIVE_LISTINGS})`, '⚠️')
-      return false
+      ui.notify(`Límite de publicaciones alcanzado (${GTS_MAX_ACTIVE_LISTINGS})`, '⚠️');
+      return false;
     }
 
     if (type === 'pokemon') {
-      const poke = selection as Pokemon
+      const poke = selection as Pokemon;
       if (isPokemonBusy(poke)) {
-        ui.notify('No puedes publicar un Pokémon que está en misión, evento o guardería.', '⚠️')
-        return false
+        ui.notify('No puedes publicar un Pokémon que está en misión, evento o guardería.', '⚠️');
+        return false;
       }
-      const legality = checkPokemonLegality(poke)
+      const legality = checkPokemonLegality(poke);
       if (poke.isIllegal || !legality.isLegal) {
-        ui.notify(`No puedes publicar un Pokémon ilegal en el GTS: ${legality.issues[0] || 'datos no válidos'}.`, '⚠️')
-        return false
+        ui.notify(
+          `No puedes publicar un Pokémon ilegal en el GTS: ${legality.issues[0] || 'datos no válidos'}.`,
+          '⚠️'
+        );
+        return false;
       }
     }
 
-    publishing.value = true
+    publishing.value = true;
     try {
       // MANDATORY: Pre-Action Flush
-      ui.notify('Sincronizando inventario...', '🔄')
-      await game.save(false)
+      ui.notify('Sincronizando inventario...', '🔄');
+      await game.save(false);
 
       const { data: _listingId, error } = await game.db.rpc('publish_listing_v2', {
         p_listing_type: type,
-        p_asset_data: type === 'pokemon' ? selection : { name: (selection as { name: string }).name, qty: (selection as { qty: number }).qty },
+        p_asset_data:
+          type === 'pokemon'
+            ? selection
+            : {
+                name: (selection as { name: string }).name,
+                qty: (selection as { qty: number }).qty
+              },
         p_price: Math.floor(price)
-      })
+      });
 
-      if (error) throw error
+      if (error) throw error;
 
       // Refresh state to confirm removal
-      if (!auth.user) return false
-      const { data: save } = await game.db.from('game_saves').select('save_data, last_save_id').eq('user_id', auth.user.id).single() as { data: { save_data: GameState; last_save_id?: string } | null }
+      if (!auth.user) return false;
+      const { data: save } = (await game.db
+        .from('game_saves')
+        .select('save_data, last_save_id')
+        .eq('user_id', auth.user.id)
+        .single()) as { data: { save_data: GameState; last_save_id?: string } | null };
       if (save?.save_data) {
-        game.updateState(save.save_data)
+        game.updateState(save.save_data);
       }
       if (save?.last_save_id) {
-        auth.user.last_save_id = save.last_save_id
-        setLatestCommittedSaveId(save.last_save_id)
+        auth.user.last_save_id = save.last_save_id;
+        setLatestCommittedSaveId(save.last_save_id);
       }
 
-      ui.notify('¡ Publicación exitosa !', '🚀')
-      await fetchUserData()
-      return true
+      ui.notify('¡ Publicación exitosa !', '🚀');
+      await fetchUserData();
+      return true;
     } catch (e) {
-      const err = e as Error
-      logger.warn('GTS', `Error al publicar: ${err.message}`)
-      ui.notify(err.message || 'Error al publicar', '❌')
-      return false
+      const err = e as Error;
+      logger.warn('GTS', `Error al publicar: ${err.message}`);
+      ui.notify(err.message || 'Error al publicar', '❌');
+      return false;
     } finally {
-      publishing.value = false
+      publishing.value = false;
     }
   }
 
   async function cancelListing(listingId: string | number) {
     try {
-      console.debug('[GTS] Accion: cancelListing iniciada para ID:', listingId, typeof listingId)
-      ui.setLoading(true)
-      ui.notify('Retirando publicación...', '🔄')
-      
-      const { data: newSave, error } = await game.db.rpc('cancel_listing_v2', {
+      console.debug('[GTS] Accion: cancelListing iniciada para ID:', listingId, typeof listingId);
+      ui.setLoading(true);
+      ui.notify('Retirando publicación...', '🔄');
+
+      const { data: newSave, error } = (await game.db.rpc('cancel_listing_v2', {
         p_listing_id: listingId
-      }) as { data: GameState | null, error: { message: string } | null }
+      })) as { data: GameState | null; error: { message: string } | null };
 
       if (error) {
-        console.error('[GTS] Error RPC cancel_listing_v2:', error)
-        throw error
+        console.error('[GTS] Error RPC cancel_listing_v2:', error);
+        throw error;
       }
 
       if (newSave) {
-        game.updateState(newSave)
-        ui.notify('Publicación cancelada. El activo regresó a tu caja/inventario.', '✅')
+        game.updateState(newSave);
+        ui.notify('Publicación cancelada. El activo regresó a tu caja/inventario.', '✅');
       } else {
-        ui.notify('Publicación cancelada con éxito.', '✅')
+        ui.notify('Publicación cancelada con éxito.', '✅');
       }
 
-      await fetchUserData()
-      return true
+      await fetchUserData();
+      return true;
     } catch (e) {
-      const err = e as Error
-      console.error('[GTS] Excepción en cancelListing:', err)
-      logger.error('GTS', `Error al cancelar: ${err.message}`)
-      ui.notify(err.message || 'Error al cancelar', '❌')
-      return false
+      const err = e as Error;
+      console.error('[GTS] Excepción en cancelListing:', err);
+      logger.error('GTS', `Error al cancelar: ${err.message}`);
+      ui.notify(err.message || 'Error al cancelar', '❌');
+      return false;
     } finally {
-      ui.setLoading(false)
+      ui.setLoading(false);
     }
   }
 
   // Auto-initialize realtime sales and fetch data on user login
-  watch(() => auth.user, (newUser) => {
-    if (newUser) {
-      fetchUserData()
-      if (auth.sessionMode !== 'offline') {
-        initRealtime()
+  watch(
+    () => auth.user,
+    (newUser) => {
+      if (newUser) {
+        void fetchUserData();
+        if (auth.sessionMode !== 'offline') {
+          initRealtime();
+        } else {
+          stopRealtime();
+        }
       } else {
-        stopRealtime()
+        stopRealtime();
+        myListings.value = [];
+        salesHistory.value = [];
       }
-    } else {
-      stopRealtime()
-      myListings.value = []
-      salesHistory.value = []
-    }
-  }, { immediate: true })
+    },
+    { immediate: true }
+  );
 
   return {
-    listings, myListings, salesHistory, loading, publishing, filters,
+    listings,
+    myListings,
+    salesHistory,
+    loading,
+    publishing,
+    filters,
     MARKET_FEE: GTS_MARKET_FEE,
     MAX_LISTINGS: GTS_MAX_ACTIVE_LISTINGS,
-    filteredListings, activeMyListings,
-    pendingSalesClaims, unclaimedSalesCount,
-    pendingPurchaseClaims, allPendingGtsClaims, unclaimedPurchasesCount, unclaimedGtsCount,
-    fetchListings, fetchUserData, initRealtime, stopRealtime,
-    buyListing, publishListing, cancelListing
-  }
-})
+    filteredListings,
+    activeMyListings,
+    pendingSalesClaims,
+    unclaimedSalesCount,
+    pendingPurchaseClaims,
+    allPendingGtsClaims,
+    unclaimedPurchasesCount,
+    unclaimedGtsCount,
+    fetchListings,
+    fetchUserData,
+    initRealtime,
+    stopRealtime,
+    buyListing,
+    publishListing,
+    cancelListing
+  };
+});

@@ -138,7 +138,7 @@ sequenceDiagram
     participant LoginView as LoginView.vue (Login)
     participant DB as DBRouter / Server
     participant GameStore as GameStore (Save/Load)
-    
+
     User->>App: Launch App (Boot / Reload)
     Note over App: Load Auth Session
     alt Active session detected (Auto-Login)
@@ -294,7 +294,7 @@ Mobile browsers frequently suspend inactive tabs and silently drop network conne
   1. **Attempt 1 (5s Ping)**: Run the first check with a short 5-second timeout to act as a "wake-up" call for the cold containers.
   2. **Intermediary Delay (1.5s)**: Wait for 1.5 seconds to allow backend services to fully initialize.
   3. **Attempt 2 (15s Fetch)**: Execute the final fetch with a longer 15-second timeout.
-  This allows cold boots to resolve transparently without returning to `/login`, while maintaining instantaneous (200ms) loads when the server is already active.
+     This allows cold boots to resolve transparently without returning to `/login`, while maintaining instantaneous (200ms) loads when the server is already active.
 - **Suspended Mobile Tab Wakeup & PWA Version Synchronization**:
   1. **Visibility Change Detection (`App.vue`)**: The application MUST listen to `visibilitychange` events and check `version.json` whenever the document returns to `visible` on mobile devices. If a newer deployment version is detected while the tab was suspended, the system immediately presents the `PVLoadingOverlay` with the **NUEVA VERSIÓN: CERRAR SESIÓN Y ACTUALIZAR** prompt before stale chunk fetches fail.
   2. **Dynamic Chunk Loading Failure Capture (`router.onError`)**: Vue Router MUST capture `Failed to fetch dynamically imported module` errors via `router.onError` and emit `PWA_NEED_REFRESH` to trigger the PWA update flow rather than crashing into an unhandled blank screen.

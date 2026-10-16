@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useBreedingStore } from '@/stores/breeding'
-import { useGameStore } from '@/stores/game'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { calculateCloningCost, calculateCloningShinyChance } from '@/logic/minigames/minigameMath'
-import EggSprite from '@/components/common/EggSprite.vue'
-import { gsap } from 'gsap'
-import { getItemName, type ItemId } from '@/data/inventory/items'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { ref, computed, watch } from 'vue';
+import { useBreedingStore } from '@/stores/breeding';
+import { useGameStore } from '@/stores/game';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { calculateCloningCost, calculateCloningShinyChance } from '@/logic/minigames/minigameMath';
+import EggSprite from '@/components/common/EggSprite.vue';
+import { gsap } from 'gsap';
+import { getItemName, type ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
-const breedingStore = useBreedingStore()
-const gameStore = useGameStore()
+const breedingStore = useBreedingStore();
+const gameStore = useGameStore();
 
 interface FossilDef {
-  id: ItemId
-  pokemonId: PokemonSpeciesId
+  id: ItemId;
+  pokemonId: PokemonSpeciesId;
 }
 
 // Fossil definitions
@@ -23,84 +23,84 @@ const FOSSILS: readonly FossilDef[] = [
   { id: 'domefossil', pokemonId: 'kabuto' },
   { id: 'helixfossil', pokemonId: 'omanyte' },
   { id: 'oldamber', pokemonId: 'aerodactyl' }
-] as const
+] as const;
 
-const defaultFossil: FossilDef = { id: 'domefossil', pokemonId: 'kabuto' }
-const selectedFossilIndex = ref(0)
-const extraSacrifices = ref(0)
+const defaultFossil: FossilDef = { id: 'domefossil', pokemonId: 'kabuto' };
+const selectedFossilIndex = ref(0);
+const extraSacrifices = ref(0);
 
 const renderedFossils = computed(() => {
-  return FOSSILS.map(f => ({
+  return FOSSILS.map((f) => ({
     id: f.id,
     name: getItemName(f.id),
     pokemon: pokemonDataProvider.getPokemonData(f.pokemonId)?.name || f.pokemonId
-  }))
-})
+  }));
+});
 
 const activeFossil = computed<{ name: string; id: ItemId; pokemon: string }>(() => {
-  const f = renderedFossils.value[selectedFossilIndex.value]
-  if (f) return f
-  const base = defaultFossil
+  const f = renderedFossils.value[selectedFossilIndex.value];
+  if (f) return f;
+  const base = defaultFossil;
   return {
     id: base.id,
     name: getItemName(base.id),
     pokemon: pokemonDataProvider.getPokemonData(base.pokemonId)?.name || base.pokemonId
-  }
-})
+  };
+});
 
 const ownedCount = computed(() => {
-  if (!gameStore.state?.inventory) return 0
-  return gameStore.state.inventory[activeFossil.value.id] || 0
-})
+  if (!gameStore.state?.inventory) return 0;
+  return gameStore.state.inventory[activeFossil.value.id] || 0;
+});
 
 const selectFossil = (idx: number) => {
-  selectedFossilIndex.value = idx
-  extraSacrifices.value = 0
-}
+  selectedFossilIndex.value = idx;
+  extraSacrifices.value = 0;
+};
 
 const selectSacrifices = (val: number) => {
-  extraSacrifices.value = val
-}
+  extraSacrifices.value = val;
+};
 
-const cost = computed(() => calculateCloningCost(extraSacrifices.value))
-const requiredFossils = computed(() => 1 + extraSacrifices.value)
+const cost = computed(() => calculateCloningCost(extraSacrifices.value));
+const requiredFossils = computed(() => 1 + extraSacrifices.value);
 
-const hasEnoughFossils = computed(() => ownedCount.value >= requiredFossils.value)
-const hasEnoughMoney = computed(() => gameStore.state.money >= cost.value)
+const hasEnoughFossils = computed(() => ownedCount.value >= requiredFossils.value);
+const hasEnoughMoney = computed(() => gameStore.state.money >= cost.value);
 
 const canClone = computed(() => {
-  return hasEnoughFossils.value && hasEnoughMoney.value
-})
+  return hasEnoughFossils.value && hasEnoughMoney.value;
+});
 
-const showFailureTooltip = ref(false)
+const showFailureTooltip = ref(false);
 
 const TOOLTIP_HIDE_DELAY_SEC = 3;
 
 const handleClone = () => {
-  if (!canClone.value) return
-  const success = breedingStore.cloneFossil(activeFossil.value.id, extraSacrifices.value)
+  if (!canClone.value) return;
+  const success = breedingStore.cloneFossil(activeFossil.value.id, extraSacrifices.value);
   if (!success) {
-    showFailureTooltip.value = true
-    gsap.killTweensOf(showFailureTooltip)
+    showFailureTooltip.value = true;
+    gsap.killTweensOf(showFailureTooltip);
     gsap.delayedCall(TOOLTIP_HIDE_DELAY_SEC, () => {
-      showFailureTooltip.value = false
-    })
+      showFailureTooltip.value = false;
+    });
   } else {
-    showFailureTooltip.value = false
+    showFailureTooltip.value = false;
   }
-  extraSacrifices.value = 0 // Reset
-}
+  extraSacrifices.value = 0; // Reset
+};
 
-const SACRIFICE_MULTIPLIER_STEP = 0.25 as const
+const SACRIFICE_MULTIPLIER_STEP = 0.25 as const;
 
 // Data table helper
 const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
-  const c = calculateCloningCost(N)
-  const baseRolls = 1 + Math.floor(N / 2)
-  const isOdd = N % 2 !== 0
-  const rollsText = isOdd ? `${baseRolls}-${baseRolls + 1}` : `${baseRolls}`
-  const shinyRate = calculateCloningShinyChance(N)
-  const mult = 1 + SACRIFICE_MULTIPLIER_STEP * N
+  const c = calculateCloningCost(N);
+  const baseRolls = 1 + Math.floor(N / 2);
+  const isOdd = N % 2 !== 0;
+  const rollsText = isOdd ? `${baseRolls}-${baseRolls + 1}` : `${baseRolls}`;
+  const shinyRate = calculateCloningShinyChance(N);
+  const mult = 1 + SACRIFICE_MULTIPLIER_STEP * N;
   return {
     N,
     cost: c,
@@ -108,12 +108,12 @@ const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
     shinyPercent: (shinyRate * 100).toFixed(4),
     multiplier: `${mult.toFixed(2)}x`,
     successPercent: 5 * (1 + N)
-  }
-})
+  };
+});
 
 // GSAP Hover Handlers for Fossil Cards
 const onCardMouseEnter = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
+  const el = e.currentTarget as HTMLElement;
   if (!el.classList.contains('active')) {
     gsap.to(el, {
       y: -2,
@@ -121,12 +121,12 @@ const onCardMouseEnter = (e: MouseEvent) => {
       borderColor: 'rgba(202, 138, 4, 0.3)',
       duration: 0.2,
       overwrite: 'auto'
-    })
+    });
   }
-}
+};
 
 const onCardMouseLeave = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
+  const el = e.currentTarget as HTMLElement;
   if (!el.classList.contains('active')) {
     gsap.to(el, {
       y: 0,
@@ -134,51 +134,50 @@ const onCardMouseLeave = (e: MouseEvent) => {
       borderColor: 'rgba(255, 255, 255, 0.06)',
       duration: 0.2,
       overwrite: 'auto'
-    })
+    });
   }
-}
+};
 
-const GSAP_HOVER_ROW_DURATION_SEC = 0.15
+const GSAP_HOVER_ROW_DURATION_SEC = 0.15;
 
 // GSAP Hover Handlers for Matrix Rows
 const onRowMouseEnter = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
+  const el = e.currentTarget as HTMLElement;
   if (!el.classList.contains('active') && !el.classList.contains('disabled')) {
     gsap.to(el, {
       backgroundColor: 'rgba(255, 255, 255, 0.03)',
       duration: GSAP_HOVER_ROW_DURATION_SEC,
       overwrite: 'auto'
-    })
+    });
   }
-}
+};
 
 const onRowMouseLeave = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
+  const el = e.currentTarget as HTMLElement;
   if (!el.classList.contains('active') && !el.classList.contains('disabled')) {
     gsap.to(el, {
       backgroundColor: 'rgba(255, 255, 255, 0)',
       duration: GSAP_HOVER_ROW_DURATION_SEC,
       overwrite: 'auto'
-    })
+    });
   }
-}
+};
 
 watch(selectedFossilIndex, () => {
-  const cards = document.querySelectorAll('.fossil-card')
-  cards.forEach(card => {
-    gsap.killTweensOf(card)
-    gsap.set(card, { clearProps: 'y,backgroundColor,borderColor' })
-  })
-})
+  const cards = document.querySelectorAll('.fossil-card');
+  cards.forEach((card) => {
+    gsap.killTweensOf(card);
+    gsap.set(card, { clearProps: 'y,backgroundColor,borderColor' });
+  });
+});
 
 watch(extraSacrifices, () => {
-  const rows = document.querySelectorAll('.matrix-row')
-  rows.forEach(row => {
-    gsap.killTweensOf(row)
-    gsap.set(row, { clearProps: 'backgroundColor' })
-  })
-})
-
+  const rows = document.querySelectorAll('.matrix-row');
+  rows.forEach((row) => {
+    gsap.killTweensOf(row);
+    gsap.set(row, { clearProps: 'backgroundColor' });
+  });
+});
 </script>
 
 <template>
@@ -186,7 +185,10 @@ watch(extraSacrifices, () => {
     <header class="cloning-header">
       <div class="info">
         <h3>Almacén de Arqueología</h3>
-        <p>Combina múltiples fósiles del mismo tipo para obtener variantes de calidad genética superior</p>
+        <p>
+          Combina múltiples fósiles del mismo tipo para obtener variantes de calidad genética
+          superior
+        </p>
       </div>
     </header>
 
@@ -199,6 +201,8 @@ watch(extraSacrifices, () => {
             v-for="(fossil, idx) in renderedFossils"
             id="fossil-cloning-div-selectfossil"
             :key="fossil.id"
+            role="button"
+            tabindex="0"
             class="fossil-card"
             :class="{ active: selectedFossilIndex === idx }"
             @click="selectFossil(idx)"
@@ -210,11 +214,10 @@ watch(extraSacrifices, () => {
                 :src="getAssetUrl(ASSET_TYPES.ITEM, fossil.id)"
                 :alt="fossil.name"
                 class="fossil-sprite"
-              
                 width="32"
                 height="32"
-              >
-              <div 
+              />
+              <div
                 class="fossil-count"
                 :class="{ empty: !((gameStore.state?.inventory?.[fossil.id] || 0) > 0) }"
               >
@@ -225,9 +228,7 @@ watch(extraSacrifices, () => {
               <div class="fossil-title">
                 {{ fossil.name }}
               </div>
-              <div class="fossil-result">
-                ADN: {{ fossil.pokemon }}
-              </div>
+              <div class="fossil-result">ADN: {{ fossil.pokemon }}</div>
             </div>
           </div>
         </div>
@@ -240,10 +241,7 @@ watch(extraSacrifices, () => {
         <!-- Preview Target -->
         <div class="cloning-target-preview">
           <div class="egg-preview-box">
-            <EggSprite
-              tint="rgba(139, 90, 43, 0.7)"
-              size="48"
-            />
+            <EggSprite tint="rgba(139, 90, 43, 0.7)" size="48" />
           </div>
           <div class="preview-text">
             <h4>Huevo Ancestral de {{ activeFossil.pokemon }}</h4>
@@ -269,9 +267,9 @@ watch(extraSacrifices, () => {
                 id="fossil-cloning-tr-selectsacrifices"
                 :key="tier.N"
                 class="matrix-row"
-                :class="{ 
+                :class="{
                   active: extraSacrifices === tier.N,
-                  disabled: ownedCount < (1 + tier.N)
+                  disabled: ownedCount < 1 + tier.N
                 }"
                 @click="selectSacrifices(tier.N)"
                 @mouseenter="onRowMouseEnter"
@@ -286,12 +284,8 @@ watch(extraSacrifices, () => {
                 <td class="font-pixel shiny-cell">
                   {{ tier.shinyPercent }}% <span class="mult-label">{{ tier.multiplier }}</span>
                 </td>
-                <td class="font-pixel text-center">
-                  {{ tier.successPercent }}%
-                </td>
-                <td class="font-pixel cost-cell">
-                  ₽{{ tier.cost.toLocaleString() }}
-                </td>
+                <td class="font-pixel text-center">{{ tier.successPercent }}%</td>
+                <td class="font-pixel cost-cell">₽{{ tier.cost.toLocaleString() }}</td>
               </tr>
             </tbody>
           </table>
@@ -301,19 +295,13 @@ watch(extraSacrifices, () => {
         <div class="status-summary-bar">
           <div class="status-item">
             <span class="lbl">Fósiles requeridos:</span>
-            <span
-              class="val font-pixel"
-              :class="{ 'error-text': !hasEnoughFossils }"
-            >
+            <span class="val font-pixel" :class="{ 'error-text': !hasEnoughFossils }">
               {{ requiredFossils }} / {{ ownedCount }}
             </span>
           </div>
           <div class="status-item">
             <span class="lbl">Costo total:</span>
-            <span
-              class="val font-pixel"
-              :class="{ 'error-text': !hasEnoughMoney }"
-            >
+            <span class="val font-pixel" :class="{ 'error-text': !hasEnoughMoney }">
               ₽{{ cost.toLocaleString() }} / ₽{{ gameStore.state.money.toLocaleString() }}
             </span>
           </div>
@@ -321,10 +309,7 @@ watch(extraSacrifices, () => {
 
         <!-- Action Button -->
         <div class="action-wrapper">
-          <div
-            v-if="showFailureTooltip"
-            class="failure-tooltip font-pixel"
-          >
+          <div v-if="showFailureTooltip" class="failure-tooltip font-pixel">
             <span class="emoji">⚠️</span> ¡EXTRACCIÓN FALLIDA! Recursos consumidos.
           </div>
           <button
@@ -333,8 +318,12 @@ watch(extraSacrifices, () => {
             :disabled="!canClone"
             @click="handleClone"
           >
-            <span v-if="!hasEnoughFossils"><span class="emoji">❌</span> FÓSILES INSUFICIENTES</span>
-            <span v-else-if="!hasEnoughMoney"><span class="emoji">💰</span> DINERO INSUFICIENTE</span>
+            <span v-if="!hasEnoughFossils"
+              ><span class="emoji">❌</span> FÓSILES INSUFICIENTES</span
+            >
+            <span v-else-if="!hasEnoughMoney"
+              ><span class="emoji">💰</span> DINERO INSUFICIENTE</span
+            >
             <span v-else><span class="emoji">🧬</span> INICIAR CLONACIÓN GENÉTICA</span>
           </button>
         </div>

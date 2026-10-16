@@ -1,102 +1,99 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { gsap } from 'gsap'
-import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs'
-import { useModalStore } from '@/stores/modals'
-import { useUIStore } from '@/stores/ui'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { CLASS_MISSIONS_BY_ID, isMissionId } from '@/data/player/playerClasses'
-import { getClassMissionDetails } from '@/logic/player/classMissionsData'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { useGsapTransition } from '@/composables/ui/useGsapTransition'
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { gsap } from 'gsap';
+import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { CLASS_MISSIONS_BY_ID, isMissionId } from '@/data/player/playerClasses';
+import { getClassMissionDetails } from '@/logic/player/classMissionsData';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { useGsapTransition } from '@/composables/ui/useGsapTransition';
 
-const buffsStore = useBuffsStore()
-const modalStore = useModalStore()
-const uiStore = useUIStore()
-const classStore = usePlayerClassStore()
-const { beforeEnter, enter, leave } = useGsapTransition({ type: 'slide-left', xOffset: -30, duration: 0.25 })
+const buffsStore = useBuffsStore();
+const modalStore = useModalStore();
+const uiStore = useUIStore();
+const classStore = usePlayerClassStore();
+const { beforeEnter, enter, leave } = useGsapTransition({
+  type: 'slide-left',
+  xOffset: -30,
+  duration: 0.25
+});
 
-const isVisible = computed(() => 
-  uiStore.activeTab === 'map' || 
-  uiStore.activeTab === 'home' || 
-  uiStore.activeTab === 'gyms'
-)
+const isVisible = computed(
+  () => uiStore.activeTab === 'map' || uiStore.activeTab === 'home' || uiStore.activeTab === 'gyms'
+);
 
-const now = ref(Temporal.Now.instant().epochMilliseconds)
-let classMissionTicker: gsap.core.Tween | null = null
+const now = ref(Temporal.Now.instant().epochMilliseconds);
+let classMissionTicker: gsap.core.Tween | null = null;
 
 onMounted(() => {
-  buffsStore.initTick()
-  const TICK_INTERVAL_SEC = 1
+  buffsStore.initTick();
+  const TICK_INTERVAL_SEC = 1;
   const tickNow = () => {
-    now.value = Temporal.Now.instant().epochMilliseconds
-    classMissionTicker = gsap.delayedCall(TICK_INTERVAL_SEC, tickNow)
-  }
-  classMissionTicker = gsap.delayedCall(TICK_INTERVAL_SEC, tickNow)
-})
+    now.value = Temporal.Now.instant().epochMilliseconds;
+    classMissionTicker = gsap.delayedCall(TICK_INTERVAL_SEC, tickNow);
+  };
+  classMissionTicker = gsap.delayedCall(TICK_INTERVAL_SEC, tickNow);
+});
 
 onUnmounted(() => {
   if (classMissionTicker) {
-    classMissionTicker.kill()
+    classMissionTicker.kill();
   }
-})
+});
 
 const formatTime = (secs: number) => {
-  if (secs <= 0) return '0:00'
-  const h = Math.floor(secs / 3600)
-  const m = Math.floor((secs % 3600) / 60)
-  const s = secs % 60
-  
+  if (secs <= 0) return '0:00';
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+
   if (h > 0) {
-    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
+  return `${m}:${s.toString().padStart(2, '0')}`;
+};
 
 const classMissionBadge = computed(() => {
-  const m = classStore.activeMission
-  if (!m || !isMissionId(m.id)) return null
-  const def = CLASS_MISSIONS_BY_ID[m.id]
-  const clsDef = classStore.currentClassDef
-  const remainingSecs = Math.max(0, Math.floor((m.endsAt - now.value) / 1000))
-  const isDone = remainingSecs <= 0
+  const m = classStore.activeMission;
+  if (!m || !isMissionId(m.id)) return null;
+  const def = CLASS_MISSIONS_BY_ID[m.id];
+  const clsDef = classStore.currentClassDef;
+  const remainingSecs = Math.max(0, Math.floor((m.endsAt - now.value) / 1000));
+  const isDone = remainingSecs <= 0;
 
-  const playerClass = classStore.playerClass || 'rocket'
-  const details = getClassMissionDetails(playerClass, m.id)
+  const playerClass = classStore.playerClass || 'rocket';
+  const details = getClassMissionDetails(playerClass, m.id);
 
   return {
     icon: clsDef?.icon || '📋',
     name: def?.name || 'Misión de Clase',
     color: clsDef?.color || 'var(--yellow, #ffd93d)',
     title: `${clsDef?.icon || ''} ${clsDef?.name || 'Clase'} · ${def?.name || 'Operación'}`,
-    desc: isDone 
-      ? '¡Operación finalizada! Haz clic para cobrar el botín.' 
-      : details.rulesText,
+    desc: isDone ? '¡Operación finalizada! Haz clic para cobrar el botín.' : details.rulesText,
     timeText: isDone ? '¡LISTO!' : formatTime(remainingSecs),
     isDone
-  }
-})
+  };
+});
 
 const handleImgError = (e: Event) => {
-  (e.target as HTMLImageElement).style.display = 'none'
-}
+  (e.target as HTMLImageElement).style.display = 'none';
+};
 
 const handleBadgeClick = (buff: ActiveBuffItem) => {
   if (buff.isEvent && buff.event) {
-    modalStore.open('EventDetail', { event: buff.event })
+    modalStore.open('EventDetail', { event: buff.event });
   }
-}
+};
 
 const handleClassMissionClick = () => {
-  modalStore.open('EventMissions')
-}
+  modalStore.open('EventMissions');
+};
 </script>
 
 <template>
-  <div
-    v-if="isVisible"
-    class="buffs-overlay"
-  >
+  <div v-if="isVisible" class="buffs-overlay">
     <TransitionGroup
       :css="false"
       tag="div"
@@ -114,6 +111,8 @@ const handleClassMissionClick = () => {
       >
         <div
           id="buff-badge-class-mission"
+          role="button"
+          tabindex="0"
           class="buff-badge is-class-mission-badge"
           :style="{ borderColor: classMissionBadge.color }"
           @click.stop="handleClassMissionClick"
@@ -125,7 +124,9 @@ const handleClassMissionClick = () => {
             <span
               class="buff-time"
               :class="{ 'is-done-text': classMissionBadge.isDone }"
-              :style="{ color: classMissionBadge.isDone ? 'var(--green, #22c55e)' : classMissionBadge.color }"
+              :style="{
+                color: classMissionBadge.isDone ? 'var(--green, #22c55e)' : classMissionBadge.color
+              }"
             >
               {{ classMissionBadge.timeText }}
             </span>
@@ -133,32 +134,30 @@ const handleClassMissionClick = () => {
         </div>
       </PVTooltip>
 
-      <PVTooltip 
-        v-for="buff in buffsStore.activeBuffs" 
-        :key="buff.id" 
+      <PVTooltip
+        v-for="buff in buffsStore.activeBuffs"
+        :key="buff.id"
         :title="buff.isEvent ? `📅 ${buff.name}` : buff.name"
         :description="buff.isEvent ? `${buff.desc} (Haz clic para ver detalles)` : buff.desc"
       >
-        <div 
+        <div
           :id="`buff-badge-${buff.id}`"
+          role="button"
+          tabindex="0"
           :class="['buff-badge', { 'is-event-badge': buff.isEvent }]"
           @click.stop="handleBadgeClick(buff)"
         >
           <div class="buff-icon-slot">
-            <span 
-              v-if="buff.isEmoji" 
-              class="buff-emoji"
-            >{{ buff.icon }}</span>
+            <span v-if="buff.isEmoji" class="buff-emoji">{{ buff.icon }}</span>
             <img
               v-else
               :src="buff.icon"
               :alt="buff.name"
               class="buff-icon"
               width="32"
-            
               height="32"
               @error="handleImgError"
-            >
+            />
           </div>
           <div class="buff-info">
             <span class="buff-time">{{ formatTime(buff.secs) }}</span>
@@ -170,7 +169,7 @@ const handleClassMissionClick = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .buffs-overlay {
   position: fixed;

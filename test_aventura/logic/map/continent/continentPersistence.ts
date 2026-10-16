@@ -68,7 +68,10 @@ export { CANONICAL_PRESETS };
 /**
  * Creates an empty blank continent project.
  */
-export function createBlankProject(name: string, dimensions?: ContinentDimensions): ContinentProject {
+export function createBlankProject(
+  name: string,
+  dimensions?: ContinentDimensions
+): ContinentProject {
   const dims = dimensions ?? { width: 3200, height: 3200, tileSize: 32 };
   const now = Temporal.Now.instant().epochMilliseconds;
   const id = `project_${now}_${Math.floor(Math.random() * 1000)}`;
@@ -96,16 +99,87 @@ export function createBlankProject(name: string, dimensions?: ContinentDimension
 }
 
 const CANONICAL_KANTO_NODES: Record<string, ContinentNode> = {
-  pallet: { id: 'pallet', name: 'Pueblo Paleta', x: 1250, y: 3500, scale: 'village', amenities: ['center'] },
-  viridian: { id: 'viridian', name: 'Ciudad Verde', x: 1250, y: 2750, scale: 'city', amenities: ['center', 'mart'] },
-  pewter: { id: 'pewter', name: 'Ciudad Plateada', x: 1250, y: 1000, scale: 'city', amenities: ['center', 'mart'] },
-  cerulean: { id: 'cerulean', name: 'Ciudad Celeste', x: 2000, y: 1625, scale: 'city', amenities: ['center', 'mart'] },
-  vermilion: { id: 'vermilion', name: 'Ciudad Carmín', x: 2000, y: 3125, scale: 'city', amenities: ['center', 'mart'] },
-  lavender: { id: 'lavender', name: 'Pueblo Lavanda', x: 2750, y: 2375, scale: 'town', amenities: ['center', 'mart'] },
-  celadon: { id: 'celadon', name: 'Ciudad Azulona', x: 1375, y: 2375, scale: 'metropolis', amenities: ['center', 'mart'] },
-  saffron: { id: 'saffron', name: 'Ciudad Azafrán', x: 2000, y: 2375, scale: 'metropolis', amenities: ['center', 'mart'] },
-  fuchsia: { id: 'fuchsia', name: 'Ciudad Fucsia', x: 2000, y: 3750, scale: 'city', amenities: ['center', 'mart'] },
-  cinnabar: { id: 'cinnabar', name: 'Isla Canela', x: 875, y: 4000, scale: 'town', amenities: ['center', 'mart'] }
+  // open-record: Canonical Kanto nodes dictionary indexed by node id
+  pallet: {
+    id: 'pallet',
+    name: 'Pueblo Paleta',
+    x: 1250,
+    y: 3500,
+    scale: 'village',
+    amenities: ['center']
+  },
+  viridian: {
+    id: 'viridian',
+    name: 'Ciudad Verde',
+    x: 1250,
+    y: 2750,
+    scale: 'city',
+    amenities: ['center', 'mart']
+  },
+  pewter: {
+    id: 'pewter',
+    name: 'Ciudad Plateada',
+    x: 1250,
+    y: 1000,
+    scale: 'city',
+    amenities: ['center', 'mart']
+  },
+  cerulean: {
+    id: 'cerulean',
+    name: 'Ciudad Celeste',
+    x: 2000,
+    y: 1625,
+    scale: 'city',
+    amenities: ['center', 'mart']
+  },
+  vermilion: {
+    id: 'vermilion',
+    name: 'Ciudad Carmín',
+    x: 2000,
+    y: 3125,
+    scale: 'city',
+    amenities: ['center', 'mart']
+  },
+  lavender: {
+    id: 'lavender',
+    name: 'Pueblo Lavanda',
+    x: 2750,
+    y: 2375,
+    scale: 'town',
+    amenities: ['center', 'mart']
+  },
+  celadon: {
+    id: 'celadon',
+    name: 'Ciudad Azulona',
+    x: 1375,
+    y: 2375,
+    scale: 'metropolis',
+    amenities: ['center', 'mart']
+  },
+  saffron: {
+    id: 'saffron',
+    name: 'Ciudad Azafrán',
+    x: 2000,
+    y: 2375,
+    scale: 'metropolis',
+    amenities: ['center', 'mart']
+  },
+  fuchsia: {
+    id: 'fuchsia',
+    name: 'Ciudad Fucsia',
+    x: 2000,
+    y: 3750,
+    scale: 'city',
+    amenities: ['center', 'mart']
+  },
+  cinnabar: {
+    id: 'cinnabar',
+    name: 'Isla Canela',
+    x: 875,
+    y: 4000,
+    scale: 'town',
+    amenities: ['center', 'mart']
+  }
 };
 
 const CANONICAL_KANTO_CONNECTIONS: readonly (readonly [string, string])[] = [
@@ -221,6 +295,7 @@ export function clearAllProfilesForTesting(): void {
 }
 
 function getAllStoredProjects(): Record<string, ContinentProject> {
+  // open-record: Stored continent projects dictionary indexed by project id
   const raw = getStorageItem(STORAGE_KEY_PROFILES);
   if (!raw) {
     const legacyRaw = getStorageItem(LEGACY_STORAGE_KEY_PROFILES);
@@ -231,7 +306,7 @@ function getAllStoredProjects(): Record<string, ContinentProject> {
   }
   try {
     const parsed = JSON.parse(raw) as Record<string, ContinentProject>; // open-record: Estructura o identificador procedural de aventura
-    const migrated: Record<string, ContinentProject> = {};
+    const migrated: Record<string, ContinentProject> = {}; // open-record: Migrated continent projects dictionary indexed by project id
     let needsSave = false;
 
     for (const [id, p] of Object.entries(parsed)) {

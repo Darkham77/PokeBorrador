@@ -24,7 +24,7 @@ import type { POINode } from '../../types/map/poiTypes.ts';
 describe.skip('Canonical Progression and Urban Tiers', () => {
   it('catalog provides structured progression from L_0 to L_9 with explicit tiers', () => {
     const catalog = generateProceduralPOICatalog(27, { targetUrbanSettlements: 15 });
-    
+
     // L_0 must be Starting Town (Tier 0, no gym)
     const l0 = catalog.find((p) => p.progressionIndex === 0 || p.id === 'town_1');
     expect(l0).toBeDefined();
@@ -38,7 +38,9 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
     expect(metropolises[0]!.tier).toBe(2);
 
     // Exactly 8 Gyms across Tier 1 cities and Metropolis
-    const gymSettlements = catalog.filter((p) => p.hasGym && (p.type === 'city' || p.type === 'metropolis'));
+    const gymSettlements = catalog.filter(
+      (p) => p.hasGym && (p.type === 'city' || p.type === 'metropolis')
+    );
     expect(gymSettlements.length).toBe(8);
 
     // Final Climax is Pokemon League (Tier 3)
@@ -53,7 +55,7 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
       height: 256,
       seed: 777,
       oceanWaterPercentage: 0.38,
-      mountainPercentage: 0.20
+      mountainPercentage: 0.2
     });
 
     const pois = placeRegionalPOIs(continent, {
@@ -63,7 +65,9 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
       targetUrbanSettlements: 15
     });
 
-    const l0 = pois.find((p) => p.progressionIndex === 0 || p.id.includes('town_1') || p.id.includes('origen'));
+    const l0 = pois.find(
+      (p) => p.progressionIndex === 0 || p.id.includes('town_1') || p.id.includes('origen')
+    );
     expect(l0).toBeDefined();
     // Starting Town must be in the Southwest quadrant
     expect(l0!.gridX).toBeLessThan(continent.width * 0.45);
@@ -72,7 +76,7 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
     const league = pois.find((p) => p.type === 'pokemon_league');
     expect(league).toBeDefined();
     // League must be on northern elevated massif
-    expect(league!.gridY).toBeLessThan(continent.height * 0.40);
+    expect(league!.gridY).toBeLessThan(continent.height * 0.4);
     expect(league!.elevation).toBeGreaterThanOrEqual(1);
   });
 
@@ -96,7 +100,9 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
     expect(bTypes.includes('pokemart')).toBe(false);
     expect(bTypes.includes('pokecenter')).toBe(true);
 
-    const houseCount = layout.buildings.filter((b) => b.type === 'house' || b.type === 'lab').length;
+    const houseCount = layout.buildings.filter(
+      (b) => b.type === 'house' || b.type === 'lab'
+    ).length;
     expect(houseCount).toBeGreaterThanOrEqual(2);
     expect(houseCount).toBeLessThanOrEqual(4);
   });
@@ -160,7 +166,9 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
     const marts = layout.buildings.filter((b) => b.type === 'pokemart');
     expect(marts.length).toBeLessThanOrEqual(1);
 
-    const residentialCount = layout.buildings.filter((b) => b.type === 'house' || b.type === 'condo').length;
+    const residentialCount = layout.buildings.filter(
+      (b) => b.type === 'house' || b.type === 'condo'
+    ).length;
     expect(residentialCount).toBeGreaterThanOrEqual(4);
   });
 
@@ -170,7 +178,7 @@ describe.skip('Canonical Progression and Urban Tiers', () => {
       height: 256,
       seed: 777,
       oceanWaterPercentage: 0.38,
-      mountainPercentage: 0.20
+      mountainPercentage: 0.2
     });
 
     // Check that mountains exist in the central latitudinal band (y between 80 and 176)

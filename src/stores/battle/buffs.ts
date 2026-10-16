@@ -1,19 +1,19 @@
-import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
-import { gsap } from 'gsap'
-import { useGameStore } from '@/stores/game.ts'
-import { useEventStore } from '@/stores/events.ts'
-import { isItemId, BUFF_FIELDS } from '@/data/inventory/items'
-import type { GatheringToolTier } from '@/types/pokemon/encounters'
-import type { GameState } from '@/types/system/game'
-import { getServerTime, getServerInstant, getGMT3Date } from '@/logic/utils/timeUtils'
+import { defineStore } from 'pinia';
+import { computed, ref } from 'vue';
+import { gsap } from 'gsap';
+import { useGameStore } from '@/stores/game.ts';
+import { useEventStore } from '@/stores/events.ts';
+import { isItemId, BUFF_FIELDS } from '@/data/inventory/items';
+import type { GatheringToolTier } from '@/types/pokemon/encounters';
+import type { GameState } from '@/types/system/game';
+import { getServerTime, getServerInstant, getGMT3Date } from '@/logic/utils/timeUtils';
 import {
   buildActiveEventBuffs,
   buildActivePlayerItemBuffs,
   type ActiveBuffItem
-} from './buffsHelper.ts'
+} from './buffsHelper.ts';
 
-export { type ActiveBuffItem }
+export { type ActiveBuffItem };
 
 const BUFF_TICK_INTERVAL_SEC = 1;
 const BUFF_AUTOSAVE_INTERVAL_SECS = 30;
@@ -45,39 +45,21 @@ function decrementActiveBuffs(s: GameState): boolean {
 }
 
 function shouldAutoSaveBuffTimers(s: GameState): boolean {
-  return BUFF_FIELDS.some(k => s[k] > 0 && s[k] % BUFF_AUTOSAVE_INTERVAL_SECS === 0);
+  return BUFF_FIELDS.some((k) => s[k] > 0 && s[k] % BUFF_AUTOSAVE_INTERVAL_SECS === 0);
 }
 
-export const useBuffsStore = defineStore('buffs', () => {
-  const gameStore = useGameStore()
-  const eventStore = useEventStore()
-  
-  const currentTick = ref(0)
-  let tickInterval: gsap.core.Tween | null = null
+const CUMULATIVE_BUFF_NAMES = [
+  'repel',
+  'shiny',
+  'amulet',
+  'lucky-egg',
+  'safari',
+  'cerulean',
+  'articuno',
+  'mewtwo'
+] as const;
 
-  function initTick() {
-    if (tickInterval) tickInterval.kill()
-    
-    const tick = () => {
-      currentTick.value++
-      // Pause timers if player is in an active battle
-      if (gameStore.state.battle && !gameStore.state.battle.over) {
-        tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick)
-        return
-      }
-
-      const s = gameStore.state
-      const changed = decrementActiveBuffs(s)
-
-      if (changed && shouldAutoSaveBuffTimers(s)) {
-        gameStore.save(false)
-      }
-      
-      tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick)
-    }
-
-    tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick)
-  }
+export type CumulativeBuffName = (typeof CUMULATIVE_BUFF_NAMES)[number];
 
 type StateCumulativeBuffField =
   | 'repelSecs'
@@ -89,7 +71,7 @@ type StateCumulativeBuffField =
   | 'articunoTicketSecs'
   | 'mewtwoTicketSecs';
 
-const CUMULATIVE_BUFF_FIELDS: Readonly<Record<string, StateCumulativeBuffField>> = {
+const CUMULATIVE_BUFF_FIELDS: Readonly<Record<CumulativeBuffName, StateCumulativeBuffField>> = {
   repel: 'repelSecs',
   shiny: 'shinyBoostSecs',
   amulet: 'amuletCoinSecs',
@@ -97,11 +79,11 @@ const CUMULATIVE_BUFF_FIELDS: Readonly<Record<string, StateCumulativeBuffField>>
   safari: 'safariTicketSecs',
   cerulean: 'ceruleanTicketSecs',
   articuno: 'articunoTicketSecs',
-  mewtwo: 'mewtwoTicketSecs',
+  mewtwo: 'mewtwoTicketSecs'
 };
 
 function applyCumulativeBuff(s: GameState, buffName: string, seconds: number): boolean {
-  const field = CUMULATIVE_BUFF_FIELDS[buffName];
+  const field = CUMULATIVE_BUFF_FIELDS[buffName as CumulativeBuffName];
   if (field) {
     s[field] = (s[field] || 0) + seconds;
     return true;
@@ -109,7 +91,12 @@ function applyCumulativeBuff(s: GameState, buffName: string, seconds: number): b
   return false;
 }
 
-function applyToolBuff(s: GameState, buffName: string, seconds: number, extraData: string | null): boolean {
+function applyToolBuff(
+  s: GameState,
+  buffName: string,
+  seconds: number,
+  extraData: string | null
+): boolean {
   const tier = (extraData as GatheringToolTier | null) || 'standard';
   if (buffName === 'fishing-rod') {
     s.fishingRodSecs = seconds;
@@ -133,7 +120,12 @@ function applyToolBuff(s: GameState, buffName: string, seconds: number, extraDat
   return false;
 }
 
-function applySpecialBuff(s: GameState, buffName: string, seconds: number, extraData: string | null): void {
+function applySpecialBuff(
+  s: GameState,
+  buffName: string,
+  seconds: number,
+  extraData: string | null
+): void {
   if (buffName === 'iv-scanner') {
     s.ivScannerSecs = seconds;
   } else if (buffName === 'incense') {
@@ -142,26 +134,59 @@ function applySpecialBuff(s: GameState, buffName: string, seconds: number, extra
   }
 }
 
+export const useBuffsStore = defineStore('buffs', () => {
+  const gameStore = useGameStore();
+  const eventStore = useEventStore();
+
+  const currentTick = ref(0);
+  let tickInterval: gsap.core.Tween | null = null;
+
+  function initTick() {
+    if (tickInterval) tickInterval.kill();
+
+    const tick = () => {
+      currentTick.value++;
+      // Pause timers if player is in an active battle
+      if (gameStore.state.battle && !gameStore.state.battle.over) {
+        tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick);
+        return;
+      }
+
+      const s = gameStore.state;
+      const changed = decrementActiveBuffs(s);
+
+      if (changed && shouldAutoSaveBuffTimers(s)) {
+        void gameStore.save(false);
+      }
+
+      tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick);
+    };
+
+    tickInterval = gsap.delayedCall(BUFF_TICK_INTERVAL_SEC, tick);
+  }
+
   function addBuff(buffName: string, seconds: number, extraData: string | null = null) {
     const s = gameStore.state;
-    if (!applyCumulativeBuff(s, buffName, seconds) && !applyToolBuff(s, buffName, seconds, extraData)) {
+    if (
+      !applyCumulativeBuff(s, buffName, seconds) &&
+      !applyToolBuff(s, buffName, seconds, extraData)
+    ) {
       applySpecialBuff(s, buffName, seconds, extraData);
     }
-    gameStore.save(false);
+    void gameStore.save(false);
   }
 
   const activeBuffs = computed<ActiveBuffItem[]>(() => {
-    void currentTick.value
-    const nowMs = getServerTime()
-    const nowInstant = getServerInstant()
-    const zdt = getGMT3Date()
+    void currentTick.value;
+    const nowMs = getServerTime();
+    const nowInstant = getServerInstant();
+    const zdt = getGMT3Date();
 
-    const eventBuffs = buildActiveEventBuffs(eventStore.activeEvents, nowMs, nowInstant, zdt)
-    const itemBuffs = buildActivePlayerItemBuffs(gameStore.state)
+    const eventBuffs = buildActiveEventBuffs(eventStore.activeEvents, nowMs, nowInstant, zdt);
+    const itemBuffs = buildActivePlayerItemBuffs(gameStore.state);
 
-    return [...eventBuffs, ...itemBuffs]
-  })
+    return [...eventBuffs, ...itemBuffs];
+  });
 
-  return { initTick, addBuff, activeBuffs }
-})
-
+  return { initTick, addBuff, activeBuffs };
+});

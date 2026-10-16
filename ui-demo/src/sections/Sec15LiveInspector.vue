@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useLiveInspector } from '../logic/useLiveInspector.ts'
+import { computed } from 'vue';
+import { useLiveInspector } from '../logic/useLiveInspector.ts';
 
-const { logs, serializedData, clear, log } = useLiveInspector()
+const { logs, serializedData, clear, log } = useLiveInspector();
 
 const formattedJson = computed(() => {
-  return JSON.stringify(serializedData.value, null, 2)
-})
+  return JSON.stringify(serializedData.value, null, 2);
+});
 
 function handleClear() {
-  clear()
-  log('Consola limpiada por el usuario.')
+  clear();
+  log('Consola limpiada por el usuario.');
 }
 
 function handleReset() {
-  clear()
-  log('Formulario y datos restablecidos.')
+  clear();
+  log('Formulario y datos restablecidos.');
 }
 </script>
 
@@ -38,7 +38,7 @@ function handleReset() {
               id="btn-clear-inspector"
               type="button"
               class="pv-curve-xs pv-btn pv-btn-secondary"
-              style="font-size: var(--font-7); padding: 4px 8px;"
+              style="font-size: var(--font-7); padding: 4px 8px"
               @click="handleClear"
             >
               <span>LIMPIAR CONSOLA</span>
@@ -47,7 +47,7 @@ function handleReset() {
               id="btn-reset-inspector"
               type="button"
               class="pv-curve-xs pv-btn pv-btn-danger"
-              style="font-size: var(--font-7); padding: 4px 8px;"
+              style="font-size: var(--font-7); padding: 4px 8px"
               @click="handleReset"
             >
               <span>RESET DATOS</span>
@@ -59,22 +59,12 @@ function handleReset() {
           <!-- Columna 1: Logs de eventos en vivo -->
           <div class="log-box-column">
             <span class="column-label">ÚLTIMOS EVENTOS DETECTADOS:</span>
-            <div
-              id="live-inspector-logs"
-              class="log-box-content pv-frame-control"
-            >
-              <div
-                v-for="entry in logs"
-                :key="entry.id"
-                class="log-entry"
-              >
+            <div id="live-inspector-logs" class="log-box-content pv-frame-control">
+              <div v-for="entry in logs" :key="entry.id" class="log-entry">
                 <span class="log-time">[{{ entry.time }}]</span>
                 <span class="log-msg">{{ entry.message }}</span>
               </div>
-              <div
-                v-if="logs.length === 0"
-                style="color: var(--slate-500);"
-              >
+              <div v-if="logs.length === 0" style="color: var(--slate-500)">
                 // Consola vacía. Interactúa con los controles para ver eventos...
               </div>
             </div>
@@ -83,10 +73,9 @@ function handleReset() {
           <!-- Columna 2: JSON Serializado -->
           <div class="log-box-column">
             <span class="column-label">VALORES SERIALIZADOS DEL FORMULARIO:</span>
-            <pre
-              id="live-inspector-json"
-              class="json-pre-content pv-frame-control"
-            >{{ formattedJson }}</pre>
+            <pre id="live-inspector-json" class="json-pre-content pv-frame-control">{{
+              formattedJson
+            }}</pre>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@
 
     & .sandstorm-layer {
       position: absolute;
-      transform: Translate3d(0,0,0);
+      transform: Translate3d(0, 0, 0);
       inset: var(--weather-layer-bleed, -600px);
       background-repeat: repeat;
       will-change: transform;
@@ -17,18 +17,18 @@
   &.sandstorm {
     @extend %sandstorm-base;
 
-    & .layer-1 { 
+    & .layer-1 {
       opacity: 0.5;
-      transform: Translate3d(calc(var(--seed-x, 0) * 0.5px), calc(var(--seed-y, 0) * 0.5px), 0); 
+      transform: Translate3d(calc(var(--seed-x, 0) * 0.5px), calc(var(--seed-y, 0) * 0.5px), 0);
       background-image: var(--weather-noise-1-url);
-      background-size: 512px 512px; 
+      background-size: 512px 512px;
       filter: sepia(1) Saturate(2) Brightness(0.7) Contrast(1.5);
     }
-    & .layer-2 { 
-      opacity: 0.55; 
-      transform: Translate3d(calc(var(--seed-x, 0) * 1.2px), calc(var(--seed-y, 0) * 1.2px), 0); 
+    & .layer-2 {
+      opacity: 0.55;
+      transform: Translate3d(calc(var(--seed-x, 0) * 1.2px), calc(var(--seed-y, 0) * 1.2px), 0);
       background-image: var(--weather-noise-2-url);
-      background-size: 512px 512px; 
+      background-size: 512px 512px;
       filter: sepia(1) Saturate(1.8) Brightness(0.65) Contrast(1.6);
     }
   }
@@ -42,14 +42,14 @@
       background-image: url("data:image/svg+xml,%3Csvg width='256' height='256' viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%238a6d51'%3E%3Crect x='23' y='45' width='6' height='6'/%3E%3Crect x='150' y='20' width='4' height='4'/%3E%3Crect x='88' y='110' width='5' height='5'/%3E%3Crect x='210' y='160' width='3' height='3'/%3E%3Crect x='45' y='200' width='6' height='6'/%3E%3Crect x='130' y='230' width='4' height='4'/%3E%3Crect x='10' y='120' width='3' height='3'/%3E%3Crect x='190' y='80' width='5' height='5'/%3E%3Crect x='240' y='240' width='4' height='4'/%3E%3Crect x='70' y='10' width='3' height='3'/%3E%3C/g%3E%3C/svg%3E");
     }
 
-    & .layer-1 { 
-      opacity: 0.95; 
-      transform: Translate3d(calc(var(--seed-x, 0) * 0.8px), calc(var(--seed-y, 0) * 0.8px), 0); 
+    & .layer-1 {
+      opacity: 0.95;
+      transform: Translate3d(calc(var(--seed-x, 0) * 0.8px), calc(var(--seed-y, 0) * 0.8px), 0);
       background-size: 256px 256px;
     }
-    & .layer-2 { 
-      opacity: 0.8; 
-      transform: Translate3d(calc(var(--seed-x, 0) * 1.5px), calc(var(--seed-y, 0) * 1.5px), 0); 
+    & .layer-2 {
+      opacity: 0.8;
+      transform: Translate3d(calc(var(--seed-x, 0) * 1.5px), calc(var(--seed-y, 0) * 1.5px), 0);
       background-size: 512px 512px;
     }
   }
@@ -80,7 +80,6 @@
       inset: 0;
       pointer-events: none;
       box-shadow: var(--shadow-card);
-
     }
   }
 }

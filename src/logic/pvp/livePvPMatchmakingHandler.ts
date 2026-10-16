@@ -1,10 +1,7 @@
 import type { Ref } from 'vue';
 export type DelayedCall = { kill: () => void };
 import { parseInstantSafe } from '@/logic/utils/timeUtils.ts';
-import {
-  DEFAULT_INITIAL_ELO,
-  ONLINE_PRESENCE_WINDOW_MS
-} from '@/logic/constants/gameplay.ts';
+import { DEFAULT_INITIAL_ELO, ONLINE_PRESENCE_WINDOW_MS } from '@/logic/constants/gameplay.ts';
 import { isAllowedRankGap } from '@/logic/pvp/rankedEngine.ts';
 import {
   PVP_INVITE_EXPIRY_MS,
@@ -15,9 +12,12 @@ import {
 } from '@/types/battle/pvp';
 
 export function getMatchmakingTimeoutSec(): number {
-  const debugObj = typeof window !== 'undefined'
-    ? window.__VITE_DEBUG__
-    : (typeof globalThis !== 'undefined' ? globalThis.__VITE_DEBUG__ : undefined);
+  const debugObj =
+    typeof window !== 'undefined'
+      ? window.__VITE_DEBUG__
+      : typeof globalThis !== 'undefined'
+        ? globalThis.__VITE_DEBUG__
+        : undefined;
   if (debugObj?.fastRankedDelay) {
     return FAST_MATCHMAKING_TIMEOUT_SEC;
   }
@@ -35,16 +35,17 @@ export interface RankedQueueEntry {
 
 const RANKED_QUEUE_FETCH_LIMIT = 10 as const;
 const RANKED_TIER_GAP_TOLERANCE = 1 as const;
-const MATCHMAKING_BATTLE_INVITE_COLUMNS = 'id, sender_id, challenger_id, opponent_id, status, created_at, config';
+const MATCHMAKING_BATTLE_INVITE_COLUMNS =
+  'id, sender_id, challenger_id, opponent_id, status, created_at, config';
 
 async function checkUserOnline(db: DBRouter | null, userId: string): Promise<boolean> {
   if (!db) return false;
   try {
-    const { data } = await db
+    const { data } = (await db
       .from('game_saves')
       .select('updated_at')
       .eq('user_id', userId)
-      .single() as { data: { updated_at: string } | null };
+      .single()) as { data: { updated_at: string } | null };
 
     if (!data?.updated_at) {
       return userId.startsWith('local_');
@@ -52,7 +53,7 @@ async function checkUserOnline(db: DBRouter | null, userId: string): Promise<boo
     const lastSeen = parseInstantSafe(data.updated_at);
     if (!lastSeen) return false;
     const now = Temporal.Now.instant().epochMilliseconds;
-    return (now - lastSeen.epochMilliseconds) < ONLINE_PRESENCE_WINDOW_MS;
+    return now - lastSeen.epochMilliseconds < ONLINE_PRESENCE_WINDOW_MS;
   } catch {
     return userId.startsWith('local_');
   }
@@ -77,19 +78,24 @@ export async function executePollMatchmaking(ctx: {
 
   const data = res.data as RankedQueueEntry[] | null;
   if (data && data.length > 0 && ctx.userId && ctx.db) {
-    const match = typeof ctx.myElo === 'number'
-      ? data
-          .filter((entry) => isAllowedRankGap(ctx.myElo!, entry.elo, RANKED_TIER_GAP_TOLERANCE))
-          .sort((a, b) => Math.abs(a.elo - ctx.myElo!) - Math.abs(b.elo - ctx.myElo!))[0]
-      : data[0];
+    const match =
+      typeof ctx.myElo === 'number'
+        ? data
+            .filter((entry) => isAllowedRankGap(ctx.myElo!, entry.elo, RANKED_TIER_GAP_TOLERANCE))
+            .sort((a, b) => Math.abs(a.elo - ctx.myElo!) - Math.abs(b.elo - ctx.myElo!))[0]
+        : data[0];
     if (!match) return;
-    const invRes = await ctx.db.from('battle_invites').insert({
-      challenger_id: ctx.userId,
-      sender_id: ctx.userId,
-      opponent_id: match.user_id,
-      status: 'ranked_match',
-      config: { format: '6v6', levelRule: 'flat50', arena: { gymId: 'celadon' }, mode: 'ranked' }
-    }).select().single();
+    const invRes = await ctx.db
+      .from('battle_invites')
+      .insert({
+        challenger_id: ctx.userId,
+        sender_id: ctx.userId,
+        opponent_id: match.user_id,
+        status: 'ranked_match',
+        config: { format: '6v6', levelRule: 'flat50', arena: { gymId: 'celadon' }, mode: 'ranked' }
+      })
+      .select()
+      .single();
 
     const invite = invRes.data as BattleInvite | null;
     const error = invRes.error;
@@ -115,18 +121,20 @@ export function executeInitInvitePoller(ctx: {
 }): DelayedCall | null {
   const poll = async () => {
     if (!ctx.userId || !ctx.db) return;
-    const { data } = await ctx.db
+    const { data } = (await ctx.db
       .from('battle_invites')
       .select(MATCHMAKING_BATTLE_INVITE_COLUMNS)
       .eq('opponent_id', ctx.userId)
       .in('status', ['pending', 'ranked_match'])
       .order('created_at', { ascending: false })
-      .limit(1) as { data: BattleInvite[] | null };
+      .limit(1)) as { data: BattleInvite[] | null };
 
     if (data && data.length > 0 && ctx.db) {
       const inv = data[0];
       if (!inv) return;
-      const diffMs = Temporal.Now.instant().epochMilliseconds - Temporal.Instant.from(inv.created_at).epochMilliseconds;
+      const diffMs =
+        Temporal.Now.instant().epochMilliseconds -
+        Temporal.Instant.from(inv.created_at).epochMilliseconds;
       if (diffMs > PVP_INVITE_EXPIRY_MS) return;
 
       if (inv.status === 'ranked_match') {
@@ -171,7 +179,8 @@ export async function executeStartSearch(ctx: {
   if (!ctx.userId || !ctx.db) return null;
 
   if (ctx.currentSeasonRules) {
-    const { validateTeamForRanked, normalizeRankedRules } = await import('@/logic/pvp/rankedEngine');
+    const { validateTeamForRanked, normalizeRankedRules } =
+      await import('@/logic/pvp/rankedEngine');
     const rules = normalizeRankedRules(ctx.currentSeasonRules, ctx.currentSeasonRules.name);
     const format = rules.maxPokemon <= 3 ? '3v3' : '6v6';
     const team = ctx.resolvePvpTeam(format);
@@ -242,13 +251,17 @@ export async function executeSendInvite(ctx: {
     arena: { gymId: 'celadon' }
   };
 
-  const invRes = await ctx.db.from('battle_invites').insert({
-    challenger_id: ctx.userId,
-    sender_id: ctx.userId,
-    opponent_id: ctx.opponentId,
-    status: 'pending',
-    config: challengeConfig
-  }).select().single();
+  const invRes = await ctx.db
+    .from('battle_invites')
+    .insert({
+      challenger_id: ctx.userId,
+      sender_id: ctx.userId,
+      opponent_id: ctx.opponentId,
+      status: 'pending',
+      config: challengeConfig
+    })
+    .select()
+    .single();
 
   const data = invRes.data as BattleInvite | null;
   const error = invRes.error;
@@ -270,18 +283,21 @@ export async function executeAcceptInvite(ctx: {
   onStartBattle: (invite: BattleInvite) => void;
 }): Promise<void> {
   if (!ctx.db) return;
-  const { data: invite } = await ctx.db
+  const { data: invite } = (await ctx.db
     .from('battle_invites')
     .select(MATCHMAKING_BATTLE_INVITE_COLUMNS)
     .eq('id', ctx.inviteId)
-    .single() as { data: BattleInvite | null };
+    .single()) as { data: BattleInvite | null };
 
   if (!invite) return;
 
   const senderId = invite.sender_id || invite.challenger_id || '';
   const isOnline = await checkUserOnline(ctx.db, senderId);
   if (!isOnline) {
-    await ctx.db.from('battle_invites').update({ status: 'cancelled_offline' }).eq('id', ctx.inviteId);
+    await ctx.db
+      .from('battle_invites')
+      .update({ status: 'cancelled_offline' })
+      .eq('id', ctx.inviteId);
     ctx.activeInvite.value = null;
     ctx.openOfflineModal('El oponente');
     return;
@@ -323,4 +339,3 @@ export function executeStartSearchCountdown(ctx: {
   timer = ctx.scheduleNext(tick);
   return timer;
 }
-

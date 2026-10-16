@@ -1,7 +1,7 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/cosmetics" as *;
-@use "@/styles/components/_profile-shared.scss" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/cosmetics' as *;
+@use '@/styles/components/_profile-shared.scss' as *;
 
 .profile-header-premium {
   display: none;
@@ -122,12 +122,12 @@
         font-size: var(--font-14);
         font-weight: bold;
         margin-left: 4px;
-        
+
         &.male {
           color: Rgb(59 139 255 / 100%);
           text-shadow: 0 0 5px Rgb(59 139 255 / 50%);
         }
-        
+
         &.female {
           color: Rgb(255 110 255 / 100%);
           text-shadow: 0 0 5px Rgb(255 110 255 / 50%);
@@ -153,7 +153,7 @@
         font-size: var(--font-7);
         cursor: pointer;
         flex-shrink: 0;
-        
+
         &:hover {
           background: Rgb(255 255 255 / 5%);
           border-color: var(--yellow);
@@ -254,7 +254,7 @@
   .reset-wrap-legacy {
     text-align: center;
     margin-top: 12px;
-    
+
     .reset-btn-legacy {
       @include pixelated;
 
@@ -265,14 +265,14 @@
       color: Rgb(255 255 255 / 40%);
       font-size: var(--font-8);
       cursor: pointer;
-      
+
       &:hover {
         background: Rgb(245 158 11 / 5%);
         color: Rgb(245 158 11 / 100%);
         border-color: Rgb(245 158 11 / 40%);
       }
     }
-    
+
     .hint-text-legacy {
       color: Rgb(255 255 255 / 20%);
       font-size: var(--font-10);
@@ -283,7 +283,7 @@
 
 .profile-modal-legacy {
   border-left: 2px solid Rgb(255 255 255 / 5%) !important;
-  
+
   :deep(.modal-scrollable-content) {
     background: transparent !important;
   }

@@ -16,13 +16,14 @@ export function auditFsmSubstateParity(fsmPath: string): SubstateParityResult {
   const content = readFileSync(fsmPath, 'utf-8');
 
   // Extrae dinámicamente todos los substates definidos en el store
-  const substateMatches = Array.from(content.matchAll(/['"]([\w_]+)['"]\s*:\s*['"]substate['"]/gi))
-    .map(m => m[1] || '');
+  const substateMatches = Array.from(
+    content.matchAll(/['"]([\w_]+)['"]\s*:\s*['"]substate['"]/gi)
+  ).map((m) => m[1] || '');
 
   // Extrae además literales de strings en mayúsculas que parezcan substates (convención del proyecto)
   const literalSubstates = Array.from(content.matchAll(/['"]([A-Z_]{4,})['"]/g))
-    .map(m => m[1] || '')
-    .filter(s => Boolean(s) && (s.includes('_') || s.length >= 6));
+    .map((m) => m[1] || '')
+    .filter((s) => Boolean(s) && (s.includes('_') || s.length >= 6));
 
   const allSubstates = [...new Set([...substateMatches, ...literalSubstates])];
 

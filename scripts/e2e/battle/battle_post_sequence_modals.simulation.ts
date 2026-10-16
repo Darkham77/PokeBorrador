@@ -27,7 +27,8 @@ class PostBattleSequenceSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { useEventStore } = await import('../../../src/stores/events.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const gameStore = useGameStore();
@@ -48,10 +49,19 @@ class PostBattleSequenceSimWrapper extends BaseBattleSimulation {
         type: 'competition' as const,
         icon: '🏆',
         config: JSON.stringify({
-          subCompetitions: [{ id: 'heavyweight', name: 'Más Pesado', metric: 'weight', order: 'max' }]
+          subCompetitions: [
+            { id: 'heavyweight', name: 'Más Pesado', metric: 'weight', order: 'max' }
+          ]
         }),
         rules: {
-          categories: [{ id: 'heavyweight', title: 'Más Pesado', metric: 'weight' as const, order: 'max' as const }]
+          categories: [
+            {
+              id: 'heavyweight',
+              title: 'Más Pesado',
+              metric: 'weight' as const,
+              order: 'max' as const
+            }
+          ]
         }
       };
       eventStore.allEvents = [mockEvent];
@@ -65,17 +75,21 @@ test.describe('Post-Battle Sequential Modal Coordinator E2E Simulation', () => {
     test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
   });
 
-  test('executes MoveLearning followed by Evolution in strict priority queue order', async ({ page }) => {
+  test('executes MoveLearning followed by Evolution in strict priority queue order', async ({
+    page
+  }) => {
     const sim = new PostBattleSequenceSimWrapper(page, 'SeqMoveEvoUser');
     await sim.setup();
     await sim.setupTestScenario();
 
     // Trigger coordinator sequence in page context
     await page.evaluate(async () => {
-      const { postBattleCoordinator } = await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
+      const { postBattleCoordinator } =
+        await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { requirePokemonMoveId } = await import('../../../src/data/battle/moves.ts');
-      const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider.ts');
+      const { pokemonDataProvider } =
+        await import('../../../src/logic/providers/pokemonDataProvider.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const gameStore = useGameStore();
@@ -121,28 +135,38 @@ test.describe('Post-Battle Sequential Modal Coordinator E2E Simulation', () => {
     await expect(evoModal).not.toBeVisible({ timeout: 10000 });
 
     // 7. Verify coordinator is idle and Pokemon evolved
-    await expect.poll(async () => {
-      return await page.evaluate(async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { postBattleCoordinator } = await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
-        const p = useGameStore().state.team[0];
-        return p?.id === 'charmeleon' && !postBattleCoordinator.isBusy();
-      });
-    }, { timeout: 10000 }).toBe(true);
+    await expect
+      .poll(
+        async () => {
+          return await page.evaluate(async () => {
+            const { useGameStore } = await import('../../../src/stores/game.ts');
+            const { postBattleCoordinator } =
+              await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
+            const p = useGameStore().state.team[0];
+            return p?.id === 'charmeleon' && !postBattleCoordinator.isBusy();
+          });
+        },
+        { timeout: 10000 }
+      )
+      .toBe(true);
 
     sim.finish('MoveLearning -> Evolution E2E Verified');
   });
 
-  test('cancelling move learning cleanly advances to evolution without deadlock', async ({ page }) => {
+  test('cancelling move learning cleanly advances to evolution without deadlock', async ({
+    page
+  }) => {
     const sim = new PostBattleSequenceSimWrapper(page, 'SeqCancelMoveEvoUser');
     await sim.setup();
     await sim.setupTestScenario();
 
     await page.evaluate(async () => {
-      const { postBattleCoordinator } = await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
+      const { postBattleCoordinator } =
+        await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { requirePokemonMoveId } = await import('../../../src/data/battle/moves.ts');
-      const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider.ts');
+      const { pokemonDataProvider } =
+        await import('../../../src/logic/providers/pokemonDataProvider.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const gameStore = useGameStore();
@@ -181,14 +205,20 @@ test.describe('Post-Battle Sequential Modal Coordinator E2E Simulation', () => {
     await clickResilient(evoConfirmBtn);
     await expect(evoModal).not.toBeVisible({ timeout: 10000 });
 
-    await expect.poll(async () => {
-      return await page.evaluate(async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { postBattleCoordinator } = await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
-        const p = useGameStore().state.team[0];
-        return p?.id === 'charmeleon' && !postBattleCoordinator.isBusy();
-      });
-    }, { timeout: 10000 }).toBe(true);
+    await expect
+      .poll(
+        async () => {
+          return await page.evaluate(async () => {
+            const { useGameStore } = await import('../../../src/stores/game.ts');
+            const { postBattleCoordinator } =
+              await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
+            const p = useGameStore().state.team[0];
+            return p?.id === 'charmeleon' && !postBattleCoordinator.isBusy();
+          });
+        },
+        { timeout: 10000 }
+      )
+      .toBe(true);
 
     sim.finish('Cancel Move -> Evolution E2E Verified');
   });
@@ -199,10 +229,12 @@ test.describe('Post-Battle Sequential Modal Coordinator E2E Simulation', () => {
     await sim.setupTestScenario();
 
     await page.evaluate(async () => {
-      const { postBattleCoordinator } = await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
+      const { postBattleCoordinator } =
+        await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { requirePokemonMoveId } = await import('../../../src/data/battle/moves.ts');
-      const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider.ts');
+      const { pokemonDataProvider } =
+        await import('../../../src/logic/providers/pokemonDataProvider.ts');
 
       const gameStore = useGameStore();
       const pokemon = gameStore.state.team[0]!;
@@ -238,28 +270,39 @@ test.describe('Post-Battle Sequential Modal Coordinator E2E Simulation', () => {
 
     await expect(moveModal).not.toBeVisible({ timeout: 10000 });
 
-    await expect.poll(async () => {
-      return await page.evaluate(async () => {
-        const { postBattleCoordinator } = await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
-        return !postBattleCoordinator.isBusy();
-      });
-    }, { timeout: 10000 }).toBe(true);
+    await expect
+      .poll(
+        async () => {
+          return await page.evaluate(async () => {
+            const { postBattleCoordinator } =
+              await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
+            return !postBattleCoordinator.isBusy();
+          });
+        },
+        { timeout: 10000 }
+      )
+      .toBe(true);
 
     sim.finish('Double Move Learning E2E Verified');
   });
 
-  test('triple cascade: MoveLearning -> Evolution -> EventAutoEnroll executes in exact priority order', async ({ page }) => {
+  test('triple cascade: MoveLearning -> Evolution -> EventAutoEnroll executes in exact priority order', async ({
+    page
+  }) => {
     const sim = new PostBattleSequenceSimWrapper(page, 'SeqTripleCascadeUser');
     await sim.setup();
     await sim.setupTestScenario();
 
     await page.evaluate(async () => {
-      const { postBattleCoordinator } = await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
+      const { postBattleCoordinator } =
+        await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { requirePokemonMoveId } = await import('../../../src/data/battle/moves.ts');
-      const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider.ts');
+      const { pokemonDataProvider } =
+        await import('../../../src/logic/providers/pokemonDataProvider.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
 
       const gameStore = useGameStore();
       const pokemon = gameStore.state.team[0]!;
@@ -308,12 +351,18 @@ test.describe('Post-Battle Sequential Modal Coordinator E2E Simulation', () => {
     await expect(enrollModal).not.toBeVisible({ timeout: 10000 });
 
     // 4. Coordinator completed
-    await expect.poll(async () => {
-      return await page.evaluate(async () => {
-        const { postBattleCoordinator } = await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
-        return !postBattleCoordinator.isBusy();
-      });
-    }, { timeout: 10000 }).toBe(true);
+    await expect
+      .poll(
+        async () => {
+          return await page.evaluate(async () => {
+            const { postBattleCoordinator } =
+              await import('../../../src/logic/battle/postBattleSequenceCoordinator.ts');
+            return !postBattleCoordinator.isBusy();
+          });
+        },
+        { timeout: 10000 }
+      )
+      .toBe(true);
 
     sim.finish('Triple Cascade Sequence E2E Verified');
   });

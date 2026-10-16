@@ -4,5 +4,5 @@ import { runMovesFuzzer } from '../core/fuzzer_engine.ts';
 
 await runFuzzerSuite({
   suiteName: 'Fuzzer — Movimientos (Gen 9)',
-  run: runMovesFuzzer,
+  run: runMovesFuzzer
 });

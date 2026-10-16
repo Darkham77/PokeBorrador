@@ -7,17 +7,19 @@ export function useAdventureCapabilities() {
 
   const hasSurf = computed(() => {
     const badges = gameStore.state.badges ?? 0;
-    const hasMove = gameStore.state.team?.some(p => 
-      p.moves?.some(m => m && (m.id === 'surf' || m.name?.toLowerCase() === 'surf'))
-    ) ?? false;
+    const hasMove =
+      gameStore.state.team?.some((p) =>
+        p.moves?.some((m) => m && (m.id === 'surf' || m.name?.toLowerCase() === 'surf'))
+      ) ?? false;
     return badges >= 5 && hasMove;
   });
 
   const hasCut = computed(() => {
     const badges = gameStore.state.badges ?? 0;
-    const hasMove = gameStore.state.team?.some(p => 
-      p.moves?.some(m => m && (m.id === 'cut' || m.name?.toLowerCase() === 'cut'))
-    ) ?? false;
+    const hasMove =
+      gameStore.state.team?.some((p) =>
+        p.moves?.some((m) => m && (m.id === 'cut' || m.name?.toLowerCase() === 'cut'))
+      ) ?? false;
     return badges >= 2 && hasMove;
   });
 

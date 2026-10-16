@@ -12,10 +12,13 @@ import {
   RANDOM_STRING_SUBSTRING_END
 } from '@/logic/constants/gameplay.ts';
 
+import { isItemId } from '@/data/inventory/items';
+import type { Inventory } from '@/types/inventory/items';
+
 interface OfflineSaveData {
   box?: Record<string, unknown>[];
   team?: Record<string, unknown>[];
-  inventory?: Record<string, number>;
+  inventory?: Inventory;
   money?: number;
   [key: string]: unknown;
 }
@@ -55,13 +58,15 @@ function removePokemonFromSave(saveObj: OfflineSaveData, uid: string): boolean {
 }
 
 function removeItemFromSave(saveObj: OfflineSaveData, itemName: string, qty: number): boolean {
-  saveObj.inventory = saveObj.inventory || {};
-  const currentQty = saveObj.inventory[itemName] || 0;
+  if (!saveObj.inventory) saveObj.inventory = {};
+  const inventory = saveObj.inventory;
+  if (!isItemId(itemName)) return false;
+  const currentQty = inventory[itemName] || 0;
   if (currentQty < qty) return false;
 
-  saveObj.inventory[itemName] = currentQty - qty;
-  if (saveObj.inventory[itemName]! <= 0) {
-    delete saveObj.inventory[itemName];
+  inventory[itemName] = currentQty - qty;
+  if (inventory[itemName]! <= 0) {
+    delete inventory[itemName];
   }
   return true;
 }
@@ -92,7 +97,11 @@ export async function emulatePublishListing(
   params: Record<string, unknown>,
   context: { userId: string; username: string }
 ): Promise<DBResponse> {
-  const { p_listing_type, p_asset_data, p_price } = params as { p_listing_type: MarketListingType, p_asset_data: Pokemon | { name: string; qty: number }, p_price: number };
+  const { p_listing_type, p_asset_data, p_price } = params as {
+    p_listing_type: MarketListingType;
+    p_asset_data: Pokemon | { name: string; qty: number };
+    p_price: number;
+  };
   const { userId, username } = context;
 
   const validationError = validatePublishListing(p_listing_type, p_asset_data);
@@ -105,12 +114,19 @@ export async function emulatePublishListing(
     [userId]
   );
   if (activeListings.length >= MAX_MARKET_LISTINGS_PER_USER) {
-    return { data: null, error: { message: `Límite de publicaciones alcanzado (${MAX_MARKET_LISTINGS_PER_USER})` } };
+    return {
+      data: null,
+      error: { message: `Límite de publicaciones alcanzado (${MAX_MARKET_LISTINGS_PER_USER})` }
+    };
   }
 
-  const saves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
+  const saves = await queryLocal('SELECT save_data FROM game_saves WHERE user_id = ?', [userId]);
   if (saves.length === 0) return { data: null, error: { message: 'Save not found' } };
-  const saveObj = (typeof saves[0]!.save_data === 'string' ? JSON.parse(saves[0]!.save_data as string) : saves[0]!.save_data) as OfflineSaveData;
+  const saveObj = (
+    typeof saves[0]!.save_data === 'string'
+      ? JSON.parse(saves[0]!.save_data as string)
+      : saves[0]!.save_data
+  ) as OfflineSaveData;
 
   const removeError = removePublishedAssetFromSave(saveObj, p_listing_type, p_asset_data);
   if (removeError) {
@@ -129,7 +145,14 @@ export async function emulatePublishListing(
   );
 
   await persistSQLite();
-  return { data: 'list_' + Math.random().toString(ALPHANUMERIC_RADIX).substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END), error: null };
+  return {
+    data:
+      'list_' +
+      Math.random()
+        .toString(ALPHANUMERIC_RADIX)
+        .substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END),
+    error: null
+  };
 }
 
 export async function emulateBuyListing(
@@ -140,14 +163,34 @@ export async function emulateBuyListing(
   const { p_listing_id } = params;
   const { userId } = context;
 
-  const listings = await queryLocal("SELECT * FROM market_listings WHERE id = ? AND status = 'active'", [p_listing_id]);
-  if (listings.length === 0) return { data: null, error: { message: 'La publicación ya no está disponible o fue vendida.' } };
-  const listing = listings[0] as { id: string | number; seller_id: string; listing_type: MarketListingType; price: number; data: string | Record<string, unknown> };
-  if (listing.seller_id === userId) return { data: null, error: { message: 'No puedes comprar tu propia oferta.' } };
+  const listings = await queryLocal(
+    "SELECT * FROM market_listings WHERE id = ? AND status = 'active'",
+    [p_listing_id]
+  );
+  if (listings.length === 0)
+    return {
+      data: null,
+      error: { message: 'La publicación ya no está disponible o fue vendida.' }
+    };
+  const listing = listings[0] as {
+    id: string | number;
+    seller_id: string;
+    listing_type: MarketListingType;
+    price: number;
+    data: string | Record<string, unknown>;
+  };
+  if (listing.seller_id === userId)
+    return { data: null, error: { message: 'No puedes comprar tu propia oferta.' } };
 
-  const buyerSaves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
+  const buyerSaves = await queryLocal('SELECT save_data FROM game_saves WHERE user_id = ?', [
+    userId
+  ]);
   if (buyerSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
-  const buyerSave = (typeof buyerSaves[0]!.save_data === 'string' ? JSON.parse(buyerSaves[0]!.save_data as string) : buyerSaves[0]!.save_data) as OfflineSaveData;
+  const buyerSave = (
+    typeof buyerSaves[0]!.save_data === 'string'
+      ? JSON.parse(buyerSaves[0]!.save_data as string)
+      : buyerSaves[0]!.save_data
+  ) as OfflineSaveData;
 
   const price = Number(listing.price);
   if ((buyerSave.money || 0) < price) {
@@ -165,12 +208,16 @@ export async function emulateBuyListing(
   if (typeof assetDataObj === 'string') {
     try {
       assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    } catch (_e) {
+    } catch {
       void 0;
     }
   }
 
-  const claimIdBuyer = 'claim_' + Math.random().toString(ALPHANUMERIC_RADIX).substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END);
+  const claimIdBuyer =
+    'claim_' +
+    Math.random()
+      .toString(ALPHANUMERIC_RADIX)
+      .substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END);
   const buyerAssetPayload = {
     type: listing.listing_type === 'pokemon' ? 'pokemon' : 'item',
     data: assetDataObj
@@ -180,9 +227,14 @@ export async function emulateBuyListing(
     [claimIdBuyer, userId, p_listing_id, JSON.stringify(buyerAssetPayload)]
   );
 
-  const claimIdSeller = 'claim_' + Math.random().toString(ALPHANUMERIC_RADIX).substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END);
+  const claimIdSeller =
+    'claim_' +
+    Math.random()
+      .toString(ALPHANUMERIC_RADIX)
+      .substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END);
   const finalPayment = Math.floor(price * MARKET_TAX_REMAINDER_MULTIPLIER);
-  const sellerAssetPayload: Record<string, unknown> = { // open-record: Generic key-value data dictionary container
+  const sellerAssetPayload: Record<string, unknown> = {
+    // open-record: Generic key-value data dictionary container
     type: 'money',
     data: finalPayment
   };
@@ -219,32 +271,48 @@ export async function emulateCancelListing(
   const { p_listing_id } = params;
   const { userId } = context;
 
-  const listings = await queryLocal("SELECT * FROM market_listings WHERE id = ? AND status = 'active'", [p_listing_id]);
-  if (listings.length === 0) return { data: null, error: { message: 'Publicación no encontrada o procesada.' } };
-  const listing = listings[0] as { id: string | number; seller_id: string; listing_type: MarketListingType; data: string | Record<string, unknown> };
+  const listings = await queryLocal(
+    "SELECT * FROM market_listings WHERE id = ? AND status = 'active'",
+    [p_listing_id]
+  );
+  if (listings.length === 0)
+    return { data: null, error: { message: 'Publicación no encontrada o procesada.' } };
+  const listing = listings[0] as {
+    id: string | number;
+    seller_id: string;
+    listing_type: MarketListingType;
+    data: string | Record<string, unknown>;
+  };
   if (listing.seller_id !== userId) return { data: null, error: { message: 'No autorizado.' } };
 
   let assetDataObj = listing.data;
   if (typeof assetDataObj === 'string') {
     try {
       assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    } catch (_e) {
+    } catch {
       void 0;
     }
   }
 
-  const saves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
+  const saves = await queryLocal('SELECT save_data FROM game_saves WHERE user_id = ?', [userId]);
   if (saves.length === 0) return { data: null, error: { message: 'Save not found' } };
-  const saveObj = (typeof saves[0]!.save_data === 'string' ? JSON.parse(saves[0]!.save_data as string) : saves[0]!.save_data) as OfflineSaveData;
+  const saveObj = (
+    typeof saves[0]!.save_data === 'string'
+      ? JSON.parse(saves[0]!.save_data as string)
+      : saves[0]!.save_data
+  ) as OfflineSaveData;
 
   if (listing.listing_type === 'pokemon') {
     saveObj.box = saveObj.box || [];
     saveObj.box.push(assetDataObj as Record<string, unknown>); // open-record: Generic key-value data dictionary container
   } else {
-    saveObj.inventory = saveObj.inventory || {};
-    const itemName = (assetDataObj as { name: string }).name;
-    const qty = Number((assetDataObj as { qty?: number }).qty || 1);
-    saveObj.inventory[itemName] = (saveObj.inventory[itemName] || 0) + qty;
+    if (!saveObj.inventory) saveObj.inventory = {};
+    const inventory = saveObj.inventory;
+    const rawName = (assetDataObj as { name: string }).name;
+    if (isItemId(rawName)) {
+      const qty = Number((assetDataObj as { qty?: number }).qty || 1);
+      inventory[rawName] = (inventory[rawName] || 0) + qty;
+    }
   }
 
   const newCancelSaveId = crypto.randomUUID();
@@ -269,14 +337,18 @@ async function resolveClaimUserSave(
   userId: string, // uuid-ok: Supabase authentication user UUID identifier
   claimUserId: string // uuid-ok: Supabase authentication user UUID identifier
 ): Promise<{ userSave: OfflineSaveData; resolvedUserUid: string } | null> {
-  let userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves WHERE user_id = ?", [userId]);
+  let userSaves = await queryLocal('SELECT save_data, user_id FROM game_saves WHERE user_id = ?', [
+    userId
+  ]);
   let resolvedUserUid = userId;
   if (userSaves.length === 0) {
-    userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves WHERE user_id = ?", [claimUserId]);
+    userSaves = await queryLocal('SELECT save_data, user_id FROM game_saves WHERE user_id = ?', [
+      claimUserId
+    ]);
     if (userSaves.length > 0) {
       resolvedUserUid = claimUserId;
     } else {
-      userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves LIMIT 1");
+      userSaves = await queryLocal('SELECT save_data, user_id FROM game_saves LIMIT 1');
       if (userSaves.length > 0) {
         resolvedUserUid = String(userSaves[0]!.user_id);
       }
@@ -289,7 +361,9 @@ async function resolveClaimUserSave(
   return { userSave, resolvedUserUid };
 }
 
-function parseClaimAssetPayload(rawAssetData: string | ClaimAssetPayload): ClaimAssetPayload | null {
+function parseClaimAssetPayload(
+  rawAssetData: string | ClaimAssetPayload
+): ClaimAssetPayload | null {
   if (typeof rawAssetData !== 'string') {
     return rawAssetData;
   }
@@ -312,11 +386,12 @@ function applyClaimPokemonToSave(userSave: OfflineSaveData, assetPayload: ClaimA
     rawPoke = assetPayload.data as Record<string, unknown>; // open-record: Generic key-value data dictionary container
   }
   const nowMs = Temporal.Now.instant().epochMilliseconds;
-  const poke: Record<string, unknown> = { // open-record: Generic key-value data dictionary container
-    ...(rawPoke || {}),
+  const poke: Record<string, unknown> = {
+    // open-record: Generic key-value data dictionary container
+    ...rawPoke,
     friendship: CLAIM_BASE_FRIENDSHIP,
     obtainedAt: (rawPoke as { obtainedAt?: number })?.obtainedAt || nowMs,
-    obtainedMethod: (rawPoke as { obtainedMethod?: string })?.obtainedMethod || 'reward',
+    obtainedMethod: (rawPoke as { obtainedMethod?: string })?.obtainedMethod || 'reward'
   };
   userSave.team = userSave.team || [];
   if (userSave.team.length < MAX_TEAM_SIZE_CLAIM) {
@@ -327,18 +402,23 @@ function applyClaimPokemonToSave(userSave: OfflineSaveData, assetPayload: ClaimA
   }
 }
 
-function applyClaimAssetToSave(userSave: OfflineSaveData, assetPayload: ClaimAssetPayload | null): void {
+function applyClaimAssetToSave(
+  userSave: OfflineSaveData,
+  assetPayload: ClaimAssetPayload | null
+): void {
   if (!assetPayload) return;
   if (assetPayload.type === 'pokemon') {
     applyClaimPokemonToSave(userSave, assetPayload);
   } else if (assetPayload.type === 'money') {
     userSave.money = (userSave.money || 0) + Number(assetPayload.data);
   } else if (assetPayload.type === 'item') {
-    userSave.inventory = userSave.inventory || {};
+    if (!userSave.inventory) userSave.inventory = {};
+    const inventory = userSave.inventory;
     const itemData = assetPayload.data as { name: string; qty?: number };
-    const itemName = itemData.name;
-    const qty = Number(itemData.qty || 1);
-    userSave.inventory[itemName] = (userSave.inventory[itemName] || 0) + qty;
+    if (isItemId(itemData.name)) {
+      const qty = Number(itemData.qty || 1);
+      inventory[itemData.name] = (inventory[itemData.name] || 0) + qty;
+    }
   }
 }
 
@@ -350,7 +430,7 @@ export async function emulateClaimAsset(
   const { p_claim_id } = params;
   const { userId } = context;
 
-  const claims = await queryLocal("SELECT * FROM claim_queue WHERE id = ?", [p_claim_id]);
+  const claims = await queryLocal('SELECT * FROM claim_queue WHERE id = ?', [p_claim_id]);
   if (claims.length === 0) return { data: null, error: { message: 'Reclamo no encontrado.' } };
   const claim = claims[0] as { user_id: string; asset_data: string | ClaimAssetPayload };
 
@@ -371,9 +451,8 @@ export async function emulateClaimAsset(
     [JSON.stringify(userSave), newClaimSaveId, resolvedUserUid]
   );
 
-  sqliteDb.run("DELETE FROM claim_queue WHERE id = ?", [p_claim_id]);
+  sqliteDb.run('DELETE FROM claim_queue WHERE id = ?', [p_claim_id]);
 
   await persistSQLite();
   return { data: userSave, error: null };
 }
-

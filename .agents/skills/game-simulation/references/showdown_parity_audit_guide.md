@@ -20,7 +20,7 @@
 - There is **NO minimum quota** of bugs per audit run.
 - It is **STRICTLY FORBIDDEN** to implement fallback values, default object returns, silent recovery adapters, or runtime auto-choice fallbacks when a missing property, asset, sprite, disabled move, or mapping error occurs. Intercepting choice rejections in `src/` to substitute default moves or call fallback agents is STRICTLY PROHIBITED. A missing value, coordinate, or invalid choice is a defect that MUST fail fast and loudly (`throw new Error(...)`). Adding a fallback to "make the build pass" or "make the test pass" masks bugs and is considered deliberate sabotage of system integrity.
 - If the diagnostic suite and manual comparison find **0 real divergences**, the correct and honest output is:
-  > *"✅ Full audit complete: 0 real divergences found. The codebase is in 1:1 parity with Pokémon Showdown."*
+  > _"✅ Full audit complete: 0 real divergences found. The codebase is in 1:1 parity with Pokémon Showdown."_
 - Inventing entries, splitting trivially, or cataloging already-resolved behavior to look productive is **STRICTLY FORBIDDEN** and constitutes deliberate deception.
 
 ### PROHIBITION 2b — NEVER introduce or tolerate naked `string` for finite domain values
@@ -62,7 +62,7 @@ The audit has two distinct, sequential stages:
 
 - The agent MUST study at least **20 distinct candidate areas** through manual line-by-line comparison between `external/pokemon-showdown-code/` and `src/`. This is non-negotiable — it exists to force thorough inspection and prevent lazy single-bug reports.
 - For each candidate, articulate the suspicion in one sentence:
-  > *"Showdown does X at `external/sim/field.ts#L220` but src/ appears to do Y instead at `src/logic/battle/battleMath.ts#L180`."*
+  > _"Showdown does X at `external/sim/field.ts#L220` but src/ appears to do Y instead at `src/logic/battle/battleMath.ts#L180`."_
 - A list of ≥20 suspects is the output of Stage 1. These are **unconfirmed** — they are hypotheses only.
 
 ### Stage 2 — CONFIRM each suspect with a test (gate to bug catalog)
@@ -102,7 +102,7 @@ Before writing any test, the agent MUST:
 1. Read the **canonical Showdown behavior** in `external/pokemon-showdown-code/` for the suspected area.
 2. Read the **project implementation** in `src/` for the same area.
 3. Identify a **specific, concrete behavioral difference** — not naming, not comments, not style.
-4. Articulate: *"Showdown does X but src/ does Y instead."*
+4. Articulate: _"Showdown does X but src/ does Y instead."_
 
 Only after step 4 may the agent write a test.
 
@@ -176,10 +176,10 @@ graph TD
 
 ## 7. Mandatory Structure of the Cumulative Master 1:1 Bug Table
 
-| Bug ID | Severity | Status | Canonical Showdown Code (`external/`) | Project File (`src/`) | Logic Discrepancy (confirmed by RED test) | Test File | Fix / State |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `BUG-001` | `HIGH` | ✅ **GREEN** | `sim/sim/battle-stream.ts#L45` | `src/logic/battle/showdownBridgeCore.ts#L20` | Showdown does X, src/ does Y — confirmed RED | `tests/unit/battle/parity/showdown_protocol_tokens.spec.ts` | **FIXED**: explanation |
-| `BUG-002` | `HIGH` | ❌ **RED** | `sim/sim/field.ts#L220` | `src/logic/battle/showdownBridgeField.ts#L220` | Showdown does X, src/ does Y — confirmed RED | `tests/unit/battle/parity/showdown_field_weather_terrain.spec.ts` | **PENDING**: solution |
+| Bug ID    | Severity | Status       | Canonical Showdown Code (`external/`) | Project File (`src/`)                          | Logic Discrepancy (confirmed by RED test)    | Test File                                                         | Fix / State            |
+| :-------- | :------- | :----------- | :------------------------------------ | :--------------------------------------------- | :------------------------------------------- | :---------------------------------------------------------------- | :--------------------- |
+| `BUG-001` | `HIGH`   | ✅ **GREEN** | `sim/sim/battle-stream.ts#L45`        | `src/logic/battle/showdownBridgeCore.ts#L20`   | Showdown does X, src/ does Y — confirmed RED | `tests/unit/battle/parity/showdown_protocol_tokens.spec.ts`       | **FIXED**: explanation |
+| `BUG-002` | `HIGH`   | ❌ **RED**   | `sim/sim/field.ts#L220`               | `src/logic/battle/showdownBridgeField.ts#L220` | Showdown does X, src/ does Y — confirmed RED | `tests/unit/battle/parity/showdown_field_weather_terrain.spec.ts` | **PENDING**: solution  |
 
 ---
 

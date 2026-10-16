@@ -1,41 +1,49 @@
 // ui-demo/src/data/mockDetailPokemon.ts
 
-import type { PokemonGender } from '@/types/pokemon/pokemon'
-import type { PokemonType } from '@/data/battle/types'
+import type { PokemonGender } from '@/types/pokemon/pokemon';
+import type { PokemonType } from '@/data/battle/types';
 
 export interface PokemonSummaryItem {
-  id: number
-  name: string // domain-ok: Open dynamic text or non-domain string payload
+  id: number;
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export interface DetailPokemon {
-  uid: string // domain-ok: Open dynamic text or non-domain string payload
-  id: number
-  dexNum: string // domain-ok: Open dynamic text or non-domain string payload
-  name: string // domain-ok: Open dynamic text or non-domain string payload
-  gender: PokemonGender
-  type: PokemonType
-  typeLabel: string // domain-ok: Open dynamic text or non-domain string payload
-  category: string // domain-ok: Open dynamic text or non-domain string payload
-  height: string // domain-ok: Open dynamic text or non-domain string payload
-  weight: string // domain-ok: Open dynamic text or non-domain string payload
-  nature: string // domain-ok: Open dynamic text or non-domain string payload
-  ability: string // domain-ok: Open dynamic text or non-domain string payload
-  vigor: string // domain-ok: Open dynamic text or non-domain string payload
-  hp: number
-  maxHp: number
-  level: number
-  maxLevel: number
-  exp: number
-  expNext: number
-  friendship: number
-  maxFriendship: number
-  friendshipTitle: string // domain-ok: Open dynamic text or non-domain string payload
-  lore: string // domain-ok: Open dynamic text or non-domain string payload
-  evolButtonText: string // domain-ok: Open dynamic text or non-domain string payload
-  stats: { name: string; value: number; max: number }[]
-  moves: { name: string; type: string; typeLabel: string; pot: string; prec: string; cat: string; pp: string }[]
-  evolChain: { id: number; name: string; req: string }[]
+  uid: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: number;
+  dexNum: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  gender: PokemonGender;
+  type: PokemonType;
+  typeLabel: string; // domain-ok: Open dynamic text or non-domain string payload
+  category: string; // domain-ok: Open dynamic text or non-domain string payload
+  height: string; // domain-ok: Open dynamic text or non-domain string payload
+  weight: string; // domain-ok: Open dynamic text or non-domain string payload
+  nature: string; // domain-ok: Open dynamic text or non-domain string payload
+  ability: string; // domain-ok: Open dynamic text or non-domain string payload
+  vigor: string; // domain-ok: Open dynamic text or non-domain string payload
+  hp: number;
+  maxHp: number;
+  level: number;
+  maxLevel: number;
+  exp: number;
+  expNext: number;
+  friendship: number;
+  maxFriendship: number;
+  friendshipTitle: string; // domain-ok: Open dynamic text or non-domain string payload
+  lore: string; // domain-ok: Open dynamic text or non-domain string payload
+  evolButtonText: string; // domain-ok: Open dynamic text or non-domain string payload
+  stats: { name: string; value: number; max: number }[];
+  moves: {
+    name: string; // domain-ok: Open dynamic text or non-domain string payload
+    type: string; // domain-ok: Open dynamic text or non-domain string payload
+    typeLabel: string; // domain-ok: Open dynamic text or non-domain string payload
+    pot: string; // domain-ok: Open dynamic text or non-domain string payload
+    prec: string; // domain-ok: Open dynamic text or non-domain string payload
+    cat: string; // domain-ok: Open dynamic text or non-domain string payload
+    pp: string; // domain-ok: Open dynamic text or non-domain string payload
+  }[];
+  evolChain: { id: number; name: string; req: string }[];
 }
 
 export const MOCK_DETAIL_PIKACHU: DetailPokemon = {
@@ -72,17 +80,49 @@ export const MOCK_DETAIL_PIKACHU: DetailPokemon = {
     { name: 'VELOCIDAD', value: 110, max: 200 }
   ],
   moves: [
-    { name: 'RAYO', type: 'electric', typeLabel: 'ELÉCTRICO', pot: '90', prec: '100', cat: 'Especial', pp: '15/15' },
-    { name: 'ONDA TRUENO', type: 'electric', typeLabel: 'ELÉCTRICO', pot: '-', prec: '90', cat: 'Estado', pp: '20/20' },
-    { name: 'ATAQUE RÁPIDO', type: 'normal', typeLabel: 'NORMAL', pot: '40', prec: '100', cat: 'Físico', pp: '30/30' },
-    { name: 'COLA FÉRREA', type: 'steel', typeLabel: 'ACERO', pot: '100', prec: '75', cat: 'Físico', pp: '15/15' }
+    {
+      name: 'RAYO',
+      type: 'electric',
+      typeLabel: 'ELÉCTRICO',
+      pot: '90',
+      prec: '100',
+      cat: 'Especial',
+      pp: '15/15'
+    },
+    {
+      name: 'ONDA TRUENO',
+      type: 'electric',
+      typeLabel: 'ELÉCTRICO',
+      pot: '-',
+      prec: '90',
+      cat: 'Estado',
+      pp: '20/20'
+    },
+    {
+      name: 'ATAQUE RÁPIDO',
+      type: 'normal',
+      typeLabel: 'NORMAL',
+      pot: '40',
+      prec: '100',
+      cat: 'Físico',
+      pp: '30/30'
+    },
+    {
+      name: 'COLA FÉRREA',
+      type: 'steel',
+      typeLabel: 'ACERO',
+      pot: '100',
+      prec: '75',
+      cat: 'Físico',
+      pp: '15/15'
+    }
   ],
   evolChain: [
     { id: 172, name: 'PICHU', req: 'Base' },
     { id: 25, name: 'PIKACHU', req: 'Amistad Alta' },
     { id: 26, name: 'RAICHU', req: 'Piedra Trueno' }
   ]
-}
+};
 
 export const MOCK_DETAIL_CHARIZARD: DetailPokemon = {
   ...MOCK_DETAIL_PIKACHU,
@@ -105,17 +145,49 @@ export const MOCK_DETAIL_CHARIZARD: DetailPokemon = {
   lore: 'Escupe un fuego tan caliente que funde las rocas. Causa incendios forestales sin querer.',
   evolButtonText: '💎 FORMA GIGA / MEGA',
   moves: [
-    { name: 'LANZALLAMAS', type: 'fire', typeLabel: 'FUEGO', pot: '90', prec: '100', cat: 'Especial', pp: '15/15' },
-    { name: 'TAJO AÉREO', type: 'flying', typeLabel: 'VOLADOR', pot: '75', prec: '95', cat: 'Especial', pp: '15/15' },
-    { name: 'GARRA DRAGÓN', type: 'dragon', typeLabel: 'DRAGÓN', pot: '80', prec: '100', cat: 'Físico', pp: '15/15' },
-    { name: 'TERREMOTO', type: 'ground', typeLabel: 'TIERRA', pot: '100', prec: '100', cat: 'Físico', pp: '10/10' }
+    {
+      name: 'LANZALLAMAS',
+      type: 'fire',
+      typeLabel: 'FUEGO',
+      pot: '90',
+      prec: '100',
+      cat: 'Especial',
+      pp: '15/15'
+    },
+    {
+      name: 'TAJO AÉREO',
+      type: 'flying',
+      typeLabel: 'VOLADOR',
+      pot: '75',
+      prec: '95',
+      cat: 'Especial',
+      pp: '15/15'
+    },
+    {
+      name: 'GARRA DRAGÓN',
+      type: 'dragon',
+      typeLabel: 'DRAGÓN',
+      pot: '80',
+      prec: '100',
+      cat: 'Físico',
+      pp: '15/15'
+    },
+    {
+      name: 'TERREMOTO',
+      type: 'ground',
+      typeLabel: 'TIERRA',
+      pot: '100',
+      prec: '100',
+      cat: 'Físico',
+      pp: '10/10'
+    }
   ],
   evolChain: [
     { id: 4, name: 'CHARMANDER', req: 'Base' },
     { id: 5, name: 'CHARMELEON', req: 'Nv. 16' },
     { id: 6, name: 'CHARIZARD', req: 'Nv. 36' }
   ]
-}
+};
 
 export const MOCK_DETAIL_GENGAR: DetailPokemon = {
   ...MOCK_DETAIL_PIKACHU,
@@ -138,14 +210,46 @@ export const MOCK_DETAIL_GENGAR: DetailPokemon = {
   lore: 'Se esconde en las sombras. Se dice que si alguien siente un frío repentino, es que un Gengar está cerca.',
   evolButtonText: '💎 FORMA GIGA / MEGA',
   moves: [
-    { name: 'BOLA SOMBRA', type: 'ghost', typeLabel: 'FANTASMA', pot: '80', prec: '100', cat: 'Especial', pp: '15/15' },
-    { name: 'BOMBA LODO', type: 'poison', typeLabel: 'VENENO', pot: '90', prec: '100', cat: 'Especial', pp: '10/10' },
-    { name: 'HIPNOSIS', type: 'psychic', typeLabel: 'PSÍQUICO', pot: '-', prec: '60', cat: 'Estado', pp: '20/20' },
-    { name: 'COME SUEÑOS', type: 'psychic', typeLabel: 'PSÍQUICO', pot: '100', prec: '100', cat: 'Especial', pp: '15/15' }
+    {
+      name: 'BOLA SOMBRA',
+      type: 'ghost',
+      typeLabel: 'FANTASMA',
+      pot: '80',
+      prec: '100',
+      cat: 'Especial',
+      pp: '15/15'
+    },
+    {
+      name: 'BOMBA LODO',
+      type: 'poison',
+      typeLabel: 'VENENO',
+      pot: '90',
+      prec: '100',
+      cat: 'Especial',
+      pp: '10/10'
+    },
+    {
+      name: 'HIPNOSIS',
+      type: 'psychic',
+      typeLabel: 'PSÍQUICO',
+      pot: '-',
+      prec: '60',
+      cat: 'Estado',
+      pp: '20/20'
+    },
+    {
+      name: 'COME SUEÑOS',
+      type: 'psychic',
+      typeLabel: 'PSÍQUICO',
+      pot: '100',
+      prec: '100',
+      cat: 'Especial',
+      pp: '15/15'
+    }
   ],
   evolChain: [
     { id: 92, name: 'GASTLY', req: 'Base' },
     { id: 93, name: 'HAUNTER', req: 'Nv. 25' },
     { id: 94, name: 'GENGAR', req: 'Intercambio' }
   ]
-}
+};

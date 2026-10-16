@@ -48,23 +48,15 @@ async function watchReplay(match: PersonalPvPMatchSummary) {
 
 <template>
   <div class="arena-match-history-section">
-    <div
-      v-if="history.length === 0"
-      class="empty-history-box"
-    >
+    <div v-if="history.length === 0" class="empty-history-box">
       <span class="empty-icon"><span class="emoji">⚔️</span></span>
-      <h4 class="empty-title text-outline">
-        SIN COMBATES REGISTRADOS
-      </h4>
+      <h4 class="empty-title text-outline">SIN COMBATES REGISTRADOS</h4>
       <p class="empty-desc">
         Tus partidas clasificatorias y duelos amistosos aparecerán aquí automáticamente.
       </p>
     </div>
 
-    <div
-      v-else
-      class="history-list"
-    >
+    <div v-else class="history-list">
       <ArenaMatchHistoryCard
         v-for="item in history"
         :key="item.id || item.battleCode"
@@ -77,7 +69,7 @@ async function watchReplay(match: PersonalPvPMatchSummary) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .arena-match-history-section {
   display: flex;

@@ -17,10 +17,9 @@ export function resolveDefendingTeam(saveData: {
   pvpTeam6?: string[];
 }): Pokemon[] {
   const pvp6Uids = saveData.pvpTeam6 || [];
-  const allPokes = [
-    ...(saveData.team || []),
-    ...(saveData.box || [])
-  ].filter((p): p is Pokemon => p !== null);
+  const allPokes = [...(saveData.team || []), ...(saveData.box || [])].filter(
+    (p): p is Pokemon => p !== null
+  );
 
   if (pvp6Uids.length > 0) {
     const pokesByUid = new Map<string, Pokemon>();
@@ -47,7 +46,6 @@ export function createPassiveTeamSnapshot(team: Pokemon[]): string {
   return JSON.stringify(serializePokemonTeam(team));
 }
 
-
 /**
  * Fills a list of PVP slot UIDs up to maxSlots from all available non-illegal Pokémon.
  */
@@ -55,12 +53,15 @@ export function fillPvpSlotsFromAvailable(
   currentUids: string[] | undefined,
   allPokemon: (Pokemon | null)[],
   maxSlots: number
-): string[] { // no-domain: Non-domain utility collection or data structure
-  const validPokes = (allPokemon || []).filter((p): p is Pokemon => p != null && !p.isIllegal && Boolean(p.uid));
+): string[] {
+  // no-domain: Non-domain utility collection or data structure
+  const validPokes = (allPokemon || []).filter(
+    (p): p is Pokemon => p != null && !p.isIllegal && Boolean(p.uid)
+  );
   if (validPokes.length === 0) return [];
 
-  const existingUidsSet = new Set(validPokes.map(p => p.uid));
-  const result: string[] = (currentUids || []).filter(uid => existingUidsSet.has(uid)); // no-domain: Non-domain utility collection or data structure
+  const existingUidsSet = new Set(validPokes.map((p) => p.uid));
+  const result: string[] = (currentUids || []).filter((uid) => existingUidsSet.has(uid)); // no-domain: Non-domain utility collection or data structure
 
   const targetCount = Math.min(maxSlots, validPokes.length);
   if (result.length < targetCount) {
@@ -106,7 +107,7 @@ export function ensurePvpTeamsFilled(saveData: {
  */
 export function resolveOfflineRivalTeam(
   saveData: Record<string, unknown>,
-  format: PvpMatchFormat,
+  format: PvpMatchFormat
 ): Pokemon[] {
   const team = (Array.isArray(saveData.team) ? saveData.team : []) as (Pokemon | null)[];
   const box = (Array.isArray(saveData.box) ? saveData.box : []) as (Pokemon | null)[];
@@ -118,9 +119,9 @@ export function resolveOfflineRivalTeam(
   const rawUids = Array.isArray(rawData) ? rawData.map(String) : [];
 
   const filledUids = fillPvpSlotsFromAvailable(rawUids, allPokes, maxSlots);
-  const pokesByUid = new Map<string, Pokemon>(allPokes.map(p => [p.uid, p]));
+  const pokesByUid = new Map<string, Pokemon>(allPokes.map((p) => [p.uid, p]));
 
-  return filledUids.map(uid => pokesByUid.get(uid)).filter((p): p is Pokemon => p != null);
+  return filledUids.map((uid) => pokesByUid.get(uid)).filter((p): p is Pokemon => p != null);
 }
 
 const KANTO_MAX_DEX_NUM = 151;
@@ -130,7 +131,7 @@ function checkAllowedTypes(pokemon: Pokemon, allowedTypes: readonly PokemonType[
   const pokeTypes: PokemonType[] = [];
   if (pokemon.type) pokeTypes.push(pokemon.type as PokemonType);
   if (pokemon.type2 && pokemon.type2 !== pokemon.type) pokeTypes.push(pokemon.type2 as PokemonType);
-  return pokeTypes.some(t => allowedTypes.includes(t));
+  return pokeTypes.some((t) => allowedTypes.includes(t));
 }
 
 function checkRegionThemeRule(themeId: SeasonalThemeId, dexNum: number): boolean {
@@ -146,7 +147,10 @@ function checkRegionThemeRule(themeId: SeasonalThemeId, dexNum: number): boolean
 /**
  * Validates whether an individual Pokémon meets the constraints of a seasonal theme.
  */
-export function isPokemonLegalForTheme(pokemon: Pokemon | null | undefined, theme: SeasonalThemeConfig): boolean {
+export function isPokemonLegalForTheme(
+  pokemon: Pokemon | null | undefined,
+  theme: SeasonalThemeConfig
+): boolean {
   if (!pokemon || pokemon.isIllegal) return false;
   if (!isPokemonSpeciesId(pokemon.id)) return false;
 
@@ -156,7 +160,11 @@ export function isPokemonLegalForTheme(pokemon: Pokemon | null | undefined, them
   if (theme.bannedPokemonIds?.includes(speciesId)) {
     return false;
   }
-  if (theme.allowedTypes && theme.allowedTypes.length > 0 && !checkAllowedTypes(pokemon, theme.allowedTypes)) {
+  if (
+    theme.allowedTypes &&
+    theme.allowedTypes.length > 0 &&
+    !checkAllowedTypes(pokemon, theme.allowedTypes)
+  ) {
     return false;
   }
   if (theme.requiresDualType && (!pokemon.type2 || pokemon.type2 === pokemon.type)) {
@@ -183,11 +191,16 @@ function findBestMonotypeTeam(sortedCandidates: Pokemon[], targetCount: number):
   let bestScore = -1;
 
   for (const commonType of allTypesInPool) {
-    const matchingPokes = sortedCandidates.filter(p => p.type === commonType || p.type2 === commonType);
+    const matchingPokes = sortedCandidates.filter(
+      (p) => p.type === commonType || p.type2 === commonType
+    );
     const candidateTeam = matchingPokes.slice(0, targetCount);
     const teamScore = candidateTeam.reduce((acc, p) => acc + calculatePokemonStrengthScore(p), 0);
 
-    if (candidateTeam.length > bestTeam.length || (candidateTeam.length === bestTeam.length && teamScore > bestScore)) {
+    if (
+      candidateTeam.length > bestTeam.length ||
+      (candidateTeam.length === bestTeam.length && teamScore > bestScore)
+    ) {
       bestTeam = candidateTeam;
       bestScore = teamScore;
     }
@@ -203,15 +216,17 @@ function findBestMonotypeTeam(sortedCandidates: Pokemon[], targetCount: number):
 export function autoFillLegalTeamForTheme(
   availablePokemon: (Pokemon | null | undefined)[],
   theme: SeasonalThemeConfig,
-  targetCount: number = MAX_PVP_SLOTS,
+  targetCount: number = MAX_PVP_SLOTS
 ): Pokemon[] {
   const validCandidates = (availablePokemon || [])
     .filter((p): p is Pokemon => p != null && !p.isIllegal && Boolean(p.uid))
-    .filter(p => isPokemonLegalForTheme(p, theme));
+    .filter((p) => isPokemonLegalForTheme(p, theme));
 
   if (validCandidates.length === 0) return [];
 
-  const sorted = validCandidates.toSorted((a, b) => calculatePokemonStrengthScore(b) - calculatePokemonStrengthScore(a));
+  const sorted = validCandidates.toSorted(
+    (a, b) => calculatePokemonStrengthScore(b) - calculatePokemonStrengthScore(a)
+  );
   if (theme.requiresMonotype) {
     return findBestMonotypeTeam(sorted, targetCount);
   }

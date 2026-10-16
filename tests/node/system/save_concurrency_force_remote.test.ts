@@ -6,7 +6,7 @@
  * because the in-flight save's options were used instead.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { saveGame, resetSaveOperationState } from '../../../src/logic/auth/saveService.ts';
 import { saveCoordinator } from '../../../src/logic/auth/saveCoordinator.ts';
@@ -22,7 +22,11 @@ describe('saveService Concurrency forceRemote Preservation', () => {
 
     // Simulate that a cloud save happened recently, so un-forced saves are throttled by the 60s rule
     saveCoordinator.notifyCloudSaveSuccess();
-    assert.strictEqual(saveCoordinator.shouldExecuteCloudSave(false), false, 'Cloud saves should be throttled');
+    assert.strictEqual(
+      saveCoordinator.shouldExecuteCloudSave(false),
+      false,
+      'Cloud saves should be throttled'
+    );
 
     const user: AuthUser = {
       id: '00000000-0000-0000-0000-000000000002',
@@ -30,7 +34,10 @@ describe('saveService Concurrency forceRemote Preservation', () => {
       user_metadata: { username: 'TrainerPvp' }
     };
 
-    const starter = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: 50 });
+    const starter = pokemonDebugService.generate({
+      id: requirePokemonSpeciesId('pikachu'),
+      level: 50
+    });
 
     const state1: GameState = JSON.parse(JSON.stringify(INITIAL_STATE));
     state1.trainer = 'TrainerPvp';
@@ -46,7 +53,7 @@ describe('saveService Concurrency forceRemote Preservation', () => {
       mode: 'online',
       rpc: async (_name: string, _params: unknown) => {
         rpcCallCount++;
-        await new Promise(resolve => setTimeout(resolve, 30));
+        await new Promise((resolve) => setTimeout(resolve, 30));
         return { data: { success: true, last_save_id: `save-${rpcCallCount}` }, error: null };
       },
       from: () => ({
@@ -64,7 +71,15 @@ describe('saveService Concurrency forceRemote Preservation', () => {
 
     assert.ok(res1 !== null, 'Save 1 should succeed');
     assert.ok(res2 !== null, 'Save 2 should succeed');
-    assert.strictEqual(res2?.remote, true, 'Save 2 MUST have executed as a remote cloud save (remote: true)');
-    assert.strictEqual(rpcCallCount, 1, 'Save 2 MUST have invoked db.rpc to persist to the remote database');
+    assert.strictEqual(
+      res2?.remote,
+      true,
+      'Save 2 MUST have executed as a remote cloud save (remote: true)'
+    );
+    assert.strictEqual(
+      rpcCallCount,
+      1,
+      'Save 2 MUST have invoked db.rpc to persist to the remote database'
+    );
   });
 });

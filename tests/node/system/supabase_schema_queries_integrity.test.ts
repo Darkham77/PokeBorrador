@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -51,7 +51,10 @@ describe('Supabase Schema Queries Integrity (Anti-400 Regression)', () => {
         foundQueries++;
         const selectFieldsRaw = match[1];
         if (!selectFieldsRaw) continue;
-        const requestedColumns = selectFieldsRaw.split(',').map(c => c.trim()).filter(Boolean);
+        const requestedColumns = selectFieldsRaw
+          .split(',')
+          .map((c) => c.trim())
+          .filter(Boolean);
 
         for (const col of requestedColumns) {
           expect(

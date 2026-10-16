@@ -83,8 +83,8 @@ export class BattleOrchestrator {
     if (rqid > 0 && rqid <= this.lastRequestId) return;
 
     // Check if we need to act (force switch or regular turn)
-    const needsAction = this.state.isForceSwitch() ||
-      (request.active && currentTurn > this.turnProcessed);
+    const needsAction =
+      this.state.isForceSwitch() || (request.active && currentTurn > this.turnProcessed);
 
     if (!needsAction) return;
 
@@ -119,8 +119,8 @@ export class BattleOrchestrator {
 
     // Update teams for logging
     this.logger.setTeams(
-      snapshot.mySide.pokemon.map(p => p.name),
-      snapshot.opponentSide.pokemon.map(p => p.name)
+      snapshot.mySide.pokemon.map((p) => p.name),
+      snapshot.opponentSide.pokemon.map((p) => p.name)
     );
 
     // Step 2: Update inference engine
@@ -151,16 +151,26 @@ export class BattleOrchestrator {
 
     // Step 5: Try heuristics
     let decision = heuristicDecision(
-      snapshot, this.state, matchup, strategic,
-      availableMoves, switchOptions, this.calc, this.inference
+      snapshot,
+      this.state,
+      matchup,
+      strategic,
+      availableMoves,
+      switchOptions,
+      this.calc,
+      this.inference
     );
 
     // Step 6: If heuristics didn't resolve, call Claude
     if (!decision) {
       logDebug('Heuristics inconclusive, calling Claude...');
       decision = await this.claude.decide(
-        snapshot, strategic, matchup,
-        availableMoves, switchOptions, this.inference
+        snapshot,
+        strategic,
+        matchup,
+        availableMoves,
+        switchOptions,
+        this.inference
       );
     }
 
@@ -173,7 +183,7 @@ export class BattleOrchestrator {
     decision = maybeImperfectPlay(
       decision,
       availableMoves,
-      switchOptions.map(p => p.name)
+      switchOptions.map((p) => p.name)
     );
 
     // Log the decision
@@ -195,7 +205,11 @@ export class BattleOrchestrator {
       if (decision.terastallize) extra = 'terastallize';
       else if (decision.mega) extra = 'mega';
       this.client.chooseMove(this.battleId, decision.moveIndex, extra || undefined);
-    } else if (decision.type === 'switch' && decision.switchIndex != null && decision.switchIndex > 0) {
+    } else if (
+      decision.type === 'switch' &&
+      decision.switchIndex != null &&
+      decision.switchIndex > 0
+    ) {
       this.client.chooseSwitch(this.battleId, decision.switchIndex);
     } else {
       logError(`Invalid decision: ${JSON.stringify(decision)}`);
@@ -206,14 +220,10 @@ export class BattleOrchestrator {
   /**
    * Emergency fallback: pick the highest damage move or first available switch.
    */
-  private emergencyFallback(
-    moves: MoveInfo[],
-    switches: any[],
-    snapshot: any
-  ): Decision {
+  private emergencyFallback(moves: MoveInfo[], switches: any[], snapshot: any): Decision {
     logDebug('Using emergency fallback');
 
-    const usable = moves.filter(m => !m.disabled && m.pp > 0);
+    const usable = moves.filter((m) => !m.disabled && m.pp > 0);
     if (usable.length > 0) {
       return {
         type: 'move',
@@ -221,22 +231,20 @@ export class BattleOrchestrator {
         moveIndex: moves.indexOf(usable[0]) + 1,
         source: 'random',
         confidence: 0.1,
-        reasoning: 'Emergency fallback: first available move',
+        reasoning: 'Emergency fallback: first available move'
       };
     }
 
     if (switches.length > 0) {
       const sidePokemons = snapshot.mySide.pokemon;
-      const switchIdx = sidePokemons.findIndex(
-        (p: any) => p.species === switches[0].species
-      ) + 1;
+      const switchIdx = sidePokemons.findIndex((p: any) => p.species === switches[0].species) + 1;
       return {
         type: 'switch',
         choice: switches[0].name?.toLowerCase() || 'unknown',
         switchIndex: switchIdx,
         source: 'random',
         confidence: 0.1,
-        reasoning: 'Emergency fallback: first available switch',
+        reasoning: 'Emergency fallback: first available switch'
       };
     }
 
@@ -247,7 +255,7 @@ export class BattleOrchestrator {
       moveIndex: 1,
       source: 'random',
       confidence: 0,
-      reasoning: 'No options available',
+      reasoning: 'No options available'
     };
   }
 

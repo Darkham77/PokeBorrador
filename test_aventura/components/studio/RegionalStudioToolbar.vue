@@ -118,25 +118,20 @@ function handleJsonImport(e: Event): void {
   <nav class="viewport-toolbar">
     <!-- Group 1: Project & Region Meta -->
     <div class="toolbar-group">
-      <span class="region-title"><span class="emoji-inline">🗺️</span> {{ store.projectName || `Región #${store.seed}` }}</span>
+      <span class="region-title"
+        ><span class="emoji-inline">🗺️</span>
+        {{ store.projectName || `Región #${store.seed}` }}</span
+      >
       <span class="region-size">{{ store.mapDimension }}×{{ store.mapDimension }}</span>
       <select
         id="select-regional-profile"
         class="project-select"
+        aria-label="Perfil regional"
         :value="store.activeProjectId"
         @change="handleProfileChange"
       >
-        <option
-          value=""
-          disabled
-        >
-          Proyectos...
-        </option>
-        <option
-          v-for="p in store.savedProfiles"
-          :key="p.id"
-          :value="p.id"
-        >
+        <option value="" disabled>Proyectos...</option>
+        <option v-for="p in store.savedProfiles" :key="p.id" :value="p.id">
           {{ p.name }}
         </option>
       </select>
@@ -190,17 +185,14 @@ function handleJsonImport(e: Event): void {
       <select
         id="select-city-editor"
         class="city-select"
+        aria-label="Seleccionar ciudad a editar"
         :value="store.selectedPOIId ?? ''"
         @change="handleCitySelect"
       >
         <option value="">
           {{ store.pois.length > 0 ? '-- Seleccionar ciudad... --' : 'Sin ciudades' }}
         </option>
-        <option
-          v-for="poi in store.pois"
-          :key="poi.id"
-          :value="poi.id"
-        >
+        <option v-for="poi in store.pois" :key="poi.id" :value="poi.id">
           {{ poi.name }} ({{ poi.type }})
         </option>
       </select>
@@ -258,10 +250,7 @@ function handleJsonImport(e: Event): void {
 
     <!-- Group 4: Render indicator & View Actions -->
     <div class="toolbar-group">
-      <span
-        v-if="isRenderingTiles || store.isGenerating"
-        class="rendering-indicator"
-      >
+      <span v-if="isRenderingTiles || store.isGenerating" class="rendering-indicator">
         <span class="emoji-inline">⏳</span> Renderizando...
       </span>
       <button
@@ -299,17 +288,19 @@ function handleJsonImport(e: Event): void {
       ref="svgInputRef"
       type="file"
       accept=".svg"
+      aria-label="Importar archivo SVG"
       class="hidden-file-input"
       @change="handleSvgImport"
-    >
+    />
     <input
       id="regional-studio-toolbar-input-jsonimport"
       ref="jsonInputRef"
       type="file"
       accept=".json"
+      aria-label="Importar archivo JSON"
       class="hidden-file-input"
       @change="handleJsonImport"
-    >
+    />
   </nav>
 </template>
 

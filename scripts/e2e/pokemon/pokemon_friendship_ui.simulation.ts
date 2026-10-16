@@ -25,111 +25,153 @@ class PokemonFriendshipSimulation extends BaseE2ESimulation {
   }
 
   public async setupFriendshipTestTeam(): Promise<{ success: boolean; teamUids: string[] }> {
-    return await this.page.evaluate(async ({ sproutVal, comradeVal, radiantVal, bestVal, faintVal }) => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-      const gameStore = useGameStore();
+    return await this.page.evaluate(
+      async ({ sproutVal, comradeVal, radiantVal, bestVal, faintVal }) => {
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+        const gameStore = useGameStore();
 
-      // 1. Gengar: Sprout (75) - User's exact scenario
-      const p1 = pokemonDebugService.generate({ id: requirePokemonSpeciesId('gengar'), level: 61 });
-      p1.uid = 'sim-gengar-75';
-      p1.friendship = sproutVal;
+        // 1. Gengar: Sprout (75) - User's exact scenario
+        const p1 = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('gengar'),
+          level: 61
+        });
+        p1.uid = 'sim-gengar-75';
+        p1.friendship = sproutVal;
 
-      // 2. Pikachu: Comrade (100)
-      const p2 = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: 25 });
-      p2.uid = 'sim-pikachu-100';
-      p2.friendship = comradeVal;
+        // 2. Pikachu: Comrade (100)
+        const p2 = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('pikachu'),
+          level: 25
+        });
+        p2.uid = 'sim-pikachu-100';
+        p2.friendship = comradeVal;
 
-      // 3. Golbat: Radiant Prism (160) - Ready to evolve
-      const p3 = pokemonDebugService.generate({ id: requirePokemonSpeciesId('golbat'), level: 35 });
-      p3.uid = 'sim-golbat-160';
-      p3.friendship = radiantVal;
+        // 3. Golbat: Radiant Prism (160) - Ready to evolve
+        const p3 = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('golbat'),
+          level: 35
+        });
+        p3.uid = 'sim-golbat-160';
+        p3.friendship = radiantVal;
 
-      // 4. Snorlax: Best Friends (220) - Miracle combat perks
-      const p4 = pokemonDebugService.generate({ id: requirePokemonSpeciesId('snorlax'), level: 50 });
-      p4.uid = 'sim-snorlax-220';
-      p4.friendship = bestVal;
+        // 4. Snorlax: Best Friends (220) - Miracle combat perks
+        const p4 = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('snorlax'),
+          level: 50
+        });
+        p4.uid = 'sim-snorlax-220';
+        p4.friendship = bestVal;
 
-      // 5. Caterpie: Faint test baseline (50)
-      const p5 = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: 10 });
-      p5.uid = 'sim-caterpie-50';
-      p5.friendship = faintVal;
+        // 5. Caterpie: Faint test baseline (50)
+        const p5 = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('caterpie'),
+          level: 10
+        });
+        p5.uid = 'sim-caterpie-50';
+        p5.friendship = faintVal;
 
-      gameStore.state.starterChosen = true;
-      gameStore.state.team = [p1, p2, p3, p4, p5];
-      gameStore.state.box = [];
+        gameStore.state.starterChosen = true;
+        gameStore.state.team = [p1, p2, p3, p4, p5];
+        gameStore.state.box = [];
 
-      await gameStore.save(false, true, true);
+        await gameStore.save(false, true, true);
 
-      return {
-        success: true,
-        teamUids: [p1.uid, p2.uid, p3.uid, p4.uid, p5.uid]
-      };
-    }, {
-      sproutVal: FRIENDSHIP_SPROUT_USER_VALUE,
-      comradeVal: FRIENDSHIP_COMRADE_VALUE,
-      radiantVal: FRIENDSHIP_RADIANT_PRISM_VALUE,
-      bestVal: FRIENDSHIP_BEST_FRIENDS_VALUE,
-      faintVal: FRIENDSHIP_FAINT_TEST_VALUE
-    });
-  }
-
-  public async applyFriendshipDeltaToPokemon(uid: string, delta: number): Promise<{ oldF: number; newF: number; tier: string }> {
-    return await this.page.evaluate(async ({ monUid, deltaAmount }) => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { applyFriendshipDelta, resolveFriendshipSealTier } = await import('../../../src/logic/pokemon/friendshipLogic.ts');
-      const gameStore = useGameStore();
-
-      const mon = gameStore.state.team.find(p => p.uid === monUid);
-      if (!mon) throw new Error(`Pokemon with uid ${monUid} not found in team`);
-
-      const result = applyFriendshipDelta(mon, deltaAmount);
-      await gameStore.save(false, true, true);
-
-      return {
-        oldF: result.oldFriendship,
-        newF: result.newFriendship,
-        tier: resolveFriendshipSealTier(result.newFriendship)
-      };
-    }, { monUid: uid, deltaAmount: delta });
-  }
-
-  public async triggerWalkingActivityWithSteps(uid: string, initialSteps: number, activity: 'battle' | 'gym' | 'capture'): Promise<{ newFriendship: number; remainingSteps: number }> {
-    return await this.page.evaluate(async ({ monUid, steps, act }) => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useBreedingStore } = await import('../../../src/stores/breeding.ts');
-      const gameStore = useGameStore();
-      const breedingStore = useBreedingStore();
-
-      const mon = gameStore.state.team.find(p => p.uid === monUid);
-      if (!mon) throw new Error(`Pokemon ${monUid} not found`);
-      mon.friendshipSteps = steps;
-
-      const origRandom = Math.random;
-      try {
-        Math.random = () => 0.1;
-        breedingStore.reduceHatchTimers(act);
-      } finally {
-        Math.random = origRandom;
+        return {
+          success: true,
+          teamUids: [p1.uid, p2.uid, p3.uid, p4.uid, p5.uid]
+        };
+      },
+      {
+        sproutVal: FRIENDSHIP_SPROUT_USER_VALUE,
+        comradeVal: FRIENDSHIP_COMRADE_VALUE,
+        radiantVal: FRIENDSHIP_RADIANT_PRISM_VALUE,
+        bestVal: FRIENDSHIP_BEST_FRIENDS_VALUE,
+        faintVal: FRIENDSHIP_FAINT_TEST_VALUE
       }
-
-      await gameStore.save(false, true, true);
-
-      return {
-        newFriendship: mon.friendship ?? 70,
-        remainingSteps: mon.friendshipSteps ?? 0,
-      };
-    }, { monUid: uid, steps: initialSteps, act: activity });
+    );
   }
 
-  public async getTeamFriendshipSnapshot(): Promise<{ uid: string; friendship: number; friendshipSteps: number; sealTier: string; isEvoReady: boolean }[]> {
+  public async applyFriendshipDeltaToPokemon(
+    uid: string,
+    delta: number
+  ): Promise<{ oldF: number; newF: number; tier: string }> {
+    return await this.page.evaluate(
+      async ({ monUid, deltaAmount }) => {
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { applyFriendshipDelta, resolveFriendshipSealTier } =
+          await import('../../../src/logic/pokemon/friendshipLogic.ts');
+        const gameStore = useGameStore();
+
+        const mon = gameStore.state.team.find((p) => p.uid === monUid);
+        if (!mon) throw new Error(`Pokemon with uid ${monUid} not found in team`);
+
+        const result = applyFriendshipDelta(mon, deltaAmount);
+        await gameStore.save(false, true, true);
+
+        return {
+          oldF: result.oldFriendship,
+          newF: result.newFriendship,
+          tier: resolveFriendshipSealTier(result.newFriendship)
+        };
+      },
+      { monUid: uid, deltaAmount: delta }
+    );
+  }
+
+  public async triggerWalkingActivityWithSteps(
+    uid: string,
+    initialSteps: number,
+    activity: 'battle' | 'gym' | 'capture'
+  ): Promise<{ newFriendship: number; remainingSteps: number }> {
+    return await this.page.evaluate(
+      async ({ monUid, steps, act }) => {
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { useBreedingStore } = await import('../../../src/stores/breeding.ts');
+        const gameStore = useGameStore();
+        const breedingStore = useBreedingStore();
+
+        const mon = gameStore.state.team.find((p) => p.uid === monUid);
+        if (!mon) throw new Error(`Pokemon ${monUid} not found`);
+        mon.friendshipSteps = steps;
+
+        const origRandom = Math.random;
+        try {
+          Math.random = () => 0.1;
+          breedingStore.reduceHatchTimers(act);
+        } finally {
+          Math.random = origRandom;
+        }
+
+        await gameStore.save(false, true, true);
+
+        return {
+          newFriendship: mon.friendship ?? 70,
+          remainingSteps: mon.friendshipSteps ?? 0
+        };
+      },
+      { monUid: uid, steps: initialSteps, act: activity }
+    );
+  }
+
+  public async getTeamFriendshipSnapshot(): Promise<
+    {
+      uid: string;
+      friendship: number;
+      friendshipSteps: number;
+      sealTier: string;
+      isEvoReady: boolean;
+    }[]
+  > {
     return await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { resolveFriendshipSealTier, isReadyForFriendshipEvolution } = await import('../../../src/logic/pokemon/friendshipLogic.ts');
+      const { resolveFriendshipSealTier, isReadyForFriendshipEvolution } =
+        await import('../../../src/logic/pokemon/friendshipLogic.ts');
       const gameStore = useGameStore();
 
-      return gameStore.state.team.map(p => ({
+      return gameStore.state.team.map((p) => ({
         uid: p.uid,
         friendship: p.friendship ?? 70,
         friendshipSteps: p.friendshipSteps ?? 0,
@@ -141,7 +183,9 @@ class PokemonFriendshipSimulation extends BaseE2ESimulation {
 }
 
 test.describe('Pokemon Friendship Lifecycle, Seals & Persistence Simulation', () => {
-  test('verifies friendship seals, promotions, faint drops, and reload persistence', async ({ page }) => {
+  test('verifies friendship seals, promotions, faint drops, and reload persistence', async ({
+    page
+  }) => {
     const sim = new PokemonFriendshipSimulation(page, 'FriendshipMaster');
 
     await sim.setup();
@@ -210,23 +254,23 @@ test.describe('Pokemon Friendship Lifecycle, Seals & Persistence Simulation', ()
     expect(snapshotAfterReload.length).toBe(5);
 
     // Gengar retained 100 and Comrade tier
-    const reloadedGengar = snapshotAfterReload.find(p => p.uid === 'sim-gengar-75')!;
+    const reloadedGengar = snapshotAfterReload.find((p) => p.uid === 'sim-gengar-75')!;
     expect(reloadedGengar.friendship).toBe(100);
     expect(reloadedGengar.sealTier).toBe('comrade');
 
     // Golbat retained 160 and evolution readiness
-    const reloadedGolbat = snapshotAfterReload.find(p => p.uid === 'sim-golbat-160')!;
+    const reloadedGolbat = snapshotAfterReload.find((p) => p.uid === 'sim-golbat-160')!;
     expect(reloadedGolbat.friendship).toBe(160);
     expect(reloadedGolbat.sealTier).toBe('radiant_prism');
     expect(reloadedGolbat.isEvoReady).toBe(true);
 
     // Snorlax retained 220 and Best Friends tier
-    const reloadedSnorlax = snapshotAfterReload.find(p => p.uid === 'sim-snorlax-220')!;
+    const reloadedSnorlax = snapshotAfterReload.find((p) => p.uid === 'sim-snorlax-220')!;
     expect(reloadedSnorlax.friendship).toBe(220);
     expect(reloadedSnorlax.sealTier).toBe('best_friends');
 
     // Caterpie retained 49 and Distrust tier
-    const reloadedCaterpie = snapshotAfterReload.find(p => p.uid === 'sim-caterpie-50')!;
+    const reloadedCaterpie = snapshotAfterReload.find((p) => p.uid === 'sim-caterpie-50')!;
     expect(reloadedCaterpie.friendship).toBe(49);
     expect(reloadedCaterpie.sealTier).toBe('distrust');
 
@@ -258,10 +302,13 @@ test.describe('Pokemon Friendship Lifecycle, Seals & Persistence Simulation', ()
     await page.reload();
     await waitForStoreReady(page);
     const snapshotWalkReload = await sim.getTeamFriendshipSnapshot();
-    const gengarAfterWalk = snapshotWalkReload.find(p => p.uid === 'sim-gengar-75')!;
+    const gengarAfterWalk = snapshotWalkReload.find((p) => p.uid === 'sim-gengar-75')!;
     expect(gengarAfterWalk.friendship).toBe(101);
     expect(gengarAfterWalk.friendshipSteps).toBe(0);
 
-    sim.finish('verifies friendship seals, promotions, faint drops, walking steps toast, and reload persistence', 'passed');
+    sim.finish(
+      'verifies friendship seals, promotions, faint drops, walking steps toast, and reload persistence',
+      'passed'
+    );
   });
 });

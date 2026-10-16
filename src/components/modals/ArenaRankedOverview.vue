@@ -1,23 +1,26 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
-import { gsap } from "gsap";
-import { usePvPStore } from "@/stores/pvp";
-import { useLivePvPStore } from "@/stores/livePvP";
-import { useUIStore } from "@/stores/ui";
-import { useModalStore } from "@/stores/modals";
-import { getAssetUrl, ASSET_TYPES } from "@/logic/services/assetService";
-import SeasonTournamentCard from "@/components/modals/SeasonTournamentCard.vue";
-import { toPokemonType, type PokemonType } from "@/data/battle/types";
-import { getSeasonalThemeForMonth, type RankedTierId } from "@/data/system/rankedData";
-import { validateTeamForRanked, normalizeRankedRules } from "@/logic/pvp/rankedEngine";
-import { GAME_TIMEZONE } from "@/logic/utils/timeUtils";
-import { ARENA_TIER_ICON_FLOAT_Y_PX, TIER_ICON_FLOAT_DURATION_SEC } from "@/logic/constants/animations";
+import { ref, computed, onMounted, watch } from 'vue';
+import { gsap } from 'gsap';
+import { usePvPStore } from '@/stores/pvp';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import SeasonTournamentCard from '@/components/modals/SeasonTournamentCard.vue';
+import { toPokemonType, type PokemonType } from '@/data/battle/types';
+import { getSeasonalThemeForMonth, type RankedTierId } from '@/data/system/rankedData';
+import { validateTeamForRanked, normalizeRankedRules } from '@/logic/pvp/rankedEngine';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import {
+  ARENA_TIER_ICON_FLOAT_Y_PX,
+  TIER_ICON_FLOAT_DURATION_SEC
+} from '@/logic/constants/animations';
 
 import {
   resolveSearchMessage,
   resolveRankedTierDisplay,
   resolveRankedStatsDisplay
-} from "./arenaRankedOverviewHelper";
+} from './arenaRankedOverviewHelper';
 
 const pvp = usePvPStore();
 const livePvP = useLivePvPStore();
@@ -32,9 +35,12 @@ const EMOJI_HOVER_ROTATE_DEG = 5;
 const EMOJI_HOVER_DURATION_SEC = 0.3;
 const EMOJI_OVERSHOOT_EASE = 1.275;
 
-watch(() => pvp.eloTier?.id, () => {
-  imageError.value = false;
-});
+watch(
+  () => pvp.eloTier?.id,
+  () => {
+    imageError.value = false;
+  }
+);
 
 onMounted(() => {
   if (tierIconRef.value) {
@@ -43,7 +49,7 @@ onMounted(() => {
       duration: TIER_ICON_FLOAT_DURATION_SEC,
       yoyo: true,
       repeat: -1,
-      ease: "power1.inOut"
+      ease: 'power1.inOut'
     });
   }
 });
@@ -54,26 +60,23 @@ const currentTheme = computed(() => {
 
 const allowedTypes = computed<PokemonType[]>(() => {
   const rulesTypes = pvp.currentSeasonRules?.allowedTypes;
-  const types = rulesTypes && rulesTypes.length > 0 ? rulesTypes : (currentTheme.value.allowedTypes || []);
+  const types =
+    rulesTypes && rulesTypes.length > 0 ? rulesTypes : currentTheme.value.allowedTypes || [];
   return types.map(toPokemonType);
 });
 
 const levelCap = computed(() => pvp.currentSeasonRules?.levelCap || '50');
 
-const tierDisplay = computed(() =>
-  resolveRankedTierDisplay(pvp.eloTier, pvp.elo)
-);
+const tierDisplay = computed(() => resolveRankedTierDisplay(pvp.eloTier, pvp.elo));
 
-const statsDisplay = computed(() =>
-  resolveRankedStatsDisplay(pvp.stats)
-);
+const statsDisplay = computed(() => resolveRankedStatsDisplay(pvp.stats));
 
 const searchMessage = computed(() =>
   resolveSearchMessage(livePvP.searchPhase, livePvP.searchSecondsRemaining)
 );
 
 const getRankIcon = (tierId?: RankedTierId) => {
-  const id = tierId || "bronce";
+  const id = tierId || 'bronce';
   return getAssetUrl(ASSET_TYPES.RANK, id);
 };
 
@@ -81,12 +84,14 @@ const seasonActive = computed(() => {
   const now = Temporal.Now.instant();
   const range = pvp.seasonRange || {};
   if (!range.start || !range.end) return false;
-  return Temporal.Instant.compare(now, range.start) >= 0 && Temporal.Instant.compare(now, range.end) <= 0;
+  return (
+    Temporal.Instant.compare(now, range.start) >= 0 && Temporal.Instant.compare(now, range.end) <= 0
+  );
 });
 
 function startSearch() {
   if (!seasonActive.value) {
-    ui.notify("La temporada no está activa.", "🚫");
+    ui.notify('La temporada no está activa.', '🚫');
     return;
   }
   if (livePvP.isSearching) {
@@ -95,17 +100,16 @@ function startSearch() {
   }
   if (pvp.currentSeasonRules) {
     const rules = normalizeRankedRules(pvp.currentSeasonRules, pvp.currentSeasonRules.name);
-    const format = rules.maxPokemon <= 3 ? "3v3" : "6v6";
+    const format = rules.maxPokemon <= 3 ? '3v3' : '6v6';
     const team = livePvP.resolvePvpTeam(format);
     const validation = validateTeamForRanked(team, rules);
     if (!validation.ok) {
-      ui.notify(validation.reason || "Tu equipo no cumple las reglas de la temporada.", "⚠️");
+      ui.notify(validation.reason || 'Tu equipo no cumple las reglas de la temporada.', '⚠️');
       return;
     }
   }
   livePvP.startSearch();
 }
-
 
 function handleTournamentCardClick() {
   if (!modalStore.isOpen('Arena')) {
@@ -114,7 +118,7 @@ function handleTournamentCardClick() {
 }
 
 function handleEmojiEnter(e: MouseEvent) {
-  const emoji = (e.currentTarget as HTMLElement).querySelector(".emoji");
+  const emoji = (e.currentTarget as HTMLElement).querySelector('.emoji');
   if (emoji) {
     gsap.to(emoji, {
       scale: EMOJI_HOVER_SCALE,
@@ -126,13 +130,13 @@ function handleEmojiEnter(e: MouseEvent) {
 }
 
 function handleEmojiLeave(e: MouseEvent) {
-  const emoji = (e.currentTarget as HTMLElement).querySelector(".emoji");
+  const emoji = (e.currentTarget as HTMLElement).querySelector('.emoji');
   if (emoji) {
     gsap.to(emoji, {
       scale: 1,
       rotate: 0,
       duration: EMOJI_HOVER_DURATION_SEC,
-      ease: "power2.out"
+      ease: 'power2.out'
     });
   }
 }
@@ -154,20 +158,16 @@ function handleEmojiLeave(e: MouseEvent) {
     <section class="rank-card">
       <div class="rank-summary-row">
         <div class="tier-display">
-          <div
-            ref="tierIconRef"
-            class="tier-icon-wrapper"
-          >
+          <div ref="tierIconRef" class="tier-icon-wrapper">
             <img
               v-if="!imageError"
               :src="getRankIcon(pvp.eloTier?.id)"
               :alt="tierDisplay.name"
               class="tier-image allow-aliasing"
               width="32"
-            
               height="32"
               @error="imageError = true"
-            >
+            />
             <div
               v-else
               class="tier-emoji-badge"
@@ -180,15 +180,10 @@ function handleEmojiLeave(e: MouseEvent) {
           </div>
           <div class="tier-info">
             <span class="tier-label text-outline">RANGO ACTUAL</span>
-            <h2
-              :style="{ color: tierDisplay.color }"
-              class="text-outline"
-            >
+            <h2 :style="{ color: tierDisplay.color }" class="text-outline">
               {{ tierDisplay.name }}
             </h2>
-            <div class="elo-badge text-outline">
-              {{ tierDisplay.elo }} ELO
-            </div>
+            <div class="elo-badge text-outline">{{ tierDisplay.elo }} ELO</div>
           </div>
         </div>
 
@@ -209,10 +204,7 @@ function handleEmojiLeave(e: MouseEvent) {
       </div>
 
       <!-- Matchmaking Search Indicator -->
-      <div
-        v-if="livePvP.isSearching"
-        class="search-status-box"
-      >
+      <div v-if="livePvP.isSearching" class="search-status-box">
         <span class="emoji icon">⏳</span>
         <span class="status-msg">
           {{ searchMessage }}

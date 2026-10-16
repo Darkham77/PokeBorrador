@@ -1,14 +1,14 @@
-import type { ItemTier } from '@/types/inventory/items'
-import { getItemById } from '@/data/inventory/items'
+import type { ItemTier } from '@/types/inventory/items';
+import { getItemById } from '@/data/inventory/items';
 
-const TIER_LABELS: Record<string, string> = {
+const TIER_LABELS: Record<ItemTier, string> = {
   common: 'COMÚN',
   rare: 'RARO',
   epic: 'ÉPICO',
   legend: 'LEGENDARIO'
 } as const;
 
-const TIER_COLORS: Record<string, string> = {
+const TIER_COLORS: Record<ItemTier, string> = {
   common: '#94a3b8',
   rare: '#3b82f6',
   epic: '#a855f7',
@@ -24,11 +24,11 @@ export function resolveItemDisplayName(name?: string): string {
 }
 
 export function resolveTierLabel(tier?: string): string {
-  return TIER_LABELS[tier || 'common'] || 'COMÚN';
+  return (TIER_LABELS as Record<string, string>)[tier || 'common'] || 'COMÚN'; // open-record: Item tier labels dictionary
 }
 
 export function resolveTierColor(tier?: string): string {
-  return TIER_COLORS[tier || 'common'] || '#94a3b8';
+  return (TIER_COLORS as Record<string, string>)[tier || 'common'] || '#94a3b8'; // open-record: Item tier colors dictionary
 }
 
 export interface BuyButtonState {

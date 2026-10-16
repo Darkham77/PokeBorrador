@@ -70,6 +70,9 @@ async function copyToClipboard(): Promise<void> {
     v-if="isOpen"
     id="autotile-report-modal-div-1"
     class="modal-overlay"
+    role="button"
+    tabindex="-1"
+    aria-label="Cerrar modal de reporte"
     @click.self="emit('close')"
   >
     <div class="modal-card">
@@ -77,17 +80,10 @@ async function copyToClipboard(): Promise<void> {
       <div class="modal-header">
         <div class="modal-title-group">
           <span class="modal-icon">📋</span>
-          <h2 class="modal-title">
-            Reporte de Errores en Continente Real
-          </h2>
+          <h2 class="modal-title">Reporte de Errores en Continente Real</h2>
           <span class="report-badge">{{ reports.length }} casos</span>
         </div>
-        <button
-          id="btn-close-report"
-          type="button"
-          class="close-btn"
-          @click="emit('close')"
-        >
+        <button id="btn-close-report" type="button" class="close-btn" @click="emit('close')">
           <span class="emoji-inline">✕</span>
         </button>
       </div>
@@ -115,33 +111,22 @@ async function copyToClipboard(): Promise<void> {
       </div>
 
       <!-- Tab 1: Summary List -->
-      <div
-        v-if="activeTab === 'summary'"
-        class="modal-body"
-      >
-        <div
-          v-if="reports.length === 0"
-          class="empty-state"
-        >
+      <div v-if="activeTab === 'summary'" class="modal-body">
+        <div v-if="reports.length === 0" class="empty-state">
           No hay tiles marcados como defectuosos todavía.
           <p class="empty-sub">
             Hacé clic en cualquier celda o tile de un parche para marcarlo individualmente.
           </p>
         </div>
 
-        <div
-          v-else
-          class="report-list"
-        >
-          <div
-            v-for="rep in reports"
-            :key="rep.id"
-            class="report-item"
-          >
+        <div v-else class="report-list">
+          <div v-for="rep in reports" :key="rep.id" class="report-item">
             <div class="item-header">
               <span class="badge seed-badge">Semilla #{{ rep.seed }}</span>
               <span class="badge coord-badge">Tile: ({{ rep.tileX }}, {{ rep.tileY }})</span>
-              <span class="badge patch-badge">Parche: ({{ rep.patchCenterX }}, {{ rep.patchCenterY }})</span>
+              <span class="badge patch-badge"
+                >Parche: ({{ rep.patchCenterX }}, {{ rep.patchCenterY }})</span
+              >
               <span class="category-text">{{ rep.category }}</span>
               <button
                 id="autotile-report-modal-btn-emit"
@@ -154,14 +139,13 @@ async function copyToClipboard(): Promise<void> {
               </button>
             </div>
             <div class="item-details">
-              <div>Tile: <code>{{ rep.currentTile }}</code></div>
+              <div>
+                Tile: <code>{{ rep.currentTile }}</code>
+              </div>
               <div class="layers-preview">
                 Capas: <code>{{ rep.layerStack.join(' -> ') }}</code>
               </div>
-              <div
-                v-if="rep.neighborhood"
-                class="neighborhood-box"
-              >
+              <div v-if="rep.neighborhood" class="neighborhood-box">
                 <span class="neighborhood-title">Vecindad 3x3:</span>
                 <div class="neighborhood-grid">
                   <div
@@ -172,10 +156,10 @@ async function copyToClipboard(): Promise<void> {
                     :title="`(${cell.x}, ${cell.y}) ${cell.tile}`"
                   >
                     <span class="n-dir">{{ cell.dir }}</span>
-                    <span class="n-terrain"><span
-                      v-if="cell.dir === 'C'"
-                      class="emoji-inline"
-                    >⚠️</span><template v-else>{{ cell.terrain }}</template></span>
+                    <span class="n-terrain"
+                      ><span v-if="cell.dir === 'C'" class="emoji-inline">⚠️</span
+                      ><template v-else>{{ cell.terrain }}</template></span
+                    >
                   </div>
                 </div>
               </div>
@@ -187,17 +171,14 @@ async function copyToClipboard(): Promise<void> {
                 placeholder="Escribí una nota (ej. 'Falta esquina interna de arena', 'El acantilado no proyecta pie sur')"
                 class="note-field"
                 @input="(e) => emit('updateNote', rep.id, (e.target as HTMLInputElement).value)"
-              >
+              />
             </div>
           </div>
         </div>
       </div>
 
       <!-- Tab 2: JSON Payload -->
-      <div
-        v-else
-        class="modal-body"
-      >
+      <div v-else class="modal-body">
         <pre class="json-code"><code>{{ jsonPayload }}</code></pre>
       </div>
 

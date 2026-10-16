@@ -39,7 +39,11 @@ interface WorldPoint {
   readonly y: number;
 }
 
-function countMountainNeighbors(grid: readonly (ArrayLike<number> | undefined)[], x: number, y: number): number {
+function countMountainNeighbors(
+  grid: readonly (ArrayLike<number> | undefined)[],
+  x: number,
+  y: number
+): number {
   let count = 0;
   for (let dy = -1; dy <= 1; dy++) {
     for (let dx = -1; dx <= 1; dx++) {
@@ -141,9 +145,29 @@ function drawBakedChunks(): void {
 
 function inferUrbanScale(id: string, name: string): 'metropolis' | 'city' | 'town' | 'village' {
   const lower = `${id}_${name}`.toLowerCase();
-  if (lower.includes('saffron') || lower.includes('celadon') || lower.includes('goldenrod') || lower.includes('metro')) return 'metropolis';
-  if (lower.includes('cerulean') || lower.includes('vermilion') || lower.includes('fuchsia') || lower.includes('cinnabar') || lower.includes('pewter') || lower.includes('gym')) return 'city';
-  if (lower.includes('pallet') || lower.includes('lavender') || lower.includes('village') || lower.includes('lab')) return 'village';
+  if (
+    lower.includes('saffron') ||
+    lower.includes('celadon') ||
+    lower.includes('goldenrod') ||
+    lower.includes('metro')
+  )
+    return 'metropolis';
+  if (
+    lower.includes('cerulean') ||
+    lower.includes('vermilion') ||
+    lower.includes('fuchsia') ||
+    lower.includes('cinnabar') ||
+    lower.includes('pewter') ||
+    lower.includes('gym')
+  )
+    return 'city';
+  if (
+    lower.includes('pallet') ||
+    lower.includes('lavender') ||
+    lower.includes('village') ||
+    lower.includes('lab')
+  )
+    return 'village';
   return 'town';
 }
 
@@ -161,18 +185,25 @@ function syncUrbanMaquettes(gen: KantoRegionalWorldGenerator): void {
     const cy = Math.round(node.y);
 
     // Clear auto-generated structures near this city center for procedural maps
-    gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > MIN_PLAZA_CLEARANCE_RADIUS_PX);
-    gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > MIN_PLAZA_CLEARANCE_RADIUS_PX);
+    gen.buildings = gen.buildings.filter(
+      (b) => Math.hypot(b.x - cx, b.y - cy) > MIN_PLAZA_CLEARANCE_RADIUS_PX
+    );
+    gen.props = gen.props.filter(
+      (p) => Math.hypot(p.x - cx, p.y - cy) > MIN_PLAZA_CLEARANCE_RADIUS_PX
+    );
 
     const urbanScale = node.scale ?? inferUrbanScale(id, node.name);
-    const maquette = bakeUrbanMaquette({
-      id,
-      name: node.name,
-      type: 'town',
-      x: cx,
-      y: cy,
-      urbanScale
-    }, store.activeProject.config.seed);
+    const maquette = bakeUrbanMaquette(
+      {
+        id,
+        name: node.name,
+        type: 'town',
+        x: cx,
+        y: cy,
+        urbanScale
+      },
+      store.activeProject.config.seed
+    );
 
     // Pave central plaza if defined with clean dirt paths
     if (maquette.plazaRect) {
@@ -237,13 +268,19 @@ function syncUrbanMaquettes(gen: KantoRegionalWorldGenerator): void {
     for (const p of maquette.props) {
       const snapPx = Math.round(p.x / KANTO_TILE_SIZE) * KANTO_TILE_SIZE;
       const snapPy = Math.round(p.y / KANTO_TILE_SIZE) * KANTO_TILE_SIZE;
-      gen.props.push({ style: p.style, x: snapPx, y: snapPy, w: KANTO_TILE_SIZE, h: KANTO_TILE_SIZE });
+      gen.props.push({
+        style: p.style,
+        x: snapPx,
+        y: snapPy,
+        w: KANTO_TILE_SIZE,
+        h: KANTO_TILE_SIZE
+      });
     }
   }
 }
 
 function syncPlacedStructures(gen: KantoRegionalWorldGenerator): void {
-  for (const s of (store.activeProject.placedSprites ?? [])) {
+  for (const s of store.activeProject.placedSprites ?? []) {
     if (s.category === 'building') {
       gen.buildings.push({ style: s.spriteId, x: s.x, y: s.y, w: s.width, h: s.height });
     } else if (s.category === 'tree') {
@@ -256,15 +293,20 @@ function syncPlacedStructures(gen: KantoRegionalWorldGenerator): void {
 
 function biomeToCellType(biome: string): CellBiomeType {
   switch (biome) {
-    case 'path': return CELL_BIOME.DIRT_PATH;
+    case 'path':
+      return CELL_BIOME.DIRT_PATH;
     case 'water':
     case 'ocean':
-    case 'beach': return CELL_BIOME.WATER;
-    case 'forest': return CELL_BIOME.TALL_GRASS;
+    case 'beach':
+      return CELL_BIOME.WATER;
+    case 'forest':
+      return CELL_BIOME.TALL_GRASS;
     case 'mountain':
-    case 'snow': return CELL_BIOME.MOUNTAIN_DIRT;
+    case 'snow':
+      return CELL_BIOME.MOUNTAIN_DIRT;
     case 'grass':
-    default: return CELL_BIOME.GRASS;
+    default:
+      return CELL_BIOME.GRASS;
   }
 }
 
@@ -279,9 +321,15 @@ async function bakeWorld(): Promise<void> {
     const project = store.activeProject;
 
     // 1. Generate base Kanto layout or procedural continent
-    const kantoNodesRecord: Record<string, { name: string; type: string; x: number; y: number }> = {};
+    const kantoNodesRecord: Record<string, { name: string; type: string; x: number; y: number }> = // open-record: Procedural project node coordinates indexed by node id
+      {};
     for (const node of Object.values(project.nodes)) {
-      kantoNodesRecord[node.id] = { name: node.name, type: 'city', x: Math.round(node.x), y: Math.round(node.y) };
+      kantoNodesRecord[node.id] = {
+        name: node.name,
+        type: 'city',
+        x: Math.round(node.x),
+        y: Math.round(node.y)
+      };
     }
     const kantoConns: [string, string][] = project.connections.map(([u, v]) => [u, v]);
 
@@ -347,7 +395,11 @@ async function bakeWorld(): Promise<void> {
             if (gen.grid[y]?.[x + 1] === CELL_BIOME.MOUNTAIN_DIRT) mtNeighbors++;
             if (mtNeighbors <= 1) {
               gen.grid[y]![x] = CELL_BIOME.GRASS;
-              gen.nature.push({ style: 'rock_small_01', x: x * KANTO_TILE_SIZE, y: y * KANTO_TILE_SIZE });
+              gen.nature.push({
+                style: 'rock_small_01',
+                x: x * KANTO_TILE_SIZE,
+                y: y * KANTO_TILE_SIZE
+              });
             }
           }
         }
@@ -433,7 +485,11 @@ async function bakeWorld(): Promise<void> {
           const bRow = biomeGrid[y];
           if (!bRow) continue;
           for (let x = 0; x < Math.min(KANTO_GRID_W - 1, gridWidth); x += 2) {
-            if (bRow[x] === 'forest' && gen.grid[y]?.[x] !== CELL_BIOME.MOUNTAIN_DIRT && gen.grid[y]?.[x] !== CELL_BIOME.WATER) {
+            if (
+              bRow[x] === 'forest' &&
+              gen.grid[y]?.[x] !== CELL_BIOME.MOUNTAIN_DIRT &&
+              gen.grid[y]?.[x] !== CELL_BIOME.WATER
+            ) {
               gen.trees.push({
                 style: 'tree_viridian_forest',
                 x: x * KANTO_TILE_SIZE,
@@ -482,7 +538,7 @@ function paintBrushAt(gx: number, gy: number): void {
         if (row) row[px] = targetBiome;
         if (gen.elevation?.[py]) {
           if (targetBiome === CELL_BIOME.MOUNTAIN_DIRT) {
-            gen.elevation[py]![px] = (Math.abs(dx) < half && Math.abs(dy) < half && size > 2) ? 3 : 2;
+            gen.elevation[py]![px] = Math.abs(dx) < half && Math.abs(dy) < half && size > 2 ? 3 : 2;
           } else if (targetBiome === CELL_BIOME.WATER) {
             gen.elevation[py]![px] = 0;
           } else {
@@ -501,7 +557,8 @@ function stampStructureAt(worldPos: WorldPoint): void {
   const prefab = defaultPrefabsRegistry.getPrefabById(store.selectedPrefabId);
   const w = prefab?.width ?? DEFAULT_PREFAB_FALLBACK_WIDTH;
   const h = prefab?.height ?? DEFAULT_PREFAB_FALLBACK_HEIGHT;
-  const cat: SpriteCategory = prefab?.category === 'vegetation' ? 'tree' : prefab?.category === 'props' ? 'prop' : 'building';
+  const cat: SpriteCategory =
+    prefab?.category === 'vegetation' ? 'tree' : prefab?.category === 'props' ? 'prop' : 'building';
 
   const newStruct: PlacedCustomSprite = {
     id: `struct_${Temporal.Now.instant().epochMilliseconds}`,
@@ -521,7 +578,11 @@ function handlePointerDown(e: PointerEvent): void {
   const worldPos = screenToWorld(e.clientX, e.clientY);
 
   // 1. Panning check
-  if (e.button === 1 || isSpacePressed.value || (e.button === 0 && store.activeTool === 'pointer')) {
+  if (
+    e.button === 1 ||
+    isSpacePressed.value ||
+    (e.button === 0 && store.activeTool === 'pointer')
+  ) {
     isPanning.value = true;
     panStart.value = { x: e.clientX, y: e.clientY };
     panOrigin.value = { x: store.panX, y: store.panY };
@@ -546,7 +607,12 @@ function handlePointerDown(e: PointerEvent): void {
     const sprites = store.activeProject.placedSprites ?? [];
     for (let i = sprites.length - 1; i >= 0; i--) {
       const s = sprites[i]!;
-      if (worldPos.x >= s.x && worldPos.x <= s.x + s.width && worldPos.y >= s.y && worldPos.y <= s.y + s.height) {
+      if (
+        worldPos.x >= s.x &&
+        worldPos.x <= s.x + s.width &&
+        worldPos.y >= s.y &&
+        worldPos.y <= s.y + s.height
+      ) {
         isDraggingStructure.value = true;
         draggedStructureIdx.value = i;
         store.selectedStructureIndex = i;
@@ -576,7 +642,11 @@ function handlePointerMove(e: PointerEvent): void {
   if (isPaintingTerrain.value && store.activeTool === 'terrain') {
     const gx = Math.floor(worldPos.x / KANTO_TILE_SIZE);
     const gy = Math.floor(worldPos.y / KANTO_TILE_SIZE);
-    if (!lastPaintedTile.value || lastPaintedTile.value.gx !== gx || lastPaintedTile.value.gy !== gy) {
+    if (
+      !lastPaintedTile.value ||
+      lastPaintedTile.value.gx !== gx ||
+      lastPaintedTile.value.gy !== gy
+    ) {
       lastPaintedTile.value = { gx, gy };
       paintBrushAt(gx, gy);
     }
@@ -629,12 +699,9 @@ onUnmounted(() => {
   window.removeEventListener('keyup', handleKeyUp);
 });
 
-watch(
-  [() => store.activeProjectId, () => store.activeProject.config.seed],
-  () => {
-    bakeWorld();
-  }
-);
+watch([() => store.activeProjectId, () => store.activeProject.config.seed], () => {
+  bakeWorld();
+});
 
 async function forceRebake(): Promise<void> {
   catalogLoader.reset();
@@ -658,10 +725,7 @@ defineExpose({
     @pointermove="handlePointerMove"
     @pointerup="handlePointerUp"
   >
-    <div
-      class="canvas-world-wrapper"
-      :style="transformStyle"
-    >
+    <div class="canvas-world-wrapper" :style="transformStyle">
       <canvas
         ref="canvasRef"
         :width="KANTO_WORLD_WIDTH"

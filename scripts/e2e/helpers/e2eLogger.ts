@@ -6,7 +6,7 @@ import {
   MAX_PER_ACTION_TIMEOUT_MS,
   MAX_UI_SETTLE_TIMEOUT_MS,
   E2E_FALLBACK_TIMEOUT_MS,
-  MS_TO_SECONDS_DIVISOR,
+  MS_TO_SECONDS_DIVISOR
 } from '../simulation_config.ts';
 
 export interface E2EPage extends Page {
@@ -21,7 +21,7 @@ export function flushE2ELogs(
 ): void {
   const workerId = process.env.TEST_WORKER_INDEX || '0';
   const logDir = path.resolve('scratch/logs/e2e');
-  
+
   try {
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true });
@@ -31,7 +31,10 @@ export function flushE2ELogs(
     const header = `\n--- [${timeStr}] TEST: ${testName} [STATUS: ${status.toUpperCase()}] (${durationMs ? (durationMs / MS_TO_SECONDS_DIVISOR).toFixed(1) + 's' : '0s'}) ---\n`;
     fs.appendFileSync(logFilePath, header + logBuffer.join('\n') + '\n');
   } catch (err: unknown) {
-    console.debug('[E2E-LOGGER-WARN] Failed to write log file:', err instanceof Error ? err.message : String(err));
+    console.debug(
+      '[E2E-LOGGER-WARN] Failed to write log file:',
+      err instanceof Error ? err.message : String(err)
+    );
   }
 
   const durationStr = durationMs ? ` (${(durationMs / MS_TO_SECONDS_DIVISOR).toFixed(1)}s)` : '';
@@ -58,13 +61,18 @@ export function logE2EDebug(page: Page | undefined, msg: string): void {
   }
 }
 
-export async function clickResilient(locator: Locator, options: { timeout?: number } = {}): Promise<void> {
+export async function clickResilient(
+  locator: Locator,
+  options: { timeout?: number } = {}
+): Promise<void> {
   const timeout = options.timeout ?? MAX_PER_ACTION_TIMEOUT_MS;
   const initialTimeout = Math.min(timeout, MAX_UI_SETTLE_TIMEOUT_MS);
   const fallbackTimeout = Math.min(timeout, E2E_FALLBACK_TIMEOUT_MS);
   try {
     await locator.click({ timeout: initialTimeout });
   } catch (_err) {
-    await locator.evaluate((el: HTMLElement) => el.click(), undefined, { timeout: fallbackTimeout });
+    await locator.evaluate((el: HTMLElement) => el.click(), undefined, {
+      timeout: fallbackTimeout
+    });
   }
 }

@@ -48,7 +48,13 @@ describe('mintHighlandMountainSeamIntegrity (Pattern B)', () => {
 
     const pois = placeRegionalPOIs(continent, { targetCount: 18, seed: 615856 });
     const routes = generateRouteNetwork(continent, pois, { allowBridges: true });
-    const { instructions } = buildMapBlitInstructions(continent, pois, routes.pathGrid, routes.bridgeGrid, null);
+    const { instructions } = buildMapBlitInstructions(
+      continent,
+      pois,
+      routes.pathGrid,
+      routes.bridgeGrid,
+      null
+    );
 
     // At (89, 41), it is a mountain corner outer nw on height 1 bordering height 0 at (88, 41)
     const mCell = continent.resolvedMountain.cellDetails[41]?.[89];

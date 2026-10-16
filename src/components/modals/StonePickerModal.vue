@@ -15,16 +15,16 @@ import BaseModal from '@/components/common/BaseModal.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
 const gameStore = useGameStore();
 const uiStore = useUIStore();
@@ -39,16 +39,16 @@ interface StoneOption {
 
 const options = computed<StoneOption[]>(() => {
   if (!pokemon.value) return [];
-  
+
   const p = pokemon.value;
   if (p.id === 'eevee') {
     return [
-      { stone: 'waterstone',   to: 'vaporeon' },
+      { stone: 'waterstone', to: 'vaporeon' },
       { stone: 'thunderstone', to: 'jolteon' },
-      { stone: 'firestone',    to: 'flareon' },
+      { stone: 'firestone', to: 'flareon' }
     ];
   }
-  
+
   const evo = isStoneEvolutionKey(p.id) ? STONE_EVOLUTIONS[p.id] : undefined;
   if (evo && isItemId(evo.stone) && isPokemonSpeciesId(evo.to)) {
     return [{ stone: evo.stone, to: evo.to }];
@@ -77,12 +77,12 @@ const useStone = (stoneId: ItemId, toId: PokemonSpeciesId) => {
   gameStore.save(false);
 };
 
-const imageErrors = ref<Record<string, boolean>>({});
+const imageErrors = ref<Partial<Record<ItemId, boolean>>>({});
 
-const stoneHasError = (stoneName: string) => !!imageErrors.value[stoneName];
+const stoneHasError = (stoneId: ItemId) => !!imageErrors.value[stoneId];
 
-const handleImageError = (stoneName: string) => {
-  imageErrors.value[stoneName] = true;
+const handleImageError = (stoneId: ItemId) => {
+  imageErrors.value[stoneId] = true;
 };
 
 watch(options, () => {
@@ -114,31 +114,28 @@ const getPokemonName = (id: string) => {
   >
     <div class="stone-picker-content">
       <p class="stone-help">
-        ¿Qué piedra usás en <span class="accent-text">{{ pokemon?.name }}</span>?
+        ¿Qué piedra usás en <span class="accent-text">{{ pokemon?.name }}</span
+        >?
       </p>
 
       <div class="options-list">
-        <div 
-          v-for="opt in options" 
+        <div
+          v-for="opt in options"
           :key="opt.stone"
           class="stone-option-vicio"
           :class="{ disabled: (gameStore.state.inventory[opt.stone] || 0) <= 0 }"
         >
           <div class="stone-sprite-box">
-            <img 
+            <img
               v-if="getStoneInfo(opt.stone).sprite && !stoneHasError(opt.stone)"
-              :src="getAssetUrl(ASSET_TYPES.ITEM, getStoneInfo(opt.stone).sprite!)" 
+              :src="getAssetUrl(ASSET_TYPES.ITEM, getStoneInfo(opt.stone).sprite!)"
               :alt="getStoneInfo(opt.stone).name || 'Piedra evolutiva'"
-              class="stone-sprite" 
+              class="stone-sprite"
               width="32"
-            
               height="32"
               @error="handleImageError(opt.stone)"
-            >
-            <span
-              v-else
-              class="fallback-icon"
-            ><span class="emoji">🚫</span></span>
+            />
+            <span v-else class="fallback-icon"><span class="emoji">🚫</span></span>
           </div>
 
           <div class="stone-details">
@@ -146,11 +143,13 @@ const getPokemonName = (id: string) => {
               {{ getStoneInfo(opt.stone).name }}
             </div>
             <div class="evo-target">
-              <span class="emoji">→</span> {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[opt.stone] || 0 }}
+              <span class="emoji">→</span> {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{
+                gameStore.state.inventory[opt.stone] || 0
+              }}
             </div>
           </div>
 
-          <button 
+          <button
             :id="`stone-picker-use-btn-${opt.stone}-${opt.to}`"
             class="use-btn-vicio"
             :disabled="(gameStore.state.inventory[opt.stone] || 0) <= 0"
@@ -175,8 +174,8 @@ const getPokemonName = (id: string) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .stone-picker-content {
   padding: 8px 0;
@@ -187,7 +186,7 @@ const getPokemonName = (id: string) => {
   font-size: var(--font-13);
   text-align: center;
   margin-bottom: 24px;
-  
+
   .accent-text {
     color: var(--yellow);
     font-weight: bold;
@@ -213,15 +212,16 @@ const getPokemonName = (id: string) => {
     background: Rgb(251 191 36 / 10%);
     transform: Translatex(4px);
     border-color: var(--yellow);
-    
-    .stone-name { color: var(--yellow); }
+
+    .stone-name {
+      color: var(--yellow);
+    }
   }
-  
 
   &.disabled {
     opacity: 0.3;
     will-change: transform, filter, opacity;
-  filter: Grayscale(1);
+    filter: Grayscale(1);
   }
 }
 
@@ -233,15 +233,17 @@ const getPokemonName = (id: string) => {
   height: 44px;
   border-radius: $radius-lg-alt;
   background: Rgb(0 0 0 / 20%);
-  
+
   .stone-sprite {
     @include sprite-render;
 
     width: 36px;
     height: 36px;
   }
-  
-  .fallback-icon { font-size: var(--font-24); }
+
+  .fallback-icon {
+    font-size: var(--font-24);
+  }
 }
 
 .stone-details {
@@ -250,7 +252,6 @@ const getPokemonName = (id: string) => {
     color: var(--white);
     font-size: var(--font-14);
     font-weight: 700;
-    
   }
   .evo-target {
     color: Rgb(255 255 255 / 30%);

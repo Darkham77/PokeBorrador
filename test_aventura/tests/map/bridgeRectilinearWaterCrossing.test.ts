@@ -20,7 +20,10 @@ import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import { resolveCanonicalBridges } from '../../logic/map/canonicalBridgeEngine.ts';
 
-const manifestPath = path.resolve(import.meta.dirname, '../../data/map/canonical_assets_manifest.json');
+const manifestPath = path.resolve(
+  import.meta.dirname,
+  '../../data/map/canonical_assets_manifest.json'
+);
 const manifestJson = JSON.parse(fs.readFileSync(manifestPath, 'utf-8')) as Array<{
   id: string;
   runtimePath: string;
@@ -135,7 +138,8 @@ describe('bridgeRectilinearWaterCrossing', () => {
 
     // Zero stray horizontal railings or orphan single railings anywhere in the bridge run
     const strayRailings = faroWaterBlits.filter(
-      (b) => b.file === 'poke_bridge_h_single.png' || (isVertical && b.file === 'poke_bridge_h_top.png')
+      (b) =>
+        b.file === 'poke_bridge_h_single.png' || (isVertical && b.file === 'poke_bridge_h_top.png')
     );
     expect(strayRailings.length).toBe(0);
 

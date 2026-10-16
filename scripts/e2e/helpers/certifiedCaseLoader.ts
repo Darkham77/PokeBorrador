@@ -20,11 +20,15 @@ export function clearCertifiedCaseCache(): void {
  * Unifica la lectura, validación de esquema y almacenamiento en caché en memoria
  * para replayers de Node.js y suites de prueba Playwright.
  */
-export function loadCertifiedBattleCases(category: 'battle' | 'items' | 'all' = 'all'): CertifiedTestBatch[] | CertifiedFuzzerDocument {
+export function loadCertifiedBattleCases(
+  category: 'battle' | 'items' | 'all' = 'all'
+): CertifiedTestBatch[] | CertifiedFuzzerDocument {
   if (!cachedDocument) {
     const filePath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
     if (!fs.existsSync(filePath)) {
-      throw new Error(`[FUZZER-LOADER] No se encontró el archivo de casos certificados en: ${filePath}. Ejecuta 'npm run sim:fuzzer' para generarlo.`);
+      throw new Error(
+        `[FUZZER-LOADER] No se encontró el archivo de casos certificados en: ${filePath}. Ejecuta 'npm run sim:fuzzer' para generarlo.`
+      );
     }
 
     const rawContent = fs.readFileSync(filePath, 'utf8');
@@ -42,9 +46,10 @@ export function loadCertifiedBattleCases(category: 'battle' | 'items' | 'all' = 
       if (typeof itemBatch === 'object' && itemBatch !== null) {
         const record = itemBatch as Record<string, unknown>;
         if (!record.id) {
-          const itemPrefix = Array.isArray(record.itemsToTest) && typeof record.itemsToTest[0] === 'string'
-            ? `item-${record.itemsToTest[0]}`
-            : `item-batch-${index + 1}`;
+          const itemPrefix =
+            Array.isArray(record.itemsToTest) && typeof record.itemsToTest[0] === 'string'
+              ? `item-${record.itemsToTest[0]}`
+              : `item-batch-${index + 1}`;
           record.id = itemPrefix;
         }
       }

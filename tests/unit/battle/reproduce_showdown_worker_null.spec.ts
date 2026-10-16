@@ -1,9 +1,13 @@
 /**
  * @vitest-environment jsdom
  */
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vite-plus/test';
 import { createPinia, setActivePinia } from 'pinia';
-import { executeTurnInWorker, setShowdownWorker, testResetShowdownWorker } from '@/logic/battle/showdownWorkerClient.ts';
+import {
+  executeTurnInWorker,
+  setShowdownWorker,
+  testResetShowdownWorker
+} from '@/logic/battle/showdownWorkerClient.ts';
 import { executeCanonicalTurn } from '@/logic/battle/helpers/canonicalTurnRunner.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
 
@@ -34,14 +38,30 @@ class MockWorker {
           }
         }
       } as MessageEvent;
-      this.listeners.forEach(l => l(event));
+      this.listeners.forEach((l) => l(event));
     }
   }
 }
 
 function createMockBattleContext(): BattleContext {
-  const p = { id: '25', uid: 'p1', name: 'Pikachu', hp: 100, maxHp: 100, level: 50, moves: [{ id: 'tackle', name: 'Tackle', power: 40, pp: 35 }] };
-  const e = { id: '16', uid: 'e1', name: 'Pidgey', hp: 100, maxHp: 100, level: 5, moves: [{ id: 'tackle', name: 'Tackle', power: 40, pp: 35 }] };
+  const p = {
+    id: '25',
+    uid: 'p1',
+    name: 'Pikachu',
+    hp: 100,
+    maxHp: 100,
+    level: 50,
+    moves: [{ id: 'tackle', name: 'Tackle', power: 40, pp: 35 }]
+  };
+  const e = {
+    id: '16',
+    uid: 'e1',
+    name: 'Pidgey',
+    hp: 100,
+    maxHp: 100,
+    level: 5,
+    moves: [{ id: 'tackle', name: 'Tackle', power: 40, pp: 35 }]
+  };
   return {
     activeBattle: {
       value: {

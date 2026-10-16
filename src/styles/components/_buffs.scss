@@ -19,7 +19,7 @@
   align-items: center;
   pointer-events: auto;
   cursor: default;
-  
+
   &:hover .buff-tooltip {
     opacity: 1;
     transform: Translate3d(0, -50%, 0);
@@ -74,12 +74,12 @@
 
 // Event specialized styling
 .buff-item.event {
-    & .buff-collapsed {
+  & .buff-collapsed {
     border: 1px solid $yellow;
     background: Rgb(25 20 5 / 95%);
     box-shadow: var(--shadow-glow-amber);
   }
-    & .buff-timer-badge {
+  & .buff-timer-badge {
     color: $white;
     text-shadow: 0 0 5px $yellow;
   }

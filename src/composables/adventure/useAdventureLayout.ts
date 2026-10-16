@@ -1,110 +1,122 @@
-import { computed } from 'vue'
-import type { Ref } from 'vue'
-import { ADVENTURE_NODE_IDS, KANTO_NODE_POSITIONS, KANTO_CONNECTIONS } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
-import type { AdventureNodeId, GraphEdge } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
-import type { MapLocation } from '@/types/pokemon/encounters'
+import { computed } from 'vue';
+import type { Ref } from 'vue';
+import {
+  ADVENTURE_NODE_IDS,
+  KANTO_NODE_POSITIONS,
+  KANTO_CONNECTIONS
+} from '../../../test_aventura/logic/adventure/kantoGraph.ts';
+import type {
+  AdventureNodeId,
+  GraphEdge
+} from '../../../test_aventura/logic/adventure/kantoGraph.ts';
+import type { MapLocation } from '@/types/pokemon/encounters';
 
+import {
+  isPokemonCenterNodeId,
+  CANVAS_W,
+  CANVAS_H,
+  CARD_W,
+  CARD_H
+} from './helpers/adventureSimulationConstants.ts';
 
-import { isPokemonCenterNodeId } from './helpers/adventureSimulationConstants.ts'
-
-const CANVAS_W = 6400
-const CANVAS_H = 4400
-const CARD_W = 320
-const CARD_H = 220
 const MIN_CAMERA_OVERLAY_SCALE = 0.25 as const;
 
 export function useAdventureLayout(options: {
-  cameraScale: Ref<number>
-  calculatedPath: Ref<AdventureNodeId[]>
-  originMap: Ref<AdventureNodeId>
-  activeHMs: Ref<Set<string>>
-  mapLocationsById: Ref<Partial<Record<AdventureNodeId, MapLocation>>>
+  cameraScale: Ref<number>;
+  calculatedPath: Ref<AdventureNodeId[]>;
+  originMap: Ref<AdventureNodeId>;
+  activeHMs: Ref<Set<string>>;
+  mapLocationsById: Ref<Partial<Record<AdventureNodeId, MapLocation>>>;
 }) {
   const nodePositions = computed(() => {
-    const result: Partial<Record<AdventureNodeId, { x: number; y: number; label: string }>> = {}
+    const result: Partial<Record<AdventureNodeId, { x: number; y: number; label: string }>> = {};
     for (const id of ADVENTURE_NODE_IDS) {
-      const pos = KANTO_NODE_POSITIONS[id]
+      const pos = KANTO_NODE_POSITIONS[id];
       result[id] = {
         x: (pos.x / 100) * (CANVAS_W - CARD_W),
         y: (pos.y / 100) * (CANVAS_H - CARD_H),
-        label: pos.label,
-      }
+        label: pos.label
+      };
     }
-    return result
-  })
+    return result;
+  });
 
   const validNodeIds = computed(() => {
-    return ADVENTURE_NODE_IDS.filter(id => options.mapLocationsById.value[id])
-  })
+    return ADVENTURE_NODE_IDS.filter((id) => options.mapLocationsById.value[id]);
+  });
 
-  const worldOverlayScale = computed(() => 1 / Math.max(options.cameraScale.value, MIN_CAMERA_OVERLAY_SCALE))
+  const worldOverlayScale = computed(
+    () => 1 / Math.max(options.cameraScale.value, MIN_CAMERA_OVERLAY_SCALE)
+  );
 
-const OVERLAY_X_OFFSET_RIGHT = 20
-const OVERLAY_Y_OFFSET_TOP = 18
+  const OVERLAY_X_OFFSET_RIGHT = 20;
+  const OVERLAY_Y_OFFSET_TOP = 18;
 
   const pokemonCenterOverlays = computed(() => {
-    return validNodeIds.value.flatMap(nodeId => {
-      if (!isPokemonCenterNodeId(nodeId)) return []
-      const position = nodePositions.value[nodeId]
-      if (!position) return []
-      return [{
-        id: nodeId,
-        label: options.mapLocationsById.value[nodeId]?.name || KANTO_NODE_POSITIONS[nodeId].label,
-        x: position.x + CARD_W - OVERLAY_X_OFFSET_RIGHT,
-        y: position.y + OVERLAY_Y_OFFSET_TOP
-      }]
-    })
-  })
+    return validNodeIds.value.flatMap((nodeId) => {
+      if (!isPokemonCenterNodeId(nodeId)) return [];
+      const position = nodePositions.value[nodeId];
+      if (!position) return [];
+      return [
+        {
+          id: nodeId,
+          label: options.mapLocationsById.value[nodeId]?.name || KANTO_NODE_POSITIONS[nodeId].label,
+          x: position.x + CARD_W - OVERLAY_X_OFFSET_RIGHT,
+          y: position.y + OVERLAY_Y_OFFSET_TOP
+        }
+      ];
+    });
+  });
 
   const adjacentConnections = computed(() => {
-    const origin = options.originMap.value
-    const originPos = nodePositions.value[origin]
-    const connections = KANTO_CONNECTIONS[origin] || []
+    const origin = options.originMap.value;
+    const originPos = nodePositions.value[origin];
+    const connections = KANTO_CONNECTIONS[origin] || [];
     const result = {
-      top: [] as { target: AdventureNodeId, mo?: string, label: string }[],
-      bottom: [] as { target: AdventureNodeId, mo?: string, label: string }[],
-      left: [] as { target: AdventureNodeId, mo?: string, label: string }[],
-      right: [] as { target: AdventureNodeId, mo?: string, label: string }[],
-    }
+      top: [] as { target: AdventureNodeId; mo?: string; label: string }[],
+      bottom: [] as { target: AdventureNodeId; mo?: string; label: string }[],
+      left: [] as { target: AdventureNodeId; mo?: string; label: string }[],
+      right: [] as { target: AdventureNodeId; mo?: string; label: string }[]
+    };
 
-    if (!originPos) return result
+    if (!originPos) return result;
 
     for (const conn of connections) {
-      const targetPos = nodePositions.value[conn.target]
-      if (!targetPos) continue
-      const dx = targetPos.x - originPos.x
-      const dy = targetPos.y - originPos.y
-      const nodeLabel = targetPos.label
+      const targetPos = nodePositions.value[conn.target];
+      if (!targetPos) continue;
+      const dx = targetPos.x - originPos.x;
+      const dy = targetPos.y - originPos.y;
+      const nodeLabel = targetPos.label;
       if (Math.abs(dx) > Math.abs(dy)) {
-        if (dx > 0) result.right.push({ ...conn, label: nodeLabel })
-        else result.left.push({ ...conn, label: nodeLabel })
+        if (dx > 0) result.right.push({ ...conn, label: nodeLabel });
+        else result.left.push({ ...conn, label: nodeLabel });
       } else {
-        if (dy > 0) result.bottom.push({ ...conn, label: nodeLabel })
-        else result.top.push({ ...conn, label: nodeLabel })
+        if (dy > 0) result.bottom.push({ ...conn, label: nodeLabel });
+        else result.top.push({ ...conn, label: nodeLabel });
       }
     }
-    return result
-  })
+    return result;
+  });
 
-  const pathSet = computed(() => new Set(options.calculatedPath.value))
+  const pathSet = computed(() => new Set(options.calculatedPath.value));
   const pathEdgeSet = computed(() => {
-    const set = new Set<string>()
-    const path = options.calculatedPath.value
+    const set = new Set<string>();
+    const path = options.calculatedPath.value;
     for (let i = 0; i < path.length - 1; i++) {
-      const key = [path[i]!, path[i + 1]!].sort().join('|')
-      set.add(key)
+      const key = [path[i]!, path[i + 1]!].sort().join('|');
+      set.add(key);
     }
-    return set
-  })
+    return set;
+  });
 
-  const getEdgeKey = (from: string, to: string) => [from, to].sort().join('|')
-  const isEdgeOnPath = (from: string, to: string) => pathEdgeSet.value.has(getEdgeKey(from, to))
+  const getEdgeKey = (from: string, to: string) => [from, to].sort().join('|');
+  const isEdgeOnPath = (from: string, to: string) => pathEdgeSet.value.has(getEdgeKey(from, to));
 
   const isEdgeTraversable = (edge: GraphEdge) => {
-    if (!edge.mo) return true
-    const requirements = edge.mo.split(',')
-    return requirements.every(req => options.activeHMs.value.has(req))
-  }
+    if (!edge.mo) return true;
+    const requirements = edge.mo.split(',');
+    return requirements.every((req) => options.activeHMs.value.has(req));
+  };
 
   return {
     nodePositions,
@@ -116,5 +128,5 @@ const OVERLAY_Y_OFFSET_TOP = 18
     pathEdgeSet,
     isEdgeOnPath,
     isEdgeTraversable
-  }
+  };
 }

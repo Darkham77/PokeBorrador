@@ -38,7 +38,7 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
     // Pixel (0, 0)
     expect(raw.data[3]).toBe(0);
     // Pixel (31, 0)
-    expect(raw.data[(31) * 4 + 3]).toBe(0);
+    expect(raw.data[31 * 4 + 3]).toBe(0);
 
     // Verify authentic color palette: must contain trunk brown (approx 120,64,64 or 160,128,32)
     // and must NOT be just a green pine tree
@@ -155,7 +155,11 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
 
       let touchesOcean = false;
       for (let y = maxY; y <= Math.min(result.continent.height - 1, maxY + 4); y++) {
-        for (let x = Math.max(0, minX - 2); x <= Math.min(result.continent.width - 1, maxX + 2); x++) {
+        for (
+          let x = Math.max(0, minX - 2);
+          x <= Math.min(result.continent.width - 1, maxX + 2);
+          x++
+        ) {
           if (isOcean[y]?.[x]) {
             touchesOcean = true;
             break;
@@ -309,7 +313,9 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
     const portDock = result.pois.find((p) => p.type === 'port_dock');
     expect(portDock).toBeDefined();
 
-    const pierStartX = portDock!.gridX + (portDock!.footprint.width >= 7 ? Math.floor((portDock!.footprint.width - 3) / 2) : 0);
+    const pierStartX =
+      portDock!.gridX +
+      (portDock!.footprint.width >= 7 ? Math.floor((portDock!.footprint.width - 3) / 2) : 0);
     const pierEndX = pierStartX + 2; // pierW = 3
     const harborMinX = portDock!.gridX - 8;
     const harborMaxX = portDock!.gridX + portDock!.footprint.width + 8;
@@ -321,7 +327,8 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
       for (let x = harborMinX; x <= harborMaxX; x++) {
         if (result.bridgeGrid[y]?.[x]) {
           // The ONLY allowed bridges in this area are the official pier columns (x in pierStartX..pierEndX)
-          const isPartOfPier = x >= pierStartX && x <= pierEndX && y >= portDock!.gridY + portDock!.footprint.height;
+          const isPartOfPier =
+            x >= pierStartX && x <= pierEndX && y >= portDock!.gridY + portDock!.footprint.height;
           expect(isPartOfPier).toBe(true);
         }
       }
@@ -340,7 +347,11 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
 
       const allProps = [
         ...result.wilderness.props,
-        ...(result.progressionObstacles ?? []).map((o) => ({ x: o.x, y: o.y, prefabFile: o.prefabFile })),
+        ...(result.progressionObstacles ?? []).map((o) => ({
+          x: o.x,
+          y: o.y,
+          prefabFile: o.prefabFile
+        })),
         ...(result.progressionObstacles ?? []).flatMap((o) => o.flankingProps ?? []),
         ...(result.microVignettes ?? []).flatMap((v) => v.props)
       ];
@@ -361,7 +372,8 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
         // 4. Must never be adjacent to stairs or cliff face
         for (let dy = -1; dy <= 1; dy++) {
           for (let dx = -1; dx <= 1; dx++) {
-            const adjCell = result.continent.resolvedMountain.cellDetails[prop.y + dy]?.[prop.x + dx];
+            const adjCell =
+              result.continent.resolvedMountain.cellDetails[prop.y + dy]?.[prop.x + dx];
             if (adjCell?.role.includes('stairs')) {
               expect(adjCell.role).not.toContain('stairs');
             }
@@ -400,7 +412,9 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
     const portDock = result.pois.find((p) => p.type === 'port_dock');
     expect(portDock).toBeDefined();
 
-    const pierStartX = portDock!.gridX + (portDock!.footprint.width >= 7 ? Math.floor((portDock!.footprint.width - 3) / 2) : 0);
+    const pierStartX =
+      portDock!.gridX +
+      (portDock!.footprint.width >= 7 ? Math.floor((portDock!.footprint.width - 3) / 2) : 0);
     const pierStartY = portDock!.gridY + portDock!.footprint.height;
 
     // Check all instructions blitted in the pier columns under the gatehouse threshold
@@ -500,7 +514,13 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
 
       // BFS inside radius 3: can the avatar walk from (tree.x - 2, tree.y) to (tree.x + 2, tree.y)
       // or from (tree.x, tree.y - 2) to (tree.x, tree.y + 2)?
-      const canReach = (startX: number, startY: number, goalX: number, goalY: number, maxDist: number): boolean => {
+      const canReach = (
+        startX: number,
+        startY: number,
+        goalX: number,
+        goalY: number,
+        maxDist: number
+      ): boolean => {
         if (isImpassable(startX, startY) || isImpassable(goalX, goalY)) return false;
         const queue: { x: number; y: number }[] = [{ x: startX, y: startY }];
         const visited = new Set<string>([`${startX}_${startY}`]);
@@ -509,7 +529,12 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
           const cur = queue.shift()!;
           if (cur.x === goalX && cur.y === goalY) return true;
 
-          for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]] as const) {
+          for (const [dx, dy] of [
+            [0, 1],
+            [0, -1],
+            [1, 0],
+            [-1, 0]
+          ] as const) {
             const nx = cur.x + dx;
             const ny = cur.y + dy;
             const key = `${nx}_${ny}`;
@@ -532,5 +557,3 @@ describe('Cut Tree, Ledge Transparency, and Port City Invariants', () => {
     }
   });
 });
-
-

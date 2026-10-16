@@ -6,25 +6,31 @@ const common = require('./../../common');
 let battle;
 
 describe('Gear Up', () => {
-	afterEach(() => {
-		battle.destroy();
-	});
+  afterEach(() => {
+    battle.destroy();
+  });
 
-	it('should boost the Attack and Special Attack of all active allies with Plus or Minus', () => {
-		battle = common.gen(5).createBattle({ gameType: 'triples' }, [[
-			{ species: "Minun", ability: 'minus', moves: ['sleeptalk'] },
-			{ species: "Klinklang", ability: 'plus', moves: ['gearup'] },
-			{ species: "Pyukumuku", ability: 'innardsout', moves: ['sleeptalk'] },
-		], [
-			{ species: "Plusle", ability: 'plus', moves: ['sleeptalk'] },
-			{ species: "Klinklang", ability: 'minus', moves: ['gearup'] },
-			{ species: "Pyukumuku", ability: 'innardsout', moves: ['sleeptalk'] },
-		]]);
-		battle.makeChoices('move sleeptalk, move gearup, move sleeptalk', 'move sleeptalk, move gearup, move sleeptalk');
-		for (const active of battle.getAllActive()) {
-			if (active.name === 'Pyukumuku') continue;
-			assert.statStage(active, 'atk', 1);
-			assert.statStage(active, 'spa', 1);
-		}
-	});
+  it('should boost the Attack and Special Attack of all active allies with Plus or Minus', () => {
+    battle = common.gen(5).createBattle({ gameType: 'triples' }, [
+      [
+        { species: 'Minun', ability: 'minus', moves: ['sleeptalk'] },
+        { species: 'Klinklang', ability: 'plus', moves: ['gearup'] },
+        { species: 'Pyukumuku', ability: 'innardsout', moves: ['sleeptalk'] }
+      ],
+      [
+        { species: 'Plusle', ability: 'plus', moves: ['sleeptalk'] },
+        { species: 'Klinklang', ability: 'minus', moves: ['gearup'] },
+        { species: 'Pyukumuku', ability: 'innardsout', moves: ['sleeptalk'] }
+      ]
+    ]);
+    battle.makeChoices(
+      'move sleeptalk, move gearup, move sleeptalk',
+      'move sleeptalk, move gearup, move sleeptalk'
+    );
+    for (const active of battle.getAllActive()) {
+      if (active.name === 'Pyukumuku') continue;
+      assert.statStage(active, 'atk', 1);
+      assert.statStage(active, 'spa', 1);
+    }
+  });
 });

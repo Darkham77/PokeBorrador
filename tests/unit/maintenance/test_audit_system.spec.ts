@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   discoverAuditors,
   loadAuditConfig,
@@ -17,7 +17,10 @@ import {
   findSpriteCollisions,
   findMissingSprites
 } from '../../../scripts/auditors/assets/audit_item_sprite_collisions.ts';
-import { splitSQLStatements, translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
+import {
+  splitSQLStatements,
+  translatePostgresToSqlite
+} from '../../../src/logic/db/sqlTranslator.ts';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '../../../src/data/system/constants.ts';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
@@ -50,7 +53,9 @@ describe('Audit System & Dynamic Auto-Discovery Engine', () => {
       expect(task.name).toBeTruthy();
       expect(task.command).toBe('node');
       expect(task.args).toContain('--permission');
-      expect(task.scriptPath).toMatch(/^(?:(?:node_modules\/)?@francogp\/auditor\/dist\/suites|scripts\/auditors)\//);
+      expect(task.scriptPath).toMatch(
+        /^(?:(?:node_modules\/)?@francogp\/auditor\/dist\/suites|scripts\/auditors)\//
+      );
     }
   });
 
@@ -154,8 +159,20 @@ describe('Unified Theme Presentation Engine', () => {
 
   it('should render detailed findings grouped by file and handle edge cases', () => {
     const findings = [
-      { severity: 'error' as const, message: 'Invalid property value', file: 'src/data/items.ts', line: 12, ruleId: 'rule-test', context: 'bad_val' },
-      { severity: 'warning' as const, message: 'Consider using constant', file: 'src/data/items.ts', line: 24 }
+      {
+        severity: 'error' as const,
+        message: 'Invalid property value',
+        file: 'src/data/items.ts',
+        line: 12,
+        ruleId: 'rule-test',
+        context: 'bad_val'
+      },
+      {
+        severity: 'warning' as const,
+        message: 'Consider using constant',
+        file: 'src/data/items.ts',
+        line: 24
+      }
     ];
 
     const detail = renderFindingsDetail(findings);
@@ -187,7 +204,9 @@ describe('Unified Theme Presentation Engine', () => {
 
     const md = renderMarkdownReport(results, 1, 15);
     expect(md).toContain('# 🛡️ Reporte Consolidado de Auditoría Global');
-    expect(md).toContain('| Estado | Auditoría | Duración | Métrica Principal | Errores | Advertencias |');
+    expect(md).toContain(
+      '| Estado | Auditoría | Duración | Métrica Principal | Errores | Advertencias |'
+    );
     expect(md).toContain('Item Database Integrity');
     expect(md).toContain('`15 ms`');
     expect(md).toContain('✅ Pass');
@@ -207,7 +226,7 @@ describe('Integrity & False-Positive Prevention Tests for Sub-Auditors', () => {
       expect(collisions).toHaveLength(1);
       expect(collisions[0]!.sprite).toBe('crafting/tier3/choicescarf');
       expect(collisions[0]!.count).toBe(2);
-      expect(collisions[0]!.items.map(i => i.id)).toEqual(['item_a', 'item_b']);
+      expect(collisions[0]!.items.map((i) => i.id)).toEqual(['item_a', 'item_b']);
     });
 
     it('does NOT report collisions when each item has a unique sprite', () => {
@@ -287,7 +306,7 @@ describe('Integrity & False-Positive Prevention Tests for Sub-Auditors', () => {
       const gen = Dex.forGen(ACTIVE_GENERATION);
       const learnsetMoves = new Set<string>();
       for (const [pokeId, poke] of Object.entries(POKEMON_DB)) {
-        if (!((ENABLED_POKEMON_IDS as readonly string[]).includes(pokeId))) continue;
+        if (!(ENABLED_POKEMON_IDS as readonly string[]).includes(pokeId)) continue;
         if (poke.learnset && Array.isArray(poke.learnset)) {
           for (const m of poke.learnset) {
             if (m.id) learnsetMoves.add(toID(m.id));
@@ -308,7 +327,7 @@ describe('Integrity & False-Positive Prevention Tests for Sub-Auditors', () => {
       for (const pokeId of ENABLED_POKEMON_IDS) {
         const species = Dex.species.get(pokeId);
         if (species && species.exists) {
-          Object.values(species.abilities).forEach(abiName => {
+          Object.values(species.abilities).forEach((abiName) => {
             abilityIds.add(toID(abiName));
           });
         }
@@ -318,7 +337,9 @@ describe('Integrity & False-Positive Prevention Tests for Sub-Auditors', () => {
       for (const abilityId of abilityIds) {
         const ability = Dex.abilities.get(abilityId);
         expect(ability.exists).toBe(true);
-        expect(ABILITY_TRANSLATIONS_ES[abilityId as keyof typeof ABILITY_TRANSLATIONS_ES]).toBeDefined();
+        expect(
+          ABILITY_TRANSLATIONS_ES[abilityId as keyof typeof ABILITY_TRANSLATIONS_ES]
+        ).toBeDefined();
       }
     });
 
@@ -353,7 +374,10 @@ describe('Integrity & False-Positive Prevention Tests for Sub-Auditors', () => {
       expect(res.status).toBe('passed');
       expect(res.summary.warnings).toBe(1);
 
-      const targetPath = path.resolve(process.cwd(), 'scratch/audits/architecture/test_sample_auditor.json');
+      const targetPath = path.resolve(
+        process.cwd(),
+        'scratch/audits/architecture/test_sample_auditor.json'
+      );
       const fileData = await fs.readFile(targetPath, 'utf-8');
       const parsed = JSON.parse(fileData) as StandardAuditResult;
 
@@ -366,4 +390,3 @@ describe('Integrity & False-Positive Prevention Tests for Sub-Auditors', () => {
     });
   });
 });
-

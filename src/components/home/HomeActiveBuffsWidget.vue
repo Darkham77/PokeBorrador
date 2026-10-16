@@ -1,59 +1,55 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs'
-import { useModalStore } from '@/stores/modals'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
+import { computed, onMounted } from 'vue';
+import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs';
+import { useModalStore } from '@/stores/modals';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
-const buffsStore = useBuffsStore()
-const modalStore = useModalStore()
+const buffsStore = useBuffsStore();
+const modalStore = useModalStore();
 
 onMounted(() => {
-  buffsStore.initTick()
-})
+  buffsStore.initTick();
+});
 
-const activeBuffs = computed<ActiveBuffItem[]>(() => buffsStore.activeBuffs)
+const activeBuffs = computed<ActiveBuffItem[]>(() => buffsStore.activeBuffs);
 
 const formatTime = (secs: number): string => {
-  if (secs <= 0) return '0:00'
-  const h = Math.floor(secs / 3600)
-  const m = Math.floor((secs % 3600) / 60)
-  const s = secs % 60
+  if (secs <= 0) return '0:00';
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
 
   if (h > 0) {
-    return `${h}h ${m.toString().padStart(2, '0')}m`
+    return `${h}h ${m.toString().padStart(2, '0')}m`;
   }
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
+  return `${m}:${s.toString().padStart(2, '0')}`;
+};
 
 const openInventory = () => {
-  modalStore.open('Inventory')
-}
+  modalStore.open('Inventory');
+};
 
 const handleBuffClick = (buff: ActiveBuffItem) => {
   if (buff.isEvent && buff.event) {
-    modalStore.open('EventDetail', { event: buff.event })
+    modalStore.open('EventDetail', { event: buff.event });
   } else {
-    openInventory()
+    openInventory();
   }
-}
+};
 </script>
 
 <template>
-  <div
-    ref="widgetRef"
-    class="home-active-buffs-widget home-section-card"
-  >
+  <div ref="widgetRef" class="home-active-buffs-widget home-section-card">
     <!-- Header -->
     <div class="card-header-bar">
       <div class="title-wrap">
         <span class="emoji card-icon">⚡</span>
         <div class="title-text-group">
-          <h3 class="card-title">
-            POTENCIADORES &amp; AURAS
-          </h3>
+          <h3 class="card-title">POTENCIADORES &amp; AURAS</h3>
           <span class="buffs-sub">
-            {{ activeBuffs.length }} {{ activeBuffs.length === 1 ? 'efecto activo' : 'efectos activos' }}
+            {{ activeBuffs.length }}
+            {{ activeBuffs.length === 1 ? 'efecto activo' : 'efectos activos' }}
           </span>
         </div>
       </div>
@@ -64,29 +60,29 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
     </div>
 
     <!-- Active Buffs List -->
-    <div
-      v-if="activeBuffs.length > 0"
-      class="buffs-grid"
-    >
+    <div v-if="activeBuffs.length > 0" class="buffs-grid">
       <PVTooltip
         v-for="buff in activeBuffs"
         :key="buff.id"
         :title="buff.isEvent ? `📅 ${buff.name}` : buff.name"
-        :description="buff.isEvent ? `${buff.desc} (Haz clic para ver detalles del evento)` : `${buff.desc} (Haz clic para gestionar en mochila)`"
+        :description="
+          buff.isEvent
+            ? `${buff.desc} (Haz clic para ver detalles del evento)`
+            : `${buff.desc} (Haz clic para gestionar en mochila)`
+        "
       >
         <div
           :id="`home-buff-item-${buff.id}`"
           v-gsap-hover="'widget'"
           class="buff-card-item"
           :class="{ 'is-event-card': buff.isEvent }"
+          role="button"
+          tabindex="0"
           @click.stop="handleBuffClick(buff)"
         >
           <!-- Icon slot -->
           <div class="buff-icon-slot">
-            <span
-              v-if="buff.isEmoji"
-              class="buff-emoji emoji"
-            >{{ buff.icon }}</span>
+            <span v-if="buff.isEmoji" class="buff-emoji emoji">{{ buff.icon }}</span>
             <img
               v-else
               :src="buff.icon"
@@ -94,17 +90,14 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
               class="buff-icon-img"
               width="32"
               height="32"
-            >
+            />
           </div>
 
           <!-- Info Body -->
           <div class="buff-info-body">
             <div class="buff-title-row">
               <span class="buff-label">{{ buff.name }}</span>
-              <span
-                class="buff-badge-pill"
-                :class="{ 'is-event': buff.isEvent }"
-              >
+              <span class="buff-badge-pill" :class="{ 'is-event': buff.isEvent }">
                 {{ buff.isEvent ? 'EVENTO' : 'CONSUMIBLE' }}
               </span>
             </div>
@@ -125,6 +118,8 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
       id="home-active-buffs-widget-div-1"
       v-gsap-hover="{ scale: 1.01, y: -1 }"
       class="empty-buffs-card"
+      role="button"
+      tabindex="0"
       @click.stop="openInventory"
     >
       <span class="emoji empty-icon">🧪</span>
@@ -132,11 +127,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
         <span class="empty-title">Sin potenciadores activos</span>
         <span class="empty-sub">Usa inciensos, huevos suerte o repelentes desde tu mochila.</span>
       </div>
-      <button
-        id="home-active-buffs-widget-btn-activar"
-        v-gsap-hover
-        class="empty-action-btn"
-      >
+      <button id="home-active-buffs-widget-btn-activar" v-gsap-hover class="empty-action-btn">
         ACTIVAR
       </button>
     </div>
@@ -144,7 +135,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .home-active-buffs-widget {
   @include home-section-card;

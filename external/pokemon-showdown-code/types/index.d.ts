@@ -19,51 +19,146 @@ export type BoostsTable<T = number> = { [boost in BoostID]: T };
 
 export type MoveCategory = 'Physical' | 'Special' | 'Status';
 export type MoveTarget =
-  'adjacentAlly' | 'adjacentAllyOrSelf' | 'adjacentFoe' | 'all' |
-  'allAdjacent' | 'allAdjacentFoes' | 'allies' | 'allySide' | 'allyTeam' |
-  'any' | 'foeSide' | 'normal' | 'randomNormal' | 'scripted' | 'self';
+  | 'adjacentAlly'
+  | 'adjacentAllyOrSelf'
+  | 'adjacentFoe'
+  | 'all'
+  | 'allAdjacent'
+  | 'allAdjacentFoes'
+  | 'allies'
+  | 'allySide'
+  | 'allyTeam'
+  | 'any'
+  | 'foeSide'
+  | 'normal'
+  | 'randomNormal'
+  | 'scripted'
+  | 'self';
 
 export type Nonstandard =
-  'Past' | 'Future' | 'Unobtainable' | 'CAP' | 'LGPE' | 'Custom' | 'Gigantamax';
+  | 'Past'
+  | 'Future'
+  | 'Unobtainable'
+  | 'CAP'
+  | 'LGPE'
+  | 'Custom'
+  | 'Gigantamax';
 
 export type EvoType =
-  'trade' | 'useItem' | 'levelMove' | 'levelExtra' |
-  'levelFriendship' | 'levelHold' | 'other';
+  | 'trade'
+  | 'useItem'
+  | 'levelMove'
+  | 'levelExtra'
+  | 'levelFriendship'
+  | 'levelHold'
+  | 'other';
 
 export type EggGroup =
-  'Monster' | 'Water 1' | 'Bug' | 'Flying' | 'Field' | 'Fairy' | 'Grass' | 'Human-Like' |
-  'Water 3' | 'Mineral' | 'Amorphous' | 'Water 2' | 'Ditto' | 'Dragon' | 'Undiscovered';
+  | 'Monster'
+  | 'Water 1'
+  | 'Bug'
+  | 'Flying'
+  | 'Field'
+  | 'Fairy'
+  | 'Grass'
+  | 'Human-Like'
+  | 'Water 3'
+  | 'Mineral'
+  | 'Amorphous'
+  | 'Water 2'
+  | 'Ditto'
+  | 'Dragon'
+  | 'Undiscovered';
 
 export type SideID = 'p1' | 'p2' | 'p3' | 'p4';
 export type Player = SideID;
 
-export type GameType =
-  'singles' | 'doubles' | 'triples' | 'multi' | 'freeforall' | 'rotation';
+export type GameType = 'singles' | 'doubles' | 'triples' | 'multi' | 'freeforall' | 'rotation';
 
 export type HPColor = 'g' | 'y' | 'r';
 
 export type StatusName = 'slp' | 'psn' | 'brn' | 'frz' | 'par' | 'tox';
 
 export type NatureName =
-  'Adamant' | 'Bashful' | 'Bold' | 'Brave' | 'Calm' |
-  'Careful' | 'Docile' | 'Gentle' | 'Hardy' | 'Hasty' |
-  'Impish' | 'Jolly' | 'Lax' | 'Lonely' | 'Mild' |
-  'Modest' | 'Naive' | 'Naughty' | 'Quiet' | 'Quirky' |
-  'Rash' | 'Relaxed' | 'Sassy' | 'Serious' | 'Timid';
+  | 'Adamant'
+  | 'Bashful'
+  | 'Bold'
+  | 'Brave'
+  | 'Calm'
+  | 'Careful'
+  | 'Docile'
+  | 'Gentle'
+  | 'Hardy'
+  | 'Hasty'
+  | 'Impish'
+  | 'Jolly'
+  | 'Lax'
+  | 'Lonely'
+  | 'Mild'
+  | 'Modest'
+  | 'Naive'
+  | 'Naughty'
+  | 'Quiet'
+  | 'Quirky'
+  | 'Rash'
+  | 'Relaxed'
+  | 'Sassy'
+  | 'Serious'
+  | 'Timid';
 
 export type TypeName =
-  'Normal' | 'Fighting' | 'Flying' | 'Poison' | 'Ground' | 'Rock' | 'Bug' | 'Ghost' | 'Steel' |
-  'Fire' | 'Water' | 'Grass' | 'Electric' | 'Psychic' | 'Ice' | 'Dragon' | 'Dark' | 'Fairy' |
-  '???' | 'Stellar';
+  | 'Normal'
+  | 'Fighting'
+  | 'Flying'
+  | 'Poison'
+  | 'Ground'
+  | 'Rock'
+  | 'Bug'
+  | 'Ghost'
+  | 'Steel'
+  | 'Fire'
+  | 'Water'
+  | 'Grass'
+  | 'Electric'
+  | 'Psychic'
+  | 'Ice'
+  | 'Dragon'
+  | 'Dark'
+  | 'Fairy'
+  | '???'
+  | 'Stellar';
 
 export type HPTypeName = Exclude<TypeName, 'Normal' | 'Fairy' | '???' | 'Stellar'>;
 
 export namespace Tier {
   export type Singles =
-    'AG' | 'Uber' | '(Uber)' | 'OU' | '(OU)' | 'UUBL' | 'UU' | 'RUBL' | 'RU' |
-    'NUBL' | 'NU' | '(NU)' | 'PUBL' | 'PU' | '(PU)' | 'NFE' | 'LC';
+    | 'AG'
+    | 'Uber'
+    | '(Uber)'
+    | 'OU'
+    | '(OU)'
+    | 'UUBL'
+    | 'UU'
+    | 'RUBL'
+    | 'RU'
+    | 'NUBL'
+    | 'NU'
+    | '(NU)'
+    | 'PUBL'
+    | 'PU'
+    | '(PU)'
+    | 'NFE'
+    | 'LC';
   export type Doubles =
-    'DUber' | '(DUber)' | 'DOU' | '(DOU)' | 'DBL' | 'DUU' | '(DUU)' | 'NFE' | 'LC';
+    | 'DUber'
+    | '(DUber)'
+    | 'DOU'
+    | '(DOU)'
+    | 'DBL'
+    | 'DUU'
+    | '(DUU)'
+    | 'NFE'
+    | 'LC';
   export type Other = 'Unreleased' | 'Illegal' | 'CAP' | 'CAP NFE' | 'CAP LC';
 }
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { BattleCheatManager } from '@/logic/battle/helpers/battleCheatManager.ts';
 import { createShowdownBattle } from '@/logic/battle/helpers/showdownBattleFactory.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '@/data/system/constants.ts';
@@ -19,7 +19,13 @@ const makePoke = (species: string, moves: string[]) => ({
 describe('BattleCheatManager - Unit & Integrity Tests', () => {
   it('should parse history terna correctly and apply post-turn heal', () => {
     const history = [
-      { turnCount: 1, p1Choice: 'move 1', p2Choice: 'move 1', battleTurn: 1, p1Heal: true as const },
+      {
+        turnCount: 1,
+        p1Choice: 'move 1',
+        p2Choice: 'move 1',
+        battleTurn: 1,
+        p1Heal: true as const
+      },
       { turnCount: 2, p1Choice: 'move 1', p2Choice: 'move 1', battleTurn: 2 }
     ];
 
@@ -82,7 +88,14 @@ describe('BattleCheatManager - Unit & Integrity Tests', () => {
 
   it('should register heal entries by both battleTurn and turnCount for pre/post turn consistency', () => {
     const history = [
-      { turnCount: 19, p1Choice: 'switch 2', p2Choice: 'move 1', battleTurn: 20, p1Heal: true as const, p1ForceSwitch: true }
+      {
+        turnCount: 19,
+        p1Choice: 'switch 2',
+        p2Choice: 'move 1',
+        battleTurn: 20,
+        p1Heal: true as const,
+        p1ForceSwitch: true
+      }
     ];
 
     const cheatManager = new BattleCheatManager(history);

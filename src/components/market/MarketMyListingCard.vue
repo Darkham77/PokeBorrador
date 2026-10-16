@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
-import { formatCurrency } from '@/logic/utils/formatters'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getItemById } from '@/data/inventory/items'
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts'
-import type { MarketListing } from '@/logic/economy/market'
+import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue';
+import { formatCurrency } from '@/logic/utils/formatters';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getItemById } from '@/data/inventory/items';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils.ts';
+import type { MarketListing } from '@/logic/economy/market';
 
 defineProps<{
-  item: MarketListing
-}>()
+  item: MarketListing;
+}>();
 
 const emit = defineEmits<{
-  (e: 'cancel', listingId: string | number): void
-}>()
+  (e: 'cancel', listingId: string | number): void;
+}>();
 
 function onListingItemImgError(e: Event): void {
-  const target = e.target as HTMLImageElement | null
+  const target = e.target as HTMLImageElement | null;
   if (target) {
-    target.src = getAssetUrl(ASSET_TYPES.ITEM, 'potion')
+    target.src = getAssetUrl(ASSET_TYPES.ITEM, 'potion');
   }
 }
 </script>
@@ -46,20 +46,16 @@ function onListingItemImgError(e: Event): void {
         </button>
       </div>
     </template>
-    <div 
-      v-else
-      class="my-listing-item-card"
-    >
+    <div v-else class="my-listing-item-card">
       <div class="card-visual">
-        <img 
-          :src="getAssetUrl(ASSET_TYPES.ITEM, item.data.name || '')" 
+        <img
+          :src="getAssetUrl(ASSET_TYPES.ITEM, item.data.name || '')"
           :alt="getItemById(item.data.name || '')?.name || item.data.name || 'Objeto'"
           class="i-sprite pixelated"
           width="32"
-        
           height="32"
           @error="onListingItemImgError"
-        >
+        />
       </div>
       <div class="card-info">
         <span class="name">{{ getItemById(item.data.name || '')?.name || item.data.name }}</span>

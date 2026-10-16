@@ -23,10 +23,10 @@ export function auditFSMEventParity(workerPath: string, battleStorePath: string)
 
   // Extrae casos del worker y listeners del store
   const workerCases = Array.from(workerContent.matchAll(/case\s+['"]([a-z0-9_-]+)['"]:/gi))
-    .map(m => m[1] || '')
+    .map((m) => m[1] || '')
     .filter(Boolean);
   const storeHandlers = Array.from(storeContent.matchAll(/on\(['"]([a-z0-9_-]+)['"]/gi))
-    .map(m => m[1] || '')
+    .map((m) => m[1] || '')
     .filter(Boolean);
 
   for (const wCase of workerCases) {

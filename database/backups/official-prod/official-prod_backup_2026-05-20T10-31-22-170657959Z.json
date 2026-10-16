@@ -4468,14 +4468,7 @@
           },
           "badges": 0,
           "classXP": 10,
-          "pokedex": [
-            "bulbasaur",
-            "nidoran_m",
-            "weedle",
-            "zubat",
-            "pikachu",
-            "gengar"
-          ],
+          "pokedex": ["bulbasaur", "nidoran_m", "weedle", "zubat", "pikachu", "gengar"],
           "trainer": "Yarzu",
           "boxCount": 4,
           "classData": {
@@ -5354,12 +5347,7 @@
           "warDailyCap": {},
           "activeBattle": null,
           "avatar_style": null,
-          "defeatedGyms": [
-            "pewter",
-            "cerulean",
-            "vermilion",
-            "celadon"
-          ],
+          "defeatedGyms": ["pewter", "cerulean", "vermilion", "celadon"],
           "luckyEggSecs": 0,
           "rankedMaxElo": 1000,
           "trainerLevel": 7,
@@ -5499,9 +5487,7 @@
               "type": "general"
             }
           ],
-          "rankedRewardsClaimed": [
-            "bronce_1000"
-          ],
+          "rankedRewardsClaimed": ["bronce_1000"],
           "daycare_berry_egg_time": 1775081434337,
           "daycare_mission_refreshes": 3
         },
@@ -6439,9 +6425,7 @@
               "spe": 14,
               "uid": "dbf25dba-b447-46c3-85d0-cdb54dafabdc",
               "name": "Beedrill",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "bug",
               "emoji": "🐝",
               "level": 10,
@@ -6506,9 +6490,7 @@
               "spe": 7,
               "uid": "f5c96553-0835-4874-9e43-43565bc79808",
               "name": "Togepi",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "normal",
               "emoji": "🥚",
               "level": 8,
@@ -6572,9 +6554,7 @@
               "spe": 9,
               "uid": "943571a8-f7f4-43ae-addc-7dd49947dc23",
               "name": "Mankey",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "fighting",
               "emoji": "🐒",
               "level": 3,
@@ -6633,9 +6613,7 @@
               "spe": 11,
               "uid": "d589a21b-ea64-471d-a88a-68bb38e142b0",
               "name": "Zubat",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "poison",
               "emoji": "🦇",
               "level": 5,
@@ -6687,9 +6665,7 @@
               "spe": 13,
               "uid": "131ea553-ec01-4d91-936e-b46de4b4dadb",
               "name": "Rattata",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "🐭",
               "level": 5,
@@ -6748,9 +6724,7 @@
               "spe": 48,
               "uid": "818bbcf2-a67a-486c-8307-4d3347662aeb",
               "name": "Gengar",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "ghost",
               "emoji": "👻",
               "level": 21,
@@ -6824,9 +6798,7 @@
               "spe": 20,
               "uid": "151d21cd-cb85-43ae-a945-77c44383f910",
               "name": "Lickitung",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "👅",
               "level": 19,
@@ -6900,9 +6872,7 @@
               "spe": 8,
               "uid": "677a2ba1-cf2f-4d0a-9175-444d59eb9113",
               "name": "Zubat",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "poison",
               "emoji": "🦇",
               "level": 3,
@@ -6954,9 +6924,7 @@
               "spe": 48,
               "uid": "df1ed5dc-cdd0-4e04-b2b1-c6dcf13d8240",
               "name": "Mr. Mime",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "psychic",
               "emoji": "🤡",
               "level": 21,
@@ -7032,9 +7000,7 @@
               "spe": 22,
               "uid": "a831bd1c-dcaa-498c-81cf-6e8934036131",
               "name": "Drowzee",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "psychic",
               "emoji": "🌀",
               "level": 19,
@@ -7107,9 +7073,7 @@
               "spe": 23,
               "uid": "4cdac4f0-dcb6-4272-9df6-f5bb8ee3ffcf",
               "name": "Drowzee",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "psychic",
               "emoji": "🌀",
               "level": 15,
@@ -7175,9 +7139,7 @@
               "spe": 117,
               "uid": "35aa50b6-3f0f-4488-90bf-ebc0ad2fb731",
               "name": "Persian",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "normal",
               "emoji": "🐱",
               "level": 41,
@@ -7253,9 +7215,7 @@
               "spe": 10,
               "uid": "aaf51e7b-9b5d-496f-aa38-96068ad6eb65",
               "name": "Pidgey",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "🐦",
               "level": 4,
@@ -7307,9 +7267,7 @@
               "spe": 27,
               "uid": "1bf8b600-578d-498b-b226-27d19f841324",
               "name": "Nidorino",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "poison",
               "emoji": "🐭",
               "level": 17,
@@ -7451,9 +7409,7 @@
               "spe": 112,
               "uid": "c84b4fa6-5088-40e6-bafd-0de244251c47",
               "name": "Kadabra",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "psychic",
               "emoji": "🧘",
               "level": 41,
@@ -7531,9 +7487,7 @@
               "spe": 54,
               "uid": "1149e02a-f21b-4a08-a1b6-0005568257cf",
               "name": "Parasect",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "bug",
               "emoji": "🍄",
               "level": 54,
@@ -7750,9 +7704,7 @@
               "spe": 99,
               "uid": "d000dd0a-323d-4b5a-a539-9c488326d671",
               "name": "Dugtrio",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "ground",
               "emoji": "🕳️",
               "level": 41,
@@ -7899,9 +7851,7 @@
               "spe": 46,
               "uid": "c2076a70-d97d-495c-9fc2-5661542b2292",
               "name": "Dewgong",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "water",
               "emoji": "🦭",
               "level": 36,
@@ -7977,9 +7927,7 @@
               "spe": 93,
               "uid": "faabd749-5c1f-466f-bcb1-0f4bc241cdfd",
               "name": "Tentacruel",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "water",
               "emoji": "🌊",
               "level": 44,
@@ -8123,9 +8071,7 @@
               "spe": 161,
               "uid": "7230d912-7f45-4e32-ac48-451689ae602d",
               "name": "Alakazam",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "psychic",
               "emoji": "🧘",
               "level": 65,
@@ -8200,9 +8146,7 @@
               "uid": "ba310f43-f941-40a6-b733-4288d865388d",
               "aura": "white",
               "name": "Tauros",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "🐂",
               "level": 45,
@@ -8278,9 +8222,7 @@
               "spe": 62,
               "uid": "9f4c1a3f-05a2-4035-ad6a-1ef6125b1b54",
               "name": "Golem",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "rock",
               "emoji": "🪨",
               "level": 50,
@@ -8355,9 +8297,7 @@
               "uid": "326f85bd-ce6d-4d16-af7b-38fe9df7979f",
               "aura": "white",
               "name": "Fearow",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "🐦",
               "level": 42,
@@ -8577,9 +8517,7 @@
               "spe": 125,
               "uid": "2248a818-89d8-4b14-96ad-08c39d84d427",
               "name": "Raichu",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "electric",
               "emoji": "⚡",
               "level": 50,
@@ -8800,9 +8738,7 @@
               "uid": "4e69e212-4e51-4801-9e49-7ae9bc8222e2",
               "aura": "white",
               "name": "Jolteon",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "electric",
               "emoji": "⚡",
               "level": 50,
@@ -9023,9 +8959,7 @@
               "spe": 35,
               "uid": "fc469cd7-3b3b-4579-8b15-a7abb82c9ccd",
               "name": "Meowth",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "🐱",
               "level": 15,
@@ -9163,9 +9097,7 @@
               "spe": 21,
               "uid": "6ccc820b-026f-4db7-b7e4-3f233b920e50",
               "name": "Snorlax",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "💤",
               "level": 26,
@@ -9239,9 +9171,7 @@
               "uid": "607320fd-4f81-4424-a1c0-9f62f4c8e97d",
               "aura": "white",
               "name": "Exeggutor",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "grass",
               "emoji": "🌴",
               "level": 46,
@@ -9462,9 +9392,7 @@
               "spe": 39,
               "uid": "d22d40b9-e4c2-464d-ac7d-813245c4f9d8",
               "name": "Onix",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "rock",
               "emoji": "🪨",
               "level": 21,
@@ -9538,9 +9466,7 @@
               "spe": 44,
               "uid": "255c4c6d-e25f-4e35-aa58-f27c45fbea24",
               "name": "Pikachu",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "electric",
               "emoji": "⚡",
               "level": 20,
@@ -9821,9 +9747,7 @@
               "spe": 50,
               "uid": "062ce0fd-8ff4-457b-a04d-99657e8aa301",
               "name": "Marowak",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "ground",
               "emoji": "🦴",
               "level": 39,
@@ -9898,9 +9822,7 @@
               "spe": 15,
               "uid": "293b5f91-3a1b-4aa5-a9c8-40318c17907f",
               "name": "Pikachu",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "electric",
               "emoji": "⚡",
               "level": 6,
@@ -10026,9 +9948,7 @@
               "uid": "ff66240e-4142-4d4a-b702-2075fe130473",
               "aura": "white",
               "name": "Nidoking",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "poison",
               "emoji": "🐭",
               "level": 44,
@@ -10104,9 +10024,7 @@
               "spe": 36,
               "uid": "8762d244-2585-446b-8318-c6e4786647e3",
               "name": "Venonat",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "bug",
               "emoji": "🦋",
               "level": 27,
@@ -10179,9 +10097,7 @@
               "spe": 39,
               "uid": "69d85dfa-5553-4fc8-9982-ef6ff4c52384",
               "name": "Ditto",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "blob",
               "level": 28,
@@ -10233,9 +10149,7 @@
               "spe": 35,
               "uid": "b91a59ee-1674-4f62-a3d3-ac794937aa8c",
               "name": "Venonat",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "bug",
               "emoji": "🦋",
               "level": 26,
@@ -10308,9 +10222,7 @@
               "spe": 35,
               "uid": "4118a87b-82c3-4a2a-8b42-e9b39da0aa58",
               "name": "Venonat",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "bug",
               "emoji": "🦋",
               "level": 27,
@@ -10434,9 +10346,7 @@
               "spe": 18,
               "uid": "5575e37e-f158-4117-af75-b2eed84b80c1",
               "name": "Geodude",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "rock",
               "emoji": "🪨",
               "level": 21,
@@ -11014,9 +10924,7 @@
               "spe": 98,
               "uid": "3e40a925-dc04-4e98-8e92-dbbe8ada940f",
               "name": "Seadra",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "water",
               "emoji": "🐎",
               "level": 53,
@@ -11092,9 +11000,7 @@
               "spe": 12,
               "uid": "e05eb805-3937-4ce7-b16b-e6a861fd7abb",
               "name": "Paras",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "bug",
               "emoji": "🍄",
               "level": 10,
@@ -11154,9 +11060,7 @@
               "spe": 39,
               "uid": "2dd3bee5-8930-45fe-9ebb-9b982523924a",
               "name": "Raticate",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "🐭",
               "level": 20,
@@ -11496,9 +11400,7 @@
               "spe": 12,
               "uid": "2a2349da-8c44-40f2-8971-8553a452aabe",
               "name": "Pichu",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "electric",
               "emoji": "🐭",
               "level": 5,
@@ -11753,9 +11655,7 @@
               "spe": 101,
               "uid": "3e263fbd-e3cf-436e-a4b9-96d32fc997b8",
               "name": "Pikachu",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "electric",
               "emoji": "⚡",
               "level": 46,
@@ -11831,9 +11731,7 @@
               "uid": "affc3b5b-a32a-45c1-a5a6-c049c019c2e1",
               "aura": "white",
               "name": "Victreebel",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "grass",
               "emoji": "🌺",
               "level": 43,
@@ -12048,9 +11946,7 @@
               "spe": 20,
               "uid": "eed9243d-8869-4fb2-bcdc-eb1dd4f7485d",
               "name": "Ekans",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "poison",
               "emoji": "🐍",
               "level": 12,
@@ -12384,9 +12280,7 @@
               "spe": 9,
               "uid": "693067e0-a329-4fdf-8f2c-af3df2660808",
               "name": "Exeggcute",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "grass",
               "emoji": "🥚",
               "level": 5,
@@ -12438,9 +12332,7 @@
               "spe": 8,
               "uid": "ef19dbb7-0ac3-4b3c-9ecd-34779bcc6273",
               "name": "Rhyhorn",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "ground",
               "emoji": "🦏",
               "level": 5,
@@ -12668,9 +12560,7 @@
               "uid": "74603e79-4a76-4c1a-9c3b-e927821d256f",
               "aura": "white",
               "name": "Hypno",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "psychic",
               "emoji": "🌀",
               "level": 42,
@@ -12746,9 +12636,7 @@
               "spe": 47,
               "uid": "cb239963-d492-436c-bfe8-6383816b5f2d",
               "name": "Nidorino",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "poison",
               "emoji": "🐭",
               "level": 26,
@@ -12819,9 +12707,7 @@
               "spe": 59,
               "uid": "185b8ae2-293a-41ab-8173-9b5038de64bf",
               "name": "Nidoqueen",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "poison",
               "emoji": "🐭",
               "level": 46,
@@ -12954,9 +12840,7 @@
               "spe": 14,
               "uid": "a0852a0b-c3fc-4100-8d7b-0dba8b5807f3",
               "name": "Wigglytuff",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "🎵",
               "level": 16,
@@ -13572,9 +13456,7 @@
               "spe": 45,
               "uid": "31cc1a77-dd6e-4c3e-bd5f-06fe17c5227f",
               "name": "Voltorb",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "electric",
               "emoji": "⚽",
               "level": 20,
@@ -13648,9 +13530,7 @@
               "spe": 29,
               "uid": "0db39e3c-290a-439c-92d0-9a287bbe1cdb",
               "name": "Mankey",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "fighting",
               "emoji": "🐒",
               "level": 17,
@@ -14126,9 +14006,7 @@
               "spe": 32,
               "uid": "85c10de1-b64e-4a8e-a55f-ab43499c2815",
               "name": "Tangela",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "grass",
               "emoji": "🌿",
               "level": 19,
@@ -14345,9 +14223,7 @@
               "spe": 68,
               "uid": "bf8e6215-a915-447c-9a23-d64ba59c5294",
               "name": "Rhydon",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "ground",
               "emoji": "🦏",
               "level": 65,
@@ -14420,9 +14296,7 @@
               "spe": 133,
               "uid": "2c828698-fb14-444c-9704-46dd8384af96",
               "name": "Magneton",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "electric",
               "emoji": "🔩",
               "level": 73,
@@ -17205,9 +17079,7 @@
               "spe": 7,
               "uid": "bc7d8b70-3795-4a52-bc55-ac1a02be6de9",
               "name": "Togepi",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "🥚",
               "level": 5,
@@ -17727,10 +17599,7 @@
               "spe": 204,
               "uid": "96206315-078f-459b-a960-f0642d1005c5",
               "name": "Dragonite",
-              "tags": [
-                "breed",
-                "fav"
-              ],
+              "tags": ["breed", "fav"],
               "type": "dragon",
               "emoji": "🐉",
               "level": 100,
@@ -17928,9 +17797,7 @@
               "spe": 148,
               "uid": "7bb02778-b40e-40e9-84b0-b2be6aadcdd8",
               "name": "Dragonite",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "dragon",
               "emoji": "🐉",
               "level": 77,
@@ -18000,9 +17867,7 @@
               "spe": 152,
               "uid": "24f51e36-0b69-44bb-a1b8-51301a6b58a0",
               "name": "Magneton",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "electric",
               "emoji": "🔩",
               "level": 79,
@@ -18077,10 +17942,7 @@
               "spe": 172,
               "uid": "52f8e7f0-d455-4201-b4a1-09211c5292fa",
               "name": "Arcanine",
-              "tags": [
-                "fav",
-                "breed"
-              ],
+              "tags": ["fav", "breed"],
               "type": "fire",
               "emoji": "🐕",
               "level": 76,
@@ -18151,9 +18013,7 @@
               "uid": "d5098b09-5fb9-436e-8632-62e9ec1c350d",
               "aura": "white",
               "name": "Snorlax",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "normal",
               "emoji": "💤",
               "level": 79,
@@ -18231,9 +18091,7 @@
               "uid": "0bfb4107-bfdc-4474-ae40-0c1afe8cb62e",
               "aura": "white",
               "name": "Machamp",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "fighting",
               "emoji": "💪",
               "level": 53,
@@ -18309,9 +18167,7 @@
               "spe": 87,
               "uid": "e0a9aa18-6139-41c4-954b-84d5393ceb4e",
               "name": "Vileplume",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "grass",
               "emoji": "🌺",
               "level": 65,
@@ -18367,12 +18223,7 @@
           "stats": {
             "wins": 4303,
             "battles": 4316,
-            "encounterEggBag": [
-              "elekid",
-              "igglybuff",
-              "togepi",
-              "eevee"
-            ],
+            "encounterEggBag": ["elekid", "igglybuff", "togepi", "eevee"],
             "trainersDefeated": 498,
             "encounterEggBySpecies": {
               "eevee": 3,
@@ -18537,14 +18388,8 @@
             "officialRouteId": null,
             "blackMarketDaily": {
               "date": "2026-05-04",
-              "items": [
-                "tm13",
-                "magnet",
-                "shell_bell"
-              ],
-              "purchased": [
-                "shell_bell"
-              ]
+              "items": ["tm13", "magnet", "shell_bell"],
+              "purchased": ["shell_bell"]
             },
             "blackMarketSales": 861
           },
@@ -18856,9 +18701,7 @@
           "mewtwoTicketSecs": 0,
           "safariTicketSecs": 0,
           "trainerExpNeeded": 100,
-          "marketSoldSeenIds": [
-            "e8c098e3-45e9-42ef-993c-211f60104c25"
-          ],
+          "marketSoldSeenIds": ["e8c098e3-45e9-42ef-993c-211f60104c25"],
           "passiveTeamActive": true,
           "articunoTicketSecs": 0,
           "ceruleanTicketSecs": 0,
@@ -18934,9 +18777,7 @@
               "type": "general"
             }
           ],
-          "rankedRewardsClaimed": [
-            "bronce_1000"
-          ],
+          "rankedRewardsClaimed": ["bronce_1000"],
           "daycare_berry_egg_time": 0,
           "daycare_mission_refreshes": 3
         },
@@ -19209,10 +19050,7 @@
               "spe": 44,
               "uid": "255c4c6d-e25f-4e35-aa58-f27c45fbea24",
               "name": "Pikachu",
-              "tags": [
-                "breed",
-                "fav"
-              ],
+              "tags": ["breed", "fav"],
               "type": "electric",
               "emoji": "⚡",
               "level": 20,
@@ -19277,12 +19115,7 @@
           "badges": 0,
           "classXP": 40,
           "faction": null,
-          "pokedex": [
-            "charmander",
-            "weedle",
-            "kakuna",
-            "pidgey"
-          ],
+          "pokedex": ["charmander", "weedle", "kakuna", "pidgey"],
           "trainer": "chienmin",
           "boxCount": 4,
           "pvpStats": {
@@ -19542,12 +19375,7 @@
           "stats": {},
           "badges": 0,
           "classXP": 0,
-          "pokedex": [
-            "charmander",
-            "alakazam",
-            "rattata",
-            "gengar"
-          ],
+          "pokedex": ["charmander", "alakazam", "rattata", "gengar"],
           "trainer": "Mata8",
           "boxCount": 4,
           "classData": {
@@ -19573,13 +19401,7 @@
           "gymProgress": {},
           "lastGymWins": {},
           "playerClass": null,
-          "seenPokedex": [
-            "charmander",
-            "alakazam",
-            "rattata",
-            "pidgey",
-            "gengar"
-          ],
+          "seenPokedex": ["charmander", "alakazam", "rattata", "pidgey", "gengar"],
           "activeBattle": null,
           "defeatedGyms": [],
           "luckyEggSecs": 0,
@@ -19765,10 +19587,7 @@
           "badges": 0,
           "classXP": 0,
           "faction": null,
-          "pokedex": [
-            "charmander",
-            "rattata"
-          ],
+          "pokedex": ["charmander", "rattata"],
           "trainer": "tester",
           "boxCount": 4,
           "pvpStats": {
@@ -19799,10 +19618,7 @@
           "gymProgress": {},
           "lastGymWins": {},
           "playerClass": "entrenador",
-          "seenPokedex": [
-            "charmander",
-            "rattata"
-          ],
+          "seenPokedex": ["charmander", "rattata"],
           "warDailyCap": {},
           "activeBattle": null,
           "defeatedGyms": [],
@@ -20212,13 +20028,7 @@
             "trainersDefeated": 1
           },
           "badges": 0,
-          "pokedex": [
-            "charmander",
-            "rattata",
-            "pidgey",
-            "zubat",
-            "togepi"
-          ],
+          "pokedex": ["charmander", "rattata", "pidgey", "zubat", "togepi"],
           "trainer": "Bru",
           "boxCount": 4,
           "inventory": {
@@ -20426,10 +20236,7 @@
           "badges": 0,
           "classXP": 285,
           "faction": "poder",
-          "pokedex": [
-            "charmander",
-            "psyduck"
-          ],
+          "pokedex": ["charmander", "psyduck"],
           "trainer": "Arkham",
           "boxCount": 4,
           "pvpStats": {
@@ -20448,11 +20255,7 @@
             "officialRouteId": null,
             "blackMarketDaily": {
               "date": "2026-04-10",
-              "items": [
-                "twisted_spoon",
-                "tm41",
-                "focus_band"
-              ],
+              "items": ["twisted_spoon", "tm41", "focus_band"],
               "purchased": []
             },
             "blackMarketSales": 0
@@ -20510,9 +20313,7 @@
           "amuletCoinSecs": 0,
           "shinyBoostSecs": 0,
           "lastGymAttempts": {},
-          "passiveTeamUids": [
-            "2a687aad-270a-47d2-9de9-7b0a5a8f273a"
-          ],
+          "passiveTeamUids": ["2a687aad-270a-47d2-9de9-7b0a5a8f273a"],
           "daycare_missions": [
             {
               "date": "2026-04-11",
@@ -20699,9 +20500,7 @@
           "money": 3000,
           "stats": {},
           "badges": 0,
-          "pokedex": [
-            "charmander"
-          ],
+          "pokedex": ["charmander"],
           "trainer": "test_user",
           "inventory": {
             "Poción": 3,
@@ -20712,9 +20511,7 @@
           "battleCoins": 0,
           "gymProgress": {},
           "lastGymWins": {},
-          "seenPokedex": [
-            "charmander"
-          ],
+          "seenPokedex": ["charmander"],
           "activeBattle": null,
           "defeatedGyms": [],
           "luckyEggSecs": 0,
@@ -20795,9 +20592,7 @@
           "badges": 0,
           "classXP": 0,
           "faction": null,
-          "pokedex": [
-            "charmander"
-          ],
+          "pokedex": ["charmander"],
           "trainer": "gadou",
           "boxCount": 4,
           "pvpStats": {
@@ -20831,9 +20626,7 @@
           "gymProgress": {},
           "lastGymWins": {},
           "playerClass": null,
-          "seenPokedex": [
-            "charmander"
-          ],
+          "seenPokedex": ["charmander"],
           "warDailyCap": {},
           "activeBattle": null,
           "avatar_style": null,
@@ -22858,10 +22651,7 @@
               "spe": 82,
               "uid": "669bc5f5-ab3e-4121-96ad-af8804cbf14b",
               "name": "Arcanine",
-              "tags": [
-                "iv31",
-                "breed"
-              ],
+              "tags": ["iv31", "breed"],
               "type": "fire",
               "emoji": "🐕",
               "level": 35,
@@ -22935,9 +22725,7 @@
               "spe": 184,
               "uid": "fd284215-43b5-4255-80d8-a41f18e4af7d",
               "name": "Gengar",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ghost",
               "emoji": "👻",
               "level": 76,
@@ -23077,9 +22865,7 @@
               "spe": 98,
               "uid": "be010e5b-462f-4764-91ef-e43113025312",
               "name": "Gyarados",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "water",
               "emoji": "🐉",
               "level": 56,
@@ -23148,9 +22934,7 @@
               "spe": 135,
               "uid": "9be5242b-7aca-41ea-8dea-8bebbc855c87",
               "name": "Dragonite",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "dragon",
               "emoji": "🐉",
               "level": 77,
@@ -23217,9 +23001,7 @@
               "spe": 120,
               "uid": "e1e162d7-1cf1-456f-b9b9-4cac38b43d70",
               "name": "Articuno",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "ice",
               "emoji": "❄️",
               "level": 63,
@@ -23426,13 +23208,7 @@
             "battles": 4436,
             "pvpWins": 2,
             "pvpBattles": 4,
-            "encounterEggBag": [
-              "togepi",
-              "magby",
-              "eevee",
-              "pichu",
-              "igglybuff"
-            ],
+            "encounterEggBag": ["togepi", "magby", "eevee", "pichu", "igglybuff"],
             "trainersDefeated": 459,
             "encounterEggBySpecies": {
               "cleffa": 1,
@@ -23781,9 +23557,7 @@
           "mewtwoTicketSecs": 0,
           "safariTicketSecs": 0,
           "trainerExpNeeded": 100,
-          "marketSoldSeenIds": [
-            "7092ea9b-1e0c-4355-a8b3-bb521aa817b7"
-          ],
+          "marketSoldSeenIds": ["7092ea9b-1e0c-4355-a8b3-bb521aa817b7"],
           "passiveTeamActive": false,
           "articunoTicketSecs": 0,
           "ceruleanTicketSecs": 0,
@@ -23859,9 +23633,7 @@
               "type": "general"
             }
           ],
-          "rankedRewardsClaimed": [
-            "bronce_1000"
-          ],
+          "rankedRewardsClaimed": ["bronce_1000"],
           "daycare_berry_egg_time": 0,
           "daycare_mission_refreshes": 3
         },
@@ -25221,10 +24993,7 @@
               "spe": 74,
               "uid": "b42e3b1c-0eab-48d3-933b-1be1c913dfdc",
               "name": "Rhydon",
-              "tags": [
-                "iv31",
-                "fav"
-              ],
+              "tags": ["iv31", "fav"],
               "type": "ground",
               "emoji": "🦏",
               "level": 67,
@@ -25370,10 +25139,7 @@
               "spe": 69,
               "uid": "2feb6c5b-da53-4049-a472-34c80c9ba839",
               "name": "Golem",
-              "tags": [
-                "iv31",
-                "fav"
-              ],
+              "tags": ["iv31", "fav"],
               "type": "rock",
               "emoji": "🪨",
               "level": 51,
@@ -25587,10 +25353,7 @@
               "spe": 78,
               "uid": "2daea5c6-bb9e-44e6-9768-51b7f497b59d",
               "name": "Pikachu",
-              "tags": [
-                "iv31",
-                "breed"
-              ],
+              "tags": ["iv31", "breed"],
               "type": "electric",
               "emoji": "⚡",
               "level": 35,
@@ -26179,9 +25942,7 @@
               "uid": "78c301c1-c085-4be9-86e7-522f1adab83d",
               "aura": "white",
               "name": "Jolteon",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "electric",
               "emoji": "⚡",
               "level": 56,
@@ -26476,9 +26237,7 @@
               "spe": 41,
               "uid": "36a08cf2-6da0-4296-bae7-ff7edf1accf4",
               "name": "Farfetch'd",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "🦆",
               "level": 25,
@@ -26887,9 +26646,7 @@
               "spe": 99,
               "uid": "49f366cf-a602-4fb1-b70d-86efeccb49bb",
               "name": "Magneton",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "electric",
               "emoji": "🔩",
               "level": 57,
@@ -26964,9 +26721,7 @@
               "uid": "f8d44b28-b0d1-41b0-a78d-4acebbf545f7",
               "aura": "white",
               "name": "Exeggutor",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "grass",
               "emoji": "🌴",
               "level": 54,
@@ -27046,9 +26801,7 @@
               "spe": 50,
               "uid": "2b906c72-2ba7-4a4b-a4fa-da4e12876456",
               "name": "Parasect",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "bug",
               "emoji": "🍄",
               "level": 50,
@@ -27121,9 +26874,7 @@
               "spe": 117,
               "uid": "34514345-035f-4864-8bab-595ef0b9ca45",
               "name": "Kadabra",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "psychic",
               "emoji": "🧘",
               "level": 53,
@@ -27196,9 +26947,7 @@
               "spe": 89,
               "uid": "a3346087-3fb3-4a77-b781-0b8c0015d1a1",
               "name": "Starmie",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "water",
               "emoji": "⭐",
               "level": 42,
@@ -27560,10 +27309,7 @@
               "spe": 116,
               "uid": "06cd8fa7-a7c5-43b0-b15a-7945c34529d0",
               "name": "Primeape",
-              "tags": [
-                "iv31",
-                "fav"
-              ],
+              "tags": ["iv31", "fav"],
               "type": "fighting",
               "emoji": "🐒",
               "level": 54,
@@ -27758,11 +27504,7 @@
               "spe": 150,
               "uid": "5cf25f7b-45c1-43a1-a432-80c0b3d7b8bc",
               "name": "Gengar",
-              "tags": [
-                "fav",
-                "iv31",
-                "breed"
-              ],
+              "tags": ["fav", "iv31", "breed"],
               "type": "ghost",
               "emoji": "👻",
               "level": 58,
@@ -27908,9 +27650,7 @@
               "spe": 94,
               "uid": "7a09f85e-cff7-4fdb-aefc-b57deb08864f",
               "name": "Tentacruel",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "water",
               "emoji": "🌊",
               "level": 39,
@@ -28273,9 +28013,7 @@
               "spe": 63,
               "uid": "b14e8c4f-51cf-4259-8495-561090061b06",
               "name": "Marowak",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ground",
               "emoji": "🦴",
               "level": 50,
@@ -28611,9 +28349,7 @@
               "spe": 46,
               "uid": "5e42fbc3-714e-4c2f-b15e-2a6d92a7f5e5",
               "name": "Machamp",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "fighting",
               "emoji": "💪",
               "level": 46,
@@ -28687,9 +28423,7 @@
               "spe": 73,
               "uid": "6eebf538-b3e7-47ea-9209-4f3ec6d3b340",
               "name": "Venomoth",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "bug",
               "emoji": "🦋",
               "level": 33,
@@ -29049,9 +28783,7 @@
               "spe": 54,
               "uid": "db5678af-9a6d-4633-aad2-9d9f6c93f71b",
               "name": "Persian",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "🐱",
               "level": 28,
@@ -29121,10 +28853,7 @@
               "spe": 50,
               "uid": "c90341d9-8007-4487-aef5-c73bf2a46ca0",
               "name": "Vileplume",
-              "tags": [
-                "iv31",
-                "fav"
-              ],
+              "tags": ["iv31", "fav"],
               "type": "grass",
               "emoji": "🌺",
               "level": 48,
@@ -29466,9 +29195,7 @@
               "spe": 109,
               "uid": "74a4a8cf-d7d3-42e1-94bd-a61cc2266446",
               "name": "Magneton",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "electric",
               "emoji": "🔩",
               "level": 61,
@@ -29564,9 +29291,7 @@
               "spe": 143,
               "uid": "1482655c-0da3-47de-802f-43fee80e462f",
               "name": "Dragonite",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "dragon",
               "emoji": "🐉",
               "level": 83,
@@ -29644,11 +29369,7 @@
               "spe": 73,
               "uid": "07a950a5-b88f-4a58-828a-73820e8bffd2",
               "name": "Nidorino",
-              "tags": [
-                "fav",
-                "breed",
-                "iv31"
-              ],
+              "tags": ["fav", "breed", "iv31"],
               "type": "poison",
               "emoji": "🐭",
               "level": 48,
@@ -29715,9 +29436,7 @@
               "spe": 62,
               "uid": "4d44252a-565a-4a14-8541-5c6c150c721f",
               "name": "Hypno",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "psychic",
               "emoji": "🌀",
               "level": 35,
@@ -29785,9 +29504,7 @@
               "spe": 65,
               "uid": "160da3ff-91cf-4a9e-89fe-8e5688d26bf7",
               "name": "Vulpix",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "FOX",
               "level": 41,
@@ -29980,11 +29697,7 @@
           "stats": {
             "wins": 1661,
             "battles": 1700,
-            "encounterEggBag": [
-              "igglybuff",
-              "magby",
-              "eevee"
-            ],
+            "encounterEggBag": ["igglybuff", "magby", "eevee"],
             "trainersDefeated": 197,
             "encounterEggBySpecies": {
               "eevee": 1,
@@ -30105,15 +29818,8 @@
             "officialRouteId": null,
             "blackMarketDaily": {
               "date": "2026-04-20",
-              "items": [
-                "mystic_water",
-                "exp_share",
-                "stick"
-              ],
-              "purchased": [
-                "mystic_water",
-                "stick"
-              ]
+              "items": ["mystic_water", "exp_share", "stick"],
+              "purchased": ["mystic_water", "stick"]
             },
             "blackMarketSales": 173
           },
@@ -30466,9 +30172,7 @@
               "type": "general"
             }
           ],
-          "rankedRewardsClaimed": [
-            "bronce_1000"
-          ],
+          "rankedRewardsClaimed": ["bronce_1000"],
           "daycare_berry_egg_time": 1776211033337,
           "daycare_mission_refreshes": 3
         },
@@ -30547,9 +30251,7 @@
           "badges": 0,
           "classXP": 0,
           "faction": null,
-          "pokedex": [
-            "squirtle"
-          ],
+          "pokedex": ["squirtle"],
           "trainer": "Motaro",
           "boxCount": 4,
           "warCoins": 0,
@@ -30576,10 +30278,7 @@
           "gymProgress": {},
           "lastGymWins": {},
           "playerClass": null,
-          "seenPokedex": [
-            "squirtle",
-            "rattata"
-          ],
+          "seenPokedex": ["squirtle", "rattata"],
           "warDailyCap": {},
           "activeBattle": null,
           "defeatedGyms": [],
@@ -31430,9 +31129,7 @@
             "trainersDefeated": 13
           },
           "badges": 0,
-          "pokedex": [
-            "mankey"
-          ],
+          "pokedex": ["mankey"],
           "trainer": "Matius",
           "inventory": {
             "Poción": 13,
@@ -31445,10 +31142,7 @@
           "repelSecs": 0,
           "trainerExp": 717,
           "battleCoins": 146,
-          "seenPokedex": [
-            "rattata",
-            "mankey"
-          ],
+          "seenPokedex": ["rattata", "mankey"],
           "activeBattle": null,
           "defeatedGyms": [],
           "luckyEggSecs": 0,
@@ -31700,9 +31394,7 @@
               "spe": 13,
               "uid": "29800a82-1052-4396-95b3-a53fea824a64",
               "name": "Squirtle",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "water",
               "emoji": "💧",
               "level": 11,
@@ -33364,11 +33056,7 @@
             "officialRouteId": null,
             "blackMarketDaily": {
               "date": "2026-04-16",
-              "items": [
-                "tm08",
-                "tm48",
-                "shell_bell"
-              ],
+              "items": ["tm08", "tm48", "shell_bell"],
               "purchased": []
             },
             "blackMarketSales": 40
@@ -33664,9 +33352,7 @@
               "type": "general"
             }
           ],
-          "rankedRewardsClaimed": [
-            "bronce_1000"
-          ],
+          "rankedRewardsClaimed": ["bronce_1000"],
           "daycare_berry_egg_time": 0,
           "daycare_mission_refreshes": 3
         },
@@ -34770,13 +34456,7 @@
           "warDailyCap": {},
           "activeBattle": null,
           "avatar_style": null,
-          "defeatedGyms": [
-            "pewter",
-            "cerulean",
-            "vermilion",
-            "celadon",
-            "fuchsia"
-          ],
+          "defeatedGyms": ["pewter", "cerulean", "vermilion", "celadon", "fuchsia"],
           "luckyEggSecs": 0,
           "rankedMaxElo": 1000,
           "trainerLevel": 9,
@@ -35028,10 +34708,7 @@
           },
           "badges": 0,
           "classXP": 0,
-          "pokedex": [
-            "squirtle",
-            "weedle"
-          ],
+          "pokedex": ["squirtle", "weedle"],
           "trainer": "Brian",
           "boxCount": 4,
           "classData": {
@@ -35057,10 +34734,7 @@
           "gymProgress": {},
           "lastGymWins": {},
           "playerClass": null,
-          "seenPokedex": [
-            "squirtle",
-            "weedle"
-          ],
+          "seenPokedex": ["squirtle", "weedle"],
           "activeBattle": null,
           "defeatedGyms": [],
           "luckyEggSecs": 0,
@@ -37853,9 +37527,7 @@
               "spe": 35,
               "uid": "ccaf8676-ab79-45fe-b53b-b45078b34a98",
               "name": "Venonat",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "bug",
               "emoji": "🦋",
               "level": 27,
@@ -38339,9 +38011,7 @@
               "spe": 10,
               "uid": "ff56a086-9ca3-422c-a6d2-3a6094370de9",
               "name": "Nidoran♀",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "poison",
               "emoji": "🐭",
               "level": 5,
@@ -40938,9 +40608,7 @@
               "spe": 12,
               "uid": "6aa47070-3a9c-4461-8256-6cc3935f33b5",
               "name": "Growlithe",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "fire",
               "emoji": "🐕",
               "level": 5,
@@ -43015,9 +42683,7 @@
             "wins": 4623,
             "battles": 4655,
             "pvpBattles": 1,
-            "encounterEggBag": [
-              "magby"
-            ],
+            "encounterEggBag": ["magby"],
             "trainersDefeated": 462,
             "encounterEggBySpecies": {
               "eevee": 1,
@@ -43710,9 +43376,7 @@
             "Pokéball": 23
           },
           "trainerExp": 56,
-          "defeatedGyms": [
-            "pewter"
-          ],
+          "defeatedGyms": ["pewter"],
           "trainerLevel": 4,
           "starterChosen": true,
           "trainerExpNeeded": 100
@@ -43744,9 +43408,7 @@
               "spe": 46,
               "uid": "277d4513-31a0-46ec-990b-3b6385134f9b",
               "name": "Marowak",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ground",
               "emoji": "🦴",
               "level": 42,
@@ -43815,9 +43477,7 @@
               "spe": 14,
               "uid": "fcea9980-74f6-4cc2-809a-26fc500c9eea",
               "name": "Rattata",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "🐭",
               "level": 5,
@@ -43864,9 +43524,7 @@
               "spe": 13,
               "uid": "b0dced2c-044a-4ea5-967e-aa1f14024b73",
               "name": "Mankey",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fighting",
               "emoji": "🐒",
               "level": 5,
@@ -43913,9 +43571,7 @@
               "spe": 9,
               "uid": "28981b2e-037c-4ac8-a81d-25a8c396e7e5",
               "name": "Pidgey",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "flying",
               "emoji": "🐦",
               "level": 4,
@@ -43960,9 +43616,7 @@
               "spe": 17,
               "uid": "3812ba21-ecb6-410a-8b3b-4effa7132727",
               "name": "Ekans",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "poison",
               "emoji": "🐍",
               "level": 10,
@@ -44019,9 +43673,7 @@
               "spe": 13,
               "uid": "b0c7d7c7-a50d-44ea-a9f8-49bb740cad2d",
               "name": "Elekid",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "electric",
               "emoji": "🔌",
               "level": 5,
@@ -44069,9 +43721,7 @@
               "spe": 11,
               "uid": "6760d158-2880-450c-a842-98688a4811d7",
               "name": "Zubat",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "poison",
               "emoji": "🦇",
               "level": 5,
@@ -44116,9 +43766,7 @@
               "spe": 9,
               "uid": "3447f5a5-5b4f-4673-998f-93e4ee1f2df2",
               "name": "Nidoran♀",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "poison",
               "emoji": "🐭",
               "level": 5,
@@ -44169,9 +43817,7 @@
               "spe": 63,
               "uid": "895e6508-8031-42fc-bf2c-d6fc9090e917",
               "name": "Diglett",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ground",
               "emoji": "🕳️",
               "level": 30,
@@ -44233,9 +43879,7 @@
               "spe": 49,
               "uid": "d89942f6-d14d-4ffc-bb12-6b0a5136e849",
               "name": "Diglett",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ground",
               "emoji": "🕳️",
               "level": 26,
@@ -44299,9 +43943,7 @@
               "spe": 18,
               "uid": "5ef4c5c2-8be0-4c0a-86ed-e3d42c9a7b29",
               "name": "Machop",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fighting",
               "emoji": "💪",
               "level": 16,
@@ -44357,9 +43999,7 @@
               "spe": 28,
               "uid": "832d6d52-118a-4b3c-a4e1-4c996b17f3cf",
               "name": "Growlithe",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🐕",
               "level": 19,
@@ -44416,9 +44056,7 @@
               "spe": 46,
               "uid": "07a49c16-f919-49c4-a15a-d1eb864d58a2",
               "name": "Gastly",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "ghost",
               "emoji": "👻",
               "level": 25,
@@ -44481,9 +44119,7 @@
               "spe": 44,
               "uid": "c23fc84e-5316-4ad7-902f-7c9e6267fd48",
               "name": "Gastly",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ghost",
               "emoji": "👻",
               "level": 22,
@@ -44545,10 +44181,7 @@
               "spe": 55,
               "uid": "75b4db27-b0c1-4f66-959b-598c002973b5",
               "name": "Gastly",
-              "tags": [
-                "iv31",
-                "breed"
-              ],
+              "tags": ["iv31", "breed"],
               "type": "ghost",
               "emoji": "👻",
               "level": 24,
@@ -44612,9 +44245,7 @@
               "spe": 48,
               "uid": "5f0163fe-09c8-4ab6-a788-3d63298b6e34",
               "name": "Gastly",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ghost",
               "emoji": "👻",
               "level": 23,
@@ -44678,9 +44309,7 @@
               "spe": 47,
               "uid": "6c2f2a83-c5f5-49dd-a694-9ff5a532a377",
               "name": "Haunter",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ghost",
               "emoji": "👻",
               "level": 22,
@@ -44736,9 +44365,7 @@
               "spe": 45,
               "uid": "a693424c-b64a-4fbe-9f97-98eef95eb5d0",
               "name": "Gastly",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ghost",
               "emoji": "👻",
               "level": 24,
@@ -44800,9 +44427,7 @@
               "spe": 41,
               "uid": "be7d2e7f-8c61-410b-b12c-865df5a5f3da",
               "name": "Gastly",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ghost",
               "emoji": "👻",
               "level": 20,
@@ -44859,9 +44484,7 @@
               "spe": 46,
               "uid": "20e00048-b929-4cf4-8ac1-894e7b2b2db6",
               "name": "Gastly",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "ghost",
               "emoji": "👻",
               "level": 22,
@@ -44923,9 +44546,7 @@
               "spe": 50,
               "uid": "c46ccc8d-10d3-4a5a-a3ad-66dba4360018",
               "name": "Gastly",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "ghost",
               "emoji": "👻",
               "level": 23,
@@ -44988,9 +44609,7 @@
               "spe": 43,
               "uid": "dbeb4cdd-2b0b-4e61-acda-598f302c0747",
               "name": "Gastly",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "ghost",
               "emoji": "👻",
               "level": 22,
@@ -45053,9 +44672,7 @@
               "spe": 41,
               "uid": "4644f6c2-cc25-4c63-b4ee-790a113248e3",
               "name": "Gastly",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ghost",
               "emoji": "👻",
               "level": 23,
@@ -45117,9 +44734,7 @@
               "spe": 12,
               "uid": "84d56d79-b049-4ad8-838a-6ba3a8f34f9c",
               "name": "Mankey",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fighting",
               "emoji": "🐒",
               "level": 5,
@@ -45167,9 +44782,7 @@
               "spe": 15,
               "uid": "6c413513-2aee-42ad-9907-4a1409837b5f",
               "name": "Sandshrew",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ground",
               "emoji": "🏜️",
               "level": 12,
@@ -45220,9 +44833,7 @@
               "spe": 34,
               "uid": "c8c25ced-f6f7-493e-941a-758cbdd4bdf5",
               "name": "Gastly",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ghost",
               "emoji": "👻",
               "level": 20,
@@ -45279,9 +44890,7 @@
               "spe": 36,
               "uid": "a96f090d-fbd3-4670-b9ed-6ea502edd8f5",
               "name": "Gastly",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "ghost",
               "emoji": "👻",
               "level": 21,
@@ -45343,9 +44952,7 @@
               "spe": 16,
               "uid": "9b825b56-6574-443c-952c-c000d07c54d7",
               "name": "Slowpoke",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "water",
               "emoji": "🐌",
               "level": 34,
@@ -45407,9 +45014,7 @@
               "spe": 23,
               "uid": "33bd8e8e-7aa3-4753-ac3f-b560d984ff3a",
               "name": "Slowpoke",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "water",
               "emoji": "🐌",
               "level": 31,
@@ -45472,9 +45077,7 @@
               "spe": 26,
               "uid": "62e1f5ba-39e8-48d6-912b-a9b444e62266",
               "name": "Ditto",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "blob",
               "level": 24,
@@ -45520,9 +45123,7 @@
               "spe": 34,
               "uid": "92c1140b-b29f-4354-bb64-80f204ead9cf",
               "name": "Farfetch'd",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "🦆",
               "level": 24,
@@ -45585,9 +45186,7 @@
               "spe": 60,
               "uid": "5a079770-fcbb-4b5d-8026-e7e9eb629130",
               "name": "Dewgong",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "water",
               "emoji": "🦭",
               "level": 36,
@@ -45643,9 +45242,7 @@
               "spe": 67,
               "uid": "fda24b24-0edb-49d3-b1ca-67feaba47529",
               "name": "Staryu",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "water",
               "emoji": "⭐",
               "level": 35,
@@ -45707,9 +45304,7 @@
               "spe": 71,
               "uid": "5abbc5d7-564b-415d-972d-e2f3d217674e",
               "name": "Staryu",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "water",
               "emoji": "⭐",
               "level": 35,
@@ -45771,9 +45366,7 @@
               "spe": 30,
               "uid": "073631bd-d6af-4e8c-ae91-a766c557a007",
               "name": "Meowth",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "🐱",
               "level": 13,
@@ -45830,9 +45423,7 @@
               "spe": 11,
               "uid": "8782dc2e-7b90-425a-8d81-bce78735ceb2",
               "name": "Venonat",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "bug",
               "emoji": "🦋",
               "level": 7,
@@ -45878,9 +45469,7 @@
               "spe": 13,
               "uid": "f51dc31e-c30a-454f-86f1-13e26c14b034",
               "name": "Magby",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🔥",
               "level": 5,
@@ -45923,9 +45512,7 @@
               "spe": 87,
               "uid": "81b7ea15-a8e9-4617-9d47-3d1c8d75ebae",
               "name": "Rapidash",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🐎",
               "level": 35,
@@ -45987,9 +45574,7 @@
               "spe": 75,
               "uid": "a8e28f79-80a0-4fcd-8622-8f30056835c2",
               "name": "Magmar",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🔥",
               "level": 34,
@@ -46052,9 +45637,7 @@
               "spe": 15,
               "uid": "ce135890-a765-4890-9a50-220c832e3e7d",
               "name": "Parasect",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "bug",
               "emoji": "🍄",
               "level": 24,
@@ -46112,9 +45695,7 @@
               "spe": 44,
               "uid": "66bd067f-5505-459e-9ac8-7332be2d0814",
               "name": "Growlithe",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🐕",
               "level": 34,
@@ -46184,11 +45765,7 @@
               "spe": 50,
               "uid": "60290194-5735-4414-9b59-85feeeddd723",
               "name": "Growlithe",
-              "tags": [
-                "iv31",
-                "breed",
-                "fav"
-              ],
+              "tags": ["iv31", "breed", "fav"],
               "type": "fire",
               "emoji": "🐕",
               "level": 35,
@@ -46258,9 +45835,7 @@
               "spe": 81,
               "uid": "5c234366-7335-4a4b-85fc-a9e4e69392f1",
               "name": "Magmar",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🔥",
               "level": 38,
@@ -46377,9 +45952,7 @@
               "spe": 14,
               "uid": "b5ece578-957c-4947-bc75-70c0475b22c8",
               "name": "Gastly",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "ghost",
               "emoji": "👻",
               "level": 5,
@@ -46438,9 +46011,7 @@
               "spe": 14,
               "uid": "20756c14-0cef-4aa1-9580-47af23c23f44",
               "name": "Magby",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🔥",
               "level": 5,
@@ -46485,9 +46056,7 @@
               "spe": 29,
               "uid": "fcfda4ef-bf28-4956-aef3-df97607d4176",
               "name": "Rattata",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "🐭",
               "level": 15,
@@ -46860,9 +46429,7 @@
               "spe": 57,
               "uid": "13ee44d1-8cfc-4032-b2db-508e9a507121",
               "name": "Growlithe",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🐕",
               "level": 36,
@@ -46931,10 +46498,7 @@
               "spe": 53,
               "uid": "40e2c7eb-274e-49bd-90c3-95f295c516de",
               "name": "Growlithe",
-              "tags": [
-                "iv31",
-                "breed"
-              ],
+              "tags": ["iv31", "breed"],
               "type": "fire",
               "emoji": "🐕",
               "level": 36,
@@ -47380,9 +46944,7 @@
               "spe": 49,
               "uid": "8085490c-7129-4472-b552-54a9ad72c09e",
               "name": "Growlithe",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🐕",
               "level": 37,
@@ -47451,9 +47013,7 @@
               "spe": 49,
               "uid": "eef9a4f3-94cc-47b0-add7-d210fc875a3b",
               "name": "Growlithe",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🐕",
               "level": 34,
@@ -47523,11 +47083,7 @@
               "spe": 59,
               "uid": "98b29120-fb77-41e5-8d22-fe664f450e97",
               "name": "Growlithe",
-              "tags": [
-                "breed",
-                "iv31",
-                "fav"
-              ],
+              "tags": ["breed", "iv31", "fav"],
               "type": "fire",
               "emoji": "🐕",
               "level": 35,
@@ -48134,9 +47690,7 @@
               "spe": 21,
               "uid": "ac5ae25e-b9c5-4d7e-8638-de7b40936d22",
               "name": "Shellder",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "water",
               "emoji": "🐚",
               "level": 15,
@@ -48259,9 +47813,7 @@
               "spe": 61,
               "uid": "70401afb-1a27-43e9-bee6-836e16b77697",
               "name": "Growlithe",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🐕",
               "level": 38,
@@ -48472,9 +48024,7 @@
               "spe": 47,
               "uid": "924326cb-ec45-4c71-92da-7cdeff73cfc6",
               "name": "Growlithe",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🐕",
               "level": 32,
@@ -48756,9 +48306,7 @@
               "spe": 44,
               "uid": "a4381301-4087-40c7-8dd9-d7c3a43f6e19",
               "name": "Gastly",
-              "tags": [
-                "fav"
-              ],
+              "tags": ["fav"],
               "type": "ghost",
               "emoji": "👻",
               "level": 22,
@@ -49329,9 +48877,7 @@
               "spe": 11,
               "uid": "264a237b-68e5-43a8-9829-f7cd7b188728",
               "name": "Growlithe",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "fire",
               "emoji": "🐕",
               "level": 5,
@@ -49383,9 +48929,7 @@
               "spe": 11,
               "uid": "70af71cb-0fc9-45d6-b1ab-aa272a1662b3",
               "name": "Magikarp",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "water",
               "emoji": "🐟",
               "level": 4,
@@ -49600,9 +49144,7 @@
               "spe": 31,
               "uid": "3876cb6b-3c85-4dc9-9285-1a27b2ee8a1d",
               "name": "Venonat",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "bug",
               "emoji": "🦋",
               "level": 24,
@@ -49675,9 +49217,7 @@
               "spe": 16,
               "uid": "e19687e0-2a03-4578-9910-a67dc161ea56",
               "name": "Geodude",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "rock",
               "emoji": "🪨",
               "level": 20,
@@ -50323,9 +49863,7 @@
               "spe": 8,
               "uid": "83467a54-a51e-4e0e-8507-f319d739d0ce",
               "name": "Rattata",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "🐭",
               "level": 2,
@@ -50384,9 +49922,7 @@
               "spe": 10,
               "uid": "e88833a6-7f53-4302-ae75-61e57894f7a4",
               "name": "Rattata",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "🐭",
               "level": 5,
@@ -50445,9 +49981,7 @@
               "spe": 13,
               "uid": "cb0bb58d-d908-4274-b474-3d92ef798e99",
               "name": "Rattata",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "🐭",
               "level": 4,
@@ -50622,9 +50156,7 @@
               "spe": 12,
               "uid": "11e272ba-0d7b-4d72-b0e3-d0680e88a372",
               "name": "Rattata",
-              "tags": [
-                "iv31"
-              ],
+              "tags": ["iv31"],
               "type": "normal",
               "emoji": "🐭",
               "level": 4,
@@ -53011,11 +52543,7 @@
               "spe": 13,
               "uid": "2292e2bf-daae-4a95-adb7-37c59ab61f03",
               "name": "Rattata",
-              "tags": [
-                "fav",
-                "breed",
-                "iv31"
-              ],
+              "tags": ["fav", "breed", "iv31"],
               "type": "normal",
               "emoji": "🐭",
               "level": 4,
@@ -54571,11 +54099,7 @@
               "spe": 12,
               "uid": "bb1a1c96-646a-45cb-b075-28b6c788e55a",
               "name": "Rattata",
-              "tags": [
-                "fav",
-                "breed",
-                "iv31"
-              ],
+              "tags": ["fav", "breed", "iv31"],
               "type": "normal",
               "emoji": "🐭",
               "level": 4,
@@ -54866,9 +54390,7 @@
               "spe": 192,
               "uid": "f8caea63-5bfa-42db-b187-079bfc358c00",
               "name": "Gengar",
-              "tags": [
-                "breed"
-              ],
+              "tags": ["breed"],
               "type": "ghost",
               "emoji": "👻",
               "level": 68,
@@ -56520,11 +56042,7 @@
               "type": "general"
             }
           ],
-          "rankedRewardsClaimed": [
-            "bronce_1000",
-            "bronce_1100",
-            "plata_1200"
-          ],
+          "rankedRewardsClaimed": ["bronce_1000", "bronce_1100", "plata_1200"],
           "daycare_berry_egg_time": 1775993836425,
           "daycare_mission_refreshes": 3
         },
@@ -56604,9 +56122,7 @@
           "badges": 0,
           "classXP": 0,
           "faction": null,
-          "pokedex": [
-            "bulbasaur"
-          ],
+          "pokedex": ["bulbasaur"],
           "trainer": "Rodri",
           "boxCount": 4,
           "warCoins": 0,
@@ -56633,10 +56149,7 @@
           "gymProgress": {},
           "lastGymWins": {},
           "playerClass": null,
-          "seenPokedex": [
-            "bulbasaur",
-            "rattata"
-          ],
+          "seenPokedex": ["bulbasaur", "rattata"],
           "warDailyCap": {},
           "activeBattle": null,
           "defeatedGyms": [],
@@ -57210,11 +56723,7 @@
             "officialRouteId": null,
             "blackMarketDaily": {
               "date": "2026-04-08",
-              "items": [
-                "spell_tag",
-                "max_repel",
-                "pp_up"
-              ],
+              "items": ["spell_tag", "max_repel", "pp_up"],
               "purchased": []
             },
             "blackMarketSales": 1
@@ -58834,11 +58343,7 @@
             "officialRouteId": null,
             "blackMarketDaily": {
               "date": "2026-03-31",
-              "items": [
-                "tm16",
-                "leftovers",
-                "exp_share"
-              ],
+              "items": ["tm16", "leftovers", "exp_share"],
               "purchased": []
             },
             "blackMarketSales": 154
@@ -59173,9 +58678,7 @@
           "money": 3000,
           "stats": {},
           "badges": 0,
-          "pokedex": [
-            "bulbasaur"
-          ],
+          "pokedex": ["bulbasaur"],
           "trainer": "Prueba2",
           "inventory": {
             "Poción": 3,
@@ -61453,11 +60956,7 @@
           "trainerExp": 3769,
           "battleCoins": 1090,
           "activeBattle": null,
-          "defeatedGyms": [
-            "pewter",
-            "cerulean",
-            "vermilion"
-          ],
+          "defeatedGyms": ["pewter", "cerulean", "vermilion"],
           "trainerLevel": 8,
           "starterChosen": true,
           "trainerExpNeeded": 100
@@ -62697,10 +62196,7 @@
           ],
           "warDailyCap": {},
           "activeBattle": null,
-          "defeatedGyms": [
-            "pewter",
-            "cerulean"
-          ],
+          "defeatedGyms": ["pewter", "cerulean"],
           "luckyEggSecs": 0,
           "trainerLevel": 7,
           "_last_updated": 1775429581275,
@@ -63072,9 +62568,7 @@
             "battles": 1
           },
           "badges": 0,
-          "pokedex": [
-            "squirtle"
-          ],
+          "pokedex": ["squirtle"],
           "trainer": "MaskenPiten",
           "lastSeen": "2026-03-13T00:13:42.189Z",
           "inventory": {
@@ -64216,9 +63710,7 @@
           "spe": 16,
           "uid": "e19687e0-2a03-4578-9910-a67dc161ea56",
           "name": "Geodude",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "rock",
           "emoji": "🪨",
           "level": 20,
@@ -64289,9 +63781,7 @@
           "spe": 31,
           "uid": "3876cb6b-3c85-4dc9-9285-1a27b2ee8a1d",
           "name": "Venonat",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "bug",
           "emoji": "🦋",
           "level": 24,
@@ -64452,11 +63942,7 @@
           "spe": 14,
           "uid": "5cf25f7b-45c1-43a1-a432-80c0b3d7b8bc",
           "name": "Gastly",
-          "tags": [
-            "breed",
-            "fav",
-            "iv31"
-          ],
+          "tags": ["breed", "fav", "iv31"],
           "type": "ghost",
           "emoji": "👻",
           "level": 5,
@@ -68001,13 +67487,7 @@
           "allowedTypes": [],
           "seasonEndDate": "2026-05-10",
           "seasonStartDate": "2026-04-10",
-          "bannedPokemonIds": [
-            "articuno",
-            "zapdos",
-            "mewtwo",
-            "moltres",
-            "mew"
-          ]
+          "bannedPokemonIds": ["articuno", "zapdos", "mewtwo", "moltres", "mew"]
         },
         "updated_at": "2026-04-10T21:47:09.321Z"
       }
@@ -68129,9 +67609,7 @@
           "spe": 51,
           "uid": "9f4c1a3f-05a2-4035-ad6a-1ef6125b1b54",
           "name": "Graveler",
-          "tags": [
-            "fav"
-          ],
+          "tags": ["fav"],
           "type": "rock",
           "emoji": "🪨",
           "level": 49,
@@ -68502,9 +67980,7 @@
           "spe": 70,
           "uid": "fd284215-43b5-4255-80d8-a41f18e4af7d",
           "name": "Gengar",
-          "tags": [
-            "iv31"
-          ],
+          "tags": ["iv31"],
           "type": "ghost",
           "emoji": "👻",
           "level": 32,
@@ -68580,9 +68056,7 @@
           "spe": 70,
           "uid": "fd284215-43b5-4255-80d8-a41f18e4af7d",
           "name": "Haunter",
-          "tags": [
-            "iv31"
-          ],
+          "tags": ["iv31"],
           "type": "ghost",
           "emoji": "👻",
           "level": 32,
@@ -68658,9 +68132,7 @@
           "spe": 70,
           "uid": "fd284215-43b5-4255-80d8-a41f18e4af7d",
           "name": "Haunter",
-          "tags": [
-            "iv31"
-          ],
+          "tags": ["iv31"],
           "type": "ghost",
           "emoji": "👻",
           "level": 32,
@@ -68796,9 +68268,7 @@
           "spe": 161,
           "uid": "7230d912-7f45-4e32-ac48-451689ae602d",
           "name": "Kadabra",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "psychic",
           "emoji": "🧘",
           "level": 65,
@@ -69294,9 +68764,7 @@
           "spe": 70,
           "uid": "fd284215-43b5-4255-80d8-a41f18e4af7d",
           "name": "Haunter",
-          "tags": [
-            "iv31"
-          ],
+          "tags": ["iv31"],
           "type": "ghost",
           "emoji": "👻",
           "level": 32,
@@ -69539,9 +69007,7 @@
           "spe": 161,
           "uid": "7230d912-7f45-4e32-ac48-451689ae602d",
           "name": "Alakazam",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "psychic",
           "emoji": "🧘",
           "level": 65,
@@ -69629,9 +69095,7 @@
           "spe": 70,
           "uid": "fd284215-43b5-4255-80d8-a41f18e4af7d",
           "name": "Gengar",
-          "tags": [
-            "iv31"
-          ],
+          "tags": ["iv31"],
           "type": "ghost",
           "emoji": "👻",
           "level": 32,
@@ -69934,9 +69398,7 @@
           "spe": 51,
           "uid": "9f4c1a3f-05a2-4035-ad6a-1ef6125b1b54",
           "name": "Golem",
-          "tags": [
-            "fav"
-          ],
+          "tags": ["fav"],
           "type": "rock",
           "emoji": "🪨",
           "level": 49,
@@ -70852,11 +70314,7 @@
           "spe": 52,
           "uid": "5cf25f7b-45c1-43a1-a432-80c0b3d7b8bc",
           "name": "Gengar",
-          "tags": [
-            "fav",
-            "iv31",
-            "breed"
-          ],
+          "tags": ["fav", "iv31", "breed"],
           "type": "ghost",
           "emoji": "👻",
           "level": 25,
@@ -71758,9 +71216,7 @@
           "spe": 161,
           "uid": "7230d912-7f45-4e32-ac48-451689ae602d",
           "name": "Kadabra",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "psychic",
           "emoji": "🧘",
           "level": 65,
@@ -71998,9 +71454,7 @@
           "spe": 36,
           "uid": "2feb6c5b-da53-4049-a472-34c80c9ba839",
           "name": "Graveler",
-          "tags": [
-            "iv31"
-          ],
+          "tags": ["iv31"],
           "type": "rock",
           "emoji": "🪨",
           "level": 45,
@@ -73242,11 +72696,7 @@
           "spe": 29,
           "uid": "5cf25f7b-45c1-43a1-a432-80c0b3d7b8bc",
           "name": "Gastly",
-          "tags": [
-            "fav",
-            "iv31",
-            "breed"
-          ],
+          "tags": ["fav", "iv31", "breed"],
           "type": "ghost",
           "emoji": "👻",
           "level": 13,
@@ -73330,11 +72780,7 @@
           "spe": 29,
           "uid": "5cf25f7b-45c1-43a1-a432-80c0b3d7b8bc",
           "name": "Gastly",
-          "tags": [
-            "fav",
-            "iv31",
-            "breed"
-          ],
+          "tags": ["fav", "iv31", "breed"],
           "type": "ghost",
           "emoji": "👻",
           "level": 13,
@@ -73924,11 +73370,7 @@
           "spe": 52,
           "uid": "5cf25f7b-45c1-43a1-a432-80c0b3d7b8bc",
           "name": "Haunter",
-          "tags": [
-            "fav",
-            "iv31",
-            "breed"
-          ],
+          "tags": ["fav", "iv31", "breed"],
           "type": "ghost",
           "emoji": "👻",
           "level": 25,
@@ -74248,9 +73690,7 @@
           "spe": 99,
           "uid": "49f366cf-a602-4fb1-b70d-86efeccb49bb",
           "name": "Magneton",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "electric",
           "emoji": "🔩",
           "level": 57,
@@ -74338,9 +73778,7 @@
           "spe": 91,
           "uid": "7bb02778-b40e-40e9-84b0-b2be6aadcdd8",
           "name": "Dragonair",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "dragon",
           "emoji": "🐉",
           "level": 52,
@@ -74427,9 +73865,7 @@
           "spe": 91,
           "uid": "7bb02778-b40e-40e9-84b0-b2be6aadcdd8",
           "name": "Dragonair",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "dragon",
           "emoji": "🐉",
           "level": 52,
@@ -74948,9 +74384,7 @@
           "spe": 109,
           "uid": "b958fbf3-3366-4f56-814e-21bc0cfdc9c3",
           "name": "Dragonair",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "dragon",
           "emoji": "🐉",
           "level": 64,
@@ -75122,9 +74556,7 @@
           "spe": 109,
           "uid": "b958fbf3-3366-4f56-814e-21bc0cfdc9c3",
           "name": "Dragonair",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "dragon",
           "emoji": "🐉",
           "level": 64,
@@ -75210,9 +74642,7 @@
           "spe": 46,
           "uid": "5e42fbc3-714e-4c2f-b15e-2a6d92a7f5e5",
           "name": "Machoke",
-          "tags": [
-            "fav"
-          ],
+          "tags": ["fav"],
           "type": "fighting",
           "emoji": "💪",
           "level": 46,
@@ -75385,9 +74815,7 @@
           "spe": 44,
           "uid": "255c4c6d-e25f-4e35-aa58-f27c45fbea24",
           "name": "Pikachu",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "electric",
           "emoji": "⚡",
           "level": 20,
@@ -75558,9 +74986,7 @@
           "spe": 46,
           "uid": "5e42fbc3-714e-4c2f-b15e-2a6d92a7f5e5",
           "name": "Machamp",
-          "tags": [
-            "fav"
-          ],
+          "tags": ["fav"],
           "type": "fighting",
           "emoji": "💪",
           "level": 46,
@@ -75647,9 +75073,7 @@
           "spe": 52,
           "uid": "9f4c1a3f-05a2-4035-ad6a-1ef6125b1b54",
           "name": "Graveler",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "rock",
           "emoji": "🪨",
           "level": 50,
@@ -75737,9 +75161,7 @@
           "spe": 52,
           "uid": "9f4c1a3f-05a2-4035-ad6a-1ef6125b1b54",
           "name": "Golem",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "rock",
           "emoji": "🪨",
           "level": 50,
@@ -75827,9 +75249,7 @@
           "spe": 161,
           "uid": "7230d912-7f45-4e32-ac48-451689ae602d",
           "name": "Alakazam",
-          "tags": [
-            "breed"
-          ],
+          "tags": ["breed"],
           "type": "psychic",
           "emoji": "🧘",
           "level": 65,
@@ -75917,9 +75337,7 @@
           "spe": 36,
           "uid": "2feb6c5b-da53-4049-a472-34c80c9ba839",
           "name": "Golem",
-          "tags": [
-            "iv31"
-          ],
+          "tags": ["iv31"],
           "type": "rock",
           "emoji": "🪨",
           "level": 45,
@@ -78553,9 +77971,7 @@
         "last_sign_in_at": "2026-04-13T21:22:54.388Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "d02c61c1-f14d-4c73-ba6f-1ddfe84701d2",
@@ -78601,9 +78017,7 @@
         "last_sign_in_at": "2026-03-23T04:56:07.177Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "44934c84-7e56-4740-a97d-ae749f5447de",
@@ -78649,9 +78063,7 @@
         "last_sign_in_at": "2026-03-12T12:20:29.984Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "58772cc4-cead-485b-b8ac-5c7acfc1e4cb",
@@ -78697,9 +78109,7 @@
         "last_sign_in_at": "2026-04-19T11:51:12.127Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "b6fa2c62-23c9-4781-9c2a-9822b48bf30e",
@@ -78745,9 +78155,7 @@
         "last_sign_in_at": "2026-03-12T23:43:16.074Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "8fd48bca-ce13-4228-b6f0-ee89dc146a3a",
@@ -78793,9 +78201,7 @@
         "last_sign_in_at": "2026-05-17T01:38:05.658Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "5222d170-c695-422f-a74a-87ea65f18a5f",
@@ -78841,9 +78247,7 @@
         "last_sign_in_at": "2026-05-19T19:41:07.745Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "6f4dd8cc-1ad9-4bde-9339-4d1e8bbd713d",
@@ -78889,9 +78293,7 @@
         "last_sign_in_at": "2026-03-15T00:21:51.259Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "1e078f36-034f-48d1-880a-9e64d4927d99",
@@ -78937,9 +78339,7 @@
         "last_sign_in_at": "2026-03-21T22:32:20.804Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "ed26b669-37f6-4434-a0f6-0fc200fa468a",
@@ -78985,9 +78385,7 @@
         "last_sign_in_at": "2026-04-05T15:51:44.294Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "6bebbf64-e799-4229-bf19-089e2c9c7248",
@@ -79033,9 +78431,7 @@
         "last_sign_in_at": "2026-03-15T00:15:00.507Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "b8c3006c-7aa5-49ae-ae09-c75d22ce8153",
@@ -79081,9 +78477,7 @@
         "last_sign_in_at": "2026-03-19T21:50:49.814Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "88cc46df-668d-42e5-9428-84e86b864f0e",
@@ -79129,9 +78523,7 @@
         "last_sign_in_at": "2026-03-17T02:40:26.222Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "cbc65502-3de3-4dc2-bb4c-5781f1bf498a",
@@ -79177,9 +78569,7 @@
         "last_sign_in_at": "2026-03-18T00:50:46.544Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "4a62b560-a1a3-4fb1-bac0-c4b16530b543",
@@ -79225,9 +78615,7 @@
         "last_sign_in_at": "2026-03-17T11:59:49.678Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "f554e9e7-f6eb-473b-9e51-4381e67591cc",
@@ -79273,9 +78661,7 @@
         "last_sign_in_at": "2026-03-15T16:29:12.537Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "e72ca0d8-34f5-4812-9efd-e19e1dc892be",
@@ -79321,9 +78707,7 @@
         "last_sign_in_at": "2026-03-23T22:28:47.638Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "dee2dd08-59d9-4122-9cdf-7ec9022f0245",
@@ -79369,9 +78753,7 @@
         "last_sign_in_at": "2026-03-17T03:52:31.586Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "eb6b85f4-d2ca-4751-9d4b-6c4fa2ac52ac",
@@ -79417,9 +78799,7 @@
         "last_sign_in_at": "2026-04-14T20:44:52.612Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "816e03dc-c4ca-40ae-a077-66c43251b404",
@@ -79465,9 +78845,7 @@
         "last_sign_in_at": "2026-03-20T00:35:53.372Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "8048a95a-0585-4b24-83f7-db18e55e7db5",
@@ -79513,9 +78891,7 @@
         "last_sign_in_at": "2026-03-26T02:07:41.703Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "143ffccc-d17d-4b7e-b021-2e05c5b76b2a",
@@ -79561,9 +78937,7 @@
         "last_sign_in_at": "2026-03-17T20:47:18.849Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "3c00d89c-01ba-4e21-a7d3-1fb1457c90c5",
@@ -79609,9 +78983,7 @@
         "last_sign_in_at": "2026-03-24T01:38:43.584Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "3f415779-2f3c-4e9a-9236-1a646e5ad5b3",
@@ -79657,9 +79029,7 @@
         "last_sign_in_at": "2026-03-29T22:07:03.297Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "e47c45fc-78c3-4694-9cb6-af330cb2cb6d",
@@ -79705,9 +79075,7 @@
         "last_sign_in_at": "2026-04-13T21:30:14.127Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "5105e21d-c952-479a-8cf1-814383b599a1",
@@ -79753,9 +79121,7 @@
         "last_sign_in_at": "2026-03-30T04:55:00.713Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "fe7c650d-e480-4825-a975-b558e05d3147",
@@ -79801,9 +79167,7 @@
         "last_sign_in_at": "2026-05-04T22:02:13.754Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "259ef49f-54b2-40c6-a797-5951dc966cb4",
@@ -79849,9 +79213,7 @@
         "last_sign_in_at": "2026-04-05T06:13:03.504Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "d8a92877-70f3-40a5-ac49-1b1f7e09b37e",
@@ -79897,9 +79259,7 @@
         "last_sign_in_at": "2026-03-30T04:17:32.570Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "fa1ff37c-8e1d-42c8-9948-cfedd1f043ce",
@@ -79945,9 +79305,7 @@
         "last_sign_in_at": "2026-05-02T21:32:48.473Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "6ffae092-ab26-4f07-b5e2-10247347ed69",
@@ -79993,9 +79351,7 @@
         "last_sign_in_at": "2026-04-11T05:44:52.433Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "d5034349-822e-458e-9c49-075b54be430e",
@@ -80041,9 +79397,7 @@
         "last_sign_in_at": "2026-04-03T07:24:24.454Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "8226e266-c181-4ae1-ba99-22b540595819",
@@ -80089,9 +79443,7 @@
         "last_sign_in_at": "2026-03-27T21:20:58.242Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "58f8968f-90d9-4a28-b219-1ef097d3e4b2",
@@ -80137,9 +79489,7 @@
         "last_sign_in_at": "2026-04-03T06:08:45.140Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "57bd0b82-ab09-47eb-b459-616188aaf8fa",
@@ -80185,9 +79535,7 @@
         "last_sign_in_at": "2026-04-10T16:11:50.117Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "b4da2989-5bf8-4448-82df-4ce19be7c9cd",
@@ -80233,9 +79581,7 @@
         "last_sign_in_at": "2026-04-01T00:05:36.292Z",
         "raw_app_meta_data": {
           "provider": "email",
-          "providers": [
-            "email"
-          ]
+          "providers": ["email"]
         },
         "raw_user_meta_data": {
           "sub": "52b6b4e1-b908-4cc2-b7a8-7ce4fe0a2e06",

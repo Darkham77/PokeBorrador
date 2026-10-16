@@ -25,8 +25,11 @@ export function useTrainerProfileStats(
   const gameStore = useGameStore();
 
   const badgesCount = computed(() => {
-    if (isOwnProfile.value) return gameStore.state.badges ?? gameStore.state.defeatedGyms?.length ?? 0;
-    return profile.value?.badges ?? saveState.value?.badges ?? saveState.value?.defeatedGyms?.length ?? 0;
+    if (isOwnProfile.value)
+      return gameStore.state.badges ?? gameStore.state.defeatedGyms?.length ?? 0;
+    return (
+      profile.value?.badges ?? saveState.value?.badges ?? saveState.value?.defeatedGyms?.length ?? 0
+    );
   });
 
   const pokedexCaught = computed(() => {
@@ -50,36 +53,65 @@ export function useTrainerProfileStats(
   });
 
   const pvpWins = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.pvpStats?.wins, profile.value?.pvp_wins, saveState.value?.pvpStats?.wins, 0)
+    resolveStatField(
+      isOwnProfile.value,
+      gameStore.state.pvpStats?.wins,
+      profile.value?.pvp_wins,
+      saveState.value?.pvpStats?.wins,
+      0
+    )
   );
 
   const pvpLosses = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.pvpStats?.losses, profile.value?.pvp_losses, saveState.value?.pvpStats?.losses, 0)
+    resolveStatField(
+      isOwnProfile.value,
+      gameStore.state.pvpStats?.losses,
+      profile.value?.pvp_losses,
+      saveState.value?.pvpStats?.losses,
+      0
+    )
   );
 
   const eloRating = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.eloRating, profile.value?.elo_rating, saveState.value?.eloRating, DEFAULT_ELO_RATING_BASE)
+    resolveStatField(
+      isOwnProfile.value,
+      gameStore.state.eloRating,
+      profile.value?.elo_rating,
+      saveState.value?.eloRating,
+      DEFAULT_ELO_RATING_BASE
+    )
   );
 
-  const warCoins = computed(() => (isOwnProfile.value ? gameStore.state.warCoins ?? 0 : profile.value?.war_coins ?? saveState.value?.warCoins ?? 0));
+  const warCoins = computed(() =>
+    isOwnProfile.value
+      ? (gameStore.state.warCoins ?? 0)
+      : (profile.value?.war_coins ?? saveState.value?.warCoins ?? 0)
+  );
 
   const criminality = computed(() => {
-    if (isOwnProfile.value) return (gameStore.state.classData as { criminality?: number } | undefined)?.criminality ?? 0;
+    if (isOwnProfile.value)
+      return (gameStore.state.classData as { criminality?: number } | undefined)?.criminality ?? 0;
     return saveState.value?.classData?.criminality ?? 0;
   });
 
   const reputation = computed(() => {
-    if (isOwnProfile.value) return (gameStore.state.classData as { reputation?: number } | undefined)?.reputation ?? 0;
+    if (isOwnProfile.value)
+      return (gameStore.state.classData as { reputation?: number } | undefined)?.reputation ?? 0;
     return saveState.value?.classData?.reputation ?? 0;
   });
 
   const captureStreak = computed(() => {
-    if (isOwnProfile.value) return (gameStore.state.classData as { longestStreak?: number } | undefined)?.longestStreak ?? 0;
+    if (isOwnProfile.value)
+      return (
+        (gameStore.state.classData as { longestStreak?: number } | undefined)?.longestStreak ?? 0
+      );
     return saveState.value?.classData?.longestStreak ?? 0;
   });
 
   const totalWarPoints = computed<number>(() => {
-    const warMap = isOwnProfile.value ? gameStore.state.warMyPtsLocal : saveState.value?.warMyPtsLocal;
+    const warMap = isOwnProfile.value
+      ? gameStore.state.warMyPtsLocal
+      : saveState.value?.warMyPtsLocal;
     if (!warMap) return 0;
     const points = Object.values(warMap) as number[];
     return points.reduce((a: number, b: number) => Number(a) + Number(b), 0);
@@ -107,18 +139,36 @@ export function useTrainerProfileStats(
   };
 
   const playtimeHours = computed(() => {
-    const secs = isOwnProfile.value ? (gameStore.state.playtime ?? 0) : (profile.value?.playtime ?? saveState.value?.playtime ?? 0);
+    const secs = isOwnProfile.value
+      ? (gameStore.state.playtime ?? 0)
+      : (profile.value?.playtime ?? saveState.value?.playtime ?? 0);
     return Math.floor(secs / SECONDS_PER_HOUR_FACTOR);
   });
 
   const rankedMaxElo = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.rankedMaxElo, profile.value?.ranked_max_elo, saveState.value?.rankedMaxElo, DEFAULT_ELO_RATING_BASE)
+    resolveStatField(
+      isOwnProfile.value,
+      gameStore.state.rankedMaxElo,
+      profile.value?.ranked_max_elo,
+      saveState.value?.rankedMaxElo,
+      DEFAULT_ELO_RATING_BASE
+    )
   );
 
-  const boxCount = computed(() => (isOwnProfile.value ? gameStore.state.box?.length ?? 0 : profile.value?.box_count ?? saveState.value?.box?.length ?? 0));
+  const boxCount = computed(() =>
+    isOwnProfile.value
+      ? (gameStore.state.box?.length ?? 0)
+      : (profile.value?.box_count ?? saveState.value?.box?.length ?? 0)
+  );
 
   const pvpDraws = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.pvpStats?.draws, profile.value?.pvp_draws, saveState.value?.pvpStats?.draws, 0)
+    resolveStatField(
+      isOwnProfile.value,
+      gameStore.state.pvpStats?.draws,
+      profile.value?.pvp_draws,
+      saveState.value?.pvpStats?.draws,
+      0
+    )
   );
 
   const longestStreak = computed(() =>
@@ -138,7 +188,13 @@ export function useTrainerProfileStats(
   });
 
   const maxDamage = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.stats?.maxDamage, profile.value?.max_damage, saveState.value?.stats?.maxDamage, 0)
+    resolveStatField(
+      isOwnProfile.value,
+      gameStore.state.stats?.maxDamage,
+      profile.value?.max_damage,
+      saveState.value?.stats?.maxDamage,
+      0
+    )
   );
 
   const totalBattles = computed(() => {
@@ -149,15 +205,33 @@ export function useTrainerProfileStats(
   });
 
   const tradeVolume = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.stats?.tradeVolume, profile.value?.trade_volume, saveState.value?.stats?.tradeVolume, 0)
+    resolveStatField(
+      isOwnProfile.value,
+      gameStore.state.stats?.tradeVolume,
+      profile.value?.trade_volume,
+      saveState.value?.stats?.tradeVolume,
+      0
+    )
   );
 
   const captureAttempts = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.stats?.captureAttempts, profile.value?.capture_attempts, saveState.value?.stats?.captureAttempts, 0)
+    resolveStatField(
+      isOwnProfile.value,
+      gameStore.state.stats?.captureAttempts,
+      profile.value?.capture_attempts,
+      saveState.value?.stats?.captureAttempts,
+      0
+    )
   );
 
   const captureSuccesses = computed(() =>
-    resolveStatField(isOwnProfile.value, gameStore.state.stats?.captureSuccesses, profile.value?.capture_successes, saveState.value?.stats?.captureSuccesses, 0)
+    resolveStatField(
+      isOwnProfile.value,
+      gameStore.state.stats?.captureSuccesses,
+      profile.value?.capture_successes,
+      saveState.value?.stats?.captureSuccesses,
+      0
+    )
   );
 
   const captureEfficiency = computed(() => {
@@ -167,13 +241,19 @@ export function useTrainerProfileStats(
     return Math.round((successes / attempts) * 100);
   });
 
-  const money = computed(() => (isOwnProfile.value ? gameStore.state.money ?? 0 : saveState.value?.money ?? 0));
-  const battleCoinsCount = computed(() => (isOwnProfile.value ? gameStore.state.battleCoins ?? 0 : saveState.value?.battleCoins ?? 0));
+  const money = computed(() =>
+    isOwnProfile.value ? (gameStore.state.money ?? 0) : (saveState.value?.money ?? 0)
+  );
+  const battleCoinsCount = computed(() =>
+    isOwnProfile.value ? (gameStore.state.battleCoins ?? 0) : (saveState.value?.battleCoins ?? 0)
+  );
 
   const eventMedalCounts = computed(() => {
     const team = isOwnProfile.value ? gameStore.state.team : saveState.value?.team;
     const box = isOwnProfile.value ? gameStore.state.box : saveState.value?.box;
-    const savedStats = (isOwnProfile.value ? gameStore.state.stats : saveState.value?.stats) as Partial<Record<GameStatKey, number>> | undefined;
+    const savedStats = (isOwnProfile.value ? gameStore.state.stats : saveState.value?.stats) as
+      | Partial<Record<GameStatKey, number>>
+      | undefined;
     return computeEventTrophyCounts(
       team,
       box,
@@ -192,7 +272,9 @@ export function useTrainerProfileStats(
   const eventMedalsTotal = computed(() => eventMedalCounts.value.total);
 
   const eventParticipations = computed(() => {
-    const savedStats = (isOwnProfile.value ? gameStore.state.stats : saveState.value?.stats) as Partial<Record<GameStatKey, number>> | undefined;
+    const savedStats = (isOwnProfile.value ? gameStore.state.stats : saveState.value?.stats) as
+      | Partial<Record<GameStatKey, number>>
+      | undefined;
     const fromSaved = savedStats?.eventParticipations ?? 0;
     return Math.max(eventParticipationsDb.value, fromSaved, eventMedalsTotal.value);
   });

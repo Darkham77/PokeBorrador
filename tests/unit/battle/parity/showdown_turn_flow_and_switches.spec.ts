@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { handleCoreEvents } from '@/logic/battle/showdownBridgeCore';
 import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
 import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
@@ -20,7 +20,7 @@ describe('Audit Parity - BUG-025: player token name→side mapping inverted look
       p: null,
       getPoke: () => null,
       getSide: () => null,
-      turnLogs: [],
+      turnLogs: []
     } as unknown as Parameters<typeof handleCoreEvents>[0];
     await handleCoreEvents(ctxPlayer);
 
@@ -33,7 +33,7 @@ describe('Audit Parity - BUG-025: player token name→side mapping inverted look
       p: null,
       getPoke: () => null,
       getSide: () => null,
-      turnLogs: [],
+      turnLogs: []
     } as unknown as Parameters<typeof handleCoreEvents>[0];
     await handleCoreEvents(ctxWin);
 
@@ -45,7 +45,10 @@ describe('Audit Parity - BUG-025: player token name→side mapping inverted look
 // --- From test_bug026_win_multi_battle_format.spec.ts ---
 describe('Audit Parity - BUG-026: win token must parse multi-battle "Name1 & Name2" winner format', () => {
   it('should handle multi-battle win token with ally names concatenated', async () => {
-    const battle = { playerNames: { Ash: 'player', Red: 'player' }, over: false } as Record<string, unknown>;
+    const battle = { playerNames: { Ash: 'player', Red: 'player' }, over: false } as Record<
+      string,
+      unknown
+    >;
     const store = { activeBattle: { value: battle }, addLog: () => {} };
 
     const ctx = {
@@ -56,7 +59,7 @@ describe('Audit Parity - BUG-026: win token must parse multi-battle "Name1 & Nam
       p: null,
       getPoke: () => null,
       getSide: () => null,
-      turnLogs: [],
+      turnLogs: []
     } as unknown as Parameters<typeof handleCoreEvents>[0];
     await handleCoreEvents(ctx);
 
@@ -71,13 +74,16 @@ describe('Audit Parity - BUG-027: -activate uses forbidden .replace() normalizat
   it('should use toID()-equivalent normalization — "Speed Boost" must map to "speedboost" consistently', () => {
     const mockPoke = { volatileCounters: {}, name: 'Yanmega', ability: '' };
     const ctx = {
-      store: { activeBattle: { value: {} }, addLog: (_msg: string, _style: string, _src: unknown) => {} },
+      store: {
+        activeBattle: { value: {} },
+        addLog: (_msg: string, _style: string, _src: unknown) => {}
+      },
       type: '-activate',
       parts: ['', '-activate', 'p1a: Yanmega', 'ability: Speed Boost'],
       line: '|-activate|p1a: Yanmega|ability: Speed Boost',
       p: null,
       getPoke: () => mockPoke,
-      getSide: () => 'player',
+      getSide: () => 'player'
     } as unknown as Parameters<typeof handleMiscEvents>[0];
 
     handleMiscEvents(ctx);
@@ -97,21 +103,31 @@ describe('Audit Parity - BUG-028: -activate must distinguish move: and ability: 
     const makeCtx = (effectPart: string, line: string) => ({
       store: {
         activeBattle: { value: {} },
-        addLog: (msg: string) => logs.push(msg),
+        addLog: (msg: string) => logs.push(msg)
       },
       type: '-activate',
       parts: ['', '-activate', 'p1a: Yanmega', effectPart],
       line,
       p: null,
       getPoke: () => ({ ...mockPoke }),
-      getSide: () => 'player',
+      getSide: () => 'player'
     });
 
-    handleMiscEvents(makeCtx('ability: Speed Boost', '|-activate|p1a: Yanmega|ability: Speed Boost') as unknown as Parameters<typeof handleMiscEvents>[0]);
+    handleMiscEvents(
+      makeCtx(
+        'ability: Speed Boost',
+        '|-activate|p1a: Yanmega|ability: Speed Boost'
+      ) as unknown as Parameters<typeof handleMiscEvents>[0]
+    );
     const abilityLog = logs.at(-1);
 
     logs.length = 0;
-    handleMiscEvents(makeCtx('move: Confusion Hit', '|-activate|p1a: Yanmega|move: Confusion Hit') as unknown as Parameters<typeof handleMiscEvents>[0]);
+    handleMiscEvents(
+      makeCtx(
+        'move: Confusion Hit',
+        '|-activate|p1a: Yanmega|move: Confusion Hit'
+      ) as unknown as Parameters<typeof handleMiscEvents>[0]
+    );
     const moveLog = logs.at(-1);
 
     // Logs should be semantically different — ability vs move activation is different context
@@ -132,7 +148,7 @@ describe('Audit Parity - BUG-029: -start typechange must update target.type, not
       p: null,
       getPoke: () => mockPoke,
       getSide: () => 'player',
-      playerSide: 'p1',
+      playerSide: 'p1'
     } as unknown as Parameters<typeof handleFieldEvents>[0];
 
     await handleFieldEvents(ctx);
@@ -155,7 +171,7 @@ describe('Audit Parity - BUG-030: -start typeadd must update type2, not add a co
       p: null,
       getPoke: () => mockPoke,
       getSide: () => 'player',
-      playerSide: 'p1',
+      playerSide: 'p1'
     } as unknown as Parameters<typeof handleFieldEvents>[0];
 
     await handleFieldEvents(ctx);
@@ -171,7 +187,7 @@ describe('Audit Parity - BUG-035: swap token must update position in activeBattl
   it('should update active slot index when |swap| arrives in doubles', () => {
     const battle = {
       player: { name: 'Pikachu', position: 0 },
-      playerB: { name: 'Charizard', position: 1 },
+      playerB: { name: 'Charizard', position: 1 }
     } as Record<string, unknown>;
     const store = { activeBattle: { value: battle }, addLog: () => {} };
     const ctx = {
@@ -180,8 +196,8 @@ describe('Audit Parity - BUG-035: swap token must update position in activeBattl
       parts: ['', 'swap', 'p1a: Pikachu', '1'],
       line: '|swap|p1a: Pikachu|1',
       p: null,
-      getPoke: (id: string) => id.includes('Pikachu') ? battle.player : null,
-      getSide: () => 'player',
+      getPoke: (id: string) => (id.includes('Pikachu') ? battle.player : null),
+      getSide: () => 'player'
     } as unknown as Parameters<typeof handleMiscEvents>[0];
 
     handleMiscEvents(ctx);
@@ -204,34 +220,37 @@ describe('Audit Parity - BUG-036: clearTurnVolatiles logic must not be duplicate
 
     const makeMon = () => ({
       name: 'Pikachu',
-      volatileCounters: { protect: 1, flinch: 1, endure: 1, confusion: 1 },
+      volatileCounters: { protect: 1, flinch: 1, endure: 1, confusion: 1 }
     });
 
     const makeCtx = (type: string) => ({
       store: {
         activeBattle: { value: { player: makeMon(), enemy: makeMon() } },
-        addLog: () => {},
+        addLog: () => {}
       },
       type,
       parts: ['', type, '5'],
       line: `|${type}|5`,
       p: null,
       getPoke: () => null,
-      getSide: () => null,
+      getSide: () => null
     });
 
     const ctxTurn = makeCtx('turn') as unknown as Parameters<typeof handleMiscEvents>[0];
     const ctxUpkeep = makeCtx('upkeep') as unknown as Parameters<typeof handleMiscEvents>[0];
 
     handleMiscEvents(ctxTurn);
-    const turnResult = (ctxTurn.store.activeBattle.value as unknown as Record<string, unknown>);
+    const turnResult = ctxTurn.store.activeBattle.value as unknown as Record<string, unknown>;
 
     handleMiscEvents(ctxUpkeep);
-    const upkeepResult = (ctxUpkeep.store.activeBattle.value as unknown as Record<string, unknown>);
+    const upkeepResult = ctxUpkeep.store.activeBattle.value as unknown as Record<string, unknown>;
 
     // Both paths must clear the same keys — if one path misses a key the other handles, it's a bug
-    const playerTurnCounters = (turnResult.player as { volatileCounters: Record<string, unknown> }).volatileCounters;
-    const playerUpkeepCounters = (upkeepResult.player as { volatileCounters: Record<string, unknown> }).volatileCounters;
+    const playerTurnCounters = (turnResult.player as { volatileCounters: Record<string, unknown> })
+      .volatileCounters;
+    const playerUpkeepCounters = (
+      upkeepResult.player as { volatileCounters: Record<string, unknown> }
+    ).volatileCounters;
 
     expect(playerTurnCounters).toEqual(playerUpkeepCounters);
     // 'confusion' must NOT be cleared (not a per-turn volatile in this batch)
@@ -248,25 +267,25 @@ describe('Audit Parity - BUG-037: turn volatile cleanup only clears p1/p2 slots,
   it('should clear volatiles for all active seats (p1a, p1b, p2a, p2b) in doubles on turn token', () => {
     const makeActive = () => ({
       name: 'Pikachu',
-      volatileCounters: { protect: 1, flinch: 1 },
+      volatileCounters: { protect: 1, flinch: 1 }
     });
     const battle = {
       player: makeActive(),
-      playerB: makeActive(),  // second slot in doubles — p1b
+      playerB: makeActive(), // second slot in doubles — p1b
       enemy: makeActive(),
-      enemyB: makeActive(),   // second slot in doubles — p2b
+      enemyB: makeActive() // second slot in doubles — p2b
     };
     const ctx = {
       store: {
         activeBattle: { value: battle },
-        addLog: () => {},
+        addLog: () => {}
       },
       type: 'turn',
       parts: ['', 'turn', '3'],
       line: '|turn|3',
       p: null,
       getPoke: () => null,
-      getSide: () => null,
+      getSide: () => null
     } as unknown as Parameters<typeof handleMiscEvents>[0];
 
     handleMiscEvents(ctx);
@@ -284,10 +303,19 @@ describe('Audit Parity - BUG-037: turn volatile cleanup only clears p1/p2 slots,
 describe('Audit Parity - BUG-038: -transform must copy PP as Math.min(5, move.maxPP) not hardcoded 5', () => {
   it('should set PP to min(5, originalMaxPP) when transforming, not always hardcoded 5', () => {
     const originalMoves = [
-      { id: 'hydropump', name: 'Hydro Pump', pp: 8, maxPP: 8 }, // 0 PP-Ups = 5 PP; 3 PP-Ups = 8 PP
+      { id: 'hydropump', name: 'Hydro Pump', pp: 8, maxPP: 8 } // 0 PP-Ups = 5 PP; 3 PP-Ups = 8 PP
     ];
-    const user = { id: 'ditto' as PokemonSpeciesId, name: 'Ditto', isTransformed: false, moves: null };
-    const targetPoke = { id: 'blastoise' as PokemonSpeciesId, name: 'Blastoise', moves: originalMoves };
+    const user = {
+      id: 'ditto' as PokemonSpeciesId,
+      name: 'Ditto',
+      isTransformed: false,
+      moves: null
+    };
+    const targetPoke = {
+      id: 'blastoise' as PokemonSpeciesId,
+      name: 'Blastoise',
+      moves: originalMoves
+    };
 
     const ctx = {
       store: { activeBattle: { value: {} }, addLog: () => {} },
@@ -295,8 +323,8 @@ describe('Audit Parity - BUG-038: -transform must copy PP as Math.min(5, move.ma
       parts: ['', '-transform', 'p1a: Ditto', 'p2a: Blastoise'],
       line: '|-transform|p1a: Ditto|p2a: Blastoise',
       p: null,
-      getPoke: (id: string) => id.includes('Ditto') ? user : targetPoke,
-      getSide: () => null,
+      getPoke: (id: string) => (id.includes('Ditto') ? user : targetPoke),
+      getSide: () => null
     } as unknown as Parameters<typeof handleMiscEvents>[0];
 
     handleMiscEvents(ctx);
@@ -319,10 +347,7 @@ describe('Audit Parity - BUG-039: detailschange/replace must not use dynamic imp
     const { readFileSync } = await import('node:fs');
     const { resolve } = await import('node:path');
 
-    const bridgePath = resolve(
-      process.cwd(),
-      'src/logic/battle/showdownBridgeMisc.ts'
-    );
+    const bridgePath = resolve(process.cwd(), 'src/logic/battle/showdownBridgeMisc.ts');
     const content = readFileSync(bridgePath, 'utf-8');
 
     // Detect dynamic import inside the detailschange/replace case block
@@ -351,7 +376,7 @@ describe('Audit Parity - BUG-040: -fieldend must clear terrain when electricterr
         p: null,
         getPoke: () => null,
         getSide: () => null,
-        playerSide: 'p1',
+        playerSide: 'p1'
       } as unknown as Parameters<typeof handleFieldEvents>[0];
 
       await handleFieldEvents(ctx);
@@ -444,7 +469,11 @@ describe('Audit Parity - BUG-055: -enditem sets lastItem', () => {
 // --- From test_bug056_item_resets_lastitem.spec.ts ---
 describe('Audit Parity - BUG-056: -item resets lastItem', () => {
   it('should clear lastItem when receiving a new item via -item', () => {
-    const target = { name: 'Snorlax', item: null as ItemId | null, lastItem: 'sitrusberry' as ItemId | null };
+    const target = {
+      name: 'Snorlax',
+      item: null as ItemId | null,
+      lastItem: 'sitrusberry' as ItemId | null
+    };
     const ctx = {
       store: { activeBattle: { value: {} }, addLog: () => {} },
       type: '-item',
@@ -464,7 +493,12 @@ describe('Audit Parity - BUG-058: -hitcount animation sync', () => {
   it('should parse -hitcount token correctly and add hit log', () => {
     let logged = false;
     const ctx = {
-      store: { activeBattle: { value: {} }, addLog: () => { logged = true; } },
+      store: {
+        activeBattle: { value: {} },
+        addLog: () => {
+          logged = true;
+        }
+      },
       type: '-hitcount',
       parts: ['', '-hitcount', 'p2a: Substitute', '3'],
       line: '|-hitcount|p2a: Substitute|3',
@@ -499,7 +533,13 @@ describe('Audit Parity - BUG-060: -damage from silent flag', () => {
     let logCount = 0;
     const victim = { name: 'Pikachu', hp: 100, maxHp: 100 };
     const ctx = {
-      store: { activeBattle: { value: {} }, addLog: () => { logCount++; }, animations: null },
+      store: {
+        activeBattle: { value: {} },
+        addLog: () => {
+          logCount++;
+        },
+        animations: null
+      },
       type: '-damage',
       parts: ['', '-damage', 'p1a: Pikachu', '80/100', '[from] recoil', '[silent]'],
       line: '|-damage|p1a: Pikachu|80/100|[from] recoil|[silent]',
@@ -521,11 +561,16 @@ describe('Audit Parity - BUG-062: move miss log target', () => {
     const attacker = { name: 'Pikachu' };
     const target = { name: 'Charizard' };
     const ctx = {
-      store: { activeBattle: { value: {} }, addLog: (msg: string) => { logMsg = msg; } },
+      store: {
+        activeBattle: { value: {} },
+        addLog: (msg: string) => {
+          logMsg = msg;
+        }
+      },
       type: '-miss',
       parts: ['', '-miss', 'p1a: Pikachu', 'p2a: Charizard'],
       line: '|-miss|p1a: Pikachu|p2a: Charizard',
-      getPoke: (id: string) => id.includes('Pikachu') ? attacker : target,
+      getPoke: (id: string) => (id.includes('Pikachu') ? attacker : target),
       getSide: () => 'player',
       turnLogs: []
     };
@@ -540,7 +585,12 @@ describe('Audit Parity - BUG-064: activate subpart parsing', () => {
     let logMsg = '';
     const target = { name: 'Shedinja' };
     const ctx = {
-      store: { activeBattle: { value: {} }, addLog: (msg: string) => { logMsg = msg; } },
+      store: {
+        activeBattle: { value: {} },
+        addLog: (msg: string) => {
+          logMsg = msg;
+        }
+      },
       type: '-activate',
       parts: ['', '-activate', 'p1a: Shedinja', 'ability: Wonder Guard'],
       line: '|-activate|p1a: Shedinja|ability: Wonder Guard',
@@ -558,7 +608,12 @@ describe('Audit Parity - BUG-071: prepare move log style', () => {
     let logStyle = '';
     const attacker = { name: 'SolarBeamUser' };
     const ctx = {
-      store: { activeBattle: { value: {} }, addLog: (_msg: string, style: string) => { logStyle = style; } },
+      store: {
+        activeBattle: { value: {} },
+        addLog: (_msg: string, style: string) => {
+          logStyle = style;
+        }
+      },
       type: '-prepare',
       parts: ['', '-prepare', 'p1a: SolarBeamUser', 'Solar Beam'],
       line: '|-prepare|p1a: SolarBeamUser|Solar Beam',
@@ -597,7 +652,12 @@ describe('Audit Parity - BUG-073: heal recoil from clause log', () => {
     let logMsg = '';
     const target = { name: 'Venusaur', hp: 50, maxHp: 100 };
     const ctx = {
-      store: { activeBattle: { value: {} }, addLog: (msg: string) => { logMsg = msg; } },
+      store: {
+        activeBattle: { value: {} },
+        addLog: (msg: string) => {
+          logMsg = msg;
+        }
+      },
       type: '-heal',
       parts: ['', '-heal', 'p1a: Venusaur', '80/100', '[from] drain'],
       line: '|-heal|p1a: Venusaur|80/100|[from] drain',
@@ -652,7 +712,12 @@ describe('Audit Parity - BUG-078: item eat verb log', () => {
     let logMsg = '';
     const target = { name: 'Snorlax' };
     const ctx = {
-      store: { activeBattle: { value: {} }, addLog: (msg: string) => { logMsg = msg; } },
+      store: {
+        activeBattle: { value: {} },
+        addLog: (msg: string) => {
+          logMsg = msg;
+        }
+      },
       type: '-enditem',
       parts: ['', '-enditem', 'p1a: Snorlax', 'Oran Berry', '[eat]'],
       line: '|-enditem|p1a: Snorlax|Oran Berry|[eat]',
@@ -733,7 +798,10 @@ describe('Audit Parity - BUG-084: trapped enemy choice helper validation', () =>
     };
     const p = { uid: 'p-1', name: 'Pikachu', hp: 100 } as any;
     const e = { uid: 'e-1', name: 'Charizard', hp: 100 } as any;
-    const choice = await computeP2Choice(store as any, p, e, null, { isWild: false, p2Skip: false });
+    const choice = await computeP2Choice(store as any, p, e, null, {
+      isWild: false,
+      p2Skip: false
+    });
     expect(choice.startsWith('switch')).toBe(false);
   });
 });

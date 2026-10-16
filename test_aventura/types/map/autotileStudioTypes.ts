@@ -37,10 +37,7 @@ export const MOUNTAIN_PATCH_SUBTYPES = [
 ] as const;
 export type MountainPatchSubtype = (typeof MOUNTAIN_PATCH_SUBTYPES)[number];
 
-export const REAL_PATCH_CATEGORIES = [
-  'all',
-  ...CONTINENT_TRANSITION_CATEGORIES
-] as const;
+export const REAL_PATCH_CATEGORIES = ['all', ...CONTINENT_TRANSITION_CATEGORIES] as const;
 export type RealPatchCategory = (typeof REAL_PATCH_CATEGORIES)[number];
 
 export interface CanonicalBitmaskCase {
@@ -95,7 +92,6 @@ export interface RealContinentPatch {
 
 export const NEIGHBOR_DIRECTIONS = ['NW', 'N', 'NE', 'W', 'C', 'E', 'SW', 'S', 'SE'] as const;
 export type NeighborDirection = (typeof NEIGHBOR_DIRECTIONS)[number];
-
 
 export interface NeighborCellSummary {
   readonly dir: NeighborDirection;

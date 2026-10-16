@@ -5,8 +5,12 @@ export const BATTLE_MODAL_REGISTRY = {
   Arena: defineAsyncComponent(() => import('@/components/modals/ArenaModal.vue')),
   BattleSwitch: defineAsyncComponent(() => import('@/components/modals/PokemonSelectionModal.vue')),
   PvPChallenge: defineAsyncComponent(() => import('@/components/modals/PvPChallengeModal.vue')),
-  PvPOpponentOffline: defineAsyncComponent(() => import('@/components/modals/PvPOpponentOfflineModal.vue')),
-  RankedSeasonReward: defineAsyncComponent(() => import('@/components/modals/RankedSeasonRewardModal.vue')),
+  PvPOpponentOffline: defineAsyncComponent(
+    () => import('@/components/modals/PvPOpponentOfflineModal.vue')
+  ),
+  RankedSeasonReward: defineAsyncComponent(
+    () => import('@/components/modals/RankedSeasonRewardModal.vue')
+  )
 };
 
 export type BattleModalKey = keyof typeof BATTLE_MODAL_REGISTRY;

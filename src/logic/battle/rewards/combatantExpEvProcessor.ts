@@ -2,7 +2,12 @@ import { processExpGain, processEvGain } from '../battleRewards.ts';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import { clampFriendship } from '@/logic/pokemon/friendshipLogic.ts';
 import type { BattleContext } from '@/types/battle/battleContext';
-import { POKEMON_STAT_KEYS, type Pokemon, type Move, type PokemonStatKey } from '@/types/pokemon/pokemon';
+import {
+  POKEMON_STAT_KEYS,
+  type Pokemon,
+  type Move,
+  type PokemonStatKey
+} from '@/types/pokemon/pokemon';
 
 const POKERUS_SPREAD_PROBABILITY = 0.33;
 
@@ -12,7 +17,7 @@ const COMPACT_STAT_NAMES_ES: Record<PokemonStatKey, string> = {
   def: 'Def',
   spa: 'At.Esp',
   spd: 'Def.Esp',
-  spe: 'Vel',
+  spe: 'Vel'
 };
 
 export interface ExpEvDistributorParams {
@@ -48,7 +53,14 @@ export async function processCombatantExpAndEvs(
   }
 
   spreadPokerus(ctx);
-  await presentTeamExpAndLevelUps(ctx, active, expGainedMap, eventExpExtraMap, levelUpMap, evGainsMap);
+  await presentTeamExpAndLevelUps(
+    ctx,
+    active,
+    expGainedMap,
+    eventExpExtraMap,
+    levelUpMap,
+    evGainsMap
+  );
 }
 
 async function applyLevelUpRewards(
@@ -66,9 +78,11 @@ async function applyLevelUpRewards(
     }
   }
 
-  const { calculateFriendshipLevelUpDelta, applyFriendshipDelta } = await import('@/logic/pokemon/friendshipLogic');
+  const { calculateFriendshipLevelUpDelta, applyFriendshipDelta } =
+    await import('@/logic/pokemon/friendshipLogic');
   const hasSootheBell = p.heldItem === 'soothebell';
-  const friendshipGain = calculateFriendshipLevelUpDelta(clampFriendship(p.friendship), hasSootheBell) * levelsGained;
+  const friendshipGain =
+    calculateFriendshipLevelUpDelta(clampFriendship(p.friendship), hasSootheBell) * levelsGained;
   applyFriendshipDelta(p, friendshipGain, addLog);
 }
 
@@ -82,7 +96,9 @@ function recordEventExpExtra(
 ): void {
   if (params.eventExpMultiplier <= 1) return;
   const share = isActive ? 1 : 0.5;
-  const gainedWithoutEvent = Math.floor(baseExp * share * params.classMult * params.totalExpMultWithoutEvent);
+  const gainedWithoutEvent = Math.floor(
+    baseExp * share * params.classMult * params.totalExpMultWithoutEvent
+  );
   const eventExtra = Math.max(0, rewardGained - gainedWithoutEvent);
   if (eventExtra > 0) {
     eventExpExtraMap.set(pUid, (eventExpExtraMap.get(pUid) || 0) + eventExtra);
@@ -155,10 +171,7 @@ function recordEvGains(
   }
 }
 
-async function handleLevelUpEvolution(
-  p: Pokemon,
-  ctx: BattleContext
-): Promise<void> {
+async function handleLevelUpEvolution(p: Pokemon, ctx: BattleContext): Promise<void> {
   if (p.heldItem === 'everstone') {
     ctx.addLog(`${p.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', p);
     return;
@@ -182,7 +195,7 @@ async function finalizePokemonLevelUp(
     p.pendingMoves = lvlData.moves;
     const { postBattleCoordinator } = await import('../postBattleSequenceCoordinator.ts');
     const coordinator = ctx.postBattleCoordinator ?? postBattleCoordinator;
-    coordinator.enqueueMoveLearning(lvlData.moves.map(m => ({ pokemon: p, move: m })));
+    coordinator.enqueueMoveLearning(lvlData.moves.map((m) => ({ pokemon: p, move: m })));
   }
 
   await handleLevelUpEvolution(p, ctx);
@@ -285,10 +298,7 @@ async function presentTeamExpAndLevelUps(
   }
 }
 
-function tryInfectNeighbor(
-  neighbor: Pokemon | undefined,
-  newlyInfectedNames: string[]
-): void {
+function tryInfectNeighbor(neighbor: Pokemon | undefined, newlyInfectedNames: string[]): void {
   if (neighbor && (!neighbor.pokerus || neighbor.pokerus === 'uninfected')) {
     neighbor.pokerus = 'infected';
     newlyInfectedNames.push(neighbor.nickname || neighbor.name);
@@ -328,6 +338,10 @@ function spreadPokerus(ctx: BattleContext): void {
   }
 
   if (newlyInfectedNames.length > 0) {
-    ctx.addLog(`¡El Pokérus se ha contagiado a ${newlyInfectedNames.join(', ')}!`, 'log-success', 'player');
+    ctx.addLog(
+      `¡El Pokérus se ha contagiado a ${newlyInfectedNames.join(', ')}!`,
+      'log-success',
+      'player'
+    );
   }
 }

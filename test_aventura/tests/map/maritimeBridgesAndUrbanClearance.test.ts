@@ -50,7 +50,8 @@ describe('maritimeBridgesAndUrbanClearance (Tier 1 Architecture Verification)', 
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           (continentMap.cells[y]![x] as { terrain: string }).terrain = terrainMatrix[y]![x]!;
-          (continentMap.cells[y]![x] as { isWalkable: boolean }).isWalkable = terrainMatrix[y]![x] !== 'water';
+          (continentMap.cells[y]![x] as { isWalkable: boolean }).isWalkable =
+            terrainMatrix[y]![x] !== 'water';
           (continentMap.terrainMatrix[y]![x] as string) = terrainMatrix[y]![x]!;
         }
       }
@@ -120,13 +121,24 @@ describe('maritimeBridgesAndUrbanClearance (Tier 1 Architecture Verification)', 
           if (!result.bridgeGrid[y]![x]) continue;
           if (continentMap.cells[y]?.[x]?.terrain !== 'water') continue;
 
-          const hasN = Boolean(result.bridgeGrid[y - 1]?.[x] && continentMap.cells[y - 1]?.[x]?.terrain === 'water');
-          const hasS = Boolean(result.bridgeGrid[y + 1]?.[x] && continentMap.cells[y + 1]?.[x]?.terrain === 'water');
-          const hasW = Boolean(result.bridgeGrid[y]?.[x - 1] && continentMap.cells[y]?.[x - 1]?.terrain === 'water');
-          const hasE = Boolean(result.bridgeGrid[y]?.[x + 1] && continentMap.cells[y]?.[x + 1]?.terrain === 'water');
+          const hasN = Boolean(
+            result.bridgeGrid[y - 1]?.[x] && continentMap.cells[y - 1]?.[x]?.terrain === 'water'
+          );
+          const hasS = Boolean(
+            result.bridgeGrid[y + 1]?.[x] && continentMap.cells[y + 1]?.[x]?.terrain === 'water'
+          );
+          const hasW = Boolean(
+            result.bridgeGrid[y]?.[x - 1] && continentMap.cells[y]?.[x - 1]?.terrain === 'water'
+          );
+          const hasE = Boolean(
+            result.bridgeGrid[y]?.[x + 1] && continentMap.cells[y]?.[x + 1]?.terrain === 'water'
+          );
 
           const hasCornerTurn = (hasN || hasS) && (hasW || hasE);
-          expect(hasCornerTurn, `Bridge at (${x}, ${y}) forms a 90-degree corner in open water`).toBe(false);
+          expect(
+            hasCornerTurn,
+            `Bridge at (${x}, ${y}) forms a 90-degree corner in open water`
+          ).toBe(false);
         }
       }
     });
@@ -196,10 +208,26 @@ describe('maritimeBridgesAndUrbanClearance (Tier 1 Architecture Verification)', 
           while (queue.length > 0) {
             const curr = queue.pop()!;
             mass.push({ x: curr.x, y: curr.y, elev: continent.heightmap[curr.y]![curr.x]! });
-            for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+            for (const [dx, dy] of [
+              [1, 0],
+              [-1, 0],
+              [0, 1],
+              [0, -1],
+              [1, 1],
+              [1, -1],
+              [-1, 1],
+              [-1, -1]
+            ]) {
               const nx = curr.x + dx!;
               const ny = curr.y + dy!;
-              if (nx >= 0 && nx < W && ny >= 0 && ny < H && continent.heightmap[ny]![nx]! > 0 && !visited[ny]![nx]) {
+              if (
+                nx >= 0 &&
+                nx < W &&
+                ny >= 0 &&
+                ny < H &&
+                continent.heightmap[ny]![nx]! > 0 &&
+                !visited[ny]![nx]
+              ) {
                 visited[ny]![nx] = true;
                 queue.push({ x: nx, y: ny });
               }
@@ -232,11 +260,17 @@ describe('maritimeBridgesAndUrbanClearance (Tier 1 Architecture Verification)', 
         }
       }
 
-      const continentMap = generateContinentMap({ width: W, height: H, seed: 42, withStairs: false });
+      const continentMap = generateContinentMap({
+        width: W,
+        height: H,
+        seed: 42,
+        withStairs: false
+      });
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           (continentMap.cells[y]![x] as { terrain: string }).terrain = terrainMatrix[y]![x]!;
-          (continentMap.cells[y]![x] as { isWalkable: boolean }).isWalkable = terrainMatrix[y]![x] !== 'water';
+          (continentMap.cells[y]![x] as { isWalkable: boolean }).isWalkable =
+            terrainMatrix[y]![x] !== 'water';
           (continentMap.terrainMatrix[y]![x] as string) = terrainMatrix[y]![x]!;
         }
       }
@@ -272,4 +306,3 @@ describe('maritimeBridgesAndUrbanClearance (Tier 1 Architecture Verification)', 
     });
   });
 });
-

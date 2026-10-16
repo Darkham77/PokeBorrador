@@ -1,20 +1,16 @@
 <script setup lang="ts">
-import { POKEMON_STAT_KEYS, type PokemonStatKey } from '@/types/pokemon/pokemon'
+import { POKEMON_STAT_KEYS, type PokemonStatKey } from '@/types/pokemon/pokemon';
 
 interface Props {
-  stats: Record<PokemonStatKey, number>
+  stats: Record<PokemonStatKey, number>;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 </script>
 
 <template>
   <div class="base-stats-grid">
-    <div
-      v-for="stat in POKEMON_STAT_KEYS"
-      :key="stat"
-      class="stat-item"
-    >
+    <div v-for="stat in POKEMON_STAT_KEYS" :key="stat" class="stat-item">
       <label>{{ stat }}</label>
       <div class="stat-value">
         {{ stats[stat] }}

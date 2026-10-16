@@ -18,7 +18,7 @@ export function toID(text: any): T.ID {
 }
 
 function getString(str: any): string {
-  return (typeof str === 'string' || typeof str === 'number') ? '' + str : '';
+  return typeof str === 'string' || typeof str === 'number' ? '' + str : '';
 }
 
 // #region Data
@@ -31,7 +31,9 @@ export interface FormatData {
   inherit?: boolean;
 }
 
-interface AnyObject {[k: string]: any}
+interface AnyObject {
+  [k: string]: any;
+}
 
 export class BasicEffect<NameT extends string = string> implements T.BasicEffect<NameT> {
   id: T.ID;
@@ -54,7 +56,7 @@ export class BasicEffect<NameT extends string = string> implements T.BasicEffect
     this.name = getString(data.name).trim() as NameT;
     this.id = data.realMove ? toID(data.realMove) : toID(this.name); // Hidden Power hack
     this.fullname = getString(data.fullname) || this.name;
-    this.effectType = getString(data.effectType) as T.EffectType || 'Condition';
+    this.effectType = (getString(data.effectType) as T.EffectType) || 'Condition';
     this.kind = 'Condition';
     this.exists = !!(this.exists && this.id);
     this.num = data.num || 0;
@@ -77,17 +79,18 @@ export class Condition extends BasicEffect implements T.Condition {
   constructor(data: AnyObject) {
     super(data);
     data = this;
-    this.effectType =
-      (['Weather', 'Status'].includes(data.effectType) ? data.effectType : 'Condition');
+    this.effectType = ['Weather', 'Status'].includes(data.effectType)
+      ? data.effectType
+      : 'Condition';
     this.kind = 'Condition';
   }
 }
 
-const EMPTY_CONDITION: Condition = new Condition({name: '', exists: false});
+const EMPTY_CONDITION: Condition = new Condition({ name: '', exists: false });
 
 class DexConditions implements T.DexTable<Condition> {
   readonly dex: ModdedDex;
-  readonly cache = Object.create(null) as {[id: string]: Condition};
+  readonly cache = Object.create(null) as { [id: string]: Condition };
 
   constructor(dex: ModdedDex) {
     this.dex = dex;
@@ -118,21 +121,20 @@ class DexConditions implements T.DexTable<Condition> {
 
     let found: T.AbilityData | T.ItemData | T.MoveData;
     if (this.dex.data.Conditions.hasOwnProperty(id)) {
-      condition = new Condition({kind: 'Condition', ...this.dex.data.Conditions[id]});
+      condition = new Condition({ kind: 'Condition', ...this.dex.data.Conditions[id] });
     } else if (
-      (this.dex.data.Moves.hasOwnProperty(id) &&
-        (found = this.dex.data.Moves[id]).condition) ||
+      (this.dex.data.Moves.hasOwnProperty(id) && (found = this.dex.data.Moves[id]).condition) ||
       (this.dex.data.Abilities.hasOwnProperty(id) &&
         (found = this.dex.data.Abilities[id]).condition) ||
-      (this.dex.data.Items.hasOwnProperty(id) &&
-        (found = this.dex.data.Items[id]).condition)) {
-      condition = new Condition({name: found.name || id, ...found.condition});
+      (this.dex.data.Items.hasOwnProperty(id) && (found = this.dex.data.Items[id]).condition)
+    ) {
+      condition = new Condition({ name: found.name || id, ...found.condition });
     } else if (id === 'recoil') {
-      condition = new Condition({name: 'Recoil', effectType: 'Recoil'});
+      condition = new Condition({ name: 'Recoil', effectType: 'Recoil' });
     } else if (id === 'drain') {
-      condition = new Condition({name: 'Drain', effectType: 'Drain'});
+      condition = new Condition({ name: 'Drain', effectType: 'Drain' });
     } else {
-      condition = new Condition({name: id, exists: false});
+      condition = new Condition({ name: id, exists: false });
     }
 
     this.cache[id] = condition;
@@ -179,8 +181,8 @@ export class Ability extends BasicEffect<T.AbilityName> implements T.Ability {
 class DexAbilities implements T.DexTable<Ability> {
   readonly dex: ModdedDex;
   readonly caches = {
-    get: Object.create(null) as {[id: string]: Ability},
-    all: undefined as ReadonlyArray<Ability> | undefined,
+    get: Object.create(null) as { [id: string]: Ability },
+    all: undefined as ReadonlyArray<Ability> | undefined
   };
 
   constructor(dex: ModdedDex) {
@@ -204,7 +206,7 @@ class DexAbilities implements T.DexTable<Ability> {
       if (ability.gen > this.dex.gen) (ability as any).isNonstandard = 'Future';
       if (this.dex.gen <= 2 && ability.id === 'noability') (ability as any).isNonstandard = null;
     } else {
-      ability = new Ability({id, name: id, exists: false});
+      ability = new Ability({ id, name: id, exists: false });
     }
 
     if (ability.exists) this.caches.get[id] = ability;
@@ -226,7 +228,7 @@ export class Item extends BasicEffect<T.ItemName> implements T.Item {
   readonly kind: 'Item';
 
   readonly forcedForme?: T.SpeciesName;
-  readonly megaStone?: {[megaEvolves: T.SpeciesName]: T.SpeciesName};
+  readonly megaStone?: { [megaEvolves: T.SpeciesName]: T.SpeciesName };
   readonly onDrive?: T.TypeName;
   readonly onMemory?: T.TypeName;
   readonly onPlate?: T.TypeName;
@@ -242,7 +244,7 @@ export class Item extends BasicEffect<T.ItemName> implements T.Item {
   readonly isGem?: boolean;
   readonly isPokeball?: boolean;
   readonly isPrimalOrb?: boolean;
-  readonly naturalGift?: {basePower: number; type: T.TypeName};
+  readonly naturalGift?: { basePower: number; type: T.TypeName };
   readonly boosts?: Partial<T.BoostsTable> | false;
 
   constructor(data: AnyObject) {
@@ -273,19 +275,19 @@ export class Item extends BasicEffect<T.ItemName> implements T.Item {
       // specified manually
     }
 
-    if (this.isBerry) this.fling = {basePower: 10};
-    if (this.id.endsWith('plate')) this.fling = {basePower: 90};
-    if (this.onDrive) this.fling = {basePower: 70};
-    if (this.megaStone) this.fling = {basePower: 80};
-    if (this.onMemory) this.fling = {basePower: 50};
+    if (this.isBerry) this.fling = { basePower: 10 };
+    if (this.id.endsWith('plate')) this.fling = { basePower: 90 };
+    if (this.onDrive) this.fling = { basePower: 70 };
+    if (this.megaStone) this.fling = { basePower: 80 };
+    if (this.onMemory) this.fling = { basePower: 50 };
   }
 }
 
 class DexItems implements T.DexTable<Item> {
   readonly dex: ModdedDex;
   readonly caches = {
-    get: Object.create(null) as {[id: string]: Item},
-    all: undefined as ReadonlyArray<Item> | undefined,
+    get: Object.create(null) as { [id: string]: Item },
+    all: undefined as ReadonlyArray<Item> | undefined
   };
 
   constructor(dex: ModdedDex) {
@@ -304,7 +306,7 @@ class DexItems implements T.DexTable<Item> {
     if (item) return item;
 
     if (id && !this.dex.data.Items[id] && this.dex.data.Items[id + 'berry']) {
-      item = this.getByID(id + 'berry' as T.ID);
+      item = this.getByID((id + 'berry') as T.ID);
       return (this.caches.get[id] = item);
     }
 
@@ -313,7 +315,7 @@ class DexItems implements T.DexTable<Item> {
       item = new Item(data);
       if (item.gen > this.dex.gen) (item as any).isNonstandard = 'Future';
     } else {
-      item = new Item({name: id, exists: false});
+      item = new Item({ name: id, exists: false });
     }
 
     if (item.exists) this.caches.get[id] = item;
@@ -372,7 +374,7 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
   readonly heal?: number[];
   readonly forceSwitch?: boolean;
   readonly selfSwitch?: 'copyvolatile' | 'shedtail' | boolean;
-  readonly selfBoost?: {boosts?: Partial<T.BoostsTable>};
+  readonly selfBoost?: { boosts?: Partial<T.BoostsTable> };
   readonly selfdestruct?: boolean | 'ifHit' | 'always';
   readonly breaksProtect?: boolean;
   readonly recoil?: [number, number];
@@ -397,7 +399,7 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
   readonly ignoreAccuracy?: boolean;
   readonly ignoreDefensive?: boolean;
   readonly ignoreEvasion?: boolean;
-  readonly ignoreImmunity?: boolean | {[k in keyof T.TypeName]?: boolean};
+  readonly ignoreImmunity?: boolean | { [k in keyof T.TypeName]?: boolean };
   readonly ignoreNegativeOffensive?: boolean;
   readonly ignoreOffensive?: boolean;
   readonly ignorePositiveDefensive?: boolean;
@@ -439,7 +441,7 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
     this.hasSheerForceBoost = data.hasSheerForceBoost || false;
     this.priority = Number(data.priority) || 0;
     this.ignoreImmunity =
-      (data.ignoreImmunity !== undefined ? data.ignoreImmunity : data.category === 'Status');
+      data.ignoreImmunity !== undefined ? data.ignoreImmunity : data.category === 'Status';
     this.pp = Number(data.pp);
     this.isZ = data.isZ || false;
     this.isMax = data.isMax || false;
@@ -447,8 +449,7 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
     this.selfSwitch =
       (typeof data.selfSwitch === 'string'
         ? (data.selfSwitch as 'copyvolatile' | 'shedtail')
-        : data.selfSwitch) ||
-      undefined;
+        : data.selfSwitch) || undefined;
     this.pressureTarget = data.pressureTarget || undefined;
     this.nonGhostTarget = data.nonGhostTarget || undefined;
     this.ignoreAbility = data.ignoreAbility || false;
@@ -456,7 +457,7 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
       typeof data.volatileStatus === 'string' ? (data.volatileStatus as T.ID) : undefined;
 
     if (this.category !== 'Status' && !this.maxMove && this.id !== 'struggle') {
-      this.maxMove = {basePower: 1};
+      this.maxMove = { basePower: 1 };
       if (this.isMax || this.isZ) {
         // already initialized to 1
       } else if (!this.basePower) {
@@ -495,8 +496,13 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
         }
       }
     }
-    if (this.category !== 'Status' && !this.zMove &&
-        !this.isZ && !this.isMax && this.id !== 'struggle') {
+    if (
+      this.category !== 'Status' &&
+      !this.zMove &&
+      !this.isZ &&
+      !this.isMax &&
+      this.id !== 'struggle'
+    ) {
       let basePower = this.basePower;
       this.zMove = {};
       if (Array.isArray(this.multihit)) basePower *= 3;
@@ -552,8 +558,8 @@ export class Move extends BasicEffect<T.MoveName> implements T.Move {
 class DexMoves implements T.DexTable<Move> {
   readonly dex: ModdedDex;
   readonly caches = {
-    get: Object.create(null) as {[id: string]: Move},
-    all: undefined as ReadonlyArray<Move> | undefined,
+    get: Object.create(null) as { [id: string]: Move },
+    all: undefined as ReadonlyArray<Move> | undefined
   };
 
   constructor(dex: ModdedDex) {
@@ -592,7 +598,7 @@ class DexMoves implements T.DexTable<Move> {
       }
       if (move.gen > this.dex.gen) (move as any).isNonstandard = 'Future';
     } else {
-      move = new Move({id, name: id, exists: false});
+      move = new Move({ id, name: id, exists: false });
     }
 
     if (move.exists) this.caches.get[id] = move;
@@ -630,8 +636,8 @@ export class Nature extends BasicEffect<T.NatureName> implements T.Nature {
 class DexNatures implements T.DexTable<Nature> {
   readonly dex: ModdedDex;
   readonly caches = {
-    get: Object.create(null) as {[id: string]: Nature},
-    all: undefined as ReadonlyArray<Nature> | undefined,
+    get: Object.create(null) as { [id: string]: Nature },
+    all: undefined as ReadonlyArray<Nature> | undefined
   };
 
   constructor(dex: ModdedDex) {
@@ -654,7 +660,7 @@ class DexNatures implements T.DexTable<Nature> {
       nature = new Nature(data);
       if (nature.gen > this.dex.gen) nature.isNonstandard = 'Future';
     } else {
-      nature = new Nature({name: id, exists: false});
+      nature = new Nature({ name: id, exists: false });
     }
 
     if (nature.exists) this.caches.get[id] = nature;
@@ -701,7 +707,7 @@ export class Species extends BasicEffect<T.SpeciesName> implements T.Species {
   readonly cosmeticFormes?: T.SpeciesName[];
   readonly otherFormes?: T.SpeciesName[];
   readonly formeOrder?: T.SpeciesName[];
-  readonly genderRatio: {M: number; F: number};
+  readonly genderRatio: { M: number; F: number };
   readonly isMega?: boolean;
   readonly mother?: string;
   readonly isPrimal?: boolean;
@@ -735,7 +741,7 @@ export class Species extends BasicEffect<T.SpeciesName> implements T.Species {
     this.baseSpecies = data.baseSpecies || data.name;
     this.forme = data.forme || '';
     this.baseForme = data.baseForme || '';
-    this.abilities = data.abilities || {0: ''};
+    this.abilities = data.abilities || { 0: '' };
     this.types = data.types || ['???'];
     this.prevo = data.prevo || '';
     this.tier = data.tier || '';
@@ -746,15 +752,25 @@ export class Species extends BasicEffect<T.SpeciesName> implements T.Species {
     this.eggGroups = data.eggGroups || [];
     this.canHatch = data.canHatch || false;
     this.isCosmeticForme = !!data.isCosmeticForme;
-    this.genderRatio = data.genderRatio || (this.gender === 'M' ? {M: 1, F: 0}
-      : this.gender === 'F' ? {M: 0, F: 1}
-      : this.gender === 'N' ? {M: 0, F: 0}
-      : {M: 0.5, F: 0.5});
+    this.genderRatio =
+      data.genderRatio ||
+      (this.gender === 'M'
+        ? { M: 1, F: 0 }
+        : this.gender === 'F'
+          ? { M: 0, F: 1 }
+          : this.gender === 'N'
+            ? { M: 0, F: 0 }
+            : { M: 0.5, F: 0.5 });
     this.requiredItems =
       this.requiredItems || (this.requiredItem ? [this.requiredItem] : undefined);
-    this.baseStats = data.baseStats || {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0};
-    this.bst = this.baseStats.hp + this.baseStats.atk + this.baseStats.def +
-      this.baseStats.spa + this.baseStats.spd + this.baseStats.spe;
+    this.baseStats = data.baseStats || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+    this.bst =
+      this.baseStats.hp +
+      this.baseStats.atk +
+      this.baseStats.def +
+      this.baseStats.spa +
+      this.baseStats.spd +
+      this.baseStats.spe;
     this.weightkg = data.weightkg || 0;
     this.weighthg = this.weightkg * 10;
     this.tags = data.tags || [];
@@ -766,9 +782,10 @@ export class Species extends BasicEffect<T.SpeciesName> implements T.Species {
     this.gmaxUnreleased = !!data.gmaxUnreleased;
     this.cannotDynamax = !!data.cannotDynamax;
     this.requiredTeraType = data.requiredTeraType;
-    this.battleOnly = data.battleOnly ||
-      (this.isMega || this.isPrimal ? this.baseSpecies : undefined);
-    this.changesFrom = data.changesFrom ||
+    this.battleOnly =
+      data.battleOnly || (this.isMega || this.isPrimal ? this.baseSpecies : undefined);
+    this.changesFrom =
+      data.changesFrom ||
       (this.battleOnly !== this.baseSpecies ? this.battleOnly : this.baseSpecies);
     if (Array.isArray(data.changesFrom)) this.changesFrom = data.changesFrom[0]; // BUG
 
@@ -796,13 +813,13 @@ export class Species extends BasicEffect<T.SpeciesName> implements T.Species {
   }
 }
 
-type Mutable<T> = {-readonly [P in keyof T]: T[P]};
+type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 class DexSpecies implements T.DexTable<Species> {
   readonly dex: ModdedDex;
   readonly caches = {
-    get: Object.create(null) as {[id: string]: Species},
-    all: undefined as ReadonlyArray<Species> | undefined,
+    get: Object.create(null) as { [id: string]: Species },
+    all: undefined as ReadonlyArray<Species> | undefined
   };
 
   constructor(dex: ModdedDex) {
@@ -833,9 +850,9 @@ class DexSpecies implements T.DexTable<Species> {
         species = new Species({
           ...this.dex.data.Species[baseId],
           ...this.dex.data.FormatsData[id],
-          name: id,
+          name: id
         });
-        species.abilities = {0: species.abilities['S']!};
+        species.abilities = { 0: species.abilities['S']! };
       } else {
         species = this.get(alias);
         if (this.dex.data.Species[id]?.isCosmeticForme) {
@@ -847,7 +864,7 @@ class DexSpecies implements T.DexTable<Species> {
             name: species.baseSpecies + '-' + cosmeticForme.forme!,
             baseForme: '',
             otherFormes: null,
-            cosmeticFormes: null,
+            cosmeticFormes: null
           });
         }
         if (species.cosmeticFormes) {
@@ -862,7 +879,7 @@ class DexSpecies implements T.DexTable<Species> {
                 baseSpecies: species.name,
                 otherFormes: null,
                 cosmeticFormes: null,
-                isCosmeticForme: true,
+                isCosmeticForme: true
               });
               break;
             }
@@ -877,13 +894,13 @@ class DexSpecies implements T.DexTable<Species> {
     let data = this.dex.data.Species[id];
     if (id && !data) {
       let aliasTo = '';
-      const formeNames: {[k: string]: string[]} = {
+      const formeNames: { [k: string]: string[] } = {
         alola: ['a', 'alola', 'alolan'],
         galar: ['g', 'galar', 'galarian'],
         hisui: ['h', 'hisui', 'hisuian'],
         paldea: ['p', 'paldea', 'paldean'],
         mega: ['m', 'mega'],
-        primal: ['p', 'primal'],
+        primal: ['p', 'primal']
       };
       for (const forme in formeNames) {
         let pokeName = '';
@@ -915,9 +932,13 @@ class DexSpecies implements T.DexTable<Species> {
 
     if (id && data) {
       const tags = data.baseSpecies && this.dex.data.Species[toID(data.baseSpecies)].tags;
-      species = new Species({tags, ...data, ...this.dex.data.FormatsData[id]});
-      if (!species.tier && !species.doublesTier && !species.natDexTier &&
-          species.baseSpecies !== species.name) {
+      species = new Species({ tags, ...data, ...this.dex.data.FormatsData[id] });
+      if (
+        !species.tier &&
+        !species.doublesTier &&
+        !species.natDexTier &&
+        species.baseSpecies !== species.name
+      ) {
         if (species.baseSpecies === 'Mimikyu') {
           (species as any).tier =
             this.dex.data.FormatsData[toID(species.baseSpecies)].tier || 'Illegal';
@@ -958,16 +979,21 @@ class DexSpecies implements T.DexTable<Species> {
         species.isNonstandard = 'Future';
       }
       species.nfe = !!(species.evos?.length && this.get(species.evos[0]).gen <= this.dex.gen);
-      species.canHatch = species.canHatch ||
-        (!['Ditto', 'Undiscovered'].includes(
-          species.eggGroups[0]
-        ) && !species.prevo && species.name !== 'Manaphy');
+      species.canHatch =
+        species.canHatch ||
+        (!['Ditto', 'Undiscovered'].includes(species.eggGroups[0]) &&
+          !species.prevo &&
+          species.name !== 'Manaphy');
       if (this.dex.gen === 1) species.bst -= species.baseStats.spd;
       if (this.dex.gen < 5) delete species.abilities['H'];
     } else {
       species = new Species({
-        id, name: id,
-        exists: false, tier: 'Illegal', doublesTier: 'Illegal', isNonstandard: 'Custom',
+        id,
+        name: id,
+        exists: false,
+        tier: 'Illegal',
+        doublesTier: 'Illegal',
+        isNonstandard: 'Custom'
       });
     }
 
@@ -988,7 +1014,7 @@ class DexSpecies implements T.DexTable<Species> {
 export class Learnset implements T.Learnset {
   readonly effectType: 'Learnset';
   readonly kind: 'Learnset';
-  readonly learnset?: {[moveid: string]: T.MoveSource[]};
+  readonly learnset?: { [moveid: string]: T.MoveSource[] };
   readonly eventOnly: boolean;
   readonly eventData?: T.EventInfo[];
   readonly encounters?: T.EventInfo[];
@@ -1015,7 +1041,7 @@ export class Learnset implements T.Learnset {
 
 class DexLearnsets {
   readonly dex: ModdedDex;
-  readonly cache = Object.create(null) as {[id: string]: Learnset};
+  readonly cache = Object.create(null) as { [id: string]: Learnset };
 
   constructor(dex: ModdedDex) {
     this.dex = dex;
@@ -1033,7 +1059,7 @@ class DexLearnsets {
       try {
         DATA.Learnsets = (await import('./data/learnsets.json')).default as Data<T.LearnsetData>;
       } catch {
-        // @ts-ignore If we're being used via a <script> tag we depend on Learnsets being required
+        // @ts-expect-error If we're being used via a <script> tag we depend on Learnsets being required
         DATA.Learnsets = (window as any).pkmn?.learnsets as Data<T.LearnsetData>;
         if (!DATA.Learnsets) throw new Error('Learnsets have not been included!');
       }
@@ -1045,7 +1071,7 @@ class DexLearnsets {
     if (id && data) {
       learnset = new Learnset(data);
     } else {
-      learnset = new Learnset({exists: false});
+      learnset = new Learnset({ exists: false });
     }
     if (learnset.exists) this.cache[id] = learnset;
     return learnset;
@@ -1060,7 +1086,7 @@ export class Type implements T.Type {
   readonly exists: boolean;
   readonly gen: T.GenerationNum;
   readonly isNonstandard: T.Nonstandard | null;
-  readonly damageTaken: {[t in Exclude<T.TypeName, '???'>]: number} & {[key: string]: number};
+  readonly damageTaken: { [t in Exclude<T.TypeName, '???'>]: number } & { [key: string]: number };
   readonly HPivs: Partial<T.StatsTable>;
   readonly HPdvs: Partial<T.StatsTable>;
 
@@ -1088,9 +1114,9 @@ export class Type implements T.Type {
 class DexTypes implements T.DexTable<Type> {
   readonly dex: ModdedDex;
   readonly caches = {
-    get: Object.create(null) as {[id: string]: Type},
+    get: Object.create(null) as { [id: string]: Type },
     all: undefined as ReadonlyArray<Type> | undefined,
-    names: undefined as ReadonlyArray<string> | undefined,
+    names: undefined as ReadonlyArray<string> | undefined
   };
 
   constructor(dex: ModdedDex) {
@@ -1109,12 +1135,12 @@ class DexTypes implements T.DexTable<Type> {
     let type = this.caches.get[id];
     if (type) return type;
 
-    const typeName = id.charAt(0).toUpperCase() + id.substr(1) as Exclude<T.TypeName, '???'>;
+    const typeName = (id.charAt(0).toUpperCase() + id.substr(1)) as Exclude<T.TypeName, '???'>;
     const data = this.dex.data.Types[id];
     if (typeName && data) {
-      type = new Type({name: typeName, id, ...data});
+      type = new Type({ name: typeName, id, ...data });
     } else {
-      type = new Type({name: typeName, id, exists: false});
+      type = new Type({ name: typeName, id, exists: false });
     }
 
     if (type.exists) this.caches.get[id] = type;
@@ -1123,7 +1149,9 @@ class DexTypes implements T.DexTable<Type> {
 
   names(): readonly string[] {
     if (this.caches.names) return this.caches.names;
-    this.caches.names = this.all().filter(type => !type.isNonstandard).map(type => type.name);
+    this.caches.names = this.all()
+      .filter((type) => !type.isNonstandard)
+      .map((type) => type.name);
     return this.caches.names;
   }
 
@@ -1146,42 +1174,66 @@ class DexTypes implements T.DexTable<Type> {
 const STATS: readonly T.StatID[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
 
 class DexStats {
-  readonly shortNames: {readonly [k in T.StatID]: string};
-  readonly mediumNames: {readonly [k in T.StatID]: string};
-  readonly names: {readonly [k in T.StatID]: string};
+  readonly shortNames: { readonly [k in T.StatID]: string };
+  readonly mediumNames: { readonly [k in T.StatID]: string };
+  readonly names: { readonly [k in T.StatID]: string };
 
   constructor(dex: ModdedDex) {
     if (dex.gen !== 1) {
       this.shortNames = {
         __proto__: null,
-        hp: 'HP', atk: 'Atk', def: 'Def',
-        spa: 'SpA', spd: 'SpD', spe: 'Spe',
+        hp: 'HP',
+        atk: 'Atk',
+        def: 'Def',
+        spa: 'SpA',
+        spd: 'SpD',
+        spe: 'Spe'
       } as any;
       this.mediumNames = {
         __proto__: null,
-        hp: 'HP', atk: 'Attack', def: 'Defense',
-        spa: 'Sp. Atk', spd: 'Sp. Def', spe: 'Speed',
+        hp: 'HP',
+        atk: 'Attack',
+        def: 'Defense',
+        spa: 'Sp. Atk',
+        spd: 'Sp. Def',
+        spe: 'Speed'
       } as any;
       this.names = {
         __proto__: null,
-        hp: 'HP', atk: 'Attack', def: 'Defense',
-        spa: 'Special Attack', spd: 'Special Defense', spe: 'Speed',
+        hp: 'HP',
+        atk: 'Attack',
+        def: 'Defense',
+        spa: 'Special Attack',
+        spd: 'Special Defense',
+        spe: 'Speed'
       } as any;
     } else {
       this.shortNames = {
         __proto__: null,
-        hp: 'HP', atk: 'Atk', def: 'Def',
-        spa: 'Spc', spd: '[SpD]', spe: 'Spe',
+        hp: 'HP',
+        atk: 'Atk',
+        def: 'Def',
+        spa: 'Spc',
+        spd: '[SpD]',
+        spe: 'Spe'
       } as any;
       this.mediumNames = {
         __proto__: null,
-        hp: 'HP', atk: 'Attack', def: 'Defense',
-        spa: 'Special', spd: '[Sp. Def]', spe: 'Speed',
+        hp: 'HP',
+        atk: 'Attack',
+        def: 'Defense',
+        spa: 'Special',
+        spd: '[Sp. Def]',
+        spe: 'Speed'
       } as any;
       this.names = {
         __proto__: null,
-        hp: 'HP', atk: 'Attack', def: 'Defense',
-        spa: 'Special', spd: '[Special Defense]', spe: 'Speed',
+        hp: 'HP',
+        atk: 'Attack',
+        def: 'Defense',
+        spa: 'Special',
+        spd: '[Special Defense]',
+        spe: 'Speed'
       } as any;
     }
   }
@@ -1195,13 +1247,13 @@ class DexStats {
 
 // #region Dex
 
-type Data<T> = {9: {[id: string]: T}} & {
-  [num in Exclude<T.GenerationNum, 9>]?: {[id: string]: {inherit?: boolean} & T.DeepPartial<T>}
+type Data<T> = { 9: { [id: string]: T } } & {
+  [num in Exclude<T.GenerationNum, 9>]?: { [id: string]: { inherit?: boolean } & T.DeepPartial<T> };
 };
 
 const DATA = {
   Abilities: AbilitiesJSON as Data<T.AbilityData>,
-  Aliases: AliasesJSON as {[id: string]: string},
+  Aliases: AliasesJSON as { [id: string]: string },
   Conditions: ConditionsJSON as Data<T.ConditionData>,
   Items: ItemsJSON as Data<T.ItemData>,
   Moves: MovesJSON as unknown as Data<T.MoveData>,
@@ -1209,19 +1261,33 @@ const DATA = {
   Natures: NaturesJSON as Data<T.NatureData>,
   Learnsets: null! as Data<T.LearnsetData>,
   Types: TypesJSON as Data<T.TypeData>,
-  FormatsData: FormatsDataJSON as Data<FormatData>,
+  FormatsData: FormatsDataJSON as Data<FormatData>
 };
 
 const HP_TYPES: T.HPTypeName[] = [
-  'Fighting', 'Flying', 'Poison', 'Ground', 'Rock', 'Bug', 'Ghost', 'Steel',
-  'Fire', 'Water', 'Grass', 'Electric', 'Psychic', 'Ice', 'Dragon', 'Dark',
+  'Fighting',
+  'Flying',
+  'Poison',
+  'Ground',
+  'Rock',
+  'Bug',
+  'Ghost',
+  'Steel',
+  'Fire',
+  'Water',
+  'Grass',
+  'Electric',
+  'Psychic',
+  'Ice',
+  'Dragon',
+  'Dark'
 ];
 
 const GEN_IDS = ['gen1', 'gen2', 'gen3', 'gen4', 'gen5', 'gen6', 'gen7', 'gen8', 'gen9'] as const;
-type GenID = typeof GEN_IDS[number];
+type GenID = (typeof GEN_IDS)[number];
 const CURRENT_GEN_ID: GenID = GEN_IDS[8];
 
-const dexes: {[mod: string]: ModdedDex} = Object.create(null);
+const dexes: { [mod: string]: ModdedDex } = Object.create(null);
 
 export type ModData = T.DeepPartial<ModdedDex['data']> & T.ModData;
 
@@ -1231,16 +1297,16 @@ export class ModdedDex implements T.Dex {
   readonly gen: T.GenerationNum;
   readonly modid: T.ID;
   readonly data!: {
-    Abilities: {[id: string]: T.AbilityData};
-    Aliases: {[id: string]: string};
-    Conditions: {[id: string]: T.ConditionData};
-    FormatsData: {[id: string]: FormatData};
-    Items: {[id: string]: T.ItemData};
-    Learnsets: null | {[id: string]: T.LearnsetData};
-    Moves: {[id: string]: T.MoveData};
-    Natures: {[id: string]: T.NatureData};
-    Species: {[id: string]: T.SpeciesData};
-    Types: {[id: string]: T.TypeData};
+    Abilities: { [id: string]: T.AbilityData };
+    Aliases: { [id: string]: string };
+    Conditions: { [id: string]: T.ConditionData };
+    FormatsData: { [id: string]: FormatData };
+    Items: { [id: string]: T.ItemData };
+    Learnsets: null | { [id: string]: T.LearnsetData };
+    Moves: { [id: string]: T.MoveData };
+    Natures: { [id: string]: T.NatureData };
+    Species: { [id: string]: T.SpeciesData };
+    Types: { [id: string]: T.TypeData };
   };
 
   readonly abilities: DexAbilities;
@@ -1259,7 +1325,7 @@ export class ModdedDex implements T.Dex {
     const isGen = (GEN_IDS as unknown as Array<GenID | T.ID>).includes(modid);
     if (!isGen && !modData) throw new Error(`Must provide mod data with mod '${modid}'`);
     this.modid = modid as T.ID;
-    this.gen = parseInt((modData?.Scripts?.inherit ?? modid).slice(3)) as T.GenerationNum || 9;
+    this.gen = (parseInt((modData?.Scripts?.inherit ?? modid).slice(3)) as T.GenerationNum) || 9;
     this.loadData(modData);
 
     this.abilities = new DexAbilities(this);
@@ -1286,11 +1352,11 @@ export class ModdedDex implements T.Dex {
   }
 
   getImmunity(
-    source: {type: string} | string,
-    target: {getTypes: () => string[]} | {types: string[]} | string[] | string
+    source: { type: string } | string,
+    target: { getTypes: () => string[] } | { types: string[] } | string[] | string
   ): boolean {
     const sourceType: string = typeof source !== 'string' ? source.type : source;
-    // @ts-ignore
+    // @ts-expect-error
     const targetTyping: string[] | string = target.getTypes?.() || target.types || target;
     if (Array.isArray(targetTyping)) {
       for (const type of targetTyping) {
@@ -1304,11 +1370,11 @@ export class ModdedDex implements T.Dex {
   }
 
   getEffectiveness(
-    source: {type: string} | string,
-    target: {getTypes: () => string[]} | {types: string[]} | string[] | string
+    source: { type: string } | string,
+    target: { getTypes: () => string[] } | { types: string[] } | string[] | string
   ): number {
     const sourceType: string = typeof source !== 'string' ? source.type : source;
-    // @ts-ignore
+    // @ts-expect-error
     const targetTyping: string[] | string = target.getTypes?.() || target.types || target;
     let totalTypeMod = 0;
     if (Array.isArray(targetTyping)) {
@@ -1320,19 +1386,22 @@ export class ModdedDex implements T.Dex {
     const typeData = this.types.get(targetTyping);
     if (!typeData) return 0;
     switch (typeData.damageTaken[sourceType]) {
-      case 1: return 1; // super-effective
-      case 2: return -1; // resist
+      case 1:
+        return 1; // super-effective
+      case 2:
+        return -1; // resist
       // in case of weird situations like Gravity, immunity is handled elsewhere
-      default: return 0;
+      default:
+        return 0;
     }
   }
 
   getHiddenPower(ivs: T.StatsTable) {
     const tr = (num: number, bits = 0) => {
-      if (bits) return (num >>> 0) % (2 ** bits);
+      if (bits) return (num >>> 0) % 2 ** bits;
       return num >>> 0;
     };
-    const stats = {hp: 31, atk: 31, def: 31, spe: 31, spa: 31, spd: 31};
+    const stats = { hp: 31, atk: 31, def: 31, spe: 31, spa: 31, spd: 31 };
     if (this.gen <= 2) {
       // Gen 2 specific Hidden Power check. IVs are still treated 0-31 so we get them 0-15
       const atkDV = tr(ivs.atk / 2);
@@ -1342,12 +1411,11 @@ export class ModdedDex implements T.Dex {
       return {
         type: HP_TYPES[4 * (atkDV % 4) + (defDV % 4)],
         power: tr(
-          (5 * ((spcDV >> 3) +
-            (2 * (speDV >> 3)) +
-            (4 * (defDV >> 3)) +
-            (8 * (atkDV >> 3))) +
-            (spcDV % 4)) / 2 + 31
-        ),
+          (5 * ((spcDV >> 3) + 2 * (speDV >> 3) + 4 * (defDV >> 3) + 8 * (atkDV >> 3)) +
+            (spcDV % 4)) /
+            2 +
+            31
+        )
       };
     } else {
       // Hidden Power check for Gen 3 onwards
@@ -1360,9 +1428,9 @@ export class ModdedDex implements T.Dex {
         i *= 2;
       }
       return {
-        type: HP_TYPES[tr(hpTypeX * 15 / 63)],
+        type: HP_TYPES[tr((hpTypeX * 15) / 63)],
         // After Gen 6, Hidden Power is always 60 base power
-        power: (this.gen && this.gen < 6) ? tr(hpPowerX * 40 / 63) + 30 : 60,
+        power: this.gen && this.gen < 6 ? tr((hpPowerX * 40) / 63) + 30 : 60
       };
     }
   }
@@ -1403,7 +1471,7 @@ export class ModdedDex implements T.Dex {
 
     const d = modData ? modData[type] : DATA[type][this.gen];
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    if (d !== this.data[type]) this.data[type] = ({...d, ...(this.data[type] as any)}) as any;
+    if (d !== this.data[type]) this.data[type] = { ...d, ...(this.data[type] as any) } as any;
 
     if (this.modid === CURRENT_GEN_ID) return;
 
@@ -1449,7 +1517,7 @@ function getGen3Category(type: T.TypeName) {
 
 function deepClone(obj: any): any {
   if (obj === null || typeof obj !== 'object') return obj;
-  if (Array.isArray(obj)) return obj.map(prop => deepClone(prop));
+  if (Array.isArray(obj)) return obj.map((prop) => deepClone(prop));
   const clone = Object.create(Object.getPrototypeOf(obj));
   for (const key of Object.keys(obj)) {
     clone[key] = deepClone(obj[key]);
@@ -1521,6 +1589,6 @@ export type {
   // Learnset,
   // Type,
   // Nature,
-  GenID,
+  GenID
   // Dex,
 } from '@pkmn/dex-types';

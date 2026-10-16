@@ -26,7 +26,8 @@ class CaptureReloadSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(async (lvl) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const { requireItemId } = await import('../../../src/data/inventory/items.ts');
 
@@ -40,7 +41,7 @@ class CaptureReloadSimWrapper extends BaseBattleSimulation {
         pokemonDebugService.generate({ id: requirePokemonSpeciesId('charmander'), level: lvl }),
         pokemonDebugService.generate({ id: requirePokemonSpeciesId('squirtle'), level: lvl }),
         pokemonDebugService.generate({ id: requirePokemonSpeciesId('pidgeot'), level: lvl }),
-        pokemonDebugService.generate({ id: requirePokemonSpeciesId('butterfree'), level: lvl }),
+        pokemonDebugService.generate({ id: requirePokemonSpeciesId('butterfree'), level: lvl })
       ];
       store.state.box = [];
       await store.save(false, true, true);
@@ -49,34 +50,42 @@ class CaptureReloadSimWrapper extends BaseBattleSimulation {
 
   public async startWildEncounter(speciesId: string, level: number): Promise<void> {
     await armBattleReadyForInput(this.page);
-    await this.page.evaluate(async ({ specId, lvl }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+    await this.page.evaluate(
+      async ({ specId, lvl }) => {
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
-      const wildPoke = pokemonDebugService.generate({
-        id: requirePokemonSpeciesId(specId),
-        level: lvl
-      });
+        const wildPoke = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId(specId),
+          level: lvl
+        });
 
-      const battleStore = useBattleStore();
-      await battleStore.startBattle(wildPoke, {
-        isTrainer: false,
-        locationId: 'route1'
-      });
-    }, { specId: speciesId, lvl: level });
+        const battleStore = useBattleStore();
+        await battleStore.startBattle(wildPoke, {
+          isTrainer: false,
+          locationId: 'route1'
+        });
+      },
+      { specId: speciesId, lvl: level }
+    );
     await awaitBattleReadyForInput(this.page);
   }
 
   public async throwMasterBall(): Promise<void> {
     await armBattleFlowCompletion(this.page);
-    await clickResilient(this.page.locator('.quick-item-card[data-item-id="masterball"]:not(.is-disabled)').first());
+    await clickResilient(
+      this.page.locator('.quick-item-card[data-item-id="masterball"]:not(.is-disabled)').first()
+    );
     await awaitBattleFlowCompletion(this.page);
   }
 }
 
 test.describe('Persistencia y Captura tras Recarga de Página (F5)', () => {
-  test('captura a Rattata tras recargar a mitad de combate y verifica que se guarda en la Caja PC sin error de species', async ({ page }) => {
+  test('captura a Rattata tras recargar a mitad de combate y verifica que se guarda en la Caja PC sin error de species', async ({
+    page
+  }) => {
     const errorLogs: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error' && msg.text().includes('[SAVE]')) {
@@ -115,12 +124,14 @@ test.describe('Persistencia y Captura tras Recarga de Página (F5)', () => {
       const store = useGameStore();
       const box = store.state.box;
       const captured = box.find((p) => p?.id === 'rattata');
-      return captured ? {
-        id: captured.id,
-        name: captured.name,
-        level: captured.level,
-        hasUid: Boolean(captured.uid),
-      } : null;
+      return captured
+        ? {
+            id: captured.id,
+            name: captured.name,
+            level: captured.level,
+            hasUid: Boolean(captured.uid)
+          }
+        : null;
     });
 
     expect(boxData).not.toBeNull();

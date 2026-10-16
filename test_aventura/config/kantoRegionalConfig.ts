@@ -186,7 +186,7 @@ export const KANTO_TALL_GRASS_CONFIG = {
     margin: 4,
     step: 2,
     seedOffset: 707,
-    presenceThreshold: 0.30,
+    presenceThreshold: 0.3,
     sideThreshold: 0.65,
     sideOffsetPositive: 2,
     sideOffsetNegative: -2,
@@ -378,5 +378,3 @@ export const KANTO_LEDGES_OFFSETS = {
     { dy: 8, dx0: 3, dx1: 10 }
   ]
 } as const;
-
-

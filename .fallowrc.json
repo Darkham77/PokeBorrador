@@ -25,7 +25,7 @@
     "scripts/**/*.{ts,js,mjs}",
     "tests/**/*.{ts,js}",
     "database/**/*.{ts,js}",
-    "vitest.config.ts",
+    "vite.config.ts",
     ".auditor/audit.config.ts",
     "ui-demo/src/main.ts",
     "test_aventura/main.ts",
@@ -40,7 +40,7 @@
   "ignoreDependencies": [
     "postgres",
     "@pkmn/sim",
-    "eslint-formatter-codeframe",
+    "vite-plus",
     "@rolldown/binding-wasm32-wasi",
     "ws",
     "sql.js",
@@ -67,16 +67,48 @@
       { "name": "views", "patterns": ["src/views/**", "test_aventura/views/**"] }
     ],
     "rules": [
-      { "from": "types", "allow": ["types", "data", "logic"], "allowTypeOnly": ["stores", "composables"] },
+      {
+        "from": "types",
+        "allow": ["types", "data", "logic"],
+        "allowTypeOnly": ["stores", "composables"]
+      },
       { "from": "data", "allow": ["types", "data", "logic"] },
       { "from": "modals", "allow": ["types", "data", "logic", "stores", "components"] },
       { "from": "minigameHelpers", "allow": ["types", "data", "logic"] },
       { "from": "logic", "allow": ["types", "data", "logic", "stores"] },
       { "from": "stores", "allow": ["types", "data", "logic", "stores", "modals"] },
-      { "from": "composables", "allow": ["types", "data", "logic", "stores", "composables", "minigameHelpers"] },
+      {
+        "from": "composables",
+        "allow": ["types", "data", "logic", "stores", "composables", "minigameHelpers"]
+      },
       { "from": "loaders", "allow": ["types", "data", "logic", "stores", "loaders"] },
-      { "from": "components", "allow": ["types", "data", "logic", "stores", "composables", "components", "modals", "minigameHelpers"] },
-      { "from": "views", "allow": ["types", "data", "logic", "stores", "composables", "components", "views", "modals", "loaders"] }
+      {
+        "from": "components",
+        "allow": [
+          "types",
+          "data",
+          "logic",
+          "stores",
+          "composables",
+          "components",
+          "modals",
+          "minigameHelpers"
+        ]
+      },
+      {
+        "from": "views",
+        "allow": [
+          "types",
+          "data",
+          "logic",
+          "stores",
+          "composables",
+          "components",
+          "views",
+          "modals",
+          "loaders"
+        ]
+      }
     ]
   },
   "unusedComponentProps": {
@@ -94,79 +126,51 @@
   "ignoreExports": [
     {
       "file": "src/components/battle/battleMoveSlotHelpers.ts",
-      "exports": [
-        "MOVE_SLOT_GLOW_TYPES"
-      ]
+      "exports": ["MOVE_SLOT_GLOW_TYPES"]
     },
     {
       "file": "src/components/battle/moveTooltipStatusHelper.ts",
-      "exports": [
-        "STAT_MODIFIER_ARROWS",
-        "StatModifierArrow"
-      ]
+      "exports": ["STAT_MODIFIER_ARROWS", "StatModifierArrow"]
     },
     {
       "file": "src/components/modals/archaeologyGameHelper.ts",
-      "exports": [
-        "ARCHAEOLOGY_CLUES"
-      ]
+      "exports": ["ARCHAEOLOGY_CLUES"]
     },
     {
       "file": "src/components/modals/cosmeticsFilterHelper.ts",
-      "exports": [
-        "COSMETIC_ITEM_TYPES"
-      ]
+      "exports": ["COSMETIC_ITEM_TYPES"]
     },
     {
       "file": "src/components/modals/spawns/routeSpawnsTerrainHelper.ts",
-      "exports": [
-        "ROUTE_SPAWN_TERRAIN_TYPES",
-        "CLASS_ROUTE_ACTION_KINDS"
-      ]
+      "exports": ["ROUTE_SPAWN_TERRAIN_TYPES", "CLASS_ROUTE_ACTION_KINDS"]
     },
     {
       "file": "src/composables/system/usePWA.ts",
-      "exports": [
-        "PWA_INSTALL_OUTCOMES"
-      ]
+      "exports": ["PWA_INSTALL_OUTCOMES"]
     },
     {
       "file": "src/data/pokemon/evolutionDataWrapper.ts",
-      "exports": [
-        "EVOLUTION_TIMES"
-      ]
+      "exports": ["EVOLUTION_TIMES"]
     },
     {
       "file": "src/logic/battle/actions/specialActionsRoarHelper.ts",
-      "exports": [
-        "ROAR_ESCAPE_LOG_TYPES",
-        "executeRoarAction"
-      ]
+      "exports": ["ROAR_ESCAPE_LOG_TYPES", "executeRoarAction"]
     },
     {
       "file": "src/logic/battle/helpers/battleCheatManager.ts",
-      "exports": [
-        "CHEAT_EXECUTION_PHASES"
-      ]
+      "exports": ["CHEAT_EXECUTION_PHASES"]
     },
     {
       "file": "src/logic/battle/showdownAdapter.ts",
-      "exports": [
-        "SHOWDOWN_GAME_TYPES",
-        "resolveBaseStats"
-      ]
+      "exports": ["SHOWDOWN_GAME_TYPES", "resolveBaseStats"]
     },
     {
       "file": "src/logic/battle/showdownBridgeCore.ts",
-      "exports": [
-        "WINNER_LOG_SOURCES"
-      ]
+      "exports": ["WINNER_LOG_SOURCES"]
     },
     {
       "file": "src/logic/battle/showdownTeamGeneratorClient.ts",
-      "exports": [
-        "TEAM_GENERATOR_TYPES"
-      ]
+      "exports": ["TEAM_GENERATOR_TYPES"]
     },
     {
       "file": "src/logic/battle/showdownWorkerClient.ts",
@@ -179,75 +183,47 @@
     },
     {
       "file": "src/logic/battle/showdownWorkerDebugActions.ts",
-      "exports": [
-        "applyCheatsInWorker",
-        "notifyWorkerBattleWin"
-      ]
+      "exports": ["applyCheatsInWorker", "notifyWorkerBattleWin"]
     },
     {
       "file": "src/logic/battle/showdownWorkerInstance.ts",
-      "exports": [
-        "registerShowdownStoreResolvers"
-      ]
+      "exports": ["registerShowdownStoreResolvers"]
     },
     {
       "file": "src/logic/db/dbCompatibility.ts",
-      "exports": [
-        "OUTDATED_ERROR_CODES"
-      ]
+      "exports": ["OUTDATED_ERROR_CODES"]
     },
     {
       "file": "src/logic/events/eventCompetitionsHelper.ts",
-      "exports": [
-        "BODY_METRICS",
-        "TRAINING_METRICS"
-      ]
+      "exports": ["BODY_METRICS", "TRAINING_METRICS"]
     },
     {
       "file": "src/views/dev/utils/shadowEditorCatalogHelpers.ts",
-      "exports": [
-        "SHADOW_EDITOR_VIEWS"
-      ]
+      "exports": ["SHADOW_EDITOR_VIEWS"]
     },
     {
       "file": "ui-demo/src/data/mockSelectionPokemon.ts",
-      "exports": [
-        "MOCK_SELECTION_SOURCES"
-      ]
+      "exports": ["MOCK_SELECTION_SOURCES"]
     },
     {
       "file": "src/data/system/official_servers.ts",
-      "exports": [
-        "OFFICIAL_SERVERS_BY_ID"
-      ]
+      "exports": ["OFFICIAL_SERVERS_BY_ID"]
     },
     {
       "file": "src/logic/environment/map/baseMapEnvironment.ts",
-      "exports": [
-        "MAP_ENVIRONMENT_TYPES",
-        "MapEnvironmentType"
-      ]
+      "exports": ["MAP_ENVIRONMENT_TYPES", "MapEnvironmentType"]
     },
     {
       "file": "src/data/world/gyms.ts",
-      "exports": [
-        "Gym",
-        "GymDifficulty"
-      ]
+      "exports": ["Gym", "GymDifficulty"]
     },
     {
       "file": "src/logic/gym/gymEngine.ts",
-      "exports": [
-        "Gym",
-        "GYM_RATIOS",
-        "GymRatioKey"
-      ]
+      "exports": ["Gym", "GYM_RATIOS", "GymRatioKey"]
     },
     {
       "file": "src/data/battle/volatileStatusMap.ts",
-      "exports": [
-        "VolatileStatusKey"
-      ]
+      "exports": ["VolatileStatusKey"]
     },
     {
       "file": "src/logic/validation/subschemas/battleSchemas.ts",
@@ -277,10 +253,7 @@
     },
     {
       "file": "src/logic/validation/subschemas/socialSchemas.ts",
-      "exports": [
-        "DaycareMissionDto",
-        "ClaimItemDto"
-      ]
+      "exports": ["DaycareMissionDto", "ClaimItemDto"]
     },
     {
       "file": "src/data/player/trainerTypes.ts",
@@ -293,101 +266,63 @@
     },
     {
       "file": "src/logic/utils/npcSpriteRouter.ts",
-      "exports": [
-        "requireNpcArchetype"
-      ]
+      "exports": ["requireNpcArchetype"]
     },
     {
       "file": "src/logic/utils/timeUtils.ts",
-      "exports": [
-        "DayPhase",
-        "getServerInstant",
-        "getGMT3Date"
-      ]
+      "exports": ["DayPhase", "getServerInstant", "getGMT3Date"]
     },
     {
       "file": "src/logic/weather/weatherMath.ts",
-      "exports": [
-        "DayPhase"
-      ]
+      "exports": ["DayPhase"]
     },
     {
       "file": "src/logic/battle/actions/specialActionsHelper.ts",
-      "exports": [
-        "callPokemonToBattle"
-      ]
+      "exports": ["callPokemonToBattle"]
     },
     {
       "file": "src/logic/battle/battleCatchMath.ts",
-      "exports": [
-        "calculateCatchRatePure",
-        "calculateEscapeChancePure"
-      ]
+      "exports": ["calculateCatchRatePure", "calculateEscapeChancePure"]
     },
     {
       "file": "src/logic/battle/battleFaintSequence.ts",
-      "exports": [
-        "processEnemyFaintSequence"
-      ]
+      "exports": ["processEnemyFaintSequence"]
     },
     {
       "file": "src/logic/battle/battleFlowHazardsHelper.ts",
-      "exports": [
-        "calculateStealthRockDamage",
-        "calculateSpikesDamage"
-      ]
+      "exports": ["calculateStealthRockDamage", "calculateSpikesDamage"]
     },
     {
       "file": "src/logic/battle/battleRewardsPhase.ts",
-      "exports": [
-        "processBattleRewardsPhase"
-      ]
+      "exports": ["processBattleRewardsPhase"]
     },
     {
       "file": "src/logic/battle/battleStateSync.ts",
-      "exports": [
-        "syncTeamHP",
-        "syncAndPersist",
-        "parseCondition"
-      ]
+      "exports": ["syncTeamHP", "syncAndPersist", "parseCondition"]
     },
     {
       "file": "src/logic/battle/orchestratorCallSequence.ts",
-      "exports": [
-        "executePokemonCallSequence"
-      ]
+      "exports": ["executePokemonCallSequence"]
     },
     {
       "file": "src/logic/battle/orchestratorPayloadHelper.ts",
-      "exports": [
-        "prepareSeatPayload"
-      ]
+      "exports": ["prepareSeatPayload"]
     },
     {
       "file": "src/logic/battle/orchestratorSearchPhaseHelper.ts",
-      "exports": [
-        "processSearchPhaseSequence"
-      ]
+      "exports": ["processSearchPhaseSequence"]
     },
     {
       "file": "src/logic/battle/orchestratorWorkerInitHelper.ts",
-      "exports": [
-        "initWorkerForBattle"
-      ]
+      "exports": ["initWorkerForBattle"]
     },
     {
       "file": "src/logic/constants/pokedexConstants.ts",
-      "exports": [
-        "GAME_TMS",
-        "TM_COMPAT",
-        "GameTM"
-      ]
+      "exports": ["GAME_TMS", "TM_COMPAT", "GameTM"]
     },
     {
       "file": "src/logic/pvp/rankedEngine.ts",
-      "exports": [
-        "validateTeamForRanked"
-      ]
+      "exports": ["validateTeamForRanked"]
     },
     {
       "file": "src/data/inventory/items.ts",
@@ -401,17 +336,11 @@
     },
     {
       "file": "src/logic/breeding/missionEngine.ts",
-      "exports": [
-        "DaycareMission",
-        "MissionRequirement",
-        "MissionReward"
-      ]
+      "exports": ["DaycareMission", "MissionRequirement", "MissionReward"]
     },
     {
       "file": "src/data/player/playerClasses.ts",
-      "exports": [
-        "MissionId"
-      ]
+      "exports": ["MissionId"]
     },
     {
       "file": "src/data/pokemon/pokedex.ts",
@@ -438,69 +367,43 @@
     },
     {
       "file": "src/data/battle/types.ts",
-      "exports": [
-        "TYPE_TRANSLATIONS",
-        "POKEMON_TYPES_SET"
-      ]
+      "exports": ["TYPE_TRANSLATIONS", "POKEMON_TYPES_SET"]
     },
     {
       "file": "src/logic/auth/saveService.ts",
-      "exports": [
-        "serializeState",
-        "isValidState"
-      ]
+      "exports": ["serializeState", "isValidState"]
     },
     {
       "file": "src/logic/auth/sessionHub.ts",
-      "exports": [
-        "getSessionId"
-      ]
+      "exports": ["getSessionId"]
     },
     {
       "file": "src/logic/battle/ai/battleAI.ts",
-      "exports": [
-        "getBattleAITools"
-      ]
+      "exports": ["getBattleAITools"]
     },
     {
       "file": "src/logic/battle/battleEngine.ts",
-      "exports": [
-        "getTypeEffectiveness",
-        "getEffectiveStat",
-        "getAbilityMultiplier"
-      ]
+      "exports": ["getTypeEffectiveness", "getEffectiveStat", "getAbilityMultiplier"]
     },
     {
       "file": "src/logic/battle/battleFormulas.ts",
-      "exports": [
-        "getMoveCategory",
-        "BattleFormulasContext"
-      ]
+      "exports": ["getMoveCategory", "BattleFormulasContext"]
     },
     {
       "file": "src/logic/battle/battleStatus.ts",
-      "exports": [
-        "getStatusIcon"
-      ]
+      "exports": ["getStatusIcon"]
     },
     {
       "file": "src/logic/battle/battleMath.ts",
-      "exports": [
-        "STAGE_MULTIPLIERS_ACC"
-      ]
+      "exports": ["STAGE_MULTIPLIERS_ACC"]
     },
     {
       "file": "src/logic/breeding/breedingData.ts",
-      "exports": [
-        "EGG_GROUP_TRANSLATIONS",
-        "BreedingConstantKey"
-      ]
+      "exports": ["EGG_GROUP_TRANSLATIONS", "BreedingConstantKey"]
     },
     {
       "file": "src/logic/breeding/hatchAuras.ts",
-      "exports": [
-        "TYPE_AURA_COLORS"
-      ]
+      "exports": ["TYPE_AURA_COLORS"]
     },
     {
       "file": "src/logic/constants/tags.ts",
@@ -521,34 +424,23 @@
     },
     {
       "file": "src/logic/db/dbRouter.ts",
-      "exports": [
-        "DBCompatibilityResponse",
-        "AppCompatibilityResponse"
-      ]
+      "exports": ["DBCompatibilityResponse", "AppCompatibilityResponse"]
     },
     {
       "file": "src/logic/db/sqliteEngine.ts",
-      "exports": [
-        "db"
-      ]
+      "exports": ["db"]
     },
     {
       "file": "src/logic/economy/economyFormulas.ts",
-      "exports": [
-        "HEAL_COST_TIER_MULTIPLIERS"
-      ]
+      "exports": ["HEAL_COST_TIER_MULTIPLIERS"]
     },
     {
       "file": "src/logic/encounters/encounterUI.ts",
-      "exports": [
-        "triggerRivalSequence"
-      ]
+      "exports": ["triggerRivalSequence"]
     },
     {
       "file": "src/logic/encounters/encounters.ts",
-      "exports": [
-        "selectFromPool"
-      ]
+      "exports": ["selectFromPool"]
     },
     {
       "file": "src/logic/environment/bushLibrary.ts",
@@ -565,31 +457,19 @@
     },
     {
       "file": "src/logic/evolution/evolutionLogic.ts",
-      "exports": [
-        "checkTradeEvolution",
-        "FRIENDSHIP_EVOLUTION_MAP",
-        "getEvolvedForm"
-      ]
+      "exports": ["checkTradeEvolution", "FRIENDSHIP_EVOLUTION_MAP", "getEvolvedForm"]
     },
     {
       "file": "src/logic/player/classEngine.ts",
-      "exports": [
-        "getMissionCostInfo"
-      ]
+      "exports": ["getMissionCostInfo"]
     },
     {
       "file": "src/logic/pokemon/statEngine.ts",
-      "exports": [
-        "STAGE_MULT",
-        "ACC_STAGE_MULT",
-        "getAccuracyMultiplier"
-      ]
+      "exports": ["STAGE_MULT", "ACC_STAGE_MULT", "getAccuracyMultiplier"]
     },
     {
       "file": "src/logic/pokemon/typeEngine.ts",
-      "exports": [
-        "getTypeEffectiveness"
-      ]
+      "exports": ["getTypeEffectiveness"]
     },
     {
       "file": "src/logic/pokemon/pokemonFactory.ts",
@@ -603,65 +483,39 @@
     },
     {
       "file": "src/logic/services/assetService.ts",
-      "exports": [
-        "useAssets",
-        "clearAssetCache"
-      ]
+      "exports": ["useAssets", "clearAssetCache"]
     },
     {
       "file": "src/logic/db/supabase.ts",
-      "exports": [
-        "default"
-      ]
+      "exports": ["default"]
     },
     {
       "file": "src/logic/utils/assetResolver.ts",
-      "exports": [
-        "currentLODSuffix",
-        "useAssetResolver"
-      ]
+      "exports": ["currentLODSuffix", "useAssetResolver"]
     },
     {
       "file": "src/logic/utils/gsapHelpers.ts",
-      "exports": [
-        "killTweens"
-      ]
+      "exports": ["killTweens"]
     },
     {
       "file": "src/logic/utils/logger.ts",
-      "exports": [
-        "default"
-      ]
+      "exports": ["default"]
     },
     {
       "file": "src/logic/utils/opfsStorage.ts",
-      "exports": [
-        "getOpfsFile",
-        "deleteOpfsFile",
-        "listBackups"
-      ]
+      "exports": ["getOpfsFile", "deleteOpfsFile", "listBackups"]
     },
     {
       "file": "src/logic/utils/storage.ts",
-      "exports": [
-        "default"
-      ]
+      "exports": ["default"]
     },
     {
       "file": "src/logic/war/guardianEngine.ts",
-      "exports": [
-        "getConflictZones",
-        "simulateLocalDominance",
-        "GUARDIAN_TIERS"
-      ]
+      "exports": ["getConflictZones", "simulateLocalDominance", "GUARDIAN_TIERS"]
     },
     {
       "file": "src/logic/war/warEngine.ts",
-      "exports": [
-        "WAR_PTS_TABLE",
-        "getReconciledWeekIds",
-        "isWarEventType"
-      ]
+      "exports": ["WAR_PTS_TABLE", "getReconciledWeekIds", "isWarEventType"]
     },
     {
       "file": "src/logic/weather/weatherRegistry.ts",
@@ -675,10 +529,7 @@
     },
     {
       "file": "src/stores/pvp.ts",
-      "exports": [
-        "RANKED_REWARD_MILESTONES",
-        "RANKED_REWARD_TIER_MARKS"
-      ]
+      "exports": ["RANKED_REWARD_MILESTONES", "RANKED_REWARD_TIER_MARKS"]
     },
     {
       "file": "src/data/pokemon/animatedSpriteDatabase.ts",
@@ -690,25 +541,15 @@
     },
     {
       "file": "src/logic/utils/itemTierResolver.ts",
-      "exports": [
-        "ITEM_TIER_LABELS",
-        "ITEM_TIER_COLORS"
-      ]
+      "exports": ["ITEM_TIER_LABELS", "ITEM_TIER_COLORS"]
     },
     {
       "file": "src/logic/utils/routeSpawnHelpers.ts",
-      "exports": [
-        "translateWeather",
-        "TRAVEL_BUFF_ITEM_IDS_SET",
-        "TRAVEL_INCENSE_ITEM_IDS_SET"
-      ]
+      "exports": ["translateWeather", "TRAVEL_BUFF_ITEM_IDS_SET", "TRAVEL_INCENSE_ITEM_IDS_SET"]
     },
     {
       "file": "src/logic/battle/helpers/requestHelper.ts",
-      "exports": [
-        "classifyRequest",
-        "REQUEST_KINDS"
-      ]
+      "exports": ["classifyRequest", "REQUEST_KINDS"]
     },
     {
       "file": "src/logic/validation/schemas.ts",
@@ -723,11 +564,7 @@
     },
     {
       "file": "src/stores/inventory/inventoryHelpers.ts",
-      "exports": [
-        "getItemTier",
-        "isItemProduct",
-        "getAdjustedProductCategory"
-      ]
+      "exports": ["getItemTier", "isItemProduct", "getAdjustedProductCategory"]
     },
     {
       "file": "src/logic/battle/orchestrator.ts",
@@ -788,10 +625,7 @@
     },
     {
       "file": "src/logic/battle/actions/statusActions.ts",
-      "exports": [
-        "MoveAction",
-        "STATUS_ACTIONS"
-      ]
+      "exports": ["MoveAction", "STATUS_ACTIONS"]
     },
     {
       "file": "src/types/battle/battle.ts",
@@ -829,16 +663,11 @@
     },
     {
       "file": "src/stores/map.ts",
-      "exports": [
-        "useMapStore"
-      ]
+      "exports": ["useMapStore"]
     },
     {
       "file": "src/logic/utils/animationRegistry.ts",
-      "exports": [
-        "AnimTimingKey",
-        "AnimEaseKey"
-      ]
+      "exports": ["AnimTimingKey", "AnimEaseKey"]
     },
     {
       "file": "src/logic/constants/visuals.ts",
@@ -852,32 +681,19 @@
     },
     {
       "file": "src/stores/notifications.ts",
-      "exports": [
-        "UINotification"
-      ]
+      "exports": ["UINotification"]
     },
     {
       "file": "src/types/system/database.ts",
-      "exports": [
-        "AbilityBaseData",
-        "SQL_PROXY_ACTIONS",
-        "SQL_PROXY_COUNT_MODES"
-      ]
+      "exports": ["AbilityBaseData", "SQL_PROXY_ACTIONS", "SQL_PROXY_COUNT_MODES"]
     },
     {
       "file": "src/logic/battle/engine/showdownSpreadModifyHelper.ts",
-      "exports": [
-        "statsMap",
-        "patchShowdownSpreadModify"
-      ]
+      "exports": ["statsMap", "patchShowdownSpreadModify"]
     },
     {
       "file": "src/logic/battle/battleSeedManager.ts",
-      "exports": [
-        "formatToShowdownSeed",
-        "parseToNumericSeed",
-        "injectDebugSeed"
-      ]
+      "exports": ["formatToShowdownSeed", "parseToNumericSeed", "injectDebugSeed"]
     },
     {
       "file": "src/data/system/constants.ts",
@@ -902,82 +718,55 @@
     },
     {
       "file": "src/components/battle/MoveTooltipTactical.vue",
-      "exports": [
-        "default"
-      ]
+      "exports": ["default"]
     },
     {
       "file": "src/composables/battle/useBattleMinigames.ts",
-      "exports": [
-        "useBattleMinigames"
-      ]
+      "exports": ["useBattleMinigames"]
     },
     {
       "file": "src/stores/battle/battleItemUseHelper.ts",
-      "exports": [
-        "processUseItemInBattle"
-      ]
+      "exports": ["processUseItemInBattle"]
     },
     {
       "file": "src/stores/battle/battleLogHelper.ts",
-      "exports": [
-        "createBattleLoggerHelper"
-      ]
+      "exports": ["createBattleLoggerHelper"]
     },
     {
       "file": "src/components/common/useAtmosphereLeafAnim.ts",
-      "exports": [
-        "useAtmosphereLeafAnim"
-      ]
+      "exports": ["useAtmosphereLeafAnim"]
     },
     {
       "file": "src/components/common/useAtmosphereSandstormAnim.ts",
-      "exports": [
-        "useAtmosphereSandstormAnim"
-      ]
+      "exports": ["useAtmosphereSandstormAnim"]
     },
     {
       "file": "src/components/common/useAtmosphereSnowAnim.ts",
-      "exports": [
-        "useAtmosphereSnowAnim"
-      ]
+      "exports": ["useAtmosphereSnowAnim"]
     },
     {
       "file": "src/components/common/useAtmosphereRainAnim.ts",
-      "exports": [
-        "useAtmosphereRainAnim"
-      ]
+      "exports": ["useAtmosphereRainAnim"]
     },
     {
       "file": "src/components/market/useMarketPublishInventory.ts",
-      "exports": [
-        "useMarketPublishInventory",
-        "InventoryItem"
-      ]
+      "exports": ["useMarketPublishInventory", "InventoryItem"]
     },
     {
       "file": "src/components/market/useMarketPublishPokemon.ts",
-      "exports": [
-        "useMarketPublishPokemon"
-      ]
+      "exports": ["useMarketPublishPokemon"]
     },
     {
       "file": "src/components/market/useMarketPublishActions.ts",
-      "exports": [
-        "useMarketPublishActions"
-      ]
+      "exports": ["useMarketPublishActions"]
     },
     {
       "file": "src/composables/adventure/useAdventurePassives.ts",
-      "exports": [
-        "useAdventurePassives"
-      ]
+      "exports": ["useAdventurePassives"]
     },
     {
       "file": "src/composables/adventure/useAdventureModalAnims.ts",
-      "exports": [
-        "useAdventureModalAnims"
-      ]
+      "exports": ["useAdventureModalAnims"]
     },
     {
       "file": "src/logic/items/itemEffects.ts",
@@ -993,65 +782,39 @@
     },
     {
       "file": "src/logic/battle/helpers/showdownTeamMapper.ts",
-      "exports": [
-        "CustomPokemonSet",
-        "ShowdownRequest",
-        "ShowdownRequestPokemon"
-      ]
+      "exports": ["CustomPokemonSet", "ShowdownRequest", "ShowdownRequestPokemon"]
     },
     {
       "file": "src/logic/battle/showdown.worker.ts",
-      "exports": [
-        "CustomPokemonSet"
-      ]
+      "exports": ["CustomPokemonSet"]
     },
     {
       "file": "src/logic/battle/ai/heuristic/pokemonTracker.ts",
-      "exports": [
-        "PokemonTracker"
-      ]
+      "exports": ["PokemonTracker"]
     },
     {
       "file": "src/logic/battle/ai/heuristic/inferenceEngine.ts",
-      "exports": [
-        "InferenceEngine"
-      ]
+      "exports": ["InferenceEngine"]
     },
     {
       "file": "src/logic/battle/ai/scriptedAI.ts",
-      "exports": [
-        "ScriptedAI"
-      ]
+      "exports": ["ScriptedAI"]
     },
     {
       "file": "src/data/pokemon/evolutionData.ts",
-      "exports": [
-        "LevelEvolutionSpeciesId",
-        "StoneEvolutionKey",
-        "TradeEvolutionSpeciesId"
-      ]
+      "exports": ["LevelEvolutionSpeciesId", "StoneEvolutionKey", "TradeEvolutionSpeciesId"]
     },
     {
       "file": "src/data/pokemon/pokemonFeetDatabase.ts",
-      "exports": [
-        "getPokemonCryFilename",
-        "isPokemonCryId",
-        "POKEMON_CRIES_DATABASE"
-      ]
+      "exports": ["getPokemonCryFilename", "isPokemonCryId", "POKEMON_CRIES_DATABASE"]
     },
     {
       "file": "src/data/world/weather-tables.ts",
-      "exports": [
-        "RouteWeatherTable"
-      ]
+      "exports": ["RouteWeatherTable"]
     },
     {
       "file": "src/composables/battle/useBattleShadows.ts",
-      "exports": [
-        "hasAnimatedShadowKey",
-        "computeShadowCoords",
-        "computeShadowBodyRadius"
-      ]
+      "exports": ["hasAnimatedShadowKey", "computeShadowCoords", "computeShadowBodyRadius"]
     },
     {
       "file": "src/logic/battle/ai/heuristic/heuristicEngine.ts",
@@ -1063,21 +826,15 @@
     },
     {
       "file": "src/logic/battle/battleDebug.ts",
-      "exports": [
-        "canExecuteScriptedReplayAction"
-      ]
+      "exports": ["canExecuteScriptedReplayAction"]
     },
     {
       "file": "src/logic/battle/helpers/showdownBattleRunner.ts",
-      "exports": [
-        "REPLAY_SEATS"
-      ]
+      "exports": ["REPLAY_SEATS"]
     },
     {
       "file": "src/logic/battle/trainerInventory.ts",
-      "exports": [
-        "NPC_BUDGET_CONFIG"
-      ]
+      "exports": ["NPC_BUDGET_CONFIG"]
     },
     {
       "file": "src/logic/constants/animations.ts",
@@ -1140,31 +897,19 @@
     },
     {
       "file": "src/logic/db/schema.ts",
-      "exports": [
-        "DEFAULT_DB_ELO_RATING",
-        "DEFAULT_GUARDIAN_POINTS",
-        "DEFAULT_EGG_HATCH_STEPS"
-      ]
+      "exports": ["DEFAULT_DB_ELO_RATING", "DEFAULT_GUARDIAN_POINTS", "DEFAULT_EGG_HATCH_STEPS"]
     },
     {
       "file": "src/logic/pokemon/pokemonUtils.ts",
-      "exports": [
-        "MAX_IV_VALUE_EXCLUSIVE"
-      ]
+      "exports": ["MAX_IV_VALUE_EXCLUSIVE"]
     },
     {
       "file": "src/types/battle/battleEvents.ts",
-      "exports": [
-        "BATTLE_FLOW_DESTINATIONS",
-        "BattleUiEventName"
-      ]
+      "exports": ["BATTLE_FLOW_DESTINATIONS", "BattleUiEventName"]
     },
     {
       "file": "src/types/battle/certifiedBattleActions.ts",
-      "exports": [
-        "CERTIFIED_BATTLE_GAME_ACTION_KINDS",
-        "CertifiedBattleGameActionKind"
-      ]
+      "exports": ["CERTIFIED_BATTLE_GAME_ACTION_KINDS", "CertifiedBattleGameActionKind"]
     },
     {
       "file": "src/types/system/game.ts",
@@ -1178,59 +923,39 @@
     },
     {
       "file": "src/data/pokemon/npcSpriteCatalog.ts",
-      "exports": [
-        "isNpcSpriteId"
-      ]
+      "exports": ["isNpcSpriteId"]
     },
     {
       "file": "src/data/world/map-assets.ts",
-      "exports": [
-        "AVAILABLE_BATTLE_MAPS",
-        "AVAILABLE_BATTLE_MAPS_SET"
-      ]
+      "exports": ["AVAILABLE_BATTLE_MAPS", "AVAILABLE_BATTLE_MAPS_SET"]
     },
     {
       "file": "src/logic/battle/helpers/showdownSeats.ts",
-      "exports": [
-        "REPLAY_SEATS"
-      ]
+      "exports": ["REPLAY_SEATS"]
     },
     {
       "file": "src/components/admin/debug/debugPanelCategories.ts",
-      "exports": [
-        "DebugPanelCategoryId"
-      ]
+      "exports": ["DebugPanelCategoryId"]
     },
     {
       "file": "src/data/player/trainer.ts",
-      "exports": [
-        "MarketUnlockLevel"
-      ]
+      "exports": ["MarketUnlockLevel"]
     },
     {
       "file": "src/logic/combat/spatialCoordinator.ts",
-      "exports": [
-        "WorldConstantKey"
-      ]
+      "exports": ["WorldConstantKey"]
     },
     {
       "file": "src/logic/modals/registry.ts",
-      "exports": [
-        "ModalRegistryKey"
-      ]
+      "exports": ["ModalRegistryKey"]
     },
     {
       "file": "src/types/system/gameEvents.ts",
-      "exports": [
-        "GameUiEventName"
-      ]
+      "exports": ["GameUiEventName"]
     },
     {
       "file": "src/logic/battle/battleUiUtils.ts",
-      "exports": [
-        "BattleStatusKey",
-        "BattleStatKey"
-      ]
+      "exports": ["BattleStatusKey", "BattleStatKey"]
     },
     {
       "file": "src/logic/pokemon/statsMath.ts",
@@ -1244,27 +969,19 @@
     },
     {
       "file": "src/logic/battle/battleMinigames.ts",
-      "exports": [
-        "BATTLE_MINIGAMES"
-      ]
+      "exports": ["BATTLE_MINIGAMES"]
     },
     {
       "file": "src/logic/battle/statBreakdownHelper.ts",
-      "exports": [
-        "STAGE_MULTIPLIERS_MAP"
-      ]
+      "exports": ["STAGE_MULTIPLIERS_MAP"]
     },
     {
       "file": "src/logic/pokemon/pokemonWildHeldItems.ts",
-      "exports": [
-        "WILD_HELD_ITEMS"
-      ]
+      "exports": ["WILD_HELD_ITEMS"]
     },
     {
       "file": "src/logic/events/eventCompetitions.ts",
-      "exports": [
-        "getSubCompIcon"
-      ]
+      "exports": ["getSubCompIcon"]
     },
     {
       "file": "src/logic/player/classMath.ts",
@@ -1278,9 +995,7 @@
     },
     {
       "file": "src/logic/pokemon/pokemonFieldAbilities.ts",
-      "exports": [
-        "getFieldAbilityDescription"
-      ]
+      "exports": ["getFieldAbilityDescription"]
     },
     {
       "file": "src/types/pokemon/pokemon.ts",
@@ -1304,10 +1019,7 @@
     },
     {
       "file": "src/types/auth/auth.ts",
-      "exports": [
-        "SERVER_CONNECTION_STATUSES",
-        "USER_ROLES"
-      ]
+      "exports": ["SERVER_CONNECTION_STATUSES", "USER_ROLES"]
     },
     {
       "file": "src/types/breeding/breeding.ts",
@@ -1328,28 +1040,19 @@
     },
     {
       "file": "src/types/pokemon/friendship.ts",
-      "exports": [
-        "FRIENDSHIP_LOG_TONES"
-      ]
+      "exports": ["FRIENDSHIP_LOG_TONES"]
     },
     {
       "file": "src/components/modals/fishingGameHelper.ts",
-      "exports": [
-        "FISHING_DIFFICULTY_KEYS",
-        "requireFishingDifficultyKey"
-      ]
+      "exports": ["FISHING_DIFFICULTY_KEYS", "requireFishingDifficultyKey"]
     },
     {
       "file": "src/composables/adventure/useAdventureEvents.ts",
-      "exports": [
-        "ADVENTURE_TRIGGER_TYPES"
-      ]
+      "exports": ["ADVENTURE_TRIGGER_TYPES"]
     },
     {
       "file": "src/composables/pokemon/useBoxFilters.ts",
-      "exports": [
-        "FRIENDSHIP_SEAL_TIER_FILTERS"
-      ]
+      "exports": ["FRIENDSHIP_SEAL_TIER_FILTERS"]
     },
     {
       "file": "src/logic/economy/market.ts",
@@ -1362,61 +1065,39 @@
     },
     {
       "file": "src/logic/render/atmosphere.worker.ts",
-      "exports": [
-        "ATMOSPHERE_WORKER_ACTIONS",
-        "AtmosphereWorkerAction",
-        "ATMOSPHERE_NOISE_SLOTS"
-      ]
+      "exports": ["ATMOSPHERE_WORKER_ACTIONS", "AtmosphereWorkerAction", "ATMOSPHERE_NOISE_SLOTS"]
     },
     {
       "file": "src/stores/war.ts",
-      "exports": [
-        "WAR_WINNER_FACTIONS"
-      ]
+      "exports": ["WAR_WINNER_FACTIONS"]
     },
     {
       "file": "src/logic/auth/savePokemonSerializer.ts",
-      "exports": [
-        "withPersistedPokemonGender"
-      ]
+      "exports": ["withPersistedPokemonGender"]
     },
     {
       "file": "src/logic/battle/showdownWeatherInjection.ts",
-      "exports": [
-        "setBridgeWeatherResolver"
-      ]
+      "exports": ["setBridgeWeatherResolver"]
     },
     {
       "file": "src/logic/db/lanRelayBridge.ts",
-      "exports": [
-        "LAN_RELAY_ACTIONS",
-        "LanRelayAction"
-      ]
+      "exports": ["LAN_RELAY_ACTIONS", "LanRelayAction"]
     },
     {
       "file": "src/logic/db/migrations_version.ts",
-      "exports": [
-        "LATEST_MIGRATION_ID"
-      ]
+      "exports": ["LATEST_MIGRATION_ID"]
     },
     {
       "file": "src/logic/player/classMissionsData.ts",
-      "exports": [
-        "CLASS_MISSIONS_METADATA"
-      ]
+      "exports": ["CLASS_MISSIONS_METADATA"]
     },
     {
       "file": "src/logic/utils/cloneUtils.ts",
-      "exports": [
-        "deepToRaw"
-      ]
+      "exports": ["deepToRaw"]
     },
     {
       "file": "src/logic/workers/saveWorkerClient.ts",
-      "exports": [
-        "getSaveWorker",
-        "terminateSaveWorker"
-      ]
+      "exports": ["getSaveWorker", "terminateSaveWorker"]
     },
     {
       "file": "src/types/battle/pvp.ts",
@@ -1472,54 +1153,35 @@
     },
     {
       "file": "src/logic/constants/pokemonSortConstants.ts",
-      "exports": [
-        "PokemonSortKey"
-      ]
+      "exports": ["PokemonSortKey"]
     },
     {
       "file": "src/logic/pvp/livePvPMatchmakingHandler.ts",
-      "exports": [
-        "RankedQueueEntry"
-      ]
+      "exports": ["RankedQueueEntry"]
     },
     {
       "file": "src/logic/workers/save.worker.ts",
-      "exports": [
-        "SaveWorkerIncomingMessage"
-      ]
+      "exports": ["SaveWorkerIncomingMessage"]
     },
     {
       "file": "src/logic/pvp/livePvPBattleSetupHandler.ts",
-      "exports": [
-        "executeConfirmTeamPreview"
-      ]
+      "exports": ["executeConfirmTeamPreview"]
     },
     {
       "file": "src/types/battle/tooltip.ts",
-      "exports": [
-        "STAT_MODIFIER_DIRECTIONS",
-        "STAT_MODIFIER_STATUS_CLASSES"
-      ]
+      "exports": ["STAT_MODIFIER_DIRECTIONS", "STAT_MODIFIER_STATUS_CLASSES"]
     },
     {
       "file": "src/components/common/baseRefreshButtonTypes.ts",
-      "exports": [
-        "REFRESH_BUTTON_SIZES",
-        "REFRESH_BUTTON_VARIANTS"
-      ]
+      "exports": ["REFRESH_BUTTON_SIZES", "REFRESH_BUTTON_VARIANTS"]
     },
     {
       "file": "src/components/evolution/evolutionTypes.ts",
-      "exports": [
-        "EVOLUTION_STEPS",
-        "EVOLUTION_SPRITE_TARGETS"
-      ]
+      "exports": ["EVOLUTION_STEPS", "EVOLUTION_SPRITE_TARGETS"]
     },
     {
       "file": "src/logic/utils/spriteOutliner.worker.ts",
-      "exports": [
-        "SPRITE_OUTLINER_ACTIONS"
-      ]
+      "exports": ["SPRITE_OUTLINER_ACTIONS"]
     },
     {
       "file": "test_aventura/types/map/autotileStudioTypes.ts",

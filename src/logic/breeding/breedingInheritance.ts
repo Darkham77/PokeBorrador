@@ -7,7 +7,7 @@ import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon.ts';
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils.ts';
 import { getSpeciesEggMoves } from '@/data/pokemon/eggMoves.ts';
 import { BREEDING_CONSTANTS } from './breedingData.ts';
-import { getBreedingBaseId, getEggSpecies } from './breedingEngine.ts';
+import { getEggSpecies } from './breedingEngine.ts';
 
 const HIDDEN_ABILITY_HERITAGE_PCT = 60;
 
@@ -15,9 +15,16 @@ const HIDDEN_ABILITY_HERITAGE_PCT = 60;
  * Calculates offspring IV inheritance.
  * Supports Power items (force stat) and Destiny Knot (inherits 5 stats).
  */
-export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, itemB: string, playerClass: string = ''): PokemonIVs {
+export function calculateInheritance(
+  pA: Pokemon,
+  pB: Pokemon,
+  itemA: string,
+  itemB: string,
+  playerClass: string = ''
+): PokemonIVs {
   const ivs: PokemonIVs = generateRandomIVs();
 
+  // open-record: Power item keys and aliases mapped to Pokemon IV stat keys
   const powerMap: Record<string, keyof PokemonIVs> = {
     power_weight: 'hp',
     powerweight: 'hp',
@@ -32,33 +39,35 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
     power_anklet: 'spe',
     poweranklet: 'spe'
   };
-  
+
   const forcedA = powerMap[itemA];
   const forcedB = powerMap[itemB];
-  
+
   if (forcedA) ivs[forcedA] = pA.ivs[forcedA];
   if (forcedB && forcedB !== forcedA) ivs[forcedB] = pB.ivs[forcedB];
   else if (forcedB && forcedB === forcedA) {
     ivs[forcedB] = Math.random() < 0.5 ? pA.ivs[forcedB] : pB.ivs[forcedB];
   }
-  
+
   const hasDestinyKnot = itemA === 'destinyknot' || itemB === 'destinyknot';
-  const forcedCount = (forcedA && forcedB && forcedA !== forcedB) ? 2 : ((forcedA || forcedB) ? 1 : 0);
-  
+  const forcedCount = forcedA && forcedB && forcedA !== forcedB ? 2 : forcedA || forcedB ? 1 : 0;
+
   // Breeder inherits +1 additional base stat
-  let baseInheritCount = hasDestinyKnot ? BREEDING_CONSTANTS.IV_INHERIT_DESTINY_KNOT : BREEDING_CONSTANTS.IV_INHERIT_DEFAULT;
+  let baseInheritCount = hasDestinyKnot
+    ? BREEDING_CONSTANTS.IV_INHERIT_DESTINY_KNOT
+    : BREEDING_CONSTANTS.IV_INHERIT_DEFAULT;
   if (playerClass === 'criador') baseInheritCount++;
-  
+
   const countToInherit = Math.max(0, baseInheritCount - forcedCount);
-  
-  const remainingStats = POKEMON_STAT_KEYS.filter(s => s !== forcedA && s !== forcedB)
+
+  const remainingStats = POKEMON_STAT_KEYS.filter((s) => s !== forcedA && s !== forcedB)
     .sort(() => Math.random() - 0.5)
     .slice(0, countToInherit);
-    
-  remainingStats.forEach(s => {
+
+  remainingStats.forEach((s) => {
     ivs[s] = Math.random() < 0.5 ? pA.ivs[s] : pB.ivs[s];
   });
-  
+
   return ivs;
 }
 
@@ -66,24 +75,29 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
  * Calculates move inheritance.
  * Priority: Egg Moves > TMs learned by parents > Level-up moves shared.
  */
-export function inheritMoves(pA: Pokemon, pB: Pokemon, eggSpeciesId: PokemonSpeciesId): PokemonMoveId[] {
-  const babyId = getBreedingBaseId(eggSpeciesId);
-  const possibleEggMoves = getSpeciesEggMoves(babyId);
+export function inheritMoves(
+  pA: Pokemon,
+  pB: Pokemon,
+  eggSpeciesId: PokemonSpeciesId
+): PokemonMoveId[] {
+  const possibleEggMoves = getSpeciesEggMoves(eggSpeciesId);
   const inheritedMoves: PokemonMoveId[] = [];
 
   // 1. Egg Moves (if father or mother knows it AND it is in possible egg moves DB)
   const parentsMoves = [...(pA.moves || []), ...(pB.moves || [])];
-  possibleEggMoves.forEach(moveId => {
-    if (parentsMoves.some(m => m && m.id === moveId)) {
+  possibleEggMoves.forEach((moveId) => {
+    if (parentsMoves.some((m) => m && m.id === moveId)) {
       if (!inheritedMoves.includes(moveId)) inheritedMoves.push(moveId);
     }
   });
 
   // 2. TMs / Shared legal moves that offspring can learn at level 1
-  const sharedMoves = (pA.moves || []).filter(ma => ma?.id && (pB.moves || []).some(mb => mb?.id === ma.id));
-  sharedMoves.forEach(m => {
+  const sharedMoves = (pA.moves || []).filter(
+    (ma) => ma?.id && (pB.moves || []).some((mb) => mb?.id === ma.id)
+  );
+  sharedMoves.forEach((m) => {
     if (m?.id && !inheritedMoves.includes(m.id) && inheritedMoves.length < 4) {
-      if (canLearnMove(babyId, m.id, 1)) {
+      if (canLearnMove(eggSpeciesId, m.id, 1)) {
         inheritedMoves.push(m.id);
       }
     }
@@ -99,20 +113,20 @@ export function inheritMoves(pA: Pokemon, pB: Pokemon, eggSpeciesId: PokemonSpec
  * If Ditto is present, the other parent acts as the "mother".
  */
 export function inheritAbility(pA: Pokemon, pB: Pokemon): string | null {
-  const isADitto = getBreedingBaseId(pA.id) === 'ditto';
-  const isBDitto = getBreedingBaseId(pB.id) === 'ditto';
-  
+  const isADitto = pA.id === 'ditto';
+  const isBDitto = pB.id === 'ditto';
+
   let source: Pokemon | null;
   if (isADitto) source = pB;
   else if (isBDitto) source = pA;
   else source = pA.gender === 'f' ? pA : pB; // Mother takes precedence
-  
+
   if (!source) return null;
-  
+
   if (Math.random() < BREEDING_CONSTANTS.HIDDEN_ABILITY_CHANCE) {
     return source.ability || null;
   }
-  
+
   return null; // Random ability (standard slot 1 or 2)
 }
 
@@ -120,11 +134,16 @@ export function inheritAbility(pA: Pokemon, pB: Pokemon): string | null {
  * Calculates Shiny probability considering Masuda Method and events.
  * standardRate is typically 1/8192 or 1/4096.
  */
-export function calculateShinyChance(pA: Pokemon, pB: Pokemon, standardRate: number = (1 / BASE_SHINY_DENOMINATOR), eventShinyMult: number = 1): number {
+export function calculateShinyChance(
+  pA: Pokemon,
+  pB: Pokemon,
+  standardRate: number = 1 / BASE_SHINY_DENOMINATOR,
+  eventShinyMult: number = 1
+): number {
   const isForeign = pA.region !== pB.region || pA.ot_id !== pB.ot_id; // Masuda Method simplification
-  const masudaBonus = isForeign ? (BREEDING_CONSTANTS.MASUDA_MULTIPLIER - 1) : 0;
+  const masudaBonus = isForeign ? BREEDING_CONSTANTS.MASUDA_MULTIPLIER - 1 : 0;
   const eventBonus = eventShinyMult - 1;
-  
+
   const totalMult = 1 + masudaBonus + eventBonus; // Additive stacking
   return standardRate * totalMult;
 }
@@ -132,13 +151,18 @@ export function calculateShinyChance(pA: Pokemon, pB: Pokemon, standardRate: num
 /**
  * Determines inherited nature (Everstone).
  */
-export function inheritNature(pA: Pokemon, pB: Pokemon, itemA: string, itemB: string): string | null {
+export function inheritNature(
+  pA: Pokemon,
+  pB: Pokemon,
+  itemA: string,
+  itemB: string
+): string | null {
   if (itemA === 'everstone' && itemB === 'everstone') {
     return Math.random() < 0.5 ? pA.nature : pB.nature;
   }
   if (itemA === 'everstone') return pA.nature;
   if (itemB === 'everstone') return pB.nature;
-  
+
   // Without Everstone, nature is random (handled when creating the Pokemon instance)
   return null;
 }
@@ -156,21 +180,30 @@ export interface GeneticsForecast {
  * Returns a probability summary for the UI.
  * Does not reveal the final outcome, only current applied rules.
  */
-export function getGeneticsForecast(pA: Pokemon, pB: Pokemon, playerClass: string = ''): GeneticsForecast {
+export function getGeneticsForecast(
+  pA: Pokemon,
+  pB: Pokemon,
+  playerClass: string = ''
+): GeneticsForecast {
   const itemA = pA.heldItem || '';
   const itemB = pB.heldItem || '';
-  
+
   const hasEverstone = itemA === 'everstone' || itemB === 'everstone';
   const hasDestinyKnot = itemA === 'destinyknot' || itemB === 'destinyknot';
   const isForeign = pA.region !== pB.region || pA.ot_id !== pB.ot_id;
-  
-  const ivCount = (hasDestinyKnot ? BREEDING_CONSTANTS.IV_INHERIT_DESTINY_KNOT : BREEDING_CONSTANTS.IV_INHERIT_DEFAULT) + (playerClass === 'criador' ? 1 : 0);
-  
+
+  const ivCount =
+    (hasDestinyKnot
+      ? BREEDING_CONSTANTS.IV_INHERIT_DESTINY_KNOT
+      : BREEDING_CONSTANTS.IV_INHERIT_DEFAULT) + (playerClass === 'criador' ? 1 : 0);
+
   // Calculate if there are potential Egg Moves
-  const babyId = getBreedingBaseId(getEggSpecies(pA.id));
+  const babyId = getEggSpecies(pA.id);
   const possibleEggMoves = getSpeciesEggMoves(babyId);
   const parentsMoves = [...(pA.moves || []), ...(pB.moves || [])];
-  const eggMovesDetected = possibleEggMoves.filter(moveId => parentsMoves.some(m => m && m.id === moveId));
+  const eggMovesDetected = possibleEggMoves.filter((moveId) =>
+    parentsMoves.some((m) => m && m.id === moveId)
+  );
 
   return {
     natureGuaranteed: hasEverstone,

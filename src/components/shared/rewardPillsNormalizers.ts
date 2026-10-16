@@ -1,6 +1,6 @@
 /**
  * src/components/shared/rewardPillsNormalizers.ts
- * 
+ *
  * Pure normalizer helpers for RewardPillsGroup component.
  * Decouples raw prize payloads, item lookups, and direct pills into unified NormalizedReward items.
  */
@@ -8,20 +8,9 @@
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getItemById, getItemName } from '@/data/inventory/items';
 import type { EventRewardType } from '@/types/system/stores';
-import type { UnifiedRewardPill } from '@/types/rewards/rewards';
+import type { UnifiedRewardPill, DomainPrizeData } from '@/types/rewards/rewards';
 
-export interface RawPrizeData {
-  type?: EventRewardType;
-  amount?: number;
-  qty?: number;
-  money?: number;
-  battleCoins?: number;
-  item?: string;
-  items?: Record<string, number>;
-  species?: string;
-  shiny?: boolean;
-  level?: number;
-}
+export type RawPrizeData = DomainPrizeData;
 
 export interface NormalizedReward {
   id: string;
@@ -87,6 +76,7 @@ function normalizeDirectPills(pills: readonly UnifiedRewardPill[]): NormalizedRe
 }
 
 function normalizeRewardsMap(rewards: Record<string, number>): NormalizedReward[] {
+  // open-record: Generic rewards map
   const list: NormalizedReward[] = [];
   for (const [key, qty] of Object.entries(rewards)) {
     if (typeof qty === 'number' && qty > 0) {
@@ -152,7 +142,7 @@ function normalizeSingleItemReward(p: RawPrizeData): NormalizedReward | null {
   if (!p.item) return null;
 
   const itId = String(p.item);
-  const qty = typeof p.qty === 'number' ? p.qty : (typeof p.amount === 'number' ? p.amount : 1);
+  const qty = typeof p.qty === 'number' ? p.qty : typeof p.amount === 'number' ? p.amount : 1;
   const name = getItemName(itId);
 
   return {
@@ -235,7 +225,7 @@ function normalizePokemonReward(p: RawPrizeData): NormalizedReward | null {
 
 export function normalizeAllRewards(
   pills: readonly UnifiedRewardPill[] | null | undefined,
-  rewards: Record<string, number> | null | undefined,
+  rewards: Record<string, number> | null | undefined, // open-record: Generic rewards map
   prize: RawPrizeData | Record<string, unknown> | null | undefined
 ): NormalizedReward[] {
   if (pills && pills.length > 0) {

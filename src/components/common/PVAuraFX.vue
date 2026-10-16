@@ -4,67 +4,67 @@
  * Manages screen auras (Reflect/Light Screen/Safeguard).
  * Shiny sparkles are rendered via PVStatusFX as a secondary effect.
  */
-import { ref, watch, nextTick, onUnmounted } from 'vue'
-import { gsap } from 'gsap'
-import { Z_LAYERS } from '@/logic/constants/visuals'
+import { ref, watch, nextTick, onUnmounted } from 'vue';
+import { gsap } from 'gsap';
+import { Z_LAYERS } from '@/logic/constants/visuals';
 
 const props = defineProps({
   hasReflect: { type: Boolean, required: true },
   hasLightScreen: { type: Boolean, required: true },
-  hasSafeguard: { type: Boolean, required: true },
-})
+  hasSafeguard: { type: Boolean, required: true }
+});
 
-const rootRef = ref<HTMLElement | null>(null)
+const rootRef = ref<HTMLElement | null>(null);
 
-const GSAP_SCREEN_AURA_DURATION_SEC = 2
-const SCALE_MIN_AURA = 0.95
-const SCALE_MAX_AURA = 1.05
+const GSAP_SCREEN_AURA_DURATION_SEC = 2;
+const SCALE_MIN_AURA = 0.95;
+const SCALE_MAX_AURA = 1.05;
 
 const initScreenAuraFX = () => {
-  const container = rootRef.value?.closest('.pv-fx-wrapper')
-  if (!container) return
-  const screens = container.querySelectorAll('.pv-fx-screen-overlay')
-  screens.forEach(el => {
-    gsap.killTweensOf(el)
-    gsap.fromTo(el, 
-      { scale: SCALE_MIN_AURA, opacity: 0.4 }, 
-      { scale: SCALE_MAX_AURA, opacity: 0.7, duration: GSAP_SCREEN_AURA_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
-    )
-  })
-}
+  const container = rootRef.value?.closest('.pv-fx-wrapper');
+  if (!container) return;
+  const screens = container.querySelectorAll('.pv-fx-screen-overlay');
+  screens.forEach((el) => {
+    gsap.killTweensOf(el);
+    gsap.fromTo(
+      el,
+      { scale: SCALE_MIN_AURA, opacity: 0.4 },
+      {
+        scale: SCALE_MAX_AURA,
+        opacity: 0.7,
+        duration: GSAP_SCREEN_AURA_DURATION_SEC,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    );
+  });
+};
 
-watch([() => props.hasReflect, () => props.hasLightScreen, () => props.hasSafeguard], () => {
-  nextTick(() => initScreenAuraFX())
-}, { immediate: true })
+watch(
+  [() => props.hasReflect, () => props.hasLightScreen, () => props.hasSafeguard],
+  () => {
+    nextTick(() => initScreenAuraFX());
+  },
+  { immediate: true }
+);
 
 onUnmounted(() => {
-  gsap.killTweensOf('.pv-fx-screen-overlay')
-})
+  gsap.killTweensOf('.pv-fx-screen-overlay');
+});
 </script>
 
 <template>
-  <div
-    ref="rootRef"
-    class="pv-aura-fx-layer"
-  >
+  <div ref="rootRef" class="pv-aura-fx-layer">
     <!-- PANTALLAS TÁCTICAS -->
-    <div
-      v-if="hasReflect"
-      class="pv-fx-screen-overlay reflect"
-    />
-    <div
-      v-if="hasLightScreen"
-      class="pv-fx-screen-overlay light-screen"
-    />
-    <div
-      v-if="hasSafeguard"
-      class="pv-fx-aura-overlay safeguard"
-    />
+    <div v-if="hasReflect" class="pv-fx-screen-overlay reflect" />
+    <div v-if="hasLightScreen" class="pv-fx-screen-overlay light-screen" />
+    <div v-if="hasSafeguard" class="pv-fx-aura-overlay safeguard" />
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pv-aura-fx-layer {
   position: absolute;
@@ -84,12 +84,12 @@ onUnmounted(() => {
   inset: -10%;
   pointer-events: none;
   mix-blend-mode: color-dodge;
-  
+
   &.reflect {
     border: 2px solid var(--orange-500);
     background: Radial-Gradient(circle, transparent 40%, var(--orange-500) 100%);
   }
-  
+
   &.light-screen {
     border: 2px solid var(--gold);
     background: Radial-Gradient(circle, transparent 40%, var(--gold) 100%);
@@ -102,7 +102,7 @@ onUnmounted(() => {
   opacity: 0.4;
   inset: -5%;
   pointer-events: none;
-  
+
   &.safeguard {
     background: Radial-Gradient(circle, var(--green-light) 0%, transparent 70%);
     mix-blend-mode: screen;

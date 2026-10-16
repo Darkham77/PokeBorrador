@@ -51,10 +51,7 @@ class PvpReplaySpectatorSimWrapper extends BaseE2ESimulation {
             turn: 1,
             p1Choice: 'move 1',
             p2Choice: 'move 1',
-            logs: [
-              '|move|p1a: Pikachu|Thunderbolt|p2a: Eevee',
-              '|-damage|p2a: Eevee|40/100'
-            ]
+            logs: ['|move|p1a: Pikachu|Thunderbolt|p2a: Eevee', '|-damage|p2a: Eevee|40/100']
           },
           {
             turn: 2,
@@ -81,7 +78,9 @@ class PvpReplaySpectatorSimWrapper extends BaseE2ESimulation {
 test.describe('PvP Battle Tactical Replay Spectator Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('opens tactical spectator arena, navigates turns with fog-of-war, and exits', async ({ page }) => {
+  test('opens tactical spectator arena, navigates turns with fog-of-war, and exits', async ({
+    page
+  }) => {
     const sim = new PvpReplaySpectatorSimWrapper(page, 'ReplaySpectatorSim');
     await sim.setup();
 

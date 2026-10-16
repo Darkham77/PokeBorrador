@@ -5,7 +5,7 @@
  * with 100% domain fidelity (species, tags, stats, ivs, etc.) and satisfies validateSaveData cleanly.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
 import { serializeState } from '../../../src/logic/auth/saveSerializer.ts';
@@ -41,14 +41,17 @@ describe('Save Serializer Enemy Team SSoT Parity', () => {
       playerTeam: [playerMon],
       playerTeamIndex: 0,
       enemyTeamIndex: 0,
-      timestamp: Temporal.Now.instant().epochMilliseconds,
+      timestamp: Temporal.Now.instant().epochMilliseconds
     } as unknown as GameState['activeBattle'];
 
     const serialized = serializeState(rawState);
 
     // Assert enemyTeam in serialized data contains species
     assert.ok(serialized.activeBattle, 'serialized.activeBattle must exist');
-    assert.ok(Array.isArray(serialized.activeBattle.enemyTeam), 'serialized enemyTeam must be an array');
+    assert.ok(
+      Array.isArray(serialized.activeBattle.enemyTeam),
+      'serialized enemyTeam must be an array'
+    );
     assert.strictEqual(serialized.activeBattle.enemyTeam.length, 2);
 
     const serializedEnemy1 = serialized.activeBattle.enemyTeam[0];

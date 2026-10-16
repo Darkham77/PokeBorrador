@@ -18,7 +18,7 @@
  * si cae por debajo de un umbral, evitando que el combate termine prematuramente.
  */
 
-import { describe, it, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import { HeuristicDamageCalculator } from '../../../src/logic/battle/ai/heuristic/damageCalculator.ts';
@@ -30,7 +30,7 @@ import type {
   HeuristicMoveInfo,
   HeuristicFieldState,
   DamageMatchup,
-  DamageResult,
+  DamageResult
 } from '../../../src/logic/battle/ai/heuristic/types.ts';
 import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
 
@@ -42,7 +42,7 @@ import {
   makeSnapshot,
   makeStrategic,
   MOVES_MIXED,
-  applyErrorRate,
+  applyErrorRate
 } from './heuristic_ai_fuzzer_helpers.ts';
 
 // ─────────────────────────────────────────────────────────
@@ -57,7 +57,7 @@ function makeMatchup(
   myPercent: number,
   oppMove: PokemonMoveId,
   oppPercent: number,
-  extras: Partial<DamageResult> = {},
+  extras: Partial<DamageResult> = {}
 ): DamageMatchup {
   const base: DamageResult = {
     move: myMove,
@@ -68,7 +68,7 @@ function makeMatchup(
     isOHKO: myPercent >= 100,
     is2HKO: myPercent * 2 >= 100,
     priority: 0,
-    ...extras,
+    ...extras
   };
   const opp: DamageResult = {
     move: oppMove,
@@ -78,7 +78,7 @@ function makeMatchup(
     maxPercent: oppPercent,
     isOHKO: oppPercent >= 100,
     is2HKO: oppPercent * 2 >= 100,
-    priority: 0,
+    priority: 0
   };
   return { myAttacking: [base], oppAttacking: [opp] };
 }
@@ -98,7 +98,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
   describe('Dificultades (AI_CONFIG_PRESETS)', () => {
     it('wild: errorRate = 0.50, nunca switchea', () => {
       const preset = AI_CONFIG_PRESETS.wild;
-      assert.strictEqual(preset.errorRate, 0.50);
+      assert.strictEqual(preset.errorRate, 0.5);
       assert.strictEqual(preset.switchAggressiveness, 0.0);
       assert.strictEqual(preset.useInference, false);
     });
@@ -111,12 +111,12 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
 
     it('gym: errorRate = 0.00', () => {
       const preset = AI_CONFIG_PRESETS.gym;
-      assert.strictEqual(preset.errorRate, 0.00);
+      assert.strictEqual(preset.errorRate, 0.0);
     });
 
     it('rival (= champion): errorRate = 0.00, máxima agresividad de switch', () => {
       const preset = AI_CONFIG_PRESETS.rival;
-      assert.strictEqual(preset.errorRate, 0.00);
+      assert.strictEqual(preset.errorRate, 0.0);
       assert.strictEqual(preset.switchAggressiveness, 0.85);
     });
 
@@ -133,11 +133,11 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
   describe('Escenario 1: OHKO garantizado', () => {
     it('Layer 4: usa el move que hace OHKO cuando outspeedea', () => {
       const my = makePoke('Gengar', {
-        stats: { hp: 120, atk: 65, def: 60, spa: 130, spd: 75, spe: 130 },
+        stats: { hp: 120, atk: 65, def: 60, spa: 130, spd: 75, spe: 130 }
       });
       const opp = makePoke('Blissey', {
         hpPercent: 100,
-        stats: { hp: 400, atk: 10, def: 10, spa: 75, spd: 135, spe: 55 },
+        stats: { hp: 400, atk: 10, def: 10, spa: 75, spd: 135, spe: 55 }
       });
       const snap = makeSnapshot(my, opp);
       const matchup = makeMatchup('shadowball', 120, 'seismictoss', 30);
@@ -146,10 +146,19 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
 
       const available: HeuristicMoveInfo[] = [
         { id: 'shadowball', pp: 15, disabled: false },
-        { id: 'thunderbolt', pp: 15, disabled: false },
+        { id: 'thunderbolt', pp: 15, disabled: false }
       ];
 
-      const result = heuristicDecision(snap, matchup, makeStrategic(), available, [], calc, inference, false);
+      const result = heuristicDecision(
+        snap,
+        matchup,
+        makeStrategic(),
+        available,
+        [],
+        calc,
+        inference,
+        false
+      );
 
       assert.ok(result !== null, 'debe retornar una decisión');
       assert.strictEqual(result.type, 'move');
@@ -163,7 +172,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
   describe('Escenario 2: Priority KO', () => {
     it('Layer 3: usa priority move si hace OHKO y oponente no tiene priority más alto', () => {
       const my = makePoke('Scizor', {
-        stats: { hp: 140, atk: 130, def: 100, spa: 55, spd: 80, spe: 65 },
+        stats: { hp: 140, atk: 130, def: 100, spa: 55, spd: 80, spe: 65 }
       });
       const opp = makePoke('Garchomp', { hpPercent: 15, hp: 15 });
       const snap = makeSnapshot(my, opp);
@@ -177,10 +186,19 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
 
       const available: HeuristicMoveInfo[] = [
         { id: 'bulletpunch', pp: 30, disabled: false },
-        { id: 'xscissor', pp: 15, disabled: false },
+        { id: 'xscissor', pp: 15, disabled: false }
       ];
 
-      const result = heuristicDecision(snap, matchup, makeStrategic(), available, [], calc, inference, false);
+      const result = heuristicDecision(
+        snap,
+        matchup,
+        makeStrategic(),
+        available,
+        [],
+        calc,
+        inference,
+        false
+      );
 
       assert.ok(result !== null);
       assert.strictEqual(result.type, 'move');
@@ -195,7 +213,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
       const my = makePoke('Charizard', { hpPercent: 80 });
       const bench = makePoke('Blastoise', { active: false, species: 'blastoise' });
       const opp = makePoke('Garchomp', {
-        stats: { hp: 200, atk: 130, def: 95, spa: 80, spd: 85, spe: 102 },
+        stats: { hp: 200, atk: 130, def: 95, spa: 80, spd: 85, spe: 102 }
       });
       const snap = makeSnapshot(my, opp, [bench]);
 
@@ -203,9 +221,14 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
       const matchup = makeMatchup('ember', 10, 'earthquake', 80);
 
       const result = heuristicDecision(
-        snap, matchup, makeStrategic(),
+        snap,
+        matchup,
+        makeStrategic(),
         [{ id: 'ember', pp: 25, disabled: false }],
-        [bench], calc, inference, false,
+        [bench],
+        calc,
+        inference,
+        false
       );
 
       // Puede ser switch o move — ambos válidos, lo importante es que no crashea
@@ -221,19 +244,25 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
     it('Layer 7: usa Swords Dance si el oponente no puede amenazar', () => {
       const my = makePoke('Garchomp', {
         hpPercent: 100,
-        stats: { hp: 200, atk: 130, def: 95, spa: 80, spd: 85, spe: 102 },
+        stats: { hp: 200, atk: 130, def: 95, spa: 80, spd: 85, spe: 102 }
       });
       const opp = makePoke('Chansey', {
         hpPercent: 100,
-        stats: { hp: 400, atk: 5, def: 5, spa: 35, spd: 105, spe: 50 },
+        stats: { hp: 400, atk: 5, def: 5, spa: 35, spd: 105, spe: 50 }
       });
       const snap = makeSnapshot(my, opp);
       // Oponente sólo hace 5% — completamente inofensivo
       const matchup = makeMatchup('earthquake', 55, 'softboiled', 5);
 
       const result = heuristicDecision(
-        snap, matchup, makeStrategic(),
-        MOVES_MIXED, [], calc, inference, false,
+        snap,
+        matchup,
+        makeStrategic(),
+        MOVES_MIXED,
+        [],
+        calc,
+        inference,
+        false
       );
 
       // El engine puede elegir setup o el ataque más fuerte
@@ -255,10 +284,19 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
 
       const available: HeuristicMoveInfo[] = [
         { id: 'stealthrock', pp: 20, disabled: false },
-        { id: 'earthquake', pp: 10, disabled: false },
+        { id: 'earthquake', pp: 10, disabled: false }
       ];
 
-      const result = heuristicDecision(snap, matchup, makeStrategic(), available, [], calc, inference, false);
+      const result = heuristicDecision(
+        snap,
+        matchup,
+        makeStrategic(),
+        available,
+        [],
+        calc,
+        inference,
+        false
+      );
 
       if (result?.type === 'move') {
         assert.ok(['stealthrock', 'earthquake'].includes(result.moveId || ''));
@@ -273,10 +311,10 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
       const my = makePoke('Scizor', {
         item: 'choiceband',
         knownItem: 'choiceband',
-        stats: { hp: 140, atk: 130, def: 100, spa: 55, spd: 80, spe: 65 },
+        stats: { hp: 140, atk: 130, def: 100, spa: 55, spd: 80, spe: 65 }
       });
       const opp = makePoke('Blissey', {
-        stats: { hp: 400, atk: 10, def: 10, spa: 75, spd: 135, spe: 55 },
+        stats: { hp: 400, atk: 10, def: 10, spa: 75, spd: 135, spe: 55 }
       });
       const snap = makeSnapshot(my, opp);
 
@@ -290,7 +328,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
         item: 'lightball',
         knownItem: 'lightball',
         itemConsumed: false,
-        stats: { hp: 70, atk: 55, def: 30, spa: 50, spd: 40, spe: 90 },
+        stats: { hp: 70, atk: 55, def: 30, spa: 50, spd: 40, spe: 90 }
       });
       const myConsumed = { ...myWithItem, itemConsumed: true };
       const opp = makePoke('Blissey');
@@ -318,10 +356,19 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
 
       const allDisabled: HeuristicMoveInfo[] = [
         { id: 'psychic', pp: 0, disabled: true },
-        { id: 'shadowball', pp: 15, disabled: false },
+        { id: 'shadowball', pp: 15, disabled: false }
       ];
 
-      const result = heuristicDecision(snap, matchup, makeStrategic(), allDisabled, [], calc, inference, false);
+      const result = heuristicDecision(
+        snap,
+        matchup,
+        makeStrategic(),
+        allDisabled,
+        [],
+        calc,
+        inference,
+        false
+      );
       if (result?.type === 'move') {
         assert.notStrictEqual(result.moveId, 'psychic', 'nunca debe elegir un move disabled');
       }
@@ -333,10 +380,10 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
   describe('Escenario 8: Trick Room', () => {
     it('getEffectiveSpeed invierte la velocidad bajo Trick Room', () => {
       const fast = makePoke('Deoxys', {
-        stats: { hp: 50, atk: 150, def: 50, spa: 150, spd: 50, spe: 180 },
+        stats: { hp: 50, atk: 150, def: 50, spa: 150, spd: 50, spe: 180 }
       });
       const slow = makePoke('Shuckle', {
-        stats: { hp: 20, atk: 10, def: 230, spa: 10, spd: 230, spe: 5 },
+        stats: { hp: 20, atk: 10, def: 230, spa: 10, spd: 230, spe: 5 }
       });
       const field = makeField({ trickRoom: true });
 
@@ -355,7 +402,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
       inference.reset();
       const opp = makePoke('Garchomp', {
         knownMoves: ['earthquake', 'dragonclaw'],
-        species: 'garchomp',
+        species: 'garchomp'
       });
       const my = makePoke('Alakazam');
       const snap = makeSnapshot(my, opp);
@@ -372,7 +419,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
       inference.reset();
       const opp = makePoke('Lucario', {
         knownMoves: ['closecombat', 'extremespeed'],
-        species: 'lucario',
+        species: 'lucario'
       });
       const my = makePoke('Alakazam');
       const snap = makeSnapshot(my, opp);
@@ -390,11 +437,55 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
   // ── Escenario 10: Wildcard fuzzer ─────────────────────
 
   describe('Escenario 10: Wildcard fuzzer (200 snapshots aleatorios)', () => {
-    const SPECIES = ['charizard', 'blastoise', 'venusaur', 'pikachu', 'gengar', 'alakazam', 'dragonite', 'garchomp', 'lucario', 'mewtwo'];
-    const STATUSES: Array<HeuristicPokemonState['status']> = ['', 'brn', 'par', 'psn', 'slp', 'frz', 'tox'];
-    const ITEMS = ['', 'choiceband', 'choicespecs', 'lifeorb', 'leftovers', 'assaultvest', 'eviolite'];
-    const WEATHERS: Array<HeuristicFieldState['weather']> = [null, 'sunnyday', 'raindance', 'sandstorm', 'snowscape'];
-    const MOVE_POOL = ['tackle', 'thunderbolt', 'flamethrower', 'icebeam', 'earthquake', 'swordsdance', 'stealthrock', 'uturn', 'shadowball', 'bulletpunch'] as const satisfies readonly PokemonMoveId[];
+    const SPECIES = [
+      'charizard',
+      'blastoise',
+      'venusaur',
+      'pikachu',
+      'gengar',
+      'alakazam',
+      'dragonite',
+      'garchomp',
+      'lucario',
+      'mewtwo'
+    ];
+    const STATUSES: Array<HeuristicPokemonState['status']> = [
+      '',
+      'brn',
+      'par',
+      'psn',
+      'slp',
+      'frz',
+      'tox'
+    ];
+    const ITEMS = [
+      '',
+      'choiceband',
+      'choicespecs',
+      'lifeorb',
+      'leftovers',
+      'assaultvest',
+      'eviolite'
+    ];
+    const WEATHERS: Array<HeuristicFieldState['weather']> = [
+      null,
+      'sunnyday',
+      'raindance',
+      'sandstorm',
+      'snowscape'
+    ];
+    const MOVE_POOL = [
+      'tackle',
+      'thunderbolt',
+      'flamethrower',
+      'icebeam',
+      'earthquake',
+      'swordsdance',
+      'stealthrock',
+      'uturn',
+      'shadowball',
+      'bulletpunch'
+    ] as const satisfies readonly PokemonMoveId[];
 
     function randInt(min: number, max: number): number {
       return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -406,8 +497,13 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
 
     function randBoosts(): HeuristicPokemonState['boosts'] {
       return {
-        atk: randInt(-3, 3), def: randInt(-3, 3), spa: randInt(-3, 3),
-        spd: randInt(-3, 3), spe: randInt(-3, 3), accuracy: 0, evasion: 0,
+        atk: randInt(-3, 3),
+        def: randInt(-3, 3),
+        spa: randInt(-3, 3),
+        spd: randInt(-3, 3),
+        spe: randInt(-3, 3),
+        accuracy: 0,
+        evasion: 0
       };
     }
 
@@ -433,9 +529,14 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
           def: randInt(50, 200),
           spa: randInt(50, 200),
           spd: randInt(50, 200),
-          spe: randInt(20, 180),
+          spe: randInt(20, 180)
         },
-        moves: [makeMove(randElement(MOVE_POOL)), makeMove(randElement(MOVE_POOL)), makeMove(randElement(MOVE_POOL)), makeMove(randElement(MOVE_POOL))],
+        moves: [
+          makeMove(randElement(MOVE_POOL)),
+          makeMove(randElement(MOVE_POOL)),
+          makeMove(randElement(MOVE_POOL)),
+          makeMove(randElement(MOVE_POOL))
+        ],
         knownMoves: [randElement(MOVE_POOL)],
         ability: 'blaze',
         knownAbility: null,
@@ -443,15 +544,15 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
         knownItem: Math.random() > 0.5 ? item : null,
         itemConsumed: Math.random() > 0.8,
         boosts: randBoosts(),
-        volatiles: makeVolatiles(Math.random() > 0.7 ? ['taunt'] : []),
+        volatiles: makeVolatiles(Math.random() > 0.7 ? ['taunt'] : [])
       };
     }
 
     function randAvailable(): HeuristicMoveInfo[] {
-      return MOVE_POOL.slice(0, 4).map(id => ({
+      return MOVE_POOL.slice(0, 4).map((id) => ({
         id,
         pp: randInt(0, 15),
-        disabled: Math.random() > 0.85,
+        disabled: Math.random() > 0.85
       }));
     }
 
@@ -476,12 +577,21 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
         }
 
         try {
-          const result = heuristicDecision(snap, matchup, strategic, available, bench, calc, inference, false);
+          const result = heuristicDecision(
+            snap,
+            matchup,
+            strategic,
+            available,
+            bench,
+            calc,
+            inference,
+            false
+          );
           // El resultado debe ser null o un objeto con type válido
           if (result !== null) {
             assert.ok(
               result.type === 'move' || result.type === 'switch',
-              `tipo inválido: ${result.type}`,
+              `tipo inválido: ${result.type}`
             );
             if (result.type === 'move') {
               assert.ok(typeof result.moveId === 'string' && result.moveId.length > 0);
@@ -507,7 +617,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
       const available: HeuristicMoveInfo[] = [
         { id: 'psychic', pp: 30, disabled: false },
         { id: 'shadowball', pp: 15, disabled: false },
-        { id: 'recover', pp: 10, disabled: false },
+        { id: 'recover', pp: 10, disabled: false }
       ];
 
       let wildOptimal = 0;
@@ -515,7 +625,16 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
       const TRIALS = 50;
 
       for (let i = 0; i < TRIALS; i++) {
-        const base = heuristicDecision(snap, matchup, makeStrategic(), available, [], calc, inference, false);
+        const base = heuristicDecision(
+          snap,
+          matchup,
+          makeStrategic(),
+          available,
+          [],
+          calc,
+          inference,
+          false
+        );
 
         // Wild aplica 50% error rate
         const wild = applyErrorRate(base, available, AI_CONFIG_PRESETS.wild);

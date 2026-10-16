@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { Battle } from '@pkmn/sim';
@@ -6,7 +6,12 @@ import { BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 import { BATTLE_UI_EVENTS, isBattleReadyForInputDetail } from '@/types/battle/battleEvents';
 import { nextBattleReadyEventKey } from '@/logic/battle/helpers/battleReadyEventKey';
 import { computeCombatantVolatiles } from '@/components/battle/combatantVolatilesHelper';
-import { isVolatileStatusKey, requireVolatileStatusKey, type Pokemon, type Move } from '@/types/pokemon/pokemon';
+import {
+  isVolatileStatusKey,
+  requireVolatileStatusKey,
+  type Pokemon,
+  type Move
+} from '@/types/pokemon/pokemon';
 import type { BattleStages } from '@/types/battle/battle';
 import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
 import { processRocketStealMechanics } from '@/logic/battle/orchestratorRocketHelper';
@@ -24,31 +29,37 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
   describe('battle UI event contract', () => {
     it('exposes the canonical readiness event and accepts its typed detail', () => {
       expect(BATTLE_UI_EVENTS.READY_FOR_INPUT).toBe('battle-ready-for-input');
-      expect(isBattleReadyForInputDetail({
-        subState: BATTLE_SUBSTATES.WAIT_INPUT,
-        p1ChoiceIdx: 0,
-        p2ChoiceIdx: 0,
-        over: false,
-        playerSwitchSlots: [],
-      })).toBe(true);
+      expect(
+        isBattleReadyForInputDetail({
+          subState: BATTLE_SUBSTATES.WAIT_INPUT,
+          p1ChoiceIdx: 0,
+          p2ChoiceIdx: 0,
+          over: false,
+          playerSwitchSlots: []
+        })
+      ).toBe(true);
     });
 
     it('rejects a non-canonical battle substate at the browser event boundary', () => {
-      expect(isBattleReadyForInputDetail({
-        subState: 'UNSAFE_TEST_STATE',
-        p1ChoiceIdx: 0,
-        p2ChoiceIdx: 0,
-        over: false,
-      })).toBe(false);
+      expect(
+        isBattleReadyForInputDetail({
+          subState: 'UNSAFE_TEST_STATE',
+          p1ChoiceIdx: 0,
+          p2ChoiceIdx: 0,
+          over: false
+        })
+      ).toBe(false);
     });
 
     it('rejects readiness without the public Showdown switch-slot projection', () => {
-      expect(isBattleReadyForInputDetail({
-        subState: BATTLE_SUBSTATES.WAIT_INPUT,
-        p1ChoiceIdx: 0,
-        p2ChoiceIdx: 0,
-        over: false,
-      })).toBe(false);
+      expect(
+        isBattleReadyForInputDetail({
+          subState: BATTLE_SUBSTATES.WAIT_INPUT,
+          p1ChoiceIdx: 0,
+          p2ChoiceIdx: 0,
+          over: false
+        })
+      ).toBe(false);
     });
   });
 
@@ -60,8 +71,11 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
     it('clears the key when battle leaves an input state so the next real input transition emits again', () => {
       const afterTurnStarts = nextBattleReadyEventKey('WAIT_INPUT_move_0', false, '');
       expect(afterTurnStarts).toBe('');
-      if (afterTurnStarts === null) throw new Error('Non-input transition must clear the deduplication key.');
-      expect(nextBattleReadyEventKey(afterTurnStarts, true, 'WAIT_INPUT_move_0')).toBe('WAIT_INPUT_move_0');
+      if (afterTurnStarts === null)
+        throw new Error('Non-input transition must clear the deduplication key.');
+      expect(nextBattleReadyEventKey(afterTurnStarts, true, 'WAIT_INPUT_move_0')).toBe(
+        'WAIT_INPUT_move_0'
+      );
     });
   });
 
@@ -117,7 +131,12 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
 
     it('should strip prefixes like move: before validating volatile status keys', () => {
       const rawEffect = 'move: Taunt';
-      const cleanId = rawEffect.startsWith('move:') ? rawEffect.replace(/^move:\s*/, '').toLowerCase().replace(/[^a-z0-9]/g, '') : rawEffect;
+      const cleanId = rawEffect.startsWith('move:')
+        ? rawEffect
+            .replace(/^move:\s*/, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '')
+        : rawEffect;
       expect(isVolatileStatusKey(cleanId)).toBe(true);
       expect(requireVolatileStatusKey(cleanId)).toBe('taunt');
     });
@@ -127,15 +146,24 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
     it('should parse ability token with Trace origin', () => {
       let capturedLog = '';
       const mockStore = {
-        addLog: (msg: string) => { capturedLog = msg; }
+        addLog: (msg: string) => {
+          capturedLog = msg;
+        }
       };
       const mockPoke = { name: 'Alakazam' };
       const ctx = {
         store: mockStore,
         type: '-ability',
-        parts: ['', '-ability', 'p1a: Alakazam', 'Intimidate', '[from] ability: Trace', '[of] p2a: Gyarados'],
+        parts: [
+          '',
+          '-ability',
+          'p1a: Alakazam',
+          'Intimidate',
+          '[from] ability: Trace',
+          '[of] p2a: Gyarados'
+        ],
         line: '|-ability|p1a: Alakazam|Intimidate|[from] ability: Trace|[of] p2a: Gyarados',
-        getPoke: (str: string) => str.includes('p1a') ? mockPoke : { name: 'Gyarados' }
+        getPoke: (str: string) => (str.includes('p1a') ? mockPoke : { name: 'Gyarados' })
       };
       const handled = handleMiscEvents(ctx as any);
       expect(handled).toBe(true);
@@ -151,10 +179,13 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
         activeBattle: ref(null),
         addLog: vi.fn(),
         uiStore: { notify: vi.fn() },
-        audio: { play: vi.fn() },
+        audio: { play: vi.fn() }
       } as unknown as BattleContext;
 
-      await processRocketStealMechanics(mockCtx, 'Wild Pikachu', null, { isTrainer: false, isGym: false });
+      await processRocketStealMechanics(mockCtx, 'Wild Pikachu', null, {
+        isTrainer: false,
+        isGym: false
+      });
       expect(mockCtx.addLog).not.toHaveBeenCalled();
     });
   });
@@ -167,7 +198,7 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
         hp: 100,
         maxHp: 100,
         status: '',
-        moves: [],
+        moves: []
       } as unknown as Pokemon;
 
       const logs: string[] = [];
@@ -175,9 +206,11 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
       const mockAudio = { play: vi.fn() } as unknown as AudioStore;
 
       const res = await executeHealingItemUsage('potion', fullHpPoke, {
-        addLog: (msg) => { logs.push(String(msg)); },
+        addLog: (msg) => {
+          logs.push(String(msg));
+        },
         audio: mockAudio,
-        consumeItem,
+        consumeItem
       });
 
       expect(res.action).toBe('fail');
@@ -192,7 +225,7 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
         { id: 'agility', name: 'Agilidad', pp: 30, maxPP: 30 } as Move,
         { id: 'safeguard', name: 'Velo Sagrado', pp: 25, maxPP: 25 } as Move,
         { id: 'outrage', name: 'Enfado', pp: 16, maxPP: 16 } as Move,
-        { id: 'hyperbeam', name: 'Hiperrayo', pp: 5, maxPP: 5 } as Move,
+        { id: 'hyperbeam', name: 'Hiperrayo', pp: 5, maxPP: 5 } as Move
       ];
 
       const dragonite: Pokemon = {
@@ -285,16 +318,24 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
 
     it('debe validar el nivel en el composable', () => {
       const { validatePokemon } = useRankedValidation();
-      
-      expect(validatePokemon({ name: 'Charmander', level: 10, type: 'fire' } as unknown as Pokemon).ok).toBe(true);
-      expect(validatePokemon({ name: 'Charizard', level: 60, type: 'fire' } as unknown as Pokemon).ok).toBe(false);
+
+      expect(
+        validatePokemon({ name: 'Charmander', level: 10, type: 'fire' } as unknown as Pokemon).ok
+      ).toBe(true);
+      expect(
+        validatePokemon({ name: 'Charizard', level: 60, type: 'fire' } as unknown as Pokemon).ok
+      ).toBe(false);
     });
 
     it('debe validar los tipos permitidos', () => {
       const { validatePokemon } = useRankedValidation();
-      
-      expect(validatePokemon({ name: 'Squirtle', level: 10, type: 'water' } as unknown as Pokemon).ok).toBe(true);
-      expect(validatePokemon({ name: 'Pikachu', level: 10, type: 'electric' } as unknown as Pokemon).ok).toBe(false);
+
+      expect(
+        validatePokemon({ name: 'Squirtle', level: 10, type: 'water' } as unknown as Pokemon).ok
+      ).toBe(true);
+      expect(
+        validatePokemon({ name: 'Pikachu', level: 10, type: 'electric' } as unknown as Pokemon).ok
+      ).toBe(false);
     });
 
     it('debe validar el límite de pokémon en equipo', () => {
@@ -305,7 +346,7 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
         { name: 'P3', level: 10, type: 'fire' },
         { name: 'P4', level: 10, type: 'fire' }
       ] as unknown as Pokemon[];
-      
+
       expect(validateTeam(team).ok).toBe(false);
       expect(validateTeam(team.slice(0, 3)).ok).toBe(true);
     });
@@ -330,8 +371,34 @@ describe('Battle Volatiles, Events & State Transitions Domain Suite', () => {
 
       const mockCtx = {
         activeBattle: mockActiveBattle,
-        playerStages: ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }),
-        enemyStages: ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }),
+        playerStages: ref({
+          atk: 0,
+          def: 0,
+          spa: 0,
+          spd: 0,
+          spe: 0,
+          accuracy: 0,
+          evasion: 0,
+          reflect: 0,
+          lightScreen: 0,
+          safeguard: 0,
+          mist: 0,
+          spikes: 0
+        }),
+        enemyStages: ref({
+          atk: 0,
+          def: 0,
+          spa: 0,
+          spd: 0,
+          spe: 0,
+          accuracy: 0,
+          evasion: 0,
+          reflect: 0,
+          lightScreen: 0,
+          safeguard: 0,
+          mist: 0,
+          spikes: 0
+        }),
         faintedSides: ref(new Set()),
         clearLogs: () => {}
       } as unknown as BattleContext;

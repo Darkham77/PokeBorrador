@@ -1,255 +1,277 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { gsap } from 'gsap'
-import { useEventStore } from '@/stores/events'
-import { useModalStore } from '@/stores/modals'
-import EventCard from '@/components/modals/EventCard.vue'
-import PastEventsList from '@/components/modals/PastEventsList.vue'
-import WorldEventsUpcomingSchedule from '@/components/modals/WorldEventsUpcomingSchedule.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { getUpcomingEventOccurrences, type Event as GameEvent, type UpcomingEventOccurrence } from '@/logic/events/eventEngine'
-import { getServerInstant } from '@/logic/utils/timeUtils'
-import { useHomeWidgetsCollapse } from '@/composables/home/useHomeWidgetsCollapse'
-import { useWindowListener } from '@/composables/ui/useWindowListener'
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
-import HomeWidgetRefreshBtn from './HomeWidgetRefreshBtn.vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { storeToRefs } from 'pinia';
+import { gsap } from 'gsap';
+import { useEventStore } from '@/stores/events';
+import { useModalStore } from '@/stores/modals';
+import EventCard from '@/components/modals/EventCard.vue';
+import PastEventsList from '@/components/modals/PastEventsList.vue';
+import WorldEventsUpcomingSchedule from '@/components/modals/WorldEventsUpcomingSchedule.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import {
+  getUpcomingEventOccurrences,
+  type Event as GameEvent,
+  type UpcomingEventOccurrence
+} from '@/logic/events/eventEngine';
+import { getServerInstant } from '@/logic/utils/timeUtils';
+import { useHomeWidgetsCollapse } from '@/composables/home/useHomeWidgetsCollapse';
+import { useWindowListener } from '@/composables/ui/useWindowListener';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
+import HomeWidgetRefreshBtn from './HomeWidgetRefreshBtn.vue';
 
-const CARD_MIN_WIDTH_PX = 250
-const CARD_GAP_PX = 12
-const SWIPE_THRESHOLD_PX = 40
-const SWIPE_MAX_DRAG_PX = 120
-const SLIDE_TRANSITION_DURATION_SEC = 0.28
-const SLIDE_OFFSET_PX = 30
-const DRAG_DAMPENING_BOUNDARY = 0.25
-const DRAG_DAMPENING_NORMAL = 0.85
-const SWIPE_LOCK_AXIS_THRESHOLD_PX = 8
-const DEFAULT_FALLBACK_CONTAINER_WIDTH_PX = 1200
-const UPCOMING_EVENTS_LOOKAHEAD_DAYS = 14
+const CARD_MIN_WIDTH_PX = 250;
+const CARD_GAP_PX = 12;
+const SWIPE_THRESHOLD_PX = 40;
+const SWIPE_MAX_DRAG_PX = 120;
+const SLIDE_TRANSITION_DURATION_SEC = 0.28;
+const SLIDE_OFFSET_PX = 30;
+const DRAG_DAMPENING_BOUNDARY = 0.25;
+const DRAG_DAMPENING_NORMAL = 0.85;
+const SWIPE_LOCK_AXIS_THRESHOLD_PX = 8;
+const DEFAULT_FALLBACK_CONTAINER_WIDTH_PX = 1200;
+const UPCOMING_EVENTS_LOOKAHEAD_DAYS = 14;
 
-const eventStore = useEventStore()
-const modalStore = useModalStore()
-const { allEvents, activeEvents, pastEvents, isLoading } = storeToRefs(eventStore)
-const { isCollapsed, setCollapsed } = useHomeWidgetsCollapse()
+const eventStore = useEventStore();
+const modalStore = useModalStore();
+const { allEvents, activeEvents, pastEvents, isLoading } = storeToRefs(eventStore);
+const { isCollapsed, setCollapsed } = useHomeWidgetsCollapse();
 
 const showSchedule = computed({
   get: () => !isCollapsed('events_schedule'),
-  set: (val: boolean) => { setCollapsed('events_schedule', !val) }
-})
+  set: (val: boolean) => {
+    setCollapsed('events_schedule', !val);
+  }
+});
 const showHistory = computed({
   get: () => !isCollapsed('events_history'),
-  set: (val: boolean) => { setCollapsed('events_history', !val) }
-})
-const sectionRef = ref<HTMLElement | null>(null)
-const containerRef = ref<HTMLElement | null>(null)
-const eventsRowRef = ref<HTMLElement | null>(null)
-const containerWidth = ref(DEFAULT_FALLBACK_CONTAINER_WIDTH_PX)
-let gsapCtx: gsap.Context | null = null
-let resizeObserver: ResizeObserver | null = null
+  set: (val: boolean) => {
+    setCollapsed('events_history', !val);
+  }
+});
+const sectionRef = ref<HTMLElement | null>(null);
+const containerRef = ref<HTMLElement | null>(null);
+const eventsRowRef = ref<HTMLElement | null>(null);
+const containerWidth = ref(DEFAULT_FALLBACK_CONTAINER_WIDTH_PX);
+let gsapCtx: gsap.Context | null = null;
+let resizeObserver: ResizeObserver | null = null;
 
 // Touch / Mouse Drag & Swipe State
-const isDragging = ref(false)
-const dragOffsetPx = ref(0)
-const isPointerDown = ref(false)
-const startPointerX = ref(0)
-const startPointerY = ref(0)
-const activePointerId = ref<number | null>(null)
-const isHorizontalGesture = ref(false)
+const isDragging = ref(false);
+const dragOffsetPx = ref(0);
+const isPointerDown = ref(false);
+const startPointerX = ref(0);
+const startPointerY = ref(0);
+const activePointerId = ref<number | null>(null);
+const isHorizontalGesture = ref(false);
 
 // Responsive measurement of container width
 const updateLayout = () => {
   if (containerRef.value) {
-    const w = containerRef.value.getBoundingClientRect().width
+    const w = containerRef.value.getBoundingClientRect().width;
     if (w > 0) {
-      containerWidth.value = w
+      containerWidth.value = w;
     }
   }
-}
+};
 
-useWindowListener('resize', updateLayout)
+useWindowListener('resize', updateLayout);
 
 onMounted(() => {
-  updateLayout()
+  updateLayout();
   if (typeof ResizeObserver !== 'undefined' && containerRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         if (entry.contentRect.width > 0) {
-          containerWidth.value = entry.contentRect.width
+          containerWidth.value = entry.contentRect.width;
         }
       }
-    })
-    resizeObserver.observe(containerRef.value)
+    });
+    resizeObserver.observe(containerRef.value);
   }
-})
+});
 
 onUnmounted(() => {
   if (resizeObserver) {
-    resizeObserver.disconnect()
-    resizeObserver = null
+    resizeObserver.disconnect();
+    resizeObserver = null;
   }
-})
+});
 
 // Dynamic calculation of exactly how many cards (slots) fit in ONE single line (scales dynamically to 2k, 4k, etc.)
 const visibleSlots = computed(() => {
-  const calculated = Math.floor((containerWidth.value + CARD_GAP_PX) / (CARD_MIN_WIDTH_PX + CARD_GAP_PX))
-  return Math.max(1, calculated)
-})
+  const calculated = Math.floor(
+    (containerWidth.value + CARD_GAP_PX) / (CARD_MIN_WIDTH_PX + CARD_GAP_PX)
+  );
+  return Math.max(1, calculated);
+});
 
 // Active events carousel
-const carouselIndex = ref(0)
-const needsCarousel = computed(() => activeEvents.value.length > visibleSlots.value)
+const carouselIndex = ref(0);
+const needsCarousel = computed(() => activeEvents.value.length > visibleSlots.value);
 
 watch([activeEvents, visibleSlots], () => {
-  carouselIndex.value = 0
-})
+  carouselIndex.value = 0;
+});
 
 const totalPages = computed(() => {
-  if (visibleSlots.value <= 0) return 1
-  return Math.max(1, Math.ceil(activeEvents.value.length / visibleSlots.value))
-})
+  if (visibleSlots.value <= 0) return 1;
+  return Math.max(1, Math.ceil(activeEvents.value.length / visibleSlots.value));
+});
 
 const currentPage = computed(() => {
-  if (visibleSlots.value <= 0) return 0
-  return Math.floor(carouselIndex.value / visibleSlots.value)
-})
+  if (visibleSlots.value <= 0) return 0;
+  return Math.floor(carouselIndex.value / visibleSlots.value);
+});
 
-const _CAROUSEL_SLIDE_DIRECTIONS = ['next', 'prev'] as const
-type CarouselSlideDirection = (typeof _CAROUSEL_SLIDE_DIRECTIONS)[number]
+const _CAROUSEL_SLIDE_DIRECTIONS = ['next', 'prev'] as const;
+type CarouselSlideDirection = (typeof _CAROUSEL_SLIDE_DIRECTIONS)[number];
 
 const animateSlideTransition = (direction: CarouselSlideDirection) => {
-  if (!eventsRowRef.value) return
-  const offset = direction === 'next' ? SLIDE_OFFSET_PX : -SLIDE_OFFSET_PX
-  
+  if (!eventsRowRef.value) return;
+  const offset = direction === 'next' ? SLIDE_OFFSET_PX : -SLIDE_OFFSET_PX;
+
   gsap.fromTo(
     eventsRowRef.value,
     { x: offset, opacity: 0.6 },
-    { x: 0, opacity: 1, duration: SLIDE_TRANSITION_DURATION_SEC, ease: 'power2.out', clearProps: 'transform,opacity' }
-  )
-}
+    {
+      x: 0,
+      opacity: 1,
+      duration: SLIDE_TRANSITION_DURATION_SEC,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity'
+    }
+  );
+};
 
 const prevSlide = () => {
-  if (carouselIndex.value <= 0) return
-  carouselIndex.value = Math.max(0, carouselIndex.value - visibleSlots.value)
-  animateSlideTransition('prev')
-}
+  if (carouselIndex.value <= 0) return;
+  carouselIndex.value = Math.max(0, carouselIndex.value - visibleSlots.value);
+  animateSlideTransition('prev');
+};
 
 const nextSlide = () => {
-  if (carouselIndex.value + visibleSlots.value >= activeEvents.value.length) return
-  carouselIndex.value += visibleSlots.value
-  animateSlideTransition('next')
-}
+  if (carouselIndex.value + visibleSlots.value >= activeEvents.value.length) return;
+  carouselIndex.value += visibleSlots.value;
+  animateSlideTransition('next');
+};
 
 const goToSlide = (pageIdx: number) => {
-  const current = currentPage.value
-  if (pageIdx === current) return
-  const dir = pageIdx > current ? 'next' : 'prev'
-  carouselIndex.value = pageIdx * visibleSlots.value
-  animateSlideTransition(dir)
-}
+  const current = currentPage.value;
+  if (pageIdx === current) return;
+  const dir = pageIdx > current ? 'next' : 'prev';
+  carouselIndex.value = pageIdx * visibleSlots.value;
+  animateSlideTransition(dir);
+};
 
 const onPointerDown = (e: PointerEvent) => {
-  if (!needsCarousel.value) return
-  if (e.button !== 0) return
-  
-  isPointerDown.value = true
-  startPointerX.value = e.clientX
-  startPointerY.value = e.clientY
-  activePointerId.value = e.pointerId
-  isHorizontalGesture.value = false
-  dragOffsetPx.value = 0
-}
+  if (!needsCarousel.value) return;
+  if (e.button !== 0) return;
+
+  isPointerDown.value = true;
+  startPointerX.value = e.clientX;
+  startPointerY.value = e.clientY;
+  activePointerId.value = e.pointerId;
+  isHorizontalGesture.value = false;
+  dragOffsetPx.value = 0;
+};
 
 const onPointerMove = (e: PointerEvent) => {
-  if (!isPointerDown.value || activePointerId.value !== e.pointerId) return
+  if (!isPointerDown.value || activePointerId.value !== e.pointerId) return;
 
-  const deltaX = e.clientX - startPointerX.value
-  const deltaY = e.clientY - startPointerY.value
+  const deltaX = e.clientX - startPointerX.value;
+  const deltaY = e.clientY - startPointerY.value;
 
   if (!isHorizontalGesture.value) {
     if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > SWIPE_LOCK_AXIS_THRESHOLD_PX) {
-      isPointerDown.value = false
-      return
+      isPointerDown.value = false;
+      return;
     }
     if (Math.abs(deltaX) > SWIPE_LOCK_AXIS_THRESHOLD_PX) {
-      isHorizontalGesture.value = true
-      isDragging.value = true
+      isHorizontalGesture.value = true;
+      isDragging.value = true;
     }
   }
 
   if (isHorizontalGesture.value) {
-    const isAtStart = currentPage.value === 0 && deltaX > 0
-    const isAtEnd = currentPage.value === totalPages.value - 1 && deltaX < 0
-    const dampening = isAtStart || isAtEnd ? DRAG_DAMPENING_BOUNDARY : DRAG_DAMPENING_NORMAL
-    
-    const rawOffset = deltaX * dampening
-    dragOffsetPx.value = Math.max(-SWIPE_MAX_DRAG_PX, Math.min(SWIPE_MAX_DRAG_PX, rawOffset))
+    const isAtStart = currentPage.value === 0 && deltaX > 0;
+    const isAtEnd = currentPage.value === totalPages.value - 1 && deltaX < 0;
+    const dampening = isAtStart || isAtEnd ? DRAG_DAMPENING_BOUNDARY : DRAG_DAMPENING_NORMAL;
+
+    const rawOffset = deltaX * dampening;
+    dragOffsetPx.value = Math.max(-SWIPE_MAX_DRAG_PX, Math.min(SWIPE_MAX_DRAG_PX, rawOffset));
   }
-}
+};
 
 const handlePointerEnd = (e: PointerEvent) => {
-  if (!isPointerDown.value || activePointerId.value !== e.pointerId) return
+  if (!isPointerDown.value || activePointerId.value !== e.pointerId) return;
 
-  const deltaX = e.clientX - startPointerX.value
-  const wasDragging = isDragging.value
+  const deltaX = e.clientX - startPointerX.value;
+  const wasDragging = isDragging.value;
 
-  isPointerDown.value = false
-  activePointerId.value = null
-  dragOffsetPx.value = 0
+  isPointerDown.value = false;
+  activePointerId.value = null;
+  dragOffsetPx.value = 0;
 
   if (wasDragging) {
     const DRAG_RESET_DELAY_SEC = 0.05;
     gsap.delayedCall(DRAG_RESET_DELAY_SEC, () => {
-      isDragging.value = false
-    })
+      isDragging.value = false;
+    });
 
     if (deltaX < -SWIPE_THRESHOLD_PX) {
-      nextSlide()
+      nextSlide();
     } else if (deltaX > SWIPE_THRESHOLD_PX) {
-      prevSlide()
+      prevSlide();
     }
   } else {
-    isDragging.value = false
+    isDragging.value = false;
   }
-}
+};
 
 const handleCardClickCapture = (e: MouseEvent) => {
   if (isDragging.value) {
-    e.stopPropagation()
-    e.preventDefault()
+    e.stopPropagation();
+    e.preventDefault();
   }
-}
+};
 
 const pagedActiveEvents = computed(() => {
-  if (!needsCarousel.value) return activeEvents.value
-  return activeEvents.value.slice(carouselIndex.value, carouselIndex.value + visibleSlots.value)
-})
+  if (!needsCarousel.value) return activeEvents.value;
+  return activeEvents.value.slice(carouselIndex.value, carouselIndex.value + visibleSlots.value);
+});
 
 // Upcoming occurrences (fetches up to 14 days ahead and fills all remaining empty slots on the single row, NEVER in carousel)
 const upcomingOccurrences = computed(() => {
-  const occs = getUpcomingEventOccurrences(allEvents.value || [], getServerInstant(), UPCOMING_EVENTS_LOOKAHEAD_DAYS)
-  return occs.toSorted((a, b) => Temporal.Instant.compare(a.startInstant, b.startInstant))
-})
+  const occs = getUpcomingEventOccurrences(
+    allEvents.value || [],
+    getServerInstant(),
+    UPCOMING_EVENTS_LOOKAHEAD_DAYS
+  );
+  return occs.toSorted((a, b) => Temporal.Instant.compare(a.startInstant, b.startInstant));
+});
 
 const upcomingOccurrencesToFill = computed<UpcomingEventOccurrence[]>(() => {
   // If active events fill or exceed the visible slots, or active carousel is running, do NOT show upcoming events
   if (activeEvents.value.length >= visibleSlots.value) {
-    return []
+    return [];
   }
-  const activeIds = new Set(activeEvents.value.map(e => e.id))
-  const unactiveOccurrences = upcomingOccurrences.value.filter(occ => !activeIds.has(occ.event.id))
-  const emptySlots = visibleSlots.value - activeEvents.value.length
-  return unactiveOccurrences.slice(0, emptySlots)
-})
+  const activeIds = new Set(activeEvents.value.map((e) => e.id));
+  const unactiveOccurrences = upcomingOccurrences.value.filter(
+    (occ) => !activeIds.has(occ.event.id)
+  );
+  const emptySlots = visibleSlots.value - activeEvents.value.length;
+  return unactiveOccurrences.slice(0, emptySlots);
+});
 
 const openEventDetail = (event: GameEvent, occurrence?: UpcomingEventOccurrence) => {
-  if (isDragging.value) return
-  modalStore.open('EventDetail', { event, occurrence })
-}
+  if (isDragging.value) return;
+  modalStore.open('EventDetail', { event, occurrence });
+};
 
 onMounted(() => {
-  eventStore.fetchEvents()
-  eventStore.checkPendingAwards()
-  eventStore.fetchPastEvents()
+  eventStore.fetchEvents();
+  eventStore.checkPendingAwards();
+  eventStore.fetchPastEvents();
 
   gsapCtx = gsap.context(() => {
     if (sectionRef.value) {
@@ -258,32 +280,26 @@ onMounted(() => {
         sectionRef.value,
         { opacity: 0, y: SECTION_ENTRANCE_OFFSET_Y_PX },
         { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
-      )
+      );
     }
-  }, sectionRef.value || undefined)
-})
+  }, sectionRef.value || undefined);
+});
 
 onUnmounted(() => {
   if (gsapCtx) {
-    gsapCtx.revert()
+    gsapCtx.revert();
   }
-})
+});
 </script>
 
 <template>
-  <div
-    id="home-events-section"
-    ref="sectionRef"
-    class="home-events-section home-section-card"
-  >
+  <div id="home-events-section" ref="sectionRef" class="home-events-section home-section-card">
     <!-- HEADER BAR -->
     <div class="card-header-bar">
       <div class="title-wrap">
         <span class="emoji">🏆</span>
         <div class="title-text-group">
-          <h2 class="card-title">
-            EVENTOS MUNDIALES
-          </h2>
+          <h2 class="card-title">EVENTOS MUNDIALES</h2>
           <span class="section-desc">Compite con entrenadores de todo el mundo</span>
         </div>
       </div>
@@ -313,6 +329,7 @@ onUnmounted(() => {
         id="home-events-section-div-eventsrowref"
         ref="eventsRowRef"
         class="events-single-row"
+        tabindex="-1"
         :style="{
           '--visible-slots': visibleSlots,
           transform: isDragging ? `translateX(${dragOffsetPx}px)` : undefined
@@ -325,16 +342,16 @@ onUnmounted(() => {
         >
           <span class="emoji no-events-icon">⚡</span>
           <p class="no-events-text">
-            {{ isLoading ? 'Cargando eventos mundiales...' : 'No hay eventos especiales activos en este momento.' }}
+            {{
+              isLoading
+                ? 'Cargando eventos mundiales...'
+                : 'No hay eventos especiales activos en este momento.'
+            }}
           </p>
         </div>
 
         <!-- Active Events (Paged in single row) -->
-        <EventCard
-          v-for="event in pagedActiveEvents"
-          :key="event.id"
-          :event="event"
-        />
+        <EventCard v-for="event in pagedActiveEvents" :key="event.id" :event="event" />
 
         <!-- Future Events (Only fills empty slot in single row, NEVER wrapped) -->
         <EventCard
@@ -346,10 +363,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Carousel Pagination Controls & Dots (when multiple active pages) -->
-      <div
-        v-if="needsCarousel"
-        class="carousel-pagination-bar"
-      >
+      <div v-if="needsCarousel" class="carousel-pagination-bar">
         <PVTooltip title="Página anterior">
           <button
             id="home-events-section-btn-p-gina-anterior"
@@ -404,16 +418,12 @@ onUnmounted(() => {
           class="accordion-toggle"
           @click="showSchedule = !showSchedule"
         >
-          <span class="accordion-title-wrap"><span class="emoji">📅</span> <span>Calendario Semanal (Próximos 7 días)</span></span>
-          <i
-            class="fas toggle-arrow"
-            :class="showSchedule ? 'fa-chevron-up' : 'fa-chevron-down'"
-          />
+          <span class="accordion-title-wrap"
+            ><span class="emoji">📅</span> <span>Calendario Semanal (Próximos 7 días)</span></span
+          >
+          <i class="fas toggle-arrow" :class="showSchedule ? 'fa-chevron-up' : 'fa-chevron-down'" />
         </button>
-        <div
-          v-if="showSchedule"
-          class="accordion-body"
-        >
+        <div v-if="showSchedule" class="accordion-body">
           <WorldEventsUpcomingSchedule
             :all-events="allEvents"
             @open-event-detail="openEventDetail"
@@ -428,20 +438,14 @@ onUnmounted(() => {
           class="accordion-toggle"
           @click="showHistory = !showHistory"
         >
-          <span class="accordion-title-wrap"><span class="emoji">📜</span> <span>Archivo de Eventos Pasados ({{ pastEvents.length }})</span></span>
-          <i
-            class="fas toggle-arrow"
-            :class="showHistory ? 'fa-chevron-up' : 'fa-chevron-down'"
-          />
+          <span class="accordion-title-wrap"
+            ><span class="emoji">📜</span>
+            <span>Archivo de Eventos Pasados ({{ pastEvents.length }})</span></span
+          >
+          <i class="fas toggle-arrow" :class="showHistory ? 'fa-chevron-up' : 'fa-chevron-down'" />
         </button>
-        <div
-          v-if="showHistory"
-          class="accordion-body"
-        >
-          <PastEventsList
-            :past-events="pastEvents"
-            :all-events="allEvents"
-          />
+        <div v-if="showHistory" class="accordion-body">
+          <PastEventsList :past-events="pastEvents" :all-events="allEvents" />
         </div>
       </div>
     </div>
@@ -449,4 +453,3 @@ onUnmounted(() => {
 </template>
 
 <style scoped src="./HomeEventsSection.styles.scss" lang="scss"></style>
-

@@ -64,7 +64,9 @@ describe('mountainDiagonalStepAndCaveIntegrity', () => {
     expect(res.continent.resolvedMountain.occupiedFootCells[20]?.[58]).toBe(false);
 
     // Case 5 (56, 30): No cave entrance should anchor on narrow ridge
-    const caveAt56_30 = res.pois.find((p) => p.gridX === 56 && p.gridY === 30 && p.type === 'cave_entrance');
+    const caveAt56_30 = res.pois.find(
+      (p) => p.gridX === 56 && p.gridY === 30 && p.type === 'cave_entrance'
+    );
     expect(caveAt56_30).toBeUndefined();
 
     // All placed cave entrances must have solid backing wall (y-1 >= elev) and continuous south wall flanks

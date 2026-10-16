@@ -1,6 +1,6 @@
 // src/styles/components/_shop_variants.scss
-@use "@/styles/core/mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/mixins' as *;
+@use '@/styles/core/tools' as *;
 
 /* ── BATTLE CLUB SHOP (BC SHOP) PREMIUM STYLES ────────────────────────────── */
 
@@ -17,9 +17,9 @@
 
     .stat-node {
       @include shop-header-stat(#c084fc);
-      
-      &.coins .value { 
-        @extend .colored; 
+
+      &.coins .value {
+        @extend .colored;
         .currency-icon-purple {
           color: var(--purple-400);
           font-size: var(--font-14);
@@ -27,7 +27,10 @@
           margin-right: 4px;
         }
       }
-      &.level .value { @extend .colored; color: var(--yellow); }
+      &.level .value {
+        @extend .colored;
+        color: var(--yellow);
+      }
     }
   }
 }
@@ -87,9 +90,9 @@
 
     .stat-node {
       @include shop-header-stat(#ef4444);
-      
-      &.coins .value { 
-        @extend .colored; 
+
+      &.coins .value {
+        @extend .colored;
         .currency-icon-red {
           color: var(--red-light);
           font-size: var(--font-14);
@@ -97,7 +100,10 @@
           margin-right: 4px;
         }
       }
-      &.level .value { @extend .colored; color: var(--yellow); }
+      &.level .value {
+        @extend .colored;
+        color: var(--yellow);
+      }
     }
   }
 }
@@ -117,9 +123,9 @@
 
     .stat-node {
       @include shop-header-stat(#3b82f6);
-      
-      &.reputation .value { 
-        @extend .colored; 
+
+      &.reputation .value {
+        @extend .colored;
 
         color: var(--blue-500);
         text-shadow: 0 0 10px Rgb(59 130 246 / 50%);
@@ -129,7 +135,10 @@
           margin-right: 4px;
         }
       }
-      &.level .value { @extend .colored; color: var(--yellow); }
+      &.level .value {
+        @extend .colored;
+        color: var(--yellow);
+      }
     }
   }
 }

@@ -7,10 +7,18 @@
  * This test MUST FAIL before normalizing fuzzer_item_generator.ts and PASS after it.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { generateItemBatches, generateItemTestBatches, ITEM_FUZZER_ACTIVE_HOLDER_COUNT } from '../../../scripts/e2e/fuzzer/generators/fuzzer_item_generator.ts';
-import { hasCertifiedItemProtocolEvidence, hasControlDivergedBeforeNextCertifiedDecision, isControlChoiceRejection } from '../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts';
+import {
+  generateItemBatches,
+  generateItemTestBatches,
+  ITEM_FUZZER_ACTIVE_HOLDER_COUNT
+} from '../../../scripts/e2e/fuzzer/generators/fuzzer_item_generator.ts';
+import {
+  hasCertifiedItemProtocolEvidence,
+  hasControlDivergedBeforeNextCertifiedDecision,
+  isControlChoiceRejection
+} from '../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts';
 import { getItemById, requireItemId, SHOP_ITEMS } from '../../../src/data/inventory/items.ts';
 
 describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {
@@ -42,7 +50,7 @@ describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {
 
     for (const batch of batches) {
       for (const itemId of batch.itemsToTest) {
-        const item = SHOP_ITEMS.find(candidate => candidate.id === itemId);
+        const item = SHOP_ITEMS.find((candidate) => candidate.id === itemId);
         assert.ok(item, `Generated item "${itemId}" must exist in the shop catalog`);
         assert.equal(
           item.cat,
@@ -59,18 +67,28 @@ describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {
     for (const batch of batches) {
       assert.equal(batch.itemsToTest.length, ITEM_FUZZER_ACTIVE_HOLDER_COUNT);
       assert.equal(batch.playerTeam[0]?.item, batch.itemsToTest[0]);
-      assert.equal(batch.playerTeam.filter(pokemon => Boolean(pokemon.item)).length, ITEM_FUZZER_ACTIVE_HOLDER_COUNT);
+      assert.equal(
+        batch.playerTeam.filter((pokemon) => Boolean(pokemon.item)).length,
+        ITEM_FUZZER_ACTIVE_HOLDER_COUNT
+      );
     }
   });
 
   it('generates each supported held battle ItemId exactly once', () => {
-    const generatedIds = generateItemTestBatches(ITEM_FUZZER_ACTIVE_HOLDER_COUNT).flatMap(batch => batch.itemsToTest);
+    const generatedIds = generateItemTestBatches(ITEM_FUZZER_ACTIVE_HOLDER_COUNT).flatMap(
+      (batch) => batch.itemsToTest
+    );
 
     assert.equal(new Set(generatedIds).size, generatedIds.length);
   });
 
   it('recognizes a rejected control choice as item-effect divergence without masking unrelated errors', () => {
-    assert.equal(isControlChoiceRejection(new Error('[ShowdownBattleEngine] Elección "switch 2" rechazada para p1. Cause: trapped')), true);
+    assert.equal(
+      isControlChoiceRejection(
+        new Error('[ShowdownBattleEngine] Elección "switch 2" rechazada para p1. Cause: trapped')
+      ),
+      true
+    );
     assert.equal(isControlChoiceRejection(new Error('Unexpected bridge failure')), false);
   });
 
@@ -87,10 +105,20 @@ describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {
   });
 
   it('keeps out-of-battle held catalog entries out of the Showdown battle scope', () => {
-    const generatedIds = new Set(generateItemTestBatches(ITEM_FUZZER_ACTIVE_HOLDER_COUNT).flatMap(batch => batch.itemsToTest));
+    const generatedIds = new Set(
+      generateItemTestBatches(ITEM_FUZZER_ACTIVE_HOLDER_COUNT).flatMap((batch) => batch.itemsToTest)
+    );
 
-    assert.equal(generatedIds.has('bignugget'), false, 'Big Nugget is an economy item, not a Showdown battle mechanic');
-    assert.equal(generatedIds.has('bindingband'), true, 'Binding Band still has a Showdown battle mechanic');
+    assert.equal(
+      generatedIds.has('bignugget'),
+      false,
+      'Big Nugget is an economy item, not a Showdown battle mechanic'
+    );
+    assert.equal(
+      generatedIds.has('bindingband'),
+      true,
+      'Binding Band still has a Showdown battle mechanic'
+    );
   });
 
   it('uses the official restricted species when a battle item requires one', () => {
@@ -163,9 +191,7 @@ describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {
   });
 
   it('accepts certified Showdown item protocol evidence without requiring an invalid no-item replay', () => {
-    const chestoConsumptionLogs = [
-      '|-enditem|p1a: Mew|Chesto Berry|[eat]|[from] move: Rest',
-    ];
+    const chestoConsumptionLogs = ['|-enditem|p1a: Mew|Chesto Berry|[eat]|[from] move: Rest'];
 
     assert.equal(hasCertifiedItemProtocolEvidence('chestoberry', chestoConsumptionLogs), true);
   });
@@ -353,9 +379,21 @@ describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {
     const enemy = batch.enemyTeam[0];
     assert.ok(player && enemy, 'Both active seats must exist');
     assert.equal(player.species, 'abra');
-    assert.equal(player.evs.def, 0, 'Custap must not receive defensive EVs that prevent its low-HP trigger');
-    assert.equal(player.evs.spe, 0, 'Custap must be slower than its cooperating False Swipe attacker');
-    assert.equal(batch.disableIpbHealing, true, 'Custap must preserve its low-HP threshold across turns');
+    assert.equal(
+      player.evs.def,
+      0,
+      'Custap must not receive defensive EVs that prevent its low-HP trigger'
+    );
+    assert.equal(
+      player.evs.spe,
+      0,
+      'Custap must be slower than its cooperating False Swipe attacker'
+    );
+    assert.equal(
+      batch.disableIpbHealing,
+      true,
+      'Custap must preserve its low-HP threshold across turns'
+    );
     assert.equal(enemy.species, 'kartana');
     assert.equal(enemy.evs.atk, 252);
     assert.equal(batch.enemyPriorityMove, 'falseswipe');
@@ -421,5 +459,4 @@ describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {
     assert.equal(batch.playerPriorityMove, 'sketch');
     assert.equal(player.moves[0], 'sketch');
   });
-
 });

@@ -96,9 +96,9 @@ When certifying a move, ability, item, status cure, or switch interaction, every
 ### Heuristic Priority Rules
 
 1. **Targeted Interaction**:
-   - If testing a poison-curing berry (*Pecha Berry*), the opposing seat prioritizes a legal poison-inflicting move (e.g. *Toxic* or *Poison Powder*).
-   - If testing a type-resistance berry (*Occa Berry*) or type-boost item (*Charcoal*), the opposing or active seat prioritizes a move matching that type (*Flamethrower*).
-   - If testing a stat-boost ability (*Intimidate*, *Moxie*), setups force relevant switches or knockouts.
+   - If testing a poison-curing berry (_Pecha Berry_), the opposing seat prioritizes a legal poison-inflicting move (e.g. _Toxic_ or _Poison Powder_).
+   - If testing a type-resistance berry (_Occa Berry_) or type-boost item (_Charcoal_), the opposing or active seat prioritizes a move matching that type (_Flamethrower_).
+   - If testing a stat-boost ability (_Intimidate_, _Moxie_), setups force relevant switches or knockouts.
 2. **Strict Request Conformance**:
    - Heuristics shape generated team choices and AI priorities, but they MUST NEVER:
      - Inject synthetic outcomes.

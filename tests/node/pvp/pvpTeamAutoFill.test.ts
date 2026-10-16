@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   fillPvpSlotsFromAvailable,
   ensurePvpTeamsFilled,
@@ -7,21 +7,22 @@ import {
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('pvpTeamAutoFill', () => {
-  const createMockPokemon = (uid: string, name: string): Pokemon => ({
-    uid,
-    id: 'pikachu',
-    name,
-    level: 50,
-    type: 'electric',
-    hp: 100,
-    maxHp: 100,
-    atk: 50,
-    def: 50,
-    spa: 50,
-    spd: 50,
-    spe: 50,
-    moves: [{ name: 'Impactrueno', pp: 20, maxPP: 20 }]
-  } as unknown as Pokemon);
+  const createMockPokemon = (uid: string, name: string): Pokemon =>
+    ({
+      uid,
+      id: 'pikachu',
+      name,
+      level: 50,
+      type: 'electric',
+      hp: 100,
+      maxHp: 100,
+      atk: 50,
+      def: 50,
+      spa: 50,
+      spd: 50,
+      spe: 50,
+      moves: [{ name: 'Impactrueno', pp: 20, maxPP: 20 }]
+    }) as unknown as Pokemon;
 
   describe('fillPvpSlotsFromAvailable', () => {
     it('fills empty slots up to maxSlots from available pokemon list', () => {

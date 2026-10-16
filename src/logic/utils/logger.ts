@@ -1,30 +1,31 @@
 /**
  * src/logic/utils/logger.ts
- * 
+ *
  * HYBRID LOGGER (Node.js 26+ & Browser)
- * 
+ *
  * Provides unified styling for console logs.
  * - Node.js: Uses native 'node:util.styleText' for zero-dependency CLI colors.
  * - Browser: Uses CSS '%c' styling for premium DevTools appearance.
  */
 
-const isWebWorker = typeof window === 'undefined' && typeof self !== 'undefined' && 'importScripts' in self;
+const isWebWorker =
+  typeof window === 'undefined' && typeof self !== 'undefined' && 'importScripts' in self;
 const isBrowser = typeof window !== 'undefined' || isWebWorker;
 const isNode = !isBrowser && typeof process !== 'undefined' && Boolean(process.versions?.node);
 
 // Use Vite's built-in env variable for production detection
 // Fallback to process.env.NODE_ENV for Node/API environments
-const isProduction = 
-  (typeof import.meta !== 'undefined' && import.meta.env?.PROD) || 
+const isProduction =
+  (typeof import.meta !== 'undefined' && import.meta.env?.PROD) ||
   (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production');
 
 // Colors for the "Pixel Heart" aesthetic
 const COLORS = {
-  info: '#4facfe',    // Blue
+  info: '#4facfe', // Blue
   success: '#00f2fe', // Cyan/Aqua
-  warn: '#f6d365',    // Yellow/Gold
-  error: '#ff0844',   // Red/Pink
-  debug: '#a8a8a8'    // Gray
+  warn: '#f6d365', // Yellow/Gold
+  error: '#ff0844', // Red/Pink
+  debug: '#a8a8a8' // Gray
 };
 
 // Pre-import node:util if in Node.js
@@ -34,9 +35,10 @@ if (isNode) {
   try {
     // Hidden from Vite's static analysis to avoid browser bundling warnings
     const nodeUtil = 'node:util';
-    const util = await import(/* @vite-ignore */ nodeUtil) as { styleText: StyleTextFn };
+    const util = (await import(/* @vite-ignore */ nodeUtil)) as { styleText: StyleTextFn };
     styleText = util.styleText;
-  } catch (_e) { // catch-ok: Fallback when node:util is unavailable in non-node runtimes
+  } catch {
+    // catch-ok: Fallback when node:util is unavailable in non-node runtimes
     // Graceful fallback without crashing
   }
 }
@@ -47,10 +49,21 @@ export const logger = {
     if (isBrowser) {
       if (typeof message === 'string') {
         // console-ok: Centralized logger implementation
-        console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.info}; font-weight: bold;`, 'color: inherit;', ...args);
+        console.log(
+          `%c[${tag}]%c ${message}`,
+          `color: ${COLORS.info}; font-weight: bold;`,
+          'color: inherit;',
+          ...args
+        );
       } else {
         // console-ok: Centralized logger implementation
-        console.log(`%c[${tag}]%c`, `color: ${COLORS.info}; font-weight: bold;`, 'color: inherit;', message, ...args);
+        console.log(
+          `%c[${tag}]%c`,
+          `color: ${COLORS.info}; font-weight: bold;`,
+          'color: inherit;',
+          message,
+          ...args
+        );
       }
     } else {
       if (typeof message === 'string') {
@@ -68,10 +81,21 @@ export const logger = {
     if (isBrowser) {
       if (typeof message === 'string') {
         // console-ok: Centralized logger implementation
-        console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.success}; font-weight: bold;`, `color: ${COLORS.success};`, ...args);
+        console.log(
+          `%c[${tag}]%c ${message}`,
+          `color: ${COLORS.success}; font-weight: bold;`,
+          `color: ${COLORS.success};`,
+          ...args
+        );
       } else {
         // console-ok: Centralized logger implementation
-        console.log(`%c[${tag}]%c`, `color: ${COLORS.success}; font-weight: bold;`, `color: ${COLORS.success};`, message, ...args);
+        console.log(
+          `%c[${tag}]%c`,
+          `color: ${COLORS.success}; font-weight: bold;`,
+          `color: ${COLORS.success};`,
+          message,
+          ...args
+        );
       }
     } else {
       if (typeof message === 'string') {
@@ -87,9 +111,20 @@ export const logger = {
   warn(tag: string, message?: unknown, ...args: unknown[]) {
     if (isBrowser) {
       if (typeof message === 'string') {
-        console.warn(`%c[${tag}]%c ${message}`, `color: ${COLORS.warn}; font-weight: bold;`, 'color: inherit;', ...args);
+        console.warn(
+          `%c[${tag}]%c ${message}`,
+          `color: ${COLORS.warn}; font-weight: bold;`,
+          'color: inherit;',
+          ...args
+        );
       } else {
-        console.warn(`%c[${tag}]%c`, `color: ${COLORS.warn}; font-weight: bold;`, 'color: inherit;', message, ...args);
+        console.warn(
+          `%c[${tag}]%c`,
+          `color: ${COLORS.warn}; font-weight: bold;`,
+          'color: inherit;',
+          message,
+          ...args
+        );
       }
     } else {
       if (typeof message === 'string') {
@@ -103,9 +138,20 @@ export const logger = {
   error(tag: string, message?: unknown, ...args: unknown[]) {
     if (isBrowser) {
       if (typeof message === 'string') {
-        console.error(`%c[${tag}]%c ${message}`, `color: ${COLORS.error}; font-weight: bold;`, 'color: inherit;', ...args);
+        console.error(
+          `%c[${tag}]%c ${message}`,
+          `color: ${COLORS.error}; font-weight: bold;`,
+          'color: inherit;',
+          ...args
+        );
       } else {
-        console.error(`%c[${tag}]%c`, `color: ${COLORS.error}; font-weight: bold;`, 'color: inherit;', message, ...args);
+        console.error(
+          `%c[${tag}]%c`,
+          `color: ${COLORS.error}; font-weight: bold;`,
+          'color: inherit;',
+          message,
+          ...args
+        );
       }
     } else {
       if (typeof message === 'string') {
@@ -121,10 +167,21 @@ export const logger = {
     if (isBrowser) {
       if (typeof message === 'string') {
         // console-ok: Centralized logger implementation
-        console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.debug}; font-style: italic;`, 'color: #888;', ...args);
+        console.log(
+          `%c[${tag}]%c ${message}`,
+          `color: ${COLORS.debug}; font-style: italic;`,
+          'color: #888;',
+          ...args
+        );
       } else {
         // console-ok: Centralized logger implementation
-        console.log(`%c[${tag}]%c`, `color: ${COLORS.debug}; font-style: italic;`, 'color: #888;', message, ...args);
+        console.log(
+          `%c[${tag}]%c`,
+          `color: ${COLORS.debug}; font-style: italic;`,
+          'color: #888;',
+          message,
+          ...args
+        );
       }
     } else {
       if (typeof message === 'string') {

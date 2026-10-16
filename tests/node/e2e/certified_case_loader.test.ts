@@ -1,5 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { loadCertifiedBattleCases, type CertifiedFuzzerDocument } from '../../../scripts/e2e/helpers/certifiedCaseLoader.ts';
+import { describe, it, expect } from 'vite-plus/test';
+import {
+  loadCertifiedBattleCases,
+  type CertifiedFuzzerDocument
+} from '../../../scripts/e2e/helpers/certifiedCaseLoader.ts';
 import type { CertifiedTestBatch } from '../../../scripts/e2e/e2e_helpers.ts';
 
 describe('Certified Case Loader - loadCertifiedBattleCases', () => {
@@ -61,5 +64,3 @@ describe('Certified Case Loader - loadCertifiedBattleCases', () => {
     }
   });
 });
-
-

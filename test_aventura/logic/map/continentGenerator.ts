@@ -33,6 +33,7 @@ import {
   type ResolvedWaterMapResult,
   type ResolvedWaterCell
 } from './waterAutotileEngine.ts';
+import { floodFillGrid, type GridPoint } from '../utils/gridBfsUtils.ts';
 import {
   synthesizeMacroBiomes,
   type MacroBiomeResult,
@@ -95,7 +96,10 @@ export interface ContinentGeneratorOptions {
 }
 
 import type { ContinentCellDetails } from './geologicalAutotilingEngine.ts';
-export type { ContinentCellDetails, GeologicalAutotilingPassOptions } from './geologicalAutotilingEngine.ts';
+export type {
+  ContinentCellDetails,
+  GeologicalAutotilingPassOptions
+} from './geologicalAutotilingEngine.ts';
 import {
   distributePerimeterBeach,
   removeOrphanTiles,
@@ -146,14 +150,30 @@ function computeRadialLandmassCellScore(
   const dy = (y - cy) / maxRadius;
 
   const theta = Math.atan2(dy, dx);
-  const lobe1 = Math.sin(CONTINENT_GEN.LOBE_1_FREQ * theta + seed * CONTINENT_GEN.LOBE_1_SEED_SCALE) * (CONTINENT_GEN.LOBE_1_AMP * mapScale);
-  const lobe2 = Math.cos(CONTINENT_GEN.LOBE_2_FREQ * theta + seed * CONTINENT_GEN.LOBE_2_SEED_SCALE) * (CONTINENT_GEN.LOBE_2_AMP * mapScale);
-  const lobe3 = Math.sin(CONTINENT_GEN.LOBE_3_FREQ * theta + seed * CONTINENT_GEN.LOBE_3_SEED_SCALE) * (CONTINENT_GEN.LOBE_3_AMP * mapScale);
+  const lobe1 =
+    Math.sin(CONTINENT_GEN.LOBE_1_FREQ * theta + seed * CONTINENT_GEN.LOBE_1_SEED_SCALE) *
+    (CONTINENT_GEN.LOBE_1_AMP * mapScale);
+  const lobe2 =
+    Math.cos(CONTINENT_GEN.LOBE_2_FREQ * theta + seed * CONTINENT_GEN.LOBE_2_SEED_SCALE) *
+    (CONTINENT_GEN.LOBE_2_AMP * mapScale);
+  const lobe3 =
+    Math.sin(CONTINENT_GEN.LOBE_3_FREQ * theta + seed * CONTINENT_GEN.LOBE_3_SEED_SCALE) *
+    (CONTINENT_GEN.LOBE_3_AMP * mapScale);
   const angularMod = CONTINENT_GEN.ANGULAR_MOD_BASE + lobe1 + lobe2 + lobe3;
 
   const sWarp = Math.min(CONTINENT_GEN.WARP_MAX_SCALE, CONTINENT_GEN.WARP_SCALE_FACTOR / minDim);
-  const warpX = noise.noise2D(x * sWarp + CONTINENT_GEN.WARP_X_OFFSET_X, y * sWarp + CONTINENT_GEN.WARP_X_OFFSET_Y) * (CONTINENT_GEN.WARP_AMP * mapScale);
-  const warpY = noise.noise2D(x * sWarp + CONTINENT_GEN.WARP_Y_OFFSET_X, y * sWarp + CONTINENT_GEN.WARP_Y_OFFSET_Y) * (CONTINENT_GEN.WARP_AMP * mapScale);
+  const warpX =
+    noise.noise2D(
+      x * sWarp + CONTINENT_GEN.WARP_X_OFFSET_X,
+      y * sWarp + CONTINENT_GEN.WARP_X_OFFSET_Y
+    ) *
+    (CONTINENT_GEN.WARP_AMP * mapScale);
+  const warpY =
+    noise.noise2D(
+      x * sWarp + CONTINENT_GEN.WARP_Y_OFFSET_X,
+      y * sWarp + CONTINENT_GEN.WARP_Y_OFFSET_Y
+    ) *
+    (CONTINENT_GEN.WARP_AMP * mapScale);
 
   const pDx = dx + warpX;
   const pDy = dy + warpY;
@@ -161,21 +181,37 @@ function computeRadialLandmassCellScore(
 
   const modulatedDist = pDist / Math.max(CONTINENT_GEN.MIN_ANGULAR_MOD, angularMod);
 
-  const s1 = Math.min(CONTINENT_GEN.COAST_NOISE_MAX_SCALE, CONTINENT_GEN.COAST_NOISE_FACTOR / minDim);
+  const s1 = Math.min(
+    CONTINENT_GEN.COAST_NOISE_MAX_SCALE,
+    CONTINENT_GEN.COAST_NOISE_FACTOR / minDim
+  );
   const coastNoise =
     noise.noise2D(x * s1, y * s1) * CONTINENT_GEN.COAST_OCTAVE_1_WEIGHT +
-    noise.noise2D(x * s1 * CONTINENT_GEN.COAST_OCTAVE_2_SCALE, y * s1 * CONTINENT_GEN.COAST_OCTAVE_2_SCALE) * CONTINENT_GEN.COAST_OCTAVE_2_WEIGHT +
-    noise.noise2D(x * s1 * CONTINENT_GEN.COAST_OCTAVE_3_SCALE, y * s1 * CONTINENT_GEN.COAST_OCTAVE_3_SCALE) * CONTINENT_GEN.COAST_OCTAVE_3_WEIGHT;
+    noise.noise2D(
+      x * s1 * CONTINENT_GEN.COAST_OCTAVE_2_SCALE,
+      y * s1 * CONTINENT_GEN.COAST_OCTAVE_2_SCALE
+    ) *
+      CONTINENT_GEN.COAST_OCTAVE_2_WEIGHT +
+    noise.noise2D(
+      x * s1 * CONTINENT_GEN.COAST_OCTAVE_3_SCALE,
+      y * s1 * CONTINENT_GEN.COAST_OCTAVE_3_SCALE
+    ) *
+      CONTINENT_GEN.COAST_OCTAVE_3_WEIGHT;
 
   const borderDist = Math.min(x, width - 1 - x, y, height - 1 - y);
-  const borderDamp = borderDist <= CONTINENT_GEN.BORDER_DAMP_THRESHOLD ? Math.max(0.0, (borderDist - 1) / CONTINENT_GEN.BORDER_DAMP_THRESHOLD) : 1.0;
+  const borderDamp =
+    borderDist <= CONTINENT_GEN.BORDER_DAMP_THRESHOLD
+      ? Math.max(0.0, (borderDist - 1) / CONTINENT_GEN.BORDER_DAMP_THRESHOLD)
+      : 1.0;
 
   const effectiveDist = Math.max(0.0, modulatedDist + coastNoise);
 
   let falloff = 0.0;
   if (effectiveDist < CONTINENT_GEN.FALLOFF_MAX_DIST) {
     const t = effectiveDist / CONTINENT_GEN.FALLOFF_MAX_DIST;
-    falloff = (1.0 - t * t * (CONTINENT_GEN.SMOOTHSTEP_CUBIC - CONTINENT_GEN.SMOOTHSTEP_QUAD * t)) * borderDamp;
+    falloff =
+      (1.0 - t * t * (CONTINENT_GEN.SMOOTHSTEP_CUBIC - CONTINENT_GEN.SMOOTHSTEP_QUAD * t)) *
+      borderDamp;
   }
 
   const noiseScale = Math.min(CONTINENT_GEN.FBM_MAX_SCALE, CONTINENT_GEN.FBM_SCALE_FACTOR / minDim);
@@ -183,9 +219,13 @@ function computeRadialLandmassCellScore(
   return (n * CONTINENT_GEN.FBM_WEIGHT + CONTINENT_GEN.FBM_BASE) * falloff;
 }
 
-function sealInteriorWaterDepressions(matrix: WaterTerrainKind[][], width: number, height: number): void {
+function sealInteriorWaterDepressions(
+  matrix: WaterTerrainKind[][],
+  width: number,
+  height: number
+): void {
   const visitedOcean: boolean[][] = Array.from({ length: height }, () => Array(width).fill(false));
-  const queue: { x: number; y: number }[] = [];
+  const queue: GridPoint[] = [];
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       if (x === 0 || x === width - 1 || y === 0 || y === height - 1) {
@@ -197,23 +237,7 @@ function sealInteriorWaterDepressions(matrix: WaterTerrainKind[][], width: numbe
     }
   }
 
-  let head = 0;
-  while (head < queue.length) {
-    const curr = queue[head++]!;
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = curr.x + dx!;
-      const ny = curr.y + dy!;
-      if (
-        nx >= 0 && nx < width &&
-        ny >= 0 && ny < height &&
-        !visitedOcean[ny]![nx] &&
-        matrix[ny]![nx] === 'water'
-      ) {
-        visitedOcean[ny]![nx] = true;
-        queue.push({ x: nx, y: ny });
-      }
-    }
-  }
+  floodFillGrid(queue, visitedOcean, width, height, (nx, ny) => matrix[ny]![nx] === 'water');
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -239,11 +263,16 @@ export function generateRadialLandmassMask(
   const cy = (height - 1) / 2;
   const maxRadius = Math.min(cx, cy) * CONTINENT_GEN.RADIAL_MAX_RADIUS_FACTOR;
 
-  const scores: number[][] = Array.from({ length: height }, () => Array(width).fill(CONTINENT_GEN.INITIAL_OCEAN_SCORE));
+  const scores: number[][] = Array.from({ length: height }, () =>
+    Array(width).fill(CONTINENT_GEN.INITIAL_OCEAN_SCORE)
+  );
   const insideScores: number[] = [];
 
   const minDim = Math.min(width, height);
-  const mapScale = Math.min(1.0, Math.max(0.0, (minDim - CONTINENT_GEN.MAP_SCALE_MIN_DIM) / CONTINENT_GEN.MAP_SCALE_DIVISOR));
+  const mapScale = Math.min(
+    1.0,
+    Math.max(0.0, (minDim - CONTINENT_GEN.MAP_SCALE_MIN_DIM) / CONTINENT_GEN.MAP_SCALE_DIVISOR)
+  );
   const ctx: RadialLandmassContext = { cx, cy, maxRadius, minDim, mapScale, seed, noise };
 
   for (let y = 0; y < height; y++) {
@@ -268,8 +297,13 @@ export function generateRadialLandmassMask(
   }
 
   insideScores.sort((a, b) => a - b);
-  const cutoffIndex = Math.floor(insideScores.length * (oceanRatio * CONTINENT_GEN.OCEAN_CUTOFF_RATIO_SCALE));
-  const oceanThreshold = Math.max(CONTINENT_GEN.OCEAN_MIN_THRESHOLD, insideScores[cutoffIndex] ?? CONTINENT_GEN.OCEAN_FALLBACK_THRESHOLD);
+  const cutoffIndex = Math.floor(
+    insideScores.length * (oceanRatio * CONTINENT_GEN.OCEAN_CUTOFF_RATIO_SCALE)
+  );
+  const oceanThreshold = Math.max(
+    CONTINENT_GEN.OCEAN_MIN_THRESHOLD,
+    insideScores[cutoffIndex] ?? CONTINENT_GEN.OCEAN_FALLBACK_THRESHOLD
+  );
 
   const matrix: WaterTerrainKind[][] = Array.from({ length: height }, () =>
     Array<WaterTerrainKind>(width).fill('water')
@@ -306,16 +340,23 @@ export function generateContinentMap(options?: ContinentGeneratorOptions): Conti
   const rawMatrix = generateRadialLandmassMask(W, H, seed, oceanRatio);
 
   // 2. Continuous Beach Buffer
-  const variableBeach = options?.variableBeach ?? (Math.min(W, H) >= CONTINENT_GEN.VARIABLE_BEACH_MIN_DIM);
+  const variableBeach =
+    options?.variableBeach ?? Math.min(W, H) >= CONTINENT_GEN.VARIABLE_BEACH_MIN_DIM;
   distributePerimeterBeach(rawMatrix, beachWidth, { variableBeach, seed });
 
   // 3. Remove Orphan Land Patches & Keep Strictly Only the Main Continent
   removeOrphanTiles(rawMatrix, CONTINENT_GEN.ORPHAN_ISLAND_MIN_CELLS, true);
 
   // 4. Generate Maritime Archipelago (Phase 1)
-  const withArchipelago = options?.withArchipelago ?? (Math.min(W, H) >= CONTINENT_GEN.ARCHIPELAGO_MIN_DIM);
+  const withArchipelago =
+    options?.withArchipelago ?? Math.min(W, H) >= CONTINENT_GEN.ARCHIPELAGO_MIN_DIM;
   const archipelagoIslands = withArchipelago
-    ? generateArchipelagoIslands(rawMatrix, { width: W, height: H, seed, count: options?.islandCount ?? CONTINENT_GEN.DEFAULT_ISLAND_COUNT })
+    ? generateArchipelagoIslands(rawMatrix, {
+        width: W,
+        height: H,
+        seed,
+        count: options?.islandCount ?? CONTINENT_GEN.DEFAULT_ISLAND_COUNT
+      })
     : [];
 
   // 5. Inland Freshwater Lakes (carved in interior grass plains with authentic grass shores)
@@ -345,210 +386,248 @@ export function generateContinentMap(options?: ContinentGeneratorOptions): Conti
   });
 
   // 8. Continental Mountains & Stairs (Phase 2 Geological Clusterer)
-  const continentalMountains = generateContinentalMountains(
-    sanitizedWaterMatrix,
-    { ...options, width: W, height: H, seed, macroBiomeGrid: macroBiomes.biomeGrid, withStairs: options?.withStairs ?? true }
-  );
+  const continentalMountains = generateContinentalMountains(sanitizedWaterMatrix, {
+    ...options,
+    width: W,
+    height: H,
+    seed,
+    macroBiomeGrid: macroBiomes.biomeGrid,
+    withStairs: options?.withStairs ?? true
+  });
   const { sanitizedHeightmap, geologicalClusters } = continentalMountains;
   let { placedStairs, mountainResult } = continentalMountains;
 
-interface RiverDrainageStepParams {
-  readonly W: number;
-  readonly H: number;
-  readonly seed: number;
-  readonly withRiver?: boolean;
-  readonly mountainPalette?: MountainPalette;
-  readonly sanitizedWaterMatrix: WaterTerrainKind[][];
-  readonly sanitizedHeightmap: number[][];
-  readonly geologicalClusters: ReturnType<typeof generateContinentalMountains>['geologicalClusters'];
-  placedStairs: ReturnType<typeof generateContinentalMountains>['placedStairs'];
-  mountainResult: ReturnType<typeof generateContinentalMountains>['mountainResult'];
-}
+  interface RiverDrainageStepParams {
+    readonly W: number;
+    readonly H: number;
+    readonly seed: number;
+    readonly withRiver?: boolean;
+    readonly mountainPalette?: MountainPalette;
+    readonly sanitizedWaterMatrix: WaterTerrainKind[][];
+    readonly sanitizedHeightmap: number[][];
+    readonly geologicalClusters: ReturnType<
+      typeof generateContinentalMountains
+    >['geologicalClusters'];
+    placedStairs: ReturnType<typeof generateContinentalMountains>['placedStairs'];
+    mountainResult: ReturnType<typeof generateContinentalMountains>['mountainResult'];
+  }
 
-function applyProceduralRiverDrainageStep(params: RiverDrainageStepParams): {
-  readonly resolvedWater: ReturnType<typeof resolveWaterCoastGrid>;
-  readonly placedStairs: ReturnType<typeof generateContinentalMountains>['placedStairs'];
-  readonly mountainResult: ReturnType<typeof generateContinentalMountains>['mountainResult'];
-  readonly riverDrainage?: ProceduralRiverDrainageResult;
-} {
-  const { W, H, seed, withRiver, mountainPalette, sanitizedWaterMatrix, sanitizedHeightmap, geologicalClusters } = params;
-  let { placedStairs, mountainResult } = params;
-  let resolvedWater = resolveWaterCoastGrid(sanitizedWaterMatrix);
-
-  const shouldDrainRiver = withRiver ?? (W >= CONTINENT_GEN.RIVER_MIN_DIMENSION && H >= CONTINENT_GEN.RIVER_MIN_DIMENSION);
-  let riverDrainage: ProceduralRiverDrainageResult | undefined;
-
-  if (shouldDrainRiver) {
-    riverDrainage = generateProceduralRiverDrainage(
+  function applyProceduralRiverDrainageStep(params: RiverDrainageStepParams): {
+    readonly resolvedWater: ReturnType<typeof resolveWaterCoastGrid>;
+    readonly placedStairs: ReturnType<typeof generateContinentalMountains>['placedStairs'];
+    readonly mountainResult: ReturnType<typeof generateContinentalMountains>['mountainResult'];
+    readonly riverDrainage?: ProceduralRiverDrainageResult;
+  } {
+    const {
+      W,
+      H,
+      seed,
+      withRiver,
+      mountainPalette,
       sanitizedWaterMatrix,
       sanitizedHeightmap,
-      { seed, placedStairs }
-    );
-    if (riverDrainage.riverCarved) {
-      resolvedWater = resolveWaterCoastGrid(sanitizedWaterMatrix);
-      const unStairsResolved = resolveMountainMapGrid(sanitizedHeightmap, {
-        palette: mountainPalette ?? 'brown',
-        paletteMatrix: geologicalClusters.paletteMatrix
+      geologicalClusters
+    } = params;
+    let { placedStairs, mountainResult } = params;
+    let resolvedWater = resolveWaterCoastGrid(sanitizedWaterMatrix);
+
+    const shouldDrainRiver =
+      withRiver ??
+      (W >= CONTINENT_GEN.RIVER_MIN_DIMENSION && H >= CONTINENT_GEN.RIVER_MIN_DIMENSION);
+    let riverDrainage: ProceduralRiverDrainageResult | undefined;
+
+    if (shouldDrainRiver) {
+      riverDrainage = generateProceduralRiverDrainage(sanitizedWaterMatrix, sanitizedHeightmap, {
+        seed,
+        placedStairs
       });
-      placedStairs = placedStairs.filter((s) => {
-        const cL = unStairsResolved.cellDetails[s.y]?.[s.x];
-        const cR = unStairsResolved.cellDetails[s.y]?.[s.x + 1];
-        return cL?.role === 'edge_south_top' && cR?.role === 'edge_south_top';
-      });
-      mountainResult = resolveMountainMapGrid(sanitizedHeightmap, {
-        palette: mountainPalette ?? 'brown',
-        paletteMatrix: geologicalClusters.paletteMatrix,
-        stairs: placedStairs
-      });
+      if (riverDrainage.riverCarved) {
+        resolvedWater = resolveWaterCoastGrid(sanitizedWaterMatrix);
+        const unStairsResolved = resolveMountainMapGrid(sanitizedHeightmap, {
+          palette: mountainPalette ?? 'brown',
+          paletteMatrix: geologicalClusters.paletteMatrix
+        });
+        placedStairs = placedStairs.filter((s) => {
+          const cL = unStairsResolved.cellDetails[s.y]?.[s.x];
+          const cR = unStairsResolved.cellDetails[s.y]?.[s.x + 1];
+          return cL?.role === 'edge_south_top' && cR?.role === 'edge_south_top';
+        });
+        mountainResult = resolveMountainMapGrid(sanitizedHeightmap, {
+          palette: mountainPalette ?? 'brown',
+          paletteMatrix: geologicalClusters.paletteMatrix,
+          stairs: placedStairs
+        });
+      }
     }
+
+    return { resolvedWater, placedStairs, mountainResult, riverDrainage };
   }
 
-  return { resolvedWater, placedStairs, mountainResult, riverDrainage };
-}
-
-interface CellCompositionParams {
-  readonly x: number;
-  readonly y: number;
-  readonly terrain: WaterTerrainKind;
-  readonly elev: number;
-  readonly waterCell?: ResolvedWaterCell | null;
-  readonly mtnCell?: ReturnType<typeof resolveMountainMapGrid>['cellDetails'][number][number] | null;
-  readonly mBiome?: MacroBiome | null;
-  readonly resolvedMacroBiomes: ReturnType<typeof resolveMacroBiomeAutotile>;
-  readonly geologicalClusters: ReturnType<typeof generateContinentalMountains>['geologicalClusters'];
-  readonly mountainPalette?: MountainPalette;
-  readonly mountainResult: ReturnType<typeof generateContinentalMountains>['mountainResult'];
-  readonly riverDrainage?: ProceduralRiverDrainageResult;
-}
-
-function pushBaseGroundLayer(
-  layerStack: string[],
-  elev: number,
-  terrain: WaterTerrainKind,
-  waterCell: ResolvedWaterCell | null | undefined,
-  mCell: ResolvedMacroBiomeCell | null | undefined,
-  mtnPal: MountainPalette
-): void {
-  if (elev > 0) {
-    layerStack.push(mtnPal === 'gray' ? 'poke_cliff_gray_plateau_rock.png' : 'poke_cliff_brown_plateau_rock.png');
-    return;
-  }
-  if (waterCell && waterCell.terrain !== 'grass') {
-    layerStack.push(...waterCell.layerStack);
-    return;
-  }
-  if (terrain === 'water') {
-    layerStack.push('poke_water_ocean_center.png');
-    return;
-  }
-  if (mCell) {
-    layerStack.push(...mCell.layerStack);
-    return;
-  }
-  layerStack.push('poke_grass_plain.png');
-}
-
-function applyMountainCellProperties(
-  layerStack: string[],
-  mtnCell: ReturnType<typeof resolveMountainMapGrid>['cellDetails'][number][number] | undefined,
-  elev: number,
-  initialWalkable: boolean
-): { readonly mtnRole?: MountainRole; readonly isStair: boolean; readonly isWalkable: boolean } {
-  if (!mtnCell) {
-    return { mtnRole: undefined, isStair: false, isWalkable: initialWalkable };
+  interface CellCompositionParams {
+    readonly x: number;
+    readonly y: number;
+    readonly terrain: WaterTerrainKind;
+    readonly elev: number;
+    readonly waterCell?: ResolvedWaterCell | null;
+    readonly mtnCell?:
+      | ReturnType<typeof resolveMountainMapGrid>['cellDetails'][number][number]
+      | null;
+    readonly mBiome?: MacroBiome | null;
+    readonly resolvedMacroBiomes: ReturnType<typeof resolveMacroBiomeAutotile>;
+    readonly geologicalClusters: ReturnType<
+      typeof generateContinentalMountains
+    >['geologicalClusters'];
+    readonly mountainPalette?: MountainPalette;
+    readonly mountainResult: ReturnType<typeof generateContinentalMountains>['mountainResult'];
+    readonly riverDrainage?: ProceduralRiverDrainageResult;
   }
 
-  const mtnRole = mtnCell.role;
-  const isStair = mtnCell.role === 'stairs_l' || mtnCell.role === 'stairs_r';
-
-  if (elev > 0) {
-    layerStack.push(mtnCell.primaryTile);
-    if (mtnCell.overlayTiles && mtnCell.overlayTiles.length > 0) {
-      layerStack.push(...mtnCell.overlayTiles);
+  function pushBaseGroundLayer(
+    layerStack: string[],
+    elev: number,
+    terrain: WaterTerrainKind,
+    waterCell: ResolvedWaterCell | null | undefined,
+    mCell: ResolvedMacroBiomeCell | null | undefined,
+    mtnPal: MountainPalette
+  ): void {
+    if (elev > 0) {
+      layerStack.push(
+        mtnPal === 'gray' ? 'poke_cliff_gray_plateau_rock.png' : 'poke_cliff_brown_plateau_rock.png'
+      );
+      return;
     }
+    if (waterCell && waterCell.terrain !== 'grass') {
+      layerStack.push(...waterCell.layerStack);
+      return;
+    }
+    if (terrain === 'water') {
+      layerStack.push('poke_water_ocean_center.png');
+      return;
+    }
+    if (mCell) {
+      layerStack.push(...mCell.layerStack);
+      return;
+    }
+    layerStack.push('poke_grass_plain.png');
   }
 
-  let isWalkable = initialWalkable;
-  if (
-    mtnCell.role === 'peak_isolated' ||
-    mtnCell.role.startsWith('edge_') ||
-    mtnCell.role.startsWith('corner_outer_')
-  ) {
-    isWalkable = false;
+  function applyMountainCellProperties(
+    layerStack: string[],
+    mtnCell: ReturnType<typeof resolveMountainMapGrid>['cellDetails'][number][number] | undefined,
+    elev: number,
+    initialWalkable: boolean
+  ): { readonly mtnRole?: MountainRole; readonly isStair: boolean; readonly isWalkable: boolean } {
+    if (!mtnCell) {
+      return { mtnRole: undefined, isStair: false, isWalkable: initialWalkable };
+    }
+
+    const mtnRole = mtnCell.role;
+    const isStair = mtnCell.role === 'stairs_l' || mtnCell.role === 'stairs_r';
+
+    if (elev > 0) {
+      layerStack.push(mtnCell.primaryTile);
+      if (mtnCell.overlayTiles && mtnCell.overlayTiles.length > 0) {
+        layerStack.push(...mtnCell.overlayTiles);
+      }
+    }
+
+    let isWalkable = initialWalkable;
+    if (
+      mtnCell.role === 'peak_isolated' ||
+      mtnCell.role.startsWith('edge_') ||
+      mtnCell.role.startsWith('corner_outer_')
+    ) {
+      isWalkable = false;
+    }
+
+    if (isStair) {
+      isWalkable = true;
+    }
+
+    return { mtnRole, isStair, isWalkable };
   }
 
-  if (isStair) {
-    isWalkable = true;
+  interface NorthCliffFootParams {
+    layerStack: string[];
+    northMtn: ReturnType<typeof resolveMountainMapGrid>['cellDetails'][number][number] | undefined;
+    isRiverChannel: boolean;
+    terrain: WaterTerrainKind;
+    currentWalkable: boolean;
+    currentStair: boolean;
   }
 
-  return { mtnRole, isStair, isWalkable };
-}
+  function applyProjectedNorthCliffFoot({
+    layerStack,
+    northMtn,
+    isRiverChannel,
+    terrain,
+    currentWalkable,
+    currentStair
+  }: NorthCliffFootParams): { readonly isWalkable: boolean; readonly isStair: boolean } {
+    if (isRiverChannel || !northMtn?.projectedFoot) {
+      return { isWalkable: currentWalkable, isStair: currentStair };
+    }
 
-interface NorthCliffFootParams {
-  layerStack: string[];
-  northMtn: ReturnType<typeof resolveMountainMapGrid>['cellDetails'][number][number] | undefined;
-  isRiverChannel: boolean;
-  terrain: WaterTerrainKind;
-  currentWalkable: boolean;
-  currentStair: boolean;
-}
-
-function applyProjectedNorthCliffFoot({
-  layerStack,
-  northMtn,
-  isRiverChannel,
-  terrain,
-  currentWalkable,
-  currentStair
-}: NorthCliffFootParams): { readonly isWalkable: boolean; readonly isStair: boolean } {
-  if (isRiverChannel || !northMtn?.projectedFoot) {
+    layerStack.push(northMtn.projectedFoot.tile);
+    if (northMtn.projectedFoot.occupiesCell && terrain !== 'water') {
+      return { isWalkable: false, isStair: currentStair };
+    }
+    if (!northMtn.projectedFoot.occupiesCell) {
+      return { isWalkable: true, isStair: true };
+    }
     return { isWalkable: currentWalkable, isStair: currentStair };
   }
 
-  layerStack.push(northMtn.projectedFoot.tile);
-  if (northMtn.projectedFoot.occupiesCell && terrain !== 'water') {
-    return { isWalkable: false, isStair: currentStair };
+  function composeContinentCell(params: CellCompositionParams): ContinentCellDetails {
+    const {
+      x,
+      y,
+      terrain,
+      elev,
+      waterCell,
+      mtnCell,
+      mBiome,
+      resolvedMacroBiomes,
+      geologicalClusters,
+      mountainPalette,
+      mountainResult,
+      riverDrainage
+    } = params;
+
+    const layerStack: string[] = []; // domain-ok: composite procedural tile layer stack
+    const mtnPal = geologicalClusters?.paletteMatrix?.[y]?.[x] ?? mountainPalette ?? 'brown';
+    const mCell = resolvedMacroBiomes.cellDetails[y]?.[x];
+
+    pushBaseGroundLayer(layerStack, elev, terrain, waterCell, mCell, mtnPal);
+
+    const initialWalkable = !(terrain === 'water' && waterCell?.role === 'center');
+    const mtnProps = applyMountainCellProperties(layerStack, mtnCell, elev, initialWalkable);
+
+    const isRiverChannel = riverDrainage?.riverGrid?.[y]?.[x] ?? false;
+    const northMtn = y > 0 ? mountainResult.cellDetails[y - 1]![x] : undefined;
+    const footProps = applyProjectedNorthCliffFoot({
+      layerStack,
+      northMtn,
+      isRiverChannel,
+      terrain,
+      currentWalkable: mtnProps.isWalkable,
+      currentStair: mtnProps.isStair
+    });
+
+    return {
+      x,
+      y,
+      terrain,
+      elevation: elev,
+      macroBiome: mBiome ?? undefined,
+      mountainPalette: mtnPal,
+      waterRole: waterCell?.role,
+      mountainRole: mtnProps.mtnRole,
+      isStair: footProps.isStair,
+      isWalkable: footProps.isWalkable,
+      layerStack
+    };
   }
-  if (!northMtn.projectedFoot.occupiesCell) {
-    return { isWalkable: true, isStair: true };
-  }
-  return { isWalkable: currentWalkable, isStair: currentStair };
-}
-
-function composeContinentCell(params: CellCompositionParams): ContinentCellDetails {
-  const {
-    x, y, terrain, elev, waterCell, mtnCell, mBiome,
-    resolvedMacroBiomes, geologicalClusters, mountainPalette,
-    mountainResult, riverDrainage
-  } = params;
-
-  const layerStack: string[] = []; // domain-ok: composite procedural tile layer stack
-  const mtnPal = geologicalClusters?.paletteMatrix?.[y]?.[x] ?? mountainPalette ?? 'brown';
-  const mCell = resolvedMacroBiomes.cellDetails[y]?.[x];
-
-  pushBaseGroundLayer(layerStack, elev, terrain, waterCell, mCell, mtnPal);
-
-  const initialWalkable = !(terrain === 'water' && waterCell?.role === 'center');
-  const mtnProps = applyMountainCellProperties(layerStack, mtnCell, elev, initialWalkable);
-
-  const isRiverChannel = riverDrainage?.riverGrid?.[y]?.[x] ?? false;
-  const northMtn = y > 0 ? mountainResult.cellDetails[y - 1]![x] : undefined;
-  const footProps = applyProjectedNorthCliffFoot({ layerStack, northMtn, isRiverChannel, terrain, currentWalkable: mtnProps.isWalkable, currentStair: mtnProps.isStair });
-
-  return {
-    x,
-    y,
-    terrain,
-    elevation: elev,
-    macroBiome: mBiome ?? undefined,
-    mountainPalette: mtnPal,
-    waterRole: waterCell?.role,
-    mountainRole: mtnProps.mtnRole,
-    isStair: footProps.isStair,
-    isWalkable: footProps.isWalkable,
-    layerStack
-  };
-}
 
   // 8a. Procedural River Drainage & Post-Processing
   const riverDrainageResult = applyProceduralRiverDrainageStep({
@@ -614,5 +693,3 @@ function composeContinentCell(params: CellCompositionParams): ContinentCellDetai
     riverDrainage
   };
 }
-
-

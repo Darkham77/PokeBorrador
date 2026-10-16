@@ -7,7 +7,9 @@
   width: 100%;
   max-width: 640px;
   margin: 0 auto;
-  filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85)));
+  filter: Drop-Shadow(
+    calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85))
+  );
 }
 
 .selection-window-frame {
@@ -17,7 +19,9 @@
   font-family: var(--font-pixel);
   box-sizing: border-box;
   --frame-border: var(--yellow); // Borde dorado/amarillo canónico 1:1
-  box-shadow: 0 40px 100px Rgba(0, 0, 0, 0.9), inset 0 0 20px Rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 40px 100px Rgba(0, 0, 0, 0.9),
+    inset 0 0 20px Rgba(0, 0, 0, 0.5);
 }
 
 // HEADER: TÍTULO Y BOTÓN CERRAR CON MÁSCARA PIXELADA 1:1
@@ -36,7 +40,10 @@
     gap: 8px;
     letter-spacing: 1px;
     line-height: 1;
-    .emoji { color: var(--yellow); font-size: var(--font-14); }
+    .emoji {
+      color: var(--yellow);
+      font-size: var(--font-14);
+    }
   }
 
   .modal-close-btn {
@@ -66,7 +73,8 @@
         width: 10px;
         height: 10px;
         background-color: Rgba(255, 255, 255, 0.7);
-        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect x='0' y='0' width='2' height='2'/%3E%3Crect x='8' y='0' width='2' height='2'/%3E%3Crect x='2' y='2' width='2' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='4' y='4' width='2' height='2'/%3E%3Crect x='2' y='6' width='2' height='2'/%3E%3Crect x='6' y='6' width='2' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='8' y='8' width='2' height='2'/%3E%3C/svg%3E") no-repeat center;
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Crect x='0' y='0' width='2' height='2'/%3E%3Crect x='8' y='0' width='2' height='2'/%3E%3Crect x='2' y='2' width='2' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='4' y='4' width='2' height='2'/%3E%3Crect x='2' y='6' width='2' height='2'/%3E%3Crect x='6' y='6' width='2' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='8' y='8' width='2' height='2'/%3E%3C/svg%3E")
+          no-repeat center;
         mask-size: contain;
       }
     }
@@ -74,7 +82,9 @@
     &:hover .close-icon-wrapper {
       background: Rgba(239, 68, 68, 0.2);
       border-color: var(--red-light);
-      &::before { background-color: var(--red-light); }
+      &::before {
+        background-color: var(--red-light);
+      }
     }
   }
 }
@@ -110,8 +120,13 @@
       font-family: var(--font-pixel);
       font-size: var(--font-9);
       box-sizing: border-box;
-      &::placeholder { color: Rgba(255, 255, 255, 0.25); }
-      &:focus { border-color: var(--yellow); background: Rgba(255, 214, 10, 0.05); }
+      &::placeholder {
+        color: Rgba(255, 255, 255, 0.25);
+      }
+      &:focus {
+        border-color: var(--yellow);
+        background: Rgba(255, 214, 10, 0.05);
+      }
     }
 
     .ps-clear-search {
@@ -122,7 +137,9 @@
       cursor: pointer;
       background: none;
       border: none;
-      &:hover { color: var(--white); }
+      &:hover {
+        color: var(--white);
+      }
     }
   }
 
@@ -131,7 +148,10 @@
     gap: 3px;
     width: 100%;
 
-    .ps-sort-wrapper { flex: 1 1 0; min-width: 0; }
+    .ps-sort-wrapper {
+      flex: 1 1 0;
+      min-width: 0;
+    }
 
     .sort-pill-btn {
       width: 100%;
@@ -150,10 +170,24 @@
       white-space: nowrap;
       box-sizing: border-box;
 
-      .emoji { font-size: var(--font-8); flex-shrink: 0; }
-      .label { font-size: var(--font-7); white-space: nowrap; }
-      &:hover:not(.active) { background: Rgba(255, 255, 255, 0.07); color: var(--white); }
-      &.active { background: Rgba(255, 215, 0, 0.12); --frame-border: var(--yellow); color: var(--yellow); font-weight: bold; }
+      .emoji {
+        font-size: var(--font-8);
+        flex-shrink: 0;
+      }
+      .label {
+        font-size: var(--font-7);
+        white-space: nowrap;
+      }
+      &:hover:not(.active) {
+        background: Rgba(255, 255, 255, 0.07);
+        color: var(--white);
+      }
+      &.active {
+        background: Rgba(255, 215, 0, 0.12);
+        --frame-border: var(--yellow);
+        color: var(--yellow);
+        font-weight: bold;
+      }
     }
   }
 
@@ -181,7 +215,10 @@
         font-size: var(--font-9);
         cursor: pointer;
         flex-shrink: 0;
-        &:hover { background: Rgba(255, 255, 255, 0.08); color: var(--white); }
+        &:hover {
+          background: Rgba(255, 255, 255, 0.08);
+          color: var(--white);
+        }
       }
 
       .ps-tags-list-horizontal {
@@ -191,7 +228,9 @@
         gap: 4px;
         overflow-x: auto;
         justify-content: space-between;
-        &::-webkit-scrollbar { display: none; }
+        &::-webkit-scrollbar {
+          display: none;
+        }
 
         .tag-pill-btn {
           display: inline-flex;
@@ -208,9 +247,15 @@
           flex-shrink: 0;
           opacity: 0.7;
 
-          .tag-icon { font-size: var(--font-8); }
+          .tag-icon {
+            font-size: var(--font-8);
+          }
 
-          &:hover { opacity: 1; background: Rgba(255, 255, 255, 0.08); color: var(--white); }
+          &:hover {
+            opacity: 1;
+            background: Rgba(255, 255, 255, 0.08);
+            color: var(--white);
+          }
           &.active {
             opacity: 1;
             background: Rgba(56, 189, 248, 0.15);
@@ -233,9 +278,16 @@
   padding-right: 6px;
   margin-top: 8px;
 
-  &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-thumb { background: var(--yellow); border-radius: 3px; }
-  &::-webkit-scrollbar-track { background: Rgba(0, 0, 0, 0.3); }
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--yellow);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-track {
+    background: Rgba(0, 0, 0, 0.3);
+  }
 }
 
 // TARJETA DE POKÉMON INDIVIDUAL (1:1 CON POKEMONSELECTIONITEM)
@@ -251,8 +303,13 @@
   box-sizing: border-box;
   --frame-border: var(--tier-color, #3b82f6);
 
-  &:hover:not(.is-disabled) { filter: Brightness(1.08); }
-  &.is-disabled { opacity: 0.55; filter: Grayscale(0.7); }
+  &:hover:not(.is-disabled) {
+    filter: Brightness(1.08);
+  }
+  &.is-disabled {
+    opacity: 0.55;
+    filter: Grayscale(0.7);
+  }
 
   // COLUMNA IZQUIERDA: BOTÓN DETALLES '?' Y SPRITE
   .poke-preview-container {
@@ -282,7 +339,9 @@
       justify-content: center;
       cursor: pointer;
       z-index: calc(var(--z-base) + 5);
-      &:hover { transform: Scale(1.1); }
+      &:hover {
+        transform: Scale(1.1);
+      }
     }
 
     .poke-preview {
@@ -338,8 +397,14 @@
           font-size: var(--font-9);
           font-weight: bold;
           line-height: 1;
-          &.male { background: #2563eb; color: var(--white); }
-          &.female { background: var(--rose); color: var(--white); }
+          &.male {
+            background: #2563eb;
+            color: var(--white);
+          }
+          &.female {
+            background: var(--rose);
+            color: var(--white);
+          }
         }
 
         .mini-badges {
@@ -354,7 +419,8 @@
           .mini-badge-item {
             font-size: var(--font-8);
             line-height: 1;
-            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+            font-family:
+              'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif !important;
 
             &.is-text {
               font-family: var(--font-pixel) !important;
@@ -371,7 +437,10 @@
         align-items: center;
         gap: 8px;
 
-        .source-symbol { font-size: var(--font-13); line-height: 1; }
+        .source-symbol {
+          font-size: var(--font-13);
+          line-height: 1;
+        }
 
         .m-badge-tier {
           height: 22px;
@@ -398,7 +467,10 @@
       gap: 10px;
       margin-top: 1px;
 
-      .sel-types-row { display: inline-flex; gap: 4px; }
+      .sel-types-row {
+        display: inline-flex;
+        gap: 4px;
+      }
 
       .m-type-tag {
         display: inline-flex;
@@ -414,30 +486,77 @@
         letter-spacing: 0.3px;
         border-radius: 4px;
         border: 1px solid Rgba(0, 0, 0, 0.3);
-        box-shadow: 0 2px 4px Rgba(0, 0, 0, 0.3), inset 0 1px 0 Rgba(255, 255, 255, 0.3);
-        background-image: linear-gradient(135deg, Rgba(255, 255, 255, 0.25) 0%, Rgba(255, 255, 255, 0) 50%, Rgba(0, 0, 0, 0.3) 100%);
+        box-shadow:
+          0 2px 4px Rgba(0, 0, 0, 0.3),
+          inset 0 1px 0 Rgba(255, 255, 255, 0.3);
+        background-image: linear-gradient(
+          135deg,
+          Rgba(255, 255, 255, 0.25) 0%,
+          Rgba(255, 255, 255, 0) 50%,
+          Rgba(0, 0, 0, 0.3) 100%
+        );
         text-shadow: 1px 1px 0 #000;
         white-space: nowrap;
 
-        &.type-dragon { background-color: var(--type-dragon); }
-        &.type-flying { background-color: var(--type-flying); }
-        &.type-poison { background-color: var(--type-poison); }
-        &.type-water { background-color: var(--type-water); }
-        &.type-fire { background-color: var(--type-fire); }
-        &.type-normal { background-color: var(--type-normal); }
-        &.type-electric { background-color: var(--type-electric); }
-        &.type-ghost { background-color: var(--type-ghost); }
-        &.type-psychic { background-color: var(--type-psychic); }
-        &.type-grass { background-color: var(--type-grass); }
-        &.type-ground { background-color: var(--type-ground); }
-        &.type-rock { background-color: var(--type-rock); }
-        &.type-ice { background-color: var(--type-ice); }
-        &.type-fighting { background-color: var(--type-fighting); }
+        &.type-dragon {
+          background-color: var(--type-dragon);
+        }
+        &.type-flying {
+          background-color: var(--type-flying);
+        }
+        &.type-poison {
+          background-color: var(--type-poison);
+        }
+        &.type-water {
+          background-color: var(--type-water);
+        }
+        &.type-fire {
+          background-color: var(--type-fire);
+        }
+        &.type-normal {
+          background-color: var(--type-normal);
+        }
+        &.type-electric {
+          background-color: var(--type-electric);
+        }
+        &.type-ghost {
+          background-color: var(--type-ghost);
+        }
+        &.type-psychic {
+          background-color: var(--type-psychic);
+        }
+        &.type-grass {
+          background-color: var(--type-grass);
+        }
+        &.type-ground {
+          background-color: var(--type-ground);
+        }
+        &.type-rock {
+          background-color: var(--type-rock);
+        }
+        &.type-ice {
+          background-color: var(--type-ice);
+        }
+        &.type-fighting {
+          background-color: var(--type-fighting);
+        }
       }
 
-      .m-badge-level { font-size: var(--font-9); font-weight: bold; color: var(--purple-400); }
-      .m-badge-iv { font-size: var(--font-9); font-weight: bold; color: var(--green-light); }
-      .m-badge-tot { font-size: var(--font-9); font-weight: bold; color: var(--yellow); }
+      .m-badge-level {
+        font-size: var(--font-9);
+        font-weight: bold;
+        color: var(--purple-400);
+      }
+      .m-badge-iv {
+        font-size: var(--font-9);
+        font-weight: bold;
+        color: var(--green-light);
+      }
+      .m-badge-tot {
+        font-size: var(--font-9);
+        font-weight: bold;
+        color: var(--yellow);
+      }
     }
 
     // HP BAR (CANÓNICO COMBATE)
@@ -448,7 +567,12 @@
       width: 100%;
       margin-top: 2px;
 
-      .hp-label { font-size: var(--font-9); font-weight: 800; color: var(--yellow); flex-shrink: 0; }
+      .hp-label {
+        font-size: var(--font-9);
+        font-weight: 800;
+        color: var(--yellow);
+        flex-shrink: 0;
+      }
 
       .hp-bar-container {
         flex: 1;
@@ -466,7 +590,12 @@
         }
       }
 
-      .hp-text { font-size: var(--font-9); color: var(--white); font-weight: bold; white-space: nowrap; }
+      .hp-text {
+        font-size: var(--font-9);
+        color: var(--white);
+        font-weight: bold;
+        white-space: nowrap;
+      }
     }
 
     // AVISO DE LÍMITE DE TEMPORADA (CANÓNICO TEMPORADA)
@@ -484,8 +613,12 @@
       gap: 5px;
       line-height: 1.2;
 
-      .emoji { font-size: var(--font-9); }
-      .violation-label { font-size: var(--font-8); }
+      .emoji {
+        font-size: var(--font-9);
+      }
+      .violation-label {
+        font-size: var(--font-8);
+      }
     }
   }
 }

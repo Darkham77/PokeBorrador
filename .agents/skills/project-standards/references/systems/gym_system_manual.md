@@ -10,16 +10,16 @@ This manual defines the behavior of Gym Leaders, their difficulty scaling, and t
 
 ### 1. Canonical Kanto Gym Leaders Registry
 
-| # | Gym Leader | City / Location | Elemental Type | Badge | Required Badges | Level Cap | First Victory TM | Easy Ace | Hard Ace |
-| :-: | :--- | :--- | :--- | :--- | :-: | :-: | :--- | :--- | :--- |
-| **1** | **Brock** | Ciudad Plateada (`pewter_city`) | Rock | 💎 Medalla Roca | 0 | Lv 20 | `tm39` (Rock Tomb) | Onix (Lv 14) | Onix (Lv 68) |
-| **2** | **Misty** | Ciudad Celeste (`cerulean_city`) | Water | 💧 Medalla Cascada | 1 | Lv 30 | `tm03` (Water Pulse) | Starmie (Lv 21) | Starmie (Lv 70) |
-| **3** | **Lt. Surge** | Ciudad Carmín (`vermilion_city`) | Electric | ⚡ Medalla Trueno | 2 | Lv 40 | `tm34` (Shock Wave) | Raichu (Lv 24) | Raichu (Lv 72) |
-| **4** | **Erika** | Ciudad Azulona (`celadon_city`) | Grass | 🌸 Medalla Arcoíris | 3 | Lv 50 | `tm19` (Giga Drain) | Vileplume (Lv 29) | Vileplume (Lv 74) |
-| **5** | **Koga** | Ciudad Fucsia (`fuchsia_city`) | Poison | 💀 Medalla Alma | 4 | Lv 60 | `tm06` (Toxic) | Venomoth (Lv 43) | Venomoth (Lv 76) |
-| **6** | **Sabrina** | Ciudad Azafrán (`saffron_city`) | Psychic | 👁️ Medalla Pantano | 5 | Lv 70 | `tm29` (Psychic) | Alakazam (Lv 43) | Alakazam (Lv 78) |
-| **7** | **Blaine** | Isla Canela (`cinnabar_island`) | Fire | 🔥 Medalla Volcán | 6 | Lv 80 | `tm38` (Fire Blast) | Arcanine (Lv 47) | Arcanine (Lv 80) |
-| **8** | **Giovanni** | Ciudad Verde (`viridian_city`) | Ground | 🌍 Medalla Tierra | 7 | Lv 100 | `tm26` (Earthquake) | Rhydon (Lv 50) | Rhydon (Lv 85) |
+|   #   | Gym Leader    | City / Location                  | Elemental Type | Badge               | Required Badges | Level Cap | First Victory TM     | Easy Ace          | Hard Ace          |
+| :---: | :------------ | :------------------------------- | :------------- | :------------------ | :-------------: | :-------: | :------------------- | :---------------- | :---------------- |
+| **1** | **Brock**     | Ciudad Plateada (`pewter_city`)  | Rock           | 💎 Medalla Roca     |        0        |   Lv 20   | `tm39` (Rock Tomb)   | Onix (Lv 14)      | Onix (Lv 68)      |
+| **2** | **Misty**     | Ciudad Celeste (`cerulean_city`) | Water          | 💧 Medalla Cascada  |        1        |   Lv 30   | `tm03` (Water Pulse) | Starmie (Lv 21)   | Starmie (Lv 70)   |
+| **3** | **Lt. Surge** | Ciudad Carmín (`vermilion_city`) | Electric       | ⚡ Medalla Trueno   |        2        |   Lv 40   | `tm34` (Shock Wave)  | Raichu (Lv 24)    | Raichu (Lv 72)    |
+| **4** | **Erika**     | Ciudad Azulona (`celadon_city`)  | Grass          | 🌸 Medalla Arcoíris |        3        |   Lv 50   | `tm19` (Giga Drain)  | Vileplume (Lv 29) | Vileplume (Lv 74) |
+| **5** | **Koga**      | Ciudad Fucsia (`fuchsia_city`)   | Poison         | 💀 Medalla Alma     |        4        |   Lv 60   | `tm06` (Toxic)       | Venomoth (Lv 43)  | Venomoth (Lv 76)  |
+| **6** | **Sabrina**   | Ciudad Azafrán (`saffron_city`)  | Psychic        | 👁️ Medalla Pantano  |        5        |   Lv 70   | `tm29` (Psychic)     | Alakazam (Lv 43)  | Alakazam (Lv 78)  |
+| **7** | **Blaine**    | Isla Canela (`cinnabar_island`)  | Fire           | 🔥 Medalla Volcán   |        6        |   Lv 80   | `tm38` (Fire Blast)  | Arcanine (Lv 47)  | Arcanine (Lv 80)  |
+| **8** | **Giovanni**  | Ciudad Verde (`viridian_city`)   | Ground         | 🌍 Medalla Tierra   |        7        |  Lv 100   | `tm26` (Earthquake)  | Rhydon (Lv 50)    | Rhydon (Lv 85)    |
 
 ---
 

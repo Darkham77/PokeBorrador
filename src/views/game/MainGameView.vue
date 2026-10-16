@@ -1,153 +1,159 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch, nextTick, useTemplateRef } from 'vue'
-import { gsap } from 'gsap'
-import { useBodyClass } from '@/composables/ui/useBodyClass'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { useBattleStore } from '@/stores/battle/battle'
-import { useLivePvPStore } from '@/stores/livePvP'
-import { useBreedingStore } from '@/stores/breeding'
-import { useLoadingStore } from '@/stores/loading'
-import { useMainLayout } from '@/composables/ui/useMainLayout'
-import { logger } from '@/logic/utils/logger'
-import { preloadShowdownWorker } from '@/logic/battle/showdownWorkerClient.ts'
-import { HUD_HEIGHT_UPDATE_DELAY_SEC } from '@/logic/constants/animations.ts'
+import { computed, onMounted, onUnmounted, watch, nextTick, useTemplateRef } from 'vue';
+import { gsap } from 'gsap';
+import { useBodyClass } from '@/composables/ui/useBodyClass';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useBreedingStore } from '@/stores/breeding';
+import { useLoadingStore } from '@/stores/loading';
+import { useMainLayout } from '@/composables/ui/useMainLayout';
+import { logger } from '@/logic/utils/logger';
+import { preloadShowdownWorker } from '@/logic/battle/showdownWorkerClient.ts';
+import { HUD_HEIGHT_UPDATE_DELAY_SEC } from '@/logic/constants/animations.ts';
 
 // Sub-components
-import TitleScreen from '@/components/game/TitleScreen.vue'
-import ActionButtons from '@/components/ui/ActionButtons.vue'
-import TrainerPanel from '@/components/profile/TrainerPanel.vue'
-import HUD_Navigation from '@/components/ui/HUD_Navigation.vue'
-import InventoryPills from '@/components/inventory/InventoryPills.vue'
-import { defineResilientAsyncComponent } from '@/logic/utils/resilientComponent'
-import CriminalityBar from '@/components/ui/CriminalityBar.vue'
-import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
-import HUD_SidebarLeft from '@/components/ui/HUD_SidebarLeft.vue'
-const LocalDebugPanel = defineResilientAsyncComponent(() => import('@/components/admin/LocalDebugPanel.vue'))
+import TitleScreen from '@/components/game/TitleScreen.vue';
+import ActionButtons from '@/components/ui/ActionButtons.vue';
+import TrainerPanel from '@/components/profile/TrainerPanel.vue';
+import HUD_Navigation from '@/components/ui/HUD_Navigation.vue';
+import InventoryPills from '@/components/inventory/InventoryPills.vue';
+import { defineResilientAsyncComponent } from '@/logic/utils/resilientComponent';
+import CriminalityBar from '@/components/ui/CriminalityBar.vue';
+import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue';
+import HUD_SidebarLeft from '@/components/ui/HUD_SidebarLeft.vue';
+const LocalDebugPanel = defineResilientAsyncComponent(
+  () => import('@/components/admin/LocalDebugPanel.vue')
+);
 
-import MainGameTabsContent from './MainGameTabsContent.vue'
+import MainGameTabsContent from './MainGameTabsContent.vue';
 
-const GlobalChat = defineResilientAsyncComponent(() => import('@/components/social/GlobalChat.vue'))
-const DirectChatWindow = defineResilientAsyncComponent(() => import('@/components/social/DirectChatWindow.vue'))
-import { useChatStore } from '@/stores/social/chat'
-import { useAuthStore } from '@/stores/auth'
-import { isLocalEnvironment } from '@/logic/utils/env'
-import { preloadSaveWorker } from '@/logic/workers/saveWorkerClient'
+const GlobalChat = defineResilientAsyncComponent(
+  () => import('@/components/social/GlobalChat.vue')
+);
+const DirectChatWindow = defineResilientAsyncComponent(
+  () => import('@/components/social/DirectChatWindow.vue')
+);
+import { useChatStore } from '@/stores/social/chat';
+import { useAuthStore } from '@/stores/auth';
+import { isLocalEnvironment } from '@/logic/utils/env';
+import { preloadSaveWorker } from '@/logic/workers/saveWorkerClient';
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const battleStore = useBattleStore()
-const chatStore = useChatStore()
-const livePvP = useLivePvPStore()
-const breedingStore = useBreedingStore()
-const authStore = useAuthStore()
+const gameStore = useGameStore();
+const uiStore = useUIStore();
+const battleStore = useBattleStore();
+const chatStore = useChatStore();
+const livePvP = useLivePvPStore();
+const breedingStore = useBreedingStore();
+const authStore = useAuthStore();
 
-const isDebugActive = computed(() => isLocalEnvironment() || authStore.sessionMode === 'offline' || authStore.user?.role === 'admin')
+const isDebugActive = computed(
+  () =>
+    isLocalEnvironment() || authStore.sessionMode === 'offline' || authStore.user?.role === 'admin'
+);
 
 // --- Refs for Layout ---
-const hudRef = useTemplateRef<HTMLElement>('hudRef')
-const hudBottomRef = useTemplateRef<HTMLElement>('hudBottomRef')
-const innerHudRef = useTemplateRef<HTMLElement>('innerHudRef')
+const hudRef = useTemplateRef<HTMLElement>('hudRef');
+const hudBottomRef = useTemplateRef<HTMLElement>('hudBottomRef');
+const innerHudRef = useTemplateRef<HTMLElement>('innerHudRef');
 
 // --- Composable Layout ---
-const {
-  hudHeight,
-  hudBottomHeight,
-  isHudHidden,
-  updateHudHeight
-} = useMainLayout(hudRef, hudBottomRef, innerHudRef)
+const { hudHeight, hudBottomHeight, isHudHidden, updateHudHeight } = useMainLayout(
+  hudRef,
+  hudBottomRef,
+  innerHudRef
+);
 
-const MIN_HUD_TOP_PADDING_PX = 90
-const HUD_TOP_PADDING_EXTRA_PX = 15
-const HUD_BOTTOM_PADDING_EXTRA_PX = 20
+const MIN_HUD_TOP_PADDING_PX = 90;
+const HUD_TOP_PADDING_EXTRA_PX = 15;
+const HUD_BOTTOM_PADDING_EXTRA_PX = 20;
 
 const contentAreaStyle = computed(() => {
-  const topPadding = Math.max(MIN_HUD_TOP_PADDING_PX, hudHeight.value + HUD_TOP_PADDING_EXTRA_PX)
-  const bottomPadding = hudBottomHeight.value > 0 ? hudBottomHeight.value + HUD_BOTTOM_PADDING_EXTRA_PX : 0
+  const topPadding = Math.max(MIN_HUD_TOP_PADDING_PX, hudHeight.value + HUD_TOP_PADDING_EXTRA_PX);
+  const bottomPadding =
+    hudBottomHeight.value > 0 ? hudBottomHeight.value + HUD_BOTTOM_PADDING_EXTRA_PX : 0;
   return {
     '--hud-top-padding': `${topPadding}px`,
     '--hud-bottom-padding': `${bottomPadding}px`
-  }
-})
+  };
+});
 
 // Managed Body Classes
-useBodyClass('is-battle-active', () => battleStore.isBattleActive)
+useBodyClass('is-battle-active', () => battleStore.isBattleActive);
 
-const gs = computed(() => gameStore.state)
-const activeTab = computed(() => uiStore.activeTab)
+const gs = computed(() => gameStore.state);
+const activeTab = computed(() => uiStore.activeTab);
 
 onMounted(() => {
-  logger.info('MainGameView', 'MOUNTED. activeTab:', activeTab.value)
-  
+  logger.info('MainGameView', 'MOUNTED. activeTab:', activeTab.value);
+
   // Initial height calculation
-  updateHudHeight()
-  gsap.delayedCall(HUD_HEIGHT_UPDATE_DELAY_SEC, updateHudHeight) 
+  updateHudHeight();
+  gsap.delayedCall(HUD_HEIGHT_UPDATE_DELAY_SEC, updateHudHeight);
 
   // Initialize background services
-  livePvP.initInvitePoller()
-  breedingStore.checkDailyReset()
-  preloadShowdownWorker()
-  preloadSaveWorker()
+  livePvP.initInvitePoller();
+  breedingStore.checkDailyReset();
+  preloadShowdownWorker();
+  preloadSaveWorker();
 
   // Signal that DOM is ready
-  const loadingStore = useLoadingStore()
+  const loadingStore = useLoadingStore();
   if (activeTab.value !== 'home' || !gs.value.starterChosen) {
-    loadingStore.markAppMounted()
+    loadingStore.markAppMounted();
   } else {
     // Fail-safe timeout in case HomeView fails to signal within 2.5s
-    const FAILSAFE_APP_MOUNT_DELAY_SEC = 2.5
+    const FAILSAFE_APP_MOUNT_DELAY_SEC = 2.5;
     gsap.delayedCall(FAILSAFE_APP_MOUNT_DELAY_SEC, () => {
       if (!loadingStore.isAppMounted) {
-        loadingStore.markAppMounted()
+        loadingStore.markAppMounted();
       }
-    })
+    });
   }
-})
+});
 
 onUnmounted(() => {
-  logger.info('MainGameView', 'UNMOUNTED.')
-})
+  logger.info('MainGameView', 'UNMOUNTED.');
+});
 
-watch(() => gs.value.starterChosen, (val) => {
-  if (val) {
-    nextTick(() => {
-      const el = document.getElementById('game-screen')
-      if (el) {
-        if (typeof window !== 'undefined' && window.__E2E__) {
-          gsap.set(el, { opacity: 1, y: 0 })
-          return
+watch(
+  () => gs.value.starterChosen,
+  (val) => {
+    if (val) {
+      nextTick(() => {
+        const el = document.getElementById('game-screen');
+        if (el) {
+          if (typeof window !== 'undefined' && window.__E2E__) {
+            gsap.set(el, { opacity: 1, y: 0 });
+            return;
+          }
+          const MAIN_GAME_TRANSITION_Y_PX = 10;
+          gsap.fromTo(
+            el,
+            { opacity: 0, y: MAIN_GAME_TRANSITION_Y_PX },
+            { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+          );
         }
-        const MAIN_GAME_TRANSITION_Y_PX = 10
-        gsap.fromTo(el,
-          { opacity: 0, y: MAIN_GAME_TRANSITION_Y_PX },
-          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
-        )
-      }
-    })
-  }
-}, { immediate: true })
-
+      });
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
   <div class="main-game-view-root">
     <TitleScreen />
 
-    <div
-      v-show="gs.starterChosen"
-      id="game-screen"
-      class="screen"
-    >
+    <div v-show="gs.starterChosen" id="game-screen" class="screen">
       <!-- HUD PRINCIPAL -->
       <div
         ref="hudRef"
         class="hud-container main-hud-desktop"
         :class="{ 'hud-hidden': isHudHidden }"
       >
-        <div 
-          ref="innerHudRef"
-          class="hud"
-        >
+        <div ref="innerHudRef" class="hud">
           <!-- 1. Entrenador (Siempre Arriba) -->
           <TrainerPanel class="hud-left" />
 
@@ -163,43 +169,34 @@ watch(() => gs.value.starterChosen, (val) => {
       </div>
 
       <!-- MAIN CONTENT -->
-      <div
-        id="zoomable-content"
-        class="zoom-target content-area"
-        :style="contentAreaStyle"
-      >
+      <div id="zoomable-content" class="zoom-target content-area" :style="contentAreaStyle">
         <MainGameTabsContent :active-tab="activeTab" />
       </div>
 
       <!-- HUD SIDEBAR (HERRAMIENTAS IZQUIERDA) -->
-      <HUD_SidebarLeft
-        class="hud-sidebar-tools"
-      >
+      <HUD_SidebarLeft class="hud-sidebar-tools">
         <GlobalChat />
         <LocalDebugPanel v-if="isDebugActive" />
       </HUD_SidebarLeft>
 
       <!-- HUD INFERIOR (NAVIGATION MOBILE) -->
-      <div 
+      <div
         v-if="gs.starterChosen"
         ref="hudBottomRef"
         class="hud-bottom-wrapper"
         :class="{ 'hud-visible-active': isHudHidden }"
       >
-        <HUD_Navigation 
-          class="mobile-only-nav"
-          position="bottom" 
-        />
+        <HUD_Navigation class="mobile-only-nav" position="bottom" />
       </div>
 
       <!-- OVERLAYS GLOBALES -->
       <div class="global-overlays">
         <BuffsOverlay />
         <CriminalityBar />
-        <DirectChatWindow 
-          v-for="(_chat, friendId) in chatStore.privateChats" 
+        <DirectChatWindow
+          v-for="(_chat, friendId) in chatStore.privateChats"
           :key="friendId"
-          :friend-id="(friendId as string)"
+          :friend-id="friendId as string"
         />
       </div>
     </div>
@@ -207,5 +204,5 @@ watch(() => gs.value.starterChosen, (val) => {
 </template>
 
 <style lang="scss">
-@use "../../styles/views/main-game-view" as *;
+@use '../../styles/views/main-game-view' as *;
 </style>

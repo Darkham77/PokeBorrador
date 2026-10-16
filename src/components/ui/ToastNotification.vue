@@ -1,20 +1,27 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui'
-import { gsap } from 'gsap'
-import PvPChallengeToast from '@/components/social/PvPChallengeToast.vue'
+import { useUIStore } from '@/stores/ui';
+import { gsap } from 'gsap';
+import PvPChallengeToast from '@/components/social/PvPChallengeToast.vue';
 
-const uiStore = useUIStore()
+const uiStore = useUIStore();
 
 const TOAST_ENTER_X_OFFSET = 50;
 const TOAST_LEAVE_X_OFFSET = 30;
 const TOAST_LEAVE_SCALE = 0.9;
-const TOAST_EASE_OVERSHOOT = 1.72;
+const UI_TOAST_EASE_OVERSHOOT = 1.72;
 
 function onEnter(el: Element, done: () => void) {
-  gsap.fromTo(el,
+  gsap.fromTo(
+    el,
     { opacity: 0, x: TOAST_ENTER_X_OFFSET },
-    { opacity: 1, x: 0, duration: 0.3, ease: `back.out(${TOAST_EASE_OVERSHOOT})`, onComplete: done }
-  )
+    {
+      opacity: 1,
+      x: 0,
+      duration: 0.3,
+      ease: `back.out(${UI_TOAST_EASE_OVERSHOOT})`,
+      onComplete: done
+    }
+  );
 }
 
 function onLeave(el: Element, done: () => void) {
@@ -24,7 +31,7 @@ function onLeave(el: Element, done: () => void) {
     scale: TOAST_LEAVE_SCALE,
     duration: 0.3,
     onComplete: done
-  })
+  });
 }
 </script>
 
@@ -35,30 +42,24 @@ function onLeave(el: Element, done: () => void) {
       class="toast-stack"
       :class="{ 'is-fullscreen-toast': uiStore.isAnyFullscreenModalOpen }"
     >
-      <TransitionGroup
-        :css="false"
-        @enter="onEnter"
-        @leave="onLeave"
-      >
-        <div 
-          v-for="n in uiStore.notifications" 
-          :id="'toast-item-' + n.id" 
+      <TransitionGroup :css="false" @enter="onEnter" @leave="onLeave">
+        <div
+          v-for="n in uiStore.notifications"
+          :id="'toast-item-' + n.id"
           :key="n.id"
           class="toast-item"
         >
-          <img 
-            v-if="n.icon && (n.icon.includes('/') || n.icon.includes('.') || n.icon.startsWith('http'))"
+          <img
+            v-if="
+              n.icon && (n.icon.includes('/') || n.icon.includes('.') || n.icon.startsWith('http'))
+            "
             :src="n.icon"
             alt=""
             class="toast-icon-img"
-          
             width="32"
             height="32"
-          >
-          <span
-            v-else
-            class="emoji toast-icon"
-          >{{ n.icon }}</span>
+          />
+          <span v-else class="emoji toast-icon">{{ n.icon }}</span>
           <span class="toast-msg">{{ n.msg }}</span>
         </div>
       </TransitionGroup>
@@ -107,7 +108,7 @@ function onLeave(el: Element, done: () => void) {
   border-left: 3px solid var(--yellow, Rgb(241 196 15 / 100%));
   box-shadow: var(--shadow-card);
   letter-spacing: 0;
-  
+
   .toast-icon {
     display: inline-flex;
     justify-content: center;
@@ -124,7 +125,7 @@ function onLeave(el: Element, done: () => void) {
     image-rendering: pixelated;
     flex-shrink: 0;
   }
-  
+
   .toast-msg {
     line-height: 1.3;
   }

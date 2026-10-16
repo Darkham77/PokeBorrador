@@ -1,112 +1,120 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { useClipboard } from '@vueuse/core'
-import { gsap } from 'gsap'
-import type { ITacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine.ts'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { useClipboard } from '@vueuse/core';
+import { gsap } from 'gsap';
+import type { ITacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine.ts';
+import { CLIPBOARD_COPIED_DUR_MS } from '@/logic/constants/visuals';
 
 const props = defineProps<{
-  engine: ITacticalReplayEngine
-}>()
+  engine: ITacticalReplayEngine;
+}>();
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'turn-change', turn: number): void
-}>()
+  (e: 'close'): void;
+  (e: 'turn-change', turn: number): void;
+}>();
 
-const CLIPBOARD_COPIED_DUR_MS = 2000 as const
-
-const replayerBarRef = ref<HTMLElement | null>(null)
-const copyIndicatorRef = ref<HTMLElement | null>(null)
-const { copy, copied } = useClipboard({ copiedDuring: CLIPBOARD_COPIED_DUR_MS })
-let autoPlayTween: gsap.core.Tween | null = null
+const replayerBarRef = ref<HTMLElement | null>(null);
+const copyIndicatorRef = ref<HTMLElement | null>(null);
+const { copy, copied } = useClipboard({ copiedDuring: CLIPBOARD_COPIED_DUR_MS });
+let autoPlayTween: gsap.core.Tween | null = null;
 
 watch(copied, async (isCopied) => {
   if (isCopied) {
-    await nextTick()
+    await nextTick();
     if (copyIndicatorRef.value) {
-      gsap.fromTo(copyIndicatorRef.value, { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.2 })
+      gsap.fromTo(
+        copyIndicatorRef.value,
+        { scale: 0.8, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.2 }
+      );
     }
   }
-})
+});
 
-const currentTurn = ref(props.engine.getCurrentTurn())
-const totalTurns = computed(() => props.engine.getTotalTurns())
-const isPlaying = ref(props.engine.isPlaying())
-const isOver = computed(() => props.engine.isOver())
-const battleCode = computed(() => props.engine.getRecord().battleCode)
-const themeTitle = computed(() => props.engine.getRecord().themeId.replace(/_/g, ' ').toUpperCase())
+const currentTurn = ref(props.engine.getCurrentTurn());
+const totalTurns = computed(() => props.engine.getTotalTurns());
+const isPlaying = ref(props.engine.isPlaying());
+const isOver = computed(() => props.engine.isOver());
+const battleCode = computed(() => props.engine.getRecord().battleCode);
+const themeTitle = computed(() =>
+  props.engine.getRecord().themeId.replace(/_/g, ' ').toUpperCase()
+);
 
 const turnLabel = computed(() => {
-  const cur = String(currentTurn.value).padStart(2, '0')
-  const tot = String(totalTurns.value).padStart(2, '0')
-  return `TURNO ${cur} / ${tot}`
-})
+  const cur = String(currentTurn.value).padStart(2, '0');
+  const tot = String(totalTurns.value).padStart(2, '0');
+  return `TURNO ${cur} / ${tot}`;
+});
 
 function updateState() {
-  currentTurn.value = props.engine.getCurrentTurn()
-  isPlaying.value = props.engine.isPlaying()
-  emit('turn-change', currentTurn.value)
+  currentTurn.value = props.engine.getCurrentTurn();
+  isPlaying.value = props.engine.isPlaying();
+  emit('turn-change', currentTurn.value);
 }
 
 function handleNextTurn() {
-  const advanced = props.engine.nextTurn()
-  updateState()
+  const advanced = props.engine.nextTurn();
+  updateState();
   if (!advanced && autoPlayTween) {
-    stopAutoPlay()
+    stopAutoPlay();
   }
 }
 
 function handleRestart() {
-  stopAutoPlay()
-  props.engine.restart()
-  updateState()
+  stopAutoPlay();
+  props.engine.restart();
+  updateState();
 }
 
 function startAutoPlay() {
-  isPlaying.value = true
-  props.engine.play()
-  
-  autoPlayTween = gsap.to({}, {
-    duration: 1.8,
-    repeat: -1,
-    onRepeat: () => {
-      const advanced = props.engine.nextTurn()
-      updateState()
-      if (!advanced) {
-        stopAutoPlay()
+  isPlaying.value = true;
+  props.engine.play();
+
+  autoPlayTween = gsap.to(
+    {},
+    {
+      duration: 1.8,
+      repeat: -1,
+      onRepeat: () => {
+        const advanced = props.engine.nextTurn();
+        updateState();
+        if (!advanced) {
+          stopAutoPlay();
+        }
       }
     }
-  })
+  );
 }
 
 function stopAutoPlay() {
-  isPlaying.value = false
-  props.engine.pause()
+  isPlaying.value = false;
+  props.engine.pause();
   if (autoPlayTween) {
-    autoPlayTween.kill()
-    autoPlayTween = null
+    autoPlayTween.kill();
+    autoPlayTween = null;
   }
 }
 
 function togglePlayPause() {
   if (isPlaying.value) {
-    stopAutoPlay()
+    stopAutoPlay();
   } else {
     if (isOver.value) {
-      props.engine.restart()
-      updateState()
+      props.engine.restart();
+      updateState();
     }
-    startAutoPlay()
+    startAutoPlay();
   }
 }
 
 async function copyCode() {
-  await copy(battleCode.value)
+  await copy(battleCode.value);
 }
 
 function handleClose() {
-  stopAutoPlay()
-  emit('close')
+  stopAutoPlay();
+  emit('close');
 }
 
 onMounted(() => {
@@ -117,29 +125,22 @@ onMounted(() => {
       opacity: 0,
       duration: 0.4,
       ease: 'back.out(1.4)'
-    })
+    });
   }
-})
+});
 
 onUnmounted(() => {
-  stopAutoPlay()
-})
+  stopAutoPlay();
+});
 </script>
 
 <template>
-  <div
-    id="battle-tactical-replayer-bar"
-    ref="replayerBarRef"
-    class="tactical-replayer-bar"
-  >
+  <div id="battle-tactical-replayer-bar" ref="replayerBarRef" class="tactical-replayer-bar">
     <!-- Left Section: Match Info & Fog Badge -->
     <div class="replayer-info-section">
       <span class="theater-badge"><span class="emoji">🎭</span> TEATRO PVP</span>
       <span class="theme-badge">{{ themeTitle }}</span>
-      <span
-        class="fog-badge"
-        title="Movimientos y objetos solo visibles una vez usados"
-      >
+      <span class="fog-badge" title="Movimientos y objetos solo visibles una vez usados">
         <span class="emoji">🌫️</span> NIEBLA ACTIVA
       </span>
     </div>
@@ -163,7 +164,8 @@ onUnmounted(() => {
         :title="isPlaying ? 'Pausar' : 'Reproducir'"
         @click="togglePlayPause"
       >
-        <span class="emoji">{{ isPlaying ? '⏸' : (isOver ? '↺' : '▶') }}</span> {{ isPlaying ? 'PAUSA' : (isOver ? 'REPETIR' : 'PLAY') }}
+        <span class="emoji">{{ isPlaying ? '⏸' : isOver ? '↺' : '▶' }}</span>
+        {{ isPlaying ? 'PAUSA' : isOver ? 'REPETIR' : 'PLAY' }}
       </button>
 
       <button
@@ -193,11 +195,7 @@ onUnmounted(() => {
       >
         <span class="code-lbl">{{ battleCode }}</span>
         <span class="copy-icon emoji">📋</span>
-        <span
-          v-if="copied"
-          ref="copyIndicatorRef"
-          class="copy-indicator"
-        >¡COPIADO!</span>
+        <span v-if="copied" ref="copyIndicatorRef" class="copy-indicator">¡COPIADO!</span>
       </button>
 
       <button

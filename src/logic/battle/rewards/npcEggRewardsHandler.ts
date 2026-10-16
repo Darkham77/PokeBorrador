@@ -27,10 +27,13 @@ export function handleNpcBabyEggReward(ctx: BattleContext, active: BattleState):
   if (!active.isTrainer || active.isGym || active.isPvP) return false;
 
   const currentEggs = ctx.gs.state.eggs || [];
-  const currentNpcEggs = currentEggs.filter(e => e.isNpc);
+  const currentNpcEggs = currentEggs.filter((e) => e.isNpc);
 
   // If incubator is completely full (7 total) or already carrying the maximum allowed NPC eggs (1), no egg can be received
-  if (currentEggs.length >= MAX_TOTAL_CARRIED_EGGS || currentNpcEggs.length >= MAX_NPC_CARRIED_EGGS) {
+  if (
+    currentEggs.length >= MAX_TOTAL_CARRIED_EGGS ||
+    currentNpcEggs.length >= MAX_NPC_CARRIED_EGGS
+  ) {
     return false;
   }
 
@@ -43,7 +46,7 @@ export function handleNpcBabyEggReward(ctx: BattleContext, active: BattleState):
 
   const globalMultipliers = ctx.eventStore?.globalMultipliers as { shiny?: number } | undefined;
   const shinyMultiplier = globalMultipliers?.shiny || 1;
-  const isShiny = Math.random() < ((1 / BASE_SHINY_DENOMINATOR) * shinyMultiplier);
+  const isShiny = Math.random() < (1 / BASE_SHINY_DENOMINATOR) * shinyMultiplier;
 
   const randomNatureIndex = Math.floor(Math.random() * NATURES.length);
   const nature = NATURES[randomNatureIndex] || 'serious';

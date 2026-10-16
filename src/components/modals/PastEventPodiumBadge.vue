@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { getRankMedal, getRankLabel } from './pastEventMetricFormatter'
+import { getRankMedal, getRankLabel } from './pastEventMetricFormatter';
 
 defineProps<{
-  rank?: string | number
-}>()
+  rank?: string | number;
+}>();
 </script>
 
 <template>
@@ -14,7 +14,7 @@ defineProps<{
 </template>
 
 <style lang="scss" scoped>
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .rank-badge {
   display: flex;

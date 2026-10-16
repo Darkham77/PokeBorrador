@@ -25,7 +25,7 @@ describe('regionalLeagueAndGyms', () => {
     width: W,
     height: H,
     seed,
-    oceanWaterPercentage: 0.30,
+    oceanWaterPercentage: 0.3,
     beachWidth: 3,
     lakeCount: 4,
     mountainPercentage: 0.22,
@@ -72,7 +72,7 @@ describe('regionalLeagueAndGyms', () => {
     const league = leagueNodes[0]!;
     expect(league.name).toContain('Liga');
     // Anchored in northern sector of the continent
-    expect(league.gridY).toBeLessThan(Math.round(H * 0.40));
+    expect(league.gridY).toBeLessThan(Math.round(H * 0.4));
     // Anchored on elevated mountain massif (elevation >= 1)
     expect(league.elevation).toBeGreaterThanOrEqual(1);
   });
@@ -104,9 +104,7 @@ describe('regionalLeagueAndGyms', () => {
     expect(layout.pavedPlazaCells.length).toBe(0);
 
     // Zero hardcoded checkpoint gates on Meseta Añil (procedural gates placed along routes)
-    const gate = layout.buildings.find(
-      (b) => b.prefabFile === 'poke_league_checkpoint_gate.png'
-    );
+    const gate = layout.buildings.find((b) => b.prefabFile === 'poke_league_checkpoint_gate.png');
     expect(gate).toBeUndefined();
   });
 
@@ -121,13 +119,23 @@ describe('regionalLeagueAndGyms', () => {
           const b2 = buildings[j]!;
 
           // No bounding box intersection
-          const overlapX = Math.max(0, Math.min(b1.x + b1.width, b2.x + b2.width) - Math.max(b1.x, b2.x));
-          const overlapY = Math.max(0, Math.min(b1.y + b1.height, b2.y + b2.height) - Math.max(b1.y, b2.y));
+          const overlapX = Math.max(
+            0,
+            Math.min(b1.x + b1.width, b2.x + b2.width) - Math.max(b1.x, b2.x)
+          );
+          const overlapY = Math.max(
+            0,
+            Math.min(b1.y + b1.height, b2.y + b2.height) - Math.max(b1.y, b2.y)
+          );
           expect(overlapX > 0 && overlapY > 0).toBe(false);
 
           // Minimum 1 tile clearance (no touching edges)
-          const touchH = (b1.x + b1.width === b2.x || b2.x + b2.width === b1.x) && !(b1.y + b1.height <= b2.y || b2.y + b2.height <= b1.y);
-          const touchV = (b1.y + b1.height === b2.y || b2.y + b2.height === b1.y) && !(b1.x + b1.width <= b2.x || b2.x + b2.width <= b1.x);
+          const touchH =
+            (b1.x + b1.width === b2.x || b2.x + b2.width === b1.x) &&
+            !(b1.y + b1.height <= b2.y || b2.y + b2.height <= b1.y);
+          const touchV =
+            (b1.y + b1.height === b2.y || b2.y + b2.height === b1.y) &&
+            !(b1.x + b1.width <= b2.x || b2.x + b2.width <= b1.x);
           expect(touchH || touchV).toBe(false);
         }
       }

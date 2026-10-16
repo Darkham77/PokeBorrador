@@ -11,15 +11,15 @@ The system uses a nested coordinate system:
 
 All spatial logic is centralized in `@/logic/combat/spatialCoordinator.ts`. Components and manuals must use these symbolic references to ensure integrity when constants change.
 
-| Constant | Symbolic Role | Description |
-| :--- | :--- | :--- |
-| `MAP_WIDTH / HEIGHT` | **World Bounds** | The total canvas size for background and object placement. |
-| `SAFE_ZONE_WIDTH/HEIGHT` | **Action Area** | The 3:2 rectangular zone where critical combat action occurs. |
-| `VISIBLE_UNITS_X/Y` | **Camera Target** | The target unit density for visibility. Usually `HEIGHT + Padding`. |
-| `TARGET_X / Y` | **Focal Point** | The camera center. `TARGET_Y` is offset to ensure bottom-alignment. |
-| `OBJECT_SCALE` | **Pixel Density** | Multiplier to maintain pixel-art crispness at various sizes. |
-| `ENTITY_SIZE_P1/P2` | **Occupancy** | Side-specific bounding boxes for combatants. |
-| `POKEBALL_SIZE_P1/P2` | **Item Scale** | Side-specific perspective size for Poké Balls (1:5 ratio to 0.3m Pokémon). |
+| Constant                 | Symbolic Role     | Description                                                                |
+| :----------------------- | :---------------- | :------------------------------------------------------------------------- |
+| `MAP_WIDTH / HEIGHT`     | **World Bounds**  | The total canvas size for background and object placement.                 |
+| `SAFE_ZONE_WIDTH/HEIGHT` | **Action Area**   | The 3:2 rectangular zone where critical combat action occurs.              |
+| `VISIBLE_UNITS_X/Y`      | **Camera Target** | The target unit density for visibility. Usually `HEIGHT + Padding`.        |
+| `TARGET_X / Y`           | **Focal Point**   | The camera center. `TARGET_Y` is offset to ensure bottom-alignment.        |
+| `OBJECT_SCALE`           | **Pixel Density** | Multiplier to maintain pixel-art crispness at various sizes.               |
+| `ENTITY_SIZE_P1/P2`      | **Occupancy**     | Side-specific bounding boxes for combatants.                               |
+| `POKEBALL_SIZE_P1/P2`    | **Item Scale**    | Side-specific perspective size for Poké Balls (1:5 ratio to 0.3m Pokémon). |
 
 ### 2. Entity Positioning
 

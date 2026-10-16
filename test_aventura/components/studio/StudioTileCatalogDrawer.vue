@@ -53,11 +53,11 @@ const filteredPrefabs = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
 
   if (cat !== 'all') {
-    list = list.filter(p => p.category === cat);
+    list = list.filter((p) => p.category === cat);
   }
 
   if (q) {
-    list = list.filter(p => p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
+    list = list.filter((p) => p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
   }
 
   return list;
@@ -124,10 +124,7 @@ onMounted(async () => {
     </div>
 
     <!-- TAB 1: PREFABS GALLERY -->
-    <div
-      v-if="activeTab === 'prefabs'"
-      class="drawer-tab-content"
-    >
+    <div v-if="activeTab === 'prefabs'" class="drawer-tab-content">
       <!-- Filters and Category Chips -->
       <div class="prefabs-filters">
         <div class="search-row">
@@ -137,7 +134,8 @@ onMounted(async () => {
             type="text"
             placeholder="Buscar edificio, árbol, prop..."
             class="retro-search-input"
-          >
+            aria-label="Buscar elementos o prefabs"
+          />
           <button
             id="btn-refresh-prefabs"
             class="btn-sync-icon"
@@ -166,27 +164,29 @@ onMounted(async () => {
 
       <!-- Prefab Items Grid -->
       <div class="prefabs-scroll-area">
-        <div
-          v-if="filteredPrefabs.length === 0"
-          class="empty-prefabs-hint"
-        >
+        <div v-if="filteredPrefabs.length === 0" class="empty-prefabs-hint">
           <span class="icon">📭</span>
           <p>No se encontraron prefabs.</p>
-          <small>Coloca plantillas en <code>prefabs/inbox/</code> y ejecuta <code>npm run prefabs:extract</code></small>
+          <small
+            >Coloca plantillas en <code>prefabs/inbox/</code> y ejecuta
+            <code>npm run prefabs:extract</code></small
+          >
         </div>
 
-        <div
-          v-else
-          class="prefabs-grid"
-        >
+        <div v-else class="prefabs-grid">
           <div
             v-for="p in filteredPrefabs"
             :id="'prefab-card-' + p.id"
             :key="p.id"
             v-gsap-hover="'card'"
             class="prefab-card"
-            :class="{ selected: adventureStore.stampingPrefab?.id === p.id && adventureStore.activeTool === 'stamp' }"
+            :class="{
+              selected:
+                adventureStore.stampingPrefab?.id === p.id && adventureStore.activeTool === 'stamp'
+            }"
             :title="p.name + ' (' + p.width + 'x' + p.height + ' px)'"
+            role="button"
+            tabindex="0"
             @click="selectPrefabItem(p)"
           >
             <div class="thumb-container">
@@ -195,36 +195,26 @@ onMounted(async () => {
                 :alt="p.name"
                 class="prefab-thumb"
                 loading="lazy"
-              
                 width="32"
                 height="32"
-              >
+              />
             </div>
             <div class="prefab-info">
               <span class="prefab-name">{{ p.name }}</span>
               <span class="prefab-dim">{{ p.width }}x{{ p.height }} px</span>
             </div>
-            <button
-              :id="'btn-stamp-' + p.id"
-              class="btn-stamp-action"
-            >
-              Estampar
-            </button>
+            <button :id="'btn-stamp-' + p.id" class="btn-stamp-action">Estampar</button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- TAB 2: CONTINUOUS TERRAIN BIOMES -->
-    <div
-      v-else
-      class="drawer-tab-content terrain-tab-content"
-    >
-      <div class="section-title">
-        Pincel de Terreno Continuo
-      </div>
+    <div v-else class="drawer-tab-content terrain-tab-content">
+      <div class="section-title">Pincel de Terreno Continuo</div>
       <p class="section-hint">
-        Pinta biomas de suelo continuos sobre el canvas. Las costas, caminos y acantilados se autotitulan orgánicamente.
+        Pinta biomas de suelo continuos sobre el canvas. Las costas, caminos y acantilados se
+        autotitulan orgánicamente.
       </p>
 
       <!-- Brush Size Control -->
@@ -252,13 +242,15 @@ onMounted(async () => {
           :key="b.id"
           v-gsap-hover="'card'"
           class="biome-card"
-          :class="{ selected: adventureStore.selectedBiome === b.id && adventureStore.activeMode === 'terrain' }"
+          :class="{
+            selected:
+              adventureStore.selectedBiome === b.id && adventureStore.activeMode === 'terrain'
+          }"
+          role="button"
+          tabindex="0"
           @click="selectBiome(b.id)"
         >
-          <span
-            class="color-dot"
-            :style="{ background: b.color }"
-          />
+          <span class="color-dot" :style="{ background: b.color }" />
           <span class="icon">{{ b.icon }}</span>
           <span class="biome-label">{{ b.label }}</span>
         </div>
@@ -268,7 +260,7 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .studio-prefabs-drawer {
   display: flex;

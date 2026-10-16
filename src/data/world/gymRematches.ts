@@ -28,7 +28,8 @@ export const GYM_REMATCHES: Record<GymId, GymRematchConfig> = {
       { itemId: 'rarecandy', quantity: 3 }
     ],
     rewardBattleCoins: 150,
-    quote: '¡Mi fortaleza de roca ahora es invulnerable! ¡Demuéstrame el verdadero poder de tu equipo!'
+    quote:
+      '¡Mi fortaleza de roca ahora es invulnerable! ¡Demuéstrame el verdadero poder de tu equipo!'
   },
   cerulean: {
     gymId: 'cerulean',
@@ -154,5 +155,5 @@ export function getAvailableGymRematches(
   state: GameState,
   currentDate?: string // domain-ok: Open dynamic text or non-domain string payload
 ): GymId[] {
-  return GYM_IDS.filter(id => isGymRematchAvailable(state, id, currentDate));
+  return GYM_IDS.filter((id) => isGymRematchAvailable(state, id, currentDate));
 }

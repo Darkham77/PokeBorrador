@@ -1,15 +1,14 @@
 // src/styles/core/mixins/_shop-standards.scss
-@use "../variables" as *;
-@use "./layout" as *;
-@use "./shell" as *;
-@use "../gpu" as *;
+@use '../variables' as *;
+@use './layout' as *;
+@use './shell' as *;
+@use '../gpu' as *;
 
 /**
  * Unified Shop Shell
  * Standard translucent glassmorphism container for premium menus.
  */
 @mixin shop-shell {
-
   position: relative;
   display: flex;
   height: 600px;
@@ -38,7 +37,6 @@
  * Standard sidebar navigation container with crystal borders.
  */
 @mixin shop-sidebar($border-color: Rgba(255, 255, 255, 0.08)) {
-
   display: flex;
   flex-direction: column;
   gap: $spacing-sm-alt;
@@ -67,7 +65,9 @@
     scrollbar-width: none;
     flex-shrink: 0; // Prevent sidebar from being squeezed
     -ms-overflow-style: none;
-    &::-webkit-scrollbar { display: none; }
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 }
 
@@ -76,7 +76,6 @@
  * Standard navigation button with active indicators and theme color support.
  */
 @mixin shop-sidebar-button($accent-color: var(--yellow)) {
-
   position: relative;
   display: flex;
   align-items: center;
@@ -102,7 +101,6 @@
   }
 
   &:hover:not(.active) {
-
     background: Rgb(255 255 255 / 5%);
     color: Rgb(255 255 255 / 90%);
     transform: Translatex(4px);
@@ -118,7 +116,6 @@
   }
 
   .cat-icon-frame {
-
     display: flex;
     justify-content: center;
     align-items: center;
@@ -137,7 +134,9 @@
     }
 
     // Fix: bypass pixel font's size-adjust so emoji centers in the frame
-    .cat-icon, span, i {
+    .cat-icon,
+    span,
+    i {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -161,55 +160,53 @@
     }
   }
 
-    .active-indicator {
+  .active-indicator {
+    position: absolute;
+    top: 25%;
+    bottom: 25%;
+    left: 0;
+    width: 3px;
+    border-radius: 0 $radius-sm $radius-sm 0;
+    background: $accent-color;
+    opacity: 0;
+    box-shadow: var(--shadow-glow-amber);
 
-      position: absolute;
-      top: 25%;
-      bottom: 25%;
-      left: 0;
-      width: 3px;
-      border-radius: 0 $radius-sm $radius-sm 0;
-      background: $accent-color;
-      opacity: 0;
-      box-shadow: var(--shadow-glow-amber);
-
-      @include responsive(950px) {
-        width: auto;
-        height: 3px;
-        border-radius: $radius-sm $radius-sm 0 0;
-        inset: auto 8% 0;
-        box-shadow: var(--shadow-card);
-      }
-    }
-
-    &.active {
-      background: color-mix(in srgb, #{$accent-color} 8%, transparent);
-      color: $accent-color;
-      border-color: color-mix(in srgb, #{$accent-color} 20%, transparent);
-      
-      .cat-icon-frame {
-        background: color-mix(in srgb, #{$accent-color} 12%, transparent);
-        border-color: transparent;
-        box-shadow: var(--shadow-glow-amber);
-      }
-
-      .cat-label {
-        opacity: 1;
-        text-shadow: 0 0 10px color-mix(in srgb, #{$accent-color} 30%, transparent);
-      }
-
-      .active-indicator {
-        opacity: 1;
-      }
+    @include responsive(950px) {
+      width: auto;
+      height: 3px;
+      border-radius: $radius-sm $radius-sm 0 0;
+      inset: auto 8% 0;
+      box-shadow: var(--shadow-card);
     }
   }
+
+  &.active {
+    background: color-mix(in srgb, #{$accent-color} 8%, transparent);
+    color: $accent-color;
+    border-color: color-mix(in srgb, #{$accent-color} 20%, transparent);
+
+    .cat-icon-frame {
+      background: color-mix(in srgb, #{$accent-color} 12%, transparent);
+      border-color: transparent;
+      box-shadow: var(--shadow-glow-amber);
+    }
+
+    .cat-label {
+      opacity: 1;
+      text-shadow: 0 0 10px color-mix(in srgb, #{$accent-color} 30%, transparent);
+    }
+
+    .active-indicator {
+      opacity: 1;
+    }
+  }
+}
 
 /**
  * Unified Shop Header
  * Standard header layout for shops and complex menus.
  */
 @mixin shop-header {
-
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -274,7 +271,10 @@
   align-items: flex-end;
   gap: $spacing-xs;
 
-  .stat-label, .gts-stat-label, .shop-stat-label, .inv-stat-label {
+  .stat-label,
+  .gts-stat-label,
+  .shop-stat-label,
+  .inv-stat-label {
     @include pixelated;
 
     color: Rgb(255 255 255 / 30%);
@@ -371,7 +371,7 @@
   cursor: pointer;
   box-shadow: var(--shadow-md);
   outline: none;
-  
+
   &:hover:not(:disabled) {
     background: $accent-color;
     color: var(--black);
@@ -410,11 +410,17 @@
   box-sizing: border-box;
 
   // Custom scrollbar for premium look
-  &::-webkit-scrollbar { width: 8px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { 
-    border-radius: $radius-sm; 
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: $radius-sm;
     background: Rgb(255 255 255 / 10%);
-    &:hover { background: Rgb(255 255 255 / 20%); }
+    &:hover {
+      background: Rgb(255 255 255 / 20%);
+    }
   }
 }

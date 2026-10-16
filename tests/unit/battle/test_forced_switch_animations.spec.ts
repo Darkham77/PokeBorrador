@@ -1,8 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useBattleStore } from '@/stores/battle/battle';
 import { useGameStore } from '@/stores/game';
-import { BATTLE_STATES, BATTLE_SUBSTATES, type BattleStateName, type BattleSubStateName } from '@/logic/battle/battleStateMachine';
+import {
+  BATTLE_STATES,
+  BATTLE_SUBSTATES,
+  type BattleStateName,
+  type BattleSubStateName
+} from '@/logic/battle/battleStateMachine';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
 import { getForcedExitConfig } from '@/logic/battle/helpers/forcedSwitchRegistry';
 import { gameBus } from '@/logic/events/gameBus';
@@ -47,19 +52,29 @@ describe('Forced Switch & Phazing Animation Parity (|drag| & forced |switch|)', 
         escapeType: 'whirlwind',
         getExpulsionLog: expect.any(Function)
       });
-      expect(getForcedExitConfig('whirlwind').getExpulsionLog('Magneton')).toBe('¡Magneton fue expulsado por el remolino!');
+      expect(getForcedExitConfig('whirlwind').getExpulsionLog('Magneton')).toBe(
+        '¡Magneton fue expulsado por el remolino!'
+      );
 
       expect(getForcedExitConfig('roar').escapeType).toBe('flee');
-      expect(getForcedExitConfig('roar').getExpulsionLog('Magneton')).toBe('¡Magneton huyó asustado por el rugido!');
+      expect(getForcedExitConfig('roar').getExpulsionLog('Magneton')).toBe(
+        '¡Magneton huyó asustado por el rugido!'
+      );
 
       expect(getForcedExitConfig('dragontail').escapeType).toBe('knockback');
-      expect(getForcedExitConfig('dragontail').getExpulsionLog('Magneton')).toBe('¡Magneton fue arrojado fuera por la cola dragón!');
+      expect(getForcedExitConfig('dragontail').getExpulsionLog('Magneton')).toBe(
+        '¡Magneton fue arrojado fuera por la cola dragón!'
+      );
 
       expect(getForcedExitConfig('circlethrow').escapeType).toBe('knockback');
-      expect(getForcedExitConfig('circlethrow').getExpulsionLog('Magneton')).toBe('¡Magneton fue lanzado fuera del combate!');
+      expect(getForcedExitConfig('circlethrow').getExpulsionLog('Magneton')).toBe(
+        '¡Magneton fue lanzado fuera del combate!'
+      );
 
       expect(getForcedExitConfig('teleport').escapeType).toBe('teleport');
-      expect(getForcedExitConfig('teleport').getExpulsionLog('Abra')).toBe('¡Abra se teletransportó lejos!');
+      expect(getForcedExitConfig('teleport').getExpulsionLog('Abra')).toBe(
+        '¡Abra se teletransportó lejos!'
+      );
 
       expect(getForcedExitConfig('uturn').escapeType).toBe('withdraw');
       expect(getForcedExitConfig('redcard').escapeType).toBe('knockback');
@@ -81,7 +96,11 @@ describe('Forced Switch & Phazing Animation Parity (|drag| & forced |switch|)', 
       const eventStream: string[] = [];
 
       const origTransition = battleStore.fsm.transition.bind(battleStore.fsm);
-      battleStore.fsm.transition = async (state: BattleStateName | BattleSubStateName, subState: BattleSubStateName | null = null, delayMs: number = 0) => {
+      battleStore.fsm.transition = async (
+        state: BattleStateName | BattleSubStateName,
+        subState: BattleSubStateName | null = null,
+        delayMs: number = 0
+      ) => {
         eventStream.push(`fsm:${state}:${subState || 'none'}`);
         return origTransition(state, subState, delayMs);
       };
@@ -116,8 +135,20 @@ describe('Forced Switch & Phazing Animation Parity (|drag| & forced |switch|)', 
         enemyRequest: {
           side: {
             pokemon: [
-              { ident: `p2: ${magneton.uid}`, details: `${magneton.name}, L40, M`, condition: `${magneton.hp}/${magneton.maxHp}`, active: true, uid: magneton.uid },
-              { ident: `p2: ${cubone.uid}`, details: `${cubone.name}, L44, M`, condition: `${cubone.hp}/${cubone.maxHp}`, active: false, uid: cubone.uid }
+              {
+                ident: `p2: ${magneton.uid}`,
+                details: `${magneton.name}, L40, M`,
+                condition: `${magneton.hp}/${magneton.maxHp}`,
+                active: true,
+                uid: magneton.uid
+              },
+              {
+                ident: `p2: ${cubone.uid}`,
+                details: `${cubone.name}, L44, M`,
+                condition: `${cubone.hp}/${cubone.maxHp}`,
+                active: false,
+                uid: cubone.uid
+              }
             ]
           }
         },
@@ -147,9 +178,12 @@ describe('Forced Switch & Phazing Animation Parity (|drag| & forced |switch|)', 
         exitingEnemy: ref(null),
         exitingPlayer: ref(null),
         clearLogs: () => {},
-        clearVolatileStatus: (p: Pokemon) => { if (p) p.status = ''; },
+        clearVolatileStatus: (p: Pokemon) => {
+          if (p) p.status = '';
+        },
         addLog: (msg: string, type: string, source: unknown) => {
-          const srcStr = typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
+          const srcStr =
+            typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
           eventStream.push(`log:${srcStr}:${msg}`);
           battleStore.addLog(msg, type as any, source as any);
         }
@@ -162,35 +196,43 @@ describe('Forced Switch & Phazing Animation Parity (|drag| & forced |switch|)', 
       gameBus.off('PLAY_ESCAPE_ANIM', onEscape);
 
       // Verify Expulsion Log happened
-      const expulsionLogIdx = eventStream.findIndex(e => e.includes('¡Magneton fue expulsado por el remolino!'));
+      const expulsionLogIdx = eventStream.findIndex((e) =>
+        e.includes('¡Magneton fue expulsado por el remolino!')
+      );
       expect(expulsionLogIdx).toBeGreaterThan(-1);
 
       // Verify PLAY_ESCAPE_ANIM bus event was emitted with whirlwind
-      const escapeAnimBusIdx = eventStream.findIndex(e => e === 'bus:PLAY_ESCAPE_ANIM:whirlwind');
+      const escapeAnimBusIdx = eventStream.findIndex((e) => e === 'bus:PLAY_ESCAPE_ANIM:whirlwind');
       expect(escapeAnimBusIdx).toBeGreaterThan(expulsionLogIdx);
       expect(escapeEvents[0]?.type).toBe('whirlwind');
       expect(escapeEvents[0]?.side).toBe('enemy');
 
       // Verify awaitTween('escape-enemy') was awaited
-      const awaitEscapeTweenIdx = eventStream.findIndex(e => e === 'anim:awaitTween:escape-enemy');
+      const awaitEscapeTweenIdx = eventStream.findIndex(
+        (e) => e === 'anim:awaitTween:escape-enemy'
+      );
       expect(awaitEscapeTweenIdx).toBeGreaterThan(escapeAnimBusIdx);
 
       // Verify VACATE_SEAT happened after escape tween
-      const vacateSeatIdx = eventStream.findIndex(e => e === 'fsm:ACTIVE_BATTLE:VACATE_SEAT');
+      const vacateSeatIdx = eventStream.findIndex((e) => e === 'fsm:ACTIVE_BATTLE:VACATE_SEAT');
       expect(vacateSeatIdx).toBeGreaterThan(awaitEscapeTweenIdx);
 
       // Verify Incoming Drag Log happened
-      const dragLogIdx = eventStream.findIndex(e => e.includes('¡Cubone fue arrastrado al campo!'));
+      const dragLogIdx = eventStream.findIndex((e) =>
+        e.includes('¡Cubone fue arrastrado al campo!')
+      );
       expect(dragLogIdx).toBeGreaterThan(vacateSeatIdx);
 
       // Verify POKEMON_CALL -> RENDER_BALL -> OCCUPY_SEAT transitions
-      const callFsmIdx = eventStream.findIndex(e => e === 'fsm:ACTIVE_BATTLE:POKEMON_CALL');
-      const occupySeatIdx = eventStream.findIndex(e => e === 'fsm:ACTIVE_BATTLE:OCCUPY_SEAT');
+      const callFsmIdx = eventStream.findIndex((e) => e === 'fsm:ACTIVE_BATTLE:POKEMON_CALL');
+      const occupySeatIdx = eventStream.findIndex((e) => e === 'fsm:ACTIVE_BATTLE:OCCUPY_SEAT');
       expect(callFsmIdx).toBeGreaterThan(vacateSeatIdx);
       expect(occupySeatIdx).toBeGreaterThan(callFsmIdx);
 
       // Verify handleReleaseRequest was called on Cubone
-      const releaseAnimIdx = eventStream.findIndex(e => e === 'anim:handleReleaseRequest:enemy:Cubone');
+      const releaseAnimIdx = eventStream.findIndex(
+        (e) => e === 'anim:handleReleaseRequest:enemy:Cubone'
+      );
       expect(releaseAnimIdx).toBeGreaterThan(occupySeatIdx);
 
       // Verify active enemy is now Cubone
@@ -211,7 +253,11 @@ describe('Forced Switch & Phazing Animation Parity (|drag| & forced |switch|)', 
       const eventStream: string[] = [];
 
       const origTransition = battleStore.fsm.transition.bind(battleStore.fsm);
-      battleStore.fsm.transition = async (state: BattleStateName | BattleSubStateName, subState: BattleSubStateName | null = null, delayMs: number = 0) => {
+      battleStore.fsm.transition = async (
+        state: BattleStateName | BattleSubStateName,
+        subState: BattleSubStateName | null = null,
+        delayMs: number = 0
+      ) => {
         eventStream.push(`fsm:${state}:${subState || 'none'}`);
         return origTransition(state, subState, delayMs);
       };
@@ -246,8 +292,20 @@ describe('Forced Switch & Phazing Animation Parity (|drag| & forced |switch|)', 
         playerRequest: {
           side: {
             pokemon: [
-              { ident: `p1: ${pidgeot.uid}`, details: `${pidgeot.name}, L40, M`, condition: `${pidgeot.hp}/${pidgeot.maxHp}`, active: true, uid: pidgeot.uid },
-              { ident: `p1: ${bulbasaur.uid}`, details: `${bulbasaur.name}, L7, M`, condition: `${bulbasaur.hp}/${bulbasaur.maxHp}`, active: false, uid: bulbasaur.uid }
+              {
+                ident: `p1: ${pidgeot.uid}`,
+                details: `${pidgeot.name}, L40, M`,
+                condition: `${pidgeot.hp}/${pidgeot.maxHp}`,
+                active: true,
+                uid: pidgeot.uid
+              },
+              {
+                ident: `p1: ${bulbasaur.uid}`,
+                details: `${bulbasaur.name}, L7, M`,
+                condition: `${bulbasaur.hp}/${bulbasaur.maxHp}`,
+                active: false,
+                uid: bulbasaur.uid
+              }
             ]
           }
         },
@@ -277,9 +335,12 @@ describe('Forced Switch & Phazing Animation Parity (|drag| & forced |switch|)', 
         exitingEnemy: ref(null),
         exitingPlayer: ref(null),
         clearLogs: () => {},
-        clearVolatileStatus: (p: Pokemon) => { if (p) p.status = ''; },
+        clearVolatileStatus: (p: Pokemon) => {
+          if (p) p.status = '';
+        },
         addLog: (msg: string, type: string, source: unknown) => {
-          const srcStr = typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
+          const srcStr =
+            typeof source === 'string' ? source : (source as Pokemon)?.name || 'unknown';
           eventStream.push(`log:${srcStr}:${msg}`);
           battleStore.addLog(msg, type as any, source as any);
         }
@@ -292,21 +353,27 @@ describe('Forced Switch & Phazing Animation Parity (|drag| & forced |switch|)', 
       gameBus.off('PLAY_ESCAPE_ANIM', onEscape);
 
       // Verify Expulsion Log happened for player
-      const expulsionLogIdx = eventStream.findIndex(e => e.includes('¡Pidgeot huyó asustado por el rugido!'));
+      const expulsionLogIdx = eventStream.findIndex((e) =>
+        e.includes('¡Pidgeot huyó asustado por el rugido!')
+      );
       expect(expulsionLogIdx).toBeGreaterThan(-1);
 
       // Verify PLAY_ESCAPE_ANIM bus event was emitted with flee
-      const escapeAnimBusIdx = eventStream.findIndex(e => e === 'bus:PLAY_ESCAPE_ANIM:flee');
+      const escapeAnimBusIdx = eventStream.findIndex((e) => e === 'bus:PLAY_ESCAPE_ANIM:flee');
       expect(escapeAnimBusIdx).toBeGreaterThan(expulsionLogIdx);
       expect(escapeEvents[0]?.type).toBe('flee');
       expect(escapeEvents[0]?.side).toBe('player');
 
       // Verify awaitTween('escape-player') was awaited
-      const awaitEscapeTweenIdx = eventStream.findIndex(e => e === 'anim:awaitTween:escape-player');
+      const awaitEscapeTweenIdx = eventStream.findIndex(
+        (e) => e === 'anim:awaitTween:escape-player'
+      );
       expect(awaitEscapeTweenIdx).toBeGreaterThan(escapeAnimBusIdx);
 
       // Verify handleReleaseRequest was called on Bulbasaur
-      const releaseAnimIdx = eventStream.findIndex(e => e === 'anim:handleReleaseRequest:player:Bulbasaur');
+      const releaseAnimIdx = eventStream.findIndex(
+        (e) => e === 'anim:handleReleaseRequest:player:Bulbasaur'
+      );
       expect(releaseAnimIdx).toBeGreaterThan(awaitEscapeTweenIdx);
 
       // Verify active player is now Bulbasaur

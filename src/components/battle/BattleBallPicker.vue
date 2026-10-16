@@ -1,48 +1,48 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { onClickOutside } from '@vueuse/core'
-import { useGameStore } from '@/stores/game'
-import { useBattleStore } from '@/stores/battle/battle'
-import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { gsap } from 'gsap'
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ref, computed } from 'vue';
+import { onClickOutside } from '@vueuse/core';
+import { useGameStore } from '@/stores/game';
+import { useBattleStore } from '@/stores/battle/battle';
+import { getItemById, isItemId, type ItemId } from '@/data/inventory/items';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { gsap } from 'gsap';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-gsap.registerPlugin(ScrollToPlugin, ScrollTrigger)
+gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
 interface Props {
-  disabled?: boolean
-  isFinishing?: boolean
+  disabled?: boolean;
+  isFinishing?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   isFinishing: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'select-ball', ballId: ItemId): void
-  (e: 'catch'): void
-}>()
+  (e: 'select-ball', ballId: ItemId): void;
+  (e: 'catch'): void;
+}>();
 
-const gameStore = useGameStore()
-const battleStore = useBattleStore()
+const gameStore = useGameStore();
+const battleStore = useBattleStore();
 
-const isBallMenuOpen = ref(false)
-const menuRef = ref<HTMLElement | null>(null)
+const isBallMenuOpen = ref(false);
+const menuRef = ref<HTMLElement | null>(null);
 
 const availableBalls = computed(() => {
-  const inventory = gameStore.state.inventory || {}
+  const inventory = gameStore.state.inventory || {};
   return (Object.entries(inventory) as [ItemId, number | undefined][])
     .filter(([id, qty]) => {
-      if (typeof qty !== 'number' || qty <= 0 || !isItemId(id)) return false
-      const item = getItemById(id)
-      return item && item.cat === 'pokeballs'
+      if (typeof qty !== 'number' || qty <= 0 || !isItemId(id)) return false;
+      const item = getItemById(id);
+      return item && item.cat === 'pokeballs';
     })
     .map(([id, qty]) => {
-      const item = getItemById(id)
+      const item = getItemById(id);
       return {
         name: item ? item.name : id,
         qty: qty as number,
@@ -50,52 +50,58 @@ const availableBalls = computed(() => {
         sprite: (item as { sprite: string }).sprite,
         id: id,
         desc: (item as { desc?: string }).desc || ''
-      }
+      };
     })
-    .toSorted((a, b) => b.price - a.price)
-})
+    .toSorted((a, b) => b.price - a.price);
+});
 
 const toggleBallMenu = () => {
-  if (battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || props.disabled) return
-  
+  if (
+    battleStore.isProcessing ||
+    props.isFinishing ||
+    battleStore.isIntroAnimating ||
+    props.disabled
+  )
+    return;
+
   if (availableBalls.value.length === 0) {
-    emit('catch')
-    return
+    emit('catch');
+    return;
   }
 
   if (availableBalls.value.length === 1 && !isBallMenuOpen.value) {
-    const ball = availableBalls.value[0]
-    if (ball) emit('select-ball', ball.id)
-    return
+    const ball = availableBalls.value[0];
+    if (ball) emit('select-ball', ball.id);
+    return;
   }
 
   if (isBallMenuOpen.value) {
-    closeMenu()
+    closeMenu();
   } else {
-    isBallMenuOpen.value = true
+    isBallMenuOpen.value = true;
   }
-}
+};
 
-const BALL_MENU_ANIM_Y_OFFSET_PX = 40
-const BALL_MENU_CLOSE_Y_OFFSET_PX = 20
-const BALL_MENU_OPEN_DURATION_SEC = 0.25
-const BALL_MENU_CLOSE_DURATION_SEC = 0.15
+const BALL_MENU_ANIM_Y_OFFSET_PX = 40;
+const BALL_MENU_CLOSE_Y_OFFSET_PX = 20;
+const BALL_MENU_OPEN_DURATION_SEC = 0.25;
+const BALL_MENU_CLOSE_DURATION_SEC = 0.15;
 
 const openMenu = () => {
-  if (!menuRef.value) return
-  
-  const tl = gsap.timeline()
-  
+  if (!menuRef.value) return;
+
+  const tl = gsap.timeline();
+
   gsap.set(menuRef.value, {
     scale: 0.2,
     opacity: 0,
     y: BALL_MENU_ANIM_Y_OFFSET_PX,
     transformOrigin: 'bottom center'
-  })
+  });
 
-  const container = menuRef.value?.querySelector('.menu-items-container')
+  const container = menuRef.value?.querySelector('.menu-items-container');
   if (container) {
-    (container as HTMLElement).scrollTop = (container as HTMLElement).scrollHeight
+    (container as HTMLElement).scrollTop = (container as HTMLElement).scrollHeight;
   }
 
   tl.to(menuRef.value, {
@@ -106,16 +112,16 @@ const openMenu = () => {
     ease: 'back.out(1.7)',
     onStart: () => {
       if (container) {
-        (container as HTMLElement).scrollTop = (container as HTMLElement).scrollHeight
+        (container as HTMLElement).scrollTop = (container as HTMLElement).scrollHeight;
       }
     }
-  })
-}
+  });
+};
 
 const closeMenu = () => {
   if (!menuRef.value) {
-    isBallMenuOpen.value = false
-    return
+    isBallMenuOpen.value = false;
+    return;
   }
 
   gsap.to(menuRef.value, {
@@ -125,42 +131,33 @@ const closeMenu = () => {
     duration: BALL_MENU_CLOSE_DURATION_SEC, // Ultra-fast close
     ease: 'power2.in',
     onComplete: () => {
-      isBallMenuOpen.value = false
+      isBallMenuOpen.value = false;
     }
-  })
-}
+  });
+};
 
 const selectBall = (ballId: ItemId) => {
-  emit('select-ball', ballId)
-  closeMenu()
-}
+  emit('select-ball', ballId);
+  closeMenu();
+};
 
-const containerRef = ref<HTMLElement | null>(null)
+const containerRef = ref<HTMLElement | null>(null);
 
 onClickOutside(containerRef, () => {
   if (isBallMenuOpen.value) {
-    closeMenu()
+    closeMenu();
   }
-})
+});
 
 defineExpose({
   toggleBallMenu
-})
+});
 </script>
 
 <template>
-  <div
-    ref="containerRef"
-    class="catch-btn-wrapper"
-    :class="{ 'menu-open': isBallMenuOpen }"
-  >
+  <div ref="containerRef" class="catch-btn-wrapper" :class="{ 'menu-open': isBallMenuOpen }">
     <!-- Upward Dropdown Menu -->
-    <div
-      v-if="isBallMenuOpen"
-      ref="menuRef"
-      class="ball-dropdown-menu"
-      @vue:mounted="openMenu"
-    >
+    <div v-if="isBallMenuOpen" ref="menuRef" class="ball-dropdown-menu" @vue:mounted="openMenu">
       <div class="menu-header">
         <span class="header-label">SELECCIONAR BALL</span>
       </div>
@@ -180,20 +177,18 @@ defineExpose({
             @click.stop="selectBall(ball.id)"
           >
             <span class="ball-sprite-wrapper">
-              <img 
-                :src="getAssetUrl(ASSET_TYPES.ITEM, ball.sprite)" 
-                :alt="ball.name" 
-                class="ball-icon-mini" 
+              <img
+                :src="getAssetUrl(ASSET_TYPES.ITEM, ball.sprite)"
+                :alt="ball.name"
+                class="ball-icon-mini"
                 width="20"
                 height="20"
-              >
+              />
             </span>
             <span class="ball-info">
               <span class="ball-name">{{ ball.name }}</span>
             </span>
-            <span class="ball-qty">
-              x{{ ball.qty }}
-            </span>
+            <span class="ball-qty"> x{{ ball.qty }} </span>
             <span class="ball-action-arrow">
               <span class="emoji">▶</span>
             </span>
@@ -207,7 +202,13 @@ defineExpose({
       v-gsap-hover="{ scale: 1.12, rotation: 5, y: 0 }"
       class="btn-catch-ball"
       :class="{ 'is-active': isBallMenuOpen }"
-      :disabled="props.disabled || battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || (battleStore.uiConfig ? !battleStore.uiConfig.allowCatch : false)"
+      :disabled="
+        props.disabled ||
+        battleStore.isProcessing ||
+        props.isFinishing ||
+        battleStore.isIntroAnimating ||
+        (battleStore.uiConfig ? !battleStore.uiConfig.allowCatch : false)
+      "
       @click.stop="toggleBallMenu"
     >
       <span class="sr-only">CAPTURAR</span>
@@ -216,9 +217,9 @@ defineExpose({
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_variables" as v;
-@use "@/styles/core/_mixins" as m;
-@use "@/styles/core/_tools" as t;
+@use '@/styles/core/_variables' as v;
+@use '@/styles/core/_mixins' as m;
+@use '@/styles/core/_tools' as t;
 
 .catch-btn-wrapper {
   position: relative;
@@ -226,18 +227,18 @@ defineExpose({
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 64px; 
+  width: 64px;
   height: 64px;
   overflow: visible;
 
   &.menu-open {
-    z-index: var(--z-max); 
+    z-index: var(--z-max);
   }
 }
 
 .btn-catch-ball {
   position: relative;
-  z-index: var(--z-map-spawns); 
+  z-index: var(--z-map-spawns);
   display: block;
   width: 64px;
   height: 64px;
@@ -248,11 +249,10 @@ defineExpose({
   transform: Translatez(0);
   box-shadow: var(--shadow-card-elevated);
   cursor: pointer;
-  overflow: hidden; 
+  overflow: hidden;
   transform-origin: center center;
   transform-style: preserve-3d;
   will-change: transform, filter, box-shadow;
-  
 
   &:hover:not(:disabled) {
     filter: Brightness(1.1);
@@ -297,7 +297,9 @@ defineExpose({
     box-shadow: var(--shadow-xl);
   }
 
-  .sr-only { display: none; }
+  .sr-only {
+    display: none;
+  }
 }
 
 .ball-dropdown-menu {
@@ -333,7 +335,7 @@ defineExpose({
   padding: 0 8px 8px;
   border-bottom: 1px solid Rgb(255 255 255 / 10%);
   flex-shrink: 0;
-  
+
   .header-label {
     @include m.pixelated;
 
@@ -400,17 +402,17 @@ defineExpose({
 
     transform: none; // Zero movement to prevent sticking
     outline: none;
-    
+
     .ball-sprite-wrapper .ball-icon-mini {
       transform: Scale(1.15); // Scale is safe, it doesn't shift the hit area
     }
 
-    .ball-qty, .ball-action-arrow {
+    .ball-qty,
+    .ball-action-arrow {
       color: var(--white);
       opacity: 1;
     }
   }
-  
 
   .ball-sprite-wrapper {
     display: flex;
@@ -437,7 +439,7 @@ defineExpose({
     align-items: center;
     min-width: 0;
     flex: 1;
-    
+
     .ball-name {
       @include m.pixelated;
 

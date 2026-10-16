@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { ref, nextTick, type Ref } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import fs from 'node:fs';
@@ -122,16 +122,16 @@ describe('Pokemon Core Domain Suite', () => {
 
   describe('useBoxFilters - Total Power (BST + IVs)', () => {
     const mockPowerBox = ref([
-      { 
-        id: 'pikachu', 
-        name: 'Pikachu', 
-        level: 25, 
+      {
+        id: 'pikachu',
+        name: 'Pikachu',
+        level: 25,
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } // Total IVs: 186, TOTAL: 320 + 186 = 506
       },
-      { 
-        id: 'bulbasaur', 
-        name: 'Bulbasaur', 
-        level: 5, 
+      {
+        id: 'bulbasaur',
+        name: 'Bulbasaur',
+        level: 5,
         ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } // Total IVs: 0, TOTAL: 318 + 0 = 318
       }
     ]) as Ref<Pokemon[]>;
@@ -173,7 +173,10 @@ describe('Pokemon Core Domain Suite', () => {
     });
 
     it('loads the extracted illegal Ash account case without crashing', () => {
-      const fixturePath = path.resolve(process.cwd(), 'tests/fixtures/illegal_account_ash_case.json');
+      const fixturePath = path.resolve(
+        process.cwd(),
+        'tests/fixtures/illegal_account_ash_case.json'
+      );
       const rawData = fs.readFileSync(fixturePath, 'utf8');
       const saveData = JSON.parse(rawData) as SaveDataDto;
 
@@ -183,7 +186,10 @@ describe('Pokemon Core Domain Suite', () => {
     });
 
     it('identifies, purges disabled species, and fully repairs all illegal Pokémon across team and box from Ash account', () => {
-      const fixturePath = path.resolve(process.cwd(), 'tests/fixtures/illegal_account_ash_case.json');
+      const fixturePath = path.resolve(
+        process.cwd(),
+        'tests/fixtures/illegal_account_ash_case.json'
+      );
       const rawData = fs.readFileSync(fixturePath, 'utf8');
       const saveData = JSON.parse(rawData) as SaveDataDto;
 
@@ -192,7 +198,9 @@ describe('Pokemon Core Domain Suite', () => {
 
       const team = (saveData.team || []) as (Pokemon | null)[];
       const box = (saveData.box || []) as (Pokemon | null)[];
-      const remainingPokes = [...team, ...box].filter((p): p is Pokemon => p !== null && typeof p === 'object' && !!p.id);
+      const remainingPokes = [...team, ...box].filter(
+        (p): p is Pokemon => p !== null && typeof p === 'object' && !!p.id
+      );
 
       remainingPokes.forEach((p) => {
         expect(!p.isIllegal).toBe(true);
@@ -239,7 +247,7 @@ describe('Pokemon Core Domain Suite', () => {
       expect(p.id).toBe('gengar');
       expect(p.nature).toBe('adamant');
       expect(p.ability).toBe('cursedbody');
-      
+
       expect(p.moves.length).toBe(4);
       expect(p.moves[0]?.id).toBe('shadowball');
       expect(p.moves[1]?.id).toBe('hypnosis');
@@ -341,10 +349,12 @@ describe('Pokemon Core Domain Suite', () => {
         expect(getMoveDescription('explosion')).toContain('debilita');
         expect(() => getMoveDescription('non-existent')).toThrow();
       });
-      
+
       it('should return default message for normal status move', () => {
         const mockStatusMove = { cat: 'status' } as unknown as MoveBaseData;
-        expect(getMoveDescription('growl', mockStatusMove)).toBe('Un movimiento que causa un efecto de estado o alteración.');
+        expect(getMoveDescription('growl', mockStatusMove)).toBe(
+          'Un movimiento que causa un efecto de estado o alteración.'
+        );
       });
     });
 
@@ -353,7 +363,7 @@ describe('Pokemon Core Domain Suite', () => {
         const ivs = generateRandomIVs();
         expect(ivs).toBeDefined();
         const stats: (keyof typeof ivs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
-        stats.forEach(stat => {
+        stats.forEach((stat) => {
           expect(ivs[stat]).toBeGreaterThanOrEqual(0);
           expect(ivs[stat]).toBeLessThanOrEqual(31);
           expect(Number.isInteger(ivs[stat])).toBe(true);

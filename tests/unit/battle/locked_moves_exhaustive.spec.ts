@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
@@ -55,7 +55,9 @@ describe('Exhaustive Locked & Forced Moves Unit Tests (Tier 1)', () => {
         }
       };
 
-      await parseShowdownLogLine(store as never, '|move|p1a: Rayquaza|Outrage|p2a: Pidgey', ['|move|p1a: Rayquaza|Outrage|p2a: Pidgey']);
+      await parseShowdownLogLine(store as never, '|move|p1a: Rayquaza|Outrage|p2a: Pidgey', [
+        '|move|p1a: Rayquaza|Outrage|p2a: Pidgey'
+      ]);
 
       expect(mockAwaitTween).toHaveBeenCalledWith('attack-player');
     });
@@ -103,7 +105,11 @@ describe('Exhaustive Locked & Forced Moves Unit Tests (Tier 1)', () => {
         }
       };
 
-      await parseShowdownLogLine(store as never, '|move|p1a: Rayquaza|Outrage|p2a: Pidgey|[from]lockedmove', ['|move|p1a: Rayquaza|Outrage|p2a: Pidgey|[from]lockedmove']);
+      await parseShowdownLogLine(
+        store as never,
+        '|move|p1a: Rayquaza|Outrage|p2a: Pidgey|[from]lockedmove',
+        ['|move|p1a: Rayquaza|Outrage|p2a: Pidgey|[from]lockedmove']
+      );
 
       expect(mockAwaitTween).toHaveBeenCalledWith('attack-player');
     });
@@ -151,7 +157,11 @@ describe('Exhaustive Locked & Forced Moves Unit Tests (Tier 1)', () => {
         }
       };
 
-      await parseShowdownLogLine(store as never, '|move|p1a: Snorlax|Body Slam|p2a: Gengar|[from]Sleep Talk', ['|move|p1a: Snorlax|Body Slam|p2a: Gengar|[from]Sleep Talk']);
+      await parseShowdownLogLine(
+        store as never,
+        '|move|p1a: Snorlax|Body Slam|p2a: Gengar|[from]Sleep Talk',
+        ['|move|p1a: Snorlax|Body Slam|p2a: Gengar|[from]Sleep Talk']
+      );
 
       expect(mockAwaitTween).toHaveBeenCalledWith('attack-player');
     });
@@ -199,7 +209,9 @@ describe('Exhaustive Locked & Forced Moves Unit Tests (Tier 1)', () => {
         }
       };
 
-      await parseShowdownLogLine(store as never, '|move|p1a: Rayquaza|Outrage|p2a: Pidgey|[miss]', ['|move|p1a: Rayquaza|Outrage|p2a: Pidgey|[miss]']);
+      await parseShowdownLogLine(store as never, '|move|p1a: Rayquaza|Outrage|p2a: Pidgey|[miss]', [
+        '|move|p1a: Rayquaza|Outrage|p2a: Pidgey|[miss]'
+      ]);
 
       expect(mockAwaitTween).not.toHaveBeenCalled();
     });
@@ -216,20 +228,46 @@ describe('Exhaustive Locked & Forced Moves Unit Tests (Tier 1)', () => {
     });
 
     it('accurately identifies charging two-turn moves in the move database', () => {
-      const chargeMoveIds = ['solarbeam', 'skullbash', 'skyattack', 'razorwind', 'dig', 'fly', 'dive', 'bounce'];
+      const chargeMoveIds = [
+        'solarbeam',
+        'skullbash',
+        'skyattack',
+        'razorwind',
+        'dig',
+        'fly',
+        'dive',
+        'bounce'
+      ];
       for (const id of chargeMoveIds) {
         const md = pokemonDataProvider.getMoveData(id);
         expect(md).toBeDefined();
-        expect(['solarbeam', 'skullbash', 'skyattack', 'razorwind', 'dig', 'fly', 'dive', 'bounce']).toContain(id);
+        expect([
+          'solarbeam',
+          'skullbash',
+          'skyattack',
+          'razorwind',
+          'dig',
+          'fly',
+          'dive',
+          'bounce'
+        ]).toContain(id);
       }
     });
 
     it('accurately identifies recharge moves in the move database', () => {
-      const rechargeMoveIds = ['hyperbeam', 'gigaimpact', 'frenzyplant', 'blastburn', 'hydrocannon'];
+      const rechargeMoveIds = [
+        'hyperbeam',
+        'gigaimpact',
+        'frenzyplant',
+        'blastburn',
+        'hydrocannon'
+      ];
       for (const id of rechargeMoveIds) {
         const md = pokemonDataProvider.getMoveData(id);
         expect(md).toBeDefined();
-        expect(['hyperbeam', 'gigaimpact', 'frenzyplant', 'blastburn', 'hydrocannon']).toContain(id);
+        expect(['hyperbeam', 'gigaimpact', 'frenzyplant', 'blastburn', 'hydrocannon']).toContain(
+          id
+        );
       }
     });
   });

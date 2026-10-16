@@ -1,4 +1,5 @@
 <!-- markdownlint-disable MD033 -->
+
 # Reporte de Paridad de Sprites de Pokémon
 
 Este reporte analiza la consistencia de archivos entre las carpetas de sprites de la Pokédex en `_raw-assets/Pokemon/`.

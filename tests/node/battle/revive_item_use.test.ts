@@ -1,4 +1,4 @@
-import { describe, it, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { createPinia, setActivePinia } from 'pinia';
 import { handleItemUsage } from '../../../src/logic/battle/battleItems.ts';
@@ -47,8 +47,32 @@ describe('Revive Item Usage Unit Test', () => {
       enemy: pokemonDebugService.generate({ id: 'blissey', level: 100 }),
       playerTeamIndex: 1,
       playerTeam: [
-        { uid: 'mew-lvl-1', id: 'mew', name: 'Mew', hp: 6, maxHp: 13, level: 1, moves: [], status: '', sleepTurns: 0, fainted: false, types: ['psychic'] },
-        { uid: 'mew-lvl-100', id: 'mew', name: 'Mew', hp: 404, maxHp: 404, level: 100, moves: [], status: '', sleepTurns: 0, fainted: false, types: ['psychic'] },
+        {
+          uid: 'mew-lvl-1',
+          id: 'mew',
+          name: 'Mew',
+          hp: 6,
+          maxHp: 13,
+          level: 1,
+          moves: [],
+          status: '',
+          sleepTurns: 0,
+          fainted: false,
+          types: ['psychic']
+        },
+        {
+          uid: 'mew-lvl-100',
+          id: 'mew',
+          name: 'Mew',
+          hp: 404,
+          maxHp: 404,
+          level: 100,
+          moves: [],
+          status: '',
+          sleepTurns: 0,
+          fainted: false,
+          types: ['psychic']
+        }
       ],
       enemyTeam: [],
       turn: 1,
@@ -56,13 +80,24 @@ describe('Revive Item Usage Unit Test', () => {
       winner: null,
       fsmState: 'ACTIVE_BATTLE',
       fsmSubState: 'WAIT_INPUT',
-      isProcessing: false,
+      isProcessing: false
     } as never;
 
     battleStore.syncTeamHP();
 
-    assert.strictEqual(gameStore.state.team[0]?.hp, 6, 'Faint Mew must receive only its own HP (6), not strong Mew HP');
-    assert.ok(gameStore.state.team[0]!.hp <= gameStore.state.team[0]!.maxHp, 'Faint Mew HP must never exceed its max HP');
-    assert.strictEqual(gameStore.state.team[1]?.hp, 404, 'Strong Mew must receive its own HP (404)');
+    assert.strictEqual(
+      gameStore.state.team[0]?.hp,
+      6,
+      'Faint Mew must receive only its own HP (6), not strong Mew HP'
+    );
+    assert.ok(
+      gameStore.state.team[0]!.hp <= gameStore.state.team[0]!.maxHp,
+      'Faint Mew HP must never exceed its max HP'
+    );
+    assert.strictEqual(
+      gameStore.state.team[1]?.hp,
+      404,
+      'Strong Mew must receive its own HP (404)'
+    );
   });
 });

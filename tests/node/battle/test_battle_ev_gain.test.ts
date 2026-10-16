@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { processEvGain, processExpGain } from '@/logic/battle/battleRewards';
 import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
@@ -23,7 +23,7 @@ describe('Battle EV Gains & Rewards Distribution (Gen 6-9 Standard)', () => {
     const evResult = processEvGain(playerMon, enemyMon, participants);
     const expResult = processExpGain(playerMon, 100, participants, {
       isActive: true,
-      participantsSet: participants,
+      participantsSet: participants
     });
 
     assert.ok(evResult !== null);
@@ -47,7 +47,7 @@ describe('Battle EV Gains & Rewards Distribution (Gen 6-9 Standard)', () => {
     const evResult = processEvGain(benchedMon, enemyMon, participants);
     const expResult = processExpGain(benchedMon, 100, participants, {
       isActive: false,
-      participantsSet: participants,
+      participantsSet: participants
     });
 
     // In Gen 6-9, living benched Pokémon get 100% of EVs and 50% shared Exp
@@ -71,7 +71,7 @@ describe('Battle EV Gains & Rewards Distribution (Gen 6-9 Standard)', () => {
     const evResult = processEvGain(benchedMon, enemyMon, participants);
     const expResult = processExpGain(benchedMon, 100, participants, {
       isActive: false,
-      participantsSet: participants,
+      participantsSet: participants
     });
 
     assert.ok(evResult !== null);
@@ -93,7 +93,7 @@ describe('Battle EV Gains & Rewards Distribution (Gen 6-9 Standard)', () => {
     const evResult = processEvGain(faintedMon, enemyMon, participants);
     const expResult = processExpGain(faintedMon, 100, participants, {
       isActive: true,
-      participantsSet: participants,
+      participantsSet: participants
     });
 
     assert.strictEqual(evResult, null);
@@ -113,7 +113,7 @@ describe('Battle EV Gains & Rewards Distribution (Gen 6-9 Standard)', () => {
     const evResult = processEvGain(faintedBenchMon, enemyMon, participants);
     const expResult = processExpGain(faintedBenchMon, 100, participants, {
       isActive: false,
-      participantsSet: participants,
+      participantsSet: participants
     });
 
     assert.strictEqual(evResult, null);

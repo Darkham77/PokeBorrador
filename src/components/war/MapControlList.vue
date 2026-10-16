@@ -1,45 +1,51 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useWarStore } from '@/stores/war'
-import { useMapStore } from '@/stores/map'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { MAP_ROUTE_MAPPING, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { isFactionId, type FactionId } from '@/types/system/game'
+import { ref, computed } from 'vue';
+import { useWarStore } from '@/stores/war';
+import { useMapStore } from '@/stores/map';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { MAP_ROUTE_MAPPING, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { isFactionId, type FactionId } from '@/types/system/game';
 
-const warStore = useWarStore()
-const mapStore = useMapStore()
-const currentRegion = ref('kanto')
+const warStore = useWarStore();
+const mapStore = useMapStore();
+const currentRegion = ref('kanto');
 
 const regions = [
   { id: 'kanto', name: 'KANTO', active: true },
   { id: 'johto', name: 'JOHTO', active: false },
   { id: 'hoenn', name: 'HOENN', active: false }
-]
+];
 
 interface MapData {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 const getMapImage = (mapId: MapRouteId) => {
-  const fileName = MAP_ROUTE_MAPPING[mapId]
-  return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: mapStore.currentCycle || 'day' })
-}
+  const fileName = MAP_ROUTE_MAPPING[mapId];
+  return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: mapStore.currentCycle || 'day' });
+};
 
-const NEUTRAL_DOMINANCE_PERCENT = 50 as const
+const NEUTRAL_DOMINANCE_PERCENT = 50 as const;
 
 const allMaps = computed(() => {
-  const maps = pokemonDataProvider.getMaps() as MapData[]
-  return maps.map(m => {
-    const mapId = requireMapRouteId(m.id)
-    const data = warStore.mapDominance[mapId] || { union: 0, poder: 0, winner: null }
-    const total = (Number(data.union ?? 0)) + (Number(data.poder ?? 0))
-    const unionPct = total > 0 ? ((data.union ?? 0) / total) * 100 : NEUTRAL_DOMINANCE_PERCENT
-    const poderPct = Math.max(0, 100 - unionPct)
-    const rawWinner = data.winner || ((data.union ?? 0) > (data.poder ?? 0) ? 'union' : (data.poder ?? 0) > (data.union ?? 0) ? 'poder' : null)
-    const winner: FactionId | null = isFactionId(rawWinner) ? rawWinner : null
-    
+  const maps = pokemonDataProvider.getMaps() as MapData[];
+  return maps.map((m) => {
+    const mapId = requireMapRouteId(m.id);
+    const data = warStore.mapDominance[mapId] || { union: 0, poder: 0, winner: null };
+    const total = Number(data.union ?? 0) + Number(data.poder ?? 0);
+    const unionPct = total > 0 ? ((data.union ?? 0) / total) * 100 : NEUTRAL_DOMINANCE_PERCENT;
+    const poderPct = Math.max(0, 100 - unionPct);
+    const rawWinner =
+      data.winner ||
+      ((data.union ?? 0) > (data.poder ?? 0)
+        ? 'union'
+        : (data.poder ?? 0) > (data.union ?? 0)
+          ? 'poder'
+          : null);
+    const winner: FactionId | null = isFactionId(rawWinner) ? rawWinner : null;
+
     return {
       id: mapId,
       name: m.name,
@@ -48,21 +54,19 @@ const allMaps = computed(() => {
       unionPct,
       poderPct,
       winner
-    }
-  })
-})
+    };
+  });
+});
 
 const filteredMaps = computed(() => {
-  if (currentRegion.value !== 'kanto') return []
-  return allMaps.value
-})
+  if (currentRegion.value !== 'kanto') return [];
+  return allMaps.value;
+});
 </script>
 
 <template>
   <div class="map-control-list">
-    <h3 class="wc-section-title">
-      CONTROL TERRITORIAL
-    </h3>
+    <h3 class="wc-section-title">CONTROL TERRITORIAL</h3>
 
     <!-- Region Selector Tabs -->
     <div class="region-tabs">
@@ -76,48 +80,28 @@ const filteredMaps = computed(() => {
         @click="currentRegion = region.id"
       >
         <span class="region-name">{{ region.name }}</span>
-        <span
-          v-if="!region.active"
-          class="coming-soon"
-        >PROXIMAMENTE</span>
+        <span v-if="!region.active" class="coming-soon">PROXIMAMENTE</span>
       </button>
     </div>
 
     <div class="grid">
-      <div
-        v-for="map in filteredMaps"
-        :key="map.id"
-        class="map-row"
-        :class="map.winner"
-      >
+      <div v-for="map in filteredMaps" :key="map.id" class="map-row" :class="map.winner">
         <div class="map-row-content">
-          <div
-            class="map-thumbnail"
-            :style="{ backgroundImage: `url(${getMapImage(map.id)})` }"
-          />
+          <div class="map-thumbnail" :style="{ backgroundImage: `url(${getMapImage(map.id)})` }" />
 
           <div class="map-details">
             <div class="map-info">
               <span class="map-name">{{ map.name }}</span>
-              <span
-                v-if="map.winner"
-                class="winner-badge"
-              >
+              <span v-if="map.winner" class="winner-badge">
                 {{ map.winner === 'union' ? 'UNION' : 'PODER' }}
               </span>
             </div>
 
             <div class="dominance-bar">
-              <div
-                class="bar-fill union"
-                :style="{ width: map.unionPct + '%' }"
-              >
+              <div class="bar-fill union" :style="{ width: map.unionPct + '%' }">
                 <span v-if="map.union > 0">{{ map.union }}</span>
               </div>
-              <div
-                class="bar-fill poder"
-                :style="{ width: map.poderPct + '%' }"
-              >
+              <div class="bar-fill poder" :style="{ width: map.poderPct + '%' }">
                 <span v-if="map.poder > 0">{{ map.poder }}</span>
               </div>
             </div>
@@ -129,7 +113,7 @@ const filteredMaps = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .map-control-list {
   margin-top: 20px;
@@ -166,7 +150,6 @@ const filteredMaps = computed(() => {
   color: var(--gray);
   font-size: var(--font-9);
   cursor: pointer;
-  
 
   &:hover:not(.disabled) {
     background: Rgb(255 255 255 / 8%);
@@ -203,14 +186,17 @@ const filteredMaps = computed(() => {
   border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: $radius-xl;
   background: Rgb(255 255 255 / 3%);
-  
 
   &:hover {
     background: Rgb(255 255 255 / 6%);
   }
 
-  &.union { border-left: 4px solid Rgb(59 130 246 / 100%); }
-  &.poder { border-left: 4px solid Rgb(239 68 68 / 100%); }
+  &.union {
+    border-left: 4px solid Rgb(59 130 246 / 100%);
+  }
+  &.poder {
+    border-left: 4px solid Rgb(239 68 68 / 100%);
+  }
 }
 
 .map-row-content {
@@ -255,9 +241,15 @@ const filteredMaps = computed(() => {
     padding: 2px 6px;
     border-radius: $radius-sm;
     font-size: var(--font-8);
-    
-    .union & { background: Rgb(59 130 246 / 100%); color: var(--white); }
-    .poder & { background: Rgb(239 68 68 / 100%); color: var(--white); }
+
+    .union & {
+      background: Rgb(59 130 246 / 100%);
+      color: var(--white);
+    }
+    .poder & {
+      background: Rgb(239 68 68 / 100%);
+      color: var(--white);
+    }
   }
 }
 
@@ -267,7 +259,7 @@ const filteredMaps = computed(() => {
   border-radius: $radius-sm;
   background: $black;
   overflow: hidden;
-  
+
   .bar-fill {
     display: flex;
     justify-content: center;
@@ -276,10 +268,15 @@ const filteredMaps = computed(() => {
     color: var(--white);
     font-size: var(--font-7);
     font-weight: bold;
-    
 
-    &.union { background: Rgb(59 130 246 / 100%); box-shadow: $shadow-inset-md; }
-    &.poder { background: Rgb(239 68 68 / 100%); box-shadow: $shadow-inset-md; }
+    &.union {
+      background: Rgb(59 130 246 / 100%);
+      box-shadow: $shadow-inset-md;
+    }
+    &.poder {
+      background: Rgb(239 68 68 / 100%);
+      box-shadow: $shadow-inset-md;
+    }
   }
 }
 </style>

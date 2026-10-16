@@ -35,7 +35,11 @@ const dashOffset = computed(() => {
 });
 
 const isUrgent = computed(() => {
-  return !isReconnecting.value && secondsRemaining.value <= URGENT_THRESHOLD_SEC && secondsRemaining.value > 0;
+  return (
+    !isReconnecting.value &&
+    secondsRemaining.value <= URGENT_THRESHOLD_SEC &&
+    secondsRemaining.value > 0
+  );
 });
 
 watch(isUrgent, (urgent) => {
@@ -71,18 +75,8 @@ watch(isUrgent, (urgent) => {
   >
     <div class="timer-content">
       <div class="timer-svg-wrap">
-        <svg
-          class="timer-ring-svg"
-          viewBox="0 0 48 48"
-          width="40"
-          height="40"
-        >
-          <circle
-            class="ring-bg"
-            cx="24"
-            cy="24"
-            :r="RADIUS"
-          />
+        <svg class="timer-ring-svg" viewBox="0 0 48 48" width="40" height="40">
+          <circle class="ring-bg" cx="24" cy="24" :r="RADIUS" />
           <circle
             class="ring-progress"
             cx="24"
@@ -92,25 +86,12 @@ watch(isUrgent, (urgent) => {
             :stroke-dashoffset="dashOffset"
           />
         </svg>
-        <span
-          id="pvp-timer-number"
-          class="timer-number text-outline"
-        >{{ displaySeconds }}s</span>
+        <span id="pvp-timer-number" class="timer-number text-outline">{{ displaySeconds }}s</span>
       </div>
 
       <div class="timer-labels">
-        <span
-          v-if="isReconnecting"
-          class="reconnect-label text-outline"
-        >
-          RECONECTANDO...
-        </span>
-        <span
-          v-else
-          class="timer-subtext text-outline"
-        >
-          TURNO PVP
-        </span>
+        <span v-if="isReconnecting" class="reconnect-label text-outline"> RECONECTANDO... </span>
+        <span v-else class="timer-subtext text-outline"> TURNO PVP </span>
 
         <span
           v-if="afkStrikes > 0 && !isReconnecting"
@@ -125,7 +106,7 @@ watch(isUrgent, (urgent) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pvp-turn-timer-clock {
   display: flex;
@@ -210,7 +191,11 @@ watch(isUrgent, (urgent) => {
   font-size: var(--font-11);
   font-weight: 700;
   letter-spacing: -0.5px;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000;
 }
 
 .timer-labels {
@@ -227,7 +212,11 @@ watch(isUrgent, (urgent) => {
   font-size: var(--font-9);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000;
 }
 
 .reconnect-label {
@@ -237,7 +226,11 @@ watch(isUrgent, (urgent) => {
   font-size: var(--font-9);
   font-weight: 700;
   letter-spacing: 0.5px;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000;
 }
 
 .strike-badge {
@@ -252,6 +245,10 @@ watch(isUrgent, (urgent) => {
   background: Rgb(245 158 11 / 18%);
   color: var(--yellow-light);
   font-size: var(--font-8);
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000;
 }
 </style>

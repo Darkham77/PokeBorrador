@@ -114,7 +114,12 @@ function distributeBarriers(
     }
 
     // 3. Strength barrier: placed on a cycle or secondary cave accessible at or after Gym 4
-    if (!strengthPlaced && minOrder >= 4 && minOrder <= STRENGTH_MAX_CHAIN_ORDER && (edge.kind === 'cycle' || edge.kind === 'branch_stub')) {
+    if (
+      !strengthPlaced &&
+      minOrder >= 4 &&
+      minOrder <= STRENGTH_MAX_CHAIN_ORDER &&
+      (edge.kind === 'cycle' || edge.kind === 'branch_stub')
+    ) {
       result.push({
         ...edge,
         barrier: 'barrier_strength'
@@ -216,9 +221,7 @@ export interface ProgressionResult {
   readonly isSolvable: boolean;
 }
 
-export function applyProgressionBarriers(
-  graph: PokemonTopologyGraph
-): ProgressionResult {
+export function applyProgressionBarriers(graph: PokemonTopologyGraph): ProgressionResult {
   const orderMap = assignProgressionOrder(graph);
 
   // Attempt distribution and anti-softlock validation

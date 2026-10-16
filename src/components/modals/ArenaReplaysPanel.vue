@@ -112,16 +112,11 @@ onMounted(() => {
     <ArenaMatchHistorySection v-if="currentSubTab === 'my_matches'" />
 
     <!-- Battle Code Direct Search Card -->
-    <section
-      v-else-if="currentSubTab === 'search'"
-      class="replay-search-card"
-    >
+    <section v-else-if="currentSubTab === 'search'" class="replay-search-card">
       <div class="card-header">
         <span class="header-icon"><span class="emoji">🔍</span></span>
         <div class="header-text">
-          <h3 class="panel-subtitle text-outline">
-            BUSCAR BATALLA POR CÓDIGO
-          </h3>
+          <h3 class="panel-subtitle text-outline">BUSCAR BATALLA POR CÓDIGO</h3>
           <p class="panel-desc">
             Introduce el código (ej: BTL-8821-490) para reproducir cualquier combate histórico
           </p>
@@ -135,11 +130,12 @@ onMounted(() => {
             id="input-replay-battle-code"
             v-model="searchBattleCode"
             type="text"
+            aria-label="Código de repetición de combate"
             placeholder="BTL-XXXX-YYY"
             class="code-input text-outline"
             @input="searchBattleCode = searchBattleCode.toUpperCase()"
             @keyup.enter="searchByCode"
-          >
+          />
         </div>
         <button
           id="btn-search-battle-code"
@@ -162,21 +158,13 @@ onMounted(() => {
       <div class="card-header live-header">
         <span class="header-icon"><span class="emoji">🔴</span></span>
         <div class="header-text">
-          <h3 class="panel-subtitle live-subtitle text-outline">
-            COMBATES EN DIRECTO
-          </h3>
-          <p class="panel-desc">
-            Presencia partidas activas de la comunidad en tiempo real
-          </p>
+          <h3 class="panel-subtitle live-subtitle text-outline">COMBATES EN DIRECTO</h3>
+          <p class="panel-desc">Presencia partidas activas de la comunidad en tiempo real</p>
         </div>
       </div>
 
       <div class="live-grid">
-        <div
-          v-for="match in activeLiveMatches"
-          :key="match.id"
-          class="live-match-item"
-        >
+        <div v-for="match in activeLiveMatches" :key="match.id" class="live-match-item">
           <div class="match-info">
             <div class="trainers-row">
               <span class="trainer-name text-outline">{{ match.p1Name }}</span>
@@ -198,32 +186,24 @@ onMounted(() => {
     </section>
 
     <!-- Recent Replays Card -->
-    <section
-      v-if="currentSubTab === 'community'"
-      class="recent-replays-card"
-    >
+    <section v-if="currentSubTab === 'community'" class="recent-replays-card">
       <div class="card-header">
         <span class="header-icon"><span class="emoji">📺</span></span>
         <div class="header-text">
-          <h3 class="panel-subtitle text-outline">
-            REPETICIONES RECIENTES
-          </h3>
-          <p class="panel-desc">
-            Últimos enfrentamientos registrados en el coliseo
-          </p>
+          <h3 class="panel-subtitle text-outline">REPETICIONES RECIENTES</h3>
+          <p class="panel-desc">Últimos enfrentamientos registrados en el coliseo</p>
         </div>
       </div>
 
       <div class="replays-content">
         <!-- Replay Items Grid -->
-        <div
-          v-if="recentReplays.length > 0"
-          class="replays-grid"
-        >
+        <div v-if="recentReplays.length > 0" class="replays-grid">
           <div
             v-for="replay in recentReplays"
             id="arena-replays-panel-div-watchreplay"
             :key="replay.id"
+            role="button"
+            tabindex="0"
             class="replay-item-card"
             @click="handleWatchReplay(replay)"
           >
@@ -232,9 +212,13 @@ onMounted(() => {
               <span class="turns-badge">{{ replay.turnsCount || 10 }} turnos</span>
             </div>
             <div class="replay-combatants">
-              <span class="trainer p1 text-outline">{{ replay.p1?.username || 'Entrenador 1' }}</span>
+              <span class="trainer p1 text-outline">{{
+                replay.p1?.username || 'Entrenador 1'
+              }}</span>
               <span class="vs">vs</span>
-              <span class="trainer p2 text-outline">{{ replay.p2?.username || 'Entrenador 2' }}</span>
+              <span class="trainer p2 text-outline">{{
+                replay.p2?.username || 'Entrenador 2'
+              }}</span>
             </div>
             <button
               :id="'btn-watch-replay-' + replay.id"
@@ -247,18 +231,14 @@ onMounted(() => {
         </div>
 
         <!-- Retro-Modern Empty State -->
-        <div
-          v-else
-          class="empty-replays-box"
-        >
+        <div v-else class="empty-replays-box">
           <div class="empty-icon-halo">
             <span class="emoji empty-icon">📺</span>
           </div>
-          <h4 class="empty-title text-outline">
-            SIN REPETICIONES REGISTRADAS
-          </h4>
+          <h4 class="empty-title text-outline">SIN REPETICIONES REGISTRADAS</h4>
           <p class="empty-desc">
-            ¡Participa en combates de la Arena o busca una partida por su código para revivir la acción aquí!
+            ¡Participa en combates de la Arena o busca una partida por su código para revivir la
+            acción aquí!
           </p>
         </div>
       </div>
@@ -267,4 +247,3 @@ onMounted(() => {
 </template>
 
 <style scoped src="./ArenaReplaysPanel.styles.scss" lang="scss"></style>
-

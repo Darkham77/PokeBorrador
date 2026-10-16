@@ -49,16 +49,17 @@ export function loadCheckpointDocument(): E2ECheckpointDocument {
       return {
         master: parsed.master ?? null,
         passedSuites: Array.isArray(parsed.passedSuites) ? parsed.passedSuites : [],
-        suites: parsed.suites && typeof parsed.suites === 'object' ? parsed.suites : {},
+        suites: parsed.suites && typeof parsed.suites === 'object' ? parsed.suites : {}
       };
     }
-  } catch { // catch-ok: ignore corrupt checkpoint and return empty default
+  } catch {
+    // catch-ok: ignore corrupt checkpoint and return empty default
     // Ignore corrupt checkpoint and return empty default
   }
   return {
     master: null,
     passedSuites: [],
-    suites: {},
+    suites: {}
   };
 }
 
@@ -70,7 +71,8 @@ export function saveCheckpointDocument(doc: E2ECheckpointDocument): void {
       fs.mkdirSync(dir, { recursive: true });
     }
     fs.writeFileSync(filePath, JSON.stringify(doc, null, 2), 'utf8');
-  } catch { // catch-ok: non-fatal if checkpoint write fails
+  } catch {
+    // catch-ok: non-fatal if checkpoint write fails
     // Non-fatal if checkpoint write fails
   }
 }
@@ -93,7 +95,7 @@ export function recordMasterSuiteFailure(params: {
     suiteName: params.suiteName,
     suiteRelativePath: params.suiteRelativePath,
     driver: params.driver,
-    timestamp,
+    timestamp
   };
 
   const suiteKey = params.suiteName.toLowerCase();
@@ -106,7 +108,7 @@ export function recordMasterSuiteFailure(params: {
     failedBatchIndex: params.failedBatchIndex ?? existingSuite?.failedBatchIndex,
     failedCaseId: params.failedCaseId ?? existingSuite?.failedCaseId,
     errorSnippet: params.errorSnippet ?? existingSuite?.errorSnippet,
-    timestamp,
+    timestamp
   };
 
   saveCheckpointDocument(doc);
@@ -125,7 +127,7 @@ export function recordMasterSuiteProgress(params: {
     suiteName: params.suiteName,
     suiteRelativePath: params.suiteRelativePath,
     driver: params.driver,
-    timestamp: Temporal.Now.instant().toString(),
+    timestamp: Temporal.Now.instant().toString()
   };
   if (params.completedSuiteName) {
     if (!doc.passedSuites) {
@@ -178,7 +180,7 @@ export function recordSuiteFailure(
     failedBatchIndex: params.failedBatchIndex,
     failedCaseId: params.failedCaseId,
     errorSnippet: params.errorSnippet,
-    timestamp: Temporal.Now.instant().toString(),
+    timestamp: Temporal.Now.instant().toString()
   };
   saveCheckpointDocument(doc);
 }
@@ -207,7 +209,8 @@ export function clearSuiteCheckpoint(suiteName: string): void {
     if (fs.existsSync(progressDir)) {
       try {
         fs.rmSync(progressDir, { recursive: true, force: true });
-      } catch { // catch-ok: ignore directory removal error
+      } catch {
+        // catch-ok: ignore directory removal error
         // Ignore error
       }
     }
@@ -224,7 +227,8 @@ export function clearAllCheckpoints(): void {
     if (fs.existsSync(progressDir)) {
       fs.rmSync(progressDir, { recursive: true, force: true });
     }
-  } catch { // catch-ok: ignore error when clearing checkpoint files
+  } catch {
+    // catch-ok: ignore error when clearing checkpoint files
     // Ignore error
   }
 }

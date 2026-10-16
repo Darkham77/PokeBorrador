@@ -16,7 +16,7 @@ Tooling / Quality Engineers.
 - [scripts/auditors/fsm/AGENTS.md](./fsm/AGENTS.md): Mermaid diagrams parity, FSM implementation, flow parity, combat invariants, Showdown parity.
 - [scripts/auditors/persistence/AGENTS.md](./persistence/AGENTS.md): SQLite in-memory migrations, save persistence parity, database schema parity.
 
-*Note: 48 generic built-in suites across architecture, domain data, persistence, and documentation reside in `node_modules/@francogp/auditor/src/suites/`.*
+_Note: 48 generic built-in suites across architecture, domain data, persistence, and documentation reside in `node_modules/@francogp/auditor/src/suites/`._
 
 - **Mandatory OOP Inheritance Mandate**: Every host extension sub-auditor in this directory MUST inherit from either `BaseAuditor<TRuleId>` or `FileScanAuditor<TRuleId>` imported from `@francogp/auditor`. Creating standalone procedural scripts, custom directory walkers, or ad-hoc result printers is strictly forbidden.
 - **Audit Configuration Registration**: All 18 host extension sub-auditors MUST be explicitly registered in `audit.config.ts` under `extensions`.

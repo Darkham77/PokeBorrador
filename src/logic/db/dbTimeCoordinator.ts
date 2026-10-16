@@ -11,7 +11,7 @@ export class DBTimeCoordinator {
   constructor() {
     this.getTimeOffset = this.getTimeOffset.bind(this);
     if (typeof window !== 'undefined') {
-      window.__GET_DB_TIME_OFFSET__ = this.getTimeOffset;
+      window.__GET_DB_TIME_OFFSET__ = () => this.getTimeOffset();
     }
   }
 
@@ -32,20 +32,29 @@ export class DBTimeCoordinator {
       const clean = dateStr.trim();
       const num = Number(clean);
       let targetDate: Temporal.Instant;
-      if (!isNaN(num) && clean.length >= MIN_TIMESTAMP_MS_STRING_LENGTH && !clean.includes('-') && !clean.includes('T')) {
+      if (
+        !isNaN(num) &&
+        clean.length >= MIN_TIMESTAMP_MS_STRING_LENGTH &&
+        !clean.includes('-') &&
+        !clean.includes('T')
+      ) {
         targetDate = Temporal.Instant.fromEpochMilliseconds(num);
       } else {
         try {
           targetDate = Temporal.Instant.from(clean);
         } catch {
           const isoClean = clean.replace(' ', 'T');
-          targetDate = Temporal.PlainDateTime.from(isoClean).toZonedDateTime(GAME_TIMEZONE).toInstant();
+          targetDate = Temporal.PlainDateTime.from(isoClean)
+            .toZonedDateTime(GAME_TIMEZONE)
+            .toInstant();
         }
       }
       const offset = targetDate.epochMilliseconds - Temporal.Now.instant().epochMilliseconds;
       this.setTimeOffset(offset);
     } catch (e) {
-      throw new Error(`[DBRouter] Invalid mock time format '${dateStr}': ${(e as Error).message}`, { cause: e });
+      throw new Error(`[DBRouter] Invalid mock time format '${dateStr}': ${(e as Error).message}`, {
+        cause: e
+      });
     }
   }
 
@@ -59,7 +68,7 @@ export class DBTimeCoordinator {
 
   async getServerTime(mode: SessionMode, client: SupabaseClient | null): Promise<number> {
     const baseTime = await this._getRawServerTime(mode, client);
-    const offset = mode === 'offline' ? (this._timeOffset || 0) : 0;
+    const offset = mode === 'offline' ? this._timeOffset || 0 : 0;
     return baseTime + offset;
   }
 
@@ -69,7 +78,7 @@ export class DBTimeCoordinator {
     }
 
     try {
-      const res = await client.rpc('fn_get_server_time') as { data: unknown; error: unknown };
+      const res = (await client.rpc('fn_get_server_time')) as { data: unknown; error: unknown };
       const { data, error } = res;
       if (!error && data) {
         if (typeof data === 'string') {

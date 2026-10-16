@@ -21,7 +21,7 @@ export interface RegistrationDetails extends LoginDetails {
 /** Information requested to make a request and handle the response. */
 export interface Action {
   method: 'GET' | 'POST';
-  headers: {[key: string]: string | number};
+  headers: { [key: string]: string | number };
   url: string;
   data: string;
   responseType: 'text';
@@ -38,19 +38,23 @@ interface Response {
   actionerror?: string;
 }
 
-type ID = (string & {__brand: 'ID'}) | (string & {__isID: true}) | '';
+type ID = (string & { __brand: 'ID' }) | (string & { __isID: true }) | '';
 
 /** Register with the server. */
 export function register(details: RegistrationDetails): Action {
   return {
-    ...action('register', details, querystring({
-      serverid: details.serverid,
-      username: details.username,
-      password: details.password,
-      cpassword: details.cpassword ?? details.password,
-      captcha: details.captcha ?? CAPTCHA,
-      challstr: details.challstr,
-    })),
+    ...action(
+      'register',
+      details,
+      querystring({
+        serverid: details.serverid,
+        username: details.username,
+        password: details.password,
+        cpassword: details.cpassword ?? details.password,
+        captcha: details.captcha ?? CAPTCHA,
+        challstr: details.challstr
+      })
+    ),
     onResponse: (data?: string) => {
       const response = safeJSON(data) as Response;
       if (response.curuser?.loggedin) {
@@ -58,7 +62,7 @@ export function register(details: RegistrationDetails): Action {
       } else {
         return error(details, response);
       }
-    },
+    }
   };
 }
 
@@ -66,12 +70,16 @@ export function register(details: RegistrationDetails): Action {
 export function login(details: LoginDetails): Action {
   if (!details.password) return rename(details);
   return {
-    ...action('login', details, querystring({
-      serverid: details.serverid,
-      name: details.username,
-      pass: details.password,
-      challstr: details.challstr,
-    })),
+    ...action(
+      'login',
+      details,
+      querystring({
+        serverid: details.serverid,
+        name: details.username,
+        pass: details.password,
+        challstr: details.challstr
+      })
+    ),
     onResponse: (data?: string) => {
       const response = safeJSON(data) as Response;
       if (response.curuser?.loggedin) {
@@ -79,22 +87,26 @@ export function login(details: LoginDetails): Action {
       } else {
         return error(details, response);
       }
-    },
+    }
   };
 }
 
 /** Attempts to upkeep an existing session with the server (requires cookies). */
 export function upkeep(details: LoginDetails): Action {
   return {
-    ...action('upkeep', details, querystring({
-      serverid: details.serverid,
-      challstr: details.challstr,
-    })),
+    ...action(
+      'upkeep',
+      details,
+      querystring({
+        serverid: details.serverid,
+        challstr: details.challstr
+      })
+    ),
     onResponse: (data?: string) => {
-      const response = safeJSON(data) as {username?: string; assertion: string};
+      const response = safeJSON(data) as { username?: string; assertion: string };
       if (!response.username) return undefined;
-      return next({...details, username: response.username}, response.assertion);
-    },
+      return next({ ...details, username: response.username }, response.assertion);
+    }
   };
 }
 
@@ -102,44 +114,52 @@ export function upkeep(details: LoginDetails): Action {
 export function rename(details: LoginDetails): Action {
   if (details.password) return login(details);
   return {
-    ...action('getassertion', details, querystring({
-      serverid: details.serverid,
-      userid: toID(details.username),
-      challstr: details.challstr,
-    })),
-    onResponse: (assertion: string) => next(details, assertion),
+    ...action(
+      'getassertion',
+      details,
+      querystring({
+        serverid: details.serverid,
+        userid: toID(details.username),
+        challstr: details.challstr
+      })
+    ),
+    onResponse: (assertion: string) => next(details, assertion)
   };
 }
 
 /** Log out from the server (but remain connected as a guest). */
 export function logout(details: Omit<LoginDetails, 'challstr'>): Action {
   return {
-    ...action('logout', details, querystring({
-      serverid: details.serverid,
-      userid: toID(details.username),
-    })),
-    onResponse: () => '|/logout',
+    ...action(
+      'logout',
+      details,
+      querystring({
+        serverid: details.serverid,
+        userid: toID(details.username)
+      })
+    ),
+    onResponse: () => '|/logout'
   };
 }
 
 function action(
   api: 'register' | 'login' | 'upkeep' | 'getassertion' | 'logout',
-  details: {url?: string},
+  details: { url?: string },
   data: string
 ): Omit<Action, 'onResponse'> {
   return {
     method: 'POST',
-    url: `${(details?.url || URL)}api/${api}`,
+    url: `${details?.url || URL}api/${api}`,
     headers: {
       'Content-Type': CONTENT_TYPE,
-      'Content-Length': data.length,
+      'Content-Length': data.length
     },
     data,
-    responseType: 'text',
+    responseType: 'text'
   };
 }
 
-function querystring(data: {[key: string]: string | undefined}) {
+function querystring(data: { [key: string]: string | undefined }) {
   // This naive approach is only safe because it is only intended for use for a very narrow range
   // of values we need to deal with when dealing with the Pokémon Showdown login server.
   const buf = [];
@@ -166,14 +186,14 @@ function next(details: LoginDetails, assertion: string) {
   return `|/trn ${details.username},0,${process(details, assertion)}`;
 }
 
-function error(details: {username: string}, response: Response): never {
+function error(details: { username: string }, response: Response): never {
   const err = response.error || response.actionerror;
   if (err) throw new Error(err);
   void process(details, response.assertion || '');
   throw new Error(`Received unexpected response: ']${JSON.stringify(response)}'`);
 }
 
-function process(details: {username: string}, assertion: string) {
+function process(details: { username: string }, assertion: string) {
   if (assertion.slice(0, 14).toLowerCase() === '<!doctype html') {
     // some sort of MitM proxy - ignore it
     const endIndex = assertion.indexOf('>');
@@ -198,4 +218,4 @@ function process(details: {username: string}, assertion: string) {
 }
 
 /** Collection of tools for interacting with Pokémon Showdown's login server. */
-export const Actions = {register, login, upkeep, rename, logout};
+export const Actions = { register, login, upkeep, rename, logout };

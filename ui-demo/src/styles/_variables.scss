@@ -75,7 +75,11 @@ body.theme-vicio-dark,
 body.theme-wingull-light,
 .theme-wingull-light {
   --color-body-bg: #d7e0c4;
-  --body-overlay: Radial-Gradient(circle at 50% 50%, Rgba(240, 248, 224, 0.65) 0%, Rgba(180, 196, 160, 0.85) 100%);
+  --body-overlay: Radial-Gradient(
+    circle at 50% 50%,
+    Rgba(240, 248, 224, 0.65) 0%,
+    Rgba(180, 196, 160, 0.85) 100%
+  );
 
   --color-panel-bg: #fbfce7;
   --color-panel-outer: #2c3e2e;

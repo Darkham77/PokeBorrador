@@ -2,10 +2,10 @@ import type { DayPhase } from '@/logic/utils/timeUtils';
 import type { PokemonMoveId } from '@/data/battle/moves';
 import type { PurePokemon, PureMove, PureBattleWeather } from './battleMathTypes.ts';
 import { calculateDeltaStreamTypeEff } from './battleTypeEffectiveness.ts';
+import { DAY_CYCLE_BOOST_MULTIPLIER } from '@/logic/constants/gameplay.ts';
 
 const WEATHER_BOOST_MULTIPLIER = 1.5 as const;
 const WEATHER_REDUCTION_MULTIPLIER = 0.5 as const;
-const DAY_CYCLE_BOOST_MULTIPLIER = 1.2 as const;
 const TERRAIN_REDUCTION_MULTIPLIER = 0.5 as const;
 
 const WEATHER_KEYS = {
@@ -22,7 +22,9 @@ const WEATHER_KEYS = {
 function calculateSunWeatherBonus(weatherType: string, moveType: string): number {
   if (moveType === 'fire') return WEATHER_BOOST_MULTIPLIER;
   if (moveType === 'water') {
-    return (weatherType === 'intense_sun' || weatherType === 'heatwave') ? 0 : WEATHER_REDUCTION_MULTIPLIER;
+    return weatherType === 'intense_sun' || weatherType === 'heatwave'
+      ? 0
+      : WEATHER_REDUCTION_MULTIPLIER;
   }
   return 1;
 }
@@ -30,7 +32,9 @@ function calculateSunWeatherBonus(weatherType: string, moveType: string): number
 function calculateRainWeatherBonus(weatherType: string, moveType: string): number {
   if (moveType === 'water') return WEATHER_BOOST_MULTIPLIER;
   if (moveType === 'fire') {
-    return (weatherType === 'heavy_rain' || weatherType === 'storm') ? 0 : WEATHER_REDUCTION_MULTIPLIER;
+    return weatherType === 'heavy_rain' || weatherType === 'storm'
+      ? 0
+      : WEATHER_REDUCTION_MULTIPLIER;
   }
   return 1;
 }
@@ -41,7 +45,11 @@ function calculateThunderstormBonus(moveType: string): number {
   return 1;
 }
 
-function calculateActiveWeatherBonus(weather: PureBattleWeather, mechWeather: string, moveType: string): number {
+function calculateActiveWeatherBonus(
+  weather: PureBattleWeather,
+  mechWeather: string,
+  moveType: string
+): number {
   if (mechWeather === WEATHER_KEYS.SUN) {
     return calculateSunWeatherBonus(weather.type, moveType);
   }
@@ -55,15 +63,17 @@ function calculateActiveWeatherBonus(weather: PureBattleWeather, mechWeather: st
 }
 
 function calculateDayCycleBonus(dayCycle: DayPhase | undefined, moveType: string): number {
-  if ((dayCycle === 'day' || dayCycle === 'morning') && moveType === 'fire') return DAY_CYCLE_BOOST_MULTIPLIER;
-  if ((dayCycle === 'night' || dayCycle === 'dusk') && moveType === 'water') return DAY_CYCLE_BOOST_MULTIPLIER;
+  if ((dayCycle === 'day' || dayCycle === 'morning') && moveType === 'fire')
+    return DAY_CYCLE_BOOST_MULTIPLIER;
+  if ((dayCycle === 'night' || dayCycle === 'dusk') && moveType === 'water')
+    return DAY_CYCLE_BOOST_MULTIPLIER;
   return 1;
 }
 
 interface WeatherDamageFlags {
-  isSolarMove: boolean
-  isGym: boolean
-  isMoveWeather: boolean
+  isSolarMove: boolean;
+  isGym: boolean;
+  isMoveWeather: boolean;
 }
 
 function calculateSolarMovePenalty(
@@ -74,7 +84,9 @@ function calculateSolarMovePenalty(
   if (!isSolarMove) return 1;
   if (!weather || weather.turns === 0) return 1;
   const isSun = mechWeather === WEATHER_KEYS.SUN;
-  const isClear = (mechWeather === WEATHER_KEYS.CLEAR || weather.type === 'clear' || weather.type === 'none') && weather.type !== 'thunderstorm';
+  const isClear =
+    (mechWeather === WEATHER_KEYS.CLEAR || weather.type === 'clear' || weather.type === 'none') &&
+    weather.type !== 'thunderstorm';
   if ((!isGym || isMoveWeather) && !isSun && !isClear) {
     return WEATHER_REDUCTION_MULTIPLIER;
   }
@@ -100,8 +112,16 @@ function calculateWeatherDamageMultiplier(
   return weatherMult * solarPenalty;
 }
 
-function resolveTerrainMultiplier(terrain: string | null | undefined, moveType: string, cleanMoveId: PokemonMoveId): number {
-  if (terrain === 'grassyterrain' && moveType === 'ground' && (cleanMoveId === 'earthquake' || cleanMoveId === 'bulldoze' || cleanMoveId === 'magnitude')) {
+function resolveTerrainMultiplier(
+  terrain: string | null | undefined,
+  moveType: string,
+  cleanMoveId: PokemonMoveId
+): number {
+  if (
+    terrain === 'grassyterrain' &&
+    moveType === 'ground' &&
+    (cleanMoveId === 'earthquake' || cleanMoveId === 'bulldoze' || cleanMoveId === 'magnitude')
+  ) {
     return TERRAIN_REDUCTION_MULTIPLIER;
   }
   return 1;
@@ -116,13 +136,23 @@ export function resolveEnvironmentModifiers(
   dayCycle: DayPhase,
   terrain: string | null | undefined,
   eff: number,
-  defender: PurePokemon,
+  defender: PurePokemon
 ): { weatherMult: number; finalEff: number; terrainMult: number } {
-  const isMoveWeather = Boolean(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
+  const isMoveWeather = Boolean(
+    weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1
+  );
   const isSolarMove = move.id === 'solarbeam' || move.id === 'solarblade';
-  const weatherMult = calculateWeatherDamageMultiplier(weather, mechWeather || '', moveType, { isGym, isMoveWeather, isSolarMove }, dayCycle);
+  const weatherMult = calculateWeatherDamageMultiplier(
+    weather,
+    mechWeather || '',
+    moveType,
+    { isGym, isMoveWeather, isSolarMove },
+    dayCycle
+  );
 
-  const isStrongWinds = Boolean((!isGym || isMoveWeather) && weather && weather.turns !== 0 && weather.type === 'strong_winds');
+  const isStrongWinds = Boolean(
+    (!isGym || isMoveWeather) && weather && weather.turns !== 0 && weather.type === 'strong_winds'
+  );
   const finalEff = calculateDeltaStreamTypeEff(eff, defender, moveType, isStrongWinds);
   const terrainMult = move.id ? resolveTerrainMultiplier(terrain, moveType, move.id) : 1;
 

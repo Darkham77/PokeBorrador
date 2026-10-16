@@ -45,7 +45,8 @@ export function findValidBuildingPlacementSpot(
 
   const isSpotValid = (tx: number, ty: number): boolean => {
     // Must stay within grid bounds with 1-tile margin
-    if (tx < 1 || tx + bw >= KANTO_GRID_W - 1 || ty < 1 || ty + bh >= KANTO_GRID_H - 1) return false;
+    if (tx < 1 || tx + bw >= KANTO_GRID_W - 1 || ty < 1 || ty + bh >= KANTO_GRID_H - 1)
+      return false;
 
     // 1-tile margin check against water, mountain elevation, cliffs, and reserved spaces
     for (let cy = ty - 1; cy <= ty + bh; cy++) {
@@ -55,9 +56,16 @@ export function findValidBuildingPlacementSpot(
         if (!row || !eRow) return false;
         const cell = row[cx];
         const elev = eRow[cx];
-        if (cell === undefined || cell === CELL_BIOME.WATER || cell === CELL_BIOME.MOUNTAIN_DIRT) return false;
+        if (cell === undefined || cell === CELL_BIOME.WATER || cell === CELL_BIOME.MOUNTAIN_DIRT)
+          return false;
         if (elev === undefined || elev >= MAX_BUILDABLE_ELEVATION) return false;
-        if (gen.occupancy.has(cx, cy, OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.DOOR_ACCESS)) {
+        if (
+          gen.occupancy.has(
+            cx,
+            cy,
+            OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.DOOR_ACCESS
+          )
+        ) {
           return false;
         }
       }

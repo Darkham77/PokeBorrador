@@ -43,7 +43,9 @@ export function resolveValidMoveChoice(
   // If requested move does not exist in request (out of bounds slot) or is disabled or has 0 PP,
   // find the first legal move slot with available PP.
   if (!targetMove || targetMove.disabled || targetMove.pp === 0) {
-    const firstValidIdx = movesList.findIndex(m => m && !m.disabled && (m.pp === undefined || m.pp > 0));
+    const firstValidIdx = movesList.findIndex(
+      (m) => m && !m.disabled && (m.pp === undefined || m.pp > 0)
+    );
     if (firstValidIdx !== -1) {
       return `move ${firstValidIdx + 1}${suffix}`;
     }
@@ -60,6 +62,6 @@ export function getFirstValidMoveSlot(
   fallback = 'move 1'
 ): string {
   const movesList = Array.isArray(activeMoves) ? activeMoves : [];
-  const validIdx = movesList.findIndex(m => m && !m.disabled && (m.pp === undefined || m.pp > 0));
+  const validIdx = movesList.findIndex((m) => m && !m.disabled && (m.pp === undefined || m.pp > 0));
   return validIdx !== -1 ? `move ${validIdx + 1}` : fallback;
 }

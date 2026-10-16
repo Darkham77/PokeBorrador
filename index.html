@@ -1,21 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/webp" href="./assets/fondo/logo%203.webp" />
     <link rel="apple-touch-icon" href="./assets/fondo/logo%203.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#161a2e">
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#161a2e" />
     <title>Poké Vicio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="preload" href="/fonts/pokemon-firered-leafgreen-font.ttf" as="font" type="font/ttf" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen&family=Nunito:wght@400;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      rel="preload"
+      href="/fonts/pokemon-firered-leafgreen-font.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
 
     <style>
       @font-face {
@@ -27,7 +42,8 @@
         size-adjust: 128%;
       }
       /* Eliminate FOUC (Flash of Unstyled Content) */
-      html, body {
+      html,
+      body {
         background-color: #07080e !important;
         background: #07080e !important;
         color: #fff;
@@ -40,10 +56,10 @@
         overscroll-behavior-x: none;
         overscroll-behavior-y: none;
       }
-      #app { 
-        background: #07080e; 
+      #app {
+        background: #07080e;
         width: 100dvw;
-        height: 100dvh; 
+        height: 100dvh;
         overflow: hidden;
         overscroll-behavior: none;
         overscroll-behavior-x: none;
@@ -63,7 +79,7 @@
         padding: 20px;
         box-sizing: border-box;
       }
-      
+
       .offline-card {
         background: rgba(15, 18, 32, 0.95);
         border: 2px solid rgba(255, 255, 255, 0.15);
@@ -72,63 +88,83 @@
         max-width: 440px;
         padding: 40px;
         text-align: center;
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
+        box-shadow:
+          0 0 50px rgba(0, 0, 0, 0.5),
+          inset 0 0 20px rgba(255, 255, 255, 0.02);
         box-sizing: border-box;
-        transition: border-color 0.5s ease, box-shadow 0.5s ease;
+        transition:
+          border-color 0.5s ease,
+          box-shadow 0.5s ease;
       }
-      
+
       .offline-card.error-state {
         border-color: rgba(255, 69, 58, 0.4);
-        box-shadow: 0 0 60px rgba(255, 69, 58, 0.15), inset 0 0 20px rgba(255, 69, 58, 0.05);
+        box-shadow:
+          0 0 60px rgba(255, 69, 58, 0.15),
+          inset 0 0 20px rgba(255, 69, 58, 0.05);
         animation: cardPulse 3s infinite ease-in-out;
       }
-      
+
       @keyframes cardPulse {
-        0%, 100% { border-color: rgba(255, 69, 58, 0.4); box-shadow: 0 0 50px rgba(255, 69, 58, 0.15); }
-        50% { border-color: rgba(255, 69, 58, 0.8); box-shadow: 0 0 70px rgba(255, 69, 58, 0.35); }
+        0%,
+        100% {
+          border-color: rgba(255, 69, 58, 0.4);
+          box-shadow: 0 0 50px rgba(255, 69, 58, 0.15);
+        }
+        50% {
+          border-color: rgba(255, 69, 58, 0.8);
+          box-shadow: 0 0 70px rgba(255, 69, 58, 0.35);
+        }
       }
-      
+
       .icon-header {
         margin-bottom: 24px;
       }
-      
+
       .wifi-icon {
         display: inline-block;
         font-size: 56px;
         filter: drop-shadow(0 0 15px rgba(255, 214, 10, 0.3));
         transition: filter 0.5s ease;
       }
-      
+
       .offline-card.error-state .wifi-icon {
         filter: drop-shadow(0 0 15px rgba(255, 69, 58, 0.6));
       }
-      
+
       .pulse {
         animation: pulseIcon 2s infinite ease-in-out;
       }
-      
+
       @keyframes pulseIcon {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.08); opacity: 0.8; }
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.08);
+          opacity: 0.8;
+        }
       }
-      
+
       .press-start {
         font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
         letter-spacing: 1px;
         image-rendering: pixelated;
       }
-      
+
       .offline-title {
         font-size: 16px;
         color: #ffd60a;
         margin: 0 0 20px 0;
         transition: color 0.5s ease;
       }
-      
+
       .offline-card.error-state .offline-title {
         color: #ff453a;
       }
-      
+
       .msg {
         color: rgba(255, 255, 255, 0.7);
         font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
@@ -136,14 +172,14 @@
         line-height: 1.6;
         margin: 0 0 24px 0;
       }
-      
+
       .spinner-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 16px;
       }
-      
+
       .spinner {
         width: 36px;
         height: 36px;
@@ -152,23 +188,27 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
-      
+
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
-      
+
       .status-text {
         font-size: 9px;
         color: #ffd60a;
       }
-      
+
       .error-details {
         margin: 10px 0 24px 0;
         font-size: 11px;
         color: rgba(255, 255, 255, 0.4);
       }
-      
+
       .error-details code {
         background: rgba(0, 0, 0, 0.3);
         padding: 4px 8px;
@@ -176,7 +216,7 @@
         color: #ff453a;
         font-family: monospace;
       }
-      
+
       .actions-group {
         display: flex;
         flex-direction: column;
@@ -194,20 +234,24 @@
         font-weight: bold;
         border-radius: 8px;
         cursor: pointer;
-        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 69, 58, 0.3);
+        box-shadow:
+          0 4px 0 rgba(0, 0, 0, 0.3),
+          0 0 15px rgba(255, 69, 58, 0.3);
         transition: all 0.2s ease;
         outline: none;
         width: 100%;
         box-sizing: border-box;
       }
-      
+
       .retry-btn-modern:hover {
         transform: translateY(-2px);
         background: #ffffff;
         color: #ff453a;
-        box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2), 0 0 20px rgba(255, 255, 255, 0.4);
+        box-shadow:
+          0 6px 0 rgba(0, 0, 0, 0.2),
+          0 0 20px rgba(255, 255, 255, 0.4);
       }
-      
+
       .retry-btn-modern:active {
         transform: translateY(1px);
         box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
@@ -234,7 +278,9 @@
         background: rgba(255, 214, 10, 0.2);
         border-color: #ffd60a;
         color: #ffffff;
-        box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 214, 10, 0.3);
+        box-shadow:
+          0 6px 0 rgba(0, 0, 0, 0.2),
+          0 0 15px rgba(255, 214, 10, 0.3);
       }
 
       .login-btn-modern:active {
@@ -253,14 +299,16 @@
         var message = document.getElementById('offline-message');
         var loader = document.getElementById('offline-loader');
         var errorContent = document.getElementById('offline-error-content');
-        
+
         if (card) card.className = 'offline-card error-state';
         if (icon) {
           icon.innerHTML = '⚠️';
           icon.className = 'wifi-icon pulse';
         }
         if (title) title.innerHTML = 'CONEXIÓN FALLIDA';
-        if (message) message.innerHTML = 'El servidor de Poké Vicio está fuera de línea o no tienes conexión a internet.';
+        if (message)
+          message.innerHTML =
+            'El servidor de Poké Vicio está fuera de línea o no tienes conexión a internet.';
         if (loader) loader.style.display = 'none';
         if (errorContent) errorContent.style.display = 'block';
       }
@@ -268,19 +316,29 @@
       function retryConnection() {
         if ('serviceWorker' in navigator) {
           try {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-              registrations.forEach(function(r) {
-                if (r.waiting) r.waiting.postMessage({ type: 'SKIP_WAITING' });
-                r.unregister().catch(function() {});
-              });
-            }).catch(function() {});
+            navigator.serviceWorker
+              .getRegistrations()
+              .then(function (registrations) {
+                registrations.forEach(function (r) {
+                  if (r.waiting) r.waiting.postMessage({ type: 'SKIP_WAITING' });
+                  r.unregister().catch(function () {});
+                });
+              })
+              .catch(function () {});
           } catch (e) {}
         }
         if ('caches' in window) {
           try {
-            caches.keys().then(function(keys) {
-              return Promise.all(keys.map(function(key) { return caches.delete(key); }));
-            }).catch(function() {});
+            caches
+              .keys()
+              .then(function (keys) {
+                return Promise.all(
+                  keys.map(function (key) {
+                    return caches.delete(key);
+                  })
+                );
+              })
+              .catch(function () {});
           } catch (e) {}
         }
         var cacheBuster = Date.now();
@@ -303,30 +361,47 @@
 
         if ('caches' in window) {
           try {
-            caches.keys().then(function(keys) {
-              return Promise.all(keys.map(function(key) { return caches.delete(key); }));
-            }).catch(function() {});
+            caches
+              .keys()
+              .then(function (keys) {
+                return Promise.all(
+                  keys.map(function (key) {
+                    return caches.delete(key);
+                  })
+                );
+              })
+              .catch(function () {});
           } catch (e) {}
         }
 
         if ('serviceWorker' in navigator) {
           try {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-              registrations.forEach(function(r) {
-                if (r.waiting) r.waiting.postMessage({ type: 'SKIP_WAITING' });
-                r.unregister().catch(function() {});
-              });
-            }).catch(function() {});
+            navigator.serviceWorker
+              .getRegistrations()
+              .then(function (registrations) {
+                registrations.forEach(function (r) {
+                  if (r.waiting) r.waiting.postMessage({ type: 'SKIP_WAITING' });
+                  r.unregister().catch(function () {});
+                });
+              })
+              .catch(function () {});
           } catch (e) {}
         }
 
-        var base = (typeof window !== 'undefined' && window.location.pathname.startsWith('/PokeBorrador')) ? '/PokeBorrador/' : '/';
+        var base =
+          typeof window !== 'undefined' && window.location.pathname.startsWith('/PokeBorrador')
+            ? '/PokeBorrador/'
+            : '/';
         var target = base + 'login?fresh_t=' + Date.now();
         window.location.replace(target);
       }
 
       // Si el navegador ya detecta que no hay internet, actuar de inmediato
-      if (typeof navigator !== 'undefined' && !navigator.onLine && (typeof window === 'undefined' || !window.__E2E__)) {
+      if (
+        typeof navigator !== 'undefined' &&
+        !navigator.onLine &&
+        (typeof window === 'undefined' || !window.__E2E__)
+      ) {
         setTimeout(showOfflineScreen, 0);
       }
 
@@ -337,7 +412,7 @@
       }
 
       // Fallback de seguridad: si después de 6 segundos Vue no se ha montado, mostrar error
-      setTimeout(function() {
+      setTimeout(function () {
         if (typeof window !== 'undefined' && !window.pwa_app_mounted && !window.__E2E__) {
           showOfflineScreen();
         }
@@ -356,9 +431,7 @@
             <span class="wifi-icon pulse" id="offline-icon">📶</span>
           </div>
 
-          <h2 class="press-start offline-title" id="offline-title">
-            CARGANDO JUEGO
-          </h2>
+          <h2 class="press-start offline-title" id="offline-title">CARGANDO JUEGO</h2>
 
           <p class="msg" id="offline-message">
             Iniciando la interfaz de Poké Vicio. Por favor espera unos instantes...
@@ -369,10 +442,8 @@
             <span class="status-text press-start">CONECTANDO...</span>
           </div>
 
-          <div id="offline-error-content" style="display: none;">
-            <p class="error-details">
-              Detalle: <code>WEB_OFFLINE / CONEXIÓN RECHAZADA</code>
-            </p>
+          <div id="offline-error-content" style="display: none">
+            <p class="error-details">Detalle: <code>WEB_OFFLINE / CONEXIÓN RECHAZADA</code></p>
             <div class="actions-group">
               <button class="retry-btn-modern press-start" onclick="retryConnection()">
                 REINTENTAR

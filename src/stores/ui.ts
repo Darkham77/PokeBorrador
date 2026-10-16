@@ -1,27 +1,27 @@
-
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { useModalStore } from '@/stores/modals.ts'
-import { useLoadingStore } from '@/stores/loading'
-import { safeStorage } from '@/logic/utils/storage'
-import { useNotificationStore } from '@/stores/notifications.ts'
-import { gameBus } from '@/logic/events/gameBus.ts'
-import type { Pokemon, Move, PokemonStorageLocation } from '@/types/pokemon/pokemon'
-import { MODAL_METADATA } from '@/logic/modals/metadata.ts'
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { ItemId } from '@/data/inventory/items'
-import type { PokemonMoveId } from '@/data/battle/moves'
-import { SMALL_SCREEN_BREAKPOINT_PX, MOBILE_SCREEN_BREAKPOINT_PX, DEFAULT_WINDOW_WIDTH_PX } from '@/logic/constants/gameplay.ts'
-import type { LowPowerModeSetting } from '@/types/system/game'
-
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { useModalStore } from '@/stores/modals.ts';
+import { useLoadingStore } from '@/stores/loading';
+import { safeStorage } from '@/logic/utils/storage';
+import { useNotificationStore } from '@/stores/notifications.ts';
+import { gameBus } from '@/logic/events/gameBus.ts';
+import type { Pokemon, Move, PokemonStorageLocation } from '@/types/pokemon/pokemon';
+import { MODAL_METADATA } from '@/logic/modals/metadata.ts';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { ItemId } from '@/data/inventory/items';
+import type { PokemonMoveId } from '@/data/battle/moves';
+import {
+  SMALL_SCREEN_BREAKPOINT_PX,
+  MOBILE_SCREEN_BREAKPOINT_PX,
+  DEFAULT_WINDOW_WIDTH_PX
+} from '@/logic/constants/gameplay.ts';
+import type { LowPowerModeSetting } from '@/types/system/game';
 
 interface EvolutionData {
   pokemon: Pokemon;
   targetId: PokemonSpeciesId;
   itemName: string;
 }
-
-
 
 export interface LearnItem {
   pokemon: Pokemon;
@@ -31,231 +31,255 @@ export interface LearnItem {
 }
 
 export const useUIStore = defineStore('ui', () => {
-  const libraryTab = ref('gimnasios')
-  const activeTab = ref('home')
-  const notificationStore = useNotificationStore()
-  
+  const libraryTab = ref('gimnasios');
+  const activeTab = ref('home');
+  const notificationStore = useNotificationStore();
+
   // Notifications
-  const notifications = computed(() => notificationStore.notifications)
-  
-  const isDebugFastMode = ref(false)
+  const notifications = computed(() => notificationStore.notifications);
+
+  const isDebugFastMode = ref(false);
   function toggleDebugFastMode() {
-    isDebugFastMode.value = !isDebugFastMode.value
+    isDebugFastMode.value = !isDebugFastMode.value;
   }
-  const isSimplifiedModalsMode = ref(false) // Forzado vía debug
-  const isDebugGridMode = ref(false)
-  const debugAnimationsEnabled = ref(true)
-  const debugPokedexMode = ref<'none' | 'seen' | 'caught' | null>(null)
+  const isSimplifiedModalsMode = ref(false); // Forzado vía debug
+  const isDebugGridMode = ref(false);
+  const debugAnimationsEnabled = ref(true);
+  const debugPokedexMode = ref<'none' | 'seen' | 'caught' | null>(null);
 
   // Screen width tracking for dynamic reactivity (resizing support)
-  const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : DEFAULT_WINDOW_WIDTH_PX)
+  const windowWidth = ref(
+    typeof window !== 'undefined' ? window.innerWidth : DEFAULT_WINDOW_WIDTH_PX
+  );
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', () => {
-      windowWidth.value = window.innerWidth
-    })
+      windowWidth.value = window.innerWidth;
+    });
   }
 
   const isSmallScreen = computed(() => {
-    return (windowWidth.value / appZoom.value) <= SMALL_SCREEN_BREAKPOINT_PX
-  })
+    return windowWidth.value / appZoom.value <= SMALL_SCREEN_BREAKPOINT_PX;
+  });
 
   // Low Power Mode
   const lowPowerMode = ref<LowPowerModeSetting>(
     (safeStorage.getItem('low-power-mode') as LowPowerModeSetting) || 'auto'
-  )
+  );
   const isLowPowerActive = computed(() => {
-    if (lowPowerMode.value === 'enabled') return true
-    
+    if (lowPowerMode.value === 'enabled') return true;
+
     // Force low power mode during custom modals that obscure the background (e.g. HatchAnimation, Evolution)
-    const modalStore = useModalStore()
-    if (modalStore.stack.some(m => MODAL_METADATA[m.name]?.obscuresBackground)) return true
-    
-    if (isAnyBlockingModalOpen.value) return true // Force low power mode when a modal is open to pause background renders
-    if (lowPowerMode.value === 'disabled') return false
-    return windowWidth.value < MOBILE_SCREEN_BREAKPOINT_PX
-  })
+    const modalStore = useModalStore();
+    if (modalStore.stack.some((m) => MODAL_METADATA[m.name]?.obscuresBackground)) return true;
+
+    if (isAnyBlockingModalOpen.value) return true; // Force low power mode when a modal is open to pause background renders
+    if (lowPowerMode.value === 'disabled') return false;
+    return windowWidth.value < MOBILE_SCREEN_BREAKPOINT_PX;
+  });
   function setLowPowerMode(mode: LowPowerModeSetting) {
-    lowPowerMode.value = mode
-    safeStorage.setItem('low-power-mode', mode)
+    lowPowerMode.value = mode;
+    safeStorage.setItem('low-power-mode', mode);
   }
-  
+
   // Hide Map Pokemon Mode
-  const hideMapPokemon = ref<boolean>(
-    safeStorage.getItem('hide-map-pokemon') === 'true'
-  )
+  const hideMapPokemon = ref<boolean>(safeStorage.getItem('hide-map-pokemon') === 'true');
   function setHideMapPokemon(val: boolean) {
-    hideMapPokemon.value = val
-    safeStorage.setItem('hide-map-pokemon', val ? 'true' : 'false')
+    hideMapPokemon.value = val;
+    safeStorage.setItem('hide-map-pokemon', val ? 'true' : 'false');
   }
-  
+
   // Auto-battle Mode
-  const autoBattle = ref<boolean>(
-    safeStorage.getItem('auto-battle') === 'true'
-  )
+  const autoBattle = ref<boolean>(safeStorage.getItem('auto-battle') === 'true');
   function setAutoBattle(val: boolean) {
-    autoBattle.value = val
-    safeStorage.setItem('auto-battle', val ? 'true' : 'false')
+    autoBattle.value = val;
+    safeStorage.setItem('auto-battle', val ? 'true' : 'false');
   }
-  
+
   // Team Management Debug Flags
-  const pvpAutoFillDisabled = ref(false)
-  const warAutoFillDisabled = ref(false)
+  const pvpAutoFillDisabled = ref(false);
+  const warAutoFillDisabled = ref(false);
 
-  const isFastMode = computed(() => isDebugFastMode.value || isAnyBlockingModalOpen.value)
+  const isFastMode = computed(() => isDebugFastMode.value || isAnyBlockingModalOpen.value);
 
-  const isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
-  const isBattleActive = ref(false)
+  const isBattleSwitchForced = ref(false); // Para cuando un poke es debilitado
+  const isBattleActive = ref(false);
   function setBattleActive(val: boolean) {
-    isBattleActive.value = val
+    isBattleActive.value = val;
   }
-  
+
   // Data for modals (still needed in the store if shared)
-  const activePokemonForRelearner = ref<Pokemon | null>(null)
-  const evolutionData = ref<EvolutionData | null>(null)
-  const currentMoveToLearn = ref<LearnItem | null>(null)
-  const learnQueue = ref<LearnItem[]>([])
-  const activePokemonForNature = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
-  const ppUpTarget = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
-  const activeItemForPPUp = ref<ItemId | null>(null)
-  const activePokemonForAbility = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
-  
+  const activePokemonForRelearner = ref<Pokemon | null>(null);
+  const evolutionData = ref<EvolutionData | null>(null);
+  const currentMoveToLearn = ref<LearnItem | null>(null);
+  const learnQueue = ref<LearnItem[]>([]);
+  const activePokemonForNature = ref<{ context: PokemonStorageLocation; index: number } | null>(
+    null
+  );
+  const ppUpTarget = ref<{ context: PokemonStorageLocation; index: number } | null>(null);
+  const activeItemForPPUp = ref<ItemId | null>(null);
+  const activePokemonForAbility = ref<{ context: PokemonStorageLocation; index: number } | null>(
+    null
+  );
+
   // Detalle data
-  const selectedPokemon = ref<Pokemon | null>(null)
-  const selectedMove = ref<string | null>(null)
+  const selectedPokemon = ref<Pokemon | null>(null);
+  const selectedMove = ref<string | null>(null);
 
   // Item Target context (for using items from Box Menu, etc)
-  const inventoryTarget = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
+  const inventoryTarget = ref<{ context: PokemonStorageLocation; index: number } | null>(null);
 
   // Zoom initialization
   const getInitialZoom = () => {
-    const saved = safeStorage.getItem('app-zoom')
+    const saved = safeStorage.getItem('app-zoom');
     if (saved) {
-      const val = parseFloat(saved)
-      if (!isNaN(val) && val > 0) return val
+      const val = parseFloat(saved);
+      if (!isNaN(val) && val > 0) return val;
     }
-    return 1.0 // 100% default
-  }
-  const appZoom = ref(getInitialZoom())
-  
+    return 1.0; // 100% default
+  };
+  const appZoom = ref(getInitialZoom());
+
   // Static flags for non-modal elements
-  const isChatOpen = ref(false)
-  const isHistoryOpen = ref(false)
-  const openHudGroup = ref<string | null>(null) // Tracks which HUD menu group is open (e.g., 'POKEMON', 'MARKET')
+  const isChatOpen = ref(false);
+  const isHistoryOpen = ref(false);
+  const openHudGroup = ref<string | null>(null); // Tracks which HUD menu group is open (e.g., 'POKEMON', 'MARKET')
 
   // ── MODAL TRIGGERS ─────────────────────────────────────────────────────────
-  
+
   function toggleProfile() {
-    const s = useModalStore(); if (s.isOpen('Profile')) s.close('Profile'); else s.open('Profile')
+    const s = useModalStore();
+    if (s.isOpen('Profile')) s.close('Profile');
+    else s.open('Profile');
   }
   function toggleSettings() {
-    const s = useModalStore(); if (s.isOpen('Settings')) s.close('Settings'); else s.open('Settings')
+    const s = useModalStore();
+    if (s.isOpen('Settings')) s.close('Settings');
+    else s.open('Settings');
   }
   function toggleLibrary(tabId = null) {
-    const s = useModalStore(); if (s.isOpen('Library')) s.close('Library'); else s.open('Library', { initialTab: tabId })
+    const s = useModalStore();
+    if (s.isOpen('Library')) s.close('Library');
+    else s.open('Library', { initialTab: tabId });
   }
-  const open = (name: string, props: Record<string, unknown> = {}) => useModalStore().open(name, props)
-  const close = (name: string) => useModalStore().close(name)
+  const open = (name: string, props: Record<string, unknown> = {}) =>
+    useModalStore().open(name, props);
+  const close = (name: string) => useModalStore().close(name);
   function closeAll() {
-    useModalStore().closeAll()
-    isHistoryOpen.value = false
-    isChatOpen.value = false
-    openHudGroup.value = null
-    activeModalStack.value = []
+    useModalStore().closeAll();
+    isHistoryOpen.value = false;
+    isChatOpen.value = false;
+    openHudGroup.value = null;
+    activeModalStack.value = [];
   }
 
   // ── MODAL STACKING SYSTEM (Z-INDEX) ────────────────────────────────────────
-  const activeModalStack = ref<string[]>([])
+  const activeModalStack = ref<string[]>([]);
   function registerModal(modalId: string) {
-    if (!activeModalStack.value.includes(modalId)) activeModalStack.value.push(modalId)
+    if (!activeModalStack.value.includes(modalId)) activeModalStack.value.push(modalId);
   }
-  const unregisterModal = (modalId: string) => { activeModalStack.value = activeModalStack.value.filter(id => id !== modalId) }
-  const getModalDepth = (modalId: string) => activeModalStack.value.indexOf(modalId)
+  const unregisterModal = (modalId: string) => {
+    activeModalStack.value = activeModalStack.value.filter((id) => id !== modalId);
+  };
+  const getModalDepth = (modalId: string) => activeModalStack.value.indexOf(modalId);
 
   function toggleHudGroup(name: string | null) {
-    openHudGroup.value = openHudGroup.value === name ? null : name
+    openHudGroup.value = openHudGroup.value === name ? null : name;
   }
 
-  const hasDismissedSessionLock = ref(false)
+  const hasDismissedSessionLock = ref(false);
 
-  function toggleInventory(context: PokemonStorageLocation | null = null, index: number | null = null) {
-    const modalStore = useModalStore()
+  function toggleInventory(
+    context: PokemonStorageLocation | null = null,
+    index: number | null = null
+  ) {
+    const modalStore = useModalStore();
     if (context !== null && index !== null) {
-      inventoryTarget.value = { context, index }
+      inventoryTarget.value = { context, index };
     } else {
-      inventoryTarget.value = null
+      inventoryTarget.value = null;
     }
 
-    if (modalStore.isOpen('Inventory')) modalStore.close('Inventory')
-    else modalStore.open('Inventory')
+    if (modalStore.isOpen('Inventory')) modalStore.close('Inventory');
+    else modalStore.open('Inventory');
   }
 
-  const notify = notificationStore.notify
+  const notify = notificationStore.notify;
 
   const isAnyFullscreenModalOpen = computed(() => {
-    const modalStore = useModalStore()
-    
-    // Check if battle is active and we are in mobile/fullscreen mode (<= 950px)
-    const isBattleFullscreen = isBattleActive.value && isSmallScreen.value
-    const isStackFullscreen = modalStore.stack.some(m => 
-      MODAL_METADATA[m.name]?.isFullscreen || 
-      ((m.props.type === 'fullscreen' || m.props.maxHeight === '100dvh') && !m.closing)
-    )
-    
-    return isBattleFullscreen || isStackFullscreen
-  })
+    const modalStore = useModalStore();
 
-  const isLoading = ref(false)
-  function setLoading(val: boolean, msg: string = 'Procesando...', sub: string = 'Por favor espera', icon = '⏳') { 
-    isLoading.value = val 
-    const loadingStore = useLoadingStore()
-    if (val) loadingStore.start('ui_generic', msg, sub, true, icon)
-    else loadingStore.finish('ui_generic')
+    // Check if battle is active and we are in mobile/fullscreen mode (<= 950px)
+    const isBattleFullscreen = isBattleActive.value && isSmallScreen.value;
+    const isStackFullscreen = modalStore.stack.some(
+      (m) =>
+        MODAL_METADATA[m.name]?.isFullscreen ||
+        ((m.props.type === 'fullscreen' || m.props.maxHeight === '100dvh') && !m.closing)
+    );
+
+    return isBattleFullscreen || isStackFullscreen;
+  });
+
+  const isLoading = ref(false);
+  function setLoading(
+    val: boolean,
+    msg: string = 'Procesando...',
+    sub: string = 'Por favor espera',
+    icon = '⏳'
+  ) {
+    isLoading.value = val;
+    const loadingStore = useLoadingStore();
+    if (val) loadingStore.start('ui_generic', msg, sub, true, icon);
+    else loadingStore.finish('ui_generic');
   }
 
-  function openPokemonDetail(pokemon: Pokemon, index: number, context: string = 'team', extra: unknown = null) {
-    selectedPokemon.value = pokemon
-    useModalStore().open('PokemonDetail', { pokemon, index, context, extra })
+  function openPokemonDetail(
+    pokemon: Pokemon,
+    index: number,
+    context: string = 'team',
+    extra: unknown = null
+  ) {
+    selectedPokemon.value = pokemon;
+    useModalStore().open('PokemonDetail', { pokemon, index, context, extra });
   }
 
   function openMoveDetail(moveId: PokemonMoveId) {
-    selectedMove.value = moveId
-    useModalStore().open('MoveDetail', { moveId })
+    selectedMove.value = moveId;
+    useModalStore().open('MoveDetail', { moveId });
   }
 
   const handleEvolutionFinished = () => {
-    useModalStore().close('Evolution')
-  }
-  gameBus.on('EVOLUTION_FINISHED', handleEvolutionFinished)
+    useModalStore().close('Evolution');
+  };
+  gameBus.on('EVOLUTION_FINISHED', handleEvolutionFinished);
 
   function startEvolution(pokemon: Pokemon, targetId: PokemonSpeciesId, itemName: string) {
-    const targetSpeciesId = requirePokemonSpeciesId(targetId)
-    evolutionData.value = { pokemon, targetId: targetSpeciesId, itemName }
-    useModalStore().open('Evolution')
-    gameBus.emit('START_EVOLUTION_FLOW', { pokemon, targetSpeciesId, itemName })
+    const targetSpeciesId = requirePokemonSpeciesId(targetId);
+    evolutionData.value = { pokemon, targetId: targetSpeciesId, itemName };
+    useModalStore().open('Evolution');
+    gameBus.emit('START_EVOLUTION_FLOW', { pokemon, targetSpeciesId, itemName });
   }
 
   function addToLearnQueue(items: LearnItem | LearnItem[]) {
     if (Array.isArray(items)) {
-      learnQueue.value.push(...items)
+      learnQueue.value.push(...items);
     } else {
-      learnQueue.value.push(items)
+      learnQueue.value.push(items);
     }
-    checkLearnQueue()
+    checkLearnQueue();
   }
 
   function checkLearnQueue() {
-    const modalStore = useModalStore()
-    if (modalStore.isOpen('MoveLearning') || learnQueue.value.length === 0) return
-    currentMoveToLearn.value = learnQueue.value.shift() || null
-    modalStore.open('MoveLearning')
+    const modalStore = useModalStore();
+    if (modalStore.isOpen('MoveLearning') || learnQueue.value.length === 0) return;
+    currentMoveToLearn.value = learnQueue.value.shift() || null;
+    modalStore.open('MoveLearning');
   }
 
   function finishMoveLearning() {
-    useModalStore().close('MoveLearning')
-    currentMoveToLearn.value = null
-    checkLearnQueue()
+    useModalStore().close('MoveLearning');
+    currentMoveToLearn.value = null;
+    checkLearnQueue();
   }
-
 
   /**
    * Returns true if there is any active modal that obscures the background.
@@ -263,30 +287,29 @@ export const useUIStore = defineStore('ui', () => {
    * and deactivates only when closing begins.
    */
   const isAnyBlockingModalOpen = computed(() => {
-    const modalStore = useModalStore()
-    const obscuringModals = modalStore.stack.filter(m => {
-      if (m.name === 'Profile') return false
-      if (m.props?.overlay === 'none') return false
-      return true
-    })
+    const modalStore = useModalStore();
+    const obscuringModals = modalStore.stack.filter((m) => {
+      if (m.name === 'Profile') return false;
+      if (m.props?.overlay === 'none') return false;
+      return true;
+    });
 
-    return obscuringModals.some(m => !m.closing)
-  })
-  
-
+    return obscuringModals.some((m) => !m.closing);
+  });
 
   // ── DYNAMIC FLAGS FOR BACKWARD COMPATIBILITY (WRITABLE) ───────────────────
-  const createModalRef = (name: string) => computed({
-    get: () => useModalStore().isOpen(name),
-    set: (val) => {
-      if (val) useModalStore().open(name)
-      else useModalStore().close(name)
-    }
-  })
+  const createModalRef = (name: string) =>
+    computed({
+      get: () => useModalStore().isOpen(name),
+      set: (val) => {
+        if (val) useModalStore().open(name);
+        else useModalStore().close(name);
+      }
+    });
 
-  const isNaturePatchOpen = createModalRef('NaturePatch')
-  const isPPUpOpen = createModalRef('PPUp')
-  const isAbilityPillOpen = createModalRef('AbilityPill')
+  const isNaturePatchOpen = createModalRef('NaturePatch');
+  const isPPUpOpen = createModalRef('PPUp');
+  const isAbilityPillOpen = createModalRef('AbilityPill');
 
   return {
     isAnyBlockingModalOpen,
@@ -317,9 +340,9 @@ export const useUIStore = defineStore('ui', () => {
     activeTab,
     appZoom,
     setZoom: (val: number) => {
-      appZoom.value = val
-      safeStorage.setItem('app-zoom', val.toString())
-      document.documentElement.style.setProperty('--app-zoom', val.toString())
+      appZoom.value = val;
+      safeStorage.setItem('app-zoom', val.toString());
+      document.documentElement.style.setProperty('--app-zoom', val.toString());
     },
     notify,
     notifications,
@@ -335,27 +358,27 @@ export const useUIStore = defineStore('ui', () => {
     closeModal: () => useModalStore().closeTop(),
     openPokemonDetail,
     openMoveDetail,
-    
+
     toggleTeamManagement: (initialTab?: unknown) => {
-      const modalStore = useModalStore()
+      const modalStore = useModalStore();
       if (modalStore.isOpen('TeamManagement')) {
-        modalStore.close('TeamManagement')
+        modalStore.close('TeamManagement');
       } else {
-        const tab = typeof initialTab === 'string' ? initialTab : undefined
-        modalStore.open('TeamManagement', tab ? { initialTab: tab } : {})
+        const tab = typeof initialTab === 'string' ? initialTab : undefined;
+        modalStore.open('TeamManagement', tab ? { initialTab: tab } : {});
       }
     },
-    
+
     pvpAutoFillDisabled,
     warAutoFillDisabled,
-    
+
     // Relearner
     activePokemonForRelearner,
-    
+
     // Evolution
     evolutionData,
     startEvolution,
-    
+
     // Move Learning
     currentMoveToLearn,
     learnQueue,
@@ -385,5 +408,5 @@ export const useUIStore = defineStore('ui', () => {
     // Confirmation
     openConfirm: (options: Record<string, unknown>) => useModalStore().open('Confirm', options),
     openPrompt: (options: Record<string, unknown>) => useModalStore().open('Prompt', options)
-  }
-})
+  };
+});

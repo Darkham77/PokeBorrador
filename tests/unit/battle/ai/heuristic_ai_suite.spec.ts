@@ -6,15 +6,15 @@
  * - Heuristic AI move sets and O(1) sprite/pre-evolution lookups.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   evaluatePriorityKOLayer,
-  evaluateGuaranteedKOLayer,
+  evaluateGuaranteedKOLayer
 } from '@/logic/battle/ai/heuristic/heuristicLayerEvaluators';
 import type {
   DamageMatchup,
   HeuristicMoveInfo,
-  HeuristicPokemonState,
+  HeuristicPokemonState
 } from '@/logic/battle/ai/heuristic/types';
 import { HAZARD_REMOVAL_MOVES } from '@/logic/battle/ai/heuristic/sackOrder';
 import { SETUP_MOVES, PRIORITY_MOVES } from '@/logic/constants/encounters';
@@ -26,12 +26,12 @@ describe('Heuristic AI Domain Suite', () => {
     const dummyOppActive = {
       name: 'Charizard',
       species: 'charizard',
-      hpPercent: 20,
+      hpPercent: 20
     } as unknown as HeuristicPokemonState;
 
     const availableMoves: HeuristicMoveInfo[] = [
       { id: 'quickattack', pp: 20, disabled: false },
-      { id: 'thunderbolt', pp: 15, disabled: false },
+      { id: 'thunderbolt', pp: 15, disabled: false }
     ];
 
     it('selects priority KO move when opponent can be OHKOed by priority', () => {
@@ -45,10 +45,10 @@ describe('Heuristic AI Domain Suite', () => {
             maxPercent: 40,
             isOHKO: true,
             is2HKO: true,
-            priority: 1,
-          },
+            priority: 1
+          }
         ],
-        oppAttacking: [],
+        oppAttacking: []
       };
 
       const decision = evaluatePriorityKOLayer(matchup, availableMoves, 100, 90, dummyOppActive);
@@ -68,10 +68,10 @@ describe('Heuristic AI Domain Suite', () => {
             maxPercent: 130,
             isOHKO: true,
             is2HKO: true,
-            priority: 0,
-          },
+            priority: 0
+          }
         ],
-        oppAttacking: [],
+        oppAttacking: []
       };
 
       const decision = evaluateGuaranteedKOLayer(matchup, availableMoves, true);

@@ -15,7 +15,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { resolvePoiLandmarksAndBuildings, resolvePortFerryAsset } from '../../logic/map/canvasLandmarkRenderer.ts';
+import {
+  resolvePoiLandmarksAndBuildings,
+  resolvePortFerryAsset
+} from '../../logic/map/canvasLandmarkRenderer.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { type POINode, GEO_CARDINAL_DIRECTIONS } from '../../types/map/poiTypes.ts';
@@ -41,9 +44,7 @@ describe('portDockTerminalRotation', () => {
       const bHeight = isWestOrEast ? 7 : 6;
 
       const expectedLandmark =
-        dir === 'south'
-          ? 'poke_port_vermilion_gate.png'
-          : 'poke_port_lighthouse_beacon.png';
+        dir === 'south' ? 'poke_port_vermilion_gate.png' : 'poke_port_lighthouse_beacon.png';
 
       const mockPort: POINode = {
         id: 'test_port',
@@ -54,7 +55,8 @@ describe('portDockTerminalRotation', () => {
         gridY: 20,
         elevation: 0,
         facing: dir,
-        buildingFile: dir === 'south' ? 'poke_port_vermilion_gate.png' : 'poke_port_lighthouse_beacon.png',
+        buildingFile:
+          dir === 'south' ? 'poke_port_vermilion_gate.png' : 'poke_port_lighthouse_beacon.png',
         terrainPreference: 'coast_water',
         hasGym: false
       };
@@ -117,7 +119,9 @@ describe('portDockTerminalRotation', () => {
           const pierWalkwayStart = 22;
           const pierWalkwayEnd = 24;
           const overlapsWalkway = postTileY <= pierWalkwayEnd && postBaseTileY >= pierWalkwayStart;
-          expect(overlapsWalkway, `Beacon at py=${post.py} overlaps walkway rows 22..24`).toBe(false);
+          expect(overlapsWalkway, `Beacon at py=${post.py} overlaps walkway rows 22..24`).toBe(
+            false
+          );
         }
       } else if (dir === 'north') {
         // Pier walkway occupies cols 22..24. Beacon posts must be strictly <= col 21 or >= col 25.
@@ -125,7 +129,10 @@ describe('portDockTerminalRotation', () => {
         for (const post of beaconPosts) {
           const postTileX = post.px / 32;
           const overlapsWalkway = postTileX >= 22 && postTileX <= 24;
-          expect(overlapsWalkway, `North beacon at px=${post.px} overlaps walkway cols 22..24`).toBe(false);
+          expect(
+            overlapsWalkway,
+            `North beacon at px=${post.px} overlaps walkway cols 22..24`
+          ).toBe(false);
         }
       }
     });
@@ -164,7 +171,10 @@ describe('portDockTerminalRotation', () => {
           : 'poke_port_lighthouse_beacon.png';
 
       const landmarkStamped = stamped.find((b) => b.file === expectedLandmark);
-      expect(landmarkStamped, `Expected landmark ${expectedLandmark} for seed ${seed}`).toBeDefined();
+      expect(
+        landmarkStamped,
+        `Expected landmark ${expectedLandmark} for seed ${seed}`
+      ).toBeDefined();
     }
   });
 });

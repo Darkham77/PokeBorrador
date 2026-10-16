@@ -1,30 +1,39 @@
-import { loadBestSave } from '@/logic/auth/loadService'
-import { gsap } from 'gsap'
-import { saveGame as performSave, setLatestCommittedSaveId, getLatestCommittedSaveId } from '@/logic/auth/saveService'
-import { useLoadingStore } from '@/stores/loading'
-import { useUIStore } from '@/stores/ui'
-import { useModalStore } from '@/stores/modals'
-import { isSaveLocked } from '@/logic/auth/sessionHub'
-import { checkAppVersionCompatibility } from '@/logic/db/dbRouter'
-import { useUpdateStore } from '@/stores/update'
-import { gameBus } from '@/logic/events/gameBus'
-import { requireGenderId, type GameState, type ClaimItem } from '@/types/system/game'
-import type { AuthUser } from '@/types/auth/auth'
-import { ref, type Ref } from 'vue'
-import { logger } from '@/logic/utils/logger'
-import type { DBRouter } from '@/logic/db/dbRouter'
-import { canSaveState, updateSessionPlaytime, handleSaveRollback, saveSandboxLocalState } from '@/stores/game/actions/saveActionHelpers'
-import { saveCoordinator } from '@/logic/auth/saveCoordinator'
-import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage'
+import { loadBestSave } from '@/logic/auth/loadService';
+import { gsap } from 'gsap';
+import {
+  saveGame as performSave,
+  setLatestCommittedSaveId,
+  getLatestCommittedSaveId
+} from '@/logic/auth/saveService';
+import { useLoadingStore } from '@/stores/loading';
+import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
+import { isSaveLocked } from '@/logic/auth/sessionHub';
+import { checkAppVersionCompatibility } from '@/logic/db/dbRouter';
+import { useUpdateStore } from '@/stores/update';
+import { gameBus } from '@/logic/events/gameBus';
+import { requireGenderId, type GameState, type ClaimItem } from '@/types/system/game';
+import type { AuthUser } from '@/types/auth/auth';
+import { ref, type Ref } from 'vue';
+import { logger } from '@/logic/utils/logger';
+import type { DBRouter } from '@/logic/db/dbRouter';
+import {
+  canSaveState,
+  updateSessionPlaytime,
+  handleSaveRollback,
+  saveSandboxLocalState
+} from '@/stores/game/actions/saveActionHelpers';
+import { saveCoordinator } from '@/logic/auth/saveCoordinator';
+import { safeSessionStorage, SESSION_STORAGE_KEYS } from '@/logic/utils/storage';
 
 const LOAD_RETRY_DELAY_SEC = 1.5;
 const MAX_SESSION_LOAD_RETRIES = 9 as const;
 
 interface LoadSaveResult {
-  data: GameState | null
-  issues: string[]
-  lastSaveId: string | null
-  lastError: unknown
+  data: GameState | null;
+  issues: string[];
+  lastSaveId: string | null;
+  lastError: unknown;
 }
 
 async function fetchSaveWithRetry(
@@ -32,63 +41,97 @@ async function fetchSaveWithRetry(
   dbRouter: DBRouter,
   loadingStore: ReturnType<typeof useLoadingStore>
 ): Promise<LoadSaveResult> {
-  let attempts = 0
-  const maxAttempts = 2
-  let lastError: unknown = null
+  let attempts = 0;
+  const maxAttempts = 2;
+  let lastError: unknown = null;
 
   while (attempts < maxAttempts) {
     try {
-      const result = await loadBestSave(user, dbRouter)
-      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT, '0')
-      return { data: result.data, issues: result.issues, lastSaveId: result.lastSaveId, lastError: null }
+      const result = await loadBestSave(user, dbRouter);
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT, '0');
+      return {
+        data: result.data,
+        issues: result.issues,
+        lastSaveId: result.lastSaveId,
+        lastError: null
+      };
     } catch (error) {
-      attempts++
-      lastError = error
-      logger.warn('LOAD', `Intento ${attempts} de carga fallido: ${(error as Error).message}`)
+      attempts++;
+      lastError = error;
+      logger.warn('LOAD', `Intento ${attempts} de carga fallido: ${(error as Error).message}`);
       if (attempts < maxAttempts) {
-        loadingStore.setProgress('game_data', 'Conexión lenta...', `Reintentando (${attempts}/${maxAttempts})...`)
-        await new Promise(resolve => gsap.delayedCall(LOAD_RETRY_DELAY_SEC, resolve))
+        loadingStore.setProgress(
+          'game_data',
+          'Conexión lenta...',
+          `Reintentando (${attempts}/${maxAttempts})...`
+        );
+        await new Promise((resolve) => gsap.delayedCall(LOAD_RETRY_DELAY_SEC, resolve));
       }
     }
   }
-  return { data: null, issues: [], lastSaveId: null, lastError }
+  return { data: null, issues: [], lastSaveId: null, lastError };
 }
 
 function handleOfflineRetry(loadingStore: ReturnType<typeof useLoadingStore>) {
-  loadingStore.setProgress('game_data', 'Sin conexión a Internet', 'Esperando señal para reintentar...')
-  window.addEventListener('online', () => { window.location.reload() }, { once: true })
-  return { success: false, offline: true }
+  loadingStore.setProgress(
+    'game_data',
+    'Sin conexión a Internet',
+    'Esperando señal para reintentar...'
+  );
+  window.addEventListener(
+    'online',
+    () => {
+      window.location.reload();
+    },
+    { once: true }
+  );
+  return { success: false, offline: true };
 }
 
 function handleSessionRetry(
   loadingStore: ReturnType<typeof useLoadingStore>,
   authStore: { logout?: () => Promise<void> }
 ) {
-  const retryCount = parseInt(safeSessionStorage.getItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT) || '0', 10)
+  const retryCount = parseInt(
+    safeSessionStorage.getItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT) || '0',
+    10
+  );
   if (retryCount >= MAX_SESSION_LOAD_RETRIES) {
-    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT, '0')
-    loadingStore.setProgress('game_data', 'Error de conexión persistente', 'Redireccionando al inicio de sesión...')
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT, '0');
+    loadingStore.setProgress(
+      'game_data',
+      'Error de conexión persistente',
+      'Redireccionando al inicio de sesión...'
+    );
     if (authStore.logout) {
-      authStore.logout()
+      void authStore.logout();
     } else {
-      window.location.reload()
+      window.location.reload();
     }
-    return { success: false, error: true }
+    return { success: false, error: true };
   }
 
-  safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT, (retryCount + 1).toString())
+  safeSessionStorage.setItem(SESSION_STORAGE_KEYS.LOAD_RETRY_COUNT, (retryCount + 1).toString());
 
   if (retryCount < 1) {
-    loadingStore.setProgress('game_data', 'Red inestable...', 'Reconectando al servidor...')
-    window.location.reload()
-    return { success: false, reconnecting: true }
+    loadingStore.setProgress('game_data', 'Red inestable...', 'Reconectando al servidor...');
+    window.location.reload();
+    return { success: false, reconnecting: true };
   }
 
-  loadingStore.setProgress('game_data', 'Error de conexión', 'La red no responde. Toca en cualquier lugar para reintentar.')
-  window.addEventListener('click', () => {
-    window.location.reload()
-  }, { once: true })
-  return { success: false, error: true }
+  loadingStore.setProgress(
+    'game_data',
+    'Error de conexión',
+    'La red no responde. Toca en cualquier lugar para reintentar.'
+  );
+  window.addEventListener(
+    'click',
+    () => {
+      window.location.reload();
+    },
+    { once: true }
+  );
+  return { success: false, error: true };
 }
 
 function handleLoadNetworkError(
@@ -96,22 +139,25 @@ function handleLoadNetworkError(
   loadingStore: ReturnType<typeof useLoadingStore>,
   authStore: { logout?: () => Promise<void> }
 ) {
-  logger.error('LOAD', `Todos los intentos de carga fallaron: ${(lastError as Error).message}`)
-  const err = lastError as Error
-  const isTimeout = err.message === 'LOAD_TIMEOUT'
-  const isNetwork = Boolean(err.message && (err.message.toLowerCase().includes('fetch') || err.message.toLowerCase().includes('network')))
-  const isOffline = !navigator.onLine
+  logger.error('LOAD', `Todos los intentos de carga fallaron: ${(lastError as Error).message}`);
+  const err = lastError as Error;
+  const isTimeout = err.message === 'LOAD_TIMEOUT';
+  const isNetwork = Boolean(
+    err.message &&
+    (err.message.toLowerCase().includes('fetch') || err.message.toLowerCase().includes('network'))
+  );
+  const isOffline = !navigator.onLine;
 
   if (!isTimeout && !isNetwork && !isOffline) {
-    loadingStore.finish('game_data')
-    return { success: false, error: true }
+    loadingStore.finish('game_data');
+    return { success: false, error: true };
   }
 
   if (isOffline) {
-    return handleOfflineRetry(loadingStore)
+    return handleOfflineRetry(loadingStore);
   }
 
-  return handleSessionRetry(loadingStore, authStore)
+  return handleSessionRetry(loadingStore, authStore);
 }
 
 function applyLoadedSave(
@@ -123,26 +169,26 @@ function applyLoadedSave(
   updateState: (data: GameState) => void,
   uiStore: ReturnType<typeof useUIStore>
 ): number {
-  const username = user.user_metadata?.username
+  const username = user.user_metadata?.username;
   if (!data.trainer && username) {
-    data.trainer = username
+    data.trainer = username;
   }
-  updateState(data)
-  const sessionStartTime = Temporal.Now.instant().epochMilliseconds
-  user.last_save_id = lastSaveId || undefined
-  setLatestCommittedSaveId(lastSaveId || null)
+  updateState(data);
+  const sessionStartTime = Temporal.Now.instant().epochMilliseconds;
+  user.last_save_id = lastSaveId || undefined;
+  setLatestCommittedSaveId(lastSaveId || null);
 
   if (issues && issues.length > 0) {
-    logger.warn('LOAD', 'Validación de partida - Advertencias encontradas:', issues)
-    uiStore.notify('Partida cargada con advertencias de legalidad', '⚠️')
+    logger.warn('LOAD', 'Validación de partida - Advertencias encontradas:', issues);
+    uiStore.notify('Partida cargada con advertencias de legalidad', '⚠️');
   } else {
-    uiStore.notify(`¡Bienvenido, ${state.trainer || username || 'Entrenador'}!`, '👋')
+    uiStore.notify(`¡Bienvenido, ${state.trainer || username || 'Entrenador'}!`, '👋');
   }
 
   if ((user.db_version || 0) < 3) {
-    user.db_version = 3
+    user.db_version = 3;
   }
-  return sessionStartTime
+  return sessionStartTime;
 }
 
 function initializeDefaultSave(
@@ -150,65 +196,77 @@ function initializeDefaultSave(
   state: GameState,
   saveFn: (showNotif?: boolean) => Promise<unknown>
 ): number {
-  state.trainer = user.user_metadata?.username || 'Entrenador'
-  state.gender = requireGenderId(user.user_metadata?.gender)
-  const sessionStartTime = Temporal.Now.instant().epochMilliseconds
-  saveFn(false)
-  return sessionStartTime
+  state.trainer = user.user_metadata?.username || 'Entrenador';
+  state.gender = requireGenderId(user.user_metadata?.gender);
+  const sessionStartTime = Temporal.Now.instant().epochMilliseconds;
+  void saveFn(false);
+  return sessionStartTime;
 }
 
 export function useSaveActions(
-  state: GameState, 
-  authStore: { user: AuthUser | null, logout?: () => Promise<void> }, 
-  db: Ref<DBRouter>, 
+  state: GameState,
+  authStore: { user: AuthUser | null; logout?: () => Promise<void> },
+  db: Ref<DBRouter>,
   updateState: (data: GameState) => void,
   isSandboxActive: Ref<boolean>
 ) {
-  const uiStore = useUIStore()
-  const loadingStore = useLoadingStore()
-  const saveBlocked = ref(false)
-  const validationErrorDetails = ref<string[] | null>(null)
+  const uiStore = useUIStore();
+  const loadingStore = useLoadingStore();
+  const saveBlocked = ref(false);
+  const validationErrorDetails = ref<string[] | null>(null);
   let sessionStartTime: number | null = null;
 
   async function loadGame() {
-    loadingStore.start('game_data', 'Cargando datos...', 'Leyendo partida guardada', false, '📂')
-    
+    loadingStore.start('game_data', 'Cargando datos...', 'Leyendo partida guardada', false, '📂');
+
     if (isSandboxActive.value) {
-      loadingStore.finish('game_data')
-      return { success: true }
+      loadingStore.finish('game_data');
+      return { success: true };
     }
-    
+
     if (!authStore.user) {
-      return { success: true, guest: true }
+      return { success: true, guest: true };
     }
-    
-    const { data, issues, lastSaveId, lastError } = await fetchSaveWithRetry(authStore.user, db.value, loadingStore)
-    
+
+    const { data, issues, lastSaveId, lastError } = await fetchSaveWithRetry(
+      authStore.user,
+      db.value,
+      loadingStore
+    );
+
     if (!data && lastError) {
-      return handleLoadNetworkError(lastError, loadingStore, authStore)
+      return handleLoadNetworkError(lastError, loadingStore, authStore);
     }
-    
+
     if (data && authStore.user) {
-      sessionStartTime = applyLoadedSave(data, lastSaveId, issues, authStore.user, state, updateState, uiStore)
+      sessionStartTime = applyLoadedSave(
+        data,
+        lastSaveId,
+        issues,
+        authStore.user,
+        state,
+        updateState,
+        uiStore
+      );
     } else if (!data && authStore.user) {
-      sessionStartTime = initializeDefaultSave(authStore.user, state, save)
+      sessionStartTime = initializeDefaultSave(authStore.user, state, save);
     }
-    
-    loadingStore.finish('game_data')
-    return { success: true }
+
+    loadingStore.finish('game_data');
+    return { success: true };
   }
 
-  const CURRENT_DB_VERSION = 3 as const
+  const CURRENT_DB_VERSION = 3 as const;
 
   interface SaveActionResult {
-    success: boolean
-    migrated?: boolean
-    lastSaveId?: string
-    rollback?: boolean
-    outOfSync?: boolean
-    error?: string
-    remote?: boolean
-    issues?: string[]
+    success: boolean;
+    migrated?: boolean;
+    lastSaveId?: string;
+    rollback?: boolean;
+    outOfSync?: boolean;
+    error?: string;
+    remote?: boolean;
+    issues?: string[];
   }
 
   async function verifyClientCompatibility(
@@ -216,21 +274,24 @@ export function useSaveActions(
     uiStoreInstance: ReturnType<typeof useUIStore>
   ): Promise<{ blocked: boolean; error?: string }> {
     try {
-      const appComp = await checkAppVersionCompatibility(dbClient)
+      const appComp = await checkAppVersionCompatibility(dbClient);
       if (!appComp.compatible && appComp.error === 'OUTDATED_CLIENT') {
-        logger.warn('SAVE', `Guardado bloqueado: Cliente desactualizado (${appComp.client}) vs Servidor (${appComp.server}).`)
-        gameBus.emit('PWA_NEED_REFRESH')
+        logger.warn(
+          'SAVE',
+          `Guardado bloqueado: Cliente desactualizado (${appComp.client}) vs Servidor (${appComp.server}).`
+        );
+        gameBus.emit('PWA_NEED_REFRESH');
         useUpdateStore().notifyOutdatedClient({
           client: appComp.client,
           server: appComp.server
-        })
-        uiStoreInstance.notify('Actualización requerida para guardar', '⚠️')
-        return { blocked: true, error: 'OUTDATED_CLIENT' }
+        });
+        uiStoreInstance.notify('Actualización requerida para guardar', '⚠️');
+        return { blocked: true, error: 'OUTDATED_CLIENT' };
       }
     } catch (e) {
-      logger.warn('SAVE', 'No se pudo verificar la compatibilidad de versión en el guardado:', e)
+      logger.warn('SAVE', 'No se pudo verificar la compatibilidad de versión en el guardado:', e);
     }
-    return { blocked: false }
+    return { blocked: false };
   }
 
   async function processSaveResult(
@@ -240,68 +301,71 @@ export function useSaveActions(
     notifyFn: (msg: string, icon?: string) => void,
     updateStateFn: (save: GameState) => void
   ): Promise<void> {
-    if (!result) return
+    if (!result) return;
 
     if (result.success) {
-      saveBlocked.value = false
-      validationErrorDetails.value = null
-    } else if (result.error && (result.error.includes('Error de validación') || result.error.includes('Datos corruptos'))) {
-      saveBlocked.value = true
-      validationErrorDetails.value = result.issues || [result.error]
+      saveBlocked.value = false;
+      validationErrorDetails.value = null;
+    } else if (
+      result.error &&
+      (result.error.includes('Error de validación') || result.error.includes('Datos corruptos'))
+    ) {
+      saveBlocked.value = true;
+      validationErrorDetails.value = result.issues || [result.error];
     }
 
     if (result.migrated && user) {
-      user.db_version = CURRENT_DB_VERSION
+      user.db_version = CURRENT_DB_VERSION;
     }
     if (result.lastSaveId && user) {
-      user.last_save_id = getLatestCommittedSaveId() || result.lastSaveId
+      user.last_save_id = getLatestCommittedSaveId() || result.lastSaveId;
     }
 
     if (result.rollback && user) {
-      await handleSaveRollback(result, dbClient, user, notifyFn, updateStateFn)
+      await handleSaveRollback(result, dbClient, user, notifyFn, updateStateFn);
     }
   }
 
   async function save(showNotif = true, immediate = true, forceRemote = false) {
     if (saveCoordinator.isBatchActive() && !immediate) {
       saveCoordinator.schedule(async () => {
-        await save(showNotif, true, forceRemote)
-      })
-      return { success: true }
+        await save(showNotif, true, forceRemote);
+      });
+      return { success: true };
     }
 
     if (immediate) {
-      saveCoordinator.cancelPendingLocalSave()
+      saveCoordinator.cancelPendingLocalSave();
     }
 
-    const modalStore = useModalStore()
-    const saveCheck = canSaveState(state, (name) => modalStore.isOpen(name))
+    const modalStore = useModalStore();
+    const saveCheck = canSaveState(state, (name) => modalStore.isOpen(name));
     if (!saveCheck.allowed) {
-      return { success: false, error: saveCheck.error }
+      return { success: false, error: saveCheck.error };
     }
 
     if (isSandboxActive.value) {
-      saveSandboxLocalState(state)
-      return { success: true }
+      saveSandboxLocalState(state);
+      return { success: true };
     }
-    if (!authStore.user) return { success: false }
+    if (!authStore.user) return { success: false };
 
-    sessionStartTime = updateSessionPlaytime(state, sessionStartTime)
+    sessionStartTime = updateSessionPlaytime(state, sessionStartTime);
 
     // Check session lock (Last-In-Wins)
-    const locked = isSaveLocked()
+    const locked = isSaveLocked();
     if (locked) {
-      logger.warn('SAVE', 'Sesión bloqueada. Solo se realizará guardado LOCAL.')
+      logger.warn('SAVE', 'Sesión bloqueada. Solo se realizará guardado LOCAL.');
     }
 
     // Guard: Prevent saving with an outdated client version to protect DB integrity
-    const compCheck = await verifyClientCompatibility(db.value, uiStore)
+    const compCheck = await verifyClientCompatibility(db.value, uiStore);
     if (compCheck.blocked) {
-      return { success: false, error: compCheck.error }
+      return { success: false, error: compCheck.error };
     }
 
-    const notifyFn = uiStore.notify
-    const result = await performSave(state, authStore.user, {
+    const notifyFn = uiStore.notify;
+    const result = (await performSave(state, authStore.user, {
       showNotif,
       notifyFn,
       db: db.value,
@@ -309,109 +373,121 @@ export function useSaveActions(
       lastSaveId: authStore.user.last_save_id,
       skipRemote: locked,
       forceRemote
-    }) as SaveActionResult
+    })) as SaveActionResult;
 
-    await processSaveResult(result, authStore.user, db.value, notifyFn, updateState)
-    return result || { success: false }
+    await processSaveResult(result, authStore.user, db.value, notifyFn, updateState);
+    return result || { success: false };
   }
 
   async function scheduleSave(delayMs?: number, forceRemote = false) {
     saveCoordinator.schedule(async () => {
-      await save(false, true, forceRemote)
-    }, delayMs)
+      await save(false, true, forceRemote);
+    }, delayMs);
   }
 
   async function withBatchSave<T>(action: () => Promise<T>, showNotifOnEnd = true): Promise<T> {
     return saveCoordinator.withBatchSave(action, async () => {
-      await save(showNotifOnEnd, true, true)
-    })
+      await save(showNotifOnEnd, true, true);
+    });
   }
 
-async function ensureClaimQueuePreinserted(
-  database: DBRouter,
-  userId: string,
-  localClaim: ClaimItem
-): Promise<void> {
-  try {
-    const { data: existing } = await database
-      .from('claim_queue')
-      .select('id')
-      .eq('id', localClaim.id)
-      .maybeSingle()
-    if (!existing) {
-      await database.from('claim_queue').insert([
-        {
-          id: localClaim.id,
-          user_id: userId,
-          source_type: localClaim.source_type || 'gts',
-          source_id: localClaim.source_id,
-          asset_data: typeof localClaim.asset_data === 'string' ? JSON.parse(localClaim.asset_data) : localClaim.asset_data,
-          created_at: localClaim.created_at || Temporal.Now.instant().toString()
-        }
-      ])
+  async function ensureClaimQueuePreinserted(
+    database: DBRouter,
+    userId: string,
+    localClaim: ClaimItem
+  ): Promise<void> {
+    try {
+      const { data: existing } = await database
+        .from('claim_queue')
+        .select('id')
+        .eq('id', localClaim.id)
+        .maybeSingle();
+      if (!existing) {
+        await database.from('claim_queue').insert([
+          {
+            id: localClaim.id,
+            user_id: userId,
+            source_type: localClaim.source_type || 'gts',
+            source_id: localClaim.source_id,
+            asset_data:
+              typeof localClaim.asset_data === 'string'
+                ? JSON.parse(localClaim.asset_data)
+                : localClaim.asset_data,
+            created_at: localClaim.created_at || Temporal.Now.instant().toString()
+          }
+        ]);
+      }
+    } catch (err) {
+      logger.warn('Failed to pre-insert claim item into claim_queue, continuing to RPC', err);
     }
-  } catch (err) {
-    logger.warn('Failed to pre-insert claim item into claim_queue, continuing to RPC', err)
   }
-}
 
-async function syncCommittedSaveIdAfterClaim(
-  database: DBRouter,
-  user: AuthUser
-): Promise<void> {
-  const { data: saveRow } = await database
-    .from('game_saves')
-    .select('last_save_id')
-    .eq('user_id', user.id)
-    .single() as { data: { last_save_id?: string } | null }
-  if (saveRow?.last_save_id) {
-    user.last_save_id = saveRow.last_save_id
-    setLatestCommittedSaveId(saveRow.last_save_id)
+  async function syncCommittedSaveIdAfterClaim(database: DBRouter, user: AuthUser): Promise<void> {
+    const { data: saveRow } = (await database
+      .from('game_saves')
+      .select('last_save_id')
+      .eq('user_id', user.id)
+      .single()) as { data: { last_save_id?: string } | null };
+    if (saveRow?.last_save_id) {
+      user.last_save_id = saveRow.last_save_id;
+      setLatestCommittedSaveId(saveRow.last_save_id);
+    }
   }
-}
 
   async function claimAsset(claimId: string | number) {
-    if (isSandboxActive.value) return false
-    if (!authStore.user || !db.value) return false
+    if (isSandboxActive.value) return false;
+    if (!authStore.user || !db.value) return false;
     try {
-      const localClaim = (state.claimQueue || []).find((c: ClaimItem) => String(c.id) === String(claimId))
+      const localClaim = (state.claimQueue || []).find(
+        (c: ClaimItem) => String(c.id) === String(claimId)
+      );
       if (localClaim) {
-        await ensureClaimQueuePreinserted(db.value, authStore.user.id, localClaim)
+        await ensureClaimQueuePreinserted(db.value, authStore.user.id, localClaim);
       }
 
       // Ensure recent in-memory changes (milestones, class loot) are flushed to DB before claim_asset_v2 reads game_saves
-      await save(false, true, true)
+      await save(false, true, true);
 
-      const { data, error } = await db.value.rpc('claim_asset_v2', { p_claim_id: claimId })
-      if (error) throw error
+      const { data, error } = await db.value.rpc('claim_asset_v2', { p_claim_id: claimId });
+      if (error) throw error;
       if (data) {
-        updateState(data as GameState)
-        state.claimQueue = state.claimQueue.filter((c: ClaimItem) => c.id !== claimId)
+        updateState(data as GameState);
+        state.claimQueue = state.claimQueue.filter((c: ClaimItem) => c.id !== claimId);
         if (authStore.user) {
-          await syncCommittedSaveIdAfterClaim(db.value, authStore.user)
+          await syncCommittedSaveIdAfterClaim(db.value, authStore.user);
         }
-        return true
+        return true;
       }
     } catch (e) {
-      logger.error('CLAIM', `Error al reclamar activo: ${(e as Error).message}`)
-      uiStore.notify('Error al reclamar activo', '❌')
-      return false
+      logger.error('CLAIM', `Error al reclamar activo: ${(e as Error).message}`);
+      uiStore.notify('Error al reclamar activo', '❌');
+      return false;
     }
-    return false
+    return false;
   }
 
   async function fetchClaimQueue() {
-    if (isSandboxActive.value) return
-    if (!authStore.user || !db.value) return
-    const claimRes = await db.value.from('claim_queue')
+    if (isSandboxActive.value) return;
+    if (!authStore.user || !db.value) return;
+    const claimRes = await db.value
+      .from('claim_queue')
       .select('id, user_id, type, asset_data, source_type, source_id, created_at')
       .eq('user_id', authStore.user.id)
       .order('created_at', { ascending: true })
-      .limit(100)
-    const data = claimRes.data as ClaimItem[] | null // domain-ok: Open dynamic text or non-domain string payload
-    const error = claimRes.error
-    if (!error) state.claimQueue = data || []
+      .limit(100);
+    const data = claimRes.data as ClaimItem[] | null; // domain-ok: Open dynamic text or non-domain string payload
+    const error = claimRes.error;
+    if (!error) state.claimQueue = data || [];
   }
 
-  return { loadGame, save, scheduleSave, withBatchSave, claimAsset, fetchClaimQueue, saveBlocked, validationErrorDetails }
+  return {
+    loadGame,
+    save,
+    scheduleSave,
+    withBatchSave,
+    claimAsset,
+    fetchClaimQueue,
+    saveBlocked,
+    validationErrorDetails
+  };
 }

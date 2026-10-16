@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { buildFaintTimeline, buildAttackTimeline } from '@/components/battle/helpers/combatantActionAnims';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import {
+  buildFaintTimeline,
+  buildAttackTimeline
+} from '@/components/battle/helpers/combatantActionAnims';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { BattleCombatantProps } from '@/types/battle/battle';
 import { gameBus } from '@/logic/events/gameBus';
@@ -143,7 +146,9 @@ describe('Animation Parity for Similar Battle Mechanics (Pivots, Phazing, Inmola
     expect(toCalls.length).toBeGreaterThan(0);
 
     // Verify physical prep and dash forward
-    const dashCall = toCalls.find((call) => typeof call[1]?.x === 'number' && typeof call[1]?.y === 'number');
+    const dashCall = toCalls.find(
+      (call) => typeof call[1]?.x === 'number' && typeof call[1]?.y === 'number'
+    );
     expect(dashCall).toBeDefined();
   });
 
@@ -163,7 +168,9 @@ describe('Animation Parity for Similar Battle Mechanics (Pivots, Phazing, Inmola
     const fromToCalls = (tl!.fromTo as ReturnType<typeof vi.fn>).mock.calls;
     expect(fromToCalls.length).toBeGreaterThan(0);
 
-    const specialPulseCall = fromToCalls.find((call) => typeof call[2]?.filter === 'string' && call[2]?.filter.includes('Brightness'));
+    const specialPulseCall = fromToCalls.find(
+      (call) => typeof call[2]?.filter === 'string' && call[2]?.filter.includes('Brightness')
+    );
     expect(specialPulseCall).toBeDefined();
     expect(specialPulseCall?.[2]?.yoyo).toBe(true);
   });

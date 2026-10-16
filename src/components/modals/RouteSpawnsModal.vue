@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import BaseModal from '@/components/common/BaseModal.vue'
-import RouteSpawnsWeatherEffectsCard from './spawns/RouteSpawnsWeatherEffectsCard.vue'
-import { useModalStore } from '@/stores/modals'
-import type { MapLocation } from '@/types/pokemon/encounters'
-import type { WeatherId } from '@/logic/weather/weatherRegistry'
-import type { DayPhase } from '@/logic/utils/timeUtils'
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation'
-import { useRoutePerks } from '@/composables/modals/useRoutePerks'
-import RouteSpawnsTable from './RouteSpawnsTable.vue'
+import { computed } from 'vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import RouteSpawnsWeatherEffectsCard from './spawns/RouteSpawnsWeatherEffectsCard.vue';
+import { useModalStore } from '@/stores/modals';
+import type { MapLocation } from '@/types/pokemon/encounters';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation';
+import { useRoutePerks } from '@/composables/modals/useRoutePerks';
+import RouteSpawnsTable from './RouteSpawnsTable.vue';
 
 interface Props {
-  show?: boolean
-  map: MapLocation
-  weather: WeatherId
-  cycle: DayPhase
+  show?: boolean;
+  map: MapLocation;
+  weather: WeatherId;
+  cycle: DayPhase;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const modalStore = useModalStore()
+const modalStore = useModalStore();
 
-const mapRef = computed(() => props.map)
+const mapRef = computed(() => props.map);
 
 const {
   playerClass,
@@ -40,21 +40,24 @@ const {
   timeRemainingText,
   toggleExtortion,
   toggleOfficialRoute
-} = useRoutePerks({ map: mapRef })
+} = useRoutePerks({ map: mapRef });
 
 const openPokemonDetail = (speciesId: PokemonSpeciesId, isSeen: boolean) => {
-  if (!isSeen) return
-  modalStore.open('PokemonDetail', { speciesId: requirePokemonSpeciesId(speciesId), context: 'pokedex' })
-}
+  if (!isSeen) return;
+  modalStore.open('PokemonDetail', {
+    speciesId: requirePokemonSpeciesId(speciesId),
+    context: 'pokedex'
+  });
+};
 
 const cycleLabels: Record<DayPhase, string> = {
   morning: '🌅 Amanecer',
   day: '☀️ Día',
   dusk: '🌇 Ocaso',
   night: '🌙 Noche'
-}
+};
 
-import type { NpcChanceInfo } from '@/logic/weather/weatherUtils'
+import type { NpcChanceInfo } from '@/logic/weather/weatherUtils';
 
 const {
   weatherEmoji,
@@ -80,9 +83,9 @@ const {
   getFishingSpawnTooltip,
   getArchaeologySpawnTooltip,
   npcSpawns
-} = useRouteSpawnsCalculation(props)
+} = useRouteSpawnsCalculation(props);
 
-const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
+const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value);
 </script>
 
 <template>
@@ -102,7 +105,9 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
         </div>
         <div class="info-item">
           <span class="label">Clima Activo:</span>
-          <span class="value"><span class="emoji">{{ weatherEmoji }}</span> {{ weatherLabel }}</span>
+          <span class="value"
+            ><span class="emoji">{{ weatherEmoji }}</span> {{ weatherLabel }}</span
+          >
         </div>
         <div class="info-item">
           <span class="label">Rango Nivel:</span>

@@ -73,7 +73,9 @@ export async function executeTurnInWorker(
   const isOptionsObject = typeof optionsOrP1Skip === 'object' && optionsOrP1Skip !== null;
   const p1Skip = isOptionsObject ? optionsOrP1Skip.p1Skip : Boolean(optionsOrP1Skip);
   const p2Skip = isOptionsObject ? optionsOrP1Skip.p2Skip : Boolean(p2SkipParam);
-  const p1UsedBattleItem = isOptionsObject ? optionsOrP1Skip.p1UsedBattleItem : Boolean(p1UsedBattleItemParam);
+  const p1UsedBattleItem = isOptionsObject
+    ? optionsOrP1Skip.p1UsedBattleItem
+    : Boolean(p1UsedBattleItemParam);
 
   const worker = getShowdownWorker();
   if (!worker) {
@@ -81,27 +83,45 @@ export async function executeTurnInWorker(
   }
 
   const finalP2Choice = p2Choice;
-  const simCheck = validateAndTraceSimulationReplay(p1Choice, finalP2Choice, { p1Skip, p2Skip, p1UsedBattleItem });
+  const simCheck = validateAndTraceSimulationReplay(p1Choice, finalP2Choice, {
+    p1Skip,
+    p2Skip,
+    p1UsedBattleItem
+  });
   if (simCheck.shouldBypass) {
     return { logs: [], isOver: true, winner: null };
   }
 
   const { replayContext, isSimulation, history, certifiedHistoryStep } = simCheck;
-  const { p1Hps, p2Hps, p1Statuses, p2Statuses, weatherVal } = prepareTurnStateForWorker(p1Choice, finalP2Choice || '', replayContext);
+  const { p1Hps, p2Hps, p1Statuses, p2Statuses, weatherVal } = prepareTurnStateForWorker(
+    p1Choice,
+    finalP2Choice || '',
+    replayContext
+  );
 
   return new Promise((resolve, reject) => {
     const handler = async (event: MessageEvent) => {
       const data = event.data as { type: string; payload: WorkerSuccessPayload };
       const { type, payload } = data;
       if (type === 'WORKER_LOG') {
-        logger.debug('ShowdownWorker', `[WORKER] ${String(payload)}`);
+        const logMsg = typeof payload === 'string' ? payload : JSON.stringify(payload);
+        logger.debug('ShowdownWorker', `[WORKER] ${logMsg}`);
         return;
       }
       if (type === 'ERROR' || type === 'TURN_ERROR') {
         cleanWorkerListener(worker, handler);
         const errPayload = payload as { message?: string } | string | null | undefined;
-        const msg = typeof errPayload === 'object' && errPayload?.message ? errPayload.message : (typeof errPayload === 'string' ? errPayload : JSON.stringify(errPayload || 'Showdown Worker Error'));
-        reject(new Error(`[ShowdownWorkerClient] Worker rejected turn. context=${replayContext}; workerPayload=${msg}`));
+        const msg =
+          typeof errPayload === 'object' && errPayload?.message
+            ? errPayload.message
+            : typeof errPayload === 'string'
+              ? errPayload
+              : JSON.stringify(errPayload || 'Showdown Worker Error');
+        reject(
+          new Error(
+            `[ShowdownWorkerClient] Worker rejected turn. context=${replayContext}; workerPayload=${msg}`
+          )
+        );
         return;
       }
       if (type === 'TURN_SUCCESS') {
@@ -109,7 +129,11 @@ export async function executeTurnInWorker(
         try {
           syncWorkerTurnSuccessToClient(payload);
         } catch (error: unknown) {
-          reject(new Error(`[ShowdownWorkerClient] Worker turn succeeded but client synchronization failed. context=${replayContext}; cause=${error instanceof Error ? error.message : String(error)}`));
+          reject(
+            new Error(
+              `[ShowdownWorkerClient] Worker turn succeeded but client synchronization failed. context=${replayContext}; cause=${error instanceof Error ? error.message : String(error)}`
+            )
+          );
           return;
         }
         resolve(payload);
@@ -126,7 +150,21 @@ export async function executeTurnInWorker(
     }
     worker.postMessage({
       type: 'EXECUTE_TURN',
-      payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1UsedBattleItem, p1Hps, p2Hps, p1Statuses, p2Statuses, history, certifiedHistoryStep, weather: weatherVal, isFuzzerSimulation: isSimulation }
+      payload: {
+        p1Choice,
+        p2Choice: finalP2Choice,
+        p1Skip,
+        p2Skip,
+        p1UsedBattleItem,
+        p1Hps,
+        p2Hps,
+        p1Statuses,
+        p2Statuses,
+        history,
+        certifiedHistoryStep,
+        weather: weatherVal,
+        isFuzzerSimulation: isSimulation
+      }
     });
   });
 }

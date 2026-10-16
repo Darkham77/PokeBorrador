@@ -1,30 +1,28 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 interface Props {
-  pokedexCaught: number
-  pokedexSeen: number
+  pokedexCaught: number;
+  pokedexSeen: number;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const GEN_1_POKEDEX_TOTAL = 151;
 
 const completionPct = computed(() => {
-  if (props.pokedexCaught <= 0) return 0
-  return Math.round((props.pokedexCaught / GEN_1_POKEDEX_TOTAL) * 100)
-})
+  if (props.pokedexCaught <= 0) return 0;
+  return Math.round((props.pokedexCaught / GEN_1_POKEDEX_TOTAL) * 100);
+});
 
 const barWidthPct = computed(() => {
-  return Math.min(100, (props.pokedexCaught / GEN_1_POKEDEX_TOTAL) * 100)
-})
+  return Math.min(100, (props.pokedexCaught / GEN_1_POKEDEX_TOTAL) * 100);
+});
 </script>
 
 <template>
   <div class="profile-section-card pokedex-card">
-    <div class="section-label">
-      PROGRESO DE POKÉDEX
-    </div>
+    <div class="section-label">PROGRESO DE POKÉDEX</div>
     <div class="pokedex-stats">
       <div class="pokedex-stat">
         <span class="pokedex-val">{{ pokedexCaught }}</span>
@@ -36,10 +34,7 @@ const barWidthPct = computed(() => {
       </div>
     </div>
     <div class="pokedex-bar-container">
-      <div 
-        class="pokedex-bar-progress" 
-        :style="{ width: barWidthPct + '%' }" 
-      />
+      <div class="pokedex-bar-progress" :style="{ width: barWidthPct + '%' }" />
     </div>
     <div class="pokedex-footer">
       <span>Gen I Total: {{ GEN_1_POKEDEX_TOTAL }}</span>
@@ -49,5 +44,5 @@ const barWidthPct = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_profile-shared";
+@use '@/styles/components/_profile-shared';
 </style>

@@ -45,7 +45,7 @@ Si todas existen, respondé "Todo OK" y no modifiques nada.
 
 ## PROMPT 2 — Hook en src/legacy/js/06_encounters.js: Guardián en goLocation
 
-```text
+````text
 En el archivo src/legacy/js/06_encounters.js, encontrá la función `goLocation(locId)`. Necesito hacer dos cambios quirúrgicos:
 
 **Cambio 1:** Convertir la función a `async`:
@@ -71,13 +71,13 @@ if (typeof tryTriggerGuardian === 'function') {
 
 No toques nada más en el archivo. Verificá que el juego cargue sin errores de consola.
 
-```
+````
 
 ---
 
 ## PROMPT 3 — Hook en src/legacy/js/04_state.js: multiplicador shiny de dominancia
 
-```text
+````text
 
 En el archivo src/legacy/js/04_state.js, dentro de la función `makePokemon(id, level)`, encontrá este bloque:
 
@@ -97,13 +97,13 @@ if (typeof getDominanceShinyMultiplier === 'function' && window.currentEncounter
 
 No toques nada más en el archivo. Verificá que el juego cargue sin errores.
 
-```
+````
 
 ---
 
 ## PROMPT 4 — Hook en src/legacy/js/07_battle.js: puntos de guerra al ganar
 
-```text
+````text
 
 En el archivo src/legacy/js/07_battle.js, dentro de la función `endBattle(won)`, encontrá este bloque exacto:
 
@@ -127,13 +127,13 @@ if (typeof addWarPoints === 'function') {
 
 No toques nada más. Verificá que el juego cargue sin errores.
 
-```
+````
 
 ---
 
 ## PROMPT 5 — Hook en src/legacy/js/07_battle.js: multiplicador EXP de dominancia
 
-```text
+````text
 
 En el archivo src/legacy/js/07_battle.js, dentro de la función `awardBattleExperience(isCapture = false)`, encontrá estas líneas:
 
@@ -161,13 +161,13 @@ const baseExp = Math.floor(b.enemy.level * expMultiplier);
 
 No toques nada más. Verificá que el juego cargue sin errores.
 
-```
+````
 
 ---
 
 ## PROMPT 6 — Hook en src/legacy/js/07_battle.js: captura de Guardián
 
-```text
+````text
 
 En el archivo src/legacy/js/07_battle.js, encontrá la función `catchSuccess(enemy)`.
 
@@ -204,13 +204,13 @@ if (enemy.isGuardian && typeof claimGuardianCapture === 'function') {
 
 No toques nada más. Verificá que el juego cargue sin errores.
 
-```
+````
 
 ---
 
 ## PROMPT 7 — CSS de Dominancia en style.css
 
-```text
+````text
 
 Abrí el archivo style.css. Andá al final del archivo y añadí el siguiente bloque de estilos. No modifiques ninguna línea existente, solo agregá al final:
 
@@ -268,13 +268,13 @@ Abrí el archivo style.css. Andá al final del archivo y añadí el siguiente bl
 
 Verificá que el juego cargue sin errores de consola.
 
-```
+````
 
 ---
 
 ## PROMPT 8 — Verificar badge de facción en perfil (src/legacy/js/01_auth.js)
 
-```text
+````text
 
 En el archivo src/legacy/js/01_auth.js, dentro de la función `updateProfilePanel(user, profile)`, verificá que exista un bloque que actualice el elemento `#player-faction-badge` según `state.faction`.
 
@@ -299,13 +299,13 @@ if (factionBadge) {
 
 Si YA existe ese bloque, no toques nada, respondé "Ya estaba".
 
-```
+````
 
 ---
 
 ## PROMPT 9 — Verificar llamada a initDominanceSystem en el login (src/legacy/js/01_auth.js)
 
-```text
+````text
 
 En el archivo src/legacy/js/01_auth.js, dentro de la función `onLogin(user)`, verificá que exista esta línea (o similar) cerca del final del bloque try:
 
@@ -317,7 +317,7 @@ Si NO existe, añadila justo ANTES de la línea `} catch (e) {` que cierra el bl
 
 Si YA existe, no toques nada, respondé "Ya estaba".
 
-```
+````
 
 ---
 
@@ -347,15 +347,15 @@ Reportá el estado de cada punto. Si hay algo faltante, hacé los cambios quirú
 
 ## Notas de diseño (para referencia)
 
-| Concepto | Detalle |
-| --- | --- |
-| Facciones | Team Unión (🟢) vs Team Poder (🟣) — elección permanente |
-| Guardianes | 35+ Pokémon en pool (Común/Raro/Élite) — determinístico por fecha+mapa |
-| Zonas de conflicto | 12 mapas rotativos diarios, elegidos por hash de la fecha |
-| Chance encuentro | 3% por visita (`GUARDIAN_CHANCE = 0.03`) |
-| Puntos de territorio | wild_win: 2pt · capture: 5pt · trainer_win: 8pt · guardian: 150-750pt |
-| Cap diario | 300 PT por mapa por día (anti-farm) |
-| Monedas de guerra | 1 moneda cada 10 PT ganados |
-| Ciclo semanal | Lun–Vie = Disputa · Sáb–Dom = Dominancia (bonos activos) |
-| Bonos de dominancia | EXP x1.25 · Shiny x2 en mapas dominados |
-| Fase online only | El sistema requiere cuenta Supabase — modo local no participa |
+| Concepto             | Detalle                                                                |
+| -------------------- | ---------------------------------------------------------------------- |
+| Facciones            | Team Unión (🟢) vs Team Poder (🟣) — elección permanente               |
+| Guardianes           | 35+ Pokémon en pool (Común/Raro/Élite) — determinístico por fecha+mapa |
+| Zonas de conflicto   | 12 mapas rotativos diarios, elegidos por hash de la fecha              |
+| Chance encuentro     | 3% por visita (`GUARDIAN_CHANCE = 0.03`)                               |
+| Puntos de territorio | wild_win: 2pt · capture: 5pt · trainer_win: 8pt · guardian: 150-750pt  |
+| Cap diario           | 300 PT por mapa por día (anti-farm)                                    |
+| Monedas de guerra    | 1 moneda cada 10 PT ganados                                            |
+| Ciclo semanal        | Lun–Vie = Disputa · Sáb–Dom = Dominancia (bonos activos)               |
+| Bonos de dominancia  | EXP x1.25 · Shiny x2 en mapas dominados                                |
+| Fase online only     | El sistema requiere cuenta Supabase — modo local no participa          |

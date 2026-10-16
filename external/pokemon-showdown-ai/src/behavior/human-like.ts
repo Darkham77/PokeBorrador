@@ -12,13 +12,13 @@ function randomBetween(min: number, max: number): number {
 /** Delay to simulate human thinking time before making a move (random float each turn) */
 export async function turnDelay(): Promise<void> {
   const delay = randomFloat(CONFIG.behavior.turnDelayMin, CONFIG.behavior.turnDelayMax);
-  await new Promise(resolve => setTimeout(resolve, delay));
+  await new Promise((resolve) => setTimeout(resolve, delay));
 }
 
 /** Delay before queueing the next battle */
 export async function requeueDelay(): Promise<void> {
   const delay = randomBetween(CONFIG.behavior.requeueDelayMin, CONFIG.behavior.requeueDelayMax);
-  await new Promise(resolve => setTimeout(resolve, delay));
+  await new Promise((resolve) => setTimeout(resolve, delay));
 }
 
 /**
@@ -37,24 +37,24 @@ export function maybeImperfectPlay(
   // Pick a random alternative move or switch
   if (decision.type === 'move' && availableMoves.length > 1) {
     const otherMoves = availableMoves.filter(
-      m => m.id !== decision.choice && !m.disabled && m.pp > 0
+      (m) => m.id !== decision.choice && !m.disabled && m.pp > 0
     );
     if (otherMoves.length > 0) {
       const pick = otherMoves[Math.floor(Math.random() * otherMoves.length)];
-      const moveIdx = availableMoves.findIndex(m => m.id === pick.id);
+      const moveIdx = availableMoves.findIndex((m) => m.id === pick.id);
       return {
         ...decision,
         choice: pick.id,
         moveIndex: moveIdx + 1,
         source: 'random',
         confidence: 0,
-        reasoning: 'imperfect play injection',
+        reasoning: 'imperfect play injection'
       };
     }
   }
 
   if (decision.type === 'switch' && switchOptions.length > 1) {
-    const otherSwitches = switchOptions.filter(s => s !== decision.choice);
+    const otherSwitches = switchOptions.filter((s) => s !== decision.choice);
     if (otherSwitches.length > 0) {
       const pickIdx = Math.floor(Math.random() * otherSwitches.length);
       const pick = otherSwitches[pickIdx];
@@ -66,7 +66,7 @@ export function maybeImperfectPlay(
         switchIndex: originalIdx !== -1 ? originalIdx + 1 : decision.switchIndex,
         source: 'random',
         confidence: 0,
-        reasoning: 'imperfect play injection',
+        reasoning: 'imperfect play injection'
       };
     }
   }

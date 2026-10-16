@@ -4,5 +4,5 @@ import { runScenariosFuzzer } from '../core/fuzzer_engine.ts';
 
 await runFuzzerSuite({
   suiteName: 'Fuzzer — Escenarios y Mecánicas (Gen 9)',
-  run: runScenariosFuzzer,
+  run: runScenariosFuzzer
 });

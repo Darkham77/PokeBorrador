@@ -1,53 +1,55 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { useModalStore } from '@/stores/modals'
-import { useAuthStore } from '@/stores/auth'
-import { useTradeStore } from '@/stores/trade'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import { computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useModalStore } from '@/stores/modals';
+import { useAuthStore } from '@/stores/auth';
+import { useTradeStore } from '@/stores/trade';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const authStore = useAuthStore()
-const classStore = usePlayerClassStore()
-const tradeStore = useTradeStore()
-const modalStore = useModalStore()
-const gs = computed(() => gameStore.state)
+const gameStore = useGameStore();
+const uiStore = useUIStore();
+const authStore = useAuthStore();
+const classStore = usePlayerClassStore();
+const tradeStore = useTradeStore();
+const modalStore = useModalStore();
+const gs = computed(() => gameStore.state);
 
 const displayName = computed(() => {
-  const user = authStore.user as { user_metadata?: { username?: string } } | null
-  return gs.value.trainer || user?.user_metadata?.username || 'Entrenador'
-})
+  const user = authStore.user as { user_metadata?: { username?: string } } | null;
+  return gs.value.trainer || user?.user_metadata?.username || 'Entrenador';
+});
 
 // Experience bar logic
 const trainerExpPct = computed(() => {
-  if (!gs.value.trainerExpNeeded || gs.value.trainerExpNeeded === 0) return 0
-  return Math.min(100, (gs.value.trainerExp / gs.value.trainerExpNeeded) * 100)
-})
+  if (!gs.value.trainerExpNeeded || gs.value.trainerExpNeeded === 0) return 0;
+  return Math.min(100, (gs.value.trainerExp / gs.value.trainerExpNeeded) * 100);
+});
 
 const handlePanelClick = (event: Event) => {
   // If clicking specifically the avatar area, handle class logic
-  const isAvatar = (event.target as HTMLElement).closest('#hud-class-avatar')
-  
+  const isAvatar = (event.target as HTMLElement).closest('#hud-class-avatar');
+
   if (isAvatar) {
     if (!gameStore.state.playerClass) {
-      modalStore.open('ClassSelection')
+      modalStore.open('ClassSelection');
     } else {
-      modalStore.open('ClassMissions')
+      modalStore.open('ClassMissions');
     }
-    return
+    return;
   }
-  
-  uiStore.toggleProfile()
-}
+
+  uiStore.toggleProfile();
+};
 </script>
 
 <template>
   <div
     id="hud-trainer-panel"
+    role="button"
+    tabindex="0"
     class="hud-trainer pointer-cursor"
     @click.stop="handlePanelClick"
   >
@@ -66,7 +68,7 @@ const handlePanelClick = (event: Event) => {
           description="Tienes solicitudes de intercambio pendientes."
           position="top"
         >
-          <div 
+          <div
             v-gsap-loop="{ effect: 'pulse', scale: 1.1, duration: 1, ease: 'sine.inOut' }"
             class="alert-badge"
           >
@@ -90,16 +92,15 @@ const handlePanelClick = (event: Event) => {
         </div>
       </div>
       <div class="exp-bar-container">
-        <div
-          id="trainer-exp-bar"
-          class="exp-bar-fill"
-          :style="{ width: trainerExpPct + '%' }"
-        />
+        <div id="trainer-exp-bar" class="exp-bar-fill" :style="{ width: trainerExpPct + '%' }" />
       </div>
       <div
         id="hud-class-label"
         class="class-label"
-        :style="{ display: classStore.playerClass ? 'block' : 'none', color: classStore.currentClassDef?.color }"
+        :style="{
+          display: classStore.playerClass ? 'block' : 'none',
+          color: classStore.currentClassDef?.color
+        }"
       >
         {{ classStore.currentClassDef?.name }}
       </div>
@@ -108,7 +109,7 @@ const handlePanelClick = (event: Event) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .trainer-lv {
   @include pixelated;
@@ -116,8 +117,10 @@ const handlePanelClick = (event: Event) => {
   color: var(--gray);
   font-size: var(--font-8);
   margin-top: 2px;
-  
-  span { color: var(--yellow); }
+
+  span {
+    color: var(--yellow);
+  }
 }
 
 .exp-bar-container {
@@ -133,7 +136,6 @@ const handlePanelClick = (event: Event) => {
   height: 100%;
   border-radius: $radius-lg-alt;
   background: Linear-Gradient(90deg, Rgb(199 125 255 / 100%), Rgb(155 77 202 / 100%));
-  
 }
 
 .class-label {
@@ -144,7 +146,9 @@ const handlePanelClick = (event: Event) => {
   margin-top: 4px;
 }
 
-.pointer-cursor { cursor: pointer; }
+.pointer-cursor {
+  cursor: pointer;
+}
 
 .alert-badge {
   @include pixelated;

@@ -1,9 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import fs from 'node:fs';
 
-import { runBatteryOfDiagnostics, testInMemoryMigrations } from '../../../scripts/maintenance/diagnose_account.ts';
+import {
+  runBatteryOfDiagnostics,
+  testInMemoryMigrations
+} from '../../../scripts/maintenance/diagnose_account.ts';
 import type { GameState } from '@/types/system/game';
 import { INITIAL_STATE } from '@/stores/gameInitialState';
 import { serializeState } from '@/logic/auth/saveSerializer';
@@ -23,8 +26,10 @@ describe('System Utilities & Save Services Domain Suite', () => {
 
     const backupContent = fs.readFileSync(backupPath, 'utf8');
     const backupData = JSON.parse(backupContent);
-    const profiles: Array<{ id: string; email?: string; username?: string }> = backupData.data.profiles || [];
-    const gameSaves: Array<{ user_id?: string; save_data: string | GameState }> = backupData.data.game_saves || [];
+    const profiles: Array<{ id: string; email?: string; username?: string }> =
+      backupData.data.profiles || [];
+    const gameSaves: Array<{ user_id?: string; save_data: string | GameState }> =
+      backupData.data.game_saves || [];
 
     it('should diagnose kenviota account from recent backup and verify migration fix', () => {
       const kenProfile = profiles.find((p: { email?: string }) => p.email === 'kenviota@gmail.com');
@@ -33,34 +38,58 @@ describe('System Utilities & Save Services Domain Suite', () => {
       const kenSaveRow = gameSaves.find((s: { user_id?: string }) => s.user_id === kenProfile.id);
       assert.ok(kenSaveRow, 'Must find kenviota save row');
 
-      const rawSave: GameState = typeof kenSaveRow.save_data === 'string' ? JSON.parse(kenSaveRow.save_data) : kenSaveRow.save_data;
+      const rawSave: GameState =
+        typeof kenSaveRow.save_data === 'string'
+          ? JSON.parse(kenSaveRow.save_data)
+          : kenSaveRow.save_data;
 
       const initialFindings = runBatteryOfDiagnostics(rawSave);
-      const errors = initialFindings.filter(f => f.severity === 'error');
+      const errors = initialFindings.filter((f) => f.severity === 'error');
       assert.ok(errors.length > 0, 'Must find critical errors in legacy unmigrated save');
 
       const migSim = testInMemoryMigrations(rawSave, kenProfile.id);
-      assert.strictEqual(migSim.success, true, 'Migration simulation must successfully resolve all critical errors');
+      assert.strictEqual(
+        migSim.success,
+        true,
+        'Migration simulation must successfully resolve all critical errors'
+      );
       assert.ok(migSim.fixedCount > 0, 'Must fix errors');
-      assert.strictEqual(migSim.remainingFindings.filter(f => f.severity === 'error').length, 0, 'Must have 0 remaining critical errors');
+      assert.strictEqual(
+        migSim.remainingFindings.filter((f) => f.severity === 'error').length,
+        0,
+        'Must have 0 remaining critical errors'
+      );
     });
 
     it('should diagnose oucae account and verify egg IDs and negative inventory fix', () => {
       const oucaeProfile = profiles.find((p: { username?: string }) => p.username === 'oucae');
       assert.ok(oucaeProfile, 'Must find oucae profile');
 
-      const oucaeSaveRow = gameSaves.find((s: { user_id?: string }) => s.user_id === oucaeProfile.id);
+      const oucaeSaveRow = gameSaves.find(
+        (s: { user_id?: string }) => s.user_id === oucaeProfile.id
+      );
       assert.ok(oucaeSaveRow, 'Must find oucae save row');
 
-      const rawSave: GameState = typeof oucaeSaveRow.save_data === 'string' ? JSON.parse(oucaeSaveRow.save_data) : oucaeSaveRow.save_data;
+      const rawSave: GameState =
+        typeof oucaeSaveRow.save_data === 'string'
+          ? JSON.parse(oucaeSaveRow.save_data)
+          : oucaeSaveRow.save_data;
 
       const initialFindings = runBatteryOfDiagnostics(rawSave);
-      const errors = initialFindings.filter(f => f.severity === 'error');
+      const errors = initialFindings.filter((f) => f.severity === 'error');
       assert.ok(errors.length > 0, 'Must find critical errors in oucae save');
 
       const migSim = testInMemoryMigrations(rawSave, oucaeProfile.id);
-      assert.strictEqual(migSim.success, true, 'Migration simulation must successfully resolve all critical errors for oucae');
-      assert.strictEqual(migSim.remainingFindings.filter(f => f.severity === 'error').length, 0, 'Must have 0 remaining critical errors');
+      assert.strictEqual(
+        migSim.success,
+        true,
+        'Migration simulation must successfully resolve all critical errors for oucae'
+      );
+      assert.strictEqual(
+        migSim.remainingFindings.filter((f) => f.severity === 'error').length,
+        0,
+        'Must have 0 remaining critical errors'
+      );
     });
   });
 
@@ -73,11 +102,7 @@ describe('System Utilities & Save Services Domain Suite', () => {
       const serialized = serializeState(rawState);
       const res = validateSaveData(serialized);
 
-      assert.strictEqual(
-        res.success,
-        true,
-        `Validation failed: ${JSON.stringify(res.issues)}`
-      );
+      assert.strictEqual(res.success, true, `Validation failed: ${JSON.stringify(res.issues)}`);
     });
   });
 
@@ -138,12 +163,14 @@ describe('System Utilities & Save Services Domain Suite', () => {
   describe('Router Chunk Error Detection', () => {
     it('should identify "Couldn\'t resolve component" as a chunk reload error', () => {
       const isChunkError = (message: string): boolean => {
-        const chunkErrorRegex = /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Loading chunk|Couldn't resolve component/i;
+        const chunkErrorRegex =
+          /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Loading chunk|Couldn't resolve component/i;
         return chunkErrorRegex.test(message);
       };
 
       const error1 = 'Couldn\'t resolve component "default" at "/login"';
-      const error2 = 'Failed to fetch dynamically imported module: https://example.com/assets/LoginView-123.js';
+      const error2 =
+        'Failed to fetch dynamically imported module: https://example.com/assets/LoginView-123.js';
       const error3 = 'TypeError: Cannot read properties of undefined';
 
       expect(isChunkError(error1)).toBe(true);
@@ -156,14 +183,26 @@ describe('System Utilities & Save Services Domain Suite', () => {
     it('serializes active battle without ReferenceError for requireAbilityId', () => {
       const mockState: any = {
         trainer: { name: 'Ash', level: 1 },
-        team: [{ uid: '1', id: 'pikachu', name: 'Pikachu', hp: 100, maxHp: 100, ability: 'static' }],
+        team: [
+          { uid: '1', id: 'pikachu', name: 'Pikachu', hp: 100, maxHp: 100, ability: 'static' }
+        ],
         box: [],
         starterChosen: true,
         activeBattle: {
           isTrainer: true,
           over: false,
-          enemyTeam: [{ uid: '2', id: 'mew', name: 'Mew', hp: 100, maxHp: 100, ability: 'synchronize', moves: [] }],
-        },
+          enemyTeam: [
+            {
+              uid: '2',
+              id: 'mew',
+              name: 'Mew',
+              hp: 100,
+              maxHp: 100,
+              ability: 'synchronize',
+              moves: []
+            }
+          ]
+        }
       };
 
       assert.doesNotThrow(() => {
@@ -176,7 +215,7 @@ describe('System Utilities & Save Services Domain Suite', () => {
     const baseState = {
       team: [{ id: 'p1' }],
       box: [],
-      starterChosen: true,
+      starterChosen: true
     } as unknown as GameState;
 
     it('should block saving when pokemon count is 0', () => {
@@ -184,7 +223,7 @@ describe('System Utilities & Save Services Domain Suite', () => {
         ...baseState,
         team: [],
         box: [],
-        starterChosen: true,
+        starterChosen: true
       } as unknown as GameState;
 
       const result = canSaveState(state, () => false);
@@ -197,7 +236,7 @@ describe('System Utilities & Save Services Domain Suite', () => {
         ...baseState,
         team: [{ id: 'p1' }],
         box: [],
-        starterChosen: false,
+        starterChosen: false
       } as unknown as GameState;
 
       const result = canSaveState(state, () => false);
@@ -225,9 +264,7 @@ describe('System Utilities & Save Services Domain Suite', () => {
   describe('ShowdownBattleRunner: History Cursor & Boundary Conditions', () => {
     it('returns null from requirePendingHistoryEntry when historyIndex equals history.length (exhausted)', () => {
       const mockDebug = {
-        history: [
-          { p1Choice: 'move 1', p2Choice: 'move 1', battleTurn: 1 }
-        ],
+        history: [{ p1Choice: 'move 1', p2Choice: 'move 1', battleTurn: 1 }],
         replayHistoryIdx: 1,
         certifiedReplayWorkerEnded: true
       };
@@ -238,9 +275,7 @@ describe('System Utilities & Save Services Domain Suite', () => {
 
     it('marks certifiedReplayWorkerEnded when advancing cursor past the last history entry', () => {
       const mockDebug = {
-        history: [
-          { p1Choice: 'move 1', p2Choice: 'move 1', battleTurn: 1 }
-        ],
+        history: [{ p1Choice: 'move 1', p2Choice: 'move 1', battleTurn: 1 }],
         replayHistoryIdx: 0,
         p1ChoiceIdx: 0,
         p2ChoiceIdx: 0,

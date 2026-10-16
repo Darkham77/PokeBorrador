@@ -1,5 +1,9 @@
 import type { SideID } from '@pkmn/sim';
-import { getShowdownWorker, resolveBattleStore, cleanWorkerListener } from './showdownWorkerInstance.ts';
+import {
+  getShowdownWorker,
+  resolveBattleStore,
+  cleanWorkerListener
+} from './showdownWorkerInstance.ts';
 import {
   lastSyncTeamStates,
   syncTeamsFromLastWorkerState,
@@ -14,7 +18,8 @@ export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[
   if (!worker) throw new Error('showdownWorker is null');
   worker.postMessage({ type: 'GET_SIMULATOR_STATE' });
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => { // timer-ok: Web Worker message response timeout with SIMULATOR_STATE_TIMEOUT_MS
+    const timer = setTimeout(() => {
+      // timer-ok: Web Worker message response timeout with SIMULATOR_STATE_TIMEOUT_MS
       cleanWorkerListener(worker, handler);
       reject(new Error('[ShowdownWorkerClient] Timeout waiting for GET_SIMULATOR_STATE_RESPONSE'));
     }, SIMULATOR_STATE_TIMEOUT_MS);
@@ -59,7 +64,9 @@ export async function isPlayerTrappedInWorker(): Promise<boolean> {
   return promise;
 }
 
-export async function applyCheatsInWorker(cheats: Array<{ side: SideID; type: 'heal' }>): Promise<void> {
+export async function applyCheatsInWorker(
+  cheats: Array<{ side: SideID; type: 'heal' }>
+): Promise<void> {
   const worker = getShowdownWorker();
   if (!worker) return;
   worker.postMessage({
@@ -71,9 +78,11 @@ export async function applyCheatsInWorker(cheats: Array<{ side: SideID; type: 'h
       const data = event.data as { type: string; payload: WorkerSuccessPayload };
       if (data.type === 'APPLY_CHEATS_DONE') {
         cleanWorkerListener(worker, handler);
-        ['p1', 'p2', 'p3', 'p4'].forEach(seatId => {
+        (['p1', 'p2', 'p3', 'p4'] as const).forEach((seatId) => {
           const seatStateKey = `${seatId}TeamState` as keyof WorkerSuccessPayload;
-          const seatState = data.payload[seatStateKey] as Array<SynchronizedPokemonState | null> | undefined;
+          const seatState = data.payload[seatStateKey] as
+            | Array<SynchronizedPokemonState | null>
+            | undefined;
           lastSyncTeamStates[seatId] = seatState || null;
         });
         const battleStore = resolveBattleStore();
@@ -93,10 +102,17 @@ export async function applyCheatsInWorker(cheats: Array<{ side: SideID; type: 'h
   });
 }
 
-export async function applyDebugStatusInWorker(side: SideID, uid: string, status: string): Promise<void> {
+export async function applyDebugStatusInWorker(
+  side: SideID,
+  uid: string,
+  status: string
+): Promise<void> {
   const worker = getShowdownWorker();
   if (!worker) return;
-  worker.postMessage({ type: 'APPLY_DEBUG_STATUS', payload: { debugStatus: { side, uid, status } } });
+  worker.postMessage({
+    type: 'APPLY_DEBUG_STATUS',
+    payload: { debugStatus: { side, uid, status } }
+  });
   return new Promise((resolve) => {
     const handler = async (event: MessageEvent) => {
       const data = event.data as { type: string; payload: WorkerSuccessPayload };

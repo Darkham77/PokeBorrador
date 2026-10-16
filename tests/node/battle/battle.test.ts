@@ -9,7 +9,7 @@
  * This avoids the transitive Vue chain: battleFormulas → pokemonDataProvider → vue.
  */
 
-import { describe, it, vi } from 'vitest';
+import { describe, it, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 
@@ -21,11 +21,10 @@ import {
   STAGE_MULTIPLIERS_STAT,
   type PurePokemon,
   type PureMove,
-  type PureBattleWeather,
+  type PureBattleWeather
 } from '../../../src/logic/battle/battleMath.ts';
 
 describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
-
   // Fix Math.random for deterministic results (max damage roll)
   vi.spyOn(Math, 'random').mockReturnValue(1.0);
 
@@ -61,7 +60,7 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
       assert.strictEqual(STAGE_MULTIPLIERS_STAT['2'], 2.0);
     });
     it('should have 0.5 at stage -2', () => {
-      assert.strictEqual(STAGE_MULTIPLIERS_STAT['-2'], 0.50);
+      assert.strictEqual(STAGE_MULTIPLIERS_STAT['-2'], 0.5);
     });
   });
 
@@ -69,21 +68,50 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
 
   describe('getAbilityMultiplier', () => {
     it('Torrente should boost Water at low HP', () => {
-      const attacker: PurePokemon = { level: 50, hp: 10, maxHp: 90, spa: 100, type: 'water', ability: 'torrent' };
+      const attacker: PurePokemon = {
+        level: 50,
+        hp: 10,
+        maxHp: 90,
+        spa: 100,
+        type: 'water',
+        ability: 'torrent'
+      };
       const move: PureMove = { type: 'water', power: 90, cat: 'special' };
       const { mult } = getAbilityMultiplier(attacker, move);
       assert.strictEqual(mult, 1.5);
     });
 
     it('Experto should boost moves with power ≤ 60', () => {
-      const attacker: PurePokemon = { level: 50, hp: 50, maxHp: 100, atk: 100, type: 'normal', ability: 'technician' };
-      const { mult } = getAbilityMultiplier(attacker, { type: 'normal', power: 40, cat: 'physical' });
+      const attacker: PurePokemon = {
+        level: 50,
+        hp: 50,
+        maxHp: 100,
+        atk: 100,
+        type: 'normal',
+        ability: 'technician'
+      };
+      const { mult } = getAbilityMultiplier(attacker, {
+        type: 'normal',
+        power: 40,
+        cat: 'physical'
+      });
       assert.strictEqual(mult, 1.5);
     });
 
     it('Experto should NOT boost moves with power > 60', () => {
-      const attacker: PurePokemon = { level: 50, hp: 50, maxHp: 100, atk: 100, type: 'normal', ability: 'technician' };
-      const { mult } = getAbilityMultiplier(attacker, { type: 'normal', power: 90, cat: 'physical' });
+      const attacker: PurePokemon = {
+        level: 50,
+        hp: 50,
+        maxHp: 100,
+        atk: 100,
+        type: 'normal',
+        ability: 'technician'
+      };
+      const { mult } = getAbilityMultiplier(attacker, {
+        type: 'normal',
+        power: 90,
+        cat: 'physical'
+      });
       assert.strictEqual(mult, 1);
     });
   });
@@ -125,7 +153,7 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
   describe('calculateDamagePure – Damage Formula', () => {
     const attacker: PurePokemon = { level: 100, atk: 200, spa: 200, type: 'electric' };
     const defender: PurePokemon = { level: 100, def: 100, spd: 100, type: 'normal' };
-    const move: PureMove        = { name: 'Rayo', type: 'electric', power: 90, cat: 'special' };
+    const move: PureMove = { name: 'Rayo', type: 'electric', power: 90, cat: 'special' };
 
     it('should calculate base special damage correctly', () => {
       const result = calculateDamagePure(attacker, defender, move, { atkStages: 0, defStages: 0 });
@@ -148,8 +176,8 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
   describe('calculateDamagePure – Abilities', () => {
     it('Intrépido should allow Normal to hit Ghost (eff = 1)', () => {
       const attacker: PurePokemon = { level: 50, atk: 100, type: 'normal', ability: 'scrappy' };
-      const defender: PurePokemon = { level: 50, def: 50,  type: 'ghost' };
-      const move: PureMove        = { name: 'Pisotón', type: 'normal', power: 65, cat: 'physical' };
+      const defender: PurePokemon = { level: 50, def: 50, type: 'ghost' };
+      const move: PureMove = { name: 'Pisotón', type: 'normal', power: 65, cat: 'physical' };
 
       const result = calculateDamagePure(attacker, defender, move);
       assert.ok(result.dmg > 0, 'Damage should be > 0');
@@ -159,10 +187,10 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
     it('Sebo should reduce Fire damage by 50%', () => {
       const attacker: PurePokemon = { level: 50, spa: 100, type: 'fire' };
       const defender: PurePokemon = { level: 50, spd: 100, type: 'normal', ability: 'thickfat' };
-      const move: PureMove        = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
+      const move: PureMove = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
 
       const noSebo = calculateDamagePure(attacker, { ...defender, ability: null }, move);
-      const sebo   = calculateDamagePure(attacker, defender, move);
+      const sebo = calculateDamagePure(attacker, defender, move);
 
       assert.strictEqual(sebo.dmg, Math.floor(noSebo.dmg * 0.5));
     });
@@ -173,8 +201,8 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
   describe('calculateDamagePure – Weather', () => {
     const attacker: PurePokemon = { level: 50, spa: 100, type: 'fire' };
     const defender: PurePokemon = { level: 50, spd: 100, type: 'normal' };
-    const move: PureMove        = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
-    const sun:  PureBattleWeather = { type: 'sun',  turns: 5 };
+    const move: PureMove = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
+    const sun: PureBattleWeather = { type: 'sun', turns: 5 };
     const rain: PureBattleWeather = { type: 'rain', turns: 5 };
 
     it('should boost Fire damage in Sun (1.5x)', () => {

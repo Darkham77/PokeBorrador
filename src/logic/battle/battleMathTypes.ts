@@ -40,6 +40,33 @@ export interface PureMove {
   halfHP?: boolean;
 }
 
+const SPECIAL_TYPES_GEN3 = [
+  'fire',
+  'water',
+  'grass',
+  'electric',
+  'psychic',
+  'ice',
+  'dragon',
+  'dark'
+] as const;
+
+const SPECIAL_TYPES_GEN3_SET: ReadonlySet<PokemonType> = new Set<PokemonType>(SPECIAL_TYPES_GEN3); // runtime-set: Fast O(1) membership lookup set
+
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { HOENN_GENERATION_NUM } from '@/logic/constants/gameplay';
+
+export function getMoveCategory(
+  move: PureMove | { cat?: MoveCategory; type?: PokemonType; id?: PokemonMoveId; power?: number }
+): MoveCategory {
+  if (move.cat === 'status') return 'status';
+  if (ACTIVE_GENERATION <= HOENN_GENERATION_NUM) {
+    if (move.type && SPECIAL_TYPES_GEN3_SET.has(move.type)) return 'special';
+    return 'physical';
+  }
+  return move.cat ?? 'physical';
+}
+
 export interface PureBattleWeather {
   type: WeatherId;
   turns: number;
@@ -99,4 +126,3 @@ export interface PureCatchOptions {
   pokedexCount?: number;
   forceCritical?: boolean;
 }
-

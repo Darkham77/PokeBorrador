@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/modals/spawns/RouteSpawnsWeatherCombatEffects.vue
- * 
+ *
  * Modular sub-panel rendering combat weather effects and type spawn modifiers.
  */
 import type { PokemonType } from '@/data/battle/types';
@@ -42,23 +42,17 @@ defineProps<{
 <template>
   <div class="weather-panel-details">
     <div class="weather-header-line">
-      <span class="weather-title-badge"><span class="emoji">{{ weatherEmoji }}</span> EFECTOS EN COMBATE</span>
-      <div
-        v-if="parsedDescriptionLines.length"
-        class="weather-desc-lines"
+      <span class="weather-title-badge"
+        ><span class="emoji">{{ weatherEmoji }}</span> EFECTOS EN COMBATE</span
       >
+      <div v-if="parsedDescriptionLines.length" class="weather-desc-lines">
         <RouteSpawnsWeatherDescLine
           v-for="(line, lineIdx) in parsedDescriptionLines"
           :key="lineIdx"
           :line="line"
         />
       </div>
-      <span
-        v-else
-        class="weather-desc-line"
-      >
-        Sin efectos climáticos especiales en combate.
-      </span>
+      <span v-else class="weather-desc-line"> Sin efectos climáticos especiales en combate. </span>
     </div>
 
     <!-- Type modifiers tags lists (Map Spawns) -->

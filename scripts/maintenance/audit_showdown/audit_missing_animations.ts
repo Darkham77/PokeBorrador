@@ -18,7 +18,9 @@ export function auditMissingAnimations(srcDir: string): AnimationAuditResult {
   const battleComponentsDir = path.join(srcDir, 'components', 'battle');
   if (!existsSync(battleComponentsDir)) return { missingAnimations };
 
-  const files = getFilesRecursively(battleComponentsDir).filter(f => f.endsWith('.ts') || f.endsWith('.vue'));
+  const files = getFilesRecursively(battleComponentsDir).filter(
+    (f) => f.endsWith('.ts') || f.endsWith('.vue')
+  );
   let aggregatedContent = '';
 
   for (const file of files) {
@@ -68,7 +70,9 @@ export function auditMissingAnimations(srcDir: string): AnimationAuditResult {
 
   for (const showdownId of canonicalShowdownIds) {
     if (!aggregatedContent.includes(showdownId)) {
-      missingAnimations.push(`Falta paridad 1:1 para ID canónico de Showdown '${showdownId}' en componentes visuales de combate`);
+      missingAnimations.push(
+        `Falta paridad 1:1 para ID canónico de Showdown '${showdownId}' en componentes visuales de combate`
+      );
     }
   }
 

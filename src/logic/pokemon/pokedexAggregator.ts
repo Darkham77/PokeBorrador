@@ -1,9 +1,9 @@
 /**
  * src/logic/pokemon/pokedexAggregator.ts
- * 
+ *
  * POKEDEX AGGREGATOR (Node.js 26+)
- * 
- * Uses the new Iterator.concat() feature from V8 14.6 to merge multiple 
+ *
+ * Uses the new Iterator.concat() feature from V8 14.6 to merge multiple
  * data sources (Team, PC, Encounters) without creating intermediate arrays.
  */
 
@@ -16,9 +16,13 @@ export class PokedexAggregator {
    * Returns an iterator that yields all unique Pokémon IDs seen across different pools.
    * Demonstrates Iterator.concat() to avoid merging massive arrays in memory.
    */
-  static getAllKnownSpecies(team: Pokemon[], pc: Pokemon[], seenInWild: PokemonSpeciesId[]): IterableIterator<PokemonSpeciesId> {
-    const teamIds = team.map(p => p.id).values();
-    const pcIds = pc.map(p => p.id).values();
+  static getAllKnownSpecies(
+    team: Pokemon[],
+    pc: Pokemon[],
+    seenInWild: PokemonSpeciesId[]
+  ): IterableIterator<PokemonSpeciesId> {
+    const teamIds = team.map((p) => p.id).values();
+    const pcIds = pc.map((p) => p.id).values();
     const wildIds = seenInWild.values();
 
     // Iterator sequencing (V8 14.6 / Node 26)
@@ -29,7 +33,11 @@ export class PokedexAggregator {
   /**
    * Filters the aggregated iterator.
    */
-  static getFilteredSpecies(team: Pokemon[], pc: Pokemon[], seenInWild: PokemonSpeciesId[]): PokemonSpeciesId[] {
+  static getFilteredSpecies(
+    team: Pokemon[],
+    pc: Pokemon[],
+    seenInWild: PokemonSpeciesId[]
+  ): PokemonSpeciesId[] {
     const all = this.getAllKnownSpecies(team, pc, seenInWild);
     const result: PokemonSpeciesId[] = [];
     const seen = new Set<string>();

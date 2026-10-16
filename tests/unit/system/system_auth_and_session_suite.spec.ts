@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth.ts';
@@ -20,7 +20,7 @@ vi.mock('@/logic/db/supabase', async () => {
   const { mockSupabase } = await import('../../helpers/supabaseMock.ts');
   return {
     supabase: mockSupabase,
-    switchServer: vi.fn(),
+    switchServer: vi.fn()
   };
 });
 
@@ -30,9 +30,15 @@ setupLocalStorageMock();
 let sessionStore: Record<string, string> = {};
 const sessionStorageMock = {
   getItem: vi.fn((key: string) => sessionStore[key] || null),
-  setItem: vi.fn((key: string, value: string) => { sessionStore[key] = value.toString(); }),
-  removeItem: vi.fn((key: string) => { delete sessionStore[key]; }),
-  clear: vi.fn(() => { sessionStore = {}; })
+  setItem: vi.fn((key: string, value: string) => {
+    sessionStore[key] = value.toString();
+  }),
+  removeItem: vi.fn((key: string) => {
+    delete sessionStore[key];
+  }),
+  clear: vi.fn(() => {
+    sessionStore = {};
+  })
 };
 Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock, writable: true });
 
@@ -90,7 +96,7 @@ describe('System Auth, Session & Migration Domain Suite', () => {
     it('debe iniciar sesión local correctamente (Protocolo ASH)', async () => {
       const auth = useAuthStore();
       await auth.localLogin('ASH');
-      
+
       expect(auth.user?.user_metadata?.username).toBe('ASH');
       expect(auth.sessionMode).toBe('offline');
       expect(localStorage.getItem('pokevicio_local_user')).toContain('ASH');
@@ -98,13 +104,19 @@ describe('System Auth, Session & Migration Domain Suite', () => {
 
     it('debe registrar usuarios nuevos en Supabase', async () => {
       const auth = useAuthStore();
-      (supabase.auth.signUp as Mock).mockResolvedValue({ 
-        data: { user: { id: 'new_uuid', email: 'test@pkv.io', user_metadata: { username: 'TrainerTest' } } as unknown as User }, 
-        error: null 
+      (supabase.auth.signUp as Mock).mockResolvedValue({
+        data: {
+          user: {
+            id: 'new_uuid',
+            email: 'test@pkv.io',
+            user_metadata: { username: 'TrainerTest' }
+          } as unknown as User
+        },
+        error: null
       });
 
       await auth.signup('test@pkv.io', 'pass123', 'TrainerTest', 'h');
-      
+
       expect(supabase.auth.signUp).toHaveBeenCalledWith({
         email: 'test@pkv.io',
         password: 'pass123',
@@ -116,23 +128,29 @@ describe('System Auth, Session & Migration Domain Suite', () => {
     it('debe activar el monitoreo de sesión al iniciar sesión online', async () => {
       const auth = useAuthStore();
       (supabase.auth.signInWithPassword as Mock).mockResolvedValue({
-        data: { user: { id: 'user123', user_metadata: { username: 'TrainerTest' } } as unknown as User, session: { access_token: 'tok' } },
+        data: {
+          user: { id: 'user123', user_metadata: { username: 'TrainerTest' } } as unknown as User,
+          session: { access_token: 'tok' }
+        },
         error: null
       });
 
       await auth.login('test@pkv.io', 'pass123');
-      
+
       expect(auth.sessionMode).toBe('online');
       expect(supabase.channel).toHaveBeenCalledWith('session_check_user123');
     });
 
     it('debe resetear el estado al cerrar sesión', async () => {
       const auth = useAuthStore();
-      auth.user = { id: 'user123', user_metadata: { username: 'TrainerTest' } } as unknown as NonNullable<typeof auth.user>;
+      auth.user = {
+        id: 'user123',
+        user_metadata: { username: 'TrainerTest' }
+      } as unknown as NonNullable<typeof auth.user>;
       auth.sessionConflict = true;
-      
+
       await auth.logout(true);
-      
+
       expect(auth.user).toBeNull();
       expect(auth.sessionConflict).toBe(false);
       expect(localStorage.getItem('pokevicio_local_user')).toBeNull();
@@ -140,7 +158,12 @@ describe('System Auth, Session & Migration Domain Suite', () => {
   });
 
   describe('Auth Load Service (Migration v2)', () => {
-    const mockUser = { id: 'test_user', email: 'test@pkv.io', db_version: 3, user_metadata: { username: 'test_user' } } as unknown as AuthUser;
+    const mockUser = {
+      id: 'test_user',
+      email: 'test@pkv.io',
+      db_version: 3,
+      user_metadata: { username: 'test_user' }
+    } as unknown as AuthUser;
     let db: DBRouter;
 
     beforeEach(async () => {
@@ -154,10 +177,12 @@ describe('System Auth, Session & Migration Domain Suite', () => {
     it('should prefer database cloud save over local cache to protect rollbacks and migrations', async () => {
       const cloudSave = {
         save_data: createMockSaveData({ trainer: 'CloudHero', money: 100 }),
-        updated_at: Temporal.Instant.fromEpochMilliseconds(Temporal.Now.instant().epochMilliseconds - 86400000).toString(),
+        updated_at: Temporal.Instant.fromEpochMilliseconds(
+          Temporal.Now.instant().epochMilliseconds - 86400000
+        ).toString(),
         last_save_id: 'cloud_v1'
       };
-      
+
       const localSave = createMockSaveData({
         trainer: 'LocalHero',
         money: 500,
@@ -166,7 +191,10 @@ describe('System Auth, Session & Migration Domain Suite', () => {
       localStorage.setItem('pokemon_local_save_test_user', JSON.stringify(localSave));
 
       db.mode = 'online';
-      vi.spyOn(db.realClient as unknown as Record<string, (...args: unknown[]) => unknown>, 'from').mockReturnValue({
+      vi.spyOn(
+        db.realClient as unknown as Record<string, (...args: unknown[]) => unknown>,
+        'from'
+      ).mockReturnValue({
         select: () => ({
           eq: () => ({
             single: async () => ({ data: cloudSave, error: null })
@@ -184,27 +212,104 @@ describe('System Auth, Session & Migration Domain Suite', () => {
       const invalidSave = createMockSaveData({
         trainer: 'OldTimer',
         team: [
-          { id: 'pikachu', species: 'pikachu', name: 'Pikachu', level: 5, exp: 0, expNeeded: 100, hp: 35, maxHp: 35, atk: 55, def: 40, spa: 50, spd: 50, spe: 90, type: 'electric', status: '', isShiny: false, moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }], ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, nature: 'hardy', ability: 'static' }
+          {
+            id: 'pikachu',
+            species: 'pikachu',
+            name: 'Pikachu',
+            level: 5,
+            exp: 0,
+            expNeeded: 100,
+            hp: 35,
+            maxHp: 35,
+            atk: 55,
+            def: 40,
+            spa: 50,
+            spd: 50,
+            spe: 90,
+            type: 'electric',
+            status: '',
+            isShiny: false,
+            moves: [
+              { id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }
+            ],
+            ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+            nature: 'hardy',
+            ability: 'static'
+          }
         ],
         _last_updated: Temporal.Now.instant().epochMilliseconds
       });
-      
+
       db.mode = 'offline';
       localStorage.setItem('pokemon_local_save_test_user', JSON.stringify(invalidSave));
 
-      await expect(loadBestSave(mockUser, db)).rejects.toThrow('Carga abortada por datos corruptos o inválidos');
+      await expect(loadBestSave(mockUser, db)).rejects.toThrow(
+        'Carga abortada por datos corruptos o inválidos'
+      );
     });
 
     it('should sanitize duplicate UIDs', async () => {
       const corruptedSave = createMockSaveData({
         trainer: 'CloneMaster',
         team: [
-          { id: 'bulbasaur', species: 'bulbasaur', name: 'Bulbasaur', uid: 'same_id', level: 5, exp: 0, expNeeded: 100, hp: 45, maxHp: 45, atk: 49, def: 49, spa: 65, spd: 65, spe: 45, type: 'grass', status: '', isShiny: false, vigor: 100, maxVigor: 100, moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }], ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, nature: 'hardy', ability: 'overgrow' },
-          { id: 'squirtle', species: 'squirtle', name: 'Squirtle', uid: 'same_id', level: 5, exp: 0, expNeeded: 100, hp: 44, maxHp: 44, atk: 48, def: 65, spa: 50, spd: 64, spe: 43, type: 'water', status: '', isShiny: false, vigor: 100, maxVigor: 100, moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }], ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, nature: 'hardy', ability: 'torrent' }
+          {
+            id: 'bulbasaur',
+            species: 'bulbasaur',
+            name: 'Bulbasaur',
+            uid: 'same_id',
+            level: 5,
+            exp: 0,
+            expNeeded: 100,
+            hp: 45,
+            maxHp: 45,
+            atk: 49,
+            def: 49,
+            spa: 65,
+            spd: 65,
+            spe: 45,
+            type: 'grass',
+            status: '',
+            isShiny: false,
+            vigor: 100,
+            maxVigor: 100,
+            moves: [
+              { id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }
+            ],
+            ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+            nature: 'hardy',
+            ability: 'overgrow'
+          },
+          {
+            id: 'squirtle',
+            species: 'squirtle',
+            name: 'Squirtle',
+            uid: 'same_id',
+            level: 5,
+            exp: 0,
+            expNeeded: 100,
+            hp: 44,
+            maxHp: 44,
+            atk: 48,
+            def: 65,
+            spa: 50,
+            spd: 64,
+            spe: 43,
+            type: 'water',
+            status: '',
+            isShiny: false,
+            vigor: 100,
+            maxVigor: 100,
+            moves: [
+              { id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }
+            ],
+            ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+            nature: 'hardy',
+            ability: 'torrent'
+          }
         ],
         _last_updated: Temporal.Now.instant().epochMilliseconds
       });
-      
+
       db.mode = 'offline';
       localStorage.setItem('pokemon_local_save_test_user', JSON.stringify(corruptedSave));
 
@@ -214,7 +319,12 @@ describe('System Auth, Session & Migration Domain Suite', () => {
     });
 
     it('should auto-migrate local user with db_version < 3 in offline mode without throwing', async () => {
-      const legacyUser = { id: 'local_ash', email: 'ash@local', db_version: 2, user_metadata: { username: 'ash' } } as unknown as AuthUser;
+      const legacyUser = {
+        id: 'local_ash',
+        email: 'ash@local',
+        db_version: 2,
+        user_metadata: { username: 'ash' }
+      } as unknown as AuthUser;
       const legacySave = createMockSaveData({
         trainer: 'ash',
         _last_updated: Temporal.Now.instant().epochMilliseconds
@@ -235,7 +345,7 @@ describe('System Auth, Session & Migration Domain Suite', () => {
         isOnline: true,
         login: loginMock,
         signup: vi.fn(),
-        localLogin: vi.fn(),
+        localLogin: vi.fn()
       } as any;
 
       const routerMock = { replace: vi.fn() } as any;
@@ -266,7 +376,7 @@ describe('System Auth, Session & Migration Domain Suite', () => {
         success,
         loading,
         authTab,
-        getFriendlyErrorMessage,
+        getFriendlyErrorMessage
       });
 
       await handlers.handleLogin();
@@ -286,7 +396,7 @@ describe('System Auth, Session & Migration Domain Suite', () => {
         isOnline: false,
         login: vi.fn(),
         signup: vi.fn(),
-        localLogin: localLoginMock,
+        localLogin: localLoginMock
       } as any;
 
       const routerMock = { replace: vi.fn() } as any;
@@ -317,7 +427,7 @@ describe('System Auth, Session & Migration Domain Suite', () => {
         success,
         loading,
         authTab,
-        getFriendlyErrorMessage,
+        getFriendlyErrorMessage
       });
 
       await handlers.handleLocalLogin();

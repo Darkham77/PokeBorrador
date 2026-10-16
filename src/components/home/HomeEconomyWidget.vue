@@ -1,67 +1,61 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useGTSStore } from '@/stores/gts'
-import { useModalStore } from '@/stores/modals'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getItemById } from '@/data/inventory/items'
-import type { MarketListing } from '@/logic/economy/market'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
-import HomeWidgetRefreshBtn from './HomeWidgetRefreshBtn.vue'
+import { computed, onMounted } from 'vue';
+import { useGTSStore } from '@/stores/gts';
+import { useModalStore } from '@/stores/modals';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getItemById } from '@/data/inventory/items';
+import type { MarketListing } from '@/logic/economy/market';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
+import HomeWidgetRefreshBtn from './HomeWidgetRefreshBtn.vue';
 
-const gtsStore = useGTSStore()
-const modalStore = useModalStore()
+const gtsStore = useGTSStore();
+const modalStore = useModalStore();
 
 onMounted(async () => {
   if (gtsStore.listings.length === 0) {
-    await gtsStore.fetchListings()
+    await gtsStore.fetchListings();
   }
-})
+});
 
-const unclaimedGtsCount = computed(() => gtsStore.unclaimedGtsCount)
-const recentListings = computed<MarketListing[]>(() => gtsStore.listings.slice(0, 5))
+const unclaimedGtsCount = computed(() => gtsStore.unclaimedGtsCount);
+const recentListings = computed<MarketListing[]>(() => gtsStore.listings.slice(0, 5));
 
 const openGTS = () => {
-  modalStore.open('GlobalMarket')
-}
+  modalStore.open('GlobalMarket');
+};
 
 const getListingSprite = (listing: MarketListing): string => {
   if (listing.listing_type === 'pokemon') {
-    const poke = listing.data as Pokemon
-    const speciesId = poke.id
-    if (!speciesId) return ''
-    return getAssetUrl(ASSET_TYPES.POKEMON, speciesId, { isShiny: poke.isShiny })
+    const poke = listing.data as Pokemon;
+    const speciesId = poke.id;
+    if (!speciesId) return '';
+    return getAssetUrl(ASSET_TYPES.POKEMON, speciesId, { isShiny: poke.isShiny });
   }
-  return getAssetUrl(ASSET_TYPES.ITEM, String(listing.data?.name || 'pokeball'))
-}
+  return getAssetUrl(ASSET_TYPES.ITEM, String(listing.data?.name || 'pokeball'));
+};
 
 const getListingTitle = (listing: MarketListing): string => {
   if (listing.listing_type === 'pokemon') {
-    const poke = listing.data as Pokemon
-    const shinyMark = poke.isShiny ? ' ✨' : ''
-    return `${poke.name} Nv.${poke.level || 1}${shinyMark}`
+    const poke = listing.data as Pokemon;
+    const shinyMark = poke.isShiny ? ' ✨' : '';
+    return `${poke.name} Nv.${poke.level || 1}${shinyMark}`;
   }
-  const itemDef = getItemById(String(listing.data?.name || ''))
-  const qty = listing.data?.qty || 1
-  return `${itemDef?.name || listing.data?.name || 'Objeto'} x${qty}`
-}
+  const itemDef = getItemById(String(listing.data?.name || ''));
+  const qty = listing.data?.qty || 1;
+  return `${itemDef?.name || listing.data?.name || 'Objeto'} x${qty}`;
+};
 </script>
 
 <template>
-  <div
-    class="home-gts-widget home-section-card"
-  >
+  <div class="home-gts-widget home-section-card">
     <!-- Header -->
     <div class="card-header-bar">
       <div class="title-wrap">
         <span class="emoji card-icon">🏪</span>
         <div class="title-text-group">
-          <h3 class="card-title">
-            MERCADO GTS
-          </h3>
-          <span class="gts-sub">
-            Últimas publicaciones globales
-          </span>
+          <h3 class="card-title">MERCADO GTS</h3>
+          <span class="gts-sub"> Últimas publicaciones globales </span>
         </div>
       </div>
 
@@ -88,28 +82,27 @@ const getListingTitle = (listing: MarketListing): string => {
         <span class="emoji alert-icon">🔔</span>
         <div class="alert-info">
           <span class="alert-title">¡Reclamos pendientes en GTS!</span>
-          <span class="alert-sub">Tienes {{ unclaimedGtsCount }} {{ unclaimedGtsCount === 1 ? 'transacción pendiente' : 'transacciones pendientes' }} de cobro o retiro.</span>
+          <span class="alert-sub"
+            >Tienes {{ unclaimedGtsCount }}
+            {{ unclaimedGtsCount === 1 ? 'transacción pendiente' : 'transacciones pendientes' }} de
+            cobro o retiro.</span
+          >
         </div>
-        <button
-          id="home-economy-widget-btn-ver-en-gts"
-          v-gsap-hover
-          class="alert-claim-btn"
-        >
+        <button id="home-economy-widget-btn-ver-en-gts" v-gsap-hover class="alert-claim-btn">
           VER EN GTS
         </button>
       </div>
 
       <!-- Recent 5 Global Market Listings Preview -->
-      <div
-        v-if="recentListings.length > 0"
-        class="recent-listings-list"
-      >
+      <div v-if="recentListings.length > 0" class="recent-listings-list">
         <div
           v-for="item in recentListings"
           id="home-economy-widget-div-2"
           :key="item.id"
           v-gsap-hover="{ scale: 1.01, x: 2 }"
           class="recent-listing-row"
+          role="button"
+          tabindex="0"
           @click.stop="openGTS"
         >
           <div class="item-icon-slot">
@@ -119,7 +112,7 @@ const getListingTitle = (listing: MarketListing): string => {
               class="item-thumb"
               width="32"
               height="32"
-            >
+            />
           </div>
 
           <div class="item-details">
@@ -137,6 +130,8 @@ const getListingTitle = (listing: MarketListing): string => {
         v-else
         id="home-economy-widget-div-3"
         class="empty-gts-box"
+        role="button"
+        tabindex="0"
         @click.stop="openGTS"
       >
         <span class="emoji empty-gts-icon">🏪</span>
@@ -147,7 +142,7 @@ const getListingTitle = (listing: MarketListing): string => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .home-gts-widget {
   @include home-section-card;

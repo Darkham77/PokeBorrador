@@ -2,11 +2,11 @@
  * @file backup_supabase_db.ts
  * @description Script automático para descargar un respaldo completo (backup) en formato JSON
  * de la base de datos Supabase elegida (nube o NAS), extrayendo credenciales y Tenant ID del .env maestro.
- * 
+ *
  * UTILIDAD:
  * Permite al usuario elegir un servidor (--server=<perfil> o --all) y generar un archivo
  * estructurado con el contenido de todas las tablas del esquema public.
- * 
+ *
  * CUMPLE CON:
  * - Regla de Aislamiento y Parseo Multi-Servidor (env-multi-server-parser).
  * - Estándares Node.js 26+ (Explicit Resource Management con 'using', prefijos node:).
@@ -43,13 +43,17 @@ async function downloadTablesData(
       totalRows += rows.length;
       console.log(styleText('gray', `   ✔️ ${tableName}: ${rows.length} filas respaldadas.`));
     } catch (tErr: unknown) {
-      console.error(styleText('red', `   ❌ Error al respaldar tabla ${tableName}: ${(tErr as Error).message}`));
+      console.error(
+        styleText('red', `   ❌ Error al respaldar tabla ${tableName}: ${(tErr as Error).message}`)
+      );
     }
   }
   return { backupData, totalRows };
 }
 
-async function downloadAuthData(sql: postgres.Sql): Promise<{ authUsers: Record<string, unknown>[]; authIdentities: Record<string, unknown>[] }> {
+async function downloadAuthData(
+  sql: postgres.Sql
+): Promise<{ authUsers: Record<string, unknown>[]; authIdentities: Record<string, unknown>[] }> {
   let authUsers: Record<string, unknown>[] = [];
   let authIdentities: Record<string, unknown>[] = [];
 
@@ -59,16 +63,30 @@ async function downloadAuthData(sql: postgres.Sql): Promise<{ authUsers: Record<
     authUsers = usersRes as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
     console.log(styleText('gray', `   ✔️ auth.users: ${authUsers.length} usuarios respaldados.`));
   } catch (authErr: unknown) {
-    console.error(styleText('yellow', `   ⚠️ Advertencia: No se pudo respaldar auth.users: ${(authErr as Error).message}`));
+    console.error(
+      styleText(
+        'yellow',
+        `   ⚠️ Advertencia: No se pudo respaldar auth.users: ${(authErr as Error).message}`
+      )
+    );
   }
 
   try {
-    console.log(styleText('cyan', '👤 Descargando identidades de usuario desde auth.identities...'));
+    console.log(
+      styleText('cyan', '👤 Descargando identidades de usuario desde auth.identities...')
+    );
     const idRes = await sql`SELECT * FROM auth.identities;`;
     authIdentities = idRes as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
-    console.log(styleText('gray', `   ✔️ auth.identities: ${authIdentities.length} identidades respaldadas.`));
+    console.log(
+      styleText('gray', `   ✔️ auth.identities: ${authIdentities.length} identidades respaldadas.`)
+    );
   } catch (authErr: unknown) {
-    console.error(styleText('yellow', `   ⚠️ Advertencia: No se pudo respaldar auth.identities: ${(authErr as Error).message}`));
+    console.error(
+      styleText(
+        'yellow',
+        `   ⚠️ Advertencia: No se pudo respaldar auth.identities: ${(authErr as Error).message}`
+      )
+    );
   }
 
   return { authUsers, authIdentities };
@@ -79,22 +97,46 @@ async function backupSingleServerProfile(
   profile: string,
   canonicalName: string
 ): Promise<void> {
-  console.log(styleText('bold', styleText('blue', `\n==================================================`)));
-  console.log(styleText('bold', styleText('cyan', `📥 INICIANDO RESPALDO DE BASE DE DATOS: [${canonicalName}]`)));
-  console.log(styleText('bold', styleText('blue', `==================================================`)));
+  console.log(
+    styleText('bold', styleText('blue', `\n==================================================`))
+  );
+  console.log(
+    styleText(
+      'bold',
+      styleText('cyan', `📥 INICIANDO RESPALDO DE BASE DE DATOS: [${canonicalName}]`)
+    )
+  );
+  console.log(
+    styleText('bold', styleText('blue', `==================================================`))
+  );
 
   const serverBackupDir = path.join(BACKUPS_DIR, canonicalName);
   await fsPromises.mkdir(serverBackupDir, { recursive: true });
 
   const dbUrl = buildDatabaseUrl(conf, canonicalName);
   if (!dbUrl) {
-    console.error(styleText('red', `❌ Error: No se pudo construir la URL de conexión Postgres para el perfil "${canonicalName}".`));
-    console.error(styleText('yellow', `👉 Asegúrate de tener SERVER_${profile}_POSTGRES_PASSWORD y SERVER_${profile}_SUPABASE_PUBLIC_URL en el .env`));
+    console.error(
+      styleText(
+        'red',
+        `❌ Error: No se pudo construir la URL de conexión Postgres para el perfil "${canonicalName}".`
+      )
+    );
+    console.error(
+      styleText(
+        'yellow',
+        `👉 Asegúrate de tener SERVER_${profile}_POSTGRES_PASSWORD y SERVER_${profile}_SUPABASE_PUBLIC_URL en el .env`
+      )
+    );
     return;
   }
 
   if (dbUrl.includes('placeholder')) {
-    console.log(styleText('yellow', `⚠️  Advertencia: La contraseña para [${canonicalName}] es un placeholder. Omitiendo respaldo.`));
+    console.log(
+      styleText(
+        'yellow',
+        `⚠️  Advertencia: La contraseña para [${canonicalName}] es un placeholder. Omitiendo respaldo.`
+      )
+    );
     return;
   }
 
@@ -104,7 +146,9 @@ async function backupSingleServerProfile(
   const sql = postgres(dbUrl, { ssl: isSupabaseCloud ? 'require' : false, max: 1 });
 
   try {
-    interface TableRow { table_name: string }
+    interface TableRow {
+      table_name: string;
+    }
     const tables = await sql<TableRow[]>`
       SELECT table_name 
       FROM information_schema.tables 
@@ -113,12 +157,22 @@ async function backupSingleServerProfile(
     `;
 
     if (tables.length === 0) {
-      console.log(styleText('yellow', `⚠️  No se encontraron tablas en el esquema public de [${canonicalName}].`));
+      console.log(
+        styleText(
+          'yellow',
+          `⚠️  No se encontraron tablas en el esquema public de [${canonicalName}].`
+        )
+      );
       await sql.end();
       return;
     }
 
-    console.log(styleText('green', `📊 Se detectaron ${tables.length} tablas en [${canonicalName}]. Iniciando descarga...`));
+    console.log(
+      styleText(
+        'green',
+        `📊 Se detectaron ${tables.length} tablas en [${canonicalName}]. Iniciando descarga...`
+      )
+    );
 
     const { backupData, totalRows } = await downloadTablesData(sql, tables);
     const { authUsers, authIdentities } = await downloadAuthData(sql);
@@ -147,9 +201,16 @@ async function backupSingleServerProfile(
 
     console.log(styleText('green', `\n✨ Respaldo completado exitosamente en [${canonicalName}]:`));
     console.log(styleText('cyan', `📂 Archivo guardado en: ${backupFilePath}`));
-    console.log(styleText('cyan', `📈 Resumen: ${tables.length} tablas, ${totalRows} filas totales.`));
+    console.log(
+      styleText('cyan', `📈 Resumen: ${tables.length} tablas, ${totalRows} filas totales.`)
+    );
   } catch (dbErr: unknown) {
-    console.error(styleText('red', `❌ Error al conectar o respaldar la base de datos de [${canonicalName}]: ${(dbErr as Error).message}`));
+    console.error(
+      styleText(
+        'red',
+        `❌ Error al conectar o respaldar la base de datos de [${canonicalName}]: ${(dbErr as Error).message}`
+      )
+    );
     try {
       await sql.end();
     } catch {
@@ -159,16 +220,31 @@ async function backupSingleServerProfile(
 }
 
 export async function backupSupabaseDb() {
-  console.log(styleText('bold', `\n--- 📦 SUPABASE DATABASE BACKUP MANAGER (Node.js ${BACKUP_TARGET_NODE_VERSION_LABEL}+) ---`));
+  console.log(
+    styleText(
+      'bold',
+      `\n--- 📦 SUPABASE DATABASE BACKUP MANAGER (Node.js ${BACKUP_TARGET_NODE_VERSION_LABEL}+) ---`
+    )
+  );
 
   const serverConfigs = await readAndParseEnv();
   const baseProfiles = Object.keys(serverConfigs);
   if (baseProfiles.length === 0) {
-    console.error(styleText('red', '❌ Error: No se encontraron configuraciones de servidor en el .env.'));
+    console.error(
+      styleText('red', '❌ Error: No se encontraron configuraciones de servidor en el .env.')
+    );
     process.exit(1);
   }
 
-  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain: Non-domain utility collection or data structure
+  const allAvailable = Array.from(
+    new Set(
+      baseProfiles.concat(
+        Object.values(serverConfigs)
+          .map((c) => c.ID)
+          .filter(Boolean) as string[]
+      )
+    )
+  ); // no-domain: Non-domain utility collection or data structure
   const targetProfiles = parseServerArguments(process.argv.slice(2), baseProfiles, allAvailable);
 
   await fsPromises.mkdir(BACKUPS_DIR, { recursive: true });
@@ -184,7 +260,9 @@ export async function backupSupabaseDb() {
   for (const profile of targetProfiles) {
     const conf = profileToConfig.get(profile);
     if (!conf) {
-      console.error(styleText('red', `❌ Error: El perfil o ID "${profile}" no existe en el archivo .env.`));
+      console.error(
+        styleText('red', `❌ Error: El perfil o ID "${profile}" no existe en el archivo .env.`)
+      );
       continue;
     }
     const canonicalName = conf.ID || profile;
@@ -193,10 +271,10 @@ export async function backupSupabaseDb() {
 }
 
 // Permitir ejecución directa
-const isDirectRun = process.argv[1] && (
-  process.argv[1].endsWith('backup_supabase_db.ts') ||
-  process.argv[1].includes('backup_supabase_db.ts')
-);
+const isDirectRun =
+  process.argv[1] &&
+  (process.argv[1].endsWith('backup_supabase_db.ts') ||
+    process.argv[1].includes('backup_supabase_db.ts'));
 
 if (isDirectRun) {
   backupSupabaseDb().catch((err) => {

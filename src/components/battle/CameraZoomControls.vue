@@ -1,54 +1,63 @@
 <script setup lang="ts">
-import { useBattleStore } from '@/stores/battle/battle'
-import { useUIStore } from '@/stores/ui'
+import { useBattleStore } from '@/stores/battle/battle';
+import { useUIStore } from '@/stores/ui';
 
 const MAX_ZOOM_LEVEL = 1.0;
 const DEFAULT_MIN_ZOOM_LEVEL = 0.5;
 const ZOOM_INCREMENT = 0.1;
 const ZOOM_DECIMALS_FACTOR = 10;
 
-const props = withDefaults(defineProps<{
-  minZoom?: number
-}>(), {
-  minZoom: DEFAULT_MIN_ZOOM_LEVEL
-})
+const props = withDefaults(
+  defineProps<{
+    minZoom?: number;
+  }>(),
+  {
+    minZoom: DEFAULT_MIN_ZOOM_LEVEL
+  }
+);
 
-const battleStore = useBattleStore()
-const uiStore = useUIStore()
+const battleStore = useBattleStore();
+const uiStore = useUIStore();
 
 const zoomIn = () => {
-  const current = battleStore.debugZoom
+  const current = battleStore.debugZoom;
   if (current < MAX_ZOOM_LEVEL) {
-    const nextZoom = Math.min(MAX_ZOOM_LEVEL, Math.round((current + ZOOM_INCREMENT) * ZOOM_DECIMALS_FACTOR) / ZOOM_DECIMALS_FACTOR)
-    battleStore.debugZoom = nextZoom
+    const nextZoom = Math.min(
+      MAX_ZOOM_LEVEL,
+      Math.round((current + ZOOM_INCREMENT) * ZOOM_DECIMALS_FACTOR) / ZOOM_DECIMALS_FACTOR
+    );
+    battleStore.debugZoom = nextZoom;
   }
-}
+};
 
 const zoomOut = () => {
-  const current = battleStore.debugZoom
-  const minAllowed = props.minZoom
+  const current = battleStore.debugZoom;
+  const minAllowed = props.minZoom;
   if (current > minAllowed) {
-    const nextZoom = Math.max(minAllowed, Math.round((current - ZOOM_INCREMENT) * ZOOM_DECIMALS_FACTOR) / ZOOM_DECIMALS_FACTOR)
-    battleStore.debugZoom = nextZoom
+    const nextZoom = Math.max(
+      minAllowed,
+      Math.round((current - ZOOM_INCREMENT) * ZOOM_DECIMALS_FACTOR) / ZOOM_DECIMALS_FACTOR
+    );
+    battleStore.debugZoom = nextZoom;
   }
-}
+};
 
 const copyReplay = async () => {
-  const payload = battleStore.getCombatReplayPayload()
+  const payload = battleStore.getCombatReplayPayload();
   if (!payload) {
-    uiStore.notify('No hay combate activo para exportar', '⚠️')
-    return
+    uiStore.notify('No hay combate activo para exportar', '⚠️');
+    return;
   }
-  const text = JSON.stringify(payload, null, 2)
+  const text = JSON.stringify(payload, null, 2);
   try {
     if (navigator?.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(text);
     }
-    uiStore.notify('Replay de combate copiado al portapapeles', '📋')
+    uiStore.notify('Replay de combate copiado al portapapeles', '📋');
   } catch (err) {
-    console.error('Failed to copy replay to clipboard:', err)
+    console.error('Failed to copy replay to clipboard:', err);
   }
-}
+};
 </script>
 
 <template>
@@ -83,7 +92,7 @@ const copyReplay = async () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .camera-zoom-controls {
   @include pixelated;

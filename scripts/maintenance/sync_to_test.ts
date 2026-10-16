@@ -8,7 +8,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SOURCE_DIR = path.resolve(__dirname, '..');
 const TARGET_DIR = path.resolve(SOURCE_DIR, '..', 'pokevicio-test');
 
-const DIRECTORIES_TO_COPY: string[] = [ // no-domain: Non-domain utility collection or data structure
+const DIRECTORIES_TO_COPY: string[] = [
+  // no-domain: Non-domain utility collection or data structure
   'api',
   path.join('database', 'migrations'),
   'public',
@@ -16,7 +17,8 @@ const DIRECTORIES_TO_COPY: string[] = [ // no-domain: Non-domain utility collect
   'src'
 ];
 
-const FILES_TO_COPY: string[] = [ // no-domain: Non-domain utility collection or data structure
+const FILES_TO_COPY: string[] = [
+  // no-domain: Non-domain utility collection or data structure
   'package.json',
   'package-lock.json',
   'vite.config.ts',
@@ -26,14 +28,15 @@ const FILES_TO_COPY: string[] = [ // no-domain: Non-domain utility collection or
   'index.html',
   '.gitignore',
   '.env.example',
-  'eslint.config.js',
+  '.node-version',
   '.prettierrc',
   '.markdownlint.json',
   'README.md',
   path.join('tests', 'vitest.setup.ts')
 ];
 
-const PRESERVED_PATTERNS: string[] = [ // no-domain: Non-domain utility collection or data structure
+const PRESERVED_PATTERNS: string[] = [
+  // no-domain: Non-domain utility collection or data structure
   '.git',
   '.github'
 ];
@@ -42,7 +45,11 @@ function shouldPreserve(name: string): boolean {
   return PRESERVED_PATTERNS.includes(name) || name.startsWith('.git') || name.startsWith('.github');
 }
 
-async function copyRecursive(src: string, dest: string, ignoreFilter?: (p: string) => boolean): Promise<void> {
+async function copyRecursive(
+  src: string,
+  dest: string,
+  ignoreFilter?: (p: string) => boolean
+): Promise<void> {
   if (ignoreFilter && ignoreFilter(src)) {
     return;
   }
@@ -51,11 +58,7 @@ async function copyRecursive(src: string, dest: string, ignoreFilter?: (p: strin
     await fs.mkdir(dest, { recursive: true });
     const entries = await fs.readdir(src, { withFileTypes: true });
     for (const entry of entries) {
-      await copyRecursive(
-        path.join(src, entry.name),
-        path.join(dest, entry.name),
-        ignoreFilter
-      );
+      await copyRecursive(path.join(src, entry.name), path.join(dest, entry.name), ignoreFilter);
     }
   } else {
     await fs.mkdir(path.dirname(dest), { recursive: true });
@@ -147,7 +150,7 @@ async function main(): Promise<void> {
   console.log(`\n✨ Sync completed successfully!\n`);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(`❌ Error during sync:`, err);
   process.exit(1);
 });

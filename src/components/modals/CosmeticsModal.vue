@@ -1,44 +1,45 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import { useCosmeticsStore } from '@/stores/player/cosmetics'
-import { useProfileStore } from '@/stores/player/profile'
-import { useGameStore } from '@/stores/game'
-import { useAuthStore } from '@/stores/auth'
-import BaseModal from '@/components/common/BaseModal.vue'
-import AvatarFrameSelector from '@/components/modals/AvatarFrameSelector.vue'
-import CosmeticsNickStyleCard from './CosmeticsNickStyleCard.vue'
-
+import { computed } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import { useCosmeticsStore } from '@/stores/player/cosmetics';
+import { useProfileStore } from '@/stores/player/profile';
+import { useGameStore } from '@/stores/game';
+import { useAuthStore } from '@/stores/auth';
+import BaseModal from '@/components/common/BaseModal.vue';
+import AvatarFrameSelector from '@/components/modals/AvatarFrameSelector.vue';
+import CosmeticsNickStyleCard from './CosmeticsNickStyleCard.vue';
 
 interface Props {
-  id?: string
-  show?: boolean
+  id?: string;
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   id: 'cosmetics-modal',
   show: true
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const uiStore = useUIStore()
-const cosmeticsStore = useCosmeticsStore()
-const profileStore = useProfileStore()
-const gameStore = useGameStore()
-const authStore = useAuthStore()
+const uiStore = useUIStore();
+const cosmeticsStore = useCosmeticsStore();
+const profileStore = useProfileStore();
+const gameStore = useGameStore();
+const authStore = useAuthStore();
 
 const previewUsername = computed(() => {
-  const pName = profileStore.profileData.username
-  if (pName && pName !== '—' && pName.trim().length > 0) return pName
-  return gameStore.state.trainer || (authStore.user?.user_metadata?.username as string) || 'Entrenador'
-})
+  const pName = profileStore.profileData.username;
+  if (pName && pName !== '—' && pName.trim().length > 0) return pName;
+  return (
+    gameStore.state.trainer || (authStore.user?.user_metadata?.username as string) || 'Entrenador'
+  );
+});
 
 const closeCosmetics = () => {
-  emit('close')
-}
+  emit('close');
+};
 
 import {
   isCosmeticStyleLocked,
@@ -46,16 +47,16 @@ import {
   checkIsLocalEnvironment,
   type LockableCosmeticStyle,
   type CosmeticPlayerContext
-} from './cosmeticsFilterHelper'
+} from './cosmeticsFilterHelper';
 
 const isLocal = computed(() => {
-  const hn = typeof window !== 'undefined' ? window.location.hostname : undefined
-  return checkIsLocalEnvironment(import.meta.env.DEV, hn)
-})
+  const hn = typeof window !== 'undefined' ? window.location.hostname : undefined;
+  return checkIsLocalEnvironment(import.meta.env.DEV, hn);
+});
 
 const isAdmin = computed(() => {
-  return authStore.user?.role === 'admin' || isLocal.value
-})
+  return authStore.user?.role === 'admin' || isLocal.value;
+});
 
 const playerContext = computed<CosmeticPlayerContext>(() => ({
   playerClass: gameStore.state.playerClass,
@@ -63,20 +64,20 @@ const playerContext = computed<CosmeticPlayerContext>(() => ({
   trainerLevel: gameStore.state.trainerLevel,
   faction: gameStore.state.faction,
   isAdmin: isAdmin.value
-}))
+}));
 
 const isNickLocked = (style: LockableCosmeticStyle) => {
-  return isCosmeticStyleLocked(style, playerContext.value)
-}
+  return isCosmeticStyleLocked(style, playerContext.value);
+};
 
 const selectNick = (style: LockableCosmeticStyle) => {
-  const lockNotice = resolveCosmeticLockNotification(style, 'estilo', playerContext.value)
+  const lockNotice = resolveCosmeticLockNotification(style, 'estilo', playerContext.value);
   if (lockNotice) {
-    uiStore.notify(lockNotice, '🔒')
-    return
+    uiStore.notify(lockNotice, '🔒');
+    return;
   }
-  cosmeticsStore.equipNickStyle(style.id)
-}
+  cosmeticsStore.equipNickStyle(style.id);
+};
 </script>
 
 <template>
@@ -96,9 +97,7 @@ const selectNick = (style: LockableCosmeticStyle) => {
           <h3>Estilos de Nick</h3>
           <span class="badge">CHAT &amp; PERFIL</span>
         </div>
-        <p class="section-desc">
-          Personalizá cómo los demás ven tu nombre.
-        </p>
+        <p class="section-desc">Personalizá cómo los demás ven tu nombre.</p>
 
         <div class="styles-grid">
           <CosmeticsNickStyleCard
@@ -126,7 +125,7 @@ const selectNick = (style: LockableCosmeticStyle) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_cosmetics-shared";
+@use '@/styles/components/_cosmetics-shared';
 
 .cosmetics-modal-internal {
   display: flex;
@@ -154,6 +153,9 @@ const selectNick = (style: LockableCosmeticStyle) => {
 
 .modal-footer-internal {
   text-align: center;
-  p { color: Rgb(71 85 105 / 100%); font-size: var(--font-11); }
+  p {
+    color: Rgb(71 85 105 / 100%);
+    font-size: var(--font-11);
+  }
 }
 </style>

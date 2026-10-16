@@ -27,7 +27,7 @@ export interface GeneratedContinentResult {
   readonly gridWidth: number;
   readonly gridHeight: number;
   readonly biomeGrid: ContinentBiomeType[][];
-  readonly nodes: Record<string, ContinentNode>;
+  readonly nodes: Record<string, ContinentNode>; // open-record: Continent nodes dictionary indexed by node id
   readonly connections: readonly ContinentConnection[];
   readonly roads: ReadonlySet<string>;
 }
@@ -104,8 +104,12 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
   const simplexMoist = new SimplexNoise(seed + 101);
 
   // 1. Compute raw Elevation and Moisture grids
-  const elevationGrid: number[][] = Array.from({ length: gridH }, () => new Array(gridW).fill(0));
-  const moistureGrid: number[][] = Array.from({ length: gridH }, () => new Array(gridW).fill(0));
+  const elevationGrid: number[][] = Array.from({ length: gridH }, () =>
+    Array.from({ length: gridW }, () => 0)
+  );
+  const moistureGrid: number[][] = Array.from({ length: gridH }, () =>
+    Array.from({ length: gridW }, () => 0)
+  );
 
   const halfW = gridW / 2;
   const halfH = gridH / 2;
@@ -141,7 +145,7 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
   );
 
   const biomeGrid: ContinentBiomeType[][] = Array.from({ length: gridH }, () =>
-    new Array<ContinentBiomeType>(gridW).fill('ocean')
+    Array.from({ length: gridW }, () => 'ocean')
   );
 
   for (let y = 0; y < gridH; y++) {
@@ -158,7 +162,8 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
         biomeGrid[y]![x] = 'beach';
       } else if (elev >= mountainThreshold) {
         // High mountain peak in cold north becomes snow peak
-        const isSnowPeak = biomes.snowPercent > 0 && elev >= mountainThreshold + 0.1 && northFactor > 0.6;
+        const isSnowPeak =
+          biomes.snowPercent > 0 && elev >= mountainThreshold + 0.1 && northFactor > 0.6;
         if (isSnowPeak) {
           biomeGrid[y]![x] = 'snow';
         } else {
@@ -193,13 +198,17 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
     }
   }
 
-  const allCandidateLand = habitableLand.length >= cityCount ? habitableLand : [...habitableLand, ...secondaryLand];
+  const allCandidateLand =
+    habitableLand.length >= cityCount ? habitableLand : [...habitableLand, ...secondaryLand];
 
   // 4. Place Urban Nodes
-  const nodes: Record<string, ContinentNode> = {};
+  const nodes: Record<string, ContinentNode> = {}; // open-record: Generated urban continent nodes indexed by node id
   const placedCoords: { gx: number; gy: number }[] = [];
   const targetCount = Math.min(cityCount, Math.max(2, allCandidateLand.length));
-  const minDistance = Math.max(3, Math.floor(Math.min(gridW, gridH) / (Math.sqrt(targetCount) * 1.4)));
+  const minDistance = Math.max(
+    3,
+    Math.floor(Math.min(gridW, gridH) / (Math.sqrt(targetCount) * 1.4))
+  );
 
   // Shuffle candidates deterministically
   for (let i = allCandidateLand.length - 1; i > 0; i--) {
@@ -245,7 +254,12 @@ export function generateContinent(config: ContinentGenConfig): GeneratedContinen
     const nodeId = `node_${i + 1}`;
     const name = SETTLEMENT_NAMES[i % SETTLEMENT_NAMES.length] ?? `Asentamiento ${i + 1}`;
 
-    const scale = i === 0 ? 'metropolis' : i === 1 ? 'city' : urbanScales[Math.min(urbanScales.length - 1, 2 + (i % 3))]!;
+    const scale =
+      i === 0
+        ? 'metropolis'
+        : i === 1
+          ? 'city'
+          : urbanScales[Math.min(urbanScales.length - 1, 2 + (i % 3))]!;
 
     const amenities: ContinentAmenity[] = ['center'];
     if (scale === 'metropolis' || scale === 'city' || scale === 'town') {

@@ -1,87 +1,89 @@
 <script setup lang="ts">
-import { gsap } from 'gsap'
-import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import PokemonSortBar from '@/components/pokemon/PokemonSortBar.vue'
-import PokemonTagBar from '@/components/pokemon/PokemonTagBar.vue'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
-import { POKEMON_TYPES } from '@/data/battle/types'
-import type { PokemonFilterTagId } from '@/logic/constants/tags'
+import { gsap } from 'gsap';
+import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import PokemonSortBar from '@/components/pokemon/PokemonSortBar.vue';
+import PokemonTagBar from '@/components/pokemon/PokemonTagBar.vue';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
+import { POKEMON_TYPES } from '@/data/battle/types';
+import type { PokemonFilterTagId } from '@/logic/constants/tags';
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
 
 interface BoxFilters {
-  tier: string
-  type: string
-  levelMin: number
-  levelMax: number
-  friendshipMin?: number
-  friendshipMax?: number
-  ivHP: number
-  ivATK: number
-  ivDEF: number
-  ivSPA: number
-  ivSPD: number
-  ivSPE: number
-  evHP?: number
-  evATK?: number
-  evDEF?: number
-  evSPA?: number
-  evSPD?: number
-  evSPE?: number
-  ivAny31: boolean
-  ivMin: number
-  ivMax: number
-  ivTotalMin: number
-  ivTotalMax: number
-  bstMin: number
-  bstMax: number
-  search: string
-  tags: PokemonFilterTagId[]
-  friendshipSealTier?: string
-  friendshipEvoReady?: boolean
-  friendshipMaxOnly?: boolean
+  tier: string;
+  type: string;
+  levelMin: number;
+  levelMax: number;
+  friendshipMin?: number;
+  friendshipMax?: number;
+  ivHP: number;
+  ivATK: number;
+  ivDEF: number;
+  ivSPA: number;
+  ivSPD: number;
+  ivSPE: number;
+  evHP?: number;
+  evATK?: number;
+  evDEF?: number;
+  evSPA?: number;
+  evSPD?: number;
+  evSPE?: number;
+  ivAny31: boolean;
+  ivMin: number;
+  ivMax: number;
+  ivTotalMin: number;
+  ivTotalMax: number;
+  bstMin: number;
+  bstMax: number;
+  search: string;
+  tags: PokemonFilterTagId[];
+  friendshipSealTier?: string;
+  friendshipEvoReady?: boolean;
+  friendshipMaxOnly?: boolean;
 }
 
 interface Props {
-  filters: BoxFilters
-  isFiltersOpen: boolean
-  sortMode: string
-  sortDirection?: string
-  hasActiveFilters: boolean
-  resultsCount: number
+  filters: BoxFilters;
+  isFiltersOpen: boolean;
+  sortMode: string;
+  sortDirection?: string;
+  hasActiveFilters: boolean;
+  resultsCount: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   sortDirection: 'desc'
-})
+});
 
 const emit = defineEmits<{
-  (e: 'update:isFiltersOpen', val: boolean): void
-  (e: 'update:sortMode', val: string): void
-  (e: 'update:sortDirection', val: string): void
-  (e: 'update:filters', val: BoxFilters): void
-  (e: 'reset'): void
-}>()
+  (e: 'update:isFiltersOpen', val: boolean): void;
+  (e: 'update:sortMode', val: string): void;
+  (e: 'update:sortDirection', val: string): void;
+  (e: 'update:filters', val: BoxFilters): void;
+  (e: 'reset'): void;
+}>();
 
 const toggleFilters = () => {
-  emit('update:isFiltersOpen', !props.isFiltersOpen)
-}
+  emit('update:isFiltersOpen', !props.isFiltersOpen);
+};
 
 const updateFilter = <K extends keyof BoxFilters>(key: K, val: BoxFilters[K]) => {
-  emit('update:filters', { ...props.filters, [key]: val })
-}
+  emit('update:filters', { ...props.filters, [key]: val });
+};
 
 const onSearchInput = (e: Event) => {
-  const val = (e.target as HTMLInputElement).value
-  updateFilter('search', val)
-}
+  const val = (e.target as HTMLInputElement).value;
+  updateFilter('search', val);
+};
 
 const onRangeInput = (key: keyof BoxFilters, e: Event) => {
-  const val = Number((e.target as HTMLInputElement).value)
-  updateFilter(key, val as BoxFilters[keyof BoxFilters]) // domain-ok: Open dynamic text or non-domain string payload
-}
+  const val = Number((e.target as HTMLInputElement).value);
+  updateFilter(key, val as BoxFilters[keyof BoxFilters]); // domain-ok: Open dynamic text or non-domain string payload
+};
 
 // Standardized stat colors (Corrected with Hexadecimal values)
 const STAT_COLORS: Record<string, string> = {
+  // open-record: UI stat and range bar display colors
   HP: '#4ade80',
   ATK: '#f87171',
   DEF: '#60a5fa',
@@ -90,58 +92,58 @@ const STAT_COLORS: Record<string, string> = {
   SPE: '#fbbf24',
   LEVEL: '#a855f7',
   TOTAL: '#fbbf24'
-}
+};
 
-const MAX_INDIVIDUAL_IV_STAT = 31
-const MAX_INDIVIDUAL_EV_STAT = 252
-const MAX_POKEMON_BASE_STAT_TOTAL = 1000
-const PERCENTAGE_SCALE_FACTOR = 100;
+const MAX_INDIVIDUAL_IV_STAT = 31;
+const MAX_INDIVIDUAL_EV_STAT = 252;
+const MAX_POKEMON_BASE_STAT_TOTAL = 1000;
 
 const getSliderStyle = (val: number, max: number, color: string) => {
-  const percentage = (val / max) * PERCENTAGE_SCALE_FACTOR
+  const percentage = (val / max) * PERCENT_BASE_MULTIPLIER;
   return {
     background: `Linear-Gradient(to right, ${color} 0%, ${color} ${percentage}%, Rgba(255,255,255,0.1) ${percentage}%, Rgba(255,255,255,0.1) 100%)`
-  }
-}
+  };
+};
 
-const BOX_FILTERS_ENTER_DURATION_SEC = 0.35
-const BOX_FILTERS_LEAVE_DURATION_SEC = 0.25
+const BOX_FILTERS_ENTER_DURATION_SEC = 0.35;
+const BOX_FILTERS_LEAVE_DURATION_SEC = 0.25;
 
 const beforeEnter = (el: Element) => {
-  gsap.set(el, { 
+  gsap.set(el, {
     height: 0,
     opacity: 0,
     overflow: 'hidden'
-  })
-}
+  });
+};
 
 const enter = (el: Element, done: () => void) => {
   // layout-ok: Acordeon expand/collapse requiere animacion de altura en transicion de Vue SFC
-  gsap.fromTo(el, 
+  gsap.fromTo(
+    el,
     { height: 0, opacity: 0 },
-    { 
-      height: 'auto', 
-      opacity: 1, 
-      duration: BOX_FILTERS_ENTER_DURATION_SEC, 
+    {
+      height: 'auto',
+      opacity: 1,
+      duration: BOX_FILTERS_ENTER_DURATION_SEC,
       ease: 'power2.out',
       onComplete: () => {
-        gsap.set(el, { clearProps: 'height,overflow' })
-        done()
+        gsap.set(el, { clearProps: 'height,overflow' });
+        done();
       }
     }
-  )
-}
+  );
+};
 
 const leave = (el: Element, done: () => void) => {
   // layout-ok: Acordeon expand/collapse requiere animacion de altura en transicion de Vue SFC
-  gsap.to(el, { 
-    height: 0, 
-    opacity: 0, 
-    duration: BOX_FILTERS_LEAVE_DURATION_SEC, 
+  gsap.to(el, {
+    height: 0,
+    opacity: 0,
+    duration: BOX_FILTERS_LEAVE_DURATION_SEC,
     ease: 'power2.in',
-    onComplete: done 
-  })
-}
+    onComplete: done
+  });
+};
 </script>
 
 <template>
@@ -156,9 +158,10 @@ const leave = (el: Element, done: () => void) => {
             :value="filters.search"
             type="text"
             placeholder="Buscar..."
+            aria-label="Buscar Pokémon"
             class="box-search-input"
             @input="onSearchInput"
-          >
+          />
           <button
             v-if="filters.search"
             id="box-filters-btn-1"
@@ -175,7 +178,7 @@ const leave = (el: Element, done: () => void) => {
           position="bottom"
         >
           <button
-            id="box-filters-btn-filtros" 
+            id="box-filters-btn-filtros"
             class="filter-toggle-btn-premium"
             :class="{ active: isFiltersOpen }"
             @click.stop="toggleFilters"
@@ -206,24 +209,15 @@ const leave = (el: Element, done: () => void) => {
           @update:model-value="updateFilter('tags', $event)"
         />
       </div>
-    </div> <!-- end box-controls-compact -->
+    </div>
+    <!-- end box-controls-compact -->
 
     <!-- Panel Extendido de Filtros (Optimizado Mixto) -->
-    <Transition
-      :css="false"
-      @before-enter="beforeEnter"
-      @enter="enter"
-      @leave="leave"
-    >
-      <div
-        v-if="isFiltersOpen"
-        class="filters-expanded-premium"
-      >
+    <Transition :css="false" @before-enter="beforeEnter" @enter="enter" @leave="leave">
+      <div v-if="isFiltersOpen" class="filters-expanded-premium">
         <!-- Fila Superior: Tipos (Ancho Completo) -->
         <div class="compact-section full-width">
-          <h4 class="box-section-label">
-            TIPOS ELEMENTALES
-          </h4>
+          <h4 class="box-section-label">TIPOS ELEMENTALES</h4>
           <div class="types-compact-grid">
             <button
               id="box-filters-btn-todos"
@@ -247,9 +241,7 @@ const leave = (el: Element, done: () => void) => {
 
         <!-- Filtro por Tier -->
         <div class="compact-section full-width margin-top">
-          <h4 class="box-section-label">
-            FILTRAR POR TIER (POTENCIAL GENÉTICO)
-          </h4>
+          <h4 class="box-section-label">FILTRAR POR TIER (POTENCIAL GENÉTICO)</h4>
           <div class="tiers-compact-grid">
             <button
               id="box-filters-btn-todos-2"
@@ -263,9 +255,9 @@ const leave = (el: Element, done: () => void) => {
               id="box-filters-btn-tier"
               :key="tier"
               :class="['filter-pill tier-pill', { active: filters.tier === tier }]"
-              :style="{ 
-                '--tier-color': (cfg as { color: string, bg: string }).color,
-                '--tier-bg': (cfg as { color: string, bg: string }).bg
+              :style="{
+                '--tier-color': (cfg as { color: string; bg: string }).color,
+                '--tier-bg': (cfg as { color: string; bg: string }).bg
               }"
               @click.stop="updateFilter('tier', tier as string)"
             >
@@ -279,9 +271,7 @@ const leave = (el: Element, done: () => void) => {
           <!-- Columna 1: Rangos -->
           <div class="filter-column">
             <div class="compact-section">
-              <h4 class="box-section-label">
-                RANGOS GENERALES
-              </h4>
+              <h4 class="box-section-label">RANGOS GENERALES</h4>
               <div class="premium-slider-group compact">
                 <div class="slider-row-mini">
                   <span class="label">NV. MÍN</span>
@@ -291,9 +281,13 @@ const leave = (el: Element, done: () => void) => {
                     type="range"
                     min="1"
                     max="100"
-                    :style="[getSliderStyle(filters.levelMin, 100, STAT_COLORS.LEVEL as string), { '--stat-color': STAT_COLORS.LEVEL }]"
+                    aria-label="Nivel mínimo"
+                    :style="[
+                      getSliderStyle(filters.levelMin, 100, STAT_COLORS.LEVEL as string),
+                      { '--stat-color': STAT_COLORS.LEVEL }
+                    ]"
                     @input="onRangeInput('levelMin', $event)"
-                  >
+                  />
                   <span class="val">{{ filters.levelMin }}</span>
                 </div>
                 <div class="slider-row-mini">
@@ -304,9 +298,13 @@ const leave = (el: Element, done: () => void) => {
                     type="range"
                     min="1"
                     max="100"
-                    :style="[getSliderStyle(filters.levelMax, 100, STAT_COLORS.LEVEL as string), { '--stat-color': STAT_COLORS.LEVEL }]"
+                    aria-label="Nivel máximo"
+                    :style="[
+                      getSliderStyle(filters.levelMax, 100, STAT_COLORS.LEVEL as string),
+                      { '--stat-color': STAT_COLORS.LEVEL }
+                    ]"
                     @input="onRangeInput('levelMax', $event)"
-                  >
+                  />
                   <span class="val">{{ filters.levelMax }}</span>
                 </div>
                 <div class="slider-row-mini">
@@ -317,9 +315,13 @@ const leave = (el: Element, done: () => void) => {
                     type="range"
                     min="0"
                     :max="MAX_INDIVIDUAL_IV_STAT"
-                    :style="[getSliderStyle(filters.ivMin, MAX_INDIVIDUAL_IV_STAT, '#4ade80'), { '--stat-color': '#4ade80' }]"
+                    aria-label="IV individual mínimo"
+                    :style="[
+                      getSliderStyle(filters.ivMin, MAX_INDIVIDUAL_IV_STAT, '#4ade80'),
+                      { '--stat-color': '#4ade80' }
+                    ]"
                     @input="onRangeInput('ivMin', $event)"
-                  >
+                  />
                   <span class="val">{{ filters.ivMin }}</span>
                 </div>
                 <div class="slider-row-mini">
@@ -330,9 +332,13 @@ const leave = (el: Element, done: () => void) => {
                     type="range"
                     min="0"
                     :max="MAX_INDIVIDUAL_IV_STAT"
-                    :style="[getSliderStyle(filters.ivMax, MAX_INDIVIDUAL_IV_STAT, '#4ade80'), { '--stat-color': '#4ade80' }]"
+                    aria-label="IV individual máximo"
+                    :style="[
+                      getSliderStyle(filters.ivMax, MAX_INDIVIDUAL_IV_STAT, '#4ade80'),
+                      { '--stat-color': '#4ade80' }
+                    ]"
                     @input="onRangeInput('ivMax', $event)"
-                  >
+                  />
                   <span class="val">{{ filters.ivMax }}</span>
                 </div>
                 <div class="slider-row-mini">
@@ -343,9 +349,13 @@ const leave = (el: Element, done: () => void) => {
                     type="range"
                     min="0"
                     max="255"
-                    :style="[getSliderStyle(filters.friendshipMin ?? 0, 255, '#f43f5e'), { '--stat-color': '#f43f5e' }]"
+                    aria-label="Amistad mínima"
+                    :style="[
+                      getSliderStyle(filters.friendshipMin ?? 0, 255, '#f43f5e'),
+                      { '--stat-color': '#f43f5e' }
+                    ]"
                     @input="onRangeInput('friendshipMin', $event)"
-                  >
+                  />
                   <span class="val">{{ filters.friendshipMin ?? 0 }}</span>
                 </div>
                 <div class="slider-row-mini">
@@ -356,9 +366,13 @@ const leave = (el: Element, done: () => void) => {
                     type="range"
                     min="0"
                     max="255"
-                    :style="[getSliderStyle(filters.friendshipMax ?? 255, 255, '#f43f5e'), { '--stat-color': '#f43f5e' }]"
+                    aria-label="Amistad máxima"
+                    :style="[
+                      getSliderStyle(filters.friendshipMax ?? 255, 255, '#f43f5e'),
+                      { '--stat-color': '#f43f5e' }
+                    ]"
                     @input="onRangeInput('friendshipMax', $event)"
-                  >
+                  />
                   <span class="val">{{ filters.friendshipMax ?? 255 }}</span>
                 </div>
                 <div class="slider-row-mini">
@@ -370,9 +384,13 @@ const leave = (el: Element, done: () => void) => {
                     min="0"
                     :max="MAX_POKEMON_BASE_STAT_TOTAL"
                     step="10"
-                    :style="[getSliderStyle(filters.bstMin, MAX_POKEMON_BASE_STAT_TOTAL, '#fbbf24'), { '--stat-color': '#fbbf24' }]"
+                    aria-label="Estadísticas base totales mínimas"
+                    :style="[
+                      getSliderStyle(filters.bstMin, MAX_POKEMON_BASE_STAT_TOTAL, '#fbbf24'),
+                      { '--stat-color': '#fbbf24' }
+                    ]"
                     @input="onRangeInput('bstMin', $event)"
-                  >
+                  />
                   <span class="val">{{ filters.bstMin }}</span>
                 </div>
               </div>
@@ -382,9 +400,7 @@ const leave = (el: Element, done: () => void) => {
           <!-- Columna 2: IVs Stats -->
           <div class="filter-column">
             <div class="compact-section full-height">
-              <h4 class="box-section-label">
-                IVs STATS INDIVIDUALES
-              </h4>
+              <h4 class="box-section-label">IVs STATS INDIVIDUALES</h4>
               <div class="iv-mini-grid">
                 <div
                   v-for="stat in ['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE']"
@@ -398,13 +414,20 @@ const leave = (el: Element, done: () => void) => {
                     type="range"
                     min="0"
                     :max="MAX_INDIVIDUAL_IV_STAT"
-                    :style="[getSliderStyle(filters[('iv' + stat) as keyof BoxFilters] as number, MAX_INDIVIDUAL_IV_STAT, STAT_COLORS[stat] as string), { '--stat-color': STAT_COLORS[stat] }]"
+                    :aria-label="'IV mínimo de ' + stat"
+                    :style="[
+                      getSliderStyle(
+                        filters[('iv' + stat) as keyof BoxFilters] as number,
+                        MAX_INDIVIDUAL_IV_STAT,
+                        STAT_COLORS[stat] as string
+                      ),
+                      { '--stat-color': STAT_COLORS[stat] }
+                    ]"
                     @input="onRangeInput(('iv' + stat) as keyof BoxFilters, $event)"
-                  >
-                  <span
-                    class="stat-val"
-                    :style="{ color: STAT_COLORS[stat] }"
-                  >{{ filters[('iv' + stat) as keyof BoxFilters] }}</span>
+                  />
+                  <span class="stat-val" :style="{ color: STAT_COLORS[stat] }">{{
+                    filters[('iv' + stat) as keyof BoxFilters]
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -413,9 +436,7 @@ const leave = (el: Element, done: () => void) => {
           <!-- Columna 3: EVs Stats -->
           <div class="filter-column">
             <div class="compact-section full-height">
-              <h4 class="box-section-label">
-                EVs STATS INDIVIDUALES
-              </h4>
+              <h4 class="box-section-label">EVs STATS INDIVIDUALES</h4>
               <div class="iv-mini-grid">
                 <div
                   v-for="stat in ['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE']"
@@ -430,13 +451,20 @@ const leave = (el: Element, done: () => void) => {
                     min="0"
                     :max="MAX_INDIVIDUAL_EV_STAT"
                     step="4"
-                    :style="[getSliderStyle(Number(filters[('ev' + stat) as keyof BoxFilters] || 0), MAX_INDIVIDUAL_EV_STAT, STAT_COLORS[stat] as string), { '--stat-color': STAT_COLORS[stat] }]"
+                    :aria-label="'EV mínimo de ' + stat"
+                    :style="[
+                      getSliderStyle(
+                        Number(filters[('ev' + stat) as keyof BoxFilters] || 0),
+                        MAX_INDIVIDUAL_EV_STAT,
+                        STAT_COLORS[stat] as string
+                      ),
+                      { '--stat-color': STAT_COLORS[stat] }
+                    ]"
                     @input="onRangeInput(('ev' + stat) as keyof BoxFilters, $event)"
-                  >
-                  <span
-                    class="stat-val"
-                    :style="{ color: STAT_COLORS[stat] }"
-                  >{{ filters[('ev' + stat) as keyof BoxFilters] || 0 }}</span>
+                  />
+                  <span class="stat-val" :style="{ color: STAT_COLORS[stat] }">{{
+                    filters[('ev' + stat) as keyof BoxFilters] || 0
+                  }}</span>
                 </div>
               </div>
             </div>

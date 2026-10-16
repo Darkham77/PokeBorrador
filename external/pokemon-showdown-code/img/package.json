@@ -2,12 +2,22 @@
   "name": "@pkmn/img",
   "version": "0.3.4",
   "description": "Logic for displaying Pokémon Showdown's sprite/icon resources",
-  "repository": "github:pkmn/ps",
   "license": "MIT",
+  "repository": "github:pkmn/ps",
+  "files": [
+    "build"
+  ],
   "sideEffects": false,
   "main": "build/index.js",
   "module": "build/index.mjs",
   "types": "build/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "adaptable": [
+        "./build/adaptable.d.ts"
+      ]
+    }
+  },
   "unpkg": "build/index.min.js",
   "exports": {
     ".": {
@@ -19,19 +29,9 @@
       "import": "./build/adaptable.mjs"
     }
   },
-  "typesVersions": {
-    "*": {
-      "adaptable": [
-        "./build/adaptable.d.ts"
-      ]
-    }
-  },
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "build"
-  ],
   "scripts": {
     "lint": "eslint --cache src",
     "fix": "eslint --fix src",

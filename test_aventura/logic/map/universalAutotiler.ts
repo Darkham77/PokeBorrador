@@ -7,10 +7,7 @@ import {
   RMXP_SUBTILES,
   type RmxpSubtilePos
 } from '../../config/kantoTileEngineConfig.ts';
-import {
-  KANTO_TILE_SIZE,
-  CELL_BIOME
-} from '../../types/map/kantoGridModel.ts';
+import { KANTO_TILE_SIZE, CELL_BIOME } from '../../types/map/kantoGridModel.ts';
 import type { DynamicCatalogLoader } from './kantoCatalogLoader.ts';
 import { type MountainPalette } from './mountainAutotileEngine.ts';
 
@@ -157,13 +154,17 @@ export class UniversalAutotiler {
       (minX >= b.mtMoon.minGx && minX <= b.mtMoon.maxGx && minY <= b.mtMoon.maxGy)
     ) {
       pal = 'brown'; // Canonical Mt. Moon massif
-    } else if (minX >= b.rockTunnel.minGx && minY >= b.rockTunnel.minGy && minY <= b.rockTunnel.maxGy) {
+    } else if (
+      minX >= b.rockTunnel.minGx &&
+      minY >= b.rockTunnel.minGy &&
+      minY <= b.rockTunnel.maxGy
+    ) {
       pal = 'brown'; // Canonical Rock Tunnel massif
     } else if (minX < b.indigoPlateauMinGx || minY > b.seafoamMinGy) {
       pal = 'gray'; // Canonical Indigo Plateau & Seafoam / Cinnabar
     } else {
       const hash = ((minX * b.hashPrimeX + minY * b.hashPrimeY) ^ b.hashXor) & b.hashMask;
-      pal = (hash % 2 === 0) ? 'brown' : 'gray';
+      pal = hash % 2 === 0 ? 'brown' : 'gray';
     }
 
     for (const k of comp) {
@@ -228,8 +229,10 @@ export class UniversalAutotiler {
     const isSouthCliffTop = s && !isSameOrHigherMt(gx, gy + 2);
 
     if (isSouthCliffFace) {
-      if (!w && e) return { primaryImage: `${prefix}_corner_bl.png`, underlayImage, pal, isRockTier };
-      if (!e && w) return { primaryImage: `${prefix}_corner_br.png`, underlayImage, pal, isRockTier };
+      if (!w && e)
+        return { primaryImage: `${prefix}_corner_bl.png`, underlayImage, pal, isRockTier };
+      if (!e && w)
+        return { primaryImage: `${prefix}_corner_br.png`, underlayImage, pal, isRockTier };
       return { primaryImage: `${prefix}_face.png`, underlayImage, pal, isRockTier };
     }
 
@@ -240,15 +243,20 @@ export class UniversalAutotiler {
     }
 
     // 3. North Outer Corners (missing north and one lateral border)
-    if (!n && !w && s && e) return { primaryImage: `${prefix}_corner_tl.png`, underlayImage, pal, isRockTier };
-    if (!n && !e && s && w) return { primaryImage: `${prefix}_corner_tr.png`, underlayImage, pal, isRockTier };
+    if (!n && !w && s && e)
+      return { primaryImage: `${prefix}_corner_tl.png`, underlayImage, pal, isRockTier };
+    if (!n && !e && s && w)
+      return { primaryImage: `${prefix}_corner_tr.png`, underlayImage, pal, isRockTier };
 
     // 4. North Edge (missing north border)
-    if (!n && s && w && e) return { primaryImage: `${prefix}_top.png`, underlayImage, pal, isRockTier };
+    if (!n && s && w && e)
+      return { primaryImage: `${prefix}_top.png`, underlayImage, pal, isRockTier };
 
     // 5. Lateral Edges (missing only left or right)
-    if (!w && e && n && s) return { primaryImage: `${prefix}_left.png`, underlayImage, pal, isRockTier };
-    if (!e && w && n && s) return { primaryImage: `${prefix}_right.png`, underlayImage, pal, isRockTier };
+    if (!w && e && n && s)
+      return { primaryImage: `${prefix}_left.png`, underlayImage, pal, isRockTier };
+    if (!e && w && n && s)
+      return { primaryImage: `${prefix}_right.png`, underlayImage, pal, isRockTier };
 
     // 6. Concave Inner Corners (all 4 cardinal present, check diagonals)
     const nw = isSameOrHigherMt(gx - 1, gy - 1);
@@ -285,7 +293,9 @@ export class UniversalAutotiler {
     if (layout && layout[pieceName]) {
       return layout[pieceName];
     }
-    return LPC_PIECE_SLICES[pieceName] ?? LPC_PIECE_SLICES.B ?? LPC_PIECE_SLICES.C ?? { sx: 0, sy: 0 };
+    return (
+      LPC_PIECE_SLICES[pieceName] ?? LPC_PIECE_SLICES.B ?? LPC_PIECE_SLICES.C ?? { sx: 0, sy: 0 }
+    );
   }
 
   resolvePiece(grid: Uint8Array[], gx: number, gy: number, cellType: number): string {
@@ -367,9 +377,10 @@ export class UniversalAutotiler {
     const T = KANTO_TILE_SIZE;
 
     // Base Grass under non-water, non-mountain terrain (prefer authentic GBA grass metatile)
-    const gbaBaseGrass = this.loader.getImage('poke_grass_plain.png')
-      || this.loader.getImage('poke_grass.png')
-      || this.loader.getImage('poke_grass_pallet.png');
+    const gbaBaseGrass =
+      this.loader.getImage('poke_grass_plain.png') ||
+      this.loader.getImage('poke_grass.png') ||
+      this.loader.getImage('poke_grass_pallet.png');
     if (cell !== CELL_BIOME.WATER && cell !== CELL_BIOME.MOUNTAIN_DIRT) {
       if (cell === CELL_BIOME.FOREST_WALL) {
         const forestGrass = this.loader.getImage('poke_forest_grass.png') || gbaBaseGrass;
@@ -461,8 +472,9 @@ export class UniversalAutotiler {
         else if (!se) waterImg = this.loader.getImage('poke_water_inner_br.png');
         else {
           // Deep ocean center water
-          waterImg = this.loader.getImage('poke_water_deep.png')
-            || this.loader.getImage('poke_water_calm.png');
+          waterImg =
+            this.loader.getImage('poke_water_deep.png') ||
+            this.loader.getImage('poke_water_calm.png');
         }
       }
 
@@ -480,8 +492,9 @@ export class UniversalAutotiler {
       const res = this.resolveMountainTile(grid, gx, gy, elevation);
 
       // Base plateau rock underlay for mountain cells (never green grass)
-      const baseRockImg = this.loader.getImage(`poke_cliff_${res.pal}_plateau_rock.png`)
-        || this.loader.getImage(`poke_cliff_${res.pal}_plateau.png`);
+      const baseRockImg =
+        this.loader.getImage(`poke_cliff_${res.pal}_plateau_rock.png`) ||
+        this.loader.getImage(`poke_cliff_${res.pal}_plateau.png`);
       if (baseRockImg) {
         ctx.drawImage(baseRockImg, 0, 0, baseRockImg.width, baseRockImg.height, dx, dy, T, T);
       } else {
@@ -496,9 +509,10 @@ export class UniversalAutotiler {
         }
       }
 
-      const pImg = this.loader.getImage(res.primaryImage)
-        || baseRockImg
-        || this.loader.getImage(`poke_cliff_cone_${res.pal}.png`);
+      const pImg =
+        this.loader.getImage(res.primaryImage) ||
+        baseRockImg ||
+        this.loader.getImage(`poke_cliff_cone_${res.pal}.png`);
       if (pImg) {
         ctx.drawImage(pImg, 0, 0, pImg.width, pImg.height, dx, dy, T, T);
       }
@@ -560,5 +574,3 @@ export class UniversalAutotiler {
     ctx.drawImage(sheetImg, slice.sx, slice.sy, T, T, dx, dy, T, T);
   }
 }
-
-

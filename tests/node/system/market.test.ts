@@ -7,7 +7,7 @@
  * Zero mocks, zero Pinia, zero Vue, zero browser dependencies.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import {
@@ -45,9 +45,15 @@ const BASE_POKEMON: Pokemon = {
   moves: [],
   ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
   nature: 'hardy'
-}
+};
 
-function makePokemonListing(id: string, name: string, price: number, sellerId: string, extra: Partial<Pokemon> = {}): Extract<MarketListing, { listing_type: 'pokemon' }> {
+function makePokemonListing(
+  id: string,
+  name: string,
+  price: number,
+  sellerId: string,
+  extra: Partial<Pokemon> = {}
+): Extract<MarketListing, { listing_type: 'pokemon' }> {
   return {
     id,
     listing_type: 'pokemon',
@@ -60,7 +66,13 @@ function makePokemonListing(id: string, name: string, price: number, sellerId: s
   };
 }
 
-function makeItemListing(id: string, name: string, price: number, sellerId: string, qty = 1): Extract<MarketListing, { listing_type: 'item' }> {
+function makeItemListing(
+  id: string,
+  name: string,
+  price: number,
+  sellerId: string,
+  qty = 1
+): Extract<MarketListing, { listing_type: 'item' }> {
   return {
     id,
     listing_type: 'item',
@@ -123,12 +135,12 @@ describe('Global Market Logic & Calculations', () => {
 
     it('correctly reports seen status and prevents duplicates', () => {
       const state = { marketSoldSeenIds: [] } as unknown as GameState;
-      
+
       assert.strictEqual(isMarketSoldSeen('listing_123', state), false);
-      
+
       markMarketSoldSeen('listing_123', state);
       assert.strictEqual(isMarketSoldSeen('listing_123', state), true);
-      
+
       // Attempting to mark seen again should not duplicate
       markMarketSoldSeen('listing_123', state);
       assert.strictEqual(state.marketSoldSeenIds?.length, 1);
@@ -157,12 +169,12 @@ describe('Global Market Logic & Calculations', () => {
       const pFilters = getDefaultFilters('pokemon');
       const filteredPokes = applyMarketFilters(allListings, pFilters, 'explore');
       assert.strictEqual(filteredPokes.length, 2);
-      assert.ok(filteredPokes.every(i => i.listing_type === 'pokemon'));
+      assert.ok(filteredPokes.every((i) => i.listing_type === 'pokemon'));
 
       const iFilters = getDefaultFilters('item');
       const filteredItems = applyMarketFilters(allListings, iFilters, 'explore');
       assert.strictEqual(filteredItems.length, 2);
-      assert.ok(filteredItems.every(i => i.listing_type === 'item'));
+      assert.ok(filteredItems.every((i) => i.listing_type === 'item'));
     });
 
     it('filters listings by price ranges', () => {

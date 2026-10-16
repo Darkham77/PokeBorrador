@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   selectPassiveOpponent,
   computePassiveEnemyChoice,
@@ -9,11 +9,31 @@ import { deserializePokemonTeam } from '@/logic/auth/savePokemonSerializer';
 describe('passiveMatchmakingHelper', () => {
   describe('selectPassiveOpponent', () => {
     const mockCandidates: PassiveTeamCandidate[] = [
-      { user_id: 'user_1', elo_rating: 1050, team_data: JSON.stringify([{ id: 'pikachu', name: 'Pikachu', level: 50 }]) },
-      { user_id: 'user_2', elo_rating: 1250, team_data: JSON.stringify([{ id: 'charizard', name: 'Charizard', level: 50 }]) },
-      { user_id: 'user_3', elo_rating: 1800, team_data: JSON.stringify([{ id: 'blastoise', name: 'Blastoise', level: 50 }]) },
-      { user_id: 'user_4', elo_rating: 3500, team_data: JSON.stringify([{ id: 'mewtwo', name: 'Mewtwo', level: 100 }]) },
-      { user_id: 'self_user', elo_rating: 1000, team_data: JSON.stringify([{ id: 'bulbasaur', name: 'Bulbasaur', level: 50 }]) }
+      {
+        user_id: 'user_1',
+        elo_rating: 1050,
+        team_data: JSON.stringify([{ id: 'pikachu', name: 'Pikachu', level: 50 }])
+      },
+      {
+        user_id: 'user_2',
+        elo_rating: 1250,
+        team_data: JSON.stringify([{ id: 'charizard', name: 'Charizard', level: 50 }])
+      },
+      {
+        user_id: 'user_3',
+        elo_rating: 1800,
+        team_data: JSON.stringify([{ id: 'blastoise', name: 'Blastoise', level: 50 }])
+      },
+      {
+        user_id: 'user_4',
+        elo_rating: 3500,
+        team_data: JSON.stringify([{ id: 'mewtwo', name: 'Mewtwo', level: 100 }])
+      },
+      {
+        user_id: 'self_user',
+        elo_rating: 1000,
+        team_data: JSON.stringify([{ id: 'bulbasaur', name: 'Bulbasaur', level: 50 }])
+      }
     ];
 
     it('excludes self from candidate selection', () => {
@@ -120,8 +140,14 @@ describe('passiveMatchmakingHelper', () => {
     });
 
     it('falls back to move 1 or null when request is undefined or no moves available', () => {
-      expect(computePassiveEnemyChoice(undefined)).toEqual({ type: 'move', moveIndex: 0, choiceString: 'move 1' });
-      expect(computePassiveEnemyChoice({ forceSwitch: [true], side: { pokemon: [] } } as any)).toBeNull();
+      expect(computePassiveEnemyChoice(undefined)).toEqual({
+        type: 'move',
+        moveIndex: 0,
+        choiceString: 'move 1'
+      });
+      expect(
+        computePassiveEnemyChoice({ forceSwitch: [true], side: { pokemon: [] } } as any)
+      ).toBeNull();
     });
   });
 });

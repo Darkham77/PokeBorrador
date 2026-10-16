@@ -209,7 +209,9 @@ function connectDoorsToStreets(
   }
 
   for (const b of buildings) {
-    const doorTargets: { x: number; y: number }[] = [{ x: b.doorX, y: b.doorY + DOOR_OFFSET_SOUTH }];
+    const doorTargets: { x: number; y: number }[] = [
+      { x: b.doorX, y: b.doorY + DOOR_OFFSET_SOUTH }
+    ];
     if (b.width >= DOOR_DOUBLE_WIDTH_THRESHOLD && b.doorX + 1 < b.x + b.width) {
       doorTargets.push({ x: b.doorX + 1, y: b.doorY + DOOR_OFFSET_SOUTH });
     }
@@ -265,6 +267,27 @@ function connectDoorsToStreets(
       }
     }
   }
+}
+
+function finalizeSettlementStreets(
+  buildings: readonly UrbanBuildingPlacement[],
+  internalStreets: { x: number; y: number }[],
+  bounds: { bx: number; by: number; W: number; H: number },
+  isCellLand: (x: number, y: number) => boolean
+): { cleanStreets: { x: number; y: number }[]; streetSet: Set<string>; bMask: Set<string> } {
+  connectDoorsToStreets(buildings, internalStreets, bounds, isCellLand);
+  const bMask = new Set<string>();
+  for (const b of buildings) {
+    for (let dy = 0; dy < b.height; dy++) {
+      for (let dx = 0; dx < b.width; dx++) bMask.add(`${b.x + dx}_${b.y + dy}`);
+    }
+  }
+
+  const cleanStreets = internalStreets.filter(
+    (s) => !bMask.has(`${s.x}_${s.y}`) && isCellLand(s.x, s.y)
+  );
+  const streetSet = new Set(cleanStreets.map((s) => `${s.x}_${s.y}`));
+  return { cleanStreets, streetSet, bMask };
 }
 
 /**
@@ -326,7 +349,12 @@ export function generateOrganicCityLayout(
   };
 
   const hasAdjacentWater = (x: number, y: number): boolean => {
-    return isCellWater(x - 1, y) || isCellWater(x + 1, y) || isCellWater(x, y - 1) || isCellWater(x, y + 1);
+    return (
+      isCellWater(x - 1, y) ||
+      isCellWater(x + 1, y) ||
+      isCellWater(x, y - 1) ||
+      isCellWater(x, y + 1)
+    );
   };
 
   // Check if settlement area contains water
@@ -390,9 +418,11 @@ export function generateOrganicCityLayout(
       // 2.5D Isolation Mask:
       // X axis (lateral): minimum 1 tile free separation
       // Y axis (front/back): minimum 2 tiles south (front sidewalk), 1 tile north (eave clearance)
-      const lateralOverlap = x < b.x + b.width + CITY_LATERAL_CLEARANCE && x + w > b.x - CITY_LATERAL_CLEARANCE;
+      const lateralOverlap =
+        x < b.x + b.width + CITY_LATERAL_CLEARANCE && x + w > b.x - CITY_LATERAL_CLEARANCE;
       if (lateralOverlap) {
-        const verticalSeparated = y + h + CITY_FRONT_CLEARANCE <= b.y || b.y + b.height + CITY_REAR_CLEARANCE <= y;
+        const verticalSeparated =
+          y + h + CITY_FRONT_CLEARANCE <= b.y || b.y + b.height + CITY_REAR_CLEARANCE <= y;
         if (!verticalSeparated) return false;
       }
     }
@@ -456,8 +486,10 @@ export function generateOrganicCityLayout(
             const candX = preferredX + dx;
             const candY = preferredY + dy;
             if (
-              candX >= bx && candX + meta.width <= bx + W &&
-              candY >= by && candY + meta.height <= by + H
+              candX >= bx &&
+              candX + meta.width <= bx + W &&
+              candY >= by &&
+              candY + meta.height <= by + H
             ) {
               if (placeBuildingDirect(bId, type, candX, candY, metaId)) {
                 return true;
@@ -490,9 +522,10 @@ export function generateOrganicCityLayout(
     const candidates: CandidateLot[] = [];
 
     const minX = sectorBounds?.minX ?? bx;
-    const maxX = sectorBounds?.maxX !== undefined
-      ? Math.min(bx + W - meta.width, sectorBounds.maxX - meta.width + 1)
-      : bx + W - meta.width;
+    const maxX =
+      sectorBounds?.maxX !== undefined
+        ? Math.min(bx + W - meta.width, sectorBounds.maxX - meta.width + 1)
+        : bx + W - meta.width;
     const minY = sectorBounds?.minY ?? by;
     const maxY = Math.min(
       sectorBounds?.maxY !== undefined ? sectorBounds.maxY : by + H - meta.height,
@@ -551,17 +584,17 @@ export function generateOrganicCityLayout(
     return placeBuildingWithSearch(bId, type, preferredX, preferredY, metaId);
   };
 
-function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number; h: number } {
-  if (type === 'fountain' || prefabFile.includes('fountain')) return PROP_DIM_FOUNTAIN;
-  if (prefabFile.includes('cargo_crates_stack')) return PROP_DIM_CRATES_STACK;
-  if (prefabFile.includes('cargo_crates_double')) return PROP_DIM_CRATES_DOUBLE;
-  if (type === 'bench') {
-    if (prefabFile.includes('_v') || prefabFile.includes('vertical')) return PROP_DIM_BENCH_V;
-    return PROP_DIM_BENCH_H;
+  function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number; h: number } {
+    if (type === 'fountain' || prefabFile.includes('fountain')) return PROP_DIM_FOUNTAIN;
+    if (prefabFile.includes('cargo_crates_stack')) return PROP_DIM_CRATES_STACK;
+    if (prefabFile.includes('cargo_crates_double')) return PROP_DIM_CRATES_DOUBLE;
+    if (type === 'bench') {
+      if (prefabFile.includes('_v') || prefabFile.includes('vertical')) return PROP_DIM_BENCH_V;
+      return PROP_DIM_BENCH_H;
+    }
+    if (type === 'statue') return PROP_DIM_STATUE;
+    return PROP_DIM_DEFAULT;
   }
-  if (type === 'statue') return PROP_DIM_STATUE;
-  return PROP_DIM_DEFAULT;
-}
 
   const midX = Math.floor(W / 2);
   const midY = Math.floor(H / 2);
@@ -590,7 +623,12 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
     // Crossing Clearance Mandate: benches strictly outside central intersection
     const distX = Math.abs(x - (bx + midX));
     const distY = Math.abs(y - (by + midY));
-    if (type === 'bench' && distX < INTERSECTION_CLEARANCE_RADIUS && distY < INTERSECTION_CLEARANCE_RADIUS) return;
+    if (
+      type === 'bench' &&
+      distX < INTERSECTION_CLEARANCE_RADIUS &&
+      distY < INTERSECTION_CLEARANCE_RADIUS
+    )
+      return;
 
     // Lamp Anti-Clumping Mandate: >= LAMP_MIN_SPACING tiles apart
     if (type === 'lamp') {
@@ -623,7 +661,8 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
         const y = gy + dy;
         if (!isCellLand(x, y)) return false;
         if (internalStreets.some((s) => s.x === x && s.y === y)) return false;
-        if (buildings.some((b) => x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height)) return false;
+        if (buildings.some((b) => x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height))
+          return false;
         if (props.some((p) => p.x === x && p.y === y)) return false;
       }
     }
@@ -665,16 +704,26 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
   const decorateHouseLot = (b: UrbanBuildingPlacement, isRural: boolean): void => {
     // Mailbox or signpost at doorstep flank
     if (isCellLand(b.doorX - 1, b.doorY + DOOR_OFFSET_SOUTH)) {
-      addProp(isRural ? 'mailbox' : 'signpost', b.doorX - 1, b.doorY + DOOR_OFFSET_SOUTH, getAssetFilename(isRural ? 'poke_mailbox_post_white' : 'poke_signpost'));
+      addProp(
+        isRural ? 'mailbox' : 'signpost',
+        b.doorX - 1,
+        b.doorY + DOOR_OFFSET_SOUTH,
+        getAssetFilename(isRural ? 'poke_mailbox_post_white' : 'poke_signpost')
+      );
     }
     // Flowerbed at other flank
     if (isCellLand(b.doorX + 2, b.doorY + DOOR_OFFSET_SOUTH)) {
-      addProp('flower', b.doorX + 2, b.doorY + DOOR_OFFSET_SOUTH, getAssetFilename(isRural ? 'poke_flowers_red' : 'poke_flower_pot_circular'));
+      addProp(
+        'flower',
+        b.doorX + 2,
+        b.doorY + DOOR_OFFSET_SOUTH,
+        getAssetFilename(isRural ? 'poke_flowers_red' : 'poke_flower_pot_circular')
+      );
     }
     // Complete fenced garden if space permits (never isolated 1-2 tile fence posts)
     if (isRural) {
       for (const cand of GARDEN_CANDIDATES) {
-        const cx = cand.useBuildingWidth ? b.x : (cand.dx < 0 ? b.x + cand.dx : b.x + b.width);
+        const cx = cand.useBuildingWidth ? b.x : cand.dx < 0 ? b.x + cand.dx : b.x + b.width;
         const cy = b.y + cand.dy;
         const cw = cand.useBuildingWidth ? b.width : cand.w;
         if (tryPlaceGardenEnclosure(cx, cy, cw, cand.h)) {
@@ -686,10 +735,20 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
 
   const decoratePokecenter = (b: UrbanBuildingPlacement): void => {
     if (isCellLand(b.x - 1, b.doorY + DOOR_OFFSET_SOUTH)) {
-      addProp('flower', b.x - 1, b.doorY + DOOR_OFFSET_SOUTH, getAssetFilename('poke_flower_pot_circular'));
+      addProp(
+        'flower',
+        b.x - 1,
+        b.doorY + DOOR_OFFSET_SOUTH,
+        getAssetFilename('poke_flower_pot_circular')
+      );
     }
     if (isCellLand(b.x + b.width, b.doorY + DOOR_OFFSET_SOUTH)) {
-      addProp('flower', b.x + b.width, b.doorY + DOOR_OFFSET_SOUTH, getAssetFilename('poke_flower_pot_circular'));
+      addProp(
+        'flower',
+        b.x + b.width,
+        b.doorY + DOOR_OFFSET_SOUTH,
+        getAssetFilename('poke_flower_pot_circular')
+      );
     }
     if (isCellLand(b.x - 1, b.doorY + DOOR_OFFSET_NORTH)) {
       addProp('lamp', b.x - 1, b.doorY + DOOR_OFFSET_NORTH, getAssetFilename('poke_street_lamp'));
@@ -698,34 +757,64 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
 
   const decorateGym = (b: UrbanBuildingPlacement): void => {
     if (isCellLand(b.doorX - 2, b.doorY + DOOR_EXTRA_CLEARANCE_SOUTH)) {
-      addProp('statue', b.doorX - 2, b.doorY + DOOR_EXTRA_CLEARANCE_SOUTH, getAssetFilename('poke_statue_gym'));
+      addProp(
+        'statue',
+        b.doorX - 2,
+        b.doorY + DOOR_EXTRA_CLEARANCE_SOUTH,
+        getAssetFilename('poke_statue_gym')
+      );
     }
     if (isCellLand(b.doorX + 2, b.doorY + DOOR_EXTRA_CLEARANCE_SOUTH)) {
-      addProp('statue', b.doorX + 2, b.doorY + DOOR_EXTRA_CLEARANCE_SOUTH, getAssetFilename('poke_statue_gym'));
+      addProp(
+        'statue',
+        b.doorX + 2,
+        b.doorY + DOOR_EXTRA_CLEARANCE_SOUTH,
+        getAssetFilename('poke_statue_gym')
+      );
     }
     if (isCellLand(b.doorX - 1, b.doorY + DOOR_OFFSET_SOUTH)) {
-      addProp('signpost', b.doorX - 1, b.doorY + DOOR_OFFSET_SOUTH, getAssetFilename('poke_gym_sign'));
+      addProp(
+        'signpost',
+        b.doorX - 1,
+        b.doorY + DOOR_OFFSET_SOUTH,
+        getAssetFilename('poke_gym_sign')
+      );
     }
   };
 
   const isTown = node.type === 'town';
-  const isMetropolis = node.type === 'metropolis' || (W >= METROPOLIS_MIN_WIDTH && H >= METROPOLIS_MIN_HEIGHT);
+  const isMetropolis =
+    node.type === 'metropolis' || (W >= METROPOLIS_MIN_WIDTH && H >= METROPOLIS_MIN_HEIGHT);
 
   // --------------------------------------------------------------------------
   // 2. RURAL TOWN ARCHITECTURE (100% Grass, 0 Paved Slabs, Micro-Lots)
   // --------------------------------------------------------------------------
   if (isTown) {
-    const isStarterOrTier0 = node.tier === 0 || node.id.includes('paleta') || node.id.includes('starter');
+    const isStarterOrTier0 =
+      node.tier === 0 || node.id.includes('paleta') || node.id.includes('starter');
     const isRegionalTown = W >= TOWN_REGIONAL_MIN_SIZE && H >= TOWN_REGIONAL_MIN_SIZE;
 
     if (!isRegionalTown) {
       if (W >= TOWN_COMPACT_10_WIDTH && H >= TOWN_COMPACT_10_HEIGHT) {
         // 10x10 Compact Town: 2 homesteads clearing gateways
-        placeBuildingWithSearch(`${node.id}_homestead_a`, 'house', bx + 0, by + TOWN_10_HOUSE_Y, 'house_wood_brown');
-        placeBuildingWithSearch(`${node.id}_homestead_b`, 'house', bx + TOWN_10_HOUSE_B_X, by + TOWN_10_HOUSE_Y, 'house_orange');
+        placeBuildingWithSearch(
+          `${node.id}_homestead_a`,
+          'house',
+          bx + 0,
+          by + TOWN_10_HOUSE_Y,
+          'house_wood_brown'
+        );
+        placeBuildingWithSearch(
+          `${node.id}_homestead_b`,
+          'house',
+          bx + TOWN_10_HOUSE_B_X,
+          by + TOWN_10_HOUSE_Y,
+          'house_orange'
+        );
 
         for (let y = 0; y < H; y++) {
-          for (let x = TOWN_10_STREET_X1; x <= TOWN_10_STREET_X2; x++) addStreetCell(bx + x, by + y);
+          for (let x = TOWN_10_STREET_X1; x <= TOWN_10_STREET_X2; x++)
+            addStreetCell(bx + x, by + y);
         }
         for (let y = TOWN_10_STREET_Y1; y <= TOWN_10_STREET_Y2; y++) {
           for (let x = 0; x < W; x++) addStreetCell(bx + x, by + y);
@@ -734,11 +823,28 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
         addProp('signpost', bx + 2, by + 5, getAssetFilename('poke_signpost'));
         addProp('flower', bx + 0, by + 5, getAssetFilename('poke_flowers_red'));
         addProp('flower', bx + TOWN_10_FLOWER_A_X, by + 5, getAssetFilename('poke_flowers_red'));
-        addProp('flower', bx + 1, by + TOWN_10_FLOWER_B_Y, getAssetFilename('poke_flower_pot_circular'));
+        addProp(
+          'flower',
+          bx + 1,
+          by + TOWN_10_FLOWER_B_Y,
+          getAssetFilename('poke_flower_pot_circular')
+        );
       } else {
         // 8x8 Compact Town: 2 homesteads
-        placeBuildingWithSearch(`${node.id}_homestead_a`, 'house', bx + 0, by + 0, 'house_wood_brown');
-        placeBuildingWithSearch(`${node.id}_homestead_b`, 'house', bx + Math.max(0, W - TOWN_8_HOUSE_OFFSET), by + Math.max(0, H - TOWN_8_HOUSE_OFFSET), 'house_orange');
+        placeBuildingWithSearch(
+          `${node.id}_homestead_a`,
+          'house',
+          bx + 0,
+          by + 0,
+          'house_wood_brown'
+        );
+        placeBuildingWithSearch(
+          `${node.id}_homestead_b`,
+          'house',
+          bx + Math.max(0, W - TOWN_8_HOUSE_OFFSET),
+          by + Math.max(0, H - TOWN_8_HOUSE_OFFSET),
+          'house_orange'
+        );
 
         for (let y = 0; y < H; y++) addStreetCell(bx + midX, by + y);
         for (let x = 0; x < W; x++) addStreetCell(bx + x, by + midY);
@@ -750,31 +856,92 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
     } else {
       if (node.tier === 0) {
         // Tier 0 Starter Town (Pallet Town): Strictly rural, ZERO Pokecenter, ZERO Pokemart!
-        placeBuildingWithSearch(`${node.id}_player_house`, 'house', bx + 0, by + 0, 'house_pallet_red');
-        placeBuildingWithSearch(`${node.id}_rival_house`, 'house', bx + TOWN_STARTER_RIVAL_X, by + 0, 'house_pallet_blue');
-        placeBuildingWithSearch(`${node.id}_lab`, 'lab', bx + TOWN_STARTER_LAB_X, by + TOWN_STARTER_LAB_Y, 'lab_oak');
-        placeBuildingWithSearch(`${node.id}_house_extra`, 'house', bx + 0, by + Math.max(0, H - TOWN_STARTER_EXTRA_OFFSET_H), 'house_gray_small');
+        placeBuildingWithSearch(
+          `${node.id}_player_house`,
+          'house',
+          bx + 0,
+          by + 0,
+          'house_pallet_red'
+        );
+        placeBuildingWithSearch(
+          `${node.id}_rival_house`,
+          'house',
+          bx + TOWN_STARTER_RIVAL_X,
+          by + 0,
+          'house_pallet_blue'
+        );
+        placeBuildingWithSearch(
+          `${node.id}_lab`,
+          'lab',
+          bx + TOWN_STARTER_LAB_X,
+          by + TOWN_STARTER_LAB_Y,
+          'lab_oak'
+        );
+        placeBuildingWithSearch(
+          `${node.id}_house_extra`,
+          'house',
+          bx + 0,
+          by + Math.max(0, H - TOWN_STARTER_EXTRA_OFFSET_H),
+          'house_gray_small'
+        );
       } else {
         // Regional Town (tier >= 1): Center, Cottages, Mart, Landmark
-        placeBuildingWithSearch(`${node.id}_pokecenter`, 'pokecenter', bx + 0, by + 0, 'pokecenter');
+        placeBuildingWithSearch(
+          `${node.id}_pokecenter`,
+          'pokecenter',
+          bx + 0,
+          by + 0,
+          'pokecenter'
+        );
 
         const cottageKey = nextRng() > 0.5 ? 'house_pallet_blue' : 'house_wood_brown';
-        placeBuildingWithSearch(`${node.id}_cottage`, 'house', bx + TOWN_REGIONAL_COTTAGE_X, by + 0, cottageKey);
-        placeBuildingWithSearch(`${node.id}_pokemart`, 'pokemart', bx + 0, by + TOWN_REGIONAL_MART_Y, 'pokemart');
+        placeBuildingWithSearch(
+          `${node.id}_cottage`,
+          'house',
+          bx + TOWN_REGIONAL_COTTAGE_X,
+          by + 0,
+          cottageKey
+        );
+        placeBuildingWithSearch(
+          `${node.id}_pokemart`,
+          'pokemart',
+          bx + 0,
+          by + TOWN_REGIONAL_MART_Y,
+          'pokemart'
+        );
 
         if (isStarterOrTier0) {
-          placeBuildingWithSearch(`${node.id}_lab`, 'lab', bx + TOWN_REGIONAL_LAB_X, by + TOWN_REGIONAL_LAB_Y, 'lab_oak');
+          placeBuildingWithSearch(
+            `${node.id}_lab`,
+            'lab',
+            bx + TOWN_REGIONAL_LAB_X,
+            by + TOWN_REGIONAL_LAB_Y,
+            'lab_oak'
+          );
         } else if (/lavender|lavanda/i.test(node.id) || /lavender|lavanda/i.test(node.name)) {
           const isBigTown = H >= TOWN_TOWER_MIN_H && W >= TOWN_TOWER_MIN_W;
           const towerId = isBigTown ? `${node.id}_tower` : `${node.id}_landmark`;
-          const towerX = isBigTown ? bx + Math.max(TOWN_TOWER_MIN_X, W - TOWN_TOWER_OFFSET_W) : bx + TOWN_REGIONAL_LANDMARK_X;
+          const towerX = isBigTown
+            ? bx + Math.max(TOWN_TOWER_MIN_X, W - TOWN_TOWER_OFFSET_W)
+            : bx + TOWN_REGIONAL_LANDMARK_X;
           const towerY = isBigTown ? by + 1 : by + TOWN_REGIONAL_LANDMARK_Y;
           const towerMeta = isBigTown ? 'poke_pokemon_tower' : 'house_lavender_purple';
           placeBuildingWithSearch(towerId, 'house', towerX, towerY, towerMeta);
           addProp('statue', bx + 4, by + 4, getAssetFilename('poke_statue_gym'));
-          addProp('statue', bx + TOWN_REGIONAL_STATUE_B_X, by + 4, getAssetFilename('poke_statue_gym'));
+          addProp(
+            'statue',
+            bx + TOWN_REGIONAL_STATUE_B_X,
+            by + 4,
+            getAssetFilename('poke_statue_gym')
+          );
         } else {
-          placeBuildingWithSearch(`${node.id}_landmark`, 'house', bx + TOWN_REGIONAL_LANDMARK_X, by + TOWN_REGIONAL_LANDMARK_Y, 'house_vermilion_ranch');
+          placeBuildingWithSearch(
+            `${node.id}_landmark`,
+            'house',
+            bx + TOWN_REGIONAL_LANDMARK_X,
+            by + TOWN_REGIONAL_LANDMARK_Y,
+            'house_vermilion_ranch'
+          );
         }
       }
 
@@ -795,7 +962,12 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
       addProp('mailbox', bx + TOWN_REGIONAL_MAILBOX_X, by + 4, getAssetFilename('poke_mailbox'));
 
       // If town has extra space and is not a fixed unit test fixture, add Town Pond or Garden
-      if (!node.id.includes('paleta') && node.tier !== 0 && W >= TOWN_POND_MIN_WIDTH && H >= TOWN_POND_MIN_HEIGHT) {
+      if (
+        !node.id.includes('paleta') &&
+        node.tier !== 0 &&
+        W >= TOWN_POND_MIN_WIDTH &&
+        H >= TOWN_POND_MIN_HEIGHT
+      ) {
         // Town Pond / Park in free space
         const pondX = bx + W - TOWN_POND_CLEARANCE_W;
         const pondY = by + H - TOWN_POND_CLEARANCE_H;
@@ -824,7 +996,9 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
       nodeId: node.id,
       buildings,
       props: props.filter((p) => !bMask.has(`${p.x}_${p.y}`)),
-      internalStreets: internalStreets.filter((s) => !bMask.has(`${s.x}_${s.y}`) && isCellLand(s.x, s.y)),
+      internalStreets: internalStreets.filter(
+        (s) => !bMask.has(`${s.x}_${s.y}`) && isCellLand(s.x, s.y)
+      ),
       pavedPlazaCells: [],
       curbs: [],
       roadMaterial: 'dirt'
@@ -854,31 +1028,103 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
     }
 
     // Macro-buildings across the districts (using search to guarantee valid land placement)
-    placeBuildingWithSearch(`${node.id}_dept_store`, 'dept_store', bx + 1, by + 1, 'poke_dept_store');
-    const towerX = W >= METROPOLIS_EXPANDED_WIDTH ? bx + METROPOLIS_TOWER_X_EXPANDED : bx + METROPOLIS_TOWER_X_DEFAULT;
-    placeBuildingWithSearch(`${node.id}_corp_tower`, 'corp_tower', towerX, by + 1, 'poke_corp_tower');
+    placeBuildingWithSearch(
+      `${node.id}_dept_store`,
+      'dept_store',
+      bx + 1,
+      by + 1,
+      'poke_dept_store'
+    );
+    const towerX =
+      W >= METROPOLIS_EXPANDED_WIDTH
+        ? bx + METROPOLIS_TOWER_X_EXPANDED
+        : bx + METROPOLIS_TOWER_X_DEFAULT;
+    placeBuildingWithSearch(
+      `${node.id}_corp_tower`,
+      'corp_tower',
+      towerX,
+      by + 1,
+      'poke_corp_tower'
+    );
 
-    const gymX = W >= METROPOLIS_EXPANDED_WIDTH ? bx + METROPOLIS_GYM_X_EXPANDED : bx + METROPOLIS_GYM_X_DEFAULT;
+    const gymX =
+      W >= METROPOLIS_EXPANDED_WIDTH
+        ? bx + METROPOLIS_GYM_X_EXPANDED
+        : bx + METROPOLIS_GYM_X_DEFAULT;
     placeBuildingWithSearch(`${node.id}_gym`, 'gym', gymX, by + 1, 'gym_gold');
 
-    const cornerX = W >= METROPOLIS_EXPANDED_WIDTH ? bx + METROPOLIS_CORNER_X_EXPANDED : bx + METROPOLIS_CORNER_X_DEFAULT;
-    const cornerY = W >= METROPOLIS_EXPANDED_WIDTH ? by + METROPOLIS_CORNER_Y_EXPANDED : by + METROPOLIS_CORNER_Y_DEFAULT;
-    placeBuildingWithSearch(`${node.id}_game_corner`, 'game_corner', cornerX, cornerY, 'poke_game_corner');
+    const cornerX =
+      W >= METROPOLIS_EXPANDED_WIDTH
+        ? bx + METROPOLIS_CORNER_X_EXPANDED
+        : bx + METROPOLIS_CORNER_X_DEFAULT;
+    const cornerY =
+      W >= METROPOLIS_EXPANDED_WIDTH
+        ? by + METROPOLIS_CORNER_Y_EXPANDED
+        : by + METROPOLIS_CORNER_Y_DEFAULT;
+    placeBuildingWithSearch(
+      `${node.id}_game_corner`,
+      'game_corner',
+      cornerX,
+      cornerY,
+      'poke_game_corner'
+    );
 
     // Commercial & Residential Quarter
-    placeBuildingWithSearch(`${node.id}_pokemart`, 'pokemart', bx + 1, by + METROPOLIS_HOUSE_A_Y, 'pokemart');
-    placeBuildingWithSearch(`${node.id}_house_a`, 'house', bx + METROPOLIS_HOUSE_A_X, by + METROPOLIS_HOUSE_A_Y, 'house_cerulean_orange');
+    placeBuildingWithSearch(
+      `${node.id}_pokemart`,
+      'pokemart',
+      bx + 1,
+      by + METROPOLIS_HOUSE_A_Y,
+      'pokemart'
+    );
+    placeBuildingWithSearch(
+      `${node.id}_house_a`,
+      'house',
+      bx + METROPOLIS_HOUSE_A_X,
+      by + METROPOLIS_HOUSE_A_Y,
+      'house_cerulean_orange'
+    );
 
     if (H >= METROPOLIS_TALL_HEIGHT) {
-      placeBuildingWithSearch(`${node.id}_house_b`, 'house', bx + METROPOLIS_HOUSE_B_X, by + METROPOLIS_HOUSE_B_Y, 'house_wood_brown');
-      placeBuildingWithSearch(`${node.id}_house_c`, 'house', bx + METROPOLIS_HOUSE_C_X, by + METROPOLIS_HOUSE_C_Y, 'house_gray_small');
+      placeBuildingWithSearch(
+        `${node.id}_house_b`,
+        'house',
+        bx + METROPOLIS_HOUSE_B_X,
+        by + METROPOLIS_HOUSE_B_Y,
+        'house_wood_brown'
+      );
+      placeBuildingWithSearch(
+        `${node.id}_house_c`,
+        'house',
+        bx + METROPOLIS_HOUSE_C_X,
+        by + METROPOLIS_HOUSE_C_Y,
+        'house_gray_small'
+      );
     }
 
     // Condo Block & PokéCenter
-    const condoX = W >= METROPOLIS_EXPANDED_WIDTH ? bx + METROPOLIS_CONDO_X_EXPANDED : bx + METROPOLIS_CONDO_X_DEFAULT;
-    const centerSE_X = W >= METROPOLIS_EXPANDED_WIDTH ? bx + METROPOLIS_CENTER_X_EXPANDED : bx + METROPOLIS_CENTER_X_DEFAULT;
-    placeBuildingWithSearch(`${node.id}_condo`, 'condo', condoX, by + METROPOLIS_CONDO_Y, 'poke_condo_block');
-    placeBuildingWithSearch(`${node.id}_pokecenter`, 'pokecenter', centerSE_X, by + METROPOLIS_CENTER_Y, 'pokecenter');
+    const condoX =
+      W >= METROPOLIS_EXPANDED_WIDTH
+        ? bx + METROPOLIS_CONDO_X_EXPANDED
+        : bx + METROPOLIS_CONDO_X_DEFAULT;
+    const centerSE_X =
+      W >= METROPOLIS_EXPANDED_WIDTH
+        ? bx + METROPOLIS_CENTER_X_EXPANDED
+        : bx + METROPOLIS_CENTER_X_DEFAULT;
+    placeBuildingWithSearch(
+      `${node.id}_condo`,
+      'condo',
+      condoX,
+      by + METROPOLIS_CONDO_Y,
+      'poke_condo_block'
+    );
+    placeBuildingWithSearch(
+      `${node.id}_pokecenter`,
+      'pokecenter',
+      centerSE_X,
+      by + METROPOLIS_CENTER_Y,
+      'pokecenter'
+    );
 
     // Central Civic Plaza (Fountain Square with benches and lamps)
     const fX = bx + METROPOLIS_PLAZA_FOUNTAIN_OFFSET_X;
@@ -903,8 +1149,20 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
       if (b.type === 'gym') decorateGym(b);
       else if (b.type === 'pokecenter') decoratePokecenter(b);
       else if (b.type === 'dept_store' || b.type === 'condo') {
-        if (isCellLand(b.doorX - 1, b.doorY + DOOR_OFFSET_SOUTH)) addProp('flower', b.doorX - 1, b.doorY + DOOR_OFFSET_SOUTH, getAssetFilename('poke_flower_pot_circular'));
-        if (isCellLand(b.doorX + 2, b.doorY + DOOR_OFFSET_SOUTH)) addProp('flower', b.doorX + 2, b.doorY + DOOR_OFFSET_SOUTH, getAssetFilename('poke_flower_pot_circular'));
+        if (isCellLand(b.doorX - 1, b.doorY + DOOR_OFFSET_SOUTH))
+          addProp(
+            'flower',
+            b.doorX - 1,
+            b.doorY + DOOR_OFFSET_SOUTH,
+            getAssetFilename('poke_flower_pot_circular')
+          );
+        if (isCellLand(b.doorX + 2, b.doorY + DOOR_OFFSET_SOUTH))
+          addProp(
+            'flower',
+            b.doorX + 2,
+            b.doorY + DOOR_OFFSET_SOUTH,
+            getAssetFilename('poke_flower_pot_circular')
+          );
       }
     }
 
@@ -913,8 +1171,19 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
     const METROPOLIS_LAMP_X_EXPANDED = 28 as const;
 
     addProp('lamp', bx + 5, by + METROPOLIS_LAMP_Y, getAssetFilename('poke_street_lamp'));
-    addProp('lamp', bx + METROPOLIS_LAMP_X_WEST, by + METROPOLIS_LAMP_Y, getAssetFilename('poke_street_lamp_left'));
-    if (W >= METROPOLIS_EXPANDED_WIDTH) addProp('lamp', bx + METROPOLIS_LAMP_X_EXPANDED, by + METROPOLIS_LAMP_Y, getAssetFilename('poke_street_lamp_left'));
+    addProp(
+      'lamp',
+      bx + METROPOLIS_LAMP_X_WEST,
+      by + METROPOLIS_LAMP_Y,
+      getAssetFilename('poke_street_lamp_left')
+    );
+    if (W >= METROPOLIS_EXPANDED_WIDTH)
+      addProp(
+        'lamp',
+        bx + METROPOLIS_LAMP_X_EXPANDED,
+        by + METROPOLIS_LAMP_Y,
+        getAssetFilename('poke_street_lamp_left')
+      );
 
     if (!props.some((p) => p.type === 'bench')) {
       for (const spot of METROPOLIS_BENCH_SPOTS) {
@@ -923,16 +1192,12 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
       }
     }
 
-    connectDoorsToStreets(buildings, internalStreets, { bx, by, W, H }, isCellLand);
-    const bMask = new Set<string>();
-    for (const b of buildings) {
-      for (let dy = 0; dy < b.height; dy++) {
-        for (let dx = 0; dx < b.width; dx++) bMask.add(`${b.x + dx}_${b.y + dy}`);
-      }
-    }
-
-    const cleanStreets = internalStreets.filter((s) => !bMask.has(`${s.x}_${s.y}`) && isCellLand(s.x, s.y));
-    const avenueKeys = new Set(cleanStreets.map((s) => `${s.x}_${s.y}`));
+    const { cleanStreets, streetSet: avenueKeys } = finalizeSettlementStreets(
+      buildings,
+      internalStreets,
+      { bx, by, W, H },
+      isCellLand
+    );
 
     // Paved Concourse: For celadon_capital test fixture, full commercial concourse (500-700 cells)
     // For organic metropolises, pave avenues + central civic plaza + sidewalks (preserving green courtyards)
@@ -961,8 +1226,10 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
             py <= fY + METROPOLIS_PLAZA_RADIUS_Y_MAX;
           // Sidewalks (adjacent to avenues)
           const isSidewalk =
-            avenueKeys.has(`${px - 1}_${py}`) || avenueKeys.has(`${px + 1}_${py}`) ||
-            avenueKeys.has(`${px}_${py - 1}`) || avenueKeys.has(`${px}_${py + 1}`);
+            avenueKeys.has(`${px - 1}_${py}`) ||
+            avenueKeys.has(`${px + 1}_${py}`) ||
+            avenueKeys.has(`${px}_${py - 1}`) ||
+            avenueKeys.has(`${px}_${py + 1}`);
 
           if (inPlaza || isSidewalk) {
             addPlazaCell(px, py);
@@ -973,7 +1240,9 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
 
     const cleanPlazas = isCeladonTest
       ? pavedPlazaCells
-      : pavedPlazaCells.filter((p) => !bMask.has(`${p.x}_${p.y}`) && !avenueKeys.has(`${p.x}_${p.y}`));
+      : pavedPlazaCells.filter(
+          (p) => !bMask.has(`${p.x}_${p.y}`) && !avenueKeys.has(`${p.x}_${p.y}`)
+        );
 
     const curbs = computeUrbanCurbs({
       pavedPlazaCells: cleanPlazas,
@@ -1101,33 +1370,60 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
   const eastSectorMinX = bx + Math.min(W - 1, aveX + AVENUE_BUFFER_EAST);
 
   // Center: NW sector
-  findStreetFacingLot(`${node.id}_pokecenter`, 'pokecenter', 'pokecenter', westX, northY, { maxX: westSectorMaxX });
+  findStreetFacingLot(`${node.id}_pokecenter`, 'pokecenter', 'pokecenter', westX, northY, {
+    maxX: westSectorMaxX
+  });
 
   // Mart: NE sector
-  findStreetFacingLot(`${node.id}_pokemart`, 'pokemart', 'pokemart', eastX, northY, { minX: eastSectorMinX });
+  findStreetFacingLot(`${node.id}_pokemart`, 'pokemart', 'pokemart', eastX, northY, {
+    minX: eastSectorMinX
+  });
 
   // Gym / Residence 2: SW sector
   if (shouldPlaceGym) {
-    findStreetFacingLot(`${node.id}_gym`, 'gym', 'gym_gold', westX, southY, { maxX: westSectorMaxX });
+    findStreetFacingLot(`${node.id}_gym`, 'gym', 'gym_gold', westX, southY, {
+      maxX: westSectorMaxX
+    });
   } else {
-    findStreetFacingLot(`${node.id}_residence_lot2`, 'house', 'house_gray_small', westX, southY, { maxX: westSectorMaxX });
+    findStreetFacingLot(`${node.id}_residence_lot2`, 'house', 'house_gray_small', westX, southY, {
+      maxX: westSectorMaxX
+    });
   }
 
   // Landmark: SE sector
-  findStreetFacingLot(`${node.id}_landmark`, lkDef.type, lkDef.key, eastX, southY, { minX: eastSectorMinX });
+  findStreetFacingLot(`${node.id}_landmark`, lkDef.type, lkDef.key, eastX, southY, {
+    minX: eastSectorMinX
+  });
 
   // Residential houses: along remaining street frontages & secondary sidewalks
   if (isTier1) {
     const palLen = RESIDENTIAL_ROOF_PALETTES.length;
     const h1Key = RESIDENTIAL_ROOF_PALETTES[Math.floor(nextRng() * palLen)]!;
     const h2Key = RESIDENTIAL_ROOF_PALETTES[Math.floor(nextRng() * palLen)]!;
-    findStreetFacingLot(`${node.id}_house_1`, 'house', h1Key, bx + 2, by + Math.floor(H * RESIDENTIAL_TIER1_PRIMARY_HOUSE_RATIO));
-    findStreetFacingLot(`${node.id}_house_2`, 'house', h2Key, bx + Math.max(2, W - RESIDENTIAL_TIER1_HOUSE2_MARGIN), by + Math.floor(H * RESIDENTIAL_TIER1_SECONDARY_HOUSE_RATIO));
+    findStreetFacingLot(
+      `${node.id}_house_1`,
+      'house',
+      h1Key,
+      bx + 2,
+      by + Math.floor(H * RESIDENTIAL_TIER1_PRIMARY_HOUSE_RATIO)
+    );
+    findStreetFacingLot(
+      `${node.id}_house_2`,
+      'house',
+      h2Key,
+      bx + Math.max(2, W - RESIDENTIAL_TIER1_HOUSE2_MARGIN),
+      by + Math.floor(H * RESIDENTIAL_TIER1_SECONDARY_HOUSE_RATIO)
+    );
   }
 
   if (node.terrainPreference === 'mountain_plateau') {
     addProp('rock', bx + 2, by + Math.max(0, H - 2), getAssetFilename('poke_rock_boulder'));
-    addProp('rock', bx + Math.max(0, W - 3), by + Math.max(0, H - 2), getAssetFilename('poke_rock_boulder'));
+    addProp(
+      'rock',
+      bx + Math.max(0, W - 3),
+      by + Math.max(0, H - 2),
+      getAssetFilename('poke_rock_boulder')
+    );
   }
 
   // Decorate all placed buildings
@@ -1169,8 +1465,26 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
   // Props: rest benches (with robust candidate search outside central crossing)
   let benchCount = 0;
   const benchCandidates = [
-    { x: swX1, prefab: 'poke_bench_v_left', yRange: [Math.min(H - 2, midY + BENCH_OFFSET_Y_NEAR), Math.min(H - 2, midY + BENCH_OFFSET_Y_FAR), Math.max(1, midY - BENCH_OFFSET_Y_NEAR), Math.max(1, midY - BENCH_OFFSET_Y_FAR)] },
-    { x: swX2, prefab: 'poke_bench_v_right', yRange: [Math.max(1, midY - BENCH_OFFSET_Y_NEAR), Math.max(1, midY - BENCH_OFFSET_Y_FAR), Math.min(H - 2, midY + BENCH_OFFSET_Y_NEAR), Math.min(H - 2, midY + BENCH_OFFSET_Y_FAR)] },
+    {
+      x: swX1,
+      prefab: 'poke_bench_v_left',
+      yRange: [
+        Math.min(H - 2, midY + BENCH_OFFSET_Y_NEAR),
+        Math.min(H - 2, midY + BENCH_OFFSET_Y_FAR),
+        Math.max(1, midY - BENCH_OFFSET_Y_NEAR),
+        Math.max(1, midY - BENCH_OFFSET_Y_FAR)
+      ]
+    },
+    {
+      x: swX2,
+      prefab: 'poke_bench_v_right',
+      yRange: [
+        Math.max(1, midY - BENCH_OFFSET_Y_NEAR),
+        Math.max(1, midY - BENCH_OFFSET_Y_FAR),
+        Math.min(H - 2, midY + BENCH_OFFSET_Y_NEAR),
+        Math.min(H - 2, midY + BENCH_OFFSET_Y_FAR)
+      ]
+    },
     { x: midX - BENCH_OFFSET_X, prefab: 'poke_bench', yRange: [swY1, swY2] },
     { x: midX + BENCH_OFFSET_X, prefab: 'poke_bench', yRange: [swY1, swY2] }
   ];
@@ -1258,25 +1572,39 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
   }
 
   if (isIslandOrCoastal && !settlementHasWater) {
-    addProp('flower', bx + 0, by + Math.min(H - 2, ISLAND_FLOWER_MAX_Y), getAssetFilename('poke_flowers_red'));
-    addProp('flower', bx + Math.min(W - 1, ISLAND_FLOWER_MAX_X), by + Math.min(H - 2, ISLAND_FLOWER_MAX_Y), getAssetFilename('poke_flowers_red'));
+    addProp(
+      'flower',
+      bx + 0,
+      by + Math.min(H - 2, ISLAND_FLOWER_MAX_Y),
+      getAssetFilename('poke_flowers_red')
+    );
+    addProp(
+      'flower',
+      bx + Math.min(W - 1, ISLAND_FLOWER_MAX_X),
+      by + Math.min(H - 2, ISLAND_FLOWER_MAX_Y),
+      getAssetFilename('poke_flowers_red')
+    );
   } else if (!settlementHasWater) {
-    addProp('flower', bx + 0, by + Math.min(H - 2, CONTINENT_FLOWER_MAX_Y), getAssetFilename('poke_flower_pot_circular'));
-    addProp('flower', bx + Math.min(W - 1, CONTINENT_FLOWER_MAX_X), by + Math.min(H - 2, CONTINENT_FLOWER_MAX_Y), getAssetFilename('poke_flower_pot_circular'));
+    addProp(
+      'flower',
+      bx + 0,
+      by + Math.min(H - 2, CONTINENT_FLOWER_MAX_Y),
+      getAssetFilename('poke_flower_pot_circular')
+    );
+    addProp(
+      'flower',
+      bx + Math.min(W - 1, CONTINENT_FLOWER_MAX_X),
+      by + Math.min(H - 2, CONTINENT_FLOWER_MAX_Y),
+      getAssetFilename('poke_flower_pot_circular')
+    );
   }
 
-
-
-  connectDoorsToStreets(buildings, internalStreets, { bx, by, W, H }, isCellLand);
-  const bMask = new Set<string>();
-  for (const b of buildings) {
-    for (let dy = 0; dy < b.height; dy++) {
-      for (let dx = 0; dx < b.width; dx++) bMask.add(`${b.x + dx}_${b.y + dy}`);
-    }
-  }
-
-  const cleanStreets = internalStreets.filter((s) => !bMask.has(`${s.x}_${s.y}`) && isCellLand(s.x, s.y));
-  const streetSet = new Set(cleanStreets.map((s) => `${s.x}_${s.y}`));
+  const { cleanStreets, streetSet, bMask } = finalizeSettlementStreets(
+    buildings,
+    internalStreets,
+    { bx, by, W, H },
+    isCellLand
+  );
 
   // Deduplicate and filter paved sidewalk cells
   const cleanPlazas: { x: number; y: number }[] = [];
@@ -1300,7 +1628,10 @@ function getPropDimensions(type: UrbanPropType, prefabFile: string): { w: number
   else if (settlementHasWater || genes.waterFeatureType === 'harbor_dock') roadMaterial = 'wood';
   else if (genes.urbanDensity < URBAN_DENSITY_STONE_THRESHOLD) roadMaterial = 'stone';
 
-  const isPureIsland = /island|canela|cinnabar|isla/i.test(node.id) || /isla|island/i.test(node.name) || node.terrainPreference === 'coast_water';
+  const isPureIsland =
+    /island|canela|cinnabar|isla/i.test(node.id) ||
+    /isla|island/i.test(node.name) ||
+    node.terrainPreference === 'coast_water';
 
   return {
     nodeId: node.id,

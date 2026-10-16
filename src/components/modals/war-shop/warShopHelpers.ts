@@ -4,10 +4,10 @@
  * Sorting and catalog helpers for the Faction War shop modal.
  */
 
-import type { Item } from '@/types/inventory/items';
+import type { Item, ItemTier } from '@/types/inventory/items';
 import type { ItemSortKey, SortOrder } from '@/types/system/game';
 
-const RARITY_TIERS: Readonly<Record<string, number>> = {
+const RARITY_TIERS: Readonly<Record<ItemTier, number>> = {
   common: 0,
   rare: 1,
   epic: 2,
@@ -24,12 +24,7 @@ function compareWarShopByRarity(a: Item, b: Item): number {
   return bTier - aTier;
 }
 
-function compareWarShopByDefault(
-  a: Item,
-  b: Item,
-  coins: number,
-  trainerLevel: number
-): number {
+function compareWarShopByDefault(a: Item, b: Item, coins: number, trainerLevel: number): number {
   const aUnlocked = trainerLevel >= (a.unlockLv || 1);
   const bUnlocked = trainerLevel >= (b.unlockLv || 1);
   const aAffordable = coins >= (a.warPrice || 0);
@@ -54,11 +49,12 @@ export function sortWarShopItems(
   trainerLevel: number
 ): Item[] {
   return items.toSorted((a, b) => {
-    const comp = sortKey === 'price'
-      ? compareWarShopByPrice(a, b)
-      : sortKey === 'rarity'
-        ? compareWarShopByRarity(a, b)
-        : compareWarShopByDefault(a, b, coins, trainerLevel);
+    const comp =
+      sortKey === 'price'
+        ? compareWarShopByPrice(a, b)
+        : sortKey === 'rarity'
+          ? compareWarShopByRarity(a, b)
+          : compareWarShopByDefault(a, b, coins, trainerLevel);
     return sortOrder === 'asc' ? comp : -comp;
   });
 }

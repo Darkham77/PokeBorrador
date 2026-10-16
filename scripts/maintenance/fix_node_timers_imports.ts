@@ -22,11 +22,15 @@ const TARGET_EXTENSIONS = new Set(['.ts', '.vue']); // runtime-set: Fast O(1) me
 
 let fixed = 0; // singleton-ok: Singleton instance state container
 
-for (const dir of [srcDir, testsDir]) { // import-ok: Dynamic module import
+for (const dir of [srcDir, testsDir]) {
+  // import-ok: Dynamic module import
   for (const file of collectRepositoryFiles(dir, root, [], TARGET_EXTENSIONS)) {
     const content = readFileSync(file, 'utf-8');
     // Remove the line with the bad import (including its newline)
-    const updated = content.replace(/^import \{ setTimeout \} from ['"]node:timers\/promises['"];?\r?\n/gm, '');
+    const updated = content.replace(
+      /^import \{ setTimeout \} from ['"]node:timers\/promises['"];?\r?\n/gm,
+      ''
+    );
     if (updated !== content) {
       writeFileSync(file, updated, 'utf-8');
       fixed++;

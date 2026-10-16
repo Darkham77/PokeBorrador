@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import BaseModal from '@/components/common/BaseModal.vue'
+import BaseModal from '@/components/common/BaseModal.vue';
 
 interface Props {
-  id?: string
-  show?: boolean
-  opponentName?: string
+  id?: string;
+  show?: boolean;
+  opponentName?: string;
 }
 
 withDefaults(defineProps<Props>(), {
   id: '',
   show: true,
   opponentName: 'El oponente'
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
 function handleClose() {
-  emit('close')
+  emit('close');
 }
 </script>
 
@@ -32,18 +32,10 @@ function handleClose() {
     @close="handleClose"
   >
     <div class="pvp-offline-body">
-      <div class="offline-icon emoji">
-        📡
-      </div>
-      <p class="offline-message">
-        El oponente no está jugando en este momento.
-      </p>
+      <div class="offline-icon emoji">📡</div>
+      <p class="offline-message">El oponente no está jugando en este momento.</p>
       <div class="offline-actions">
-        <button
-          id="btn-pvp-offline-ack"
-          class="btn-vicio-secondary"
-          @click="handleClose"
-        >
+        <button id="btn-pvp-offline-ack" class="btn-vicio-secondary" @click="handleClose">
           ENTENDIDO
         </button>
       </div>

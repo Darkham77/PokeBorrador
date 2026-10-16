@@ -89,7 +89,8 @@ export const CANONICAL_SAND_OCEAN_SHORE_BRUSH: Readonly<WaterCoastBrushSet> = {
   cornerInnerSE: 'poke_sand_water_inner_se.png'
 };
 
-export const CANONICAL_OCEAN_SHORE_BRUSH: Readonly<WaterCoastBrushSet> = CANONICAL_SAND_OCEAN_SHORE_BRUSH; // alias-ok
+export const CANONICAL_OCEAN_SHORE_BRUSH: Readonly<WaterCoastBrushSet> =
+  CANONICAL_SAND_OCEAN_SHORE_BRUSH; // alias-ok
 
 export const CANONICAL_SAND_BEACH_BRUSH: Readonly<WaterCoastBrushSet> = {
   center: 'poke_sand_center.png',
@@ -455,7 +456,9 @@ export function resolveWaterCoastGrid(
         if (waterMask !== 0) {
           const { role, innerOverlays } = classify2DAutotileRole(waterMask);
           const primaryTile = getTileForRole(CANONICAL_SAND_OCEAN_SHORE_BRUSH, role);
-          const overlayTiles = innerOverlays.map((r) => getTileForRole(CANONICAL_SAND_OCEAN_SHORE_BRUSH, r));
+          const overlayTiles = innerOverlays.map((r) =>
+            getTileForRole(CANONICAL_SAND_OCEAN_SHORE_BRUSH, r)
+          );
 
           const layerStack: string[] = [BASE_GRASS_TILE, 'poke_water_ocean_center.png']; // no-domain: Estructura o identificador procedural de aventura
           if (role.startsWith('corner_inner')) {
@@ -481,16 +484,13 @@ export function resolveWaterCoastGrid(
         }
 
         // Priority 2: Sand bordering Grass
-        const grassMask = compute2DNeighborMask(
-          matrix,
-          x,
-          y,
-          (neighbor) => neighbor === 'grass'
-        );
+        const grassMask = compute2DNeighborMask(matrix, x, y, (neighbor) => neighbor === 'grass');
 
         const { role, innerOverlays } = classify2DAutotileRole(grassMask);
         const primaryTile = getTileForRole(CANONICAL_SAND_BEACH_BRUSH, role);
-        const overlayTiles = innerOverlays.map((r) => getTileForRole(CANONICAL_SAND_BEACH_BRUSH, r));
+        const overlayTiles = innerOverlays.map((r) =>
+          getTileForRole(CANONICAL_SAND_BEACH_BRUSH, r)
+        );
 
         const layerStack: string[] = [BASE_GRASS_TILE]; // no-domain: Estructura o identificador procedural de aventura
         if (role.startsWith('corner_inner')) {
@@ -518,17 +518,14 @@ export function resolveWaterCoastGrid(
       if (terrain === 'water' || terrain === 'water_deep') {
         // Priority 1: Water bordering Grass (Inland Lakes, Rivers, and freshwater shores)
         // Whenever water meets grass, it autotiles using the canonical stone/earth lake & river shore brush.
-        const foreignMask = compute2DNeighborMask(
-          matrix,
-          x,
-          y,
-          (neighbor) => neighbor === 'grass'
-        );
+        const foreignMask = compute2DNeighborMask(matrix, x, y, (neighbor) => neighbor === 'grass');
 
         if (foreignMask !== 0) {
           const { role, innerOverlays } = classify2DAutotileRole(foreignMask);
           const primaryTile = getTileForRole(CANONICAL_LAKE_SHORE_BRUSH, role);
-          const overlayTiles = innerOverlays.map((r) => getTileForRole(CANONICAL_LAKE_SHORE_BRUSH, r));
+          const overlayTiles = innerOverlays.map((r) =>
+            getTileForRole(CANONICAL_LAKE_SHORE_BRUSH, r)
+          );
 
           const layerStack: string[] = [BASE_GRASS_TILE]; // no-domain: Estructura o identificador procedural de aventura
           if (role.startsWith('corner_inner')) {
@@ -548,7 +545,10 @@ export function resolveWaterCoastGrid(
             layerStack.push('poke_water_shadow_shore_n.png');
           } else if (role === 'edge_west' || role === 'corner_outer_sw') {
             layerStack.push('poke_water_shadow_shore_w.png');
-          } else if (oneRowSouthOfNorthBank && (role === 'center' || role.startsWith('corner_inner'))) {
+          } else if (
+            oneRowSouthOfNorthBank &&
+            (role === 'center' || role.startsWith('corner_inner'))
+          ) {
             layerStack.push('poke_water_shadow_full.png');
           }
 
@@ -598,8 +598,7 @@ export function resolveWaterCoastGrid(
         const isAbyssalCenter = minDist >= MIN_ABYSSAL_LAKE_DISTANCE;
 
         const isDeepWater = isAbyssalCenter || terrain === 'water_deep';
-        const primaryTile =
-          isDeepWater ? 'poke_water_deep.png' : CANONICAL_LAKE_SHORE_BRUSH.center;
+        const primaryTile = isDeepWater ? 'poke_water_deep.png' : CANONICAL_LAKE_SHORE_BRUSH.center;
         const layerStack: string[] = [BASE_GRASS_TILE, primaryTile]; // no-domain: Estructura o identificador procedural de aventura
 
         const oneRowSouthOfNorthBank = y > 1 && matrix[y - 2]![x]! === 'grass';

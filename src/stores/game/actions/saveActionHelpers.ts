@@ -18,18 +18,30 @@ export interface SaveRollbackPayload {
   outOfSync?: boolean;
 }
 
-export function canSaveState(state: GameState, isModalOpen: (name: string) => boolean): { allowed: boolean; error?: string } {
+export function canSaveState(
+  state: GameState,
+  isModalOpen: (name: string) => boolean
+): { allowed: boolean; error?: string } {
   const pokemonCount = (state.team?.length || 0) + (state.box?.length || 0);
-  const isGtsSimulation = typeof window !== 'undefined' && '__GTS_SIMULATION__' in window && Boolean((window as Window & { __GTS_SIMULATION__?: boolean }).__GTS_SIMULATION__);
+  const isGtsSimulation =
+    typeof window !== 'undefined' &&
+    '__GTS_SIMULATION__' in window &&
+    Boolean((window as Window & { __GTS_SIMULATION__?: boolean }).__GTS_SIMULATION__);
 
   if (!isGtsSimulation && (pokemonCount === 0 || !state.starterChosen)) {
-    logger.debug('SAVE', `Guardado abortado: El jugador tiene ${pokemonCount} Pokémon y starterChosen es ${state.starterChosen}. Prevenida sobreescritura destructiva.`);
+    logger.debug(
+      'SAVE',
+      `Guardado abortado: El jugador tiene ${pokemonCount} Pokémon y starterChosen es ${state.starterChosen}. Prevenida sobreescritura destructiva.`
+    );
     return { allowed: false, error: 'Cannot save with 0 Pokémon or unchosen starter' };
   }
 
   try {
     if (isModalOpen('Evolution') || isModalOpen('MoveLearning')) {
-      logger.warn('SAVE', 'Guardado abortado: El jugador está en medio de una evolución o aprendizaje de movimientos.');
+      logger.warn(
+        'SAVE',
+        'Guardado abortado: El jugador está en medio de una evolución o aprendizaje de movimientos.'
+      );
       return { allowed: false, error: 'Cannot save during evolution or move learning' };
     }
   } catch (e) {
@@ -71,7 +83,11 @@ export async function handleSaveRollback(
   let freshSaveId = result.lastSaveId;
 
   if (!rollbackData && db) {
-    const freshRes = await db.from('game_saves').select('save_data, last_save_id').eq('user_id', user.id).single();
+    const freshRes = await db
+      .from('game_saves')
+      .select('save_data, last_save_id')
+      .eq('user_id', user.id)
+      .single();
     const freshSave = freshRes.data as { save_data: GameState; last_save_id: string } | null;
     if (freshSave) {
       rollbackData = freshSave.save_data;
@@ -93,7 +109,11 @@ export async function handleSaveRollback(
       await writeOpfsFile(`save_${user.id}.gz`, compressed);
       logger.info('SAVE', 'Rollback local storage (LS/OPFS) updated successfully');
     } catch (e) {
-      logger.warn('SAVE', 'Error al actualizar almacenamiento local (LS/OPFS) durante el rollback:', e);
+      logger.warn(
+        'SAVE',
+        'Error al actualizar almacenamiento local (LS/OPFS) durante el rollback:',
+        e
+      );
     } finally {
       const { resetSaveOperationState } = await import('@/logic/auth/saveService.ts');
       resetSaveOperationState();

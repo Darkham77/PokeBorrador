@@ -6,7 +6,10 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
-import { repairPokemonLegality, checkPokemonLegality } from '../../src/logic/pokemon/pokemonLegality.ts';
+import {
+  repairPokemonLegality,
+  checkPokemonLegality
+} from '../../src/logic/pokemon/pokemonLegality.ts';
 import { isEnabledPokemonId } from '../../src/data/system/constants.ts';
 import { makePokemon } from '../../src/logic/pokemon/pokemonFactory.ts';
 import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
@@ -53,10 +56,14 @@ export function findDefaultDb(): string | null {
  * Aplica el algoritmo de auditoría, purga de especies no habilitadas y reparación de legalidad sobre un SaveDataDto.
  * Retorna true si se modificó algún Pokémon o huevo, junto con la lista de cambios.
  */
-function purgeEggsFromIncubator(saveData: SaveDataDto, isSilent: boolean, details: string[]): boolean {
+function purgeEggsFromIncubator(
+  saveData: SaveDataDto,
+  isSilent: boolean,
+  details: string[]
+): boolean {
   if (!Array.isArray(saveData.eggs)) return false;
   const initial = saveData.eggs.length;
-  saveData.eggs = saveData.eggs.filter(egg => {
+  saveData.eggs = saveData.eggs.filter((egg) => {
     if (!egg) return false;
     const eggSpecies = egg.id || egg.pokemonId;
     if (!eggSpecies || !isEnabledPokemonId(eggSpecies)) {
@@ -81,18 +88,27 @@ function isDaycareWarehouseItem(item: unknown): item is DaycareWarehouseEntry {
   return typeof item === 'object' && item !== null;
 }
 
-function purgeDaycareWarehouse(saveData: SaveDataDto, isSilent: boolean, details: string[]): boolean {
+function purgeDaycareWarehouse(
+  saveData: SaveDataDto,
+  isSilent: boolean,
+  details: string[]
+): boolean {
   const warehouse = saveData.daycareWarehouse;
   if (!Array.isArray(warehouse)) return false;
   const initial = warehouse.length;
-  saveData.daycareWarehouse = warehouse.filter(item => {
+  saveData.daycareWarehouse = warehouse.filter((item) => {
     if (!isDaycareWarehouseItem(item)) return false;
     const rawSpecies = String(item.species || item.id || '');
-    const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
+    const cleanSpecies = rawSpecies.startsWith('egg_')
+      ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '')
+      : rawSpecies;
     const targetSpecies = item.species ? String(item.species) : cleanSpecies;
 
     if (!targetSpecies || !isEnabledPokemonId(targetSpecies)) {
-      const label = item.isEgg || item.steps !== undefined || rawSpecies.startsWith('egg_') ? 'Huevo' : 'Pokémon';
+      const label =
+        item.isEgg || item.steps !== undefined || rawSpecies.startsWith('egg_')
+          ? 'Huevo'
+          : 'Pokémon';
       const logMsg = `${label} no habilitado eliminado de Guardería (Warehouse): "${targetSpecies || 'desconocido'}" (ID: ${item.id || 'N/A'})`;
       details.push(`  ↳ 🗑️ ${logMsg}`);
       if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
@@ -103,7 +119,12 @@ function purgeDaycareWarehouse(saveData: SaveDataDto, isSilent: boolean, details
   return saveData.daycareWarehouse.length !== initial;
 }
 
-function purgeNonEnabledPokemon(list: unknown[], locationLabel: string, isSilent: boolean, details: string[]): boolean {
+function purgeNonEnabledPokemon(
+  list: unknown[],
+  locationLabel: string,
+  isSilent: boolean,
+  details: string[]
+): boolean {
   if (!Array.isArray(list)) return false;
   const initial = list.length;
   const filtered = list.filter((p) => {
@@ -147,7 +168,12 @@ function applySaveShield(saveData: SaveDataDto, isSilent: boolean, details: stri
   return false;
 }
 
-function auditAndRepairPokemonList(list: unknown[], locationLabel: string, isSilent: boolean, details: string[]): number {
+function auditAndRepairPokemonList(
+  list: unknown[],
+  locationLabel: string,
+  isSilent: boolean,
+  details: string[]
+): number {
   if (!Array.isArray(list)) return 0;
   let fixed = 0;
   list.forEach((p, idx) => {
@@ -160,7 +186,7 @@ function auditAndRepairPokemonList(list: unknown[], locationLabel: string, isSil
         const header = `[${locationLabel} Slot ${idx}] ${poke.name} (UID: ${poke.uid}):`;
         details.push(header);
         if (!isSilent) console.log(`  ${header}`);
-        report.changes.forEach(ch => {
+        report.changes.forEach((ch) => {
           details.push(`  ↳ ${ch}`);
           if (!isSilent) console.log(`    ↳ ✅ ${ch}`);
         });
@@ -171,7 +197,12 @@ function auditAndRepairPokemonList(list: unknown[], locationLabel: string, isSil
   return fixed;
 }
 
-function releaseStuckEventFlags(list: unknown[], locationLabel: string, isSilent: boolean, details: string[]): boolean {
+function releaseStuckEventFlags(
+  list: unknown[],
+  locationLabel: string,
+  isSilent: boolean,
+  details: string[]
+): boolean {
   if (!Array.isArray(list)) return false;
   let modified = false;
   list.forEach((p, idx) => {
@@ -205,14 +236,20 @@ export function auditAndRepairSaveData(
   fixedCount += auditAndRepairPokemonList(saveData.team, 'Equipo', isSilent, details);
   fixedCount += auditAndRepairPokemonList(saveData.box, 'Caja', isSilent, details);
   if (Array.isArray(saveData.daycareWarehouse)) {
-    fixedCount += auditAndRepairPokemonList(saveData.daycareWarehouse, 'Guardería Depósito', isSilent, details);
+    fixedCount += auditAndRepairPokemonList(
+      saveData.daycareWarehouse,
+      'Guardería Depósito',
+      isSilent,
+      details
+    );
   }
   if (fixedCount > 0) modified = true;
 
   if (releaseStuckEventFlags(saveData.team, 'Equipo', isSilent, details)) modified = true;
   if (releaseStuckEventFlags(saveData.box, 'Caja', isSilent, details)) modified = true;
   if (Array.isArray(saveData.daycareWarehouse)) {
-    if (releaseStuckEventFlags(saveData.daycareWarehouse, 'Guardería Depósito', isSilent, details)) modified = true;
+    if (releaseStuckEventFlags(saveData.daycareWarehouse, 'Guardería Depósito', isSilent, details))
+      modified = true;
   }
 
   return { modified, fixedPokemonCount: fixedCount, details };
@@ -248,9 +285,14 @@ function repairSqliteSingleAccount(
 
   if (modified) {
     const updatedJson = JSON.stringify(saveData);
-    db.prepare('UPDATE game_saves SET save_data = ? WHERE user_id = ?').run(updatedJson, row.user_id);
+    db.prepare('UPDATE game_saves SET save_data = ? WHERE user_id = ?').run(
+      updatedJson,
+      row.user_id
+    );
     if (!isSilent) {
-      console.log(`✨ Guardado actualizado con éxito en SQLite (${fixedPokemonCount} Pokémon corregidos).`);
+      console.log(
+        `✨ Guardado actualizado con éxito en SQLite (${fixedPokemonCount} Pokémon corregidos).`
+      );
     }
     summary.accountsRepaired++;
     summary.pokemonRepaired += fixedPokemonCount;
@@ -304,12 +346,24 @@ function repairSingleClaimQueueItem(
     }
     const poke = parsed.data as Pokemon;
     const initialCheck = checkPokemonLegality(poke);
-    if (!initialCheck.isLegal || poke.isIllegal || !poke.id || poke.status === null || poke.maxVigor === undefined) {
+    if (
+      !initialCheck.isLegal ||
+      poke.isIllegal ||
+      !poke.id ||
+      poke.status === null ||
+      poke.maxVigor === undefined
+    ) {
       const report = repairPokemonLegality(poke);
       if (report.repaired) {
-        db.prepare("UPDATE claim_queue SET asset_data = ? WHERE id = ?").run(JSON.stringify(parsed), claimRow.id);
+        db.prepare('UPDATE claim_queue SET asset_data = ? WHERE id = ?').run(
+          JSON.stringify(parsed),
+          claimRow.id
+        );
         summary.pokemonRepaired++;
-        if (!isSilent) console.log(`  ↳ 📦 Pokémon en claim_queue (ID: ${claimRow.id}) reparado: ${report.changes.join(', ')}`);
+        if (!isSilent)
+          console.log(
+            `  ↳ 📦 Pokémon en claim_queue (ID: ${claimRow.id}) reparado: ${report.changes.join(', ')}`
+          );
       }
     }
   } catch (err) {
@@ -319,7 +373,7 @@ function repairSingleClaimQueueItem(
 
 function repairSqliteClaimQueue(db: DatabaseSync, isSilent: boolean, summary: RepairSummary): void {
   try {
-    const rawRows = db.prepare("SELECT id, asset_data FROM claim_queue").all() as unknown[]; // open-record: raw sqlite records
+    const rawRows = db.prepare('SELECT id, asset_data FROM claim_queue').all() as unknown[]; // open-record: raw sqlite records
     const claimRows: ClaimQueueRow[] = rawRows.filter(isClaimQueueRow);
     if (!isSilent) console.log(`📦 Auditando claim_queue (${claimRows.length} registros)...`);
     for (const claimRow of claimRows) {
@@ -341,38 +395,63 @@ function repairSingleMarketListingItem(
     const poke = (typeof mRow.data === 'string' ? JSON.parse(mRow.data) : mRow.data) as Pokemon;
     if (!poke || typeof poke !== 'object') return;
     const initialCheck = checkPokemonLegality(poke);
-    if (!initialCheck.isLegal || poke.isIllegal || !poke.id || poke.status === null || poke.maxVigor === undefined) {
+    if (
+      !initialCheck.isLegal ||
+      poke.isIllegal ||
+      !poke.id ||
+      poke.status === null ||
+      poke.maxVigor === undefined
+    ) {
       const report = repairPokemonLegality(poke);
       if (report.repaired) {
-        db.prepare("UPDATE market_listings SET data = ? WHERE id = ?").run(JSON.stringify(poke), mRow.id);
+        db.prepare('UPDATE market_listings SET data = ? WHERE id = ?').run(
+          JSON.stringify(poke),
+          mRow.id
+        );
         summary.pokemonRepaired++;
-        if (!isSilent) console.log(`  ↳ 🏪 Pokémon en market_listings (ID: ${mRow.id}) reparado: ${report.changes.join(', ')}`);
+        if (!isSilent)
+          console.log(
+            `  ↳ 🏪 Pokémon en market_listings (ID: ${mRow.id}) reparado: ${report.changes.join(', ')}`
+          );
       }
     }
-  } catch { // catch-ok: ignore corrupt market listing json parse error
+  } catch {
+    // catch-ok: ignore corrupt market listing json parse error
     // ignore
   }
 }
 
-function repairSqliteMarketListings(db: DatabaseSync, isSilent: boolean, summary: RepairSummary): void {
+function repairSqliteMarketListings(
+  db: DatabaseSync,
+  isSilent: boolean,
+  summary: RepairSummary
+): void {
   try {
-    const rawRows = db.prepare("SELECT id, data FROM market_listings WHERE listing_type = 'pokemon'").all() as unknown[]; // open-record: raw sqlite records
+    const rawRows = db
+      .prepare("SELECT id, data FROM market_listings WHERE listing_type = 'pokemon'")
+      .all() as unknown[]; // open-record: raw sqlite records
     const marketRows: MarketListingRow[] = rawRows.filter(isMarketListingRow);
     for (const mRow of marketRows) {
       repairSingleMarketListingItem(mRow, db, isSilent, summary);
     }
-  } catch { // catch-ok: market_listings table might not exist
+  } catch {
+    // catch-ok: market_listings table might not exist
     // market_listings table might not exist
   }
 }
 
-function openSqliteDbForRepair(options: RepairAccountOptions): { db: DatabaseSync; shouldClose: boolean } {
+function openSqliteDbForRepair(options: RepairAccountOptions): {
+  db: DatabaseSync;
+  shouldClose: boolean;
+} {
   if (options.dbInstance) {
     return { db: options.dbInstance, shouldClose: false };
   }
   const targetDbPath = options.dbPath || findDefaultDb();
   if (!targetDbPath || !fs.existsSync(targetDbPath)) {
-    throw new Error(`No se encontró ninguna base de datos SQLite en "${targetDbPath || 'rutas por defecto'}".`);
+    throw new Error(
+      `No se encontró ninguna base de datos SQLite en "${targetDbPath || 'rutas por defecto'}".`
+    );
   }
   return { db: new DatabaseSync(targetDbPath), shouldClose: true };
 }
@@ -397,7 +476,7 @@ function fetchSqliteSaveRows(
  */
 export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSummary {
   const isAll = Boolean(options.all);
-  const targetUserUid = isAll ? null : (options.userId || null);
+  const targetUserUid = isAll ? null : options.userId || null;
   const isSilent = Boolean(options.silent);
 
   const { db, shouldClose } = openSqliteDbForRepair(options);
@@ -405,7 +484,9 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
   if (!isSilent) {
     console.log(`\n📦 Evaluando base de datos SQLite ${options.dbPath ? options.dbPath : ''}...`);
     if (isAll) {
-      console.log(`🌐 Modo masivo (--all): Auditando y corrigiendo todas las cuentas registradas...`);
+      console.log(
+        `🌐 Modo masivo (--all): Auditando y corrigiendo todas las cuentas registradas...`
+      );
     } else {
       console.log(`🎯 Modo individual: Reparando cuenta "${targetUserUid}"...`);
     }
@@ -421,7 +502,11 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
 
   if (rows.length === 0) {
     if (!isSilent) {
-      console.log(targetUserUid ? `⚠️ No se encontró ninguna partida para el usuario "${targetUserUid}".` : '⚠️ La tabla game_saves está vacía.');
+      console.log(
+        targetUserUid
+          ? `⚠️ No se encontró ninguna partida para el usuario "${targetUserUid}".`
+          : '⚠️ La tabla game_saves está vacía.'
+      );
     }
     return summary;
   }
@@ -460,18 +545,39 @@ async function fetchTargetSupabaseRows(
   isSilent: boolean
 ): Promise<Array<{ user_id: string; save_data: unknown }>> {
   if (isAll || !targetUser) {
-    return await sql`SELECT user_id, save_data FROM public.game_saves ORDER BY user_id ASC` as Array<{ user_id: string; save_data: unknown }>;
+    return (await sql`SELECT user_id, save_data FROM public.game_saves ORDER BY user_id ASC`) as Array<{
+      user_id: string;
+      save_data: unknown;
+    }>;
   }
-  let matchedRows = await sql`SELECT user_id, save_data FROM public.game_saves WHERE user_id::text = ${targetUser}` as Array<{ user_id: string; save_data: unknown }>;
+  let matchedRows =
+    (await sql`SELECT user_id, save_data FROM public.game_saves WHERE user_id::text = ${targetUser}`) as Array<{
+      user_id: string;
+      save_data: unknown;
+    }>;
 
   if (matchedRows.length === 0) {
-    const profiles = await sql`SELECT id, username, email FROM public.profiles WHERE username ILIKE ${targetUser} OR email ILIKE ${targetUser}` as Array<{ id: string; username: string; email: string }>;
+    const profiles =
+      (await sql`SELECT id, username, email FROM public.profiles WHERE username ILIKE ${targetUser} OR email ILIKE ${targetUser}`) as Array<{
+        id: string;
+        username: string;
+        email: string;
+      }>;
     if (profiles.length === 1 && profiles[0]?.id) {
       const resolvedUuid = profiles[0].id;
-      if (!isSilent) console.log(`👤 Usuario encontrado por perfil: ${profiles[0].username} (UUID: ${resolvedUuid})`);
-      matchedRows = await sql`SELECT user_id, save_data FROM public.game_saves WHERE user_id::text = ${resolvedUuid}` as Array<{ user_id: string; save_data: unknown }>;
+      if (!isSilent)
+        console.log(
+          `👤 Usuario encontrado por perfil: ${profiles[0].username} (UUID: ${resolvedUuid})`
+        );
+      matchedRows =
+        (await sql`SELECT user_id, save_data FROM public.game_saves WHERE user_id::text = ${resolvedUuid}`) as Array<{
+          user_id: string;
+          save_data: unknown;
+        }>;
     } else if (profiles.length > 1) {
-      throw new Error(`Se encontraron múltiples usuarios coincidentes con "${targetUser}". Usa el UUID explícito.`);
+      throw new Error(
+        `Se encontraron múltiples usuarios coincidentes con "${targetUser}". Usa el UUID explícito.`
+      );
     }
   }
 
@@ -516,7 +622,9 @@ async function repairSupabaseSingleAccount(
     const updatedJson = JSON.stringify(saveData);
     await sql`UPDATE public.game_saves SET save_data = ${updatedJson}::jsonb, updated_at = NOW() WHERE user_id = ${row.user_id}`;
     if (!isSilent) {
-      console.log(`✨ Guardado actualizado con éxito en Supabase (${fixedPokemonCount} Pokémon corregidos).`);
+      console.log(
+        `✨ Guardado actualizado con éxito en Supabase (${fixedPokemonCount} Pokémon corregidos).`
+      );
     }
     summary.accountsRepaired++;
     summary.pokemonRepaired += fixedPokemonCount;
@@ -537,9 +645,11 @@ async function repairSupabaseSingleAccount(
 /**
  * Repara cuentas almacenadas en un servidor Supabase / PostgreSQL.
  */
-export async function repairAccountsInSupabase(options: RepairAccountOptions): Promise<RepairSummary> {
+export async function repairAccountsInSupabase(
+  options: RepairAccountOptions
+): Promise<RepairSummary> {
   const isAll = Boolean(options.all);
-  const targetUser = isAll ? null : (options.userId || null);
+  const targetUser = isAll ? null : options.userId || null;
   const profile = options.server;
   const isSilent = Boolean(options.silent);
 
@@ -557,7 +667,9 @@ export async function repairAccountsInSupabase(options: RepairAccountOptions): P
 
   const dbUrl = buildDatabaseUrl(conf, profile);
   if (!dbUrl) {
-    throw new Error(`No se pudo construir la URL de conexión Postgres para el perfil "${profile}".`);
+    throw new Error(
+      `No se pudo construir la URL de conexión Postgres para el perfil "${profile}".`
+    );
   }
 
   if (dbUrl.includes('placeholder')) {
@@ -568,7 +680,9 @@ export async function repairAccountsInSupabase(options: RepairAccountOptions): P
   if (!isSilent) {
     console.log(`\n🔌 Conectando al servidor Supabase [${profile}]...`);
     if (isAll) {
-      console.log(`🌐 Modo masivo (--all): Auditando y corrigiendo todas las cuentas registradas...`);
+      console.log(
+        `🌐 Modo masivo (--all): Auditando y corrigiendo todas las cuentas registradas...`
+      );
     } else {
       console.log(`🎯 Modo individual: Reparando cuenta "${targetUser}"...`);
     }
@@ -590,13 +704,19 @@ export async function repairAccountsInSupabase(options: RepairAccountOptions): P
 
     if (rows.length === 0) {
       if (!isSilent) {
-        console.log(targetUser ? `⚠️ No se encontró ninguna partida para el usuario "${targetUser}".` : '⚠️ La tabla game_saves está vacía.');
+        console.log(
+          targetUser
+            ? `⚠️ No se encontró ninguna partida para el usuario "${targetUser}".`
+            : '⚠️ La tabla game_saves está vacía.'
+        );
       }
       return summary;
     }
 
     if (!isSilent) {
-      console.log(`🔍 Se encontraron ${rows.length} cuenta(s) en Supabase para auditar y reparar.\n`);
+      console.log(
+        `🔍 Se encontraron ${rows.length} cuenta(s) en Supabase para auditar y reparar.\n`
+      );
     }
 
     for (const row of rows) {
@@ -621,7 +741,9 @@ export async function repairAccountsInSupabase(options: RepairAccountOptions): P
 /**
  * Función principal unificada de reparación de cuentas para SQLite o Supabase.
  */
-export async function repairAccountsInDatabase(options: RepairAccountOptions): Promise<RepairSummary> {
+export async function repairAccountsInDatabase(
+  options: RepairAccountOptions
+): Promise<RepairSummary> {
   if (options.server) {
     return await repairAccountsInSupabase(options);
   }
@@ -630,7 +752,13 @@ export async function repairAccountsInDatabase(options: RepairAccountOptions): P
 
 async function main() {
   const args = process.argv.slice(2);
-  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['all', 'fix', 'help'].includes(a) ? `--${a}` : a));
+  const normalized = args.map((a) =>
+    a.includes('=') && !a.startsWith('-')
+      ? `--${a}`
+      : ['all', 'fix', 'help'].includes(a)
+        ? `--${a}`
+        : a
+  );
   const { values, positionals } = parseArgs({
     args: normalized,
     options: {
@@ -644,7 +772,8 @@ async function main() {
     allowPositionals: true
   });
 
-  const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+  const isHelp =
+    values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
   if (isHelp) {
     console.log(`
 Uso:
@@ -678,22 +807,34 @@ Ejemplos:
   if (!targetServer) {
     try {
       const { baseProfiles, allAvailable } = await getValidatedServerConfigs();
-      const serverIdx = remainingPositionals.findIndex(p => allAvailable.includes(p) || baseProfiles.includes(p));
+      const serverIdx = remainingPositionals.findIndex(
+        (p) => allAvailable.includes(p) || baseProfiles.includes(p)
+      );
       if (serverIdx !== -1) {
         targetServer = remainingPositionals[serverIdx];
         remainingPositionals.splice(serverIdx, 1);
       }
-    } catch { // catch-ok: ignored if .env cannot be read in offline mode
+    } catch {
+      // catch-ok: ignored if .env cannot be read in offline mode
       // Ignored if .env cannot be read in offline mode
     }
   }
 
-  const isAll = Boolean(values.all) || Boolean(values['all-accounts']) || remainingPositionals.some(p => p === 'all' || p === '--all');
-  const rawUserId = values.user || (remainingPositionals.find(p => p !== 'all' && p !== '--all') ? String(remainingPositionals.find(p => p !== 'all' && p !== '--all')) : null);
+  const isAll =
+    Boolean(values.all) ||
+    Boolean(values['all-accounts']) ||
+    remainingPositionals.some((p) => p === 'all' || p === '--all');
+  const rawUserId =
+    values.user ||
+    (remainingPositionals.find((p) => p !== 'all' && p !== '--all')
+      ? String(remainingPositionals.find((p) => p !== 'all' && p !== '--all'))
+      : null);
   const targetUserId = isAll ? null : rawUserId;
 
   if (!isAll && !targetUserId) {
-    console.error(`❌ Debes especificar un usuario (ej: npm run database:repair-account <userId> o --user <userId>) o utilizar --all (o el argumento 'all') para corregir todas las cuentas registradas.`);
+    console.error(
+      `❌ Debes especificar un usuario (ej: npm run database:repair-account <userId> o --user <userId>) o utilizar --all (o el argumento 'all') para corregir todas las cuentas registradas.`
+    );
     console.log(`Usa --help para más información.\n`);
     process.exit(1);
   }
@@ -713,9 +854,8 @@ Ejemplos:
 
 // Ejecutar CLI solo si se llama directamente
 if (process.argv[1] && import.meta.url.endsWith(path.basename(process.argv[1]))) {
-  main().catch(err => {
+  main().catch((err) => {
     console.error('Error fatal al reparar cuentas:', err);
     process.exit(1);
   });
 }
-

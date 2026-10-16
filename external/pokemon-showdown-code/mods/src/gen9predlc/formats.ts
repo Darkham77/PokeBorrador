@@ -29,6 +29,6 @@ export const Formats = [
       'VGC Timer',
       'Open Team Sheets'
     ],
-    banlist: [ 'Walking Wake', 'Iron Leaves' ]
+    banlist: ['Walking Wake', 'Iron Leaves']
   }
 ];

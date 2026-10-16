@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { createMockBattleContext } from '../../../scripts/e2e/fuzzer/core/fuzzer_mock_battle_store.ts';
 import { parseShowdownLogLine } from '../../../src/logic/battle/showdownBridge.ts';
 import { logger } from '../../../src/logic/utils/logger.ts';
@@ -40,7 +40,7 @@ describe('ShowdownBridge Unhandled Logs Regression Tests', () => {
     const debugSpy = vi.spyOn(logger, 'debug');
     await parseShowdownLogLine(mockStore, '|win|Player');
 
-    const unhandledCalls = debugSpy.mock.calls.filter(args => 
+    const unhandledCalls = debugSpy.mock.calls.filter((args) =>
       args[1]?.toString().includes('sin parseador visual específico')
     );
     expect(unhandledCalls.length).toBe(0);
@@ -55,7 +55,7 @@ describe('ShowdownBridge Unhandled Logs Regression Tests', () => {
     const debugSpy = vi.spyOn(logger, 'debug');
     await parseShowdownLogLine(mockStore, '|-anim|p1a: P-Poke1|Dragon Darts|p2a: E-Poke1');
 
-    const unhandledCalls = debugSpy.mock.calls.filter(args => 
+    const unhandledCalls = debugSpy.mock.calls.filter((args) =>
       args[1]?.toString().includes('sin parseador visual específico')
     );
     expect(unhandledCalls.length).toBe(0);
@@ -70,7 +70,7 @@ describe('ShowdownBridge Unhandled Logs Regression Tests', () => {
     const debugSpy = vi.spyOn(logger, 'debug');
     await parseShowdownLogLine(mockStore, '|-fieldactivate|move: Fairy Lock');
 
-    const unhandledCalls = debugSpy.mock.calls.filter(args => 
+    const unhandledCalls = debugSpy.mock.calls.filter((args) =>
       args[1]?.toString().includes('sin parseador visual específico')
     );
     expect(unhandledCalls.length).toBe(0);
@@ -81,13 +81,16 @@ describe('ShowdownBridge Unhandled Logs Regression Tests', () => {
     const p1 = createLocalPoke('P-Poke1', 'Mew');
     const p2 = createLocalPoke('E-Poke1', 'Blissey');
     const mockStore = createMockBattleContext(p1, p2);
-    
+
     const targetPoke = createLocalPoke('E-Poke2', 'Gengar');
     targetPoke.uid = 'gengar-123';
     mockStore.activeBattle.value!.enemyTeam = [p2, targetPoke];
-    
-    await parseShowdownLogLine(mockStore, '|switch|p2a: bd56a16e|Gengar, L100|0 fnt|[uids]p2a:bd56a16e=gengar-123');
-    
+
+    await parseShowdownLogLine(
+      mockStore,
+      '|switch|p2a: bd56a16e|Gengar, L100|0 fnt|[uids]p2a:bd56a16e=gengar-123'
+    );
+
     expect(targetPoke.hp).toBe(0);
     expect(targetPoke.status).toBe('');
   });

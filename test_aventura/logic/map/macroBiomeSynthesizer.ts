@@ -68,7 +68,10 @@ const BIOME_THRESHOLDS = {
  */
 function classifyMacroBiome(temperature: number, moisture: number): MacroBiome {
   // Arid Desert: Hot and very dry
-  if (temperature > BIOME_THRESHOLDS.DESERT_TEMP_MIN && moisture < BIOME_THRESHOLDS.DESERT_MOIST_MAX) {
+  if (
+    temperature > BIOME_THRESHOLDS.DESERT_TEMP_MIN &&
+    moisture < BIOME_THRESHOLDS.DESERT_MOIST_MAX
+  ) {
     return 'arid_desert';
   }
   // Volcanic Plateau: Very hot, dry-to-moderate
@@ -216,9 +219,7 @@ function computeContainmentBuffer(
 /**
  * Master synthesizer generating macro-region biomes across continental terrain.
  */
-export function synthesizeMacroBiomes(
-  options: MacroBiomeSynthesizerOptions
-): MacroBiomeResult {
+export function synthesizeMacroBiomes(options: MacroBiomeSynthesizerOptions): MacroBiomeResult {
   const { width, height, seed, terrainMatrix, heightmap } = options;
   const tempScale = options.temperatureScale ?? DEFAULT_TEMP_SCALE;
   const moistScale = options.moistureScale ?? DEFAULT_MOIST_SCALE;

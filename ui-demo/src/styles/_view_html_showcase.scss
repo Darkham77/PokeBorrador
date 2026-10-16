@@ -113,7 +113,7 @@
     }
   }
 
-  input[type="range"] {
+  input[type='range'] {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
@@ -130,7 +130,9 @@
       height: 18px;
       background: var(--color-text-gold, #ffd60a);
       border: 2px solid var(--black);
-      box-shadow: inset 1px 1px 0 #ffffff, 0 2px 4px Rgba(0, 0, 0, 0.6);
+      box-shadow:
+        inset 1px 1px 0 #ffffff,
+        0 2px 4px Rgba(0, 0, 0, 0.6);
       cursor: pointer;
     }
 
@@ -139,7 +141,9 @@
       height: 18px;
       background: var(--color-text-gold, #ffd60a);
       border: 2px solid var(--black);
-      box-shadow: inset 1px 1px 0 #ffffff, 0 2px 4px Rgba(0, 0, 0, 0.6);
+      box-shadow:
+        inset 1px 1px 0 #ffffff,
+        0 2px 4px Rgba(0, 0, 0, 0.6);
       cursor: pointer;
     }
   }
@@ -151,7 +155,7 @@
   align-items: center;
   gap: 8px;
 
-  input[type="color"] {
+  input[type='color'] {
     width: 32px;
     height: 32px;
     border: 2px solid var(--black) !important;
@@ -170,7 +174,7 @@
 
 // BOTÓN IMAGEN & CARGA DE ARCHIVO RETRO
 .pv-file-input-wrap {
-  input[type="file"] {
+  input[type='file'] {
     font-size: var(--font-7);
     color: var(--color-text-muted);
     cursor: pointer;
@@ -283,7 +287,9 @@ dialog#native-modal-dialog {
   color: var(--color-text-main);
   margin: auto;
   border: none;
-  filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.95)));
+  filter: Drop-Shadow(
+    calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.95))
+  );
 
   &::backdrop {
     background: Rgba(3, 7, 18, 0.82);
@@ -299,7 +305,9 @@ div#demo-native-popover {
   font-family: var(--font-pixel);
   color: var(--color-text-main);
   border: none;
-  filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.9)));
+  filter: Drop-Shadow(
+    calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.9))
+  );
 
   &::backdrop {
     background: Rgba(0, 0, 0, 0.5);

@@ -75,7 +75,6 @@ const extractedPatches = computed<readonly RealContinentPatch[]>(() => {
 watch(
   extractedPatches,
   async (patches) => {
-
     const allFilenames = new Set<string>();
     for (const p of patches) {
       if (p.instructions) {
@@ -150,7 +149,10 @@ const mountainSubtypeCounts = computed<Record<MountainPatchSubtype, number>>(() 
   return counts;
 });
 
-const mountainSubtypeOptions: readonly { readonly id: MountainPatchSubtype; readonly label: string }[] = [
+const mountainSubtypeOptions: readonly {
+  readonly id: MountainPatchSubtype;
+  readonly label: string;
+}[] = [
   { id: 'all', label: 'Todos los Pisos' },
   { id: 'multi_tier', label: '🏔️ Pisos Superiores (Tier 2+)' },
   { id: 'stairs', label: '🪜 Escaleras' },
@@ -159,10 +161,11 @@ const mountainSubtypeOptions: readonly { readonly id: MountainPatchSubtype; read
   { id: 'base_cliff', label: '⛰️ Piso 1 (Base)' }
 ];
 
-
 const reportList = computed<readonly AutotileErrorReport[]>(() => {
   return Array.from(errorReports.value.values()).sort(
-    (a, b) => Temporal.Instant.from(b.timestamp).epochMilliseconds - Temporal.Instant.from(a.timestamp).epochMilliseconds
+    (a, b) =>
+      Temporal.Instant.from(b.timestamp).epochMilliseconds -
+      Temporal.Instant.from(a.timestamp).epochMilliseconds
   );
 });
 
@@ -274,9 +277,7 @@ const categoryLabels: Record<RealPatchCategory, string> = {
         >
           <span class="emoji-inline">←</span> Continent Studio
         </button>
-        <h1 class="page-title">
-          Inspector de Parches Reales del Continente
-        </h1>
+        <h1 class="page-title">Inspector de Parches Reales del Continente</h1>
       </div>
 
       <!-- Seed Controls -->
@@ -364,17 +365,15 @@ const categoryLabels: Record<RealPatchCategory, string> = {
             v-model="showOnlyFlagged"
             type="checkbox"
             class="toggle-checkbox"
-          >
+            aria-label="Mostrar solo tiles marcados"
+          />
           <span>Solo parches con errores ({{ flaggedCount }})</span>
         </label>
       </div>
     </div>
 
     <!-- Mountain Sub-Filter Toolbar (Appears when Acantilados is selected) -->
-    <div
-      v-if="selectedCategory === 'mountain_cliff'"
-      class="mountain-subfilter-toolbar"
-    >
+    <div v-if="selectedCategory === 'mountain_cliff'" class="mountain-subfilter-toolbar">
       <div class="mountain-subfilter-label">
         <span>Filtro de Pisos y Desniveles:</span>
       </div>
@@ -394,28 +393,18 @@ const categoryLabels: Record<RealPatchCategory, string> = {
       </div>
     </div>
 
-
     <!-- Main Grid of Real Patches -->
     <main class="patches-container">
-      <div
-        v-if="store.isGenerating"
-        class="loading-state"
-      >
+      <div v-if="store.isGenerating" class="loading-state">
         <span class="loading-spinner emoji-inline">⏳</span>
         <span>Generando continente y extrayendo transiciones reales...</span>
       </div>
 
-      <div
-        v-else-if="filteredPatches.length === 0"
-        class="no-results"
-      >
+      <div v-else-if="filteredPatches.length === 0" class="no-results">
         No se encontraron parches con los filtros seleccionados en esta semilla.
       </div>
 
-      <div
-        v-else
-        class="patches-grid"
-      >
+      <div v-else class="patches-grid">
         <AutotilePatchCard
           v-for="patch in filteredPatches"
           :key="patch.id"
@@ -587,7 +576,6 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   color: var(--white);
 }
 
-
 .report-cta-btn {
   display: flex;
   align-items: center;
@@ -714,7 +702,6 @@ const categoryLabels: Record<RealPatchCategory, string> = {
   font-weight: 700;
   border-color: var(--amber);
 }
-
 
 .patches-container {
   min-height: 0;

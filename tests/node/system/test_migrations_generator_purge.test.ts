@@ -1,9 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
-import { splitSQLStatements, translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
+import {
+  splitSQLStatements,
+  translatePostgresToSqlite
+} from '../../../src/logic/db/sqlTranslator.ts';
 import { initTestDatabaseSchema } from '../../../scripts/auditors/persistence/_testDbHelper.ts';
 
 describe('Client Migrations Manifest PostgreSQL Purge Specification', () => {
@@ -12,7 +15,9 @@ describe('Client Migrations Manifest PostgreSQL Purge Specification', () => {
 
   it('should purge PostgreSQL SQL from DATABASE_MIGRATIONS when a companion .sqlite.sql exists', () => {
     const list = fs.readdirSync(migrationsDir);
-    const sqlFiles = list.filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'));
+    const sqlFiles = list.filter(
+      (f) => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema')
+    );
 
     let purgedCount = 0;
     let fallbackCount = 0;
@@ -22,13 +27,18 @@ describe('Client Migrations Manifest PostgreSQL Purge Specification', () => {
       const sqliteFile = sqlFile.replace(/\.sql$/, '.sqlite.sql');
       const hasCompanion = list.includes(sqliteFile);
 
-      const entry = DATABASE_MIGRATIONS.find(m => m.id === migrationId) as {
-        id: string;
-        sql: string;
-        sqlite_sql?: string;
-      } | undefined;
+      const entry = DATABASE_MIGRATIONS.find((m) => m.id === migrationId) as
+        | {
+            id: string;
+            sql: string;
+            sqlite_sql?: string;
+          }
+        | undefined;
 
-      expect(entry, `Migration ${migrationId} must be registered in DATABASE_MIGRATIONS`).toBeDefined();
+      expect(
+        entry,
+        `Migration ${migrationId} must be registered in DATABASE_MIGRATIONS`
+      ).toBeDefined();
       if (!entry) continue;
 
       if (hasCompanion) {
@@ -62,31 +72,37 @@ describe('Client Migrations Manifest PostgreSQL Purge Specification', () => {
     expect(fallbackCount).toBeGreaterThanOrEqual(40);
   });
 
-function executeMigrationStatement(db: DatabaseSync, sql: string, migrationId: string): void {
-  try {
-    db.exec(sql);
-  } catch (err: unknown) {
-    const msg = (err as Error).message.toLowerCase();
-    const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
-    const isMissing = msg.includes('no such column');
-    if (!isDuplicate && !isMissing) {
-      throw new Error(`Migration ${migrationId} failed during in-memory SQLite execution: ${(err as Error).message}`, { cause: err });
+  function executeMigrationStatement(db: DatabaseSync, sql: string, migrationId: string): void {
+    try {
+      db.exec(sql);
+    } catch (err: unknown) {
+      const msg = (err as Error).message.toLowerCase();
+      const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
+      const isMissing = msg.includes('no such column');
+      if (!isDuplicate && !isMissing) {
+        throw new Error(
+          `Migration ${migrationId} failed during in-memory SQLite execution: ${(err as Error).message}`,
+          { cause: err }
+        );
+      }
     }
   }
-}
 
-function applySingleMigration(db: DatabaseSync, m: { id: string; sql: string; sqlite_sql?: string }): void {
-  const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql;
-  const isSqliteSpec = m.sqlite_sql !== undefined;
-  const statements = splitSQLStatements(sqlSource);
+  function applySingleMigration(
+    db: DatabaseSync,
+    m: { id: string; sql: string; sqlite_sql?: string }
+  ): void {
+    const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql;
+    const isSqliteSpec = m.sqlite_sql !== undefined;
+    const statements = splitSQLStatements(sqlSource);
 
-  for (const stmt of statements) {
-    if (!stmt.trim()) continue;
-    const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
-    if (!sql) continue;
-    executeMigrationStatement(db, sql, m.id);
+    for (const stmt of statements) {
+      if (!stmt.trim()) continue;
+      const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
+      if (!sql) continue;
+      executeMigrationStatement(db, sql, m.id);
+    }
   }
-}
 
   it('should execute 100% of purged DATABASE_MIGRATIONS on in-memory SQLite without schema errors', () => {
     using db = new DatabaseSync(':memory:');
@@ -101,8 +117,10 @@ function applySingleMigration(db: DatabaseSync, m: { id: string; sql: string; sq
     expect(executedCount).toBe(DATABASE_MIGRATIONS.length);
 
     // Verify key tables exist
-    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as { name: string }[];
-    const tableNames = new Set(tables.map(t => t.name));
+    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as {
+      name: string;
+    }[];
+    const tableNames = new Set(tables.map((t) => t.name));
     expect(tableNames.has('profiles')).toBe(true);
     expect(tableNames.has('game_saves')).toBe(true);
     expect(tableNames.has('system_config')).toBe(true);

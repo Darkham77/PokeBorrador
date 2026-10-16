@@ -2,7 +2,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-
 /**
  * scripts/e2e/events/event_slot_management.simulation.ts
  *
@@ -25,7 +24,8 @@ class EventSlotManagementSimulation extends BaseEventSimulation {
 
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const { getServerTime } = await import('../../../src/logic/utils/timeUtils.ts');
 
@@ -50,7 +50,14 @@ class EventSlotManagementSimulation extends BaseEventSimulation {
       shellder.nickname = 'Base Shell';
       shellder.weight = SHELLDER_WEIGHT;
       shellder.height = SHELLDER_HEIGHT;
-      shellder.ivs = { hp: SHELLDER_IV, atk: SHELLDER_IV, def: SHELLDER_IV, spa: SHELLDER_IV, spd: SHELLDER_IV, spe: SHELLDER_IV };
+      shellder.ivs = {
+        hp: SHELLDER_IV,
+        atk: SHELLDER_IV,
+        def: SHELLDER_IV,
+        spa: SHELLDER_IV,
+        spd: SHELLDER_IV,
+        spe: SHELLDER_IV
+      };
       shellder.obtainedAt = currentSimTime;
 
       const horsea = pokemonDebugService.generate({
@@ -62,7 +69,14 @@ class EventSlotManagementSimulation extends BaseEventSimulation {
       horsea.nickname = 'Star Sea';
       horsea.weight = HORSEA_WEIGHT;
       horsea.height = HORSEA_HEIGHT;
-      horsea.ivs = { hp: HORSEA_IV, atk: HORSEA_IV, def: HORSEA_IV, spa: HORSEA_IV, spd: HORSEA_IV, spe: HORSEA_IV };
+      horsea.ivs = {
+        hp: HORSEA_IV,
+        atk: HORSEA_IV,
+        def: HORSEA_IV,
+        spa: HORSEA_IV,
+        spd: HORSEA_IV,
+        spe: HORSEA_IV
+      };
       horsea.obtainedAt = currentSimTime;
 
       gameStore.state.starterChosen = true;
@@ -81,7 +95,9 @@ class EventSlotManagementSimulation extends BaseEventSimulation {
 }
 
 test.describe('World Events Slot Management E2E Simulation', () => {
-  test('enrolls, changes participant via EventSlotActionModal, and withdraws releasing onEvent', async ({ page }) => {
+  test('enrolls, changes participant via EventSlotActionModal, and withdraws releasing onEvent', async ({
+    page
+  }) => {
     const sim = new EventSlotManagementSimulation(page, 'SlotMaster');
     await sim.setup();
     try {
@@ -119,7 +135,9 @@ test.describe('World Events Slot Management E2E Simulation', () => {
 
       // In autoConfirm mode, clicking confirms immediately.
       // Verify selection modal unmounts completely within the 5s timeout limit.
-      await expect(page.locator('.selection-container')).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await expect(page.locator('.selection-container')).toHaveCount(0, {
+        timeout: MAX_PER_ACTION_TIMEOUT_MS
+      });
 
       await expect(ivChip).toContainText('✓', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
@@ -137,10 +155,13 @@ test.describe('World Events Slot Management E2E Simulation', () => {
       // Verify onEvent was released back to false
       const onEventState = await page.evaluate(async () => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        return useGameStore().state.team.map(p => ({ nickname: p.nickname, onEvent: Boolean(p.onEvent) }));
+        return useGameStore().state.team.map((p) => ({
+          nickname: p.nickname,
+          onEvent: Boolean(p.onEvent)
+        }));
       });
 
-      expect(onEventState.every(p => p.onEvent === false)).toBe(true);
+      expect(onEventState.every((p) => p.onEvent === false)).toBe(true);
     } finally {
       await sim.resetMockGameTime();
       await sim.finish('World Events Slot Management E2E Simulation');

@@ -1,12 +1,18 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { Battle, type ID } from '@pkmn/sim';
 import type { CertifiedBattleCase } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
-import { statsMap, patchShowdownSpreadModify } from '../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
+import {
+  statsMap,
+  patchShowdownSpreadModify
+} from '../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
-import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../src/logic/battle/helpers/showdownTeamMapper.ts';
+import {
+  ShowdownTeamMapper,
+  type CustomPokemonSet
+} from '../../../src/logic/battle/helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
 import { executeBattleTurn } from '../../../src/logic/battle/helpers/showdownExecutor.ts';
@@ -57,12 +63,16 @@ function replayViaShowdownBattleRunner(caseId: string, expectedTurns: number) {
       p2Choice: step.p2Choice,
       history: match.history,
       currentStep: turnsExecuted,
-      certifiedHistoryStep: step,
+      certifiedHistoryStep: step
     });
     assert.ok(res, `Turn ${turnsExecuted} execution result must be defined`);
   }
 
-  assert.strictEqual(turnsExecuted, expectedTurns, `All ${expectedTurns} turns must execute deterministically`);
+  assert.strictEqual(
+    turnsExecuted,
+    expectedTurns,
+    `All ${expectedTurns} turns must execute deterministically`
+  );
   assert.strictEqual(battle.ended, true, 'Battle must reach terminal state');
 }
 

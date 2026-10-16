@@ -1,10 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import {
-  armBattleReadyForInput,
-  awaitBattleReadyForInput,
-  openDebugTab
-} from '../e2e_helpers.ts';
+import { armBattleReadyForInput, awaitBattleReadyForInput, openDebugTab } from '../e2e_helpers.ts';
 
 const WILD_PIDGEY_TEST_LEVEL = 3;
 
@@ -26,7 +22,9 @@ class WildEncounterJumpSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Battle Wild Encounter Jump & Shiny Intro Simulations', () => {
-  test('should render wild encounter intro sequence and settle into WAIT_INPUT state', async ({ page }) => {
+  test('should render wild encounter intro sequence and settle into WAIT_INPUT state', async ({
+    page
+  }) => {
     const sim = new WildEncounterJumpSimWrapper(page, 'WildJumpTest');
     await sim.setup();
 
@@ -44,7 +42,9 @@ test.describe('Battle Wild Encounter Jump & Shiny Intro Simulations', () => {
     await sim.forceFleeDebugger();
   });
 
-  test('should render shiny wild encounter with sparkles and audio event without animation blocking', async ({ page }) => {
+  test('should render shiny wild encounter with sparkles and audio event without animation blocking', async ({
+    page
+  }) => {
     const sim = new WildEncounterJumpSimWrapper(page, 'WildShinyTest');
     await sim.setup();
     await sim.setupShinyEncounter();
@@ -62,7 +62,9 @@ test.describe('Battle Wild Encounter Jump & Shiny Intro Simulations', () => {
     await sim.forceFleeDebugger();
   });
 
-  test('should render bushes and wild silhouette during SEARCH_PHASE and jump in ENTRY_ANIM', async ({ page }) => {
+  test('should render bushes and wild silhouette during SEARCH_PHASE and jump in ENTRY_ANIM', async ({
+    page
+  }) => {
     const sim = new WildEncounterJumpSimWrapper(page, 'WildSearchPhaseTest');
     await sim.setup();
     await sim.disableAutoMode();
@@ -71,7 +73,8 @@ test.describe('Battle Wild Encounter Jump & Shiny Intro Simulations', () => {
     await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const gameStore = useGameStore();

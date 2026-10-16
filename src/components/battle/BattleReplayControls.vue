@@ -1,59 +1,56 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { ITacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine'
+import { ref, computed } from 'vue';
+import type { ITacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine';
 
 interface Props {
-  engine?: ITacticalReplayEngine | null
+  engine?: ITacticalReplayEngine | null;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'play'): void
-  (e: 'pause'): void
-  (e: 'next'): void
-  (e: 'restart'): void
-  (e: 'speed-change', speed: number): void
-}>()
+  (e: 'play'): void;
+  (e: 'pause'): void;
+  (e: 'next'): void;
+  (e: 'restart'): void;
+  (e: 'speed-change', speed: number): void;
+}>();
 
-const isPlaying = ref(false)
-const speed = ref(1)
-const speeds = [1, 2, 4] as const
+const isPlaying = ref(false);
+const speed = ref(1);
+const speeds = [1, 2, 4] as const;
 
-const currentTurn = computed(() => props.engine?.getCurrentTurn() ?? 0)
-const totalTurns = computed(() => props.engine?.getTotalTurns() ?? 0)
+const currentTurn = computed(() => props.engine?.getCurrentTurn() ?? 0);
+const totalTurns = computed(() => props.engine?.getTotalTurns() ?? 0);
 
 const togglePlay = () => {
-  isPlaying.value = !isPlaying.value
+  isPlaying.value = !isPlaying.value;
   if (isPlaying.value) {
-    emit('play')
+    emit('play');
   } else {
-    emit('pause')
+    emit('pause');
   }
-}
+};
 
 const handleNext = () => {
-  emit('next')
-}
+  emit('next');
+};
 
 const handleRestart = () => {
-  isPlaying.value = false
-  emit('restart')
-}
+  isPlaying.value = false;
+  emit('restart');
+};
 
 const cycleSpeed = () => {
-  const currentIndex = speeds.indexOf(speed.value as 1 | 2 | 4)
-  const nextIndex = (currentIndex + 1) % speeds.length
-  speed.value = speeds[nextIndex] ?? 1
-  emit('speed-change', speed.value)
-}
+  const currentIndex = speeds.indexOf(speed.value as 1 | 2 | 4);
+  const nextIndex = (currentIndex + 1) % speeds.length;
+  speed.value = speeds[nextIndex] ?? 1;
+  emit('speed-change', speed.value);
+};
 </script>
 
 <template>
-  <div
-    id="battle-replay-controls"
-    class="replay-controls-bar"
-  >
+  <div id="battle-replay-controls" class="replay-controls-bar">
     <div class="replay-turn-indicator">
       <span class="label">TURNO</span>
       <span class="turn-numbers">{{ currentTurn }} / {{ totalTurns }}</span>
@@ -76,12 +73,7 @@ const cycleSpeed = () => {
       >
         <span class="emoji">{{ isPlaying ? '⏸️' : '▶️' }}</span>
       </button>
-      <button
-        id="replay-btn-next"
-        class="replay-btn"
-        title="Siguiente Turno"
-        @click="handleNext"
-      >
+      <button id="replay-btn-next" class="replay-btn" title="Siguiente Turno" @click="handleNext">
         <span class="emoji">⏭️</span>
       </button>
       <button
@@ -97,7 +89,7 @@ const cycleSpeed = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .replay-controls-bar {
   display: flex;

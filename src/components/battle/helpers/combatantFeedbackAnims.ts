@@ -42,7 +42,7 @@ import {
   SCALE_FULL,
   SCALE_ZERO,
   OPACITY_FULL,
-  OPACITY_INVISIBLE,
+  OPACITY_INVISIBLE
 } from '@/logic/constants/animations';
 
 const RECOIL_EASE_BACK_OVERSHOOT = 1.7;
@@ -52,6 +52,7 @@ const HEAL_BRIGHTNESS_FULL = 1;
 const HEAL_SEPIA_NONE = 0;
 
 export const STATUS_FLASH_COLORS: Record<string, string> = {
+  // open-record: Status flash hex colors palette
   brn: '#ff4500',
   psn: '#9400d3',
   par: '#ffd700',
@@ -69,7 +70,7 @@ const BLINK_TIMELINE_STEPS = [
   { t: 3 * BLINK_STEP_INTERVAL_SEC, op: 1 },
   { t: 4 * BLINK_STEP_INTERVAL_SEC, op: 0 },
   { t: 5 * BLINK_STEP_INTERVAL_SEC, op: 1 },
-  { t: 6 * BLINK_STEP_INTERVAL_SEC, op: 1 },
+  { t: 6 * BLINK_STEP_INTERVAL_SEC, op: 1 }
 ] as const;
 
 export function animateCombatantEmerging(target: HTMLElement): void {
@@ -78,9 +79,27 @@ export function animateCombatantEmerging(target: HTMLElement): void {
       gsap.set(target, { clearProps: 'transform' });
     }
   });
-  tl.to(target, { y: EMERGE_SQUISH_Y_PX, scaleX: EMERGE_SQUISH_SCALE_X, scaleY: EMERGE_SQUISH_SCALE_Y, duration: EMERGE_SQUISH_DURATION_SEC, ease: 'power1.in' })
-    .to(target, { y: EMERGE_JUMP_Y_PX, scaleX: EMERGE_JUMP_SCALE_X, scaleY: EMERGE_JUMP_SCALE_Y, duration: EMERGE_JUMP_DURATION_SEC, ease: 'power2.out' })
-    .to(target, { y: 0, scaleX: EMERGE_LAND_SCALE_X, scaleY: EMERGE_LAND_SCALE_Y, duration: EMERGE_LAND_DURATION_SEC, ease: 'bounce.out' })
+  tl.to(target, {
+    y: EMERGE_SQUISH_Y_PX,
+    scaleX: EMERGE_SQUISH_SCALE_X,
+    scaleY: EMERGE_SQUISH_SCALE_Y,
+    duration: EMERGE_SQUISH_DURATION_SEC,
+    ease: 'power1.in'
+  })
+    .to(target, {
+      y: EMERGE_JUMP_Y_PX,
+      scaleX: EMERGE_JUMP_SCALE_X,
+      scaleY: EMERGE_JUMP_SCALE_Y,
+      duration: EMERGE_JUMP_DURATION_SEC,
+      ease: 'power2.out'
+    })
+    .to(target, {
+      y: 0,
+      scaleX: EMERGE_LAND_SCALE_X,
+      scaleY: EMERGE_LAND_SCALE_Y,
+      duration: EMERGE_LAND_DURATION_SEC,
+      ease: 'bounce.out'
+    })
     .to(target, { scaleX: 1, scaleY: 1, duration: EMERGE_SETTLE_DURATION_SEC });
 }
 
@@ -93,8 +112,7 @@ export function animateCombatantHeal(spriteRotationEl: HTMLElement): void {
     filter: `brightness(1.4) sepia(0.8) hue-rotate(300deg) saturate(${POKEBALL_SEPIA_SATURATE})`,
     duration: COMBATANT_HEAL_PHASE_DURATION_SEC,
     ease: 'power1.out'
-  })
-  .to(spriteRotationEl, {
+  }).to(spriteRotationEl, {
     y: 0,
     scale: 1,
     filter: `brightness(${HEAL_BRIGHTNESS_FULL}) sepia(${HEAL_SEPIA_NONE}) hue-rotate(0deg) saturate(${HEAL_SATURATION_FULL})`,
@@ -109,35 +127,65 @@ export function animateCombatantHeal(spriteRotationEl: HTMLElement): void {
 export function animateCombatantRecoil(spriteEl: HTMLElement, isPlayerSide: boolean): void {
   const backX = isPlayerSide ? -RECOIL_HORIZONTAL_OFFSET_PX : RECOIL_HORIZONTAL_OFFSET_PX;
   const backY = isPlayerSide ? RECOIL_VERTICAL_OFFSET_PX : -RECOIL_VERTICAL_OFFSET_PX;
-  gsap.timeline()
+  gsap
+    .timeline()
     .to(spriteEl, { x: backX, y: backY, duration: RECOIL_PUSH_DURATION_SEC, ease: 'power2.out' })
-    .to(spriteEl, { x: 0, y: 0, duration: RECOIL_RECOVERY_DURATION_SEC, ease: `back.out(${RECOIL_EASE_BACK_OVERSHOOT})` });
+    .to(spriteEl, {
+      x: 0,
+      y: 0,
+      duration: RECOIL_RECOVERY_DURATION_SEC,
+      ease: `back.out(${RECOIL_EASE_BACK_OVERSHOOT})`
+    });
 }
 
 export function animatePokeballWobble(pokeballEl: HTMLElement): void {
   gameBus.emit('PLAY_SOUND', 'wobble');
   gsap.to(pokeballEl, {
     keyframes: [
-      { rotation: POKEBALL_WOBBLE_ANGLE_1_DEG, duration: POKEBALL_WOBBLE_STEP1_SEC, ease: 'power1.out' },
-      { rotation: POKEBALL_WOBBLE_ANGLE_2_DEG, duration: POKEBALL_WOBBLE_STEP2_SEC, ease: 'power1.inOut' },
-      { rotation: POKEBALL_WOBBLE_ANGLE_3_DEG, duration: POKEBALL_WOBBLE_STEP34_SEC, ease: 'power1.inOut' },
-      { rotation: POKEBALL_WOBBLE_ANGLE_4_DEG, duration: POKEBALL_WOBBLE_STEP34_SEC, ease: 'power1.inOut' },
+      {
+        rotation: POKEBALL_WOBBLE_ANGLE_1_DEG,
+        duration: POKEBALL_WOBBLE_STEP1_SEC,
+        ease: 'power1.out'
+      },
+      {
+        rotation: POKEBALL_WOBBLE_ANGLE_2_DEG,
+        duration: POKEBALL_WOBBLE_STEP2_SEC,
+        ease: 'power1.inOut'
+      },
+      {
+        rotation: POKEBALL_WOBBLE_ANGLE_3_DEG,
+        duration: POKEBALL_WOBBLE_STEP34_SEC,
+        ease: 'power1.inOut'
+      },
+      {
+        rotation: POKEBALL_WOBBLE_ANGLE_4_DEG,
+        duration: POKEBALL_WOBBLE_STEP34_SEC,
+        ease: 'power1.inOut'
+      },
       { rotation: 0, duration: POKEBALL_WOBBLE_STEP1_SEC, ease: 'power1.in' }
     ]
   });
 }
 
 export function animatePokeballBlink(pokeballEl: HTMLElement): void {
-  gsap.fromTo(pokeballEl,
+  gsap.fromTo(
+    pokeballEl,
     { filter: 'Brightness(1)' },
-    { filter: `Brightness(${STATUS_FLASH_BRIGHTNESS}) Hue-Rotate(10deg)`, duration: ATTACK_SPECIAL_DURATION_SEC, yoyo: true, repeat: 1, ease: 'power1.inOut' }
+    {
+      filter: `Brightness(${STATUS_FLASH_BRIGHTNESS}) Hue-Rotate(10deg)`,
+      duration: ATTACK_SPECIAL_DURATION_SEC,
+      yoyo: true,
+      repeat: 1,
+      ease: 'power1.inOut'
+    }
   );
 }
 
 export function animateSpriteShake(spriteEl: HTMLElement, isPlayer: boolean): void {
   const shakeDist = isPlayer ? -POKEBALL_SHAKE_DISTANCE_PX : POKEBALL_SHAKE_DISTANCE_PX;
   gsap.set(spriteEl, { transition: 'none' });
-  gsap.fromTo(spriteEl,
+  gsap.fromTo(
+    spriteEl,
     { x: 0 },
     {
       x: shakeDist,
@@ -145,12 +193,14 @@ export function animateSpriteShake(spriteEl: HTMLElement, isPlayer: boolean): vo
       yoyo: true,
       repeat: POKEBALL_SPRITE_SHAKE_REPEAT,
       ease: 'power1.inOut',
-      onComplete: () => { gsap.set(spriteEl, { clearProps: 'x,opacity,transition' }); }
+      onComplete: () => {
+        gsap.set(spriteEl, { clearProps: 'x,opacity,transition' });
+      }
     }
   );
 
   const tl = gsap.timeline();
-  BLINK_TIMELINE_STEPS.forEach(b => {
+  BLINK_TIMELINE_STEPS.forEach((b) => {
     tl.set(spriteEl, { opacity: b.op }, b.t);
   });
 }
@@ -158,7 +208,8 @@ export function animateSpriteShake(spriteEl: HTMLElement, isPlayer: boolean): vo
 export function animateSpriteBlink(spriteEl: HTMLElement, isPlayer: boolean): void {
   const shakeDist = isPlayer ? -POKEBALL_SHAKE_DISTANCE_PX : POKEBALL_SHAKE_DISTANCE_PX;
   gsap.set(spriteEl, { transition: 'none' });
-  gsap.fromTo(spriteEl,
+  gsap.fromTo(
+    spriteEl,
     { x: 0, filter: 'Brightness(1)' },
     {
       x: shakeDist,
@@ -167,7 +218,9 @@ export function animateSpriteBlink(spriteEl: HTMLElement, isPlayer: boolean): vo
       yoyo: true,
       repeat: POKEBALL_SPRITE_SHAKE_REPEAT,
       ease: 'power1.inOut',
-      onComplete: () => { gsap.set(spriteEl, { clearProps: 'x,filter,transition' }); }
+      onComplete: () => {
+        gsap.set(spriteEl, { clearProps: 'x,filter,transition' });
+      }
     }
   );
 }
@@ -175,7 +228,8 @@ export function animateSpriteBlink(spriteEl: HTMLElement, isPlayer: boolean): vo
 export function animateStatusFlash(spriteRotationEl: HTMLElement, status: string): void {
   const color = STATUS_FLASH_COLORS[status] || '#ffffff';
   gsap.killTweensOf(spriteRotationEl, 'filter');
-  gsap.fromTo(spriteRotationEl,
+  gsap.fromTo(
+    spriteRotationEl,
     { filter: `Drop-Shadow(0 0 0px ${color}) Brightness(1)` },
     {
       filter: `Drop-Shadow(0 0 ${STATUS_FLASH_SHADOW_PX}px ${color}) Brightness(${STATUS_FLASH_BRIGHTNESS})`,
@@ -218,7 +272,14 @@ export function executeCatchingTween(
     duration: BALL_TRANSITION_DURATION_SEC,
     ease: 'power2.inOut',
     onComplete: () => {
-      gsap.set(spriteEl, { x: 0, y: 0, scale: SCALE_ZERO, opacity: OPACITY_INVISIBLE, filter: 'none', clearProps: 'transformOrigin' });
+      gsap.set(spriteEl, {
+        x: 0,
+        y: 0,
+        scale: SCALE_ZERO,
+        opacity: OPACITY_INVISIBLE,
+        filter: 'none',
+        clearProps: 'transformOrigin'
+      });
       onDone();
     }
   });
@@ -253,7 +314,13 @@ export function executeReleasingTween(
     duration: BALL_TRANSITION_DURATION_SEC,
     ease: 'power2.inOut',
     onComplete: () => {
-      gsap.set(spriteEl, { x: 0, y: 0, scale: 1, opacity: 1, clearProps: 'filter,transformOrigin' });
+      gsap.set(spriteEl, {
+        x: 0,
+        y: 0,
+        scale: 1,
+        opacity: 1,
+        clearProps: 'filter,transformOrigin'
+      });
       if (rotationEl) gsap.set(rotationEl, { clearProps: 'transform,rotation,filter' });
       if (shadowEl) gsap.set(shadowEl, { clearProps: 'display' });
       if (pokemonName) {
@@ -286,26 +353,26 @@ export function animateCombatantTransform(
     duration: TRANSFORM_SQUISH_DURATION_SEC,
     ease: 'power2.in'
   })
-  .add(() => {
-    if (onMorph) onMorph();
-  })
-  .to(spriteEl, {
-    scaleX: TRANSFORM_POP_SCALEX,
-    scaleY: TRANSFORM_POP_SCALEY,
-    filter: 'brightness(1.5) drop-shadow(0 0 8px #e9d5ff)',
-    duration: TRANSFORM_POP_DURATION_SEC,
-    ease: 'back.out(2)'
-  })
-  .to(spriteEl, {
-    scaleX: SCALE_FULL,
-    scaleY: SCALE_FULL,
-    filter: 'brightness(1)',
-    duration: TRANSFORM_SETTLE_DURATION_SEC,
-    ease: 'power1.out',
-    onComplete: () => {
-      gsap.set(spriteEl, { clearProps: 'transform,scale,scaleX,scaleY,filter,transition' });
-    }
-  });
+    .add(() => {
+      if (onMorph) onMorph();
+    })
+    .to(spriteEl, {
+      scaleX: TRANSFORM_POP_SCALEX,
+      scaleY: TRANSFORM_POP_SCALEY,
+      filter: 'brightness(1.5) drop-shadow(0 0 8px #e9d5ff)',
+      duration: TRANSFORM_POP_DURATION_SEC,
+      ease: 'back.out(2)'
+    })
+    .to(spriteEl, {
+      scaleX: SCALE_FULL,
+      scaleY: SCALE_FULL,
+      filter: 'brightness(1)',
+      duration: TRANSFORM_SETTLE_DURATION_SEC,
+      ease: 'power1.out',
+      onComplete: () => {
+        gsap.set(spriteEl, { clearProps: 'transform,scale,scaleX,scaleY,filter,transition' });
+      }
+    });
 
   return tl;
 }
@@ -433,13 +500,25 @@ export function dispatchBallAnimation(
 ): void {
   if (val !== 'catching' && val !== 'releasing') return;
   const animKey = resolveCombatantAnimKey(side, pokemon?.uid);
-  const tween = val === 'catching'
-    ? executeCatchingTween(params.sprite, params.shadow, params.rotation, params.origin, params.coords, params.onDone)
-    : executeReleasingTween(params.sprite, params.shadow, params.rotation, params.origin, params.coords, pokemon?.id, params.onDone);
+  const tween =
+    val === 'catching'
+      ? executeCatchingTween(
+          params.sprite,
+          params.shadow,
+          params.rotation,
+          params.origin,
+          params.coords,
+          params.onDone
+        )
+      : executeReleasingTween(
+          params.sprite,
+          params.shadow,
+          params.rotation,
+          params.origin,
+          params.coords,
+          pokemon?.id,
+          params.onDone
+        );
 
   gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
 }
-
-
-
-

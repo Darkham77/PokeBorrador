@@ -167,8 +167,8 @@ To test functions that depend on probability (e.g., capture success, move accura
 When writing debug commands or console helpers that mutate nested properties of reactive Vue 3 refs (e.g., `ctx.activeBattle.value.player.hp = ...`), the changes might not be programmatically detected by Vue's reactivity system. To guarantee immediate visual update across UI observers and components, you MUST force deep reactivity updates by spreading the nested object and re-assigning the root ref:
 
 ```ts
-active.player = { ...active.player }
-ctx.activeBattle.value = { ...active }
+active.player = { ...active.player };
+ctx.activeBattle.value = { ...active };
 ```
 
 This triggers reactive watchers and updates HUD components instantly.
@@ -179,8 +179,8 @@ In testing environments that define the `window` object (such as `jsdom` with Vi
 
 ```ts
 beforeEach(() => {
-  delete (window as any).__VITE_DEBUG__
-})
+  delete (window as any).__VITE_DEBUG__;
+});
 ```
 
 This guarantees a clean global state for each test run.

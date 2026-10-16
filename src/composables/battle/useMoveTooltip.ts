@@ -5,10 +5,7 @@ import { useBattleStore } from '@/stores/battle/battle';
 import { getMoveDescription } from '@/logic/pokemon/pokemonUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { PurePokemon } from '@/logic/battle/battleMath';
-import {
-  calculateMoveModifierInfo,
-  parseStatusEffectInfo
-} from '@/logic/battle/moveTooltipMath';
+import { calculateMoveModifierInfo, parseStatusEffectInfo } from '@/logic/battle/moveTooltipMath';
 
 import {
   applyChoiceItemModifier,
@@ -61,7 +58,9 @@ export function useMoveTooltip(
     if (!battleStore.isBattleActive) return null;
 
     const move = toValue(moveInput);
-    const attacker = playerInfoInput ? (toValue(playerInfoInput) || battleStore.state?.player) : battleStore.state?.player;
+    const attacker = playerInfoInput
+      ? toValue(playerInfoInput) || battleStore.state?.player
+      : battleStore.state?.player;
     const defender = battleStore.state?.enemy;
     if (!attacker) return null;
 
@@ -89,4 +88,6 @@ export function useMoveTooltip(
   };
 }
 
-export type ActiveMoveDetails = NonNullable<ReturnType<typeof useMoveTooltip>['activeDetails']['value']>
+export type ActiveMoveDetails = NonNullable<
+  ReturnType<typeof useMoveTooltip>['activeDetails']['value']
+>;

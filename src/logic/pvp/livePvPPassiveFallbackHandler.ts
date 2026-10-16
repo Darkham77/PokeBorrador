@@ -83,35 +83,39 @@ export function executeStartPassiveBattle(
   ctx.battleState.enemyHp = params.enemyTeam.map((p: Pokemon) => p.hp);
   ctx.battleState.enemyActiveIdx = 0;
   ctx.battleState.phase = 'choosing';
-  ctx.battleState.logs = [`¡Comienza el combate clasificatorio contra la defensa pasiva de ${params.opponentName}!`] satisfies string[];
+  ctx.battleState.logs = [
+    `¡Comienza el combate clasificatorio contra la defensa pasiva de ${params.opponentName}!`
+  ] satisfies string[];
   ctx.battleState.myPick = null;
   ctx.battleState.enemyPick = null;
   ctx.battleState.ch = null;
 
   const enemyLeader = params.enemyTeam[0];
   if (enemyLeader && ctx.battleStore) {
-    void ctx.battleStore.startBattle(enemyLeader, {
-      isPvP: true,
-      isRanked: true,
-      isAsynchronous: true,
-      pvpMatchId: ctx.battleState.inviteId || undefined,
-      pvpIsHost: true,
-      pvpOpponentId: params.opponentId,
-      pvpOpponentName: params.opponentName,
-      enemyTeam: params.enemyTeam,
-      playerTeam: myTeam,
-      isTrainer: true,
-      trainerName: params.opponentName,
-      trainerSprite: params.opponentClass || 'entrenador',
-      trainerGender: params.opponentGender || 'h',
-      trainerArchetype: params.opponentClass === 'rocket' ? 'rocket' : 'default',
-      trainerQuote: getRandomQuoteForTrainer('rival'),
-      locationId: 'stadium'
-    }).then(() => {
-      if (ctx.battleState.active) {
-        ctx.timerManager.startTurnTimer();
-      }
-    });
+    void ctx.battleStore
+      .startBattle(enemyLeader, {
+        isPvP: true,
+        isRanked: true,
+        isAsynchronous: true,
+        pvpMatchId: ctx.battleState.inviteId || undefined,
+        pvpIsHost: true,
+        pvpOpponentId: params.opponentId,
+        pvpOpponentName: params.opponentName,
+        enemyTeam: params.enemyTeam,
+        playerTeam: myTeam,
+        isTrainer: true,
+        trainerName: params.opponentName,
+        trainerSprite: params.opponentClass || 'entrenador',
+        trainerGender: params.opponentGender || 'h',
+        trainerArchetype: params.opponentClass === 'rocket' ? 'rocket' : 'default',
+        trainerQuote: getRandomQuoteForTrainer('rival'),
+        locationId: 'stadium'
+      })
+      .then(() => {
+        if (ctx.battleState.active) {
+          ctx.timerManager.startTurnTimer();
+        }
+      });
   }
 }
 
@@ -138,7 +142,8 @@ export async function executeFallbackToPassiveBattle(ctx: FallbackRunnerContext)
   ctx.notify('Buscando equipo de defensa pasiva...', '🛡️');
 
   try {
-    const { executePassiveMatchmakingFallback } = await import('@/logic/pvp/passiveMatchmakingHelper');
+    const { executePassiveMatchmakingFallback } =
+      await import('@/logic/pvp/passiveMatchmakingHelper');
     const fallbackResult = await executePassiveMatchmakingFallback({
       db: ctx.db,
       userUid: ctx.userId,
@@ -171,4 +176,3 @@ export async function executeFallbackToPassiveBattle(ctx: FallbackRunnerContext)
     ctx.searchPhase.value = 'human';
   }
 }
-

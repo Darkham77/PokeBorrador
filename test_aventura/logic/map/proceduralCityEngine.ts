@@ -15,13 +15,9 @@ import type {
 } from '../../types/map/poiTypes.ts';
 import type { SettlementTerrainContext } from './cityLayoutEngine.ts';
 import type { BuildingPrefabMeta } from './canonicalAssetsRegistry.ts';
-import {
-  generateOrganicCityLayout
-} from './organicCityEngine.ts';
+import { generateOrganicCityLayout } from './organicCityEngine.ts';
 
 export type { BuildingPrefabMeta, SettlementCurbPlacement };
-
-
 
 /**
  * Generates a fully procedural urban layout for any settlement node (Metropolis, City, Town).

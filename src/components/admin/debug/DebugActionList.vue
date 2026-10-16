@@ -1,32 +1,31 @@
 <script setup lang="ts">
+import type { StyleValue } from 'vue';
+
 interface ActionItem {
-  id: string
-  icon: string
-  label: string
-  desc?: string
+  id: string;
+  icon: string;
+  label: string;
+  desc?: string;
 }
 
 defineProps<{
-  title: string
-  items: ActionItem[]
-  titleStyle?: Record<string, string | number>
-  cardStyle?: Record<string, string | number>
-  labelStyle?: Record<string, string | number>
-  descStyle?: Record<string, string | number>
-  arrowStyle?: Record<string, string | number>
-}>()
+  title: string;
+  items: ActionItem[];
+  titleStyle?: StyleValue;
+  cardStyle?: StyleValue;
+  labelStyle?: StyleValue;
+  descStyle?: StyleValue;
+  arrowStyle?: StyleValue;
+}>();
 
 defineEmits<{
-  (e: 'action', id: string): void
-}>()
+  (e: 'action', id: string): void;
+}>();
 </script>
 
 <template>
   <div class="debug-section">
-    <h3 
-      class="section-title"
-      :style="titleStyle"
-    >
+    <h3 class="section-title" :style="titleStyle">
       {{ title }}
     </h3>
     <div class="button-list">
@@ -41,28 +40,18 @@ defineEmits<{
         <span class="btn-content">
           <span class="emoji icon">{{ item.icon }}</span>
           <span class="text">
-            <span 
-              class="label"
-              :style="labelStyle"
-            >{{ item.label }}</span>
-            <span
-              v-if="item.desc"
-              class="desc"
-              :style="descStyle"
-            >{{ item.desc }}</span>
+            <span class="label" :style="labelStyle">{{ item.label }}</span>
+            <span v-if="item.desc" class="desc" :style="descStyle">{{ item.desc }}</span>
           </span>
         </span>
-        <span 
-          class="emoji arrow"
-          :style="arrowStyle"
-        >▶</span>
+        <span class="emoji arrow" :style="arrowStyle">▶</span>
       </button>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .debug-section {
   .section-title {
@@ -94,7 +83,7 @@ defineEmits<{
   color: var(--white);
   cursor: pointer;
   margin-bottom: 8px;
-  
+
   &:hover {
     background: Rgb(255 255 255 / 8%);
     transform: Translatex(4px);
@@ -104,17 +93,25 @@ defineEmits<{
     display: flex;
     align-items: center;
     gap: $spacing-md-lg;
-    
-    .icon { font-size: var(--font-20); }
-    
+
+    .icon {
+      font-size: var(--font-20);
+    }
+
     .text {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       gap: $spacing-2xs;
-      
-      .label { @include pixelated; font-size: var(--font-8); }
-      .desc { color: Rgb(255 255 255 / 40%); font-size: var(--font-9); }
+
+      .label {
+        @include pixelated;
+        font-size: var(--font-8);
+      }
+      .desc {
+        color: Rgb(255 255 255 / 40%);
+        font-size: var(--font-9);
+      }
     }
   }
 }

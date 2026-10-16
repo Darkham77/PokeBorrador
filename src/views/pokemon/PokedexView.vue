@@ -1,55 +1,62 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/logic/constants/pokedexConstants'
-import { usePokedex } from '@/composables/pokemon/usePokedex'
-import { usePokedexDataLoader } from '@/loaders/pokedexDataLoader'
+import { ref, computed } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/logic/constants/pokedexConstants';
+import { usePokedex } from '@/composables/pokemon/usePokedex';
+import { usePokedexDataLoader } from '@/loaders/pokedexDataLoader';
 
 // Components
-import PokedexHeader from '@/components/pokedex/PokedexHeader.vue'
-import PokedexControls from '@/components/pokedex/PokedexControls.vue'
-import PokedexPokemonCard from '@/components/pokedex/PokedexPokemonCard.vue'
-import { useUIStore } from '@/stores/ui'
-import type { PokedexItem } from '@/types/system/game'
+import PokedexHeader from '@/components/pokedex/PokedexHeader.vue';
+import PokedexControls from '@/components/pokedex/PokedexControls.vue';
+import PokedexPokemonCard from '@/components/pokedex/PokedexPokemonCard.vue';
+import { useUIStore } from '@/stores/ui';
+import type { PokedexItem } from '@/types/system/game';
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const { data: _pokedexSummary } = usePokedexDataLoader()
-const gs = computed(() => gameStore.state)
+const gameStore = useGameStore();
+const uiStore = useUIStore();
+const { data: _pokedexSummary } = usePokedexDataLoader();
+const gs = computed(() => gameStore.state);
 
-const currentGen = ref(1)
+const currentGen = ref(1);
 
-const currentOrder = computed(() => currentGen.value === 1 ? PDEX_ORDER : GEN2_PDEX_ORDER)
-const { searchQuery, sortBy, sortOrder, pokemonList: rawPokemonList } = usePokedex(gs, currentOrder, currentGen)
+const currentOrder = computed(() => (currentGen.value === 1 ? PDEX_ORDER : GEN2_PDEX_ORDER));
+const {
+  searchQuery,
+  sortBy,
+  sortOrder,
+  pokemonList: rawPokemonList
+} = usePokedex(gs, currentOrder, currentGen);
 
 const pokemonList = computed(() => {
-  return rawPokemonList.value.map(p => ({
+  return rawPokemonList.value.map((p) => ({
     ...p,
     spriteUrl: p.spriteUrl || ''
-  }))
-})
+  }));
+});
 
 const stats = computed(() => {
-  const caught = gs.value.pokedex || []
-  const seen = gs.value.seenPokedex || []
-  const currentGenTotal = currentOrder.value.length
-  const currentGenSeen = currentOrder.value.filter(id => seen.includes(id) || caught.includes(id)).length
-  const currentGenCaught = currentOrder.value.filter(id => caught.includes(id)).length
+  const caught = gs.value.pokedex || [];
+  const seen = gs.value.seenPokedex || [];
+  const currentGenTotal = currentOrder.value.length;
+  const currentGenSeen = currentOrder.value.filter(
+    (id) => seen.includes(id) || caught.includes(id)
+  ).length;
+  const currentGenCaught = currentOrder.value.filter((id) => caught.includes(id)).length;
 
-  return { seen: currentGenSeen, caught: currentGenCaught, total: currentGenTotal }
-})
+  return { seen: currentGenSeen, caught: currentGenCaught, total: currentGenTotal };
+});
 
 const openDetail = (p: PokedexItem) => {
-  if (!p.isSeen) return
-  uiStore.open('PokedexDetail', { speciesId: p.id, context: 'pokedex' })
-}
+  if (!p.isSeen) return;
+  uiStore.open('PokedexDetail', { speciesId: p.id, context: 'pokedex' });
+};
 </script>
 
 <template>
   <div class="pokedex-view">
     <PokedexHeader :stats="stats" />
 
-    <PokedexControls 
+    <PokedexControls
       v-model:current-gen="currentGen"
       v-model:sort-by="sortBy"
       v-model:sort-order="sortOrder"
@@ -58,9 +65,9 @@ const openDetail = (p: PokedexItem) => {
 
     <div class="pokedex-grid">
       <PokedexPokemonCard
-        v-for="p in pokemonList" 
-        id="pokedex-view-pokedexpokemoncard-1" 
-        :key="p.id" 
+        v-for="p in pokemonList"
+        id="pokedex-view-pokedexpokemoncard-1"
+        :key="p.id"
         :p="p"
         data-ignore="[PureVue-Ignore]"
         @click.stop="openDetail(p)"
@@ -70,5 +77,5 @@ const openDetail = (p: PokedexItem) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/views/pokedex" as *;
+@use '@/styles/views/pokedex' as *;
 </style>

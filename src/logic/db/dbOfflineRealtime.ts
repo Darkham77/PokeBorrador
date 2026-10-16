@@ -18,7 +18,12 @@ export function createOfflineRealtimeChannel(name: string): RealtimeChannel {
 
   const dispatchPayload = (rawPayload: unknown) => {
     if (!rawPayload || typeof rawPayload !== 'object') return;
-    const msg = rawPayload as { type?: string; event?: string; payload?: unknown; _msgUid?: string };
+    const msg = rawPayload as {
+      type?: string;
+      event?: string;
+      payload?: unknown;
+      _msgUid?: string;
+    };
     if (msg._msgUid) {
       if (seenMsgUids.has(msg._msgUid)) return;
       seenMsgUids.add(msg._msgUid);
@@ -43,17 +48,26 @@ export function createOfflineRealtimeChannel(name: string): RealtimeChannel {
   });
 
   const mock: Partial<RealtimeChannel> = {
-    on(eventType: unknown, filter: unknown, cb: unknown) { // domain-ok: Open dynamic text or non-domain string payload
-      const filterObj = (filter && typeof filter === 'object') ? (filter as { event?: string }) : {};
+    on(eventType: unknown, filter: unknown, cb: unknown) {
+      // domain-ok: Open dynamic text or non-domain string payload
+      const filterObj = filter && typeof filter === 'object' ? (filter as { event?: string }) : {};
       listeners.push({
-        type: String(eventType || ''),
+        type:
+          typeof eventType === 'string'
+            ? eventType
+            : typeof eventType === 'number'
+              ? String(eventType)
+              : '',
         event: filterObj.event,
         cb: cb as (payload: unknown) => void
       });
       return mock as RealtimeChannel;
     },
     subscribe(cb?: (status: REALTIME_SUBSCRIBE_STATES, err?: Error) => void) {
-      if (cb) gsap.delayedCall(MOCK_CHANNEL_SUBSCRIBE_DELAY_SEC, () => cb('SUBSCRIBED' as REALTIME_SUBSCRIBE_STATES));
+      if (cb)
+        gsap.delayedCall(MOCK_CHANNEL_SUBSCRIBE_DELAY_SEC, () =>
+          cb('SUBSCRIBED' as REALTIME_SUBSCRIBE_STATES)
+        );
       return mock as RealtimeChannel;
     },
     async send(args: unknown) {
@@ -61,9 +75,10 @@ export function createOfflineRealtimeChannel(name: string): RealtimeChannel {
       try {
         sanitized = cloneReactive(args) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       } catch {
-        sanitized = (typeof args === 'object' && args !== null)
-          ? { ...(args as Record<string, unknown>) } // open-record: Generic key-value data dictionary container
-          : { payload: args };
+        sanitized =
+          typeof args === 'object' && args !== null
+            ? { ...(args as Record<string, unknown>) } // open-record: Generic key-value data dictionary container
+            : { payload: args };
       }
       if (!sanitized._msgUid) {
         sanitized._msgUid = `${Math.random().toString(36).substring(2)}_${Temporal.Now.instant().epochMilliseconds}`;
@@ -86,15 +101,27 @@ export function createOfflineRealtimeChannel(name: string): RealtimeChannel {
 }
 
 export function createNoopRealtimeChannel(name: string): RealtimeChannel {
-  logger.warn('DBRouter', `Channel '${name}' requested but online client not ready. Returning mock.`);
+  logger.warn(
+    'DBRouter',
+    `Channel '${name}' requested but online client not ready. Returning mock.`
+  );
   const noop: Partial<RealtimeChannel> = {
-    on() { return noop as RealtimeChannel; },
-    subscribe(cb?: (status: REALTIME_SUBSCRIBE_STATES, err?: Error) => void) {
-      if (cb) gsap.delayedCall(MOCK_CHANNEL_SUBSCRIBE_DELAY_SEC, () => cb('SUBSCRIBED' as REALTIME_SUBSCRIBE_STATES));
+    on() {
       return noop as RealtimeChannel;
     },
-    async send() { return 'ok' as const; },
-    async unsubscribe() { return 'ok' as const; }
+    subscribe(cb?: (status: REALTIME_SUBSCRIBE_STATES, err?: Error) => void) {
+      if (cb)
+        gsap.delayedCall(MOCK_CHANNEL_SUBSCRIBE_DELAY_SEC, () =>
+          cb('SUBSCRIBED' as REALTIME_SUBSCRIBE_STATES)
+        );
+      return noop as RealtimeChannel;
+    },
+    async send() {
+      return 'ok' as const;
+    },
+    async unsubscribe() {
+      return 'ok' as const;
+    }
   };
   return noop as RealtimeChannel;
 }

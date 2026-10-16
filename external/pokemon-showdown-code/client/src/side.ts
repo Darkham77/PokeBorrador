@@ -1,10 +1,14 @@
-import {ID, PokemonSet, SideCondition, toID} from '@pkmn/data';
+import { ID, PokemonSet, SideCondition, toID } from '@pkmn/data';
 import {
-  AvatarIdent, DetailedPokemon, PokemonDetails, PokemonSearchID, Username,
+  AvatarIdent,
+  DetailedPokemon,
+  PokemonDetails,
+  PokemonSearchID,
+  Username
 } from '@pkmn/protocol';
 
-import {Battle} from './battle';
-import {Pokemon} from './pokemon';
+import { Battle } from './battle';
+import { Pokemon } from './pokemon';
 
 export class Side {
   readonly battle: Battle;
@@ -78,7 +82,7 @@ export class Side {
     if (avatar) this.setAvatar(avatar);
   }
 
-  addSideCondition(effect: {name: string; id: ID}, persist: boolean) {
+  addSideCondition(effect: { name: string; id: ID }, persist: boolean) {
     const id = effect.id;
     if (this.sideConditions[id]) {
       if (id === 'spikes' || id === 'toxicspikes') {
@@ -90,29 +94,56 @@ export class Side {
     const name = effect.name as SideCondition;
     switch (id) {
       case 'tailwind':
-        return (this.sideConditions[id] =
-          {name, level: 1, minDuration: this.battle.gen.num >= 5
-            ? persist ? 6 : 4 : persist ? 5 : 3, maxDuration: 0});
-      case 'reflect': case 'lightscreen':
-        return (this.sideConditions[id] =
-          {name, level: 1, minDuration: 5, maxDuration: this.battle.gen.num >= 4 ? 8 : 0});
+        return (this.sideConditions[id] = {
+          name,
+          level: 1,
+          minDuration: this.battle.gen.num >= 5 ? (persist ? 6 : 4) : persist ? 5 : 3,
+          maxDuration: 0
+        });
+      case 'reflect':
+      case 'lightscreen':
+        return (this.sideConditions[id] = {
+          name,
+          level: 1,
+          minDuration: 5,
+          maxDuration: this.battle.gen.num >= 4 ? 8 : 0
+        });
       case 'auroraveil':
-        return (this.sideConditions[id] = {name, level: 1, minDuration: 5, maxDuration: 8});
+        return (this.sideConditions[id] = { name, level: 1, minDuration: 5, maxDuration: 8 });
       case 'safeguard':
-        return (this.sideConditions[id] =
-          {name, level: 1, minDuration: persist ? 7 : 5, maxDuration: 0});
-      case 'mist': case 'luckychant':
-        return (this.sideConditions[id] = {name, level: 1, minDuration: 5, maxDuration: 0});
-      case 'doomdesire': case 'futuresight':
-        return (this.sideConditions[id] = {name, level: 1, minDuration: 3, maxDuration: 0});
-      case 'quickguard': case 'wideguard': case 'craftyshield': case 'matblock':
-        return (this.sideConditions[id] =
-          {name, level: 1, minDuration: 1, maxDuration: 1, remove: true});
-      case 'gmaxwildfire': case 'gmaxvolcalith': case 'gmaxvinelash': case 'gmaxcannonade':
-      case 'grasspledge': case 'waterpledge': case 'firepledge':
-        return (this.sideConditions[id] = {name, level: 1, minDuration: 4, maxDuration: 0});
+        return (this.sideConditions[id] = {
+          name,
+          level: 1,
+          minDuration: persist ? 7 : 5,
+          maxDuration: 0
+        });
+      case 'mist':
+      case 'luckychant':
+        return (this.sideConditions[id] = { name, level: 1, minDuration: 5, maxDuration: 0 });
+      case 'doomdesire':
+      case 'futuresight':
+        return (this.sideConditions[id] = { name, level: 1, minDuration: 3, maxDuration: 0 });
+      case 'quickguard':
+      case 'wideguard':
+      case 'craftyshield':
+      case 'matblock':
+        return (this.sideConditions[id] = {
+          name,
+          level: 1,
+          minDuration: 1,
+          maxDuration: 1,
+          remove: true
+        });
+      case 'gmaxwildfire':
+      case 'gmaxvolcalith':
+      case 'gmaxvinelash':
+      case 'gmaxcannonade':
+      case 'grasspledge':
+      case 'waterpledge':
+      case 'firepledge':
+        return (this.sideConditions[id] = { name, level: 1, minDuration: 4, maxDuration: 0 });
       default:
-        return (this.sideConditions[id] = {name, level: 1, minDuration: 0, maxDuration: 0});
+        return (this.sideConditions[id] = { name, level: 1, minDuration: 0, maxDuration: 0 });
     }
   }
 
@@ -123,11 +154,14 @@ export class Side {
 
   addPokemon(details: DetailedPokemon, replaceSlot = -1) {
     const oldItem = replaceSlot >= 0 ? this.team[replaceSlot]?.item : undefined;
-    const set = replaceSlot >= 0
-      ? this.team[replaceSlot]?.set
-      : this.sets?.find(s => details.name
-        ? (s.name || s.species) === details.name
-        : s.species === details.speciesForme);
+    const set =
+      replaceSlot >= 0
+        ? this.team[replaceSlot]?.set
+        : this.sets?.find((s) =>
+            details.name
+              ? (s.name || s.species) === details.name
+              : s.species === details.speciesForme
+          );
     const poke = this.provider(this, details, set);
     if (oldItem) poke.item = oldItem;
 
@@ -141,7 +175,7 @@ export class Side {
     }
     if (this.team.length > this.totalPokemon || this.battle.speciesClause) {
       // check for Illusion
-      const existingTable: {[searchid: string]: number} = {};
+      const existingTable: { [searchid: string]: number } = {};
       let toRemove = -1;
       for (let poke1i = 0; poke1i < this.team.length; poke1i++) {
         const poke1 = this.team[poke1i];
@@ -174,8 +208,10 @@ export class Side {
             if (curPoke === poke) continue;
             if (curPoke.fainted) continue;
             if (this.active.includes(curPoke)) continue;
-            if (['Zoroark', 'Zorua'].includes(curPoke.speciesForme) ||
-              curPoke.ability === 'Illusion') {
+            if (
+              ['Zoroark', 'Zorua'].includes(curPoke.speciesForme) ||
+              curPoke.ability === 'Illusion'
+            ) {
               illusionFound = curPoke;
               break;
             }
@@ -205,7 +241,7 @@ export class Side {
     return poke;
   }
 
-  switchIn(pokemon: Pokemon, from?: {id: ID}, slot = pokemon.slot) {
+  switchIn(pokemon: Pokemon, from?: { id: ID }, slot = pokemon.slot) {
     this.active[slot] = pokemon;
     pokemon.slot = slot;
     pokemon.clearVolatile();
@@ -252,7 +288,7 @@ export class Side {
       pokemon.hpcolor = oldpokemon.hpcolor;
       pokemon.status = oldpokemon.status;
       pokemon.copyVolatileFrom(oldpokemon, 'illusion');
-      pokemon.statusState = {...oldpokemon.statusState};
+      pokemon.statusState = { ...oldpokemon.statusState };
       if (oldpokemon.terastallized) {
         pokemon.terastallized = oldpokemon.terastallized;
         oldpokemon.terastallized = undefined;
@@ -268,11 +304,11 @@ export class Side {
     pokemon.slot = slot;
   }
 
-  switchOut(pokemon: Pokemon, from?: {id: ID}, slot = pokemon.slot) {
+  switchOut(pokemon: Pokemon, from?: { id: ID }, slot = pokemon.slot) {
     if (!['batonpass', 'zbatonpass'].includes(from?.id || '')) {
       pokemon.clearVolatile();
       if (from?.id === 'shedtail') {
-        pokemon.volatiles = {substitute: {id: 'substitute' as ID}};
+        pokemon.volatiles = { substitute: { id: 'substitute' as ID } };
       }
     } else {
       pokemon.removeVolatile('transform' as ID);
@@ -343,7 +379,7 @@ export class Side {
 
   destroy() {
     this.clearPokemon();
-    // @ts-ignore readonly
+    // @ts-expect-error readonly
     this.battle = null!;
     this.foe = null!;
   }

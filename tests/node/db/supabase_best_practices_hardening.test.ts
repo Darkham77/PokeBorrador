@@ -8,7 +8,7 @@
  * 5. System automated awarding RPC execution restriction.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import postgres from 'postgres';
@@ -78,7 +78,9 @@ describe('Supabase Postgres Best Practices Hardening & Public Profile Parity', (
       defeated_gyms: string;
     }
 
-    const row = db.prepare('SELECT * FROM trainer_public_profiles WHERE id = ?').get('ash_test_1') as unknown as PublicProfileResult;
+    const row = db
+      .prepare('SELECT * FROM trainer_public_profiles WHERE id = ?')
+      .get('ash_test_1') as unknown as PublicProfileResult;
 
     assert.ok(row, 'Profile should be found in trainer_public_profiles view');
     assert.strictEqual(row.username, 'AshKetchum');
@@ -87,7 +89,11 @@ describe('Supabase Postgres Best Practices Hardening & Public Profile Parity', (
     assert.strictEqual(row.elo_rating, 1450);
     assert.strictEqual(row.pokedex_caught, 3, 'pokedex_caught must match pokedex array length');
     assert.strictEqual(row.pokedex_seen, 4, 'pokedex_seen must match seenPokedex array length');
-    assert.strictEqual(row.trainers_defeated, 42, 'trainers_defeated must match stats.trainersDefeated');
+    assert.strictEqual(
+      row.trainers_defeated,
+      42,
+      'trainers_defeated must match stats.trainersDefeated'
+    );
     assert.strictEqual(row.wild_wins, 80, 'wild_wins must match stats.wins');
     assert.strictEqual(row.war_coins, 250, 'war_coins must match warCoins');
     assert.ok(row.defeated_gyms.includes('pewter'), 'defeated_gyms must contain pewter');
@@ -128,21 +134,27 @@ describe('Supabase Postgres Best Practices Hardening & Public Profile Parity', (
           ON CONFLICT (user_id) DO UPDATE SET save_data = EXCLUDED.save_data;
         `;
 
-        const viewRows = await sql<Array<{
-          id: string;
-          username: string;
-          badges: number;
-          pokedex_caught: number;
-          pokedex_seen: number;
-          trainers_defeated: number;
-          wild_wins: number;
-          war_coins: number;
-          defeated_gyms: unknown;
-        }>>`
+        const viewRows = await sql<
+          Array<{
+            id: string;
+            username: string;
+            badges: number;
+            pokedex_caught: number;
+            pokedex_seen: number;
+            trainers_defeated: number;
+            wild_wins: number;
+            war_coins: number;
+            defeated_gyms: unknown;
+          }>
+        >`
           SELECT * FROM public.trainer_public_profiles WHERE id = ${ashId}
         `;
 
-        assert.strictEqual(viewRows.length, 1, 'Should return exactly 1 row from trainer_public_profiles view');
+        assert.strictEqual(
+          viewRows.length,
+          1,
+          'Should return exactly 1 row from trainer_public_profiles view'
+        );
         const viewRow = viewRows[0];
         assert.ok(viewRow, 'View row should exist');
         assert.strictEqual(viewRow.username, 'AshPgTest');
@@ -163,7 +175,11 @@ describe('Supabase Postgres Best Practices Hardening & Public Profile Parity', (
         } catch (e: unknown) {
           priceConstraintThrew = true;
           const msg = (e as Error).message;
-          assert.ok(msg.includes('check_market_price_positive') || msg.includes('violates check constraint'), 'Should fail on price constraint');
+          assert.ok(
+            msg.includes('check_market_price_positive') ||
+              msg.includes('violates check constraint'),
+            'Should fail on price constraint'
+          );
         }
         assert.strictEqual(priceConstraintThrew, true, 'Inserting negative market price must fail');
 
@@ -176,7 +192,10 @@ describe('Supabase Postgres Best Practices Hardening & Public Profile Parity', (
         } catch (e: unknown) {
           tradeConstraintThrew = true;
           const msg = (e as Error).message;
-          assert.ok(msg.includes('check_trade_money_positive') || msg.includes('violates check constraint'), 'Should fail on trade money constraint');
+          assert.ok(
+            msg.includes('check_trade_money_positive') || msg.includes('violates check constraint'),
+            'Should fail on trade money constraint'
+          );
         }
         assert.strictEqual(tradeConstraintThrew, true, 'Inserting negative trade money must fail');
 

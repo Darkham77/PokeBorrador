@@ -112,7 +112,9 @@ function removeOrphanIslands(grid: boolean[][], w: number, h: number): void {
  * Computes organic, percentage-governed biome masks with Simplex Noise FBM
  * and quantile thresholding.
  */
-export function computeBiomeDistribution(options: BiomeDistributionOptions): BiomeDistributionResult {
+export function computeBiomeDistribution(
+  options: BiomeDistributionOptions
+): BiomeDistributionResult {
   const width = Math.max(8, Math.floor(options.width));
   const height = Math.max(8, Math.floor(options.height));
   const totalCells = width * height;
@@ -188,7 +190,11 @@ export function computeBiomeDistribution(options: BiomeDistributionOptions): Bio
   }
 
   // Highest heights become mountain (from end of sorted array)
-  for (let i = totalCells - 1; i >= totalCells - targetMountainCount && i >= targetWaterCount; i--) {
+  for (
+    let i = totalCells - 1;
+    i >= totalCells - targetMountainCount && i >= targetWaterCount;
+    i--
+  ) {
     const idx = cellIndices[i]!;
     const cy = Math.floor(idx / width);
     const cx = idx % width;

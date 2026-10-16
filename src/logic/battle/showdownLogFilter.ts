@@ -27,7 +27,12 @@ export function filterShowdownLogs(logs: string[], playerSide: string = 'p1'): s
   for (let i = 0; i < logs.length; i++) {
     const line = logs[i] || '';
     if (line.startsWith('|split|')) {
-      const chosenLine = resolveSplitLogBranch(line, logs[i + 1] || '', logs[i + 2] || '', playerSide);
+      const chosenLine = resolveSplitLogBranch(
+        line,
+        logs[i + 1] || '',
+        logs[i + 2] || '',
+        playerSide
+      );
       if (chosenLine) filtered.push(chosenLine);
       i += 2;
     } else if (!isIgnoredShowdownProtocolLine(line)) {

@@ -26,9 +26,10 @@ export function isValidSqliteBuffer(
 
   // Inspect the first 16 bytes for the magic signature
   const headerSlice = buffer.subarray(0, SQLITE_HEADER_BYTE_LENGTH);
-  const headerStr = typeof Buffer !== 'undefined' && Buffer.isBuffer(headerSlice)
-    ? headerSlice.toString('utf-8')
-    : new TextDecoder('utf-8').decode(headerSlice);
+  const headerStr =
+    typeof Buffer !== 'undefined' && Buffer.isBuffer(headerSlice)
+      ? headerSlice.toString('utf-8')
+      : new TextDecoder('utf-8').decode(headerSlice);
 
   return headerStr === SQLITE_MAGIC_HEADER;
 }

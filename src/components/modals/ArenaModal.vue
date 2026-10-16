@@ -59,10 +59,7 @@ onMounted(async () => {
           </div>
         </div>
         <div class="header-stats">
-          <div
-            v-if="auth.sessionMode === 'offline'"
-            class="stat-node local-mode"
-          >
+          <div v-if="auth.sessionMode === 'offline'" class="stat-node local-mode">
             <span class="label">MODO</span>
             <span class="value text-outline">LOCAL</span>
           </div>
@@ -127,4 +124,3 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_arena.scss"></style>
-

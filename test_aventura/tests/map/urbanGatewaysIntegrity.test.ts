@@ -111,7 +111,9 @@ describe('urbanGatewaysIntegrity (Error 3)', () => {
       for (const gw of poi.gateways) {
         const isBlocked = buildingCells.has(`${gw.x}_${gw.y}`);
         if (isBlocked) {
-          throw new Error(`Gateway (${gw.x}, ${gw.y}) of settlement '${poi.id}' (${poi.type}) is blocked by a building!`);
+          throw new Error(
+            `Gateway (${gw.x}, ${gw.y}) of settlement '${poi.id}' (${poi.type}) is blocked by a building!`
+          );
         }
         expect(isBlocked).toBe(false);
       }

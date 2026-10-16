@@ -23,8 +23,8 @@ const dexGen = Dex.forGen(ACTIVE_GENERATION);
 // ---------------------------------------------------------------------------
 const SPECIES_POOL: string[] = dexGen.species // no-domain: Non-domain utility collection or data structure
   .all()
-  .filter(s => s.exists && !s.isNonstandard && !s.forme?.includes('Totem') && !s.battleOnly)
-  .map(s => s.id);
+  .filter((s) => s.exists && !s.isNonstandard && !s.forme?.includes('Totem') && !s.battleOnly)
+  .map((s) => s.id);
 
 // ---------------------------------------------------------------------------
 // Build a learnset-valid moveset for the given species at max level.
@@ -32,19 +32,33 @@ const SPECIES_POOL: string[] = dexGen.species // no-domain: Non-domain utility c
 // ---------------------------------------------------------------------------
 // Moves that cause self-faint, immediate loss, or extreme recoil that ends
 // battles on turn 1 — excluded from random AI movesets.
-const SELF_KO_MOVES = new Set([
+const SELF_KO_MOVES = [
   // Self-faint
-  'selfdestruct', 'explosion', 'mistyexplosion',
-  'healingwish', 'lunardance', 'memento',
-  'perishsong', 'destinybond', 'finalgambit',
+  'selfdestruct',
+  'explosion',
+  'mistyexplosion',
+  'healingwish',
+  'lunardance',
+  'memento',
+  'perishsong',
+  'destinybond',
+  'finalgambit',
   // Extreme recoil (≥33% user HP) — KOs fragile Pokémon in 1-2 hits
-  'headsmash', 'volttackle', 'flareblitz', 'woodhammer',
-  'doubleedge', 'bravebird', 'takedown',
-]);
+  'headsmash',
+  'volttackle',
+  'flareblitz',
+  'woodhammer',
+  'doubleedge',
+  'bravebird',
+  'takedown'
+] as const;
+
+export type SelfKoMove = (typeof SELF_KO_MOVES)[number];
+const SELF_KO_MOVES_SET: ReadonlySet<string> = new Set(SELF_KO_MOVES);
 
 /** Returns true if the move is safe for extended simulation (no self-faint or extreme recoil). */
 function isSafeMove(moveId: string): boolean {
-  return !SELF_KO_MOVES.has(moveId);
+  return !SELF_KO_MOVES_SET.has(moveId);
 }
 
 // ---------------------------------------------------------------------------
@@ -59,7 +73,7 @@ async function buildValidMoveset(speciesId: string): Promise<string[]> {
 
   if (learnsetData?.learnset) {
     for (const [moveId, sources] of Object.entries(learnsetData.learnset)) {
-      const isCurrentGen = sources.some(src => src.startsWith(String(ACTIVE_GENERATION)));
+      const isCurrentGen = sources.some((src) => src.startsWith(String(ACTIVE_GENERATION)));
       if (!isCurrentGen) continue;
       const move = dexGen.moves.get(moveId);
       if (!move.exists || move.isNonstandard || move.id === 'struggle') continue;
@@ -71,16 +85,17 @@ async function buildValidMoveset(speciesId: string): Promise<string[]> {
   }
 
   // Guarantee at least 3 damaging moves (or all available); fill the rest with support
-  const pool = damaging.length >= 3
-    ? [...shuffleArray(damaging).slice(0, 3), ...shuffleArray(support).slice(0, 1)]
-    : damaging.length >= 2
-      ? [...shuffleArray(damaging).slice(0, 2), ...shuffleArray(support).slice(0, 2)]
-      : [...shuffleArray(damaging), ...shuffleArray(support)].slice(0, 4);
+  const pool =
+    damaging.length >= 3
+      ? [...shuffleArray(damaging).slice(0, 3), ...shuffleArray(support).slice(0, 1)]
+      : damaging.length >= 2
+        ? [...shuffleArray(damaging).slice(0, 2), ...shuffleArray(support).slice(0, 2)]
+        : [...shuffleArray(damaging), ...shuffleArray(support)].slice(0, 4);
 
   // If still < 4, pad from general fallback
   const result = pool.slice(0, 4);
   if (result.length < 4) {
-    const fallback = shuffleArray(getFallbackDamagingMoves()).filter(m => !result.includes(m));
+    const fallback = shuffleArray(getFallbackDamagingMoves()).filter((m) => !result.includes(m));
     result.push(...fallback.slice(0, 4 - result.length));
   }
   return result;
@@ -92,8 +107,15 @@ function getFallbackDamagingMoves(): string[] {
   if (!_fallbackDamaging) {
     _fallbackDamaging = dexGen.moves
       .all()
-      .filter(m => m.exists && !m.isNonstandard && m.id !== 'struggle' && (m.basePower ?? 0) > 0 && isSafeMove(m.id))
-      .map(m => m.id);
+      .filter(
+        (m) =>
+          m.exists &&
+          !m.isNonstandard &&
+          m.id !== 'struggle' &&
+          (m.basePower ?? 0) > 0 &&
+          isSafeMove(m.id)
+      )
+      .map((m) => m.id);
   }
   return _fallbackDamaging;
 }
@@ -150,7 +172,7 @@ async function buildRandomPokemonSet(): Promise<PokemonSet> {
     nature: goPhysical ? 'adamant' : 'modest',
     evs,
     ivs,
-    moves: moveset,
+    moves: moveset
   };
   Reflect.set(set, 'uid', uid);
   return set;
@@ -160,9 +182,7 @@ async function buildRandomPokemonSet(): Promise<PokemonSet> {
 // Build a full team of 3 random Pokémon (standard Poké Vicio 3v3 format)
 // ---------------------------------------------------------------------------
 async function buildRandomTeam(): Promise<PokemonSet[]> {
-  const sets = await Promise.all(
-    Array.from({ length: 3 }, () => buildRandomPokemonSet())
-  );
+  const sets = await Promise.all(Array.from({ length: 3 }, () => buildRandomPokemonSet()));
   return sets;
 }
 
@@ -174,7 +194,8 @@ export async function generateAiBattles(count: number = 100): Promise<AiBattleBa
 
   for (let i = 0; i < count; i++) {
     const [p1Team, p2Team] = await Promise.all([buildRandomTeam(), buildRandomTeam()]);
-    const { PokemonLegalityValidator } = await import('../../../../src/logic/battle/engine/pokemonLegalityValidator.ts');
+    const { PokemonLegalityValidator } =
+      await import('../../../../src/logic/battle/engine/pokemonLegalityValidator.ts');
     PokemonLegalityValidator.assertTeamLegality(p1Team, `AI Battle ${i + 1} P1 Team`);
     PokemonLegalityValidator.assertTeamLegality(p2Team, `AI Battle ${i + 1} P2 Team`);
     const id = `ai-${crypto.randomBytes(6).toString('hex')}`;

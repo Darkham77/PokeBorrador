@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { gsap } from 'gsap'
-import { logToInspector } from '../logic/useLiveInspector.ts'
+import { ref, onMounted } from 'vue';
+import { gsap } from 'gsap';
+import { logToInspector } from '../logic/useLiveInspector.ts';
 
-const arrowRef = ref<HTMLElement | null>(null)
-const nativeDialogRef = ref<HTMLDialogElement | null>(null)
-const isDrawerOpen = ref(false)
+const arrowRef = ref<HTMLElement | null>(null);
+const nativeDialogRef = ref<HTMLDialogElement | null>(null);
+const isDrawerOpen = ref(false);
 
 onMounted(() => {
   if (arrowRef.value) {
@@ -15,48 +15,48 @@ onMounted(() => {
       repeat: -1,
       yoyo: true,
       ease: 'sine.inOut'
-    })
+    });
   }
-})
+});
 
 function openNativeDialog() {
   if (nativeDialogRef.value) {
-    nativeDialogRef.value.showModal()
-    logToInspector('dialog.showModal(): Ventana modal nativa abierta')
+    nativeDialogRef.value.showModal();
+    logToInspector('dialog.showModal(): Ventana modal nativa abierta');
   }
 }
 
 function closeNativeDialog(action: string) {
   if (nativeDialogRef.value) {
-    nativeDialogRef.value.close()
-    logToInspector(`dialog.close(): Modal cerrado (${action})`)
+    nativeDialogRef.value.close();
+    logToInspector(`dialog.close(): Modal cerrado (${action})`);
   }
 }
 
 function openDrawer() {
-  isDrawerOpen.value = true
-  logToInspector('Panel lateral <aside> (Slide-Over Drawer) abierto')
+  isDrawerOpen.value = true;
+  logToInspector('Panel lateral <aside> (Slide-Over Drawer) abierto');
 }
 
 function closeDrawer() {
-  isDrawerOpen.value = false
-  logToInspector('Panel lateral <aside> cerrado')
+  isDrawerOpen.value = false;
+  logToInspector('Panel lateral <aside> cerrado');
 }
 
 const CHEVRON_OPEN_ROTATION_DEG = 180 as const;
 
 function onAccordionToggle(panelNum: number, event: Event) {
-  const details = event.target as HTMLDetailsElement
-  const chevron = details.querySelector('.accordion-chevron')
+  const details = event.target as HTMLDetailsElement;
+  const chevron = details.querySelector('.accordion-chevron');
   if (chevron) {
     gsap.to(chevron, {
       rotation: details.open ? CHEVRON_OPEN_ROTATION_DEG : 0,
       duration: 0.25,
       ease: 'power2.out'
-    })
+    });
   }
   if (details.open) {
-    logToInspector(`<details name="faq-group">: Panel ${panelNum} abierto (acordeón exclusivo)`)
+    logToInspector(`<details name="faq-group">: Panel ${panelNum} abierto (acordeón exclusivo)`);
   }
 }
 </script>
@@ -71,18 +71,12 @@ function onAccordionToggle(panelNum: number, event: Event) {
     <div class="grid-2">
       <!-- Cuadro de Diálogo Retro -->
       <div class="pv-frame-panel pv-dialog-box">
-        <div class="pv-frame-pill dialog-speaker">
-          PROFESOR OAK
-        </div>
+        <div class="pv-frame-pill dialog-speaker">PROFESOR OAK</div>
         <div class="dialog-text">
-          "¡Hola, entrenador! El mundo de los Pokémon está repleto de misterios. ¡Prepárate para forjar tu propia leyenda!"
+          "¡Hola, entrenador! El mundo de los Pokémon está repleto de misterios. ¡Prepárate para
+          forjar tu propia leyenda!"
         </div>
-        <div
-          ref="arrowRef"
-          class="dialog-arrow"
-        >
-          ▼
-        </div>
+        <div ref="arrowRef" class="dialog-arrow">▼</div>
       </div>
 
       <!-- Ventana Modal Preview -->
@@ -102,24 +96,15 @@ function onAccordionToggle(panelNum: number, event: Event) {
         </div>
         <div class="pv-window-body">
           <div class="data-rows-col">
-            <div
-              class="pv-data-row"
-              style="border-left-color: var(--blue-500);"
-            >
+            <div class="pv-data-row" style="border-left-color: var(--blue-500)">
               <span class="data-key">ENTRENADOR:</span>
               <span class="data-val">SATOSHI</span>
             </div>
-            <div
-              class="pv-data-row"
-              style="border-left-color: var(--color-text-gold);"
-            >
+            <div class="pv-data-row" style="border-left-color: var(--color-text-gold)">
               <span class="data-key">DINERO:</span>
               <span class="data-val gold-val">₽999,999</span>
             </div>
-            <div
-              class="pv-data-row"
-              style="border-left-color: var(--emerald);"
-            >
+            <div class="pv-data-row" style="border-left-color: var(--emerald)">
               <span class="data-key">POKÉDEX KANTO:</span>
               <span class="data-val">151 / 151</span>
             </div>
@@ -129,10 +114,7 @@ function onAccordionToggle(panelNum: number, event: Event) {
     </div>
 
     <!-- PANELES NATIVOS: ACORDEÓN DETAILS Y TRIGGERS DE DIALOG / POPOVER / DRAWER -->
-    <div
-      class="grid-2"
-      style="margin-top: 14px;"
-    >
+    <div class="grid-2" style="margin-top: 14px">
       <!-- Acordeón Nativo <details> con name="faq-group" -->
       <div class="pv-frame-panel pv-panel-surface">
         <div class="sub-label">
@@ -147,13 +129,15 @@ function onAccordionToggle(panelNum: number, event: Event) {
           >
             <summary class="pv-accordion-summary">
               <span class="summary-title-group">
-                <span style="color: var(--emerald);">●</span>
+                <span style="color: var(--emerald)">●</span>
                 <span>Panel 1: ¿Cómo funciona sin Javascript?</span>
               </span>
               <span class="accordion-chevron">▼</span>
             </summary>
             <div class="accordion-content">
-              El navegador gestiona el estado abierto/cerrado internamente mediante el atributo booleano <code style="color: var(--yellow);">open</code>. Es 100% accesible por teclado.
+              El navegador gestiona el estado abierto/cerrado internamente mediante el atributo
+              booleano <code style="color: var(--yellow)">open</code>. Es 100% accesible por
+              teclado.
             </div>
           </details>
 
@@ -164,13 +148,14 @@ function onAccordionToggle(panelNum: number, event: Event) {
           >
             <summary class="pv-accordion-summary">
               <span class="summary-title-group">
-                <span style="color: var(--blue-500);">●</span>
+                <span style="color: var(--blue-500)">●</span>
                 <span>Panel 2: Atributo `name` exclusivo</span>
               </span>
               <span class="accordion-chevron">▼</span>
             </summary>
             <div class="accordion-content">
-              Al compartir <code style="color: var(--yellow);">name="faq-group"</code>, abrir un panel cierra automáticamente los demás de forma nativa en Chromium, Firefox y Safari.
+              Al compartir <code style="color: var(--yellow)">name="faq-group"</code>, abrir un
+              panel cierra automáticamente los demás de forma nativa en Chromium, Firefox y Safari.
             </div>
           </details>
 
@@ -181,13 +166,17 @@ function onAccordionToggle(panelNum: number, event: Event) {
           >
             <summary class="pv-accordion-summary">
               <span class="summary-title-group">
-                <span style="color: var(--purple-400);">●</span>
+                <span style="color: var(--purple-400)">●</span>
                 <span>Panel 3: Personalización Pixel-Art</span>
               </span>
               <span class="accordion-chevron">▼</span>
             </summary>
             <div class="accordion-content">
-              Ocultamos la flecha nativa con <code style="color: var(--yellow);">summary::-webkit-details-marker { display:none }</code> e integramos marcos Bresenham.
+              Ocultamos la flecha nativa con
+              <code style="color: var(--yellow)"
+                >summary::-webkit-details-marker { display:none }</code
+              >
+              e integramos marcos Bresenham.
             </div>
           </details>
         </div>
@@ -198,18 +187,24 @@ function onAccordionToggle(panelNum: number, event: Event) {
         <div class="sub-label">
           <span>SUPERPOSICIONES NATIVAS (&lt;dialog&gt;, POPOVER &amp; &lt;aside&gt;):</span>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 8px">
           <!-- Trigger Dialog -->
           <button
             id="btn-open-native-dialog"
             v-gsap-hover="'button'"
             type="button"
             class="pv-curve-xs pv-btn pv-btn-primary"
-            style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: var(--font-8);"
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 8px 12px;
+              font-size: var(--font-8);
+            "
             @click="openNativeDialog"
           >
             <span>🪟 ABRIR MODAL NATIVO &lt;dialog&gt;</span>
-            <span style="color: var(--yellow);">dialog.showModal()</span>
+            <span style="color: var(--yellow)">dialog.showModal()</span>
           </button>
 
           <!-- Trigger Popover -->
@@ -219,10 +214,16 @@ function onAccordionToggle(panelNum: number, event: Event) {
             type="button"
             popovertarget="demo-native-popover"
             class="pv-curve-xs pv-btn pv-btn-secondary"
-            style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: var(--font-8);"
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 8px 12px;
+              font-size: var(--font-8);
+            "
           >
             <span>💬 ABRIR POPOVER NATIVO (API HTML5)</span>
-            <span style="color: var(--emerald);">popovertarget="id"</span>
+            <span style="color: var(--emerald)">popovertarget="id"</span>
           </button>
 
           <!-- Trigger Drawer Lateral -->
@@ -231,11 +232,20 @@ function onAccordionToggle(panelNum: number, event: Event) {
             v-gsap-hover="'button'"
             type="button"
             class="pv-curve-xs pv-btn"
-            style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: var(--font-8); background: rgba(168, 85, 247, 0.2); --frame-border: var(--purple-400); color: var(--white);"
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 8px 12px;
+              font-size: var(--font-8);
+              background: rgba(168, 85, 247, 0.2);
+              --frame-border: var(--purple-400);
+              color: var(--white);
+            "
             @click="openDrawer"
           >
             <span>📑 MOSTRAR PANEL LATERAL (&lt;aside&gt; DRAWER)</span>
-            <span style="color: var(--purple-400);">Slide-Over</span>
+            <span style="color: var(--purple-400)">Slide-Over</span>
           </button>
         </div>
       </div>
@@ -246,27 +256,65 @@ function onAccordionToggle(panelNum: number, event: Event) {
       id="native-modal-dialog"
       ref="nativeDialogRef"
       class="pv-frame-panel"
-      style="max-width: 440px; width: 90%; background: #121829; --frame-border: var(--yellow); padding: 16px; font-family: var(--font-pixel); color: var(--color-text-main); margin: auto; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);"
+      style="
+        max-width: 440px;
+        width: 90%;
+        background: #121829;
+        --frame-border: var(--yellow);
+        padding: 16px;
+        font-family: var(--font-pixel);
+        color: var(--color-text-main);
+        margin: auto;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+      "
     >
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; margin-bottom: 10px;">
-        <span style="font-size: var(--font-9); font-weight: 900; color: var(--yellow);">VENTANA &lt;dialog&gt; NATIVA</span>
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          padding-bottom: 8px;
+          margin-bottom: 10px;
+        "
+      >
+        <span style="font-size: var(--font-9); font-weight: 900; color: var(--yellow)"
+          >VENTANA &lt;dialog&gt; NATIVA</span
+        >
         <button
           type="button"
           class="pv-frame-pill"
-          style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.1); color: var(--white); cursor: pointer;"
+          style="
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            cursor: pointer;
+          "
           @click="closeNativeDialog('cancelado')"
         >
           ✕
         </button>
       </div>
-      <p style="font-size: var(--font-8); line-height: 1.4; color: var(--color-text-muted); margin-bottom: 12px;">
-        Este modal nativo utiliza <code style="color: var(--yellow);">dialog.showModal()</code> con trampa de foco, backdrop configurable y tecla Escape nativa.
+      <p
+        style="
+          font-size: var(--font-8);
+          line-height: 1.4;
+          color: var(--color-text-muted);
+          margin-bottom: 12px;
+        "
+      >
+        Este modal nativo utiliza <code style="color: var(--yellow)">dialog.showModal()</code> con
+        trampa de foco, backdrop configurable y tecla Escape nativa.
       </p>
-      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+      <div style="display: flex; justify-content: flex-end; gap: 8px">
         <button
           type="button"
           class="pv-curve-xs pv-btn pv-btn-secondary"
-          style="font-size: var(--font-8); padding: 6px 12px;"
+          style="font-size: var(--font-8); padding: 6px 12px"
           @click="closeNativeDialog('cerrado')"
         >
           CERRAR
@@ -274,7 +322,7 @@ function onAccordionToggle(panelNum: number, event: Event) {
         <button
           type="button"
           class="pv-curve-xs pv-btn pv-btn-primary"
-          style="font-size: var(--font-8); padding: 6px 12px;"
+          style="font-size: var(--font-8); padding: 6px 12px"
           @click="closeNativeDialog('confirmado')"
         >
           CONFIRMAR
@@ -287,27 +335,64 @@ function onAccordionToggle(panelNum: number, event: Event) {
       id="demo-native-popover"
       popover
       class="pv-frame-panel"
-      style="max-width: 320px; background: #121829; --frame-border: var(--emerald); padding: 14px; font-family: var(--font-pixel); color: var(--color-text-main); margin: auto; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);"
+      style="
+        max-width: 320px;
+        background: #121829;
+        --frame-border: var(--emerald);
+        padding: 14px;
+        font-family: var(--font-pixel);
+        color: var(--color-text-main);
+        margin: auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      "
     >
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <span style="font-size: var(--font-9); font-weight: 900; color: var(--emerald);">POPOVER API OFICIAL</span>
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+        "
+      >
+        <span style="font-size: var(--font-9); font-weight: 900; color: var(--emerald)"
+          >POPOVER API OFICIAL</span
+        >
         <button
           popovertarget="demo-native-popover"
           popovertargetaction="hide"
           class="pv-frame-pill"
-          style="cursor: pointer; background: rgba(255, 255, 255, 0.1); color: var(--white); width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: var(--font-8);"
+          style="
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-8);
+          "
         >
           ✕
         </button>
       </div>
-      <p style="font-size: var(--font-7); color: var(--color-text-muted); line-height: 1.4; margin-bottom: 10px;">
-        Declarado simplemente con el atributo <code style="color: var(--green-light);">popover</code>. Se ubica en el Top Layer del navegador sin z-index hacks y se auto-cierra con "light dismiss".
+      <p
+        style="
+          font-size: var(--font-7);
+          color: var(--color-text-muted);
+          line-height: 1.4;
+          margin-bottom: 10px;
+        "
+      >
+        Declarado simplemente con el atributo
+        <code style="color: var(--green-light)">popover</code>. Se ubica en el Top Layer del
+        navegador sin z-index hacks y se auto-cierra con "light dismiss".
       </p>
       <button
         popovertarget="demo-native-popover"
         popovertargetaction="hide"
         class="pv-curve-xs pv-btn pv-btn-success"
-        style="width: 100%; font-size: var(--font-8); padding: 6px;"
+        style="width: 100%; font-size: var(--font-8); padding: 6px"
       >
         ENTENDIDO
       </button>
@@ -315,44 +400,57 @@ function onAccordionToggle(panelNum: number, event: Event) {
 
     <!-- DRAWER LATERAL SLIDE-OVER CON <aside> -->
     <Teleport to="body">
-      <div
-        v-if="isDrawerOpen"
-        class="pv-slide-drawer-backdrop"
-        @click="closeDrawer"
-      />
-      <aside
-        v-if="isDrawerOpen"
-        class="pv-frame-panel pv-slide-drawer-aside"
-      >
+      <div v-if="isDrawerOpen" class="pv-slide-drawer-backdrop" @click="closeDrawer" />
+      <aside v-if="isDrawerOpen" class="pv-frame-panel pv-slide-drawer-aside">
         <div class="drawer-header">
-          <div class="drawer-title">
-            <span>📑</span> <span>PANEL LATERAL (&lt;aside&gt;)</span>
-          </div>
+          <div class="drawer-title"><span>📑</span> <span>PANEL LATERAL (&lt;aside&gt;)</span></div>
           <button
             type="button"
             class="pv-frame-pill"
-            style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.1); color: var(--white); cursor: pointer;"
+            style="
+              width: 22px;
+              height: 22px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: rgba(255, 255, 255, 0.1);
+              color: var(--white);
+              cursor: pointer;
+            "
             @click="closeDrawer"
           >
             ✕
           </button>
         </div>
         <div class="drawer-body">
-          <p style="margin-bottom: 12px;">
-            El elemento semántico <code style="color: var(--yellow);">&lt;aside&gt;</code> representa contenido secundario tangencial, ideal para barras laterales de herramientas, configuraciones o navegación rápida.
+          <p style="margin-bottom: 12px">
+            El elemento semántico <code style="color: var(--yellow)">&lt;aside&gt;</code> representa
+            contenido secundario tangencial, ideal para barras laterales de herramientas,
+            configuraciones o navegación rápida.
           </p>
           <div
             class="pv-frame-control"
-            style="padding: 8px; background: rgba(0, 0, 0, 0.3); --frame-border: rgba(255, 255, 255, 0.1);"
+            style="
+              padding: 8px;
+              background: rgba(0, 0, 0, 0.3);
+              --frame-border: rgba(255, 255, 255, 0.1);
+            "
           >
-            <div style="font-size: var(--font-7); color: var(--yellow); font-weight: bold; margin-bottom: 4px;">
+            <div
+              style="
+                font-size: var(--font-7);
+                color: var(--yellow);
+                font-weight: bold;
+                margin-bottom: 4px;
+              "
+            >
               ATAJOS RÁPIDOS
             </div>
-            <div style="display: flex; flex-direction: column; gap: 4px;">
+            <div style="display: flex; flex-direction: column; gap: 4px">
               <button
                 type="button"
                 class="pv-btn pv-btn-secondary pv-btn-sm"
-                style="font-size: var(--font-7); text-align: left; justify-content: flex-start;"
+                style="font-size: var(--font-7); text-align: left; justify-content: flex-start"
                 @click="closeDrawer"
               >
                 • Volver al catálogo principal
@@ -363,7 +461,7 @@ function onAccordionToggle(panelNum: number, event: Event) {
         <button
           type="button"
           class="pv-curve-xs pv-btn pv-btn-primary"
-          style="width: 100%; font-size: var(--font-8); padding: 8px; margin-top: 12px;"
+          style="width: 100%; font-size: var(--font-8); padding: 8px; margin-top: 12px"
           @click="closeDrawer"
         >
           CERRAR PANEL

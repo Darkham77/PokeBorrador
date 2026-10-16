@@ -14,7 +14,7 @@ import { calculateSackOrder } from './sackOrder.ts';
 export function evaluateStrategicState(
   snapshot: HeuristicBattleSnapshot,
   calc: HeuristicDamageCalculator,
-  inference: InferenceEngine,
+  inference: InferenceEngine
 ): StrategicState {
   const winConditions = evaluateWinConditions(snapshot, calc, inference);
   const threats = evaluateThreats(snapshot, calc, inference);

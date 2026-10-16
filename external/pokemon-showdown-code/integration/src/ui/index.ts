@@ -1,24 +1,38 @@
 /* eslint @typescript-eslint/no-floating-promises: ["error", {ignoreVoid: true}] */
 import fs from 'fs';
 
-import {Battle, Pokemon, Side} from '@pkmn/client';
-import {GenerationNum, Generations} from '@pkmn/data';
-import {GraphicsGen, Icons, Sprites} from '@pkmn/img';
-import {ArgName, ArgType, BattleArgsKWArgType, Handler, Protocol} from '@pkmn/protocol';
-import {TeamGenerators} from '@pkmn/randoms';
-import {Data, PokemonSet, Teams} from '@pkmn/sets';
-import {BattleStreams, Teams as DTeams, Dex, PRNG, RandomPlayerAI, TeamValidator} from '@pkmn/sim';
-import {LogFormatter} from '@pkmn/view';
+import { Battle, Pokemon, Side } from '@pkmn/client';
+import { GenerationNum, Generations } from '@pkmn/data';
+import { GraphicsGen, Icons, Sprites } from '@pkmn/img';
+import { ArgName, ArgType, BattleArgsKWArgType, Handler, Protocol } from '@pkmn/protocol';
+import { TeamGenerators } from '@pkmn/randoms';
+import { Data, PokemonSet, Teams } from '@pkmn/sets';
+import {
+  BattleStreams,
+  Teams as DTeams,
+  Dex,
+  PRNG,
+  RandomPlayerAI,
+  TeamValidator
+} from '@pkmn/sim';
+import { LogFormatter } from '@pkmn/view';
 
 const TEAM_A = fs.readFileSync(__dirname + '/teams/a.txt', 'utf8');
 const TEAM_B = fs.readFileSync(__dirname + '/teams/b.txt', 'utf8');
 
 const FIXED = window.location.href.includes('fixed');
 const FORMATS = [
-  'gen1randombattle', 'gen2randombattle', 'gen3randombattle', 'gen4randombattle',
-  'gen5randombattle', 'gen6randombattle', 'gen7randombattle', 'gen8randombattle',
-  /* 'gen7randomdoublesbattle', */ 'gen8randomdoublesbattle', 'gen9randombattle',
-  'gen9randomdoublesbattle',
+  'gen1randombattle',
+  'gen2randombattle',
+  'gen3randombattle',
+  'gen4randombattle',
+  'gen5randombattle',
+  'gen6randombattle',
+  'gen7randombattle',
+  'gen8randombattle',
+  /* 'gen7randomdoublesbattle', */ 'gen8randomdoublesbattle',
+  'gen9randombattle',
+  'gen9randomdoublesbattle'
 ];
 const prng = new PRNG();
 const FORMAT = FIXED ? 'gen7anythinggoes' : prng.sample(FORMATS);
@@ -35,7 +49,7 @@ const importTeam = (t: string, name: 'A' | 'B') => {
   return team;
 };
 
-const SPRITES: {[gen in GenerationNum]: GraphicsGen[]} = {
+const SPRITES: { [gen in GenerationNum]: GraphicsGen[] } = {
   1: ['gen1rg', 'gen1rb', 'gen1'],
   2: ['gen2g', 'gen2s', 'gen2'],
   3: ['gen3rs', 'gen3frlg', 'gen3', 'gen3-2'],
@@ -44,16 +58,18 @@ const SPRITES: {[gen in GenerationNum]: GraphicsGen[]} = {
   6: ['ani'],
   7: ['ani'],
   8: ['ani'],
-  9: ['ani'],
+  9: ['ani']
 };
 const GEN = +FORMAT.charAt(3) as GenerationNum;
 const GRAPHICS = prng.sample(SPRITES[GEN]);
 
-const spec = {formatid: FORMAT};
-const p1spec =
-  FIXED ? {name: 'Bot A', team: DTeams.pack(importTeam(TEAM_A, 'A'))} : {name: 'Bot A'};
-const p2spec =
-  FIXED ? {name: 'Bot B', team: DTeams.pack(importTeam(TEAM_B, 'B'))} : {name: 'Bot B'};
+const spec = { formatid: FORMAT };
+const p1spec = FIXED
+  ? { name: 'Bot A', team: DTeams.pack(importTeam(TEAM_A, 'A')) }
+  : { name: 'Bot A' };
+const p2spec = FIXED
+  ? { name: 'Bot B', team: DTeams.pack(importTeam(TEAM_B, 'B')) }
+  : { name: 'Bot B' };
 
 const streams = BattleStreams.getPlayerStreams(new BattleStreams.BattleStream());
 
@@ -95,7 +111,7 @@ const displayTeam = ($td: HTMLTableCellElement, side: Side) => {
       side: `p${side.n + 1}` as 'p1' | 'p2',
       gender: pokemon.gender || undefined,
       fainted: pokemon.fainted,
-      domain: 'pkmn.cc',
+      domain: 'pkmn.cc'
     });
     $span.style.display = icon.css.display;
     $span.style.width = icon.css.width;
@@ -121,7 +137,7 @@ const addPokemon = (pokemon: Pokemon | null) => {
     const sprite = Sprites.getPokemon(pokemon.speciesForme, {
       gen: GRAPHICS,
       gender: pokemon.gender || undefined,
-      shiny: pokemon.shiny,
+      shiny: pokemon.shiny
     });
     const $img = document.createElement('img');
     $img.src = sprite.url;
@@ -206,7 +222,7 @@ void (async () => {
 
     // TODO: why does Parcel not like Protocol.parse?
     for (const line of chunk.split('\n')) {
-      const {args, kwArgs} = Protocol.parseBattleLine(line);
+      const { args, kwArgs } = Protocol.parseBattleLine(line);
       const html = formatter.formatHTML(args, kwArgs);
       const key = Protocol.key(args);
 

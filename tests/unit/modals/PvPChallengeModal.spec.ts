@@ -1,22 +1,24 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { setActivePinia, createPinia } from 'pinia'
-import PvPChallengeModal from '@/components/modals/PvPChallengeModal.vue'
-import { useGameStore } from '@/stores/game'
-import { useLivePvPStore } from '@/stores/livePvP'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { getSeasonalThemeForMonth } from '@/data/system/rankedData'
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
+import PvPChallengeModal from '@/components/modals/PvPChallengeModal.vue';
+import { useGameStore } from '@/stores/game';
+import { useLivePvPStore } from '@/stores/livePvP';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
 
 describe('PvPChallengeModal.vue', () => {
-  let mockPokemonList: Pokemon[]
+  let mockPokemonList: Pokemon[];
 
   beforeEach(() => {
-    setActivePinia(createPinia())
+    setActivePinia(createPinia());
 
-    const currentTheme = getSeasonalThemeForMonth(Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).month)
-    const allowedType = currentTheme.allowedTypes?.[0] || 'electric'
+    const currentTheme = getSeasonalThemeForMonth(
+      Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).month
+    );
+    const allowedType = currentTheme.allowedTypes?.[0] || 'electric';
 
     mockPokemonList = Array.from({ length: 6 }).map((_, i) => ({
       uid: `p_${i}`,
@@ -27,14 +29,14 @@ describe('PvPChallengeModal.vue', () => {
       maxHp: 100,
       type: allowedType,
       isIllegal: false
-    })) as unknown as Pokemon[]
+    })) as unknown as Pokemon[];
 
-    const gameStore = useGameStore()
-    gameStore.state.team = mockPokemonList.slice(0, 3)
-    gameStore.state.box = mockPokemonList.slice(3)
-    gameStore.state.pvpTeam = ['p_0', 'p_1', 'p_2']
-    gameStore.state.pvpTeam6 = ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5']
-  })
+    const gameStore = useGameStore();
+    gameStore.state.team = mockPokemonList.slice(0, 3);
+    gameStore.state.box = mockPokemonList.slice(3);
+    gameStore.state.pvpTeam = ['p_0', 'p_1', 'p_2'];
+    gameStore.state.pvpTeam6 = ['p_0', 'p_1', 'p_2', 'p_3', 'p_4', 'p_5'];
+  });
 
   it('renders online opponent details and defaults to ranked 6v6 Flat Level 50', () => {
     const wrapper = mount(PvPChallengeModal, {
@@ -47,13 +49,13 @@ describe('PvPChallengeModal.vue', () => {
         directives: { 'gsap-hover': {} },
         stubs: { Teleport: true }
       }
-    })
+    });
 
-    expect(wrapper.text()).toContain('DESAFIANDO A:')
-    expect(wrapper.text()).toContain('Red')
-    expect(wrapper.text()).toContain('RANKED')
-    expect(wrapper.text()).not.toContain('RIVAL DESCONECTADO')
-  })
+    expect(wrapper.text()).toContain('DESAFIANDO A:');
+    expect(wrapper.text()).toContain('Red');
+    expect(wrapper.text()).toContain('RANKED');
+    expect(wrapper.text()).not.toContain('RIVAL DESCONECTADO');
+  });
 
   it('displays offline rival asynchronous combat banner when friend is offline', () => {
     const wrapper = mount(PvPChallengeModal, {
@@ -73,12 +75,14 @@ describe('PvPChallengeModal.vue', () => {
         directives: { 'gsap-hover': {} },
         stubs: { Teleport: true }
       }
-    })
+    });
 
-    expect(wrapper.text()).toContain('Blue')
-    expect(wrapper.text()).toContain('RIVAL DESCONECTADO (COMBATE ASÍNCRONO)')
-    expect(wrapper.text()).toContain('Competirás contra su equipo activo controlado por la IA competitiva')
-  })
+    expect(wrapper.text()).toContain('Blue');
+    expect(wrapper.text()).toContain('RIVAL DESCONECTADO (COMBATE ASÍNCRONO)');
+    expect(wrapper.text()).toContain(
+      'Competirás contra su equipo activo controlado por la IA competitiva'
+    );
+  });
 
   it('switches between Ranked and Casual modes', async () => {
     const wrapper = mount(PvPChallengeModal, {
@@ -91,22 +95,22 @@ describe('PvPChallengeModal.vue', () => {
         directives: { 'gsap-hover': {} },
         stubs: { Teleport: true }
       }
-    })
+    });
 
-    const rankedBtn = wrapper.find('#btn-pvp-mode-ranked')
-    const casualBtn = wrapper.find('#btn-pvp-mode-casual')
+    const rankedBtn = wrapper.find('#btn-pvp-mode-ranked');
+    const casualBtn = wrapper.find('#btn-pvp-mode-casual');
 
-    expect(rankedBtn.classes()).toContain('active')
-    expect(casualBtn.classes()).not.toContain('active')
+    expect(rankedBtn.classes()).toContain('active');
+    expect(casualBtn.classes()).not.toContain('active');
 
-    await casualBtn.trigger('click')
-    expect(casualBtn.classes()).toContain('active')
-    expect(rankedBtn.classes()).not.toContain('active')
-  })
+    await casualBtn.trigger('click');
+    expect(casualBtn.classes()).toContain('active');
+    expect(rankedBtn.classes()).not.toContain('active');
+  });
 
   it('sends invite with mode and isAsynchronous flags on challenge submission', async () => {
-    const livePvPStore = useLivePvPStore()
-    const sendInviteSpy = vi.spyOn(livePvPStore, 'sendInvite').mockResolvedValue()
+    const livePvPStore = useLivePvPStore();
+    const sendInviteSpy = vi.spyOn(livePvPStore, 'sendInvite').mockResolvedValue();
 
     const wrapper = mount(PvPChallengeModal, {
       props: {
@@ -125,14 +129,14 @@ describe('PvPChallengeModal.vue', () => {
         directives: { 'gsap-hover': {} },
         stubs: { Teleport: true }
       }
-    })
+    });
 
-    const sendBtn = wrapper.find('#btn-send-pvp-challenge')
-    expect(sendBtn.attributes('disabled')).toBeUndefined()
+    const sendBtn = wrapper.find('#btn-send-pvp-challenge');
+    expect(sendBtn.attributes('disabled')).toBeUndefined();
 
-    await sendBtn.trigger('click')
+    await sendBtn.trigger('click');
 
-    expect(sendInviteSpy).toHaveBeenCalledTimes(1)
+    expect(sendInviteSpy).toHaveBeenCalledTimes(1);
     expect(sendInviteSpy).toHaveBeenCalledWith(
       'user_offline_456',
       'Gary',
@@ -142,6 +146,6 @@ describe('PvPChallengeModal.vue', () => {
         mode: 'ranked',
         isAsynchronous: true
       })
-    )
-  })
-})
+    );
+  });
+});

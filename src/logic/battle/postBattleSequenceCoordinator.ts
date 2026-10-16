@@ -22,7 +22,7 @@ export const POST_BATTLE_PRIORITIES = {
   MOVE_LEARNING: 100,
   EVOLUTION: 80,
   EVENT_AUTO_ENROLL: 60,
-  CUSTOM: 40,
+  CUSTOM: 40
 } as const;
 
 const MODAL_AWAIT_POLL_INTERVAL_MS = 50;
@@ -60,7 +60,7 @@ export class PostBattleSequenceCoordinator {
 
   public enqueueMoveLearning(items: { pokemon: Pokemon; move: Move }[]): void {
     if (items.length === 0) return;
-    const taskId = `move_learn_${items.map(i => `${i.pokemon.uid}_${i.move.id}`).join('_')}`;
+    const taskId = `move_learn_${items.map((i) => `${i.pokemon.uid}_${i.move.id}`).join('_')}`;
     this.enqueueTask({
       id: taskId,
       type: 'move_learning',
@@ -70,10 +70,14 @@ export class PostBattleSequenceCoordinator {
         const modalStore = useModalStore();
         uiStore.addToLearnQueue(items);
 
-        while (modalStore.isOpen('MoveLearning') || uiStore.learnQueue.length > 0 || uiStore.currentMoveToLearn !== null) {
+        while (
+          modalStore.isOpen('MoveLearning') ||
+          uiStore.learnQueue.length > 0 ||
+          uiStore.currentMoveToLearn !== null
+        ) {
           await gsapSleep(MODAL_AWAIT_POLL_INTERVAL_MS);
         }
-      },
+      }
     });
   }
 
@@ -92,7 +96,7 @@ export class PostBattleSequenceCoordinator {
         while (modalStore.isOpen('Evolution') || evoStore.isEvolving) {
           await gsapSleep(MODAL_AWAIT_POLL_INTERVAL_MS);
         }
-      },
+      }
     });
   }
 
@@ -110,7 +114,7 @@ export class PostBattleSequenceCoordinator {
         while (modalStore.isOpen('EventAutoEnroll')) {
           await gsapSleep(MODAL_AWAIT_POLL_INTERVAL_MS);
         }
-      },
+      }
     });
   }
 
@@ -127,7 +131,10 @@ export class PostBattleSequenceCoordinator {
         if (!nextTask) break;
 
         try {
-          logger.info('PostBattleCoordinator', `Executing post-battle task [${nextTask.type}]: ${nextTask.id}`);
+          logger.info(
+            'PostBattleCoordinator',
+            `Executing post-battle task [${nextTask.type}]: ${nextTask.id}`
+          );
           await nextTask.execute(ctx);
         } catch (err) {
           logger.error('PostBattleCoordinator', `Error in post-battle task ${nextTask.id}:`, err);

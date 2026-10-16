@@ -1,62 +1,67 @@
 <script setup lang="ts">
 /**
  * src/components/admin/debug/shared/SpawnDebugControls.vue
- * 
+ *
  * Shared UI and logic for configuring all spawn conditions, event rates,
  * and minigames probabilities (Fishing, Mining/Archaeology, Shinies, Trainers, Rivals, Guardians).
  * Used identically by both Admin Panel (Map Tab) and Battle Debug HUD.
  */
 
-import { computed } from 'vue'
-import { useDebugStore } from '@/stores/debug'
-import DebugNumericControlRow from './DebugNumericControlRow.vue'
-import type { DebugPresetOption } from './debugControlTypes.ts'
+import { computed } from 'vue';
+import { useDebugStore } from '@/stores/debug';
+import DebugNumericControlRow from './DebugNumericControlRow.vue';
+import type { DebugPresetOption } from './debugControlTypes.ts';
 
-const debugStore = useDebugStore()
+const debugStore = useDebugStore();
 
-const DEFAULT_SHINY_RATE = 3000
-const PRESET_SHINY_ALWAYS_RATE = 1
-const MASUDA_METHOD_SHINY_RATE = 512
-const PRESET_PERCENT_TEN = 10
-const PRESET_PERCENT_TWENTY = 20
-const PRESET_PERCENT_FIFTY = 50
-const PRESET_PERCENT_EIGHTY = 80
+const DEFAULT_SHINY_RATE = 3000;
+const PRESET_SHINY_ALWAYS_RATE = 1;
+const MASUDA_METHOD_SHINY_RATE = 512;
+const PRESET_PERCENT_TEN = 10;
+const PRESET_PERCENT_TWENTY = 20;
+const PRESET_PERCENT_FIFTY = 50;
+const PRESET_PERCENT_EIGHTY = 80;
 
 const SHINY_PRESETS: readonly DebugPresetOption[] = [
   { label: '✨ 100% (1/1)', value: 1, tooltip: '100% probabilidad Shiny garantizada' },
   { label: '1% (1/100)', value: 100, tooltip: '1% probabilidad Shiny (1 en 100)' },
-  { label: 'Masuda (1/512)', value: MASUDA_METHOD_SHINY_RATE, tooltip: 'Ratio Método Masuda (1 en 512)' }
-]
+  {
+    label: 'Masuda (1/512)',
+    value: MASUDA_METHOD_SHINY_RATE,
+    tooltip: 'Ratio Método Masuda (1 en 512)'
+  }
+];
 
 const PERCENT_STANDARD_PRESETS: readonly DebugPresetOption[] = [
   { label: '0%', value: 0 },
   { label: '50%', value: PRESET_PERCENT_FIFTY },
   { label: '100%', value: 100 }
-]
+];
 
 const RIVAL_PRESETS: readonly DebugPresetOption[] = [
   { label: '0%', value: 0 },
   { label: '10%', value: PRESET_PERCENT_TEN },
   { label: '50%', value: PRESET_PERCENT_FIFTY },
   { label: '100%', value: 100 }
-]
+];
 
 const GUARDIAN_PRESETS: readonly DebugPresetOption[] = [
   { label: '0%', value: 0 },
   { label: '50%', value: PRESET_PERCENT_FIFTY },
   { label: '80%', value: PRESET_PERCENT_EIGHTY },
   { label: '100%', value: 100 }
-]
+];
 
 const DEFENDER_PRESETS: readonly DebugPresetOption[] = [
   { label: '0%', value: 0 },
   { label: '20%', value: PRESET_PERCENT_TWENTY },
   { label: '50%', value: PRESET_PERCENT_FIFTY },
   { label: '100%', value: 100 }
-]
+];
 
 const isAnyOverrideActive = computed(() => {
-  return debugStore.shinyRateOverride !== null ||
+  return (
+    debugStore.shinyRateOverride !== null ||
     debugStore.trainerChancePct !== null ||
     debugStore.rivalChancePct !== null ||
     debugStore.guardianChancePct !== null ||
@@ -67,34 +72,37 @@ const isAnyOverrideActive = computed(() => {
     debugStore.forceRival ||
     debugStore.forceGuardian80 ||
     debugStore.forceShiny100
-})
+  );
+});
 
 const activeOverridesSummary = computed(() => {
-  const active: string[] = [] // no-domain: Non-domain utility collection or data structure
+  const active: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (debugStore.shinyRateOverride !== null || debugStore.forceShiny100) {
-    const rate = debugStore.shinyRateOverride ?? (debugStore.forceShiny100 ? PRESET_SHINY_ALWAYS_RATE : DEFAULT_SHINY_RATE)
-    active.push(rate === PRESET_SHINY_ALWAYS_RATE ? 'Shiny: 100%' : `Shiny: 1/${rate}`)
+    const rate =
+      debugStore.shinyRateOverride ??
+      (debugStore.forceShiny100 ? PRESET_SHINY_ALWAYS_RATE : DEFAULT_SHINY_RATE);
+    active.push(rate === PRESET_SHINY_ALWAYS_RATE ? 'Shiny: 100%' : `Shiny: 1/${rate}`);
   }
   if (debugStore.trainerChancePct !== null || debugStore.trainerChance50) {
-    active.push(`Entrenadores: ${debugStore.trainerChancePct ?? 50}%`)
+    active.push(`Entrenadores: ${debugStore.trainerChancePct ?? 50}%`);
   }
   if (debugStore.rivalChancePct !== null || debugStore.forceRival) {
-    active.push(`Rival: ${debugStore.rivalChancePct ?? 100}%`)
+    active.push(`Rival: ${debugStore.rivalChancePct ?? 100}%`);
   }
   if (debugStore.guardianChancePct !== null || debugStore.forceGuardian80) {
-    active.push(`Guardián: ${debugStore.guardianChancePct ?? 80}%`)
+    active.push(`Guardián: ${debugStore.guardianChancePct ?? 80}%`);
   }
   if (debugStore.defenderChancePct !== null) {
-    active.push(`Defensor: ${debugStore.defenderChancePct}%`)
+    active.push(`Defensor: ${debugStore.defenderChancePct}%`);
   }
   if (debugStore.fishingChancePct !== null) {
-    active.push(`Pesca: ${debugStore.fishingChancePct}%`)
+    active.push(`Pesca: ${debugStore.fishingChancePct}%`);
   }
   if (debugStore.archaeologyChancePct !== null) {
-    active.push(`Minería: ${debugStore.archaeologyChancePct}%`)
+    active.push(`Minería: ${debugStore.archaeologyChancePct}%`);
   }
-  return active.join(' | ')
-})
+  return active.join(' | ');
+});
 </script>
 
 <template>
@@ -103,7 +111,9 @@ const activeOverridesSummary = computed(() => {
     <div class="debug-card">
       <div class="card-header">
         <label>PROBABILIDADES DE SPAWNS Y MINIJUEGOS</label>
-        <PVTooltip title="Configura las probabilidades numéricas de cada evento del mapa y minijuego de captura.">
+        <PVTooltip
+          title="Configura las probabilidades numéricas de cada evento del mapa y minijuego de captura."
+        >
           <span class="emoji info-badge">ℹ️</span>
         </PVTooltip>
       </div>
@@ -217,26 +227,18 @@ const activeOverridesSummary = computed(() => {
 
       <div class="debug-info-box">
         <span>Estado:</span>
-        <strong
-          v-if="isAnyOverrideActive"
-          class="active-summary"
-        >
+        <strong v-if="isAnyOverrideActive" class="active-summary">
           {{ activeOverridesSummary }}
         </strong>
-        <strong
-          v-else
-          class="clean-summary"
-        >
-          VALORES POR DEFECTO (ORIGINAL)
-        </strong>
+        <strong v-else class="clean-summary"> VALORES POR DEFECTO (ORIGINAL) </strong>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/debug";
-@use "@/styles/core/tools" as *;
+@use '@/styles/components/debug';
+@use '@/styles/core/tools' as *;
 
 .spawn-debug-controls {
   display: flex;
@@ -250,8 +252,14 @@ const activeOverridesSummary = computed(() => {
   align-items: center;
   margin-bottom: 8px;
 
-  label { margin-bottom: 0; }
-  .info-badge { font-size: var(--font-8); opacity: 0.7; cursor: help; }
+  label {
+    margin-bottom: 0;
+  }
+  .info-badge {
+    font-size: var(--font-8);
+    opacity: 0.7;
+    cursor: help;
+  }
 }
 
 .rates-list {

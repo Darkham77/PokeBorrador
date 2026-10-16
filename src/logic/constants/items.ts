@@ -3,6 +3,8 @@
  * Centralized constant definitions for item healing amounts, multipliers, and status effects.
  */
 
+import type { ItemId } from '@/data/inventory/items';
+
 /** HP restored by a standard Potion. */
 export const POTION_HEAL_HP = 20;
 
@@ -89,7 +91,7 @@ export const DURATION_24_HOURS_MS = 86_400_000;
 export const TWO_MINUTES_MS = 120_000;
 
 /** Standard pokemart item purchase prices. */
-export const ITEM_PRICES: Record<string, number> = {
+export const ITEM_PRICES: Partial<Record<ItemId, number>> = {
   potion: 200,
   antidote: 100,
   paralyzeheal: 200,

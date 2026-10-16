@@ -228,8 +228,23 @@ export const REGIONAL_POI_CATALOG: readonly POITemplate[] = [
   }
 ];
 
-const CITY_DESIGNATIONS = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa'] as const; // no-domain: Estructura o identificador procedural de aventura
-const REMAINING_SECONDARY_TYPES = ['route_gate', 'water_landmark', 'port_dock'] as const satisfies readonly POIType[];
+const CITY_DESIGNATIONS = [
+  'Alpha',
+  'Beta',
+  'Gamma',
+  'Delta',
+  'Epsilon',
+  'Zeta',
+  'Eta',
+  'Theta',
+  'Iota',
+  'Kappa'
+] as const; // no-domain: Estructura o identificador procedural de aventura
+const REMAINING_SECONDARY_TYPES = [
+  'route_gate',
+  'water_landmark',
+  'port_dock'
+] as const satisfies readonly POIType[];
 
 export function generateProceduralPOICatalog(
   targetCount: number,

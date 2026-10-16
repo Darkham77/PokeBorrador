@@ -7,7 +7,7 @@ export const Formats = [
     gameType: 'doubles',
     bestOfDefault: true,
     searchShow: false,
-    ruleset: [ 'Flat Rules', '! Adjust Level Down', 'Max Level = 50' ],
-    banlist: [ 'Tyranitar', 'Rotom', 'Judgment', 'Soul Dew' ]
+    ruleset: ['Flat Rules', '! Adjust Level Down', 'Max Level = 50'],
+    banlist: ['Tyranitar', 'Rotom', 'Judgment', 'Soul Dew']
   }
 ];

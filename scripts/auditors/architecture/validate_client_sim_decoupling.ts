@@ -18,7 +18,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, type SharedAstContext, normalizePosixPath, AuditedDocument , createRuleCapabilities} from '@francogp/auditor';
+import {
+  BaseAuditor,
+  type SharedAstContext,
+  normalizePosixPath,
+  AuditedDocument,
+  createRuleCapabilities
+} from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -87,8 +93,8 @@ function checkPkmnSimImport(
 
   if (clause.namedBindings && ts.isNamedImports(clause.namedBindings)) {
     const nonTypeSpecifiers = clause.namedBindings.elements
-      .filter(elem => !elem.isTypeOnly)
-      .map(elem => elem.name.text);
+      .filter((elem) => !elem.isTypeOnly)
+      .map((elem) => elem.name.text);
 
     if (nonTypeSpecifiers.length === 0) return null;
 
@@ -180,9 +186,8 @@ export function checkViteConfigForSimChunks(viteConfigContent: string): SimImpor
   // Look for client manualChunks (outside of `worker:` configuration block)
   // Client manualChunks typically occurs under `build.rollupOptions.output.manualChunks`
   const workerBlockMatch = viteConfigContent.indexOf('worker:');
-  const clientConfigPortion = workerBlockMatch !== -1
-    ? viteConfigContent.slice(workerBlockMatch + 7)
-    : viteConfigContent;
+  const clientConfigPortion =
+    workerBlockMatch !== -1 ? viteConfigContent.slice(workerBlockMatch + 7) : viteConfigContent;
 
   const lines = clientConfigPortion.split(/\r?\n/);
   for (let i = 0; i < lines.length; i++) {
@@ -191,7 +196,8 @@ export function checkViteConfigForSimChunks(viteConfigContent: string): SimImpor
       issues.push({
         ruleId: 'client-sim-value-import' as const,
         line: i + 1,
-        message: 'vite.config.ts define un chunk de cliente para vendor-pkmn-sim. @pkmn/sim no debe existir en el hilo principal.',
+        message:
+          'vite.config.ts define un chunk de cliente para vendor-pkmn-sim. @pkmn/sim no debe existir en el hilo principal.',
         snippet: line.trim()
       });
     }
@@ -199,7 +205,8 @@ export function checkViteConfigForSimChunks(viteConfigContent: string): SimImpor
       issues.push({
         ruleId: 'client-randoms-value-import' as const,
         line: i + 1,
-        message: 'vite.config.ts define un chunk de cliente para vendor-randoms. @pkmn/randoms no debe existir en el hilo principal.',
+        message:
+          'vite.config.ts define un chunk de cliente para vendor-randoms. @pkmn/randoms no debe existir en el hilo principal.',
         snippet: line.trim()
       });
     }
@@ -211,7 +218,9 @@ export function checkViteConfigForSimChunks(viteConfigContent: string): SimImpor
 /**
  * Checks dist/assets for any compiled client chunks of Showdown.
  */
-export function checkDistAssetsForSimChunks(distDir: string): { chunkName: string; sizeKB: string }[] {
+export function checkDistAssetsForSimChunks(
+  distDir: string
+): { chunkName: string; sizeKB: string }[] {
   if (!fs.existsSync(distDir)) return [];
   const files = fs.readdirSync(distDir);
   const forbidden: { chunkName: string; sizeKB: string }[] = [];
@@ -259,10 +268,14 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
       ruleIds: CLIENT_SIM_DECOUPLING_RULES,
       ruleDescriptions: CLIENT_SIM_DECOUPLING_DESCRIPTIONS,
       ruleRemediations: {
-        'client-sim-value-import': 'Reemplaza imports de valor de @pkmn/sim por import type o comunícate a través del Web Worker de combate.',
-        'client-randoms-value-import': 'Reemplaza imports de @pkmn/randoms por import type o delega su ejecución al Worker.',
-        'client-sim-chunk-configured': 'Configura manualChunks en vite.config.ts aislando @pkmn/sim fuera del bundle principal de la aplicación.',
-        'client-sim-chunk-present': 'Verifica que dist/ no incluya código directo de simulación en el hilo principal.'
+        'client-sim-value-import':
+          'Reemplaza imports de valor de @pkmn/sim por import type o comunícate a través del Web Worker de combate.',
+        'client-randoms-value-import':
+          'Reemplaza imports de @pkmn/randoms por import type o delega su ejecución al Worker.',
+        'client-sim-chunk-configured':
+          'Configura manualChunks en vite.config.ts aislando @pkmn/sim fuera del bundle principal de la aplicación.',
+        'client-sim-chunk-present':
+          'Verifica que dist/ no incluya código directo de simulación en el hilo principal.'
       },
       requiresAst: true,
       coverage: {
@@ -276,7 +289,10 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
 
     let filesScanned = 0;
     let totalIssuesFound = 0;
-    const sourceFilesData: { relPath: string; issues: ReturnType<typeof scanSourceForSimImports> }[] = [];
+    const sourceFilesData: {
+      relPath: string;
+      issues: ReturnType<typeof scanSourceForSimImports>;
+    }[] = [];
 
     await this.runSubAuditor('client-sim-value-import', async () => {
       const files = await this.context.collectFiles(['src'], new Set(['.ts', '.vue', '.js']));
@@ -348,7 +364,10 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
           });
         }
       } else {
-        this.markRuleNotApplicable('client-sim-chunk-configured', 'vite.config.ts no existe en el proyecto');
+        this.markRuleNotApplicable(
+          'client-sim-chunk-configured',
+          'vite.config.ts no existe en el proyecto'
+        );
       }
     });
 
@@ -368,7 +387,10 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
           });
         }
       } else {
-        this.markRuleNotApplicable('client-sim-chunk-present', 'El directorio dist/assets no existe antes del build');
+        this.markRuleNotApplicable(
+          'client-sim-chunk-present',
+          'El directorio dist/assets no existe antes del build'
+        );
       }
     });
 
@@ -378,6 +400,10 @@ export class ValidateClientSimDecouplingAuditor extends BaseAuditor<ClientSimDec
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new ValidateClientSimDecouplingAuditor());
 }

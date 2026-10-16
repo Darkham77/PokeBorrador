@@ -21,7 +21,7 @@ export const CITY_GATEWAY_Y = 6 as const;
 // --- Pokémon League Plateau & Massif Climax ---
 export const REGIONAL_MIN_SCALE_LEAGUE = 64 as const;
 export const LEAGUE_SEARCH_MAX_Y_RATIO = 0.38 as const;
-export const LEAGUE_SEARCH_CENTER_Y_RATIO = 0.20 as const;
+export const LEAGUE_SEARCH_CENTER_Y_RATIO = 0.2 as const;
 export const LEAGUE_ELEVATION_SCORE_WEIGHT = 10 as const;
 export const LEAGUE_PLATEAU_HEIGHT_OFFSET = 12 as const;
 export const LEAGUE_STAIRS_PRUNE_RADIUS = 30 as const;

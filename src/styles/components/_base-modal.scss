@@ -1,5 +1,5 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .base-modal-root {
   position: fixed;
@@ -44,12 +44,15 @@
     pointer-events: auto;
   }
 
-  &.type-side, &.type-side-right, &.type-right {
+  &.type-side,
+  &.type-side-right,
+  &.type-right {
     justify-content: flex-end;
     align-items: stretch;
   }
 
-  &.type-side-left, &.type-left {
+  &.type-side-left,
+  &.type-left {
     justify-content: flex-start;
     align-items: stretch;
   }
@@ -71,22 +74,38 @@
 
   // Position Modes overrides
   &.position-stuck {
-    &.type-top { padding-top: 0 !important; }
-    &.type-down { padding-bottom: 0 !important; }
-    &.type-left, &.type-right, &.type-side, &.type-side-left, &.type-side-right { 
-      align-items: stretch !important; 
+    &.type-top {
+      padding-top: 0 !important;
+    }
+    &.type-down {
+      padding-bottom: 0 !important;
+    }
+    &.type-left,
+    &.type-right,
+    &.type-side,
+    &.type-side-left,
+    &.type-side-right {
+      align-items: stretch !important;
       padding: 0 !important;
     }
   }
 
   &.position-floating {
-    &.type-top { padding-top: 4dvh !important; }
-    &.type-down { padding-bottom: 4dvh !important; }
-    &.type-left, &.type-right, &.type-side, &.type-side-left, &.type-side-right { 
-      align-items: center !important; 
+    &.type-top {
+      padding-top: 4dvh !important;
+    }
+    &.type-down {
+      padding-bottom: 4dvh !important;
+    }
+    &.type-left,
+    &.type-right,
+    &.type-side,
+    &.type-side-left,
+    &.type-side-right {
+      align-items: center !important;
       padding: 2dvh !important;
     }
-    
+
     // Floating panels height management
     & .base-modal-card {
       max-height: calc(95dvh / var(--modal-zoom, 1)) !important;
@@ -95,7 +114,7 @@
 
   &.no-pointer-events {
     pointer-events: none !important;
-    
+
     // Ensure the card itself still catches events
     & .base-modal-card {
       pointer-events: auto !important;
@@ -114,7 +133,11 @@
   display: flex;
   flex-direction: column;
   border: 1px solid Rgb(255 255 255 / 10%);
-  background: linear-gradient(180deg, var(--bg-modal-top, #161a2e) 0%, var(--bg-modal-bottom, #0a0c14) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--bg-modal-top, #161a2e) 0%,
+    var(--bg-modal-bottom, #0a0c14) 100%
+  );
   opacity: 1;
   transform: Translate3d(0, 0, 0);
   pointer-events: auto;
@@ -127,12 +150,15 @@
   .type-center & {
     // Width gestionado por cardStyles
   }
-  
-  .type-side &, .type-side-right &, .type-right & {
+
+  .type-side &,
+  .type-side-right &,
+  .type-right & {
     border-left: 1px solid Rgb(255 255 255 / 10%);
   }
 
-  .type-side-left &, .type-left & {
+  .type-side-left &,
+  .type-left & {
     border-right: 1px solid Rgb(255 255 255 / 10%);
   }
 
@@ -168,15 +194,31 @@
   }
 
   // Border & Corners Logic
-  &.no-border { border: none !important; }
-  &.yellow-border { border: 2px solid var(--modal-accent) !important; }
+  &.no-border {
+    border: none !important;
+  }
+  &.yellow-border {
+    border: 2px solid var(--modal-accent) !important;
+  }
 
-  &.corners-all { border-radius: $radius-4xl !important; }
-  &.corners-none { border-radius: 0 !important; }
-  &.corners-top { border-radius: $radius-4xl $radius-4xl 0 0 !important; }
-  &.corners-bottom { border-radius: 0 0 $radius-4xl $radius-4xl !important; }
-  &.corners-left { border-radius: $radius-4xl 0 0 $radius-4xl !important; }
-  &.corners-right { border-radius: 0 $radius-4xl $radius-4xl 0 !important; }
+  &.corners-all {
+    border-radius: $radius-4xl !important;
+  }
+  &.corners-none {
+    border-radius: 0 !important;
+  }
+  &.corners-top {
+    border-radius: $radius-4xl $radius-4xl 0 0 !important;
+  }
+  &.corners-bottom {
+    border-radius: 0 0 $radius-4xl $radius-4xl !important;
+  }
+  &.corners-left {
+    border-radius: $radius-4xl 0 0 $radius-4xl !important;
+  }
+  &.corners-right {
+    border-radius: 0 $radius-4xl $radius-4xl 0 !important;
+  }
 
   &.variant-retro {
     border: 2px solid var(--modal-accent) !important;
@@ -194,12 +236,15 @@
     will-change: transform, filter, opacity;
     filter: Brightness(0.6); // Removed Blur(1px) as it breaks pixel-art aesthetic
     pointer-events: none !important;
-    
-    .sparkle, .glow, .aura {
+
+    .sparkle,
+    .glow,
+    .aura {
       display: none !important;
     }
 
-    .modal-close-btn, .modal-close-btn-floating {
+    .modal-close-btn,
+    .modal-close-btn-floating {
       display: none !important;
     }
   }
@@ -256,7 +301,6 @@
   @include btn-close-premium;
 
   &.is-solid {
-    
     &:hover {
       & .close-icon-wrapper {
         // Handled by GSAP
@@ -269,7 +313,7 @@
       border: 1px solid Rgb(255 255 255 / 10%);
       background: Rgb(15 23 42 / 95%);
       box-shadow: var(--shadow-card);
-      
+
       &::before {
         color: $white;
       }
@@ -297,7 +341,7 @@
     border: 1px solid Rgb(255 255 255 / 20%) !important;
     background: Rgb(15 23 42 / 92%) !important;
     box-shadow: var(--shadow-card);
-    
+
     &::before {
       color: $white;
     }
@@ -307,7 +351,7 @@
     border: 1px solid var(--yellow) !important;
     background: var(--yellow) !important;
     box-shadow: var(--shadow-card);
-    
+
     &::before {
       color: $black;
     }
@@ -332,19 +376,23 @@
   flex-direction: column;
   min-height: 0;
   flex: 1;
-  
-  &.padding-standard { 
-    padding: 16px; 
-    &.variant-retro { padding: 20px; }
+
+  &.padding-standard {
+    padding: 16px;
+    &.variant-retro {
+      padding: 20px;
+    }
   }
-  
-  &.padding-raw { 
-    padding: 0 !important; 
+
+  &.padding-raw {
+    padding: 0 !important;
     overflow: hidden;
   }
 }
 
-.no-scroll { overflow-y: hidden !important; }
+.no-scroll {
+  overflow-y: hidden !important;
+}
 
 body.modal-open {
   overflow: hidden !important;

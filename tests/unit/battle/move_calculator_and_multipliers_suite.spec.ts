@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { getCombatEnvState } from '@/logic/battle/moveCalculator';
 import {
   calculateStabMultiplier,
   calculateWeatherAndCyclePowerMultiplier,
   calculateAbilityPowerMultiplier,
-  calculateItemPowerMultiplier,
+  calculateItemPowerMultiplier
 } from '@/logic/battle/movePowerMultipliers';
 import { WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -111,11 +111,19 @@ describe('Move Calculator, Multipliers & PP Domain Suite', () => {
 
   describe('movePowerMultipliers', () => {
     it('calculates STAB multiplier correctly', () => {
-      const fireAttacker = { type: 'fire', type2: 'flying', ability: 'blaze' } as unknown as Pokemon;
+      const fireAttacker = {
+        type: 'fire',
+        type2: 'flying',
+        ability: 'blaze'
+      } as unknown as Pokemon;
       expect(calculateStabMultiplier('fire', fireAttacker)).toBe(1.5);
       expect(calculateStabMultiplier('water', fireAttacker)).toBe(1);
 
-      const adaptabilityAttacker = { type: 'normal', type2: null, ability: 'adaptability' } as unknown as Pokemon;
+      const adaptabilityAttacker = {
+        type: 'normal',
+        type2: null,
+        ability: 'adaptability'
+      } as unknown as Pokemon;
       expect(calculateStabMultiplier('normal', adaptabilityAttacker)).toBe(2);
     });
 
@@ -188,11 +196,29 @@ describe('Move Calculator, Multipliers & PP Domain Suite', () => {
       const lowHpCharizard = {
         hp: 10,
         maxHp: 100,
-        ability: 'blaze',
+        ability: 'blaze'
       } as unknown as Pokemon;
 
-      expect(calculateAbilityPowerMultiplier('fire', 90, lowHpCharizard, null, null, WEATHER_MECHANICAL.CLEAR)).toBe(1.5);
-      expect(calculateAbilityPowerMultiplier('water', 90, lowHpCharizard, null, null, WEATHER_MECHANICAL.CLEAR)).toBe(1);
+      expect(
+        calculateAbilityPowerMultiplier(
+          'fire',
+          90,
+          lowHpCharizard,
+          null,
+          null,
+          WEATHER_MECHANICAL.CLEAR
+        )
+      ).toBe(1.5);
+      expect(
+        calculateAbilityPowerMultiplier(
+          'water',
+          90,
+          lowHpCharizard,
+          null,
+          null,
+          WEATHER_MECHANICAL.CLEAR
+        )
+      ).toBe(1);
     });
 
     it('calculates item power multiplier for held items', () => {
@@ -207,8 +233,28 @@ describe('Move Calculator, Multipliers & PP Domain Suite', () => {
       const pidgeot = makePokemon('pidgeot', 31)!;
       pidgeot.uid = 'pidgeot-uid-123';
       pidgeot.moves = [
-        { id: 'wingattack', name: 'Ataque Ala', type: 'flying', cat: 'physical', power: 60, acc: 100, pp: 20, maxPP: 56, priority: 0 },
-        { id: 'whirlwind', name: 'Remolino', type: 'normal', cat: 'status', power: 0, acc: 100, pp: 23, maxPP: 32, priority: -6 }
+        {
+          id: 'wingattack',
+          name: 'Ataque Ala',
+          type: 'flying',
+          cat: 'physical',
+          power: 60,
+          acc: 100,
+          pp: 20,
+          maxPP: 56,
+          priority: 0
+        },
+        {
+          id: 'whirlwind',
+          name: 'Remolino',
+          type: 'normal',
+          cat: 'status',
+          power: 0,
+          acc: 100,
+          pp: 23,
+          maxPP: 32,
+          priority: -6
+        }
       ];
 
       const payload = prepareSeatPayload([pidgeot], pidgeot, null, 'Player');
@@ -225,26 +271,50 @@ describe('Move Calculator, Multipliers & PP Domain Suite', () => {
       const pidgeot = makePokemon('pidgeot', 31)!;
       pidgeot.uid = 'pidgeot-uid-123';
       pidgeot.moves = [
-        { id: 'wingattack', name: 'Ataque Ala', type: 'flying', cat: 'physical', power: 60, acc: 100, pp: 35, maxPP: 56, priority: 0 },
-        { id: 'whirlwind', name: 'Remolino', type: 'normal', cat: 'status', power: 0, acc: 100, pp: 23, maxPP: 32, priority: -6 }
+        {
+          id: 'wingattack',
+          name: 'Ataque Ala',
+          type: 'flying',
+          cat: 'physical',
+          power: 60,
+          acc: 100,
+          pp: 35,
+          maxPP: 56,
+          priority: 0
+        },
+        {
+          id: 'whirlwind',
+          name: 'Remolino',
+          type: 'normal',
+          cat: 'status',
+          power: 0,
+          acc: 100,
+          pp: 23,
+          maxPP: 32,
+          priority: -6
+        }
       ];
       gs.state.team = [pidgeot];
 
       const mockActiveBattle: Partial<BattleState> = {
         player: pidgeot,
         playerRequest: {
-          active: [{
-            moves: [
-              { move: 'Ataque Ala', id: 'wingattack', pp: 34, maxpp: 56, target: 'normal' },
-              { move: 'Remolino', id: 'whirlwind', pp: 22, maxpp: 32, target: 'normal' }
-            ]
-          }],
+          active: [
+            {
+              moves: [
+                { move: 'Ataque Ala', id: 'wingattack', pp: 34, maxpp: 56, target: 'normal' },
+                { move: 'Remolino', id: 'whirlwind', pp: 22, maxpp: 32, target: 'normal' }
+              ]
+            }
+          ],
           side: {
-            pokemon: [{
-              ident: 'p1: pidgeot-uid-123',
-              uid: 'pidgeot-uid-123',
-              active: true
-            }]
+            pokemon: [
+              {
+                ident: 'p1: pidgeot-uid-123',
+                uid: 'pidgeot-uid-123',
+                active: true
+              }
+            ]
           }
         } as unknown as ShowdownPlayerRequest
       };

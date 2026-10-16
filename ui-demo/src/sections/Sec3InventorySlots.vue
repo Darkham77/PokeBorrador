@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from 'vue';
 
-const selectedSlot = ref(0)
+const selectedSlot = ref(0);
 
 function selectSlot(index: number) {
-  selectedSlot.value = index
+  selectedSlot.value = index;
 }
 </script>
 
@@ -17,9 +17,7 @@ function selectSlot(index: number) {
 
     <div class="pv-panel-wrap has-cast-shadow">
       <div class="pv-frame-panel pv-panel-surface">
-        <h4 class="gold-subtitle">
-          RANURAS DE MOCHILA (CAVIDADES RETRO EMPOTRADAS CONTINUAS):
-        </h4>
+        <h4 class="gold-subtitle">RANURAS DE MOCHILA (CAVIDADES RETRO EMPOTRADAS CONTINUAS):</h4>
         <div class="inventory-shelf mb-18">
           <!-- Poké Ball -->
           <div
@@ -28,43 +26,12 @@ function selectSlot(index: number) {
             :class="{ selected: selectedSlot === 0 }"
             @click="selectSlot(0)"
           >
-            <svg
-              class="slot-item-icon"
-              viewBox="0 0 16 16"
-              fill="none"
-            >
-              <circle
-                cx="8"
-                cy="8"
-                r="7"
-                stroke="#000"
-                stroke-width="2"
-                fill="#ef4444"
-              />
-              <path
-                d="M1 8H15V15H1V8Z"
-                fill="#f4f4f5"
-              />
-              <line
-                x1="1"
-                y1="8"
-                x2="15"
-                y2="8"
-                stroke="#000"
-                stroke-width="2"
-              />
-              <circle
-                cx="8"
-                cy="8"
-                r="3"
-                fill="#000"
-              />
-              <circle
-                cx="8"
-                cy="8"
-                r="1.5"
-                fill="#f4f4f5"
-              />
+            <svg class="slot-item-icon" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="7" stroke="#000" stroke-width="2" fill="#ef4444" />
+              <path d="M1 8H15V15H1V8Z" fill="#f4f4f5" />
+              <line x1="1" y1="8" x2="15" y2="8" stroke="#000" stroke-width="2" />
+              <circle cx="8" cy="8" r="3" fill="#000" />
+              <circle cx="8" cy="8" r="1.5" fill="#f4f4f5" />
             </svg>
             <span class="slot-qty-tag">x99</span>
           </div>
@@ -76,50 +43,13 @@ function selectSlot(index: number) {
             :class="{ selected: selectedSlot === 1 }"
             @click="selectSlot(1)"
           >
-            <svg
-              class="slot-item-icon"
-              viewBox="0 0 16 16"
-              fill="none"
-            >
-              <circle
-                cx="8"
-                cy="8"
-                r="7"
-                stroke="#000"
-                stroke-width="2"
-                fill="#3b82f6"
-              />
-              <rect
-                x="4"
-                y="2"
-                width="8"
-                height="2"
-                fill="#ef4444"
-              />
-              <path
-                d="M1 8H15V15H1V8Z"
-                fill="#f4f4f5"
-              />
-              <line
-                x1="1"
-                y1="8"
-                x2="15"
-                y2="8"
-                stroke="#000"
-                stroke-width="2"
-              />
-              <circle
-                cx="8"
-                cy="8"
-                r="3"
-                fill="#000"
-              />
-              <circle
-                cx="8"
-                cy="8"
-                r="1.5"
-                fill="#f4f4f5"
-              />
+            <svg class="slot-item-icon" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="7" stroke="#000" stroke-width="2" fill="#3b82f6" />
+              <rect x="4" y="2" width="8" height="2" fill="#ef4444" />
+              <path d="M1 8H15V15H1V8Z" fill="#f4f4f5" />
+              <line x1="1" y1="8" x2="15" y2="8" stroke="#000" stroke-width="2" />
+              <circle cx="8" cy="8" r="3" fill="#000" />
+              <circle cx="8" cy="8" r="1.5" fill="#f4f4f5" />
             </svg>
             <span class="slot-qty-tag">x25</span>
           </div>
@@ -131,19 +61,8 @@ function selectSlot(index: number) {
             :class="{ selected: selectedSlot === 2 }"
             @click="selectSlot(2)"
           >
-            <svg
-              class="slot-item-icon"
-              viewBox="0 0 16 16"
-              fill="none"
-            >
-              <rect
-                x="6"
-                y="2"
-                width="4"
-                height="3"
-                fill="#94a3b8"
-                stroke="#000"
-              />
+            <svg class="slot-item-icon" viewBox="0 0 16 16" fill="none">
+              <rect x="6" y="2" width="4" height="3" fill="#94a3b8" stroke="#000" />
               <rect
                 x="4"
                 y="5"
@@ -153,13 +72,7 @@ function selectSlot(index: number) {
                 stroke="#000"
                 stroke-width="1.5"
               />
-              <rect
-                x="6"
-                y="7"
-                width="4"
-                height="5"
-                fill="#c084fc"
-              />
+              <rect x="6" y="7" width="4" height="5" fill="#c084fc" />
             </svg>
             <span class="slot-qty-tag">x10</span>
           </div>
@@ -171,21 +84,9 @@ function selectSlot(index: number) {
             :class="{ selected: selectedSlot === 3 }"
             @click="selectSlot(3)"
           >
-            <svg
-              class="slot-item-icon"
-              viewBox="0 0 16 16"
-              fill="none"
-            >
-              <polygon
-                points="8,1 15,8 8,15 1,8"
-                fill="#f97316"
-                stroke="#000"
-                stroke-width="1.5"
-              />
-              <polygon
-                points="8,4 12,8 8,12 4,8"
-                fill="#fde047"
-              />
+            <svg class="slot-item-icon" viewBox="0 0 16 16" fill="none">
+              <polygon points="8,1 15,8 8,15 1,8" fill="#f97316" stroke="#000" stroke-width="1.5" />
+              <polygon points="8,4 12,8 8,12 4,8" fill="#fde047" />
             </svg>
             <span class="slot-qty-tag">x02</span>
           </div>
@@ -206,64 +107,36 @@ function selectSlot(index: number) {
           GRID DE 4 MOVIMIENTOS DE BATALLA (SIMETRÍA MATEMÁTICA IZQUIERDA/DERECHA):
         </h4>
         <div class="move-slots-grid">
-          <div
-            v-gsap-hover="'card'"
-            class="pv-frame-control pv-move-slot"
-          >
+          <div v-gsap-hover="'card'" class="pv-frame-control pv-move-slot">
             <div class="move-info">
-              <div class="move-name">
-                HIDROBOMBA
-              </div>
+              <div class="move-name">HIDROBOMBA</div>
               <span class="pv-type-pill type-water">AGUA</span>
             </div>
-            <div class="move-pp">
-              PP 05/05
-            </div>
+            <div class="move-pp">PP 05/05</div>
           </div>
 
-          <div
-            v-gsap-hover="'card'"
-            class="pv-frame-control pv-move-slot"
-          >
+          <div v-gsap-hover="'card'" class="pv-frame-control pv-move-slot">
             <div class="move-info">
-              <div class="move-name">
-                TRUENO
-              </div>
+              <div class="move-name">TRUENO</div>
               <span class="pv-type-pill type-electric">ELÉCTRICO</span>
             </div>
-            <div class="move-pp">
-              PP 10/10
-            </div>
+            <div class="move-pp">PP 10/10</div>
           </div>
 
-          <div
-            v-gsap-hover="'card'"
-            class="pv-frame-control pv-move-slot"
-          >
+          <div v-gsap-hover="'card'" class="pv-frame-control pv-move-slot">
             <div class="move-info">
-              <div class="move-name">
-                LLAMARADA
-              </div>
+              <div class="move-name">LLAMARADA</div>
               <span class="pv-type-pill type-fire">FUEGO</span>
             </div>
-            <div class="move-pp">
-              PP 05/05
-            </div>
+            <div class="move-pp">PP 05/05</div>
           </div>
 
-          <div
-            v-gsap-hover="'card'"
-            class="pv-frame-control pv-move-slot"
-          >
+          <div v-gsap-hover="'card'" class="pv-frame-control pv-move-slot">
             <div class="move-info">
-              <div class="move-name">
-                DANZA ESPADA
-              </div>
+              <div class="move-name">DANZA ESPADA</div>
               <span class="pv-type-pill type-normal">NORMAL</span>
             </div>
-            <div class="move-pp">
-              PP 20/20
-            </div>
+            <div class="move-pp">PP 20/20</div>
           </div>
         </div>
       </div>

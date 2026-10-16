@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { useGameStore } from '@/stores/game';
@@ -32,7 +32,10 @@ describe('PvP Invite Lifecycle & Safety Integration', () => {
     dbSaves = {};
 
     const authStore = useAuthStore();
-    authStore.user = { id: 'user-player-1', email: 'player1@pvp.com' } as unknown as typeof authStore.user;
+    authStore.user = {
+      id: 'user-player-1',
+      email: 'player1@pvp.com'
+    } as unknown as typeof authStore.user;
 
     const gameStore = useGameStore();
     const advPoke = createFakePoke('adv-1', 'AdventureCharizard');
@@ -82,7 +85,9 @@ describe('PvP Invite Lifecycle & Safety Integration', () => {
                 return {
                   in: vi.fn().mockReturnValue({
                     order: vi.fn().mockReturnValue({
-                      limit: vi.fn().mockResolvedValue({ data: Object.values(dbInvites), error: null })
+                      limit: vi
+                        .fn()
+                        .mockResolvedValue({ data: Object.values(dbInvites), error: null })
                     })
                   })
                 };

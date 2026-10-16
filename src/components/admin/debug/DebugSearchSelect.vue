@@ -1,94 +1,97 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { onClickOutside } from '@vueuse/core'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import { ref, computed, watch } from 'vue';
+import { onClickOutside } from '@vueuse/core';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
 interface Option {
-  id: string
-  name: string
-  icon?: string
+  id: string;
+  name: string;
+  icon?: string;
 }
 
 const props = defineProps<{
-  id?: string
-  label: string
-  modelValue: string
-  options: Option[]
-  tooltipTitle: string
-  tooltipDesc: string
-  placeholder?: string
-}>()
+  id?: string;
+  label: string;
+  modelValue: string;
+  options: Option[];
+  tooltipTitle: string;
+  tooltipDesc: string;
+  placeholder?: string;
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', val: string): void
-  (e: 'select', option: Option): void
-}>()
+  (e: 'update:modelValue', val: string): void;
+  (e: 'select', option: Option): void;
+}>();
 
-const search = ref('')
-const showDropdown = ref(false)
-const selectRef = ref<HTMLElement | null>(null)
+const search = ref('');
+const showDropdown = ref(false);
+const selectRef = ref<HTMLElement | null>(null);
 
 // Sync parent value to search text initially
-watch(() => props.modelValue, (newVal) => {
-  const matching = props.options.find(o => o.id === newVal)
-  search.value = matching ? matching.name.toUpperCase() : newVal.toUpperCase()
-}, { immediate: true })
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    const matching = props.options.find((o) => o.id === newVal);
+    search.value = matching ? matching.name.toUpperCase() : newVal.toUpperCase();
+  },
+  { immediate: true }
+);
 
-const MAX_SEARCH_SELECT_RESULTS_LIMIT = 50
+const MAX_SEARCH_SELECT_RESULTS_LIMIT = 50;
 
 const filteredOptions = computed(() => {
-  const s = search.value.toLowerCase()
-  return props.options.filter(o => o.id.includes(s) || o.name.toLowerCase().includes(s)).slice(0, MAX_SEARCH_SELECT_RESULTS_LIMIT)
-})
+  const s = search.value.toLowerCase();
+  return props.options
+    .filter((o) => o.id.includes(s) || o.name.toLowerCase().includes(s))
+    .slice(0, MAX_SEARCH_SELECT_RESULTS_LIMIT);
+});
 
 function handleSelect(option: Option) {
-  search.value = option.name.toUpperCase()
-  showDropdown.value = false
-  emit('update:modelValue', option.id)
-  emit('select', option)
+  search.value = option.name.toUpperCase();
+  showDropdown.value = false;
+  emit('update:modelValue', option.id);
+  emit('select', option);
 }
 
 onClickOutside(selectRef, () => {
-  showDropdown.value = false
-})
+  showDropdown.value = false;
+});
 </script>
 
 <template>
-  <div 
-    :id="id || ('debug-select-' + label.toLowerCase().replace(/[^a-z0-9]/g, ''))"
+  <div
+    :id="id || 'debug-select-' + label.toLowerCase().replace(/[^a-z0-9]/g, '')"
     ref="selectRef"
     class="debug-input-group search-select-container"
   >
     <div
       class="label-row"
-      style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+      style="display: flex; justify-content: space-between; align-items: center; width: 100%"
     >
       <label>{{ label }}</label>
       <slot name="label-action" />
     </div>
-    <PVTooltip
-      :title="tooltipTitle"
-      :description="tooltipDesc"
-    >
-      <input 
-        :id="id ? (id + '-input') : ('debug-input-' + label.toLowerCase().replace(/[^a-z0-9]/g, ''))"
-        v-model="search" 
-        type="text" 
+    <PVTooltip :title="tooltipTitle" :description="tooltipDesc">
+      <input
+        :id="id ? id + '-input' : 'debug-input-' + label.toLowerCase().replace(/[^a-z0-9]/g, '')"
+        v-model="search"
+        type="text"
         :placeholder="placeholder || 'BUSCAR...'"
+        :aria-label="label || placeholder || 'Buscar'"
         class="search-input"
         @focus="showDropdown = true"
-      >
+      />
     </PVTooltip>
-    <div
-      v-if="showDropdown"
-      class="options-dropdown custom-scrollbar"
-    >
-      <div 
-        v-for="o in filteredOptions" 
-        :id="`option-${o.id}`" 
+    <div v-if="showDropdown" class="options-dropdown custom-scrollbar">
+      <div
+        v-for="o in filteredOptions"
+        :id="`option-${o.id}`"
         :key="o.id"
         class="option-item"
         :class="{ active: modelValue === o.id }"
+        role="button"
+        tabindex="0"
         @click.stop="handleSelect(o)"
       >
         <img
@@ -98,8 +101,8 @@ onClickOutside(selectRef, () => {
           class="item-icon"
           width="24"
           height="24"
-          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-        >
+          @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')"
+        />
         {{ o.name.toUpperCase() }}
       </div>
     </div>
@@ -107,4 +110,3 @@ onClickOutside(selectRef, () => {
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_debug.scss"></style>
-

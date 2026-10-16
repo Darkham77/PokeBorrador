@@ -1,4 +1,4 @@
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/mixins' as *;
 
 // src/styles/components/_battle.scss
 @use '../core/tools' as *;
@@ -28,7 +28,7 @@
 // Bloqueo de Scroll (Seguimos necesitándolo para el modo batalla)
 body.is-battle-active {
   overflow: hidden !important;
-  touch-action: none; 
+  touch-action: none;
 }
 
 /* ===== CONTENEDOR PRINCIPAL (RESTAURADO) ===== */
@@ -66,7 +66,7 @@ body.is-battle-active {
     max-width: 100%;
     height: 100%; // Llenar el modal nativo
     padding: 0; // Eliminado aire interno
-    grid-template: "log arena" 1fr "panel panel" auto / 280px 1fr;
+    grid-template: 'log arena' 1fr 'panel panel' auto / 280px 1fr;
     overflow: hidden;
   }
 }
@@ -127,7 +127,7 @@ body.is-battle-active {
     position: absolute;
     border: 4px dashed Rgb(255 255 255 / 40%);
     background: Rgb(255 255 255 / 5%);
-    
+
     &::after {
       @include pixelated;
 
@@ -149,7 +149,7 @@ body.is-battle-active {
     position: absolute;
     border: 4px solid red;
     background: Rgb(255 0 0 / 20%);
-    
+
     &::after {
       @include pixelated;
 
@@ -161,12 +161,16 @@ body.is-battle-active {
       transform: Scale(calc(1 / var(--camera-scale, 1)));
       transform-origin: left top;
     }
-    
-    &.p1 { 
-      &::after { content: 'P1 ANCHOR'; }
+
+    &.p1 {
+      &::after {
+        content: 'P1 ANCHOR';
+      }
     }
-    &.p2 { 
-      &::after { content: 'P2 ANCHOR'; }
+    &.p2 {
+      &::after {
+        content: 'P2 ANCHOR';
+      }
     }
   }
 
@@ -202,23 +206,23 @@ body.is-battle-active {
   @include pixelated;
 
   position: absolute;
-  left: 50%; 
+  left: 50%;
   z-index: calc(var(--z-base) - 1);
 
   // Escalado dinámico basado en la constante del sistema de cámara
-  width: 70%; 
+  width: 70%;
   height: calc(var(--obj-scale, 1) * 15px);
   transform: Translatex(-50%) Translatey(-50%);
   pointer-events: none;
-  background-size: 100% 100%; 
-  background-repeat: no-repeat; 
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   background-position: center;
   will-change: transform, filter, opacity;
   filter: none;
 }
 
-.is-floating-species { 
-  transform: Translatey(calc(var(--obj-scale, 1) * -12px)); 
+.is-floating-species {
+  transform: Translatey(calc(var(--obj-scale, 1) * -12px));
 }
 
 .searching-bushes {
@@ -235,19 +239,35 @@ body.is-battle-active {
   }
 }
 
-.bush-wrapper { 
+.bush-wrapper {
   @include pixelated;
 
-  position: absolute; 
-  width: calc(var(--obj-scale, 1) * 30px); 
+  position: absolute;
+  width: calc(var(--obj-scale, 1) * 30px);
   height: calc(var(--obj-scale, 1) * 30px);
   transform: Translate(var(--bx), var(--by)) Scale(var(--bs));
-  
+
   // Offsets también escalados
-  &.bush-front-1 { --bx: calc(var(--obj-scale, 1) * -12px); --by: calc(var(--obj-scale, 1) * 6px); --bs: 1.2; }
-  &.bush-front-2 { --bx: calc(var(--obj-scale, 1) * 17px); --by: calc(var(--obj-scale, 1) * 2px); --bs: 1.0; }
-  &.bush-back-1 { --bx: calc(var(--obj-scale, 1) * -17px); --by: calc(var(--obj-scale, 1) * -15px); --bs: 0.9; }
-  &.bush-back-2 { --bx: calc(var(--obj-scale, 1) * 10px); --by: calc(var(--obj-scale, 1) * -12px); --bs: 1.1; }
+  &.bush-front-1 {
+    --bx: calc(var(--obj-scale, 1) * -12px);
+    --by: calc(var(--obj-scale, 1) * 6px);
+    --bs: 1.2;
+  }
+  &.bush-front-2 {
+    --bx: calc(var(--obj-scale, 1) * 17px);
+    --by: calc(var(--obj-scale, 1) * 2px);
+    --bs: 1;
+  }
+  &.bush-back-1 {
+    --bx: calc(var(--obj-scale, 1) * -17px);
+    --by: calc(var(--obj-scale, 1) * -15px);
+    --bs: 0.9;
+  }
+  &.bush-back-2 {
+    --bx: calc(var(--obj-scale, 1) * 10px);
+    --by: calc(var(--obj-scale, 1) * -12px);
+    --bs: 1.1;
+  }
 }
 
 .battle-combatants {
@@ -271,17 +291,25 @@ body.is-battle-active {
   background: Rgb(0 0 0 / 45%);
   font-size: var(--font-11);
   margin-bottom: 0;
-  flex: 1; 
+  flex: 1;
   overflow-y: auto;
   box-shadow: var(--shadow-inset-md);
 
   .log-entry {
     line-height: 1.4;
     margin-bottom: 4px;
-    &.log-player { color: $green; }
-    &.log-enemy { color: $red; }
-    &.log-info { color: $yellow; }
-    &.log-catch { color: $purple; }
+    &.log-player {
+      color: $green;
+    }
+    &.log-enemy {
+      color: $red;
+    }
+    &.log-info {
+      color: $yellow;
+    }
+    &.log-catch {
+      color: $purple;
+    }
   }
 
   @media (width >= 1360px) {
@@ -298,6 +326,12 @@ body.is-battle-active {
   justify-content: center;
   align-items: center;
   height: 100%;
-  &.enemy-sprite { justify-content: flex-end; align-items: flex-start; }
-  &.player-sprite { justify-content: flex-start; align-items: flex-end; }
+  &.enemy-sprite {
+    justify-content: flex-end;
+    align-items: flex-start;
+  }
+  &.player-sprite {
+    justify-content: flex-start;
+    align-items: flex-end;
+  }
 }

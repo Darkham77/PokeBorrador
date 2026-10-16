@@ -1,122 +1,132 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
-import { gsap } from 'gsap'
-import { useUIStore } from '@/stores/ui'
-import { useWarStore } from '@/stores/war'
-import { useModalStore } from '@/stores/modals'
-import { SHOP_ITEMS } from '@/data/inventory/items'
-import { useGameStore } from '@/stores/game'
-import BaseModal from '@/components/common/BaseModal.vue'
-import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
-import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
-import WarShopItemCard from './WarShopItemCard.vue'
-import { sortWarShopItems } from './warShopHelpers.ts'
+import { ref, computed, watch, nextTick } from 'vue';
+import { gsap } from 'gsap';
+import { useUIStore } from '@/stores/ui';
+import { useWarStore } from '@/stores/war';
+import { useModalStore } from '@/stores/modals';
+import { SHOP_ITEMS } from '@/data/inventory/items';
+import { useGameStore } from '@/stores/game';
+import BaseModal from '@/components/common/BaseModal.vue';
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue';
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue';
+import WarShopItemCard from './WarShopItemCard.vue';
+import { sortWarShopItems } from './warShopHelpers.ts';
 
-import type { Item } from '@/types/inventory/items'
-import type { ItemSortKey, SortOrder } from '@/types/system/game'
+import type { Item } from '@/types/inventory/items';
+import type { ItemSortKey, SortOrder } from '@/types/system/game';
 
-const uiStore = useUIStore()
-const warStore = useWarStore()
-const gameStore = useGameStore()
+const uiStore = useUIStore();
+const warStore = useWarStore();
+const gameStore = useGameStore();
 
-const WAR_SHOP_CARD_INITIAL_OPACITY = 0
-const WAR_SHOP_CARD_INITIAL_Y_OFFSET = 15
-const WAR_SHOP_CARD_INITIAL_SCALE = 0.95
-const WAR_SHOP_GRID_ANIM_STAGGER_SEC = 0.02
+const WAR_SHOP_CARD_INITIAL_OPACITY = 0;
+const WAR_SHOP_CARD_INITIAL_Y_OFFSET = 15;
+const WAR_SHOP_CARD_INITIAL_SCALE = 0.95;
+const WAR_SHOP_GRID_ANIM_STAGGER_SEC = 0.02;
 
 interface Props {
-  id?: string
-  show?: boolean
+  id?: string;
+  show?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   id: 'war-shop-modal',
   show: true
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const isSmallScreen = computed(() => uiStore.isSmallScreen)
+const isSmallScreen = computed(() => uiStore.isSmallScreen);
 
-const activeTab = ref('todos')
-const search = ref('')
-const sortKey = ref<ItemSortKey>('name')
-const sortOrder = ref<SortOrder>('asc')
+const activeTab = ref('todos');
+const search = ref('');
+const sortKey = ref<ItemSortKey>('name');
+const sortOrder = ref<SortOrder>('asc');
 
 const filteredItems = computed<Item[]>(() => {
-  const coins = warStore.warCoins || 0
-  const trainerLevel = gameStore.state.trainerLevel || 1
+  const coins = warStore.warCoins || 0;
+  const trainerLevel = gameStore.state.trainerLevel || 1;
 
-  const items = (SHOP_ITEMS as readonly Item[]).filter(item => { // domain-ok: Open dynamic text or non-domain string payload
-    if (!item.showInWarShop) return false
-    const resolvedCat = item.cat || 'otros'
-    if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
-    if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
-    return true
-  })
+  const items = (SHOP_ITEMS as readonly Item[]).filter((item) => {
+    // domain-ok: Open dynamic text or non-domain string payload
+    if (!item.showInWarShop) return false;
+    const resolvedCat = item.cat || 'otros';
+    if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false;
+    if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false;
+    return true;
+  });
 
-  return sortWarShopItems(items, sortKey.value, sortOrder.value, coins, trainerLevel)
-})
+  return sortWarShopItems(items, sortKey.value, sortOrder.value, coins, trainerLevel);
+});
 
 const availableCategories = computed<string[]>(() => {
-  const cats = new Set<string>()
-  for (const item of (SHOP_ITEMS as readonly Item[])) { // domain-ok: Open dynamic text or non-domain string payload
-    if (!item.showInWarShop) continue
-    cats.add(item.cat || 'otros')
+  const cats = new Set<string>();
+  for (const item of SHOP_ITEMS as readonly Item[]) {
+    // domain-ok: Open dynamic text or non-domain string payload
+    if (!item.showInWarShop) continue;
+    cats.add(item.cat || 'otros');
   }
-  return Array.from(cats)
-})
+  return Array.from(cats);
+});
 
 const animateGrid = () => {
   nextTick(() => {
-    const cards = document.querySelectorAll('.war-shop-item-card')
+    const cards = document.querySelectorAll('.war-shop-item-card');
     if (cards.length > 0) {
-      gsap.killTweensOf(cards)
-      gsap.fromTo(cards, 
-        { opacity: WAR_SHOP_CARD_INITIAL_OPACITY, y: WAR_SHOP_CARD_INITIAL_Y_OFFSET, scale: WAR_SHOP_CARD_INITIAL_SCALE },
-        { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          duration: 0.2, 
-          stagger: WAR_SHOP_GRID_ANIM_STAGGER_SEC, 
+      gsap.killTweensOf(cards);
+      gsap.fromTo(
+        cards,
+        {
+          opacity: WAR_SHOP_CARD_INITIAL_OPACITY,
+          y: WAR_SHOP_CARD_INITIAL_Y_OFFSET,
+          scale: WAR_SHOP_CARD_INITIAL_SCALE
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.2,
+          stagger: WAR_SHOP_GRID_ANIM_STAGGER_SEC,
           ease: 'power1.out',
           clearProps: 'transform,scale'
         }
-      )
+      );
     }
-  })
-}
+  });
+};
 
 watch([activeTab, search], () => {
-  animateGrid()
-})
+  animateGrid();
+});
 
-watch(() => props.show, (val) => {
-  if (val) {
-    activeTab.value = 'todos'
-    search.value = ''
-    animateGrid()
+watch(
+  () => props.show,
+  (val) => {
+    if (val) {
+      activeTab.value = 'todos';
+      search.value = '';
+      animateGrid();
+    }
   }
-})
+);
 
 const closeWarShop = () => {
-  emit('close')
-}
+  emit('close');
+};
 
 // Shim for legacy code
 if (typeof window !== 'undefined') {
   Reflect.set(window, 'showWarShop', () => {
-    useModalStore().open('WarShop')
-  })
+    useModalStore().open('WarShop');
+  });
   Reflect.set(window, 'closeWarShop', () => {
-    useModalStore().close('WarShop')
-  })
+    useModalStore().close('WarShop');
+  });
   Reflect.set(window, 'renderWarShop', () => {
     // No-op, Vue handles reactivity
-  })
+  });
 }
 </script>
 
@@ -184,7 +194,7 @@ if (typeof window !== 'undefined') {
           <template #price-icon>
             <i
               class="fa-solid fa-bolt-lightning sort-label"
-              style=" color: var(--red-light);font-size: var(--font-8); line-height: 1;"
+              style="color: var(--red-light); font-size: var(--font-8); line-height: 1"
             />
           </template>
         </ShopSearchControls>
@@ -197,22 +207,12 @@ if (typeof window !== 'undefined') {
             <span class="hint-text">Gana monedas participando en la Dominancia de Kanto.</span>
           </div>
 
-          <div 
-            v-if="filteredItems.length > 0"
-            class="shop-premium-grid"
-          >
-            <WarShopItemCard
-              v-for="item in filteredItems"
-              :key="item.id"
-              :item="item"
-            />
+          <div v-if="filteredItems.length > 0" class="shop-premium-grid">
+            <WarShopItemCard v-for="item in filteredItems" :key="item.id" :item="item" />
           </div>
 
           <!-- Empty State -->
-          <div
-            v-else
-            class="shop-empty-state"
-          >
+          <div v-else class="shop-empty-state">
             <span class="emoji empty-icon">🔍</span>
             <div class="empty-text">
               <h3>Sin resultados</h3>
@@ -226,8 +226,8 @@ if (typeof window !== 'undefined') {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/components/shop" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/components/shop' as *;
 
 .war-shop-hint-banner {
   display: flex;
@@ -238,14 +238,14 @@ if (typeof window !== 'undefined') {
   border-radius: $radius-xl;
   background: Rgb(239 68 68 / 5%);
   margin-bottom: 16px;
-  
+
   .info-icon {
     display: flex;
     align-items: center;
     color: var(--red-light);
     font-size: var(--font-14);
   }
-  
+
   .hint-text {
     color: var(--slate-300);
     font-size: var(--font-11);

@@ -10,7 +10,15 @@ import { safeResolve, safeJoin } from '@francogp/auditor';
 const __filename = fileURLToPath(import.meta.url);
 
 const RAW_ASSETS_DIR = safeResolve(process.cwd(), '_raw-assets');
-const FRONT_DIR = safeJoin(RAW_ASSETS_DIR, 'public', 'assets', 'sprites', 'pokemon', 'animated', 'Front');
+const FRONT_DIR = safeJoin(
+  RAW_ASSETS_DIR,
+  'public',
+  'assets',
+  'sprites',
+  'pokemon',
+  'animated',
+  'Front'
+);
 const SCRATCH_DIR = safeResolve(process.cwd(), 'scratch');
 const DB_SYNC_BATCH_CHUNK_SIZE = 32;
 
@@ -50,7 +58,16 @@ if (!isMainThread) {
     const folders = ['Front', 'Back', 'Front shiny', 'Back shiny'] as const; // no-domain: Non-domain utility collection or data structure
 
     const processVariant = async (folder: string): Promise<void> => {
-      const varSourcePath = path.join(RAW_ASSETS_DIR, 'public', 'assets', 'sprites', 'pokemon', 'animated', folder, fileName);
+      const varSourcePath = path.join(
+        RAW_ASSETS_DIR,
+        'public',
+        'assets',
+        'sprites',
+        'pokemon',
+        'animated',
+        folder,
+        fileName
+      );
       try {
         await fs.access(varSourcePath);
       } catch {
@@ -90,15 +107,15 @@ if (!isMainThread) {
               channels: 4
             }
           })
-          .extend({
-            top: 1,
-            bottom: 1,
-            left: 1,
-            right: 1,
-            background: { r: 0, g: 0, b: 0, alpha: 0 }
-          })
-          .png()
-          .toBuffer();
+            .extend({
+              top: 1,
+              bottom: 1,
+              left: 1,
+              right: 1,
+              background: { r: 0, g: 0, b: 0, alpha: 0 }
+            })
+            .png()
+            .toBuffer();
           paddedList.push(padded);
         }
         return paddedList;
@@ -120,26 +137,50 @@ if (!isMainThread) {
             background: { r: 0, g: 0, b: 0, alpha: 0 }
           }
         })
-        .composite(compositeInputs)
-        .png()
-        .toFile(outputPath);
+          .composite(compositeInputs)
+          .png()
+          .toFile(outputPath);
       };
 
       // Guardar Idle para esta variante
       if (varAnalysis.hasIdle && varAnalysis.idleRange) {
         const [idleStart, idleEndIdx] = varAnalysis.idleRange;
-        const idleIndices = Array.from({ length: idleEndIdx - idleStart + 1 }, (_, i) => idleStart + i);
+        const idleIndices = Array.from(
+          { length: idleEndIdx - idleStart + 1 },
+          (_, i) => idleStart + i
+        );
         const paddedIdle = await processAndPadVarFrames(idleIndices);
-        const idleOutPath = path.join(RAW_ASSETS_DIR, 'public', 'assets', 'sprites', 'pokemon', 'animated', folder, `${pokemonId}i${suffix}.png`);
+        const idleOutPath = path.join(
+          RAW_ASSETS_DIR,
+          'public',
+          'assets',
+          'sprites',
+          'pokemon',
+          'animated',
+          folder,
+          `${pokemonId}i${suffix}.png`
+        );
         await saveVarSpritesheet(paddedIdle, idleOutPath);
       }
 
       // Guardar Variación única de la variante si tiene una propia detectada
       if (varAnalysis.attackRange !== null) {
         const varAtk = varAnalysis.attackRange;
-        const attackIndices = Array.from({ length: varAtk[1] - varAtk[0] + 1 }, (_, i) => varAtk[0] + i);
+        const attackIndices = Array.from(
+          { length: varAtk[1] - varAtk[0] + 1 },
+          (_, i) => varAtk[0] + i
+        );
         const paddedAttack = await processAndPadVarFrames(attackIndices);
-        const attackOutPath = path.join(RAW_ASSETS_DIR, 'public', 'assets', 'sprites', 'pokemon', 'animated', folder, `${pokemonId}v${suffix}.png`);
+        const attackOutPath = path.join(
+          RAW_ASSETS_DIR,
+          'public',
+          'assets',
+          'sprites',
+          'pokemon',
+          'animated',
+          folder,
+          `${pokemonId}v${suffix}.png`
+        );
         await saveVarSpritesheet(paddedAttack, attackOutPath);
       }
 
@@ -153,9 +194,10 @@ if (!isMainThread) {
       await processVariant(f);
     }
 
-    const extraDetails = frontAnalysis.attackRange !== null
-      ? `Idle: frames ${frontAnalysis.idleRange[0]} a ${frontAnalysis.idleRange[1]}. Ataque: frames ${frontAnalysis.attackRange[0]} a ${frontAnalysis.attackRange[1]}`
-      : `Idle: frames ${frontAnalysis.idleRange[0]} a ${frontAnalysis.idleRange[1]}. Sin ataque.`;
+    const extraDetails =
+      frontAnalysis.attackRange !== null
+        ? `Idle: frames ${frontAnalysis.idleRange[0]} a ${frontAnalysis.idleRange[1]}. Ataque: frames ${frontAnalysis.attackRange[0]} a ${frontAnalysis.attackRange[1]}`
+        : `Idle: frames ${frontAnalysis.idleRange[0]} a ${frontAnalysis.idleRange[1]}. Sin ataque.`;
 
     parentPort?.postMessage({
       success: true,
@@ -167,7 +209,7 @@ if (!isMainThread) {
     });
   };
 
-  runWorker().catch(err => {
+  runWorker().catch((err) => {
     const msg = err instanceof Error ? (err as Error).message : String(err);
     parentPort?.postMessage({ success: false, error: msg });
   });
@@ -300,7 +342,13 @@ if (isMainThread) {
 
   function parseCliArguments(): OptimizationCliOptions {
     const args = process.argv.slice(2);
-    const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['all', 'remove-original'].includes(a) ? `--${a}` : a));
+    const normalized = args.map((a) =>
+      a.includes('=') && !a.startsWith('-')
+        ? `--${a}`
+        : ['all', 'remove-original'].includes(a)
+          ? `--${a}`
+          : a
+    );
     const parsed = parseArgs({
       args: normalized,
       options: {
@@ -320,18 +368,44 @@ if (isMainThread) {
     };
   }
 
-  function filterTargetFiles(targetFiles: string[], values: OptimizationCliOptions['values'], positionals: string[]): string[] {
-    const fileFilter = typeof values.file === 'string' ? values.file : (positionals[0]?.endsWith('.png') ? positionals[0] : undefined);
-    const idFilter = typeof values.id === 'string' ? values.id : (positionals[0] && !positionals[0].includes('-') && !positionals[0].endsWith('.png') && positionals[0] !== 'all' ? positionals[0] : undefined);
-    const rangeFilter = typeof values.range === 'string' ? values.range : (positionals[0]?.includes('-') ? positionals[0] : undefined);
+  function filterTargetFiles(
+    targetFiles: string[],
+    values: OptimizationCliOptions['values'],
+    positionals: string[]
+  ): string[] {
+    const fileFilter =
+      typeof values.file === 'string'
+        ? values.file
+        : positionals[0]?.endsWith('.png')
+          ? positionals[0]
+          : undefined;
+    const idFilter =
+      typeof values.id === 'string'
+        ? values.id
+        : positionals[0] &&
+            !positionals[0].includes('-') &&
+            !positionals[0].endsWith('.png') &&
+            positionals[0] !== 'all'
+          ? positionals[0]
+          : undefined;
+    const rangeFilter =
+      typeof values.range === 'string'
+        ? values.range
+        : positionals[0]?.includes('-')
+          ? positionals[0]
+          : undefined;
 
     if (fileFilter) {
-      const filtered = targetFiles.filter(file => file === fileFilter || path.parse(file).name === path.parse(fileFilter).name);
-      console.log(`🎯 Filtrado por Archivo "${fileFilter}": ${filtered.length} archivo(s) encontrado(s).`);
+      const filtered = targetFiles.filter(
+        (file) => file === fileFilter || path.parse(file).name === path.parse(fileFilter).name
+      );
+      console.log(
+        `🎯 Filtrado por Archivo "${fileFilter}": ${filtered.length} archivo(s) encontrado(s).`
+      );
       return filtered;
     }
     if (idFilter) {
-      const filtered = targetFiles.filter(file => {
+      const filtered = targetFiles.filter((file) => {
         const match = path.parse(file).name.match(/^(\d+)(.*)$/);
         if (!match) return false;
         return match[1] === idFilter || `${match[1]}${match[2]}` === idFilter;
@@ -343,13 +417,15 @@ if (isMainThread) {
       const [startStr, endStr] = rangeFilter.split('-');
       const start = parseInt(startStr || '0', 10);
       const end = parseInt(endStr || '9999', 10);
-      const filtered = targetFiles.filter(file => {
+      const filtered = targetFiles.filter((file) => {
         const match = path.parse(file).name.match(/^(\d+)(.*)$/);
         if (!match) return false;
         const pid = parseInt(match[1]!, 10);
         return pid >= start && pid <= end;
       });
-      console.log(`🎯 Filtrado por Rango "${values.range}": ${filtered.length} archivo(s) encontrado(s).`);
+      console.log(
+        `🎯 Filtrado por Rango "${values.range}": ${filtered.length} archivo(s) encontrado(s).`
+      );
       return filtered;
     }
     return targetFiles;
@@ -370,15 +446,18 @@ if (isMainThread) {
       const runNextWorker = () => {
         if (fileIndex >= filteredFiles.length) {
           if (activeWorkers === 0) {
-            writeFinalReport().then(() => {
-              if (hasErrors) {
-                console.error(`\n❌ Proceso finalizado con ${failedCount} error(es) en hilos.`);
-                process.exit(1);
-              } else {
-                console.log('\n🎉 ¡Procesamiento completado con éxito!');
-                process.exit(0);
-              }
-            }).then(resolve).catch(reject);
+            writeFinalReport()
+              .then(() => {
+                if (hasErrors) {
+                  console.error(`\n❌ Proceso finalizado con ${failedCount} error(es) en hilos.`);
+                  process.exit(1);
+                } else {
+                  console.log('\n🎉 ¡Procesamiento completado con éxito!');
+                  process.exit(0);
+                }
+              })
+              .then(resolve)
+              .catch(reject);
           }
           return;
         }
@@ -392,7 +471,15 @@ if (isMainThread) {
         });
 
         worker.on('message', (msg: unknown) => {
-          const payload = msg as { success: boolean; details?: string; pokemonSlug: string; suffix: string; animationsFound: number; warning?: string; error?: string };
+          const payload = msg as {
+            success: boolean;
+            details?: string;
+            pokemonSlug: string;
+            suffix: string;
+            animationsFound: number;
+            warning?: string;
+            error?: string;
+          };
           if (payload.success) {
             completedCount++;
             if (payload.details) {
@@ -410,9 +497,16 @@ if (isMainThread) {
                 warning: payload.warning
               });
             }
-            console.log(`   [OK - HILO] Procesado con éxito: ${file} (${completedCount + failedCount}/${filteredFiles.length})`);
-            if (completedCount % DB_SYNC_BATCH_CHUNK_SIZE === 0 || filteredFiles.length < DB_SYNC_BATCH_CHUNK_SIZE) {
-              writeFinalReport().catch((err: unknown) => console.error('Error writing interim report:', err));
+            console.log(
+              `   [OK - HILO] Procesado con éxito: ${file} (${completedCount + failedCount}/${filteredFiles.length})`
+            );
+            if (
+              completedCount % DB_SYNC_BATCH_CHUNK_SIZE === 0 ||
+              filteredFiles.length < DB_SYNC_BATCH_CHUNK_SIZE
+            ) {
+              writeFinalReport().catch((err: unknown) =>
+                console.error('Error writing interim report:', err)
+              );
             }
           } else {
             hasErrors = true;
@@ -442,9 +536,10 @@ if (isMainThread) {
   const main = async () => {
     const { values, positionals } = parseCliArguments();
     try {
-      const targetDir = typeof values.dir === 'string' ? safeResolve(process.cwd(), values.dir) : FRONT_DIR;
+      const targetDir =
+        typeof values.dir === 'string' ? safeResolve(process.cwd(), values.dir) : FRONT_DIR;
       const files = await fs.readdir(targetDir);
-      const targetFiles = files.filter(file => {
+      const targetFiles = files.filter((file) => {
         if (!file.endsWith('.png')) return false;
         const match = path.parse(file).name.match(/^(\d+)(.*)$/);
         return match && match[1] !== '0';
@@ -457,13 +552,17 @@ if (isMainThread) {
       }
 
       if (!values.all && !values.id && !values.range && !values.file) {
-        console.log('Debes ejecutar con --all para procesamiento masivo, --file <nombre.png> para uno específico, --id <id>, o --range <inicio>-<fin>.');
+        console.log(
+          'Debes ejecutar con --all para procesamiento masivo, --file <nombre.png> para uno específico, --id <id>, o --range <inicio>-<fin>.'
+        );
         process.exit(0);
       }
 
       const numCPUs = os.cpus().length || 4;
       const workerPoolLimit = values.id ? 1 : numCPUs;
-      console.log(`🚀 Iniciando Worker Pool con límites de concurrencia: ${workerPoolLimit} hilo(s).`);
+      console.log(
+        `🚀 Iniciando Worker Pool con límites de concurrencia: ${workerPoolLimit} hilo(s).`
+      );
 
       await runWorkerPool(filteredFiles, values['remove-original'] ?? true, workerPoolLimit);
     } catch (err) {
@@ -472,7 +571,7 @@ if (isMainThread) {
     }
   };
 
-  main().catch(err => {
+  main().catch((err) => {
     console.error('❌ Error crítico en main:', err);
     process.exit(1);
   });

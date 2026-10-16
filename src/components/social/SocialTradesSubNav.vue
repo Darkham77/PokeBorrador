@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { TradeSubTab } from './socialTradesHelper'
+import type { TradeSubTab } from './socialTradesHelper';
 
 defineProps<{
-  subTab: TradeSubTab
-  receivedCount: number
-  sentCount: number
-  claimsCount: number
-}>()
+  subTab: TradeSubTab;
+  receivedCount: number;
+  sentCount: number;
+  claimsCount: number;
+}>();
 
 const emit = defineEmits<{
-  (e: 'switch-sub-tab', val: TradeSubTab): void
-}>()
+  (e: 'switch-sub-tab', val: TradeSubTab): void;
+}>();
 </script>
 
 <template>
@@ -22,10 +22,7 @@ const emit = defineEmits<{
       @click.stop="emit('switch-sub-tab', 'received')"
     >
       RECIBIDOS
-      <span
-        v-if="receivedCount > 0"
-        class="hud-notification-badge"
-      >{{ receivedCount }}</span>
+      <span v-if="receivedCount > 0" class="hud-notification-badge">{{ receivedCount }}</span>
     </button>
     <button
       id="social-trades-sub-nav-btn-2"
@@ -34,10 +31,7 @@ const emit = defineEmits<{
       @click.stop="emit('switch-sub-tab', 'sent')"
     >
       ENVIADOS
-      <span
-        v-if="sentCount > 0"
-        class="hud-notification-badge gray"
-      >{{ sentCount }}</span>
+      <span v-if="sentCount > 0" class="hud-notification-badge gray">{{ sentCount }}</span>
     </button>
     <button
       id="social-trades-sub-nav-btn-3"
@@ -46,16 +40,13 @@ const emit = defineEmits<{
       @click.stop="emit('switch-sub-tab', 'claims')"
     >
       RECLAMOS
-      <span
-        v-if="claimsCount > 0"
-        class="hud-notification-badge orange"
-      >{{ claimsCount }}</span>
+      <span v-if="claimsCount > 0" class="hud-notification-badge orange">{{ claimsCount }}</span>
     </button>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .trades-sub-nav {
   display: flex;

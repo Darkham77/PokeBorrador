@@ -37,9 +37,13 @@ export function executeForfeit(ctx: {
       actorSide: ctx.battleState.isHost ? 'p1' : 'p2',
       reason: 'forfeit'
     };
-    ctx.battleState.ch.send({ type: 'broadcast', event: 'pvp_forfeit', payload: forfeitPayload });
+    void ctx.battleState.ch.send({
+      type: 'broadcast',
+      event: 'pvp_forfeit',
+      payload: forfeitPayload
+    });
   }
-  ctx.endBattle(false, 'Te has rendido.');
+  void ctx.endBattle(false, 'Te has rendido.');
 }
 
 const DEFAULT_TURNS_COUNT = 1 as const;
@@ -59,7 +63,7 @@ function resetPvPBattleSession(
   isReconnecting.value = false;
   battleState.active = false;
   battleState.phase = 'over';
-  if (battleState.ch) battleState.ch.unsubscribe();
+  if (battleState.ch) void battleState.ch.unsubscribe();
 }
 
 async function processRankedResult(
@@ -78,7 +82,10 @@ async function processRankedResult(
       p_result: won ? 'defeat' : 'victory',
       p_delta_elo: defenderDelta,
       p_report_data: {
-        opponent: authStore.user?.user_metadata?.username || gameStore.state.trainer || DEFAULT_OPPONENT_NAME,
+        opponent:
+          authStore.user?.user_metadata?.username ||
+          gameStore.state.trainer ||
+          DEFAULT_OPPONENT_NAME,
         turns: battleState.logs.length,
         endedAt: Temporal.Now.instant().toString()
       }
@@ -124,7 +131,13 @@ export async function executeEndBattle(
 ): Promise<void> {
   resetPvPBattleSession(ctx.battleState, ctx.timerManager, ctx.isReconnecting);
 
-  const eloDelta = await processRankedResult(won, ctx.battleState, ctx.pvpStore, ctx.gameStore, ctx.authStore);
+  const eloDelta = await processRankedResult(
+    won,
+    ctx.battleState,
+    ctx.pvpStore,
+    ctx.gameStore,
+    ctx.authStore
+  );
 
   ctx.uiStore.notify(
     `${reason || (won ? '¡Has ganado!' : 'Has perdido.')}${eloDelta !== 0 ? ` (${eloDelta > 0 ? '+' : ''}${eloDelta} ELO)` : ''}`,

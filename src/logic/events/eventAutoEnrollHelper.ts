@@ -27,12 +27,12 @@ function toDynamicRecord(val: unknown): Record<string, unknown> {
   if (typeof val === 'string') {
     try {
       const parsed: unknown = JSON.parse(val);
-      return (parsed && typeof parsed === 'object') ? (parsed as Record<string, unknown>) : {}; // open-record: Dynamic JSON event payload dictionary
+      return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {}; // open-record: Dynamic JSON event payload dictionary
     } catch {
       return {};
     }
   }
-  return (val && typeof val === 'object') ? (val as Record<string, unknown>) : {}; // open-record: Dynamic JSON event payload dictionary
+  return val && typeof val === 'object' ? (val as Record<string, unknown>) : {}; // open-record: Dynamic JSON event payload dictionary
 }
 
 export interface AutoEnrollCandidateCategory {
@@ -68,8 +68,10 @@ function computeDeltaAndPreviousScore(
   }
 
   const rawData = toDynamicRecord(existingEntry.data);
-  const previousScore = typeof rawData.score === 'number' ? rawData.score : (rawData.total_ivs as number | undefined);
-  const previousDisplayValue = typeof rawData.display_value === 'string' ? rawData.display_value : String(previousScore ?? 0);
+  const previousScore =
+    typeof rawData.score === 'number' ? rawData.score : (rawData.total_ivs as number | undefined);
+  const previousDisplayValue =
+    typeof rawData.display_value === 'string' ? rawData.display_value : String(previousScore ?? 0);
 
   let deltaLabel = '¡Primer registro!';
   if (previousScore !== undefined) {
@@ -85,7 +87,7 @@ function evaluateSubCompCandidate(
   event: GameEvent,
   subComp: ResolvedSubCompetition,
   pokemon: Pokemon,
-  userEntries: Readonly<Record<string, CompetitionEntry>>,
+  userEntries: Readonly<Record<string, CompetitionEntry>>, // open-record: Composite event_id:catId index
   serverInstant: Temporal.Instant
 ): AutoEnrollCandidateCategory | null {
   const eligibility = isPokemonEligibleForSubCompetition(event, subComp, pokemon, serverInstant);
@@ -95,7 +97,8 @@ function evaluateSubCompCandidate(
   const evaluation = evaluatePokemonForSubCompetition(pokemon, subComp, order);
 
   const entryKey = `${event.id}:${subComp.id}`;
-  const existingEntry = userEntries[entryKey] || (subComp.id === 'ivs' ? userEntries[event.id] : undefined);
+  const existingEntry =
+    userEntries[entryKey] || (subComp.id === 'ivs' ? userEntries[event.id] : undefined);
 
   const newData = {
     score: evaluation.score,
@@ -107,7 +110,10 @@ function evaluateSubCompCandidate(
   const isBetter = isFirst || isNewEntryBetter(existingEntry, newData, 'score', order);
   if (!isBetter) return null;
 
-  const { previousScore, previousDisplayValue, deltaLabel } = computeDeltaAndPreviousScore(existingEntry, evaluation.score);
+  const { previousScore, previousDisplayValue, deltaLabel } = computeDeltaAndPreviousScore(
+    existingEntry,
+    evaluation.score
+  );
 
   return {
     eventId: event.id,
@@ -133,7 +139,7 @@ function evaluateSubCompCandidate(
 export function evaluateCapturedPokemonForEvents(
   pokemon: Pokemon,
   activeEvents: readonly GameEvent[],
-  userEntries: Readonly<Record<string, CompetitionEntry>>,
+  userEntries: Readonly<Record<string, CompetitionEntry>>, // open-record: Composite event_id:catId index
   serverInstant: Temporal.Instant = Temporal.Now.instant()
 ): AutoEnrollCandidateCategory[] {
   if (!pokemon || !Array.isArray(activeEvents) || activeEvents.length === 0) {
@@ -149,7 +155,13 @@ export function evaluateCapturedPokemonForEvents(
     if (!subComps || subComps.length === 0) continue;
 
     for (const subComp of subComps) {
-      const candidate = evaluateSubCompCandidate(event, subComp, pokemon, userEntries, serverInstant);
+      const candidate = evaluateSubCompCandidate(
+        event,
+        subComp,
+        pokemon,
+        userEntries,
+        serverInstant
+      );
       if (candidate) {
         results.push(candidate);
       }
@@ -171,7 +183,7 @@ interface CandidateEvaluation {
 function calculatePriorityDelta(
   evaluationScore: number,
   order: ResolvedSubCompetitionOrder,
-  existingEntry?: CompetitionEntry,
+  existingEntry?: CompetitionEntry
 ): number {
   if (existingEntry) {
     const rawData = toDynamicRecord(existingEntry.data);
@@ -187,7 +199,7 @@ function assessCandidateForSubCompetition(
   order: ResolvedSubCompetitionOrder,
   existingEntry: CompetitionEntry | undefined,
   p: Pokemon,
-  serverInstant: Temporal.Instant,
+  serverInstant: Temporal.Instant
 ): CandidateEvaluation | null {
   if (isPokemonBusy(p)) return null;
 
@@ -198,7 +210,7 @@ function assessCandidateForSubCompetition(
   const newData = {
     score: evaluation.score,
     is_shiny: Boolean(p.isShiny),
-    obtained_at: p.obtainedAt || serverInstant.epochMilliseconds,
+    obtained_at: p.obtainedAt || serverInstant.epochMilliseconds
   };
 
   const isFirst = !existingEntry;
@@ -212,12 +224,12 @@ function assessCandidateForSubCompetition(
     score: evaluation.score,
     displayValue: evaluation.displayValue,
     isBetter,
-    priorityDelta,
+    priorityDelta
   };
 }
 
 function selectNonOverlappingAssignments(
-  candidates: readonly CandidateEvaluation[],
+  candidates: readonly CandidateEvaluation[]
 ): OptimalAutoFillAssignment[] {
   const assignedPokemonUids = new Set<string>();
   const assignedCategoryIds = new Set<string>();
@@ -235,7 +247,7 @@ function selectNonOverlappingAssignments(
       pokemon: item.pokemon,
       score: item.score,
       displayValue: item.displayValue,
-      isImprovement: item.isBetter,
+      isImprovement: item.isBetter
     });
   }
 
@@ -249,8 +261,8 @@ function selectNonOverlappingAssignments(
 export function computeOptimalAutoFillAssignments(
   event: GameEvent,
   availablePokemon: readonly Pokemon[],
-  existingEntries: Readonly<Record<string, CompetitionEntry>>,
-  serverInstant: Temporal.Instant = Temporal.Now.instant(),
+  existingEntries: Readonly<Record<string, CompetitionEntry>>, // open-record: Composite event_id:catId index
+  serverInstant: Temporal.Instant = Temporal.Now.instant()
 ): OptimalAutoFillAssignment[] {
   if (event.type !== 'competition' || !availablePokemon.length) {
     return [];
@@ -264,10 +276,18 @@ export function computeOptimalAutoFillAssignments(
   for (const subComp of subComps) {
     const order = resolveSubCompetitionDirection(event.id, subComp.id, subComp.order);
     const entryKey = `${event.id}:${subComp.id}`;
-    const existingEntry = existingEntries[entryKey] || (subComp.id === 'ivs' ? existingEntries[event.id] : undefined);
+    const existingEntry =
+      existingEntries[entryKey] || (subComp.id === 'ivs' ? existingEntries[event.id] : undefined);
 
     for (const p of availablePokemon) {
-      const candidate = assessCandidateForSubCompetition(event, subComp, order, existingEntry, p, serverInstant);
+      const candidate = assessCandidateForSubCompetition(
+        event,
+        subComp,
+        order,
+        existingEntry,
+        p,
+        serverInstant
+      );
       if (candidate) {
         allCandidateEvals.push(candidate);
       }

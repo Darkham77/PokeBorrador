@@ -1,53 +1,60 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { useGameStore } from '@/stores/game.ts'
-import { logger } from '@/logic/utils/logger'
-import { parseInstantSafe } from '@/logic/utils/timeUtils'
-import type { LeaderboardEntry } from '@/stores/social/social.ts'
-import type { ProfileRow, GameSaveRow } from '@/types/system/database'
-import { LEADERBOARD_LIMIT, ONLINE_PRESENCE_WINDOW_MS, DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts'
-
-
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import { useGameStore } from '@/stores/game.ts';
+import { logger } from '@/logic/utils/logger';
+import { parseInstantSafe } from '@/logic/utils/timeUtils';
+import type { LeaderboardEntry } from '@/stores/social/social.ts';
+import type { ProfileRow, GameSaveRow } from '@/types/system/database';
+import {
+  LEADERBOARD_LIMIT,
+  ONLINE_PRESENCE_WINDOW_MS,
+  DEFAULT_INITIAL_ELO
+} from '@/logic/constants/gameplay.ts';
 
 export const useLeaderboardStore = defineStore('leaderboard', () => {
-  const gameStore = useGameStore()
-  
-  const leaderboard = ref<LeaderboardEntry[]>([])
-  const leaderboardLoading = ref(false)
+  const gameStore = useGameStore();
+
+  const leaderboard = ref<LeaderboardEntry[]>([]);
+  const leaderboardLoading = ref(false);
 
   async function fetchLeaderboard(sortBy = 'elo_rating') {
     if (!gameStore.db) {
-      leaderboard.value = []
-      return
+      leaderboard.value = [];
+      return;
     }
 
-    leaderboardLoading.value = true
-    const db = gameStore.db
+    leaderboardLoading.value = true;
+    const db = gameStore.db;
 
     try {
-      const { data, error } = await db
+      const { data, error } = (await db
         .from('profiles')
-        .select('id, username, elo_rating, trainer_level, badges, player_class, faction, nick_style, avatar_style, gender')
+        .select(
+          'id, username, elo_rating, trainer_level, badges, player_class, faction, nick_style, avatar_style, gender'
+        )
         .order(sortBy, { ascending: false })
-        .limit(LEADERBOARD_LIMIT) as { data: ProfileRow[] | null; error: unknown }
+        .limit(LEADERBOARD_LIMIT)) as { data: ProfileRow[] | null; error: unknown };
 
-      if (error) throw error
+      if (error) throw error;
 
       if (data && data.length > 0) {
-        const ids = data.map((p: ProfileRow) => p.id)
-        const { data: saves } = await db
+        const ids = data.map((p: ProfileRow) => p.id);
+        const { data: saves } = (await db
           .from('game_saves')
           .select('user_id, updated_at')
-          .in('user_id', ids) as { data: GameSaveRow[] | null; error: unknown }
+          .in('user_id', ids)) as { data: GameSaveRow[] | null; error: unknown };
 
-        const savesByUserId: Record<string, GameSaveRow> = Object.fromEntries(
-          (saves || []).map(s => [s.user_id, s])
-        )
+        const savesByUserId = new Map<string, GameSaveRow>(
+          (saves || []).map((s) => [s.user_id, s])
+        );
 
         leaderboard.value = (data as ProfileRow[]).map((p: ProfileRow) => {
-          const saveRow = savesByUserId[p.id]
-          const lastSeen = parseInstantSafe(saveRow?.updated_at)
-          const isOnline = lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < ONLINE_PRESENCE_WINDOW_MS
+          const saveRow = savesByUserId.get(p.id);
+          const lastSeen = parseInstantSafe(saveRow?.updated_at);
+          const isOnline =
+            lastSeen &&
+            Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds <
+              ONLINE_PRESENCE_WINDOW_MS;
 
           return {
             id: p.id,
@@ -61,13 +68,13 @@ export const useLeaderboardStore = defineStore('leaderboard', () => {
             avatar_style: p.avatar_style || undefined,
             isOnline: !!isOnline,
             gender: p.gender || 'h'
-          }
-        })
+          };
+        });
       }
     } catch (err) {
-      logger.error('Social', `Leaderboard error: ${(err as Error).message}`)
+      logger.error('Social', `Leaderboard error: ${(err as Error).message}`);
     } finally {
-      leaderboardLoading.value = false
+      leaderboardLoading.value = false;
     }
   }
 
@@ -75,5 +82,5 @@ export const useLeaderboardStore = defineStore('leaderboard', () => {
     leaderboard,
     leaderboardLoading,
     fetchLeaderboard
-  }
-})
+  };
+});

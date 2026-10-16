@@ -14,9 +14,23 @@ import type { SideID } from '@pkmn/sim';
 /** Canonical Showdown PRNG 4-word integer seed tuple ([w, x, y, z]) */
 export type NumericSeed = [number, number, number, number];
 
-export type CoreBattleStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion' | 'reflect' | 'lightScreen' | 'safeguard' | 'mist' | 'spikes';
+export type CoreBattleStatKey =
+  | 'atk'
+  | 'def'
+  | 'spa'
+  | 'spd'
+  | 'spe'
+  | 'accuracy'
+  | 'evasion'
+  | 'reflect'
+  | 'lightScreen'
+  | 'safeguard'
+  | 'mist'
+  | 'spikes';
 export const BATTLE_SIDES = ['player', 'enemy'] as const;
 export type BattleSide = (typeof BATTLE_SIDES)[number];
+const BATTLE_SEATS = ['seat1', 'seat2', 'seat3', 'seat4'] as const;
+export type BattleSeatId = (typeof BATTLE_SEATS)[number];
 export const BATTLE_WINNER_RESULTS = ['player', 'enemy', 'tie'] as const;
 export type BattleWinnerResult = (typeof BATTLE_WINNER_RESULTS)[number];
 export const BATTLE_MINIGAMES = ['fishing', 'archaeology'] as const;
@@ -37,13 +51,26 @@ export type BattleActionType = (typeof BATTLE_ACTION_TYPES)[number];
 export const PARTY_SLOT_STATUSES = ['active', 'fainted', 'empty'] as const;
 export type PartySlotStatus = (typeof PARTY_SLOT_STATUSES)[number];
 
-export const LIVE_PVP_MATCH_STATUSES = ['pending', 'accepted', 'declined', 'ranked_match', 'ranked_accepted'] as const;
+export const LIVE_PVP_MATCH_STATUSES = [
+  'pending',
+  'accepted',
+  'declined',
+  'ranked_match',
+  'ranked_accepted'
+] as const;
 export type LivePvPMatchStatus = (typeof LIVE_PVP_MATCH_STATUSES)[number];
 
 export const BATTLE_SEAT_SPECIAL_STATES = ['catching', 'trapped', 'releasing'] as const;
 export type BattleSeatSpecialState = (typeof BATTLE_SEAT_SPECIAL_STATES)[number];
 
-export const STAT_MODIFIER_SOURCES = ['stage', 'weather', 'ability', 'item', 'status', 'field'] as const;
+export const STAT_MODIFIER_SOURCES = [
+  'stage',
+  'weather',
+  'ability',
+  'item',
+  'status',
+  'field'
+] as const;
 export type StatModifierSource = (typeof STAT_MODIFIER_SOURCES)[number];
 
 export const BATTLE_ITEM_EFFECT_KINDS = ['heal', 'cure', 'revive'] as const;
@@ -64,7 +91,13 @@ export type WinnerSide = (typeof WINNER_SIDES)[number];
 export const COMBATANT_SPRITE_MODES = ['idle', 'variation'] as const;
 export type CombatantSpriteMode = (typeof COMBATANT_SPRITE_MODES)[number];
 
-export const BATTLE_ESCAPE_TYPES = ['flee', 'teleport', 'whirlwind', 'knockback', 'withdraw'] as const;
+export const BATTLE_ESCAPE_TYPES = [
+  'flee',
+  'teleport',
+  'whirlwind',
+  'knockback',
+  'withdraw'
+] as const;
 export type BattleEscapeType = (typeof BATTLE_ESCAPE_TYPES)[number];
 export type BattleParticipantUid = Pokemon['uid'];
 export const BATTLE_CONDITION_KEYS = [
@@ -87,11 +120,12 @@ export const BATTLE_CONDITION_KEYS = [
   'stealthrock',
   'stickyweb',
   'sunnyday',
+  'swamp',
   'tailwind',
   'toxicspikes',
   'trickroom',
   'wish',
-  'wonderroom',
+  'wonderroom'
 ] as const;
 export type BattleConditionKey = (typeof BATTLE_CONDITION_KEYS)[number];
 
@@ -149,8 +183,8 @@ export interface PendingSlotEffect {
   move: DelayedSlotMove;
   side: BattleSide;
   targetSlot: number; // 0-indexed position on target side
-  turnsLeft: number;  // fires when this reaches 0
-  damage: number;     // pre-computed damage
+  turnsLeft: number; // fires when this reaches 0
+  damage: number; // pre-computed damage
   sourceName?: string; // domain-ok: Open dynamic text or non-domain string payload — for log message only
 }
 
@@ -265,14 +299,19 @@ export interface BattleLog {
 
 import type { BattleContext } from '@/types/battle/battleContext';
 
-export type LogFn = (msg: string, type?: string, actor?: Pokemon | string | null, side?: BattleSide | null) => void;
+export type LogFn = (
+  msg: string, // domain-ok: Open dynamic text or non-domain string payload
+  type?: string, // domain-ok: Open dynamic text or non-domain string payload
+  actor?: BattleSource | null,
+  side?: BattleSide | null
+) => void;
 
 export type MoveAction = (
-  src: Pokemon, 
-  tgt: Pokemon, 
-  srcStages: BattleStages, 
-  tgtStages: BattleStages, 
-  addLogFn: LogFn, 
+  src: Pokemon,
+  tgt: Pokemon,
+  srcStages: BattleStages,
+  tgtStages: BattleStages,
+  addLogFn: LogFn,
   battleCtx?: BattleContext
 ) => void;
 

@@ -1,93 +1,91 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import BaseModal from '@/components/common/BaseModal.vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { useEventStore } from '@/stores/events'
-import { useModalStore } from '@/stores/modals'
-import { useUIStore } from '@/stores/ui'
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { AutoEnrollCandidateCategory } from '@/logic/events/eventAutoEnrollHelper'
+import { ref, computed } from 'vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useEventStore } from '@/stores/events';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { AutoEnrollCandidateCategory } from '@/logic/events/eventAutoEnrollHelper';
 
 interface Props {
-  show?: boolean
-  pokemon: Pokemon
-  candidates: AutoEnrollCandidateCategory[]
-  onComplete?: () => void
+  show?: boolean;
+  pokemon: Pokemon;
+  candidates: AutoEnrollCandidateCategory[];
+  onComplete?: () => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: true,
   onComplete: undefined
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'enrolled', categoryId: string): void
-}>()
+  (e: 'close'): void;
+  (e: 'enrolled', categoryId: string): void;
+}>();
 
-const eventStore = useEventStore()
-const modalStore = useModalStore()
-const uiStore = useUIStore()
+const eventStore = useEventStore();
+const modalStore = useModalStore();
+const uiStore = useUIStore();
 
-const selectedCategoryId = ref<string>(props.candidates[0]?.categoryId || '')
-const isSubmitting = ref(false)
+const selectedCategoryId = ref<string>(props.candidates[0]?.categoryId || '');
+const isSubmitting = ref(false);
 
 const selectedCandidate = computed(() => {
-  return props.candidates.find(c => c.categoryId === selectedCategoryId.value) || props.candidates[0]
-})
+  return (
+    props.candidates.find((c) => c.categoryId === selectedCategoryId.value) || props.candidates[0]
+  );
+});
 
 const pokemonSpriteUrl = computed(() => {
-  const species = requirePokemonSpeciesId(props.pokemon.id)
-  return getAssetUrl(ASSET_TYPES.POKEMON, species, { isShiny: Boolean(props.pokemon.isShiny) })
-})
+  const species = requirePokemonSpeciesId(props.pokemon.id);
+  return getAssetUrl(ASSET_TYPES.POKEMON, species, { isShiny: Boolean(props.pokemon.isShiny) });
+});
 
 const handleSelectCategory = (categoryId: string) => {
-  selectedCategoryId.value = categoryId
-}
+  selectedCategoryId.value = categoryId;
+};
 
 const handleDismiss = () => {
-  modalStore.close('EventAutoEnroll')
-  emit('close')
-  props.onComplete?.()
-}
+  modalStore.close('EventAutoEnroll');
+  emit('close');
+  props.onComplete?.();
+};
 
 const handleConfirm = async () => {
-  const candidate = selectedCandidate.value
-  if (!candidate || isSubmitting.value) return
+  const candidate = selectedCandidate.value;
+  if (!candidate || isSubmitting.value) return;
 
-  isSubmitting.value = true
+  isSubmitting.value = true;
   try {
-    await eventStore.submitCompetitionEntry(candidate.eventId, candidate.categoryId, props.pokemon.uid)
-    uiStore.notify(`¡${props.pokemon.name} inscripto en ${candidate.categoryTitle}!`, '🏆')
-    emit('enrolled', candidate.categoryId)
-    modalStore.close('EventAutoEnroll')
-    emit('close')
-    props.onComplete?.()
+    await eventStore.submitCompetitionEntry(
+      candidate.eventId,
+      candidate.categoryId,
+      props.pokemon.uid
+    );
+    uiStore.notify(`¡${props.pokemon.name} inscripto en ${candidate.categoryTitle}!`, '🏆');
+    emit('enrolled', candidate.categoryId);
+    modalStore.close('EventAutoEnroll');
+    emit('close');
+    props.onComplete?.();
   } catch (_err) {
-    uiStore.notify('Error al registrar inscripción.', '❌')
+    uiStore.notify('Error al registrar inscripción.', '❌');
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
-}
+};
 </script>
 
 <template>
-  <BaseModal
-    :show="show"
-    @close="handleDismiss"
-  >
-    <div
-      id="event-auto-enroll-modal"
-      class="event-auto-enroll-modal"
-    >
+  <BaseModal :show="show" @close="handleDismiss">
+    <div id="event-auto-enroll-modal" class="event-auto-enroll-modal">
       <!-- Header -->
       <div class="modal-header">
         <span class="header-icon emoji">{{ selectedCandidate?.icon || '🏆' }}</span>
         <div class="header-text">
-          <h2 class="pixelated title">
-            ¡NUEVO RÉCORD DE CONCURSO!
-          </h2>
+          <h2 class="pixelated title">¡NUEVO RÉCORD DE CONCURSO!</h2>
           <span class="event-name">{{ selectedCandidate?.eventName }}</span>
         </div>
       </div>
@@ -100,14 +98,10 @@ const handleConfirm = async () => {
             :alt="pokemon.name"
             class="pokemon-sprite pixelated"
             draggable="false"
-          
             width="32"
             height="32"
-          >
-          <span
-            v-if="pokemon.isShiny"
-            class="shiny-sparkle emoji"
-          >✨</span>
+          />
+          <span v-if="pokemon.isShiny" class="shiny-sparkle emoji">✨</span>
         </div>
         <div class="pokemon-meta">
           <span class="pokemon-name pixelated">{{ pokemon.name }}</span>
@@ -116,30 +110,23 @@ const handleConfirm = async () => {
       </div>
 
       <!-- Single Category Direct Display -->
-      <div
-        v-if="candidates.length === 1 && selectedCandidate"
-        class="single-category-card"
-      >
+      <div v-if="candidates.length === 1 && selectedCandidate" class="single-category-card">
         <div class="cat-header">
           <span class="emoji cat-icon">{{ selectedCandidate.icon }}</span>
           <span class="cat-title pixelated">{{ selectedCandidate.categoryTitle }}</span>
         </div>
         <div class="score-comparison">
-          <div
-            v-if="!selectedCandidate.isFirstEntry"
-            class="score-col prev"
-          >
+          <div v-if="!selectedCandidate.isFirstEntry" class="score-col prev">
             <span class="col-label">Récord Anterior</span>
             <span class="col-value">{{ selectedCandidate.previousDisplayValue }}</span>
           </div>
-          <div
-            v-if="!selectedCandidate.isFirstEntry"
-            class="arrow-col"
-          >
+          <div v-if="!selectedCandidate.isFirstEntry" class="arrow-col">
             <span class="emoji">➔</span>
           </div>
           <div class="score-col next">
-            <span class="col-label">{{ selectedCandidate.isFirstEntry ? 'Puntaje Obtenido' : 'Nuevo Récord' }}</span>
+            <span class="col-label">{{
+              selectedCandidate.isFirstEntry ? 'Puntaje Obtenido' : 'Nuevo Récord'
+            }}</span>
             <span class="col-value highlight">{{ selectedCandidate.newDisplayValue }}</span>
             <span class="delta-badge">{{ selectedCandidate.deltaLabel }}</span>
           </div>
@@ -147,16 +134,15 @@ const handleConfirm = async () => {
       </div>
 
       <!-- Multiple Categories Selection Grid -->
-      <div
-        v-else-if="candidates.length > 1"
-        class="multi-categories-wrap"
-      >
+      <div v-else-if="candidates.length > 1" class="multi-categories-wrap">
         <span class="selection-hint">Selecciona la categoría a representar con este Pokémon:</span>
         <div class="categories-list">
           <div
             v-for="cat in candidates"
             :id="'enroll-category-card-' + cat.categoryId"
             :key="cat.categoryId"
+            role="button"
+            tabindex="0"
             class="category-option-card"
             :class="{ active: selectedCategoryId === cat.categoryId }"
             @click="handleSelectCategory(cat.categoryId)"
@@ -169,7 +155,9 @@ const handleConfirm = async () => {
                 <span class="emoji cat-icon">{{ cat.icon }}</span>
                 <strong class="cat-title pixelated">{{ cat.categoryTitle }}</strong>
               </div>
-              <span class="cat-score">Puntaje: <span class="score-num">{{ cat.newDisplayValue }}</span></span>
+              <span class="cat-score"
+                >Puntaje: <span class="score-num">{{ cat.newDisplayValue }}</span></span
+              >
             </div>
             <div class="card-delta">
               <span class="delta-pill">{{ cat.deltaLabel }}</span>
@@ -206,7 +194,7 @@ const handleConfirm = async () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .event-auto-enroll-modal {
   display: flex;

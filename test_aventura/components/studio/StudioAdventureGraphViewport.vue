@@ -96,7 +96,10 @@ function screenToWorld(clientX: number, clientY: number) {
   const screenY = clientY - rect.top;
   const x = (screenX - store.panX) / store.zoom;
   const y = (screenY - store.panY) / store.zoom;
-  return { x: Math.max(0, Math.min(KANTO_WORLD_WIDTH, x)), y: Math.max(0, Math.min(KANTO_WORLD_HEIGHT, y)) };
+  return {
+    x: Math.max(0, Math.min(KANTO_WORLD_WIDTH, x)),
+    y: Math.max(0, Math.min(KANTO_WORLD_HEIGHT, y))
+  };
 }
 
 function handleWheelZoom(e: WheelEvent) {
@@ -121,7 +124,11 @@ function handleWheelZoom(e: WheelEvent) {
 
 function handleViewportPointerDown(e: PointerEvent) {
   // Panning: middle-click, space pressed, or graph mode pointer tool click on empty space
-  if (e.button === 1 || isSpacePressed.value || (e.button === 0 && store.activeMode === 'graph' && store.activeTool === 'pointer')) {
+  if (
+    e.button === 1 ||
+    isSpacePressed.value ||
+    (e.button === 0 && store.activeMode === 'graph' && store.activeTool === 'pointer')
+  ) {
     isPanning.value = true;
     panStartMouse.value = { x: e.clientX, y: e.clientY };
     panStartOrigin.value = { x: store.panX, y: store.panY };
@@ -165,7 +172,11 @@ function handleViewportPointerMove(e: PointerEvent) {
   if (isPaintingTerrain.value && store.activeMode === 'terrain') {
     const gx = Math.floor(worldPos.x / KANTO_TILE_SIZE);
     const gy = Math.floor(worldPos.y / KANTO_TILE_SIZE);
-    if (!lastPaintedTile.value || lastPaintedTile.value.gx !== gx || lastPaintedTile.value.gy !== gy) {
+    if (
+      !lastPaintedTile.value ||
+      lastPaintedTile.value.gx !== gx ||
+      lastPaintedTile.value.gy !== gy
+    ) {
       lastPaintedTile.value = { gx, gy };
       paintBrushAt(gx, gy);
     }
@@ -314,21 +325,27 @@ function handleNodeClick(e: MouseEvent, nodeId: string) {
 }
 
 const renderedConnections = computed(() => {
-  return store.connections.map(([idA, idB]) => {
-    const a = store.nodes[idA];
-    const b = store.nodes[idB];
-    if (!a || !b) return null;
-    const isWater = (a.type === 'route_water' || b.type === 'route_water' || a.requiresMO === 'Surf' || b.requiresMO === 'Surf');
-    return {
-      idA,
-      idB,
-      x1: a.x * 2.5,
-      y1: a.y * 2.5,
-      x2: b.x * 2.5,
-      y2: b.y * 2.5,
-      isWater
-    };
-  }).filter((c): c is NonNullable<typeof c> => c !== null);
+  return store.connections
+    .map(([idA, idB]) => {
+      const a = store.nodes[idA];
+      const b = store.nodes[idB];
+      if (!a || !b) return null;
+      const isWater =
+        a.type === 'route_water' ||
+        b.type === 'route_water' ||
+        a.requiresMO === 'Surf' ||
+        b.requiresMO === 'Surf';
+      return {
+        idA,
+        idB,
+        x1: a.x * 2.5,
+        y1: a.y * 2.5,
+        x2: b.x * 2.5,
+        y2: b.y * 2.5,
+        isWater
+      };
+    })
+    .filter((c): c is NonNullable<typeof c> => c !== null);
 });
 
 const elasticLine = computed(() => {
@@ -385,11 +402,19 @@ function paintBrushAt(gx: number, gy: number): void {
           } else if (biome === CELL_BIOME.MOUNTAIN_DIRT) {
             gen.occupancy.set(px, py, OCCUPANCY_FLAGS.CLIFF);
             gen.occupancy.clear(px, py, OCCUPANCY_FLAGS.ROAD);
-          } else if (biome === CELL_BIOME.DIRT_PATH || biome === CELL_BIOME.PLAZA_STONE || biome === CELL_BIOME.BRIDGE) {
+          } else if (
+            biome === CELL_BIOME.DIRT_PATH ||
+            biome === CELL_BIOME.PLAZA_STONE ||
+            biome === CELL_BIOME.BRIDGE
+          ) {
             gen.occupancy.clear(px, py, OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF);
             gen.occupancy.set(px, py, OCCUPANCY_FLAGS.ROAD);
           } else {
-            gen.occupancy.clear(px, py, OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.ROAD);
+            gen.occupancy.clear(
+              px,
+              py,
+              OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.ROAD
+            );
           }
         }
       }
@@ -402,7 +427,7 @@ function paintBrushAt(gx: number, gy: number): void {
 }
 
 function syncCustomStructuresToGen(gen: KantoRegionalWorldGenerator): void {
-  for (const s of (store.customStructures ?? [])) {
+  for (const s of store.customStructures ?? []) {
     const w = s.w ?? DEFAULT_PREFAB_FALLBACK_WIDTH;
     const h = s.h ?? DEFAULT_PREFAB_FALLBACK_HEIGHT;
     gen.buildings.push({
@@ -427,7 +452,8 @@ function paveCentralCivicSquare(
   uScale: string
 ): void {
   if (uScale !== 'metropolis' && uScale !== 'city') return;
-  const plazaRadiusTiles = uScale === 'metropolis' ? METROPOLIS_PLAZA_RADIUS_TILES : CITY_PLAZA_RADIUS_TILES;
+  const plazaRadiusTiles =
+    uScale === 'metropolis' ? METROPOLIS_PLAZA_RADIUS_TILES : CITY_PLAZA_RADIUS_TILES;
   const centerTx = Math.round(cx / KANTO_TILE_SIZE);
   const centerTy = Math.round(cy / KANTO_TILE_SIZE);
   const g = gen.grid;
@@ -455,23 +481,33 @@ function syncUrbanMaquettesToGen(gen: KantoRegionalWorldGenerator): void {
     const cy = Math.round(node.y * WORLD_COORDINATE_SCALE_FACTOR);
 
     // Clear default buildings within radius to apply custom urban maquette
-    gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > DEFAULT_URBAN_CLEARANCE_RADIUS_PX);
-    gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > DEFAULT_URBAN_CLEARANCE_RADIUS_PX);
+    gen.buildings = gen.buildings.filter(
+      (b) => Math.hypot(b.x - cx, b.y - cy) > DEFAULT_URBAN_CLEARANCE_RADIUS_PX
+    );
+    gen.props = gen.props.filter(
+      (p) => Math.hypot(p.x - cx, p.y - cy) > DEFAULT_URBAN_CLEARANCE_RADIUS_PX
+    );
 
-    const maquette = bakeUrbanMaquette({
-      id,
-      name: node.name,
-      type: node.type,
-      x: cx,
-      y: cy,
-      urbanScale: node.urbanScale
-    }, store.seed);
+    const maquette = bakeUrbanMaquette(
+      {
+        id,
+        name: node.name,
+        type: node.type,
+        x: cx,
+        y: cy,
+        urbanScale: node.urbanScale
+      },
+      store.seed
+    );
 
-    const plazaRadius = Math.max(MIN_PLAZA_CLEARANCE_RADIUS_PX, Math.round(maquette.plazaRect.w / 2) + PLAZA_MARGIN_CLEARANCE_PX);
+    const plazaRadius = Math.max(
+      MIN_PLAZA_CLEARANCE_RADIUS_PX,
+      Math.round(maquette.plazaRect.w / 2) + PLAZA_MARGIN_CLEARANCE_PX
+    );
 
     // Clear default buildings within plaza radius to apply custom urban maquette
-    gen.buildings = gen.buildings.filter(b => Math.hypot(b.x - cx, b.y - cy) > plazaRadius);
-    gen.props = gen.props.filter(p => Math.hypot(p.x - cx, p.y - cy) > plazaRadius);
+    gen.buildings = gen.buildings.filter((b) => Math.hypot(b.x - cx, b.y - cy) > plazaRadius);
+    gen.props = gen.props.filter((p) => Math.hypot(p.x - cx, p.y - cy) > plazaRadius);
 
     // 1. Organic paving: 1-tile sidewalk directly under building footprints
     for (const b of maquette.buildings) {
@@ -493,41 +529,41 @@ function syncUrbanMaquettesToGen(gen: KantoRegionalWorldGenerator): void {
     // 2. Compact central civic square for Metropolises and Cities only (not towns/villages)
     paveCentralCivicSquare(gen, cx, cy, node.urbanScale);
 
-      // 2. Place maquette buildings
-      for (const b of maquette.buildings) {
-        const placement = findValidBuildingPlacementSpot(gen, b.x, b.y, b.w, b.h);
-        if (!placement.found) continue;
+    // 2. Place maquette buildings
+    for (const b of maquette.buildings) {
+      const placement = findValidBuildingPlacementSpot(gen, b.x, b.y, b.w, b.h);
+      if (!placement.found) continue;
 
-        const bx = placement.tx;
-        const by = placement.ty;
-        const bw = Math.ceil(b.w / T);
-        const bh = Math.ceil(b.h / T);
+      const bx = placement.tx;
+      const by = placement.ty;
+      const bw = Math.ceil(b.w / T);
+      const bh = Math.ceil(b.h / T);
 
-        gen.buildings.push({
-          style: b.style,
-          x: placement.x,
-          y: placement.y,
-          w: b.w,
-          h: b.h
-        });
+      gen.buildings.push({
+        style: b.style,
+        x: placement.x,
+        y: placement.y,
+        w: b.w,
+        h: b.h
+      });
 
-        if (bx >= 0 && bx + bw < KANTO_GRID_W && by >= 0 && by + bh < KANTO_GRID_H) {
-          gen.occupancy.reserveRect(bx, by, bw, bh, OCCUPANCY_FLAGS.BUILDING);
-        }
-      }
-
-      // 3. Place decorative props
-      for (const p of maquette.props) {
-        gen.props.push({
-          style: p.style,
-          x: p.x,
-          y: p.y,
-          w: KANTO_TILE_SIZE,
-          h: KANTO_TILE_SIZE
-        });
+      if (bx >= 0 && bx + bw < KANTO_GRID_W && by >= 0 && by + bh < KANTO_GRID_H) {
+        gen.occupancy.reserveRect(bx, by, bw, bh, OCCUPANCY_FLAGS.BUILDING);
       }
     }
+
+    // 3. Place decorative props
+    for (const p of maquette.props) {
+      gen.props.push({
+        style: p.style,
+        x: p.x,
+        y: p.y,
+        w: KANTO_TILE_SIZE,
+        h: KANTO_TILE_SIZE
+      });
+    }
   }
+}
 
 function handleStructurePointerDown(e: PointerEvent, index: number): void {
   if (store.activeMode !== 'structures' || store.stampingPrefab) return;
@@ -566,11 +602,19 @@ async function bakeTerrainTiles(): Promise<void> {
           } else if (biome === CELL_BIOME.MOUNTAIN_DIRT) {
             gen.occupancy.set(gx, gy, OCCUPANCY_FLAGS.CLIFF);
             gen.occupancy.clear(gx, gy, OCCUPANCY_FLAGS.ROAD);
-          } else if (biome === CELL_BIOME.DIRT_PATH || biome === CELL_BIOME.PLAZA_STONE || biome === CELL_BIOME.BRIDGE) {
+          } else if (
+            biome === CELL_BIOME.DIRT_PATH ||
+            biome === CELL_BIOME.PLAZA_STONE ||
+            biome === CELL_BIOME.BRIDGE
+          ) {
             gen.occupancy.clear(gx, gy, OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF);
             gen.occupancy.set(gx, gy, OCCUPANCY_FLAGS.ROAD);
           } else {
-            gen.occupancy.clear(gx, gy, OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.ROAD);
+            gen.occupancy.clear(
+              gx,
+              gy,
+              OCCUPANCY_FLAGS.WATER | OCCUPANCY_FLAGS.CLIFF | OCCUPANCY_FLAGS.ROAD
+            );
           }
         }
       }
@@ -581,15 +625,21 @@ async function bakeTerrainTiles(): Promise<void> {
     syncUrbanMaquettesToGen(gen);
 
     // Populate dense natural trees on continental TALL_GRASS forest cells
-    const mult = Math.max(MIN_FOREST_DENSITY_MULTIPLIER, (store.proceduralConfig?.forestPercent ?? DEFAULT_FOREST_PERCENT) / DEFAULT_FOREST_PERCENT);
+    const mult = Math.max(
+      MIN_FOREST_DENSITY_MULTIPLIER,
+      (store.proceduralConfig?.forestPercent ?? DEFAULT_FOREST_PERCENT) / DEFAULT_FOREST_PERCENT
+    );
     for (let gy = 0; gy < KANTO_GRID_H; gy++) {
       const row = gen.grid[gy];
       if (!row) continue;
       for (let gx = 0; gx < KANTO_GRID_W; gx++) {
         if (row[gx] === CELL_BIOME.TALL_GRASS) {
-          const rnd = ((gx * HASH_PRIME_X + gy * HASH_PRIME_Y + store.seed * HASH_SEED_PRIME) >>> 0) / UINT32_DIVISOR;
+          const rnd =
+            ((gx * HASH_PRIME_X + gy * HASH_PRIME_Y + store.seed * HASH_SEED_PRIME) >>> 0) /
+            UINT32_DIVISOR;
           if (rnd < TREE_SPAWN_BASE_THRESHOLD * mult) {
-            const styleRnd = ((gx * LCG_PRIME_X + gy * LCG_PRIME_Y + store.seed) >>> 0) / UINT32_DIVISOR;
+            const styleRnd =
+              ((gx * LCG_PRIME_X + gy * LCG_PRIME_Y + store.seed) >>> 0) / UINT32_DIVISOR;
             const style = styleRnd > PINE_TREE_THRESHOLD ? 'pine' : 'oak';
             gen.trees.push({
               style,
@@ -612,10 +662,22 @@ async function bakeTerrainTiles(): Promise<void> {
           const ny = tgy + dy;
           if (nx >= 0 && nx < KANTO_GRID_W && ny >= 0 && ny < KANTO_GRID_H) {
             const row = gen.grid[ny];
-            if (row && (row[nx] === CELL_BIOME.DIRT_PATH || row[nx] === CELL_BIOME.BRIDGE || row[nx] === CELL_BIOME.PLAZA_STONE || row[nx] === CELL_BIOME.WATER)) {
+            if (
+              row &&
+              (row[nx] === CELL_BIOME.DIRT_PATH ||
+                row[nx] === CELL_BIOME.BRIDGE ||
+                row[nx] === CELL_BIOME.PLAZA_STONE ||
+                row[nx] === CELL_BIOME.WATER)
+            ) {
               return false;
             }
-            if (gen.occupancy.has(nx, ny, OCCUPANCY_FLAGS.ROAD | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.WATER)) {
+            if (
+              gen.occupancy.has(
+                nx,
+                ny,
+                OCCUPANCY_FLAGS.ROAD | OCCUPANCY_FLAGS.BUILDING | OCCUPANCY_FLAGS.WATER
+              )
+            ) {
               return false;
             }
           }
@@ -633,9 +695,12 @@ async function bakeTerrainTiles(): Promise<void> {
   }
 }
 
-watch(() => store.tileTerrainTrigger, () => {
-  safeBakeTerrain();
-});
+watch(
+  () => store.tileTerrainTrigger,
+  () => {
+    safeBakeTerrain();
+  }
+);
 
 function onKeyDown(e: KeyboardEvent) {
   if (e.code === 'Space') isSpacePressed.value = true;
@@ -674,6 +739,9 @@ defineExpose({
   <div
     id="studio-adventure-viewport"
     ref="viewportRef"
+    tabindex="0"
+    role="region"
+    aria-label="Lienzo interactivo de mapa de aventura"
     class="graph-viewport"
     :class="[
       `tool-cursor-${store.activeTool}`,
@@ -692,11 +760,7 @@ defineExpose({
     @click="handleCanvasClick"
   >
     <!-- Canvas World Container -->
-    <div
-      id="graph-world-container"
-      class="graph-world"
-      :style="transformStyle"
-    >
+    <div id="graph-world-container" class="graph-world" :style="transformStyle">
       <!-- Procedural Regional Tiles Base Layer -->
       <canvas
         v-show="store.showBackgroundMap"
@@ -716,12 +780,7 @@ defineExpose({
         :height="KANTO_WORLD_HEIGHT"
       >
         <defs>
-          <pattern
-            id="subgrid"
-            width="50"
-            height="50"
-            patternUnits="userSpaceOnUse"
-          >
+          <pattern id="subgrid" width="50" height="50" patternUnits="userSpaceOnUse">
             <path
               d="M 50 0 L 0 0 0 50"
               fill="none"
@@ -729,17 +788,8 @@ defineExpose({
               stroke-width="1"
             />
           </pattern>
-          <pattern
-            id="main-grid"
-            width="200"
-            height="200"
-            patternUnits="userSpaceOnUse"
-          >
-            <rect
-              width="200"
-              height="200"
-              fill="url(#subgrid)"
-            />
+          <pattern id="main-grid" width="200" height="200" patternUnits="userSpaceOnUse">
+            <rect width="200" height="200" fill="url(#subgrid)" />
             <path
               d="M 200 0 L 0 0 0 200"
               fill="none"
@@ -748,11 +798,7 @@ defineExpose({
             />
           </pattern>
         </defs>
-        <rect
-          width="100%"
-          height="100%"
-          fill="url(#main-grid)"
-        />
+        <rect width="100%" height="100%" fill="url(#main-grid)" />
       </svg>
 
       <!-- SVG Routes & Interactive Overlay -->
@@ -764,10 +810,7 @@ defineExpose({
       >
         <!-- Standard Route Edges (Outer Stroke + Inner Road) -->
         <g class="route-connections">
-          <template
-            v-for="(c, idx) in renderedConnections"
-            :key="'conn-' + idx"
-          >
+          <template v-for="(c, idx) in renderedConnections" :key="'conn-' + idx">
             <!-- Outer Road Border -->
             <line
               :x1="c.x1"
@@ -793,10 +836,7 @@ defineExpose({
         </g>
 
         <!-- Elastic Connecting Line when dragging/linking from source node -->
-        <g
-          v-if="elasticLine"
-          class="elastic-link-line"
-        >
+        <g v-if="elasticLine" class="elastic-link-line">
           <line
             :x1="elasticLine.x1"
             :y1="elasticLine.y1"
@@ -810,10 +850,7 @@ defineExpose({
         </g>
 
         <!-- Dijkstra GPS Highlight Route -->
-        <g
-          v-if="dijkstraLegs.length > 0"
-          class="gps-highlight-route"
-        >
+        <g v-if="dijkstraLegs.length > 0" class="gps-highlight-route">
           <line
             v-for="(leg, idx) in dijkstraLegs"
             :key="'gps-' + idx"
@@ -854,23 +891,22 @@ defineExpose({
           @click="(e) => handleNodeClick(e, String(id))"
         >
           <!-- Marker Pin -->
-          <div
-            class="node-pin"
-            :class="'type-' + node.type"
-          >
+          <div class="node-pin" :class="'type-' + node.type">
             <span class="pin-icon">
-              {{ node.type === 'city' ? '🏙️' : node.type === 'league' ? '🏆' : node.type === 'poi' ? '📍' : '🌾' }}
+              {{
+                node.type === 'city'
+                  ? '🏙️'
+                  : node.type === 'league'
+                    ? '🏆'
+                    : node.type === 'poi'
+                      ? '📍'
+                      : '🌾'
+              }}
             </span>
-            <span
-              v-if="node.hasCenter"
-              class="pc-badge"
-              title="Centro Pokémon"
-            >❤️</span>
-            <span
-              v-if="node.requiresMO"
-              class="mo-badge"
-              :title="'Requiere ' + node.requiresMO"
-            >🔒</span>
+            <span v-if="node.hasCenter" class="pc-badge" title="Centro Pokémon">❤️</span>
+            <span v-if="node.requiresMO" class="mo-badge" :title="'Requiere ' + node.requiresMO"
+              >🔒</span
+            >
           </div>
 
           <!-- Label with Name & Coordinates -->
@@ -882,10 +918,7 @@ defineExpose({
       </div>
 
       <!-- Structures Bounding Boxes & Drag Overlays (Mode Structures) -->
-      <div
-        v-if="store.activeMode === 'structures'"
-        class="structures-overlay-layer"
-      >
+      <div v-if="store.activeMode === 'structures'" class="structures-overlay-layer">
         <div
           v-for="(s, idx) in store.customStructures"
           :id="'structure-box-' + idx"
@@ -916,7 +949,10 @@ defineExpose({
 
       <!-- Stamping Ghost Prefab Preview (Transparent Ghost Sprite following cursor) -->
       <div
-        v-if="(store.activeTool === 'stamp' || store.activeMode === 'structures') && store.stampingPrefab"
+        v-if="
+          (store.activeTool === 'stamp' || store.activeMode === 'structures') &&
+          store.stampingPrefab
+        "
         class="stamping-ghost-preview"
         :style="{
           left: `${worldCursor.x - store.stampingPrefab.width / 2}px`,
@@ -930,12 +966,13 @@ defineExpose({
           :src="store.stampingPrefab.file_path"
           :alt="store.stampingPrefab.name"
           class="ghost-prefab-img"
-        
           width="32"
           height="32"
-        >
+        />
         <div class="ghost-tag">
-          {{ store.stampingPrefab.name }} ({{ store.stampingPrefab.width }}x{{ store.stampingPrefab.height }})
+          {{ store.stampingPrefab.name }} ({{ store.stampingPrefab.width }}x{{
+            store.stampingPrefab.height
+          }})
         </div>
       </div>
 
@@ -966,7 +1003,9 @@ defineExpose({
       </div>
       <div class="hud-item">
         <span class="hud-label">Cursor:</span>
-        <span class="hud-val">{{ Math.round(worldCursor.x / 2.5) }}, {{ Math.round(worldCursor.y / 2.5) }}</span>
+        <span class="hud-val"
+          >{{ Math.round(worldCursor.x / 2.5) }}, {{ Math.round(worldCursor.y / 2.5) }}</span
+        >
       </div>
     </div>
   </div>

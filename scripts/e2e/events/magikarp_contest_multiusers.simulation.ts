@@ -21,7 +21,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-
 export class MagikarpContestMultiuserSimulation extends BaseEventSimulation {
   constructor(page: Page, username: string = 'ContestChampion') {
     super(page, username);
@@ -34,7 +33,8 @@ export class MagikarpContestMultiuserSimulation extends BaseEventSimulation {
   public async setupContestScenario(): Promise<{ validMonUid: string; outdatedMonUid: string }> {
     return await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const { getServerTime } = await import('../../../src/logic/utils/timeUtils.ts');
 
@@ -124,65 +124,73 @@ export class MagikarpContestMultiuserSimulation extends BaseEventSimulation {
         ON CONFLICT (id) DO NOTHING;
       `);
 
-      await this.queryTestDb(`
+      await this.queryTestDb(
+        `
         INSERT INTO competition_entries (id, event_id, category_id, player_id, player_name, player_email, data, submitted_at)
         VALUES 
         ('a0000000-0000-0000-0000-000000000002', 'torneo_pesca', 'ivs', 'b0000000-0000-0000-0000-000000000002', 'ContestPlayer_2', 'p2@test.local', $1, NOW()),
         ('a0000000-0000-0000-0000-000000000003', 'torneo_pesca', 'ivs', 'b0000000-0000-0000-0000-000000000003', 'ContestPlayer_3', 'p3@test.local', $2, NOW()),
         ('a0000000-0000-0000-0000-000000000004', 'torneo_pesca', 'ivs', 'b0000000-0000-0000-0000-000000000004', 'ContestPlayer_4', 'p4@test.local', $3, NOW())
         ON CONFLICT (event_id, category_id, player_id) DO NOTHING;
-      `, [comp2Data, comp3Data, comp4Data]);
+      `,
+        [comp2Data, comp3Data, comp4Data]
+      );
     } else {
-      await this.page.evaluate(async ({ c2, c3, c4 }) => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const gameStore = useGameStore();
-        if (!gameStore.db) throw new Error('[Magikarp Simulation] Game DB is not ready');
+      await this.page.evaluate(
+        async ({ c2, c3, c4 }) => {
+          const { useGameStore } = await import('../../../src/stores/game.ts');
+          const gameStore = useGameStore();
+          if (!gameStore.db) throw new Error('[Magikarp Simulation] Game DB is not ready');
 
-        await gameStore.db.from('competition_entries').insert({
-          id: 'a0000000-0000-0000-0000-000000000002',
-          event_id: 'torneo_pesca',
-          category_id: 'ivs',
-          player_id: 'b0000000-0000-0000-0000-000000000002',
-          player_name: 'ContestPlayer_2',
-          player_email: 'p2@test.local',
-          pokemon_uid: 'sim-karp-p2',
-          submitted_at: '2026-08-04T19:10:00Z',
-          data: c2
-        });
+          await gameStore.db.from('competition_entries').insert({
+            id: 'a0000000-0000-0000-0000-000000000002',
+            event_id: 'torneo_pesca',
+            category_id: 'ivs',
+            player_id: 'b0000000-0000-0000-0000-000000000002',
+            player_name: 'ContestPlayer_2',
+            player_email: 'p2@test.local',
+            pokemon_uid: 'sim-karp-p2',
+            submitted_at: '2026-08-04T19:10:00Z',
+            data: c2
+          });
 
-        await gameStore.db.from('competition_entries').insert({
-          id: 'a0000000-0000-0000-0000-000000000003',
-          event_id: 'torneo_pesca',
-          category_id: 'ivs',
-          player_id: 'b0000000-0000-0000-0000-000000000003',
-          player_name: 'ContestPlayer_3',
-          player_email: 'p3@test.local',
-          pokemon_uid: 'sim-karp-p3',
-          submitted_at: '2026-08-04T19:15:00Z',
-          data: c3
-        });
+          await gameStore.db.from('competition_entries').insert({
+            id: 'a0000000-0000-0000-0000-000000000003',
+            event_id: 'torneo_pesca',
+            category_id: 'ivs',
+            player_id: 'b0000000-0000-0000-0000-000000000003',
+            player_name: 'ContestPlayer_3',
+            player_email: 'p3@test.local',
+            pokemon_uid: 'sim-karp-p3',
+            submitted_at: '2026-08-04T19:15:00Z',
+            data: c3
+          });
 
-        await gameStore.db.from('competition_entries').insert({
-          id: 'a0000000-0000-0000-0000-000000000004',
-          event_id: 'torneo_pesca',
-          category_id: 'ivs',
-          player_id: 'b0000000-0000-0000-0000-000000000004',
-          player_name: 'ContestPlayer_4',
-          player_email: 'p4@test.local',
-          pokemon_uid: 'sim-karp-p4',
-          submitted_at: '2026-08-04T19:20:00Z',
-          data: c4
-        });
+          await gameStore.db.from('competition_entries').insert({
+            id: 'a0000000-0000-0000-0000-000000000004',
+            event_id: 'torneo_pesca',
+            category_id: 'ivs',
+            player_id: 'b0000000-0000-0000-0000-000000000004',
+            player_name: 'ContestPlayer_4',
+            player_email: 'p4@test.local',
+            pokemon_uid: 'sim-karp-p4',
+            submitted_at: '2026-08-04T19:20:00Z',
+            data: c4
+          });
 
-        const { persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
-        await persistSQLite();
-      }, { c2: comp2Data, c3: comp3Data, c4: comp4Data });
+          const { persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
+          await persistSQLite();
+        },
+        { c2: comp2Data, c3: comp3Data, c4: comp4Data }
+      );
     }
   }
 }
 
 test.describe('Magikarp Tournament Multi-User Podium & GUI Awarding E2E Simulation', () => {
-  test('ranks 4 players deterministically by IVs, awards top 3, excludes 4th, and verifies GUI claim', async ({ page }) => {
+  test('ranks 4 players deterministically by IVs, awards top 3, excludes 4th, and verifies GUI claim', async ({
+    page
+  }) => {
     const sim = new MagikarpContestMultiuserSimulation(page, 'ContestChampion');
     await sim.setup();
     await sim.purgeEventState('torneo_pesca');
@@ -256,10 +264,16 @@ test.describe('Magikarp Tournament Multi-User Podium & GUI Awarding E2E Simulati
       });
 
       // Assert Top 3 podium integrity
-      const firstPlace = winners.find(w => w.rank === 'first' && w.player_name === 'ContestChampion');
-      const secondPlace = winners.find(w => w.rank === 'second' && w.player_name === 'ContestPlayer_2');
-      const thirdPlace = winners.find(w => w.rank === 'third' && w.player_name === 'ContestPlayer_3');
-      const fourthPlace = winners.find(w => w.player_name === 'ContestPlayer_4');
+      const firstPlace = winners.find(
+        (w) => w.rank === 'first' && w.player_name === 'ContestChampion'
+      );
+      const secondPlace = winners.find(
+        (w) => w.rank === 'second' && w.player_name === 'ContestPlayer_2'
+      );
+      const thirdPlace = winners.find(
+        (w) => w.rank === 'third' && w.player_name === 'ContestPlayer_3'
+      );
+      const fourthPlace = winners.find((w) => w.player_name === 'ContestPlayer_4');
 
       expect(firstPlace).toBeDefined();
       expect(firstPlace?.score).toBe(180);
@@ -270,7 +284,9 @@ test.describe('Magikarp Tournament Multi-User Podium & GUI Awarding E2E Simulati
       expect(fourthPlace).toBeUndefined(); // P4 excluded from podium
 
       // 12. Claim 1st place award in GUI
-      const claimBtn = page.locator('[id^="claim-pending-award-btn-"], [id^="claim-pending-reward-btn-"]').first();
+      const claimBtn = page
+        .locator('[id^="claim-pending-award-btn-"], [id^="claim-pending-reward-btn-"]')
+        .first();
       await expect(claimBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await claimBtn.click();
 

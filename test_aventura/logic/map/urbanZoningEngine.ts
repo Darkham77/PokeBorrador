@@ -22,12 +22,7 @@ import {
   type StructureTemplate
 } from '../../config/mapStructures.ts';
 import type { TileCollision } from './tilesRegistry.ts';
-import type {
-  ThemeBiomePalette,
-  MapCell,
-  MapSpawn,
-  MapWarp
-} from './proceduralMapGenerator.ts';
+import type { ThemeBiomePalette, MapCell, MapSpawn, MapWarp } from './proceduralMapGenerator.ts';
 import { placeScenicProps, type PropsPlacementResult } from './propsPlacementEngine.ts';
 
 const PARK_BUSH_DENSITY = 0.25;
@@ -110,19 +105,41 @@ export function generateUrbanLayout(options: UrbanZoningOptions): UrbanLayoutRes
   // 3.1 Plaza (if requested)
   if (config.plazaType && config.plazaType !== 'none') {
     const plazaTemplate = config.plazaType === 'fountain' ? PLAZA_FOUNTAIN : PLAZA_PARK;
-    const centralLotIndex = findLotNearCoords(availableLots, occupiedLots, streetNetwork.center.x, streetNetwork.center.y, plazaTemplate.footprint);
+    const centralLotIndex = findLotNearCoords(
+      availableLots,
+      occupiedLots,
+      streetNetwork.center.x,
+      streetNetwork.center.y,
+      plazaTemplate.footprint
+    );
     if (centralLotIndex !== -1) {
       const lot = availableLots[centralLotIndex]!;
       occupiedLots.add(centralLotIndex);
-      stampStructureAt(elevationLayer, collisionGrid, objectLayer, plazaTemplate, lot.x, lot.y, mapWidth, mapHeight, makeCell);
+      stampStructureAt(
+        elevationLayer,
+        collisionGrid,
+        objectLayer,
+        plazaTemplate,
+        lot.x,
+        lot.y,
+        mapWidth,
+        mapHeight,
+        makeCell
+      );
       placedCivicCount++;
     }
   }
 
   // 3.2 Oak's Research Lab
-  const shouldPlaceLab = config.includeLab ?? (config.scale === 'hamlet');
+  const shouldPlaceLab = config.includeLab ?? config.scale === 'hamlet';
   if (shouldPlaceLab) {
-    const labLotIndex = findBestLotFor(availableLots, occupiedLots, KANTO_LAB.footprint, 'south', mapHeight);
+    const labLotIndex = findBestLotFor(
+      availableLots,
+      occupiedLots,
+      KANTO_LAB.footprint,
+      'south',
+      mapHeight
+    );
     if (labLotIndex !== -1) {
       const lot = availableLots[labLotIndex]!;
       occupiedLots.add(labLotIndex);
@@ -151,7 +168,13 @@ export function generateUrbanLayout(options: UrbanZoningOptions): UrbanLayoutRes
   // 3.3 Pokémon Center (standard in village, town, city, metropolis)
   const shouldPlaceCenter = config.scale !== 'hamlet';
   if (shouldPlaceCenter) {
-    const centerLotIndex = findBestLotFor(availableLots, occupiedLots, POKEMON_CENTER.footprint, 'west', mapWidth);
+    const centerLotIndex = findBestLotFor(
+      availableLots,
+      occupiedLots,
+      POKEMON_CENTER.footprint,
+      'west',
+      mapWidth
+    );
     if (centerLotIndex !== -1) {
       const lot = availableLots[centerLotIndex]!;
       occupiedLots.add(centerLotIndex);
@@ -180,7 +203,13 @@ export function generateUrbanLayout(options: UrbanZoningOptions): UrbanLayoutRes
   // 3.4 Poké Mart (village, town, city, metropolis)
   const shouldPlaceMart = config.scale !== 'hamlet';
   if (shouldPlaceMart) {
-    const martLotIndex = findBestLotFor(availableLots, occupiedLots, POKEMART.footprint, 'east', mapWidth);
+    const martLotIndex = findBestLotFor(
+      availableLots,
+      occupiedLots,
+      POKEMART.footprint,
+      'east',
+      mapWidth
+    );
     if (martLotIndex !== -1) {
       const lot = availableLots[martLotIndex]!;
       occupiedLots.add(martLotIndex);
@@ -207,9 +236,15 @@ export function generateUrbanLayout(options: UrbanZoningOptions): UrbanLayoutRes
   }
 
   // 3.5 Official Pokémon Gym (town, city, metropolis)
-  const shouldPlaceGym = config.includeGym ?? (['town', 'city', 'metropolis'].includes(config.scale));
+  const shouldPlaceGym = config.includeGym ?? ['town', 'city', 'metropolis'].includes(config.scale);
   if (shouldPlaceGym) {
-    const gymLotIndex = findBestLotFor(availableLots, occupiedLots, KANTO_GYM.footprint, 'north', mapHeight);
+    const gymLotIndex = findBestLotFor(
+      availableLots,
+      occupiedLots,
+      KANTO_GYM.footprint,
+      'north',
+      mapHeight
+    );
     if (gymLotIndex !== -1) {
       const lot = availableLots[gymLotIndex]!;
       occupiedLots.add(gymLotIndex);
@@ -250,7 +285,10 @@ export function generateUrbanLayout(options: UrbanZoningOptions): UrbanLayoutRes
           ? KANTO_HOUSE_SMALL
           : residentialTemplates[Math.floor(prng() * residentialTemplates.length)]!;
 
-      if (lot.width >= chosenTemplate.footprint.width && lot.height >= chosenTemplate.footprint.height) {
+      if (
+        lot.width >= chosenTemplate.footprint.width &&
+        lot.height >= chosenTemplate.footprint.height
+      ) {
         occupiedLots.add(i);
         stampStructureWithDoorway(
           baseLayer,
@@ -364,19 +402,40 @@ export function generateStreetNetwork(
     xRoads.push(midX);
   } else if (scale === 'town') {
     // 2 horizontal avenues + central & optional lateral vertical streets
-    yRoads.push(Math.floor(height * URBAN_AVENUE_RATIOS.TOWN_Y_NORTH), Math.floor(height * URBAN_AVENUE_RATIOS.TOWN_Y_SOUTH));
+    yRoads.push(
+      Math.floor(height * URBAN_AVENUE_RATIOS.TOWN_Y_NORTH),
+      Math.floor(height * URBAN_AVENUE_RATIOS.TOWN_Y_SOUTH)
+    );
     xRoads.push(midX);
     if (width >= URBAN_AVENUE_RATIOS.TOWN_EXPAND_WIDTH) {
-      xRoads.push(Math.floor(width * URBAN_AVENUE_RATIOS.TOWN_X_WEST), Math.floor(width * URBAN_AVENUE_RATIOS.TOWN_X_EAST));
+      xRoads.push(
+        Math.floor(width * URBAN_AVENUE_RATIOS.TOWN_X_WEST),
+        Math.floor(width * URBAN_AVENUE_RATIOS.TOWN_X_EAST)
+      );
     }
   } else if (scale === 'city') {
     // 2 horizontal boulevards + 3 vertical streets
-    yRoads.push(Math.floor(height * URBAN_AVENUE_RATIOS.CITY_Y_NORTH), Math.floor(height * URBAN_AVENUE_RATIOS.CITY_Y_SOUTH));
-    xRoads.push(Math.floor(width * URBAN_AVENUE_RATIOS.CITY_X_WEST), midX, Math.floor(width * URBAN_AVENUE_RATIOS.CITY_X_EAST));
+    yRoads.push(
+      Math.floor(height * URBAN_AVENUE_RATIOS.CITY_Y_NORTH),
+      Math.floor(height * URBAN_AVENUE_RATIOS.CITY_Y_SOUTH)
+    );
+    xRoads.push(
+      Math.floor(width * URBAN_AVENUE_RATIOS.CITY_X_WEST),
+      midX,
+      Math.floor(width * URBAN_AVENUE_RATIOS.CITY_X_EAST)
+    );
   } else {
     // Metropolis: 3 horizontal + 3 vertical boulevards
-    yRoads.push(Math.floor(height * URBAN_AVENUE_RATIOS.METROPOLIS_Y_NORTH), midY, Math.floor(height * URBAN_AVENUE_RATIOS.METROPOLIS_Y_SOUTH));
-    xRoads.push(Math.floor(width * URBAN_AVENUE_RATIOS.METROPOLIS_X_WEST), midX, Math.floor(width * URBAN_AVENUE_RATIOS.METROPOLIS_X_EAST));
+    yRoads.push(
+      Math.floor(height * URBAN_AVENUE_RATIOS.METROPOLIS_Y_NORTH),
+      midY,
+      Math.floor(height * URBAN_AVENUE_RATIOS.METROPOLIS_Y_SOUTH)
+    );
+    xRoads.push(
+      Math.floor(width * URBAN_AVENUE_RATIOS.METROPOLIS_X_WEST),
+      midX,
+      Math.floor(width * URBAN_AVENUE_RATIOS.METROPOLIS_X_EAST)
+    );
   }
 
   // Stamp horizontal avenues (width 2)

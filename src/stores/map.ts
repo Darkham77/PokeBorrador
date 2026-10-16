@@ -1,13 +1,13 @@
-import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
-import { gameBus } from '@/logic/events/gameBus'
-import { logger } from '@/logic/utils/logger'
-import { VISIBLE_WORLD_MAPS } from '@/data/world/maps'
-import { getDayCycle, getSeason, getServerTime } from '@/logic/utils/timeUtils'
-import { getRouteWeather } from '@/logic/weather/weatherUtils'
-import { useGameStore } from '@/stores/game.ts'
-import type { Event } from '@/logic/events/eventEngine'
-import type { DayPhase, Season } from '@/logic/utils/timeUtils'
+import { defineStore } from 'pinia';
+import { ref, computed, watch } from 'vue';
+import { gameBus } from '@/logic/events/gameBus';
+import { logger } from '@/logic/utils/logger';
+import { VISIBLE_WORLD_MAPS } from '@/data/world/maps';
+import { getDayCycle, getSeason, getServerTime } from '@/logic/utils/timeUtils';
+import { getRouteWeather } from '@/logic/weather/weatherUtils';
+import { useGameStore } from '@/stores/game.ts';
+import type { Event } from '@/logic/events/eventEngine';
+import type { DayPhase, Season } from '@/logic/utils/timeUtils';
 
 import type { MapRouteId } from '@/data/world/map-assets';
 import { registerWeatherResolver, type WeatherId } from '@/logic/weather/weatherRegistry';
@@ -16,22 +16,24 @@ import { requireWeatherSeasonId } from '@/data/world/weather-tables';
 import type { DominanceInfo } from '@/types/system/stores';
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
 
-import { gsap } from 'gsap'
+import { gsap } from 'gsap';
 
 const TIME_TICK_SAMPLE_INTERVAL_SEC = 10 as const;
 
 export const useMapStore = defineStore('map', () => {
-  const gs = useGameStore()
+  const gs = useGameStore();
   const currentMap = computed<MapRouteId>({
     get: () => requireMapRouteId(gs.state.map?.currentMap || 'route1'),
-    set: (val: MapRouteId) => { if (gs.state.map) gs.state.map.currentMap = val }
-  })
+    set: (val: MapRouteId) => {
+      if (gs.state.map) gs.state.map.currentMap = val;
+    }
+  });
 
-  const globalWeather = ref<WeatherId | null>(null) // If forced, overrides deterministic weather
-  const forcedCycle = ref<DayPhase | null>(null)
-  const forcedSeason = ref<Season | null>(null)
-  const isTimeTickerFrozen = ref(false)
-  const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / ONE_HOUR_MS))
+  const globalWeather = ref<WeatherId | null>(null); // If forced, overrides deterministic weather
+  const forcedCycle = ref<DayPhase | null>(null);
+  const forcedSeason = ref<Season | null>(null);
+  const isTimeTickerFrozen = ref(false);
+  const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / ONE_HOUR_MS));
 
   // Reactive Epoch Hour computation on demand & time-sync-update events (Zero-Timer Event-Driven Architecture)
   const updateEpochHour = () => {
@@ -39,14 +41,14 @@ export const useMapStore = defineStore('map', () => {
   };
 
   const setFreezeClock = (freeze: boolean) => {
-    isTimeTickerFrozen.value = freeze
+    isTimeTickerFrozen.value = freeze;
     if (typeof window !== 'undefined') {
       if (!window.__VITE_DEBUG__) {
-        window.__VITE_DEBUG__ = {}
+        window.__VITE_DEBUG__ = {};
       }
-      window.__VITE_DEBUG__.freezeClock = freeze
+      window.__VITE_DEBUG__.freezeClock = freeze;
     }
-  }
+  };
 
   if (typeof window !== 'undefined') {
     window.addEventListener('time-sync-update', () => {
@@ -54,91 +56,113 @@ export const useMapStore = defineStore('map', () => {
       updateEpochHour();
     });
 
-    let lastCheckedSec = 0
+    let lastCheckedSec = 0;
     const onTimeTick = (time: number) => {
       // Sample every 10 seconds of GSAP timeline execution
-      if (time - lastCheckedSec < TIME_TICK_SAMPLE_INTERVAL_SEC) return
-      lastCheckedSec = time
+      if (time - lastCheckedSec < TIME_TICK_SAMPLE_INTERVAL_SEC) return;
+      lastCheckedSec = time;
 
-      const isFrozen = isTimeTickerFrozen.value || 
+      const isFrozen =
+        isTimeTickerFrozen.value ||
         Boolean(
-          window.__VITE_DEBUG__?.freezeClock || 
-          window.__VITE_DEBUG__?.isScriptedReplayMode || 
+          window.__VITE_DEBUG__?.freezeClock ||
+          window.__VITE_DEBUG__?.isScriptedReplayMode ||
           window.__VITE_DEBUG__?.isDeterministicSimulation
-        )
+        );
 
-      if (isFrozen) return
+      if (isFrozen) return;
 
-      const newEpochHour = Math.floor(getServerTime() / ONE_HOUR_MS)
+      const newEpochHour = Math.floor(getServerTime() / ONE_HOUR_MS);
       if (newEpochHour !== currentEpochHour.value) {
-        logger.info('MapStore', `Real-time hour changed: ${currentEpochHour.value} -> ${newEpochHour}`)
-        currentEpochHour.value = newEpochHour
+        logger.info(
+          'MapStore',
+          `Real-time hour changed: ${currentEpochHour.value} -> ${newEpochHour}`
+        );
+        currentEpochHour.value = newEpochHour;
       }
-    }
+    };
 
     if (gsap && gsap.ticker && typeof gsap.ticker.add === 'function') {
-      gsap.ticker.add(onTimeTick)
+      gsap.ticker.add(onTimeTick);
     }
   }
 
   const currentCycle = computed(() => {
-    if (forcedCycle.value) return forcedCycle.value
-    return getDayCycle(currentEpochHour.value * ONE_HOUR_MS)
-  })
-  
+    if (forcedCycle.value) return forcedCycle.value;
+    return getDayCycle(currentEpochHour.value * ONE_HOUR_MS);
+  });
+
   const currentSeason = computed(() => {
-    if (forcedSeason.value) return forcedSeason.value
-    return getSeason(currentEpochHour.value * ONE_HOUR_MS)
-  })
-  
+    if (forcedSeason.value) return forcedSeason.value;
+    return getSeason(currentEpochHour.value * ONE_HOUR_MS);
+  });
+
   const currentWeather = computed<WeatherId>(() => {
-    if (globalWeather.value) return globalWeather.value
-    return getRouteWeather(currentMap.value, requireWeatherSeasonId(currentSeason.value.id), currentEpochHour.value, currentCycle.value)
-  })
+    if (globalWeather.value) return globalWeather.value;
+    return getRouteWeather(
+      currentMap.value,
+      requireWeatherSeasonId(currentSeason.value.id),
+      currentEpochHour.value,
+      currentCycle.value
+    );
+  });
 
-  registerWeatherResolver(() => currentWeather.value)
+  registerWeatherResolver(() => currentWeather.value);
 
-  watch(currentWeather, (weather) => {
-    gameBus.emit('MAP_WEATHER_CHANGED', { weather, mapId: currentMap.value })
-  }, { immediate: true })
+  watch(
+    currentWeather,
+    (weather) => {
+      gameBus.emit('MAP_WEATHER_CHANGED', { weather, mapId: currentMap.value });
+    },
+    { immediate: true }
+  );
 
   watch(currentEpochHour, (newHour, oldHour) => {
     if (newHour !== oldHour) {
-      gameBus.emit('GAME_CYCLE_TICK', { epochHour: newHour })
+      gameBus.emit('GAME_CYCLE_TICK', { epochHour: newHour });
     }
-  })
+  });
 
   // Sync time on store init (safer than onMounted in a store)
   // syncServerTime() -- DEFERRED to game initialization
-  const maps = ref([...VISIBLE_WORLD_MAPS])
-  const activeEvents = ref<Event[]>([])
-  const lastNavigateTime = ref(0)
-  const lastTrainerChanceIncrementAt = ref(Temporal.Now.instant().epochMilliseconds)
-  const mapWinners = ref<Partial<Record<MapRouteId, DominanceInfo>>>({}) // locId -> winner
-  
+  const maps = ref([...VISIBLE_WORLD_MAPS]);
+  const activeEvents = ref<Event[]>([]);
+  const lastNavigateTime = ref(0);
+  const lastTrainerChanceIncrementAt = ref(Temporal.Now.instant().epochMilliseconds);
+  const mapWinners = ref<Partial<Record<MapRouteId, DominanceInfo>>>({}); // locId -> winner
+
   const setGlobalSeason = (s: string | null) => {
     if (!s) {
-      forcedSeason.value = null
-      return
+      forcedSeason.value = null;
+      return;
     }
     const seasons: Season[] = [
       { id: 'spring', label: 'Primavera', icon: '🌸' },
       { id: 'summer', label: 'Verano', icon: '🌻' },
       { id: 'autumn', label: 'Otoño', icon: '🍂' },
       { id: 'winter', label: 'Invierno', icon: '⛄' }
-    ]
-    forcedSeason.value = seasons.find(sea => sea.id === s) || null
-  }
-  
-  const setGlobalWeather = (w: WeatherId | null) => { globalWeather.value = w }
-  const setGlobalCycle = (c: DayPhase | null) => { forcedCycle.value = c }
+    ];
+    forcedSeason.value = seasons.find((sea) => sea.id === s) || null;
+  };
+
+  const setGlobalWeather = (w: WeatherId | null) => {
+    globalWeather.value = w;
+  };
+  const setGlobalCycle = (c: DayPhase | null) => {
+    forcedCycle.value = c;
+  };
 
   const navigate = async (locId: MapRouteId) => {
     const targetWeather = globalWeather.value
       ? globalWeather.value
-      : getRouteWeather(locId, requireWeatherSeasonId(currentSeason.value.id), currentEpochHour.value, currentCycle.value)
+      : getRouteWeather(
+          locId,
+          requireWeatherSeasonId(currentSeason.value.id),
+          currentEpochHour.value,
+          currentCycle.value
+        );
 
-    const { executeNavigation } = await import('./mapActions')
+    const { executeNavigation } = await import('./mapActions');
     await executeNavigation(
       locId,
       {
@@ -152,18 +176,26 @@ export const useMapStore = defineStore('map', () => {
         mapWinners: mapWinners.value
       },
       {
-        setCurrentMap: (val: MapRouteId) => { currentMap.value = val },
-        setCurrentEpochHour: (val: number) => { currentEpochHour.value = val },
-        setLastNavigateTime: (val: number) => { lastNavigateTime.value = val },
-        setLastTrainerChanceIncrementAt: (val: number) => { lastTrainerChanceIncrementAt.value = val }
+        setCurrentMap: (val: MapRouteId) => {
+          currentMap.value = val;
+        },
+        setCurrentEpochHour: (val: number) => {
+          currentEpochHour.value = val;
+        },
+        setLastNavigateTime: (val: number) => {
+          lastNavigateTime.value = val;
+        },
+        setLastTrainerChanceIncrementAt: (val: number) => {
+          lastTrainerChanceIncrementAt.value = val;
+        }
       }
-    )
-  }
+    );
+  };
 
   const triggerArchaeologyRewards = async (locId: MapRouteId, difficulty?: string) => {
-    const { executeArchaeologyRewards } = await import('./mapActions')
-    await executeArchaeologyRewards(locId, gs, difficulty)
-  }
+    const { executeArchaeologyRewards } = await import('./mapActions');
+    await executeArchaeologyRewards(locId, gs, difficulty);
+  };
 
   return {
     currentMap,
@@ -185,9 +217,9 @@ export const useMapStore = defineStore('map', () => {
     navigate,
     // fallow-ignore-next-line unused-store-member
     triggerArchaeologyRewards
-  }
-})
+  };
+});
 
 if (typeof window !== 'undefined') {
-  window.__VITE_DEBUG_MAP_STORE_RESOLVER__ = () => useMapStore()
+  window.__VITE_DEBUG_MAP_STORE_RESOLVER__ = () => useMapStore();
 }

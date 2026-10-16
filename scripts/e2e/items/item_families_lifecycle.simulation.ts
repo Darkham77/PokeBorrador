@@ -31,7 +31,8 @@ class ItemFamiliesSimulation extends BaseE2ESimulation {
     await this.page.evaluate(async (pikaHp) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const gameStore = useGameStore();
@@ -67,15 +68,40 @@ class ItemFamiliesSimulation extends BaseE2ESimulation {
 
       // Setup Stocked Inventory for all families
       const testItems: ItemId[] = [
-        'potion', 'superpotion', 'maxpotion', 'antidote', 'fullheal', 'fullrestore', 'rarecandy', 'ether',
-        'protein', 'healthfeather', 'musclemochi', 'freshstartmochi', 'pomegberry',
-        'luckyegg', 'amuletcoin', 'repel', 'fishingrod', 'pickaxe', 'incensefire', 'ivscanner',
-        'moverelearner', 'naturepatch', 'abilitypill', 'ppup', 'ppmax',
-        'firestone', 'waterstone', 'thunderstone',
-        'soothebell', 'everstone', 'leftovers'
+        'potion',
+        'superpotion',
+        'maxpotion',
+        'antidote',
+        'fullheal',
+        'fullrestore',
+        'rarecandy',
+        'ether',
+        'protein',
+        'healthfeather',
+        'musclemochi',
+        'freshstartmochi',
+        'pomegberry',
+        'luckyegg',
+        'amuletcoin',
+        'repel',
+        'fishingrod',
+        'pickaxe',
+        'incensefire',
+        'ivscanner',
+        'moverelearner',
+        'naturepatch',
+        'abilitypill',
+        'ppup',
+        'ppmax',
+        'firestone',
+        'waterstone',
+        'thunderstone',
+        'soothebell',
+        'everstone',
+        'leftovers'
       ];
 
-      testItems.forEach(id => {
+      testItems.forEach((id) => {
         inventoryStore.addItem(id, 5);
       });
 
@@ -83,13 +109,19 @@ class ItemFamiliesSimulation extends BaseE2ESimulation {
     }, INITIAL_PIKA_HP);
   }
 
-  public async executeItemOnTeam(itemId: ItemId, teamIndex: number): Promise<{ success: boolean; message?: string }> {
-    return await this.page.evaluate(async ({ id, index }) => {
-      const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
-      const invStore = useInventoryStore();
-      const res = invStore.useItem(id as ItemId, 'team', index);
-      return { success: !!res.success, message: res.message };
-    }, { id: itemId, index: teamIndex });
+  public async executeItemOnTeam(
+    itemId: ItemId,
+    teamIndex: number
+  ): Promise<{ success: boolean; message?: string }> {
+    return await this.page.evaluate(
+      async ({ id, index }) => {
+        const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
+        const invStore = useInventoryStore();
+        const res = invStore.useItem(id as ItemId, 'team', index);
+        return { success: !!res.success, message: res.message };
+      },
+      { id: itemId, index: teamIndex }
+    );
   }
 
   public async executeGlobalItem(itemId: ItemId): Promise<{ success: boolean; message?: string }> {
@@ -123,7 +155,7 @@ class ItemFamiliesSimulation extends BaseE2ESimulation {
   public async getActiveBuffs(): Promise<Array<{ id: string; secs: number }>> {
     return await this.page.evaluate(async () => {
       const { useBuffsStore } = await import('../../../src/stores/battle/buffs.ts');
-      return useBuffsStore().activeBuffs.map(b => ({ id: b.id, secs: b.secs }));
+      return useBuffsStore().activeBuffs.map((b) => ({ id: b.id, secs: b.secs }));
     });
   }
 
@@ -134,14 +166,19 @@ class ItemFamiliesSimulation extends BaseE2ESimulation {
   }
 
   public async setBuffDurationSeconds(field: string, seconds: number): Promise<void> {
-    await this.page.evaluate(({ f, s }) => {
-      window.__VITE_DEBUG__?.setBuffDuration?.(f, s);
-    }, { f: field, s: seconds });
+    await this.page.evaluate(
+      ({ f, s }) => {
+        window.__VITE_DEBUG__?.setBuffDuration?.(f, s);
+      },
+      { f: field, s: seconds }
+    );
   }
 }
 
 test.describe('E2E Item Families Lifecycle & Debug Simulation', () => {
-  test('exercises full cycle of all item families with real UI, state and time acceleration', async ({ page }) => {
+  test('exercises full cycle of all item families with real UI, state and time acceleration', async ({
+    page
+  }) => {
     const sim = new ItemFamiliesSimulation(page, 'ItemFamilyTester');
 
     await sim.setup();
@@ -197,16 +234,16 @@ test.describe('E2E Item Families Lifecycle & Debug Simulation', () => {
     expect(repelRes.success).toBe(true);
 
     let buffs = await sim.getActiveBuffs();
-    expect(buffs.some(b => b.id === 'lucky-egg')).toBe(true);
-    expect(buffs.some(b => b.id === 'repel')).toBe(true);
+    expect(buffs.some((b) => b.id === 'lucky-egg')).toBe(true);
+    expect(buffs.some((b) => b.id === 'repel')).toBe(true);
 
     // B. Fast-forward Repel to 2 seconds and advance 2 seconds to see live expiration
     await sim.setBuffDurationSeconds('repelSecs', 2);
     await sim.advanceTimeInSeconds(2);
 
     buffs = await sim.getActiveBuffs();
-    expect(buffs.some(b => b.id === 'repel')).toBe(false);
-    expect(buffs.some(b => b.id === 'lucky-egg')).toBe(true);
+    expect(buffs.some((b) => b.id === 'repel')).toBe(false);
+    expect(buffs.some((b) => b.id === 'lucky-egg')).toBe(true);
 
     // ─── 4. FAMILY 5: Move Relearner ────────────────────────────────────────
     // Raichu has 4 moves -> triggers Move Relearner flow
@@ -224,7 +261,13 @@ test.describe('E2E Item Families Lifecycle & Debug Simulation', () => {
       const invStore = useInventoryStore();
 
       const mon = gameStore.state.team[1] as Pokemon;
-      const newMove: Move = { id: 'thunderwave', name: 'Onda Trueno', pp: 20, maxPP: 20, type: 'electric' };
+      const newMove: Move = {
+        id: 'thunderwave',
+        name: 'Onda Trueno',
+        pp: 20,
+        maxPP: 20,
+        type: 'electric'
+      };
 
       uiStore.addToLearnQueue({
         pokemon: mon,

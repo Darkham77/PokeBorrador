@@ -1,4 +1,9 @@
-import { TRAINER_TYPES, TRAINER_TYPE_KEYS, getArchetypePool, type TrainerTypeKey } from '@/data/player/trainerTypes';
+import {
+  TRAINER_TYPES,
+  TRAINER_TYPE_KEYS,
+  getArchetypePool,
+  type TrainerTypeKey
+} from '@/data/player/trainerTypes';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation } from '@/types/pokemon/encounters';
 import type { MapRouteId } from '@/data/world/map-assets';
@@ -15,8 +20,8 @@ import { generateNpcName } from '@/logic/utils/npcNameGenerator';
 
 // Default generic configuration of probabilities and weights
 const DEFAULT_ARCHETYPE_WEIGHTS: Record<TrainerTypeKey, number> = {
-  rival: 0.001,      // 0.1% absolute probability
-  policeman: 0.0,    // 0% (policeman only with criminality, or via customChances/overrides)
+  rival: 0.001, // 0.1% absolute probability
+  policeman: 0.0, // 0% (policeman only with criminality, or via customChances/overrides)
   caza_bichos: 1.0,
   ornitologo: 1.0,
   cientifico: 1.0,
@@ -33,7 +38,7 @@ const DEFAULT_ARCHETYPE_WEIGHTS: Record<TrainerTypeKey, number> = {
   ranger: 1.0,
   pokefan: 1.0,
   artista: 1.0,
-  default: 1.0,
+  default: 1.0
 };
 
 /**
@@ -74,9 +79,7 @@ function selectTrainerArchetype(
     return rivalChance > 0 ? 'rival' : 'policeman';
   }
 
-  const relativeKeys = TRAINER_TYPE_KEYS.filter(
-    k => k !== 'rival' && k !== 'policeman'
-  );
+  const relativeKeys = TRAINER_TYPE_KEYS.filter((k) => k !== 'rival' && k !== 'policeman');
 
   const totalRelativeWeight = relativeKeys.reduce((sum, k) => sum + (weights[k] ?? 1.0), 0);
   if (totalRelativeWeight <= 0) {
@@ -123,9 +126,10 @@ export async function buildRivalEncounter(playerTeam: Pokemon[] = []): Promise<R
 
   // Rival level: Player team average + 5 (capped at MAX_POKEMON_LEVEL)
   const safeTeam = playerTeam || [];
-  const avgLevel = safeTeam.length > 0
-    ? safeTeam.reduce((acc, p) => acc + (p.level || 5), 0) / safeTeam.length
-    : 5;
+  const avgLevel =
+    safeTeam.length > 0
+      ? safeTeam.reduce((acc, p) => acc + (p.level || 5), 0) / safeTeam.length
+      : 5;
   const rivalLevel = Math.min(MAX_POKEMON_LEVEL, Math.floor(avgLevel) + 5);
 
   // Team size: minimum 3 or equal to player team size if they have more than 3
@@ -147,7 +151,9 @@ export async function buildRivalEncounter(playerTeam: Pokemon[] = []): Promise<R
   for (const set of generatedSets) {
     const speciesId = requirePokemonSpeciesId(toID(set.species));
     if (!isEnabledPokemonId(speciesId)) {
-      throw new Error(`[buildRivalEncounter] Non-enabled species returned by generator: ${speciesId}`);
+      throw new Error(
+        `[buildRivalEncounter] Non-enabled species returned by generator: ${speciesId}`
+      );
     }
 
     const p = makePokemon(speciesId, rivalLevel) as Pokemon;
@@ -187,10 +193,11 @@ export async function buildTrainerEncounter(
   gsState.trainerChance = 5;
 
   const mapsList = pokemonDataProvider.getMaps() as MapLocation[];
-  const targetMap = mapsList.find(m => m.id === locId);
+  const targetMap = mapsList.find((m) => m.id === locId);
   const baseLv = targetMap?.lv?.[0] || 5;
 
-  const isMaxCriminality = (gsState.playerClass === 'rocket' && (gsState.classData?.criminality ?? 0) >= 100);
+  const isMaxCriminality =
+    gsState.playerClass === 'rocket' && (gsState.classData?.criminality ?? 0) >= 100;
 
   let tName: string;
   let tSprite: NpcSpriteId;
@@ -209,7 +216,8 @@ export async function buildTrainerEncounter(
     tQuote = getRandomQuoteForTrainer('policeman');
 
     const criminality = (gsState.classData?.criminality as number) || 100;
-    const { calculatePoliceEffectiveLevel, calculatePoliceTeamSize } = await import('@/logic/player/classMath');
+    const { calculatePoliceEffectiveLevel, calculatePoliceTeamSize } =
+      await import('@/logic/player/classMath');
     const trainerLv = calculatePoliceEffectiveLevel(baseLv, criminality);
     const teamSize = calculatePoliceTeamSize(criminality);
 
@@ -219,12 +227,14 @@ export async function buildTrainerEncounter(
   } else {
     const mapChances = targetMap?.trainerChances || {};
     typeKey = selectTrainerArchetype(mapChances, false);
-    
+
     const t = TRAINER_TYPES[typeKey];
     const archetypeSprites = getSpritesForArchetype(t.archetype);
     const selectedSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)];
     if (!selectedSprite) {
-      throw new Error(`[trainerSpawner] No NPC sprite registered for trainer archetype: ${t.archetype}`);
+      throw new Error(
+        `[trainerSpawner] No NPC sprite registered for trainer archetype: ${t.archetype}`
+      );
     }
     tSprite = requireNpcSpriteId(selectedSprite);
     tName = generateNpcName({ spriteId: tSprite, archetype: typeKey, includeTitle: true });

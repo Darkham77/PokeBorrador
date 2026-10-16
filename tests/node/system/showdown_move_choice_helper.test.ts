@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   resolveValidMoveChoice,
   getFirstValidMoveSlot,
@@ -86,13 +86,19 @@ describe('showdownMoveChoiceHelper - Comprehensive Unit Tests', () => {
     it('should normalize single-move locked/recharge states to move 1', () => {
       const rechargeById: ActiveRequestMove[] = [{ id: 'recharge', disabled: false }];
       const rechargeByName: ActiveRequestMove[] = [{ move: 'Recharge', disabled: false }];
-      const shadowForce: ActiveRequestMove[] = [{ id: 'shadowforce', move: 'Shadow Force', disabled: false }];
+      const shadowForce: ActiveRequestMove[] = [
+        { id: 'shadowforce', move: 'Shadow Force', disabled: false }
+      ];
 
       expect(resolveValidMoveChoice('move 3', rechargeById)).toBe('move 1');
       expect(resolveValidMoveChoice('move 4', rechargeByName)).toBe('move 1');
       expect(resolveValidMoveChoice('move 3', shadowForce)).toBe('move 1');
-      expect(resolveValidMoveChoice('move 2 terastallize', rechargeById)).toBe('move 1 terastallize');
-      expect(resolveValidMoveChoice('move 3 terastallize', shadowForce)).toBe('move 1 terastallize');
+      expect(resolveValidMoveChoice('move 2 terastallize', rechargeById)).toBe(
+        'move 1 terastallize'
+      );
+      expect(resolveValidMoveChoice('move 3 terastallize', shadowForce)).toBe(
+        'move 1 terastallize'
+      );
     });
 
     it('should return original choice if all moves are disabled or out of PP', () => {

@@ -1,4 +1,4 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .adv-test-container {
   position: relative;
@@ -87,7 +87,9 @@
   align-items: center;
   margin-bottom: 10px;
   cursor: pointer;
-  input { margin-right: 8px; }
+  input {
+    margin-right: 8px;
+  }
   .adv-toggle-label {
     color: var(--white);
     font-size: var(--font-7);
@@ -137,7 +139,9 @@
   background-color: var(--yellow);
   color: var(--black);
   box-shadow: var(--shadow-card);
-  &:hover:not(:disabled) { background-color: var(--yellow); }
+  &:hover:not(:disabled) {
+    background-color: var(--yellow);
+  }
   &:disabled {
     background-color: var(--slate-600);
     color: var(--slate-400);
@@ -163,7 +167,9 @@
   font-size: var(--font-9);
   box-shadow: var(--shadow-card);
   cursor: pointer;
-  &:hover { background-color: var(--orange-400); }
+  &:hover {
+    background-color: var(--orange-400);
+  }
 }
 
 /* ─── Layout 50/50 ─── */

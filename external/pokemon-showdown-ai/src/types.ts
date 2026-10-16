@@ -3,24 +3,24 @@
 // ============================================================
 
 export interface PokemonState {
-  name: string;          // Display name (e.g. "Excadrill")
-  species: string;       // Species ID (e.g. "excadrill")
+  name: string; // Display name (e.g. "Excadrill")
+  species: string; // Species ID (e.g. "excadrill")
   level: number;
-  gender: string;        // 'M' | 'F' | 'N'
-  hp: number;            // Current HP (absolute for own side, percent for opponent)
-  maxHp: number;         // Max HP (absolute for own side, 100 for opponent)
-  hpPercent: number;     // HP as percentage 0-100
+  gender: string; // 'M' | 'F' | 'N'
+  hp: number; // Current HP (absolute for own side, percent for opponent)
+  maxHp: number; // Max HP (absolute for own side, 100 for opponent)
+  hpPercent: number; // HP as percentage 0-100
   status: StatusCondition | null;
   statusTurns: number;
   active: boolean;
   fainted: boolean;
   stats: BaseStats;
-  moves: string[];       // All known moves (IDs)
-  knownMoves: string[];  // Moves revealed in battle
-  ability: string;       // Base ability from team data
+  moves: string[]; // All known moves (IDs)
+  knownMoves: string[]; // Moves revealed in battle
+  ability: string; // Base ability from team data
   knownAbility: string | null; // Ability revealed in battle
-  item: string;          // Item from team data
-  knownItem: string | null;    // Item revealed in battle
+  item: string; // Item from team data
+  knownItem: string | null; // Item revealed in battle
   itemConsumed: boolean;
   teraType: string | null;
   terastallized: boolean;
@@ -214,8 +214,8 @@ export interface DamageResult {
 }
 
 export interface DamageMatchup {
-  myAttacking: DamageResult[];   // My active -> opponent active
-  oppAttacking: DamageResult[];  // Opponent active -> my active
+  myAttacking: DamageResult[]; // My active -> opponent active
+  oppAttacking: DamageResult[]; // Opponent active -> my active
 }
 
 // ============================================================

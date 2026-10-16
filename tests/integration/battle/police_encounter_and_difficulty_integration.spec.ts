@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { generateEncounter } from '@/logic/encounters/encounters';
 import { buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
@@ -13,20 +13,32 @@ import { requireMapRouteId } from '@/data/world/map-assets';
 
 vi.mock('gsap', () => ({
   default: {
-    delayedCall: vi.fn((_delay, cb) => { if (cb) cb(); return {}; }),
+    delayedCall: vi.fn((_delay, cb) => {
+      if (cb) cb();
+      return {};
+    }),
     fromTo: vi.fn(() => ({ progress: vi.fn() })),
     to: vi.fn(() => ({ progress: vi.fn() })),
     timeline: vi.fn(() => ({ to: vi.fn().mockReturnThis(), progress: vi.fn() })),
     set: vi.fn(),
-    context: vi.fn((fn) => { fn(); return { revert: vi.fn() }; })
+    context: vi.fn((fn) => {
+      fn();
+      return { revert: vi.fn() };
+    })
   },
   gsap: {
-    delayedCall: vi.fn((_delay, cb) => { if (cb) cb(); return {}; }),
+    delayedCall: vi.fn((_delay, cb) => {
+      if (cb) cb();
+      return {};
+    }),
     fromTo: vi.fn(() => ({ progress: vi.fn() })),
     to: vi.fn(() => ({ progress: vi.fn() })),
     timeline: vi.fn(() => ({ to: vi.fn().mockReturnThis(), progress: vi.fn() })),
     set: vi.fn(),
-    context: vi.fn((fn) => { fn(); return { revert: vi.fn() }; })
+    context: vi.fn((fn) => {
+      fn();
+      return { revert: vi.fn() };
+    })
   }
 }));
 
@@ -47,14 +59,94 @@ describe('Police Encounter and Difficulty Scaling Integration Test (Tier 2)', ()
     // Matriz completa de pruebas basada en ventas del Mercado Negro:
     // (Cada venta agrega +10% de criminalidad)
     const testCases = [
-      { sales: 0, expectedCrim: 0, isPolice: false, expectedBonusLv: 0, minTeam: 1, maxTeam: 3, route: 'route1', baseLv: 2, expectedLv: 4 },
-      { sales: 5, expectedCrim: 50, isPolice: false, expectedBonusLv: 0, minTeam: 1, maxTeam: 3, route: 'route1', baseLv: 2, expectedLv: 4 },
-      { sales: 10, expectedCrim: 100, isPolice: true, expectedBonusLv: 0, minTeam: 3, maxTeam: 4, route: 'route1', baseLv: 2, expectedLv: 7 }, // 2 + 5 + 0
-      { sales: 12, expectedCrim: 120, isPolice: true, expectedBonusLv: 2, minTeam: 3, maxTeam: 4, route: 'route1', baseLv: 2, expectedLv: 9 }, // 2 + 5 + 2
-      { sales: 15, expectedCrim: 150, isPolice: true, expectedBonusLv: 5, minTeam: 4, maxTeam: 5, route: 'route1', baseLv: 2, expectedLv: 12 }, // 2 + 5 + 5
-      { sales: 20, expectedCrim: 200, isPolice: true, expectedBonusLv: 10, minTeam: 6, maxTeam: 6, route: 'route1', baseLv: 2, expectedLv: 17 }, // 2 + 5 + 10 (SWAT 6)
-      { sales: 30, expectedCrim: 300, isPolice: true, expectedBonusLv: 20, minTeam: 6, maxTeam: 6, route: 'route1', baseLv: 2, expectedLv: 27 }, // 2 + 5 + 20 (SWAT 6)
-      { sales: 100, expectedCrim: 1000, isPolice: true, expectedBonusLv: 90, minTeam: 6, maxTeam: 6, route: 'cerulean_cave', baseLv: 55, expectedLv: 100 }, // 55 + 5 + 90 = 150 -> CLAMP a 100
+      {
+        sales: 0,
+        expectedCrim: 0,
+        isPolice: false,
+        expectedBonusLv: 0,
+        minTeam: 1,
+        maxTeam: 3,
+        route: 'route1',
+        baseLv: 2,
+        expectedLv: 4
+      },
+      {
+        sales: 5,
+        expectedCrim: 50,
+        isPolice: false,
+        expectedBonusLv: 0,
+        minTeam: 1,
+        maxTeam: 3,
+        route: 'route1',
+        baseLv: 2,
+        expectedLv: 4
+      },
+      {
+        sales: 10,
+        expectedCrim: 100,
+        isPolice: true,
+        expectedBonusLv: 0,
+        minTeam: 3,
+        maxTeam: 4,
+        route: 'route1',
+        baseLv: 2,
+        expectedLv: 7
+      }, // 2 + 5 + 0
+      {
+        sales: 12,
+        expectedCrim: 120,
+        isPolice: true,
+        expectedBonusLv: 2,
+        minTeam: 3,
+        maxTeam: 4,
+        route: 'route1',
+        baseLv: 2,
+        expectedLv: 9
+      }, // 2 + 5 + 2
+      {
+        sales: 15,
+        expectedCrim: 150,
+        isPolice: true,
+        expectedBonusLv: 5,
+        minTeam: 4,
+        maxTeam: 5,
+        route: 'route1',
+        baseLv: 2,
+        expectedLv: 12
+      }, // 2 + 5 + 5
+      {
+        sales: 20,
+        expectedCrim: 200,
+        isPolice: true,
+        expectedBonusLv: 10,
+        minTeam: 6,
+        maxTeam: 6,
+        route: 'route1',
+        baseLv: 2,
+        expectedLv: 17
+      }, // 2 + 5 + 10 (SWAT 6)
+      {
+        sales: 30,
+        expectedCrim: 300,
+        isPolice: true,
+        expectedBonusLv: 20,
+        minTeam: 6,
+        maxTeam: 6,
+        route: 'route1',
+        baseLv: 2,
+        expectedLv: 27
+      }, // 2 + 5 + 20 (SWAT 6)
+      {
+        sales: 100,
+        expectedCrim: 1000,
+        isPolice: true,
+        expectedBonusLv: 90,
+        minTeam: 6,
+        maxTeam: 6,
+        route: 'cerulean_cave',
+        baseLv: 55,
+        expectedLv: 100
+      } // 55 + 5 + 90 = 150 -> CLAMP a 100
     ];
 
     for (const tc of testCases) {
@@ -106,13 +198,17 @@ describe('Police Encounter and Difficulty Scaling Integration Test (Tier 2)', ()
     gameStore.state.starterChosen = true;
 
     // 1. Probar que generateEncounter genera encuentro con entrenador (policía)
-    const encounter = await generateEncounter('route1', {
-      team: gameStore.state.team,
-      playerClass: 'rocket',
-      classData: gameStore.state.classData,
-      trainerChance: 5,
-      faction: null
-    }, { forceEncounter: false });
+    const encounter = await generateEncounter(
+      'route1',
+      {
+        team: gameStore.state.team,
+        playerClass: 'rocket',
+        classData: gameStore.state.classData,
+        trainerChance: 5,
+        faction: null
+      },
+      { forceEncounter: false }
+    );
     expect(encounter).toBeDefined();
 
     // 2. Probar escalado en Ruta 1 (baseLv = 2):

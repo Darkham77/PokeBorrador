@@ -16,8 +16,10 @@ export function audit4SeatCompatibility(targetDir: string): SeatAuditResult {
   for (const file of files) {
     const content = readFileSync(file, 'utf-8');
     // Busca patrones explícitos de 2 asientos sin contemplar p3/p4
-    if (/const\s+seats\s*=\s*\[['"]p1['"]\s*,\s*['"]p2['"]\]/i.test(content) ||
-        /typeof\s+seat\s*===\s*['"]p1['"]\s*\|\|\s*seat\s*===\s*['"]p2['"]/i.test(content)) {
+    if (
+      /const\s+seats\s*=\s*\[['"]p1['"]\s*,\s*['"]p2['"]\]/i.test(content) ||
+      /typeof\s+seat\s*===\s*['"]p1['"]\s*\|\|\s*seat\s*===\s*['"]p2['"]/i.test(content)
+    ) {
       hardcodedTwoSeatFiles.push(file);
     }
   }

@@ -6,7 +6,9 @@ export interface LoggerOptions {
   readonly reportDir?: string;
 }
 
-export function formatExecutionTimestamp(instant: Temporal.Instant = Temporal.Now.instant()): string {
+export function formatExecutionTimestamp(
+  instant: Temporal.Instant = Temporal.Now.instant()
+): string {
   return instant.toString().replace('T', ' ').slice(0, 19);
 }
 
@@ -54,7 +56,7 @@ export abstract class BaseRunnerLogger {
     const percent = total > 0 ? Math.round((current / total) * 100) : 0;
     const paddedPercent = `${percent}`.padStart(3, ' ');
     const knownEmojis = ['▶️', '✅', '❌', '✨', '🚀', '⚠️', '⏭️', '💡', '🎉'];
-    const matchedEmoji = knownEmojis.find(e => message.startsWith(e));
+    const matchedEmoji = knownEmojis.find((e) => message.startsWith(e));
     if (matchedEmoji) {
       const cleanMsg = message.slice(matchedEmoji.length).trim();
       const formattedMsg = `${matchedEmoji} [${tag}] [${paddedPercent}%] (${current}/${total}) ${cleanMsg}`;
@@ -98,17 +100,23 @@ export abstract class BaseRunnerLogger {
 
     const blockLines: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (blockHeader) {
-      blockLines.push(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      blockLines.push(
+        `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+      );
       blockLines.push(`[${Temporal.Now.instant().toString()}] LOG BLOCK: ${blockHeader}`);
-      blockLines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      blockLines.push(
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+      );
     }
     for (const line of this.memoryBuffer) {
       blockLines.push(line);
     }
-    blockLines.push(`--------------------------------------------------------------------------------\n`);
+    blockLines.push(
+      `--------------------------------------------------------------------------------\n`
+    );
 
     const blockContent = blockLines.join('\n') + '\n';
-    
+
     // Escritura síncrona atómica en el archivo de reporte maestro
     fs.appendFileSync(this.debugFilePath, blockContent, { encoding: 'utf-8' });
     this.memoryBuffer = [];
@@ -123,12 +131,16 @@ export abstract class BaseRunnerLogger {
     this.isIntercepting = true;
 
     console.debug = (...args: unknown[]) => {
-      const line = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+      const line = args
+        .map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a)))
+        .join(' ');
       this.debug(line);
     };
 
     console.log = (...args: unknown[]) => {
-      const line = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+      const line = args
+        .map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a)))
+        .join(' ');
       if (this.isProgressLog(line)) {
         this.originalConsoleLog.apply(console, args);
       } else {

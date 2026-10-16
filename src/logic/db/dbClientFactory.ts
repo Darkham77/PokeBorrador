@@ -9,7 +9,6 @@ const MAX_RECONNECT_INTERVAL_MS = 300000 as const;
 const INITIAL_RECONNECT_BACKOFF_MS = [1000, 2000, 5000] as const;
 const DEFAULT_RECONNECT_BACKOFF_MS = 5000 as const;
 
-
 function getE2EDriver(): E2eDatabaseDriver {
   if (typeof globalThis !== 'undefined' && globalThis.__E2E_DRIVER__) {
     return globalThis.__E2E_DRIVER__;
@@ -36,11 +35,15 @@ export function resolveInitialDbSession(
   }
 
   if (e2eDriver === 'postgres') {
-    const isLocalContainer = Boolean(config.url && (config.url.includes('127.0.0.1') || config.url.includes('localhost')));
-    const finalConfig = isLocalContainer ? config : {
-      url: 'http://127.0.0.1:54321',
-      key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjI1MDAwMDAwMDB9.bWuWcdy1ICtTs7Zq7TNjum7G0VIS5je9rFlzshoeBLA'
-    };
+    const isLocalContainer = Boolean(
+      config.url && (config.url.includes('127.0.0.1') || config.url.includes('localhost'))
+    );
+    const finalConfig = isLocalContainer
+      ? config
+      : {
+          url: 'http://127.0.0.1:54321',
+          key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjI1MDAwMDAwMDB9.bWuWcdy1ICtTs7Zq7TNjum7G0VIS5je9rFlzshoeBLA'
+        };
     return { mode: 'online', config: finalConfig };
   }
 
@@ -51,7 +54,9 @@ export function resolveInitialDbSession(
 export function createSupabaseClient(config: DBConfig): SupabaseClient {
   const { url, key } = config;
   if (!url || !key) {
-    throw new Error('[DBRouter] Missing Supabase configuration (URL or API key). Online operations cannot proceed.');
+    throw new Error(
+      '[DBRouter] Missing Supabase configuration (URL or API key). Online operations cannot proceed.'
+    );
   }
 
   const isE2E = isE2EEnvironment();
@@ -61,13 +66,15 @@ export function createSupabaseClient(config: DBConfig): SupabaseClient {
   try {
     logger.info('DBRouter', 'Lazily initializing Supabase client...');
     return createClient(url, key, {
-      ...(isE2EPostgres ? {
-        accessToken: async () => {
-          const token = safeStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
-          if (token) return token;
-          return key;
-        }
-      } : {}),
+      ...(isE2EPostgres
+        ? {
+            accessToken: async () => {
+              const token = safeStorage.getItem(LOCAL_STORAGE_KEYS.AUTH_TOKEN);
+              if (token) return token;
+              return key;
+            }
+          }
+        : {}),
       realtime: {
         reconnectAfterMs: (tries) => {
           if (tries > 3) return MAX_RECONNECT_INTERVAL_MS;
@@ -76,6 +83,8 @@ export function createSupabaseClient(config: DBConfig): SupabaseClient {
       }
     });
   } catch (err) {
-    throw new Error(`[DBRouter] Failed to initialize Supabase client: ${(err as Error).message}`, { cause: err });
+    throw new Error(`[DBRouter] Failed to initialize Supabase client: ${(err as Error).message}`, {
+      cause: err
+    });
   }
 }

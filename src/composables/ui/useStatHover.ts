@@ -1,10 +1,10 @@
-import { gsap } from 'gsap'
+import { gsap } from 'gsap';
 
 interface StatHoverOptions {
-  y?: number
-  scale?: number
-  brightness?: number
-  duration?: number
+  y?: number;
+  scale?: number;
+  brightness?: number;
+  duration?: number;
 }
 
 const DEFAULT_HOVER_Y_OFFSET_PX = -3 as const;
@@ -17,20 +17,20 @@ const DEFAULT_HOVER_OPTIONS: Required<StatHoverOptions> = {
   scale: DEFAULT_HOVER_SCALE_FACTOR,
   brightness: DEFAULT_HOVER_BRIGHTNESS,
   duration: DEFAULT_STAT_HOVER_DURATION_SEC
-}
+};
 
 /**
  * Shared GSAP composable for smooth, non-destructive stat card hover animations.
  * Elevates the card and enhances brightness without wiping out underlying CSS gradients or borders.
  */
 export function useStatHover(_ignoredClassMap?: unknown, options: StatHoverOptions = {}) {
-  const cfg = { ...DEFAULT_HOVER_OPTIONS, ...options }
+  const cfg = { ...DEFAULT_HOVER_OPTIONS, ...options };
 
   const handleStatEnter = (e: MouseEvent) => {
-    const el = e.currentTarget as HTMLElement | null
-    if (!el) return
+    const el = e.currentTarget as HTMLElement | null;
+    if (!el) return;
     if (!el.style.filter) {
-      gsap.set(el, { filter: 'brightness(1)' })
+      gsap.set(el, { filter: 'brightness(1)' });
     }
     gsap.to(el, {
       y: cfg.y,
@@ -40,12 +40,12 @@ export function useStatHover(_ignoredClassMap?: unknown, options: StatHoverOptio
       duration: cfg.duration,
       ease: 'power2.out',
       overwrite: 'auto'
-    })
-  }
+    });
+  };
 
   const handleStatLeave = (e: MouseEvent) => {
-    const el = e.currentTarget as HTMLElement | null
-    if (!el) return
+    const el = e.currentTarget as HTMLElement | null;
+    if (!el) return;
     gsap.to(el, {
       y: 0,
       scale: 1,
@@ -54,9 +54,8 @@ export function useStatHover(_ignoredClassMap?: unknown, options: StatHoverOptio
       duration: cfg.duration,
       ease: 'power2.out',
       overwrite: 'auto'
-    })
-  }
+    });
+  };
 
-  return { handleStatEnter, handleStatLeave }
+  return { handleStatEnter, handleStatLeave };
 }
-

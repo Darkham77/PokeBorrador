@@ -1,70 +1,77 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
-import { CATEGORY_LABELS } from '@/data/inventory/items'
-import type { BagMainTab } from '@/types/inventory/items'
+import { computed, watch } from 'vue';
+import { CATEGORY_LABELS } from '@/data/inventory/items';
+import type { BagMainTab } from '@/types/inventory/items';
 
 interface Props {
-  activeCategory: string
-  mainTab: BagMainTab
-  availableCategories?: string[]
-  accentColor?: string
+  activeCategory: string;
+  mainTab: BagMainTab;
+  availableCategories?: string[];
+  accentColor?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   availableCategories: undefined,
   accentColor: 'var(--yellow)'
-})
+});
 
 const emit = defineEmits<{
-  (e: 'update:activeCategory', category: string): void
-}>()
+  (e: 'update:activeCategory', category: string): void;
+}>();
 
 const categories = computed(() => {
-  const allCats = props.mainTab === 'materiales' ? [
-    { id: 'todos', label: 'Todos', icon: '📦' },
-    { id: 'raw_material', label: CATEGORY_LABELS.raw_material, icon: '🪵' },
-    { id: 'refined_material', label: CATEGORY_LABELS.refined_material, icon: '🪙' },
-    { id: 'component', label: CATEGORY_LABELS.component, icon: '⚙️' }
-  ] : [
-    { id: 'todos', label: 'Todos', icon: '📦' },
-    { id: 'utilizables', label: 'Utilizables', icon: '⭐' },
-    { id: 'stones', label: CATEGORY_LABELS.stones || 'Piedras', icon: '💎' },
-    { id: 'pokeballs', label: CATEGORY_LABELS.pokeballs, icon: '⚪' },
-    { id: 'potions', label: CATEGORY_LABELS.potions, icon: '🧪' },
-    { id: 'combat_held', label: CATEGORY_LABELS.combat_held, icon: '🎒' },
-    { id: 'breeding_held', label: CATEGORY_LABELS.breeding_held, icon: '🥚' },
-    { id: 'machinery', label: CATEGORY_LABELS.machinery, icon: '🏭' },
-    { id: 'tools', label: CATEGORY_LABELS.tools, icon: '🛠️' },
-    { id: 'tms', label: CATEGORY_LABELS.tms, icon: '📀' },
-    { id: 'otros', label: CATEGORY_LABELS.otros, icon: '✨' }
-  ]
+  const allCats =
+    props.mainTab === 'materiales'
+      ? [
+          { id: 'todos', label: 'Todos', icon: '📦' },
+          { id: 'raw_material', label: CATEGORY_LABELS.raw_material, icon: '🪵' },
+          { id: 'refined_material', label: CATEGORY_LABELS.refined_material, icon: '🪙' },
+          { id: 'component', label: CATEGORY_LABELS.component, icon: '⚙️' }
+        ]
+      : [
+          { id: 'todos', label: 'Todos', icon: '📦' },
+          { id: 'utilizables', label: 'Utilizables', icon: '⭐' },
+          { id: 'stones', label: CATEGORY_LABELS.stones || 'Piedras', icon: '💎' },
+          { id: 'pokeballs', label: CATEGORY_LABELS.pokeballs, icon: '⚪' },
+          { id: 'potions', label: CATEGORY_LABELS.potions, icon: '🧪' },
+          { id: 'combat_held', label: CATEGORY_LABELS.combat_held, icon: '🎒' },
+          { id: 'breeding_held', label: CATEGORY_LABELS.breeding_held, icon: '🥚' },
+          { id: 'machinery', label: CATEGORY_LABELS.machinery, icon: '🏭' },
+          { id: 'tools', label: CATEGORY_LABELS.tools, icon: '🛠️' },
+          { id: 'tms', label: CATEGORY_LABELS.tms, icon: '📀' },
+          { id: 'otros', label: CATEGORY_LABELS.otros, icon: '✨' }
+        ];
 
-  const avail = props.availableCategories
+  const avail = props.availableCategories;
   if (avail) {
-    return allCats.filter(cat => {
-      if (cat.id === 'todos') return true
-      return avail.includes(cat.id)
-    })
+    return allCats.filter((cat) => {
+      if (cat.id === 'todos') return true;
+      return avail.includes(cat.id);
+    });
   }
-  return allCats
-})
+  return allCats;
+});
 
 const setCategory = (id: string) => {
-  emit('update:activeCategory', id)
-}
+  emit('update:activeCategory', id);
+};
 
 // Ensure active category is always valid when changing main tabs
-watch(() => categories.value, (newCats) => {
-  if (!newCats.find(c => c.id === props.activeCategory)) {
-    emit('update:activeCategory', 'todos')
-  }
-}, { immediate: true })
+watch(
+  () => categories.value,
+  (newCats) => {
+    if (!newCats.find((c) => c.id === props.activeCategory)) {
+      emit('update:activeCategory', 'todos');
+    }
+  },
+  { immediate: true }
+);
 
-const SIDEBAR_BORDER_COLOR_MIX_PERCENT = 15
+const SIDEBAR_BORDER_COLOR_MIX_PERCENT = 15;
 
 const sidebarBorderColor = computed(() => {
-  return `color-mix(in srgb, ${props.accentColor} ${SIDEBAR_BORDER_COLOR_MIX_PERCENT}%, transparent)`
-})
+  return `color-mix(in srgb, ${props.accentColor} ${SIDEBAR_BORDER_COLOR_MIX_PERCENT}%, transparent)`;
+});
 </script>
 
 <template>
@@ -88,7 +95,7 @@ const sidebarBorderColor = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .unified-sidebar {
   @include shop-sidebar(v-bind('sidebarBorderColor'));

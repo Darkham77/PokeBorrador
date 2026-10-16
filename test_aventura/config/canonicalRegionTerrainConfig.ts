@@ -293,13 +293,9 @@ export const ROUTE_WAYPOINTS_CONFIG = {
     { x: 194, y: 58 }
   ],
 
-  ROUTE10_POWERPLANT_POINTS: [
-    { x: 212, y: 64 }
-  ],
+  ROUTE10_POWERPLANT_POINTS: [{ x: 212, y: 64 }],
 
-  ROUTE10_SOUTH_POINTS: [
-    { x: 204, y: 92 }
-  ],
+  ROUTE10_SOUTH_POINTS: [{ x: 204, y: 92 }],
 
   DIGLETT_POINTS: [
     { x: 134, y: 156 },

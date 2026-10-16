@@ -21,7 +21,7 @@
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, FileScanAuditor , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, FileScanAuditor, createRuleCapabilities } from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -35,7 +35,8 @@ export const COMBAT_INVARIANTS_RULES: readonly CombatInvariantsRuleId[] = [
 ] as const;
 
 const STATUS_NULL_ASSIGNMENT_REGEX = /(?:\.status\s*=\s*null\b|\bstatus:\s*null\b)/g;
-const BINARY_SEAT_BRANCH_REGEX = /\b(?:seat|sideID|side|targetSide)\s*===\s*['"]p1['"]\s*\?\s*['"]p2['"]\s*:\s*['"]p1['"]/g;
+const BINARY_SEAT_BRANCH_REGEX =
+  /\b(?:seat|sideID|side|targetSide)\s*===\s*['"]p1['"]\s*\?\s*['"]p2['"]\s*:\s*['"]p1['"]/g;
 
 export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRuleId> {
   constructor() {
@@ -67,8 +68,10 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
         'battle-multi-seat-hardcoding': 'Bifurcación binaria p1/p2'
       },
       ruleRemediations: {
-        'showdown-healthy-status-null-prohibition': 'Use empty string \'\' instead of null for healthy Pokemon status',
-        'battle-multi-seat-hardcoding': 'Use dynamic seat helper methods instead of binary p1/p2 ternary expressions'
+        'showdown-healthy-status-null-prohibition':
+          "Use empty string '' instead of null for healthy Pokemon status",
+        'battle-multi-seat-hardcoding':
+          'Use dynamic seat helper methods instead of binary p1/p2 ternary expressions'
       },
       roots: ['src/logic/battle'],
       allowedExtensions: new Set(['.ts', '.vue'])
@@ -87,7 +90,10 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
 
   private auditStatusNull(relPath: string, content: string): void {
     let match: RegExpExecArray | null;
-    const regex = new RegExp(STATUS_NULL_ASSIGNMENT_REGEX.source, STATUS_NULL_ASSIGNMENT_REGEX.flags);
+    const regex = new RegExp(
+      STATUS_NULL_ASSIGNMENT_REGEX.source,
+      STATUS_NULL_ASSIGNMENT_REGEX.flags
+    );
 
     while ((match = regex.exec(content)) !== null) {
       const line = this.getLineNumber(content, match.index);
@@ -121,6 +127,10 @@ export class CombatInvariantsAuditor extends FileScanAuditor<CombatInvariantsRul
 }
 
 // Standalone execution support
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new CombatInvariantsAuditor());
 }

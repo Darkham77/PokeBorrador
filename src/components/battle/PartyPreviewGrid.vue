@@ -1,22 +1,17 @@
 <script setup lang="ts">
-import type { PartySlotStatus } from '@/types/battle/battle'
+import type { PartySlotStatus } from '@/types/battle/battle';
 
 defineProps<{
-  teamBallsStatus: PartySlotStatus[]
-}>()
+  teamBallsStatus: PartySlotStatus[];
+}>();
 </script>
 
 <template>
   <div class="team-balls-row">
-    <div 
-      v-for="(status, idx) in teamBallsStatus" 
-      :key="idx"
-      class="ball-slot"
-      :class="status"
-    />
+    <div v-for="(status, idx) in teamBallsStatus" :key="idx" class="ball-slot" :class="status" />
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_team-balls.scss" as *;
+@use '@/styles/components/_team-balls.scss' as *;
 </style>

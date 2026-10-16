@@ -179,7 +179,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Line-Height for Wrapped Pixel Text**: When using pixelated fonts (like `Pokemon FireRed LeafGreen`), text wrapping can lead to extremely tight vertical spacing where lines overlap or touch. Always specify a generous `line-height` of `1.4` to `1.6` for multiline text containers to ensure proper legibility and vertical breathing room.
 - **Prohibition of Faux-Bold on Pixel Typography Mandate**:
   - Pixel fonts (Retro Typography such as `Pokemon FireRed LeafGreen`, `PKMN RBYGSC`, or `Press Start 2P`) are bitmap-aligned monospace typefaces with NO native bold variant. Developers MUST NEVER apply `font-weight: 700`, `800`, `900`, or `bold` to elements styled with `@include pixelated;`.
-  - Applying artificial bolding forces the browser to generate *faux-bold* by dilating pixel glyphs, clipping ascenders/descenders against line boundaries, cutting off the top of uppercase characters and the bottom of lowercase descenders (`p`, `g`, `y`), and turning clean retro lettering into smeared blobs. Pixel fonts must use `font-weight: normal;` (or omit font-weight) and inherit safe `line-height: 1.35;`.
+  - Applying artificial bolding forces the browser to generate _faux-bold_ by dilating pixel glyphs, clipping ascenders/descenders against line boundaries, cutting off the top of uppercase characters and the bottom of lowercase descenders (`p`, `g`, `y`), and turning clean retro lettering into smeared blobs. Pixel fonts must use `font-weight: normal;` (or omit font-weight) and inherit safe `line-height: 1.35;`.
 - **BST Aesthetics**: Game-world data (Stats, IVs, Levels) MUST prioritize these sharp pixelated tokens to reinforce the "Retro Heart".
 - **Technical/Special Character Exception**: For debugging consoles, developer detail overlays, technical logs, or cases requiring special character glyphs (such as `@`, `#`, brackets, or JSON formatting), you are permitted to use standard monospace fonts (e.g. `Courier New`, monospace) or alternative pixel fonts (like `VT323` or `Silkscreen`) to ensure readability.
 - **Primary Font Special Character Ban**: The primary pixel font (`Pokemon FireRed LeafGreen`) does NOT contain glyphs for special characters like `#`, `@`, or `[` (square brackets). Using them with the primary font causes visual corruption. You MUST use alternative fonts (such as `VT323` or standard monospace) whenever rendering strings containing these symbols (e.g., Pokedex number `#001` or debug tags `[DEBUG]`).
@@ -482,7 +482,7 @@ To ensure a seamless transition between full-map exploration and focused modal i
 
 To prevent visual "jitter" or layout shifts during state transitions, use **Sticky Refs** (local memory variables) that hold the last valid value while the underlying store is updating or clearing.
 
-- **Combat Anchors**: Keep ground-coordinates in a local `ref` that only updates when new *confirmed* data arrives.
+- **Combat Anchors**: Keep ground-coordinates in a local `ref` that only updates when new _confirmed_ data arrives.
 - **HUD Stability**: A Pokémon's info-card MUST stay visible during finishing animations (`isFinishing`) until the Pokémon physically leaves the screen or the HP reaches zero.
 
 ### 16. Persistent Player HUD
@@ -529,7 +529,7 @@ To maintain pixel-perfect alignment in the high-fidelity 2D combat arena:
 
 ### 2. Shadow & Ground Synchronization (Pixelated Standard)
 
-- **Rendered Parity**: Shadow positions MUST be calculated based on the *rendered* height of the sprite (`object-fit: contain`) inside the entity square.
+- **Rendered Parity**: Shadow positions MUST be calculated based on the _rendered_ height of the sprite (`object-fit: contain`) inside the entity square.
 - **Formula**: The vertical offset is derived from the ratio between the sprite's `feetY` (ground level) and the total `ENTITY_SIZE`.
 - **Pixelation Technique**: Generate shadows on a low-resolution canvas (e.g., 10x7), disable anti-aliasing (`imageSmoothingEnabled = false`), and scale up via CSS with `image-rendering: pixelated`.
 - **Centralization**: All shadow dimensions and base offsets MUST be controlled by `spatialCoordinator.ts`. Prohibit hardcoded dimensions in CSS (scoped or global) to avoid layout collisions.
@@ -666,7 +666,7 @@ To prevent overloading the HUD with irrelevant information, weather and time cyc
 
 To prevent false positive translation leaks in static database validations:
 
-- **Curse Type Exception ("???")**: The custom elemental type `"???"` used by the *Maldición (Curse)* move in generations 2-4 MUST be registered as a valid and allowed Spanish type in any translation/database audit suite (`validate_translations.ts`), preventing false-positive mismatches.
+- **Curse Type Exception ("???")**: The custom elemental type `"???"` used by the _Maldición (Curse)_ move in generations 2-4 MUST be registered as a valid and allowed Spanish type in any translation/database audit suite (`validate_translations.ts`), preventing false-positive mismatches.
 
 ### 25. High-Fidelity Vue 3 GSAP Tooltip Coordination
 
@@ -711,13 +711,17 @@ The project's audit engine (`audit_project.ts`) flags any CSS `transition:` prop
 // ❌ Flagged as violation: CSS transition
 &.clickable-pill {
   transition: background-color 0.2s;
-  &:hover { background: Rgba($white, 0.05); }
+  &:hover {
+    background: Rgba($white, 0.05);
+  }
 }
 
 // ✅ Correct: use will-change for GPU hint, hover is instant state change
 &.clickable-pill {
   will-change: background-color;
-  &:hover { background: Rgba($white, 0.05); }
+  &:hover {
+    background: Rgba($white, 0.05);
+  }
 }
 ```
 

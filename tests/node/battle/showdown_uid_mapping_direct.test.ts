@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, beforeAll, vi } from 'vitest';
+import { describe, it, beforeEach, beforeAll, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import { Battle } from '@pkmn/sim';
@@ -23,11 +23,19 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
 
   it('TestCase 1: Initial mapping correctness', () => {
     const p1Team = [
-      { name: 'Vaporeon', species: 'Vaporeon', moves: ['hydropump'], level: 50, uid: 'vaporeon-uid' },
+      {
+        name: 'Vaporeon',
+        species: 'Vaporeon',
+        moves: ['hydropump'],
+        level: 50,
+        uid: 'vaporeon-uid'
+      },
       { name: 'Gengar', species: 'Gengar', moves: ['shadowball'], level: 50, uid: 'gengar-uid' },
       { name: 'Eevee', species: 'Eevee', moves: ['tackle'], level: 50, uid: 'eevee-uid' }
     ];
-    const p2Team = [{ name: 'Rhydon', species: 'Rhydon', moves: ['stoneedge'], level: 50, uid: 'rhydon-uid' }];
+    const p2Team = [
+      { name: 'Rhydon', species: 'Rhydon', moves: ['stoneedge'], level: 50, uid: 'rhydon-uid' }
+    ];
 
     battle.setPlayer('p1', { name: 'Player 1', team: p1Team as any });
     battle.setPlayer('p2', { name: 'Player 2', team: p2Team as any });
@@ -59,11 +67,19 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
 
   it('TestCase 2: Reordering after switch', () => {
     const p1Team = [
-      { name: 'Vaporeon', species: 'Vaporeon', moves: ['hydropump'], level: 50, uid: 'vaporeon-uid' },
+      {
+        name: 'Vaporeon',
+        species: 'Vaporeon',
+        moves: ['hydropump'],
+        level: 50,
+        uid: 'vaporeon-uid'
+      },
       { name: 'Gengar', species: 'Gengar', moves: ['shadowball'], level: 50, uid: 'gengar-uid' },
       { name: 'Eevee', species: 'Eevee', moves: ['tackle'], level: 50, uid: 'eevee-uid' }
     ];
-    const p2Team = [{ name: 'Rhydon', species: 'Rhydon', moves: ['stoneedge'], level: 50, uid: 'rhydon-uid' }];
+    const p2Team = [
+      { name: 'Rhydon', species: 'Rhydon', moves: ['stoneedge'], level: 50, uid: 'rhydon-uid' }
+    ];
 
     battle.setPlayer('p1', { name: 'Player 1', team: p1Team as any });
     battle.setPlayer('p2', { name: 'Player 2', team: p2Team as any });
@@ -96,18 +112,34 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
 
     const updatedRequest = injectUidsIntoRequest(battle, 'p1', request) as any;
 
-    assert.strictEqual(updatedRequest.side.pokemon[0].uid, 'gengar-uid', 'Active Gengar (now index 0) must get Gengar UID');
-    assert.strictEqual(updatedRequest.side.pokemon[1].uid, 'vaporeon-uid', 'Benched Vaporeon (now index 1) must get Vaporeon UID');
+    assert.strictEqual(
+      updatedRequest.side.pokemon[0].uid,
+      'gengar-uid',
+      'Active Gengar (now index 0) must get Gengar UID'
+    );
+    assert.strictEqual(
+      updatedRequest.side.pokemon[1].uid,
+      'vaporeon-uid',
+      'Benched Vaporeon (now index 1) must get Vaporeon UID'
+    );
     assert.strictEqual(updatedRequest.side.pokemon[2].uid, 'eevee-uid');
   });
 
   it('TestCase 3: Duplicate identical species mapping', () => {
     // Two identical Bulbasaurs with same moves and stats
     const p1Team = [
-      { name: 'bulb1111', species: 'Bulbasaur', moves: ['tackle'], level: 50, uid: 'bulb1111-uid1' },
+      {
+        name: 'bulb1111',
+        species: 'Bulbasaur',
+        moves: ['tackle'],
+        level: 50,
+        uid: 'bulb1111-uid1'
+      },
       { name: 'bulb2222', species: 'Bulbasaur', moves: ['tackle'], level: 50, uid: 'bulb2222-uid2' }
     ];
-    const p2Team = [{ name: 'rhydon11', species: 'Rhydon', moves: ['splash'], level: 50, uid: 'rhydon11-uid' }];
+    const p2Team = [
+      { name: 'rhydon11', species: 'Rhydon', moves: ['splash'], level: 50, uid: 'rhydon11-uid' }
+    ];
 
     battle.setPlayer('p1', { name: 'Player 1', team: p1Team as any });
     battle.setPlayer('p2', { name: 'Player 2', team: p2Team as any });
@@ -156,9 +188,17 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
 
   it('TestCase 4: Strict error when UID is missing', () => {
     const p1Team = [
-      { name: 'vaporeon', species: 'Vaporeon', moves: ['hydropump'], level: 50, uid: 'vaporeon-uid' }
+      {
+        name: 'vaporeon',
+        species: 'Vaporeon',
+        moves: ['hydropump'],
+        level: 50,
+        uid: 'vaporeon-uid'
+      }
     ];
-    const p2Team = [{ name: 'rhydon11', species: 'Rhydon', moves: ['stoneedge'], level: 50, uid: 'rhydon-uid' }];
+    const p2Team = [
+      { name: 'rhydon11', species: 'Rhydon', moves: ['stoneedge'], level: 50, uid: 'rhydon-uid' }
+    ];
 
     battle.setPlayer('p1', { name: 'Player 1', team: p1Team as any });
     battle.setPlayer('p2', { name: 'Player 2', team: p2Team as any });
@@ -167,9 +207,7 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
 
     const request = {
       side: {
-        pokemon: [
-          { ident: 'p1: vaporeon', details: 'Vaporeon, L50' }
-        ]
+        pokemon: [{ ident: 'p1: vaporeon', details: 'Vaporeon, L50' }]
       }
     };
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop';
 import type { BattleContext } from '@/types/battle/battleContext';
 import { ref } from 'vue';

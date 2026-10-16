@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import type { ParsedStatusEffectInfo } from '@/types/battle/tooltip'
+import type { ParsedStatusEffectInfo } from '@/types/battle/tooltip';
 import {
   getTargetCssClass,
   getDirectionCssClass,
   getTargetArrow,
   getDirectionArrow,
   getStageRangeLabel
-} from './moveTooltipStatusHelper.ts'
+} from './moveTooltipStatusHelper.ts';
 
 defineProps<{
-  parsedStatusEffect: ParsedStatusEffectInfo
-}>()
+  parsedStatusEffect: ParsedStatusEffectInfo;
+}>();
 </script>
 
 <template>
   <div class="status-effect-wrapper">
-    <div class="calc-section-title">
-      EFECTO DE ESTADO
-    </div>
+    <div class="calc-section-title">EFECTO DE ESTADO</div>
 
     <!-- Si es condición persistente/volátil (Envenenado, Drenadoras, etc.) -->
     <template v-if="parsedStatusEffect.isCondition">
@@ -25,10 +23,7 @@ defineProps<{
         <!-- Box 1: Objetivo -->
         <div class="stat-box">
           <span class="stat-lbl">APLICADO A</span>
-          <span
-            class="stat-val"
-            :class="getTargetCssClass(parsedStatusEffect.isSelf)"
-          >
+          <span class="stat-val" :class="getTargetCssClass(parsedStatusEffect.isSelf)">
             {{ parsedStatusEffect.targetName }}
             <span
               class="arrow"
@@ -42,14 +37,13 @@ defineProps<{
         <!-- Box 2: Estado -->
         <div class="stat-box">
           <span class="stat-lbl">ESTADO</span>
-          <span
-            class="stat-val"
-            :class="getTargetCssClass(parsedStatusEffect.isSelf)"
-          >
+          <span class="stat-val" :class="getTargetCssClass(parsedStatusEffect.isSelf)">
             {{ parsedStatusEffect.label }}
             <span
               class="arrow"
-              :class="getDirectionCssClass(parsedStatusEffect.direction) === 'boosted' ? 'up' : 'down'"
+              :class="
+                getDirectionCssClass(parsedStatusEffect.direction) === 'boosted' ? 'up' : 'down'
+              "
             >
               {{ getDirectionArrow(parsedStatusEffect.direction) }}
             </span>
@@ -72,10 +66,7 @@ defineProps<{
         <!-- Box 1: Objetivo -->
         <div class="stat-box">
           <span class="stat-lbl">APLICADO A</span>
-          <span
-            class="stat-val"
-            :class="getTargetCssClass(parsedStatusEffect.isSelf)"
-          >
+          <span class="stat-val" :class="getTargetCssClass(parsedStatusEffect.isSelf)">
             {{ parsedStatusEffect.targetName }}
             <span
               class="arrow"
@@ -89,14 +80,13 @@ defineProps<{
         <!-- Box 2: Estadística -->
         <div class="stat-box">
           <span class="stat-lbl">ESTADÍSTICA</span>
-          <span
-            class="stat-val"
-            :class="getDirectionCssClass(parsedStatusEffect.direction)"
-          >
+          <span class="stat-val" :class="getDirectionCssClass(parsedStatusEffect.direction)">
             {{ parsedStatusEffect.statName }}
             <span
               class="arrow"
-              :class="getDirectionCssClass(parsedStatusEffect.direction) === 'boosted' ? 'up' : 'down'"
+              :class="
+                getDirectionCssClass(parsedStatusEffect.direction) === 'boosted' ? 'up' : 'down'
+              "
             >
               {{ getDirectionArrow(parsedStatusEffect.direction) }}
             </span>
@@ -106,14 +96,13 @@ defineProps<{
         <!-- Box 3: RANGO (STAGE) -->
         <div class="stat-box">
           <span class="stat-lbl">RANGO (STAGE)</span>
-          <span
-            class="stat-val"
-            :class="getDirectionCssClass(parsedStatusEffect.direction)"
-          >
+          <span class="stat-val" :class="getDirectionCssClass(parsedStatusEffect.direction)">
             {{ getStageRangeLabel(parsedStatusEffect.currentStage, parsedStatusEffect.finalStage) }}
             <span
               class="arrow"
-              :class="getDirectionCssClass(parsedStatusEffect.direction) === 'boosted' ? 'up' : 'down'"
+              :class="
+                getDirectionCssClass(parsedStatusEffect.direction) === 'boosted' ? 'up' : 'down'
+              "
             >
               {{ getDirectionArrow(parsedStatusEffect.direction) }}
             </span>
@@ -121,13 +110,11 @@ defineProps<{
         </div>
 
         <!-- Box 4: Valor Neto -->
-        <div
-          v-if="parsedStatusEffect.stat !== 'all'"
-          class="stat-box"
-        >
+        <div v-if="parsedStatusEffect.stat !== 'all'" class="stat-box">
           <span class="stat-lbl">VALOR NETO</span>
           <span class="stat-val">
-            {{ parsedStatusEffect.initialStatVal }} <span class="emoji">➔</span> {{ parsedStatusEffect.finalStatVal }}
+            {{ parsedStatusEffect.initialStatVal }} <span class="emoji">➔</span>
+            {{ parsedStatusEffect.finalStatVal }}
           </span>
         </div>
       </div>
@@ -136,8 +123,8 @@ defineProps<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/_move-tooltip-shared.scss" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/_move-tooltip-shared.scss' as *;
 
 .status-effect-wrapper {
   display: flex;

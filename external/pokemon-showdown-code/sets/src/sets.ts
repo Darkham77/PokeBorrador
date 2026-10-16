@@ -1,11 +1,4 @@
-import {
-  GenerationNum,
-  HPTypeName,
-  ID,
-  PokemonSet,
-  StatID,
-  StatsTable,
-} from '@pkmn/types';
+import { GenerationNum, HPTypeName, ID, PokemonSet, StatID, StatsTable } from '@pkmn/types';
 
 export interface DataTable<T> {
   get(name: string): Readonly<T> | undefined;
@@ -22,9 +15,9 @@ export interface Data {
 
   readonly gen: GenerationNum;
 
-  readonly abilities: DataTable<{name: string}>;
-  readonly items: DataTable<{name: string}>;
-  readonly moves: DataTable<{name: string}>;
+  readonly abilities: DataTable<{ name: string }>;
+  readonly items: DataTable<{ name: string }>;
+  readonly moves: DataTable<{ name: string }>;
   readonly natures: DataTable<Nature>;
   readonly species: DataTable<{
     name: string;
@@ -32,7 +25,7 @@ export interface Data {
     baseStats: StatsTable;
     gender?: string;
     battleOnly?: string | string[];
-    abilities?: {0: string; 1?: string; H?: string; S?: string};
+    abilities?: { 0: string; 1?: string; H?: string; S?: string };
     types?: string[];
     requiredTeraType?: string;
   }>;
@@ -49,12 +42,12 @@ const STAT_NAMES: Readonly<StatsTable<string>> = {
   def: 'Def',
   spa: 'SpA',
   spd: 'SpD',
-  spe: 'Spe',
+  spe: 'Spe'
 };
 
 const STATS = Object.keys(STAT_NAMES) as readonly StatID[];
 
-const DECODE_STAT: Readonly<{[name: string]: StatID}> = {
+const DECODE_STAT: Readonly<{ [name: string]: StatID }> = {
   HP: 'hp',
   hp: 'hp',
   Attack: 'atk',
@@ -79,12 +72,12 @@ const DECODE_STAT: Readonly<{[name: string]: StatID}> = {
   Speed: 'spe',
   Spe: 'spe',
   Spd: 'spe',
-  spe: 'spe',
+  spe: 'spe'
 };
 
-export type {PokemonSet} from '@pkmn/types';
+export type { PokemonSet } from '@pkmn/types';
 
-export const Sets = new class {
+export const Sets = new (class {
   pack(s: Partial<PokemonSet>) {
     return Sets.packSet(s);
   }
@@ -124,12 +117,18 @@ export const Sets = new class {
     // evs
     let evs = '|';
     if (s.evs) {
-      evs = '|' +
-        (s.evs['hp'] || '') + ',' +
-        (s.evs['atk'] || '') + ',' +
-        (s.evs['def'] || '') + ',' +
-        (s.evs['spa'] || '') + ',' +
-        (s.evs['spd'] || '') + ',' +
+      evs =
+        '|' +
+        (s.evs['hp'] || '') +
+        ',' +
+        (s.evs['atk'] || '') +
+        ',' +
+        (s.evs['def'] || '') +
+        ',' +
+        (s.evs['spa'] || '') +
+        ',' +
+        (s.evs['spd'] || '') +
+        ',' +
         (s.evs['spe'] || '');
     }
     if (evs === '|,,,,,') {
@@ -153,12 +152,18 @@ export const Sets = new class {
     // ivs
     let ivs = '|';
     if (s.ivs) {
-      ivs = '|' +
-        getIV('hp') + ',' +
-        getIV('atk') + ',' +
-        getIV('def') + ',' +
-        getIV('spa') + ',' +
-        getIV('spd') + ',' +
+      ivs =
+        '|' +
+        getIV('hp') +
+        ',' +
+        getIV('atk') +
+        ',' +
+        getIV('def') +
+        ',' +
+        getIV('spa') +
+        ',' +
+        getIV('spd') +
+        ',' +
         getIV('spe');
     }
     if (ivs === '|,,,,,') {
@@ -228,8 +233,12 @@ export const Sets = new class {
     if (s.shiny && (!data || data.gen >= 2)) {
       buf += 'Shiny: Yes  \n';
     }
-    if (typeof s.happiness === 'number' && s.happiness !== 255 &&
-        !isNaN(s.happiness) && (!data || data.gen >= 2)) {
+    if (
+      typeof s.happiness === 'number' &&
+      s.happiness !== 255 &&
+      !isNaN(s.happiness) &&
+      (!data || data.gen >= 2)
+    ) {
       buf += 'Happiness: ' + s.happiness + '  \n';
     }
     if (s.pokeball) {
@@ -364,14 +373,13 @@ export const Sets = new class {
     s.name = undefined;
 
     s.item = data.gen >= 2 && s.item ? toID(s.item) : undefined;
-    s.ability =
-      data.gen >= 3 ? toID(s.ability ? s.ability : species.abilities![0]) : undefined;
+    s.ability = data.gen >= 3 ? toID(s.ability ? s.ability : species.abilities![0]) : undefined;
     s.gender = data.gen >= 2 && s.gender && s.gender !== species.gender ? s.gender : undefined;
     s.level = s.level || 100;
 
     let maxed = true;
     if (!s.ivs) {
-      s.ivs = {hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31};
+      s.ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
     } else {
       for (const stat of STATS) {
         s.ivs[stat] = s.ivs[stat] ?? 31;
@@ -406,7 +414,7 @@ export const Sets = new class {
     s.moves = moves.sort((a, b) => a.localeCompare(b));
 
     const base = data.species.get(s.species)!.baseStats;
-    s.evs = s.evs || {} as any as StatsTable;
+    s.evs = s.evs || ({} as any as StatsTable);
     for (const stat of STATS) {
       if (data.gen < 3) {
         s.evs[stat] = s.evs[stat] ?? 252;
@@ -416,20 +424,37 @@ export const Sets = new class {
         } else {
           const val = calc(data.gen, stat, base[stat], s.ivs[stat], s.evs[stat], s.level, nature);
           if (stat === 'hp') {
-            s.evs[stat] = base[stat] === 1 ? 0
-              : Math.max(0, (Math.ceil(((val - s.level - 10) * 100) / s.level) -
-                2 * base[stat] - s.ivs[stat]) * 4);
+            s.evs[stat] =
+              base[stat] === 1
+                ? 0
+                : Math.max(
+                    0,
+                    (Math.ceil(((val - s.level - 10) * 100) / s.level) -
+                      2 * base[stat] -
+                      s.ivs[stat]) *
+                      4
+                  );
           } else {
             const n = !nature ? 1 : nature.plus === stat ? 1.1 : nature.minus === stat ? 0.9 : 1;
-            s.evs[stat] = Math.max(0, (Math.ceil(((Math.ceil(val / n) - 5) * 100) / s.level) -
-              2 * base[stat] - s.ivs[stat]) * 4);
+            s.evs[stat] = Math.max(
+              0,
+              (Math.ceil(((Math.ceil(val / n) - 5) * 100) / s.level) -
+                2 * base[stat] -
+                s.ivs[stat]) *
+                4
+            );
           }
         }
       }
     }
 
-    if (data.gen === 2 && s.species === 'marowak' && s.item === 'thickclub' &&
-      swordsdance && s.level === 100) {
+    if (
+      data.gen === 2 &&
+      s.species === 'marowak' &&
+      s.item === 'thickclub' &&
+      swordsdance &&
+      s.level === 100
+    ) {
       const iv = Math.floor(s.ivs.atk / 2) * 2;
       while (s.evs.atk > 0 && 2 * 80 + iv + Math.floor(s.evs.atk / 4) + 5 > 255) {
         s.evs.atk -= 4;
@@ -467,7 +492,7 @@ export const Sets = new class {
 
     return s;
   }
-};
+})();
 
 const ABILITY = ['', '0', '1', 'H', 'S'];
 
@@ -475,25 +500,25 @@ export function _unpack(buf: string, i = 0, j = 0, data?: Data) {
   const s: Partial<PokemonSet> = {};
   // name
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
+  if (j < 0) return { i, j };
   s.name = buf.substring(i, j);
   i = j + 1;
 
   // species
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
+  if (j < 0) return { i, j };
   s.species = unpackName(buf.substring(i, j), data?.species) || s.name;
   i = j + 1;
 
   // item
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
+  if (j < 0) return { i, j };
   s.item = unpackName(buf.substring(i, j), data?.items);
   i = j + 1;
 
   // ability
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
+  if (j < 0) return { i, j };
   let ability = unpackName(buf.substring(i, j), data?.abilities);
   if (ability === '-') {
     ability = '';
@@ -504,30 +529,34 @@ export function _unpack(buf: string, i = 0, j = 0, data?: Data) {
       if (species?.baseSpecies === 'Zygarde' && ability === 'H') {
         ability = 'Power Construct';
       } else if (species?.abilities) {
-        ability = species.abilities[ability as '0' || '0'];
+        ability = species.abilities[(ability as '0') || '0'];
       }
     }
-    if (ability !== '' && !ability) return {i, j};
+    if (ability !== '' && !ability) return { i, j };
   }
   s.ability = ability;
   i = j + 1;
 
   // moves
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
-  s.moves = buf.substring(i, j).split(',', 24).filter(x => x).map(m => unpackName(m, data?.moves));
+  if (j < 0) return { i, j };
+  s.moves = buf
+    .substring(i, j)
+    .split(',', 24)
+    .filter((x) => x)
+    .map((m) => unpackName(m, data?.moves));
   i = j + 1;
 
   // nature
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
+  if (j < 0) return { i, j };
   s.nature = unpackName(buf.substring(i, j), data?.natures);
   i = j + 1;
 
   // evs
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
-  s.evs = {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0};
+  if (j < 0) return { i, j };
+  s.evs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
   if (j !== i) {
     const evstr = buf.substring(i, j);
     if (evstr.length > 5) {
@@ -544,14 +573,14 @@ export function _unpack(buf: string, i = 0, j = 0, data?: Data) {
 
   // gender
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
+  if (j < 0) return { i, j };
   if (i !== j) s.gender = buf.substring(i, j);
   i = j + 1;
 
   // ivs
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
-  s.ivs = {hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31};
+  if (j < 0) return { i, j };
+  s.ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
   if (j !== i) {
     const st = buf.substring(i, j).split(',', 6);
     s.ivs.hp = st[0] === '' ? 31 : Number(st[0]) || 0;
@@ -565,13 +594,13 @@ export function _unpack(buf: string, i = 0, j = 0, data?: Data) {
 
   // shiny
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
+  if (j < 0) return { i, j };
   if (i !== j) s.shiny = true;
   i = j + 1;
 
   // level
   j = buf.indexOf('|', i);
-  if (j < 0) return {i, j};
+  if (j < 0) return { i, j };
   if (i !== j) s.level = parseInt(buf.substring(i, j));
   i = j + 1;
 
@@ -585,15 +614,15 @@ export function _unpack(buf: string, i = 0, j = 0, data?: Data) {
   }
 
   if (misc) {
-    s.happiness = (misc[0] ? Number(misc[0]) : 255);
+    s.happiness = misc[0] ? Number(misc[0]) : 255;
     s.hpType = misc[1] || '';
     s.pokeball = unpackName(misc[2] || '', data?.items);
     s.gigantamax = !!misc[3];
-    s.dynamaxLevel = (misc[4] ? Number(misc[4]) : 10);
+    s.dynamaxLevel = misc[4] ? Number(misc[4]) : 10;
     s.teraType = misc[5] || '';
   }
 
-  return {set: s as PokemonSet, i, j};
+  return { set: s as PokemonSet, i, j };
 }
 
 const NATURE_REGEX = /^[A-Za-z]+ (N|n)ature/;
@@ -602,11 +631,10 @@ export function _import(lines: string[], i = 0, data?: Data) {
   let s: Partial<PokemonSet> | undefined = undefined;
   for (; i < lines.length; i++) {
     let line = lines[i].trim();
-    if (line === '' || line === '---' || line.substr(0, 3) === '===' ||
-        line.includes('|')) {
-      return {set: s as PokemonSet, line: i};
+    if (line === '' || line === '---' || line.substr(0, 3) === '===' || line.includes('|')) {
+      return { set: s as PokemonSet, line: i };
     } else if (!s) {
-      s = {name: '', species: '', gender: ''};
+      s = { name: '', species: '', gender: '' };
       const atIndex = line.lastIndexOf(' @ ');
       if (atIndex !== -1) {
         s.item = line.substr(atIndex + 3);
@@ -663,7 +691,7 @@ export function _import(lines: string[], i = 0, data?: Data) {
     } else if (line.substr(0, 5) === 'EVs: ') {
       line = line.substr(5);
       const evLines = line.split(' / ');
-      s.evs = {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0};
+      s.evs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
       for (const evLine of evLines) {
         const spaceIndex = evLine.indexOf(' ');
         if (spaceIndex === -1) continue;
@@ -675,7 +703,7 @@ export function _import(lines: string[], i = 0, data?: Data) {
     } else if (line.substr(0, 5) === 'IVs: ') {
       line = line.substr(5);
       const ivLines = line.split(' / ');
-      s.ivs = {hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31};
+      s.ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
       for (const ivLine of ivLines) {
         const spaceIndex = ivLine.indexOf(' ');
         if (spaceIndex === -1) continue;
@@ -701,7 +729,7 @@ export function _import(lines: string[], i = 0, data?: Data) {
         line = 'Hidden Power ' + hpType.toString();
         const hpIVs = getHiddenPowerIVs(hpType, data);
         if (!s.ivs && hpIVs) {
-          s.ivs = {hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31};
+          s.ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
           let stat: StatID;
           for (stat in hpIVs) {
             s.ivs[stat] = hpIVs[stat]!;
@@ -715,7 +743,7 @@ export function _import(lines: string[], i = 0, data?: Data) {
     }
   }
 
-  return {set: s!, line: i + 1};
+  return { set: s!, line: i + 1 };
 }
 
 function getHiddenPowerType(move: string) {
@@ -739,8 +767,7 @@ function exportMove(move: string) {
     return move.substr(0, 13) + '[' + move.substr(13) + ']';
   }
   if (move.substr(0, 11) === 'hiddenpower') {
-    return 'Hidden Power ' +
-        '[' + move.substr(11, 1).toUpperCase() + move.substr(12) + ']';
+    return 'Hidden Power ' + '[' + move.substr(11, 1).toUpperCase() + move.substr(12) + ']';
   }
   return move;
 }
@@ -752,49 +779,64 @@ function packName(name: string | undefined | null) {
 
 function unpackName(
   name: string,
-  data?: {get: (name: string) => {name: string; exists?: boolean} | undefined}
+  data?: { get: (name: string) => { name: string; exists?: boolean } | undefined }
 ) {
   if (!name) return '';
   if (data) {
     const obj = data.get(name);
     if (obj?.exists) return obj.name;
   }
-  return (name.replace(/([0-9]+)/g, ' $1 ')
+  return name
+    .replace(/([0-9]+)/g, ' $1 ')
     .replace(/([A-Z])/g, ' $1')
     .replace(/[ ][ ]/g, ' ')
-    .trim());
+    .trim();
 }
 
-const HP: {[type in HPTypeName]: {ivs: Partial<StatsTable>; dvs: Partial<StatsTable>}} = {
-  Bug: {ivs: {atk: 30, def: 30, spd: 30}, dvs: {atk: 13, def: 13}},
-  Dark: {ivs: {}, dvs: {}},
-  Dragon: {ivs: {atk: 30}, dvs: {def: 14}},
-  Electric: {ivs: {spa: 30}, dvs: {atk: 14}},
-  Fighting: {ivs: {def: 30, spa: 30, spd: 30, spe: 30}, dvs: {atk: 12, def: 12}},
-  Fire: {ivs: {atk: 30, spa: 30, spe: 30}, dvs: {atk: 14, def: 12}},
-  Flying: {ivs: {hp: 30, atk: 30, def: 30, spa: 30, spd: 30}, dvs: {atk: 12, def: 13}},
-  Ghost: {ivs: {def: 30, spd: 30}, dvs: {atk: 13, def: 14}},
-  Grass: {ivs: {atk: 30, spa: 30}, dvs: {atk: 14, def: 14}},
-  Ground: {ivs: {spa: 30, spd: 30}, dvs: {atk: 12}},
-  Ice: {ivs: {atk: 30, def: 30}, dvs: {def: 13}},
-  Poison: {ivs: {def: 30, spa: 30, spd: 30}, dvs: {atk: 12, def: 14}},
-  Psychic: {ivs: {atk: 30, spe: 30}, dvs: {def: 12}},
-  Rock: {ivs: {def: 30, spd: 30, spe: 30}, dvs: {atk: 13, def: 12}},
-  Steel: {ivs: {spd: 30}, dvs: {atk: 13}},
-  Water: {ivs: {atk: 30, def: 30, spa: 30}, dvs: {atk: 14, def: 13}},
+const HP: { [type in HPTypeName]: { ivs: Partial<StatsTable>; dvs: Partial<StatsTable> } } = {
+  Bug: { ivs: { atk: 30, def: 30, spd: 30 }, dvs: { atk: 13, def: 13 } },
+  Dark: { ivs: {}, dvs: {} },
+  Dragon: { ivs: { atk: 30 }, dvs: { def: 14 } },
+  Electric: { ivs: { spa: 30 }, dvs: { atk: 14 } },
+  Fighting: { ivs: { def: 30, spa: 30, spd: 30, spe: 30 }, dvs: { atk: 12, def: 12 } },
+  Fire: { ivs: { atk: 30, spa: 30, spe: 30 }, dvs: { atk: 14, def: 12 } },
+  Flying: { ivs: { hp: 30, atk: 30, def: 30, spa: 30, spd: 30 }, dvs: { atk: 12, def: 13 } },
+  Ghost: { ivs: { def: 30, spd: 30 }, dvs: { atk: 13, def: 14 } },
+  Grass: { ivs: { atk: 30, spa: 30 }, dvs: { atk: 14, def: 14 } },
+  Ground: { ivs: { spa: 30, spd: 30 }, dvs: { atk: 12 } },
+  Ice: { ivs: { atk: 30, def: 30 }, dvs: { def: 13 } },
+  Poison: { ivs: { def: 30, spa: 30, spd: 30 }, dvs: { atk: 12, def: 14 } },
+  Psychic: { ivs: { atk: 30, spe: 30 }, dvs: { def: 12 } },
+  Rock: { ivs: { def: 30, spd: 30, spe: 30 }, dvs: { atk: 13, def: 12 } },
+  Steel: { ivs: { spd: 30 }, dvs: { atk: 13 } },
+  Water: { ivs: { atk: 30, def: 30, spa: 30 }, dvs: { atk: 14, def: 13 } }
 };
 
 const HP_TYPES: HPTypeName[] = [
-  'Fighting', 'Flying', 'Poison', 'Ground', 'Rock', 'Bug', 'Ghost', 'Steel',
-  'Fire', 'Water', 'Grass', 'Electric', 'Psychic', 'Ice', 'Dragon', 'Dark',
+  'Fighting',
+  'Flying',
+  'Poison',
+  'Ground',
+  'Rock',
+  'Bug',
+  'Ghost',
+  'Steel',
+  'Fire',
+  'Water',
+  'Grass',
+  'Electric',
+  'Psychic',
+  'Ice',
+  'Dragon',
+  'Dark'
 ];
 
 function getHiddenPower(gen: GenerationNum, ivs: StatsTable) {
   const tr = (num: number, bits = 0) => {
-    if (bits) return (num >>> 0) % (2 ** bits);
+    if (bits) return (num >>> 0) % 2 ** bits;
     return num >>> 0;
   };
-  const stats = {hp: 31, atk: 31, def: 31, spe: 31, spa: 31, spd: 31};
+  const stats = { hp: 31, atk: 31, def: 31, spe: 31, spa: 31, spd: 31 };
   if (gen <= 2) {
     // Gen 2 specific Hidden Power check. IVs are still treated 0-31 so we get them 0-15
     const atkDV = tr(ivs.atk / 2);
@@ -804,12 +846,11 @@ function getHiddenPower(gen: GenerationNum, ivs: StatsTable) {
     return {
       type: HP_TYPES[4 * (atkDV % 4) + (defDV % 4)],
       power: tr(
-        (5 * ((spcDV >> 3) +
-          (2 * (speDV >> 3)) +
-          (4 * (defDV >> 3)) +
-          (8 * (atkDV >> 3))) +
-          (spcDV % 4)) / 2 + 31
-      ),
+        (5 * ((spcDV >> 3) + 2 * (speDV >> 3) + 4 * (defDV >> 3) + 8 * (atkDV >> 3)) +
+          (spcDV % 4)) /
+          2 +
+          31
+      )
     };
   } else {
     // Hidden Power check for Gen 3 onwards
@@ -822,9 +863,9 @@ function getHiddenPower(gen: GenerationNum, ivs: StatsTable) {
       i *= 2;
     }
     return {
-      type: HP_TYPES[tr(hpTypeX * 15 / 63)],
+      type: HP_TYPES[tr((hpTypeX * 15) / 63)],
       // After Gen 6, Hidden Power is always 60 base power
-      power: (gen < 6) ? tr(hpPowerX * 40 / 63) + 30 : 60,
+      power: gen < 6 ? tr((hpPowerX * 40) / 63) + 30 : 60
     };
   }
 }
@@ -859,7 +900,7 @@ function getHPDV(ivs: Partial<StatsTable>) {
   );
 }
 
-const tr = (num: number, bits = 0) => bits ? (num >>> 0) % (2 ** bits) : num >>> 0;
+const tr = (num: number, bits = 0) => (bits ? (num >>> 0) % 2 ** bits : num >>> 0);
 
 function calc(
   gen: GenerationNum,
@@ -876,9 +917,9 @@ function calc(
     nature = undefined;
   }
   if (stat === 'hp') {
-    return base === 1 ? base : tr(tr(2 * base + iv + tr(ev / 4) + 100) * level / 100 + 10);
+    return base === 1 ? base : tr((tr(2 * base + iv + tr(ev / 4) + 100) * level) / 100 + 10);
   } else {
-    const val = tr(tr(2 * base + iv + tr(ev / 4)) * level / 100 + 5);
+    const val = tr((tr(2 * base + iv + tr(ev / 4)) * level) / 100 + 5);
     if (nature !== undefined) {
       if (nature.plus === stat) return tr(tr(val * 110, 16) / 100);
       if (nature.minus === stat) return tr(tr(val * 90, 16) / 100);

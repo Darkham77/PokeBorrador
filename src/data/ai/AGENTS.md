@@ -33,4 +33,4 @@ This directory contains typed dataset wrappers and JSON databases for battle AI 
 
 ## Child DOX Index
 
-- *This directory contains specialized domain logic and files with no subdirectories.*
+- _This directory contains specialized domain logic and files with no subdirectories._

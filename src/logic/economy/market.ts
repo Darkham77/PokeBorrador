@@ -39,7 +39,6 @@ export type MarketListing =
   | (MarketListingBase & { listing_type: 'pokemon'; data: Pokemon })
   | (MarketListingBase & { listing_type: 'item'; data: MarketItemData });
 
-
 export interface MarketFilters {
   mode: MarketListingType;
   search: string;
@@ -60,11 +59,13 @@ const MARKET_SOLD_SEEN_CACHE = new WeakMap<GameState, Set<string>>();
 
 export function ensureMarketSoldSeenState(state: GameState): string[] {
   if (!Array.isArray(state.marketSoldSeenIds)) state.marketSoldSeenIds = [];
-  state.marketSoldSeenIds = [...new Set(
-    (state.marketSoldSeenIds as (string | number)[])
-      .map((id) => (id !== null && id !== undefined ? String(id).trim() : ''))
-      .filter((id: string) => id.length > 0 && !id.includes('invalid'))
-  )].slice(-MAX_MARKET_SOLD_SEEN_HISTORY);
+  state.marketSoldSeenIds = [
+    ...new Set(
+      (state.marketSoldSeenIds as (string | number)[])
+        .map((id) => (id !== null && id !== undefined ? String(id).trim() : ''))
+        .filter((id: string) => id.length > 0 && !id.includes('invalid'))
+    )
+  ].slice(-MAX_MARKET_SOLD_SEEN_HISTORY);
   return state.marketSoldSeenIds;
 }
 
@@ -78,12 +79,18 @@ function getMarketSoldSeenSet(state: GameState): Set<string> {
   return cached;
 }
 
-export function isMarketSoldSeen(listingId: string | number | undefined | null, state: GameState): boolean {
+export function isMarketSoldSeen(
+  listingId: string | number | undefined | null,
+  state: GameState
+): boolean {
   if (listingId === null || listingId === undefined || listingId === '') return true;
   return getMarketSoldSeenSet(state).has(String(listingId));
 }
 
-export function markMarketSoldSeen(listingId: string | number | undefined | null, state: GameState): void {
+export function markMarketSoldSeen(
+  listingId: string | number | undefined | null,
+  state: GameState
+): void {
   if (listingId === null || listingId === undefined || listingId === '') return;
   const idStr = String(listingId).trim();
   if (!idStr) return;
@@ -106,4 +113,3 @@ export function buildMarketSaleLabel(listing: MarketListing): string {
 }
 
 export { applyMarketFilters } from './marketFilters.ts';
-

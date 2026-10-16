@@ -1,11 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { getMapEnvironment } from '@/logic/environment/map/mapEnvironmentRegistry.ts';
 import { BaseMapEnvironment } from '@/logic/environment/map/baseMapEnvironment.ts';
 import { WEATHER_IDS, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
 import { DAY_PHASES } from '@/types/system/time.ts';
 import type { MapRouteId } from '@/data/world/map-assets.ts';
 import { FIRE_RED_MAPS } from '@/data/world/maps.ts';
-import { ROUTE_WEATHER_TABLES, isWeatherTableRouteId, WEATHER_SEASON_IDS } from '@/data/world/weather-tables.ts';
+import {
+  ROUTE_WEATHER_TABLES,
+  isWeatherTableRouteId,
+  WEATHER_SEASON_IDS
+} from '@/data/world/weather-tables.ts';
 
 describe('Map Environment Boundaries & Universal Dynamic Matrix (Data-Driven SSoT)', () => {
   describe('1. Verificación Dinámica Exhaustiva de Todos los Mapas en FIRE_RED_MAPS', () => {
@@ -96,11 +100,19 @@ describe('Map Environment Boundaries & Universal Dynamic Matrix (Data-Driven SSo
             if (!env.isWeatherAllowed()) {
               if (isBaseClean) {
                 expect(env.isWeatherTypeAllowed(weather)).toBe(true);
-                expect(env.resolveCombatWeather(weather)).toEqual({ type: 'none', visual: 'clear', turns: -1 });
+                expect(env.resolveCombatWeather(weather)).toEqual({
+                  type: 'none',
+                  visual: 'clear',
+                  turns: -1
+                });
               } else {
                 expect(env.isWeatherTypeAllowed(weather)).toBe(false);
-                expect(() => env.assertWeatherAllowed(weather)).toThrowError(/\[MapEnvironment\] Violación de límites/);
-                expect(() => env.resolveCombatWeather(weather)).toThrowError(/\[MapEnvironment\] Violación de límites/);
+                expect(() => env.assertWeatherAllowed(weather)).toThrowError(
+                  /\[MapEnvironment\] Violación de límites/
+                );
+                expect(() => env.resolveCombatWeather(weather)).toThrowError(
+                  /\[MapEnvironment\] Violación de límites/
+                );
               }
             } else {
               const isAllowed = env.boundaries.allowedWeathers.has(weather) || isBaseClean;
@@ -109,8 +121,12 @@ describe('Map Environment Boundaries & Universal Dynamic Matrix (Data-Driven SSo
                 expect(() => env.assertWeatherAllowed(weather)).not.toThrow();
                 expect(() => env.resolveCombatWeather(weather)).not.toThrow();
               } else {
-                expect(() => env.assertWeatherAllowed(weather)).toThrowError(/\[MapEnvironment\] Violación de límites/);
-                expect(() => env.resolveCombatWeather(weather)).toThrowError(/\[MapEnvironment\] Violación de límites/);
+                expect(() => env.assertWeatherAllowed(weather)).toThrowError(
+                  /\[MapEnvironment\] Violación de límites/
+                );
+                expect(() => env.resolveCombatWeather(weather)).toThrowError(
+                  /\[MapEnvironment\] Violación de límites/
+                );
               }
             }
           }
@@ -140,19 +156,29 @@ describe('Map Environment Boundaries & Universal Dynamic Matrix (Data-Driven SSo
 
       expect(gymCombatEnv).toBe(pvpCombatEnv);
       expect(gymCombatEnv.isWeatherAllowed()).toBe(false);
-      expect(() => gymCombatEnv.resolveCombatWeather('rain' as WeatherId)).toThrowError(/\[MapEnvironment\] Violación de límites/);
+      expect(() => gymCombatEnv.resolveCombatWeather('rain' as WeatherId)).toThrowError(
+        /\[MapEnvironment\] Violación de límites/
+      );
     });
   });
 
   describe('3. Mandato de Cero Fallbacks y Errores Ruidosos (Fail Loudly)', () => {
     it('debe lanzar un error descriptivo inmediato si locationId está vacío o es nulo', () => {
-      expect(() => getMapEnvironment('' as unknown as MapRouteId)).toThrowError(/\[MapEnvironmentRegistry\]/);
-      expect(() => getMapEnvironment(null as unknown as MapRouteId)).toThrowError(/\[MapEnvironmentRegistry\]/);
-      expect(() => getMapEnvironment(undefined as unknown as MapRouteId)).toThrowError(/\[MapEnvironmentRegistry\]/);
+      expect(() => getMapEnvironment('' as unknown as MapRouteId)).toThrowError(
+        /\[MapEnvironmentRegistry\]/
+      );
+      expect(() => getMapEnvironment(null as unknown as MapRouteId)).toThrowError(
+        /\[MapEnvironmentRegistry\]/
+      );
+      expect(() => getMapEnvironment(undefined as unknown as MapRouteId)).toThrowError(
+        /\[MapEnvironmentRegistry\]/
+      );
     });
 
     it('debe lanzar un error descriptivo si locationId no está registrado en el catálogo', () => {
-      expect(() => getMapEnvironment('non_existent_alien_dimension' as unknown as MapRouteId)).toThrowError(
+      expect(() =>
+        getMapEnvironment('non_existent_alien_dimension' as unknown as MapRouteId)
+      ).toThrowError(
         /\[MapEnvironmentRegistry\] Entorno no registrado para locationId: "non_existent_alien_dimension"/
       );
     });

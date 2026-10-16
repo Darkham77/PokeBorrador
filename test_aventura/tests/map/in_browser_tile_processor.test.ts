@@ -68,8 +68,8 @@ describe('In-Browser Tile Processor Pipeline', () => {
     // 2. Magenta Chroma-key tile (GBA)
     const magentaTile = new Uint8ClampedArray(16 * 16 * 4);
     for (let i = 0; i < 256; i++) {
-      magentaTile[i * 4] = 255;     // R
-      magentaTile[i * 4 + 1] = 0;   // G
+      magentaTile[i * 4] = 255; // R
+      magentaTile[i * 4 + 1] = 0; // G
       magentaTile[i * 4 + 2] = 255; // B
       magentaTile[i * 4 + 3] = 255; // A
     }

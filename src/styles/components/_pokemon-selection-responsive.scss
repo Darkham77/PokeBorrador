@@ -1,23 +1,57 @@
 // src/styles/components/_pokemon-selection-responsive.scss
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 /* Screen Size Optimizations */
 @media (height <= 680px) {
   body .selection-container {
-    padding-top: 8px; 
-    
-    & .filters-bar { gap: $spacing-xs; padding: 0 15px; margin-bottom: 2px; }
-    & .ps-sort-btns button { padding: 6px; font-size: var(--font-7); }
-    & .ps-tags-bar { gap: $spacing-xs-5; }
-    & .ps-tags-bar button { gap: $spacing-xs; height: 24px; padding: 0 6px; }
-    & .ps-vertical-list { gap: $spacing-md-alt; padding: 5px 15px 15px; }
-    & .list-item { gap: $spacing-md; min-height: 80px; padding: 10px; }
-    & .poke-preview { width: 56px; height: 56px; border: none !important; background: transparent !important; overflow: visible !important; box-shadow: none !important; img { width: 68px; height: 68px; } }
-    
+    padding-top: 8px;
+
+    & .filters-bar {
+      gap: $spacing-xs;
+      padding: 0 15px;
+      margin-bottom: 2px;
+    }
+    & .ps-sort-btns button {
+      padding: 6px;
+      font-size: var(--font-7);
+    }
+    & .ps-tags-bar {
+      gap: $spacing-xs-5;
+    }
+    & .ps-tags-bar button {
+      gap: $spacing-xs;
+      height: 24px;
+      padding: 0 6px;
+    }
+    & .ps-vertical-list {
+      gap: $spacing-md-alt;
+      padding: 5px 15px 15px;
+    }
+    & .list-item {
+      gap: $spacing-md;
+      min-height: 80px;
+      padding: 10px;
+    }
+    & .poke-preview {
+      width: 56px;
+      height: 56px;
+      border: none !important;
+      background: transparent !important;
+      overflow: visible !important;
+      box-shadow: none !important;
+      img {
+        width: 68px;
+        height: 68px;
+      }
+    }
+
     & .modal-footer {
       gap: $spacing-xs-5;
-      & .count { font-size: var(--font-7); margin-bottom: 0; }
-      & .btn-confirm { 
+      & .count {
+        font-size: var(--font-7);
+        margin-bottom: 0;
+      }
+      & .btn-confirm {
         padding: 8px !important;
         border-radius: $radius-lg !important;
         font-size: var(--font-10) !important;
@@ -28,28 +62,69 @@
 
 @media (height <= 500px) {
   .modal-content-premium {
-body .modal-header-premium { min-height: 40px !important; padding: 8px 16px !important; }
-body .modal-footer-premium { padding: 8px 20px !important; }
+    body .modal-header-premium {
+      min-height: 40px !important;
+      padding: 8px 16px !important;
+    }
+    body .modal-footer-premium {
+      padding: 8px 20px !important;
+    }
   }
 
   body .selection-container {
-    & .ps-tags-section { display: none; } 
-    & .filters-bar { gap: $spacing-2xs; margin-bottom: 0; }
-    & .ps-vertical-list { gap: $spacing-sm; padding-top: 2px; padding-bottom: 5px; }
-    & .list-item { min-height: 60px; padding: 8px; border-radius: $radius-xl; }
-    & .poke-preview { width: 40px; height: 40px; border: none !important; background: transparent !important; overflow: visible !important; box-shadow: none !important; img { width: 48px; height: 48px; } }
-    & .poke-details .top-line .name-group .name { font-size: var(--font-7); }
-    & .poke-details .bottom-line { gap: $spacing-sm-alt; }
+    & .ps-tags-section {
+      display: none;
+    }
+    & .filters-bar {
+      gap: $spacing-2xs;
+      margin-bottom: 0;
+    }
+    & .ps-vertical-list {
+      gap: $spacing-sm;
+      padding-top: 2px;
+      padding-bottom: 5px;
+    }
+    & .list-item {
+      min-height: 60px;
+      padding: 8px;
+      border-radius: $radius-xl;
+    }
+    & .poke-preview {
+      width: 40px;
+      height: 40px;
+      border: none !important;
+      background: transparent !important;
+      overflow: visible !important;
+      box-shadow: none !important;
+      img {
+        width: 48px;
+        height: 48px;
+      }
+    }
+    & .poke-details .top-line .name-group .name {
+      font-size: var(--font-7);
+    }
+    & .poke-details .bottom-line {
+      gap: $spacing-sm-alt;
+    }
   }
 }
 
 @media (height <= 400px) {
-  .selection-container { 
-    padding-top: 4px; 
-    & .ps-sort-btns { display: none !important; } 
-body .modal-footer { gap: $spacing-xs; }
+  .selection-container {
+    padding-top: 4px;
+    & .ps-sort-btns {
+      display: none !important;
+    }
+    body .modal-footer {
+      gap: $spacing-xs;
+    }
   }
-  
-body .modal-header-premium { display: none !important; } 
-body .modal-footer-premium { padding: 4px 15px !important; }
+
+  body .modal-header-premium {
+    display: none !important;
+  }
+  body .modal-footer-premium {
+    padding: 4px 15px !important;
+  }
 }

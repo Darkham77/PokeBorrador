@@ -14,11 +14,11 @@
 
 In Poké Vicio, Effort Values follow modern Gen 8/9 canonical rules:
 
-| Constant | Value | Description |
-| :--- | :--- | :--- |
-| `MAX_TOTAL_EVS` | `510` | Maximum combined EV investment across all 6 stats for a single Pokémon. |
-| `MAX_STAT_EVS` | `252` | Maximum EV investment in any single stat (Gen 6+ standard; 63 additional stat points at Lv 100). |
-| `MIN_STAT_EVS` | `0` | Minimum EV investment in any stat. |
+| Constant        | Value | Description                                                                                      |
+| :-------------- | :---- | :----------------------------------------------------------------------------------------------- |
+| `MAX_TOTAL_EVS` | `510` | Maximum combined EV investment across all 6 stats for a single Pokémon.                          |
+| `MAX_STAT_EVS`  | `252` | Maximum EV investment in any single stat (Gen 6+ standard; 63 additional stat points at Lv 100). |
+| `MIN_STAT_EVS`  | `0`   | Minimum EV investment in any stat.                                                               |
 
 ### Real-Time Stat Recalculation & Level 100 Rule
 
@@ -31,16 +31,16 @@ In Poké Vicio, Effort Values follow modern Gen 8/9 canonical rules:
 
 EV gains from defeating opponent Pokémon in battle can be boosted through held items and infection states:
 
-| Item / State | ID / Key | Effect on Battle EV Gains |
-| :--- | :--- | :--- |
-| **Macho Brace** | `machobrace` | Multiplies all base EV gains by **x2**. |
-| **Power Weight** | `powerweight` | Grants a flat **+8 HP EVs** in addition to defeat yields. |
-| **Power Bracer** | `powerbracer` | Grants a flat **+8 Attack EVs** in addition to defeat yields. |
-| **Power Belt** | `powerbelt` | Grants a flat **+8 Defense EVs** in addition to defeat yields. |
-| **Power Lens** | `powerlens` | Grants a flat **+8 Sp. Atk EVs** in addition to defeat yields. |
-| **Power Band** | `powerband` | Grants a flat **+8 Sp. Def EVs** in addition to defeat yields. |
-| **Power Anklet** | `poweranklet` | Grants a flat **+8 Speed EVs** in addition to defeat yields. |
-| **Pokérus** | `pokerus: 'infected'` | Multiplies all battle EV gains (including Power Item bonuses) by **x2**. |
+| Item / State     | ID / Key              | Effect on Battle EV Gains                                                |
+| :--------------- | :-------------------- | :----------------------------------------------------------------------- |
+| **Macho Brace**  | `machobrace`          | Multiplies all base EV gains by **x2**.                                  |
+| **Power Weight** | `powerweight`         | Grants a flat **+8 HP EVs** in addition to defeat yields.                |
+| **Power Bracer** | `powerbracer`         | Grants a flat **+8 Attack EVs** in addition to defeat yields.            |
+| **Power Belt**   | `powerbelt`           | Grants a flat **+8 Defense EVs** in addition to defeat yields.           |
+| **Power Lens**   | `powerlens`           | Grants a flat **+8 Sp. Atk EVs** in addition to defeat yields.           |
+| **Power Band**   | `powerband`           | Grants a flat **+8 Sp. Def EVs** in addition to defeat yields.           |
+| **Power Anklet** | `poweranklet`         | Grants a flat **+8 Speed EVs** in addition to defeat yields.             |
+| **Pokérus**      | `pokerus: 'infected'` | Multiplies all battle EV gains (including Power Item bonuses) by **x2**. |
 
 > [!NOTE]
 > **Multiplicative Stacking**: Pokérus stacks multiplicatively with training items:
@@ -57,7 +57,7 @@ Consumables allow direct adjustment of EVs from the inventory (`src/logic/items/
 ### EV Enhancers
 
 - **Vitamins (+10 EVs)**: `hpup`, `protein`, `iron`, `calcium`, `zinc`, `carbos`.
-  - *Gen 8+ Rule*: Vitamins can be used up to the full `MAX_STAT_EVS` (252) cap; they are no longer restricted to the legacy 100-EV ceiling.
+  - _Gen 8+ Rule_: Vitamins can be used up to the full `MAX_STAT_EVS` (252) cap; they are no longer restricted to the legacy 100-EV ceiling.
 - **Mochis (+10 EVs)**: `healthmochi`, `musclemochi`, `resistmochi`, `geniusmochi`, `clevermochi`, `swiftmochi`.
 - **Feathers / Wings (+1 EV)**: `healthfeather`/`healthwing`, `musclefeather`/`musclewing`, `resistfeather`/`resistwing`, `geniusfeather`/`geniuswing`, `cleverfeather`/`cleverwing`, `swiftfeather`/`swiftwing`. Excellent for fine-tuning competitive spreads.
 
@@ -120,12 +120,12 @@ return {
 
 The fuzzer (`fuzzer_ai_team_generator.ts`) uses these standard test spreads (each totaling 508 EVs):
 
-| Pokémon Category | Test EV Spread |
-| :--- | :--- |
+| Pokémon Category                     | Test EV Spread                                            |
+| :----------------------------------- | :-------------------------------------------------------- |
 | **Physical Attacker** (`atk >= spa`) | `{ hp: 252, atk: 128, def: 64, spa: 0, spd: 0, spe: 64 }` |
-| **Special Attacker** (`spa > atk`) | `{ hp: 252, atk: 0, def: 0, spa: 128, spd: 64, spe: 64 }` |
+| **Special Attacker** (`spa > atk`)   | `{ hp: 252, atk: 0, def: 0, spa: 128, spd: 64, spe: 64 }` |
 
-*The 252 HP investment is intentional to guarantee durable 20–60 turn simulations for comprehensive mechanics fuzzing.*
+_The 252 HP investment is intentional to guarantee durable 20–60 turn simulations for comprehensive mechanics fuzzing._
 
 ### Self-KO and extreme-recoil moves must be excluded from fuzzer generation
 
@@ -177,4 +177,4 @@ Understanding the mathematical synergy between EVs and Natures is essential for 
 
 2. **Multiplicative Nature Contribution**:
    - Natures apply a $\times 1.1$ ($+10\%$) or $\times 0.9$ ($-10\%$) multiplier to the **entire parenthesized stat sum** $(\text{Base} \cdot 2 + \text{IV} + \lfloor \text{EV}/4 \rfloor + 5)$.
-   - Because Natures apply multiplicatively *after* adding EVs, a positive nature ($+10\%$) extracts greater absolute value when paired with maximum EV investment (252 EVs yield $+6.3$ extra stat points from the nature alone).
+   - Because Natures apply multiplicatively _after_ adding EVs, a positive nature ($+10\%$) extracts greater absolute value when paired with maximum EV investment (252 EVs yield $+6.3$ extra stat points from the nature alone).

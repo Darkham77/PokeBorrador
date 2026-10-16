@@ -32,7 +32,9 @@ class FleeTeleportSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Battle Flee and Teleport Simulations', () => {
-  test('should successfully flee from wild encounter via official UI and return cleanly to map', async ({ page }) => {
+  test('should successfully flee from wild encounter via official UI and return cleanly to map', async ({
+    page
+  }) => {
     const sim = new FleeTeleportSimWrapper(page, 'TestFleeSuccess');
     await sim.setup();
     await sim.setupWildEncounter('caterpie', CATERPIE_LOW_LEVEL);
@@ -58,10 +60,14 @@ test.describe('Battle Flee and Teleport Simulations', () => {
       return Boolean(store?.isBattleActive);
     });
     expect(isBattleActive).toBe(false);
-    sim.finish('should successfully flee from wild encounter via official UI and return cleanly to map');
+    sim.finish(
+      'should successfully flee from wild encounter via official UI and return cleanly to map'
+    );
   });
 
-  test('should fail flee when player speed is penalized and receive enemy counter-attack', async ({ page }) => {
+  test('should fail flee when player speed is penalized and receive enemy counter-attack', async ({
+    page
+  }) => {
     const sim = new FleeTeleportSimWrapper(page, 'TestFleeFail');
     await sim.setup();
     await sim.setupWildEncounter('pidgeot', HIGH_LEVEL_PIDGEOT);
@@ -97,13 +103,16 @@ test.describe('Battle Flee and Teleport Simulations', () => {
     sim.finish('should fail flee when player speed is penalized and receive enemy counter-attack');
   });
 
-  test('should handle Abra Teleport move with bench as a pivot switch without defeat slide', async ({ page }) => {
+  test('should handle Abra Teleport move with bench as a pivot switch without defeat slide', async ({
+    page
+  }) => {
     const sim = new FleeTeleportSimWrapper(page, 'TestTeleportAbra');
     await sim.setup();
     await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const gameStore = useGameStore();
       const battleStore = useBattleStore();
 
@@ -138,6 +147,8 @@ test.describe('Battle Flee and Teleport Simulations', () => {
     expect(activeEnemyName).toBe('Kadabra');
 
     await sim.forceFleeDebugger();
-    sim.finish('should handle Abra Teleport move with bench as a pivot switch without defeat slide');
+    sim.finish(
+      'should handle Abra Teleport move with bench as a pivot switch without defeat slide'
+    );
   });
 });

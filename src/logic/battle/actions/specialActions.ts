@@ -11,10 +11,11 @@ import { incrementRecordKey, addToField } from '@/logic/utils/mapUtils';
 
 const TRI_ATTACK_BURN_THRESHOLD = 0.066 as const;
 const TRI_ATTACK_PARALYZE_THRESHOLD = 0.132 as const;
-const TRI_ATTACK_FREEZE_THRESHOLD = 0.20 as const;
+const TRI_ATTACK_FREEZE_THRESHOLD = 0.2 as const;
 
 export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
-  'leech_seed': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  // open-record: Special move effect dispatch table indexed by move effect string
+  leech_seed: (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.type === 'grass' || tgt.type2 === 'grass') {
       addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
     } else if (!tgt.seeded) {
@@ -24,12 +25,12 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${tgt.name} ya está infectado!`, 'log-info', tgt);
     }
   },
-  'roar': async (src, tgt, _srcStages, tgtStages, addLogFn, battleCtx) => {
-    if (!battleCtx) return
-    const { executeRoarAction } = await import('./specialActionsRoarHelper.ts')
-    await executeRoarAction(src, tgt, tgtStages, addLogFn, battleCtx)
+  roar: async (src, tgt, _srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (!battleCtx) return;
+    const { executeRoarAction } = await import('./specialActionsRoarHelper.ts');
+    await executeRoarAction(src, tgt, tgtStages, addLogFn, battleCtx);
   },
-  'curse': (src, tgt, srcStages, _tgtStages, addLogFn) => {
+  curse: (src, tgt, srcStages, _tgtStages, addLogFn) => {
     if (src.type === 'ghost' || src.type2 === 'ghost') {
       const cost = Math.floor(src.maxHp / 2);
       src.hp = Math.max(0, src.hp - cost);
@@ -42,16 +43,16 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${src.name} redujo su Velocidad pero subió su Ataque y Defensa!`, 'log-info', src);
     }
   },
-  'destiny_bond': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  destiny_bond: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.destinyBond = true;
     addLogFn(`¡${src.name} intenta llevarse a su rival al destino común!`, 'log-info', src);
   },
-  'perish_song': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  perish_song: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (src.perishSongCount === undefined) src.perishSongCount = 3;
     if (tgt.perishSongCount === undefined) tgt.perishSongCount = 3;
     addLogFn('¡Todos los que escucharon el canto morirán en 3 turnos!', 'log-info', src);
   },
-  'transform': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  transform: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     const originalName = src.name;
     if (!src.originalDitto) {
       src.originalDitto = {
@@ -64,7 +65,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
         spa: src.spa,
         spd: src.spd,
         spe: src.spe,
-        moves: src.moves ? src.moves.map(m => m ? { ...m } : null) : [],
+        moves: src.moves ? src.moves.map((m) => (m ? { ...m } : null)) : [],
         ivs: src.ivs ? { ...src.ivs } : undefined,
         isShiny: src.isShiny,
         level: src.level,
@@ -85,7 +86,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     src.spe = tgt.spe;
     src.isTransformed = true;
     // Copy moves but with 5 PP
-    src.moves = (tgt.moves || []).map(m => {
+    src.moves = (tgt.moves || []).map((m) => {
       if (!m) return null;
       const newM = { ...m };
       newM.pp = 5;
@@ -94,111 +95,127 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     });
     addLogFn(`¡${originalName} se transformó en ${tgt.name}!`, 'log-info', src);
   },
-  'tri_attack': (src, tgt, srcStages, tgtStages, addLogFn) => {
+  tri_attack: (src, tgt, srcStages, tgtStages, addLogFn) => {
     const roll = Math.random();
-    if (roll < TRI_ATTACK_BURN_THRESHOLD) STATUS_ACTIONS.burn?.(src, tgt, srcStages, tgtStages, addLogFn);
-    else if (roll < TRI_ATTACK_PARALYZE_THRESHOLD) STATUS_ACTIONS.paralyze?.(src, tgt, srcStages, tgtStages, addLogFn);
-    else if (roll < TRI_ATTACK_FREEZE_THRESHOLD) STATUS_ACTIONS.freeze?.(src, tgt, srcStages, tgtStages, addLogFn);
+    if (roll < TRI_ATTACK_BURN_THRESHOLD)
+      STATUS_ACTIONS.burn?.(src, tgt, srcStages, tgtStages, addLogFn);
+    else if (roll < TRI_ATTACK_PARALYZE_THRESHOLD)
+      STATUS_ACTIONS.paralyze?.(src, tgt, srcStages, tgtStages, addLogFn);
+    else if (roll < TRI_ATTACK_FREEZE_THRESHOLD)
+      STATUS_ACTIONS.freeze?.(src, tgt, srcStages, tgtStages, addLogFn);
   },
-  'focus_energy': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  focus_energy: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.focusEnergy = true;
     addLogFn(`¡${src.name} se está concentrando!`, 'log-info', src);
   },
-  'lock_on': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  lock_on: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     src.lockOn = true;
     addLogFn(`¡${src.name} fijó el blanco en ${tgt.name}!`, 'log-info', src);
   },
-  'mirror_move': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  mirror_move: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.lastMove && tgt.lastMove.name !== 'Movimiento Espejo') {
       const move = tgt.lastMove;
       addLogFn(`¡Movimiento Espejo copió ${move.name}!`, 'log-info', src);
       if (move.effect) {
-        logger.debug('MirrorMove', `Triggering: ${move.effect}`);
+        logger.debug('MirrorMove', `Triggering: ${JSON.stringify(move.effect)}`);
       }
     } else {
-      addLogFn("¡Pero falló!", 'log-info', src);
+      addLogFn('¡Pero falló!', 'log-info', src);
     }
   },
-  'thrash': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  thrash: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     if (!src.thrashTurns) {
       src.thrashTurns = 2 + Math.floor(Math.random() * 2);
       addLogFn(`¡${src.name} está entrando en un frenesí!`, 'log-info', src);
     }
   },
-  'false_swipe': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  false_swipe: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     addLogFn(`¡Un ataque contenido!`, 'log-info', src);
   },
-  'trap': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  trap: (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     tgt.trapped = true;
     addLogFn(`¡${tgt.name} no puede escapar!`, 'log-info', tgt);
   },
-  'ingrain': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  ingrain: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.ingrain = true;
     addLogFn(`¡${src.name} echó raíces!`, 'log-info', src);
   },
-  'endure': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  endure: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.endure = true;
     addLogFn(`¡${src.name} aguantará el próximo golpe!`, 'log-info', src);
   },
-  'protect': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  protect: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.protect = true;
     addLogFn(`¡${src.name} se protegió!`, 'log-info', src);
   },
-  'belly_drum': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+  belly_drum: (src, _tgt, srcStages, _tgtStages, addLogFn) => {
     const cost = Math.floor(src.maxHp / 2);
     if (src.hp > cost && srcStages.atk < 6) {
       src.hp -= cost;
       srcStages.atk = 6;
       addLogFn(`¡${src.name} redujo su HP y maximizó su Ataque!`, 'log-info', src);
     } else {
-      addLogFn("¡Pero falló!", 'log-info', src);
+      addLogFn('¡Pero falló!', 'log-info', src);
     }
   },
-  'teleport': async (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  teleport: async (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (!battleCtx) return;
     const { executeTeleportAction } = await import('./specialActionsTeleportHelper.ts');
     await executeTeleportAction(src, addLogFn, battleCtx);
   },
-  'rapid_spin': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+  rapid_spin: (src, _tgt, srcStages, _tgtStages, addLogFn) => {
     let cleared = false;
-    if (src.seeded) { src.seeded = false; cleared = true; }
-    if (src.bound) { src.bound = 0; cleared = true; }
-    if (srcStages.spikes) { srcStages.spikes = 0; cleared = true; }
-    
+    if (src.seeded) {
+      src.seeded = false;
+      cleared = true;
+    }
+    if (src.bound) {
+      src.bound = 0;
+      cleared = true;
+    }
+    if (srcStages.spikes) {
+      srcStages.spikes = 0;
+      cleared = true;
+    }
+
     if (cleared) {
       addLogFn(`¡${src.name} se libró de las trampas girando!`, 'log-info', src);
     }
   },
-  'identify': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  identify: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     tgt.identified = true;
     addLogFn(`¡${src.name} identificó a ${tgt.name}!`, 'log-info', src);
   },
-  'swagger': (src, tgt, srcStages, tgtStages, addLogFn) => {
+  swagger: (src, tgt, srcStages, tgtStages, addLogFn) => {
     tgtStages.atk = Math.min(6, (tgtStages.atk || 0) + 2);
     addLogFn(`¡Subió mucho el Ataque de ${tgt.name}!`, 'log-info', tgt);
     STATUS_ACTIONS.confuse?.(src, tgt, srcStages, tgtStages, addLogFn);
   },
-  'recharge': (src, _tgt, _srcStages, _tgtStages, _addLogFn) => {
+  recharge: (src, _tgt, _srcStages, _tgtStages, _addLogFn) => {
     src.mustRecharge = true;
   },
-  'taunt': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  taunt: (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     tgt.tauntTurns = 3;
     addLogFn(`¡${tgt.name} cayó en la mofa!`, 'log-info', tgt);
   },
-  'torment': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  torment: (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     tgt.tormentActive = true;
     addLogFn(`¡${tgt.name} sufre de tormento!`, 'log-info', tgt);
   },
-  'disable': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  disable: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.lastMove && !tgt.disabledMove) {
       tgt.disabledMove = tgt.lastMove;
       tgt.disabledTurns = 4;
-      addLogFn(`¡El movimiento ${tgt.lastMove.name} de ${tgt.name} ha sido desactivado!`, 'log-info', tgt);
+      addLogFn(
+        `¡El movimiento ${tgt.lastMove.name} de ${tgt.name} ha sido desactivado!`,
+        'log-info',
+        tgt
+      );
     } else {
-      addLogFn("¡Pero falló!", 'log-info', src);
+      addLogFn('¡Pero falló!', 'log-info', src);
     }
   },
-  'dream_eater': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  dream_eater: (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     const b = battleCtx?.activeBattle.value;
     if (b && b.lastDamage) {
       const heal = Math.floor(b.lastDamage / 2);
@@ -206,7 +223,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${src.name} absorbió los sueños de su rival! (+${heal} HP)`, 'log-info', src);
     }
   },
-  'drain_50': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  drain_50: (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     const b = battleCtx?.activeBattle.value;
     if (b && b.lastDamage) {
       const heal = Math.max(1, Math.floor(b.lastDamage / 2));
@@ -214,7 +231,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${src.name} recuperó salud absorbiendo energía! (+${heal} HP)`, 'log-info', src);
     }
   },
-  'recoil_25': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  recoil_25: (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     const b = battleCtx?.activeBattle.value;
     if (b && b.lastDamage) {
       const recoil = Math.max(1, Math.floor(b.lastDamage / 4));
@@ -222,42 +239,46 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${src.name} recibió daño por el retroceso! (-${recoil} HP)`, 'log-info', src);
     }
   },
-  'recoil_33': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  recoil_33: (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     const b = battleCtx?.activeBattle.value;
     if (b && b.lastDamage) {
       const recoil = Math.max(1, Math.floor(b.lastDamage / 3));
       src.hp = Math.max(0, src.hp - recoil);
-      addLogFn(`¡${src.name} recibió mucho daño por el retroceso! (-${recoil} HP)`, 'log-info', src);
+      addLogFn(
+        `¡${src.name} recibió mucho daño por el retroceso! (-${recoil} HP)`,
+        'log-info',
+        src
+      );
     }
   },
-  'metronome': (_src, _tgt, _srcStages, _tgtStages, _addLogFn) => {
+  metronome: (_src, _tgt, _srcStages, _tgtStages, _addLogFn) => {
     // Logic handled in battleTurn.ts
   },
-  'encore': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  encore: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.lastMove && !tgt.encoreMove) {
       tgt.encoreMove = tgt.lastMove;
       tgt.encoreTurns = 3;
       addLogFn(`¡${tgt.name} recibió un Otra Vez!`, 'log-info', tgt);
     } else {
-      addLogFn("¡Pero falló!", 'log-info', src);
+      addLogFn('¡Pero falló!', 'log-info', src);
     }
   },
-  'fury_cutter': (src, _tgt, _srcStages, _tgtStages, _addLogFn) => {
+  fury_cutter: (src, _tgt, _srcStages, _tgtStages, _addLogFn) => {
     src.furyCutterCount = (src.furyCutterCount || 0) + 1;
   },
-  'bind': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  bind: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (!tgt.bound) {
       tgt.bound = 4 + Math.floor(Math.random() * 2);
       addLogFn(`¡${tgt.name} fue atrapado!`, 'log-info', tgt);
     } else {
-      addLogFn("¡Pero falló!", 'log-info', src);
+      addLogFn('¡Pero falló!', 'log-info', src);
     }
   },
-  'rage': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  rage: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.rageActive = true;
     addLogFn(`¡${src.name} está furioso!`, 'log-info', src);
   },
-  'future_sight_simple': (src, tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  future_sight_simple: (src, tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     const b = battleCtx?.activeBattle.value;
     if (!b) return;
     if (!b.pendingSlotEffects) b.pendingSlotEffects = [];
@@ -271,17 +292,17 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       targetSlot: 0,
       turnsLeft: FUTURE_SIGHT_TURNS,
       damage: Math.max(FUTURE_SIGHT_MIN_DMG, Math.floor(tgt.maxHp * FUTURE_SIGHT_DMG_RATIO)),
-      sourceName: src.name,
+      sourceName: src.name
     });
     addLogFn(`¡${src.name} lanzó una premonición!`, 'log-info', src);
   },
-  'trick': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  trick: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     const temp = src.heldItem;
     src.heldItem = tgt.heldItem;
     tgt.heldItem = temp;
     addLogFn(`¡${src.name} y ${tgt.name} intercambiaron objetos!`, 'log-info', src);
   },
-  'steal_item': (src, tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  steal_item: (src, tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (tgt.heldItem && !src.heldItem) {
       const stolenItem = tgt.heldItem;
       src.heldItem = stolenItem;
@@ -291,18 +312,20 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${src.name} robó ${displayName} de ${tgt.name}!`, 'log-info', src);
 
       // Play steal sound
-      import('@/stores/audio').then(m => m.useAudioStore().play('steal')).catch(err => {
-        console.error('[Audio] Failed to play steal sound:', err);
-      });
+      import('@/stores/audio')
+        .then((m) => m.useAudioStore().play('steal'))
+        .catch((err) => {
+          console.error('[Audio] Failed to play steal sound:', err);
+        });
 
       const b = battleCtx?.activeBattle.value;
       if (b && battleCtx.gs) {
-        const isPlayerSrc = (src.uid === b.player?.uid);
-        const isPlayerTgt = (tgt.uid === b.player?.uid);
-        
+        const isPlayerSrc = src.uid === b.player?.uid;
+        const isPlayerTgt = tgt.uid === b.player?.uid;
+
         if (isPlayerSrc) {
           incrementRecordKey(battleCtx.gs.state.inventory, stolenItem, 1);
-          
+
           battleCtx.uiStore.notify(`¡Robaste un ${displayName}!`, '🎒');
         } else if (isPlayerTgt) {
           battleCtx.uiStore.notify(`¡Te robaron tu ${displayName}!`, '💸');
@@ -310,23 +333,29 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       }
     }
   },
-  'pay_day': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  pay_day: (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     const b = battleCtx?.activeBattle.value;
     if (b && battleCtx.gs) {
-      const isPlayerSrc = (src.uid === b.player?.uid);
+      const isPlayerSrc = src.uid === b.player?.uid;
       if (isPlayerSrc) {
         const amount = (src.level || 5) * 5;
         addToField(battleCtx.gs.state, 'money', amount);
-        addLogFn(`¡Monedas esparcidas por todas partes! Se obtuvieron ₽${amount}.`, 'log-success', src);
-        
-        import('@/stores/audio').then(m => m.useAudioStore().play('steal')).catch(err => {
-          console.error('[Audio] Failed to play steal sound:', err);
-        });
+        addLogFn(
+          `¡Monedas esparcidas por todas partes! Se obtuvieron ₽${amount}.`,
+          'log-success',
+          src
+        );
+
+        import('@/stores/audio')
+          .then((m) => m.useAudioStore().play('steal'))
+          .catch((err) => {
+            console.error('[Audio] Failed to play steal sound:', err);
+          });
         battleCtx.uiStore.notify(`¡Robaste/Obtuviste ₽${amount}!`, '💰');
       }
     }
   },
-  'skill_swap': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  skill_swap: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     const temp = src.ability;
     src.ability = tgt.ability;
     tgt.ability = temp;
@@ -334,19 +363,19 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     addLogFn(`¡${src.name} tiene ${src.ability}!`, 'log-info', src);
     addLogFn(`¡${tgt.name} tiene ${tgt.ability}!`, 'log-info', tgt);
   },
-  'snatch': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  snatch: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.snatching = true;
     addLogFn(`¡${src.name} espera para robar un movimiento!`, 'log-info', src);
   },
-  'explosion': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  explosion: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.hp = 0;
     addLogFn(`¡${src.name} explotó!`, 'log-info', src);
   },
-  'self_destruct': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  self_destruct: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.hp = 0;
     addLogFn(`¡${src.name} se autodestruyó!`, 'log-info', src);
   },
-  'locked_move': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  locked_move: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     if (!src.volatileCounters) {
       src.volatileCounters = {};
     }
@@ -355,7 +384,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${src.name} está entrando en un frenesí!`, 'log-info', src);
     }
   },
-  'partially_trapped': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  partially_trapped: (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (!tgt.volatileCounters) {
       tgt.volatileCounters = {};
     }
@@ -363,10 +392,10 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       tgt.volatileCounters['partiallytrapped'] = 4 + Math.floor(Math.random() * 2);
       addLogFn(`¡${tgt.name} fue atrapado!`, 'log-info', tgt);
     } else {
-      addLogFn("¡Pero falló!", 'log-info', src);
+      addLogFn('¡Pero falló!', 'log-info', src);
     }
   },
-  'stockpile': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  stockpile: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     if (!src.volatileCounters) src.volatileCounters = {};
     const count = src.volatileCounters['stockpile'] || 0;
     if (count < 3) {
@@ -376,47 +405,47 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${src.name} no puede acumular más!`, 'log-info', src);
     }
   },
-  'spit_up': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  spit_up: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     if (!src.volatileCounters) src.volatileCounters = {};
     const count = src.volatileCounters['stockpile'] || 0;
     if (count > 0) {
       addLogFn(`¡${src.name} liberó la energía acumulada!`, 'log-info', src);
       src.volatileCounters['stockpile'] = 0;
     } else {
-      addLogFn("¡Pero falló porque no tenía energía acumulada!", 'log-info', src);
+      addLogFn('¡Pero falló porque no tenía energía acumulada!', 'log-info', src);
     }
   },
-  'future_sight': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  future_sight: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     addLogFn(`¡${src.name} previó un ataque para el futuro!`, 'log-info', src);
   },
-  'grudge': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  grudge: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     addLogFn(`¡${src.name} quiere vengarse del enemigo!`, 'log-info', src);
   },
-  'charge': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  charge: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     addLogFn(`¡${src.name} comenzó a cargarse de electricidad!`, 'log-info', src);
   },
-  'brick_break': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  brick_break: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     addLogFn(`¡${src.name} destruyó las pantallas reflectoras!`, 'log-info', src);
   },
-  'covet': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  covet: (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
     SPECIAL_ACTIONS['steal_item']?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
   },
-  'hp_scale': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  hp_scale: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     addLogFn(`¡La potencia del ataque depende de los PS de ${src.name}!`, 'log-info', src);
   },
-  'stat_down_self_def': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  stat_down_self_def: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     // Generic handler for Close Combat, Shell Smash, etc. that lower defenses
     addLogFn(`¡Las defensas de ${src.name} bajaron!`, 'log-info', src);
   },
-  'stat_up_enemy_atk': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  stat_up_enemy_atk: (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     // Howl / etc.
     addLogFn(`¡El ataque de ${tgt.name} subió!`, 'log-info', tgt);
   },
-  'stat_down_self_spe': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  stat_down_self_spe: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     // Hammer Arm / etc.
     addLogFn(`¡La velocidad de ${src.name} bajó!`, 'log-info', src);
   },
-  'focus_punch': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+  focus_punch: (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     addLogFn(`¡${src.name} se está concentrando!`, 'log-info', src);
   }
 };

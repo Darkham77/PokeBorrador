@@ -15,10 +15,14 @@ export async function executeRouterRpc(
   if (!client) return { data: null, error: 'Offline' };
 
   try {
-    return await client.rpc(name, params) as DBResponse;
+    return (await client.rpc(name, params)) as DBResponse;
   } catch (err: unknown) {
     const errMsg = (err instanceof Error ? err.message : String(err)).toLowerCase();
-    if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('failed to fetch')) {
+    if (
+      errMsg.includes('fetch') ||
+      errMsg.includes('network') ||
+      errMsg.includes('failed to fetch')
+    ) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('db-connection-error'));
       }

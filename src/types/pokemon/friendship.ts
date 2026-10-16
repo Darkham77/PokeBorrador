@@ -9,7 +9,7 @@ export const FRIENDSHIP_SEAL_TIERS = [
   'sprout',
   'comrade',
   'radiant_prism',
-  'best_friends',
+  'best_friends'
 ] as const;
 
 export type FriendshipSealTier = (typeof FRIENDSHIP_SEAL_TIERS)[number];
@@ -48,71 +48,73 @@ export const FRIENDSHIP_BOUNDS = {
   DEFAULT_BASE: 50,
   LEGACY_BASE: 70,
   FRIEND_BALL_BASE: 200,
-  EGG_HATCH_BASE: 120,
+  EGG_HATCH_BASE: 120
 } as const;
 
-export const FRIENDSHIP_SEAL_MAP: Readonly<Record<FriendshipSealTier, FriendshipSealMetadata>> = Object.freeze({
-  distrust: {
-    id: 'distrust',
-    minFriendship: FRIENDSHIP_BOUNDS.MIN,
-    maxFriendship: FRIENDSHIP_BOUNDS.DISTRUST_MAX,
-    label: 'Desconfianza',
-    iconEmoji: '⛓️',
-    iconName: 'seal_distrust.png',
-    barGradientClass: 'friendship-distrust',
-    evaluatorQuote: 'Parece que aún no confía en ti. ¡Trátalo con cuidado!',
-    isEvolutionReady: false,
-    isCombatPerksActive: false,
-  },
-  sprout: {
-    id: 'sprout',
-    minFriendship: FRIENDSHIP_BOUNDS.SPROUT_MIN,
-    maxFriendship: FRIENDSHIP_BOUNDS.SPROUT_MAX,
-    label: 'Sello Brote',
-    iconEmoji: '🌱',
-    iconName: 'seal_sprout.png',
-    barGradientClass: 'friendship-sprout',
-    evaluatorQuote: 'Se está acostumbrando a ti. Es un buen comienzo.',
-    isEvolutionReady: false,
-    isCombatPerksActive: false,
-  },
-  comrade: {
-    id: 'comrade',
-    minFriendship: FRIENDSHIP_BOUNDS.COMRADE_MIN,
-    maxFriendship: FRIENDSHIP_BOUNDS.COMRADE_MAX,
-    label: 'Sello Camarada',
-    iconEmoji: '🤝',
-    iconName: 'seal_comrade.png',
-    barGradientClass: 'friendship-comrade',
-    evaluatorQuote: '¡Se llevan bastante bien! Confía en tus decisiones.',
-    isEvolutionReady: false,
-    isCombatPerksActive: false,
-  },
-  radiant_prism: {
-    id: 'radiant_prism',
-    minFriendship: FRIENDSHIP_BOUNDS.RADIANT_PRISM_MIN,
-    maxFriendship: FRIENDSHIP_BOUNDS.RADIANT_PRISM_MAX,
-    label: 'Prisma Radiante',
-    iconEmoji: '💎',
-    iconName: 'seal_radiant_prism.png',
-    barGradientClass: 'friendship-radiant',
-    evaluatorQuote: '¡Son grandes amigos! Su vínculo le permite alcanzar nuevas formas.',
-    isEvolutionReady: true,
-    isCombatPerksActive: false,
-  },
-  best_friends: {
-    id: 'best_friends',
-    minFriendship: FRIENDSHIP_BOUNDS.BEST_FRIENDS_MIN,
-    maxFriendship: FRIENDSHIP_BOUNDS.BEST_FRIENDS_MAX,
-    label: 'Cinta Mejores Amigos',
-    iconEmoji: '🎀',
-    iconName: 'ribbon_best_friends.png',
-    barGradientClass: 'friendship-best-friends',
-    evaluatorQuote: '¡No podría quererte más! Su profundo vínculo activa ventajas milagrosas en combate.',
-    isEvolutionReady: true,
-    isCombatPerksActive: true,
-  },
-});
+export const FRIENDSHIP_SEAL_MAP: Readonly<Record<FriendshipSealTier, FriendshipSealMetadata>> =
+  Object.freeze({
+    distrust: {
+      id: 'distrust',
+      minFriendship: FRIENDSHIP_BOUNDS.MIN,
+      maxFriendship: FRIENDSHIP_BOUNDS.DISTRUST_MAX,
+      label: 'Desconfianza',
+      iconEmoji: '⛓️',
+      iconName: 'seal_distrust.png',
+      barGradientClass: 'friendship-distrust',
+      evaluatorQuote: 'Parece que aún no confía en ti. ¡Trátalo con cuidado!',
+      isEvolutionReady: false,
+      isCombatPerksActive: false
+    },
+    sprout: {
+      id: 'sprout',
+      minFriendship: FRIENDSHIP_BOUNDS.SPROUT_MIN,
+      maxFriendship: FRIENDSHIP_BOUNDS.SPROUT_MAX,
+      label: 'Sello Brote',
+      iconEmoji: '🌱',
+      iconName: 'seal_sprout.png',
+      barGradientClass: 'friendship-sprout',
+      evaluatorQuote: 'Se está acostumbrando a ti. Es un buen comienzo.',
+      isEvolutionReady: false,
+      isCombatPerksActive: false
+    },
+    comrade: {
+      id: 'comrade',
+      minFriendship: FRIENDSHIP_BOUNDS.COMRADE_MIN,
+      maxFriendship: FRIENDSHIP_BOUNDS.COMRADE_MAX,
+      label: 'Sello Camarada',
+      iconEmoji: '🤝',
+      iconName: 'seal_comrade.png',
+      barGradientClass: 'friendship-comrade',
+      evaluatorQuote: '¡Se llevan bastante bien! Confía en tus decisiones.',
+      isEvolutionReady: false,
+      isCombatPerksActive: false
+    },
+    radiant_prism: {
+      id: 'radiant_prism',
+      minFriendship: FRIENDSHIP_BOUNDS.RADIANT_PRISM_MIN,
+      maxFriendship: FRIENDSHIP_BOUNDS.RADIANT_PRISM_MAX,
+      label: 'Prisma Radiante',
+      iconEmoji: '💎',
+      iconName: 'seal_radiant_prism.png',
+      barGradientClass: 'friendship-radiant',
+      evaluatorQuote: '¡Son grandes amigos! Su vínculo le permite alcanzar nuevas formas.',
+      isEvolutionReady: true,
+      isCombatPerksActive: false
+    },
+    best_friends: {
+      id: 'best_friends',
+      minFriendship: FRIENDSHIP_BOUNDS.BEST_FRIENDS_MIN,
+      maxFriendship: FRIENDSHIP_BOUNDS.BEST_FRIENDS_MAX,
+      label: 'Cinta Mejores Amigos',
+      iconEmoji: '🎀',
+      iconName: 'ribbon_best_friends.png',
+      barGradientClass: 'friendship-best-friends',
+      evaluatorQuote:
+        '¡No podría quererte más! Su profundo vínculo activa ventajas milagrosas en combate.',
+      isEvolutionReady: true,
+      isCombatPerksActive: true
+    }
+  });
 
 export function isFriendshipSealTier(value: unknown): value is FriendshipSealTier {
   return typeof value === 'string' && FRIENDSHIP_SEAL_TIERS.includes(value as FriendshipSealTier);

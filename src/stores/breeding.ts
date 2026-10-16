@@ -51,27 +51,34 @@ export const useBreedingStore = defineStore('breeding', () => {
   let inFlightPromise: Promise<void> | null = null;
   const dailyMissions = computed<DaycareMission[]>({
     get: () => daycareMissionsStore.dailyMissions,
-    set: (val) => { daycareMissionsStore.dailyMissions = val }
+    set: (val) => {
+      daycareMissionsStore.dailyMissions = val;
+    }
   });
   const missionRefreshes = computed<number>({
     get: () => daycareMissionsStore.missionRefreshes,
-    set: (val) => { daycareMissionsStore.missionRefreshes = val }
+    set: (val) => {
+      daycareMissionsStore.missionRefreshes = val;
+    }
   });
 
   // --- HELPERS & PERSISTENCE ---
 
-
-
   function saveWarehouseEggs() {
     const userId = authStore.user?.id || 'default';
-    safeStorage.setItem(`${LOCAL_STORAGE_KEYS.DAYCARE_WAREHOUSE_EGGS_PREFIX}${userId}`, JSON.stringify(warehouseEggs.value));
+    safeStorage.setItem(
+      `${LOCAL_STORAGE_KEYS.DAYCARE_WAREHOUSE_EGGS_PREFIX}${userId}`,
+      JSON.stringify(warehouseEggs.value)
+    );
     gameStore.state.daycareWarehouse = [...warehouseEggs.value];
-    gameStore.scheduleSave();
+    void gameStore.scheduleSave();
   }
 
   // --- GETTERS ---
-  const isBreeding = computed(() => slots.value.length === 2 && !!slots.value[0]?.pokemon && !!slots.value[1]?.pokemon);
-  
+  const isBreeding = computed(
+    () => slots.value.length === 2 && !!slots.value[0]?.pokemon && !!slots.value[1]?.pokemon
+  );
+
   const compatibility = computed<BreedingCompatibility>(() => {
     if (!isBreeding.value) {
       return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [] };
@@ -81,7 +88,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     if (!p1 || !p2) return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [] };
     return checkCompatibility(p1, p2);
   });
-  
+
   const nextEggTime = computed(() => {
     return calculateNextEggTime(compatibility.value.level, slots.value[0], slots.value[1]);
   });
@@ -103,12 +110,16 @@ export const useBreedingStore = defineStore('breeding', () => {
         warehouseEggs.value = restoreWarehouseEggs(gameStore.state.daycareWarehouse, userId);
         if (gameStore.state.daycareWarehouse?.length !== warehouseEggs.value.length) {
           gameStore.state.daycareWarehouse = [...warehouseEggs.value];
-          gameStore.scheduleSave();
+          void gameStore.scheduleSave();
         }
 
-        const needsSave = restoreDaycareSlots(gameStore.state.team || [], gameStore.state.box || [], slots.value);
+        const needsSave = restoreDaycareSlots(
+          gameStore.state.team || [],
+          gameStore.state.box || [],
+          slots.value
+        );
         if (needsSave) {
-          gameStore.scheduleSave();
+          void gameStore.scheduleSave();
         }
 
         // Capa 1: Check retroactively if a new egg should be generated
@@ -122,14 +133,20 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   async function deposit(pokemon: Pokemon, slotIndex: number) {
-    const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+    const isDebugMode =
+      typeof window !== 'undefined' &&
+      Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
     const validation = validateDaycareDeposit(pokemon, isDebugMode);
     if (!validation.canDeposit) {
       uiStore.notify(validation.reason!, validation.icon || '⚠️');
       return false;
     }
 
-    const moveResult = movePokemonFromTeamToBoxIfPresent(gameStore.state.team, gameStore.state.box, pokemon.uid);
+    const moveResult = movePokemonFromTeamToBoxIfPresent(
+      gameStore.state.team,
+      gameStore.state.box,
+      pokemon.uid
+    );
     if (!moveResult.success) {
       uiStore.notify(moveResult.errorReason!, '⚠️');
       return false;
@@ -146,7 +163,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     slots.value[slotIndex] = { pokemon, slotIndex, deposited_at: now };
 
     uiStore.notify(`¡${pokemon.name} depositado en la Guardería!`, '🏡');
-    gameStore.scheduleSave();
+    void gameStore.scheduleSave();
     return true;
   }
 
@@ -168,13 +185,22 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     slots.value[slotIndex] = { pokemon: null, slotIndex, deposited_at: null };
     uiStore.notify(`¡${slot.pokemon.name} retirado de la Guardería!`, '🏡');
-    gameStore.scheduleSave();
+    void gameStore.scheduleSave();
     return true;
   }
 
   async function checkAndGenerateEgg() {
     const nowEpoch = Temporal.Now.instant().epochMilliseconds;
-    if (!canGenerateEgg(isBreeding.value, compatibility.value.level, slots.value[0], slots.value[1], nextEggTime.value, nowEpoch)) {
+    if (
+      !canGenerateEgg(
+        isBreeding.value,
+        compatibility.value.level,
+        slots.value[0],
+        slots.value[1],
+        nextEggTime.value,
+        nowEpoch
+      )
+    ) {
       return;
     }
 
@@ -206,24 +232,30 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     uiStore.notify(' ¡Apareció un huevo en la Guardería!', '🥚');
     if (checkParentVigorDepleted(pA, pB)) {
-      uiStore.notify('¡Uno de los padres se ha quedado sin vigor! Consigue Caramelos de vigor o Restauradores de vigor para continuar criando.', '💤');
+      uiStore.notify(
+        '¡Uno de los padres se ha quedado sin vigor! Consigue Caramelos de vigor o Restauradores de vigor para continuar criando.',
+        '💤'
+      );
     }
-    gameStore.scheduleSave();
+    void gameStore.scheduleSave();
   }
 
   function claimEgg(eggUid: string) {
     const eggIndex = warehouseEggs.value.findIndex((e) => e.id === eggUid);
     if (eggIndex === -1) return;
-    
+
     const egg = warehouseEggs.value[eggIndex];
     if (!egg) return;
 
     if (!gameStore.state.eggs) gameStore.state.eggs = [];
 
     // Slot limit: max 6 regular eggs. Slot 7 is reserved for NPC quest eggs only.
-    const regularEggs = gameStore.state.eggs.filter(e => !e.isNpc);
+    const regularEggs = gameStore.state.eggs.filter((e) => !e.isNpc);
     if (regularEggs.length >= MAX_CARRIED_EGGS) {
-      uiStore.notify(`Tu incubadora está llena. Puedes llevar un máximo de ${MAX_CARRIED_EGGS} huevos.`, '🥚');
+      uiStore.notify(
+        `Tu incubadora está llena. Puedes llevar un máximo de ${MAX_CARRIED_EGGS} huevos.`,
+        '🥚'
+      );
       return;
     }
 
@@ -231,7 +263,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       uiStore.notify(`No tienes suficiente dinero ($${egg.cost.toLocaleString()}).`, '💰');
       return;
     }
-    
+
     const eggToPush = eggFactory.createPokemonEgg({
       species: egg.species,
       steps: egg.steps,
@@ -247,9 +279,9 @@ export const useBreedingStore = defineStore('breeding', () => {
     gameStore.state.money -= egg.cost;
     warehouseEggs.value.splice(eggIndex, 1);
     saveWarehouseEggs();
-    
+
     uiStore.notify('¡Huevo recogido! Camina para eclosionarlo.', '🥚');
-    gameStore.scheduleSave();
+    void gameStore.scheduleSave();
   }
 
   function scanEgg(eggUid: string) {
@@ -272,7 +304,7 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     saveWarehouseEggs();
     uiStore.notify(`¡Huevo de ${speciesName} escaneado!`, '🔍');
-    gameStore.scheduleSave();
+    void gameStore.scheduleSave();
   }
 
   function checkDailyReset() {
@@ -292,7 +324,12 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   function reduceHatchTimers(activity: BreedingActivitySource) {
-    const REDUCTIONS: Record<BreedingActivitySource, number> = { battle: 2, capture: 3, gym: 10, minigame: 1 };
+    const REDUCTIONS: Record<BreedingActivitySource, number> = {
+      battle: 2,
+      capture: 3,
+      gym: 10,
+      minigame: 1
+    };
     const baseReduction = REDUCTIONS[activity] || 0;
     if (baseReduction === 0) return;
 
@@ -300,16 +337,17 @@ export const useBreedingStore = defineStore('breeding', () => {
     processWalkingFriendshipStepAccumulation({
       team: gameStore.state.team,
       addedSteps: baseReduction,
-      notifyFn: uiStore.notify,
+      notifyFn: uiStore.notify
     });
 
     const hatchMult = getHatchSpeedMultiplier(gameStore.state.team);
-    const criadorBonus = gameStore.state.playerClass === 'criador' ? (1 / (1 - HATCH_STEP_REDUCTION_CRIADOR)) : 1;
+    const criadorBonus =
+      gameStore.state.playerClass === 'criador' ? 1 / (1 - HATCH_STEP_REDUCTION_CRIADOR) : 1;
     const reduction = baseReduction * hatchMult * criadorBonus;
 
     const eggs = gameStore.state.eggs || [];
     if (eggs.length === 0) {
-      gameStore.scheduleSave();
+      void gameStore.scheduleSave();
       return;
     }
 
@@ -327,16 +365,15 @@ export const useBreedingStore = defineStore('breeding', () => {
     if (newlyReady) {
       uiStore.notify('¡Un Huevo Pokémon está listo para eclosionar!', '🐣');
     }
-    gameStore.scheduleSave();
+    void gameStore.scheduleSave();
   }
 
-
   function deleteEgg(eggUid: string) {
-    const idx = warehouseEggs.value.findIndex(e => e.id === eggUid);
+    const idx = warehouseEggs.value.findIndex((e) => e.id === eggUid);
     if (idx !== -1) {
       warehouseEggs.value.splice(idx, 1);
       saveWarehouseEggs();
-      gameStore.scheduleSave();
+      void gameStore.scheduleSave();
     }
   }
 
@@ -345,7 +382,7 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   const handleCriadorVigor = () => {
-    const healthyParents = slots.value.filter(s => s && s.pokemon);
+    const healthyParents = slots.value.filter((s) => s && s.pokemon);
     if (healthyParents.length > 0) {
       const chosenSlot = healthyParents[Math.floor(Math.random() * healthyParents.length)];
       if (chosenSlot && chosenSlot.pokemon) {
@@ -353,7 +390,10 @@ export const useBreedingStore = defineStore('breeding', () => {
         const prevVigor = parent.vigor ?? MAX_POKEMON_VIGOR;
         const VIGOR_RECOVERY_BONUS = 5;
         parent.vigor = Math.min(MAX_POKEMON_VIGOR, prevVigor + VIGOR_RECOVERY_BONUS);
-        useUIStore().notify(`¡Eclosión Vigorosa! Su progenitor ${parent.name} recuperó +${VIGOR_RECOVERY_BONUS} de vigor.`, '❤️');
+        useUIStore().notify(
+          `¡Eclosión Vigorosa! Su progenitor ${parent.name} recuperó +${VIGOR_RECOVERY_BONUS} de vigor.`,
+          '❤️'
+        );
       }
     }
   };

@@ -3,7 +3,13 @@ import { statsMap, patchShowdownSpreadModify } from './engine/showdownSpreadModi
 import { parseToNumericSeed, formatToShowdownSeed } from './battleSeedManager.ts';
 import { TrainerTeamGenerator, RivalTeamGenerator } from './engine/rivalTeamGenerator.ts';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
-import { applyHealCheatToSide, applyStatusCheatToSide, syncRequestConditionsWithSimulator } from './cheats.ts';
+import type { PokemonStatKey } from '@/types/pokemon/pokemon.ts';
+import type { CoreBattleStatKey } from '@/types/battle/battle.ts';
+import {
+  applyHealCheatToSide,
+  applyStatusCheatToSide,
+  syncRequestConditionsWithSimulator
+} from './cheats.ts';
 import { createShowdownBattle } from './helpers/showdownBattleFactory.ts';
 import { ShowdownTeamMapper } from './helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from './helpers/showdownLogEnricher.ts';
@@ -17,7 +23,6 @@ interface ExtendedPokemon extends Pokemon {
   faintQueued: boolean;
 }
 
-
 type ExtendedSide = Omit<Side, 'activeRequest' | 'pokemon'> & {
   pokemon: ExtendedPokemon[];
   activeRequest?: ShowdownRequest;
@@ -26,7 +31,7 @@ type ExtendedSide = Omit<Side, 'activeRequest' | 'pokemon'> & {
 import type { ShowdownRequest } from './helpers/showdownTeamMapper.ts';
 
 export interface CustomPokemonSet extends PokemonSet {
-  stats?: Record<string, number>;
+  stats?: Partial<Record<PokemonStatKey, number>>;
   uid?: string;
 }
 
@@ -82,11 +87,13 @@ interface SynchronizedPokemonState {
   maxHp: number;
   status: string;
   fainted: boolean;
-  boosts?: Record<string, number>;
+  boosts?: Partial<Record<CoreBattleStatKey, number>>;
   volatiles?: string[];
 }
 
-function getSideTeamState(side: ExtendedSide | null | undefined): Array<SynchronizedPokemonState | null> {
+function getSideTeamState(
+  side: ExtendedSide | null | undefined
+): Array<SynchronizedPokemonState | null> {
   if (!side || !Array.isArray(side.pokemon)) return [];
   return side.pokemon.map((p: ExtendedPokemon | null) => {
     if (!p) return null;
@@ -105,7 +112,6 @@ function getSideTeamState(side: ExtendedSide | null | undefined): Array<Synchron
   });
 }
 
-
 interface WorkerEventPayload {
   p1?: { name?: string; team: CustomPokemonSet[] };
   p2?: { name?: string; team: CustomPokemonSet[] };
@@ -115,18 +121,25 @@ interface WorkerEventPayload {
   p1Skip?: boolean;
   p2Skip?: boolean;
   p1UsedBattleItem?: boolean;
-  p1Hps?: Record<string, number>;
-  p2Hps?: Record<string, number>;
-  p1Statuses?: Record<string, string>;
-  p2Statuses?: Record<string, string>;
-  p1MovesPP?: Record<string, Record<string, number>>;
-  p2MovesPP?: Record<string, Record<string, number>>;
+  p1Hps?: Record<string, number>; // open-record: Pokémon name/id to current HP
+  p2Hps?: Record<string, number>; // open-record: Pokémon name/id to current HP
+  p1Statuses?: Record<string, string>; // open-record: Pokémon name/id to status condition
+  p2Statuses?: Record<string, string>; // open-record: Pokémon name/id to status condition
+  p1MovesPP?: Record<string, Record<string, number>>; // open-record: Pokémon move PP counters
+  p2MovesPP?: Record<string, Record<string, number>>; // open-record: Pokémon move PP counters
   weather?: string;
   debugStatus?: { side: SideID; uid: string; status: string };
   side?: SideID;
   type?: 'heal';
   cheats?: Array<{ turn: number; side: SideID; type: 'heal' }>;
-  history?: Array<{ turnCount: number; p1Choice: string; p2Choice: string; battleTurn: number; p1Heal?: true; p2Heal?: true }>;
+  history?: Array<{
+    turnCount: number;
+    p1Choice: string;
+    p2Choice: string;
+    battleTurn: number;
+    p1Heal?: boolean;
+    p2Heal?: boolean;
+  }>;
   certifiedHistoryStep?: number;
   isDeterministicSimulation?: boolean;
   isFuzzerSimulation?: boolean;
@@ -143,14 +156,16 @@ interface WorkerEventData {
   payload: WorkerEventPayload;
 }
 
+// open-record: Pokémon move PP tracking dictionary
 function syncSideMovesPP(side: Side, movesPPMap?: Record<string, Record<string, number>>): void {
   if (!movesPPMap || typeof movesPPMap !== 'object' || !Array.isArray(side.pokemon)) return;
-  side.pokemon.forEach(pokemon => {
+  side.pokemon.forEach((pokemon) => {
     if (!pokemon) return;
-    const uid = (Reflect.get(pokemon, 'uid') as string | undefined) || (pokemon as ExtendedPokemon).uid;
+    const uid =
+      (Reflect.get(pokemon, 'uid') as string | undefined) || (pokemon as ExtendedPokemon).uid;
     const monPPs = uid ? movesPPMap[uid] : undefined;
     if (monPPs && Array.isArray(pokemon.moveSlots)) {
-      pokemon.moveSlots.forEach(slot => {
+      pokemon.moveSlots.forEach((slot) => {
         const customPP = monPPs[slot.id];
         if (typeof customPP === 'number' && !isNaN(customPP)) {
           slot.pp = Math.max(0, Math.min(slot.maxpp, customPP));
@@ -162,12 +177,24 @@ function syncSideMovesPP(side: Side, movesPPMap?: Record<string, Record<string, 
     }
   });
 
-  const activeReq = side.activeRequest as { active?: Array<{ moves?: Array<{ id?: string; pp?: number; maxpp?: number; disabled?: boolean | string }> }> } | undefined;
-  if (activeReq && Array.isArray(activeReq.active) && activeReq.active[0] && Array.isArray(activeReq.active[0].moves)) {
-    const activeMon = side.pokemon.find(p => p && p.position === 0) || side.pokemon[0];
+  const activeReq = side.activeRequest as
+    | {
+        active?: Array<{
+          moves?: Array<{ id?: string; pp?: number; maxpp?: number; disabled?: boolean | string }>;
+        }>;
+      }
+    | undefined;
+  if (
+    activeReq &&
+    Array.isArray(activeReq.active) &&
+    activeReq.active[0] &&
+    Array.isArray(activeReq.active[0].moves)
+  ) {
+    const activeMon = side.pokemon.find((p) => p && p.position === 0) || side.pokemon[0];
     if (activeMon && Array.isArray(activeMon.moveSlots)) {
       activeReq.active[0].moves.forEach((reqMove, idx) => {
-        const correspondingSlot = activeMon.moveSlots.find(ms => ms && ms.id === reqMove.id) || activeMon.moveSlots[idx];
+        const correspondingSlot =
+          activeMon.moveSlots.find((ms) => ms && ms.id === reqMove.id) || activeMon.moveSlots[idx];
         if (correspondingSlot && reqMove) {
           reqMove.pp = correspondingSlot.pp;
           reqMove.maxpp = correspondingSlot.maxpp;
@@ -184,15 +211,23 @@ function handleInitBattle(payload: WorkerEventPayload): void {
   debugLogs.length = 0;
   reportInitStage('received');
   isDeterministicSimulation = !!payload.isDeterministicSimulation;
-  logDebug(`[E2E-WORKER-DEBUG] INIT_BATTLE received. payload.isDeterministicSimulation: ${payload.isDeterministicSimulation}, module isDeterministicSimulation set to: ${isDeterministicSimulation}`);
+  logDebug(
+    `[E2E-WORKER-DEBUG] INIT_BATTLE received. payload.isDeterministicSimulation: ${payload.isDeterministicSimulation}, module isDeterministicSimulation set to: ${isDeterministicSimulation}`
+  );
   const { p1, p2 } = payload;
   if (!p1 || !p2) {
     throw new Error('INIT_BATTLE payload must contain p1 and p2');
   }
 
-  logDebug(`[E2E-WORKER-DEBUG] P1 Team moves: ${JSON.stringify(p1.team.map((p: CustomPokemonSet) => ({ name: p.name, moves: p.moves })))}`);
-  logDebug(`[E2E-WORKER-DEBUG] P2 Team moves: ${JSON.stringify(p2.team.map((p: CustomPokemonSet) => ({ name: p.name, moves: p.moves })))}`);
-  logDebug(`[E2E-WORKER-DEBUG] init Battle.prototype.spreadModify type is: ${typeof Battle.prototype.spreadModify}`);
+  logDebug(
+    `[E2E-WORKER-DEBUG] P1 Team moves: ${JSON.stringify(p1.team.map((p: CustomPokemonSet) => ({ name: p.name, moves: p.moves })))}`
+  );
+  logDebug(
+    `[E2E-WORKER-DEBUG] P2 Team moves: ${JSON.stringify(p2.team.map((p: CustomPokemonSet) => ({ name: p.name, moves: p.moves })))}`
+  );
+  logDebug(
+    `[E2E-WORKER-DEBUG] init Battle.prototype.spreadModify type is: ${typeof Battle.prototype.spreadModify}`
+  );
   logDebug(`[E2E-WORKER-DEBUG] spreadModify code: ${Battle.prototype.spreadModify.toString()}`);
   logDebug(`[E2E-WORKER-DEBUG] init statsMap size is: ${statsMap.size}`);
 
@@ -200,12 +235,16 @@ function handleInitBattle(payload: WorkerEventPayload): void {
   ShowdownTeamMapper.populateStatsMap(p1.team);
   ShowdownTeamMapper.populateStatsMap(p2.team);
 
-  logDebug(`[E2E-WORKER-DEBUG] statsMap populated. Size: ${statsMap.size}, Keys: ${JSON.stringify(Array.from(statsMap.keys()))}`);
+  logDebug(
+    `[E2E-WORKER-DEBUG] statsMap populated. Size: ${statsMap.size}, Keys: ${JSON.stringify(Array.from(statsMap.keys()))}`
+  );
   lastLogIndex = 0;
 
   const seedVal = parseToNumericSeed(payload.seed);
   const seedStr = formatToShowdownSeed(seedVal);
-  console.debug(`[E2E-SEED-WORKER-DEBUG] Initializing Battle with seedVal: ${JSON.stringify(seedVal)} and seedStr: "${seedStr}"`);
+  console.debug(
+    `[E2E-SEED-WORKER-DEBUG] Initializing Battle with seedVal: ${JSON.stringify(seedVal)} and seedStr: "${seedStr}"`
+  );
 
   resetDeterministicMathRandom();
   const battleInstance = createShowdownBattle(payload.format || ACTIVE_SHOWDOWN_FORMAT, seedStr);
@@ -260,16 +299,16 @@ function handleInitBattle(payload: WorkerEventPayload): void {
   syncRequestConditionsWithSimulator(currentBattle.p2 as ExtendedSide);
 
   const initLogs = getNewLogs();
-  self.postMessage({ 
-    type: 'INIT_BATTLE_SUCCESS', 
-    payload: { 
+  self.postMessage({
+    type: 'INIT_BATTLE_SUCCESS',
+    payload: {
       logs: initLogs,
       p1Request: injectUidsIntoRequest('p1', currentBattle.p1.activeRequest),
       p2Request: injectUidsIntoRequest('p2', currentBattle.p2.activeRequest),
       p1TeamState: getSideTeamState(currentBattle.p1 as ExtendedSide),
       p2TeamState: getSideTeamState(currentBattle.p2 as ExtendedSide),
       debugLogs
-    } 
+    }
   });
 }
 
@@ -278,10 +317,10 @@ function handleApplyCheats(payload: WorkerEventPayload): void {
   const battle = currentBattle;
   const { cheats } = payload;
   if (cheats && Array.isArray(cheats)) {
-    cheats.forEach(c => {
+    cheats.forEach((c) => {
       const side = c.side === 'p1' ? battle.p1 : battle.p2;
       applyHealCheatToSide(side);
-      side.pokemon.forEach(p => {
+      side.pokemon.forEach((p) => {
         if (p) {
           battle.add('-heal', p, `${p.hp}/${p.maxhp}`);
         }
@@ -321,7 +360,19 @@ function handleApplyDebugStatus(payload: WorkerEventPayload): void {
 function handleExecuteTurn(payload: WorkerEventPayload): void {
   if (!currentBattle) throw new Error('currentBattle is null');
   const battle = currentBattle;
-  const { p1Choice, p2Choice, p1Skip, p2Skip, p1UsedBattleItem, p1Hps, p2Hps, p1Statuses, p2Statuses, history, certifiedHistoryStep } = payload;
+  const {
+    p1Choice,
+    p2Choice,
+    p1Skip,
+    p2Skip,
+    p1UsedBattleItem,
+    p1Hps,
+    p2Hps,
+    p1Statuses,
+    p2Statuses,
+    history,
+    certifiedHistoryStep
+  } = payload;
 
   const result = executeBattleTurn({
     battle,
@@ -351,14 +402,18 @@ function handleExecuteTurn(payload: WorkerEventPayload): void {
   const isOver = battle.ended;
   const winner = battle.winner;
   const winnerSide = battle.winner
-    ? (battle.winner === battle.p1.name ? 'p1' : (battle.winner === battle.p2.name ? 'p2' : null))
+    ? battle.winner === battle.p1.name
+      ? 'p1'
+      : battle.winner === battle.p2.name
+        ? 'p2'
+        : null
     : null;
-  const p1ForceSwitch = !!(battle.p1.activeRequest?.forceSwitch?.[0]);
-  const p2ForceSwitch = !!(battle.p2.activeRequest?.forceSwitch?.[0]);
+  const p1ForceSwitch = !!battle.p1.activeRequest?.forceSwitch?.[0];
+  const p2ForceSwitch = !!battle.p2.activeRequest?.forceSwitch?.[0];
 
-  self.postMessage({ 
-    type: 'TURN_SUCCESS', 
-    payload: { 
+  self.postMessage({
+    type: 'TURN_SUCCESS',
+    payload: {
       logs: turnLogs,
       isOver,
       winner,
@@ -371,14 +426,18 @@ function handleExecuteTurn(payload: WorkerEventPayload): void {
       p2TeamState: getSideTeamState(battle.p2 as ExtendedSide),
       p1ActionConsumed: result.p1AcceptedChoice !== '',
       p2ActionConsumed: result.p2AcceptedChoice !== ''
-    } 
+    }
   });
 }
 
 function handleCheckTrapped(): void {
-  const activeReq = currentBattle?.p1?.activeRequest as { active?: Array<{ trapped?: boolean; maybeTrapped?: boolean } | null> } | undefined;
+  const activeReq = currentBattle?.p1?.activeRequest as
+    | { active?: Array<{ trapped?: boolean; maybeTrapped?: boolean } | null> }
+    | undefined;
   const activeMon = currentBattle?.p1?.active?.[0];
-  const trapped = Boolean(activeReq?.active?.[0]?.trapped || activeReq?.active?.[0]?.maybeTrapped || activeMon?.trapped);
+  const trapped = Boolean(
+    activeReq?.active?.[0]?.trapped || activeReq?.active?.[0]?.maybeTrapped || activeMon?.trapped
+  );
   self.postMessage({
     type: 'CHECK_TRAPPED_RESPONSE',
     payload: { trapped }
@@ -386,20 +445,24 @@ function handleCheckTrapped(): void {
 }
 
 function handleGetSimulatorState(): void {
-  const p1State = currentBattle ? currentBattle.p1.pokemon.map(p => ({
-    uid: (p as ExtendedPokemon).uid || p.name,
-    hp: p.hp,
-    maxhp: p.maxhp,
-    status: p.status,
-    fainted: p.fainted
-  })) : [];
-  const p2State = currentBattle ? currentBattle.p2.pokemon.map(p => ({
-    uid: (p as ExtendedPokemon).uid || p.name,
-    hp: p.hp,
-    maxhp: p.maxhp,
-    status: p.status,
-    fainted: p.fainted
-  })) : [];
+  const p1State = currentBattle
+    ? currentBattle.p1.pokemon.map((p) => ({
+        uid: (p as ExtendedPokemon).uid || p.name,
+        hp: p.hp,
+        maxhp: p.maxhp,
+        status: p.status,
+        fainted: p.fainted
+      }))
+    : [];
+  const p2State = currentBattle
+    ? currentBattle.p2.pokemon.map((p) => ({
+        uid: (p as ExtendedPokemon).uid || p.name,
+        hp: p.hp,
+        maxhp: p.maxhp,
+        status: p.status,
+        fainted: p.fainted
+      }))
+    : [];
   self.postMessage({
     type: 'GET_SIMULATOR_STATE_RESPONSE',
     payload: { p1: p1State, p2: p2State }
@@ -410,7 +473,9 @@ function handleWinBattle(payload: WorkerEventPayload): void {
   if (currentBattle && !currentBattle.ended) {
     const side = payload.side || 'p1';
     currentBattle.win(side);
-    console.debug(`[Showdown Worker] Batalla declarada terminada por comando de victoria (${side}).`);
+    console.debug(
+      `[Showdown Worker] Batalla declarada terminada por comando de victoria (${side}).`
+    );
   }
   currentBattle = null;
   statsMap.clear();
@@ -426,7 +491,13 @@ function handleForcedEndBattle(): void {
 }
 
 function handleGenerateTrainerTeam(payload: WorkerEventPayload): void {
-  const { requestId, level = DEFAULT_GENERATED_TEAM_LEVEL, teamSize = DEFAULT_GENERATED_TEAM_SIZE, allowedSpecies = [], aceSpeciesId } = payload;
+  const {
+    requestId,
+    level = DEFAULT_GENERATED_TEAM_LEVEL,
+    teamSize = DEFAULT_GENERATED_TEAM_SIZE,
+    allowedSpecies = [],
+    aceSpeciesId
+  } = payload;
   const speciesSet = new Set(allowedSpecies);
   const team = TrainerTeamGenerator.generateTeam({
     level,
@@ -441,7 +512,13 @@ function handleGenerateTrainerTeam(payload: WorkerEventPayload): void {
 }
 
 function handleGenerateRivalTeam(payload: WorkerEventPayload): void {
-  const { requestId, level = DEFAULT_GENERATED_TEAM_LEVEL, teamSize = DEFAULT_GENERATED_TEAM_SIZE, aceSpeciesId, allowedSpecies } = payload;
+  const {
+    requestId,
+    level = DEFAULT_GENERATED_TEAM_LEVEL,
+    teamSize = DEFAULT_GENERATED_TEAM_SIZE,
+    aceSpeciesId,
+    allowedSpecies
+  } = payload;
   const speciesSet = allowedSpecies ? new Set(allowedSpecies) : undefined;
   const team = RivalTeamGenerator.generateTeam({
     level,
@@ -455,6 +532,7 @@ function handleGenerateRivalTeam(payload: WorkerEventPayload): void {
   });
 }
 
+// open-record: Showdown worker event handlers dispatch table
 const WORKER_HANDLERS: Record<string, (payload: WorkerEventPayload) => void> = {
   INIT_BATTLE: handleInitBattle,
   APPLY_CHEATS: handleApplyCheats,
@@ -465,7 +543,7 @@ const WORKER_HANDLERS: Record<string, (payload: WorkerEventPayload) => void> = {
   WIN_BATTLE: handleWinBattle,
   FORCED_END_BATTLE: () => handleForcedEndBattle(),
   GENERATE_TRAINER_TEAM: handleGenerateTrainerTeam,
-  GENERATE_RIVAL_TEAM: handleGenerateRivalTeam,
+  GENERATE_RIVAL_TEAM: handleGenerateRivalTeam
 };
 
 self.onmessage = (event: MessageEvent<WorkerEventData>) => {
@@ -482,11 +560,11 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
     const errorMsg = (error as Error).message;
     const errorStack = (error as Error).stack || '';
     console.error('[Showdown Worker] CRITICAL ERROR IN WORKER:', error);
-    self.postMessage({ 
-      type: 'ERROR', 
-      payload: { 
-        message: `${errorMsg}\nStack: ${errorStack}\nPayload: ${JSON.stringify(payload || {})}` 
-      } 
+    self.postMessage({
+      type: 'ERROR',
+      payload: {
+        message: `${errorMsg}\nStack: ${errorStack}\nPayload: ${JSON.stringify(payload || {})}`
+      }
     });
   }
 };

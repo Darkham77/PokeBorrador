@@ -7,10 +7,7 @@ import {
   KANTO_GRID_W,
   KANTO_GRID_H
 } from '../../types/map/kantoGridModel.ts';
-import {
-  UniversalAutotiler,
-  DynamicCatalogLoader
-} from '../../logic/map/kantoTileEngine.ts';
+import { UniversalAutotiler, DynamicCatalogLoader } from '../../logic/map/kantoTileEngine.ts';
 
 describe('KantoRegionalWorldGenerator & OccupancyGrid', () => {
   it('initializes OccupancyGrid with correct dimensions and bitmasks', () => {
@@ -125,11 +122,18 @@ describe('KantoRegionalWorldGenerator & OccupancyGrid', () => {
 
     // Route flanking trees and copses
     expect(generator.trees.length).toBeGreaterThan(20);
-    const hasGbaTrees = generator.trees.some((t) => t.style === 'poke_tree_oak_clean' || t.style === 'poke_tree_poke' || t.style === 'poke_tree_pine_small');
+    const hasGbaTrees = generator.trees.some(
+      (t) =>
+        t.style === 'poke_tree_oak_clean' ||
+        t.style === 'poke_tree_poke' ||
+        t.style === 'poke_tree_pine_small'
+    );
     expect(hasGbaTrees).toBe(true);
 
     // Procedural mountain cones & relief
-    const hasRelief = generator.props.some((p) => p.style === 'poke_cliff_cone_brown' || p.style === 'poke_cliff_cone_gray');
+    const hasRelief = generator.props.some(
+      (p) => p.style === 'poke_cliff_cone_brown' || p.style === 'poke_cliff_cone_gray'
+    );
     expect(hasRelief).toBe(true);
   });
 
@@ -216,4 +220,3 @@ describe('KantoRegionalWorldGenerator & OccupancyGrid', () => {
     expect(hasSideCliff).toBe(true);
   });
 });
-

@@ -23,7 +23,10 @@ export function healStuckMissions(
       referencedUid = activeMission.targetPokemonUid;
     } else if (activeMission.pokeUid) {
       referencedUid = activeMission.pokeUid;
-    } else if (activeMission.targetPokemonIdx !== undefined && activeMission.targetPokemonIdx !== null) {
+    } else if (
+      activeMission.targetPokemonIdx !== undefined &&
+      activeMission.targetPokemonIdx !== null
+    ) {
       const p = box[activeMission.targetPokemonIdx];
       if (p) referencedUid = p.uid;
     }

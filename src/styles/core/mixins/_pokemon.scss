@@ -1,8 +1,8 @@
-@use "../variables" as *;
-@use "../mixins/shell" as *;
-@use "../mixins/layout" as *;
-@use "../gpu" as *;
-@use "../functions" as *;
+@use '../variables' as *;
+@use '../mixins/shell' as *;
+@use '../mixins/layout' as *;
+@use '../gpu' as *;
+@use '../functions' as *;
 
 @mixin pokemon-card-standard($radius: 20px) {
   @include shell(Rgba(30, 41, 59, 0.5));
@@ -14,11 +14,13 @@
   background-clip: padding-box; // Extra safety for bg bleed
 
   &:hover {
-    &::before { opacity: 1; }
+    &::before {
+      opacity: 1;
+    }
   }
 
   // Ensure only background-filling headers respect the radius
-  > .card-header, 
+  > .card-header,
   > .pokemon-header,
   > .selection-item-header {
     border-top-left-radius: inherit;
@@ -26,7 +28,7 @@
   }
 
   // removed will-change and contain to avoid layer explosion
-  
+
   &::before {
     position: absolute;
     background: Radial-Gradient(circle at top right, Rgb(255 255 255 / 10%), transparent 70%);
@@ -38,7 +40,9 @@
 
   &.selected {
     @include shell-selected-blue;
-    &::before { opacity: 0 !important; }
+    &::before {
+      opacity: 0 !important;
+    }
   }
 }
 
@@ -48,13 +52,15 @@
 
   position: relative;
   border: 1px solid var(--tier-color, Rgb(255 255 255 / 18%)) !important;
-  border-radius: $radius; 
+  border-radius: $radius;
   background: Linear-Gradient(135deg, Rgb(30 41 59 / 80%), Rgb(15 23 42 / 95%)) !important;
   overflow: hidden; // Prevent corner bleeding
   box-shadow: var(--shadow-md);
 
   &:hover:not(.locked) {
-    &::before { opacity: 1; }
+    &::before {
+      opacity: 1;
+    }
   }
 
   &::before {
@@ -72,7 +78,6 @@
     outline: none;
     border-color: transparent !important;
     box-shadow: var(--shadow-card);
-
   }
 }
 
@@ -111,7 +116,12 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: var(--shadow-card);
-  background-image: Linear-Gradient(135deg, Rgb(255 255 255 / 22%) 0%, Rgb(255 255 255 / 0%) 50%, Rgb(0 0 0 / 30%) 100%);
+  background-image: Linear-Gradient(
+    135deg,
+    Rgb(255 255 255 / 22%) 0%,
+    Rgb(255 255 255 / 0%) 50%,
+    Rgb(0 0 0 / 30%) 100%
+  );
   background-clip: padding-box;
   white-space: nowrap;
 }
@@ -123,13 +133,18 @@
   justify-content: center;
   align-items: center;
   padding: 2px 6px;
-  border: 1px solid Rgb(0 0 0 / 20%); 
+  border: 1px solid Rgb(0 0 0 / 20%);
   border-radius: $radius-lg-alt;
   color: var(--white);
   font-family: var(--font-pixel);
   font-size: $size;
   text-transform: uppercase;
-  background-image: Linear-Gradient(135deg, Rgb(255 255 255 / 18%) 0%, Rgb(255 255 255 / 0%) 50%, Rgb(0 0 0 / 25%) 100%);
+  background-image: Linear-Gradient(
+    135deg,
+    Rgb(255 255 255 / 18%) 0%,
+    Rgb(255 255 255 / 0%) 50%,
+    Rgb(0 0 0 / 25%) 100%
+  );
   background-clip: padding-box;
   box-shadow: var(--shadow-sm);
   white-space: nowrap;
@@ -148,7 +163,7 @@
       border-color: var(--blue);
     }
   }
-  
+
   &::after {
     @include gpu-layer;
 

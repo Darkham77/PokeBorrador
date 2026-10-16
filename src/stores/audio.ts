@@ -25,7 +25,9 @@ export const useAudioStore = defineStore('audio', () => {
     if (isInitialized.value) return;
 
     try {
-      const AudioContextClass = window.AudioContext || (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextClass) return;
       const ctx = new AudioContextClass();
       context.value = ctx;
@@ -64,12 +66,12 @@ export const useAudioStore = defineStore('audio', () => {
   const initListeners = () => {
     gameBus.on('PLAY_SOUND', (e: Event) => {
       const type = (e as CustomEvent).detail as string;
-      if (type) play(type);
+      if (type) void play(type);
     });
     gameBus.on('PLAY_CRY', (e: Event) => {
       const detail = (e as CustomEvent).detail as { name: string; isFaint?: boolean } | undefined;
       if (detail && detail.name) {
-        playCry(detail.name, detail.isFaint || false);
+        void playCry(detail.name, detail.isFaint || false);
       }
     });
   };
@@ -78,7 +80,10 @@ export const useAudioStore = defineStore('audio', () => {
    * Plays a sound using the centralized engine.
    */
   const play = async (type: string) => {
-    const now = typeof performance !== 'undefined' ? performance.now() : Temporal.Now.instant().epochMilliseconds;
+    const now =
+      typeof performance !== 'undefined'
+        ? performance.now()
+        : Temporal.Now.instant().epochMilliseconds;
     const lastTime = lastPlayTimeMap.get(type) ?? 0;
     if (now - lastTime < AUDIO_DEBOUNCE_WINDOW_MS) {
       return;
@@ -98,6 +103,6 @@ export const useAudioStore = defineStore('audio', () => {
   return {
     init,
     resume,
-    play,
+    play
   };
 });

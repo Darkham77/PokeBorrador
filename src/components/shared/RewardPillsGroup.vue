@@ -1,28 +1,28 @@
 <script setup lang="ts">
 /**
  * src/components/shared/RewardPillsGroup.vue
- * 
+ *
  * Reusable Retro-Modern reward pills list with item sprites,
  * interactive descriptions, and GSAP micro-animations.
  */
 
-import { computed } from 'vue'
-import { gsap } from 'gsap'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import type { UnifiedRewardPill } from '@/types/rewards/rewards'
+import { computed } from 'vue';
+import { gsap } from 'gsap';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import type { UnifiedRewardPill } from '@/types/rewards/rewards';
 import {
   normalizeAllRewards,
   type RawPrizeData,
   type NormalizedReward
-} from './rewardPillsNormalizers'
+} from './rewardPillsNormalizers';
 
-import type { ComponentPillSize } from '@/types/system/game'
+import type { ComponentPillSize } from '@/types/system/game';
 
 interface Props {
-  pills?: readonly UnifiedRewardPill[] | null
-  prize?: RawPrizeData | Record<string, unknown> | null
-  rewards?: Record<string, number> | null
-  size?: ComponentPillSize
+  pills?: readonly UnifiedRewardPill[] | null;
+  prize?: RawPrizeData | Record<string, unknown> | null;
+  rewards?: Record<string, number> | null; // open-record: Generic rewards map
+  size?: ComponentPillSize;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -30,11 +30,11 @@ const props = withDefaults(defineProps<Props>(), {
   prize: null,
   rewards: null,
   size: 'sm'
-})
+});
 
 const normalizedList = computed<NormalizedReward[]>(() => {
-  return normalizeAllRewards(props.pills, props.rewards, props.prize)
-})
+  return normalizeAllRewards(props.pills, props.rewards, props.prize);
+});
 
 // GSAP Micro-interactions
 const REWARD_PILL_HOVER_Y_PX = -2 as const;
@@ -48,7 +48,7 @@ function handlePillEnter(e: MouseEvent) {
     boxShadow: '0 4px 12px rgba(250, 204, 21, 0.15)',
     duration: 0.2,
     ease: 'power2.out'
-  })
+  });
 }
 
 function handlePillLeave(e: MouseEvent) {
@@ -60,16 +60,12 @@ function handlePillLeave(e: MouseEvent) {
     boxShadow: 'none',
     duration: 0.2,
     ease: 'power2.out'
-  })
+  });
 }
 </script>
 
 <template>
-  <div 
-    v-if="normalizedList.length" 
-    class="reward-pills-group"
-    :class="[`size-${size}`]"
-  >
+  <div v-if="normalizedList.length" class="reward-pills-group" :class="[`size-${size}`]">
     <PVTooltip
       v-for="item in normalizedList"
       :key="item.id"
@@ -91,13 +87,10 @@ function handlePillLeave(e: MouseEvent) {
           :alt="item.label"
           width="32"
           height="32"
-        >
+        />
 
         <!-- Money or Custom Icon -->
-        <span 
-          v-else-if="item.icon" 
-          class="emoji reward-icon"
-        >
+        <span v-else-if="item.icon" class="emoji reward-icon">
           {{ item.icon }}
         </span>
 
@@ -105,10 +98,7 @@ function handlePillLeave(e: MouseEvent) {
         <span class="reward-label">{{ item.label }}</span>
 
         <!-- Quantity / Badge -->
-        <span 
-          v-if="item.qtyText" 
-          class="reward-qty"
-        >
+        <span v-if="item.qtyText" class="reward-qty">
           {{ item.qtyText }}
         </span>
       </div>
@@ -117,7 +107,7 @@ function handlePillLeave(e: MouseEvent) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/mixins' as *;
 
 .reward-pills-group {
   display: flex;

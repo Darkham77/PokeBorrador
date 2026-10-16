@@ -1,7 +1,7 @@
 /**
  * tests/unit/world/world_gyms_and_guardians_suite.spec.ts
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { processGymVictory } from '@/logic/gym/gymEngine';
 import { GYMS } from '@/data/world/gyms';
@@ -24,13 +24,17 @@ function activePokePokeIdToID(id: string): string {
 
 describe('World Domain: Gyms & Guardians Suite', () => {
   describe('Gym Engine', () => {
-    const mockGym = GYMS.find(gym => gym.id === 'pewter');
+    const mockGym = GYMS.find((gym) => gym.id === 'pewter');
     if (!mockGym) throw new Error('Expected Pewter gym fixture to exist');
 
     it('should give TM on first victory (Easy)', () => {
       const state = { defeatedGyms: [], gymProgress: {} };
-      const result = processGymVictory(mockGym, 'easy', state as unknown as Parameters<typeof processGymVictory>[2]);
-      
+      const result = processGymVictory(
+        mockGym,
+        'easy',
+        state as unknown as Parameters<typeof processGymVictory>[2]
+      );
+
       expect(result.tmDropped).toBe(true);
       expect(result.isFirstTime).toBe(true);
       expect(result.newProgress).toBe(1);
@@ -38,8 +42,12 @@ describe('World Domain: Gyms & Guardians Suite', () => {
 
     it('should not give TM on Easy rematch', () => {
       const state = { defeatedGyms: ['pewter'], gymProgress: { pewter: 1 } };
-      const result = processGymVictory(mockGym, 'easy', state as unknown as Parameters<typeof processGymVictory>[2]);
-      
+      const result = processGymVictory(
+        mockGym,
+        'easy',
+        state as unknown as Parameters<typeof processGymVictory>[2]
+      );
+
       expect(result.tmDropped).toBe(false);
       expect(result.isFirstTime).toBe(false);
       expect(result.extraCoins).toBe(150);
@@ -49,11 +57,18 @@ describe('World Domain: Gyms & Guardians Suite', () => {
       const state = { defeatedGyms: ['pewter'], gymProgress: { pewter: 1 } };
       let drops = 0;
       const SAMPLES = 1000;
-      
+
       for (let i = 0; i < SAMPLES; i++) {
-        if (processGymVictory(mockGym, 'normal', state as unknown as Parameters<typeof processGymVictory>[2]).tmDropped) drops++;
+        if (
+          processGymVictory(
+            mockGym,
+            'normal',
+            state as unknown as Parameters<typeof processGymVictory>[2]
+          ).tmDropped
+        )
+          drops++;
       }
-      
+
       const rate = drops / SAMPLES;
       expect(rate).toBeGreaterThan(0.01);
       expect(rate).toBeLessThan(0.05);
@@ -63,34 +78,45 @@ describe('World Domain: Gyms & Guardians Suite', () => {
       const state = { defeatedGyms: ['pewter'], gymProgress: { pewter: 1 } };
       let drops = 0;
       const SAMPLES = 1000;
-      
+
       for (let i = 0; i < SAMPLES; i++) {
-        if (processGymVictory(mockGym, 'hard', state as unknown as Parameters<typeof processGymVictory>[2]).tmDropped) drops++;
+        if (
+          processGymVictory(
+            mockGym,
+            'hard',
+            state as unknown as Parameters<typeof processGymVictory>[2]
+          ).tmDropped
+        )
+          drops++;
       }
-      
+
       const rate = drops / SAMPLES;
       expect(rate).toBeGreaterThan(0.02);
       expect(rate).toBeLessThan(0.08);
     });
 
     describe('Gym Battle Teams Simulation', () => {
-      GYMS.forEach(gym => {
-        (['easy', 'normal', 'hard'] as const).forEach(difficulty => {
+      GYMS.forEach((gym) => {
+        (['easy', 'normal', 'hard'] as const).forEach((difficulty) => {
           it(`should successfully choose first move for first active Pokemon in Gym: ${gym.name} (${difficulty})`, () => {
             const diffData = gym.difficulties[difficulty] || gym.difficulties.easy;
-            const enemyTeam = diffData.pokemon.map((id, idx) => makePokemon(id, diffData.levels[idx] || 1, { bypassWhitelist: true })).filter((p): p is Pokemon => p !== null);
-            
+            const enemyTeam = diffData.pokemon
+              .map((id, idx) =>
+                makePokemon(id, diffData.levels[idx] || 1, { bypassWhitelist: true })
+              )
+              .filter((p): p is Pokemon => p !== null);
+
             expect(enemyTeam.length).toBeGreaterThan(0);
-            
-            const startingEnemy = enemyTeam.find(p => p && p.hp > 0);
+
+            const startingEnemy = enemyTeam.find((p) => p && p.hp > 0);
             expect(startingEnemy).toBeDefined();
 
             const playerPoke = makePokemon('bulbasaur', 15)!;
 
             const p1Team = [mapToShowdownSet(playerPoke)];
-            const p2Team = enemyTeam.map(p => mapToShowdownSet(p));
+            const p2Team = enemyTeam.map((p) => mapToShowdownSet(p));
 
-            const battle = new Battle({ 
+            const battle = new Battle({
               formatid: getShowdownFormatId()
             });
 
@@ -120,10 +146,10 @@ describe('World Domain: Gyms & Guardians Suite', () => {
     describe('Gym Gen 1 Restrictiveness', () => {
       it('should only contain Generation 1 (Kanto) Pokemon across all gyms and difficulties', () => {
         const kantoPokedex = new Set(PDEX_ORDER);
-        GYMS.forEach(gym => {
-          (['easy', 'normal', 'hard'] as const).forEach(difficulty => {
+        GYMS.forEach((gym) => {
+          (['easy', 'normal', 'hard'] as const).forEach((difficulty) => {
             const diffData = gym.difficulties[difficulty] || gym.difficulties.easy;
-            diffData.pokemon.forEach(pokeId => {
+            diffData.pokemon.forEach((pokeId) => {
               expect(kantoPokedex.has(pokeId)).toBe(true);
             });
           });
@@ -190,20 +216,20 @@ describe('World Domain: Gyms & Guardians Suite', () => {
       gameStore.state.guardianCaptures = { route1: today };
 
       const chances = getNpcEncounterChances('route1', gameStore.state, {}, ['route1']);
-      const guardianChance = chances.find(c => c.type === 'guardian');
+      const guardianChance = chances.find((c) => c.type === 'guardian');
       expect(guardianChance?.active).toBe(false);
       expect(guardianChance?.chance).toBe(0);
     });
 
     it('should release the lockout when the date changes', async () => {
       const gameStore = useGameStore();
-      
+
       gameStore.state.guardianCaptures = { route1: requireISODateKey('2000-01-01') };
 
       expect(gameStore.dailyGuardianCaptures).not.toContain('route1');
 
       const chances = getNpcEncounterChances('route1', gameStore.state, {}, ['route1']);
-      const guardianChance = chances.find(c => c.type === 'guardian');
+      const guardianChance = chances.find((c) => c.type === 'guardian');
       expect(guardianChance?.active).toBe(true);
       expect(guardianChance?.chance).toBeGreaterThan(0);
     });

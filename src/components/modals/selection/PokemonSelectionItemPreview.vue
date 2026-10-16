@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
+import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 defineProps<{
-  pokemon: Pokemon
-}>()
+  pokemon: Pokemon;
+}>();
 
 defineEmits<{
-  (e: 'open-detail'): void
-}>()
+  (e: 'open-detail'): void;
+}>();
 </script>
 
 <template>
@@ -53,7 +53,7 @@ defineEmits<{
           class="pixelated"
           width="32"
           height="32"
-        >
+        />
       </PVSpriteFX>
     </div>
   </div>

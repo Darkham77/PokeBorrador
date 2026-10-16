@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import {
   POSTGRES_URL,
@@ -31,15 +31,25 @@ describe('Postgres Test Container Lifecycle & Reuse', () => {
 
   it('verifies POSTGRES_URL matches standard test container configuration', () => {
     assert.ok(typeof POSTGRES_URL === 'string', 'POSTGRES_URL must be a string');
-    assert.ok(POSTGRES_URL.startsWith('postgresql://') || POSTGRES_URL.startsWith('postgres://'), 'Must be valid postgres URL');
-    assert.ok(POSTGRES_URL.includes('localhost') || POSTGRES_URL.includes('127.0.0.1'), 'Must point to local test host');
+    assert.ok(
+      POSTGRES_URL.startsWith('postgresql://') || POSTGRES_URL.startsWith('postgres://'),
+      'Must be valid postgres URL'
+    );
+    assert.ok(
+      POSTGRES_URL.includes('localhost') || POSTGRES_URL.includes('127.0.0.1'),
+      'Must point to local test host'
+    );
   });
 
   it('validates timeout thresholds for container discovery', async () => {
     // Calling waitForPostgres with an invalid unreachable port and 1 retry should fail fast
     const invalidUrl = 'postgresql://fake_user:fake_pass@127.0.0.1:59999/fake_db';
     const isAvailable = await waitForPostgres(invalidUrl, 1);
-    assert.strictEqual(isAvailable, false, 'Unreachable postgres instance should return false gracefully');
+    assert.strictEqual(
+      isAvailable,
+      false,
+      'Unreachable postgres instance should return false gracefully'
+    );
   });
 
   it('validates postgrest failure handling on unreachable endpoints', async () => {
@@ -55,6 +65,3 @@ describe('Postgres Test Container Lifecycle & Reuse', () => {
     assert.ok(typeof waitForPostgrest === 'function');
   });
 });
-
-
-

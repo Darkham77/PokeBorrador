@@ -13,14 +13,15 @@ const CONTROLS_DISABLED_STATES_LIST = [
   'REWARDS_PHASE'
 ] as const;
 export type ControlsDisabledState = (typeof CONTROLS_DISABLED_STATES_LIST)[number];
-export const CONTROLS_DISABLED_STATES: ReadonlySet<ControlsDisabledState> = new Set(CONTROLS_DISABLED_STATES_LIST);
+export const CONTROLS_DISABLED_STATES: ReadonlySet<ControlsDisabledState> = new Set(
+  CONTROLS_DISABLED_STATES_LIST
+);
 
-const AUTO_BATTLE_SUBSTATES_LIST = [
-  'COMBAT_OR_FLEE',
-  'SILHOUETTE_MODE'
-] as const;
+const AUTO_BATTLE_SUBSTATES_LIST = ['COMBAT_OR_FLEE', 'SILHOUETTE_MODE'] as const;
 export type AutoBattleSubstate = (typeof AUTO_BATTLE_SUBSTATES_LIST)[number];
-export const AUTO_BATTLE_SUBSTATES: ReadonlySet<AutoBattleSubstate> = new Set(AUTO_BATTLE_SUBSTATES_LIST);
+export const AUTO_BATTLE_SUBSTATES: ReadonlySet<AutoBattleSubstate> = new Set(
+  AUTO_BATTLE_SUBSTATES_LIST
+);
 
 const FINISH_OVERLAY_SEARCH_SUBSTATES_LIST = [
   'WAIT_INPUT',
@@ -31,7 +32,9 @@ const FINISH_OVERLAY_SEARCH_SUBSTATES_LIST = [
   'GEN_NEW_S2'
 ] as const;
 export type FinishOverlaySearchSubstate = (typeof FINISH_OVERLAY_SEARCH_SUBSTATES_LIST)[number];
-export const FINISH_OVERLAY_SEARCH_SUBSTATES: ReadonlySet<FinishOverlaySearchSubstate> = new Set(FINISH_OVERLAY_SEARCH_SUBSTATES_LIST);
+export const FINISH_OVERLAY_SEARCH_SUBSTATES: ReadonlySet<FinishOverlaySearchSubstate> = new Set(
+  FINISH_OVERLAY_SEARCH_SUBSTATES_LIST
+);
 
 export function isControlsDisabledState(state: string | null | undefined): boolean {
   return state ? CONTROLS_DISABLED_STATES.has(state as ControlsDisabledState) : false;
@@ -42,7 +45,9 @@ export function isAutoBattleSubstate(subState: string | null | undefined): boole
 }
 
 export function isFinishOverlaySearchSubstate(subState: string | null | undefined): boolean {
-  return subState ? FINISH_OVERLAY_SEARCH_SUBSTATES.has(subState as FinishOverlaySearchSubstate) : false;
+  return subState
+    ? FINISH_OVERLAY_SEARCH_SUBSTATES.has(subState as FinishOverlaySearchSubstate)
+    : false;
 }
 
 function isRechargeMoveRequired(p: Pokemon, reqMoves?: ReqMoveEntry[]): boolean {
@@ -64,11 +69,11 @@ function resolveLockedOrTwoTurnMoveIndex(p: Pokemon, reqMoves?: ReqMoveEntry[]):
   const singleReqId = reqMoves && reqMoves.length === 1 ? reqMoves[0]?.id : undefined;
   const targetId = singleReqId || p.lastMove?.id;
   if (targetId) {
-    const forcedIdx = p.moves.findIndex(m => m?.id === targetId);
+    const forcedIdx = p.moves.findIndex((m) => m?.id === targetId);
     if (forcedIdx !== -1) return forcedIdx;
   }
   if (hasThrash) {
-    const thrashIdx = p.moves.findIndex(m => m?.id === 'thrash');
+    const thrashIdx = p.moves.findIndex((m) => m?.id === 'thrash');
     if (thrashIdx !== -1) return thrashIdx;
   }
   return null;
@@ -82,7 +87,7 @@ export function resolveForcedMoveIndex(
 ): number | null {
   if (String(subState) !== 'WAIT_INPUT' || isProcessing || !p) return null;
 
-  const nonDisabledReqMoves = reqMoves ? reqMoves.filter(m => !m.disabled) : undefined;
+  const nonDisabledReqMoves = reqMoves ? reqMoves.filter((m) => !m.disabled) : undefined;
   if (nonDisabledReqMoves && nonDisabledReqMoves.length > 1) {
     if (p.volatileCounters?.['lockedmove']) {
       delete p.volatileCounters['lockedmove'];

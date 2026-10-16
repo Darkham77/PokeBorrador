@@ -1,28 +1,32 @@
-
-import { computed, toValue } from 'vue'
-import type { MaybeRefOrGetter } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useModalStore } from '@/stores/modals'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping'
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS, type EvolutionTriggerType } from '@/data/pokemon/evolutionData'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getItemName } from '@/data/inventory/items'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { MoveBaseData } from '@/types/system/database'
-import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
-import { toPokemonType } from '@/data/battle/types'
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { MoveCategory } from '@/data/battle/moves'
-import { calculateInstancePhysicalData } from '@/logic/pokemon/physicalDimensionsMath'
-import { DEFAULT_MAX_PP_FALLBACK } from '@/logic/constants/gameplay'
+import { computed, toValue } from 'vue';
+import type { MaybeRefOrGetter } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
+import {
+  EVOLUTION_TABLE,
+  STONE_EVOLUTIONS,
+  TRADE_EVOLUTIONS,
+  type EvolutionTriggerType
+} from '@/data/pokemon/evolutionData';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getItemName } from '@/data/inventory/items';
+import { POKEMON_STAT_KEYS, type Pokemon, type PokemonStatKey } from '@/types/pokemon/pokemon';
+import type { MoveBaseData } from '@/types/system/database';
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils';
+import { toPokemonType } from '@/data/battle/types';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { MoveCategory } from '@/data/battle/moves';
+import { calculateInstancePhysicalData } from '@/logic/pokemon/physicalDimensionsMath';
+import { DEFAULT_MAX_PP_FALLBACK } from '@/logic/constants/gameplay';
 
 const MAX_BASE_STAT_VALUE = 255;
 
 function requireMoveCategory(value: string | undefined): MoveCategory {
-  if (value === undefined) return 'physical'
-  if (value === 'physical' || value === 'special' || value === 'status') return value
-  throw new Error(`Invalid move category: ${value}`)
+  if (value === undefined) return 'physical';
+  if (value === 'physical' || value === 'special' || value === 'status') return value;
+  throw new Error(`Invalid move category: ${value}`);
 }
 
 interface EvolutionEntry {
@@ -33,12 +37,12 @@ interface EvolutionEntry {
   isCaught: boolean;
 }
 
-type PokemonDetailGameStore = ReturnType<typeof useGameStore>
+type PokemonDetailGameStore = ReturnType<typeof useGameStore>;
 
 function getStorageList(gameStore: PokemonDetailGameStore, context: string): (Pokemon | null)[] {
-  if (context === 'team') return gameStore.state.team || []
-  if (context === 'box') return gameStore.state.box || []
-  return []
+  if (context === 'team') return gameStore.state.team || [];
+  if (context === 'box') return gameStore.state.box || [];
+  return [];
 }
 
 function resolveReactivePokemon(
@@ -47,65 +51,66 @@ function resolveReactivePokemon(
   index: number,
   directPokemon?: Pokemon | null
 ): Pokemon | null {
-  const list = getStorageList(gameStore, context)
+  const list = getStorageList(gameStore, context);
 
   if (directPokemon) {
     if (index > -1 && list[index]?.uid === directPokemon.uid) {
-      return list[index] ?? null
+      return list[index] ?? null;
     }
-    const realMon = list.find(p => p?.uid === directPokemon.uid)
-    return realMon ?? directPokemon
+    const realMon = list.find((p) => p?.uid === directPokemon.uid);
+    return realMon ?? directPokemon;
   }
 
   if (index > -1) {
-    return list[index] ?? null
+    return list[index] ?? null;
   }
 
-  return null
+  return null;
 }
 
+// open-record: Dynamic Vue props reactive dictionary
 export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unknown>>) {
-  const gameStore = useGameStore()
-  const modalStore = useModalStore()
+  const gameStore = useGameStore();
+  const modalStore = useModalStore();
 
   // Normalize inputs (props are passed as a reactive object or refs)
-  const getProp = <T,>(key: string): T | undefined => toValue(propsRefs[key]) as T | undefined
+  const getProp = <T>(key: string): T | undefined => toValue(propsRefs[key]) as T | undefined;
 
   const uiData = computed(() => {
-    const modal = modalStore.stack.find(m => m.name === 'PokemonDetail')
-    return (modal?.props || {}) as { pokemon?: Pokemon, index?: number, context?: string }
-  })
-  
+    const modal = modalStore.stack.find((m) => m.name === 'PokemonDetail');
+    return (modal?.props || {}) as { pokemon?: Pokemon; index?: number; context?: string };
+  });
+
   const finalIndex = computed(() => {
-    const pIdx = getProp<number>('index') ?? -1
-    return pIdx !== -1 ? pIdx : (uiData.value.index ?? -1)
-  })
+    const pIdx = getProp<number>('index') ?? -1;
+    return pIdx !== -1 ? pIdx : (uiData.value.index ?? -1);
+  });
 
   const finalContext = computed(() => {
-    const pCtx = getProp<string>('context')
-    return (pCtx && pCtx !== 'pokedex') ? pCtx : (uiData.value.context || 'pokedex')
-  })
+    const pCtx = getProp<string>('context');
+    return pCtx && pCtx !== 'pokedex' ? pCtx : uiData.value.context || 'pokedex';
+  });
 
   const targetPokemon = computed(() => {
-    const directPokemon = getProp<Pokemon>('pokemon') || uiData.value.pokemon
-    return resolveReactivePokemon(gameStore, finalContext.value, finalIndex.value, directPokemon)
-  })
+    const directPokemon = getProp<Pokemon>('pokemon') || uiData.value.pokemon;
+    return resolveReactivePokemon(gameStore, finalContext.value, finalIndex.value, directPokemon);
+  });
 
-  const isInstance = computed(() => !!targetPokemon.value)
+  const isInstance = computed(() => !!targetPokemon.value);
 
   const targetSpeciesId = computed(() => {
-    const id = isInstance.value ? targetPokemon.value?.id : getProp<string>('speciesId')
-    return requirePokemonSpeciesId(String(id || '').toLowerCase())
-  })
+    const id = isInstance.value ? targetPokemon.value?.id : getProp<string>('speciesId');
+    return requirePokemonSpeciesId(String(id || '').toLowerCase());
+  });
 
-  const speciesRaw = computed(() => pokemonDataProvider.getPokemonData(targetSpeciesId.value))
+  const speciesRaw = computed(() => pokemonDataProvider.getPokemonData(targetSpeciesId.value));
 
   const species = computed(() => {
-    if (!speciesRaw.value) return null
-    const s = speciesRaw.value
-    const types = (Array.isArray(s.type) ? s.type : [s.type]).map(toPokemonType)
-    const nationalId = String(POKEMON_SPRITE_IDS[targetSpeciesId.value] || 0)
-    
+    if (!speciesRaw.value) return null;
+    const s = speciesRaw.value;
+    const types = (Array.isArray(s.type) ? s.type : [s.type]).map(toPokemonType);
+    const nationalId = String(POKEMON_SPRITE_IDS[targetSpeciesId.value] || 0);
+
     return {
       ...s,
       nationalId,
@@ -118,62 +123,81 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
         spd: s.spd || 0,
         spe: s.spe || 0
       }
-    }
-  })
+    };
+  });
 
   const cleanCategory = computed(() => {
-    if (!species.value?.category) return 'Desconocido'
-    return species.value.category.replace(/^Pokémon\s+/i, '')
-  })
+    if (!species.value?.category) return 'Desconocido';
+    return species.value.category.replace(/^Pokémon\s+/i, '');
+  });
 
   const evolutions = computed(() => {
-    const list = []
-    const id = targetSpeciesId.value
-    const caught = gameStore.state.pokedex || []
-    const seen = gameStore.state.seenPokedex || []
+    const list = [];
+    const id = targetSpeciesId.value;
+    const caught = gameStore.state.pokedex || [];
+    const seen = gameStore.state.seenPokedex || [];
 
-    const enrichEvo = (evo: { type: EvolutionTriggerType, requirement: string, to: string }): EvolutionEntry => { // type-ok: Type contract declaration
-      const toId = requirePokemonSpeciesId(evo.to)
-      const isCaught = caught.includes(toId)
-      const isSeen = isCaught || seen.includes(toId)
-      return { ...evo, to: toId, isSeen, isCaught }
-    }
+    const enrichEvo = (evo: {
+      type: EvolutionTriggerType;
+      requirement: string;
+      to: string;
+    }): EvolutionEntry => {
+      // type-ok: Type contract declaration
+      const toId = requirePokemonSpeciesId(evo.to);
+      const isCaught = caught.includes(toId);
+      const isSeen = isCaught || seen.includes(toId);
+      return { ...evo, to: toId, isSeen, isCaught };
+    };
 
-    const evoTable = EVOLUTION_TABLE as Record<string, { level: number, to: string } | undefined> // open-record: Generic key-value data dictionary container
+    const evoTable = EVOLUTION_TABLE as Record<string, { level: number; to: string } | undefined>; // open-record: Generic key-value data dictionary container
     if (evoTable[id]) {
-      const ev = evoTable[id]!
-      list.push(enrichEvo({ type: 'level', requirement: `Nv. ${ev.level}`, to: ev.to }))
+      const ev = evoTable[id]!;
+      list.push(enrichEvo({ type: 'level', requirement: `Nv. ${ev.level}`, to: ev.to }));
     }
-    
-    const stoneTable = STONE_EVOLUTIONS as Record<string, { stone: string, to: string } | undefined> // open-record: Generic key-value data dictionary container
-    Object.keys(stoneTable).forEach(key => {
-      if (key === id || key.startsWith(`${id}_`)) {
-        const ev = stoneTable[key]!
-        list.push(enrichEvo({ type: 'stone', requirement: getItemName(ev.stone), to: ev.to }))
-      }
-    })
 
-    const tradeTable = TRADE_EVOLUTIONS as Record<string, string | undefined> // open-record: Generic key-value data dictionary container
+    // open-record: Generic key-value data dictionary container
+    const stoneTable = STONE_EVOLUTIONS as Record<
+      string,
+      { stone: string; to: string } | undefined
+    >;
+    Object.keys(stoneTable).forEach((key) => {
+      if (key === id || key.startsWith(`${id}_`)) {
+        const ev = stoneTable[key]!;
+        list.push(enrichEvo({ type: 'stone', requirement: getItemName(ev.stone), to: ev.to }));
+      }
+    });
+
+    const tradeTable = TRADE_EVOLUTIONS as Record<string, string | undefined>; // open-record: Generic key-value data dictionary container
     if (tradeTable[id]) {
-      list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: tradeTable[id]! }))
+      list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: tradeTable[id]! }));
     }
-    return list
-  })
+    return list;
+  });
 
   const displayStats = computed(() => {
-    if (!species.value) return []
-    const labels: Record<string, string> = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SPA', spd: 'SPD', spe: 'SPE' }
-    const colors: Record<string, string> = { 
-      hp: 'Rgba(255, 89, 89, 1)', 
-      atk: 'Rgba(245, 172, 120, 1)', 
-      def: 'Rgba(250, 224, 120, 1)', 
-      spa: 'Rgba(157, 183, 245, 1)', 
-      spd: 'Rgba(167, 219, 141, 1)', 
-      spe: 'Rgba(250, 146, 178, 1)' 
-    }
-    return Object.keys(species.value.stats).map(key => {
-      const base = (species.value?.stats as Record<string, number>)[key] || 0 // open-record: Generic key-value data dictionary container
-      const current = isInstance.value && targetPokemon.value ? ((Reflect.get(targetPokemon.value, key) as number | undefined) || base) : base
+    if (!species.value) return [];
+    const labels: Record<PokemonStatKey, string> = {
+      hp: 'HP',
+      atk: 'ATK',
+      def: 'DEF',
+      spa: 'SPA',
+      spd: 'SPD',
+      spe: 'SPE'
+    };
+    const colors: Record<PokemonStatKey, string> = {
+      hp: 'Rgba(255, 89, 89, 1)',
+      atk: 'Rgba(245, 172, 120, 1)',
+      def: 'Rgba(250, 224, 120, 1)',
+      spa: 'Rgba(157, 183, 245, 1)',
+      spd: 'Rgba(167, 219, 141, 1)',
+      spe: 'Rgba(250, 146, 178, 1)'
+    };
+    return POKEMON_STAT_KEYS.map((key) => {
+      const base = species.value?.stats[key] ?? 0;
+      const current =
+        isInstance.value && targetPokemon.value
+          ? (Reflect.get(targetPokemon.value, key) as number | undefined) || base
+          : base;
       return {
         id: key,
         label: labels[key] || key.toUpperCase(), // text-ok: UI text display localization string
@@ -181,83 +205,99 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
         baseValue: base,
         max: MAX_BASE_STAT_VALUE,
         color: colors[key] || '#888',
-        iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] || 0 : 0, // open-record: Generic key-value data dictionary container
-        ev: isInstance.value ? (targetPokemon.value?.evs as Record<string, number> | undefined)?.[key] || 0 : 0 // open-record: Generic key-value data dictionary container
-      }
-    })
-  })
+        iv: isInstance.value ? (targetPokemon.value?.ivs?.[key] ?? 0) : 0,
+        ev: isInstance.value ? (targetPokemon.value?.evs?.[key] ?? 0) : 0
+      };
+    });
+  });
 
   const moveDetails = computed(() => {
-    if (!species.value || !species.value.learnset) return []
-    return species.value.learnset.map(m => {
-      const resolvedId = m.id || ''
-      const data = pokemonDataProvider.getMoveData(resolvedId)
-      const basePP = data?.pp || DEFAULT_MAX_PP_FALLBACK
-      return {
-        id: resolvedId,
-        level: m.lv,
-        name: m.name,
-        type: toPokemonType(data?.type || 'normal'),
-        cat: requireMoveCategory(data?.cat),
-        power: data?.power ?? 0,
-        acc: data?.acc ?? 100,
-        pp: basePP,
-        maxPP: basePP
-      }
-    }).sort((a, b) => a.level - b.level)
-  })
+    if (!species.value || !species.value.learnset) return [];
+    return species.value.learnset
+      .map((m) => {
+        const resolvedId = m.id || '';
+        const data = pokemonDataProvider.getMoveData(resolvedId);
+        const basePP = data?.pp || DEFAULT_MAX_PP_FALLBACK;
+        return {
+          id: resolvedId,
+          level: m.lv,
+          name: m.name,
+          type: toPokemonType(data?.type || 'normal'),
+          cat: requireMoveCategory(data?.cat),
+          power: data?.power ?? 0,
+          acc: data?.acc ?? 100,
+          pp: basePP,
+          maxPP: basePP
+        };
+      })
+      .sort((a, b) => a.level - b.level);
+  });
 
   const currentMoves = computed(() => {
-    if (!isInstance.value || !targetPokemon.value?.moves) return []
-    return targetPokemon.value.moves.map((m: Pokemon['moves'][number]) => {
-      if (!m) return null
-      const resolvedId = (typeof m === 'string' ? m : m.id) || ''
-      if (!resolvedId) return null
-      const data = pokemonDataProvider.getMoveData(resolvedId)
-      const basePP = (typeof m === 'object' && m?.pp) ? m.pp : (data?.pp || DEFAULT_MAX_PP_FALLBACK)
-      const maxPP = (typeof m === 'object' && m?.maxPP) ? m.maxPP : basePP
-      return {
-        ...(typeof m === 'object' ? m : {}),
-        ...(data || {}),
-        pp: basePP,
-        maxPP,
-        type: toPokemonType(data?.type || (typeof m === 'object' ? m.type : undefined) || 'normal'),
-        cat: requireMoveCategory(data?.cat || (typeof m === 'object' ? m.cat : undefined)),
-      }
-    }).filter((m: unknown): m is (Pokemon['moves'][number] & Partial<MoveBaseData>) => m !== null)
-  })
+    if (!isInstance.value || !targetPokemon.value?.moves) return [];
+    return targetPokemon.value.moves
+      .map((m: Pokemon['moves'][number]) => {
+        if (!m) return null;
+        const resolvedId = (typeof m === 'string' ? m : m.id) || '';
+        if (!resolvedId) return null;
+        const data = pokemonDataProvider.getMoveData(resolvedId);
+        const basePP = typeof m === 'object' && m?.pp ? m.pp : data?.pp || DEFAULT_MAX_PP_FALLBACK;
+        const maxPP = typeof m === 'object' && m?.maxPP ? m.maxPP : basePP;
+        return {
+          ...(typeof m === 'object' ? m : {}),
+          ...data,
+          pp: basePP,
+          maxPP,
+          type: toPokemonType(
+            data?.type || (typeof m === 'object' ? m.type : undefined) || 'normal'
+          ),
+          cat: requireMoveCategory(data?.cat || (typeof m === 'object' ? m.cat : undefined))
+        };
+      })
+      .filter((m: unknown): m is Pokemon['moves'][number] & Partial<MoveBaseData> => m !== null);
+  });
 
   const canStoneEvolve = computed(() => {
-    const id = targetSpeciesId.value
-    return Object.keys(STONE_EVOLUTIONS).some(key => key === id || key.startsWith(`${id}_`))
-  })
+    const id = targetSpeciesId.value;
+    return Object.keys(STONE_EVOLUTIONS).some((key) => key === id || key.startsWith(`${id}_`));
+  });
 
   const instancePhysicalData = computed(() => {
-    const p = targetPokemon.value as (Pokemon & { height?: number, weight?: number }) | undefined
-    if (!isInstance.value || !p || !species.value) return null
-    return calculateInstancePhysicalData(p, species.value)
-  })
+    const p = targetPokemon.value as (Pokemon & { height?: number; weight?: number }) | undefined;
+    if (!isInstance.value || !p || !species.value) return null;
+    return calculateInstancePhysicalData(p, species.value);
+  });
 
   const captureDateFormatted = computed(() => {
-    const p = targetPokemon.value as (Pokemon & { captureDate?: string, timestamp?: number, date?: string, created_at?: string }) | undefined
-    if (!p) return null
-    const dateVal = p.captureDate || p.timestamp || p.date || p.created_at || p.obtainedAt
-    if (!dateVal) return isInstance.value ? 'SIN FECHA' : null
-    
-    try {
-      return (typeof dateVal === 'string' ? Temporal.Instant.from(dateVal) : Temporal.Instant.fromEpochMilliseconds(Number(dateVal)))
-        .toZonedDateTimeISO(GAME_TIMEZONE)
-        .toLocaleString('es-ES', { 
-          year: 'numeric', month: 'long', day: 'numeric',
-          hour: '2-digit', minute: '2-digit',
-          hour12: false
-        })
-    } catch (_) {
-      return null
-    }
-  })
+    const p = targetPokemon.value as
+      | (Pokemon & { captureDate?: string; timestamp?: number; date?: string; created_at?: string })
+      | undefined;
+    if (!p) return null;
+    const dateVal = p.captureDate || p.timestamp || p.date || p.created_at || p.obtainedAt;
+    if (!dateVal) return isInstance.value ? 'SIN FECHA' : null;
 
-  const getSprite = (id: string, isShiny: boolean = false) => getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
+    try {
+      return (
+        typeof dateVal === 'string'
+          ? Temporal.Instant.from(dateVal)
+          : Temporal.Instant.fromEpochMilliseconds(Number(dateVal))
+      )
+        .toZonedDateTimeISO(GAME_TIMEZONE)
+        .toLocaleString('es-ES', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+    } catch {
+      return null;
+    }
+  });
+
+  const getSprite = (id: string, isShiny: boolean = false) =>
+    getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
 
   return {
     targetPokemon,
@@ -275,5 +315,5 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     getSprite,
     finalIndex,
     finalContext
-  }
+  };
 }

@@ -12,6 +12,9 @@ import { WEATHER_TILE_SANDSTORM_PX } from '@/logic/constants/visuals';
 export const DUST_LAYER_ONE_DRIFT_X_PX = -WEATHER_TILE_SANDSTORM_PX;
 export const DUST_LAYER_TWO_DRIFT_X_PX = -WEATHER_TILE_SANDSTORM_PX;
 
+/** Golden ratio approximation factor (1.618) used in atmosphere particle scaling. */
+export const GOLDEN_RATIO_FACTOR = 1.618 as const;
+
 const DUST_L1_SEED_X_MULT = 1200;
 const DUST_L1_SEED_Y_MULT = 3400;
 const DUST_L1_MOD = 64;
@@ -60,7 +63,10 @@ export function computeSandstormSpeed(
   speedVar: number,
   layer: 1 | 2
 ): number {
-  const baseFactor = layer === 1 ? (1.0 + animSeed * SPEED_FACTOR_ANIM_L1) : (SPEED_FACTOR_BASE_L2 + animSeed * SPEED_FACTOR_ANIM_L2);
+  const baseFactor =
+    layer === 1
+      ? 1.0 + animSeed * SPEED_FACTOR_ANIM_L1
+      : SPEED_FACTOR_BASE_L2 + animSeed * SPEED_FACTOR_ANIM_L2;
   const weatherMult = resolveSandstormWeatherMultiplier(w, layer);
   const safeSpeedVar = speedVar > 0 ? speedVar : 1.0;
   return (baseFactor * weatherMult) / safeSpeedVar;

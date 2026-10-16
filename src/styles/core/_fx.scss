@@ -9,7 +9,7 @@
 @mixin aura-guardian($color: Rgba(255, 255, 255, 0.8)) {
   will-change: transform, filter, opacity;
 
-  // All filters and animations are now handled by GSAP in PVSpriteFX.vue 
+  // All filters and animations are now handled by GSAP in PVSpriteFX.vue
   // to prevent layering conflicts and color contamination.
 }
 
@@ -24,14 +24,26 @@
   .sparkle {
     // 15-85% distribution range to keep them near the sprite
     // Positions are randomized via GSAP in PVSpriteFX.vue
-    &:nth-child(n+1) { @include shiny-sparkle(0.1s, 50%, 50%); }
-    &:nth-child(2) { @include shiny-sparkle(0.6s, 40%, 60%); }
-    &:nth-child(3) { @include shiny-sparkle(1.2s, 60%, 40%); }
-    &:nth-child(4) { @include shiny-sparkle(1.8s, 35%, 35%); }
-    &:nth-child(5) { @include shiny-sparkle(2.2s, 65%, 65%); }
+    &:nth-child(n + 1) {
+      @include shiny-sparkle(0.1s, 50%, 50%);
+    }
+    &:nth-child(2) {
+      @include shiny-sparkle(0.6s, 40%, 60%);
+    }
+    &:nth-child(3) {
+      @include shiny-sparkle(1.2s, 60%, 40%);
+    }
+    &:nth-child(4) {
+      @include shiny-sparkle(1.8s, 35%, 35%);
+    }
+    &:nth-child(5) {
+      @include shiny-sparkle(2.2s, 65%, 65%);
+    }
 
     // Support for extra particles
-    &:nth-child(n+9) { @include shiny-sparkle(0.5s, 50%, 50%); }
+    &:nth-child(n + 9) {
+      @include shiny-sparkle(0.5s, 50%, 50%);
+    }
   }
 }
 
@@ -42,7 +54,7 @@
   z-index: calc(var(--z-map-spawns, 10) + 10);
   width: 14%;
   opacity: 0;
-  transform: translate(-50%, -50%);
+  transform: Translate(-50%, -50%);
   aspect-ratio: 1;
   transform-origin: center center;
 
@@ -54,5 +66,3 @@
     clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
   }
 }
-
-

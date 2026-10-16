@@ -1,9 +1,9 @@
-import { defineAsyncComponent, type AsyncComponentLoader, type Component } from "vue";
-import { gsap } from "gsap";
-import { gsapSleep } from "@/logic/utils/gsapHelpers.ts";
+import { defineAsyncComponent, type AsyncComponentLoader, type Component } from 'vue';
+import { gsap } from 'gsap';
+import { gsapSleep } from '@/logic/utils/gsapHelpers.ts';
+import { MILLISECONDS_PER_SECOND } from '@/logic/constants/visuals';
 
 const RETRY_BACKOFF_BASE_MS = 150;
-const MS_PER_SECOND = 1000;
 
 /**
  * Creates a resilient Vue async component that retries loading on network or Vite dev-server hiccups.
@@ -16,18 +16,21 @@ export function defineResilientAsyncComponent<T extends Component = Component>(
     loader,
     onError(_error, retry, fail, attempts) {
       if (attempts <= maxRetries) {
-        gsap.delayedCall((attempts * RETRY_BACKOFF_BASE_MS) / MS_PER_SECOND, retry);
+        gsap.delayedCall((attempts * RETRY_BACKOFF_BASE_MS) / MILLISECONDS_PER_SECOND, retry);
         return;
       }
       fail();
-    },
+    }
   });
 }
 
 /**
  * Wraps a dynamic route component import with automatic retries.
  */
-export function resilientRouteComponent<T>(loader: () => Promise<T>, maxRetries = 3): () => Promise<T> {
+export function resilientRouteComponent<T>(
+  loader: () => Promise<T>,
+  maxRetries = 3
+): () => Promise<T> {
   return async () => {
     let attempts = 0;
     while (true) {

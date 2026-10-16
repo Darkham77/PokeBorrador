@@ -1,5 +1,5 @@
-const EGG_HATCH_STEPS_BASE = 250
-const EGG_HATCH_STEPS_VARIANCE = 51
+const EGG_HATCH_STEPS_BASE = 250;
+const EGG_HATCH_STEPS_VARIANCE = 51;
 import type { DaycareEgg } from '@/types/breeding/breeding';
 import type { PokemonEgg, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
@@ -48,14 +48,15 @@ export const eggFactory = {
     const now = Temporal.Now.instant().epochMilliseconds;
     const eggId = params.id || `egg_${now}_${Math.random().toString(36).substring(2, 7)}`;
     const speciesId = getEggSpecies(params.species);
-    
+
     return {
       id: eggId,
       species: speciesId,
       name: 'Huevo Pokémon',
       level: 1,
       isEgg: true,
-      steps: params.steps ?? (Math.floor(Math.random() * EGG_HATCH_STEPS_VARIANCE) + EGG_HATCH_STEPS_BASE),
+      steps:
+        params.steps ?? Math.floor(Math.random() * EGG_HATCH_STEPS_VARIANCE) + EGG_HATCH_STEPS_BASE,
       mother_id: params.motherId || '',
       deposited_at: Temporal.Now.instant().toString(),
       ivs: params.ivs,
@@ -68,8 +69,8 @@ export const eggFactory = {
       isAncestral: params.isAncestral || undefined,
       inherited_ivs: {
         _cost: params.cost,
-        _scanned: false,
-      },
+        _scanned: false
+      }
     };
   },
 
@@ -80,7 +81,8 @@ export const eggFactory = {
     const speciesId = getEggSpecies(params.species);
     const timestamp = Temporal.Now.instant().epochMilliseconds;
     const eggUid = params.uid || `${speciesId}-${timestamp}`;
-    const steps = params.steps ?? (Math.floor(Math.random() * EGG_HATCH_STEPS_VARIANCE) + EGG_HATCH_STEPS_BASE);
+    const steps =
+      params.steps ?? Math.floor(Math.random() * EGG_HATCH_STEPS_VARIANCE) + EGG_HATCH_STEPS_BASE;
 
     return {
       uid: eggUid,
@@ -96,7 +98,7 @@ export const eggFactory = {
       tint: params.tint || undefined,
       isAncestral: params.isAncestral || undefined,
       color: params.color || undefined,
-      isNpc: params.isNpc || undefined,
+      isNpc: params.isNpc || undefined
     };
-  },
+  }
 };

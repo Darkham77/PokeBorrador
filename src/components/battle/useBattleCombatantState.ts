@@ -16,9 +16,7 @@ import {
   SMOKE_PARTICLE_EXPANSION_RATE,
   FLEE_SLIDE_DISTANCE_PX
 } from '@/logic/constants/animations';
-import {
-  useCombatantVisualSprite
-} from './useCombatantVisualSprite.ts';
+import { useCombatantVisualSprite } from './useCombatantVisualSprite.ts';
 import { animateCombatantTransform } from './helpers/combatantFeedbackAnims.ts';
 import { resolveCombatantFeetPoints } from './helpers/combatantFeetHelper.ts';
 
@@ -29,9 +27,10 @@ const SMOKE_VY_UPWARD_BIAS = 1.5;
 const SMOKE_BASE_SCALE = 1.0;
 const SMOKE_SCALE_VARIANCE = 1.5;
 const SMOKE_INITIAL_OPACITY = 0.9;
-const DEFAULT_FX_RADIUS_PX = 25;
-const FX_RADIUS_BOUND_MIN = 10;
-const FX_RADIUS_BOUND_MAX = 80;
+export const DEFAULT_FX_RADIUS_PX = 25;
+export const FX_RADIUS_BOUND_MIN = 10;
+export const FX_RADIUS_BOUND_MAX = 80;
+export const FX_RADIUS_MULTIPLIER = 1.25;
 const FLEE_SLIDE_DURATION_SEC = 0.45;
 
 interface SmokeParticle {
@@ -118,13 +117,15 @@ export function useBattleCombatantState(
 
   const shadowStore = useCombatShadowStore();
   const battleStore = useBattleStore();
-  const currentShadow = computed(() => (props.shadowKey ? shadowStore.activeShadows.get(props.shadowKey) : null));
+  const currentShadow = computed(() =>
+    props.shadowKey ? shadowStore.activeShadows.get(props.shadowKey) : null
+  );
 
   const localGroundY = computed(() => {
     // Ground line is fixed at 75% from top (= 25% from bottom of the entity box).
     // feetY from the DB is only used to ALIGN the sprite vertically (offset in the top calc).
     // It must NOT define where the ground line itself lives inside the entity box.
-const DEFAULT_GROUND_LINE_FALLBACK_PERCENT = '75%';
+    const DEFAULT_GROUND_LINE_FALLBACK_PERCENT = '75%';
 
     const cached = pokeballCoordsCache.get(cacheKey.value);
     if (cached) return cached.top;
@@ -138,12 +139,17 @@ const DEFAULT_GROUND_LINE_FALLBACK_PERCENT = '75%';
       return DEFAULT_FX_RADIUS_PX;
     }
     if (animatedMeta.value.bodyRadius === undefined) {
-      throw new Error(`[useBattleCombatantState] bodyRadius is not defined in animated database for: ${props.pokemon?.id}`);
+      throw new Error(
+        `[useBattleCombatantState] bodyRadius is not defined in animated database for: ${props.pokemon?.id}`
+      );
     }
     // bodyRadius [0-1] = half the body occupancy relative to the sprite frame.
     // The pokemon-atmosphere-wrapper has size displaySize * 2 px.
     // Radius as % of the wrapper = bodyRadius * 100 (so diameter = bodyRadius * 200%).
-    return Math.max(FX_RADIUS_BOUND_MIN, Math.min(FX_RADIUS_BOUND_MAX, animatedMeta.value.bodyRadius * 100));
+    return Math.max(
+      FX_RADIUS_BOUND_MIN,
+      Math.min(FX_RADIUS_BOUND_MAX, animatedMeta.value.bodyRadius * 100)
+    );
   });
 
   // Exposed so the BattleCombatant template can show/hide the inline poke-radius debug guide
@@ -177,7 +183,7 @@ const DEFAULT_GROUND_LINE_FALLBACK_PERCENT = '75%';
     return `50% ${localGroundY.value}`;
   };
 
-const BALL_TARGET_Y_OFFSET_RATIO = 0.35;
+  const BALL_TARGET_Y_OFFSET_RATIO = 0.35;
 
   const getBallTargetCoords = () => {
     const ballHeight = pokeballSize.value;
@@ -211,7 +217,9 @@ const BALL_TARGET_Y_OFFSET_RATIO = 0.35;
   };
 
   const handleBallError = () => {
-    throw new Error(`[BattleCombatant] Failed to load Pokeball image asset for ID: ${props.ballId}`);
+    throw new Error(
+      `[BattleCombatant] Failed to load Pokeball image asset for ID: ${props.ballId}`
+    );
   };
 
   const handleLoad = (e: Event) => {
@@ -224,17 +232,17 @@ const BALL_TARGET_Y_OFFSET_RATIO = 0.35;
   const smokeParticles = ref<SmokeParticle[]>([]);
   let activeSmokeTicker: (() => void) | null = null;
 
-const GSAP_TELEPORT_SCALEY_TARGET = 2.0;
-const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
-const GSAP_TELEPORT_DURATION_SEC = 0.4;
-const GSAP_WHIRLWIND_ROTATION_DEG = 720;
-const GSAP_WHIRLWIND_Y_OFFSET_PX = -180;
-const GSAP_WHIRLWIND_X_OFFSET_PX = 200;
-const GSAP_WHIRLWIND_SCALE_TARGET = 0.1;
-const GSAP_WHIRLWIND_DURATION_SEC = 0.55;
-const GSAP_KNOCKBACK_SCALE_TARGET = 0.5;
-const GSAP_KNOCKBACK_DURATION_SEC = 0.35;
-const GSAP_FLEE_SCALE_TARGET = 0.7;
+  const GSAP_TELEPORT_SCALEY_TARGET = 2.0;
+  const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
+  const GSAP_TELEPORT_DURATION_SEC = 0.4;
+  const GSAP_WHIRLWIND_ROTATION_DEG = 720;
+  const GSAP_WHIRLWIND_Y_OFFSET_PX = -180;
+  const GSAP_WHIRLWIND_X_OFFSET_PX = 200;
+  const GSAP_WHIRLWIND_SCALE_TARGET = 0.1;
+  const GSAP_WHIRLWIND_DURATION_SEC = 0.55;
+  const GSAP_KNOCKBACK_SCALE_TARGET = 0.5;
+  const GSAP_KNOCKBACK_DURATION_SEC = 0.35;
+  const GSAP_FLEE_SCALE_TARGET = 0.7;
 
   const runEscapeAnimation = (type: BattleEscapeType) => {
     if (!spriteRef.value) return;
@@ -254,14 +262,15 @@ const GSAP_FLEE_SCALE_TARGET = 0.7;
           if (spriteRef.value) {
             gsap.set(spriteRef.value, { clearProps: 'scale,transform,filter' });
           }
-        },
+        }
       });
       const animKey = `escape-${props.side}`;
       gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
     } else if (type === 'whirlwind') {
       gameBus.emit('PLAY_SOUND', 'flee');
 
-      const slideX = props.side === 'player' ? -GSAP_WHIRLWIND_X_OFFSET_PX : GSAP_WHIRLWIND_X_OFFSET_PX;
+      const slideX =
+        props.side === 'player' ? -GSAP_WHIRLWIND_X_OFFSET_PX : GSAP_WHIRLWIND_X_OFFSET_PX;
       const tween = gsap.to(spriteRef.value, {
         x: slideX,
         y: GSAP_WHIRLWIND_Y_OFFSET_PX,
@@ -274,7 +283,7 @@ const GSAP_FLEE_SCALE_TARGET = 0.7;
           if (spriteRef.value) {
             gsap.set(spriteRef.value, { clearProps: 'scale,transform,x,y,rotation' });
           }
-        },
+        }
       });
       const animKey = `escape-${props.side}`;
       gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
@@ -292,7 +301,7 @@ const GSAP_FLEE_SCALE_TARGET = 0.7;
           if (spriteRef.value) {
             gsap.set(spriteRef.value, { clearProps: 'scale,transform,x' });
           }
-        },
+        }
       });
       const animKey = `escape-${props.side}`;
       gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
@@ -311,11 +320,10 @@ const GSAP_FLEE_SCALE_TARGET = 0.7;
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed - SMOKE_VY_UPWARD_BIAS,
           scale: SMOKE_BASE_SCALE + Math.random() * SMOKE_SCALE_VARIANCE,
-          opacity: SMOKE_INITIAL_OPACITY,
+          opacity: SMOKE_INITIAL_OPACITY
         });
       }
       smokeParticles.value = list;
-
 
       const updateTicker = () => {
         let active = false;
@@ -351,7 +359,7 @@ const GSAP_FLEE_SCALE_TARGET = 0.7;
           if (spriteRef.value) {
             gsap.set(spriteRef.value, { clearProps: 'scale,transform,x' });
           }
-        },
+        }
       });
       const animKey = `escape-${props.side}`;
       gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
@@ -359,8 +367,14 @@ const GSAP_FLEE_SCALE_TARGET = 0.7;
   };
 
   const handleEscapeEvent = (e: Event) => {
-    const data = (e as CustomEvent).detail as { side: string; pokemon?: Pokemon | null; type: BattleEscapeType } | undefined;
-    if (data && data.side === props.side && (!data.pokemon || data.pokemon.uid === props.pokemon?.uid)) {
+    const data = (e as CustomEvent).detail as
+      | { side: string; pokemon?: Pokemon | null; type: BattleEscapeType }
+      | undefined;
+    if (
+      data &&
+      data.side === props.side &&
+      (!data.pokemon || data.pokemon.uid === props.pokemon?.uid)
+    ) {
       runEscapeAnimation(data.type || 'flee');
     }
   };

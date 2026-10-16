@@ -2,10 +2,24 @@ import { POKEMON_TYPES, type PokemonType } from '../battle/types.ts';
 import type { PokemonSpeciesId } from '../pokemon/pokedex.ts';
 import { toID } from '@/logic/utils/strings.ts';
 
-export const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'] as const;
+export const RANKED_TIER_ORDER = [
+  'Bronce',
+  'Plata',
+  'Oro',
+  'Platino',
+  'Diamante',
+  'Maestro'
+] as const;
 export type RankedTierName = (typeof RANKED_TIER_ORDER)[number];
 
-export const RANKED_TIER_IDS = ['bronce', 'plata', 'oro', 'platino', 'diamante', 'maestro'] as const;
+export const RANKED_TIER_IDS = [
+  'bronce',
+  'plata',
+  'oro',
+  'platino',
+  'diamante',
+  'maestro'
+] as const;
 export type RankedTierId = (typeof RANKED_TIER_IDS)[number];
 const RANKED_TIER_IDS_SET: ReadonlySet<string> = new Set(RANKED_TIER_IDS);
 
@@ -29,77 +43,129 @@ export interface RankedTierConfig {
   readonly fallbackEmoji: string; // domain-ok: Unicode emoji character
 }
 
-export const RANKED_MEDAL_CONFIGS: Readonly<Record<RankedTierId, RankedTierConfig>> = Object.freeze({
-  bronce: {
-    id: 'bronce',
-    name: 'Bronce',
-    color: '#c8a060',
-    fallbackEmoji: '🥉'
-  },
-  plata: {
-    id: 'plata',
-    name: 'Plata',
-    color: '#9E9E9E',
-    fallbackEmoji: '🥈'
-  },
-  oro: {
-    id: 'oro',
-    name: 'Oro',
-    color: '#FFB800',
-    fallbackEmoji: '🥇'
-  },
-  platino: {
-    id: 'platino',
-    name: 'Platino',
-    color: '#E5C100',
-    fallbackEmoji: '🔶'
-  },
-  diamante: {
-    id: 'diamante',
-    name: 'Diamante',
-    color: '#89CFF0',
-    fallbackEmoji: '💎'
-  },
-  maestro: {
-    id: 'maestro',
-    name: 'Maestro',
-    color: '#FFD700',
-    fallbackEmoji: '👑'
+export const RANKED_MEDAL_CONFIGS: Readonly<Record<RankedTierId, RankedTierConfig>> = Object.freeze(
+  {
+    bronce: {
+      id: 'bronce',
+      name: 'Bronce',
+      color: '#c8a060',
+      fallbackEmoji: '🥉'
+    },
+    plata: {
+      id: 'plata',
+      name: 'Plata',
+      color: '#9E9E9E',
+      fallbackEmoji: '🥈'
+    },
+    oro: {
+      id: 'oro',
+      name: 'Oro',
+      color: '#FFB800',
+      fallbackEmoji: '🥇'
+    },
+    platino: {
+      id: 'platino',
+      name: 'Platino',
+      color: '#E5C100',
+      fallbackEmoji: '🔶'
+    },
+    diamante: {
+      id: 'diamante',
+      name: 'Diamante',
+      color: '#89CFF0',
+      fallbackEmoji: '💎'
+    },
+    maestro: {
+      id: 'maestro',
+      name: 'Maestro',
+      color: '#FFD700',
+      fallbackEmoji: '👑'
+    }
   }
-});
+);
 
-export const RANKED_MEDAL_CONFIGS_BY_NAME: Readonly<Record<RankedTierName, RankedTierConfig>> = Object.freeze({
-  Bronce: RANKED_MEDAL_CONFIGS.bronce,
-  Plata: RANKED_MEDAL_CONFIGS.plata,
-  Oro: RANKED_MEDAL_CONFIGS.oro,
-  Platino: RANKED_MEDAL_CONFIGS.platino,
-  Diamante: RANKED_MEDAL_CONFIGS.diamante,
-  Maestro: RANKED_MEDAL_CONFIGS.maestro
-});
+export const RANKED_MEDAL_CONFIGS_BY_NAME: Readonly<Record<RankedTierName, RankedTierConfig>> =
+  Object.freeze({
+    Bronce: RANKED_MEDAL_CONFIGS.bronce,
+    Plata: RANKED_MEDAL_CONFIGS.plata,
+    Oro: RANKED_MEDAL_CONFIGS.oro,
+    Platino: RANKED_MEDAL_CONFIGS.platino,
+    Diamante: RANKED_MEDAL_CONFIGS.diamante,
+    Maestro: RANKED_MEDAL_CONFIGS.maestro
+  });
 
-export const RANKED_TYPES: readonly PokemonType[] = POKEMON_TYPES.filter(type => type !== 'fairy');
+export const RANKED_TYPES: readonly PokemonType[] = POKEMON_TYPES.filter(
+  (type) => type !== 'fairy'
+);
 
 export const RANKED_REWARD_MILESTONES = [
-  { id: 'bronce_1000', tier: 'Bronce', elo: 1000, rewards: { 'naturepatch': 1 }, icon: '🍃' },
-  { id: 'bronce_1100', tier: 'Bronce', elo: 1100, rewards: { 'naturepatch': 1 }, icon: '🍃' },
-  { id: 'plata_1200', tier: 'Plata', elo: 1200, rewards: { 'naturepatch': 1, 'vigorcandy': 1 }, icon: '🍬' },
-  { id: 'plata_1400', tier: 'Plata', elo: 1400, rewards: { 'naturepatch': 2 }, icon: '🍃' },
-  { id: 'oro_1600', tier: 'Oro', elo: 1600, rewards: { 'vigorcandy': 2 }, icon: '🍬' },
-  { id: 'oro_1800', tier: 'Oro', elo: 1800, rewards: { 'naturepatch': 2, 'vigorcandy': 1 }, icon: '🍬' },
-  { id: 'oro_2000', tier: 'Oro', elo: 2000, rewards: { 'naturepatch': 2 }, icon: '🍃' },
-  { id: 'platino_2100', tier: 'Platino', elo: 2100, rewards: { 'naturepatch': 1, 'vigorcandy': 2 }, icon: '💊' },
-  { id: 'platino_2400', tier: 'Platino', elo: 2400, rewards: { 'naturepatch': 2, 'vigorcandy': 2 }, icon: '💊' },
-  { id: 'diamante_2700', tier: 'Diamante', elo: 2700, rewards: { 'abilitypill': 1, 'vigorcandy': 2 }, icon: '🪙' },
-  { id: 'diamante_3000', tier: 'Diamante', elo: 3000, rewards: { 'naturepatch': 3, 'vigorcandy': 2 }, icon: '🍃' },
-  { id: 'diamante_3300', tier: 'Diamante', elo: 3300, rewards: { 'abilitypill': 1 }, icon: '💊' },
-  { id: 'maestro_3400', tier: 'Maestro', elo: 3400, rewards: { 'abilitypill': 2, 'naturepatch': 3, 'vigorcandy': 3 }, icon: '🌟' }
+  { id: 'bronce_1000', tier: 'Bronce', elo: 1000, rewards: { naturepatch: 1 }, icon: '🍃' },
+  { id: 'bronce_1100', tier: 'Bronce', elo: 1100, rewards: { naturepatch: 1 }, icon: '🍃' },
+  {
+    id: 'plata_1200',
+    tier: 'Plata',
+    elo: 1200,
+    rewards: { naturepatch: 1, vigorcandy: 1 },
+    icon: '🍬'
+  },
+  { id: 'plata_1400', tier: 'Plata', elo: 1400, rewards: { naturepatch: 2 }, icon: '🍃' },
+  { id: 'oro_1600', tier: 'Oro', elo: 1600, rewards: { vigorcandy: 2 }, icon: '🍬' },
+  {
+    id: 'oro_1800',
+    tier: 'Oro',
+    elo: 1800,
+    rewards: { naturepatch: 2, vigorcandy: 1 },
+    icon: '🍬'
+  },
+  { id: 'oro_2000', tier: 'Oro', elo: 2000, rewards: { naturepatch: 2 }, icon: '🍃' },
+  {
+    id: 'platino_2100',
+    tier: 'Platino',
+    elo: 2100,
+    rewards: { naturepatch: 1, vigorcandy: 2 },
+    icon: '💊'
+  },
+  {
+    id: 'platino_2400',
+    tier: 'Platino',
+    elo: 2400,
+    rewards: { naturepatch: 2, vigorcandy: 2 },
+    icon: '💊'
+  },
+  {
+    id: 'diamante_2700',
+    tier: 'Diamante',
+    elo: 2700,
+    rewards: { abilitypill: 1, vigorcandy: 2 },
+    icon: '🪙'
+  },
+  {
+    id: 'diamante_3000',
+    tier: 'Diamante',
+    elo: 3000,
+    rewards: { naturepatch: 3, vigorcandy: 2 },
+    icon: '🍃'
+  },
+  { id: 'diamante_3300', tier: 'Diamante', elo: 3300, rewards: { abilitypill: 1 }, icon: '💊' },
+  {
+    id: 'maestro_3400',
+    tier: 'Maestro',
+    elo: 3400,
+    rewards: { abilitypill: 2, naturepatch: 3, vigorcandy: 3 },
+    icon: '🌟'
+  }
 ] as const;
 
 export type RankedRewardMilestone = (typeof RANKED_REWARD_MILESTONES)[number];
 export type RankedRewardMilestoneId = RankedRewardMilestone['id'];
 
-export const RANKED_REWARD_MILESTONES_BY_ID: Readonly<Record<RankedRewardMilestoneId, RankedRewardMilestone>> = Object.freeze(
-  Object.fromEntries(RANKED_REWARD_MILESTONES.map(m => [m.id, m])) as Record<RankedRewardMilestoneId, RankedRewardMilestone>
+export const RANKED_REWARD_MILESTONES_BY_ID: Readonly<
+  Record<RankedRewardMilestoneId, RankedRewardMilestone>
+> = Object.freeze(
+  Object.fromEntries(RANKED_REWARD_MILESTONES.map((m) => [m.id, m])) as Record<
+    RankedRewardMilestoneId,
+    RankedRewardMilestone
+  >
 );
 
 export function isRankedRewardMilestoneId(value: string): value is RankedRewardMilestoneId {
@@ -107,23 +173,23 @@ export function isRankedRewardMilestoneId(value: string): value is RankedRewardM
 }
 
 export const RANKED_TYPE_META: Partial<Record<PokemonType, { label: string; icon: string }>> = {
-  normal:   { label: 'Normal', icon: '⚪' },
-  fire:     { label: 'Fuego', icon: '🔥' },
-  water:    { label: 'Agua', icon: '💧' },
+  normal: { label: 'Normal', icon: '⚪' },
+  fire: { label: 'Fuego', icon: '🔥' },
+  water: { label: 'Agua', icon: '💧' },
   electric: { label: 'Eléctrico', icon: '⚡' },
-  grass:    { label: 'Planta', icon: '🌿' },
-  ice:      { label: 'Hielo', icon: '❄️' },
+  grass: { label: 'Planta', icon: '🌿' },
+  ice: { label: 'Hielo', icon: '❄️' },
   fighting: { label: 'Lucha', icon: '🥊' },
-  poison:   { label: 'Veneno', icon: '☠️' },
-  ground:   { label: 'Tierra', icon: '⛰️' },
-  flying:   { label: 'Volador', icon: '🦅' },
-  psychic:  { label: 'Psíquico', icon: '🔮' },
-  bug:      { label: 'Bicho', icon: '🐛' },
-  rock:     { label: 'Roca', icon: '🌑' },
-  ghost:    { label: 'Fantasma', icon: '👻' },
-  dragon:   { label: 'Dragón', icon: '🐲' },
-  dark:     { label: 'Siniestro', icon: '🌑' },
-  steel:    { label: 'Acero', icon: '⚙️' }
+  poison: { label: 'Veneno', icon: '☠️' },
+  ground: { label: 'Tierra', icon: '⛰️' },
+  flying: { label: 'Volador', icon: '🦅' },
+  psychic: { label: 'Psíquico', icon: '🔮' },
+  bug: { label: 'Bicho', icon: '🐛' },
+  rock: { label: 'Roca', icon: '🌑' },
+  ghost: { label: 'Fantasma', icon: '👻' },
+  dragon: { label: 'Dragón', icon: '🐲' },
+  dark: { label: 'Siniestro', icon: '🌑' },
+  steel: { label: 'Acero', icon: '⚙️' }
 };
 
 export const SEASONAL_THEME_IDS = [
@@ -182,7 +248,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   {
     id: 'monotype_clash',
     name: 'Copa Monotipo',
-    description: 'Todos los integrantes del equipo deben compartir al menos un tipo elemental común.',
+    description:
+      'Todos los integrantes del equipo deben compartir al menos un tipo elemental común.',
     monthIndex: 1,
     bannerImage: 'tournament_monotype_full',
     levelCap: 50,
@@ -195,7 +262,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   {
     id: 'kanto_classic',
     name: 'Clásico Kanto',
-    description: 'Exclusivo para Pokémon de la Pokédex original de Kanto (#001 a #151). Míticos y Legendarios prohibidos.',
+    description:
+      'Exclusivo para Pokémon de la Pokédex original de Kanto (#001 a #151). Míticos y Legendarios prohibidos.',
     monthIndex: 2,
     bannerImage: 'tournament_kanto_full',
     levelCap: 50,
@@ -209,7 +277,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   {
     id: 'little_cup',
     name: 'Little Cup',
-    description: 'Solo Pokémon en su primera etapa evolutiva que tengan la capacidad de evolucionar.',
+    description:
+      'Solo Pokémon en su primera etapa evolutiva que tengan la capacidad de evolucionar.',
     monthIndex: 3,
     bannerImage: 'tournament_little_cup_full',
     levelCap: 5,
@@ -222,7 +291,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   {
     id: 'weather_masters',
     name: 'Maestros del Clima',
-    description: 'Batallas bajo climas extremos. Tipos permitidos: Agua, Fuego, Roca, Hielo y Planta.',
+    description:
+      'Batallas bajo climas extremos. Tipos permitidos: Agua, Fuego, Roca, Hielo y Planta.',
     monthIndex: 4,
     bannerImage: 'tournament_weather_masters_full',
     levelCap: 50,
@@ -235,7 +305,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   {
     id: 'dual_type_duo',
     name: 'Dúo Elemental',
-    description: 'Solo se permiten Pokémon que posean exactamente dos tipos elementales combinados.',
+    description:
+      'Solo se permiten Pokémon que posean exactamente dos tipos elementales combinados.',
     monthIndex: 5,
     bannerImage: 'tournament_dual_type_duo_full',
     levelCap: 50,
@@ -248,7 +319,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   {
     id: 'no_legendaries',
     name: 'Duelo de Honor (Sin Legendarios)',
-    description: 'Formato estándar competitivo OU con restricción absoluta de Pokémon Legendarios y Míticos.',
+    description:
+      'Formato estándar competitivo OU con restricción absoluta de Pokémon Legendarios y Míticos.',
     monthIndex: 6,
     bannerImage: 'tournament_no_legendaries_full',
     levelCap: 50,
@@ -261,7 +333,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   {
     id: 'speed_warp',
     name: 'Copa Velocidad & Espacio Raro',
-    description: 'Agilidad y distorsión temporal. Tipos permitidos: Eléctrico, Volador, Psíquico y Fantasma.',
+    description:
+      'Agilidad y distorsión temporal. Tipos permitidos: Eléctrico, Volador, Psíquico y Fantasma.',
     monthIndex: 7,
     bannerImage: 'tournament_speed_warp_full',
     levelCap: 50,
@@ -274,7 +347,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   {
     id: 'elemental_triad',
     name: 'Tríada Elemental',
-    description: 'El clásico triángulo de combate. Solo Pokémon con al menos un tipo entre Fuego, Agua o Planta.',
+    description:
+      'El clásico triángulo de combate. Solo Pokémon con al menos un tipo entre Fuego, Agua o Planta.',
     monthIndex: 8,
     bannerImage: 'tournament_elemental_triad_full',
     levelCap: 50,
@@ -300,7 +374,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   {
     id: 'halloween_spook',
     name: 'Noche de Brujas',
-    description: 'Especial tenebroso de Halloween. Solo se permiten especies de tipo Fantasma, Siniestro o Veneno.',
+    description:
+      'Especial tenebroso de Halloween. Solo se permiten especies de tipo Fantasma, Siniestro o Veneno.',
     monthIndex: 10,
     bannerImage: 'tournament_halloween_spook_full',
     levelCap: 50,
@@ -326,7 +401,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   {
     id: 'masters_allstars',
     name: 'Torneo de Maestros All-Stars',
-    description: 'Gran clausura anual abierta sin restricciones de tipo ni región. Máxima libertad estratégica.',
+    description:
+      'Gran clausura anual abierta sin restricciones de tipo ni región. Máxima libertad estratégica.',
     monthIndex: 12,
     bannerImage: 'tournament_masters_allstars_full',
     levelCap: 50,
@@ -337,16 +413,24 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
   }
 ]);
 
-export const SEASONAL_THEMES_BY_ID: Readonly<Record<SeasonalThemeId, SeasonalThemeConfig>> = Object.freeze(
-  Object.fromEntries(SEASONAL_ANNUAL_THEMES.map(t => [t.id, t])) as Record<SeasonalThemeId, SeasonalThemeConfig>
-);
+export const SEASONAL_THEMES_BY_ID: Readonly<Record<SeasonalThemeId, SeasonalThemeConfig>> =
+  Object.freeze(
+    Object.fromEntries(SEASONAL_ANNUAL_THEMES.map((t) => [t.id, t])) as Record<
+      SeasonalThemeId,
+      SeasonalThemeConfig
+    >
+  );
 
-export const SEASONAL_THEMES_BY_MONTH: Readonly<Record<number, SeasonalThemeConfig>> = Object.freeze(
-  Object.fromEntries(SEASONAL_ANNUAL_THEMES.map(t => [t.monthIndex, t])) as Record<number, SeasonalThemeConfig>
-);
+export const SEASONAL_THEMES_BY_MONTH: Readonly<Record<number, SeasonalThemeConfig>> =
+  Object.freeze(
+    Object.fromEntries(SEASONAL_ANNUAL_THEMES.map((t) => [t.monthIndex, t])) as Record<
+      number,
+      SeasonalThemeConfig
+    >
+  );
 
 export function getSeasonalThemeForMonth(month: number): SeasonalThemeConfig {
-  const normalizedMonth = ((Math.floor(month) - 1) % 12 + 12) % 12 + 1;
+  const normalizedMonth = ((((Math.floor(month) - 1) % 12) + 12) % 12) + 1;
   const found = SEASONAL_THEMES_BY_MONTH[normalizedMonth] ?? SEASONAL_ANNUAL_THEMES[0];
   if (!found) {
     throw new Error('[PVP] No seasonal themes configured');
@@ -355,11 +439,22 @@ export function getSeasonalThemeForMonth(month: number): SeasonalThemeConfig {
 }
 
 export const SPANISH_MONTH_NAMES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre'
 ] as const;
 
-const THEMES_BY_LOOKUP_KEY: Readonly<Record<string, SeasonalThemeConfig>> = Object.freeze( // open-record: Generic key-value data dictionary container
+const THEMES_BY_LOOKUP_KEY: Readonly<Record<string, SeasonalThemeConfig>> = Object.freeze(
+  // open-record: Generic key-value data dictionary container
   (() => {
     const map: Record<string, SeasonalThemeConfig> = {}; // open-record: Generic key-value data dictionary container
     for (const theme of SEASONAL_ANNUAL_THEMES) {
@@ -372,7 +467,8 @@ const THEMES_BY_LOOKUP_KEY: Readonly<Record<string, SeasonalThemeConfig>> = Obje
   })()
 );
 
-export function findSeasonalTheme(identifier?: string | null): SeasonalThemeConfig | undefined { // result-ok: Operation result wrapper payload
+export function findSeasonalTheme(identifier?: string | null): SeasonalThemeConfig | undefined {
+  // result-ok: Operation result wrapper payload
   if (!identifier) return undefined;
   if (isSeasonalThemeId(identifier)) {
     return SEASONAL_THEMES_BY_ID[identifier];

@@ -40,24 +40,38 @@ class FuzzerMemoryStore {
   }
 
   public async flushToDisk(): Promise<void> {
-    const certifiedPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
-    const auxiliaryPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_auxiliary_cases.json');
+    const certifiedPath = path.resolve(
+      process.cwd(),
+      'scripts/e2e/results/fuzzer_certified_cases.json'
+    );
+    const auxiliaryPath = path.resolve(
+      process.cwd(),
+      'scripts/e2e/results/fuzzer_auxiliary_cases.json'
+    );
     let existingDoc: { battle?: unknown[]; items?: unknown[] } = {};
     try {
       const fs = await import('node:fs');
       if (fs.existsSync(certifiedPath)) {
-        existingDoc = JSON.parse(fs.readFileSync(certifiedPath, 'utf8')) as { battle?: unknown[]; items?: unknown[] };
+        existingDoc = JSON.parse(fs.readFileSync(certifiedPath, 'utf8')) as {
+          battle?: unknown[];
+          items?: unknown[];
+        };
       }
     } catch {
       // catch-ok: Fallback to empty existing doc if file cannot be read or parsed
     }
     const certifiedDocument = {
-      battle: this.battle.length > 0 ? this.battle : (existingDoc.battle || []),
-      items: this.auxiliary.items && this.auxiliary.items.length > 0 ? this.auxiliary.items : (existingDoc.items || [])
+      battle: this.battle.length > 0 ? this.battle : existingDoc.battle || [],
+      items:
+        this.auxiliary.items && this.auxiliary.items.length > 0
+          ? this.auxiliary.items
+          : existingDoc.items || []
     };
     await fileWriterQueue.safeWriteFile(certifiedPath, JSON.stringify(certifiedDocument, null, 2));
     await fileWriterQueue.safeWriteFile(auxiliaryPath, JSON.stringify(this.auxiliary, null, 2));
-    console.log(`💾 [FuzzerMemoryStore] Wrote terminal certified battles to ${certifiedPath} and auxiliary artifacts to ${auxiliaryPath}.`);
+    console.log(
+      `💾 [FuzzerMemoryStore] Wrote terminal certified battles to ${certifiedPath} and auxiliary artifacts to ${auxiliaryPath}.`
+    );
   }
 }
 

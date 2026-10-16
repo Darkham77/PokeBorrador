@@ -27,7 +27,7 @@ const MAX_ACTIVE_MARKET_LISTINGS_LIMIT = 10;
 async function seedMockListings(dbPath: string, count: number) {
   const isPostgres = process.env.SIM_DB_DRIVER === 'postgres';
   const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew']; // no-domain: Non-domain utility collection or data structure
-  const speciesTypes: Record<string, { type: string, type2?: string }> = {
+  const speciesTypes: Record<string, { type: string; type2?: string }> = {
     caterpie: { type: 'bug' },
     weedle: { type: 'bug', type2: 'poison' },
     pidgey: { type: 'normal', type2: 'flying' },
@@ -37,7 +37,13 @@ async function seedMockListings(dbPath: string, count: number) {
     sandshrew: { type: 'ground' }
   };
 
-  const mockItems: Array<{ uid: string; name: string; type: string; price: number; pkmn: Record<string, unknown> }> = [];
+  const mockItems: Array<{
+    uid: string;
+    name: string;
+    type: string;
+    price: number;
+    pkmn: Record<string, unknown>;
+  }> = [];
   for (let i = 0; i < count; i++) {
     const sp = species[i % species.length]!;
     const typeInfo = speciesTypes[sp] || { type: 'normal' };
@@ -92,13 +98,20 @@ async function seedMockListings(dbPath: string, count: number) {
     db.exec('BEGIN TRANSACTION;');
     for (let i = 0; i < mockItems.length; i++) {
       const item = mockItems[i]!;
-      insertStmt.run(`seller-mock-${i}`, item.name, item.type, JSON.stringify(item.pkmn), item.price);
+      insertStmt.run(
+        `seller-mock-${i}`,
+        item.name,
+        item.type,
+        JSON.stringify(item.pkmn),
+        item.price
+      );
     }
     db.exec('COMMIT;');
   } finally {
     try {
       db.close();
-    } catch (_e: unknown) { // catch-ok: expected db already closed
+    } catch (_e: unknown) {
+      // catch-ok: expected db already closed
     }
   }
 }
@@ -112,13 +125,22 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
     await this.page.evaluate(
       async ({ money, pokemonCount, setupLevel }) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-        
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
+
         const game = useGameStore();
 
         const team: typeof game.state.team = [];
         const box: typeof game.state.box = [];
-        const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew'] as const satisfies readonly import('../../../src/data/pokemon/pokedex.ts').PokemonSpeciesId[];
+        const species = [
+          'caterpie',
+          'weedle',
+          'pidgey',
+          'rattata',
+          'spearow',
+          'ekans',
+          'sandshrew'
+        ] as const satisfies readonly import('../../../src/data/pokemon/pokedex.ts').PokemonSpeciesId[];
         for (let k = 0; k < pokemonCount; k++) {
           const sp = species[k % species.length]!;
           const pkmn = pokemonDebugService.generate({ id: sp, level: setupLevel });
@@ -132,7 +154,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
         game.updateState({ money, team, box, starterChosen: true });
         let saveRes = await game.save(false, true, true);
         while (!saveRes?.success) {
-          await new Promise(r => window.setTimeout(r, 100));
+          await new Promise((r) => window.setTimeout(r, 100));
           saveRes = await game.save(false, true, true);
         }
         console.log('[DEBUG GTS] setupUserInventory save result:', saveRes);
@@ -165,22 +187,24 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
         const { useAuthStore } = await import('../../../src/stores/auth.ts');
         const auth = useAuthStore();
         const currentUserId = auth.user?.id || 'local_seller';
-        const { data } = await game.db
+        const { data } = (await game.db
           .from('market_listings')
           .select('*')
           .eq('seller_id', currentUserId)
           .neq('status', 'sold')
-          .order('created_at', { ascending: false }) as { data: typeof gts.myListings | null };
+          .order('created_at', { ascending: false })) as { data: typeof gts.myListings | null };
         if (data) gts.myListings = data;
       },
       { publishLimit: GTS_BATCH_PUBLISH_LIMIT, listingPrice: DEFAULT_MOCK_LISTING_PRICE }
     );
   }
-
 }
 
 test.describe('GTS Multi-Account Transactions Simulation', () => {
-  test('should allow listing limits, pagination check, and successful purchase', async ({ browser, request }) => {
+  test('should allow listing limits, pagination check, and successful purchase', async ({
+    browser,
+    request
+  }) => {
     test.setTimeout(GTS_SUITE_TIMEOUT_MS);
 
     const sellerContext = await browser.newContext();
@@ -202,7 +226,9 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await seller.publishNineDirectly();
 
     // Sincronización basada en eventos: Esperar a que el loading overlay desaparezca
-    await pageSeller.locator('#pv-loading-overlay').waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await pageSeller
+      .locator('#pv-loading-overlay')
+      .waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     // Verificar que las 9 publicaciones directas se registraron antes de continuar
     const activeListingsCount = await pageSeller.evaluate(async () => {
@@ -210,7 +236,9 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
       return useGTSStore().activeMyListings.length;
     });
     if (activeListingsCount < GTS_BATCH_PUBLISH_LIMIT) {
-      throw new Error(`[GTS TEST] publishNineDirectly sólo registró ${activeListingsCount}/${GTS_BATCH_PUBLISH_LIMIT} publicaciones. El loop de publicación falló.`);
+      throw new Error(
+        `[GTS TEST] publishNineDirectly sólo registró ${activeListingsCount}/${GTS_BATCH_PUBLISH_LIMIT} publicaciones. El loop de publicación falló.`
+      );
     }
 
     // Cambiar a pestaña PUBLICAR
@@ -231,12 +259,18 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await clickResilient(publishBtn);
 
     // Esperar que se limpie la selección y que el store confirme los 10 registros activos sin estar publicando
-    await expect(pageSeller.locator('#gts-selection-hint')).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await pageSeller.waitForFunction(async (expectedLimit) => {
-      const { useGTSStore } = await import('../../../src/stores/gts.ts');
-      const store = useGTSStore();
-      return !store.publishing && store.activeMyListings.length >= expectedLimit;
-    }, MAX_ACTIVE_MARKET_LISTINGS_LIMIT, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await expect(pageSeller.locator('#gts-selection-hint')).toBeVisible({
+      timeout: MAX_PER_ACTION_TIMEOUT_MS
+    });
+    await pageSeller.waitForFunction(
+      async (expectedLimit) => {
+        const { useGTSStore } = await import('../../../src/stores/gts.ts');
+        const store = useGTSStore();
+        return !store.publishing && store.activeMyListings.length >= expectedLimit;
+      },
+      MAX_ACTIVE_MARKET_LISTINGS_LIMIT,
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+    );
 
     const nextSelectionItem = pageSeller.locator('[id^="pokemon-select-"]').first();
     await nextSelectionItem.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
@@ -248,7 +282,9 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await priceInput.fill(String(DEFAULT_MOCK_LISTING_PRICE));
     await clickResilient(publishBtn);
 
-    await seller.expectToast(`Límite de publicaciones alcanzado (${MAX_ACTIVE_MARKET_LISTINGS_LIMIT})`);
+    await seller.expectToast(
+      `Límite de publicaciones alcanzado (${MAX_ACTIVE_MARKET_LISTINGS_LIMIT})`
+    );
 
     // Guardar partida para exportar
     await seller.saveGameAndAwaitExport();
@@ -298,7 +334,9 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
       return gts.filteredListings.length;
     });
     if (buyerListingCount <= MOCK_LISTINGS_POOL_SIZE) {
-      throw new Error(`[GTS TEST] Expected seller listings plus ${MOCK_LISTINGS_POOL_SIZE} mocks, received ${buyerListingCount}.`);
+      throw new Error(
+        `[GTS TEST] Expected seller listings plus ${MOCK_LISTINGS_POOL_SIZE} mocks, received ${buyerListingCount}.`
+      );
     }
 
     // Verificar paginación por ID único
@@ -308,7 +346,7 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
 
     const nextBtn = pageBuyer.locator('#gts-explorer-next-btn').first();
     await expect(nextBtn).toBeEnabled();
-    
+
     const prevBtn = pageBuyer.locator('#gts-explorer-prev-btn').first();
     await expect(prevBtn).toBeDisabled();
 
@@ -326,9 +364,16 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await clickResilient(buyBtn);
 
     // Esperar a procesar compra (saldos actualizados)
-    await expect.poll(async () => {
-      return pageBuyer.evaluate(() => (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.()?.state?.money);
-    }, { timeout: E2E_MONEY_PURCHASE_TIMEOUT_MS }).toBe(EXPECTED_BUYER_MONEY_AFTER_PURCHASE);
+    await expect
+      .poll(
+        async () => {
+          return pageBuyer.evaluate(
+            () => (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.()?.state?.money
+          );
+        },
+        { timeout: E2E_MONEY_PURCHASE_TIMEOUT_MS }
+      )
+      .toBe(EXPECTED_BUYER_MONEY_AFTER_PURCHASE);
 
     const buyerMoney = await pageBuyer.evaluate(() => {
       return (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.()?.state?.money;

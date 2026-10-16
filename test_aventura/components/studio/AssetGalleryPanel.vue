@@ -53,7 +53,11 @@ const filteredEntries = computed(() => {
     } else if (cat === 'terrain') {
       if (entry.category !== 'terrain') return false;
     } else if (cat === 'nature') {
-      const isNature = entry.category === 'vegetation' || entry.id.includes('tree') || entry.id.includes('flower') || entry.id.includes('bush');
+      const isNature =
+        entry.category === 'vegetation' ||
+        entry.id.includes('tree') ||
+        entry.id.includes('flower') ||
+        entry.id.includes('bush');
       if (!isNature) return false;
     } else if (cat === 'buildings') {
       if (entry.category !== 'buildings') return false;
@@ -83,9 +87,7 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
     <!-- Header & Search -->
     <header class="gallery-header">
       <div class="header-top">
-        <h2 class="gallery-title">
-          Assets Registrados
-        </h2>
+        <h2 class="gallery-title">Assets Registrados</h2>
         <span class="gallery-count-badge">{{ filteredEntries.length }} / {{ entries.length }}</span>
       </div>
 
@@ -94,9 +96,10 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
           id="input-gallery-search"
           v-model="searchQuery"
           type="search"
+          aria-label="Buscar assets por ID, nombre o fuente"
           placeholder="Buscar por ID, nombre o fuente..."
           class="gallery-search-input"
-        >
+        />
       </div>
 
       <!-- Category Filter Pills -->
@@ -117,23 +120,19 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
 
     <!-- Cards Scrollable Grid -->
     <div class="cards-container">
-      <div
-        v-if="filteredEntries.length === 0"
-        class="empty-state"
-      >
+      <div v-if="filteredEntries.length === 0" class="empty-state">
         <span class="empty-icon">🔍</span>
         <p>No se encontraron assets con este filtro.</p>
       </div>
 
-      <div
-        v-else
-        class="cards-grid"
-      >
+      <div v-else class="cards-grid">
         <article
           v-for="entry in filteredEntries"
           :id="'card-asset-' + entry.id"
           :key="entry.id"
           v-gsap-hover
+          role="button"
+          tabindex="0"
           class="asset-card"
           :class="{ selected: selectedAssetId === entry.id }"
           @click="emit('select-asset', entry)"
@@ -145,40 +144,29 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
               :alt="entry.name"
               class="preview-img"
               loading="lazy"
-            
               width="32"
               height="32"
-            >
+            />
           </div>
 
           <!-- Meta Info -->
           <div class="card-info">
             <div class="card-header-row">
-              <span
-                class="category-tag"
-                :class="entry.category"
-              >{{ entry.category }}</span>
-              <span class="dimensions-tag">{{ entry.tileDimensions.w }}×{{ entry.tileDimensions.h }} baldosas</span>
+              <span class="category-tag" :class="entry.category">{{ entry.category }}</span>
+              <span class="dimensions-tag"
+                >{{ entry.tileDimensions.w }}×{{ entry.tileDimensions.h }} baldosas</span
+              >
             </div>
 
-            <h3
-              class="asset-id"
-              :title="entry.id"
-            >
+            <h3 class="asset-id" :title="entry.id">
               {{ entry.id }}
             </h3>
-            <p
-              class="asset-name"
-              :title="entry.name"
-            >
+            <p class="asset-name" :title="entry.name">
               {{ entry.name }}
             </p>
 
             <div class="card-footer-row">
-              <span
-                class="sheet-source-tag"
-                :title="entry.sourceImage"
-              >
+              <span class="sheet-source-tag" :title="entry.sourceImage">
                 <span class="icon">📄</span> {{ entry.sourceImage }}
               </span>
               <span class="pixel-dims-tag">
@@ -330,13 +318,17 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
   border-radius: $radius-md;
   background-color: var(--slate-900);
   overflow: hidden;
-  background-image: 
+  background-image:
     linear-gradient(45deg, #1e293b 25%, transparent 25%),
     linear-gradient(-45deg, #1e293b 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, #1e293b 75%),
     linear-gradient(-45deg, transparent 75%, #1e293b 75%);
   background-size: 16px 16px;
-  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
 }
 
 .preview-img {
@@ -371,10 +363,22 @@ function getAssetUrl(entry: CanonicalAssetEntry): string {
   font-weight: 700;
   text-transform: uppercase;
 
-  &.buildings { background: var(--slate-900); color: var(--blue-300); }
-  &.roads { background: var(--slate-700); color: var(--slate-100); }
-  &.curbs { background: var(--slate-600); color: var(--slate-200); }
-  &.props { background: var(--emerald-500); color: var(--emerald-400); }
+  &.buildings {
+    background: var(--slate-900);
+    color: var(--blue-300);
+  }
+  &.roads {
+    background: var(--slate-700);
+    color: var(--slate-100);
+  }
+  &.curbs {
+    background: var(--slate-600);
+    color: var(--slate-200);
+  }
+  &.props {
+    background: var(--emerald-500);
+    color: var(--emerald-400);
+  }
 }
 
 .dimensions-tag {

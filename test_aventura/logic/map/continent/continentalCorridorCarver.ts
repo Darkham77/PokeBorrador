@@ -23,10 +23,7 @@ interface GridCoordinatePoint {
   readonly y: number;
 }
 
-function isPointInHarborBasin(
-  pt: GridCoordinatePoint,
-  pois: readonly POINode[]
-): boolean {
+function isPointInHarborBasin(pt: GridCoordinatePoint, pois: readonly POINode[]): boolean {
   for (const p of pois) {
     if (p.type === 'port_dock') {
       if (
@@ -103,7 +100,8 @@ export function carveContinentalCorridorsAndPaths(
     if (poi.type !== 'port_dock') continue;
     const pierW = 3;
     const pierLen = 4;
-    const pierStartX = poi.gridX + (poi.footprint.width >= 7 ? Math.floor((poi.footprint.width - pierW) / 2) : 0);
+    const pierStartX =
+      poi.gridX + (poi.footprint.width >= 7 ? Math.floor((poi.footprint.width - pierW) / 2) : 0);
     const pierStartY = poi.gridY + poi.footprint.height;
 
     for (let dy = 0; dy < pierLen; dy++) {
@@ -129,7 +127,10 @@ export function carveContinentalCorridorsAndPaths(
     }
   }
 
-  const collectCorridorExclusionZones = (fromPoi: POINode, toPoi: POINode): { x1: number; y1: number; x2: number; y2: number }[] => {
+  const collectCorridorExclusionZones = (
+    fromPoi: POINode,
+    toPoi: POINode
+  ): { x1: number; y1: number; x2: number; y2: number }[] => {
     const zones: { x1: number; y1: number; x2: number; y2: number }[] = [];
     for (const p of pois) {
       if (p.id !== fromPoi.id && p.id !== toPoi.id) {
@@ -184,8 +185,12 @@ export function carveContinentalCorridorsAndPaths(
 
     let stamped = false;
     if (fromPoi && toPoi) {
-      const startGw = (corridor as { customStartGw?: { x: number; y: number } }).customStartGw ?? getBestGateway(fromPoi, toPoi.gridX, toPoi.gridY);
-      const goalGw = (corridor as { customGoalGw?: { x: number; y: number } }).customGoalGw ?? getBestGateway(toPoi, fromPoi.gridX, fromPoi.gridY);
+      const startGw =
+        (corridor as { customStartGw?: { x: number; y: number } }).customStartGw ??
+        getBestGateway(fromPoi, toPoi.gridX, toPoi.gridY);
+      const goalGw =
+        (corridor as { customGoalGw?: { x: number; y: number } }).customGoalGw ??
+        getBestGateway(toPoi, fromPoi.gridX, fromPoi.gridY);
 
       // Exclude third-party settlements and protect route gatehouses from being bypassed or clipped
       const otherZones = collectCorridorExclusionZones(fromPoi, toPoi);
@@ -230,7 +235,9 @@ export function carveContinentalCorridorsAndPaths(
     }
 
     if (!stamped) {
-      console.warn(`[ContinentalEngine] Warning: Corridor ${corridor.id} (${corridor.fromId} -> ${corridor.toId}) failed A* pathfinding. Fallback path applied.`);
+      console.warn(
+        `[ContinentalEngine] Warning: Corridor ${corridor.id} (${corridor.fromId} -> ${corridor.toId}) failed A* pathfinding. Fallback path applied.`
+      );
       const hasSurfWater = stampWaterBridgesForPath(
         corridor.pathCells,
         continent.terrainMatrix,
@@ -256,12 +263,21 @@ export function carveContinentalCorridorsAndPaths(
   // Ensure harbor basins around port docks are 100% free of stray bridge pieces
   for (const port of pois) {
     if (port.type !== 'port_dock') continue;
-    const pierStartX = port.gridX + (port.footprint.width >= 7 ? Math.floor((port.footprint.width - 3) / 2) : 0);
+    const pierStartX =
+      port.gridX + (port.footprint.width >= 7 ? Math.floor((port.footprint.width - 3) / 2) : 0);
     const pierEndX = pierStartX + 2;
     const pierStartY = port.gridY + port.footprint.height;
 
-    for (let y = port.gridY - 2; y <= port.gridY + port.footprint.height + PORT_DOCK_EXCLUSION_PADDING_BOTTOM; y++) {
-      for (let x = port.gridX - PORT_DOCK_EXCLUSION_PADDING_X; x <= port.gridX + port.footprint.width + PORT_DOCK_EXCLUSION_PADDING_X; x++) {
+    for (
+      let y = port.gridY - 2;
+      y <= port.gridY + port.footprint.height + PORT_DOCK_EXCLUSION_PADDING_BOTTOM;
+      y++
+    ) {
+      for (
+        let x = port.gridX - PORT_DOCK_EXCLUSION_PADDING_X;
+        x <= port.gridX + port.footprint.width + PORT_DOCK_EXCLUSION_PADDING_X;
+        x++
+      ) {
         if (y < 0 || y >= height || x < 0 || x >= width) continue;
         const isPartOfPier = x >= pierStartX && x <= pierEndX && y >= pierStartY;
         if (!isPartOfPier && bridgeGrid[y]?.[x]) {
@@ -296,15 +312,23 @@ export function carveContinentalCorridorsAndPaths(
     if (!isSouthCliffWall || !pathGrid[cy + 1]?.[cx]) return;
 
     const hasNearbyCave = pois.some(
-      (p) => p.type === 'cave_entrance' && Math.hypot(p.gridX - cx, p.gridY - cy) < MIN_DISTANCE_BETWEEN_CAVES
+      (p) =>
+        p.type === 'cave_entrance' &&
+        Math.hypot(p.gridX - cx, p.gridY - cy) < MIN_DISTANCE_BETWEEN_CAVES
     );
     if (hasNearbyCave) return;
 
-    const hasBacking = (continent.heightmap[cy - 1]?.[cx] ?? 0) >= 1 && (continent.heightmap[cy - 2]?.[cx] ?? 0) >= 1;
+    const hasBacking =
+      (continent.heightmap[cy - 1]?.[cx] ?? 0) >= 1 &&
+      (continent.heightmap[cy - 2]?.[cx] ?? 0) >= 1;
     if (!hasBacking) return;
 
-    const mtnPal = continent.geologicalClusters?.paletteMatrix?.[cy]?.[cx] ?? continent.mountainPalette ?? 'brown';
-    const caveFile = mtnPal === 'gray' ? 'poke_cave_entrance_gray.png' : 'poke_cave_entrance_brown.png';
+    const mtnPal =
+      continent.geologicalClusters?.paletteMatrix?.[cy]?.[cx] ??
+      continent.mountainPalette ??
+      'brown';
+    const caveFile =
+      mtnPal === 'gray' ? 'poke_cave_entrance_gray.png' : 'poke_cave_entrance_brown.png';
     pois.push({
       id: `cave_tunnel_${cx}_${cy}`,
       name: `Túnel de Paso ${proceduralTunnelIndex++}`,
@@ -361,7 +385,10 @@ export function carveContinentalCorridorsAndPaths(
     const minX = Math.max(0, port.gridX - HARBOR_BEACH_PADDING_WEST);
     const maxX = Math.min(width - 1, port.gridX + port.footprint.width + HARBOR_BEACH_PADDING_EAST);
     const minY = Math.max(0, port.gridY - 6);
-    const maxY = Math.min(height - 1, port.gridY + port.footprint.height + HARBOR_BEACH_PADDING_SOUTH);
+    const maxY = Math.min(
+      height - 1,
+      port.gridY + port.footprint.height + HARBOR_BEACH_PADDING_SOUTH
+    );
 
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
@@ -387,14 +414,17 @@ export function carveContinentalCorridorsAndPaths(
       }
     );
 
-    (continent as { terrainMatrix: typeof continent.terrainMatrix }).terrainMatrix = geoPass.sanitizedWaterMatrix;
-    (continent as { resolvedWater: typeof continent.resolvedWater }).resolvedWater = geoPass.resolvedWater;
-    (continent as { resolvedMountain: typeof continent.resolvedMountain }).resolvedMountain = geoPass.resolvedMountain;
-    (continent as { resolvedMacroBiomes?: typeof continent.resolvedMacroBiomes }).resolvedMacroBiomes = geoPass.resolvedMacroBiomes;
+    (continent as { terrainMatrix: typeof continent.terrainMatrix }).terrainMatrix =
+      geoPass.sanitizedWaterMatrix;
+    (continent as { resolvedWater: typeof continent.resolvedWater }).resolvedWater =
+      geoPass.resolvedWater;
+    (continent as { resolvedMountain: typeof continent.resolvedMountain }).resolvedMountain =
+      geoPass.resolvedMountain;
+    (
+      continent as { resolvedMacroBiomes?: typeof continent.resolvedMacroBiomes }
+    ).resolvedMacroBiomes = geoPass.resolvedMacroBiomes;
     (continent as { cells: typeof continent.cells }).cells = geoPass.cells;
   }
 
   return pathGrid;
 }
-
-

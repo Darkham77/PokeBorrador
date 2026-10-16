@@ -1,30 +1,32 @@
 <script setup lang="ts">
-
-import { computed, watch, toValue, onWatcherCleanup } from 'vue'
-import { gsap } from 'gsap'
-import { AUTO_BATTLE_NPC_DIALOG_DELAY_SEC } from '@/data/system/constants.ts'
-import { useBattleStore } from '@/stores/battle/battle'
-import { useUIStore } from '@/stores/ui'
-import { useGameStore } from '@/stores/game'
-import { useModalStore } from '@/stores/modals'
-import { useLivePvPStore } from '@/stores/livePvP'
-import BattleMovesGrid from './BattleMovesGrid.vue'
-import BattleActionButtons from './BattleActionButtons.vue'
-import BattleQuickTeam from './BattleQuickTeam.vue'
-import BattleQuickBag from './BattleQuickBag.vue'
-import StruggleOverlay from './StruggleOverlay.vue'
-import BattleFinishOverlay from './BattleFinishOverlay.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils.ts'
-import { getActiveCombatTeam, getHealthyBenchCombatants } from '@/logic/battle/battleTeamCoordinator.ts'
+import { computed, watch, toValue, onWatcherCleanup } from 'vue';
+import { gsap } from 'gsap';
+import { AUTO_BATTLE_NPC_DIALOG_DELAY_SEC } from '@/data/system/constants.ts';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useUIStore } from '@/stores/ui';
+import { useGameStore } from '@/stores/game';
+import { useModalStore } from '@/stores/modals';
+import { useLivePvPStore } from '@/stores/livePvP';
+import BattleMovesGrid from './BattleMovesGrid.vue';
+import BattleActionButtons from './BattleActionButtons.vue';
+import BattleQuickTeam from './BattleQuickTeam.vue';
+import BattleQuickBag from './BattleQuickBag.vue';
+import StruggleOverlay from './StruggleOverlay.vue';
+import BattleFinishOverlay from './BattleFinishOverlay.vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils.ts';
+import {
+  getActiveCombatTeam,
+  getHealthyBenchCombatants
+} from '@/logic/battle/battleTeamCoordinator.ts';
 
 // Debug tools are now handled by BattleArena sidebar
 
-const battleStore = useBattleStore()
-const uiStore = useUIStore()
-const gameStore = useGameStore()
-const modalStore = useModalStore()
-const livePvP = useLivePvPStore()
+const battleStore = useBattleStore();
+const uiStore = useUIStore();
+const gameStore = useGameStore();
+const modalStore = useModalStore();
+const livePvP = useLivePvPStore();
 
 import {
   isControlsDisabledState,
@@ -33,23 +35,26 @@ import {
   resolveForcedMoveIndex
 } from './battleArenaControlsHelper.ts';
 
-const battle = computed(() => battleStore.state)
-const player = computed(() => battle.value?.player)
-const gs = computed(() => gameStore.state)
+const battle = computed(() => battleStore.state);
+const player = computed(() => battle.value?.player);
+const gs = computed(() => gameStore.state);
 
 const isControlsDisabled = computed(() => {
   const s = toValue(battleStore.currentFsmState);
-  return !!(battleStore.isProcessing || 
-         battleStore.isIntroAnimating || 
-         battleStore.isFinishing ||
-         battleStore.isSearching ||
-         battle.value?.over ||
-         isControlsDisabledState(s));
+  return !!(
+    battleStore.isProcessing ||
+    battleStore.isIntroAnimating ||
+    battleStore.isFinishing ||
+    battleStore.isSearching ||
+    battle.value?.over ||
+    isControlsDisabledState(s)
+  );
 });
 
-const isRewardsWait = computed(() => 
-  toValue(battleStore.currentFsmState) === 'REWARDS_PHASE' && 
-  toValue(battleStore.currentSubState) === 'EMPTY_WAIT'
+const isRewardsWait = computed(
+  () =>
+    toValue(battleStore.currentFsmState) === 'REWARDS_PHASE' &&
+    toValue(battleStore.currentSubState) === 'EMPTY_WAIT'
 );
 
 const isFinishOverlayVisible = computed(() => {
@@ -59,7 +64,7 @@ const isFinishOverlayVisible = computed(() => {
   return isSearchValid || battleStore.isReadyToExit || isRewardsWait.value;
 });
 
-const execShowBattleSwitch = () => { 
+const execShowBattleSwitch = () => {
   const isForced = uiStore.isBattleSwitchForced;
   uiStore.isBattleSwitchForced = false;
 
@@ -82,15 +87,19 @@ const execShowBattleSwitch = () => {
     battleMode: battleStore.isPvP ? 'pvp' : 'wild',
     customList: team,
     includeTeam: true,
-    preventClose: isForced, 
+    preventClose: isForced,
     activePokemonUid: player.value?.uid,
     onConfirm: (pokes: Pokemon[]) => {
       if (pokes.length > 0 && pokes[0]) {
         const selectedUid = pokes[0].uid;
-        const index = team.findIndex(p => p && p.uid === selectedUid);
+        const index = team.findIndex((p) => p && p.uid === selectedUid);
         if (index !== -1) {
           if (livePvP.battleState.active) {
-            livePvP._commitPick({ type: 'switch', switchIndex: index, choiceString: `switch ${index + 1}` });
+            livePvP._commitPick({
+              type: 'switch',
+              switchIndex: index,
+              choiceString: `switch ${index + 1}`
+            });
           } else {
             battleStore.executeSwitch(selectedUid || index, isForced);
           }
@@ -100,122 +109,143 @@ const execShowBattleSwitch = () => {
   });
 };
 
-const execTryCatch = () => { 
+const execTryCatch = () => {
   const inventory = gs.value.inventory || {};
-  const balls = Object.keys(inventory).filter(n => n.toLowerCase().includes('ball'));
+  const balls = Object.keys(inventory).filter((n) => n.toLowerCase().includes('ball'));
   if (balls.length === 0) {
     uiStore.notify('¡No tienes Poké Balls!', '🚫');
     return;
   }
-  
-  modalStore.open('Inventory', { 
-    battleMode: true, 
-    initialCategory: 'pokeballs' 
+
+  modalStore.open('Inventory', {
+    battleMode: true,
+    initialCategory: 'pokeballs'
   });
 };
 
-const execShowBattleBag = () => { 
-  modalStore.open('Inventory', { 
-    battleMode: true, 
-    initialCategory: 'potions' 
+const execShowBattleBag = () => {
+  modalStore.open('Inventory', {
+    battleMode: true,
+    initialCategory: 'potions'
   });
 };
 
 const BATTLE_SWITCH_RECHECK_DELAY_SEC = 0.1;
 
-watch(() => uiStore.isBattleSwitchForced, (val) => {
-  if (val) {
-    if (battleStore.isProcessing) {
-      const checkReady = () => {
-        if (!battleStore.isProcessing) {
-          execShowBattleSwitch();
-        } else {
-          gsap.delayedCall(BATTLE_SWITCH_RECHECK_DELAY_SEC, checkReady);
-        }
-      };
-      gsap.delayedCall(BATTLE_SWITCH_RECHECK_DELAY_SEC, checkReady);
-    } else {
-      execShowBattleSwitch();
+watch(
+  () => uiStore.isBattleSwitchForced,
+  (val) => {
+    if (val) {
+      if (battleStore.isProcessing) {
+        const checkReady = () => {
+          if (!battleStore.isProcessing) {
+            execShowBattleSwitch();
+          } else {
+            gsap.delayedCall(BATTLE_SWITCH_RECHECK_DELAY_SEC, checkReady);
+          }
+        };
+        gsap.delayedCall(BATTLE_SWITCH_RECHECK_DELAY_SEC, checkReady);
+      } else {
+        execShowBattleSwitch();
+      }
     }
   }
-});
+);
 
-watch(() => battleStore.currentSubState, (subState) => {
-  if (subState === 'SWITCH_MENU' && !uiStore.isBattleSwitchForced) {
-    uiStore.isBattleSwitchForced = true;
-  }
-}, { immediate: true });
+watch(
+  () => battleStore.currentSubState,
+  (subState) => {
+    if (subState === 'SWITCH_MENU' && !uiStore.isBattleSwitchForced) {
+      uiStore.isBattleSwitchForced = true;
+    }
+  },
+  { immediate: true }
+);
 
 // Auto-battle: Automatically start encounter if enabled
-watch(() => [
-  battleStore.isSearching,
-  battleStore.currentSubState,
-  battleStore.isIntroAnimating,
-  battleStore.isProcessing,
-  uiStore.autoBattle,
-  battle.value?.isTrainer,
-  battle.value?.isGym
-] as const, ([isSearching, subState, isIntroAnimating, isProcessing, autoBattle, isTrainer, isGym]) => {
-  if (
-    autoBattle &&
-    isSearching &&
-    !isIntroAnimating &&
-    !isProcessing &&
-    isAutoBattleSubstate(String(subState))
-  ) {
-    const isNpcEncounter = Boolean(isTrainer || isGym);
-    const delay = isNpcEncounter ? AUTO_BATTLE_NPC_DIALOG_DELAY_SEC : 0;
+watch(
+  () =>
+    [
+      battleStore.isSearching,
+      battleStore.currentSubState,
+      battleStore.isIntroAnimating,
+      battleStore.isProcessing,
+      uiStore.autoBattle,
+      battle.value?.isTrainer,
+      battle.value?.isGym
+    ] as const,
+  ([isSearching, subState, isIntroAnimating, isProcessing, autoBattle, isTrainer, isGym]) => {
+    if (
+      autoBattle &&
+      isSearching &&
+      !isIntroAnimating &&
+      !isProcessing &&
+      isAutoBattleSubstate(String(subState))
+    ) {
+      const isNpcEncounter = Boolean(isTrainer || isGym);
+      const delay = isNpcEncounter ? AUTO_BATTLE_NPC_DIALOG_DELAY_SEC : 0;
 
-    if (delay > 0) {
-      const autoBattleDelayedCall = gsap.delayedCall(delay, () => {
-        if (
-          uiStore.autoBattle &&
-          battleStore.isSearching &&
-          !battleStore.isIntroAnimating &&
-          !battleStore.isProcessing &&
-          isAutoBattleSubstate(String(toValue(battleStore.currentSubState)))
-        ) {
-          battleStore.startEncounter();
-        }
-      });
-      onWatcherCleanup(() => {
-        autoBattleDelayedCall.kill();
-      });
-    } else {
-      battleStore.startEncounter();
+      if (delay > 0) {
+        const autoBattleDelayedCall = gsap.delayedCall(delay, () => {
+          if (
+            uiStore.autoBattle &&
+            battleStore.isSearching &&
+            !battleStore.isIntroAnimating &&
+            !battleStore.isProcessing &&
+            isAutoBattleSubstate(String(toValue(battleStore.currentSubState)))
+          ) {
+            battleStore.startEncounter();
+          }
+        });
+        onWatcherCleanup(() => {
+          autoBattleDelayedCall.kill();
+        });
+      } else {
+        battleStore.startEncounter();
+      }
     }
-  }
-}, { immediate: true });
+  },
+  { immediate: true }
+);
 
 // Auto-execution for forced and locked turns
-watch(() => [
-  battleStore.currentSubState,
-  battleStore.isProcessing,
-  player.value?.volatileCounters?.['lockedmove'],
-  player.value?.volatileCounters?.['twoturnmove'],
-  player.value?.volatileCounters?.['mustrecharge'],
-  player.value?.thrashTurns,
-  player.value?.lastMove?.id,
-  battleStore.state?.playerRequest?.active?.[0]?.moves
-] as const, ([subState, isProcessing, , , , , , reqMoves]) => {
-  const forcedIdx = resolveForcedMoveIndex(subState, isProcessing, player.value, reqMoves);
-  if (forcedIdx !== null) {
-    battleStore.executeMove(forcedIdx);
+watch(
+  () =>
+    [
+      battleStore.currentSubState,
+      battleStore.isProcessing,
+      player.value?.volatileCounters?.['lockedmove'],
+      player.value?.volatileCounters?.['twoturnmove'],
+      player.value?.volatileCounters?.['mustrecharge'],
+      player.value?.thrashTurns,
+      player.value?.lastMove?.id,
+      battleStore.state?.playerRequest?.active?.[0]?.moves
+    ] as const,
+  ([subState, isProcessing, , , , , , reqMoves]) => {
+    const forcedIdx = resolveForcedMoveIndex(subState, isProcessing, player.value, reqMoves);
+    if (forcedIdx !== null) {
+      battleStore.executeMove(forcedIdx);
+    }
   }
-});
+);
 
 const GSAP_ARENA_CONTROLS_INITIAL_Y_OFFSET_PX = 30;
 const GSAP_ARENA_CONTROLS_INITIAL_SCALE = 0.95;
 
 // GSAP Transition Hooks
 const onEnter = (el: Element, done: () => void) => {
-  gsap.fromTo(el, 
-    { opacity: 0, y: GSAP_ARENA_CONTROLS_INITIAL_Y_OFFSET_PX, scale: GSAP_ARENA_CONTROLS_INITIAL_SCALE },
-    { 
-      opacity: 1, 
-      y: 0, 
-      scale: 1, 
-      duration: 0.5, 
+  gsap.fromTo(
+    el,
+    {
+      opacity: 0,
+      y: GSAP_ARENA_CONTROLS_INITIAL_Y_OFFSET_PX,
+      scale: GSAP_ARENA_CONTROLS_INITIAL_SCALE
+    },
+    {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.5,
       ease: 'back.out(1.7)',
       onComplete: done
     }
@@ -224,18 +254,9 @@ const onEnter = (el: Element, done: () => void) => {
 </script>
 
 <template>
-  <div
-    id="move-panel"
-  >
-    <Transition
-      :css="false"
-      appear
-      @enter="onEnter"
-    >
-      <div 
-        class="battle-controls-layout"
-        :class="{ 'is-ui-locked': isControlsDisabled }"
-      >
+  <div id="move-panel">
+    <Transition :css="false" appear @enter="onEnter">
+      <div class="battle-controls-layout" :class="{ 'is-ui-locked': isControlsDisabled }">
         <!-- Zona 1: Equipo Rápido (Izquierda) -->
         <aside class="quick-shortcut-zone zone-team">
           <BattleQuickTeam />
@@ -256,7 +277,7 @@ const onEnter = (el: Element, done: () => void) => {
             <StruggleOverlay />
           </div>
 
-          <BattleActionButtons 
+          <BattleActionButtons
             :is-finishing="isControlsDisabled"
             @switch="execShowBattleSwitch"
             @bag="execShowBattleBag"
@@ -266,46 +287,38 @@ const onEnter = (el: Element, done: () => void) => {
         </div>
 
         <!-- Zona 2: Mochila Rápida (Derecha) -->
-        <aside
-          v-if="battleStore.uiConfig.allowBag"
-          class="quick-shortcut-zone zone-bag"
-        >
+        <aside v-if="battleStore.uiConfig.allowBag" class="quick-shortcut-zone zone-bag">
           <BattleQuickBag />
         </aside>
-        <div
-          v-else
-          class="quick-shortcut-zone zone-spacer"
-          aria-hidden="true"
-        />
+        <div v-else class="quick-shortcut-zone zone-spacer" aria-hidden="true" />
       </div>
     </Transition>
 
     <!-- Overlay de Finalización / Búsqueda (Cubre TODO el move-panel) -->
-    <BattleFinishOverlay
-      v-if="isFinishOverlayVisible"
-      :is-rewards-wait="isRewardsWait"
-    />
+    <BattleFinishOverlay v-if="isFinishOverlayVisible" :is-rewards-wait="isRewardsWait" />
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 #move-panel {
   --move-card-max-width: 200px;
   --move-panel-gap: #{$spacing-md};
-  --info-zone-width: 16px; 
-  --move-panel-max-width: calc(((var(--move-card-max-width) + var(--info-zone-width)) * 2) + var(--move-panel-gap));
+  --info-zone-width: 16px;
+  --move-panel-max-width: calc(
+    ((var(--move-card-max-width) + var(--info-zone-width)) * 2) + var(--move-panel-gap)
+  );
   --shortcut-zone-width: 160px;
 
-  position: relative; 
-  z-index: var(--z-hud); 
+  position: relative;
+  z-index: var(--z-hud);
   display: flex;
   flex-direction: column;
   gap: 0;
   padding: 0 !important;
   overflow: visible !important;
-  
+
   @media (width <= 959px) {
     padding: 0;
     flex-shrink: 0;
@@ -334,7 +347,7 @@ const onEnter = (el: Element, done: () => void) => {
   &.is-ui-locked {
     opacity: 0.6;
     will-change: transform, filter, opacity;
-  filter: Grayscale(1);
+    filter: Grayscale(1);
     pointer-events: none;
   }
 
@@ -355,7 +368,7 @@ const onEnter = (el: Element, done: () => void) => {
 .quick-shortcut-zone {
   display: flex;
   flex-direction: column;
-  height: 0;        // No contribuye a la altura del move-panel; esa la define controls-content
+  height: 0; // No contribuye a la altura del move-panel; esa la define controls-content
   min-height: 100%; // Se estira al alto del contenedor vía align-items: stretch del padre
   overflow-y: auto; // Scrollbar cuando Pokémon o items no caben
   overflow-x: hidden !important;
@@ -366,16 +379,16 @@ const onEnter = (el: Element, done: () => void) => {
     display: none !important;
     height: 0 !important;
   }
-  
+
   &.zone-team {
     min-width: 120px;
-    max-width: 745px; 
+    max-width: 745px;
 
     // 6×115px (tarjetas) + 5×6px (gaps) + 8px (padding grid) + 17px (scrollbar) = 745px
     flex: 0 1 745px;
   }
   &.zone-bag {
-    min-width: 90px; 
+    min-width: 90px;
     flex: 1 1 90px; // Crece para rellenar el espacio vacío que zone-team no ocupa
   }
   &.zone-spacer {
@@ -408,5 +421,4 @@ const onEnter = (el: Element, done: () => void) => {
   position: relative;
   width: 100%;
 }
-
 </style>

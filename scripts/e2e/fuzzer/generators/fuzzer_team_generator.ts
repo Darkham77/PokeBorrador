@@ -6,16 +6,18 @@ import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMap
 import { resolveBaseStats } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { calcStatsPure } from '../../../../src/logic/pokemon/statsMath.ts';
 
-export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unknown[]; steps?: string[] }): string { // type-ok: Type contract declaration
+export function generateBatchHash(batch: {
+  playerTeam: unknown[];
+  enemyTeam: unknown[];
+  steps?: string[];
+}): string {
+  // type-ok: Type contract declaration
   const data = {
     playerTeam: batch.playerTeam,
     enemyTeam: batch.enemyTeam,
     steps: batch.steps || []
   };
-  return crypto.createHash('md5')
-    .update(JSON.stringify(data))
-    .digest('hex')
-    .substring(0, 12);
+  return crypto.createHash('md5').update(JSON.stringify(data)).digest('hex').substring(0, 12);
 }
 
 import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
@@ -29,7 +31,10 @@ import { pokemonDataProvider } from '../../../../src/logic/providers/pokemonData
 
 import type { CalculatedStats } from '../../../../src/logic/pokemon/statsMath.ts';
 
-export interface FuzzerPokemonSet extends Omit<PokemonSet, 'gender' | 'species' | 'item' | 'ability' | 'nature' | 'moves'> {
+export interface FuzzerPokemonSet extends Omit<
+  PokemonSet,
+  'gender' | 'species' | 'item' | 'ability' | 'nature' | 'moves'
+> {
   species: PokemonSpeciesId;
   gender: GenderName;
   item: ItemId | '';
@@ -76,8 +81,12 @@ export interface CertifiedBattleHistoryEntry {
   p2Trapped?: boolean;
   p1Volatiles?: string[];
   p2Volatiles?: string[];
-  p1StatStages?: Partial<Record<'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion', number>>;
-  p2StatStages?: Partial<Record<'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion', number>>;
+  p1StatStages?: Partial<
+    Record<'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion', number>
+  >;
+  p2StatStages?: Partial<
+    Record<'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion', number>
+  >;
   p1Status?: string;
   p2Status?: string;
   p1Hp?: number;
@@ -170,122 +179,122 @@ interface TriggerConfig {
 
 export const ABILITY_TRIGGER_MAP: Readonly<Record<string, TriggerConfig>> = {
   // Inmunidades de tipo — el rival ataca con el tipo que la habilidad absorbe/bloquea
-  voltabsorb:      { enemyMove: 'thunderbolt' },
-  lightningrod:    { enemyMove: 'thunderbolt' },
-  motordrive:      { enemyMove: 'thunderbolt' },
-  transistor:      { enemyMove: 'thunderbolt' }, // boost al usar eléctrico
-  waterabsorb:     { enemyMove: 'surf' },
-  stormdrain:      { enemyMove: 'surf' },
-  dryskin:         { enemyMove: 'surf' },
-  waterbubble:     { enemyMove: 'surf' },         // boost al usar agua
-  flashfire:       { enemyMove: 'flamethrower' },
-  wellbakedbody:   { enemyMove: 'flamethrower' },
-  heatproof:       { enemyMove: 'flamethrower' },
+  voltabsorb: { enemyMove: 'thunderbolt' },
+  lightningrod: { enemyMove: 'thunderbolt' },
+  motordrive: { enemyMove: 'thunderbolt' },
+  transistor: { enemyMove: 'thunderbolt' }, // boost al usar eléctrico
+  waterabsorb: { enemyMove: 'surf' },
+  stormdrain: { enemyMove: 'surf' },
+  dryskin: { enemyMove: 'surf' },
+  waterbubble: { enemyMove: 'surf' }, // boost al usar agua
+  flashfire: { enemyMove: 'flamethrower' },
+  wellbakedbody: { enemyMove: 'flamethrower' },
+  heatproof: { enemyMove: 'flamethrower' },
   thermalexchange: { enemyMove: 'flamewheel' },
-  sapsipper:       { enemyMove: 'gigadrain' },
-  levitate:        { enemyMove: 'earthquake' },
-  eartheater:      { enemyMove: 'earthquake' },
+  sapsipper: { enemyMove: 'gigadrain' },
+  levitate: { enemyMove: 'earthquake' },
+  eartheater: { enemyMove: 'earthquake' },
 
   // Habilidades de contacto — rival usa movimiento físico de contacto
-  static:          { enemyMove: 'bodyslam' },
-  flamebody:       { enemyMove: 'bodyslam' },
-  poisonpoint:     { enemyMove: 'bodyslam' },
-  roughskin:       { enemyMove: 'bodyslam' },
-  ironbarbs:       { enemyMove: 'bodyslam' },
-  gooey:           { enemyMove: 'bodyslam' },
-  tanglinghair:    { enemyMove: 'bodyslam' },
-  cutecharm:       { enemyMove: 'bodyslam' },
-  effectspore:     { enemyMove: 'bodyslam' },
-  mummy:           { enemyMove: 'bodyslam' },
+  static: { enemyMove: 'bodyslam' },
+  flamebody: { enemyMove: 'bodyslam' },
+  poisonpoint: { enemyMove: 'bodyslam' },
+  roughskin: { enemyMove: 'bodyslam' },
+  ironbarbs: { enemyMove: 'bodyslam' },
+  gooey: { enemyMove: 'bodyslam' },
+  tanglinghair: { enemyMove: 'bodyslam' },
+  cutecharm: { enemyMove: 'bodyslam' },
+  effectspore: { enemyMove: 'bodyslam' },
+  mummy: { enemyMove: 'bodyslam' },
   wanderingspirit: { enemyMove: 'bodyslam' },
-  perishbody:      { enemyMove: 'bodyslam' },
-  lingeringaroma:  { enemyMove: 'bodyslam' },
+  perishbody: { enemyMove: 'bodyslam' },
+  lingeringaroma: { enemyMove: 'bodyslam' },
 
   // Habilidades de recoil/no-recoil — jugador usa movimiento con recoil
-  rockhead:        { enemyMove: 'seismictoss' }, // p1 usa Double-Edge sin recoil
-  reckless:        { enemyMove: 'seismictoss' },
+  rockhead: { enemyMove: 'seismictoss' }, // p1 usa Double-Edge sin recoil
+  reckless: { enemyMove: 'seismictoss' },
 
   // Habilidades activadas por baja vida — rival usa False Swipe para dejar a 1 HP
-  blaze:           { enemyMove: 'falseswipe' },
-  torrent:         { enemyMove: 'falseswipe' },
-  overgrow:        { enemyMove: 'falseswipe' },
-  swarm:           { enemyMove: 'falseswipe' },
-  berserk:         { enemyMove: 'falseswipe' },
-  emergencyexit:   { enemyMove: 'falseswipe' },
-  wimpout:         { enemyMove: 'falseswipe' },
-  defeatist:       { enemyMove: 'falseswipe' },
+  blaze: { enemyMove: 'falseswipe' },
+  torrent: { enemyMove: 'falseswipe' },
+  overgrow: { enemyMove: 'falseswipe' },
+  swarm: { enemyMove: 'falseswipe' },
+  berserk: { enemyMove: 'falseswipe' },
+  emergencyexit: { enemyMove: 'falseswipe' },
+  wimpout: { enemyMove: 'falseswipe' },
+  defeatist: { enemyMove: 'falseswipe' },
 
   // Activadas por reducciones de stats — rival usa Charm (baja Atk x2)
-  competitive:     { enemyMove: 'charm' },
-  defiant:         { enemyMove: 'charm' },
-  rattled:         { enemyMove: 'shadowball' }, // baja SpD + Oscuro/Bicho/Fantasma
-  justified:       { enemyMove: 'suckerpunch' }, // tipo Oscuro sube Atk
-  guarddog:        { enemyMove: 'charm' },        // bloquea Intimidate + sube Atk
-  opportunist:     { enemyMove: 'charm' },        // copia bajada de stats del rival
+  competitive: { enemyMove: 'charm' },
+  defiant: { enemyMove: 'charm' },
+  rattled: { enemyMove: 'shadowball' }, // baja SpD + Oscuro/Bicho/Fantasma
+  justified: { enemyMove: 'suckerpunch' }, // tipo Oscuro sube Atk
+  guarddog: { enemyMove: 'charm' }, // bloquea Intimidate + sube Atk
+  opportunist: { enemyMove: 'charm' }, // copia bajada de stats del rival
 
   // Activadas por tipos específicos de daño
-  weakarmor:       { enemyMove: 'rockslide' },   // físico → +Spe, -Def
-  steamengine:     { enemyMove: 'flamewheel' },  // Fuego/Agua → +6 Spe
-  stamina:         { enemyMove: 'rockslide' },   // recibir daño → +Def
-  watercompaction: { enemyMove: 'surf' },         // agua → +2 Def
-  innardsout:      { enemyMove: 'falseswipe' },  // al K.O. → devuelve daño
+  weakarmor: { enemyMove: 'rockslide' }, // físico → +Spe, -Def
+  steamengine: { enemyMove: 'flamewheel' }, // Fuego/Agua → +6 Spe
+  stamina: { enemyMove: 'rockslide' }, // recibir daño → +Def
+  watercompaction: { enemyMove: 'surf' }, // agua → +2 Def
+  innardsout: { enemyMove: 'falseswipe' }, // al K.O. → devuelve daño
 
   // Activadas por tipo Oscuro
-  darkside:        { enemyMove: 'suckerpunch' },
+  darkside: { enemyMove: 'suckerpunch' },
 
   // Habilidades de stat boost por tipo de ataque recibido
-  angerpoint:      { enemyMove: 'stormthrow' },  // golpe crítico → +6 Atk
-  angershell:      { enemyMove: 'falseswipe' },  // baja de 50% HP → stats mixtos
+  angerpoint: { enemyMove: 'stormthrow' }, // golpe crítico → +6 Atk
+  angershell: { enemyMove: 'falseswipe' }, // baja de 50% HP → stats mixtos
 
   // Habilidades de clima — ya cubiertas por ABILITY_SCENARIOS pero mapeamos igual
   // para el generador dinámico cuando aparecen solas en un batch
-  swiftswim:       { enemyMove: 'raindance' },
-  chlorophyll:     { enemyMove: 'sunnyday' },
-  sandrush:        { enemyMove: 'sandstorm' },
-  slushrush:       { enemyMove: 'snowscape' },
-  sandforce:       { enemyMove: 'sandstorm' },
-  solarpower:      { enemyMove: 'sunnyday' },
-  leafguard:       { enemyMove: 'sunnyday' },
-  icebody:         { enemyMove: 'snowscape' },
-  snowcloak:       { enemyMove: 'snowscape' },
-  sandveil:        { enemyMove: 'sandstorm' },
-  raindish:        { enemyMove: 'raindance' },
-  hydration:       { enemyMove: 'raindance' },
+  swiftswim: { enemyMove: 'raindance' },
+  chlorophyll: { enemyMove: 'sunnyday' },
+  sandrush: { enemyMove: 'sandstorm' },
+  slushrush: { enemyMove: 'snowscape' },
+  sandforce: { enemyMove: 'sandstorm' },
+  solarpower: { enemyMove: 'sunnyday' },
+  leafguard: { enemyMove: 'sunnyday' },
+  icebody: { enemyMove: 'snowscape' },
+  snowcloak: { enemyMove: 'snowscape' },
+  sandveil: { enemyMove: 'sandstorm' },
+  raindish: { enemyMove: 'raindance' },
+  hydration: { enemyMove: 'raindance' },
 
   // Habilidades de terreno
-  surgesurfer:     { enemyMove: 'electricterrain' },
-  mimicry:         { enemyMove: 'electricterrain' },
+  surgesurfer: { enemyMove: 'electricterrain' },
+  mimicry: { enemyMove: 'electricterrain' },
 
   // Inmunidades de estado
-  limber:          { enemyMove: 'thunderwave' },
-  immunity:        { enemyMove: 'toxic' },
-  magmaarmor:      { enemyMove: 'lovelykiss' },   // inmune a congelar (usamos sleep como proxy)
-  oblivious:       { enemyMove: 'lovelykiss' },
-  vitalspirit:     { enemyMove: 'lovelykiss' },
-  insomnia:        { enemyMove: 'lovelykiss' },
-  owntempo:        { enemyMove: 'confuseray' },
-  innerfocus:      { enemyMove: 'fakeout' },
-  steadfast:       { enemyMove: 'fakeout' },      // al hacer flinch → +Spe
-  clearsmog:       { enemyMove: 'confuseray' },
+  limber: { enemyMove: 'thunderwave' },
+  immunity: { enemyMove: 'toxic' },
+  magmaarmor: { enemyMove: 'lovelykiss' }, // inmune a congelar (usamos sleep como proxy)
+  oblivious: { enemyMove: 'lovelykiss' },
+  vitalspirit: { enemyMove: 'lovelykiss' },
+  insomnia: { enemyMove: 'lovelykiss' },
+  owntempo: { enemyMove: 'confuseray' },
+  innerfocus: { enemyMove: 'fakeout' },
+  steadfast: { enemyMove: 'fakeout' }, // al hacer flinch → +Spe
+  clearsmog: { enemyMove: 'confuseray' },
 
   // Activadas por movimientos de estado del rival
-  soundproof:      { enemyMove: 'hypervoice' },   // inmune a sonido
-  bulletproof:     { enemyMove: 'shadowball' },   // inmune a balas/bombas
-  damp:            { enemyMove: 'selfdestruct' }, // bloquea Self-Destruct
-  queenlymajesty:  { enemyMove: 'quickattack' },  // bloquea prioridad
-  dazzling:        { enemyMove: 'quickattack' },  // bloquea prioridad
-  armortail:       { enemyMove: 'quickattack' },  // bloquea prioridad
+  soundproof: { enemyMove: 'hypervoice' }, // inmune a sonido
+  bulletproof: { enemyMove: 'shadowball' }, // inmune a balas/bombas
+  damp: { enemyMove: 'selfdestruct' }, // bloquea Self-Destruct
+  queenlymajesty: { enemyMove: 'quickattack' }, // bloquea prioridad
+  dazzling: { enemyMove: 'quickattack' }, // bloquea prioridad
+  armortail: { enemyMove: 'quickattack' }, // bloquea prioridad
 
   // Habilidades misceláneas reactivas
-  pressure:        { enemyMove: 'bodyslam' },     // PP extra consumidos
-  unnerve:         { enemyMove: 'bodyslam' },     // rival no puede comer berries
-  suctioncups:     { enemyMove: 'whirlwind' },     // bloquea phazing
-  shadowtag:       { enemyMove: 'bodyslam' },     // rival no puede escapar
-  arenatrap:       { enemyMove: 'bodyslam' },
-  magnetpull:      { enemyMove: 'bodyslam' },
-  stickyhold:      { enemyMove: 'knockoff' },     // bloquea robo de item
-  colorchange:     { enemyMove: 'thunderbolt' },   // cambia tipo al ser golpeado
-  klutz:           { enemyMove: 'bodyslam' },     // no puede usar su item
+  pressure: { enemyMove: 'bodyslam' }, // PP extra consumidos
+  unnerve: { enemyMove: 'bodyslam' }, // rival no puede comer berries
+  suctioncups: { enemyMove: 'whirlwind' }, // bloquea phazing
+  shadowtag: { enemyMove: 'bodyslam' }, // rival no puede escapar
+  arenatrap: { enemyMove: 'bodyslam' },
+  magnetpull: { enemyMove: 'bodyslam' },
+  stickyhold: { enemyMove: 'knockoff' }, // bloquea robo de item
+  colorchange: { enemyMove: 'thunderbolt' }, // cambia tipo al ser golpeado
+  klutz: { enemyMove: 'bodyslam' } // no puede usar su item
 };
 
 // ---------------------------------------------------------------------------
@@ -297,10 +306,10 @@ export const ABILITY_TRIGGER_MAP: Readonly<Record<string, TriggerConfig>> = {
 // Slot 4 = bodyslam     → cubre habilidades de contacto
 // ---------------------------------------------------------------------------
 export const ENEMY_TRIGGER_MOVES = [
-  'thunderbolt',  // slot 1
-  'surf',         // slot 2
+  'thunderbolt', // slot 1
+  'surf', // slot 2
   'flamethrower', // slot 3
-  'bodyslam',    // slot 4
+  'bodyslam' // slot 4
 ] as const;
 
 /** Slot 1-based del ENEMY_TRIGGER_MOVES que activa la habilidad dada, o null si no aplica. */
@@ -309,7 +318,7 @@ export function getTriggerSlot(abilityId: string): number | null {
   if (!trigger) return null;
   const move = trigger.enemyMove.toLowerCase().replace(/[^a-z0-9]/g, ''); // string-ok: Internal string formatting or DOM token identifier
   const idx = ENEMY_TRIGGER_MOVES.findIndex(
-    m => m.toLowerCase().replace(/[^a-z0-9]/g, '') === move // string-ok: Internal string formatting or DOM token identifier
+    (m) => m.toLowerCase().replace(/[^a-z0-9]/g, '') === move // string-ok: Internal string formatting or DOM token identifier
   );
   // Si el trigger move es uno de los 4 universales, usar ese slot.
   // Si es un movimiento especial (p.ej. Charm, Earthquake, Whirlwind),
@@ -320,11 +329,21 @@ export function getTriggerSlot(abilityId: string): number | null {
 
 import { ACTIVE_GENERATION } from '../../../../src/data/system/constants.ts';
 
-export function findLegalSpeciesAndGenderForAbility(abilityId: string, dexGen: ReturnType<typeof Dex.forGen>): { species: PokemonSpeciesId; gender: GenderName; ability: AbilityId } {
+export function findLegalSpeciesAndGenderForAbility(
+  abilityId: string,
+  dexGen: ReturnType<typeof Dex.forGen>
+): { species: PokemonSpeciesId; gender: GenderName; ability: AbilityId } {
   const cleanAbility = toID(abilityId);
-  const match = dexGen.species.all().find(s => {
-    if (!s.exists || s.isNonstandard === 'CAP' || s.isNonstandard === 'Custom' || s.isNonstandard === 'Future' || s.forme?.includes('Totem')) return false;
-    return Object.values(s.abilities).some(a => toID(a) === cleanAbility);
+  const match = dexGen.species.all().find((s) => {
+    if (
+      !s.exists ||
+      s.isNonstandard === 'CAP' ||
+      s.isNonstandard === 'Custom' ||
+      s.isNonstandard === 'Future' ||
+      s.forme?.includes('Totem')
+    )
+      return false;
+    return Object.values(s.abilities).some((a) => toID(a) === cleanAbility);
   });
   if (match) {
     const speciesId = toID(match.name) as PokemonSpeciesId;
@@ -346,29 +365,37 @@ export function findLegalSpeciesAndGenderForAbility(abilityId: string, dexGen: R
 export function generateTestBatches(batchSize: number = 6): TestBatch[] {
   const dexGen = Dex.forGen(ACTIVE_GENERATION);
 
-  const allMoves = dexGen.moves.all()
-    .filter(m => m.exists && !m.isNonstandard && m.id !== 'struggle');
+  const allMoves = dexGen.moves
+    .all()
+    .filter((m) => m.exists && !m.isNonstandard && m.id !== 'struggle');
 
   // Obtener todas las habilidades probadas en escenarios scriptados para excluirlas del pool dinámico
   const scriptedAbilities = new Set(
-    ABILITY_SCENARIOS.flatMap(s => s.abilities.map(a => toID(a)))
+    ABILITY_SCENARIOS.flatMap((s) => s.abilities.map((a) => toID(a)))
   );
 
   // Filtrar habilidades excluidas del reporte singles y las que ya tienen escenarios dedicados
-  const allAbilities = dexGen.abilities.all()
-    .filter(a => a.exists && !a.isNonstandard && !EXCLUDED_FROM_SINGLES_REPORT.has(a.id) && !scriptedAbilities.has(a.id));
+  const allAbilities = dexGen.abilities
+    .all()
+    .filter(
+      (a) =>
+        a.exists &&
+        !a.isNonstandard &&
+        !EXCLUDED_FROM_SINGLES_REPORT.has(a.id) &&
+        !scriptedAbilities.has(a.id)
+    );
 
-  const movePool    = allMoves.map(m => m.id);
-  const abilityPool = allAbilities.map(a => a.id);
+  const movePool = allMoves.map((m) => m.id);
+  const abilityPool = allAbilities.map((a) => a.id);
 
   const batches: TestBatch[] = [];
-  let moveIdx    = 0;
+  let moveIdx = 0;
   let abilityIdx = 0;
 
   while (moveIdx < movePool.length || abilityIdx < abilityPool.length) {
     const playerTeam: FuzzerPokemonSet[] = [];
-    const enemyTeam:  FuzzerPokemonSet[] = [];
-    const batchMoves:     PokemonMoveId[] = [];
+    const enemyTeam: FuzzerPokemonSet[] = [];
+    const batchMoves: PokemonMoveId[] = [];
     const batchAbilities: AbilityId[] = [];
 
     for (let p = 0; p < batchSize; p++) {
@@ -411,17 +438,21 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       }
 
       // Si tiene movimientos que requieren baya obligatoria para ser válidos
-      const movesToId = pMoves.map(m => toID(m));
+      const movesToId = pMoves.map((m) => toID(m));
       if (movesToId.includes('belch' as ID) || movesToId.includes('stuffcheeks' as ID)) {
         item = 'sitrusberry';
       }
 
       // noretreat requiere ser Falinks para poder ejecutarse
-      const species = movesToId.includes('noretreat' as ID) ? ('falinks' as PokemonSpeciesId) : targetSpecies;
+      const species = movesToId.includes('noretreat' as ID)
+        ? ('falinks' as PokemonSpeciesId)
+        : targetSpecies;
       const gender = movesToId.includes('noretreat' as ID) ? ('N' as GenderName) : targetGender;
 
       let finalAbility = targetAbility;
-      const legalAbilitiesForSpecies = pokemonDataProvider.getSpeciesAbilities(species).map(a => toID(a));
+      const legalAbilitiesForSpecies = pokemonDataProvider
+        .getSpeciesAbilities(species)
+        .map((a) => toID(a));
       if (!legalAbilitiesForSpecies.includes(toID(finalAbility))) {
         finalAbility = (legalAbilitiesForSpecies[0] ?? 'synchronize') as AbilityId;
       }
@@ -434,18 +465,18 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       const pStats = calcStatsPure(100, pIvs, pBaseStats, { up: null, down: null }, false, pEvs);
 
       playerTeam.push({
-        name:    pNickname,
+        name: pNickname,
         species,
-        level:   100,
+        level: 100,
         gender,
         item: item as ItemId,
         ability: finalAbility,
-        nature:  'serious',
+        nature: 'serious',
         evs: pEvs,
         ivs: pIvs,
         moves: (pMoves.length > 0 ? pMoves.slice(0, 4) : ['tackle']) as PokemonMoveId[],
         uid: pUid,
-        stats: pStats,
+        stats: pStats
       });
     }
 
@@ -459,9 +490,9 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       // El NPC siempre tiene disponibles: eléctrico, agua, fuego y contacto.
       // If player has focuspunch, NPC must not attack so concentration isn't broken.
       // 'splash' does nothing — no healing, no damage — so Blissey can still faint naturally.
-      const eMoves: PokemonMoveId[] = (hasFocusPunch
-        ? ['splash', 'sunnyday', 'raindance', 'sandstorm']
-        : [...ENEMY_TRIGGER_MOVES]) as PokemonMoveId[];
+      const eMoves: PokemonMoveId[] = (
+        hasFocusPunch ? ['splash', 'sunnyday', 'raindance', 'sandstorm'] : [...ENEMY_TRIGGER_MOVES]
+      ) as PokemonMoveId[];
 
       const eUid = crypto.randomUUID();
       const eNickname = getShowdownNickname(eUid);
@@ -471,18 +502,18 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       const eStats = calcStatsPure(100, eIvs, eBaseStats, { up: null, down: null }, false, eEvs);
 
       enemyTeam.push({
-        name:    eNickname,
+        name: eNickname,
         species: 'blissey',
-        level:   100,
-        gender:  'F',
-        item:    '',
+        level: 100,
+        gender: 'F',
+        item: '',
         ability: 'naturalcure',
-        nature:  'serious',
+        nature: 'serious',
         evs: eEvs,
         ivs: eIvs,
         moves: eMoves.slice(0, 4),
         uid: eUid,
-        stats: eStats,
+        stats: eStats
       });
     }
 
@@ -492,8 +523,8 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       batches.push({
         playerTeam,
         enemyTeam,
-        movesToTest:         batchMoves,
-        abilitiesToTest:     batchAbilities,
+        movesToTest: batchMoves,
+        abilitiesToTest: batchAbilities
       });
     }
   }

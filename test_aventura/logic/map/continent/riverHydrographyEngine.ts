@@ -12,6 +12,7 @@ import type { WaterTerrainKind } from '../waterAutotileEngine.ts';
 import type { SettlementExclusionZone } from '../continentGenerator.ts';
 
 import { RIVER_HYDRO } from '../../../config/riverHydrographyConfig.ts';
+import { computeGridDistanceField, type GridBfsQueueItem } from '../../utils/gridBfsUtils.ts';
 
 export interface RiverWaypoint {
   readonly x: number;
@@ -113,8 +114,14 @@ export function carveRiverSystem(
       const ny = dx / len;
 
       // Meander displacement via Sine + Simplex Noise
-      const sineWave = Math.sin(t * Math.PI * RIVER_HYDRO.RIVER_SINE_PI_MULT + i) * (river.width * RIVER_HYDRO.RIVER_SINE_WIDTH_FACTOR);
-      const simplexOffset = fbm2D(noise, bx * RIVER_HYDRO.RIVER_NOISE_SCALE, by * RIVER_HYDRO.RIVER_NOISE_SCALE, { octaves: RIVER_HYDRO.RIVER_NOISE_OCTAVES }) * (river.width * RIVER_HYDRO.RIVER_NOISE_WIDTH_MULT * roughness);
+      const sineWave =
+        Math.sin(t * Math.PI * RIVER_HYDRO.RIVER_SINE_PI_MULT + i) *
+        (river.width * RIVER_HYDRO.RIVER_SINE_WIDTH_FACTOR);
+      const simplexOffset =
+        fbm2D(noise, bx * RIVER_HYDRO.RIVER_NOISE_SCALE, by * RIVER_HYDRO.RIVER_NOISE_SCALE, {
+          octaves: RIVER_HYDRO.RIVER_NOISE_OCTAVES
+        }) *
+        (river.width * RIVER_HYDRO.RIVER_NOISE_WIDTH_MULT * roughness);
       const totalOffset = sineWave + simplexOffset;
 
       const riverCenterX = bx + nx * totalOffset;
@@ -224,11 +231,19 @@ export function generateProceduralRiverDrainage(
   let owHead = 0;
   while (owHead < oceanWaterQ.length) {
     const cur = oceanWaterQ[owHead++]!;
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+    for (const [dx, dy] of [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0]
+    ]) {
       const nx = cur.x + dx!;
       const ny = cur.y + dy!;
       if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-        if (!visitedOcean[ny]![nx] && (terrainMatrix[ny]![nx] === 'water' || terrainMatrix[ny]![nx] === 'water_deep')) {
+        if (
+          !visitedOcean[ny]![nx] &&
+          (terrainMatrix[ny]![nx] === 'water' || terrainMatrix[ny]![nx] === 'water_deep')
+        ) {
           visitedOcean[ny]![nx] = true;
           oceanWaterQ.push({ x: nx, y: ny });
         }
@@ -262,7 +277,12 @@ export function generateProceduralRiverDrainage(
         if (ptElev > maxElev) maxElev = ptElev;
         if (ptElev >= 1) hasElevGe1 = true;
 
-        for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+        for (const [dx, dy] of [
+          [0, 1],
+          [0, -1],
+          [1, 0],
+          [-1, 0]
+        ]) {
           const nx = pt.x + dx!;
           const ny = pt.y + dy!;
           if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
@@ -270,7 +290,11 @@ export function generateProceduralRiverDrainage(
           if (neighborElev > maxElev) maxElev = neighborElev;
           if (neighborElev >= 1) hasElevGe1 = true;
 
-          if (!visitedOcean[ny]![nx] && !lakeVisited[ny]![nx] && terrainMatrix[ny]![nx] === 'water') {
+          if (
+            !visitedOcean[ny]![nx] &&
+            !lakeVisited[ny]![nx] &&
+            terrainMatrix[ny]![nx] === 'water'
+          ) {
             lakeVisited[ny]![nx] = true;
             lq.push({ x: nx, y: ny });
           }
@@ -290,26 +314,13 @@ export function generateProceduralRiverDrainage(
 
   // 3. Multi-source BFS to compute distance from every cell to nearest ocean water
   const distToOcean: number[][] = Array.from({ length: H }, () => Array(W).fill(Infinity));
-  const distQ: { x: number; y: number; d: number }[] = [];
+  const distQ: GridBfsQueueItem[] = [];
   for (const pt of oceanWaterQ) {
     distToOcean[pt.y]![pt.x] = 0;
     distQ.push({ x: pt.x, y: pt.y, d: 0 });
   }
 
-  let dHead = 0;
-  while (dHead < distQ.length) {
-    const cur = distQ[dHead++]!;
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = cur.x + dx!;
-      const ny = cur.y + dy!;
-      if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-        if (distToOcean[ny]![nx]! > cur.d + 1) {
-          distToOcean[ny]![nx] = cur.d + 1;
-          distQ.push({ x: nx, y: ny, d: cur.d + 1 });
-        }
-      }
-    }
-  }
+  computeGridDistanceField(distQ, distToOcean, W, H);
 
   // 4. Select Spring (Manantial):
   // Prioritize mountain/elevation lakes (hasElevGe1 or highest maxElevation), then largest lake
@@ -344,15 +355,26 @@ export function generateProceduralRiverDrainage(
   }
 
   const immediateThreshold = RIVER_HYDRO.IMMEDIATE_OCEAN_THRESHOLD;
-  const shouldAvoidImmediate = nearestOceanDist < immediateThreshold && maxOceanDist >= RIVER_HYDRO.MIN_MAX_OCEAN_DIST;
+  const shouldAvoidImmediate =
+    nearestOceanDist < immediateThreshold && maxOceanDist >= RIVER_HYDRO.MIN_MAX_OCEAN_DIST;
 
   let targetOceanCells: { x: number; y: number }[];
   if (shouldAvoidImmediate) {
-    const minMouthDist = Math.max(immediateThreshold, Math.min(RIVER_HYDRO.TARGET_BASIN_MAX_DIST, maxOceanDist * RIVER_HYDRO.TARGET_BASIN_DISTANCE_RATIO));
+    const minMouthDist = Math.max(
+      immediateThreshold,
+      Math.min(
+        RIVER_HYDRO.TARGET_BASIN_MAX_DIST,
+        maxOceanDist * RIVER_HYDRO.TARGET_BASIN_DISTANCE_RATIO
+      )
+    );
     // Prefer South (into continental valley) or East (across continent)
     const eastSouthCandidates = oceanWaterQ.filter((p) => {
       const d = Math.hypot(p.x - springPoint.x, p.y - springPoint.y);
-      return d >= minMouthDist && (p.y >= springPoint.y + RIVER_HYDRO.TARGET_SOUTH_OFFSET || p.x >= springPoint.x + RIVER_HYDRO.TARGET_EAST_OFFSET);
+      return (
+        d >= minMouthDist &&
+        (p.y >= springPoint.y + RIVER_HYDRO.TARGET_SOUTH_OFFSET ||
+          p.x >= springPoint.x + RIVER_HYDRO.TARGET_EAST_OFFSET)
+      );
     });
 
     if (eastSouthCandidates.length > 0) {
@@ -385,7 +407,7 @@ export function generateProceduralRiverDrainage(
   // Compute distance to target ocean basin
   const distToTargetOcean: number[][] = Array.from({ length: H }, () => Array(W).fill(Infinity));
   const isTargetOcean: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
-  const targetQ: { x: number; y: number; d: number }[] = [];
+  const targetQ: GridBfsQueueItem[] = [];
 
   for (const pt of targetOceanCells) {
     distToTargetOcean[pt.y]![pt.x] = 0;
@@ -393,20 +415,7 @@ export function generateProceduralRiverDrainage(
     targetQ.push({ x: pt.x, y: pt.y, d: 0 });
   }
 
-  let tHead = 0;
-  while (tHead < targetQ.length) {
-    const cur = targetQ[tHead++]!;
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = cur.x + dx!;
-      const ny = cur.y + dy!;
-      if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
-        if (distToTargetOcean[ny]![nx]! > cur.d + 1) {
-          distToTargetOcean[ny]![nx] = cur.d + 1;
-          targetQ.push({ x: nx, y: ny, d: cur.d + 1 });
-        }
-      }
-    }
-  }
+  computeGridDistanceField(targetQ, distToTargetOcean, W, H);
 
   // 5. Downhill / Oceanward Gradient Descent using A* Pathfinding
   const noise = new SimplexNoise(seed + RIVER_HYDRO.NOISE_SEED_OFFSET);
@@ -476,7 +485,8 @@ export function generateProceduralRiverDrainage(
   pq.push({
     x: springPoint.x,
     y: springPoint.y,
-    priority: distToTargetOcean[springPoint.y]![springPoint.x]! * RIVER_HYDRO.HEURISTIC_WEIGHT_TARGET_OCEAN
+    priority:
+      distToTargetOcean[springPoint.y]![springPoint.x]! * RIVER_HYDRO.HEURISTIC_WEIGHT_TARGET_OCEAN
   });
 
   let endNode: { x: number; y: number } | null = null;
@@ -491,7 +501,12 @@ export function generateProceduralRiverDrainage(
       break;
     }
 
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+    for (const [dx, dy] of [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0]
+    ]) {
       const nx = cur.x + dx!;
       const ny = cur.y + dy!;
       if (nx < 1 || nx >= W - 1 || ny < 1 || ny >= H - 1) continue;
@@ -525,16 +540,21 @@ export function generateProceduralRiverDrainage(
       const progress = (nx - springPoint.x) * flowUx + (ny - springPoint.y) * flowUy;
       const lateral = (nx - springPoint.x) * normalUx + (ny - springPoint.y) * normalUy;
       const sinOffset = Math.sin((progress / wavePeriod) * Math.PI * 2) * waveAmplitude;
-      const noiseOffset = fbm2D(noise, nx * RIVER_HYDRO.NOISE_COORD_SCALE, ny * RIVER_HYDRO.NOISE_COORD_SCALE, { octaves: RIVER_HYDRO.NOISE_OCTAVES }) * RIVER_HYDRO.NOISE_AMPLITUDE;
+      const noiseOffset =
+        fbm2D(noise, nx * RIVER_HYDRO.NOISE_COORD_SCALE, ny * RIVER_HYDRO.NOISE_COORD_SCALE, {
+          octaves: RIVER_HYDRO.NOISE_OCTAVES
+        }) * RIVER_HYDRO.NOISE_AMPLITUDE;
       const idealLateral = sinOffset + noiseOffset;
       const lateralDev = Math.abs(lateral - idealLateral);
       stepCost += lateralDev * RIVER_HYDRO.LATERAL_DEV_PENALTY_FACTOR;
 
-      const newCost = costSoFar[cur.y]![cur.x]! + Math.max(RIVER_HYDRO.MIN_STEP_COST_FLOOR, stepCost);
+      const newCost =
+        costSoFar[cur.y]![cur.x]! + Math.max(RIVER_HYDRO.MIN_STEP_COST_FLOOR, stepCost);
       if (newCost < costSoFar[ny]![nx]!) {
         costSoFar[ny]![nx] = newCost;
         cameFrom.set(`${nx}_${ny}`, { x: cur.x, y: cur.y });
-        const priority = newCost + distToTargetOcean[ny]![nx]! * RIVER_HYDRO.HEURISTIC_WEIGHT_TARGET_OCEAN;
+        const priority =
+          newCost + distToTargetOcean[ny]![nx]! * RIVER_HYDRO.HEURISTIC_WEIGHT_TARGET_OCEAN;
         pq.push({ x: nx, y: ny, priority });
       }
     }
@@ -549,7 +569,8 @@ export function generateProceduralRiverDrainage(
     fallbackPq.push({
       x: springPoint.x,
       y: springPoint.y,
-      priority: distToOcean[springPoint.y]![springPoint.x]! * RIVER_HYDRO.HEURISTIC_WEIGHT_FALLBACK_OCEAN
+      priority:
+        distToOcean[springPoint.y]![springPoint.x]! * RIVER_HYDRO.HEURISTIC_WEIGHT_FALLBACK_OCEAN
     });
 
     while (fallbackPq.length > 0) {
@@ -558,7 +579,12 @@ export function generateProceduralRiverDrainage(
         endNode = cur;
         break;
       }
-      for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+      for (const [dx, dy] of [
+        [0, 1],
+        [0, -1],
+        [1, 0],
+        [-1, 0]
+      ]) {
         const nx = cur.x + dx!;
         const ny = cur.y + dy!;
         if (nx < 1 || nx >= W - 1 || ny < 1 || ny >= H - 1) continue;
@@ -567,11 +593,16 @@ export function generateProceduralRiverDrainage(
         const hNext = heightmap[ny]?.[nx] ?? 0;
         let stepCost = 1.0;
         if (hNext > hCur) stepCost += RIVER_HYDRO.FALLBACK_UPHILL_PENALTY_FACTOR * (hNext - hCur);
-        const newCost = fallbackCost[cur.y]![cur.x]! + Math.max(RIVER_HYDRO.MIN_STEP_COST_FLOOR, stepCost);
+        const newCost =
+          fallbackCost[cur.y]![cur.x]! + Math.max(RIVER_HYDRO.MIN_STEP_COST_FLOOR, stepCost);
         if (newCost < fallbackCost[ny]![nx]!) {
           fallbackCost[ny]![nx] = newCost;
           cameFrom.set(`${nx}_${ny}`, { x: cur.x, y: cur.y });
-          fallbackPq.push({ x: nx, y: ny, priority: newCost + distToOcean[ny]![nx]! * RIVER_HYDRO.HEURISTIC_WEIGHT_FALLBACK_OCEAN });
+          fallbackPq.push({
+            x: nx,
+            y: ny,
+            priority: newCost + distToOcean[ny]![nx]! * RIVER_HYDRO.HEURISTIC_WEIGHT_FALLBACK_OCEAN
+          });
         }
       }
     }

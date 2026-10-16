@@ -4,10 +4,8 @@
  * Unit & regression tests for Pokémon Feet Database and shiny deduplication fallback.
  */
 
-import { describe, it, expect } from 'vitest';
-import {
-  requireFeetPoints
-} from '../../../src/data/pokemon/pokemonFeetDatabase.ts';
+import { describe, it, expect } from 'vite-plus/test';
+import { requireFeetPoints } from '../../../src/data/pokemon/pokemonFeetDatabase.ts';
 import type { PackedFeetDatabase } from '../../../src/data/pokemon/feetCoordinatesData.ts';
 import legacyFeetDb from '../../fixtures/assets/pokemonFeetDatabase.legacy.json' with { type: 'json' };
 import overridesJson from '../../../src/data/pokemon/spriteShadowOverrides.json' with { type: 'json' };
@@ -46,7 +44,9 @@ describe('pokemonFeetDatabase', () => {
 
     it('handles animated Front shiny with fallback to Front base', () => {
       const basePoints = requireFeetPoints('/assets/sprites/pokemon/animated/Front/25i.webp');
-      const shinyPoints = requireFeetPoints('/assets/sprites/pokemon/animated/Front shiny/25i.webp');
+      const shinyPoints = requireFeetPoints(
+        '/assets/sprites/pokemon/animated/Front shiny/25i.webp'
+      );
 
       expect(shinyPoints.feetY).toBe(basePoints.feetY);
       expect(shinyPoints.feetX).toBe(basePoints.feetX);
@@ -75,8 +75,12 @@ describe('pokemonFeetDatabase', () => {
     });
 
     it('decodes URL-encoded paths (%20)', () => {
-      const encodedPoints = requireFeetPoints('/assets/sprites/pokemon/animated/Front%20shiny/1i.webp');
-      const decodedPoints = requireFeetPoints('/assets/sprites/pokemon/animated/Front shiny/1i.webp');
+      const encodedPoints = requireFeetPoints(
+        '/assets/sprites/pokemon/animated/Front%20shiny/1i.webp'
+      );
+      const decodedPoints = requireFeetPoints(
+        '/assets/sprites/pokemon/animated/Front shiny/1i.webp'
+      );
       expect(encodedPoints).toEqual(decodedPoints);
     });
 
@@ -102,7 +106,9 @@ describe('pokemonFeetDatabase', () => {
     });
 
     it('resolves animated variation sprite paths lacking separate entry to the default idle frame', () => {
-      const variationPoints = requireFeetPoints('/assets/sprites/pokemon/animated/Back shiny/656v.webp');
+      const variationPoints = requireFeetPoints(
+        '/assets/sprites/pokemon/animated/Back shiny/656v.webp'
+      );
       const idlePoints = requireFeetPoints('/assets/sprites/pokemon/animated/Back/656i.webp');
       expect(variationPoints).toEqual(idlePoints);
     });
@@ -114,9 +120,9 @@ describe('pokemonFeetDatabase', () => {
     });
 
     it('throws when path does not exist in database', () => {
-      expect(() => requireFeetPoints('/assets/sprites/pokemon/Front/nonexistent_pokemon_99999.webp')).toThrow(
-        '[pokemonFeetDatabase] Unknown feet database path'
-      );
+      expect(() =>
+        requireFeetPoints('/assets/sprites/pokemon/Front/nonexistent_pokemon_99999.webp')
+      ).toThrow('[pokemonFeetDatabase] Unknown feet database path');
     });
   });
 
@@ -128,8 +134,11 @@ describe('pokemonFeetDatabase', () => {
 
     it('achieves exact parity with legacy snapshot for sprites using automatic calculations', () => {
       const oldDb: PackedFeetDatabase = legacyFeetDb;
-      const rawJson = overridesJson as { overrides?: Record<string, { feetY: number; feetX: number }> };
-      const overridesMap: Record<string, { feetY: number; feetX: number }> = rawJson.overrides ?? {};
+      const rawJson = overridesJson as {
+        overrides?: Record<string, { feetY: number; feetX: number }>;
+      };
+      const overridesMap: Record<string, { feetY: number; feetX: number }> =
+        rawJson.overrides ?? {};
 
       const prefixMap: Record<string, string> = {
         p: '/assets/sprites/pokemon/',
@@ -157,7 +166,10 @@ describe('pokemonFeetDatabase', () => {
 
       let automaticMatches = 0;
       for (const [groupKey, prefix] of Object.entries(prefixMap)) {
-        const group = (oldDb[groupKey as keyof PackedFeetDatabase] as Record<string, readonly number[]> | undefined) ?? {};
+        const group =
+          (oldDb[groupKey as keyof PackedFeetDatabase] as
+            | Record<string, readonly number[]>
+            | undefined) ?? {};
         for (const [subKey, coords] of Object.entries(group)) {
           const fullPath = `${prefix}${subKey}.webp`;
           if (isOverridden(fullPath)) continue;
@@ -185,7 +197,10 @@ describe('pokemonFeetDatabase', () => {
 
       let totalResolved = 0;
       for (const [groupKey, prefix] of Object.entries(prefixMap)) {
-        const group = (oldDb[groupKey as keyof PackedFeetDatabase] as Record<string, readonly number[]> | undefined) ?? {};
+        const group =
+          (oldDb[groupKey as keyof PackedFeetDatabase] as
+            | Record<string, readonly number[]>
+            | undefined) ?? {};
         for (const [subKey] of Object.entries(group)) {
           const fullPath = `${prefix}${subKey}.webp`;
           const resolved = requireFeetPoints(fullPath);
@@ -207,12 +222,15 @@ describe('pokemonFeetDatabase', () => {
 
     it('applies 100% of manual overrides from spriteShadowOverrides.json with exact precision', () => {
       const rawJson = overridesJson as {
-        overrides?: Record<string, {
-          feetY: number;
-          feetX: number;
-          isFlying?: boolean;
-          shadowScale?: number;
-        }>;
+        overrides?: Record<
+          string,
+          {
+            feetY: number;
+            feetX: number;
+            isFlying?: boolean;
+            shadowScale?: number;
+          }
+        >;
       };
       const overridesMap = rawJson.overrides ?? {};
 
@@ -236,7 +254,9 @@ describe('pokemonFeetDatabase', () => {
 
     it('inherits manual overrides in shiny variants via O(1) shiny fallback', () => {
       const butterfreeBase = requireFeetPoints('/assets/sprites/pokemon/animated/Front/12i.webp');
-      const butterfreeShiny = requireFeetPoints('/assets/sprites/pokemon/animated/Front shiny/12i.webp');
+      const butterfreeShiny = requireFeetPoints(
+        '/assets/sprites/pokemon/animated/Front shiny/12i.webp'
+      );
 
       expect(butterfreeBase.isFlying).toBe(true);
       expect(butterfreeShiny.isFlying).toBe(true);

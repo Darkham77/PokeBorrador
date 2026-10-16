@@ -98,7 +98,7 @@ export function stampPerimeterForestAndCanopy(options: ForestAndCanopyOptions): 
 
     // Fill non-corridor wilderness with dense canopy trees in staggered pattern
     for (let y = 1; y <= height - treeTpl.height - 1; y += 2) {
-      const xOffset = ((Math.floor(y / 2) % 2) === 1) ? 1 : 0;
+      const xOffset = Math.floor(y / 2) % 2 === 1 ? 1 : 0;
       for (let x = 1 + xOffset; x <= width - treeTpl.width - 1; x += 2) {
         let overlapsCorridor = false;
         for (let ty = 0; ty < treeTpl.height && !overlapsCorridor; ty++) {
@@ -110,7 +110,10 @@ export function stampPerimeterForestAndCanopy(options: ForestAndCanopyOptions): 
           }
         }
 
-        if (!overlapsCorridor && canStamp(objectLayer, elevationLayer, isPathCell, treeTpl.width, treeTpl.height, x, y)) {
+        if (
+          !overlapsCorridor &&
+          canStamp(objectLayer, elevationLayer, isPathCell, treeTpl.width, treeTpl.height, x, y)
+        ) {
           stampMultitile(objectLayer, collisionGrid, treeTpl, x, y, width, height, makeCell);
         }
       }
@@ -118,13 +121,28 @@ export function stampPerimeterForestAndCanopy(options: ForestAndCanopyOptions): 
   }
 
   // 7. Interior Standalone Trees governed by Biome Distribution Engine
-  if (width >= MIN_INTERIOR_TREES_MAP_DIMENSION && height >= MIN_INTERIOR_TREES_MAP_DIMENSION && !withTown) {
+  if (
+    width >= MIN_INTERIOR_TREES_MAP_DIMENSION &&
+    height >= MIN_INTERIOR_TREES_MAP_DIMENSION &&
+    !withTown
+  ) {
     const standaloneTpl = palette.standaloneTree ?? treeTpl;
     let placedInteriorTrees = 0;
     for (let y = 4; y <= height - standaloneTpl.height - 4; y += 4) {
       for (let x = 4; x <= width - standaloneTpl.width - 4; x += 4) {
         if (!biomeDist.forestMask[y]![x]) continue;
-        if (!canStamp(objectLayer, elevationLayer, isPathCell, standaloneTpl.width, standaloneTpl.height, x, y)) continue;
+        if (
+          !canStamp(
+            objectLayer,
+            elevationLayer,
+            isPathCell,
+            standaloneTpl.width,
+            standaloneTpl.height,
+            x,
+            y
+          )
+        )
+          continue;
 
         stampMultitile(objectLayer, collisionGrid, standaloneTpl, x, y, width, height, makeCell);
         placedInteriorTrees++;

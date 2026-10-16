@@ -1,53 +1,50 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useBattleStore } from '@/stores/battle/battle'
-import { getActiveMinigame } from '@/logic/battle/battleMinigames'
+import { computed } from 'vue';
+import { useBattleStore } from '@/stores/battle/battle';
+import { getActiveMinigame } from '@/logic/battle/battleMinigames';
 
 interface Props {
-  isRewardsWait: boolean
+  isRewardsWait: boolean;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
-const battleStore = useBattleStore()
+const battleStore = useBattleStore();
 
 const encounterBtnEmoji = computed(() => {
-  const mg = getActiveMinigame(battleStore.state)
-  if (mg === 'fishing') return '🎣'
-  if (mg === 'archaeology') return '⛏️'
-  return '⚔️'
-})
+  const mg = getActiveMinigame(battleStore.state);
+  if (mg === 'fishing') return '🎣';
+  if (mg === 'archaeology') return '⛏️';
+  return '⚔️';
+});
 
 const encounterBtnText = computed(() => {
-  const mg = getActiveMinigame(battleStore.state)
-  if (mg === 'fishing') return '¡PESCAR!'
-  if (mg === 'archaeology') return '¡EXCAVAR!'
-  return '¡COMBATIR!'
-})
+  const mg = getActiveMinigame(battleStore.state);
+  if (mg === 'fishing') return '¡PESCAR!';
+  if (mg === 'archaeology') return '¡EXCAVAR!';
+  return '¡COMBATIR!';
+});
 
 const exitButtonConfig = computed(() => {
-  const returnTab = battleStore.state?.returnTab
+  const returnTab = battleStore.state?.returnTab;
   if (returnTab === 'arena' || battleStore.isPvP) {
-    return { type: 'arena', text: 'VOLVER A LA ARENA', emoji: '⚔️' }
+    return { type: 'arena', text: 'VOLVER A LA ARENA', emoji: '⚔️' };
   }
   if (returnTab === 'home') {
-    return { type: 'home', text: 'VOLVER A CASA', emoji: '🏠' }
+    return { type: 'home', text: 'VOLVER A CASA', emoji: '🏠' };
   }
   if (returnTab === 'gyms' || battleStore.state?.isGym) {
-    return { type: 'gyms', text: 'VOLVER A GIMNASIOS', emoji: '🏆' }
+    return { type: 'gyms', text: 'VOLVER A GIMNASIOS', emoji: '🏆' };
   }
-  return { type: 'map', text: 'VOLVER AL MAPA', emoji: '🗺️' }
-})
+  return { type: 'map', text: 'VOLVER AL MAPA', emoji: '🗺️' };
+});
 </script>
 
 <template>
-  <div
-    class="battle-finish-overlay"
-    :class="{ 'is-search-mode': battleStore.isSearching }"
-  >
+  <div class="battle-finish-overlay" :class="{ 'is-search-mode': battleStore.isSearching }">
     <div class="finish-actions-group">
       <button
-        v-if="battleStore.isSearching && (battleStore.state?.wasSearching !== false)"
+        v-if="battleStore.isSearching && battleStore.state?.wasSearching !== false"
         id="start-encounter-btn"
         class="continue-btn-final fight-btn"
         @click.stop="battleStore.startEncounter()"
@@ -56,7 +53,13 @@ const exitButtonConfig = computed(() => {
         <span class="btn-text">{{ encounterBtnText }}</span>
       </button>
       <button
-        v-if="(battleStore.isReadyToExit || isRewardsWait) || (battleStore.isSearching && battleStore.state?.wasSearching !== false && battleStore.uiConfig.allowFlee)"
+        v-if="
+          battleStore.isReadyToExit ||
+          isRewardsWait ||
+          (battleStore.isSearching &&
+            battleStore.state?.wasSearching !== false &&
+            battleStore.uiConfig.allowFlee)
+        "
         id="exit-battle-btn"
         class="continue-btn-final map-btn"
         @click.stop="battleStore.completeBattleFlow('map')"
@@ -69,7 +72,7 @@ const exitButtonConfig = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .battle-finish-overlay {
   @include gpu-layer;
@@ -114,7 +117,7 @@ const exitButtonConfig = computed(() => {
   pointer-events: all;
   cursor: pointer;
   padding-left: 48px;
-  
+
   &.map-btn {
     @include btn-vicio('success', 'md', true);
   }
@@ -124,7 +127,7 @@ const exitButtonConfig = computed(() => {
     justify-content: center;
     align-items: center;
     width: 32px;
-    font-size: var(--font-28); 
+    font-size: var(--font-28);
     line-height: 1;
     will-change: transform, filter, opacity;
     filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 30%));

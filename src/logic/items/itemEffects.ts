@@ -8,8 +8,17 @@ import { ITEM_EVOLUTION_EFFECTS } from './helpers/itemEvolutionEffects.ts';
 import { ITEM_SPECIAL_BUFF_EFFECTS } from './helpers/itemSpecialBuffEffects.ts';
 import { ITEM_EV_EFFECTS } from './helpers/itemEvEffects.ts';
 
-export { isValidTarget, healHp, clearStatus, curaTotal, restorePP, handleStone, getDynamicItemEffect };
+export {
+  isValidTarget,
+  healHp,
+  clearStatus,
+  curaTotal,
+  restorePP,
+  handleStone,
+  getDynamicItemEffect
+};
 
+// open-record: Aggregated item effect execution handlers dictionary
 export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   ...ITEM_HEALING_EFFECTS,
   ...ITEM_EVOLUTION_EFFECTS,

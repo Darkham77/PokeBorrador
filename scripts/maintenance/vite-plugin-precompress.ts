@@ -1,12 +1,12 @@
 /**
  * scripts/maintenance/vite-plugin-precompress.ts
- * 
+ *
  * Vite build plugin for zero-dependency static pre-compression using native Node.js zlib.
  * Generates .br (Brotli max level 11) and .gz (Gzip max level 9) assets in dist/
  * so production web servers / CDNs can serve compressed files instantly without on-the-fly CPU load.
  * Displays a consolidated Box-Drawing compression breakdown in console upon build completion.
  */
-import type { Plugin } from 'vite';
+import type { Plugin } from 'vite-plus';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -24,9 +24,10 @@ const COMPRESSIBLE_EXTENSIONS = [
   '.webmanifest'
 ] as const;
 type CompressibleExtension = (typeof COMPRESSIBLE_EXTENSIONS)[number];
+const COMPRESSIBLE_EXTENSIONS_SET: ReadonlySet<string> = new Set(COMPRESSIBLE_EXTENSIONS);
 
 function isCompressibleExtension(ext: string): ext is CompressibleExtension {
-  return (COMPRESSIBLE_EXTENSIONS as readonly string[]).includes(ext); // domain-ok: Open dynamic text or non-domain string payload
+  return COMPRESSIBLE_EXTENSIONS_SET.has(ext);
 }
 
 const MIN_SIZE_TO_COMPRESS_BYTES = 512;
@@ -34,7 +35,14 @@ const BYTES_IN_KB = 1024;
 const BYTES_IN_MB = 1024 * 1024;
 const PWA_WARN_THRESHOLD_BYTES = 5 * BYTES_IN_MB;
 
-type AssetCategory = 'Worker' | 'WASM' | 'App Shell' | 'Vendor' | 'Game Data' | 'UI / View' | 'Asset';
+type AssetCategory =
+  | 'Worker'
+  | 'WASM'
+  | 'App Shell'
+  | 'Vendor'
+  | 'Game Data'
+  | 'UI / View'
+  | 'Asset';
 
 interface AssetCompressionStat {
   relPath: string;
@@ -51,8 +59,10 @@ function detectCategory(relPath: string): AssetCategory {
   if (norm.endsWith('.wasm')) return 'WASM';
   if (norm.includes('vendor-')) return 'Vendor';
   if (norm.includes('game-data-')) return 'Game Data';
-  if (norm.includes('index-') || norm === 'index.html' || norm.includes('manifest')) return 'App Shell';
-  if (norm.includes('View-') || norm.includes('Modal-') || norm.endsWith('.css')) return 'UI / View';
+  if (norm.includes('index-') || norm === 'index.html' || norm.includes('manifest'))
+    return 'App Shell';
+  if (norm.includes('View-') || norm.includes('Modal-') || norm.endsWith('.css'))
+    return 'UI / View';
   return 'Asset';
 }
 
@@ -86,7 +96,12 @@ async function getAllFiles(dir: string): Promise<string[]> {
   return files;
 }
 
-function printReportTable(stats: AssetCompressionStat[], totalOrig: number, totalGz: number, totalBr: number): void {
+function printReportTable(
+  stats: AssetCompressionStat[],
+  totalOrig: number,
+  totalGz: number,
+  totalBr: number
+): void {
   const TABLE_WIDTH = 94;
   const colAsset = 40;
   const colCat = 12;
@@ -96,7 +111,11 @@ function printReportTable(stats: AssetCompressionStat[], totalOrig: number, tota
   const colSav = 7;
 
   console.log('\n' + '╔' + '═'.repeat(TABLE_WIDTH) + '╗');
-  console.log('║  ⚡ POKÉ VICIO — PRE-COMPRESSION & ASSET SUMMARY (Brotli Q11 & Gzip L9)'.padEnd(TABLE_WIDTH + 1) + '║');
+  console.log(
+    '║  ⚡ POKÉ VICIO — PRE-COMPRESSION & ASSET SUMMARY (Brotli Q11 & Gzip L9)'.padEnd(
+      TABLE_WIDTH + 1
+    ) + '║'
+  );
   console.log('╠' + '═'.repeat(TABLE_WIDTH) + '╣');
 
   const header = `║ ${padRight('Asset / Chunk', colAsset)} │ ${padRight('Category', colCat)} │ ${padLeft('Original', colOrig)} │ ${padLeft('Gzip L9', colGz)} │ ${padLeft('Brotli Q11', colBr)} │ ${padLeft('Saved', colSav)} ║`;
@@ -134,7 +153,9 @@ function printReportTable(stats: AssetCompressionStat[], totalOrig: number, tota
     const remainingBr = sorted.slice(30).reduce((acc, curr) => acc + curr.brotliBytes, 0);
     const remSavings = (((remainingOrig - remainingBr) / (remainingOrig || 1)) * 100).toFixed(0);
 
-    console.log(`║ ${padRight(`... and ${remainingCount} other assets`, colAsset)} │ ${padRight('Various', colCat)} │ ${padLeft(formatBytes(remainingOrig), colOrig)} │ ${padLeft(formatBytes(remainingGz), colGz)} │ ${padLeft(formatBytes(remainingBr), colBr)} │ ${padLeft(`-${remSavings}%`, colSav)} ║`);
+    console.log(
+      `║ ${padRight(`... and ${remainingCount} other assets`, colAsset)} │ ${padRight('Various', colCat)} │ ${padLeft(formatBytes(remainingOrig), colOrig)} │ ${padLeft(formatBytes(remainingGz), colGz)} │ ${padLeft(formatBytes(remainingBr), colBr)} │ ${padLeft(`-${remSavings}%`, colSav)} ║`
+    );
   }
 
   console.log('╠' + '═'.repeat(TABLE_WIDTH) + '╣');
@@ -148,7 +169,11 @@ const asyncBrotliCompress = util.promisify(zlib.brotliCompress);
 const asyncGzip = util.promisify(zlib.gzip);
 const CONCURRENCY_LIMIT = 8;
 
-async function mapConcurrent<T, R>(items: readonly T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+async function mapConcurrent<T, R>(
+  items: readonly T[],
+  limit: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
   const results: R[] = [];
   let index = 0;
 
@@ -180,50 +205,58 @@ export function staticPrecompressPlugin(): Plugin {
       }
 
       const files = await getAllFiles(distDir);
-      const compressibleFiles = files.filter(filePath => {
+      const compressibleFiles = files.filter((filePath) => {
         const ext = path.extname(filePath).toLowerCase();
         if (!isCompressibleExtension(ext)) return false;
         if (filePath.endsWith('.gz') || filePath.endsWith('.br')) return false;
         return true;
       });
 
-      const statsResults = await mapConcurrent(compressibleFiles, CONCURRENCY_LIMIT, async (filePath) => {
-        try {
-          const content = await fs.readFile(filePath);
-          if (content.byteLength < MIN_SIZE_TO_COMPRESS_BYTES) return null;
+      const statsResults = await mapConcurrent(
+        compressibleFiles,
+        CONCURRENCY_LIMIT,
+        async (filePath) => {
+          try {
+            const content = await fs.readFile(filePath);
+            if (content.byteLength < MIN_SIZE_TO_COMPRESS_BYTES) return null;
 
-          // 1. Brotli (Level 11) - multithreaded libuv async
-          const brotliBuffer = await asyncBrotliCompress(content, {
-            params: {
-              [zlib.constants.BROTLI_PARAM_QUALITY]: 11
-            }
-          });
-          await fs.writeFile(`${filePath}.br`, brotliBuffer);
+            // 1. Brotli (Level 11) - multithreaded libuv async
+            const brotliBuffer = await asyncBrotliCompress(content, {
+              params: {
+                [zlib.constants.BROTLI_PARAM_QUALITY]: 11
+              }
+            });
+            await fs.writeFile(`${filePath}.br`, brotliBuffer);
 
-          // 2. Gzip (Level 9) - multithreaded libuv async
-          const gzipBuffer = await asyncGzip(content, {
-            level: 9
-          });
-          await fs.writeFile(`${filePath}.gz`, gzipBuffer);
+            // 2. Gzip (Level 9) - multithreaded libuv async
+            const gzipBuffer = await asyncGzip(content, {
+              level: 9
+            });
+            await fs.writeFile(`${filePath}.gz`, gzipBuffer);
 
-          const relPath = path.relative(distDir, filePath).replace(/\\/g, '/');
-          const category = detectCategory(relPath);
-          const savings = ((content.byteLength - brotliBuffer.byteLength) / content.byteLength) * 100;
+            const relPath = path.relative(distDir, filePath).replace(/\\/g, '/');
+            const category = detectCategory(relPath);
+            const savings =
+              ((content.byteLength - brotliBuffer.byteLength) / content.byteLength) * 100;
 
-          const stat: AssetCompressionStat = {
-            relPath,
-            category,
-            origBytes: content.byteLength,
-            gzipBytes: gzipBuffer.byteLength,
-            brotliBytes: brotliBuffer.byteLength,
-            savingsPercent: savings
-          };
-          return stat;
-        } catch (err) {
-          console.warn(`[precompress] Failed to compress ${path.basename(filePath)}:`, (err as Error).message);
-          return null;
+            const stat: AssetCompressionStat = {
+              relPath,
+              category,
+              origBytes: content.byteLength,
+              gzipBytes: gzipBuffer.byteLength,
+              brotliBytes: brotliBuffer.byteLength,
+              savingsPercent: savings
+            };
+            return stat;
+          } catch (err) {
+            console.warn(
+              `[precompress] Failed to compress ${path.basename(filePath)}:`,
+              (err as Error).message
+            );
+            return null;
+          }
         }
-      });
+      );
 
       const stats = statsResults.filter((s): s is AssetCompressionStat => s !== null);
 

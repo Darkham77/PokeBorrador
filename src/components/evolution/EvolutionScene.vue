@@ -71,7 +71,7 @@ const auraStyles = computed(() => {
     '--flare-1-url': `url(${flare1Url})`,
     '--flare-2-url': `url(${flare2Url})`,
     '--aura-color-1': 'rgba(96, 165, 250, 0.75)', // Blue
-    '--aura-color-2': 'rgba(251, 191, 36, 0.75)'  // Gold
+    '--aura-color-2': 'rgba(251, 191, 36, 0.75)' // Gold
   };
 });
 
@@ -80,7 +80,7 @@ const cleanupTweens = () => {
     ctx.revert();
     ctx = null;
   }
-  activeTweens.forEach(t => t.kill());
+  activeTweens.forEach((t) => t.kill());
   activeTweens.length = 0;
 };
 
@@ -90,9 +90,13 @@ const initEvolution = () => {
   const toData = pokemonDataProvider.getPokemonData(evolutionStore.targetId);
   oldName.value = evolutionStore.sourcePokemon.name;
   newName.value = toData?.name || evolutionStore.targetId;
-  
-  fromSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.sourcePokemon.id, { isShiny: evolutionStore.sourcePokemon.isShiny });
-  toSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.targetId, { isShiny: evolutionStore.sourcePokemon.isShiny });
+
+  fromSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.sourcePokemon.id, {
+    isShiny: evolutionStore.sourcePokemon.isShiny
+  });
+  toSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.targetId, {
+    isShiny: evolutionStore.sourcePokemon.isShiny
+  });
 
   step.value = 'intro';
   flashesDone.value = 0;
@@ -113,17 +117,20 @@ onMounted(() => {
 });
 
 import { watch, onUnmounted } from 'vue';
-watch(() => evolutionStore.isEvolving, (newVal) => {
-  if (newVal) {
-    initEvolution();
-  } else {
-    if (timeline) {
-      timeline.kill();
-      timeline = null;
+watch(
+  () => evolutionStore.isEvolving,
+  (newVal) => {
+    if (newVal) {
+      initEvolution();
+    } else {
+      if (timeline) {
+        timeline.kill();
+        timeline = null;
+      }
+      cleanupTweens();
     }
-    cleanupTweens();
   }
-});
+);
 
 onUnmounted(() => {
   cleanupTweens();
@@ -139,7 +146,8 @@ const startSequence = () => {
       onComplete: () => {
         step.value = 'final';
         nextTick(() => {
-          gsap.fromTo('.result-text', 
+          gsap.fromTo(
+            '.result-text',
             { opacity: 0, y: EVOLUTION_RESULT_TEXT_Y_OFFSET_PX },
             { opacity: 1, y: 0, duration: EVOLUTION_RESULT_TEXT_DURATION_SEC, ease: 'power2.out' }
           );
@@ -151,16 +159,21 @@ const startSequence = () => {
     timeline.to({}, { duration: EVOLUTION_INTRO_DELAY_SEC });
 
     // 2. Flashing & Swapping Phase (Rapid sprite swap during flashes)
-    timeline.add(() => { step.value = 'flashing'; });
-    
+    timeline.add(() => {
+      step.value = 'flashing';
+    });
+
     for (let i = 0; i < FLASH_COUNT; i++) {
-      timeline.add(() => { 
-        flashesDone.value = i + 1; 
-        // Swap displayed sprite alternately as flashing progresses
-        if (i > EVOLUTION_FLASH_SPRITE_SWAP_THRESHOLD) {
-          currentShowingSprite.value = currentShowingSprite.value === 'from' ? 'to' : 'from';
-        }
-      }, `+=${Math.max(EVOLUTION_FLASH_MIN_DELAY_SEC, EVOLUTION_FLASH_BASE_DELAY_SEC - (i * EVOLUTION_FLASH_DECAY_RATE))}`);
+      timeline.add(
+        () => {
+          flashesDone.value = i + 1;
+          // Swap displayed sprite alternately as flashing progresses
+          if (i > EVOLUTION_FLASH_SPRITE_SWAP_THRESHOLD) {
+            currentShowingSprite.value = currentShowingSprite.value === 'from' ? 'to' : 'from';
+          }
+        },
+        `+=${Math.max(EVOLUTION_FLASH_MIN_DELAY_SEC, EVOLUTION_FLASH_BASE_DELAY_SEC - i * EVOLUTION_FLASH_DECAY_RATE)}`
+      );
     }
 
     // 3. Transformation & Sound
@@ -168,7 +181,7 @@ const startSequence = () => {
       evolutionStore.evolve();
       step.value = 'transformed';
       currentShowingSprite.value = 'to';
-      
+
       // Play evolved Pokémon cry
       if (evolutionStore.targetId) {
         gameBus.emit('PLAY_CRY', { name: evolutionStore.targetId });
@@ -176,9 +189,15 @@ const startSequence = () => {
     }, `+=${EVOLUTION_TRANSFORMED_DELAY_SEC}`);
 
     // 4. Glow Burst, Scale & Aura Activation
-    timeline.fromTo('.glow-bg', 
+    timeline.fromTo(
+      '.glow-bg',
       { scale: 1, opacity: 0.2 },
-      { scale: GSAP_BURST_SCALE, opacity: 0.8, duration: GSAP_BURST_DURATION_SEC, ease: `back.out(${EVOLUTION_BURST_EASE_OVERSHOOT})` },
+      {
+        scale: GSAP_BURST_SCALE,
+        opacity: 0.8,
+        duration: GSAP_BURST_DURATION_SEC,
+        ease: `back.out(${EVOLUTION_BURST_EASE_OVERSHOOT})`
+      },
       'transformed'
     );
 
@@ -186,18 +205,44 @@ const startSequence = () => {
       nextTick(() => {
         if (flare1Ref.value && flare2Ref.value) {
           // Rotaciones continuas en contra-fase
-          const rot1 = gsap.to(flare1Ref.value, { rotation: 360, duration: EVOLUTION_AURA_ROTATION_SEC, repeat: -1, ease: 'none' });
-          const rot2 = gsap.to(flare2Ref.value, { rotation: -360, duration: EVOLUTION_AURA_ROTATION_SEC, repeat: -1, ease: 'none' });
+          const rot1 = gsap.to(flare1Ref.value, {
+            rotation: 360,
+            duration: EVOLUTION_AURA_ROTATION_SEC,
+            repeat: -1,
+            ease: 'none'
+          });
+          const rot2 = gsap.to(flare2Ref.value, {
+            rotation: -360,
+            duration: EVOLUTION_AURA_ROTATION_SEC,
+            repeat: -1,
+            ease: 'none'
+          });
           activeTweens.push(rot1, rot2);
 
           // Efecto respiración de escalas
-          const scale1 = gsap.fromTo(flare1Ref.value,
+          const scale1 = gsap.fromTo(
+            flare1Ref.value,
             { scale: EVOLUTION_FLARE_INITIAL_SCALE, opacity: EVOLUTION_FLARE_INITIAL_OPACITY },
-            { scale: EVOLUTION_FLARE_MAX_SCALE, opacity: EVOLUTION_FLARE_MAX_OPACITY, duration: GSAP_AURA_SCALE_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+            {
+              scale: EVOLUTION_FLARE_MAX_SCALE,
+              opacity: EVOLUTION_FLARE_MAX_OPACITY,
+              duration: GSAP_AURA_SCALE_DURATION_SEC,
+              yoyo: true,
+              repeat: -1,
+              ease: 'sine.inOut'
+            }
           );
-          const scale2 = gsap.fromTo(flare2Ref.value,
+          const scale2 = gsap.fromTo(
+            flare2Ref.value,
             { scale: EVOLUTION_FLARE_MAX_SCALE, opacity: EVOLUTION_FLARE_MAX_OPACITY },
-            { scale: EVOLUTION_FLARE_INITIAL_SCALE, opacity: EVOLUTION_FLARE_INITIAL_OPACITY, duration: GSAP_AURA_SCALE_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+            {
+              scale: EVOLUTION_FLARE_INITIAL_SCALE,
+              opacity: EVOLUTION_FLARE_INITIAL_OPACITY,
+              duration: GSAP_AURA_SCALE_DURATION_SEC,
+              yoyo: true,
+              repeat: -1,
+              ease: 'sine.inOut'
+            }
           );
           activeTweens.push(scale1, scale2);
         }
@@ -209,11 +254,13 @@ const startSequence = () => {
       particlesRef.value.forEach((el) => {
         if (!el) return;
         const angle = Math.random() * Math.PI * 2;
-        const distance = EVOLUTION_PARTICLE_DIST_BASE + Math.random() * EVOLUTION_PARTICLE_DIST_RANGE;
+        const distance =
+          EVOLUTION_PARTICLE_DIST_BASE + Math.random() * EVOLUTION_PARTICLE_DIST_RANGE;
         const tx = Math.cos(angle) * distance;
         const ty = Math.sin(angle) * distance;
-        
-        gsap.fromTo(el,
+
+        gsap.fromTo(
+          el,
           { x: 0, y: 0, opacity: 1, scale: 1 },
           {
             x: tx,
@@ -251,29 +298,12 @@ const close = () => {
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="evolutionStore.isEvolving"
-      id="evolution-modal"
-      class="evolution-overlay"
-    >
-      <div 
-        ref="containerRef"
-        class="evolution-container"
-        :style="auraStyles"
-      >
+    <div v-if="evolutionStore.isEvolving" id="evolution-modal" class="evolution-overlay">
+      <div ref="containerRef" class="evolution-container" :style="auraStyles">
         <!-- Auras de destellos de fondo combinados detrás del Pokémon (flare 1 y 2) -->
-        <div
-          v-if="step === 'transformed' || step === 'final'"
-          class="auras-field"
-        >
-          <div
-            ref="flare2Ref"
-            class="aura-layer rare-aura"
-          />
-          <div
-            ref="flare1Ref"
-            class="aura-layer atmospheric-aura"
-          />
+        <div v-if="step === 'transformed' || step === 'final'" class="auras-field">
+          <div ref="flare2Ref" class="aura-layer rare-aura" />
+          <div ref="flare1Ref" class="aura-layer atmospheric-aura" />
         </div>
 
         <!-- Campo Dinámico de Partículas de Luz -->
@@ -312,5 +342,5 @@ const close = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_evolution-scene.scss" as *;
+@use '@/styles/components/_evolution-scene.scss' as *;
 </style>

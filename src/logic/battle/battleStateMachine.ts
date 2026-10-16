@@ -1,8 +1,7 @@
 import { ref } from 'vue';
 import { gsap } from 'gsap';
 import { logger } from '../utils/logger.ts';
-
-const MS_PER_SECOND = 1000;
+import { MILLISECONDS_PER_SECOND } from '@/logic/constants/visuals';
 
 export const BATTLE_STATES = {
   CONTEXT_SETUP: 'CONTEXT_SETUP',
@@ -16,7 +15,7 @@ export const BATTLE_STATES = {
   EXIT_BATTLE: 'EXIT_BATTLE'
 } as const;
 
-export type BattleStateName = typeof BATTLE_STATES[keyof typeof BATTLE_STATES];
+export type BattleStateName = (typeof BATTLE_STATES)[keyof typeof BATTLE_STATES];
 const BATTLE_STATES_SET: ReadonlySet<string> = new Set(Object.values(BATTLE_STATES)); // runtime-set: Fast O(1) membership lookup set
 
 function isBattleStateName(val: string): val is BattleStateName {
@@ -212,7 +211,7 @@ export const BATTLE_SUBSTATES = {
   OPEN_SWITCH_MENU: 'OPEN_SWITCH_MENU'
 } as const;
 
-export type BattleSubStateName = typeof BATTLE_SUBSTATES[keyof typeof BATTLE_SUBSTATES];
+export type BattleSubStateName = (typeof BATTLE_SUBSTATES)[keyof typeof BATTLE_SUBSTATES];
 const BATTLE_SUBSTATES_SET: ReadonlySet<string> = new Set(Object.values(BATTLE_SUBSTATES)); // runtime-set: Fast O(1) membership lookup set
 
 export function isBattleSubStateName(val: string): val is BattleSubStateName {
@@ -225,19 +224,66 @@ export function createBattleStateMachine() {
   let transitionCall: gsap.core.Animation | null = null;
 
   // Simple strict transitions check based on the Mermaid diagram.
+  // open-record: FSM state transition validation lookup table
   const validTransitions: Record<string, ReadonlySet<string>> = {
     [BATTLE_STATES.CONTEXT_SETUP]: new Set([BATTLE_STATES.INITIALIZING]),
-    [BATTLE_STATES.INITIALIZING]: new Set([BATTLE_STATES.CONTEXT_SETUP, BATTLE_STATES.FIRST_INTRO, BATTLE_STATES.SEARCH_PHASE]),
+    [BATTLE_STATES.INITIALIZING]: new Set([
+      BATTLE_STATES.CONTEXT_SETUP,
+      BATTLE_STATES.FIRST_INTRO,
+      BATTLE_STATES.SEARCH_PHASE
+    ]),
     [BATTLE_STATES.FIRST_INTRO]: new Set([BATTLE_STATES.ACTIVE_BATTLE, BATTLE_STATES.REORDER_TEAM]),
-    [BATTLE_STATES.SEARCH_PHASE]: new Set([BATTLE_STATES.ACTIVE_BATTLE, BATTLE_STATES.EXIT_BATTLE, BATTLE_STATES.INITIALIZING, BATTLE_STATES.FIRST_INTRO, BATTLE_STATES.REWARDS_PHASE]),
-    [BATTLE_STATES.ACTIVE_BATTLE]: new Set([BATTLE_STATES.REWARDS_PHASE, BATTLE_STATES.EXIT_BATTLE, BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ, BATTLE_STATES.LEVEL_UP_MODAL]), 
-    [BATTLE_STATES.REWARDS_PHASE]: new Set([BATTLE_STATES.REORDER_TEAM, BATTLE_STATES.SEARCH_PHASE, BATTLE_STATES.INITIALIZING, BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.EMPTY_WAIT, BATTLE_SUBSTATES.DISTRIBUTE_XP, BATTLE_STATES.LEVEL_UP_MODAL]),
-    [BATTLE_STATES.LEVEL_UP_MODAL]: new Set([BATTLE_STATES.REWARDS_PHASE, BATTLE_STATES.SEARCH_PHASE, BATTLE_STATES.INITIALIZING, BATTLE_STATES.ACTIVE_BATTLE]),
-    [BATTLE_STATES.REORDER_TEAM]: new Set([BATTLE_STATES.SEARCH_PHASE, BATTLE_STATES.INITIALIZING, BATTLE_STATES.ACTIVE_BATTLE, BATTLE_STATES.EXIT_BATTLE]),
+    [BATTLE_STATES.SEARCH_PHASE]: new Set([
+      BATTLE_STATES.ACTIVE_BATTLE,
+      BATTLE_STATES.EXIT_BATTLE,
+      BATTLE_STATES.INITIALIZING,
+      BATTLE_STATES.FIRST_INTRO,
+      BATTLE_STATES.REWARDS_PHASE
+    ]),
+    [BATTLE_STATES.ACTIVE_BATTLE]: new Set([
+      BATTLE_STATES.REWARDS_PHASE,
+      BATTLE_STATES.EXIT_BATTLE,
+      BATTLE_STATES.REORDER_TEAM,
+      BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ,
+      BATTLE_SUBSTATES.PLAYER_FAINT_SEQ,
+      BATTLE_STATES.LEVEL_UP_MODAL
+    ]),
+    [BATTLE_STATES.REWARDS_PHASE]: new Set([
+      BATTLE_STATES.REORDER_TEAM,
+      BATTLE_STATES.SEARCH_PHASE,
+      BATTLE_STATES.INITIALIZING,
+      BATTLE_STATES.EXIT_BATTLE,
+      BATTLE_SUBSTATES.EMPTY_WAIT,
+      BATTLE_SUBSTATES.DISTRIBUTE_XP,
+      BATTLE_STATES.LEVEL_UP_MODAL
+    ]),
+    [BATTLE_STATES.LEVEL_UP_MODAL]: new Set([
+      BATTLE_STATES.REWARDS_PHASE,
+      BATTLE_STATES.SEARCH_PHASE,
+      BATTLE_STATES.INITIALIZING,
+      BATTLE_STATES.ACTIVE_BATTLE
+    ]),
+    [BATTLE_STATES.REORDER_TEAM]: new Set([
+      BATTLE_STATES.SEARCH_PHASE,
+      BATTLE_STATES.INITIALIZING,
+      BATTLE_STATES.ACTIVE_BATTLE,
+      BATTLE_STATES.EXIT_BATTLE
+    ]),
     [BATTLE_SUBSTATES.ENEMY_DEFEAT]: new Set([BATTLE_STATES.REWARDS_PHASE]),
-    [BATTLE_SUBSTATES.PLAYER_FAINT_SEQ]: new Set([BATTLE_STATES.ACTIVE_BATTLE, BATTLE_STATES.EXIT_BATTLE]),
-    [BATTLE_SUBSTATES.ESCAPE_PROCESS]: new Set([BATTLE_STATES.REWARDS_PHASE, BATTLE_STATES.EXIT_BATTLE]),
-    [BATTLE_STATES.EXIT_BATTLE]: new Set([BATTLE_STATES.CONTEXT_SETUP, BATTLE_STATES.INITIALIZING, BATTLE_STATES.ACTIVE_BATTLE, BATTLE_STATES.SEARCH_PHASE])
+    [BATTLE_SUBSTATES.PLAYER_FAINT_SEQ]: new Set([
+      BATTLE_STATES.ACTIVE_BATTLE,
+      BATTLE_STATES.EXIT_BATTLE
+    ]),
+    [BATTLE_SUBSTATES.ESCAPE_PROCESS]: new Set([
+      BATTLE_STATES.REWARDS_PHASE,
+      BATTLE_STATES.EXIT_BATTLE
+    ]),
+    [BATTLE_STATES.EXIT_BATTLE]: new Set([
+      BATTLE_STATES.CONTEXT_SETUP,
+      BATTLE_STATES.INITIALIZING,
+      BATTLE_STATES.ACTIVE_BATTLE,
+      BATTLE_STATES.SEARCH_PHASE
+    ])
   };
 
   let pendingResolvers: PromiseWithResolvers<void> | null = null;
@@ -246,7 +292,11 @@ export function createBattleStateMachine() {
    * Translates to a specific state or substate.
    * If a delay is provided, returns a Promise that resolves when the transition happens.
    */
-  const transition = (newState: BattleStateName | BattleSubStateName, newSubState: BattleSubStateName | null = null, delayMs: number = 0): Promise<void> => {
+  const transition = (
+    newState: BattleStateName | BattleSubStateName,
+    newSubState: BattleSubStateName | null = null,
+    delayMs: number = 0
+  ): Promise<void> => {
     if (transitionCall) {
       transitionCall.kill();
       transitionCall = null;
@@ -265,7 +315,12 @@ export function createBattleStateMachine() {
       if (newState && isBattleStateName(newState)) {
         const isSameState = currentState.value === newState;
         const allowedTransitions = validTransitions[currentState.value];
-        if (!isSameState && allowedTransitions && !allowedTransitions.has(newState) && newState !== BATTLE_STATES.EXIT_BATTLE) {
+        if (
+          !isSameState &&
+          allowedTransitions &&
+          !allowedTransitions.has(newState) &&
+          newState !== BATTLE_STATES.EXIT_BATTLE
+        ) {
           logger.warn('FSM', `Unexpected transition: ${currentState.value} -> ${newState}`);
         }
         currentState.value = newState;
@@ -280,12 +335,15 @@ export function createBattleStateMachine() {
         currentSubState.value = null; // Only clear substate when transitioning between main phases
       }
 
-      logger.debug('Battle FSM', `Transitioned to ${currentState.value}${currentSubState.value ? ' (' + currentSubState.value + ')' : ''}`);
+      logger.debug(
+        'Battle FSM',
+        `Transitioned to ${currentState.value}${currentSubState.value ? ' (' + currentSubState.value + ')' : ''}`
+      );
       resolvers.resolve();
     };
 
     if (delayMs > 0) {
-      transitionCall = gsap.delayedCall(delayMs / MS_PER_SECOND, executeTransition);
+      transitionCall = gsap.delayedCall(delayMs / MILLISECONDS_PER_SECOND, executeTransition);
     } else {
       executeTransition();
     }

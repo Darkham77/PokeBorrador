@@ -26,12 +26,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "hyperbeam",
-        "hyperdrill",
-        "hyperspacefury",
-        "hyperspacehole"
-      ],
+      "moves": ["hyperbeam", "hyperdrill", "hyperspacefury", "hyperspacehole"],
       "uid": "cbd97877-5aaa-4197-9a8b-20f60a13ef09",
       "stats": {
         "maxHp": 342,
@@ -66,12 +61,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "hypervoice",
-        "hypnosis",
-        "icebeam",
-        "iceburn"
-      ],
+      "moves": ["hypervoice", "hypnosis", "icebeam", "iceburn"],
       "uid": "5e68183f-56d6-4019-b623-819f80510b42",
       "stats": {
         "maxHp": 342,
@@ -106,12 +96,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "icefang",
-        "icehammer",
-        "icepunch",
-        "iceshard"
-      ],
+      "moves": ["icefang", "icehammer", "icepunch", "iceshard"],
       "uid": "6f07dffb-f902-4f7c-8c98-a81f41db9319",
       "stats": {
         "maxHp": 342,
@@ -146,12 +131,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "icespinner",
-        "iciclecrash",
-        "iciclespear",
-        "icywind"
-      ],
+      "moves": ["icespinner", "iciclecrash", "iciclespear", "icywind"],
       "uid": "424c0312-3b11-4100-b5db-fe54d53b08fc",
       "stats": {
         "maxHp": 342,
@@ -186,12 +166,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "imprison",
-        "incinerate",
-        "infernalparade",
-        "inferno"
-      ],
+      "moves": ["imprison", "incinerate", "infernalparade", "inferno"],
       "uid": "8fd6b440-33a0-4b00-9e2c-739e6c0d59bb",
       "stats": {
         "maxHp": 342,
@@ -226,12 +201,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "infestation",
-        "ingrain",
-        "instruct",
-        "irondefense"
-      ],
+      "moves": ["infestation", "ingrain", "instruct", "irondefense"],
       "uid": "140a5962-3fda-4e51-963d-eaf3d670a229",
       "stats": {
         "maxHp": 342,
@@ -268,12 +238,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "292a5319-94e6-42be-b120-ff42af64a827",
       "stats": {
         "maxHp": 651,
@@ -308,12 +273,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "1d71e8c3-14b2-46f8-8289-7910f1a7e569",
       "stats": {
         "maxHp": 651,
@@ -348,12 +308,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "e235947e-8b34-4585-a5fd-5a95024477ee",
       "stats": {
         "maxHp": 651,
@@ -388,12 +343,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "2a31e376-9fb1-4efa-896b-831a529c45a6",
       "stats": {
         "maxHp": 651,
@@ -428,12 +378,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "9eae5e84-6466-4510-aa42-3e0e5d6e97ab",
       "stats": {
         "maxHp": 651,
@@ -468,12 +413,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "97bc9769-9576-4a1f-8824-84629562081b",
       "stats": {
         "maxHp": 651,
@@ -512,12 +452,7 @@
     "irondefense"
   ],
   "abilitiesToTest": [],
-  "seed": [
-    18588,
-    21544,
-    54523,
-    34263
-  ],
+  "seed": [18588, 21544, 54523, 34263],
   "playerChoices": [
     "move 1",
     "move 1",
@@ -713,9 +648,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 24,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1073,10 +1006,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 19,
-      "p1Volatiles": [
-        "twoturnmove",
-        "iceburn"
-      ],
+      "p1Volatiles": ["twoturnmove", "iceburn"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1240,9 +1170,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 23,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1631,9 +1559,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 20,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1729,9 +1655,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 16,
       "p2MovePp": 17,
-      "p1Volatiles": [
-        "imprison"
-      ],
+      "p1Volatiles": ["imprison"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1764,9 +1688,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 24,
       "p2MovePp": 16,
-      "p1Volatiles": [
-        "imprison"
-      ],
+      "p1Volatiles": ["imprison"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1800,9 +1722,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 24,
       "p2MovePp": 15,
-      "p1Volatiles": [
-        "imprison"
-      ],
+      "p1Volatiles": ["imprison"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1835,9 +1755,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 23,
-      "p1Volatiles": [
-        "imprison"
-      ],
+      "p1Volatiles": ["imprison"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1963,9 +1881,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 32,
       "p2MovePp": 20,
-      "p2Volatiles": [
-        "partiallytrapped"
-      ],
+      "p2Volatiles": ["partiallytrapped"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2091,9 +2007,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 32,
       "p2MovePp": 16,
-      "p1Volatiles": [
-        "ingrain"
-      ],
+      "p1Volatiles": ["ingrain"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2127,9 +2041,7 @@
       "p1MovePp": 24,
       "p2MovePp": 15,
       "p1Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
+      "p1Volatiles": ["ingrain"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -2165,9 +2077,7 @@
       "p1MovePp": 24,
       "p2MovePp": 13,
       "p1Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
+      "p1Volatiles": ["ingrain"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2202,12 +2112,8 @@
       "p1MovePp": 32,
       "p2MovePp": 12,
       "p1Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
-      "p2Volatiles": [
-        "partiallytrapped"
-      ],
+      "p1Volatiles": ["ingrain"],
+      "p2Volatiles": ["partiallytrapped"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2243,12 +2149,8 @@
       "p2MovePp": 11,
       "p1Trapped": true,
       "p2Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
-      "p2Volatiles": [
-        "partiallytrapped"
-      ],
+      "p1Volatiles": ["ingrain"],
+      "p2Volatiles": ["partiallytrapped"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2283,9 +2185,7 @@
       "p2MovePp": 11,
       "p1Trapped": true,
       "p2Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
+      "p1Volatiles": ["ingrain"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2304,9 +2204,7 @@
       "battleTurn": 49,
       "p1ActiveUid": "140a5962-3fda-4e51-963d-eaf3d670a229",
       "p2ActiveUid": "1d71e8c3-14b2-46f8-8289-7910f1a7e569",
-      "p1Volatiles": [
-        "ingrain"
-      ],
+      "p1Volatiles": ["ingrain"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2341,12 +2239,8 @@
       "p1MovePp": 29,
       "p2MovePp": 24,
       "p1Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
-      "p2Volatiles": [
-        "partiallytrapped"
-      ],
+      "p1Volatiles": ["ingrain"],
+      "p2Volatiles": ["partiallytrapped"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2381,12 +2275,8 @@
       "p2MovePp": 23,
       "p1Trapped": true,
       "p2Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
-      "p2Volatiles": [
-        "partiallytrapped"
-      ],
+      "p1Volatiles": ["ingrain"],
+      "p2Volatiles": ["partiallytrapped"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2421,12 +2311,8 @@
       "p2MovePp": 22,
       "p1Trapped": true,
       "p2Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
-      "p2Volatiles": [
-        "partiallytrapped"
-      ],
+      "p1Volatiles": ["ingrain"],
+      "p2Volatiles": ["partiallytrapped"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2461,12 +2347,8 @@
       "p2MovePp": 21,
       "p1Trapped": true,
       "p2Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
-      "p2Volatiles": [
-        "partiallytrapped"
-      ],
+      "p1Volatiles": ["ingrain"],
+      "p2Volatiles": ["partiallytrapped"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2501,12 +2383,8 @@
       "p2MovePp": 20,
       "p1Trapped": true,
       "p2Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
-      "p2Volatiles": [
-        "partiallytrapped"
-      ],
+      "p1Volatiles": ["ingrain"],
+      "p2Volatiles": ["partiallytrapped"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2543,9 +2421,7 @@
       "p2MovePp": 19,
       "p1Trapped": true,
       "p2Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
+      "p1Volatiles": ["ingrain"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2581,12 +2457,8 @@
       "p1MovePp": 24,
       "p2MovePp": 18,
       "p1Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
-      "p2Volatiles": [
-        "partiallytrapped"
-      ],
+      "p1Volatiles": ["ingrain"],
+      "p2Volatiles": ["partiallytrapped"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2622,9 +2494,7 @@
       "p2MovePp": 18,
       "p1Trapped": true,
       "p2Trapped": true,
-      "p1Volatiles": [
-        "ingrain"
-      ],
+      "p1Volatiles": ["ingrain"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2644,9 +2514,7 @@
       "battleTurn": 57,
       "p1ActiveUid": "140a5962-3fda-4e51-963d-eaf3d670a229",
       "p2ActiveUid": "e235947e-8b34-4585-a5fd-5a95024477ee",
-      "p1Volatiles": [
-        "ingrain"
-      ],
+      "p1Volatiles": ["ingrain"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -2949,10 +2817,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 17,
-      "p1Volatiles": [
-        "twoturnmove",
-        "iceburn"
-      ],
+      "p1Volatiles": ["twoturnmove", "iceburn"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -3021,10 +2886,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 7,
       "p2MovePp": 15,
-      "p1Volatiles": [
-        "twoturnmove",
-        "iceburn"
-      ],
+      "p1Volatiles": ["twoturnmove", "iceburn"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -3094,10 +2956,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 6,
       "p2MovePp": 13,
-      "p1Volatiles": [
-        "twoturnmove",
-        "iceburn"
-      ],
+      "p1Volatiles": ["twoturnmove", "iceburn"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -3513,9 +3372,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 22,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -3617,9 +3474,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 6,
       "p2MovePp": 20,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -3756,9 +3611,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 5,
       "p2MovePp": 17,
-      "p1Volatiles": [
-        "mustrecharge"
-      ],
+      "p1Volatiles": ["mustrecharge"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,

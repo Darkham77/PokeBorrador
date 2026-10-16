@@ -5,20 +5,35 @@ import { requireItemId, type ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { eggFactory } from '@/logic/breeding/eggFactory';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { calculateCloningCost, calculateCloningRerolls, calculateCloningShinyChance } from '@/logic/minigames/minigameMath';
+import {
+  calculateCloningCost,
+  calculateCloningRerolls,
+  calculateCloningShinyChance
+} from '@/logic/minigames/minigameMath';
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
 import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { Ref } from 'vue';
 import type { DaycareEgg } from '@/types/breeding/breeding';
 import { NATURES } from '@/data/battle/natures';
-import { BREEDING_COST_LOWEST_TIER, BREEDING_COST_MID_LOW_TIER, BREEDING_COST_MID_HIGH_TIER, BREEDING_COST_MAXIMUM_TIER, BREEDING_TIER_1_MAX_PERFECT_IVS, BREEDING_TIER_2_MAX_PERFECT_IVS, BREEDING_TIER_3_MAX_PERFECT_IVS, EGG_WAREHOUSE_MAX_CAPACITY, FOSSIL_CLONE_BASE_SUCCESS_CHANCE, MAX_SINGLE_STAT_IV } from '@/logic/constants/gameplay.ts';
+import {
+  BREEDING_COST_LOWEST_TIER,
+  BREEDING_COST_MID_LOW_TIER,
+  BREEDING_COST_MID_HIGH_TIER,
+  BREEDING_COST_MAXIMUM_TIER,
+  BREEDING_TIER_1_MAX_PERFECT_IVS,
+  BREEDING_TIER_2_MAX_PERFECT_IVS,
+  BREEDING_TIER_3_MAX_PERFECT_IVS,
+  EGG_WAREHOUSE_MAX_CAPACITY,
+  FOSSIL_CLONE_BASE_SUCCESS_CHANCE,
+  MAX_SINGLE_STAT_IV
+} from '@/logic/constants/gameplay.ts';
 
 export function calculateBreedingCost(pA: Pokemon, pB: Pokemon): number {
-  const NEAR_PERFECT_IV_MIN = MAX_SINGLE_STAT_IV - 1
+  const NEAR_PERFECT_IV_MIN = MAX_SINGLE_STAT_IV - 1;
   const countPerfect = (p: Pokemon) => {
     if (!p.ivs) return 0;
-    return Object.values(p.ivs).filter(val => val >= NEAR_PERFECT_IV_MIN).length;
+    return Object.values(p.ivs).filter((val) => val >= NEAR_PERFECT_IV_MIN).length;
   };
   const totalPerfect = countPerfect(pA) + countPerfect(pB);
   if (totalPerfect <= BREEDING_TIER_1_MAX_PERFECT_IVS) return BREEDING_COST_LOWEST_TIER;
@@ -46,13 +61,19 @@ export function executeCloneFossil(
   const requiredFossils = 1 + extraQty;
 
   if (count < requiredFossils) {
-    uiStore.notify(`No tienes suficientes fósiles. Requieres ${requiredFossils} y tienes ${count}.`, '❌');
+    uiStore.notify(
+      `No tienes suficientes fósiles. Requieres ${requiredFossils} y tienes ${count}.`,
+      '❌'
+    );
     return false;
   }
 
   const totalCost = calculateCloningCost(extraQty);
   if (gameStore.state.money < totalCost) {
-    uiStore.notify(`No tienes suficiente dinero. Requieres ₽${totalCost.toLocaleString()} y tienes ₽${gameStore.state.money.toLocaleString()}.`, '💰');
+    uiStore.notify(
+      `No tienes suficiente dinero. Requieres ₽${totalCost.toLocaleString()} y tienes ₽${gameStore.state.money.toLocaleString()}.`,
+      '💰'
+    );
     return false;
   }
 
@@ -61,7 +82,7 @@ export function executeCloneFossil(
     helixfossil: 'omanyte',
     oldamber: 'aerodactyl'
   };
-  
+
   const validFossilId = requireItemId(fossilId);
   const speciesId = FOSSIL_SPECIES_MAP[validFossilId];
   if (!speciesId) {
@@ -79,7 +100,7 @@ export function executeCloneFossil(
 
   if (!isSuccess) {
     uiStore.notify('La extracción de ADN del fósil ha fallado.', '⚠️');
-    gameStore.scheduleSave();
+    void gameStore.scheduleSave();
     return false;
   }
 
@@ -117,7 +138,10 @@ export function executeCloneFossil(
   warehouseEggs.value.push(egg);
   saveWarehouseEggs();
 
-  uiStore.notify(`¡Clonación exitosa! Huevo Ancestral de ${POKEMON_DB[speciesId]?.name} creado.`, '🥚');
-  gameStore.scheduleSave();
+  uiStore.notify(
+    `¡Clonación exitosa! Huevo Ancestral de ${POKEMON_DB[speciesId]?.name} creado.`,
+    '🥚'
+  );
+  void gameStore.scheduleSave();
   return true;
 }

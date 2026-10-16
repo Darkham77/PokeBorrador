@@ -5,7 +5,7 @@ import type { WeatherId } from '@/logic/weather/weatherRegistry';
 
 export const ARCHAEOLOGY_CAVE_BASE_WEIGHT = 10;
 export const ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT = 5;
-const RAINY_FISHING_CLIMATE_MULTIPLIER = 1.20;
+const RAINY_FISHING_CLIMATE_MULTIPLIER = 1.2;
 export const EQUIPPED_TOOL_WEIGHT_BONUS = 600;
 export const BASE_GROUND_WEIGHT = 100;
 const FISHING_WEIGHT_RATIO_MULTIPLIER = 100;
@@ -34,7 +34,9 @@ export interface RouteSpawnWeights {
 
 const RAINY_WEATHERS = ['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const;
 type RainyWeather = (typeof RAINY_WEATHERS)[number];
-const SPAWN_CALC_RAINY_WEATHERS_SET: ReadonlySet<RainyWeather> = new Set<RainyWeather>(RAINY_WEATHERS); // runtime-set: Fast O(1) membership lookup set
+const SPAWN_CALC_RAINY_WEATHERS_SET: ReadonlySet<RainyWeather> = new Set<RainyWeather>(
+  RAINY_WEATHERS
+); // runtime-set: Fast O(1) membership lookup set
 
 export interface FishingWeightOptions {
   hasFishing: boolean;
@@ -43,7 +45,10 @@ export interface FishingWeightOptions {
   eventFishingBonus?: number;
 }
 
-export function calculateFishingWeight(options: FishingWeightOptions): { active: number; base: number } {
+export function calculateFishingWeight(options: FishingWeightOptions): {
+  active: number;
+  base: number;
+} {
   const { hasFishing, weather, hasFishingRod, eventFishingBonus = 1 } = options;
   if (!hasFishing) {
     return { active: 0, base: 0 };
@@ -69,13 +74,20 @@ export interface ArchaeologyWeightOptions {
   hasPickaxeOrBrush: boolean;
 }
 
-export function calculateArchaeologyWeight(options: ArchaeologyWeightOptions): { active: number; base: number } {
+export function calculateArchaeologyWeight(options: ArchaeologyWeightOptions): {
+  active: number;
+  base: number;
+} {
   const { hasArchaeology, isCave, isMountain, hasPickaxeOrBrush } = options;
   if (!hasArchaeology) {
     return { active: 0, base: 0 };
   }
 
-  const base = isCave ? ARCHAEOLOGY_CAVE_BASE_WEIGHT : (isMountain ? ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT : 0);
+  const base = isCave
+    ? ARCHAEOLOGY_CAVE_BASE_WEIGHT
+    : isMountain
+      ? ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT
+      : 0;
   let active = base;
   if (hasPickaxeOrBrush) {
     active += EQUIPPED_TOOL_WEIGHT_BONUS;
@@ -120,11 +132,12 @@ export function computeActiveWeights(
     baseGround: groundWeight,
     baseFishing: baseFishingWeight,
     baseArchaeology: baseArchWeight,
-    baseTotal: groundWeight + baseFishingWeight + baseArchWeight,
+    baseTotal: groundWeight + baseFishingWeight + baseArchWeight
   };
 }
 
 const SPANISH_TYPE_ENTRIES = Object.entries(TYPE_TRANSLATIONS) as [PokemonType, string][];
+// open-record: Spanish type name mapping to PokemonType
 const SPANISH_TYPE_MAP: Record<string, PokemonType> = Object.fromEntries([
   ...SPANISH_TYPE_ENTRIES.map(([eng, esp]) => [esp.toLowerCase(), eng]), // text-ok: UI text display localization string
   ['electrico', 'electric'],
@@ -132,7 +145,8 @@ const SPANISH_TYPE_MAP: Record<string, PokemonType> = Object.fromEntries([
   ['psiquico', 'psychic']
 ]);
 
-const SPANISH_TYPES_REGEX = /\b(normal|fuego|agua|planta|eléctrico|electrico|hielo|lucha|veneno|tierra|volador|psíquico|psiquico|bicho|roca|fantasma|dragón|dragon|siniestro|acero|hada)\b/gi;
+const SPANISH_TYPES_REGEX =
+  /\b(normal|fuego|agua|planta|eléctrico|electrico|hielo|lucha|veneno|tierra|volador|psíquico|psiquico|bicho|roca|fantasma|dragón|dragon|siniestro|acero|hada)\b/gi;
 
 interface WeatherLinePrefix {
   typeClass: string;
@@ -151,19 +165,44 @@ function detectWeatherLinePrefix(sentence: string): WeatherLinePrefix {
   const lowerSentence = sentence.toLowerCase(); // text-ok: UI text display localization string
 
   if (lowerSentence.startsWith(PREFIX_POTENCIA)) {
-    return { typeClass: 'boost', icon: '▲ ', label: 'POTENCIA:', restOfSentence: sentence.substring(PREFIX_POTENCIA.length).trim() };
+    return {
+      typeClass: 'boost',
+      icon: '▲ ',
+      label: 'POTENCIA:',
+      restOfSentence: sentence.substring(PREFIX_POTENCIA.length).trim()
+    };
   }
   if (lowerSentence.startsWith(PREFIX_DEBILITA)) {
-    return { typeClass: 'debuff', icon: '▼ ', label: 'DEBILITA:', restOfSentence: sentence.substring(PREFIX_DEBILITA.length).trim() };
+    return {
+      typeClass: 'debuff',
+      icon: '▼ ',
+      label: 'DEBILITA:',
+      restOfSentence: sentence.substring(PREFIX_DEBILITA.length).trim()
+    };
   }
   if (lowerSentence.startsWith(PREFIX_PENALIZA)) {
-    return { typeClass: 'debuff', icon: '▼ ', label: 'PENALIZA:', restOfSentence: sentence.substring(PREFIX_PENALIZA.length).trim() };
+    return {
+      typeClass: 'debuff',
+      icon: '▼ ',
+      label: 'PENALIZA:',
+      restOfSentence: sentence.substring(PREFIX_PENALIZA.length).trim()
+    };
   }
   if (lowerSentence.startsWith(PREFIX_BLOQUEA)) {
-    return { typeClass: 'block', icon: 'block', label: 'BLOQUEA:', restOfSentence: sentence.substring(PREFIX_BLOQUEA.length).trim() };
+    return {
+      typeClass: 'block',
+      icon: 'block',
+      label: 'BLOQUEA:',
+      restOfSentence: sentence.substring(PREFIX_BLOQUEA.length).trim()
+    };
   }
   if (lowerSentence.startsWith(PREFIX_EFECTO)) {
-    return { typeClass: 'effect', icon: '⚡ ', label: 'EFECTO:', restOfSentence: sentence.substring(PREFIX_EFECTO.length).trim() };
+    return {
+      typeClass: 'effect',
+      icon: '⚡ ',
+      label: 'EFECTO:',
+      restOfSentence: sentence.substring(PREFIX_EFECTO.length).trim()
+    };
   }
 
   return { typeClass: '', icon: '', label: '', restOfSentence: sentence };
@@ -179,19 +218,22 @@ export interface ParsedWeatherDescriptionLine {
 export function parseWeatherDescription(desc: string): ParsedWeatherDescriptionLine[] {
   if (!desc) return [];
 
-  const sentences = desc.split(/\n|\.\s+/).map(s => s.trim()).filter(Boolean);
-  return sentences.map(sentence => {
+  const sentences = desc
+    .split(/\n|\.\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return sentences.map((sentence) => {
     const currentSentence = sentence.replace(/^[▲▼•]\s*/u, '').trim();
     const { typeClass, icon, label, restOfSentence } = detectWeatherLinePrefix(currentSentence);
 
     const parts = restOfSentence.split(SPANISH_TYPES_REGEX);
-    const segments = parts.filter(Boolean).map(part => {
+    const segments = parts.filter(Boolean).map((part) => {
       const lower = part.toLowerCase(); // text-ok: UI text display localization string
       const typeKey = SPANISH_TYPE_MAP[lower];
       return {
         text: part,
         isType: Boolean(typeKey),
-        type: typeKey ?? '',
+        type: typeKey ?? ''
       };
     });
 

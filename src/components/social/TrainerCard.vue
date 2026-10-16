@@ -1,59 +1,65 @@
 <script setup lang="ts">
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import { formatPlayerClass } from '@/logic/utils/formatters'
-import { resolveFactionColor, resolveFactionLabel } from '@/components/modals/trainerProfileResolver'
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import { formatPlayerClass } from '@/logic/utils/formatters';
+import {
+  resolveFactionColor,
+  resolveFactionLabel
+} from '@/components/modals/trainerProfileResolver';
 
 interface ProfileData {
-  id: string
-  username: string
-  level: number
-  playerClass?: string | null
-  faction?: string | null
-  nick_style?: string | null
-  avatar_style?: string | null
-  gender?: string | null
-  avatarFrame?: string | null
-  avatarDecor?: string | null
+  id: string;
+  username: string;
+  level: number;
+  playerClass?: string | null;
+  faction?: string | null;
+  nick_style?: string | null;
+  avatar_style?: string | null;
+  gender?: string | null;
+  avatarFrame?: string | null;
+  avatarDecor?: string | null;
 }
 
-const DEFAULT_TRAINER_AVATAR_SIZE_PX = 40
+const DEFAULT_TRAINER_AVATAR_SIZE_PX = 40;
 
-const _TRAINER_CARD_VARIANTS = ['normal', 'pending'] as const
-type TrainerCardVariant = (typeof _TRAINER_CARD_VARIANTS)[number]
+const _TRAINER_CARD_VARIANTS = ['normal', 'pending'] as const;
+type TrainerCardVariant = (typeof _TRAINER_CARD_VARIANTS)[number];
 
-const props = withDefaults(defineProps<{
-  profile: ProfileData
-  avatarSize?: number
-  variant?: TrainerCardVariant
-}>(), {
-  avatarSize: DEFAULT_TRAINER_AVATAR_SIZE_PX,
-  variant: 'normal'
-})
+const props = withDefaults(
+  defineProps<{
+    profile: ProfileData;
+    avatarSize?: number;
+    variant?: TrainerCardVariant;
+  }>(),
+  {
+    avatarSize: DEFAULT_TRAINER_AVATAR_SIZE_PX,
+    variant: 'normal'
+  }
+);
 
 const emit = defineEmits<{
-  (e: 'click-profile', userId: string): void
-}>()
+  (e: 'click-profile', userId: string): void;
+}>();
 
 function onClickProfile() {
-  emit('click-profile', props.profile.id)
+  emit('click-profile', props.profile.id);
 }
 
 function hasValidFaction(faction?: string | null): boolean {
-  if (!faction) return false
-  const clean = faction.trim().toLowerCase()
-  return clean !== '' && clean !== 'null' && clean !== 'undefined' && clean !== 'sin bando'
+  if (!faction) return false;
+  const clean = faction.trim().toLowerCase();
+  return clean !== '' && clean !== 'null' && clean !== 'undefined' && clean !== 'sin bando';
 }
 
 function getFactionColor(faction?: string | null): string {
-  return resolveFactionColor(faction)
+  return resolveFactionColor(faction);
 }
 
 function getFactionLabel(faction?: string | null): string {
-  const clean = faction?.trim().toLowerCase() || ''
-  if (clean === 'poder') return 'PODER'
-  if (clean === 'union') return 'UNIÓN'
-  if (clean === 'rocket') return 'ROCKET'
-  return resolveFactionLabel(faction).toUpperCase()
+  const clean = faction?.trim().toLowerCase() || '';
+  if (clean === 'poder') return 'PODER';
+  if (clean === 'union') return 'UNIÓN';
+  if (clean === 'rocket') return 'ROCKET';
+  return resolveFactionLabel(faction).toUpperCase();
 }
 </script>
 
@@ -62,6 +68,8 @@ function getFactionLabel(faction?: string | null): string {
     id="trainer-card-div-1"
     class="trainer-card"
     :class="variant"
+    role="button"
+    tabindex="0"
     @click.stop="onClickProfile"
   >
     <div class="trainer-main">
@@ -72,10 +80,7 @@ function getFactionLabel(faction?: string | null): string {
         class="clickable-avatar"
         @click.stop="onClickProfile"
       >
-        <template
-          v-if="$slots['avatar-overlay']"
-          #overlay
-        >
+        <template v-if="$slots['avatar-overlay']" #overlay>
           <slot name="avatar-overlay" />
         </template>
       </TrainerAvatar>
@@ -106,18 +111,14 @@ function getFactionLabel(faction?: string | null): string {
       </div>
     </div>
 
-    <div
-      v-if="$slots.actions"
-      class="trainer-actions"
-      @click.stop
-    >
+    <div v-if="$slots.actions" class="trainer-actions" @click.stop>
       <slot name="actions" />
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .trainer-name-row {
   display: flex;
@@ -148,7 +149,6 @@ function getFactionLabel(faction?: string | null): string {
   border-style: solid;
   box-sizing: border-box;
   cursor: pointer;
-
 
   &.normal {
     background: Rgb(255 255 255 / 3%);

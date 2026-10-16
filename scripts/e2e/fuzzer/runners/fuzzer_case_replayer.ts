@@ -1,9 +1,15 @@
 import type { PokemonSet } from '@pkmn/sim';
 import type { CertifiedBattleCase } from '../generators/fuzzer_team_generator.ts';
 import { loadCertifiedBattleCases } from '../../helpers/certifiedCaseLoader.ts';
-import { statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
+import {
+  statsMap,
+  patchShowdownSpreadModify
+} from '../../../../src/logic/battle/engine/showdownSpreadModifyHelper.ts';
 import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
-import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
+import {
+  ShowdownTeamMapper,
+  type CustomPokemonSet
+} from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import { ShowdownBattleRunner } from '../../../../src/logic/battle/helpers/showdownBattleRunner.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../../src/data/system/constants.ts';
@@ -22,13 +28,14 @@ interface ExtendedPokemon {
   status: string;
 }
 
-
 const caseId = process.env.TEST_CASE_ID;
 const seedStr = process.env.TEST_SEED;
 
 if (!caseId && !seedStr) {
   console.error('Error: Please specify TEST_CASE_ID or TEST_SEED.');
-  console.error('Usage: TEST_CASE_ID=case-944b8c168fc4 npx tsx scripts/e2e/fuzzer/runners/fuzzer_case_replayer.ts');
+  console.error(
+    'Usage: TEST_CASE_ID=case-944b8c168fc4 npx tsx scripts/e2e/fuzzer/runners/fuzzer_case_replayer.ts'
+  );
   process.exit(1);
 }
 
@@ -39,10 +46,7 @@ let match: CertifiedBattleCase | null = null;
 
 if (caseId) {
   const casesList = loadCertifiedBattleCases('battle') as CertifiedBattleCase[];
-  match = casesList.find((c) => 
-    (c.seed && c.seed.join(',') === caseId) || 
-    c.id === caseId
-  ) || null;
+  match = casesList.find((c) => (c.seed && c.seed.join(',') === caseId) || c.id === caseId) || null;
   if (!match) {
     console.error(`Error: Case "${caseId}" not found in certified fuzzer cases.`);
     process.exit(1);
@@ -86,7 +90,9 @@ enemyTeam.forEach((e, idx: number) => {
 ShowdownLogEnricher.enrichRetroactiveLeads(battle);
 
 if (!match) {
-  console.error('Error: Replay mode requires a certified fuzzer case with playerChoices and enemyChoices.');
+  console.error(
+    'Error: Replay mode requires a certified fuzzer case with playerChoices and enemyChoices.'
+  );
   process.exit(1);
 }
 
@@ -101,11 +107,11 @@ for (let historyIndex = 0; historyIndex < match.history.length; historyIndex++) 
     break;
   }
   turn++;
-  
 
   const prevLogLen = battle.log.length;
 
-  const { executeBattleTurn } = await import('../../../../src/logic/battle/helpers/showdownExecutor.ts');
+  const { executeBattleTurn } =
+    await import('../../../../src/logic/battle/helpers/showdownExecutor.ts');
   const res = executeBattleTurn({
     battle,
     p1Choice: step.p1Choice,
@@ -117,7 +123,9 @@ for (let historyIndex = 0; historyIndex < match.history.length; historyIndex++) 
 
   const newLogs = battle.log.slice(prevLogLen);
 
-  console.log(`[Turn ${turn}] Certified step: ${JSON.stringify({ p1Choice: step.p1Choice, p2Choice: step.p2Choice, battleTurn: step.battleTurn, weather: step.weather, terrain: step.terrain })} | Accepted: ${JSON.stringify(res)}`);
+  console.log(
+    `[Turn ${turn}] Certified step: ${JSON.stringify({ p1Choice: step.p1Choice, p2Choice: step.p2Choice, battleTurn: step.battleTurn, weather: step.weather, terrain: step.terrain })} | Accepted: ${JSON.stringify(res)}`
+  );
   for (const side of battle.sides) {
     if (!side) continue;
     const activeMon = side.active?.[0] as ExtendedPokemon | undefined;
@@ -125,12 +133,13 @@ for (let historyIndex = 0; historyIndex < match.history.length; historyIndex++) 
     const expectedStatus = side.id === 'p1' ? step.p1Status : step.p2Status;
     const expectedTrapped = side.id === 'p1' ? step.p1Trapped : step.p2Trapped;
     const isTrapped = Boolean(Reflect.get(activeMon || {}, 'trapped'));
-    console.log(`[Turn ${turn}] Side ${side.id} Active: ${activeMon?.name ?? 'None'} (UID: ${activeMon?.uid ?? 'N/A'}${expectedUid ? ` [Exp: ${expectedUid}]` : ''}, HP: ${activeMon?.hp ?? 0}/${activeMon?.maxhp ?? 0}, status: ${activeMon?.status || 'none'}${expectedStatus ? ` [Exp: ${expectedStatus}]` : ''}, trapped: ${isTrapped}${expectedTrapped !== undefined ? ` [Exp: ${expectedTrapped}]` : ''}, fainted: ${activeMon?.fainted ?? true})`);
+    console.log(
+      `[Turn ${turn}] Side ${side.id} Active: ${activeMon?.name ?? 'None'} (UID: ${activeMon?.uid ?? 'N/A'}${expectedUid ? ` [Exp: ${expectedUid}]` : ''}, HP: ${activeMon?.hp ?? 0}/${activeMon?.maxhp ?? 0}, status: ${activeMon?.status || 'none'}${expectedStatus ? ` [Exp: ${expectedStatus}]` : ''}, trapped: ${isTrapped}${expectedTrapped !== undefined ? ` [Exp: ${expectedTrapped}]` : ''}, fainted: ${activeMon?.fainted ?? true})`
+    );
   }
 
   console.log('  Logs:');
-  newLogs.forEach(line => console.log(`    ${line}`));
-
+  newLogs.forEach((line) => console.log(`    ${line}`));
 }
 
 console.log(`\n========================================`);
@@ -143,27 +152,49 @@ if (match.finalState) {
   const actualEnded = battle.ended;
   if (actualEnded && finalState.winner !== undefined && finalState.winner !== null) {
     const rawExp = String(finalState.winner);
-    const expectedSeat = (rawExp === 'p1' || rawExp.startsWith('P-') || rawExp === battle.p1.name)
-      ? 'p1'
-      : ((rawExp === 'p2' || rawExp.startsWith('E-') || rawExp === battle.p2.name) ? 'p2' : rawExp);
-    const actualSeat = battle.winner === battle.p1.name ? 'p1' : (battle.winner === battle.p2.name ? 'p2' : (battle.winner === '' ? 'tie' : battle.winner));
+    const expectedSeat =
+      rawExp === 'p1' || rawExp.startsWith('P-') || rawExp === battle.p1.name
+        ? 'p1'
+        : rawExp === 'p2' || rawExp.startsWith('E-') || rawExp === battle.p2.name
+          ? 'p2'
+          : rawExp;
+    const actualSeat =
+      battle.winner === battle.p1.name
+        ? 'p1'
+        : battle.winner === battle.p2.name
+          ? 'p2'
+          : battle.winner === ''
+            ? 'tie'
+            : battle.winner;
     if (expectedSeat !== actualSeat) {
-      throw new Error(`[REPLAY-PARITY-FAILURE] Mismatch in battle winner! Expected winner=${finalState.winner} (${expectedSeat}), but replay actual winner=${battle.winner} (${actualSeat})`);
+      throw new Error(
+        `[REPLAY-PARITY-FAILURE] Mismatch in battle winner! Expected winner=${finalState.winner} (${expectedSeat}), but replay actual winner=${battle.winner} (${actualSeat})`
+      );
     }
   }
   if (Array.isArray(finalState.p1)) {
     (finalState.p1 as Array<{ hp: number; fainted: boolean }>).forEach((expectedMon, idx) => {
       const actualMon = battle.p1.pokemon[idx];
-      if (actualMon && (actualMon.hp !== expectedMon.hp || actualMon.fainted !== expectedMon.fainted)) {
-        throw new Error(`[REPLAY-PARITY-FAILURE] P1 Slot ${idx} mismatch! Expected HP=${expectedMon.hp}/fnt=${expectedMon.fainted}, Actual HP=${actualMon.hp}/fnt=${actualMon.fainted}`);
+      if (
+        actualMon &&
+        (actualMon.hp !== expectedMon.hp || actualMon.fainted !== expectedMon.fainted)
+      ) {
+        throw new Error(
+          `[REPLAY-PARITY-FAILURE] P1 Slot ${idx} mismatch! Expected HP=${expectedMon.hp}/fnt=${expectedMon.fainted}, Actual HP=${actualMon.hp}/fnt=${actualMon.fainted}`
+        );
       }
     });
   }
   if (Array.isArray(finalState.p2)) {
     (finalState.p2 as Array<{ hp: number; fainted: boolean }>).forEach((expectedMon, idx) => {
       const actualMon = battle.p2.pokemon[idx];
-      if (actualMon && (actualMon.hp !== expectedMon.hp || actualMon.fainted !== expectedMon.fainted)) {
-        throw new Error(`[REPLAY-PARITY-FAILURE] P2 Slot ${idx} mismatch! Expected HP=${expectedMon.hp}/fnt=${expectedMon.fainted}, Actual HP=${actualMon.hp}/fnt=${actualMon.fainted}`);
+      if (
+        actualMon &&
+        (actualMon.hp !== expectedMon.hp || actualMon.fainted !== expectedMon.fainted)
+      ) {
+        throw new Error(
+          `[REPLAY-PARITY-FAILURE] P2 Slot ${idx} mismatch! Expected HP=${expectedMon.hp}/fnt=${expectedMon.fainted}, Actual HP=${actualMon.hp}/fnt=${actualMon.fainted}`
+        );
       }
     });
   }

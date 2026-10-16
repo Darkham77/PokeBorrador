@@ -11,7 +11,7 @@ There are strictly two canonical factions in Poké Vicio (`FACTION_IDS` in `src/
 - **Union (`'union'`)**: Loyal to the Pokémon League, cooperation, and regional order.
 - **Poder (`'poder'`)**: Seek strength and dominance above all else.
 
-*(Note: Rocket is a specialized player class (`PlayerClassId: 'rocket'`), not a war faction).*
+_(Note: Rocket is a specialized player class (`PlayerClassId: 'rocket'`), not a war faction)._
 
 ### 2. Changing Factions
 

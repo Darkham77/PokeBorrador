@@ -13,7 +13,10 @@ html {
 }
 
 // Reset nativo estricto para erradicar bordes 3D outset y líneas descolgadas
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font-family: var(--font-pixel) !important;
   font-size: inherit;
   line-height: inherit;
@@ -37,9 +40,7 @@ body {
   overscroll-behavior: auto !important;
   overscroll-behavior-y: auto !important;
   background-color: var(--color-body-bg);
-  background-image: 
-    var(--body-overlay),
-    url('/assets/fondo/WALLPAPER.webp');
+  background-image: var(--body-overlay), url('/assets/fondo/WALLPAPER.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -63,13 +64,17 @@ body {
 
 ::-webkit-scrollbar-track {
   background: var(--color-surface-sunken, #0a0e17);
-  box-shadow: inset 1px 1px 0 Rgba(0, 0, 0, 0.8), inset -1px -1px 0 Rgba(255, 255, 255, 0.05);
+  box-shadow:
+    inset 1px 1px 0 Rgba(0, 0, 0, 0.8),
+    inset -1px -1px 0 Rgba(255, 255, 255, 0.05);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-control-border, #384666);
   border: 2px solid var(--color-surface-sunken, #0a0e17);
-  box-shadow: inset 1px 1px 0 Rgba(255, 255, 255, 0.25), inset -1px -1px 0 Rgba(0, 0, 0, 0.5);
+  box-shadow:
+    inset 1px 1px 0 Rgba(255, 255, 255, 0.25),
+    inset -1px -1px 0 Rgba(0, 0, 0, 0.5);
 
   &:hover {
     background: var(--color-accent-blue, #0a84ff);
@@ -114,15 +119,19 @@ body {
 }
 
 .text-outline {
-  text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+  text-shadow:
+    1px 1px 0 #000000,
+    -1px -1px 0 #000000,
+    1px -1px 0 #000000,
+    -1px 1px 0 #000000;
 }
 
 // REGLA PRIMARIA OBLIGATORIA: TODA FUENTE BLANCA LLEVA BORDE NEGRO 360°
 .text-white,
 .is-white,
-[style*="color: white"],
-[style*="color: #fff"],
-[style*="color: #ffffff"],
+[style*='color: white'],
+[style*='color: #fff'],
+[style*='color: #ffffff'],
 .pv-btn,
 .pv-type-pill,
 .pv-status-badge,
@@ -138,5 +147,9 @@ body {
 .m-badge-tot,
 .m-badge-level,
 .m-badge-iv {
-  text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+  text-shadow:
+    1px 1px 0 #000000,
+    -1px -1px 0 #000000,
+    1px -1px 0 #000000,
+    -1px 1px 0 #000000;
 }

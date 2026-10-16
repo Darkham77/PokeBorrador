@@ -13,7 +13,9 @@ export function auditPlaywrightActionability(testsDir: string): ActionabilityRes
   const forcedClickFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(testsDir)) return { forcedClickFiles };
 
-  const files = getFilesRecursively(testsDir).filter(f => f.endsWith('.ts') || f.endsWith('.spec.ts'));
+  const files = getFilesRecursively(testsDir).filter(
+    (f) => f.endsWith('.ts') || f.endsWith('.spec.ts')
+  );
 
   for (const file of files) {
     const content = readFileSync(file, 'utf-8');

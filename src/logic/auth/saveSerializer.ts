@@ -15,7 +15,7 @@ function serializeMapData(map: (GameState | SaveDataDto)['map']): SaveDataDto['m
   return {
     currentMap: map?.currentMap ?? 'route1',
     region: map?.region ?? 'kanto',
-    lastNavigateAt: map?.lastNavigateAt ?? 0,
+    lastNavigateAt: map?.lastNavigateAt ?? 0
   };
 }
 
@@ -25,7 +25,7 @@ function serializeTicketBuffs(state: GameState | SaveDataDto) {
     ceruleanTicketSecs: state.ceruleanTicketSecs ?? 0,
     articunoTicketSecs: state.articunoTicketSecs ?? 0,
     mewtwoTicketSecs: state.mewtwoTicketSecs ?? 0,
-    repelSecs: state.repelSecs ?? 0,
+    repelSecs: state.repelSecs ?? 0
   };
 }
 
@@ -38,7 +38,7 @@ function serializeToolBuffs(state: GameState | SaveDataDto) {
     brushSecs: state.brushSecs ?? 0,
     brushType: state.brushType ?? null,
     incenseSecs: state.incenseSecs ?? 0,
-    incenseType: state.incenseType ?? null,
+    incenseType: state.incenseType ?? null
   };
 }
 
@@ -48,7 +48,7 @@ function serializeBoosterBuffs(state: GameState | SaveDataDto) {
     amuletCoinSecs: state.amuletCoinSecs ?? 0,
     luckyEggSecs: state.luckyEggSecs ?? 0,
     ivScannerSecs: state.ivScannerSecs ?? 0,
-    daycare_berry_egg_time: state.daycare_berry_egg_time ?? 0,
+    daycare_berry_egg_time: state.daycare_berry_egg_time ?? 0
   };
 }
 
@@ -56,7 +56,7 @@ function serializeTimedBuffs(state: GameState | SaveDataDto) {
   return {
     ...serializeTicketBuffs(state),
     ...serializeToolBuffs(state),
-    ...serializeBoosterBuffs(state),
+    ...serializeBoosterBuffs(state)
   };
 }
 
@@ -65,7 +65,7 @@ function serializeWarOverview(state: GameState | SaveDataDto) {
     faction: state.faction ?? null,
     lastResolvedWeek: state.lastResolvedWeek ?? null,
     warTeam: state.warTeam ?? [],
-    warSlots: state.warSlots ?? MAX_POKEMON_TEAM_SIZE,
+    warSlots: state.warSlots ?? MAX_POKEMON_TEAM_SIZE
   };
 }
 
@@ -76,27 +76,32 @@ function serializeWarEconomy(state: GameState | SaveDataDto) {
     warDailyCap: state.warDailyCap as SaveDataDto['warDailyCap'],
     warDailyCoins: state.warDailyCoins as SaveDataDto['warDailyCoins'],
     warMyPtsLocal: state.warMyPtsLocal as SaveDataDto['warMyPtsLocal'],
-    warPointsAccumulator: state.warPointsAccumulator,
+    warPointsAccumulator: state.warPointsAccumulator
   };
 }
 
 function serializeWarState(state: GameState | SaveDataDto) {
   return {
     ...serializeWarOverview(state),
-    ...serializeWarEconomy(state),
+    ...serializeWarEconomy(state)
   };
 }
 
 function serializeBlackMarketDaily(daily: unknown) {
-  const d = daily as NonNullable<NonNullable<GameState['classData']>['blackMarketDaily']> | null | undefined;
+  const d = daily as
+    | NonNullable<NonNullable<GameState['classData']>['blackMarketDaily']>
+    | null
+    | undefined;
   return {
     date: d?.date ?? '',
     items: d?.items ?? [],
-    purchased: d?.purchased ?? [],
+    purchased: d?.purchased ?? []
   };
 }
 
-function serializeClassActiveMission(mission: NonNullable<GameState['classData'] | SaveDataDto['classData']>['activeMission']) {
+function serializeClassActiveMission(
+  mission: NonNullable<GameState['classData'] | SaveDataDto['classData']>['activeMission']
+) {
   if (!mission) return null;
   return {
     id: mission.id,
@@ -127,7 +132,7 @@ function serializeTrainerIdentity(state: GameState | SaveDataDto) {
     trainerExpNeeded: state.trainerExpNeeded,
     trainerChance: state.trainerChance ?? 1,
     nick_style: state.nick_style ?? null,
-    avatar_style: state.avatar_style ?? null,
+    avatar_style: state.avatar_style ?? null
   };
 }
 
@@ -139,7 +144,7 @@ function serializeGymAndPokedex(state: GameState | SaveDataDto) {
     gymProgress: state.gymProgress,
     lastGymWins: state.lastGymWins,
     lastGymAttempts: state.lastGymAttempts,
-    dailyGymRematches: state.dailyGymRematches as SaveDataDto['dailyGymRematches'],
+    dailyGymRematches: state.dailyGymRematches as SaveDataDto['dailyGymRematches']
   };
 }
 
@@ -154,7 +159,7 @@ function serializeRankedAndPvP(state: GameState | SaveDataDto) {
     pvpTeam: state.pvpTeam,
     pvpTeam6: state.pvpTeam6,
     pvpMatchHistory: state.pvpMatchHistory as SaveDataDto['pvpMatchHistory'],
-    lastResolvedSeasonId: state.lastResolvedSeasonId ?? '',
+    lastResolvedSeasonId: state.lastResolvedSeasonId ?? ''
   };
 }
 
@@ -164,7 +169,7 @@ function serializeDaycareAndPassive(state: GameState | SaveDataDto) {
     passiveTeamActive: Boolean(state.passiveTeamActive),
     daycare_missions: state.daycare_missions as SaveDataDto['daycare_missions'],
     daycare_mission_refreshes: state.daycare_mission_refreshes,
-    daycareWarehouse: state.daycareWarehouse as SaveDataDto['daycareWarehouse'],
+    daycareWarehouse: state.daycareWarehouse as SaveDataDto['daycareWarehouse']
   };
 }
 
@@ -177,7 +182,7 @@ function serializeCollections(state: GameState | SaveDataDto) {
     guardianCaptures: (state.guardianCaptures ?? {}) as SaveDataDto['guardianCaptures'],
     chats: state.chats,
     claimQueue: state.claimQueue as SaveDataDto['claimQueue'],
-    notificationHistory: state.notificationHistory as SaveDataDto['notificationHistory'],
+    notificationHistory: state.notificationHistory as SaveDataDto['notificationHistory']
   };
 }
 
@@ -189,7 +194,7 @@ function serializeSessionState(state: GameState | SaveDataDto) {
     lastPokemonCenterHeal: state.lastPokemonCenterHeal ?? 0,
     playtime: state.playtime ?? 0,
     activeBattle: serializeActiveBattle(state) as SaveDataDto['activeBattle'],
-    map: serializeMapData(state.map),
+    map: serializeMapData(state.map)
   };
 }
 
@@ -198,11 +203,13 @@ function serializeClassRoutes(cd: NonNullable<GameState['classData'] | SaveDataD
     extortedRouteId: cd.extortedRouteId ?? null,
     extortedRouteTimestamp: cd.extortedRouteTimestamp ?? null,
     officialRouteId: cd.officialRouteId ?? null,
-    officialRouteTimestamp: cd.officialRouteTimestamp ?? null,
+    officialRouteTimestamp: cd.officialRouteTimestamp ?? null
   };
 }
 
-function serializeClassProgress(cd: NonNullable<GameState['classData'] | SaveDataDto['classData']>) {
+function serializeClassProgress(
+  cd: NonNullable<GameState['classData'] | SaveDataDto['classData']>
+) {
   return {
     captureStreak: cd.captureStreak,
     longestStreak: cd.longestStreak,
@@ -210,11 +217,13 @@ function serializeClassProgress(cd: NonNullable<GameState['classData'] | SaveDat
     blackMarketSales: cd.blackMarketSales,
     criminality: cd.criminality,
     lastEggScanDate: cd.lastEggScanDate ?? null,
-    kitCaptures: cd.kitCaptures ?? 0,
+    kitCaptures: cd.kitCaptures ?? 0
   };
 }
 
-function serializeClassData(cd: GameState['classData'] | SaveDataDto['classData']): SaveDataDto['classData'] {
+function serializeClassData(
+  cd: GameState['classData'] | SaveDataDto['classData']
+): SaveDataDto['classData'] {
   if (!cd) {
     return {
       captureStreak: 0,
@@ -229,14 +238,14 @@ function serializeClassData(cd: GameState['classData'] | SaveDataDto['classData'
       lastEggScanDate: null,
       officialRouteId: null,
       officialRouteTimestamp: null,
-      kitCaptures: 0,
+      kitCaptures: 0
     };
   }
   return {
     ...serializeClassProgress(cd),
     ...serializeClassRoutes(cd),
     blackMarketDaily: serializeBlackMarketDaily(cd.blackMarketDaily),
-    activeMission: serializeClassActiveMission(cd.activeMission),
+    activeMission: serializeClassActiveMission(cd.activeMission)
   };
 }
 
@@ -260,7 +269,7 @@ function serializePlayerClass(state: GameState | SaveDataDto) {
       officialRouteId: cd.officialRouteId,
       officialRouteTimestamp: cd.officialRouteTimestamp,
       kitCaptures: cd.kitCaptures
-    },
+    }
   };
 }
 
@@ -274,6 +283,6 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
     ...serializeRankedAndPvP(state),
     ...serializeDaycareAndPassive(state),
     ...serializeTimedBuffs(state),
-    ...serializeWarState(state),
+    ...serializeWarState(state)
   };
 }

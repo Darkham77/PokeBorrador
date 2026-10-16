@@ -7,14 +7,14 @@
 /**
  * Calculates the total number of notes for the fishing minigame based on the encounter rarity.
  * Lower rarity means harder (rarer Pokemon), which results in fewer notes, but they scale accordingly.
- * 
+ *
  * @param rarity - The Pokemon's spawn percentage (1 to 100).
  * @returns The total number of notes to hit (integer between 5 and 22).
  */
 /**
  * Calculates the total number of notes for the fishing minigame based on the encounter rarity.
  * Lower rarity means harder (rarer Pokemon), which results in more notes.
- * 
+ *
  * @param rarity - The Pokemon's spawn percentage (1 to 100).
  * @returns The total number of notes to hit (integer between 5 and 22).
  */
@@ -22,7 +22,7 @@ const MAX_FISHING_NOTES = 22;
 const MIN_FISHING_COLLAPSE_SPEED_MS = 380;
 const MAX_FISHING_COLLAPSE_SPEED_MS = 1100;
 const MAX_FISHING_HIT_WINDOW_MS = 190;
-const ARCHAEOLOGY_CAVE_ENCOUNTER_RATE = 0.10;
+const ARCHAEOLOGY_CAVE_ENCOUNTER_RATE = 0.1;
 const ARCHAEOLOGY_MOUNTAIN_ENCOUNTER_RATE = 0.05;
 const FOSSIL_CLONING_BASE_COST = 3000;
 const FOSSIL_CLONING_EXTRA_FOSSIL_COST = 1000;
@@ -43,52 +43,60 @@ export function calculateFishingTotalNotes(rarity: number): number {
 /**
  * Calculates the collapse speed base duration (in milliseconds) for the outer ring.
  * Lower rarity means harder (rarer Pokemon), which results in faster collapse times (smaller duration).
- * 
+ *
  * @param rarity - The Pokemon's spawn percentage (1 to 100).
  * @returns The base duration in ms (between 380 and 1100).
  */
 export function calculateFishingSpeedBase(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
   const diffFactor = RARITY_DIFFICULTY_CEILING - safeRarity;
-  return Math.round(Math.max(MIN_FISHING_COLLAPSE_SPEED_MS, MAX_FISHING_COLLAPSE_SPEED_MS - (diffFactor * FISHING_SPEED_DECAY_FACTOR)) * FISHING_SPEED_TUNING_MULTIPLIER);
+  return Math.round(
+    Math.max(
+      MIN_FISHING_COLLAPSE_SPEED_MS,
+      MAX_FISHING_COLLAPSE_SPEED_MS - diffFactor * FISHING_SPEED_DECAY_FACTOR
+    ) * FISHING_SPEED_TUNING_MULTIPLIER
+  );
 }
 
 /**
  * Calculates the hit timing window (in milliseconds) for a perfect or good catch.
  * Lower rarity means harder (rarer Pokemon), which yields a smaller hit window.
- * 
+ *
  * @param rarity - The Pokemon's spawn percentage (1 to 100).
  * @returns The size of the hit window in ms (between 100 and 190).
  */
 export function calculateFishingHitWindow(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
   const diffFactor = RARITY_DIFFICULTY_CEILING - safeRarity;
-  return Math.max(100, MAX_FISHING_HIT_WINDOW_MS - (diffFactor / FISHING_HIT_WINDOW_DECAY_DIVISOR));
+  return Math.max(100, MAX_FISHING_HIT_WINDOW_MS - diffFactor / FISHING_HIT_WINDOW_DECAY_DIVISOR);
 }
 
 /**
  * Calculates the archaeology encounter chance based on environment tags.
  * 10% in caves, 5% in mountains, 0% otherwise.
- * 
+ *
  * @param isCave - True if the map is a cave.
  * @param isMountain - True if the map is a mountain.
  * @returns The encounter probability (0.0, 0.05, or 0.10).
  */
 export interface ArchaeologyTerrainFlags {
-  isCave: boolean
-  isMountain: boolean
+  isCave: boolean;
+  isMountain: boolean;
 }
 
-export function calculateArchaeologyEncounterRate({ isCave, isMountain }: ArchaeologyTerrainFlags): number {
+export function calculateArchaeologyEncounterRate({
+  isCave,
+  isMountain
+}: ArchaeologyTerrainFlags): number {
   if (isCave) return ARCHAEOLOGY_CAVE_ENCOUNTER_RATE;
   if (isMountain) return ARCHAEOLOGY_MOUNTAIN_ENCOUNTER_RATE;
-  return 0.00;
+  return 0.0;
 }
 
 /**
  * Calculates the fossil cloning cost based on the number of extra fossils sacrificed.
  * Formula: $3000 + $1000 * N (clamped to max 6 extra).
- * 
+ *
  * @param extraQty - Number of extra fossils (0 to 6).
  * @returns The total cost in coins.
  */
@@ -101,12 +109,15 @@ export function calculateCloningCost(extraQty: number): number {
  * Calculates the number of IV rerolls for cloning.
  * Base rolls: 1 + floor(extraQty / 2).
  * If extraQty is odd (1, 3, 5), there is a 50% chance of one extra roll.
- * 
+ *
  * @param extraQty - Number of extra fossils sacrificed (0 to 6).
  * @param randomSource - Optional random source for deterministic tests (returns 0.0 to 1.0).
  * @returns The total number of rolls (between 1 and 4).
  */
-export function calculateCloningRerolls(extraQty: number, randomSource: () => number = Math.random): number {
+export function calculateCloningRerolls(
+  extraQty: number,
+  randomSource: () => number = Math.random
+): number {
   const safeQty = Math.max(0, Math.min(6, extraQty));
   const baseRolls = 1 + Math.floor(safeQty / 2);
   const isOdd = safeQty % 2 !== 0;
@@ -120,7 +131,7 @@ export function calculateCloningRerolls(extraQty: number, randomSource: () => nu
  * Calculates the shiny probability for a cloned Pokemon.
  * Base chance: 1 / 4096.
  * Multiplier: 1 + 0.25 * N (up to 2.5x with N = 6).
- * 
+ *
  * @param extraQty - Number of extra fossils sacrificed (0 to 6).
  * @returns The probability as a decimal.
  */

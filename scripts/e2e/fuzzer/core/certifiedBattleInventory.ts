@@ -4,7 +4,7 @@ export type CertifiedBattleInventory = Readonly<Partial<Record<ItemId, number>>>
 
 export function createCertifiedBattleInventory(
   itemIds: readonly ItemId[],
-  quantity: number,
+  quantity: number
 ): CertifiedBattleInventory {
   if (!Number.isSafeInteger(quantity) || quantity < 1) {
     throw new Error(`[E2E-CERTIFICATION] Invalid certified inventory quantity: ${quantity}.`);

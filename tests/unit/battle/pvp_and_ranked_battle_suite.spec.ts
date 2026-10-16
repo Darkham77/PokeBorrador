@@ -4,14 +4,14 @@
  * AFK/reconnection timers, and emergency team triggers.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { Mock } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
+import type { Mock } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
-import { 
-  getEloTier, 
-  isAllowedRankGap, 
-  normalizeRankedRules, 
-  validatePokemonForRanked 
+import {
+  getEloTier,
+  isAllowedRankGap,
+  normalizeRankedRules,
+  validatePokemonForRanked
 } from '@/logic/pvp/rankedEngine';
 import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper';
 import { PVP_TURN_TIMEOUT_SEC, PVP_RECONNECT_WINDOW_SEC } from '@/types/battle/pvp';
@@ -56,9 +56,9 @@ describe('Ranked Engine & ELO Calculations', () => {
   });
 
   it('should validate allowed rank gaps (Max Gap = 1)', () => {
-    expect(isAllowedRankGap(1000, 1300)).toBe(true);  // Bronce vs Plata
+    expect(isAllowedRankGap(1000, 1300)).toBe(true); // Bronce vs Plata
     expect(isAllowedRankGap(1000, 1700)).toBe(false); // Bronce vs Oro
-    expect(isAllowedRankGap(2700, 3500)).toBe(true);  // Diamante vs Maestro
+    expect(isAllowedRankGap(2700, 3500)).toBe(true); // Diamante vs Maestro
     expect(isAllowedRankGap(1000, 3500)).toBe(false); // Bronce vs Maestro
   });
 
@@ -70,7 +70,7 @@ describe('Ranked Engine & ELO Calculations', () => {
       bannedPokemonIds: ['MEWTWO']
     };
     const rules = normalizeRankedRules(raw, 'Test Season');
-    
+
     expect(rules.maxPokemon).toBe(3);
     expect(rules.levelCap).toBe(50);
     expect(rules.allowedTypes).toContain('fire');
@@ -86,10 +86,20 @@ describe('Ranked Engine & ELO Calculations', () => {
       bannedPokemonIds: ['charizard']
     };
 
-    const okPonyta = { id: 'ponyta', name: 'Ponyta', level: 20, type: 'fire' } as unknown as Pokemon;
+    const okPonyta = {
+      id: 'ponyta',
+      name: 'Ponyta',
+      level: 20,
+      type: 'fire'
+    } as unknown as Pokemon;
     const overLeveled = { id: 'ponyta', level: 51, type: 'fire' } as unknown as Pokemon;
     const wrongType = { id: 'staryu', level: 20, type: 'water' } as unknown as Pokemon;
-    const banned = { id: 'charizard', name: 'Charizard', level: 40, type: 'fire' } as unknown as Pokemon;
+    const banned = {
+      id: 'charizard',
+      name: 'Charizard',
+      level: 40,
+      type: 'fire'
+    } as unknown as Pokemon;
 
     expect(validatePokemonForRanked(okPonyta, rules).ok).toBe(true);
     expect(validatePokemonForRanked(overLeveled, rules).ok).toBe(false);
@@ -189,16 +199,16 @@ describe('PvP Emergency Triggers', () => {
 
   it('should trigger PvP auto-fill when team length increases (watch trigger)', async () => {
     const gs = useGameStore();
-    
+
     // Initial state: empty
     expect(gs.state.pvpTeam).toHaveLength(0);
 
     // Add pokemon directly to team (bypassing addPokemon to test the watch)
     gs.state.team.push({ uid: 'p1', name: 'P1' } as unknown as Pokemon);
-    
+
     // Wait for next tick for the watcher
-    await new Promise(resolve => setTimeout(resolve, 0));
-    
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     expect(gs.state.pvpTeam).toHaveLength(1);
     expect(gs.state.pvpTeam[0]).toBe('p1');
   });
@@ -206,12 +216,12 @@ describe('PvP Emergency Triggers', () => {
   it('should fill PvP team from box if slots are available and team grows', async () => {
     const gs = useGameStore();
     gs.state.box = [{ uid: 'b1', name: 'B1' }] as unknown as Pokemon[];
-    
+
     // Add to team
     gs.state.team.push({ uid: 'p1', name: 'P1' } as unknown as Pokemon);
-    
-    await new Promise(resolve => setTimeout(resolve, 0));
-    
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     // Should have both p1 and b1 in pvpTeam (up to 3)
     expect(gs.state.pvpTeam).toContain('p1');
     expect(gs.state.pvpTeam).toContain('b1');
@@ -221,12 +231,12 @@ describe('PvP Emergency Triggers', () => {
   it('should trigger auto-fill when moving from box to team via boxStore', () => {
     const gs = useGameStore();
     const bs = useBoxStore();
-    
+
     gs.state.box = [{ uid: 'b1', name: 'B1' }] as unknown as Pokemon[];
-    
+
     // Move from box to team
     bs.moveBoxToTeam(0);
-    
+
     expect(gs.state.team).toHaveLength(1);
     expect(gs.state.team[0]!.uid).toBe('b1');
     expect(gs.state.pvpTeam).toHaveLength(1);
@@ -236,19 +246,19 @@ describe('PvP Emergency Triggers', () => {
   it('should trigger auto-fill when swapping box with team via boxStore', () => {
     const gs = useGameStore();
     const bs = useBoxStore();
-    
+
     // Setup: Team [p1], Box [b1], PvP [p1]
     gs.state.team = [{ uid: 'p1', name: 'P1', maxHp: 10, hp: 10 }] as unknown as Pokemon[];
     gs.state.box = [{ uid: 'b1', name: 'B1' }] as unknown as Pokemon[];
     gs.state.pvpTeam = ['p1'];
-    
+
     // Swap p1 with b1
     bs.swapBoxWithTeam(0, 0);
-    
+
     // Team should be [b1], Box [p1]
     expect(gs.state.team[0]!.uid).toBe('b1');
     expect(gs.state.box[0]!.uid).toBe('p1');
-    
+
     // PvP should now contain both b1 and p1
     expect(gs.state.pvpTeam).toContain('b1');
     expect(gs.state.pvpTeam).toContain('p1');
@@ -281,9 +291,11 @@ describe('LivePvPStore (Combat Engine)', () => {
     setActivePinia(createPinia());
     const auth = useAuthStore();
     const game = useGameStore();
-    
-    auth.user = { id: 'user_1', user_metadata: { username: 'Player 1' } } as unknown as NonNullable<typeof auth.user>;
-    
+
+    auth.user = { id: 'user_1', user_metadata: { username: 'Player 1' } } as unknown as NonNullable<
+      typeof auth.user
+    >;
+
     // Setup insert chain
     dbMock.insert.mockReturnValue({
       select: vi.fn().mockReturnValue({
@@ -292,7 +304,7 @@ describe('LivePvPStore (Combat Engine)', () => {
     });
 
     (game as unknown as { db: unknown }).db = dbMock;
-    
+
     const pika = makePokemon('pikachu', 50)!;
     pika.uid = 'pika_1';
     Object.assign(game.state, {
@@ -305,15 +317,17 @@ describe('LivePvPStore (Combat Engine)', () => {
 
   it('should send battle invite correctly', async () => {
     const pvp = useLivePvPStore();
-    
+
     await pvp.sendInvite('user_2', 'Player 2');
-    
+
     expect(dbMock.from).toHaveBeenCalledWith('battle_invites');
-    expect(dbMock.insert).toHaveBeenCalledWith(expect.objectContaining({
-      challenger_id: 'user_1',
-      opponent_id: 'user_2',
-      status: 'pending'
-    }));
+    expect(dbMock.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        challenger_id: 'user_1',
+        opponent_id: 'user_2',
+        status: 'pending'
+      })
+    );
   });
 
   it('should resolve turn correctly when both players move', async () => {
@@ -321,19 +335,24 @@ describe('LivePvPStore (Combat Engine)', () => {
     const { executeTurnInWorker } = await import('@/logic/battle/showdownWorkerClient');
 
     // Setup Battle
-    pvp.startBattle({ id: 'inv_1', challenger_id: 'user_1', opponent_id: 'user_2' } as unknown as Parameters<typeof pvp.startBattle>[0], { isHost: true, isRanked: false });
+    pvp.startBattle(
+      { id: 'inv_1', challenger_id: 'user_1', opponent_id: 'user_2' } as unknown as Parameters<
+        typeof pvp.startBattle
+      >[0],
+      { isHost: true, isRanked: false }
+    );
     const rat = makePokemon('rattata', 50)!;
     pvp.battleState.enemyTeam = [rat];
     pvp.battleState.enemyHp = [80];
     pvp.battleState.phase = 'choosing';
-    
+
     // Commit my pick
     pvp._commitPick({ type: 'move', moveIndex: 0 });
     expect(pvp.battleState.phase).toBe('waiting');
-    
+
     // Simulate opponent pick (via handleOpponentPick)
     pvp.handleOpponentPick({ payload: { type: 'move', moveIndex: 0 } });
-    
+
     // Allow async resolveTurn to finish
     await vi.waitFor(() => {
       expect(executeTurnInWorker).toHaveBeenCalled();
@@ -345,14 +364,19 @@ describe('LivePvPStore (Combat Engine)', () => {
     const pvp = useLivePvPStore();
     const gs = useGameStore();
     vi.spyOn(gs, 'save').mockResolvedValue({ success: true });
-    
-    pvp.startBattle({ id: 'inv_1', challenger_id: 'user_1', opponent_id: 'user_2' } as unknown as Parameters<typeof pvp.startBattle>[0], { isHost: true, isRanked: false });
+
+    pvp.startBattle(
+      { id: 'inv_1', challenger_id: 'user_1', opponent_id: 'user_2' } as unknown as Parameters<
+        typeof pvp.startBattle
+      >[0],
+      { isHost: true, isRanked: false }
+    );
     pvp.battleState.enemyHp = [0];
     pvp.battleState.enemyActiveIdx = 0;
-    
+
     // Trigger post-turn check
     pvp._checkPostTurn();
-    
+
     expect(pvp.battleState.phase).toBe('over');
     expect(pvp.battleState.active).toBe(false);
   });

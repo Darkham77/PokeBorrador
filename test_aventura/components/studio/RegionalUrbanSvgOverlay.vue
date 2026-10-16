@@ -46,34 +46,54 @@ const activeDrag = ref<ActiveDragElement | null>(null);
 const isCurrentlyColliding = ref<boolean>(false);
 
 function screenToSvgCoords(e: PointerEvent | MouseEvent): { x: number; y: number } {
-  return transformScreenToSvg(e as PointerEvent, svgRef.value, { width: store.widthPx, height: store.heightPx });
+  return transformScreenToSvg(e as PointerEvent, svgRef.value, {
+    width: store.widthPx,
+    height: store.heightPx
+  });
 }
 
 function getBuildingTitle(type: UrbanBuildingType): string {
   switch (type) {
-    case 'pokecenter': return 'Centro Pokémon';
-    case 'pokemart': return 'PokéMart';
-    case 'gym': return 'Gimnasio';
-    case 'lab': return 'Laboratorio';
-    case 'tower': return 'Torre';
-    case 'condo': return 'Condominio';
-    case 'house': return 'Casa';
-    default: return 'Edificio';
+    case 'pokecenter':
+      return 'Centro Pokémon';
+    case 'pokemart':
+      return 'PokéMart';
+    case 'gym':
+      return 'Gimnasio';
+    case 'lab':
+      return 'Laboratorio';
+    case 'tower':
+      return 'Torre';
+    case 'condo':
+      return 'Condominio';
+    case 'house':
+      return 'Casa';
+    default:
+      return 'Edificio';
   }
 }
 
 function getPropEmoji(type: UrbanPropType): string {
   switch (type) {
-    case 'lamp': return '💡';
-    case 'bench': return '🪑';
-    case 'flower': return '🌸';
-    case 'fountain': return '⛲';
-    case 'statue': return '🗿';
-    case 'bush': return '🪵';
-    case 'tree': return '🌲';
+    case 'lamp':
+      return '💡';
+    case 'bench':
+      return '🪑';
+    case 'flower':
+      return '🌸';
+    case 'fountain':
+      return '⛲';
+    case 'statue':
+      return '🗿';
+    case 'bush':
+      return '🪵';
+    case 'tree':
+      return '🌲';
     case 'fence_h':
-    case 'fence_v': return '🚧';
-    default: return '✨';
+    case 'fence_v':
+      return '🚧';
+    default:
+      return '✨';
   }
 }
 
@@ -168,17 +188,27 @@ function onPointerUp(): void {
     return;
   }
 
-  const { type, id, currentGridX, currentGridY, initialGridX, initialGridY, width, height } = activeDrag.value;
+  const { type, id, currentGridX, currentGridY, initialGridX, initialGridY, width, height } =
+    activeDrag.value;
   const poiId = currentPoi.value.id;
 
   const hasMoved = currentGridX !== initialGridX || currentGridY !== initialGridY;
 
   if (hasMoved) {
-    const isInvalid = checkBuildingCollision(currentPoi.value, id, currentGridX, currentGridY, width, height);
+    const isInvalid = checkBuildingCollision(
+      currentPoi.value,
+      id,
+      currentGridX,
+      currentGridY,
+      width,
+      height
+    );
 
     if (isInvalid) {
       // Revert if colliding
-      console.warn(`[RegionalUrbanSvgOverlay] Posición (${currentGridX}, ${currentGridY}) no válida por colisión.`);
+      console.warn(
+        `[RegionalUrbanSvgOverlay] Posición (${currentGridX}, ${currentGridY}) no válida por colisión.`
+      );
     } else if (type === 'building') {
       store.moveBuildingInPOI(poiId, id, currentGridX, currentGridY);
     } else {
@@ -212,12 +242,14 @@ const poiPerimeterBounds = computed(() => {
 });
 
 function getBuildingX(b: UrbanBuildingPlacement): number {
-  const gridX = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
+  const gridX =
+    isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
   return gridX * CANVAS_TILE_SIZE + (b.pixelOffsetX ?? 0);
 }
 
 function getBuildingY(b: UrbanBuildingPlacement): number {
-  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  const gridY =
+    isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
   return gridY * CANVAS_TILE_SIZE + (b.pixelOffsetY ?? 0);
 }
 
@@ -230,42 +262,50 @@ function getBuildingHeight(b: UrbanBuildingPlacement): number {
 }
 
 function getBuildingDoorX(b: UrbanBuildingPlacement): number {
-  const gridX = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
+  const gridX =
+    isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
   return (gridX + (b.doorX - b.x)) * CANVAS_TILE_SIZE + HALF_TILE_SIZE + (b.pixelOffsetX ?? 0);
 }
 
 function getBuildingDoorY(b: UrbanBuildingPlacement): number {
-  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  const gridY =
+    isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
   return (gridY + (b.doorY - b.y)) * CANVAS_TILE_SIZE + HALF_TILE_SIZE + (b.pixelOffsetY ?? 0);
 }
 
 function getBuildingDoorIconY(b: UrbanBuildingPlacement): number {
-  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  const gridY =
+    isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
   return (gridY + (b.doorY - b.y)) * CANVAS_TILE_SIZE + DOOR_ICON_Y_OFFSET + (b.pixelOffsetY ?? 0);
 }
 
 function getBuildingCenterX(b: UrbanBuildingPlacement): number {
-  const gridX = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
+  const gridX =
+    isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
   return (gridX + b.width / 2) * CANVAS_TILE_SIZE + (b.pixelOffsetX ?? 0);
 }
 
 function getBuildingLabelY(b: UrbanBuildingPlacement): number {
-  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  const gridY =
+    isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
   return gridY * CANVAS_TILE_SIZE + HALF_TILE_SIZE + (b.pixelOffsetY ?? 0);
 }
 
 function getBuildingCoordsCenterX(b: UrbanBuildingPlacement): number {
-  const gridX = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
+  const gridX =
+    isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridX : b.x;
   return (gridX + b.width / 2) * CANVAS_TILE_SIZE;
 }
 
 function getBuildingCoordsY(b: UrbanBuildingPlacement): number {
-  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  const gridY =
+    isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
   return gridY * CANVAS_TILE_SIZE + BUILDING_SUBTITLE_Y_OFFSET;
 }
 
 function getBuildingCollisionLabelY(b: UrbanBuildingPlacement): number {
-  const gridY = isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
+  const gridY =
+    isDragging.value && activeDrag.value?.id === b.id ? activeDrag.value.currentGridY : b.y;
   return gridY * CANVAS_TILE_SIZE + COLLISION_LABEL_Y_OFFSET;
 }
 
@@ -376,7 +416,8 @@ function getPropIconY(p: UrbanPropPlacement): number {
           text-anchor="middle"
           class="building-coords-label"
         >
-          ({{ isDragging && activeDrag?.id === b.id ? activeDrag.currentGridX : b.x }}, {{ isDragging && activeDrag?.id === b.id ? activeDrag.currentGridY : b.y }})
+          ({{ isDragging && activeDrag?.id === b.id ? activeDrag.currentGridX : b.x }},
+          {{ isDragging && activeDrag?.id === b.id ? activeDrag.currentGridY : b.y }})
         </text>
 
         <!-- Dynamic Collision Warning -->
@@ -401,24 +442,13 @@ function getPropIconY(p: UrbanPropPlacement): number {
         :class="{
           'is-selected': store.selectedUrbanElement?.id === `prop_${p.x}_${p.y}`,
           'is-dragging': isDragging && activeDrag?.id === `prop_${p.x}_${p.y}`,
-          'is-colliding': isDragging && activeDrag?.id === `prop_${p.x}_${p.y}` && isCurrentlyColliding
+          'is-colliding':
+            isDragging && activeDrag?.id === `prop_${p.x}_${p.y}` && isCurrentlyColliding
         }"
         @pointerdown="startDragProp($event, p)"
       >
-        <rect
-          :x="getPropX(p)"
-          :y="getPropY(p)"
-          width="32"
-          height="32"
-          rx="4"
-          class="prop-rect"
-        />
-        <text
-          :x="getPropIconX(p)"
-          :y="getPropIconY(p)"
-          text-anchor="middle"
-          class="prop-icon"
-        >
+        <rect :x="getPropX(p)" :y="getPropY(p)" width="32" height="32" rx="4" class="prop-rect" />
+        <text :x="getPropIconX(p)" :y="getPropIconY(p)" text-anchor="middle" class="prop-icon">
           {{ getPropEmoji(p.type) }}
         </text>
       </g>

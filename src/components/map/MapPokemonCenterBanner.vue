@@ -1,58 +1,77 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { gsap } from 'gsap'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { pokemonNeedsHealing } from '@/logic/economy/economyFormulas'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { useModalStore } from '@/stores/modals'
-import { usePokemonCenterCooldown } from '@/composables/map/usePokemonCenterCooldown'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import { computed } from 'vue';
+import { gsap } from 'gsap';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { pokemonNeedsHealing } from '@/logic/economy/economyFormulas';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
+import { usePokemonCenterCooldown } from '@/composables/map/usePokemonCenterCooldown';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const modalStore = useModalStore()
-const { cooldownSecondsLeft, cooldownFormatted, handleCooldownClick } = usePokemonCenterCooldown()
+const gameStore = useGameStore();
+const uiStore = useUIStore();
+const modalStore = useModalStore();
+const { cooldownSecondsLeft, cooldownFormatted, handleCooldownClick } = usePokemonCenterCooldown();
 
 const bannerUrl = computed(() => {
-  const assetName = cooldownSecondsLeft.value > 0 ? 'pokecenter_closed_banner' : 'pokecenter_banner'
-  return getAssetUrl(ASSET_TYPES.BANNER, assetName)
-})
+  const assetName =
+    cooldownSecondsLeft.value > 0 ? 'pokecenter_closed_banner' : 'pokecenter_banner';
+  return getAssetUrl(ASSET_TYPES.BANNER, assetName);
+});
 
 const bannerStyle = computed(() => ({
   backgroundImage: `url('${bannerUrl.value}')`
-}))
+}));
 
 const onBannerHover = (event: MouseEvent, enter: boolean) => {
-  const el = event.currentTarget as HTMLElement
-  if (!el || cooldownSecondsLeft.value > 0) return
-  const bg = el.querySelector('.banner-bg') as HTMLElement | null
+  const el = event.currentTarget as HTMLElement;
+  if (!el || cooldownSecondsLeft.value > 0) return;
+  const bg = el.querySelector('.banner-bg') as HTMLElement | null;
 
   if (enter) {
-    gsap.to(el, { y: -3, duration: 0.25, ease: 'power2.out', overwrite: 'auto' })
-    if (bg) gsap.to(bg, { scale: 1.03, duration: 0.35, ease: 'power2.out', overwrite: 'auto' })
+    gsap.to(el, { y: -3, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+    if (bg) gsap.to(bg, { scale: 1.03, duration: 0.35, ease: 'power2.out', overwrite: 'auto' });
   } else {
-    gsap.to(el, { y: 0, duration: 0.25, ease: 'power2.out', overwrite: 'auto', clearProps: 'transform' })
-    if (bg) gsap.to(bg, { scale: 1, duration: 0.3, ease: 'power2.out', overwrite: 'auto', clearProps: 'transform,scale' })
+    gsap.to(el, {
+      y: 0,
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      clearProps: 'transform'
+    });
+    if (bg)
+      gsap.to(bg, {
+        scale: 1,
+        duration: 0.3,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        clearProps: 'transform,scale'
+      });
   }
-}
+};
 
 const openCenter = () => {
-  const needsHeal = (gameStore.state.team as (Pokemon | null)[]).some(p => p && pokemonNeedsHealing(p))
-  
+  const needsHeal = (gameStore.state.team as (Pokemon | null)[]).some(
+    (p) => p && pokemonNeedsHealing(p)
+  );
+
   if (!needsHeal) {
-    uiStore.notify('Tu equipo ya está en perfectas condiciones.', '💖')
-    return
+    uiStore.notify('Tu equipo ya está en perfectas condiciones.', '💖');
+    return;
   }
 
   if (cooldownSecondsLeft.value > 0) {
-    uiStore.notify(`El Centro Pokémon está en mantenimiento. Disponible en ${cooldownFormatted.value}.`, '🏥')
-    return
+    uiStore.notify(
+      `El Centro Pokémon está en mantenimiento. Disponible en ${cooldownFormatted.value}.`,
+      '🏥'
+    );
+    return;
   }
-  
-  modalStore.open('PokemonCenter')
-}
+
+  modalStore.open('PokemonCenter');
+};
 </script>
 
 <template>
@@ -65,21 +84,14 @@ const openCenter = () => {
       @mouseenter="onBannerHover($event, true)"
       @mouseleave="onBannerHover($event, false)"
     >
-      <div 
-        class="banner-bg" 
-        :style="bannerStyle"
-      />
+      <div class="banner-bg" :style="bannerStyle" />
       <div class="banner-overlay">
-        <div class="banner-title">
-          <span class="emoji">💊</span> CENTRO POKÉMON
-        </div>
-        <div class="banner-desc">
-          Saná a tu equipo y restaurá todos sus PP al instante.
-        </div>
+        <div class="banner-title"><span class="emoji">💊</span> CENTRO POKÉMON</div>
+        <div class="banner-desc">Saná a tu equipo y restaurá todos sus PP al instante.</div>
       </div>
-      <PVTooltip 
+      <PVTooltip
         v-if="cooldownSecondsLeft > 0"
-        title="Centro Pokémon en mantenimiento" 
+        title="Centro Pokémon en mantenimiento"
         description="Debes esperar a que termine el tiempo de enfriamiento para volver a curar gratis."
         position="bottom"
         class="banner-tag-tooltip"
@@ -88,16 +100,13 @@ const openCenter = () => {
           <span class="emoji">⏱️</span> {{ cooldownFormatted }}
         </span>
       </PVTooltip>
-      <span
-        v-else
-        class="banner-tag"
-      ><span class="emoji">💊</span> CURACIÓN</span>
+      <span v-else class="banner-tag"><span class="emoji">💊</span> CURACIÓN</span>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .map-pokecenter-wrapper {
   display: flex;
@@ -120,7 +129,7 @@ const openCenter = () => {
   box-shadow: var(--shadow-card-elevated);
   overflow: hidden;
   box-sizing: border-box;
-  
+
   .banner-bg {
     @include pixelated;
 
@@ -137,7 +146,12 @@ const openCenter = () => {
     position: absolute;
     z-index: calc(var(--z-base) + 2);
     border-radius: $radius-xl-alt;
-    background: Linear-Gradient(to top, var(--black, #000) 0%, Rgb(0 0 0 / 60%) 30%, transparent 55%);
+    background: Linear-Gradient(
+      to top,
+      var(--black, #000) 0%,
+      Rgb(0 0 0 / 60%) 30%,
+      transparent 55%
+    );
     content: '';
     inset: -2px;
     pointer-events: none;

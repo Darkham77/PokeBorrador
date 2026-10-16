@@ -99,7 +99,9 @@ class LoadingGateReloadSimulation extends BaseE2ESimulation {
 }
 
 test.describe('Loading Gate, Reload Combinations & Single Source of Truth Simulation', () => {
-  test('should coordinate loading gate smoothly with zero pop-in during initial login and render Home dashboard', async ({ page }) => {
+  test('should coordinate loading gate smoothly with zero pop-in during initial login and render Home dashboard', async ({
+    page
+  }) => {
     const sim = new LoadingGateReloadSimulation(page, 'GateUser1');
 
     await sim.setup();
@@ -124,7 +126,9 @@ test.describe('Loading Gate, Reload Combinations & Single Source of Truth Simula
     expect(status.teamCount).toBeGreaterThan(0);
   });
 
-  test('should handle page reload deterministically via Web Worker save processing and smoothly reopen loading gate', async ({ page }) => {
+  test('should handle page reload deterministically via Web Worker save processing and smoothly reopen loading gate', async ({
+    page
+  }) => {
     const sim = new LoadingGateReloadSimulation(page, 'GateUser2');
 
     await sim.setup();
@@ -147,7 +151,9 @@ test.describe('Loading Gate, Reload Combinations & Single Source of Truth Simula
     expect(statusAfterReload.money).toBe(expectedMoney);
   });
 
-  test('should handle offline network disconnection and restore state from local OPFS cache without crashing', async ({ page }) => {
+  test('should handle offline network disconnection and restore state from local OPFS cache without crashing', async ({
+    page
+  }) => {
     const sim = new LoadingGateReloadSimulation(page, 'GateUser3');
 
     await sim.setup();
@@ -157,8 +163,8 @@ test.describe('Loading Gate, Reload Combinations & Single Source of Truth Simula
     await sim.saveGameAndAwaitExport();
 
     // 2. Simulate offline connectivity by aborting all backend cloud calls
-    await page.route('**/rest/v1/**', route => route.abort());
-    await page.route('**/realtime/**', route => route.abort());
+    await page.route('**/rest/v1/**', (route) => route.abort());
+    await page.route('**/realtime/**', (route) => route.abort());
 
     try {
       // 3. Reload in offline state (Vite delivers SPA, but cloud backend is unreachable; wait for network retry backoff)
@@ -177,7 +183,9 @@ test.describe('Loading Gate, Reload Combinations & Single Source of Truth Simula
     }
   });
 
-  test('should verify centralized single source of truth and no duplicate store fetches across widgets', async ({ page }) => {
+  test('should verify centralized single source of truth and no duplicate store fetches across widgets', async ({
+    page
+  }) => {
     const sim = new LoadingGateReloadSimulation(page, 'GateUser4');
 
     await sim.setup();

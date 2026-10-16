@@ -3,7 +3,10 @@ import { gameBus } from '@/logic/events/gameBus';
 import type { useBattleStore } from '@/stores/battle/battle';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { useBattleCaptureAnimations } from '@/composables/battle/useBattleCaptureAnimations';
-import { isTrainerTransitionActive, useBattleTrainerAnimations } from '@/composables/battle/useBattleTrainerAnimations';
+import {
+  isTrainerTransitionActive,
+  useBattleTrainerAnimations
+} from '@/composables/battle/useBattleTrainerAnimations';
 import { useBattleWildAnimations } from '@/composables/battle/useBattleWildAnimations';
 import {
   dispatchBattleAnimationState,
@@ -11,11 +14,11 @@ import {
 } from './battleAnimationStateDispatcher.ts';
 
 export function useBattleAnimations(
-  battleStore: ReturnType<typeof useBattleStore>, 
+  battleStore: ReturnType<typeof useBattleStore>,
   enemyRef: MaybeRefOrGetter<Pokemon | null | undefined>
 ) {
   // 1. Capture Domain delegation
-  const captureAnims = useBattleCaptureAnimations(battleStore, enemyRef)
+  const captureAnims = useBattleCaptureAnimations(battleStore, enemyRef);
   const {
     caughtPokemonSnapshot,
     isFaintInProgress,
@@ -53,10 +56,10 @@ export function useBattleAnimations(
     getPokemonIsBlinking,
     getPokemonIsHealing,
     awaitTween
-  } = captureAnims
+  } = captureAnims;
 
   // 2. Trainer Domain delegation
-  const trainerAnims = useBattleTrainerAnimations(seats, battleStore)
+  const trainerAnims = useBattleTrainerAnimations(seats, battleStore);
   const {
     trainerAnimState,
     isTrainerVisible,
@@ -66,10 +69,10 @@ export function useBattleAnimations(
     triggerTrainerExit,
     triggerPokemonCall,
     resetTrainerStates
-  } = trainerAnims
+  } = trainerAnims;
 
   // 3. Wild Domain delegation
-  const wildAnims = useBattleWildAnimations(enemyRef)
+  const wildAnims = useBattleWildAnimations(enemyRef);
   const {
     isWildEntryAnimation,
     isEmerging,
@@ -83,26 +86,28 @@ export function useBattleAnimations(
     triggerWildEmergence,
     triggerSearchEncounter,
     resetWildStates
-  } = wildAnims
+  } = wildAnims;
 
   // 4. Global transition
-  const isGlobalFadeActive = ref(false)
+  const isGlobalFadeActive = ref(false);
 
   const isIntroInProgress = computed(() => {
-    const s = toValue(battleStore.currentFsmState)
-    return s === 'INITIALIZING' ||
-           s === 'FIRST_INTRO' ||
-           isWildEntryAnimation.value || 
-           wildRevealActive.value || 
-           isEmerging.value || 
-           upcomingIsEmerging.value || 
-           isTrainerTransitionActive(trainerAnimState.value) ||
-           isCaptureSequenceActive.value
-  })
+    const s = toValue(battleStore.currentFsmState);
+    return (
+      s === 'INITIALIZING' ||
+      s === 'FIRST_INTRO' ||
+      isWildEntryAnimation.value ||
+      wildRevealActive.value ||
+      isEmerging.value ||
+      upcomingIsEmerging.value ||
+      isTrainerTransitionActive(trainerAnimState.value) ||
+      isCaptureSequenceActive.value
+    );
+  });
 
   const isPlayerSpriteSuppressed = computed(() => {
-    return !toValue(battleStore.player)
-  })
+    return !toValue(battleStore.player);
+  });
 
   const resetAll = () => {
     resetWildStates();
@@ -135,89 +140,124 @@ export function useBattleAnimations(
     { immediate: true }
   );
 
-  const registeredListeners: { event: string; callback: EventListener }[] = []
+  const registeredListeners: { event: string; callback: EventListener }[] = [];
 
   const addBusListener = (event: string, callback: EventListener) => {
-    gameBus.on(event, callback)
-    registeredListeners.push({ event, callback })
-  }
+    gameBus.on(event, callback);
+    registeredListeners.push({ event, callback });
+  };
 
   const cleanupListeners = () => {
     if (captureAnims.cleanupListeners) {
-      captureAnims.cleanupListeners()
+      captureAnims.cleanupListeners();
     }
     while (registeredListeners.length > 0) {
-      const entry = registeredListeners.pop()
+      const entry = registeredListeners.pop();
       if (entry) {
-        gameBus.off(entry.event, entry.callback)
+        gameBus.off(entry.event, entry.callback);
       }
     }
-  }
+  };
 
   const initListeners = () => {
-    cleanupListeners()
+    cleanupListeners();
 
     if (captureAnims.initListeners) {
-      captureAnims.initListeners()
+      captureAnims.initListeners();
     }
 
-    const handleWithdrawRequest = captureAnims.handleWithdrawRequest
-    addBusListener('PLAY_CATCH_ENERGY', ((e: Event) => handleCatchRequest((e as CustomEvent).detail as Parameters<typeof handleCatchRequest>[0])) as EventListener)
-    addBusListener('PLAY_WITHDRAW', ((e: Event) => handleWithdrawRequest((e as CustomEvent).detail as Parameters<typeof handleWithdrawRequest>[0])) as EventListener)
-    addBusListener('PLAY_RELEASE_ENERGY', ((e: Event) => handleReleaseRequest((e as CustomEvent).detail as Parameters<typeof handleReleaseRequest>[0])) as EventListener)
-    addBusListener('PLAY_SEND_OUT', ((e: Event) => handleReleaseRequest((e as CustomEvent).detail as Parameters<typeof handleReleaseRequest>[0])) as EventListener)
-    
-    addBusListener('PLAY_DAMAGE', ((e: Event) => handleShakeRequest((e as CustomEvent).detail as Parameters<typeof handleShakeRequest>[0])) as EventListener)
-    addBusListener('PLAY_BLINK', ((e: Event) => handleBlinkRequest((e as CustomEvent).detail as Parameters<typeof handleBlinkRequest>[0])) as EventListener)
-    addBusListener('PLAY_FLINCH', ((e: Event) => handleFlinchRequest((e as CustomEvent).detail as Parameters<typeof handleFlinchRequest>[0])) as EventListener)
-    addBusListener('PLAY_HEAL', ((e: Event) => handleHealRequest((e as CustomEvent).detail as Parameters<typeof handleHealRequest>[0])) as EventListener)
-    
+    const handleWithdrawRequest = captureAnims.handleWithdrawRequest;
+    addBusListener('PLAY_CATCH_ENERGY', ((e: Event) =>
+      handleCatchRequest(
+        (e as CustomEvent).detail as Parameters<typeof handleCatchRequest>[0]
+      )) as EventListener);
+    addBusListener('PLAY_WITHDRAW', ((e: Event) =>
+      handleWithdrawRequest(
+        (e as CustomEvent).detail as Parameters<typeof handleWithdrawRequest>[0]
+      )) as EventListener);
+    addBusListener('PLAY_RELEASE_ENERGY', ((e: Event) =>
+      handleReleaseRequest(
+        (e as CustomEvent).detail as Parameters<typeof handleReleaseRequest>[0]
+      )) as EventListener);
+    addBusListener('PLAY_SEND_OUT', ((e: Event) =>
+      handleReleaseRequest(
+        (e as CustomEvent).detail as Parameters<typeof handleReleaseRequest>[0]
+      )) as EventListener);
+
+    addBusListener('PLAY_DAMAGE', ((e: Event) =>
+      handleShakeRequest(
+        (e as CustomEvent).detail as Parameters<typeof handleShakeRequest>[0]
+      )) as EventListener);
+    addBusListener('PLAY_BLINK', ((e: Event) =>
+      handleBlinkRequest(
+        (e as CustomEvent).detail as Parameters<typeof handleBlinkRequest>[0]
+      )) as EventListener);
+    addBusListener('PLAY_FLINCH', ((e: Event) =>
+      handleFlinchRequest(
+        (e as CustomEvent).detail as Parameters<typeof handleFlinchRequest>[0]
+      )) as EventListener);
+    addBusListener('PLAY_HEAL', ((e: Event) =>
+      handleHealRequest(
+        (e as CustomEvent).detail as Parameters<typeof handleHealRequest>[0]
+      )) as EventListener);
+
     addBusListener('CATCH_SHAKE', ((e: Event) => {
-      const detail = (e as CustomEvent<Record<string, unknown>>).detail
-      const side = (typeof detail === 'string' ? detail : (detail?.side as string | undefined)) || 'enemy'
-      handleShakeRequest({ side, isCapture: true })
-      handleBlinkRequest(side)
-    }) as EventListener)
-    
+      const detail = (e as CustomEvent<Record<string, unknown>>).detail;
+      const side =
+        (typeof detail === 'string' ? detail : (detail?.side as string | undefined)) || 'enemy';
+      void handleShakeRequest({ side, isCapture: true });
+      void handleBlinkRequest(side);
+    }) as EventListener);
+
     addBusListener('CATCH_SUCCESS', ((e: Event) => {
-      const data = (e as CustomEvent).detail as string | { side?: string } | undefined
-      const side = typeof data === 'string' ? data : (data?.side || 'enemy')
-      playCatchCelebration(side)
-    }) as EventListener)
-    
-    addBusListener('POKEMON_FAINT', ((e: Event) => handleFaintAnim((e as CustomEvent).detail as Parameters<typeof handleFaintAnim>[0])) as EventListener)
-    addBusListener('PLAY_FAINT', ((e: Event) => handleFaintAnim((e as CustomEvent).detail as Parameters<typeof handleFaintAnim>[0])) as EventListener)
-    addBusListener('ENCOUNTER_ANIM', (() => triggerSearchEncounter()) as EventListener)
+      const data = (e as CustomEvent).detail as string | { side?: string } | undefined;
+      const side = typeof data === 'string' ? data : data?.side || 'enemy';
+      void playCatchCelebration(side);
+    }) as EventListener);
+
+    addBusListener('POKEMON_FAINT', ((e: Event) =>
+      handleFaintAnim(
+        (e as CustomEvent).detail as Parameters<typeof handleFaintAnim>[0]
+      )) as EventListener);
+    addBusListener('PLAY_FAINT', ((e: Event) =>
+      handleFaintAnim(
+        (e as CustomEvent).detail as Parameters<typeof handleFaintAnim>[0]
+      )) as EventListener);
+    addBusListener('ENCOUNTER_ANIM', (() => triggerSearchEncounter()) as EventListener);
 
     addBusListener('PLAY_ESCAPE_ANIM', ((e: Event) => {
-      const data = (e as CustomEvent).detail as string | { side?: string; type?: string; pokemon?: Pokemon } | undefined
-      const side = typeof data === 'string' ? data : (data?.side || 'player')
-      const type = (typeof data === 'object' && data?.type) || 'flee'
-      const pokemon = (typeof data === 'object' && data?.pokemon) || (side === 'player' ? toValue(battleStore.player) : toValue(battleStore.enemy))
+      const data = (e as CustomEvent).detail as
+        | string
+        | { side?: string; type?: string; pokemon?: Pokemon }
+        | undefined;
+      const side = typeof data === 'string' ? data : data?.side || 'player';
+      const type = (typeof data === 'object' && data?.type) || 'flee';
+      const pokemon =
+        (typeof data === 'object' && data?.pokemon) ||
+        (side === 'player' ? toValue(battleStore.player) : toValue(battleStore.enemy));
 
       if ((side === 'player' && type === 'flee') || type === 'withdraw') {
-        handleWithdrawRequest({ side: 'player', pokemon: pokemon || undefined })
-        return
+        void handleWithdrawRequest({ side: 'player', pokemon: pokemon || undefined });
+        return;
       }
 
-      gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side, pokemon: pokemon || undefined, type })
-    }) as EventListener)
+      gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side, pokemon: pokemon || undefined, type });
+    }) as EventListener);
 
     addBusListener('START_BATTLE', ((_e: Event) => {
-      Object.keys(seats.value).forEach(side => {
-        const seat = seats.value[side]
+      Object.values(seats.value).forEach((seat) => {
         if (seat) {
-          seat.entry.isCaptureActive = false
-          seat.entry.ballId = 'pokeball'
-          seat.entry.animState = null
-          seat.exit.isCaptureActive = false
-          seat.exit.ballId = 'pokeball'
-          seat.exit.animState = null
+          seat.entry.isCaptureActive = false;
+          seat.entry.ballId = 'pokeball';
+          seat.entry.animState = null;
+          seat.exit.isCaptureActive = false;
+          seat.exit.ballId = 'pokeball';
+          seat.exit.animState = null;
         }
-      })
-      resetCaptureStates()
-    }) as EventListener)
-  }
+      });
+      resetCaptureStates();
+    }) as EventListener);
+  };
 
   return {
     isWildEntryAnimation,
@@ -281,5 +321,5 @@ export function useBattleAnimations(
     handleFlinchRequest,
     triggerFlinchAnim: handleFlinchRequest,
     awaitTween
-  }
+  };
 }

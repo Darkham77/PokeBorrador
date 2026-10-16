@@ -1,7 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
-import { openDebugTab, armBattleReadyForInput, awaitBattleReadyForInput, type WindowWithResolver } from '../e2e_helpers.ts';
+import {
+  openDebugTab,
+  armBattleReadyForInput,
+  awaitBattleReadyForInput,
+  type WindowWithResolver
+} from '../e2e_helpers.ts';
 
 const CHARMANDER_EXPECTED_HP = 97;
 const CHARMANDER_EXPECTED_ATK = 46;
@@ -110,7 +115,9 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     // 12. Verify active player pokemon stats/properties in combat store matches config
     const activePokemonState = await page.evaluate(() => {
       const win = window as WindowWithResolver;
-      const gameStore = win.__VITE_DEBUG__?.getGameStore?.() as { state?: { team?: E2ECharmander[] } } | undefined;
+      const gameStore = win.__VITE_DEBUG__?.getGameStore?.() as
+        | { state?: { team?: E2ECharmander[] } }
+        | undefined;
       const charmander = gameStore?.state?.team?.find((p) => p?.id === 'charmander');
       if (!charmander || !charmander.ivs || !charmander.moves) {
         throw new Error('Charmander not found or incomplete in gameStore team');
@@ -127,7 +134,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
           def: charmander.ivs.def ?? 0,
           spa: charmander.ivs.spa ?? 0,
           spd: charmander.ivs.spd ?? 0,
-          spe: charmander.ivs.spe ?? 0,
+          spe: charmander.ivs.spe ?? 0
         },
         maxHp: charmander.maxHp,
         atk: charmander.atk,
@@ -135,7 +142,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
         spa: charmander.spa,
         spd: charmander.spd,
         spe: charmander.spe,
-        moves: charmander.moves.map((m) => m?.id),
+        moves: charmander.moves.map((m) => m?.id)
       };
     });
 
@@ -150,7 +157,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     expect(activePokemonState.ivs.spa).toBe(E2E_TEST_IV_SPA_MAX);
     expect(activePokemonState.ivs.spd).toBe(E2E_TEST_IV_SPD_CUSTOM);
     expect(activePokemonState.ivs.spe).toBe(E2E_TEST_IV_SPE_MAX);
-    
+
     expect(activePokemonState.maxHp).toBe(CHARMANDER_EXPECTED_HP);
     expect(activePokemonState.atk).toBe(CHARMANDER_EXPECTED_ATK);
     expect(activePokemonState.def).toBe(CHARMANDER_EXPECTED_DEF);
@@ -241,7 +248,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
       const battleStore = win.__VITE_DEBUG_STORE_RESOLVER__?.();
       return {
         isTrainer: !!battleStore?.state?.isTrainer,
-        trainerName: battleStore?.state?.trainerName ?? '',
+        trainerName: battleStore?.state?.trainerName ?? ''
       };
     });
 
@@ -250,7 +257,9 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     sim.finish('should configure and start trainer combat from ENTREN tab', 'passed');
   });
 
-  test('should manipulate cycle/weather from TIEMPO tab and verify combat weather sync', async ({ page }) => {
+  test('should manipulate cycle/weather from TIEMPO tab and verify combat weather sync', async ({
+    page
+  }) => {
     const sim = new DebugCreatorSimWrapper(page, 'DebugCreatorWeather');
     await sim.setup();
 
@@ -288,7 +297,10 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     });
 
     expect(weatherState).toBe('sandstorm');
-    sim.finish('should manipulate cycle/weather from TIEMPO tab and verify combat weather sync', 'passed');
+    sim.finish(
+      'should manipulate cycle/weather from TIEMPO tab and verify combat weather sync',
+      'passed'
+    );
   });
 
   test.afterEach(async ({ page }) => {

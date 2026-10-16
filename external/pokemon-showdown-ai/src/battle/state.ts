@@ -9,7 +9,7 @@ import {
   BattleRequest,
   SidePokemonData,
   MoveInfo,
-  ActiveRequest,
+  ActiveRequest
 } from '../types';
 import { logDebug } from '../logging/logger';
 
@@ -22,7 +22,7 @@ function toId(text: string): string {
 }
 
 function parseDetails(details: string): { species: string; level: number; gender: string } {
-  const parts = details.split(',').map(s => s.trim());
+  const parts = details.split(',').map((s) => s.trim());
   const species = parts[0];
   let level = 100;
   let gender = 'N';
@@ -34,7 +34,11 @@ function parseDetails(details: string): { species: string; level: number; gender
   return { species, level, gender };
 }
 
-function parseCondition(condition: string): { hp: number; maxHp: number; status: StatusCondition | null } {
+function parseCondition(condition: string): {
+  hp: number;
+  maxHp: number;
+  status: StatusCondition | null;
+} {
   // Formats: "230/230", "65/100 brn", "0 fnt"
   if (condition === '0 fnt' || condition.endsWith(' fnt')) {
     return { hp: 0, maxHp: 100, status: null };
@@ -56,7 +60,7 @@ function parsePokemonIdent(ident: string): { player: 'p1' | 'p2'; position: stri
   return {
     player: match[1] as 'p1' | 'p2',
     position: match[2],
-    name: match[3],
+    name: match[3]
   };
 }
 
@@ -92,7 +96,7 @@ function createPokemon(name: string, species: string, level: number, gender: str
     teraType: null,
     terastallized: false,
     boosts: emptyBoosts(),
-    volatiles: new Set(),
+    volatiles: new Set()
   };
 }
 
@@ -103,7 +107,7 @@ function createSide(id: 'p1' | 'p2'): SideState {
     pokemon: [],
     activePokemon: null,
     totalPokemon: 6,
-    sideConditions: new Map(),
+    sideConditions: new Map()
   };
 }
 
@@ -115,7 +119,7 @@ function createField(): FieldState {
     terrainTurns: 0,
     trickRoom: false,
     trickRoomTurns: 0,
-    tailwind: { p1: 0, p2: 0 },
+    tailwind: { p1: 0, p2: 0 }
   };
 }
 
@@ -298,7 +302,7 @@ export class BattleState {
       const name = data.ident.split(': ')[1] || species;
       const speciesId = toId(species);
 
-      let pokemon = side.pokemon.find(p => p.species === speciesId);
+      let pokemon = side.pokemon.find((p) => p.species === speciesId);
       if (!pokemon) {
         pokemon = createPokemon(name, species, level, gender);
         side.pokemon.push(pokemon);
@@ -343,7 +347,7 @@ export class BattleState {
     }
 
     // Find or create the Pokemon
-    let pokemon = side.pokemon.find(p => p.species === speciesId);
+    let pokemon = side.pokemon.find((p) => p.species === speciesId);
     if (!pokemon) {
       pokemon = createPokemon(name, species, level, gender);
       side.pokemon.push(pokemon);
@@ -373,7 +377,8 @@ export class BattleState {
   }
 
   /** Pending hazard check for HDB inference */
-  private pendingHazardCheck: { player: 'p1' | 'p2'; species: string; hpAtEntry: number } | null = null;
+  private pendingHazardCheck: { player: 'p1' | 'p2'; species: string; hpAtEntry: number } | null =
+    null;
 
   /** Consume and return pending hazard check (orchestrator calls after processing messages) */
   consumeHazardCheck(): { species: string; tookDamage: boolean } | null {
@@ -431,7 +436,7 @@ export class BattleState {
     }
 
     // Track [from] source for inference (Life Orb, etc.)
-    const fromArg = args.find(a => a.includes('[from]'));
+    const fromArg = args.find((a) => a.includes('[from]'));
     if (fromArg) {
       const fromMatch = fromArg.match(/\[from\]\s*item:\s*(.+)/i);
       if (fromMatch) {
@@ -488,8 +493,10 @@ export class BattleState {
     const amount = parseInt(args[2], 10) * direction;
     const side = this.getSide(player);
     if (side.activePokemon && stat in side.activePokemon.boosts) {
-      side.activePokemon.boosts[stat] = Math.max(-6,
-        Math.min(6, side.activePokemon.boosts[stat] + amount));
+      side.activePokemon.boosts[stat] = Math.max(
+        -6,
+        Math.min(6, side.activePokemon.boosts[stat] + amount)
+      );
     }
   }
 
@@ -522,7 +529,7 @@ export class BattleState {
     if (weather === 'none') {
       this.field.weather = null;
       this.field.weatherTurns = 0;
-    } else if (args.some(a => a.includes('[upkeep]'))) {
+    } else if (args.some((a) => a.includes('[upkeep]'))) {
       this.field.weatherTurns++;
     } else {
       this.field.weather = toId(weather);
@@ -671,7 +678,7 @@ export class BattleState {
       field: { ...this.field },
       gameOver: this.gameOver,
       winner: this.winner,
-      lastMoveByOpponent: this.lastMoveByOpponent,
+      lastMoveByOpponent: this.lastMoveByOpponent
     };
   }
 
@@ -681,7 +688,7 @@ export class BattleState {
 
   getAvailableMoves(): MoveInfo[] {
     if (!this.lastRequest?.active?.[0]) return [];
-    return this.lastRequest.active[0].moves.filter(m => !m.disabled && m.pp > 0);
+    return this.lastRequest.active[0].moves.filter((m) => !m.disabled && m.pp > 0);
   }
 
   getActiveRequest(): ActiveRequest | null {
@@ -690,7 +697,7 @@ export class BattleState {
 
   getSwitchOptions(): PokemonState[] {
     if (!this.lastRequest?.side) return [];
-    return this.getMySide().pokemon.filter(p => !p.fainted && !p.active);
+    return this.getMySide().pokemon.filter((p) => !p.fainted && !p.active);
   }
 
   isForceSwitch(): boolean {
@@ -736,8 +743,8 @@ export class BattleState {
   /** Get alive (non-fainted) Pokemon count for a side */
   getAliveCount(side: SideState): number {
     // If we haven't seen all pokemon, estimate based on totalPokemon
-    const knownAlive = side.pokemon.filter(p => !p.fainted).length;
-    const knownFainted = side.pokemon.filter(p => p.fainted).length;
+    const knownAlive = side.pokemon.filter((p) => !p.fainted).length;
+    const knownFainted = side.pokemon.filter((p) => p.fainted).length;
     const unseen = side.totalPokemon - side.pokemon.length;
     return knownAlive + unseen; // Assume unseen pokemon are alive
   }

@@ -4,7 +4,7 @@
  * immediately recompiling static feet and shadow databases into disk.
  */
 
-import type { Plugin, ViteDevServer } from 'vite';
+import type { Plugin, ViteDevServer } from 'vite-plus';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -20,11 +20,14 @@ const PROGRESS_START_PERCENT = 5 as const;
 const PROGRESS_DONE_PERCENT = 100 as const;
 const JSON_INDENT_SPACES = 2 as const;
 
-async function handleRebuildFeetDatabase(res: ServerResponse, server: ViteDevServer): Promise<void> {
+async function handleRebuildFeetDatabase(
+  res: ServerResponse,
+  server: ViteDevServer
+): Promise<void> {
   res.writeHead(HTTP_STATUS_OK, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
+    Connection: 'keep-alive'
   });
 
   const sendEvent = (progress: number, message: string, done: boolean) => {
@@ -71,7 +74,8 @@ async function handleLoadShadowOverrides(
       overrides = { ...(candidate as SpriteShadowOverridesMap) };
       delete overrides['globalShadowConfig'];
     }
-  } catch { // catch-ok: fallback to empty
+  } catch {
+    // catch-ok: fallback to empty
     overrides = {};
   }
 
@@ -81,7 +85,8 @@ async function handleLoadShadowOverrides(
     if (db.shadow) {
       globalShadowConfig = db.shadow;
     }
-  } catch { // catch-ok: fallback to defaults
+  } catch {
+    // catch-ok: fallback to defaults
     // fallback to defaults
   }
 
@@ -96,7 +101,7 @@ function handleSaveShadowOverrides(
   databaseJsonPath: string
 ): void {
   let body = '';
-  req.on('data', chunk => {
+  req.on('data', (chunk) => {
     body += chunk;
   });
 
@@ -115,16 +120,27 @@ function handleSaveShadowOverrides(
       const payloadToSave = globalShadowConfig
         ? { overrides: cleanOverrides, globalShadowConfig }
         : { overrides: cleanOverrides };
-      await fs.writeFile(overridesPath, JSON.stringify(payloadToSave, null, JSON_INDENT_SPACES), 'utf8');
+      await fs.writeFile(
+        overridesPath,
+        JSON.stringify(payloadToSave, null, JSON_INDENT_SPACES),
+        'utf8'
+      );
 
       if (globalShadowConfig) {
         try {
           const rawDb = await fs.readFile(databaseJsonPath, 'utf8');
           const db = JSON.parse(rawDb);
           db.shadow = globalShadowConfig;
-          await fs.writeFile(databaseJsonPath, JSON.stringify(db, null, JSON_INDENT_SPACES), 'utf8');
+          await fs.writeFile(
+            databaseJsonPath,
+            JSON.stringify(db, null, JSON_INDENT_SPACES),
+            'utf8'
+          );
         } catch (dbErr) {
-          console.error('[vite-plugin-dev-shadow-editor] Error updating pokemonFeetDatabase.json:', dbErr);
+          console.error(
+            '[vite-plugin-dev-shadow-editor] Error updating pokemonFeetDatabase.json:',
+            dbErr
+          );
         }
       }
 
@@ -141,27 +157,35 @@ export function devShadowEditorPlugin(): Plugin {
   return {
     name: 'vite-plugin-dev-shadow-editor',
     configureServer(server: ViteDevServer) {
-      server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-        const overridesPath = path.resolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
-        const databaseJsonPath = path.resolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.json');
+      server.middlewares.use(
+        async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+          const overridesPath = path.resolve(
+            process.cwd(),
+            'src/data/pokemon/spriteShadowOverrides.json'
+          );
+          const databaseJsonPath = path.resolve(
+            process.cwd(),
+            'src/data/pokemon/pokemonFeetDatabase.json'
+          );
 
-        if (req.method === 'GET' && req.url?.startsWith('/api/dev-rebuild-feet-database')) {
-          await handleRebuildFeetDatabase(res, server);
-          return;
+          if (req.method === 'GET' && req.url?.startsWith('/api/dev-rebuild-feet-database')) {
+            await handleRebuildFeetDatabase(res, server);
+            return;
+          }
+
+          if (req.method === 'GET' && req.url?.startsWith('/api/dev-load-shadow-overrides')) {
+            await handleLoadShadowOverrides(res, overridesPath, databaseJsonPath);
+            return;
+          }
+
+          if (req.method === 'POST' && req.url?.startsWith('/api/dev-save-shadow-overrides')) {
+            handleSaveShadowOverrides(req, res, overridesPath, databaseJsonPath);
+            return;
+          }
+
+          next();
         }
-
-        if (req.method === 'GET' && req.url?.startsWith('/api/dev-load-shadow-overrides')) {
-          await handleLoadShadowOverrides(res, overridesPath, databaseJsonPath);
-          return;
-        }
-
-        if (req.method === 'POST' && req.url?.startsWith('/api/dev-save-shadow-overrides')) {
-          handleSaveShadowOverrides(req, res, overridesPath, databaseJsonPath);
-          return;
-        }
-
-        next();
-      });
+      );
     }
   };
 }

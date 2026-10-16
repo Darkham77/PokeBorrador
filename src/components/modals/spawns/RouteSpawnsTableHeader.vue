@@ -43,12 +43,7 @@ const statsColLabel = computed(() => {
     <div class="col-types">
       {{ typesColLabel }}
     </div>
-    <div
-      v-if="showStatusCol"
-      class="col-type"
-    >
-      Estado
-    </div>
+    <div v-if="showStatusCol" class="col-type">Estado</div>
     <div class="col-multiplier">
       {{ multiplierColLabel }}
     </div>

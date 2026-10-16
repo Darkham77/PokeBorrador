@@ -1,26 +1,27 @@
 <script setup lang="ts">
-import { ref, toValue } from 'vue'
-import { useBattleStore } from '@/stores/battle/battle'
-import { gameBus } from '@/logic/events/gameBus'
-import DebugActionList from './DebugActionList.vue'
+import { ref, toValue } from 'vue';
+import { useBattleStore } from '@/stores/battle/battle';
+import { gameBus } from '@/logic/events/gameBus';
+import DebugActionList from './DebugActionList.vue';
 import { isDebugEffectActive } from './debugAudioAnimHelper';
 
-import { 
-  DEBUG_SOUNDS, 
-  DEBUG_STATUS_CONDITIONS, 
-  DEBUG_SECONDARY_EFFECTS, 
+import {
+  DEBUG_SOUNDS,
+  DEBUG_STATUS_CONDITIONS,
+  DEBUG_SECONDARY_EFFECTS,
   DEBUG_ENCOUNTER_ANIMS,
   DEBUG_COMBAT_ANIMS,
-  DEBUG_CATCH_ANIMS, 
-  DEBUG_ATTACK_FX, 
-  DEBUG_STATS, 
-  DEBUG_FIELD_EFFECTS, 
-// Weather effects removed
+  DEBUG_CATCH_ANIMS,
+  DEBUG_ATTACK_FX,
+  DEBUG_STATS,
+  DEBUG_FIELD_EFFECTS,
+  // Weather effects removed
   DEBUG_UI_ANIMS,
   DEBUG_SPECIAL_MODES
-} from './debugConstants.ts'
+} from './debugConstants.ts';
 
-interface ViteDebugBridge extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
+interface ViteDebugBridge extends Record<string, unknown> {
+  // open-record: Generic key-value data dictionary container
   setStatStage: (side: string, stat: string, val: number) => void;
   playSound: (id: string) => void;
   triggerAnim: (id: string, side: string, options?: Record<string, unknown>) => void;
@@ -31,70 +32,72 @@ interface ViteDebugBridge extends Record<string, unknown> { // open-record: Gene
   toggleSilhouette: () => void;
 }
 
-const battleStore = useBattleStore()
+const battleStore = useBattleStore();
 
-const activeSide = ref<'player' | 'enemy'>('enemy')
+const activeSide = ref<'player' | 'enemy'>('enemy');
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge
+const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge;
 
 const setStatStage = (side: string, stat: string, val: number) => {
-  getDebugBridge().setStatStage(side, stat, val)
-}
+  getDebugBridge().setStatStage(side, stat, val);
+};
 
 const playSound = (id: string) => {
-  getDebugBridge().playSound(id)
-}
+  getDebugBridge().playSound(id);
+};
 
 const triggerAnim = (id: string, options = {}) => {
-  const bridge = getDebugBridge()
+  const bridge = getDebugBridge();
   if (bridge && typeof bridge.triggerAnim === 'function') {
-    bridge.triggerAnim(id, activeSide.value, options)
+    bridge.triggerAnim(id, activeSide.value, options);
   } else {
-    gameBus.emit(id === 'recoil_rebound' ? 'PLAY_RECOIL' : id, { side: activeSide.value, ...options })
+    gameBus.emit(id === 'recoil_rebound' ? 'PLAY_RECOIL' : id, {
+      side: activeSide.value,
+      ...options
+    });
   }
-}
+};
 
 const triggerAttack = (cat?: string) => {
-  if (!cat) return
+  if (!cat) return;
   if (cat === 'recoil') {
-    gameBus.emit('PLAY_RECOIL', { side: activeSide.value })
-    return
+    gameBus.emit('PLAY_RECOIL', { side: activeSide.value });
+    return;
   }
-  const bridge = getDebugBridge()
+  const bridge = getDebugBridge();
   if (bridge && typeof bridge.triggerAnim === 'function') {
-    bridge.triggerAnim('attack', activeSide.value, { cat })
+    bridge.triggerAnim('attack', activeSide.value, { cat });
   }
-}
+};
 
 const setStatus = async (status: string) => {
-  await getDebugBridge().setStatus(activeSide.value, status)
-}
+  await getDebugBridge().setStatus(activeSide.value, status);
+};
 
 const toggleSecondary = (type: string) => {
-  getDebugBridge().setSecondaryStatus(activeSide.value, type)
-}
+  getDebugBridge().setSecondaryStatus(activeSide.value, type);
+};
 
 const modifyStat = (stat: string, delta: number) => {
-  getDebugBridge().modifyStatStage(activeSide.value, stat, delta)
-}
+  getDebugBridge().modifyStatStage(activeSide.value, stat, delta);
+};
 
 const setField = (effect: string, val: number) => {
-  getDebugBridge().setFieldEffect(activeSide.value, effect, val)
-}
+  getDebugBridge().setFieldEffect(activeSide.value, effect, val);
+};
 
 const toggleSilhouette = () => {
-  getDebugBridge().toggleSilhouette()
-}
+  getDebugBridge().toggleSilhouette();
+};
 
 const isEffectActive = (type: string, category: string) => {
-  const side = activeSide.value
-  const poke = side === 'player' 
-    ? battleStore.state?.player 
-    : battleStore.state?.enemy
-  const stages = side === 'player' ? battleStore.playerStages : battleStore.enemyStages
-  const sideConditions = side === 'player' 
-    ? battleStore.state?.playerSideConditions 
-    : battleStore.state?.enemySideConditions
+  const side = activeSide.value;
+  const poke = side === 'player' ? battleStore.state?.player : battleStore.state?.enemy;
+  const stages = side === 'player' ? battleStore.playerStages : battleStore.enemyStages;
+  const sideConditions =
+    side === 'player'
+      ? battleStore.state?.playerSideConditions
+      : battleStore.state?.enemySideConditions;
 
   return isDebugEffectActive(category, type, {
     poke,
@@ -103,8 +106,8 @@ const isEffectActive = (type: string, category: string) => {
     sideConditions,
     weatherType: battleStore.state?.weather?.type,
     terrain: battleStore.state?.terrain
-  })
-}
+  });
+};
 </script>
 
 <template>
@@ -113,14 +116,14 @@ const isEffectActive = (type: string, category: string) => {
     <div class="side-selector-wrap">
       <span class="section-label">BANDO OBJETIVO</span>
       <div class="side-toggle">
-        <button 
+        <button
           id="debug-effect-side-player"
           :class="{ active: activeSide === 'player' }"
           @click.stop="activeSide = 'player'"
         >
           JUGADOR (BACK)
         </button>
-        <button 
+        <button
           id="debug-effect-side-enemy"
           :class="{ active: activeSide === 'enemy' }"
           @click.stop="activeSide = 'enemy'"
@@ -132,9 +135,7 @@ const isEffectActive = (type: string, category: string) => {
 
     <!-- STATUS CONDITIONS SECTION -->
     <div class="debug-section">
-      <h3 class="section-title">
-        ESTADOS ALTERADOS
-      </h3>
+      <h3 class="section-title">ESTADOS ALTERADOS</h3>
       <div class="button-grid-small">
         <button
           v-for="st in DEBUG_STATUS_CONDITIONS"
@@ -152,15 +153,9 @@ const isEffectActive = (type: string, category: string) => {
 
     <!-- STATS SECTION -->
     <div class="debug-section">
-      <h3 class="section-title">
-        NIVELES DE ESTADÍSTICAS
-      </h3>
+      <h3 class="section-title">NIVELES DE ESTADÍSTICAS</h3>
       <div class="stats-list">
-        <div 
-          v-for="s in DEBUG_STATS" 
-          :key="s.id"
-          class="stat-row"
-        >
+        <div v-for="s in DEBUG_STATS" :key="s.id" class="stat-row">
           <span class="stat-label">
             <span class="emoji">{{ s.icon }}</span>
             {{ s.label }}
@@ -194,9 +189,7 @@ const isEffectActive = (type: string, category: string) => {
 
     <!-- SECONDARY EFFECTS SECTION -->
     <div class="debug-section">
-      <h3 class="section-title">
-        ESTADOS SECUNDARIOS
-      </h3>
+      <h3 class="section-title">ESTADOS SECUNDARIOS</h3>
       <div class="button-grid-small">
         <button
           v-for="se in DEBUG_SECONDARY_EFFECTS"
@@ -214,9 +207,7 @@ const isEffectActive = (type: string, category: string) => {
 
     <!-- FIELD EFFECTS SECTION -->
     <div class="debug-section">
-      <h3 class="section-title">
-        EFECTOS DE CAMPO
-      </h3>
+      <h3 class="section-title">EFECTOS DE CAMPO</h3>
       <div class="button-grid-small">
         <button
           v-for="f in DEBUG_FIELD_EFFECTS"
@@ -234,9 +225,7 @@ const isEffectActive = (type: string, category: string) => {
 
     <!-- SOUNDS SECTION -->
     <div class="debug-section">
-      <h3 class="section-title">
-        EFECTOS DE SONIDO (8-BIT)
-      </h3>
+      <h3 class="section-title">EFECTOS DE SONIDO (8-BIT)</h3>
       <div class="button-grid-small">
         <button
           v-for="s in DEBUG_SOUNDS"
@@ -259,11 +248,7 @@ const isEffectActive = (type: string, category: string) => {
     />
 
     <!-- COMBAT ANIMS SECTION -->
-    <DebugActionList
-      title="COMBATE Y ESTADO"
-      :items="DEBUG_COMBAT_ANIMS"
-      @action="triggerAnim"
-    />
+    <DebugActionList title="COMBATE Y ESTADO" :items="DEBUG_COMBAT_ANIMS" @action="triggerAnim" />
 
     <!-- CATCH ANIMS SECTION -->
     <DebugActionList
@@ -278,9 +263,7 @@ const isEffectActive = (type: string, category: string) => {
 
     <!-- ATTACK FX SECTION -->
     <div class="debug-section">
-      <h3 class="section-title">
-        FX DE ATAQUES (SPRITE)
-      </h3>
+      <h3 class="section-title">FX DE ATAQUES (SPRITE)</h3>
       <div class="button-grid-3">
         <button
           v-for="fx in DEBUG_ATTACK_FX"
@@ -312,17 +295,20 @@ const isEffectActive = (type: string, category: string) => {
       title="MODOS ESPECIALES"
       :items="DEBUG_SPECIAL_MODES"
       :title-style="{ color: '#f472b6', borderBottomColor: 'rgba(244, 114, 182, 0.3)' }"
-      :card-style="{ background: 'rgba(131, 24, 67, 0.2)', borderColor: 'rgba(244, 114, 182, 0.2)' }"
+      :card-style="{
+        background: 'rgba(131, 24, 67, 0.2)',
+        borderColor: 'rgba(244, 114, 182, 0.2)'
+      }"
       :label-style="{ color: '#fce7f3' }"
       :desc-style="{ color: '#f9a8d4' }"
       :arrow-style="{ color: '#f472b6' }"
-      @action="(id) => id === 'silhouette' ? toggleSilhouette() : null"
+      @action="(id) => (id === 'silhouette' ? toggleSilhouette() : null)"
     />
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .debug-audio-tab {
   display: flex;
@@ -357,7 +343,6 @@ const isEffectActive = (type: string, category: string) => {
     font-size: var(--font-8);
     flex: 1;
     cursor: pointer;
-    
 
     &.active {
       background: var(--purple);
@@ -405,7 +390,6 @@ const isEffectActive = (type: string, category: string) => {
   color: var(--white);
   font-size: var(--font-7);
   cursor: pointer;
-  
 
   &:hover {
     background: Rgb(255 255 255 / 8%);
@@ -417,13 +401,16 @@ const isEffectActive = (type: string, category: string) => {
     background: var(--purple);
     border-color: var(--white);
     box-shadow: var(--shadow-card);
-    
+
     .icon {
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 5px white); }
+      will-change: transform, filter, opacity;
+      filter: Drop-Shadow(0 0 5px white);
+    }
   }
 
-  .icon { font-size: var(--font-16); }
+  .icon {
+    font-size: var(--font-16);
+  }
 }
 
 .stats-list {
@@ -439,7 +426,7 @@ const isEffectActive = (type: string, category: string) => {
   padding: 6px 12px;
   border-radius: $radius-lg;
   background: Rgb(255 255 255 / 3%);
-  
+
   .stat-label {
     @include pixelated;
 
@@ -448,7 +435,9 @@ const isEffectActive = (type: string, category: string) => {
     gap: $spacing-sm;
     color: Rgb(255 255 255 / 70%);
     font-size: var(--font-8);
-    .icon { font-size: var(--font-12); }
+    .icon {
+      font-size: var(--font-12);
+    }
   }
 }
 
@@ -471,15 +460,21 @@ const isEffectActive = (type: string, category: string) => {
   color: var(--white);
   font-size: var(--font-8);
   cursor: pointer;
-  
-  
+
   &:hover {
     background: var(--purple);
     border-color: var(--white);
   }
-  
-  &.minus { color: var(--red-light); }
-  &.plus { color: var(--green-light); }
-  &.reset { color: Rgb(255 255 255 / 30%); font-size: var(--font-10); }
+
+  &.minus {
+    color: var(--red-light);
+  }
+  &.plus {
+    color: var(--green-light);
+  }
+  &.reset {
+    color: Rgb(255 255 255 / 30%);
+    font-size: var(--font-10);
+  }
 }
 </style>

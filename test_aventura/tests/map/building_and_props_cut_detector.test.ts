@@ -41,10 +41,16 @@ describe('building_and_props_cut_detector', () => {
         }
 
         // Touching directly (0 tile clearance)
-        const touchHoriz = (a.x + a.width === b.x || b.x + b.width === a.x) && !(a.y + a.height <= b.y || b.y + b.height <= a.y);
-        const touchVert = (a.y + a.height === b.y || b.y + b.height === a.y) && !(a.x + a.width <= b.x || b.x + b.width <= a.x);
+        const touchHoriz =
+          (a.x + a.width === b.x || b.x + b.width === a.x) &&
+          !(a.y + a.height <= b.y || b.y + b.height <= a.y);
+        const touchVert =
+          (a.y + a.height === b.y || b.y + b.height === a.y) &&
+          !(a.x + a.width <= b.x || b.x + b.width <= a.x);
         if (touchHoriz || touchVert) {
-          touchingBuildings.push(`${a.id} (${a.prefabFile}) is touching ${b.id} (${b.prefabFile}) with 0-tile gap`);
+          touchingBuildings.push(
+            `${a.id} (${a.prefabFile}) is touching ${b.id} (${b.prefabFile}) with 0-tile gap`
+          );
         }
       }
     }
@@ -145,12 +151,7 @@ describe('building_and_props_cut_detector', () => {
 
       for (const pr of props) {
         for (const b of buildings) {
-          if (
-            pr.x >= b.x &&
-            pr.x < b.x + b.width &&
-            pr.y >= b.y &&
-            pr.y < b.y + b.height
-          ) {
+          if (pr.x >= b.x && pr.x < b.x + b.width && pr.y >= b.y && pr.y < b.y + b.height) {
             propCollisions.push(
               `POI ${poi.name}: Prop ${pr.type} (${pr.prefabFile}) at (${pr.x},${pr.y}) is inside building ${b.id} (${b.width}x${b.height} at ${b.x},${b.y})`
             );
@@ -179,7 +180,7 @@ describe('building_and_props_cut_detector', () => {
 
     const cutRoofs: string[] = [];
 
-    const NON_ROOF_STRUCTURE_IDS = new Set<string>([
+    const NON_ROOF_STRUCTURE_IDS = [
       'poke_dock_pier_wood_small',
       'poke_dock_pier_wood_smooth',
       'poke_arena_rock_plateau',
@@ -192,7 +193,8 @@ describe('building_and_props_cut_detector', () => {
       'poke_league_checkpoint_gate',
       'gatehouse_route',
       'gatehouse_route_horizontal'
-    ]);
+    ] as const;
+    const NON_ROOF_STRUCTURE_IDS_SET: ReadonlySet<string> = new Set(NON_ROOF_STRUCTURE_IDS);
 
     for (const b of buildings) {
       const fullPath = path.resolve(ROOT_DIR, 'test_aventura/assets', b.runtimePath);
@@ -204,15 +206,22 @@ describe('building_and_props_cut_detector', () => {
 
       // Dimension checks: strict 32px multiples across 100% of building assets
       if (w % 32 !== 0 || h % 32 !== 0) {
-        cutRoofs.push(`${b.id} (${b.runtimePath}): non-32px dimensions ${w}x${h} (mod: ${w % 32}, ${h % 32})`);
+        cutRoofs.push(
+          `${b.id} (${b.runtimePath}): non-32px dimensions ${w}x${h} (mod: ${w % 32}, ${h % 32})`
+        );
       }
       if (w !== b.pixelDimensions.w || h !== b.pixelDimensions.h) {
-        cutRoofs.push(`${b.id} (${b.runtimePath}): file ${w}x${h} !== manifest ${b.pixelDimensions.w}x${b.pixelDimensions.h}`);
+        cutRoofs.push(
+          `${b.id} (${b.runtimePath}): file ${w}x${h} !== manifest ${b.pixelDimensions.w}x${b.pixelDimensions.h}`
+        );
       }
 
       // Check if top row y=0 has a flat cut on roof apex
-      if (!NON_ROOF_STRUCTURE_IDS.has(b.id)) {
-        const { data } = await sharp(fullPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+      if (!NON_ROOF_STRUCTURE_IDS_SET.has(b.id)) {
+        const { data } = await sharp(fullPath)
+          .ensureAlpha()
+          .raw()
+          .toBuffer({ resolveWithObject: true });
         let topOpaque = 0;
         for (let x = 0; x < w; x++) {
           if (data[x * 4 + 3]! > 128) topOpaque++;
@@ -223,12 +232,16 @@ describe('building_and_props_cut_detector', () => {
           const leftCornerOpaque = data[0 * 4 + 3]! > 128;
           const rightCornerOpaque = data[(w - 1) * 4 + 3]! > 128;
           if (leftCornerOpaque || rightCornerOpaque || topOpaque === w) {
-            cutRoofs.push(`${b.id} (${b.runtimePath}): flat-cut without rounded corners (CHOPPED ROOF)`);
+            cutRoofs.push(
+              `${b.id} (${b.runtimePath}): flat-cut without rounded corners (CHOPPED ROOF)`
+            );
           }
         } else {
           // Pitched/gabled-roof buildings: top row apex cannot be a solid flat cut (> 60% opaque)
           if (topOpaque > w * 0.6) {
-            cutRoofs.push(`${b.id} (${b.runtimePath}): ${topOpaque}/${w} opaque pixels on top row y=0 (CHOPPED ROOF)`);
+            cutRoofs.push(
+              `${b.id} (${b.runtimePath}): ${topOpaque}/${w} opaque pixels on top row y=0 (CHOPPED ROOF)`
+            );
           }
         }
       }

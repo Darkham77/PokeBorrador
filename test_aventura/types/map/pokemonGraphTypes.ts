@@ -194,5 +194,3 @@ export interface EnrichedCorridorProperties {
   /** Gatehouse checkpoint coordinates placed at corridor gateways. */
   readonly gatehouses: readonly { readonly x: number; readonly y: number }[];
 }
-
-

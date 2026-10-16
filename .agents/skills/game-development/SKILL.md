@@ -22,26 +22,26 @@ You are working on a game development project. This skill teaches the PRINCIPLES
 
 ### Platform Selection
 
-| If the game targets... | Use Sub-Skill |
-| :--- | :--- |
+| If the game targets...              | Use Sub-Skill             |
+| :---------------------------------- | :------------------------ |
 | Web browsers (HTML5, Canvas, WebGL) | `references/web-games.md` |
 
 ### Dimension Selection
 
-| If the game is... | Use Sub-Skill |
-| :--- | :--- |
+| If the game is...      | Use Sub-Skill            |
+| :--------------------- | :----------------------- |
 | 2D (sprites, tilemaps) | `references/2d-games.md` |
-| 3D (meshes, shaders) | `references/3d-games.md` |
+| 3D (meshes, shaders)   | `references/3d-games.md` |
 
 ### Specialty Areas
 
-| If you need... | Use Sub-Skill |
-| :--- | :--- |
-| GDD, balancing, player psychology | `references/game-design.md` |
-| Multiplayer, networking | `references/multiplayer.md` |
-| Visual style, asset pipeline, animation | `references/game-art.md` |
-| Atmospheric & Weather Effects | `references/atmospheric_effects.md` |
-| Sound design, music, adaptive audio | `references/game-audio.md` |
+| If you need...                          | Use Sub-Skill                       |
+| :-------------------------------------- | :---------------------------------- |
+| GDD, balancing, player psychology       | `references/game-design.md`         |
+| Multiplayer, networking                 | `references/multiplayer.md`         |
+| Visual style, asset pipeline, animation | `references/game-art.md`            |
+| Atmospheric & Weather Effects           | `references/atmospheric_effects.md` |
+| Sound design, music, adaptive audio     | `references/game-audio.md`          |
 
 ---
 
@@ -67,15 +67,15 @@ RENDER → Draw the frame (interpolated)
 
 ### 2. Pattern Selection Matrix
 
-| Pattern | Use When | Example |
-| :--- | :--- | :--- |
-| **State Machine** | 3-5 discrete states | Player: Idle→Walk→Jump |
-| **Object Pooling** | Frequent spawn/destroy | Bullets, particles |
-| **Observer/Events** | Cross-system communication | Health→UI updates |
-| **ECS** | Thousands of similar entities | RTS units, particles |
-| **Command** | Undo, replay, networking | Input recording |
-| **Behavior Tree** | Complex AI decisions | Enemy AI |
-| **Singleton Scene** | Prevent double-mount | Weather, Global FX |
+| Pattern             | Use When                      | Example                |
+| :------------------ | :---------------------------- | :--------------------- |
+| **State Machine**   | 3-5 discrete states           | Player: Idle→Walk→Jump |
+| **Object Pooling**  | Frequent spawn/destroy        | Bullets, particles     |
+| **Observer/Events** | Cross-system communication    | Health→UI updates      |
+| **ECS**             | Thousands of similar entities | RTS units, particles   |
+| **Command**         | Undo, replay, networking      | Input recording        |
+| **Behavior Tree**   | Complex AI decisions          | Enemy AI               |
+| **Singleton Scene** | Prevent double-mount          | Weather, Global FX     |
 
 **Decision Rule:** Start with State Machine. Add ECS only when performance demands.
 
@@ -94,14 +94,14 @@ Abstract input into ACTIONS, not raw keys:
 
 ### 4. Performance Budget (60 FPS = 16.67ms)
 
-| System | Budget |
-| :--- | :--- |
-| Input | 1ms |
-| Physics | 3ms |
-| AI | 2ms |
-| Game Logic | 4ms |
-| Rendering | 5ms |
-| Buffer | 1.67ms |
+| System     | Budget |
+| :--------- | :----- |
+| Input      | 1ms    |
+| Physics    | 3ms    |
+| AI         | 2ms    |
+| Game Logic | 4ms    |
+| Rendering  | 5ms    |
+| Buffer     | 1.67ms |
 
 **Optimization Priority:**
 
@@ -122,14 +122,14 @@ Every interactive UI element in the game (buttons, inputs, dropdowns, switches, 
 
 ## Anti-Patterns (Universal)
 
-| Don't | Do |
-| :--- | :--- |
-| Update everything every frame | Use events, dirty flags |
-| Create objects in hot loops | Object pooling |
-| Cache nothing | Cache references |
-| Optimize without profiling | Profile first |
-| Mix input with logic | Abstract input layer |
-| Interactive UI without explicit ID | Always define deterministic `id` / `:id` |
+| Don't                                 | Do                                       |
+| :------------------------------------ | :--------------------------------------- |
+| Update everything every frame         | Use events, dirty flags                  |
+| Create objects in hot loops           | Object pooling                           |
+| Cache nothing                         | Cache references                         |
+| Optimize without profiling            | Profile first                            |
+| Mix input with logic                  | Abstract input layer                     |
+| Interactive UI without explicit ID    | Always define deterministic `id` / `:id` |
 | Locate UI controls by text or classes | Locate strictly by `#<id>` or `[id=...]` |
 
 ---

@@ -19,34 +19,34 @@ export const Formats = [
   {
     name: '[Gen 9 Champions] OU',
     mod: 'champions',
-    ruleset: [ 'Standard' ],
-    banlist: [ 'AG', 'Uber', 'Moody', 'Quick Claw', 'Baton Pass', 'Last Respects', 'Shed Tail' ]
+    ruleset: ['Standard'],
+    banlist: ['AG', 'Uber', 'Moody', 'Quick Claw', 'Baton Pass', 'Last Respects', 'Shed Tail']
   },
   {
     name: '[Gen 9 Champions] UU',
     mod: 'champions',
     searchShow: false,
-    ruleset: [ '[Gen 9 Champions] OU' ],
-    banlist: [ 'OU', 'UUBL' ]
+    ruleset: ['[Gen 9 Champions] OU'],
+    banlist: ['OU', 'UUBL']
   },
   {
     name: '[Gen 9 Champions] BSS Reg M-B',
     mod: 'champions',
     bestOfDefault: true,
-    ruleset: [ 'Flat Rules', 'VGC Timer' ]
+    ruleset: ['Flat Rules', 'VGC Timer']
   },
   {
     name: '[Gen 9 Champions] VGC 2026 Reg M-B',
     mod: 'champions',
     gameType: 'doubles',
     bestOfDefault: true,
-    ruleset: [ 'Flat Rules', 'VGC Timer', 'Open Team Sheets' ]
+    ruleset: ['Flat Rules', 'VGC Timer', 'Open Team Sheets']
   },
   {
     name: '[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)',
     mod: 'champions',
     gameType: 'doubles',
-    ruleset: [ 'Flat Rules', 'VGC Timer', 'Force Open Team Sheets', 'Best of = 3' ]
+    ruleset: ['Flat Rules', 'VGC Timer', 'Force Open Team Sheets', 'Best of = 3']
   },
   {
     name: '[Gen 9 Champions] Custom Game',

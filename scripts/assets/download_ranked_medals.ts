@@ -1,6 +1,6 @@
 /**
  * scripts/assets/download_ranked_medals.ts
- * 
+ *
  * DOWNLOADS OFFICIAL POKÉMON RANK MEDALS FROM BULBAPEDIA ARCHIVES (Node.js 26+)
  * Source: Pokémon Mystery Dungeon: Rescue Team DX official rank symbols (64x64 transparent PNG)
  */
@@ -16,12 +16,22 @@ import { safeResolve, safeWriteFile, safeFetch } from '@francogp/auditor';
 enableCompileCache();
 
 const FAILURE_EXIT_CODE = 1;
-const USER_AGENT_FIREFOX_HEADER = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0';
+const USER_AGENT_FIREFOX_HEADER =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0';
 const EXPECTED_ALPHA_CHANNELS = 4;
 
 // Permissions check (Node.js 26+)
-if (process.permission && (!process.permission.has('fs.read', process.cwd()) || !process.permission.has('fs.write', process.cwd()))) {
-  console.error(styleText('red', '\n❌ Error: Requires read/write permissions. Run with --permission --allow-fs-read=. --allow-fs-write=.\n'));
+if (
+  process.permission &&
+  (!process.permission.has('fs.read', process.cwd()) ||
+    !process.permission.has('fs.write', process.cwd()))
+) {
+  console.error(
+    styleText(
+      'red',
+      '\n❌ Error: Requires read/write permissions. Run with --permission --allow-fs-read=. --allow-fs-write=.\n'
+    )
+  );
   process.exit(FAILURE_EXIT_CODE);
 }
 
@@ -73,7 +83,7 @@ async function downloadFile(rawUrl: string, filepath: string): Promise<boolean> 
     const response = await safeFetch(rawUrl, {
       headers: {
         'User-Agent': USER_AGENT_FIREFOX_HEADER,
-        'Referer': 'https://archives.bulbagarden.net/'
+        Referer: 'https://archives.bulbagarden.net/'
       }
     });
 
@@ -87,11 +97,21 @@ async function downloadFile(rawUrl: string, filepath: string): Promise<boolean> 
     // Validate transparency and image integrity via sharp
     const metadata = await sharp(buffer).metadata();
     if (metadata.channels !== EXPECTED_ALPHA_CHANNELS || !metadata.hasAlpha) {
-      console.warn(styleText('yellow', `   ⚠️ Warning: Image at ${rawUrl} might not contain an alpha transparency channel.`));
+      console.warn(
+        styleText(
+          'yellow',
+          `   ⚠️ Warning: Image at ${rawUrl} might not contain an alpha transparency channel.`
+        )
+      );
     }
 
     await safeWriteFile(safeTargetFile, buffer);
-    console.log(styleText('green', `   ✅ Saved ${path.basename(safeTargetFile)} (${metadata.width}x${metadata.height}, ${buffer.byteLength} bytes)`));
+    console.log(
+      styleText(
+        'green',
+        `   ✅ Saved ${path.basename(safeTargetFile)} (${metadata.width}x${metadata.height}, ${buffer.byteLength} bytes)`
+      )
+    );
     return true;
   } catch (e: unknown) {
     console.error(styleText('red', `   ❌ Error downloading ${rawUrl}: ${(e as Error).message}`));
@@ -107,14 +127,18 @@ async function main(): Promise<void> {
   let successCount = 0;
   for (const medal of RANKED_MEDALS) {
     const targetFile = safeResolve(DEST_DIR, medal.filename);
-    console.log(styleText('blue', `📥 Downloading ${medal.tier.toUpperCase()} (${medal.filename})...`));
+    console.log(
+      styleText('blue', `📥 Downloading ${medal.tier.toUpperCase()} (${medal.filename})...`)
+    );
     const success = await downloadFile(medal.url, targetFile);
     if (success) {
       successCount++;
     }
   }
 
-  console.log(styleText('bold', `\nDownloaded ${successCount}/${RANKED_MEDALS.length} official rank medals.`));
+  console.log(
+    styleText('bold', `\nDownloaded ${successCount}/${RANKED_MEDALS.length} official rank medals.`)
+  );
   if (successCount < RANKED_MEDALS.length) {
     process.exit(FAILURE_EXIT_CODE);
   }

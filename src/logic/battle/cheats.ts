@@ -39,9 +39,15 @@ export type CompatibleSide = Side | CheatSide;
 export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
   if (!side || !Array.isArray(side.pokemon)) return;
 
-  const battle = Reflect.get(side, 'battle') as { makeRequest?: (type: string) => void; requestState?: string; sides?: Array<CheatSide | null> } | undefined;
+  const battle = Reflect.get(side, 'battle') as
+    | {
+        makeRequest?: (type: string) => void;
+        requestState?: string;
+        sides?: Array<CheatSide | null>;
+      }
+    | undefined;
 
-  side.pokemon.forEach(p => {
+  side.pokemon.forEach((p) => {
     if (p) {
       p.fainted = false;
       if ('faintQueued' in p) {
@@ -52,7 +58,7 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
       }
       clearPokemonFromFaintQueue(side, p);
 
-      const maxHpVal = p.maxhp !== undefined ? p.maxhp : (p.maxHp !== undefined ? p.maxHp : 0);
+      const maxHpVal = p.maxhp !== undefined ? p.maxhp : p.maxHp !== undefined ? p.maxHp : 0;
       p.hp = maxHpVal;
       const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
       if (typeof cureFn === 'function') {
@@ -62,7 +68,7 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
       }
 
       if (Array.isArray(p.moveSlots)) {
-        p.moveSlots.forEach(slot => {
+        p.moveSlots.forEach((slot) => {
           if (slot) {
             slot.pp = slot.maxpp;
             if ('disabled' in slot) Reflect.set(slot, 'disabled', false);
@@ -80,8 +86,19 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
     side.active[0] = side.pokemon[0];
   }
 
-  const allActiveAlive = Boolean(battle && Array.isArray(battle.sides) && battle.sides.every(s => !s || !Array.isArray(s.active) || s.active.every(p => !p || (!p.fainted && p.hp > 0))));
-  if (battle && typeof battle.makeRequest === 'function' && battle.requestState === 'switch' && allActiveAlive) {
+  const allActiveAlive = Boolean(
+    battle &&
+    Array.isArray(battle.sides) &&
+    battle.sides.every(
+      (s) => !s || !Array.isArray(s.active) || s.active.every((p) => !p || (!p.fainted && p.hp > 0))
+    )
+  );
+  if (
+    battle &&
+    typeof battle.makeRequest === 'function' &&
+    battle.requestState === 'switch' &&
+    allActiveAlive
+  ) {
     battle.makeRequest('move');
   }
 
@@ -95,9 +112,9 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
 export function applyPpRefillCheatToSide(side: CheatSide | null | undefined): void {
   if (!side || !Array.isArray(side.pokemon)) return;
 
-  side.pokemon.forEach(p => {
+  side.pokemon.forEach((p) => {
     if (p && Array.isArray(p.moveSlots)) {
-      p.moveSlots.forEach(slot => {
+      p.moveSlots.forEach((slot) => {
         if (slot) {
           slot.pp = slot.maxpp;
         }
@@ -107,19 +124,25 @@ export function applyPpRefillCheatToSide(side: CheatSide | null | undefined): vo
 }
 
 /** Applies a visible Debug status action to the matching simulator team member. */
-export function applyStatusCheatToSide(side: CompatibleSide | null | undefined, pokemonUid: string, status: string): void {
+export function applyStatusCheatToSide(
+  side: CompatibleSide | null | undefined,
+  pokemonUid: string,
+  status: string
+): void {
   if (!side || !Array.isArray(side.pokemon)) {
-    throw new Error('[cheats] Cannot apply a status without a simulator side')
+    throw new Error('[cheats] Cannot apply a status without a simulator side');
   }
 
-  const target = side.pokemon.find(pokemon => {
-    if (!pokemon || !('uid' in pokemon) || typeof pokemon.uid !== 'string') return false
-    return isMatchingUid(pokemon.uid, pokemonUid)
-  })
+  const target = side.pokemon.find((pokemon) => {
+    if (!pokemon || !('uid' in pokemon) || typeof pokemon.uid !== 'string') return false;
+    return isMatchingUid(pokemon.uid, pokemonUid);
+  });
   if (!target) {
-    throw new Error(`[cheats] Cannot find simulator Pokémon ${pokemonUid} for status synchronization`)
+    throw new Error(
+      `[cheats] Cannot find simulator Pokémon ${pokemonUid} for status synchronization`
+    );
   }
-  target.status = status
+  target.status = status;
 }
 
 /**
@@ -128,12 +151,24 @@ export function applyStatusCheatToSide(side: CompatibleSide | null | undefined, 
  */
 export function syncRequestConditionsWithSimulator(side: CompatibleSide | null | undefined): void {
   if (!side || !side.activeRequest) return;
-  const activeRequest = side.activeRequest as { side?: { pokemon?: Array<RequestPokemon | null> } } | null;
+  const activeRequest = side.activeRequest as {
+    side?: { pokemon?: Array<RequestPokemon | null> };
+  } | null;
   if (!activeRequest || !activeRequest.side || !Array.isArray(activeRequest.side.pokemon)) {
     return;
   }
   const reqPokemons = activeRequest.side.pokemon;
-  const simPokemons = (side.pokemon as Array<(CheatPokemon & { name?: string; ident?: string; moveSlots?: Array<{ id: string; move?: string }>; moves?: string[] }) | null>).filter(Boolean);
+  const simPokemons = (
+    side.pokemon as Array<
+      | (CheatPokemon & {
+          name?: string;
+          ident?: string;
+          moveSlots?: Array<{ id: string; move?: string }>;
+          moves?: string[];
+        })
+      | null
+    >
+  ).filter(Boolean);
 
   const matchedSimMons = new Set<unknown>();
 
@@ -142,7 +177,7 @@ export function syncRequestConditionsWithSimulator(side: CompatibleSide | null |
     const reqId = reqMon.uid || reqMon.ident?.replace(/^p[1-4]a?:\s*/, '') || '';
     const reqMoves = (Reflect.get(reqMon, 'moves') as string[] | undefined) ?? []; // no-domain: Non-domain utility collection or data structure
 
-    let simMon = simPokemons.find(p => {
+    let simMon = simPokemons.find((p) => {
       if (!p || matchedSimMons.has(p)) return false;
       if (reqMon.uid && p.uid && isMatchingUid(p.uid, reqMon.uid)) return true;
       if (reqId) {
@@ -154,10 +189,23 @@ export function syncRequestConditionsWithSimulator(side: CompatibleSide | null |
     });
 
     if (!simMon && reqMoves.length > 0) {
-      simMon = simPokemons.find(p => {
+      simMon = simPokemons.find((p) => {
         if (!p || matchedSimMons.has(p)) return false;
-        const pMoves: string[] = p.moves ?? (p.moveSlots?.map(ms => (ms as { id?: string; move?: string }).id || (ms as { id?: string; move?: string }).move || '').filter(Boolean) ?? []); // no-domain: Non-domain utility collection or data structure
-        if (pMoves.length > 0 && reqMoves.every(rm => pMoves.some(pm => isMatchingUid(pm, rm)))) {
+        const pMoves =
+          p.moves ??
+          p.moveSlots
+            ?.map(
+              (ms) =>
+                (ms as { id?: string; move?: string }).id ||
+                (ms as { id?: string; move?: string }).move ||
+                ''
+            )
+            .filter(Boolean) ??
+          []; // no-domain: Non-domain utility collection or data structure
+        if (
+          pMoves.length > 0 &&
+          reqMoves.every((rm) => pMoves.some((pm) => isMatchingUid(pm, rm)))
+        ) {
           return true;
         }
         return false;
@@ -166,13 +214,14 @@ export function syncRequestConditionsWithSimulator(side: CompatibleSide | null |
 
     if (!simMon) {
       // Fallback matching by position index if not matched yet
-      simMon = simPokemons.find(p => p && !matchedSimMons.has(p));
+      simMon = simPokemons.find((p) => p && !matchedSimMons.has(p));
     }
 
     if (simMon) {
       matchedSimMons.add(simMon);
       const hp = simMon.hp;
-      const maxhp = simMon.maxhp !== undefined ? simMon.maxhp : (simMon.maxHp !== undefined ? simMon.maxHp : 0);
+      const maxhp =
+        simMon.maxhp !== undefined ? simMon.maxhp : simMon.maxHp !== undefined ? simMon.maxHp : 0;
       const status = simMon.status || '';
       const isFainted = simMon.fainted === true || hp <= 0;
 
@@ -188,11 +237,13 @@ export function syncRequestConditionsWithSimulator(side: CompatibleSide | null |
     }
   });
 
-  const active = (side.activeRequest as { active?: Array<{ moves?: Array<{ disabled?: boolean | string }> }> })?.active;
+  const active = (
+    side.activeRequest as { active?: Array<{ moves?: Array<{ disabled?: boolean | string }> }> }
+  )?.active;
   if (Array.isArray(active)) {
-    active.forEach(act => {
+    active.forEach((act) => {
       if (act && Array.isArray(act.moves)) {
-        act.moves.forEach(m => {
+        act.moves.forEach((m) => {
           if (m && m.disabled === 'pp') {
             m.disabled = false;
           }
@@ -201,4 +252,3 @@ export function syncRequestConditionsWithSimulator(side: CompatibleSide | null |
     });
   }
 }
-

@@ -5,7 +5,10 @@ import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMap
 
 import crypto from 'node:crypto';
 
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
+import {
+  requirePokemonSpeciesId,
+  type PokemonSpeciesId
+} from '../../../../src/data/pokemon/pokedex.ts';
 import type { ItemId } from '../../../../src/data/inventory/items.ts';
 import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
 import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
@@ -14,8 +17,19 @@ import type { FuzzerPokemonSet, TestBatch } from './fuzzer_team_generator.ts';
 import { pokemonDataProvider } from '../../../../src/logic/providers/pokemonDataProvider.ts';
 import { PokemonLegalityValidator } from '../../../../src/logic/battle/engine/pokemonLegalityValidator.ts';
 
-export interface ItemTestBatch extends Pick<TestBatch,
-  'playerTeam' | 'enemyTeam' | 'seed' | 'playerChoices' | 'enemyChoices' | 'history' | 'steps' | 'ended' | 'winner' | 'finalState'> {
+export interface ItemTestBatch extends Pick<
+  TestBatch,
+  | 'playerTeam'
+  | 'enemyTeam'
+  | 'seed'
+  | 'playerChoices'
+  | 'enemyChoices'
+  | 'history'
+  | 'steps'
+  | 'ended'
+  | 'winner'
+  | 'finalState'
+> {
   itemsToTest: ItemId[];
   playerPriorityMove?: PokemonMoveId;
   enemyPriorityMove?: PokemonMoveId;
@@ -29,77 +43,260 @@ export const ITEM_FUZZER_ACTIVE_HOLDER_COUNT = 1;
 
 /** Held catalog entries whose effects are outside a Pokémon Showdown battle. */
 export const OUT_OF_BATTLE_HELD_ITEM_IDS = [
-  'auspiciousarmor', 'berrysweet', 'bignugget', 'bottlecap', 'chippedpot', 'cloversweet', 'crackedpot', 'dubiousdisc',
-  'electirizer', 'flowersweet', 'galaricacuff', 'galaricawreath', 'goldbottlecap', 'grepaberry', 'hondewberry', 'kelpsyberry',
-  'lovesweet', 'magmarizer', 'maliciousarmor', 'masterpieceteacup', 'metalalloy', 'pomegberry', 'prettyfeather', 'prismscale',
-  'protector', 'qualotberry', 'rarebone', 'reapercloth', 'ribbonsweet', 'starsweet', 'strawberrysweet', 'sweetapple',
-  'syrupyapple', 'tamatoberry', 'tartapple', 'unremarkableteacup', 'upgrade',
+  'auspiciousarmor',
+  'berrysweet',
+  'bignugget',
+  'bottlecap',
+  'chippedpot',
+  'cloversweet',
+  'crackedpot',
+  'dubiousdisc',
+  'electirizer',
+  'flowersweet',
+  'galaricacuff',
+  'galaricawreath',
+  'goldbottlecap',
+  'grepaberry',
+  'hondewberry',
+  'kelpsyberry',
+  'lovesweet',
+  'magmarizer',
+  'maliciousarmor',
+  'masterpieceteacup',
+  'metalalloy',
+  'pomegberry',
+  'prettyfeather',
+  'prismscale',
+  'protector',
+  'qualotberry',
+  'rarebone',
+  'reapercloth',
+  'ribbonsweet',
+  'starsweet',
+  'strawberrysweet',
+  'sweetapple',
+  'syrupyapple',
+  'tamatoberry',
+  'tartapple',
+  'unremarkableteacup',
+  'upgrade'
 ] as const satisfies readonly ItemId[];
 
 const TYPE_TRIGGER_MOVES = {
-  normal: 'tackle', fire: 'flamethrower', water: 'surf', grass: 'energyball', electric: 'thunderbolt', ice: 'icebeam',
-  fighting: 'aurasphere', poison: 'sludgebomb', ground: 'earthquake', flying: 'airslash', psychic: 'psychic', bug: 'bugbuzz',
-  rock: 'powergem', ghost: 'shadowball', dragon: 'dragonpulse', dark: 'darkpulse', steel: 'flashcannon', fairy: 'moonblast',
+  normal: 'tackle',
+  fire: 'flamethrower',
+  water: 'surf',
+  grass: 'energyball',
+  electric: 'thunderbolt',
+  ice: 'icebeam',
+  fighting: 'aurasphere',
+  poison: 'sludgebomb',
+  ground: 'earthquake',
+  flying: 'airslash',
+  psychic: 'psychic',
+  bug: 'bugbuzz',
+  rock: 'powergem',
+  ghost: 'shadowball',
+  dragon: 'dragonpulse',
+  dark: 'darkpulse',
+  steel: 'flashcannon',
+  fairy: 'moonblast'
 } as const satisfies Record<PokemonType, PokemonMoveId>;
 
 const STATUS_CURE_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
-  aspearberry: 'icebeam', cheriberry: 'thunderwave', chestoberry: 'spore', lumberry: 'toxic', pechaberry: 'toxic',
-  persimberry: 'confuseray', rawstberry: 'willowisp',
+  aspearberry: 'icebeam',
+  cheriberry: 'thunderwave',
+  chestoberry: 'spore',
+  lumberry: 'toxic',
+  pechaberry: 'toxic',
+  persimberry: 'confuseray',
+  rawstberry: 'willowisp'
 };
 
 const TERRAIN_SEED_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
-  electricseed: 'electricterrain', grassyseed: 'grassyterrain', mistyseed: 'mistyterrain', psychicseed: 'psychicterrain',
+  electricseed: 'electricterrain',
+  grassyseed: 'grassyterrain',
+  mistyseed: 'mistyterrain',
+  psychicseed: 'psychicterrain'
 };
 
 const SELF_FIELD_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
-  bigroot: 'gigadrain', bindingband: 'bind', choiceband: 'closecombat', choicescarf: 'closecombat', damprock: 'raindance', expertbelt: 'shadowball', gripclaw: 'bind', heatrock: 'sunnyday', icyrock: 'snowscape',
-  leppaberry: 'sketch', lightclay: 'reflect', loadeddice: 'bulletseed', muscleband: 'closecombat', normalgem: 'tackle', powerherb: 'solarbeam', protectivepads: 'tackle', punchingglove: 'drainpunch', razorclaw: 'slash', roomservice: 'trickroom',
-  scopelens: 'slash', smoothrock: 'sandstorm', terrainextender: 'electricterrain', throatspray: 'bugbuzz', widelens: 'zapcannon',
+  bigroot: 'gigadrain',
+  bindingband: 'bind',
+  choiceband: 'closecombat',
+  choicescarf: 'closecombat',
+  damprock: 'raindance',
+  expertbelt: 'shadowball',
+  gripclaw: 'bind',
+  heatrock: 'sunnyday',
+  icyrock: 'snowscape',
+  leppaberry: 'sketch',
+  lightclay: 'reflect',
+  loadeddice: 'bulletseed',
+  muscleband: 'closecombat',
+  normalgem: 'tackle',
+  powerherb: 'solarbeam',
+  protectivepads: 'tackle',
+  punchingglove: 'drainpunch',
+  razorclaw: 'slash',
+  roomservice: 'trickroom',
+  scopelens: 'slash',
+  smoothrock: 'sandstorm',
+  terrainextender: 'electricterrain',
+  throatspray: 'bugbuzz',
+  widelens: 'zapcannon'
 };
 
 const ENEMY_HIT_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
-  aguavberry: 'falseswipe', apicotberry: 'falseswipe', cellbattery: 'thunderbolt', custapberry: 'falseswipe', ejectbutton: 'tackle', figyberry: 'falseswipe', floatstone: 'lowkick', ganlonberry: 'falseswipe', iapapaberry: 'falseswipe', ironball: 'earthquake', jabocaberry: 'closecombat', keeberry: 'closecombat', lansatberry: 'falseswipe', magoberry: 'falseswipe', micleberry: 'falseswipe', oranberry: 'falseswipe', petayaberry: 'falseswipe', redcard: 'tackle', ringtarget: 'shadowball', rockyhelmet: 'tackle', sitrusberry: 'falseswipe', snowball: 'icebeam', starfberry: 'falseswipe', wikiberry: 'falseswipe',
+  aguavberry: 'falseswipe',
+  apicotberry: 'falseswipe',
+  cellbattery: 'thunderbolt',
+  custapberry: 'falseswipe',
+  ejectbutton: 'tackle',
+  figyberry: 'falseswipe',
+  floatstone: 'lowkick',
+  ganlonberry: 'falseswipe',
+  iapapaberry: 'falseswipe',
+  ironball: 'earthquake',
+  jabocaberry: 'closecombat',
+  keeberry: 'closecombat',
+  lansatberry: 'falseswipe',
+  magoberry: 'falseswipe',
+  micleberry: 'falseswipe',
+  oranberry: 'falseswipe',
+  petayaberry: 'falseswipe',
+  redcard: 'tackle',
+  ringtarget: 'shadowball',
+  rockyhelmet: 'tackle',
+  sitrusberry: 'falseswipe',
+  snowball: 'icebeam',
+  starfberry: 'falseswipe',
+  wikiberry: 'falseswipe'
 };
 
 const ENEMY_STATUS_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
-  abilityshield: 'worryseed', ejectpack: 'charm', heavydutyboots: 'stealthrock', mentalherb: 'taunt', mirrorherb: 'swordsdance', safetygoggles: 'spore', utilityumbrella: 'sunnyday',
+  abilityshield: 'worryseed',
+  ejectpack: 'charm',
+  heavydutyboots: 'stealthrock',
+  mentalherb: 'taunt',
+  mirrorherb: 'swordsdance',
+  safetygoggles: 'spore',
+  utilityumbrella: 'sunnyday'
 };
 
-const PLAYER_BENCH_TRIGGER_ITEM_IDS = ['ejectbutton', 'ejectpack', 'heavydutyboots', 'shedshell'] as const satisfies readonly ItemId[];
+const PLAYER_BENCH_TRIGGER_ITEM_IDS = [
+  'ejectbutton',
+  'ejectpack',
+  'heavydutyboots',
+  'shedshell'
+] as const satisfies readonly ItemId[];
 const ENEMY_BENCH_TRIGGER_ITEM_IDS = ['redcard'] as const satisfies readonly ItemId[];
 
 const ENEMY_SUPER_EFFECTIVE_TRIGGER_MOVES: Readonly<Partial<Record<ItemId, PokemonMoveId>>> = {
-  enigmaberry: 'flamethrower', focussash: 'flamethrower', weaknesspolicy: 'flamethrower',
+  enigmaberry: 'flamethrower',
+  focussash: 'flamethrower',
+  weaknesspolicy: 'flamethrower'
 };
 
 const REQUIRED_HOLDER_SPECIES: Readonly<Partial<Record<ItemId, PokemonSpeciesId>>> = {
-  adrenalineorb: 'pinsir', aguavberry: 'abra', apicotberry: 'abra', boosterenergy: 'fluttermane', choicescarf: 'lucario', cornerstonemask: 'ogerponcornerstone', custapberry: 'abra', eviolite: 'porygon2', expertbelt: 'mew', figyberry: 'abra', floatstone: 'aggron', ganlonberry: 'abra', griseouscore: 'giratina', griseousorb: 'giratina', heavydutyboots: 'charizard', iapapaberry: 'abra', ironball: 'charizard', lansatberry: 'abra', leppaberry: 'smeargle', magoberry: 'abra', micleberry: 'abra', oranberry: 'abra', petayaberry: 'abra', ringtarget: 'snorlax', shedshell: 'scizor', sitrusberry: 'abra', starfberry: 'abra', wikiberry: 'abra',
-  hearthflamemask: 'ogerponhearthflame', lightball: 'pikachu', rustedshield: 'zamazenta', rustedsword: 'zacian',
-  utilityumbrella: 'charizard', wellspringmask: 'ogerponwellspring',
+  adrenalineorb: 'pinsir',
+  aguavberry: 'abra',
+  apicotberry: 'abra',
+  boosterenergy: 'fluttermane',
+  choicescarf: 'lucario',
+  cornerstonemask: 'ogerponcornerstone',
+  custapberry: 'abra',
+  eviolite: 'porygon2',
+  expertbelt: 'mew',
+  figyberry: 'abra',
+  floatstone: 'aggron',
+  ganlonberry: 'abra',
+  griseouscore: 'giratina',
+  griseousorb: 'giratina',
+  heavydutyboots: 'charizard',
+  iapapaberry: 'abra',
+  ironball: 'charizard',
+  lansatberry: 'abra',
+  leppaberry: 'smeargle',
+  magoberry: 'abra',
+  micleberry: 'abra',
+  oranberry: 'abra',
+  petayaberry: 'abra',
+  ringtarget: 'snorlax',
+  shedshell: 'scizor',
+  sitrusberry: 'abra',
+  starfberry: 'abra',
+  wikiberry: 'abra',
+  hearthflamemask: 'ogerponhearthflame',
+  lightball: 'pikachu',
+  rustedshield: 'zamazenta',
+  rustedsword: 'zacian',
+  utilityumbrella: 'charizard',
+  wellspringmask: 'ogerponwellspring'
 };
 
 const REQUIRED_HOLDER_ABILITIES: Readonly<Partial<Record<ItemId, AbilityId>>> = {
-  adrenalineorb: 'hypercutter', boosterenergy: 'protosynthesis', utilityumbrella: 'solarpower',
+  adrenalineorb: 'hypercutter',
+  boosterenergy: 'protosynthesis',
+  utilityumbrella: 'solarpower'
 };
 
 const REQUIRED_ENEMY_ABILITIES: Readonly<Partial<Record<ItemId, AbilityId>>> = {
-  adrenalineorb: 'intimidate', clearamulet: 'intimidate', shedshell: 'magnetpull',
+  adrenalineorb: 'intimidate',
+  clearamulet: 'intimidate',
+  shedshell: 'magnetpull'
 };
 
 const REQUIRED_ENEMY_SPECIES: Readonly<Partial<Record<ItemId, PokemonSpeciesId>>> = {
-  adrenalineorb: 'gyarados', aguavberry: 'kartana', apicotberry: 'kartana', choicescarf: 'jolteon', clearamulet: 'gyarados', custapberry: 'kartana', expertbelt: 'gengar', figyberry: 'kartana', focussash: 'charizard', ganlonberry: 'kartana', iapapaberry: 'kartana', lansatberry: 'kartana', magoberry: 'kartana', micleberry: 'kartana', oranberry: 'kartana', petayaberry: 'kartana', shedshell: 'magnezone', sitrusberry: 'kartana', starfberry: 'kartana', utilityumbrella: 'mew', wikiberry: 'kartana',
+  adrenalineorb: 'gyarados',
+  aguavberry: 'kartana',
+  apicotberry: 'kartana',
+  choicescarf: 'jolteon',
+  clearamulet: 'gyarados',
+  custapberry: 'kartana',
+  expertbelt: 'gengar',
+  figyberry: 'kartana',
+  focussash: 'charizard',
+  ganlonberry: 'kartana',
+  iapapaberry: 'kartana',
+  lansatberry: 'kartana',
+  magoberry: 'kartana',
+  micleberry: 'kartana',
+  oranberry: 'kartana',
+  petayaberry: 'kartana',
+  shedshell: 'magnezone',
+  sitrusberry: 'kartana',
+  starfberry: 'kartana',
+  utilityumbrella: 'mew',
+  wikiberry: 'kartana'
 };
 
 const REQUIRED_ENEMY_ITEMS: Readonly<Partial<Record<ItemId, ItemId>>> = {
-  protectivepads: 'rockyhelmet',
+  protectivepads: 'rockyhelmet'
 };
 
-const MAX_SPECIAL_ATTACK_ENEMY_ITEM_IDS: ReadonlySet<ItemId> = new Set(['focussash']);
-const MAX_ATTACK_ENEMY_ITEM_IDS: ReadonlySet<ItemId> = new Set([
-  'aguavberry', 'apicotberry', 'custapberry', 'figyberry', 'ganlonberry',
-  'iapapaberry', 'lansatberry', 'magoberry', 'micleberry', 'oranberry',
-  'petayaberry', 'sitrusberry', 'starfberry', 'wikiberry'
-]);
+const MAX_SPECIAL_ATTACK_ENEMY_ITEMS = ['focussash'] as const;
+export type MaxSpecialAttackEnemyItem = (typeof MAX_SPECIAL_ATTACK_ENEMY_ITEMS)[number];
+const MAX_SPECIAL_ATTACK_ENEMY_ITEM_IDS: ReadonlySet<ItemId> = new Set(MAX_SPECIAL_ATTACK_ENEMY_ITEMS);
+
+const MAX_ATTACK_ENEMY_ITEMS = [
+  'aguavberry',
+  'apicotberry',
+  'custapberry',
+  'figyberry',
+  'ganlonberry',
+  'iapapaberry',
+  'lansatberry',
+  'magoberry',
+  'micleberry',
+  'oranberry',
+  'petayaberry',
+  'sitrusberry',
+  'starfberry',
+  'wikiberry'
+] as const;
+export type MaxAttackEnemyItem = (typeof MAX_ATTACK_ENEMY_ITEMS)[number];
+const MAX_ATTACK_ENEMY_ITEM_IDS: ReadonlySet<ItemId> = new Set(MAX_ATTACK_ENEMY_ITEMS);
 
 function getSpeciesLegalGender(speciesId: string): GenderName {
   const s = Dex.species.get(speciesId);
@@ -142,19 +339,53 @@ function requiresMaxEnemyAttack(itemId: ItemId): boolean {
 }
 
 const DEFENSIVE_TRIGGER_SPECIES_BY_ATTACK_TYPE = {
-  normal: 'snorlax', fire: 'scizor', water: 'camerupt', grass: 'swampert', electric: 'gyarados', ice: 'dragonite',
-  fighting: 'snorlax', poison: 'meganium', ground: 'raichu', flying: 'venusaur', psychic: 'machamp', bug: 'celebi',
-  rock: 'charizard', ghost: 'alakazam', dragon: 'dragonite', dark: 'alakazam', steel: 'tyranitar', fairy: 'dragonite',
+  normal: 'snorlax',
+  fire: 'scizor',
+  water: 'camerupt',
+  grass: 'swampert',
+  electric: 'gyarados',
+  ice: 'dragonite',
+  fighting: 'snorlax',
+  poison: 'meganium',
+  ground: 'raichu',
+  flying: 'venusaur',
+  psychic: 'machamp',
+  bug: 'celebi',
+  rock: 'charizard',
+  ghost: 'alakazam',
+  dragon: 'dragonite',
+  dark: 'alakazam',
+  steel: 'tyranitar',
+  fairy: 'dragonite'
 } as const satisfies Record<PokemonType, PokemonSpeciesId>;
 
 const OFFENSIVE_TARGET_ENEMY_SPECIES_BY_MOVE_TYPE = {
-  ghost: 'alakazam',
+  ghost: 'alakazam'
 } as const satisfies Partial<Record<PokemonType, PokemonSpeciesId>>;
 
-const DEFAULT_PLAYER_MOVES: readonly PokemonMoveId[] = ['flamethrower', 'surf', 'closecombat', 'thunderwave'];
-const DEFAULT_ENEMY_MOVES: readonly PokemonMoveId[] = ['flamethrower', 'surf', 'toxic', 'swordsdance'];
-const CUSTAP_HOLDER_MOVES: readonly PokemonMoveId[] = ['calmmind', 'recover', 'protect', 'substitute'];
-const ACCURACY_TRIGGER_ITEM_IDS = ['blunderpolicy', 'widelens', 'zoomlens'] as const satisfies readonly ItemId[];
+const DEFAULT_PLAYER_MOVES: readonly PokemonMoveId[] = [
+  'flamethrower',
+  'surf',
+  'closecombat',
+  'thunderwave'
+];
+const DEFAULT_ENEMY_MOVES: readonly PokemonMoveId[] = [
+  'flamethrower',
+  'surf',
+  'toxic',
+  'swordsdance'
+];
+const CUSTAP_HOLDER_MOVES: readonly PokemonMoveId[] = [
+  'calmmind',
+  'recover',
+  'protect',
+  'substitute'
+];
+const ACCURACY_TRIGGER_ITEM_IDS = [
+  'blunderpolicy',
+  'widelens',
+  'zoomlens'
+] as const satisfies readonly ItemId[];
 
 function requireHookTargetType(itemId: ItemId, hook: unknown): PokemonType | null {
   if (typeof hook !== 'function') return null;
@@ -173,12 +404,16 @@ function requireHookTargetSpecies(itemId: ItemId, hook: unknown): PokemonSpecies
   if (!match) return null;
   const rawSpeciesNum = match[1];
   if (!rawSpeciesNum) {
-    throw new Error(`[FUZZER-ITEMS] Showdown hook for item "${itemId}" has an empty restricted species number.`);
+    throw new Error(
+      `[FUZZER-ITEMS] Showdown hook for item "${itemId}" has an empty restricted species number.`
+    );
   }
   const speciesNum = Number(rawSpeciesNum);
-  const species = Dex.species.all().find(candidate => candidate.num === speciesNum);
+  const species = Dex.species.all().find((candidate) => candidate.num === speciesNum);
   if (!species) {
-    throw new Error(`[FUZZER-ITEMS] Showdown hook for item "${itemId}" references unknown species #${speciesNum}.`);
+    throw new Error(
+      `[FUZZER-ITEMS] Showdown hook for item "${itemId}" references unknown species #${speciesNum}.`
+    );
   }
   return requirePokemonSpeciesId(species.id);
 }
@@ -192,11 +427,14 @@ function getRestrictedOrDefaultSpecies(itemId: ItemId, hook: unknown): PokemonSp
 }
 
 function prioritizeMove(move: PokemonMoveId, moves: readonly PokemonMoveId[]): PokemonMoveId[] {
-  return [move, ...moves.filter(candidate => candidate !== move)].slice(0, 4);
+  return [move, ...moves.filter((candidate) => candidate !== move)].slice(0, 4);
 }
 
-function requiresSupportBench(itemIds: readonly ItemId[], triggerItemIds: readonly ItemId[]): boolean {
-  return itemIds.some(itemId => triggerItemIds.some(triggerItemId => triggerItemId === itemId));
+function requiresSupportBench(
+  itemIds: readonly ItemId[],
+  triggerItemIds: readonly ItemId[]
+): boolean {
+  return itemIds.some((itemId) => triggerItemIds.some((triggerItemId) => triggerItemId === itemId));
 }
 
 function createItemlessSupportPokemon(species: PokemonSpeciesId = 'mew'): FuzzerPokemonSet {
@@ -215,24 +453,27 @@ function createItemlessSupportPokemon(species: PokemonSpeciesId = 'mew'): Fuzzer
     evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
     ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
     moves: [...DEFAULT_PLAYER_MOVES],
-    uid,
+    uid
   };
 }
 
-function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriorityMove' | 'enemyPriorityMove'> & {
+function getItemTriggerPlan(itemId: ItemId): Pick<
+  ItemTestBatch,
+  'playerPriorityMove' | 'enemyPriorityMove'
+> & {
   playerMoves: PokemonMoveId[];
   enemyMoves: PokemonMoveId[];
   playerSpecies: PokemonSpeciesId;
   enemySpecies: PokemonSpeciesId;
 } {
   const item = Dex.items.get(itemId);
-  if (ACCURACY_TRIGGER_ITEM_IDS.some(triggerItemId => triggerItemId === itemId)) {
+  if (ACCURACY_TRIGGER_ITEM_IDS.some((triggerItemId) => triggerItemId === itemId)) {
     return {
       playerMoves: prioritizeMove('zapcannon', DEFAULT_PLAYER_MOVES),
       enemyMoves: [...DEFAULT_ENEMY_MOVES],
       playerSpecies: itemId === 'zoomlens' ? 'snorlax' : 'mew',
       enemySpecies: itemId === 'zoomlens' ? 'jolteon' : 'blissey',
-      playerPriorityMove: 'zapcannon',
+      playerPriorityMove: 'zapcannon'
     };
   }
   const statusMove = STATUS_CURE_TRIGGER_MOVES[itemId];
@@ -242,7 +483,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
       enemyMoves: prioritizeMove(statusMove, DEFAULT_ENEMY_MOVES),
       playerSpecies: getRestrictedOrDefaultSpecies(itemId, null),
       enemySpecies: 'blissey',
-      enemyPriorityMove: statusMove,
+      enemyPriorityMove: statusMove
     };
   }
 
@@ -253,7 +494,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
       enemyMoves: prioritizeMove(terrainSeedMove, DEFAULT_ENEMY_MOVES),
       playerSpecies: 'mew',
       enemySpecies: 'blissey',
-      enemyPriorityMove: terrainSeedMove,
+      enemyPriorityMove: terrainSeedMove
     };
   }
 
@@ -264,20 +505,28 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
       enemyMoves: [...DEFAULT_ENEMY_MOVES],
       playerSpecies: getRestrictedOrDefaultSpecies(itemId, null),
       enemySpecies: 'blissey',
-      playerPriorityMove: selfFieldMove,
+      playerPriorityMove: selfFieldMove
     };
   }
 
   const enemyHitMove = ENEMY_HIT_TRIGGER_MOVES[itemId];
   if (enemyHitMove) {
-    const isPinchBerry = itemId === 'magoberry' || itemId === 'starfberry' || itemId === 'wikiberry';
+    const isPinchBerry =
+      itemId === 'magoberry' || itemId === 'starfberry' || itemId === 'wikiberry';
     return {
-      playerMoves: itemId === 'custapberry' ? [...CUSTAP_HOLDER_MOVES] : itemId === 'micleberry' ? prioritizeMove('zapcannon', DEFAULT_PLAYER_MOVES) : isPinchBerry ? prioritizeMove('swordsdance', DEFAULT_PLAYER_MOVES) : [...DEFAULT_PLAYER_MOVES],
+      playerMoves:
+        itemId === 'custapberry'
+          ? [...CUSTAP_HOLDER_MOVES]
+          : itemId === 'micleberry'
+            ? prioritizeMove('zapcannon', DEFAULT_PLAYER_MOVES)
+            : isPinchBerry
+              ? prioritizeMove('swordsdance', DEFAULT_PLAYER_MOVES)
+              : [...DEFAULT_PLAYER_MOVES],
       playerPriorityMove: isPinchBerry ? 'swordsdance' : undefined,
       enemyMoves: prioritizeMove(enemyHitMove, DEFAULT_ENEMY_MOVES),
       playerSpecies: getRestrictedOrDefaultSpecies(itemId, null),
       enemySpecies: 'mew',
-      enemyPriorityMove: enemyHitMove,
+      enemyPriorityMove: enemyHitMove
     };
   }
 
@@ -288,7 +537,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
       enemyMoves: prioritizeMove(enemyStatusMove, DEFAULT_ENEMY_MOVES),
       playerSpecies: getRestrictedOrDefaultSpecies(itemId, null),
       enemySpecies: 'mew',
-      enemyPriorityMove: enemyStatusMove,
+      enemyPriorityMove: enemyStatusMove
     };
   }
 
@@ -299,7 +548,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
       enemyMoves: prioritizeMove(enemySuperEffectiveMove, DEFAULT_ENEMY_MOVES),
       playerSpecies: 'scizor',
       enemySpecies: 'mew',
-      enemyPriorityMove: enemySuperEffectiveMove,
+      enemyPriorityMove: enemySuperEffectiveMove
     };
   }
 
@@ -307,14 +556,16 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
   const playerTargetType = requireHookTargetType(itemId, basePowerHook);
   if (playerTargetType) {
     const playerPriorityMove = TYPE_TRIGGER_MOVES[playerTargetType];
-    const enemySpecies = Object.entries(OFFENSIVE_TARGET_ENEMY_SPECIES_BY_MOVE_TYPE)
-      .find(([candidateType]) => candidateType === playerTargetType)?.[1] ?? 'blissey';
+    const enemySpecies =
+      Object.entries(OFFENSIVE_TARGET_ENEMY_SPECIES_BY_MOVE_TYPE).find(
+        ([candidateType]) => candidateType === playerTargetType
+      )?.[1] ?? 'blissey';
     return {
       playerMoves: prioritizeMove(playerPriorityMove, DEFAULT_PLAYER_MOVES),
       enemyMoves: [...DEFAULT_ENEMY_MOVES],
       playerSpecies: getRestrictedOrDefaultSpecies(itemId, basePowerHook),
       enemySpecies,
-      playerPriorityMove,
+      playerPriorityMove
     };
   }
 
@@ -326,7 +577,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
       enemyMoves: prioritizeMove(enemyPriorityMove, DEFAULT_ENEMY_MOVES),
       playerSpecies: DEFENSIVE_TRIGGER_SPECIES_BY_ATTACK_TYPE[enemyTargetType],
       enemySpecies: 'mew',
-      enemyPriorityMove,
+      enemyPriorityMove
     };
   }
 
@@ -334,7 +585,7 @@ function getItemTriggerPlan(itemId: ItemId): Pick<ItemTestBatch, 'playerPriority
     playerMoves: [...DEFAULT_PLAYER_MOVES],
     enemyMoves: [...DEFAULT_ENEMY_MOVES],
     playerSpecies: getRestrictedOrDefaultSpecies(itemId, null),
-    enemySpecies: 'blissey',
+    enemySpecies: 'blissey'
   };
 }
 
@@ -343,18 +594,20 @@ export function generateItemTestBatches(batchSize: number = 6): ItemTestBatch[] 
 
   // This fuzzer equips items on Pokémon, so only held battle items belong here.
   // Potions and Poké Balls are exercised through their own inventory/capture UI flows.
-  const heldBattleItems = SHOP_ITEMS.filter(i => {
+  const heldBattleItems = SHOP_ITEMS.filter((i) => {
     if (!i.id) return false;
     const dexItem = dexItems.get(i.id);
-    
-    return i.cat === 'combat_held'
-      && !OUT_OF_BATTLE_HELD_ITEM_IDS.some(itemId => itemId === i.id)
-      && dexItem
-      && dexItem.exists
-      && !dexItem.isNonstandard;
+
+    return (
+      i.cat === 'combat_held' &&
+      !OUT_OF_BATTLE_HELD_ITEM_IDS.some((itemId) => itemId === i.id) &&
+      dexItem &&
+      dexItem.exists &&
+      !dexItem.isNonstandard
+    );
   });
 
-  const itemPool = [...new Set(heldBattleItems.map(i => i.id))];
+  const itemPool = [...new Set(heldBattleItems.map((i) => i.id))];
   return generateItemBatches(itemPool, batchSize);
 }
 
@@ -379,7 +632,8 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
       if (itemIdx >= itemPool.length) break;
 
       const itemId = itemPool[itemIdx]!;
-      playerPeriodicSwitchEvery = itemId === 'shedshell' || itemId === 'heavydutyboots' ? 1 : undefined;
+      playerPeriodicSwitchEvery =
+        itemId === 'shedshell' || itemId === 'heavydutyboots' ? 1 : undefined;
       playerVoluntarySwitchObjective = itemId === 'shedshell' || undefined;
       disableIpbHealing = itemId === 'custapberry' || itemId === 'micleberry' || undefined;
       const triggerPlan = getItemTriggerPlan(itemId);
@@ -411,7 +665,7 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
           : { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
         moves: triggerPlan.playerMoves,
-        uid: pUid,
+        uid: pUid
       });
 
       itemIdx++;
@@ -426,7 +680,9 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
         throw new Error(`[FUZZER-ITEMS] Missing enemy trigger plan for item batch slot ${e + 1}.`);
       }
       if (!enemySpecies) {
-        throw new Error(`[FUZZER-ITEMS] Missing enemy species trigger plan for item batch slot ${e + 1}.`);
+        throw new Error(
+          `[FUZZER-ITEMS] Missing enemy species trigger plan for item batch slot ${e + 1}.`
+        );
       }
       const eUid = crypto.randomUUID();
       const eNickname = getShowdownNickname(eUid);
@@ -448,7 +704,7 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
         evs: { hp: 252, atk: enemyAttack, def: 252, spa: enemySpecialAttack, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
         moves: enemyMoves,
-        uid: eUid,
+        uid: eUid
       });
     }
 
@@ -470,7 +726,7 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
         enemyPriorityMove,
         playerPeriodicSwitchEvery,
         playerVoluntarySwitchObjective,
-        disableIpbHealing,
+        disableIpbHealing
       });
     }
   }

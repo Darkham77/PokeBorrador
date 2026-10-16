@@ -33,7 +33,7 @@ export const CELL_BIOME = {
   FOREST_WALL: 8
 } as const;
 
-export type CellBiomeType = typeof CELL_BIOME[keyof typeof CELL_BIOME];
+export type CellBiomeType = (typeof CELL_BIOME)[keyof typeof CELL_BIOME];
 
 // Occupancy Grid Bitmasks
 export const OCCUPANCY_FLAGS = {

@@ -34,13 +34,13 @@
 
 ## 5. Root Setup Scripts SSoT & Workspace Update Governance
 
-- **Root Setup Scripts SSoT**: Whenever instructed to initialize, configure, or update the workspace/environment (e.g. *"actualiza el entorno de trabajo"*, *"actualizar entorno"*, *"preparar el entorno"*, *"setup environment"*, *"actualizar herramientas"*), initial environment configuration, Node version updates, NVM fixes, and clean dependency installations MUST be executed exclusively via the root setup scripts:
+- **Root Setup Scripts SSoT**: Whenever instructed to initialize, configure, or update the workspace/environment (e.g. _"actualiza el entorno de trabajo"_, _"actualizar entorno"_, _"preparar el entorno"_, _"setup environment"_, _"actualizar herramientas"_), initial environment configuration, Node version updates, NVM fixes, and clean dependency installations MUST be executed exclusively via the root setup scripts:
   - Windows: [`setup-windows.ps1`](../../../../../setup-windows.ps1) (`PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1 [-DeclaredVersions]`)
   - Linux / macOS: [`setup-linux.sh`](../../../../../setup-linux.sh) (`chmod +x ./setup-linux.sh && ./setup-linux.sh [--declared-versions]`)
 - **All-in-One Execution Scope**: The setup script performs all required steps in a single run:
   1. Auto-elevates permissions via native Windows UAC prompt dialog (`setup-windows.ps1`) or sudo when necessary.
   2. Detects, installs, and configures NVM symlinks and junctions.
-  3. By default in development, automatically queries `https://nodejs.org/dist/index.json` for the latest stable Current Node.js release, synchronizes `package.json` (`engines.node`) and `.nvmrc`, updates global npm to latest release (`npm install -g npm@latest`), and runs `npm ci`. When invoked with `--declared-versions` / `-DeclaredVersions` (aliases `--locked`, `--pinned`), freezes installation strictly to versions declared in the commit without network queries, without mutating Git-tracked files, and without updating npm.
+  3. By default in development, automatically queries `https://nodejs.org/dist/index.json` for the latest stable Current Node.js release, synchronizes `package.json` (`engines.node`) and `.node-version` (with fallback to `.nvmrc`), updates global npm to latest release (`npm install -g npm@latest`), and runs `npm ci`. When invoked with `--declared-versions` / `-DeclaredVersions` (aliases `--locked`, `--pinned`), freezes installation strictly to versions declared in the commit without network queries, without mutating Git-tracked files, and without updating npm.
   4. Installs and activates Node.js via NVM (`nvm install` & `nvm use`).
   5. Enforces local `.npmrc` security settings (`ignore-scripts=true`, registry HTTPS, high audit level) and applies Windows Defender folder exclusions (`Add-MpPreference`).
   6. Cleans residual npm cache, executes `npm ci` for a deterministic workspace, unblocks native binaries in `node_modules` (`Unblock-File`), and verifies workspace tools via the unified audit framework (`npm run auditor`).

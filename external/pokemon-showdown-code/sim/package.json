@@ -2,14 +2,17 @@
   "name": "@pkmn/sim",
   "version": "0.10.11",
   "description": "An automatically generated extraction of just the simulator portion of Pokémon Showdown",
-  "repository": "github:pkmn/ps",
   "homepage": "https://psim.us",
+  "license": "MIT",
   "author": "Guangcong Luo <guangcongluo@gmail.com> (http://guangcongluo.com)",
   "contributors": [
     "Cathy J. Fitzpatrick <cathy@cathyjf.com> (https://cathyjf.com)",
     "Bill Meltsner <bill@meltsner.com> (http://www.meltsner.com)"
   ],
-  "license": "MIT",
+  "repository": "github:pkmn/ps",
+  "files": [
+    "build"
+  ],
   "sideEffects": false,
   "main": "build/cjs/sim/index.js",
   "module": "build/esm/sim/index.mjs",
@@ -28,17 +31,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "build"
-  ],
-  "dependencies": {
-    "@pkmn/sets": "^5.2.0",
-    "@pkmn/streams": "^1.1.0",
-    "ts-chacha20": "^1.2.0"
-  },
-  "devDependencies": {
-    "mocha": "^11.7.6"
-  },
   "scripts": {
     "compile": "tsc -p .",
     "build": "node ../build",
@@ -47,5 +39,13 @@
     "prepare": "npm run build",
     "pretest": "node ../build --cjs",
     "posttest": "npm run lint"
+  },
+  "dependencies": {
+    "@pkmn/sets": "^5.2.0",
+    "@pkmn/streams": "^1.1.0",
+    "ts-chacha20": "^1.2.0"
+  },
+  "devDependencies": {
+    "mocha": "^11.7.6"
   }
 }

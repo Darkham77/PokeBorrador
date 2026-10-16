@@ -33,7 +33,7 @@ import {
   type RankedTierId,
   type RankedTierName,
   type SeasonalThemeId
-} from '@/data/system/rankedData.ts'
+} from '@/data/system/rankedData.ts';
 export type RankedTierCode = 'BRONCE' | 'PLATA' | 'ORO' | 'PLATINO' | 'DIAMANTE' | 'MAESTRO';
 import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
 import { GAME_TIMEZONE, getGMT3Date } from '@/logic/utils/timeUtils.ts';
@@ -58,18 +58,60 @@ export const SEASONAL_BATTLE_COINS = {
   PLATINO: 250,
   ORO: 150,
   PLATA: 75,
-  BRONCE: 25,
+  BRONCE: 25
 } as const;
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 export const RANKED_TIERS: Record<RankedTierCode, EloTier> = {
-  BRONCE:   { id: 'bronce',   name: 'Bronce',   minElo: 0,                      color: RANKED_MEDAL_CONFIGS.bronce.color,   icon: RANKED_MEDAL_CONFIGS.bronce.fallbackEmoji,   sprite: getAssetUrl(ASSET_TYPES.RANK, 'bronce') },
-  PLATA:    { id: 'plata',    name: 'Plata',    minElo: ELO_THRESHOLD_PLATA,    color: RANKED_MEDAL_CONFIGS.plata.color,    icon: RANKED_MEDAL_CONFIGS.plata.fallbackEmoji,    sprite: getAssetUrl(ASSET_TYPES.RANK, 'plata') },
-  ORO:      { id: 'oro',      name: 'Oro',      minElo: ELO_THRESHOLD_ORO,      color: RANKED_MEDAL_CONFIGS.oro.color,      icon: RANKED_MEDAL_CONFIGS.oro.fallbackEmoji,      sprite: getAssetUrl(ASSET_TYPES.RANK, 'oro') },
-  PLATINO:  { id: 'platino',  name: 'Platino',  minElo: ELO_THRESHOLD_PLATINO,  color: RANKED_MEDAL_CONFIGS.platino.color,  icon: RANKED_MEDAL_CONFIGS.platino.fallbackEmoji,  sprite: getAssetUrl(ASSET_TYPES.RANK, 'platino') },
-  DIAMANTE: { id: 'diamante', name: 'Diamante', minElo: ELO_THRESHOLD_DIAMANTE, color: RANKED_MEDAL_CONFIGS.diamante.color, icon: RANKED_MEDAL_CONFIGS.diamante.fallbackEmoji, sprite: getAssetUrl(ASSET_TYPES.RANK, 'diamante') },
-  MAESTRO:  { id: 'maestro',  name: 'Maestro',  minElo: ELO_THRESHOLD_MAESTRO,  color: RANKED_MEDAL_CONFIGS.maestro.color,  icon: RANKED_MEDAL_CONFIGS.maestro.fallbackEmoji,  sprite: getAssetUrl(ASSET_TYPES.RANK, 'maestro') }
+  BRONCE: {
+    id: 'bronce',
+    name: 'Bronce',
+    minElo: 0,
+    color: RANKED_MEDAL_CONFIGS.bronce.color,
+    icon: RANKED_MEDAL_CONFIGS.bronce.fallbackEmoji,
+    sprite: getAssetUrl(ASSET_TYPES.RANK, 'bronce')
+  },
+  PLATA: {
+    id: 'plata',
+    name: 'Plata',
+    minElo: ELO_THRESHOLD_PLATA,
+    color: RANKED_MEDAL_CONFIGS.plata.color,
+    icon: RANKED_MEDAL_CONFIGS.plata.fallbackEmoji,
+    sprite: getAssetUrl(ASSET_TYPES.RANK, 'plata')
+  },
+  ORO: {
+    id: 'oro',
+    name: 'Oro',
+    minElo: ELO_THRESHOLD_ORO,
+    color: RANKED_MEDAL_CONFIGS.oro.color,
+    icon: RANKED_MEDAL_CONFIGS.oro.fallbackEmoji,
+    sprite: getAssetUrl(ASSET_TYPES.RANK, 'oro')
+  },
+  PLATINO: {
+    id: 'platino',
+    name: 'Platino',
+    minElo: ELO_THRESHOLD_PLATINO,
+    color: RANKED_MEDAL_CONFIGS.platino.color,
+    icon: RANKED_MEDAL_CONFIGS.platino.fallbackEmoji,
+    sprite: getAssetUrl(ASSET_TYPES.RANK, 'platino')
+  },
+  DIAMANTE: {
+    id: 'diamante',
+    name: 'Diamante',
+    minElo: ELO_THRESHOLD_DIAMANTE,
+    color: RANKED_MEDAL_CONFIGS.diamante.color,
+    icon: RANKED_MEDAL_CONFIGS.diamante.fallbackEmoji,
+    sprite: getAssetUrl(ASSET_TYPES.RANK, 'diamante')
+  },
+  MAESTRO: {
+    id: 'maestro',
+    name: 'Maestro',
+    minElo: ELO_THRESHOLD_MAESTRO,
+    color: RANKED_MEDAL_CONFIGS.maestro.color,
+    icon: RANKED_MEDAL_CONFIGS.maestro.fallbackEmoji,
+    sprite: getAssetUrl(ASSET_TYPES.RANK, 'maestro')
+  }
 };
 
 export interface SeasonalTierReward {
@@ -105,7 +147,7 @@ export function getSeasonalPrizesForTier(tierInput: string): SeasonalTierReward 
             def: MAX_INDIVIDUAL_VALUE,
             spa: MAX_INDIVIDUAL_VALUE,
             spd: MAX_INDIVIDUAL_VALUE,
-            spe: MAX_INDIVIDUAL_VALUE,
+            spe: MAX_INDIVIDUAL_VALUE
           }
         }
       };
@@ -124,7 +166,7 @@ export function getSeasonalPrizesForTier(tierInput: string): SeasonalTierReward 
             def: MAX_INDIVIDUAL_VALUE,
             spa: MAX_INDIVIDUAL_VALUE,
             spd: MAX_INDIVIDUAL_VALUE,
-            spe: DIAMANTE_SPEED_INDIVIDUAL_VALUE,
+            spe: DIAMANTE_SPEED_INDIVIDUAL_VALUE
           }
         }
       };
@@ -161,11 +203,50 @@ export function getSeasonalPrizesForTier(tierInput: string): SeasonalTierReward 
  */
 export function getEloTier(elo: number | string): EloTier {
   const e = Number(elo) || 0;
-  if (e >= (RANKED_TIERS.MAESTRO?.minElo || ELO_THRESHOLD_MAESTRO)) return RANKED_TIERS.MAESTRO || { id: 'maestro', name: 'Maestro', minElo: ELO_THRESHOLD_MAESTRO, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.DIAMANTE?.minElo || ELO_THRESHOLD_DIAMANTE)) return RANKED_TIERS.DIAMANTE || { id: 'diamante', name: 'Diamante', minElo: ELO_THRESHOLD_DIAMANTE, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.PLATINO?.minElo || ELO_THRESHOLD_PLATINO)) return RANKED_TIERS.PLATINO || { id: 'platino', name: 'Platino', minElo: ELO_THRESHOLD_PLATINO, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.ORO?.minElo || ELO_THRESHOLD_ORO)) return RANKED_TIERS.ORO || { id: 'oro', name: 'Oro', minElo: ELO_THRESHOLD_ORO, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.PLATA?.minElo || ELO_THRESHOLD_PLATA)) return RANKED_TIERS.PLATA || { id: 'plata', name: 'Plata', minElo: ELO_THRESHOLD_PLATA, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.MAESTRO?.minElo || ELO_THRESHOLD_MAESTRO))
+    return (
+      RANKED_TIERS.MAESTRO || {
+        id: 'maestro',
+        name: 'Maestro',
+        minElo: ELO_THRESHOLD_MAESTRO,
+        color: '',
+        icon: ''
+      }
+    );
+  if (e >= (RANKED_TIERS.DIAMANTE?.minElo || ELO_THRESHOLD_DIAMANTE))
+    return (
+      RANKED_TIERS.DIAMANTE || {
+        id: 'diamante',
+        name: 'Diamante',
+        minElo: ELO_THRESHOLD_DIAMANTE,
+        color: '',
+        icon: ''
+      }
+    );
+  if (e >= (RANKED_TIERS.PLATINO?.minElo || ELO_THRESHOLD_PLATINO))
+    return (
+      RANKED_TIERS.PLATINO || {
+        id: 'platino',
+        name: 'Platino',
+        minElo: ELO_THRESHOLD_PLATINO,
+        color: '',
+        icon: ''
+      }
+    );
+  if (e >= (RANKED_TIERS.ORO?.minElo || ELO_THRESHOLD_ORO))
+    return (
+      RANKED_TIERS.ORO || { id: 'oro', name: 'Oro', minElo: ELO_THRESHOLD_ORO, color: '', icon: '' }
+    );
+  if (e >= (RANKED_TIERS.PLATA?.minElo || ELO_THRESHOLD_PLATA))
+    return (
+      RANKED_TIERS.PLATA || {
+        id: 'plata',
+        name: 'Plata',
+        minElo: ELO_THRESHOLD_PLATA,
+        color: '',
+        icon: ''
+      }
+    );
   return RANKED_TIERS.BRONCE || { id: 'bronce', name: 'Bronce', minElo: 0, color: '', icon: '' };
 }
 
@@ -180,7 +261,11 @@ function getEloTierIndex(elo: number | string): number {
 /**
  * Checks if a match is allowed between two ELO ratings.
  */
-export function isAllowedRankGap(myElo: number | string, opponentElo: number | string, maxGap: number = RANKED_MAX_TIER_GAP): boolean {
+export function isAllowedRankGap(
+  myElo: number | string,
+  opponentElo: number | string,
+  maxGap: number = RANKED_MAX_TIER_GAP
+): boolean {
   return Math.abs(getEloTierIndex(myElo) - getEloTierIndex(opponentElo)) <= maxGap;
 }
 
@@ -195,21 +280,43 @@ const MAX_TEAM_MEMBERS = 6;
 const MIN_RANKED_POKEMON_LEVEL = 1;
 const MAX_RANKED_POKEMON_LEVEL = 100;
 
-export function normalizeRankedRules(raw: Partial<RankedRules> = {}, seasonName: string = 'TEMPORADA ACTUAL'): RankedRules {
+export function normalizeRankedRules(
+  raw: Partial<RankedRules> = {},
+  seasonName: string = 'TEMPORADA ACTUAL'
+): RankedRules {
   return {
     seasonName: seasonName || 'TEMPORADA ACTUAL',
-    maxPokemon: Math.max(MIN_TEAM_MEMBERS, Math.min(MAX_TEAM_MEMBERS, Number(raw.maxPokemon) || MAX_TEAM_MEMBERS)),
-    levelCap: Math.max(MIN_RANKED_POKEMON_LEVEL, Math.min(MAX_RANKED_POKEMON_LEVEL, Number(raw.levelCap) || MAX_RANKED_POKEMON_LEVEL)),
-    allowedTypes: Array.isArray(raw.allowedTypes) ? raw.allowedTypes.map(t => String(t).toLowerCase()).filter((t): t is PokemonType => isPokemonType(t)) : [],
-    bannedPokemonIds: Array.isArray(raw.bannedPokemonIds) ? raw.bannedPokemonIds.map(id => String(id).toLowerCase()).filter((id): id is PokemonSpeciesId => isPokemonSpeciesId(id)) : [],
-    allowedGenerations: Array.isArray(raw.allowedGenerations) ? raw.allowedGenerations.map(Number).filter(n => !isNaN(n) && n > 0) : undefined
+    maxPokemon: Math.max(
+      MIN_TEAM_MEMBERS,
+      Math.min(MAX_TEAM_MEMBERS, Number(raw.maxPokemon) || MAX_TEAM_MEMBERS)
+    ),
+    levelCap: Math.max(
+      MIN_RANKED_POKEMON_LEVEL,
+      Math.min(MAX_RANKED_POKEMON_LEVEL, Number(raw.levelCap) || MAX_RANKED_POKEMON_LEVEL)
+    ),
+    allowedTypes: Array.isArray(raw.allowedTypes)
+      ? raw.allowedTypes
+          .map((t) => String(t).toLowerCase())
+          .filter((t): t is PokemonType => isPokemonType(t))
+      : [],
+    bannedPokemonIds: Array.isArray(raw.bannedPokemonIds)
+      ? raw.bannedPokemonIds
+          .map((id) => String(id).toLowerCase())
+          .filter((id): id is PokemonSpeciesId => isPokemonSpeciesId(id))
+      : [],
+    allowedGenerations: Array.isArray(raw.allowedGenerations)
+      ? raw.allowedGenerations.map(Number).filter((n) => !isNaN(n) && n > 0)
+      : undefined
   };
 }
 
 /**
  * Validates a single Pokemon against the rules.
  */
-export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedRules): { ok: boolean; reason?: string } {
+export function validatePokemonForRanked(
+  pokemon: Pokemon | null,
+  rules: RankedRules
+): { ok: boolean; reason?: string } {
   if (!pokemon) return { ok: false, reason: 'Pokémon inválido.' };
 
   const id = isPokemonSpeciesId(pokemon.id) ? pokemon.id : null;
@@ -232,7 +339,10 @@ export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedR
   if (rules.allowedGenerations && rules.allowedGenerations.length > 0) {
     const monGen = getPokemonGeneration(pokemon.id);
     if (!rules.allowedGenerations.includes(monGen)) {
-      return { ok: false, reason: `${pokemon.name} pertenece a una generación no permitida (Gen ${monGen}).` };
+      return {
+        ok: false,
+        reason: `${pokemon.name} pertenece a una generación no permitida (Gen ${monGen}).`
+      };
     }
   }
 
@@ -242,10 +352,14 @@ export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedR
 /**
  * Validates a full team against the rules.
  */
-export function validateTeamForRanked(team: (Pokemon | null)[], rules: RankedRules): { ok: boolean; reason?: string } {
+export function validateTeamForRanked(
+  team: (Pokemon | null)[],
+  rules: RankedRules
+): { ok: boolean; reason?: string } {
   const members = (team || []).filter((p): p is Pokemon => p !== null);
   if (members.length === 0) return { ok: false, reason: 'El equipo está vacío.' };
-  if (members.length > rules.maxPokemon) return { ok: false, reason: `Máximo ${rules.maxPokemon} Pokémon permitidos.` };
+  if (members.length > rules.maxPokemon)
+    return { ok: false, reason: `Máximo ${rules.maxPokemon} Pokémon permitidos.` };
 
   for (const p of members) {
     const v = validatePokemonForRanked(p, rules);
@@ -297,9 +411,10 @@ export function resolveMedalTournamentInfo(
   const formattedDate = `${monthName} ${year}`;
   const exactDate = `${String(zdt.day).padStart(2, '0')}/${String(monthIndex).padStart(2, '0')}/${year}`;
 
-  let themeConfig = (medal.themeId && isSeasonalThemeId(medal.themeId))
-    ? SEASONAL_THEMES_BY_ID[medal.themeId]
-    : undefined;
+  let themeConfig =
+    medal.themeId && isSeasonalThemeId(medal.themeId)
+      ? SEASONAL_THEMES_BY_ID[medal.themeId]
+      : undefined;
 
   if (!themeConfig && medal.seasonName) {
     themeConfig = findSeasonalTheme(medal.seasonName);
@@ -309,17 +424,19 @@ export function resolveMedalTournamentInfo(
     themeConfig = getSeasonalThemeForMonth(monthIndex);
   }
 
-  const tournamentName = medal.tournamentName
-    || (medal.seasonName && !isGenericSeasonName(medal.seasonName) ? medal.seasonName : undefined)
-    || themeConfig?.name
-    || 'Frontera Kanto & Johto';
+  const tournamentName =
+    medal.tournamentName ||
+    (medal.seasonName && !isGenericSeasonName(medal.seasonName) ? medal.seasonName : undefined) ||
+    themeConfig?.name ||
+    'Frontera Kanto & Johto';
 
   const nowZdt = getGMT3Date();
   const currentTheme = getSeasonalThemeForMonth(nowZdt.month);
 
-  const isSameMonthAndYear = (zdt.month === nowZdt.month && zdt.year === nowZdt.year);
-  const matchesCurrentTournament = (themeConfig?.id === currentTheme.id) ||
-    (toID(tournamentName) === toID(currentTheme.name)) ||
+  const isSameMonthAndYear = zdt.month === nowZdt.month && zdt.year === nowZdt.year;
+  const matchesCurrentTournament =
+    themeConfig?.id === currentTheme.id ||
+    toID(tournamentName) === toID(currentTheme.name) ||
     (currentSeasonName ? toID(tournamentName) === toID(currentSeasonName) : false);
 
   const isAvailable = matchesCurrentTournament && isSameMonthAndYear;

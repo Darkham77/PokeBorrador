@@ -11,12 +11,16 @@ class FieldAbilitiesCaptureSimulation extends BaseE2ESimulation {
     await this.page.evaluate(
       async ({ natureVal }) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
         const { toNatureId } = await import('../../../src/data/battle/natures.ts');
         const gameStore = useGameStore();
 
-        const abra = pokemonDebugService.generate({ id: requirePokemonSpeciesId('abra'), level: 25 });
+        const abra = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('abra'),
+          level: 25
+        });
         abra.ability = 'synchronize';
         abra.nature = toNatureId(natureVal);
         abra.hp = abra.maxHp;
@@ -34,11 +38,15 @@ class FieldAbilitiesCaptureSimulation extends BaseE2ESimulation {
     await this.page.evaluate(
       async ({ genderVal }) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
         const gameStore = useGameStore();
 
-        const clefairy = pokemonDebugService.generate({ id: requirePokemonSpeciesId('clefairy'), level: 25 });
+        const clefairy = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('clefairy'),
+          level: 25
+        });
         clefairy.ability = 'cutecharm';
         clefairy.gender = genderVal;
         clefairy.hp = clefairy.maxHp;
@@ -53,23 +61,24 @@ class FieldAbilitiesCaptureSimulation extends BaseE2ESimulation {
   }
 
   public async setupButterfreeLeader(): Promise<void> {
-    await this.page.evaluate(
-      async () => {
-        const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-        const gameStore = useGameStore();
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+      const gameStore = useGameStore();
 
-        const butterfree = pokemonDebugService.generate({ id: requirePokemonSpeciesId('butterfree'), level: 25 });
-        butterfree.ability = 'compoundeyes';
-        butterfree.hp = butterfree.maxHp;
+      const butterfree = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('butterfree'),
+        level: 25
+      });
+      butterfree.ability = 'compoundeyes';
+      butterfree.hp = butterfree.maxHp;
 
-        gameStore.state.starterChosen = true;
-        gameStore.state.team = [butterfree];
-        gameStore.state.box = [];
-      },
-      {}
-    );
+      gameStore.state.starterChosen = true;
+      gameStore.state.team = [butterfree];
+      gameStore.state.box = [];
+    }, {});
     await this.saveGameAndAwaitExport();
   }
 
@@ -80,10 +89,14 @@ class FieldAbilitiesCaptureSimulation extends BaseE2ESimulation {
         const { generateEncounter } = await import('../../../src/logic/encounters/encounters.ts');
         const gameStore = useGameStore();
 
-        const encounter = await generateEncounter('route1', {
-          faction: gameStore.state.faction,
-          team: gameStore.state.team
-        }, { forceEncounter: true });
+        const encounter = await generateEncounter(
+          'route1',
+          {
+            faction: gameStore.state.faction,
+            team: gameStore.state.team
+          },
+          { forceEncounter: true }
+        );
 
         if (encounter && encounter.type === 'wild' && encounter.pokemon) {
           if (expNature && encounter.pokemon.nature !== expNature) {

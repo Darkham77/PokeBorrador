@@ -1,6 +1,6 @@
 // src/styles/core/mixins/_layout.scss
-@use "sass:map";
-@use "../variables" as *;
+@use 'sass:map';
+@use '../variables' as *;
 
 @mixin premium-gradient {
   background: Linear-Gradient(180deg, Rgb(255 255 255 / 3%) 0%, Rgb(0 0 0 / 15%) 100%);
@@ -25,13 +25,21 @@
 }
 
 @mixin responsive-zoom {
-  @media (width <= 467px) { zoom: 0.9; }
+  @media (width <= 467px) {
+    zoom: 0.9;
+  }
 
-  @media (width <= 420px) { zoom: 0.8; }
+  @media (width <= 420px) {
+    zoom: 0.8;
+  }
 
-  @media (width <= 380px) { zoom: 0.7; }
+  @media (width <= 380px) {
+    zoom: 0.7;
+  }
 
-  @media (width <= 340px) { zoom: 0.6; }
+  @media (width <= 340px) {
+    zoom: 0.6;
+  }
 }
 
 @mixin pixelated {
@@ -71,7 +79,7 @@
   border-radius: $radius-lg;
   background: Rgb(10 12 20 / 100%) !important;
   color: var(--white);
-  
+
   // High-fidelity pixel isolation
   font-family: $font-family-pokemon !important;
   font-size: var(--font-8) !important; // Original size
@@ -110,8 +118,6 @@
 }
 
 @mixin hover-neon-yellow($border-width: 1px) {
-  
-  
   &:hover {
     z-index: var(--z-map-spawns);
     border-color: var(--yellow) !important;
@@ -128,10 +134,10 @@
 }
 
 @mixin text-outline($color: #000, $width: 1px) {
-  text-shadow: 
-    #{$width} #{$width} 0 $color, 
-    -#{$width} -#{$width} 0 $color, 
-    #{$width} -#{$width} 0 $color, 
+  text-shadow:
+    #{$width} #{$width} 0 $color,
+    -#{$width} -#{$width} 0 $color,
+    #{$width} -#{$width} 0 $color,
     -#{$width} #{$width} 0 $color,
     0 #{$width} 0 $color,
     0 -#{$width} 0 $color,

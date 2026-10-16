@@ -17,10 +17,16 @@ interface ParsedLintData {
 }
 
 function isTargetFile(file: string): boolean {
-  return file.startsWith('src\\') || file.startsWith('src/') ||
-         file.startsWith('supabase\\') || file.startsWith('supabase/') ||
-         file.startsWith('test_aventura\\') || file.startsWith('test_aventura/') ||
-         file.startsWith('scripts\\') || file.startsWith('scripts/');
+  return (
+    file.startsWith('src\\') ||
+    file.startsWith('src/') ||
+    file.startsWith('supabase\\') ||
+    file.startsWith('supabase/') ||
+    file.startsWith('test_aventura\\') ||
+    file.startsWith('test_aventura/') ||
+    file.startsWith('scripts\\') ||
+    file.startsWith('scripts/')
+  );
 }
 
 function parseLintReport(content: string): ParsedLintData {
@@ -87,7 +93,7 @@ function run(): void {
   const data = parseLintReport(content);
   const md = formatMarkdownReport(data);
 
-  const outputPath = path.join(process.cwd(), 'scratch/eslint_summary.md');
+  const outputPath = path.join(process.cwd(), 'scratch/lint_summary.md');
   fs.writeFileSync(outputPath, md, 'utf8');
   console.log(`Summary report written to ${outputPath}`);
 }

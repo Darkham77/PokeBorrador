@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { validateAndSanitize } from '../../../src/logic/auth/saveService.ts';
 import { validateSaveData, type SaveDataDto } from '../../../src/logic/validation/schemas.ts';
@@ -41,7 +41,9 @@ describe('Save Shield Validation Lock & Auto-Unlock', () => {
         maxVigor: 100,
         ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
         evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-        moves: [{ id: 'thunderbolt', name: 'Rayos', type: 'electric', power: 90, pp: 15, maxPP: 15 }]
+        moves: [
+          { id: 'thunderbolt', name: 'Rayos', type: 'electric', power: 90, pp: 15, maxPP: 15 }
+        ]
       }
     ],
     box: [],

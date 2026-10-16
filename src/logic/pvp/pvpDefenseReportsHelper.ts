@@ -5,6 +5,8 @@
  * Manages opponent profile lookups and unnotified defense battle notifications.
  */
 
+import { DEFAULT_PLAYER_CLASS } from '@/data/player/playerClasses.ts';
+import { DEFAULT_TRAINER_LEVEL } from '@/types/system/game.ts';
 import { logger } from '@/logic/utils/logger.ts';
 import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage.ts';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
@@ -36,8 +38,6 @@ interface RawDefenseReportRow {
 }
 
 const MAX_DEFENSE_REPORTS_LIMIT = 10 as const;
-const DEFAULT_TRAINER_LEVEL = 1 as const;
-const DEFAULT_PLAYER_CLASS = 'Entrenador' as const;
 
 function parseReportData(rawData: unknown): PassiveBattleReportData {
   if (typeof rawData === 'string') {
@@ -61,10 +61,12 @@ async function fetchOpponentProfilesMap(
   if (opponentIds.length === 0) return profileMap;
 
   try {
-    const { data: profiles } = await db
+    const { data: profiles } = (await db
       .from('profiles')
-      .select('id, username, player_class, trainer_level, avatar_style, nick_style, faction, elo_rating')
-      .in('id', opponentIds) as { data: ProfileQueryRow[] | null };
+      .select(
+        'id, username, player_class, trainer_level, avatar_style, nick_style, faction, elo_rating'
+      )
+      .in('id', opponentIds)) as { data: ProfileQueryRow[] | null };
 
     if (profiles) {
       for (const p of profiles) {
@@ -96,17 +98,17 @@ function notifyUnseenDefenseReports(
 ): void {
   const storageKey = `${LOCAL_STORAGE_KEYS.PVP_LAST_SEEN_DEFENSE_REPORT_PREFIX}${userUid}`;
   const lastSeenReportId = Number(safeStorage.getItem(storageKey) || 0);
-  const newReports = formattedReports.filter(r => Number(r.id) > lastSeenReportId);
+  const newReports = formattedReports.filter((r) => Number(r.id) > lastSeenReportId);
 
   if (newReports.length === 0 || !notifyFn) return;
 
-  const wins = newReports.filter(r => r.result === 'victory').length;
-  const losses = newReports.filter(r => r.result === 'defeat').length;
+  const wins = newReports.filter((r) => r.result === 'victory').length;
+  const losses = newReports.filter((r) => r.result === 'defeat').length;
   notifyFn(
     `Defensa Pasiva: ${newReports.length} combate${newReports.length > 1 ? 's' : ''} en tu ausencia (${wins}V / ${losses}D).`,
     '🛡️'
   );
-  const highestId = Math.max(...newReports.map(r => Number(r.id) || 0));
+  const highestId = Math.max(...newReports.map((r) => Number(r.id) || 0));
   if (highestId > 0) {
     safeStorage.setItem(storageKey, String(highestId));
   }
@@ -118,27 +120,29 @@ export async function fetchAndFormatDefenseReports(
   notifyFn?: (msg: string, icon: string) => void
 ): Promise<PassiveBattleReport[]> {
   try {
-    const { data: reports } = await db
+    const { data: reports } = (await db
       .from('passive_battle_reports')
       .select('id, user_id, opponent_id, result, report_data, created_at')
       .eq('user_id', userUid)
       .order('created_at', { ascending: false })
-      .limit(MAX_DEFENSE_REPORTS_LIMIT) as { data: RawDefenseReportRow[] | null };
+      .limit(MAX_DEFENSE_REPORTS_LIMIT)) as { data: RawDefenseReportRow[] | null };
 
     if (!reports || reports.length === 0) {
       return [];
     }
 
-    const opponentIds = [...new Set(reports.map(r => r.opponent_id).filter(id => id && id !== 'local_user'))];
+    const opponentIds = [
+      ...new Set(reports.map((r) => r.opponent_id).filter((id) => id && id !== 'local_user'))
+    ];
     const profileMap = await fetchOpponentProfilesMap(db, opponentIds);
 
-    const formattedReports: PassiveBattleReport[] = reports.map(r => ({
+    const formattedReports: PassiveBattleReport[] = reports.map((r) => ({
       id: String(r.id),
       user_id: r.user_id,
       opponent_id: r.opponent_id,
       result: r.result,
       report_data: parseReportData(r.report_data),
-      opponent_profile: r.opponent_id ? (profileMap.get(r.opponent_id) || null) : null,
+      opponent_profile: r.opponent_id ? profileMap.get(r.opponent_id) || null : null,
       created_at: r.created_at
     }));
 

@@ -1,5 +1,4 @@
-@use "@/styles/core/_mixins" as *;
-
+@use '@/styles/core/_mixins' as *;
 
 .friends-list {
   display: flex;
@@ -39,7 +38,7 @@
     font-weight: 700;
     line-height: 1.2;
   }
-  
+
   .meta {
     color: Rgb(255 255 255 / 50%);
     font-size: var(--font-11);
@@ -76,13 +75,23 @@
       opacity: 0.35;
       cursor: not-allowed;
     }
-    &.chat:hover { background: Rgb(59 130 246 / 20%); color: Rgb(96 165 250 / 100%); }
-    &.trade:hover { background: Rgb(34 197 94 / 20%); color: Rgb(74 222 128 / 100%); }
-    &.battle:hover { background: Rgb(168 85 247 / 20%); color: Rgb(192 132 252 / 100%); }
-    &.remove:hover { 
+    &.chat:hover {
+      background: Rgb(59 130 246 / 20%);
+      color: Rgb(96 165 250 / 100%);
+    }
+    &.trade:hover {
+      background: Rgb(34 197 94 / 20%);
+      color: Rgb(74 222 128 / 100%);
+    }
+    &.battle:hover {
+      background: Rgb(168 85 247 / 20%);
+      color: Rgb(192 132 252 / 100%);
+    }
+    &.remove:hover {
       @include btn-vicio-danger;
 
-      width: 32px; height: 32px; // Keep same size
+      width: 32px;
+      height: 32px; // Keep same size
       font-size: var(--font-14);
     }
   }
@@ -92,8 +101,15 @@
   padding: 40px 20px;
   color: Rgb(148 163 184 / 100%);
   text-align: center;
-  .icon { font-size: var(--font-40); opacity: 0.5; margin-bottom: 15px; }
-  p { font-size: var(--font-14); margin-bottom: 20px; }
+  .icon {
+    font-size: var(--font-40);
+    opacity: 0.5;
+    margin-bottom: 15px;
+  }
+  p {
+    font-size: var(--font-14);
+    margin-bottom: 20px;
+  }
 }
 
 .clickable-avatar {

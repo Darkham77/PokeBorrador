@@ -54,9 +54,17 @@
     height: 100%;
     width: 100%;
 
-    &.hp-green { background: var(--emerald); }
-    &.hp-yellow { background: var(--amber-dark); width: 56%; }
-    &.hp-red { background: var(--red-light); width: 20%; }
+    &.hp-green {
+      background: var(--emerald);
+    }
+    &.hp-yellow {
+      background: var(--amber-dark);
+      width: 56%;
+    }
+    &.hp-red {
+      background: var(--red-light);
+      width: 20%;
+    }
   }
 }
 

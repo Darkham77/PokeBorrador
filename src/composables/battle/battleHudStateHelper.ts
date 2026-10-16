@@ -2,12 +2,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { BATTLE_SEAT_SPECIAL_STATES, type BattleSide } from '@/types/battle/battle';
 
-const INIT_FSM_STATES = [
-  'INITIALIZING',
-  'CONTEXT_SETUP',
-  'SEARCH_PHASE',
-  'FIRST_INTRO'
-] as const;
+const INIT_FSM_STATES = ['INITIALIZING', 'CONTEXT_SETUP', 'SEARCH_PHASE', 'FIRST_INTRO'] as const;
 const INIT_FSM_STATES_SET: ReadonlySet<string> = new Set<string>(INIT_FSM_STATES); // runtime-set: Fast O(1) membership lookup set
 
 const ENEMY_HUD_BLOCKED_STATES = [
@@ -18,17 +13,10 @@ const ENEMY_HUD_BLOCKED_STATES = [
 ] as const;
 const ENEMY_HUD_BLOCKED_STATES_SET: ReadonlySet<string> = new Set<string>(ENEMY_HUD_BLOCKED_STATES); // runtime-set: Fast O(1) membership lookup set
 
-const SEARCH_WILD_PRE_STATES = [
-  'CONTEXT_SETUP',
-  'INITIALIZING',
-  'SEARCH_PHASE'
-] as const;
+const SEARCH_WILD_PRE_STATES = ['CONTEXT_SETUP', 'INITIALIZING', 'SEARCH_PHASE'] as const;
 const SEARCH_WILD_PRE_STATES_SET: ReadonlySet<string> = new Set<string>(SEARCH_WILD_PRE_STATES); // runtime-set: Fast O(1) membership lookup set
 
-const SEARCH_WILD_POST_STATES = [
-  'REWARDS_PHASE',
-  'EXIT_BATTLE'
-] as const;
+const SEARCH_WILD_POST_STATES = ['REWARDS_PHASE', 'EXIT_BATTLE'] as const;
 const SEARCH_WILD_POST_STATES_SET: ReadonlySet<string> = new Set<string>(SEARCH_WILD_POST_STATES); // runtime-set: Fast O(1) membership lookup set
 
 const SILHOUETTE_FSM_SUBSTATES = [
@@ -67,7 +55,9 @@ const TRAINER_VISIBLE_FSM_SUBSTATES = [
   'RETREAT_AND_FADEOUT',
   'T_RETREAT'
 ] as const;
-const TRAINER_VISIBLE_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(TRAINER_VISIBLE_FSM_SUBSTATES); // runtime-set: Fast O(1) membership lookup set
+const TRAINER_VISIBLE_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(
+  TRAINER_VISIBLE_FSM_SUBSTATES
+); // runtime-set: Fast O(1) membership lookup set
 
 const SILHOUETTE_SUBSTATES = [
   'PARALLEL_PREP',
@@ -95,17 +85,10 @@ const BUSH_BEHIND_SUBSTATES = [
 ] as const;
 const BUSH_BEHIND_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(BUSH_BEHIND_SUBSTATES); // runtime-set: Fast O(1) membership lookup set
 
-const JUMPING_SUBSTATES = [
-  'ENCOUNTER_ANIM',
-  'PARALLEL_JUMP',
-  'JUMP_SHADOW'
-] as const;
+const JUMPING_SUBSTATES = ['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW'] as const;
 const JUMPING_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(JUMPING_SUBSTATES); // runtime-set: Fast O(1) membership lookup set
 
-const PLAYER_TECH_HIDDEN = [
-  'TRAINER_ENTRY',
-  'T_VISUAL'
-] as const;
+const PLAYER_TECH_HIDDEN = ['TRAINER_ENTRY', 'T_VISUAL'] as const;
 const PLAYER_TECH_HIDDEN_SET: ReadonlySet<string> = new Set<string>(PLAYER_TECH_HIDDEN); // runtime-set: Fast O(1) membership lookup set
 
 const ENCOUNTER_EXCLUDE_STATES = [
@@ -135,16 +118,24 @@ const ENCOUNTER_ACTIVE_SUBSTATES = [
   'BUSH_VISIBLE',
   'SILHOUETTE_MODE'
 ] as const;
-const ENCOUNTER_ACTIVE_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(ENCOUNTER_ACTIVE_SUBSTATES); // runtime-set: Fast O(1) membership lookup set
+const ENCOUNTER_ACTIVE_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(
+  ENCOUNTER_ACTIVE_SUBSTATES
+); // runtime-set: Fast O(1) membership lookup set
 
 interface BattleSeatAnimRef {
   entry?: { isCaptureActive?: boolean; isAnimatingCapture?: boolean; animState?: string };
   exit?: { isCaptureActive?: boolean; isAnimatingCapture?: boolean; animState?: string };
 }
 
-function hasCaptureAnim(anim: { isCaptureActive?: boolean; isAnimatingCapture?: boolean; animState?: string } | undefined): boolean {
+function hasCaptureAnim(
+  anim: { isCaptureActive?: boolean; isAnimatingCapture?: boolean; animState?: string } | undefined
+): boolean {
   if (!anim) return false;
-  return anim.isCaptureActive === true || anim.isAnimatingCapture === true || anim.animState === 'catching';
+  return (
+    anim.isCaptureActive === true ||
+    anim.isAnimatingCapture === true ||
+    anim.animState === 'catching'
+  );
 }
 
 function isSeatCapturing(seat: unknown): boolean {
@@ -164,7 +155,10 @@ function isTrainerHudBlocked(
   return false;
 }
 
-export function checkScrambleState(subState: string | null | undefined, state: string | null | undefined): boolean {
+export function checkScrambleState(
+  subState: string | null | undefined,
+  state: string | null | undefined
+): boolean {
   if (state && INIT_FSM_STATES_SET.has(state)) return true;
   return Boolean(subState && SILHOUETTE_FSM_SUBSTATES_SET.has(subState));
 }
@@ -175,17 +169,24 @@ export function checkEnemyTechnicalHidden(
   isTrainer: boolean
 ): boolean {
   if (subState === 'GEN_TEAMS' || subState === 'MINIGAME_CHECK') return true;
-  if ((state === 'CONTEXT_SETUP' || state === 'INITIALIZING') && subState && TECHNICAL_FSM_SUBSTATES_SET.has(subState)) {
+  if (
+    (state === 'CONTEXT_SETUP' || state === 'INITIALIZING') &&
+    subState &&
+    TECHNICAL_FSM_SUBSTATES_SET.has(subState)
+  ) {
     return true;
   }
   if (isTrainer) {
-    if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'SEARCH_PHASE') return true;
+    if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'SEARCH_PHASE')
+      return true;
     if (state === 'FIRST_INTRO' && subState !== 'POKEMON_CALL') return true;
   }
   return isTrainer && Boolean(subState && TRAINER_VISIBLE_FSM_SUBSTATES_SET.has(subState));
 }
 
-export function checkFloatingState(p: { id?: string | number; ability?: string } | Pokemon | undefined | null): boolean {
+export function checkFloatingState(
+  p: { id?: string | number; ability?: string } | Pokemon | undefined | null
+): boolean {
   if (!p || p.id === undefined || p.id === null) return false;
   const data = pokemonDataProvider.getPokemonData(String(p.id));
   if (!data) return false;
@@ -246,7 +247,10 @@ export function isEnemyJumpingCheck(isEmerging: boolean, sub: string | null | un
   return Boolean(isEmerging && JUMPING_SUBSTATES_SET.has(sub));
 }
 
-export function isPlayerTechHiddenCheck(isTrainer: boolean, sub: string | null | undefined): boolean {
+export function isPlayerTechHiddenCheck(
+  isTrainer: boolean,
+  sub: string | null | undefined
+): boolean {
   return Boolean(isTrainer && sub && PLAYER_TECH_HIDDEN_SET.has(sub));
 }
 
@@ -266,7 +270,15 @@ export function shouldShowEncounterLayersCheck(
   animState: string | null | undefined,
   fsmSub: string | null | undefined
 ): boolean {
-  const { hasEnemy, isCaptureSequenceActive, isFaintInProgress, isEnemyFloating, isWildEncounter, isSearching, wildRevealActive } = flags;
+  const {
+    hasEnemy,
+    isCaptureSequenceActive,
+    isFaintInProgress,
+    isEnemyFloating,
+    isWildEncounter,
+    isSearching,
+    wildRevealActive
+  } = flags;
   if (!hasEnemy) return false;
   if (state && ENCOUNTER_EXCLUDE_STATES_SET.has(state)) return false;
   if (animState && ENCOUNTER_ANIM_STATES_SET.has(animState)) return false;
@@ -293,7 +305,8 @@ export function isEnemyHudSuppressedCheck(
   if (minigame === 'archaeology') return true;
   if (fsmState === 'CONTEXT_SETUP' || fsmState === 'INITIALIZING') return true;
   if (isTrainerHudBlocked(isTrainer, fsmState, fsmSub)) return true;
-  if (isCombatantFaintedOrCapturing(seat2, enemy, isFaintInProgress, faintedSide, 'enemy')) return true;
+  if (isCombatantFaintedOrCapturing(seat2, enemy, isFaintInProgress, faintedSide, 'enemy'))
+    return true;
   return !enemy;
 }
 
@@ -342,10 +355,18 @@ export function buildActiveEnemyIsSilhouette(
   state: string | null | undefined,
   sub: string | null | undefined
 ): boolean {
-  const { isTrainer, isGym, isPvP, isWildSilhouette, isSilhouetteMode, wasSearching, isSearching, isWildEntryAnimation } = flags;
+  const {
+    isTrainer,
+    isGym,
+    isPvP,
+    isWildSilhouette,
+    isSilhouetteMode,
+    wasSearching,
+    isSearching,
+    isWildEntryAnimation
+  } = flags;
   if (isTrainer || isGym || isPvP) return false;
   if (isWildSilhouette || isSilhouetteMode) return true;
   const isSearchWild = Boolean(wasSearching || isSearching);
   return evaluateWildSilhouette({ isSearchWild, isWildEntryAnimation }, state, sub);
 }
-

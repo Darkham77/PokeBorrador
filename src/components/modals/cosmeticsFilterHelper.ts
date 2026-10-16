@@ -74,10 +74,10 @@ export function filterAvatarStylesByShape<T extends { class: string }>(
   shape: ShapeFilterOption
 ): readonly T[] {
   if (shape === 'circular') {
-    return styles.filter(s => !s.class.includes('sq'));
+    return styles.filter((s) => !s.class.includes('sq'));
   }
   if (shape === 'square') {
-    return styles.filter(s => s.class.includes('sq'));
+    return styles.filter((s) => s.class.includes('sq'));
   }
   return styles;
 }
@@ -90,7 +90,8 @@ export function checkIsLocalEnvironment(isDev: boolean, hostname?: string): bool
 
 export function formatCosmeticRequirement(style: LockableCosmeticStyle): string {
   if (style.requiredRole) return 'ADMIN';
-  if (style.requiredClass) return `${style.requiredClass.toUpperCase()} (NIVEL ${UNLOCK_MIN_CLASS_LEVEL})`;
+  if (style.requiredClass)
+    return `${style.requiredClass.toUpperCase()} (NIVEL ${UNLOCK_MIN_CLASS_LEVEL})`;
   if (style.requiredFaction) return `TEAM ${style.requiredFaction.toUpperCase()}`;
   return '';
 }

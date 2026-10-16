@@ -2,7 +2,7 @@
  * @file setup_supabase.ts
  * @description Orquestador CLI en TypeScript (Node.js 26+) para gestionar
  * despliegues multi-servidor de Supabase, reemplazando la versión legacy en Python.
- * 
+ *
  * CARACTERÍSTICAS MODERNAS (Node.js 26+):
  * - Uso exclusivo de prefijos 'node:' para imports nativos.
  * - Explicit Resource Management (ERM) mediante 'await using'.
@@ -12,6 +12,8 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import process from 'node:process';
+import { Buffer } from 'node:buffer';
 import { styleText, parseArgs } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { spawnSync } from 'node:child_process';
@@ -22,10 +24,10 @@ import { fileURLToPath } from 'node:url';
 enableCompileCache();
 
 // ── Constantes y Configuración de Rutas ──────────────────────────────────────
-const BASE_DIR          = path.dirname(fileURLToPath(import.meta.url));
-const ARCHIVO_MAESTRO   = path.resolve(BASE_DIR, '..', '.env'); // .env maestro en raíz de Poké Vicio
+const BASE_DIR = path.dirname(fileURLToPath(import.meta.url));
+const ARCHIVO_MAESTRO = path.resolve(BASE_DIR, '..', '.env'); // .env maestro en raíz de Poké Vicio
 const CARPETA_GENERADOS = path.resolve(BASE_DIR, 'generated');
-const CARPETA_DOCKER    = path.resolve(BASE_DIR, 'docker');
+const CARPETA_DOCKER = path.resolve(BASE_DIR, 'docker');
 
 // ── Contenido de Dockerfile Personalizado (1:1) ──────────────────────────────
 const DOCKERFILE_CONTENT = `# ─────────────────────────────────────────────────────────────────────────────
@@ -75,9 +77,19 @@ function header(title: string, subtitle = '') {
   const rawLength = Math.max(title.length, subtitle.length);
   const border = '━'.repeat(rawLength + 4);
   console.log(styleText('cyan', `┏${border}┓`));
-  console.log(styleText('cyan', `┃  ${styleText('bold', title).padEnd(rawLength + styleText('bold', title).length - title.length)}  ┃`));
+  console.log(
+    styleText(
+      'cyan',
+      `┃  ${styleText('bold', title).padEnd(rawLength + styleText('bold', title).length - title.length)}  ┃`
+    )
+  );
   if (subtitle) {
-    console.log(styleText('cyan', `┃  ${styleText('dim', subtitle).padEnd(rawLength + styleText('dim', subtitle).length - subtitle.length)}  ┃`));
+    console.log(
+      styleText(
+        'cyan',
+        `┃  ${styleText('dim', subtitle).padEnd(rawLength + styleText('dim', subtitle).length - subtitle.length)}  ┃`
+      )
+    );
   }
   console.log(styleText('cyan', `┗${border}┛`));
 }
@@ -99,7 +111,7 @@ function askPrompt(question: string, defaultValue = ''): Promise<string> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return new Promise((resolve) => {
     const q = defaultValue ? `  ${question} [${defaultValue}]: ` : `  ${question}: `;
-    rl.question(q, (answer) => {
+    rl.question(q, (answer: string) => {
       rl.close();
       resolve(answer.trim() || defaultValue);
     });
@@ -110,7 +122,7 @@ function confirmPrompt(question: string, defaultYes = false): Promise<boolean> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return new Promise((resolve) => {
     const opts = defaultYes ? '(Y/n)' : '(y/N)';
-    rl.question(`  ${question} ${opts}: `, (answer) => {
+    rl.question(`  ${question} ${opts}: `, (answer: string) => {
       rl.close();
       const a = answer.trim().toLowerCase();
       if (a === 'y' || a === 'yes') resolve(true);
@@ -134,29 +146,34 @@ function run(cmd: string[], cwd?: string, check = true) {
   return result;
 }
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // ── Lógica de Parseo y Mutación de .env ──────────────────────────────────────
 function setEnvVar(content: string, key: string, value: string, afterHeader?: string): string {
-  const escapedKey = RegExp.escape(key);
+  const escapedKey = escapeRegExp(key);
   const pattern = new RegExp(`^${escapedKey}\\s*=\\s*.*$`, 'm');
   const replacement = `${key}=${value}`;
-  
+
   if (pattern.test(content)) {
     return content.replace(pattern, replacement);
   } else {
     if (afterHeader) {
-      const escapedHeader = RegExp.escape(afterHeader);
+      const escapedHeader = escapeRegExp(afterHeader);
       const hPattern = new RegExp(`^${escapedHeader}\\s*$`, 'm');
       if (hPattern.test(content)) {
         return content.replace(hPattern, `${afterHeader}\n${replacement}`);
       }
     }
-    
+
     let res = content;
     if (res && !res.endsWith('\n')) res += '\n';
     return res + `${replacement}\n`;
   }
 }
 
+// open-record: Master environment variables key-value dictionary parsed from .env file
 async function parseMasterEnv(): Promise<Record<string, string>> {
   try {
     await fs.access(ARCHIVO_MAESTRO);
@@ -165,6 +182,7 @@ async function parseMasterEnv(): Promise<Record<string, string>> {
   }
   await using fileHandle = await fs.open(ARCHIVO_MAESTRO, 'r');
   const content = await fileHandle.readFile({ encoding: 'utf-8' });
+  // open-record: Master environment variables key-value dictionary parsed from .env file
   const result: Record<string, string> = {};
   for (const line of content.split(/\r?\n/)) {
     const trimmed = line.trim();
@@ -177,6 +195,7 @@ async function parseMasterEnv(): Promise<Record<string, string>> {
   return result;
 }
 
+// open-record: Generic environment variables key-value dictionary parsed from .env files
 async function parseEnvFile(filePath: string): Promise<Record<string, string>> {
   try {
     await fs.access(filePath);
@@ -185,6 +204,7 @@ async function parseEnvFile(filePath: string): Promise<Record<string, string>> {
   }
   await using fileHandle = await fs.open(filePath, 'r');
   const content = await fileHandle.readFile({ encoding: 'utf-8' });
+  // open-record: Generic environment variables key-value dictionary parsed from .env files
   const result: Record<string, string> = {};
   for (const line of content.split(/\r?\n/)) {
     const trimmed = line.trim();
@@ -197,22 +217,43 @@ async function parseEnvFile(filePath: string): Promise<Record<string, string>> {
   return result;
 }
 
-function getServerNames(envVars: Record<string, string>): string[] {
+function getServerNames(
+  // open-record: Environment variables key-value map for server discovery
+  envVars: Record<string, string>
+): string[] {
   const names = new Set<string>();
   const SETUP_ENV_SUFFIXES = [
-    'SUPABASE_PUBLIC_URL', 'API_EXTERNAL_URL', 'SUPABASE_ANON_KEY',
-    'SERVICE_ROLE_KEY', 'POSTGRES_PASSWORD', 'SECRET_KEY_BASE',
-    'DASHBOARD_USERNAME', 'DASHBOARD_PASSWORD', 'KONG_HTTPS_PORT',
-    'PG_META_CRYPTO_KEY', 'VAULT_ENC_KEY', 'DATABASE_URL',
-    'JWT_SECRET', 'SUPABASE_URL', 'TENANT_ID', 'IS_DEFAULT',
-    'LOGFLARE_PRIVATE_ACCESS_TOKEN', 'LOGFLARE_PUBLIC_ACCESS_TOKEN',
-    'ANON_KEY', 'SITE_URL', 'REGION', 'NAME', 'KEY', 'URL', 'ID',
-  ];
+    'SUPABASE_PUBLIC_URL',
+    'API_EXTERNAL_URL',
+    'SUPABASE_ANON_KEY',
+    'SERVICE_ROLE_KEY',
+    'POSTGRES_PASSWORD',
+    'SECRET_KEY_BASE',
+    'DASHBOARD_USERNAME',
+    'DASHBOARD_PASSWORD',
+    'KONG_HTTPS_PORT',
+    'PG_META_CRYPTO_KEY',
+    'VAULT_ENC_KEY',
+    'DATABASE_URL',
+    'JWT_SECRET',
+    'SUPABASE_URL',
+    'TENANT_ID',
+    'IS_DEFAULT',
+    'LOGFLARE_PRIVATE_ACCESS_TOKEN',
+    'LOGFLARE_PUBLIC_ACCESS_TOKEN',
+    'ANON_KEY',
+    'SITE_URL',
+    'REGION',
+    'NAME',
+    'KEY',
+    'URL',
+    'ID'
+  ] as const;
 
   for (const key of Object.keys(envVars)) {
     if (key.startsWith('SERVER_')) {
       const withoutPrefix = key.substring(7);
-      const matchedSuffix = SETUP_ENV_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
+      const matchedSuffix = SETUP_ENV_SUFFIXES.find((s) => withoutPrefix.endsWith(`_${s}`));
       if (matchedSuffix !== undefined) {
         const profile = withoutPrefix.substring(0, withoutPrefix.length - matchedSuffix.length - 1);
         if (profile) {
@@ -224,8 +265,15 @@ function getServerNames(envVars: Record<string, string>): string[] {
   return Array.from(names).sort();
 }
 
-function extractServerVars(envVars: Record<string, string>, serverName: string): Record<string, string> {
+// open-record: Server environment variables key-value dictionary extracted from master env
+function extractServerVars(
+  // open-record: Environment variables key-value dictionary
+  envVars: Record<string, string>,
+  serverName: string
+): Record<string, string> {
+  // open-record: Server environment variables key-value dictionary
   const prefix = `SERVER_${serverName}_`;
+  // open-record: Server environment variables key-value dictionary
   const result: Record<string, string> = {};
   for (const [k, v] of Object.entries(envVars)) {
     if (k.startsWith(prefix)) {
@@ -241,21 +289,22 @@ function b64url(data: Buffer): string {
 }
 
 function signJwt(payload: object, secret: string): string {
-  const h = b64url(Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })));
+  const h = b64url(Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })));
   const p = b64url(Buffer.from(JSON.stringify(payload)));
   // Firma usando algoritmo HMAC-SHA256 equivalente exacto al python hmac.new
-  const signature = crypto.createHmac('sha256', secret)
-    .update(`${h}.${p}`)
-    .digest();
+  const signature = crypto.createHmac('sha256', secret).update(`${h}.${p}`).digest();
   return `${h}.${p}.${b64url(signature)}`;
 }
 
 function isJwtValid(token: string | undefined, expectedRole: string, secret: string): boolean {
   if (!token || typeof token !== 'string') return false;
-  const parts = token.trim().replace(/^["']|["']$/g, '').split('.');
+  const parts = token
+    .trim()
+    .replace(/^["']|["']$/g, '')
+    .split('.');
   if (parts.length !== 3) return false;
   try {
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8')) as {
+    const payload = JSON.parse(Buffer.from(parts[1] || '', 'base64url').toString('utf-8')) as {
       role?: string;
       exp?: number | null;
     };
@@ -265,7 +314,8 @@ function isJwtValid(token: string | undefined, expectedRole: string, secret: str
     if (payload.exp <= nowSec) return false;
 
     // Verificar firma criptográfica HMAC-SHA256 con el JWT_SECRET correspondiente
-    const expectedSig = crypto.createHmac('sha256', secret)
+    const expectedSig = crypto
+      .createHmac('sha256', secret)
       .update(`${parts[0]}.${parts[1]}`)
       .digest('base64url');
     return parts[2] === expectedSig;
@@ -274,9 +324,16 @@ function isJwtValid(token: string | undefined, expectedRole: string, secret: str
   }
 }
 
-async function ensureServerKeys(serverName: string, envVars: Record<string, string>): Promise<Record<string, string>> {
+// open-record: Server environment variables key-value dictionary containing ensured keys
+async function ensureServerKeys(
+  serverName: string,
+  // open-record: Environment variables key-value dictionary
+  envVars: Record<string, string>
+): Promise<Record<string, string>> {
+  // open-record: Server credentials key-value dictionary
   const prefix = `SERVER_${serverName}_`;
   const existing = extractServerVars(envVars, serverName);
+  // open-record: Generated server credentials key-value dictionary
   const generated: Record<string, string> = {};
 
   if (!existing.JWT_SECRET) {
@@ -288,24 +345,30 @@ async function ensureServerKeys(serverName: string, envVars: Record<string, stri
   const iat = Math.floor(Temporal.Now.instant().epochMilliseconds / 1000);
   const exp = iat + 157680000; // 5 años de validez
 
-  for (const [key, role] of [['ANON_KEY', 'anon'], ['SERVICE_ROLE_KEY', 'service_role']] as const) {
+  for (const [key, role] of [
+    ['ANON_KEY', 'anon'],
+    ['SERVICE_ROLE_KEY', 'service_role']
+  ] as const) {
     const currentToken = existing[key];
     if (!currentToken || !isJwtValid(currentToken, role, jwtSecret)) {
       if (currentToken) {
-        warn(`El token SERVER_${serverName}_${key} actual en .env es inválido, expirado o tiene 'exp: null'. Regenerando automáticamente con firma válida...`);
+        warn(
+          `El token SERVER_${serverName}_${key} actual en .env es inválido, expirado o tiene 'exp: null'. Regenerando automáticamente con firma válida...`
+        );
       }
-      const payload = { role, iss: "supabase", iat, exp };
+      const payload = { role, iss: 'supabase', iat, exp };
       generated[key] = signJwt(payload, jwtSecret);
     }
   }
 
+  // open-record: Cryptographic secret generation functions key-value dictionary
   const simpleKeys: Record<string, () => string> = {
     POSTGRES_PASSWORD: () => crypto.randomBytes(20).toString('hex'),
-    SECRET_KEY_BASE:   () => crypto.randomBytes(48).toString('base64'),
-    VAULT_ENC_KEY:     () => crypto.randomBytes(16).toString('hex'),
+    SECRET_KEY_BASE: () => crypto.randomBytes(48).toString('base64'),
+    VAULT_ENC_KEY: () => crypto.randomBytes(16).toString('hex'),
     PG_META_CRYPTO_KEY: () => crypto.randomBytes(24).toString('base64'),
     LOGFLARE_PRIVATE_ACCESS_TOKEN: () => crypto.randomBytes(32).toString('hex'),
-    LOGFLARE_PUBLIC_ACCESS_TOKEN:  () => crypto.randomBytes(32).toString('hex'),
+    LOGFLARE_PUBLIC_ACCESS_TOKEN: () => crypto.randomBytes(32).toString('hex')
   };
 
   for (const [key, fn] of Object.entries(simpleKeys)) {
@@ -337,7 +400,7 @@ async function ensureServerKeys(serverName: string, envVars: Record<string, stri
 // ── Comandos CLI del Orquestador ─────────────────────────────────────────────
 
 async function listar() {
-  header("Servidores configurados");
+  header('Servidores configurados');
   const varsEnv = await parseMasterEnv();
   const servidores = getServerNames(varsEnv);
   if (servidores.length === 0) {
@@ -351,8 +414,8 @@ async function listar() {
   console.log(styleText('dim', '━'.repeat(80)));
   for (const nombre of servidores) {
     const svars = extractServerVars(varsEnv, nombre);
-    const url = svars.SUPABASE_PUBLIC_URL || "Sin URL";
-    const clavesOk = ['JWT_SECRET', 'POSTGRES_PASSWORD', 'ANON_KEY'].every(k => svars[k]);
+    const url = svars.SUPABASE_PUBLIC_URL || 'Sin URL';
+    const clavesOk = ['JWT_SECRET', 'POSTGRES_PASSWORD', 'ANON_KEY'].every((k) => svars[k]);
     const estado = clavesOk ? styleText('green', '✓ OK') : styleText('yellow', '⚠ Faltan');
     console.log(`${nombre.padEnd(20)} ${url.padEnd(45)} ${estado}`);
   }
@@ -360,13 +423,13 @@ async function listar() {
 }
 
 async function clonar() {
-  header("Clonando Supabase oficial");
+  header('Clonando Supabase oficial');
   try {
     await fs.access(CARPETA_DOCKER);
     warn("La carpeta 'docker' ya existe (artefacto de compilación anterior).");
-    const answer = await confirmPrompt("¿Querés sobrescribirla con la última versión de Supabase?");
+    const answer = await confirmPrompt('¿Querés sobrescribirla con la última versión de Supabase?');
     if (!answer) {
-      info("Operación cancelada.");
+      info('Operación cancelada.');
       return;
     }
     await fs.rm(CARPETA_DOCKER, { recursive: true, force: true });
@@ -374,7 +437,7 @@ async function clonar() {
     // La carpeta no existe, procedemos normalmente
   }
 
-  info("Clonando estructura de Supabase (sparse-checkout)...");
+  info('Clonando estructura de Supabase (sparse-checkout)...');
   const tempDir = path.resolve(BASE_DIR, '..', 'scratch', 'temp_supabase');
   try {
     await fs.rm(tempDir, { recursive: true, force: true });
@@ -382,8 +445,17 @@ async function clonar() {
     // Nada que limpiar
   }
 
-  run(["git", "clone", "--depth", "1", "--filter=blob:none", "--sparse", "https://github.com/supabase/supabase.git", tempDir]);
-  run(["git", "sparse-checkout", "set", "docker"], tempDir);
+  run([
+    'git',
+    'clone',
+    '--depth',
+    '1',
+    '--filter=blob:none',
+    '--sparse',
+    'https://github.com/supabase/supabase.git',
+    tempDir
+  ]);
+  run(['git', 'sparse-checkout', 'set', 'docker'], tempDir);
 
   info("Moviendo carpeta 'docker' oficial...");
   await fs.rename(path.resolve(tempDir, 'docker'), CARPETA_DOCKER);
@@ -393,15 +465,15 @@ async function clonar() {
     // Nada que limpiar
   }
 
-  info("Generando Dockerfile personalizado dinámicamente...");
+  info('Generando Dockerfile personalizado dinámicamente...');
   await fs.writeFile(path.resolve(CARPETA_DOCKER, 'Dockerfile'), DOCKERFILE_CONTENT, 'utf-8');
   await fs.mkdir(path.resolve(CARPETA_DOCKER, 'init'), { recursive: true });
 
-  ok("Estructura de Supabase y Dockerfile generados correctamente.");
+  ok('Estructura de Supabase y Dockerfile generados correctamente.');
 }
 
 async function generar() {
-  header("Generando archivos de despliegue");
+  header('Generando archivos de despliegue');
   const varsEnv = await parseMasterEnv();
   const servidores = getServerNames(varsEnv);
   if (servidores.length === 0) return;
@@ -410,7 +482,9 @@ async function generar() {
   try {
     await fs.access(path.resolve(CARPETA_DOCKER, 'docker-compose.yml'));
   } catch {
-    info("No se encontró la plantilla de Supabase en 'supabase/docker'. Clonando automáticamente...");
+    info(
+      "No se encontró la plantilla de Supabase en 'supabase/docker'. Clonando automáticamente..."
+    );
     await clonar();
   }
 
@@ -426,7 +500,7 @@ async function generar() {
     const freshVarsEnv = await parseMasterEnv();
     const serverEnv = { ...baseVars };
 
-    for (const gkey of ["DOCKER_USER", "DOCKER_REPO_DB", "DOCKER_TAG_DB"]) {
+    for (const gkey of ['DOCKER_USER', 'DOCKER_REPO_DB', 'DOCKER_TAG_DB']) {
       if (freshVarsEnv[gkey]) serverEnv[gkey] = freshVarsEnv[gkey]!;
     }
 
@@ -438,7 +512,7 @@ async function generar() {
       serverEnv.STORAGE_TENANT_ID = svars.TENANT_ID;
     }
 
-    const lineas = [`# Generado para: ${nombre}`, "# NO EDITAR ESTE ARCHIVO", ""];
+    const lineas = [`# Generado para: ${nombre}`, '# NO EDITAR ESTE ARCHIVO', ''];
     for (const [k, v] of Object.entries(serverEnv).sort((a, b) => a[0].localeCompare(b[0]))) {
       lineas.push(`${k}=${v}`);
     }
@@ -458,69 +532,71 @@ async function generar() {
     // 1. Reemplazar imagen de postgres por la imagen personalizada
     contenidoCompose = contenidoCompose.replace(
       /image:\s*supabase\/postgres:[^\r\n]+/,
-      "image: ${DOCKER_USER}/${DOCKER_REPO_DB}:${DOCKER_TAG_DB}"
+      'image: ${DOCKER_USER}/${DOCKER_REPO_DB}:${DOCKER_TAG_DB}'
     );
 
     // 2. Reemplazar montajes de archivos SQL de Supabase en db por el volumen nombrado
     const sqlMounts = [
-      "      - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z\n",
-      "      # Must be superuser to create event trigger\n",
-      "      - ./volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z\n",
-      "      # Must be superuser to alter reserved role\n",
-      "      - ./volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z\n",
-      "      # Initialize the database settings with JWT_SECRET and JWT_EXP\n",
-      "      - ./volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z\n",
-      "      # Changes required for internal supabase data such as _analytics\n",
-      "      - ./volumes/db/_supabase.sql:/docker-entrypoint-initdb.d/migrations/97-_supabase.sql:Z\n",
-      "      # Changes required for Analytics support\n",
-      "      - ./volumes/db/logs.sql:/docker-entrypoint-initdb.d/migrations/99-logs.sql:Z\n",
-      "      # Changes required for Pooler support\n",
-      "      - ./volumes/db/pooler.sql:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:Z\n"
-    ];
+      '      - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z\n',
+      '      # Must be superuser to create event trigger\n',
+      '      - ./volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z\n',
+      '      # Must be superuser to alter reserved role\n',
+      '      - ./volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z\n',
+      '      # Initialize the database settings with JWT_SECRET and JWT_EXP\n',
+      '      - ./volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z\n',
+      '      # Changes required for internal supabase data such as _analytics\n',
+      '      - ./volumes/db/_supabase.sql:/docker-entrypoint-initdb.d/migrations/97-_supabase.sql:Z\n',
+      '      # Changes required for Analytics support\n',
+      '      - ./volumes/db/logs.sql:/docker-entrypoint-initdb.d/migrations/99-logs.sql:Z\n',
+      '      # Changes required for Pooler support\n',
+      '      - ./volumes/db/pooler.sql:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:Z\n'
+    ] as const;
     for (const m of sqlMounts) {
-      contenidoCompose = contenidoCompose.replace(m, "");
+      contenidoCompose = contenidoCompose.replace(m, '');
     }
 
     // Insertar el montaje de supabase-volumes-v2 en db, usar db-data-v3 y db-config-v3 con :Z
     contenidoCompose = contenidoCompose.replace(
-      "      # PGDATA directory is persisted between restarts\n      - ./volumes/db/data:/var/lib/postgresql/data:Z\n      # Use named volume to persist pgsodium decryption key between restarts\n      - db-config:/etc/postgresql-custom",
-      "      - supabase-volumes-v2:/supabase-volumes:Z\n      # PGDATA directory is persisted between restarts\n      - db-data-v3:/var/lib/postgresql/data:Z\n      # Use named volume to persist pgsodium decryption key between restarts\n      - db-config-v3:/etc/postgresql-custom:Z"
+      '      # PGDATA directory is persisted between restarts\n      - ./volumes/db/data:/var/lib/postgresql/data:Z\n      # Use named volume to persist pgsodium decryption key between restarts\n      - db-config:/etc/postgresql-custom',
+      '      - supabase-volumes-v2:/supabase-volumes:Z\n      # PGDATA directory is persisted between restarts\n      - db-data-v3:/var/lib/postgresql/data:Z\n      # Use named volume to persist pgsodium decryption key between restarts\n      - db-config-v3:/etc/postgresql-custom:Z'
     );
 
     // Reemplazar montajes locales de studio, storage, imgproxy y functions por volúmenes nombrados con :Z
     contenidoCompose = contenidoCompose.replace(
-      "      - ./volumes/snippets:/app/snippets:Z\n      - ./volumes/functions:/app/edge-functions:Z",
-      "      - supabase-volumes-v2:/supabase-volumes:Z"
+      '      - ./volumes/snippets:/app/snippets:Z\n      - ./volumes/functions:/app/edge-functions:Z',
+      '      - supabase-volumes-v2:/supabase-volumes:Z'
     );
     contenidoCompose = contenidoCompose.replace(
-      "      SNIPPETS_MANAGEMENT_FOLDER: /app/snippets\n      EDGE_FUNCTIONS_MANAGEMENT_FOLDER: /app/edge-functions",
-      "      SNIPPETS_MANAGEMENT_FOLDER: /supabase-volumes/snippets\n      EDGE_FUNCTIONS_MANAGEMENT_FOLDER: /supabase-volumes/functions"
+      '      SNIPPETS_MANAGEMENT_FOLDER: /app/snippets\n      EDGE_FUNCTIONS_MANAGEMENT_FOLDER: /app/edge-functions',
+      '      SNIPPETS_MANAGEMENT_FOLDER: /supabase-volumes/snippets\n      EDGE_FUNCTIONS_MANAGEMENT_FOLDER: /supabase-volumes/functions'
     );
     contenidoCompose = contenidoCompose.replace(
-      "      - ./volumes/storage:/var/lib/storage:z",
-      "      - storage-data:/var/lib/storage:Z"
+      '      - ./volumes/storage:/var/lib/storage:z',
+      '      - storage-data:/var/lib/storage:Z'
     );
     contenidoCompose = contenidoCompose.replace(
-      "      - ./volumes/functions:/home/deno/functions:Z",
-      "      - supabase-volumes-v2:/home/deno:Z"
+      '      - ./volumes/functions:/home/deno/functions:Z',
+      '      - supabase-volumes-v2:/home/deno:Z'
     );
 
     // Adaptar Kong
-    const kongMounts = (
-      "      # https://github.com/supabase/supabase/issues/12661\n" +
-      "      - ./volumes/api/kong.yml:/home/kong/temp.yml:ro,z\n" +
-      "      - ./volumes/api/kong-entrypoint.sh:/home/kong/kong-entrypoint.sh:ro,z"
+    const kongMounts =
+      '      # https://github.com/supabase/supabase/issues/12661\n' +
+      '      - ./volumes/api/kong.yml:/home/kong/temp.yml:ro,z\n' +
+      '      - ./volumes/api/kong-entrypoint.sh:/home/kong/kong-entrypoint.sh:ro,z';
+    contenidoCompose = contenidoCompose.replace(
+      kongMounts,
+      '      - supabase-volumes-v2:/home:ro,z'
     );
-    contenidoCompose = contenidoCompose.replace(kongMounts, "      - supabase-volumes-v2:/home:ro,z");
 
     // Adaptar Vector
     contenidoCompose = contenidoCompose.replace(
-      "    healthcheck:\n      test:\n        [\n          \"CMD\",\n          \"wget\",\n          \"--no-verbose\",\n          \"--tries=1\",\n          \"--spider\",\n          \"http://vector:9001/health\"\n        ]\n      timeout: 5s\n      interval: 5s\n      retries: 3\n    depends_on:\n      analytics:\n        condition: service_healthy",
-      "    healthcheck:\n      test:\n        [\n          \"CMD\",\n          \"wget\",\n          \"--no-verbose\",\n          \"--tries=1\",\n          \"--spider\",\n          \"http://vector:9001/health\"\n        ]\n      timeout: 5s\n      interval: 5s\n      retries: 3\n    depends_on:\n      db:\n        condition: service_healthy\n      analytics:\n        condition: service_healthy"
+      '    healthcheck:\n      test:\n        [\n          "CMD",\n          "wget",\n          "--no-verbose",\n          "--tries=1",\n          "--spider",\n          "http://vector:9001/health"\n        ]\n      timeout: 5s\n      interval: 5s\n      retries: 3\n    depends_on:\n      analytics:\n        condition: service_healthy',
+      '    healthcheck:\n      test:\n        [\n          "CMD",\n          "wget",\n          "--no-verbose",\n          "--tries=1",\n          "--spider",\n          "http://vector:9001/health"\n        ]\n      timeout: 5s\n      interval: 5s\n      retries: 3\n    depends_on:\n      db:\n        condition: service_healthy\n      analytics:\n        condition: service_healthy'
     );
     contenidoCompose = contenidoCompose.replace(
-      "      - ./volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z",
-      "      - supabase-volumes-v2:/supabase-volumes:ro,z"
+      '      - ./volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z',
+      '      - supabase-volumes-v2:/supabase-volumes:ro,z'
     );
     contenidoCompose = contenidoCompose.replace(
       '        "/etc/vector/vector.yml"',
@@ -530,33 +606,33 @@ async function generar() {
     // Adaptar Supavisor
     contenidoCompose = contenidoCompose.replace(
       /(supavisor:\s*\r?\n\s*container_name:\s*supabase-pooler\s*\r?\n\s*image:\s*supabase\/supavisor:[^\r\n]+\s*\r?\n\s*restart:\s*unless-stopped\s*\r?\n)(\s*ports:)/,
-      "$1    ulimits:\n      nofile:\n        soft: 65536\n        hard: 65536\n$2"
+      '$1    ulimits:\n      nofile:\n        soft: 65536\n        hard: 65536\n$2'
     );
     contenidoCompose = contenidoCompose.replace(
-      "      - ./volumes/pooler/pooler.exs:/etc/pooler/pooler.exs:ro,z",
-      "      - supabase-volumes-v2:/supabase-volumes:ro,z"
+      '      - ./volumes/pooler/pooler.exs:/etc/pooler/pooler.exs:ro,z',
+      '      - supabase-volumes-v2:/supabase-volumes:ro,z'
     );
     if (!contenidoCompose.includes('RLIMIT_NOFILE: "65536"')) {
       contenidoCompose = contenidoCompose.replace(
-        "      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}",
-        "      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}\n      RLIMIT_NOFILE: \"65536\""
+        '      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}',
+        '      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}\n      RLIMIT_NOFILE: "65536"'
       );
     }
     contenidoCompose = contenidoCompose.replace(
-      "/etc/pooler/pooler.exs",
-      "/supabase-volumes/pooler/pooler.exs"
+      '/etc/pooler/pooler.exs',
+      '/supabase-volumes/pooler/pooler.exs'
     );
 
     // Adaptar Analytics
     contenidoCompose = contenidoCompose.replace(
-      "      timeout: 5s\n      interval: 5s\n      retries: 10\n    depends_on:",
-      "      timeout: 5s\n      interval: 5s\n      retries: 10\n      start_period: 60s\n    depends_on:"
+      '      timeout: 5s\n      interval: 5s\n      retries: 10\n    depends_on:',
+      '      timeout: 5s\n      interval: 5s\n      retries: 10\n      start_period: 60s\n    depends_on:'
     );
 
     // Declarar todos los volúmenes nombrados al final
     contenidoCompose = contenidoCompose.replace(
-      "volumes:\n  db-config:",
-      "volumes:\n  supabase-volumes-v2:\n  db-data-v3:\n  storage-data:\n  db-config-v3:"
+      'volumes:\n  db-config:',
+      'volumes:\n  supabase-volumes-v2:\n  db-data-v3:\n  storage-data:\n  db-config-v3:'
     );
 
     await fs.writeFile(composeDestino, contenidoCompose, 'utf-8');
@@ -575,9 +651,9 @@ async function generar() {
 }
 
 async function agregar() {
-  header("Agregar/Actualizar servidor");
+  header('Agregar/Actualizar servidor');
 
-  const nombreInput = await askPrompt("Nombre del servidor (ej: nas, vps)");
+  const nombreInput = await askPrompt('Nombre del servidor (ej: nas, vps)');
   const nombre = nombreInput.toLowerCase().trim();
   if (!nombre) return;
 
@@ -587,32 +663,53 @@ async function agregar() {
 
   if (Object.keys(existente).length > 0) {
     warn(`El servidor '${nombre}' YA EXISTE.`);
-    const proceed = await confirmPrompt("¿Estás seguro de que querés modificar sus datos básicos?");
+    const proceed = await confirmPrompt('¿Estás seguro de que querés modificar sus datos básicos?');
     if (!proceed) {
-      info("Operación cancelada.");
+      info('Operación cancelada.');
       return;
     }
-    info("Los valores actuales se usarán como sugerencia (Enter para mantener).");
+    info('Los valores actuales se usarán como sugerencia (Enter para mantener).');
   }
 
-  const srv_id     = await askPrompt("🏷️  ID del Servidor (ej: local-docker, official-prod)", existente.ID || `srv-${nombre}`);
-  const srv_name   = await askPrompt("📝 Nombre del Servidor (ej: Servidor Dev (Docker))", existente.NAME || `Servidor ${nombre.toUpperCase()}`);
-  const srv_region = await askPrompt("🌍 Región (ej: Desarrollo, Global / Cloud)", existente.REGION || "Desarrollo");
-  const tenant_id  = await askPrompt("🏢 Tenant ID (para Pooler/Storage/DB, ej: your-tenant-id)", existente.POOLER_TENANT_ID || existente.TENANT_ID || "your-tenant-id");
+  const srv_id = await askPrompt(
+    '🏷️  ID del Servidor (ej: local-docker, official-prod)',
+    existente.ID || `srv-${nombre}`
+  );
+  const srv_name = await askPrompt(
+    '📝 Nombre del Servidor (ej: Servidor Dev (Docker))',
+    existente.NAME || `Servidor ${nombre.toUpperCase()}`
+  );
+  const srv_region = await askPrompt(
+    '🌍 Región (ej: Desarrollo, Global / Cloud)',
+    existente.REGION || 'Desarrollo'
+  );
+  const tenant_id = await askPrompt(
+    '🏢 Tenant ID (para Pooler/Storage/DB, ej: your-tenant-id)',
+    existente.POOLER_TENANT_ID || existente.TENANT_ID || 'your-tenant-id'
+  );
 
-  const defDom = (existente.SUPABASE_PUBLIC_URL || "localhost").split("://").pop()?.split(":")[0] || "localhost";
-  const dominio    = await askPrompt("🌐 Dominio o IP", defDom);
+  const defDom =
+    (existente.SUPABASE_PUBLIC_URL || 'localhost').split('://').pop()?.split(':')[0] || 'localhost';
+  const dominio = await askPrompt('🌐 Dominio o IP', defDom);
 
-  const defPort = existente.API_EXTERNAL_URL ? existente.API_EXTERNAL_URL.split(":").pop() || "8000" : "8000";
-  const puerto     = await askPrompt("🔌 Puerto API", defPort);
+  const defPort = existente.API_EXTERNAL_URL
+    ? existente.API_EXTERNAL_URL.split(':').pop() || '8000'
+    : '8000';
+  const puerto = await askPrompt('🔌 Puerto API', defPort);
 
-  const defStudio = existente.SITE_URL ? existente.SITE_URL.split(":").pop() || "3000" : "3000";
-  const studio     = await askPrompt("🖥  Puerto Studio", defStudio);
+  const defStudio = existente.SITE_URL ? existente.SITE_URL.split(':').pop() || '3000' : '3000';
+  const studio = await askPrompt('🖥  Puerto Studio', defStudio);
 
-  const dash_user = await askPrompt("👤 Usuario Dashboard", existente.DASHBOARD_USERNAME || "supabase");
-  const dash_pass = await askPrompt("🔑 Clave Dashboard", existente.DASHBOARD_PASSWORD || "");
+  const dash_user = await askPrompt(
+    '👤 Usuario Dashboard',
+    existente.DASHBOARD_USERNAME || 'supabase'
+  );
+  const dash_pass = await askPrompt('🔑 Clave Dashboard', existente.DASHBOARD_PASSWORD || '');
 
-  const schema = (dominio.includes(".") && !dominio.startsWith("192.") && dominio !== "localhost") ? "https" : "http";
+  const schema =
+    dominio.includes('.') && !dominio.startsWith('192.') && dominio !== 'localhost'
+      ? 'https'
+      : 'http';
   const api_url = `${schema}://${dominio}:${puerto}`;
   const site_url = `${schema}://${dominio}:${studio}`;
 
@@ -625,16 +722,17 @@ async function agregar() {
     contenido += `\n${headerText}\n`;
   }
 
+  // open-record: Server environment variable updates key-value dictionary to write into master .env
   const actualizaciones: Record<string, string> = {
-    [`${prefix}ID`]:                  srv_id,
-    [`${prefix}NAME`]:                srv_name,
-    [`${prefix}REGION`]:              srv_region,
-    [`${prefix}TENANT_ID`]:           tenant_id,
+    [`${prefix}ID`]: srv_id,
+    [`${prefix}NAME`]: srv_name,
+    [`${prefix}REGION`]: srv_region,
+    [`${prefix}TENANT_ID`]: tenant_id,
     [`${prefix}SUPABASE_PUBLIC_URL`]: api_url,
-    [`${prefix}API_EXTERNAL_URL`]:    api_url,
-    [`${prefix}SITE_URL`]:            site_url,
-    [`${prefix}DASHBOARD_USERNAME`]:  dash_user,
-    [`${prefix}DASHBOARD_PASSWORD`]:  dash_pass,
+    [`${prefix}API_EXTERNAL_URL`]: api_url,
+    [`${prefix}SITE_URL`]: site_url,
+    [`${prefix}DASHBOARD_USERNAME`]: dash_user,
+    [`${prefix}DASHBOARD_PASSWORD`]: dash_pass
   };
 
   for (const [k, v] of Object.entries(actualizaciones)) {
@@ -644,7 +742,7 @@ async function agregar() {
   await fileHandle.truncate(0);
   await fileHandle.write(contenido, 0, 'utf-8');
 
-  info("Generando claves criptográficas seguras...");
+  info('Generando claves criptográficas seguras...');
   const freshEnv = await parseMasterEnv();
   await ensureServerKeys(nombre, freshEnv);
 
@@ -652,42 +750,42 @@ async function agregar() {
   info("Usá 'generar' cuando quieras producir el archivo .env final para el servidor remoto.");
 }
 
-async function construir(tag = "latest") {
-  header("Docker: Construir");
+async function construir(tag = 'latest') {
+  header('Docker: Construir');
   const env = await parseMasterEnv();
   const user = env.DOCKER_USER;
   const repo = env.DOCKER_REPO_DB;
   if (!user || !repo) {
-    warn("DOCKER_USER o DOCKER_REPO_DB no están configurados en el maestro.");
+    warn('DOCKER_USER o DOCKER_REPO_DB no están configurados en el maestro.');
     return;
   }
   const img = `${user}/${repo}:${tag}`;
-  run(["docker", "build", "-t", img, "."], CARPETA_DOCKER);
+  run(['docker', 'build', '-t', img, '.'], CARPETA_DOCKER);
   ok(`Imagen: ${img}`);
 }
 
-async function publicar(tag = "latest") {
-  header("Docker: Publicar");
+async function publicar(tag = 'latest') {
+  header('Docker: Publicar');
   const env = await parseMasterEnv();
   const user = env.DOCKER_USER;
   const repo = env.DOCKER_REPO_DB;
   if (!user || !repo) {
-    warn("DOCKER_USER o DOCKER_REPO_DB no están configurados.");
+    warn('DOCKER_USER o DOCKER_REPO_DB no están configurados.');
     return;
   }
   const img = `${user}/${repo}:${tag}`;
-  info("Iniciando sesión en Docker Hub...");
-  run(["docker", "login"]);
-  run(["docker", "push", img]);
+  info('Iniciando sesión en Docker Hub...');
+  run(['docker', 'login']);
+  run(['docker', 'push', img]);
   ok(`Publicada: ${img}`);
 }
 
-async function liberar(tag = "latest") {
+async function liberar(tag = 'latest') {
   await construir(tag);
   await publicar(tag);
 }
 
-async function todo(tag = "latest") {
+async function todo(tag = 'latest') {
   await clonar();
   await generar();
   await construir(tag);
@@ -695,13 +793,15 @@ async function todo(tag = "latest") {
 }
 
 function syncOfficialServers() {
-  info("Sincronizando official_servers.ts con el .env maestro...");
-  run(["npm", "run", "servers:configure"], undefined, false);
+  info('Sincronizando official_servers.ts con el .env maestro...');
+  run(['npm', 'run', 'servers:configure'], undefined, false);
 }
 
 async function main() {
   const args = process.argv.slice(2);
-  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
+  const normalized = args.map((a: string) =>
+    a.includes('=') && !a.startsWith('-') ? `--${a}` : a
+  );
   const { values, positionals } = parseArgs({
     args: normalized,
     options: {
@@ -756,19 +856,19 @@ Comandos:
       break;
     case 'build':
     case 'construir':
-      await construir(tag);
+      await construir(typeof tag === 'string' ? tag : undefined);
       break;
     case 'publish':
     case 'publicar':
-      await publicar(tag);
+      await publicar(typeof tag === 'string' ? tag : undefined);
       break;
     case 'release':
     case 'liberar':
-      await liberar(tag);
+      await liberar(typeof tag === 'string' ? tag : undefined);
       break;
     case 'all':
     case 'todo':
-      await todo(tag);
+      await todo(typeof tag === 'string' ? tag : undefined);
       syncOfficialServers();
       break;
     default:

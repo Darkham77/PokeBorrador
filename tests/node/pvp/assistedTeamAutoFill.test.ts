@@ -1,8 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import {
-  isPokemonLegalForTheme,
-  autoFillLegalTeamForTheme
-} from '@/logic/pvp/pvpTeamHelper.ts';
+import { describe, it, expect } from 'vite-plus/test';
+import { isPokemonLegalForTheme, autoFillLegalTeamForTheme } from '@/logic/pvp/pvpTeamHelper.ts';
 import { getSeasonalThemeConfig } from '@/data/system/rankedData.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
@@ -14,16 +11,24 @@ describe('Assisted Legal Team Auto-Fill', () => {
     level: number,
     type: string,
     type2?: string,
-    ivs: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number } = { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }
-  ): Pokemon => ({
-    uid,
-    id,
-    name,
-    level,
-    type,
-    type2,
-    ivs
-  } as unknown as Pokemon);
+    ivs: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number } = {
+      hp: 10,
+      atk: 10,
+      def: 10,
+      spa: 10,
+      spd: 10,
+      spe: 10
+    }
+  ): Pokemon =>
+    ({
+      uid,
+      id,
+      name,
+      level,
+      type,
+      type2,
+      ivs
+    }) as unknown as Pokemon;
 
   describe('isPokemonLegalForTheme', () => {
     it('validates banned species for kanto_classic and no_legendaries', () => {
@@ -71,8 +76,24 @@ describe('Assisted Legal Team Auto-Fill', () => {
     it('prioritizes higher level and higher IVs among legal candidates', () => {
       const weather = getSeasonalThemeConfig('weather_masters');
       const blastoiseLv30 = createTestPokemon('b1', 'blastoise', 'Blastoise Lv30', 30, 'water');
-      const charizardLv50LowIvs = createTestPokemon('c1', 'charizard', 'Charizard Lv50 Low', 50, 'fire', 'flying', { hp: 5, atk: 5, def: 5, spa: 5, spd: 5, spe: 5 });
-      const venusaurLv50HighIvs = createTestPokemon('v1', 'venusaur', 'Venusaur Lv50 High', 50, 'grass', 'poison', { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 });
+      const charizardLv50LowIvs = createTestPokemon(
+        'c1',
+        'charizard',
+        'Charizard Lv50 Low',
+        50,
+        'fire',
+        'flying',
+        { hp: 5, atk: 5, def: 5, spa: 5, spd: 5, spe: 5 }
+      );
+      const venusaurLv50HighIvs = createTestPokemon(
+        'v1',
+        'venusaur',
+        'Venusaur Lv50 High',
+        50,
+        'grass',
+        'poison',
+        { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+      );
       const mewtwoLv100 = createTestPokemon('m1', 'mewtwo', 'Mewtwo', 100, 'psychic'); // illegal type
 
       const pool = [blastoiseLv30, charizardLv50LowIvs, venusaurLv50HighIvs, mewtwoLv100];
@@ -98,7 +119,7 @@ describe('Assisted Legal Team Auto-Fill', () => {
       expect(result).toHaveLength(3);
       // Even though Blastoise has higher level (60), it cannot form a 3-member monotype team with Fire mons
       // Arcanine (BST 555) > Charizard (BST 534) > Ninetales (Lv 45)
-      expect(result.map(p => p.uid)).toEqual(['f2', 'f1', 'f3']);
+      expect(result.map((p) => p.uid)).toEqual(['f2', 'f1', 'f3']);
     });
   });
 });

@@ -165,12 +165,12 @@ interface CertifiedBattleHistoryEntry {
 
 ### Forced Recharge State Simulation Replay
 
-- When replaying certified battles containing moves with forced recharge turns (e.g. *Hyper Beam*, *Giga Impact*, *Rock Wrecker* causing `|-mustrecharge|`), the active Pokémon is marked `trapped: true` by Showdown and voluntary switching is illegal.
+- When replaying certified battles containing moves with forced recharge turns (e.g. _Hyper Beam_, _Giga Impact_, _Rock Wrecker_ causing `|-mustrecharge|`), the active Pokémon is marked `trapped: true` by Showdown and voluntary switching is illegal.
 - Battle replayers and test runners must inspect `isTrappedOrRecharging` (`isRecharging` / `active[0].moves[0].id === 'recharge'`) before attempting voluntary switches; if trapped/recharging, the replayer MUST execute `selectMove(0)` (the forced recharge action) to ensure deterministic battle progression.
 
 ### Showdown Locked Move Single-Slot Parity
 
-- Multi-turn moves (*Shadow Force, Solar Beam, Fly, Dig, Recharge*) lock the active Pokémon and cause Showdown to return a single-move array (`moves.length === 1`).
+- Multi-turn moves (_Shadow Force, Solar Beam, Fly, Dig, Recharge_) lock the active Pokémon and cause Showdown to return a single-move array (`moves.length === 1`).
 - All choice builders and simulation helpers MUST normalize input choices to `move 1` whenever the legal move count is 1, and fall back to the first available move with valid PP if an out-of-range slot is requested.
 
 ---
@@ -196,7 +196,7 @@ interface CertifiedBattleHistoryEntry {
 ### Pokémon Legality Mandate
 
 - Every Pokémon generated or evaluated in fuzzers, battle runners, replayers, and E2E simulations MUST be 100% legal according to Pokémon Showdown canonical Gen 9 rules and the Poké Vicio Pokédex database.
-- Generating synthetic or illegal Pokémon (e.g. assigning non-native abilities like *Illuminate* or *Rough Skin* to Mew, assigning non-learnable moves, or assigning invalid genders) is **STRICTLY FORBIDDEN**.
+- Generating synthetic or illegal Pokémon (e.g. assigning non-native abilities like _Illuminate_ or _Rough Skin_ to Mew, assigning non-learnable moves, or assigning invalid genders) is **STRICTLY FORBIDDEN**.
 - All generated species must strictly use natural Showdown Dex abilities, biological genders matching species ratio rules, and valid learnsets across all fuzzers and simulators.
 - When testing an ability, move, or mechanic, the generator MUST dynamically select a canonical species from the Showdown Dex that naturally possesses that ability or move.
 - All generated teams MUST pass `PokemonLegalityValidator.assertTeamLegality` before generation and simulation execution.

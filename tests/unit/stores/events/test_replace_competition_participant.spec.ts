@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { ref } from 'vue';
 import { submitCompetitionEntry } from '@/stores/events/eventEnrollmentActions';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -46,7 +46,7 @@ describe('Tier 1: Participant Replacement in submitCompetitionEntry', () => {
 
     const userEntries = ref<Record<string, CompetitionEntry>>({
       'torneo_pesca:ivs': initialEntry,
-      'torneo_pesca': initialEntry
+      torneo_pesca: initialEntry
     });
 
     const mockDb = {
@@ -63,7 +63,7 @@ describe('Tier 1: Participant Replacement in submitCompetitionEntry', () => {
       db: mockDb,
       state: { team: pokes, box: [], stats: {} },
       allPokemonList: pokes,
-      getPokemonByUid: (uid: string) => pokes.find(p => p.uid === uid) || null,
+      getPokemonByUid: (uid: string) => pokes.find((p) => p.uid === uid) || null,
       scheduleSave: vi.fn().mockResolvedValue(undefined)
     };
 
@@ -80,7 +80,10 @@ describe('Tier 1: Participant Replacement in submitCompetitionEntry', () => {
     };
 
     const allEvents = ref([
-      { id: 'torneo_pesca', config: JSON.stringify({ subCompetitions: [{ id: 'ivs', metric: 'total_ivs' }] }) }
+      {
+        id: 'torneo_pesca',
+        config: JSON.stringify({ subCompetitions: [{ id: 'ivs', metric: 'total_ivs' }] })
+      }
     ]);
 
     const ctx = {

@@ -11,7 +11,7 @@
  * 7. Dual-engine persistence parity across SQLite and PostgreSQL (describeWithDatabase).
  */
 
-import { it, expect, beforeEach } from 'vitest';
+import { it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import crypto from 'node:crypto';
 import { describeWithDatabase } from '../../dbTestHelper.ts';
@@ -19,7 +19,7 @@ import {
   FRIENDSHIP_WALK_CONSTANTS,
   calculateWalkingFriendshipGain,
   resolveWalkingFriendshipRecipient,
-  processWalkingFriendshipStepAccumulation,
+  processWalkingFriendshipStepAccumulation
 } from '../../../src/logic/pokemon/friendshipLogic.ts';
 import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
 import { requirePokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
@@ -103,7 +103,7 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
     processWalkingFriendshipStepAccumulation({
       team,
       addedSteps: 50,
-      rollFn: () => 0.1,
+      rollFn: () => 0.1
     });
     expect(pikachu.friendshipSteps).toBe(50);
     expect(charmander.friendshipSteps).toBe(0);
@@ -116,7 +116,7 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
     processWalkingFriendshipStepAccumulation({
       team,
       addedSteps: 30,
-      rollFn: () => 0.1,
+      rollFn: () => 0.1
     });
     expect(charmander.friendshipSteps).toBe(30);
     expect(pikachu.friendshipSteps).toBe(50);
@@ -131,7 +131,7 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
     const res = processWalkingFriendshipStepAccumulation({
       team,
       addedSteps: 78,
-      rollFn: () => 0.2, // Passes 50% roll
+      rollFn: () => 0.2 // Passes 50% roll
     });
     expect(res.rewardedPokemon?.uid).toBe(pikachu.uid);
     expect(pikachu.friendship).toBe(71);
@@ -155,7 +155,7 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
       team,
       addedSteps: 100,
       notifyFn,
-      rollFn: () => 0.1, // Would pass, but threshold not reached
+      rollFn: () => 0.1 // Would pass, but threshold not reached
     });
 
     expect(res1.remainingSteps).toBe(100);
@@ -169,7 +169,7 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
       team,
       addedSteps: 28,
       notifyFn,
-      rollFn: () => 0.6, // Fails 50% check
+      rollFn: () => 0.6 // Fails 50% check
     });
 
     expect(res2.remainingSteps).toBe(0);
@@ -183,7 +183,7 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
       team,
       addedSteps: 130,
       notifyFn,
-      rollFn: () => 0.2, // Passes 50% check
+      rollFn: () => 0.2 // Passes 50% check
     });
 
     expect(res3.remainingSteps).toBe(2);
@@ -247,7 +247,7 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
 
     const testState: GameState = {
       ...INITIAL_STATE,
-      team: [monA, monB],
+      team: [monA, monB]
     };
 
     // 1. Serialization & Validation
@@ -257,10 +257,11 @@ describeWithDatabase('Walking Friendship Canonical System Suite', (_engine, getD
     if (!sanitized.valid) throw new Error(sanitized.error);
 
     // 2. Persist to database game_saves table
-    await db.run(
-      'INSERT INTO game_saves (user_id, save_data, last_save_id) VALUES (?, ?, ?)',
-      [userId, JSON.stringify(sanitized.data), crypto.randomUUID()]
-    );
+    await db.run('INSERT INTO game_saves (user_id, save_data, last_save_id) VALUES (?, ?, ?)', [
+      userId,
+      JSON.stringify(sanitized.data),
+      crypto.randomUUID()
+    ]);
 
     // 3. Query back from database
     const rows = await db.query<{ save_data: unknown }>(

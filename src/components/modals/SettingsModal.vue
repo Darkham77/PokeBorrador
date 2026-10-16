@@ -1,39 +1,39 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import BaseModal from '@/components/common/BaseModal.vue'
+import { computed } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import BaseModal from '@/components/common/BaseModal.vue';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const uiStore = useUIStore()
+const uiStore = useUIStore();
 
 const currentZoom = computed(() => {
-  return Math.round(uiStore.appZoom * 100)
-})
+  return Math.round(uiStore.appZoom * 100);
+});
 
 const updateZoom = (val: number) => {
-  const zoomVal = val / 100
-  const fn = Reflect.get(uiStore, 'setZoom') as ((v: number) => void) | undefined
-  if (typeof fn === 'function') fn(zoomVal)
-  const winFn = Reflect.get(window, 'updateZoom') as ((v: number) => void) | undefined
-  if (typeof winFn === 'function') winFn(val)
-}
+  const zoomVal = val / 100;
+  const fn = Reflect.get(uiStore, 'setZoom') as ((v: number) => void) | undefined;
+  if (typeof fn === 'function') fn(zoomVal);
+  const winFn = Reflect.get(window, 'updateZoom') as ((v: number) => void) | undefined;
+  if (typeof winFn === 'function') winFn(val);
+};
 
 const handleZoomInput = (e: Event) => {
   if (e.target) {
-    updateZoom(Number((e.target as HTMLInputElement).value))
+    updateZoom(Number((e.target as HTMLInputElement).value));
   }
-}
+};
 </script>
 
 <template>
@@ -48,20 +48,21 @@ const handleZoomInput = (e: Event) => {
   >
     <div class="settings-container">
       <div class="zoom-section">
-        <label class="zoom-label">
+        <label for="settings-modal-input-1" class="zoom-label">
           Zoom de la Interfaz: <span class="zoom-value">{{ currentZoom }}%</span>
         </label>
 
         <input
-          id="settings-modal-input-1" 
-          type="range" 
-          :value="currentZoom" 
-          min="50" 
-          max="150" 
+          id="settings-modal-input-1"
+          type="range"
+          :value="currentZoom"
+          min="50"
+          max="150"
           step="5"
+          aria-label="Zoom de la interfaz"
           class="zoom-slider"
           @input="handleZoomInput"
-        >
+        />
 
         <div class="zoom-labels">
           <span>50%</span>
@@ -71,32 +72,30 @@ const handleZoomInput = (e: Event) => {
       </div>
 
       <div class="setting-section">
-        <label class="setting-label">
-          Modo Bajo Consumo:
-        </label>
+        <label class="setting-label"> Modo Bajo Consumo: </label>
         <div class="power-buttons">
-          <button 
+          <button
             id="settings-auto-battle-on-btn"
             type="button"
-            class="btn-vicio-sm" 
+            class="btn-vicio-sm"
             :class="uiStore.lowPowerMode === 'auto' ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setLowPowerMode('auto')"
           >
             AUTO
           </button>
-          <button 
+          <button
             id="settings-auto-battle-off-btn"
             type="button"
-            class="btn-vicio-sm" 
+            class="btn-vicio-sm"
             :class="uiStore.lowPowerMode === 'enabled' ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setLowPowerMode('enabled')"
           >
             ACTIVADO
           </button>
           <button
-            id="settings-modal-btn-desactivado" 
+            id="settings-modal-btn-desactivado"
             type="button"
-            class="btn-vicio-sm" 
+            class="btn-vicio-sm"
             :class="uiStore.lowPowerMode === 'disabled' ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setLowPowerMode('disabled')"
           >
@@ -110,30 +109,26 @@ const handleZoomInput = (e: Event) => {
           <span v-else-if="uiStore.lowPowerMode === 'enabled'">
             Optimización forzada (Reduce resolución y simplifica efectos visuales).
           </span>
-          <span v-else>
-            Efectos visuales y resolución completa en todas las pantallas.
-          </span>
+          <span v-else> Efectos visuales y resolución completa en todas las pantallas. </span>
         </p>
       </div>
 
       <div class="setting-section">
-        <label class="setting-label">
-          Ocultar Pokémon en Mapa:
-        </label>
+        <label class="setting-label"> Ocultar Pokémon en Mapa: </label>
         <div class="power-buttons">
           <button
-            id="settings-modal-btn-activado" 
+            id="settings-modal-btn-activado"
             type="button"
-            class="btn-vicio-sm" 
+            class="btn-vicio-sm"
             :class="uiStore.hideMapPokemon ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setHideMapPokemon(true)"
           >
             ACTIVADO
           </button>
           <button
-            id="settings-modal-btn-desactivado-2" 
+            id="settings-modal-btn-desactivado-2"
             type="button"
-            class="btn-vicio-sm" 
+            class="btn-vicio-sm"
             :class="!uiStore.hideMapPokemon ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setHideMapPokemon(false)"
           >
@@ -142,32 +137,29 @@ const handleZoomInput = (e: Event) => {
         </div>
         <p class="power-desc">
           <span v-if="uiStore.hideMapPokemon">
-            Oculta los Pokémon salvajes del mapa. Solo podrás verlos en el reporte de encuentros (botón Poké Ball).
+            Oculta los Pokémon salvajes del mapa. Solo podrás verlos en el reporte de encuentros
+            (botón Poké Ball).
           </span>
-          <span v-else>
-            Los Pokémon salvajes se muestran directamente sobre el mapa.
-          </span>
+          <span v-else> Los Pokémon salvajes se muestran directamente sobre el mapa. </span>
         </p>
       </div>
 
       <div class="setting-section">
-        <label class="setting-label">
-          Auto-combatir:
-        </label>
+        <label class="setting-label"> Auto-combatir: </label>
         <div class="power-buttons">
           <button
-            id="settings-modal-btn-activado-2" 
+            id="settings-modal-btn-activado-2"
             type="button"
-            class="btn-vicio-sm" 
+            class="btn-vicio-sm"
             :class="uiStore.autoBattle ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setAutoBattle(true)"
           >
             ACTIVADO
           </button>
           <button
-            id="settings-modal-btn-desactivado-3" 
+            id="settings-modal-btn-desactivado-3"
             type="button"
-            class="btn-vicio-sm" 
+            class="btn-vicio-sm"
             :class="!uiStore.autoBattle ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setAutoBattle(false)"
           >
@@ -176,7 +168,8 @@ const handleZoomInput = (e: Event) => {
         </div>
         <p class="power-desc">
           <span v-if="uiStore.autoBattle">
-            Los encuentros salvajes iniciarán el combate automáticamente sin preguntar si deseas combatir o volver al mapa.
+            Los encuentros salvajes iniciarán el combate automáticamente sin preguntar si deseas
+            combatir o volver al mapa.
           </span>
           <span v-else>
             Pregunta si deseas combatir o volver al mapa al encontrar un Pokémon salvaje.
@@ -185,7 +178,7 @@ const handleZoomInput = (e: Event) => {
       </div>
 
       <div class="settings-actions">
-        <button 
+        <button
           id="settings-save-close-btn"
           class="btn-vicio-primary btn-vicio-full"
           @click.stop="emit('close')"
@@ -198,8 +191,8 @@ const handleZoomInput = (e: Event) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .settings-container {
   padding: 8px 16px 16px;

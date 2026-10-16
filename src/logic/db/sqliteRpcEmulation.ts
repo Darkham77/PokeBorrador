@@ -6,21 +6,18 @@ import type { DBResponse } from '@/types/system/database';
 // Import sub-modules for offline RPC emulations
 import { emulateChangeUsername } from './rpcEmulations/profileRpc.ts';
 import { emulateSaveGameTrusted, emulateReportPassiveBattle } from './rpcEmulations/saveRpc.ts';
-import { 
-  emulatePublishListing, 
-  emulateBuyListing, 
-  emulateCancelListing, 
-  emulateClaimAsset 
-} from './rpcEmulations/marketRpc.ts';
-import { 
-  emulateSendTradeOffer, 
-  emulateAcceptTrade, 
-  emulateRejectTrade 
-} from './rpcEmulations/tradeRpc.ts';
 import {
-  emulateAwardEventAutomated,
-  emulateClaimAward
-} from './rpcEmulations/eventRpc.ts';
+  emulatePublishListing,
+  emulateBuyListing,
+  emulateCancelListing,
+  emulateClaimAsset
+} from './rpcEmulations/marketRpc.ts';
+import {
+  emulateSendTradeOffer,
+  emulateAcceptTrade,
+  emulateRejectTrade
+} from './rpcEmulations/tradeRpc.ts';
+import { emulateAwardEventAutomated, emulateClaimAward } from './rpcEmulations/eventRpc.ts';
 import {
   emulateAwardRankedSeasonAutomated,
   emulateRecordPassiveBattleResult,
@@ -31,7 +28,10 @@ import {
 /**
  * Emulates Supabase RPC calls on local SQLite database in offline mode.
  */
-export async function emulateOfflineRpc(name: string, params: Record<string, unknown> = {}): Promise<DBResponse> {
+export async function emulateOfflineRpc(
+  name: string,
+  params: Record<string, unknown> = {}
+): Promise<DBResponse> {
   logger.debug('DBRouter', `Local RPC: ${name}`, params);
   const sqliteDb = await initSQLite();
 
@@ -41,15 +41,22 @@ export async function emulateOfflineRpc(name: string, params: Record<string, unk
 
   // Determine current offline session context
   const localUserStr = safeStorage.getItem('pokevicio_local_user');
-  const localUser = localUserStr ? JSON.parse(localUserStr) as Record<string, unknown> : null; // open-record: Generic key-value data dictionary container
+  const localUser = localUserStr ? (JSON.parse(localUserStr) as Record<string, unknown>) : null; // open-record: Generic key-value data dictionary container
   const userId = (localUser as { id?: string } | null)?.id || 'local_user';
-  const username = (localUser as { user_metadata?: { username?: string } } | null)?.user_metadata?.username || 'Invitado';
-  
+  const username =
+    (localUser as { user_metadata?: { username?: string } } | null)?.user_metadata?.username ||
+    'Invitado';
+
   const context = { userId, username };
 
-  type RpcHandler = (db: SQLiteDatabase, params: Record<string, unknown>, ctx: { userId: string; username: string }) => Promise<DBResponse>;
+  type RpcHandler = (
+    db: SQLiteDatabase,
+    params: Record<string, unknown>,
+    ctx: { userId: string; username: string }
+  ) => Promise<DBResponse>;
 
   const RPC_DISPATCH_TABLE: Readonly<Record<string, RpcHandler>> = {
+    // open-record: Dynamic RPC procedure dispatch table
     change_username: (db, p, ctx) => emulateChangeUsername(db, p, ctx),
     save_game_trusted: (db, p, ctx) => emulateSaveGameTrusted(db, p, ctx),
     fn_report_passive_battle: (db, p) => emulateReportPassiveBattle(db, p),

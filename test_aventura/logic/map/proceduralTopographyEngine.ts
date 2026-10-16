@@ -35,18 +35,39 @@ export function stampOrganicWaterBodies(options: OrganicWaterBodiesOptions): voi
     makeCell
   } = options;
 
-  if (!withWater || width < DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION || height < DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION) {
+  if (
+    !withWater ||
+    width < DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION ||
+    height < DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION
+  ) {
     return;
   }
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      if (!biomeDist.waterMask[y]![x] || isPathCell[y]![x] || elevationLayer[y]![x] !== null) continue;
+      if (!biomeDist.waterMask[y]![x] || isPathCell[y]![x] || elevationLayer[y]![x] !== null)
+        continue;
 
-      const hasN = y > 0 && biomeDist.waterMask[y - 1]![x] && !isPathCell[y - 1]![x] && elevationLayer[y - 1]![x] === null;
-      const hasS = y < height - 1 && biomeDist.waterMask[y + 1]![x] && !isPathCell[y + 1]![x] && elevationLayer[y + 1]![x] === null;
-      const hasW = x > 0 && biomeDist.waterMask[y]![x - 1] && !isPathCell[y]![x - 1] && elevationLayer[y]![x - 1] === null;
-      const hasE = x < width - 1 && biomeDist.waterMask[y]![x + 1] && !isPathCell[y]![x + 1] && elevationLayer[y]![x + 1] === null;
+      const hasN =
+        y > 0 &&
+        biomeDist.waterMask[y - 1]![x] &&
+        !isPathCell[y - 1]![x] &&
+        elevationLayer[y - 1]![x] === null;
+      const hasS =
+        y < height - 1 &&
+        biomeDist.waterMask[y + 1]![x] &&
+        !isPathCell[y + 1]![x] &&
+        elevationLayer[y + 1]![x] === null;
+      const hasW =
+        x > 0 &&
+        biomeDist.waterMask[y]![x - 1] &&
+        !isPathCell[y]![x - 1] &&
+        elevationLayer[y]![x - 1] === null;
+      const hasE =
+        x < width - 1 &&
+        biomeDist.waterMask[y]![x + 1] &&
+        !isPathCell[y]![x + 1] &&
+        elevationLayer[y]![x + 1] === null;
 
       let waterId: string;
 
@@ -97,7 +118,12 @@ export function stampElevationCliffsAndCones(options: ElevationCliffsAndConesOpt
     makeCell
   } = options;
 
-  if (!withHills || withTown || width < DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION || height < DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION) {
+  if (
+    !withHills ||
+    withTown ||
+    width < DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION ||
+    height < DEFAULT_PROCEDURAL_MAP_MIN_DIMENSION
+  ) {
     return;
   }
 
@@ -152,12 +178,19 @@ export function stampElevationCliffsAndCones(options: ElevationCliffsAndConesOpt
   } else {
     const cone = palette.mountainCone2x3;
     let placedCones = 0;
-    const maxCones = Math.min(8, Math.max(2, Math.floor((width * height * (mountainPercent / 100)) / MOUNTAIN_CONE_CELLS_DIVISOR)));
+    const maxCones = Math.min(
+      8,
+      Math.max(
+        2,
+        Math.floor((width * height * (mountainPercent / 100)) / MOUNTAIN_CONE_CELLS_DIVISOR)
+      )
+    );
 
     for (let y = 1; y <= height - cone.height - 1; y += 2) {
       for (let x = 1; x <= width - cone.width - 1; x += 2) {
         if (!biomeDist.mountainMask[y]![x] || isPathCell[y]![x]) continue;
-        if (!canStamp(objectLayer, elevationLayer, isPathCell, cone.width, cone.height, x, y)) continue;
+        if (!canStamp(objectLayer, elevationLayer, isPathCell, cone.width, cone.height, x, y))
+          continue;
 
         stampMultitile(elevationLayer, collisionGrid, cone, x, y, width, height, makeCell);
         placedCones++;

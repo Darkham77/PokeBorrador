@@ -1,51 +1,54 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { gsap } from 'gsap'
-import CombatShadow from './CombatShadow.vue'
-import { getTrainerIdleConfig } from './helpers/trainerIdleAnims.ts'
-import type { FeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
+import { ref, onMounted, onUnmounted } from 'vue';
+import { gsap } from 'gsap';
+import CombatShadow from './CombatShadow.vue';
+import { getTrainerIdleConfig } from './helpers/trainerIdleAnims.ts';
+import type { FeetPoints } from '@/data/pokemon/pokemonFeetDatabase';
 
-const props = withDefaults(defineProps<{
-  spriteUrl: string
-  altText: string
-  size: number
-  feetCoords?: FeetPoints | null
-  shadowKey?: string
-  showGuide?: boolean
-  guideWidth?: number
-  guideHeight?: number
-  imageClass?: string
-}>(), {
-  feetCoords: null,
-  shadowKey: '',
-  showGuide: false,
-  guideWidth: 0,
-  guideHeight: 0,
-  imageClass: ''
-})
+const props = withDefaults(
+  defineProps<{
+    spriteUrl: string;
+    altText: string;
+    size: number;
+    feetCoords?: FeetPoints | null;
+    shadowKey?: string;
+    showGuide?: boolean;
+    guideWidth?: number;
+    guideHeight?: number;
+    imageClass?: string;
+  }>(),
+  {
+    feetCoords: null,
+    shadowKey: '',
+    showGuide: false,
+    guideWidth: 0,
+    guideHeight: 0,
+    imageClass: ''
+  }
+);
 
 const emit = defineEmits<{
-  error: [e: Event]
-}>()
+  error: [e: Event];
+}>();
 
-const TRAINER_GROUND_Y = '100%' as const
+const TRAINER_GROUND_Y = '100%' as const;
 
-const idleRef = ref<HTMLElement | null>(null)
-let idleTween: gsap.core.Tween | null = null
+const idleRef = ref<HTMLElement | null>(null);
+let idleTween: gsap.core.Tween | null = null;
 
 onMounted(() => {
-  if (!idleRef.value) return
-  gsap.killTweensOf(idleRef.value)
-  gsap.set(idleRef.value, { transformOrigin: 'bottom center' })
-  idleTween = gsap.to(idleRef.value, getTrainerIdleConfig())
-})
+  if (!idleRef.value) return;
+  gsap.killTweensOf(idleRef.value);
+  gsap.set(idleRef.value, { transformOrigin: 'bottom center' });
+  idleTween = gsap.to(idleRef.value, getTrainerIdleConfig());
+});
 
 onUnmounted(() => {
   if (idleTween) {
-    idleTween.kill()
-    idleTween = null
+    idleTween.kill();
+    idleTween = null;
   }
-})
+});
 </script>
 
 <template>
@@ -60,23 +63,16 @@ onUnmounted(() => {
       transform: `translate(calc(-${(props.feetCoords?.feetX ?? 0.5) * 100}%), calc(-${(props.feetCoords?.feetY ?? 0.95) * 100}%)) ${props.feetCoords?.isFlying ? 'translateY(-24px)' : ''}`
     }"
   >
-    <div
-      ref="idleRef"
-      class="trainer-idle-wrapper"
-    >
-      <div 
-        class="pokemon-atmosphere-wrapper"
-        :style="{ filter: 'var(--atmosphere-filter)' }"
-      >
-        <img 
-          :src="props.spriteUrl" 
+    <div ref="idleRef" class="trainer-idle-wrapper">
+      <div class="pokemon-atmosphere-wrapper" :style="{ filter: 'var(--atmosphere-filter)' }">
+        <img
+          :src="props.spriteUrl"
           :alt="props.altText"
           :class="['trainer-image', props.imageClass]"
           width="32"
-        
           height="32"
           @error="emit('error', $event)"
-        >
+        />
       </div>
     </div>
   </div>
@@ -89,10 +85,7 @@ onUnmounted(() => {
       '--shadow-y': TRAINER_GROUND_Y
     }"
   />
-  <div
-    v-if="props.showGuide"
-    class="debug-trainer-guide"
-  >
+  <div v-if="props.showGuide" class="debug-trainer-guide">
     <span>{{ Math.round(props.guideWidth) }}x{{ Math.round(props.guideHeight) }}</span>
   </div>
 </template>

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { createPinia, setActivePinia } from 'pinia';
 import { Dex } from '@pkmn/sim';
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
@@ -81,17 +81,15 @@ describe('Save Migration and Combat Simulation', () => {
           ability: 'torrent',
           nature: 'serious',
           ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-          moves: [
-            { id: 'bubble_beam', name: 'Rayo Burbuja', pp: 20, maxPP: 20 }
-          ]
+          moves: [{ id: 'bubble_beam', name: 'Rayo Burbuja', pp: 20, maxPP: 20 }]
         }
       ]
     };
 
-    db.run(
-      "INSERT INTO game_saves (user_id, save_data) VALUES (?, ?)",
-      ['local_test_user', JSON.stringify(oldSaveData)]
-    );
+    db.run('INSERT INTO game_saves (user_id, save_data) VALUES (?, ?)', [
+      'local_test_user',
+      JSON.stringify(oldSaveData)
+    ]);
 
     // 3. Ejecutar la migración física SQL en la base de datos en memoria
     const MIGRATION_SQL = `
@@ -179,7 +177,9 @@ describe('Save Migration and Combat Simulation', () => {
     `;
 
     // Aplicar sentencias individualmente
-    const statements = MIGRATION_SQL.split(';').map(s => s.trim()).filter(Boolean);
+    const statements = MIGRATION_SQL.split(';')
+      .map((s) => s.trim())
+      .filter(Boolean);
     for (const stmt of statements) {
       db.run(stmt);
     }
@@ -210,7 +210,7 @@ describe('Save Migration and Combat Simulation', () => {
     // Levantar un combate simulado de prueba con el motor nativo de Showdown (que es lo que corre en el worker)
     const { Battle } = await import('@pkmn/sim');
     const battle = new Battle({ formatid: getShowdownFormatId(3) });
-    
+
     battle.setPlayer('p1', { name: 'Player', team: [p1Set] });
     battle.setPlayer('p2', { name: 'Opponent', team: [p2Set] });
 

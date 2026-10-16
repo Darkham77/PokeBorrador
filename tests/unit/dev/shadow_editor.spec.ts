@@ -5,7 +5,7 @@
  * Unit tests for shadow editor domain types, O(1) parsers, and catalog composition.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { parseTrainerSpriteKey, type PokemonEditorEntity } from '@/types/pokemon/spriteShadows';
 import { NPC_SPRITE_TO_ARCHETYPE_MAP } from '@/data/pokemon/npcSpriteCatalog';
 import { useShadowEditor } from '@/views/dev/useShadowEditor';
@@ -69,7 +69,7 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
       expect(editor.totalEntities.value).toBeGreaterThan(150);
 
       // Find Bulbasaur (Base/M)
-      const bulbasaur = editor.pagedEntities.value.find(e => e.name.includes('BULBASAUR'));
+      const bulbasaur = editor.pagedEntities.value.find((e) => e.name.includes('BULBASAUR'));
       expect(bulbasaur).toBeDefined();
       expect(bulbasaur?.category).toBe('pokemon');
       if (bulbasaur?.category === 'pokemon') {
@@ -125,13 +125,17 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
       editor.buildCatalog();
 
       // Ensure 100% unique keys across all entities (no Vue duplicate key warnings)
-      const allKeys = editor.filteredEntities.value.map(e => e.key);
+      const allKeys = editor.filteredEntities.value.map((e) => e.key);
       const uniqueKeys = new Set(allKeys);
       expect(uniqueKeys.size).toBe(allKeys.length);
 
       // Verify Bulbasaur front and back are intercalated consecutively
-      const bulbasaurFront = editor.filteredEntities.value.find(e => e.key.includes('/Front/') && e.key.includes('/1i.webp'));
-      const bulbasaurBack = editor.filteredEntities.value.find(e => e.key.includes('/Back/') && e.key.includes('/1i.webp'));
+      const bulbasaurFront = editor.filteredEntities.value.find(
+        (e) => e.key.includes('/Front/') && e.key.includes('/1i.webp')
+      );
+      const bulbasaurBack = editor.filteredEntities.value.find(
+        (e) => e.key.includes('/Back/') && e.key.includes('/1i.webp')
+      );
       expect(bulbasaurFront).toBeDefined();
       expect(bulbasaurBack).toBeDefined();
 
@@ -140,7 +144,7 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
       expect(backIndex).toBe(frontIndex + 1);
 
       // Verify trainer avatars are strictly excluded
-      const avatarEntity = editor.filteredEntities.value.find(e => e.key.includes('avatar'));
+      const avatarEntity = editor.filteredEntities.value.find((e) => e.key.includes('avatar'));
       expect(avatarEntity).toBeUndefined();
     });
   });
@@ -233,7 +237,8 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
     it('mounts ShadowEditorCard with canonical CombatShadow and zero ground-circle', async () => {
       const { setActivePinia, createPinia } = await import('pinia');
       const { mount } = await import('@vue/test-utils');
-      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue')).default;
+      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue'))
+        .default;
       const CombatShadow = (await import('@/components/battle/CombatShadow.vue')).default;
       const { requirePokemonSpeciesId } = await import('@/data/pokemon/pokedex');
 
@@ -304,7 +309,8 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
     it('translates the sprite in ShadowEditorCard according to calibrated feet coordinates', async () => {
       const { setActivePinia, createPinia } = await import('pinia');
       const { mount } = await import('@vue/test-utils');
-      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue')).default;
+      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue'))
+        .default;
       const { requirePokemonSpeciesId } = await import('@/data/pokemon/pokedex');
 
       setActivePinia(createPinia());
@@ -314,7 +320,7 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
         category: 'pokemon',
         name: '#005 CHARMELEON',
         spriteUrl: '/assets/sprites/pokemon/animated/Front/5i.webp',
-        defaultFeetX: 0.50,
+        defaultFeetX: 0.5,
         defaultFeetY: 0.88,
         defaultIsFlying: false,
         defaultShadowScale: 1.0,
@@ -348,7 +354,8 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
     it('renders HEREDADO badge when isInherited prop is true', async () => {
       const { setActivePinia, createPinia } = await import('pinia');
       const { mount } = await import('@vue/test-utils');
-      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue')).default;
+      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue'))
+        .default;
       const { requirePokemonSpeciesId } = await import('@/data/pokemon/pokedex');
 
       setActivePinia(createPinia());
@@ -358,7 +365,7 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
         category: 'pokemon',
         name: '#005 CHARMELEON (SHINY)',
         spriteUrl: '/assets/sprites/pokemon/animated/Front shiny/5i.webp',
-        defaultFeetX: 0.50,
+        defaultFeetX: 0.5,
         defaultFeetY: 0.88,
         defaultIsFlying: false,
         defaultShadowScale: 1.0,
@@ -391,7 +398,8 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
     it('co-locates CombatShadow, ground-anchor-crosshair and ground-horizon-line directly under preview-box at dead center (50%, 75%)', async () => {
       const { setActivePinia, createPinia } = await import('pinia');
       const { mount } = await import('@vue/test-utils');
-      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue')).default;
+      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue'))
+        .default;
       const { requirePokemonSpeciesId } = await import('@/data/pokemon/pokedex');
 
       setActivePinia(createPinia());
@@ -401,7 +409,7 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
         category: 'pokemon',
         name: '#008 WARTORTLE',
         spriteUrl: '/assets/sprites/pokemon/animated/Front/8i.webp',
-        defaultFeetX: 0.50,
+        defaultFeetX: 0.5,
         defaultFeetY: 0.88,
         defaultIsFlying: false,
         defaultShadowScale: 1.0,
@@ -439,17 +447,22 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
     it('preserves virtual relative sizes across species so Bulbasaur is smaller than Ivysaur and Venusaur (no zoom deformation)', async () => {
       const { setActivePinia, createPinia } = await import('pinia');
       const { mount } = await import('@vue/test-utils');
-      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue')).default;
+      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue'))
+        .default;
       const { requirePokemonSpeciesId } = await import('@/data/pokemon/pokedex');
 
       setActivePinia(createPinia());
 
-      const createMockEntity = (id: 'bulbasaur' | 'ivysaur' | 'venusaur', num: number, spriteName: string): PokemonEditorEntity => ({
+      const createMockEntity = (
+        id: 'bulbasaur' | 'ivysaur' | 'venusaur',
+        num: number,
+        spriteName: string
+      ): PokemonEditorEntity => ({
         key: `/assets/sprites/pokemon/animated/Front/${spriteName}.webp`,
         category: 'pokemon',
         name: `#00${num} ${id.toUpperCase()}`,
         spriteUrl: `/assets/sprites/pokemon/animated/Front/${spriteName}.webp`,
-        defaultFeetX: 0.50,
+        defaultFeetX: 0.5,
         defaultFeetY: 0.88,
         defaultIsFlying: false,
         defaultShadowScale: 1.0,
@@ -470,9 +483,24 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
         props: { entity: createMockEntity('venusaur', 3, '3i') }
       });
 
-      const bulbasaurSize = parseFloat(bulbasaurWrapper.find('.sprite-frame-wrapper').attributes('style')!.match(/width:\s*([0-9.]+)px/)![1]!);
-      const ivysaurSize = parseFloat(ivysaurWrapper.find('.sprite-frame-wrapper').attributes('style')!.match(/width:\s*([0-9.]+)px/)![1]!);
-      const venusaurSize = parseFloat(venusaurWrapper.find('.sprite-frame-wrapper').attributes('style')!.match(/width:\s*([0-9.]+)px/)![1]!);
+      const bulbasaurSize = parseFloat(
+        bulbasaurWrapper
+          .find('.sprite-frame-wrapper')
+          .attributes('style')!
+          .match(/width:\s*([0-9.]+)px/)![1]!
+      );
+      const ivysaurSize = parseFloat(
+        ivysaurWrapper
+          .find('.sprite-frame-wrapper')
+          .attributes('style')!
+          .match(/width:\s*([0-9.]+)px/)![1]!
+      );
+      const venusaurSize = parseFloat(
+        venusaurWrapper
+          .find('.sprite-frame-wrapper')
+          .attributes('style')!
+          .match(/width:\s*([0-9.]+)px/)![1]!
+      );
 
       expect(bulbasaurSize).toBeLessThan(ivysaurSize);
       expect(ivysaurSize).toBeLessThan(venusaurSize);
@@ -550,11 +578,17 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
       expect(editor.hasUnsavedChanges.value).toBe(false);
 
       // Modify widthRatio
-      editor.globalShadowConfig.value = { ...editor.globalShadowConfig.value, widthRatio: initialWidth + 0.15 };
+      editor.globalShadowConfig.value = {
+        ...editor.globalShadowConfig.value,
+        widthRatio: initialWidth + 0.15
+      };
       expect(editor.hasUnsavedChanges.value).toBe(true);
 
       // Restore widthRatio
-      editor.globalShadowConfig.value = { ...editor.globalShadowConfig.value, widthRatio: initialWidth };
+      editor.globalShadowConfig.value = {
+        ...editor.globalShadowConfig.value,
+        widthRatio: initialWidth
+      };
       expect(editor.hasUnsavedChanges.value).toBe(false);
 
       // Reset to canonical defaults
@@ -571,12 +605,8 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
 
   describe('Shadow Editor Slider Copy & Paste UX', () => {
     it('copies and reads slider values using in-memory fallback and parses comma decimals', async () => {
-      const {
-        copySliderValue,
-        readSliderValue,
-        getMemoryClipboardValue,
-        clearMemoryClipboard
-      } = await import('@/views/dev/utils/shadowEditorClipboard');
+      const { copySliderValue, readSliderValue, getMemoryClipboardValue, clearMemoryClipboard } =
+        await import('@/views/dev/utils/shadowEditorClipboard');
 
       clearMemoryClipboard();
       expect(getMemoryClipboardValue()).toBeNull();
@@ -617,11 +647,10 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
     it('renders copy and paste emoji buttons on ShadowEditorCard and handles clicks', async () => {
       const { setActivePinia, createPinia } = await import('pinia');
       const { mount } = await import('@vue/test-utils');
-      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue')).default;
-      const {
-        copySliderValue,
-        clearMemoryClipboard
-      } = await import('@/views/dev/utils/shadowEditorClipboard');
+      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue'))
+        .default;
+      const { copySliderValue, clearMemoryClipboard } =
+        await import('@/views/dev/utils/shadowEditorClipboard');
       const { requirePokemonSpeciesId } = await import('@/data/pokemon/pokedex');
 
       setActivePinia(createPinia());
@@ -690,7 +719,8 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
     it('copies and pastes all values at once via footer copy/paste buttons', async () => {
       const { setActivePinia, createPinia } = await import('pinia');
       const { mount } = await import('@vue/test-utils');
-      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue')).default;
+      const ShadowEditorCard = (await import('@/views/dev/components/ShadowEditorCard.vue'))
+        .default;
       const {
         copyAllValues,
         readAllValues,
@@ -769,13 +799,7 @@ describe('Dev Shadow Editor Domain Types & O(1) Parsers', () => {
       const updateEvents = wrapper.emitted('updateOverride');
       expect(updateEvents).toBeDefined();
       const lastCall = updateEvents![updateEvents!.length - 1];
-      expect(lastCall).toEqual([
-        testEntity.key,
-        0.58,
-        0.82,
-        true,
-        1.45
-      ]);
+      expect(lastCall).toEqual([testEntity.key, 0.58, 0.82, true, 1.45]);
 
       clearMemoryCalibration();
     });

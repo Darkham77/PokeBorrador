@@ -1,22 +1,17 @@
 <script setup lang="ts">
 defineProps<{
-  faction: string | null | undefined
-  totalWarPoints: number
-  warCoins: number
-  formatNum: (num: number) => string
-  handleStatEnter: (e: MouseEvent) => void
-  handleStatLeave: (e: MouseEvent) => void
-}>()
+  faction: string | null | undefined;
+  totalWarPoints: number;
+  warCoins: number;
+  formatNum: (num: number) => string;
+  handleStatEnter: (e: MouseEvent) => void;
+  handleStatLeave: (e: MouseEvent) => void;
+}>();
 </script>
 
 <template>
-  <div
-    v-if="faction"
-    class="profile-section-card war-card"
-  >
-    <div class="section-label">
-      GUERRA DE BANDOS
-    </div>
+  <div v-if="faction" class="profile-section-card war-card">
+    <div class="section-label">GUERRA DE BANDOS</div>
     <div class="stats-grid">
       <div
         class="stat-item highlight-war-points"
@@ -45,8 +40,8 @@ defineProps<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
-@use "@/styles/components/cosmetics" as *;
-@use "@/styles/components/_profile-shared.scss" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/components/cosmetics' as *;
+@use '@/styles/components/_profile-shared.scss' as *;
 </style>

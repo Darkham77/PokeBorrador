@@ -7,7 +7,7 @@
  * - Asserts clean execution on repository data
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   ItemSpriteCollisionAuditor,
   ITEM_SPRITE_COLLISION_RULES,
@@ -52,9 +52,7 @@ describe('ItemSpriteCollisionAuditor', () => {
     });
 
     it('flags items missing sprite property definition', () => {
-      const items: ShopItem[] = [
-        { id: 'item_ghost', name: 'Ghost Item', cat: 'misc' }
-      ];
+      const items: ShopItem[] = [{ id: 'item_ghost', name: 'Ghost Item', cat: 'misc' }];
       const missing = findMissingSprites(items);
       expect(missing.length).toBe(1);
       expect(missing[0]!.reason).toBe('missing_property');
@@ -64,10 +62,7 @@ describe('ItemSpriteCollisionAuditor', () => {
   describe('Rule Coverage & Invariant Assertions', () => {
     it('covers all item sprite collision rules in auditor', () => {
       const auditor = new ItemSpriteCollisionAuditor();
-      const rules: ItemSpriteCollisionRuleId[] = [
-        'item-missing-sprite',
-        'item-sprite-collision'
-      ];
+      const rules: ItemSpriteCollisionRuleId[] = ['item-missing-sprite', 'item-sprite-collision'];
 
       for (const r of rules) {
         expect(auditor.ruleIds).toContain(r);

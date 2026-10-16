@@ -16,7 +16,10 @@ import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
 import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 import { executeRegionalGenerationJob } from '../../logic/map/continentGenerator.worker.ts';
-import { resolveWaterCoastGrid, type WaterTerrainMatrix } from '../../logic/map/waterAutotileEngine.ts';
+import {
+  resolveWaterCoastGrid,
+  type WaterTerrainMatrix
+} from '../../logic/map/waterAutotileEngine.ts';
 
 describe('waterLandmarkIsletBridge', () => {
   const continent = generateContinentMap({
@@ -74,9 +77,7 @@ describe('waterLandmarkIsletBridge', () => {
     const blitsAtCenter = instructions.filter((i) => i.px === px && i.py === py);
 
     // Center of islet must NOT have ocean center or water shore foam as base ground
-    const hasWaterBlit = blitsAtCenter.some(
-      (b) => b.filename.includes('poke_water_ocean_center')
-    );
+    const hasWaterBlit = blitsAtCenter.some((b) => b.filename.includes('poke_water_ocean_center'));
     expect(hasWaterBlit).toBe(false);
   });
 
@@ -206,7 +207,7 @@ describe('waterLandmarkIsletBridge', () => {
             [0, 1],
             [0, -1],
             [1, 0],
-            [-1, 0],
+            [-1, 0]
           ];
           for (const [dx, dy] of directions) {
             const nx = x + dx;

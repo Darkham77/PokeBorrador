@@ -62,8 +62,10 @@ async function handlePlayerTeleportSwitch(
     ? battleCtx.animations.handleCatchRequest({ side: 'player', pokemon: src })
     : Promise.resolve();
 
-  const keys = Object.keys(battleCtx.playerStages.value) as (keyof typeof battleCtx.playerStages.value)[];
-  keys.forEach(k => {
+  const keys = Object.keys(
+    battleCtx.playerStages.value
+  ) as (keyof typeof battleCtx.playerStages.value)[];
+  keys.forEach((k) => {
     battleCtx.playerStages.value[k] = 0;
   });
 
@@ -95,7 +97,7 @@ export async function executeTeleportAction(
 
   if (aliveOthers.length === 0) {
     addLogFn(`¡${src.name} intentó teletransportarse!`, 'log-info', src);
-    addLogFn("¡Pero no hay nadie para sustituirle!", 'log-info', src);
+    addLogFn('¡Pero no hay nadie para sustituirle!', 'log-info', src);
     return;
   }
 

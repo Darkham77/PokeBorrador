@@ -19,16 +19,23 @@ interface NormalizedPokemonFields {
   moves: readonly PokemonMoveId[];
 }
 
-function extractNormalizedPokemonFields(poke: Pokemon | PokemonSet | Record<string, unknown>): NormalizedPokemonFields | string {
+function extractNormalizedPokemonFields(
+  poke: Pokemon | PokemonSet | Record<string, unknown>
+): NormalizedPokemonFields | string {
   const rawSpecies = String(Reflect.get(poke, 'species') || Reflect.get(poke, 'id') || '');
   if (!isPokemonSpeciesId(rawSpecies)) {
     return `Invalid or non-existent species ID: "${rawSpecies}".`;
   }
-  const rawAbility = String(Reflect.get(poke, 'ability') || '');
+  const abilityVal = Reflect.get(poke, 'ability');
+  const rawAbility = typeof abilityVal === 'string' ? abilityVal : '';
   const gender = (Reflect.get(poke, 'gender') as string | null | undefined) ?? null;
   const rawMoves = Reflect.get(poke, 'moves');
   const moves: readonly PokemonMoveId[] = Array.isArray(rawMoves)
-    ? rawMoves.map(m => (typeof m === 'string' ? m : (typeof m === 'object' && m && 'id' in m ? String(m.id) : ''))).filter(isPokemonMoveId)
+    ? rawMoves
+        .map((m) =>
+          typeof m === 'string' ? m : typeof m === 'object' && m && 'id' in m ? String(m.id) : ''
+        )
+        .filter(isPokemonMoveId)
     : [];
 
   return { speciesId: rawSpecies, rawAbility, gender, moves };
@@ -74,10 +81,20 @@ export class PokemonLegalityValidator {
     }
     const species = this.dex.species.get(cleanId);
     if (!species || !species.exists) {
-      return { valid: false, errors: [`Species "${speciesId}" does not exist in Dex gen ${ACTIVE_GENERATION}.`] };
+      return {
+        valid: false,
+        errors: [`Species "${speciesId}" does not exist in Dex gen ${ACTIVE_GENERATION}.`]
+      };
     }
-    if (species.isNonstandard && species.isNonstandard !== 'Unobtainable' && species.isNonstandard !== 'Past') {
-      return { valid: false, errors: [`Species "${speciesId}" is non-standard (${species.isNonstandard}).`] };
+    if (
+      species.isNonstandard &&
+      species.isNonstandard !== 'Unobtainable' &&
+      species.isNonstandard !== 'Past'
+    ) {
+      return {
+        valid: false,
+        errors: [`Species "${speciesId}" is non-standard (${species.isNonstandard}).`]
+      };
     }
     return { valid: true, errors: [] };
   }
@@ -85,16 +102,21 @@ export class PokemonLegalityValidator {
   /**
    * Validates that the ability is natively available for the species.
    */
-  public static validateAbility(speciesId: PokemonSpeciesId, abilityId: AbilityId): LegalityCheckResult {
+  public static validateAbility(
+    speciesId: PokemonSpeciesId,
+    abilityId: AbilityId
+  ): LegalityCheckResult {
     const cleanAbility = toID(abilityId);
     if (!cleanAbility) {
       return { valid: false, errors: [`Ability is empty for species "${speciesId}".`] };
     }
-    const legalAbilities = pokemonDataProvider.getSpeciesAbilities(speciesId).map(a => toID(a));
+    const legalAbilities = pokemonDataProvider.getSpeciesAbilities(speciesId).map((a) => toID(a));
     if (!legalAbilities.includes(cleanAbility)) {
       return {
         valid: false,
-        errors: [`Species "${speciesId}" cannot legally have ability "${abilityId}". Legal abilities: [${legalAbilities.join(', ')}]`]
+        errors: [
+          `Species "${speciesId}" cannot legally have ability "${abilityId}". Legal abilities: [${legalAbilities.join(', ')}]`
+        ]
       };
     }
     return { valid: true, errors: [] };
@@ -103,27 +125,47 @@ export class PokemonLegalityValidator {
   /**
    * Validates that the gender matches the species' biological gender ratio.
    */
-  public static validateGender(speciesId: PokemonSpeciesId, gender: string | null | undefined): LegalityCheckResult {
+  public static validateGender(
+    speciesId: PokemonSpeciesId,
+    gender: string | null | undefined
+  ): LegalityCheckResult {
     const cleanSpecies = toID(speciesId);
     const species = this.dex.species.get(cleanSpecies);
     if (!species || !species.exists) {
-      return { valid: false, errors: [`Cannot validate gender: Species "${speciesId}" not found.`] };
+      return {
+        valid: false,
+        errors: [`Cannot validate gender: Species "${speciesId}" not found.`]
+      };
     }
 
     const cleanGender = gender ? toID(gender) : 'n';
-    const isGenderless = (species.gender as string) === 'N' || (!species.genderRatio && !species.gender);
+    const isGenderless =
+      (species.gender as string) === 'N' || (!species.genderRatio && !species.gender);
 
     if (isGenderless) {
       if (cleanGender !== 'n' && cleanGender !== '' && cleanGender !== 'genderless') {
-        return { valid: false, errors: [`Species "${speciesId}" is strictly genderless, but received gender "${gender}".`] };
+        return {
+          valid: false,
+          errors: [
+            `Species "${speciesId}" is strictly genderless, but received gender "${gender}".`
+          ]
+        };
       }
     } else if (species.gender === 'F' || species.genderRatio?.F === 1) {
       if (cleanGender !== 'f' && cleanGender !== 'female') {
-        return { valid: false, errors: [`Species "${speciesId}" is strictly 100% female, but received gender "${gender}".`] };
+        return {
+          valid: false,
+          errors: [
+            `Species "${speciesId}" is strictly 100% female, but received gender "${gender}".`
+          ]
+        };
       }
     } else if (species.gender === 'M' || species.genderRatio?.M === 1) {
       if (cleanGender !== 'm' && cleanGender !== 'male') {
-        return { valid: false, errors: [`Species "${speciesId}" is strictly 100% male, but received gender "${gender}".`] };
+        return {
+          valid: false,
+          errors: [`Species "${speciesId}" is strictly 100% male, but received gender "${gender}".`]
+        };
       }
     }
     return { valid: true, errors: [] };
@@ -132,7 +174,10 @@ export class PokemonLegalityValidator {
   /**
    * Validates that all moves exist in Showdown's database.
    */
-  public static validateMoves(speciesId: PokemonSpeciesId, moves: readonly PokemonMoveId[]): LegalityCheckResult {
+  public static validateMoves(
+    speciesId: PokemonSpeciesId,
+    moves: readonly PokemonMoveId[]
+  ): LegalityCheckResult {
     const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (!Array.isArray(moves) || moves.length === 0) {
       return { valid: false, errors: [`Species "${speciesId}" has no moves defined.`] };
@@ -156,11 +201,12 @@ export class PokemonLegalityValidator {
     return { valid: errors.length === 0, errors };
   }
 
-
   /**
    * Validates a full Pokemon entity or PokemonSet.
    */
-  public static validatePokemon(poke: Pokemon | PokemonSet | Record<string, unknown>): LegalityCheckResult {
+  public static validatePokemon(
+    poke: Pokemon | PokemonSet | Record<string, unknown>
+  ): LegalityCheckResult {
     const extracted = extractNormalizedPokemonFields(poke);
     if (typeof extracted === 'string') {
       return { valid: false, errors: [extracted] };
@@ -180,7 +226,10 @@ export class PokemonLegalityValidator {
   /**
    * Validates an entire team and throws loudly if any constraint is violated.
    */
-  public static assertTeamLegality(team: Array<Pokemon | PokemonSet | Record<string, unknown>>, teamLabel = 'Team'): void {
+  public static assertTeamLegality(
+    team: Array<Pokemon | PokemonSet | Record<string, unknown>>,
+    teamLabel = 'Team'
+  ): void {
     if (!Array.isArray(team) || team.length === 0) {
       throw new Error(`[PokemonLegality] ${teamLabel} is empty or not an array.`);
     }
@@ -195,7 +244,9 @@ export class PokemonLegalityValidator {
     });
 
     if (teamErrors.length > 0) {
-      throw new Error(`[PokemonLegality] ❌ ILLEGAL TEAM DETECTED in ${teamLabel}:\n  • ${teamErrors.join('\n  • ')}`);
+      throw new Error(
+        `[PokemonLegality] ❌ ILLEGAL TEAM DETECTED in ${teamLabel}:\n  • ${teamErrors.join('\n  • ')}`
+      );
     }
   }
 
@@ -203,10 +254,15 @@ export class PokemonLegalityValidator {
    * Assert single Pokemon legality, throwing loudly on any illegality.
    */
   // fallow-ignore-next-line unused-class-member
-  public static assertPokemonLegality(poke: Pokemon | PokemonSet | Record<string, unknown>, label = 'Pokemon'): void {
+  public static assertPokemonLegality(
+    poke: Pokemon | PokemonSet | Record<string, unknown>,
+    label = 'Pokemon'
+  ): void {
     const res = this.validatePokemon(poke);
     if (!res.valid) {
-      throw new Error(`[PokemonLegality] ❌ ILLEGAL POKEMON DETECTED in ${label}:\n  • ${res.errors.join('\n  • ')}`);
+      throw new Error(
+        `[PokemonLegality] ❌ ILLEGAL POKEMON DETECTED in ${label}:\n  • ${res.errors.join('\n  • ')}`
+      );
     }
   }
 }

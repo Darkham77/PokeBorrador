@@ -1,50 +1,44 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { useGameStore } from '@/stores/game.ts'
-import { NATURE_DATA, getNatureDataByNameOrId } from '@/data/battle/natures.ts'
-import type { Pokemon } from '@/types/pokemon/pokemon.ts'
+import { computed } from 'vue';
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { useGameStore } from '@/stores/game.ts';
+import { NATURE_DATA, getNatureDataByNameOrId } from '@/data/battle/natures.ts';
+import type { Pokemon } from '@/types/pokemon/pokemon.ts';
 
 interface Props {
-  pokemon: Pokemon
-  isPlayer?: boolean
-  isScrambled?: boolean
+  pokemon: Pokemon;
+  isPlayer?: boolean;
+  isScrambled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isPlayer: false,
   isScrambled: false
-})
+});
 
-const gameStore = useGameStore()
+const gameStore = useGameStore();
 
 const natureData = computed(() => {
-  if (!props.pokemon?.nature) return NATURE_DATA['serious']
-  return getNatureDataByNameOrId(props.pokemon.nature) || NATURE_DATA['serious']
-})
+  if (!props.pokemon?.nature) return NATURE_DATA['serious'];
+  return getNatureDataByNameOrId(props.pokemon.nature) || NATURE_DATA['serious'];
+});
 
 const showBreederTooltip = computed(() => {
-  return !props.isPlayer && !props.isScrambled && gameStore.state.playerClass === 'criador'
-})
+  return !props.isPlayer && !props.isScrambled && gameStore.state.playerClass === 'criador';
+});
 
 const tooltipTitle = computed(() => {
   // domain-ok: UI presentation uppercase label for tooltip title
-  return props.pokemon?.nature ? (natureData.value?.name ?? 'Seria').toUpperCase() : 'SERIA'
-})
+  return props.pokemon?.nature ? (natureData.value?.name ?? 'Seria').toUpperCase() : 'SERIA';
+});
 </script>
 
 <template>
   <div class="level-row">
-    <div class="poke-level m-badge-level">
-      Nv. {{ isScrambled ? '??' : pokemon.level }}
-    </div>
+    <div class="poke-level m-badge-level">Nv. {{ isScrambled ? '??' : pokemon.level }}</div>
 
-    <PVTooltip
-      v-if="showBreederTooltip"
-      position="bottom"
-      :title="tooltipTitle"
-    >
+    <PVTooltip v-if="showBreederTooltip" position="bottom" :title="tooltipTitle">
       <div class="m-badge-nature">
         {{ natureData?.name || 'Seria' }}
       </div>
@@ -53,29 +47,48 @@ const tooltipTitle = computed(() => {
           <div
             v-if="natureData?.up || natureData?.down"
             class="modifiers-row"
-            style="display: flex; gap: $spacing-sm; margin: 4px 0;"
+            style="display: flex; gap: $spacing-sm; margin: 4px 0"
           >
             <span
               v-if="natureData?.up"
               class="stat-mod mod-up"
-              style="color: var(--green); font-size: var(--font-8); font-weight: bold; text-transform: uppercase;"
-            ><span class="emoji">▲</span> {{ natureData.up }} (+10%)</span>
+              style="
+                color: var(--green);
+                font-size: var(--font-8);
+                font-weight: bold;
+                text-transform: uppercase;
+              "
+              ><span class="emoji">▲</span> {{ natureData.up }} (+10%)</span
+            >
             <span
               v-if="natureData?.down"
               class="stat-mod mod-down"
-              style="color: var(--red); font-size: var(--font-8); font-weight: bold; text-transform: uppercase;"
-            ><span class="emoji">▼</span> {{ natureData.down }} (-10%)</span>
+              style="
+                color: var(--red);
+                font-size: var(--font-8);
+                font-weight: bold;
+                text-transform: uppercase;
+              "
+              ><span class="emoji">▼</span> {{ natureData.down }} (-10%)</span
+            >
           </div>
-          <p style="margin: 4px 0 0; color: var(--slate-300); font-size: var(--font-8); line-height: 1.4;">
+          <p
+            style="
+              margin: 4px 0 0;
+              color: var(--slate-300);
+              font-size: var(--font-8);
+              line-height: 1.4;
+            "
+          >
             {{ natureData?.desc || 'Sin efecto en estadísticas.' }}
           </p>
         </div>
       </template>
     </PVTooltip>
 
-    <PokemonTypePills 
+    <PokemonTypePills
       v-if="!isScrambled"
-      :pokemon="pokemon" 
+      :pokemon="pokemon"
       :size="pokemon.type2 ? 'ssm' : 'sm'"
       class="poke-types"
     />

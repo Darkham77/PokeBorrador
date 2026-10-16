@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { useGameStore } from '@/stores/game';
 import { handleNpcBabyEggReward } from '@/logic/battle/rewards/npcEggRewardsHandler';
@@ -30,17 +30,17 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
           isGym: false,
           isPvP: false,
           isRival: false,
-          trainerSprite: 'entrenador',
-        } as unknown as BattleState,
+          trainerSprite: 'entrenador'
+        } as unknown as BattleState
       },
       uiStore: {
         notify: vi.fn((msg: string, icon: string) => {
           notifications.push({ msg, icon });
-        }),
+        })
       },
       addLog: vi.fn((msg: string, type: string, source: unknown) => {
         logs.push({ msg, type, source });
-      }),
+      })
     };
 
     return { mockCtx, logs, notifications };
@@ -106,12 +106,7 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
     expect(logFromObject.iconType).toBe('npc_egg');
 
     // 3. Regular egg source 'egg'
-    const logRegularEgg = formatBattleLog(
-      'Huevo normal',
-      'log-catch',
-      'egg',
-      { gs }
-    );
+    const logRegularEgg = formatBattleLog('Huevo normal', 'log-catch', 'egg', { gs });
 
     expect(logRegularEgg.icon).toBe(expectedEggUrl);
     expect(logRegularEgg.iconType).toBe('egg');
@@ -126,10 +121,7 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
 
     vi.spyOn(Math, 'random').mockReturnValue(0.001);
 
-    handleNpcBabyEggReward(
-      mockCtx as unknown as BattleContext,
-      mockCtx.activeBattle.value
-    );
+    handleNpcBabyEggReward(mockCtx as unknown as BattleContext, mockCtx.activeBattle.value);
 
     // Mochila has 1 egg (+1 NPC slot)
     expect(gs.state.eggs.length).toBe(1);
@@ -151,8 +143,8 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
         totalSteps: 200,
         ready: false,
         isNpc: true,
-        tint: NPC_EGG_TINT,
-      },
+        tint: NPC_EGG_TINT
+      }
     ];
 
     const { mockCtx, logs } = createMockBattleContext(gs);
@@ -177,7 +169,7 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
       id: 'caterpie',
       steps: 100,
       totalSteps: 100,
-      ready: false,
+      ready: false
     }));
 
     const { mockCtx, logs } = createMockBattleContext(gs);
@@ -201,10 +193,7 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
 
     vi.spyOn(Math, 'random').mockReturnValue(0.001);
 
-    handleNpcBabyEggReward(
-      mockCtx as unknown as BattleContext,
-      mockCtx.activeBattle.value
-    );
+    handleNpcBabyEggReward(mockCtx as unknown as BattleContext, mockCtx.activeBattle.value);
 
     const egg = gs.state.eggs![0]!;
     expect(egg.isNpc).toBe(true);
@@ -239,8 +228,8 @@ describe('NPC Baby Egg Reward Lifecycle & Daycare Separation', () => {
         isNpc: true,
         tint: NPC_EGG_TINT,
         nature: 'jolly',
-        isShiny: false,
-      },
+        isShiny: false
+      }
     ];
 
     const serialized = serializeState(gs.state);

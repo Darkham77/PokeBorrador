@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   isIdleSuppressed,
   getIdleFloatingConfig,
@@ -55,7 +55,9 @@ describe('Freeze Static Mode and Combatant Idle Animations', () => {
       for (let i = 0; i < 10; i++) {
         const dur = durFn();
         expect(dur).toBeGreaterThanOrEqual(COMBATANT_IDLE_FLOAT_BASE_DURATION_SEC);
-        expect(dur).toBeLessThanOrEqual(COMBATANT_IDLE_FLOAT_BASE_DURATION_SEC + COMBATANT_IDLE_FLOAT_VAR_DURATION_SEC);
+        expect(dur).toBeLessThanOrEqual(
+          COMBATANT_IDLE_FLOAT_BASE_DURATION_SEC + COMBATANT_IDLE_FLOAT_VAR_DURATION_SEC
+        );
       }
     });
   });
@@ -73,7 +75,9 @@ describe('Freeze Static Mode and Combatant Idle Animations', () => {
       for (let i = 0; i < 10; i++) {
         const sx = scaleXFn();
         expect(sx).toBeGreaterThanOrEqual(COMBATANT_IDLE_GROUNDED_BASE_SCALE_X);
-        expect(sx).toBeLessThanOrEqual(COMBATANT_IDLE_GROUNDED_BASE_SCALE_X + COMBATANT_IDLE_GROUNDED_VAR_SCALE_X);
+        expect(sx).toBeLessThanOrEqual(
+          COMBATANT_IDLE_GROUNDED_BASE_SCALE_X + COMBATANT_IDLE_GROUNDED_VAR_SCALE_X
+        );
       }
     });
   });

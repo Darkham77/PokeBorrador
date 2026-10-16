@@ -75,7 +75,9 @@ function handleApplyAndRegenerate(): void {
           @click="handleApplyPreset(key)"
         >
           <span class="preset-name">{{ p.name }}</span>
-          <span class="preset-meta">{{ p.dimensions.width }}×{{ p.dimensions.height }}px | {{ p.cityCount }} Ciudades</span>
+          <span class="preset-meta"
+            >{{ p.dimensions.width }}×{{ p.dimensions.height }}px | {{ p.cityCount }} Ciudades</span
+          >
         </button>
       </div>
     </div>
@@ -89,7 +91,8 @@ function handleApplyAndRegenerate(): void {
           v-model.number="localConfig.seed"
           type="number"
           class="input-field"
-        >
+          aria-label="Semilla de generación"
+        />
         <button
           id="studio-procedural-config-modal-btn-randomseed"
           type="button"
@@ -104,7 +107,9 @@ function handleApplyAndRegenerate(): void {
 
     <!-- Dimensiones del Continente -->
     <div class="control-group">
-      <label class="control-label"><span class="icon">📐</span> Dimensiones (Ancho × Alto px)</label>
+      <label class="control-label"
+        ><span class="icon">📐</span> Dimensiones (Ancho × Alto px)</label
+      >
       <div class="flex gap-2">
         <input
           id="studio-procedural-config-modal-input-width"
@@ -115,7 +120,8 @@ function handleApplyAndRegenerate(): void {
           max="8000"
           class="input-field"
           placeholder="Ancho px"
-        >
+          aria-label="Ancho en píxeles"
+        />
         <span class="self-center">×</span>
         <input
           id="studio-procedural-config-modal-input-height"
@@ -126,14 +132,17 @@ function handleApplyAndRegenerate(): void {
           max="8000"
           class="input-field"
           placeholder="Alto px"
-        >
+          aria-label="Alto en píxeles"
+        />
       </div>
     </div>
 
     <!-- Cantidad de Ciudades -->
     <div class="control-group">
       <div class="label-row">
-        <label class="control-label"><span class="icon">🏙️</span> Cantidad de Ciudades / Pueblos</label>
+        <label class="control-label"
+          ><span class="icon">🏙️</span> Cantidad de Ciudades / Pueblos</label
+        >
         <span class="value-badge">{{ localConfig.cityCount }}</span>
       </div>
       <input
@@ -144,19 +153,20 @@ function handleApplyAndRegenerate(): void {
         max="30"
         step="1"
         class="slider"
-      >
+        aria-label="Cantidad de ciudades"
+      />
     </div>
 
     <div class="separator-line" />
 
     <!-- Biomas Sliders -->
-    <h4 class="biomes-title">
-      Distribución de Biomas
-    </h4>
+    <h4 class="biomes-title">Distribución de Biomas</h4>
 
     <div class="control-group">
       <div class="label-row">
-        <label class="control-label"><span class="icon">🌊</span> Cobertura de Océano y Lagos</label>
+        <label class="control-label"
+          ><span class="icon">🌊</span> Cobertura de Océano y Lagos</label
+        >
         <span class="value-badge">{{ localConfig.biomes.waterPercent }}%</span>
       </div>
       <input
@@ -166,12 +176,15 @@ function handleApplyAndRegenerate(): void {
         min="0"
         max="100"
         class="slider"
-      >
+        aria-label="Porcentaje de agua"
+      />
     </div>
 
     <div class="control-group">
       <div class="label-row">
-        <label class="control-label"><span class="icon">🏖️</span> Cobertura de Playas y Costas</label>
+        <label class="control-label"
+          ><span class="icon">🏖️</span> Cobertura de Playas y Costas</label
+        >
         <span class="value-badge">{{ localConfig.biomes.beachPercent }}%</span>
       </div>
       <input
@@ -181,7 +194,8 @@ function handleApplyAndRegenerate(): void {
         min="0"
         max="100"
         class="slider"
-      >
+        aria-label="Porcentaje de playa"
+      />
     </div>
 
     <div class="control-group">
@@ -196,7 +210,8 @@ function handleApplyAndRegenerate(): void {
         min="0"
         max="100"
         class="slider"
-      >
+        aria-label="Porcentaje de bosque"
+      />
     </div>
 
     <div class="control-group">
@@ -211,12 +226,15 @@ function handleApplyAndRegenerate(): void {
         min="0"
         max="100"
         class="slider"
-      >
+        aria-label="Porcentaje de montaña"
+      />
     </div>
 
     <div class="control-group">
       <div class="label-row">
-        <label class="control-label"><span class="icon">❄️</span> Cobertura de Nieve y Glaciares</label>
+        <label class="control-label"
+          ><span class="icon">❄️</span> Cobertura de Nieve y Glaciares</label
+        >
         <span class="value-badge">{{ localConfig.biomes.snowPercent }}%</span>
       </div>
       <input
@@ -226,7 +244,8 @@ function handleApplyAndRegenerate(): void {
         min="0"
         max="100"
         class="slider"
-      >
+        aria-label="Porcentaje de nieve"
+      />
     </div>
     <template #footer>
       <button
@@ -250,7 +269,6 @@ function handleApplyAndRegenerate(): void {
 </template>
 
 <style scoped lang="scss">
-
 .control-group {
   display: flex;
   flex-direction: column;

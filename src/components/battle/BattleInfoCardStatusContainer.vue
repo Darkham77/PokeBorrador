@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import BattleInfoStats from './BattleInfoStats.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import BattleInfoStats from './BattleInfoStats.vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
-import type { UnifiedStatusItem, AdminStatConfigItem } from '@/types/battle/status'
+import type { UnifiedStatusItem, AdminStatConfigItem } from '@/types/battle/status';
 
 defineProps<{
-  unifiedStatuses: UnifiedStatusItem[]
-  showStatsTable: boolean
-  adminStatConfig: AdminStatConfigItem[]
-  getStatModifier: (key: string) => number
-  getBreakdown: (key: string) => { base: number; final: number }
-  pokemon?: Pokemon | null
-}>()
+  unifiedStatuses: UnifiedStatusItem[];
+  showStatsTable: boolean;
+  adminStatConfig: AdminStatConfigItem[];
+  getStatModifier: (key: string) => number;
+  getBreakdown: (key: string) => { base: number; final: number };
+  pokemon?: Pokemon | null;
+}>();
 
 function shouldShowTooltipContent(status: UnifiedStatusItem, showStatsTable: boolean): boolean {
-  return Boolean(status.isAdminOnly || (showStatsTable && status.emoji !== '🎒'))
+  return Boolean(status.isAdminOnly || (showStatsTable && status.emoji !== '🎒'));
 }
 
 function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean): boolean {
-  return Boolean(showStatsTable && status.emoji !== '🎒')
+  return Boolean(showStatsTable && status.emoji !== '🎒');
 }
 </script>
 
@@ -32,33 +32,21 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
       :description="status.description"
       position="bottom"
     >
-      <div
-        class="m-status-tag"
-        :class="[status.class, { 'is-boosted': status.isBoosted }]"
-      >
+      <div class="m-status-tag" :class="[status.class, { 'is-boosted': status.isBoosted }]">
         <span class="emoji">{{ status.emoji }}</span>
-        <span 
-          v-if="status.stageValue !== undefined" 
+        <span
+          v-if="status.stageValue !== undefined"
           class="stage-arrow"
           :class="status.stageValue > 0 ? 'up' : 'down'"
-        ><span class="stage-glyph emoji">{{ status.stageValue > 0 ? '▲' : '▼' }}</span><span class="stage-num">{{ Math.abs(status.stageValue) }}</span></span>
-        <span
-          v-if="status.count"
-          class="status-counter"
+          ><span class="stage-glyph emoji">{{ status.stageValue > 0 ? '▲' : '▼' }}</span
+          ><span class="stage-num">{{ Math.abs(status.stageValue) }}</span></span
         >
-          {{ status.count }}t
-        </span>
+        <span v-if="status.count" class="status-counter"> {{ status.count }}t </span>
       </div>
 
-      <template
-        v-if="shouldShowTooltipContent(status, showStatsTable)"
-        #content
-      >
+      <template v-if="shouldShowTooltipContent(status, showStatsTable)" #content>
         <div class="status-pro-tooltip">
-          <div 
-            v-if="status.isAdminOnly"
-            class="admin-only-disclaimer"
-          >
+          <div v-if="status.isAdminOnly" class="admin-only-disclaimer">
             <span class="emoji">⚠️</span> esto es visible solo para administradores
           </div>
 
@@ -78,7 +66,7 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .status-container {
   position: relative;

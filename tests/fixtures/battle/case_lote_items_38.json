@@ -24,12 +24,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "flamethrower",
-        "surf",
-        "closecombat",
-        "thunderwave"
-      ],
+      "moves": ["flamethrower", "surf", "closecombat", "thunderwave"],
       "uid": "ab8cb98d-e619-4d29-92c8-05bd0874a758",
       "stats": {
         "maxHp": 404,
@@ -64,12 +59,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "flamethrower",
-        "surf",
-        "closecombat",
-        "thunderwave"
-      ],
+      "moves": ["flamethrower", "surf", "closecombat", "thunderwave"],
       "uid": "59f68ae5-6a7b-4191-9f34-da0935108ad2",
       "stats": {
         "maxHp": 404,
@@ -106,12 +96,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "tackle",
-        "flamethrower",
-        "surf",
-        "toxic"
-      ],
+      "moves": ["tackle", "flamethrower", "surf", "toxic"],
       "uid": "88dbedbb-e441-4ec2-84b9-c98023c078ce",
       "stats": {
         "maxHp": 404,
@@ -123,17 +108,10 @@
       }
     }
   ],
-  "itemsToTest": [
-    "ejectbutton"
-  ],
+  "itemsToTest": ["ejectbutton"],
   "enemyPriorityMove": "tackle",
   "cheats": [],
-  "seed": [
-    18588,
-    21544,
-    54523,
-    34263
-  ],
+  "seed": [18588, 21544, 54523, 34263],
   "playerChoices": [
     "move 1",
     "switch 2",

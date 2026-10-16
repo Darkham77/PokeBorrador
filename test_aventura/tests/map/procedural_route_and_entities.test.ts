@@ -13,21 +13,17 @@ import {
   loadTilesRegistry,
   type TilesRegistryJson
 } from '../../logic/map/tilesRegistry.ts';
-import {
-  generateProceduralMap
-} from '../../logic/map/proceduralMapGenerator.ts';
-import {
-  POKEMON_CENTER,
-  POKEMART,
-  KANTO_HOUSE_SMALL
-} from '../../config/mapStructures.ts';
+import { generateProceduralMap } from '../../logic/map/proceduralMapGenerator.ts';
+import { POKEMON_CENTER, POKEMART, KANTO_HOUSE_SMALL } from '../../config/mapStructures.ts';
 
 describe('Procedural Route, Ledges & Game Entities (v2.5)', () => {
   let registryService: TilesRegistryService;
 
   beforeAll(() => {
     const registryPath = path.resolve('test_aventura/assets/tiles_registry.json');
-    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(true);
+    expect(fs.existsSync(registryPath), 'test_aventura/assets/tiles_registry.json must exist').toBe(
+      true
+    );
     const raw = fs.readFileSync(registryPath, 'utf-8');
     const data = JSON.parse(raw) as TilesRegistryJson;
     registryService = new TilesRegistryService(data);
@@ -44,18 +40,18 @@ describe('Procedural Route, Ledges & Game Entities (v2.5)', () => {
       expect(map.entities).toBeDefined();
       expect(map.entities.warps.length).toBeGreaterThanOrEqual(3);
 
-      const pcWarp = map.entities.warps.find(w => w.targetMapId === 'interior_pokemon_center');
+      const pcWarp = map.entities.warps.find((w) => w.targetMapId === 'interior_pokemon_center');
       expect(pcWarp).toBeDefined();
       expect(pcWarp!.targetSpawnId).toBe('spawn_door');
       // Entrance must be walkable in collision matrix
       expect(map.collisionMatrix[pcWarp!.y]![pcWarp!.x]).toBe(0);
 
-      const martWarp = map.entities.warps.find(w => w.targetMapId === 'interior_pokemart');
+      const martWarp = map.entities.warps.find((w) => w.targetMapId === 'interior_pokemart');
       expect(martWarp).toBeDefined();
       expect(martWarp!.targetSpawnId).toBe('spawn_door');
       expect(map.collisionMatrix[martWarp!.y]![martWarp!.x]).toBe(0);
 
-      const houseWarps = map.entities.warps.filter(w => w.targetMapId === 'interior_kanto_house');
+      const houseWarps = map.entities.warps.filter((w) => w.targetMapId === 'interior_kanto_house');
       expect(houseWarps.length).toBeGreaterThanOrEqual(1);
       for (const hw of houseWarps) {
         expect(map.collisionMatrix[hw.y]![hw.x]).toBe(0);
@@ -70,16 +66,22 @@ describe('Procedural Route, Ledges & Game Entities (v2.5)', () => {
 
       expect(map.entities.spawns.length).toBeGreaterThanOrEqual(4);
 
-      const playerStart = map.entities.spawns.find(s => s.id === 'player_start');
+      const playerStart = map.entities.spawns.find((s) => s.id === 'player_start');
       expect(playerStart).toBeDefined();
-      expect(map.collisionMatrix[playerStart!.y]![playerStart!.x], 'player_start must be walkable').toBe(0);
+      expect(
+        map.collisionMatrix[playerStart!.y]![playerStart!.x],
+        'player_start must be walkable'
+      ).toBe(0);
 
-      const townExit = map.entities.spawns.find(s => s.id === 'town_exit_south');
+      const townExit = map.entities.spawns.find((s) => s.id === 'town_exit_south');
       expect(townExit).toBeDefined();
-      expect(map.collisionMatrix[townExit!.y]![townExit!.x], 'town_exit_south must be walkable').toBe(0);
+      expect(
+        map.collisionMatrix[townExit!.y]![townExit!.x],
+        'town_exit_south must be walkable'
+      ).toBe(0);
 
       // Building exits must also be walkable
-      const pcExit = map.entities.spawns.find(s => s.id.includes('pokemon_center'));
+      const pcExit = map.entities.spawns.find((s) => s.id.includes('pokemon_center'));
       expect(pcExit).toBeDefined();
       expect(map.collisionMatrix[pcExit!.y]![pcExit!.x], 'building exit must be walkable').toBe(0);
     });
@@ -97,15 +99,24 @@ describe('Procedural Route, Ledges & Game Entities (v2.5)', () => {
         expect(map.collisionMatrix[warp.y]![warp.x]).toBe(0);
         const doorstepY = warp.y + 1;
         if (doorstepY < map.height) {
-          expect(map.collisionMatrix[doorstepY]![warp.x], `Doorstep at (${warp.x}, ${doorstepY}) must be walkable`).toBe(0);
+          expect(
+            map.collisionMatrix[doorstepY]![warp.x],
+            `Doorstep at (${warp.x}, ${doorstepY}) must be walkable`
+          ).toBe(0);
         }
       }
 
       // Central avenue at x = 15 must connect through the town down to the southern exit
       const midX = Math.floor(map.width / 2);
       for (let y = 4; y < map.height - 2; y++) {
-        expect(map.collisionMatrix[y]![midX], `Central vertical road at (${midX}, ${y}) must be walkable`).toBe(0);
-        expect(map.layers.decorations[y]![midX], `Central vertical road at (${midX}, ${y}) must be clear`).toBeNull();
+        expect(
+          map.collisionMatrix[y]![midX],
+          `Central vertical road at (${midX}, ${y}) must be walkable`
+        ).toBe(0);
+        expect(
+          map.layers.decorations[y]![midX],
+          `Central vertical road at (${midX}, ${y}) must be clear`
+        ).toBeNull();
       }
     });
   });
@@ -120,8 +131,8 @@ describe('Procedural Route, Ledges & Game Entities (v2.5)', () => {
       expect(route.type).toBe('route');
 
       // Northern exit spawn and southern start spawn must exist and be walkable
-      const northSpawn = route.entities.spawns.find(s => s.id === 'route_exit_north');
-      const southSpawn = route.entities.spawns.find(s => s.id === 'player_start');
+      const northSpawn = route.entities.spawns.find((s) => s.id === 'route_exit_north');
+      const southSpawn = route.entities.spawns.find((s) => s.id === 'player_start');
 
       expect(northSpawn).toBeDefined();
       expect(southSpawn).toBeDefined();
@@ -169,14 +180,19 @@ describe('Procedural Route, Ledges & Game Entities (v2.5)', () => {
       );
 
       let ledgeTileCount = 0;
-      const validLedgeTiles = new Set(['tile_terrain_120d7decae', 'tile_terrain_1938e75eaa']);
+      const VALID_LEDGE_TILES = ['tile_terrain_120d7decae', 'tile_terrain_1938e75eaa'] as const;
+      type ValidLedgeTile = (typeof VALID_LEDGE_TILES)[number];
+      const VALID_LEDGE_TILES_SET: ReadonlySet<ValidLedgeTile> = new Set(VALID_LEDGE_TILES);
 
       for (let y = 0; y < route.height; y++) {
         for (let x = 0; x < route.width; x++) {
           if (route.collisionMatrix[y]![x] === 3) {
             ledgeTileCount++;
             const baseTile = route.layers.ground[y]![x]?.tileId;
-            expect(validLedgeTiles.has(baseTile!), `Ledge tile ${baseTile} must be canonical`).toBe(true);
+            expect(
+              VALID_LEDGE_TILES_SET.has(baseTile as ValidLedgeTile),
+              `Ledge tile ${baseTile} must be canonical`
+            ).toBe(true);
             // Must have no blocking obstacle on the ledge itself
             expect(route.layers.decorations[y]![x]).toBeNull();
           }

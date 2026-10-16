@@ -7,7 +7,7 @@
  * - Asserts clean execution on repository data
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   FsmImplementationAuditor,
   FSM_IMPLEMENTATION_RULES,
@@ -121,4 +121,3 @@ export const BATTLE_STATES = {
     });
   });
 });
-

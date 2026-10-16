@@ -4,5 +4,5 @@ import { runItemsFuzzer } from '../core/fuzzer_engine.ts';
 
 await runFuzzerSuite({
   suiteName: 'Fuzzer — Ítems (All Generations)',
-  run: runItemsFuzzer,
+  run: runItemsFuzzer
 });

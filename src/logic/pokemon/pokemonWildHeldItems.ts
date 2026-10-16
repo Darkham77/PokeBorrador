@@ -5,7 +5,9 @@ import { GAME_RATIOS } from '@/data/system/constants';
 /**
  * Wild held item probabilities
  */
-export const WILD_HELD_ITEMS: Partial<Record<PokemonSpeciesId, { common?: ItemId; rare?: ItemId }>> = {
+export const WILD_HELD_ITEMS: Partial<
+  Record<PokemonSpeciesId, { common?: ItemId; rare?: ItemId }>
+> = {
   butterfree: { rare: 'silverpowder' },
   beedrill: { rare: 'poisonbarb' },
   pikachu: { common: 'berrybronze', rare: 'lightball' },
@@ -30,7 +32,8 @@ export const WILD_HELD_ITEMS: Partial<Record<PokemonSpeciesId, { common?: ItemId
   dragonite: { rare: 'dragonscale' }
 };
 
-export function getWildHeldItem( // domain-ok: Open dynamic text or non-domain string payload
+export function getWildHeldItem(
+  // domain-ok: Open dynamic text or non-domain string payload
   id: PokemonSpeciesId,
   rates?: { commonRate: number; rareRate: number; forceHeldChance?: number }
 ): ItemId | null {

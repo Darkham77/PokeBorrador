@@ -1,6 +1,6 @@
 /**
  * src/logic/validation/subschemas/pokemonSchemas.ts
- * 
+ *
  * Valibot validation schemas for Pokemon entities, moves, IVs, EVs, and eggs.
  */
 
@@ -20,7 +20,7 @@ import {
   literal,
   partial,
   unknown,
-  type InferOutput,
+  type InferOutput
 } from 'valibot';
 
 import { MAXIMUM_FRIENDSHIP_VALUE, MAX_STAT_IV } from '@/logic/constants/gameplay.ts';
@@ -36,7 +36,7 @@ export const pokemonIVsSchema = object({
   def: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
   spa: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
   spd: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
-  spe: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
+  spe: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV))
 });
 
 export const pokemonEVsSchema = object({
@@ -45,18 +45,29 @@ export const pokemonEVsSchema = object({
   def: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
   spa: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
   spd: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
-  spe: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
+  spe: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV))
 });
 
 export const moveEffectSchema = object({
   type: string(),
-  status: optional(nullable(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox')]))),
+  status: optional(
+    nullable(
+      union([
+        literal('par'),
+        literal('brn'),
+        literal('psn'),
+        literal('slp'),
+        literal('frz'),
+        literal('tox')
+      ])
+    )
+  ),
   stat: optional(string()),
   stages: optional(number()),
   chance: optional(number()),
   val: optional(number()),
   percent: optional(number()),
-  text: optional(string()),
+  text: optional(string())
 });
 
 export const moveSchema = object({
@@ -85,7 +96,7 @@ export const moveSchema = object({
   endeavor: optional(boolean()),
   counter: optional(boolean()),
   turns: optional(number()),
-  sound: optional(boolean()),
+  sound: optional(boolean())
 });
 
 export const pokemonCompetitionTrophySchema = object({
@@ -95,7 +106,7 @@ export const pokemonCompetitionTrophySchema = object({
   categoryName: string(),
   rank: union([literal('first'), literal('second'), literal('third')]),
   score: number(),
-  awardedAt: number(),
+  awardedAt: number()
 });
 
 // fallow-ignore-next-line unused-type
@@ -106,7 +117,7 @@ export const friendshipSealTierSchema = union([
   literal('sprout'),
   literal('comrade'),
   literal('radiant_prism'),
-  literal('best_friends'),
+  literal('best_friends')
 ]);
 export type FriendshipSealTierDto = InferOutput<typeof friendshipSealTierSchema>;
 
@@ -133,8 +144,24 @@ export const pokemonSchema = object({
   isShiny: boolean(),
   isGuardian: optional(boolean()),
   isFloating: optional(boolean()),
-  gender: optional(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')]))),
-  status: optional(nullable(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox'), literal('')]))),
+  gender: optional(
+    nullable(
+      union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')])
+    )
+  ),
+  status: optional(
+    nullable(
+      union([
+        literal('par'),
+        literal('brn'),
+        literal('psn'),
+        literal('slp'),
+        literal('frz'),
+        literal('tox'),
+        literal('')
+      ])
+    )
+  ),
   statusTurns: optional(number()),
   sleepTurns: optional(number()),
   confused: optional(number()),
@@ -175,7 +202,9 @@ export const pokemonSchema = object({
   nature: optional(string()),
   heldItem: optional(nullable(string())),
   item: optional(nullable(string())),
-  friendship: optional(pipe(number(), minValue(MIN_FRIENDSHIP), maxValue(MAXIMUM_FRIENDSHIP_VALUE))),
+  friendship: optional(
+    pipe(number(), minValue(MIN_FRIENDSHIP), maxValue(MAXIMUM_FRIENDSHIP_VALUE))
+  ),
   friendshipSteps: optional(pipe(number(), minValue(0))),
   vigor: optional(number()),
   maxVigor: optional(number()),
@@ -212,7 +241,7 @@ export const pokemonSchema = object({
   illegalReasons: optional(array(string())),
   height: optional(number()),
   weight: optional(number()),
-  trophies: optional(array(pokemonCompetitionTrophySchema)),
+  trophies: optional(array(pokemonCompetitionTrophySchema))
 });
 
 const partialPokemonIVsSchema = partial(pokemonIVsSchema);
@@ -228,19 +257,25 @@ export const pokemonEggSchema = object({
   isGuardian: optional(boolean()),
   nature: optional(string()),
   abilitySlot: optional(number()),
-  gender: optional(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')]))),
+  gender: optional(
+    nullable(
+      union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')])
+    )
+  ),
   ivs: optional(partialPokemonIVsSchema),
   movesAtBirth: optional(array(string())),
   obtainedAt: optional(number()),
   scanned: optional(boolean()),
-  predictedInfo: optional(object({
-    name: string(),
-    ivTotal: number()
-  })),
+  predictedInfo: optional(
+    object({
+      name: string(),
+      ivTotal: number()
+    })
+  ),
   tint: optional(string()),
   isAncestral: optional(boolean()),
   color: optional(string()),
-  isNpc: optional(boolean()),
+  isNpc: optional(boolean())
 });
 
 export type PokemonIVsDto = InferOutput<typeof pokemonIVsSchema>;

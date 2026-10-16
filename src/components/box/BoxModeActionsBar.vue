@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-const props = withDefaults(defineProps<{
-  isRocketMode?: boolean;
-  selectedCount?: number;
-  rocketSellValue?: number;
-}>(), {
-  isRocketMode: false,
-  selectedCount: 0,
-  rocketSellValue: 0
-});
+const props = withDefaults(
+  defineProps<{
+    isRocketMode?: boolean;
+    selectedCount?: number;
+    rocketSellValue?: number;
+  }>(),
+  {
+    isRocketMode: false,
+    selectedCount: 0,
+    rocketSellValue: 0
+  }
+);
 
 const emit = defineEmits<{
   (e: 'cancel'): void;
@@ -32,36 +35,29 @@ const formattedSellValue = computed(() => {
       <span class="count">{{ selectedCount }}</span>
       <span class="label">{{ modeLabel }}</span>
 
-      <div
-        v-if="isRocketMode"
-        class="earnings"
-      >
+      <div v-if="isRocketMode" class="earnings">
         <span class="currency">₽</span>
         <span class="value">{{ formattedSellValue }}</span>
       </div>
     </div>
 
     <div class="action-buttons">
-      <button
-        id="box-view-cancel-mode-btn"
-        class="btn-cancel"
-        @click.stop="emit('cancel')"
-      >
+      <button id="box-view-cancel-mode-btn" class="btn-cancel" @click.stop="emit('cancel')">
         CANCELAR
       </button>
-      <button 
+      <button
         v-if="isRocketMode"
         id="box-view-confirm-rocket-btn"
-        class="btn-confirm-rocket" 
+        class="btn-confirm-rocket"
         :disabled="selectedCount === 0"
         @click.stop="emit('confirm-rocket')"
       >
         <span class="emoji">💀</span> VENDER LOTE
       </button>
-      <button 
+      <button
         v-else
         id="box-view-confirm-release-btn"
-        class="btn-confirm-release" 
+        class="btn-confirm-release"
         :disabled="selectedCount === 0"
         @click.stop="emit('confirm-release')"
       >
@@ -72,8 +68,8 @@ const formattedSellValue = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/views/box";
-@use "@/styles/core/tools" as *;
+@use '@/styles/views/box';
+@use '@/styles/core/tools' as *;
 
 .mode-actions-bar {
   display: flex;
@@ -113,8 +109,15 @@ const formattedSellValue = computed(() => {
       padding-left: 12px;
       border-left: 1px solid Rgb(255 255 255 / 10%);
 
-      .currency { color: var(--green); font-family: sans-serif; }
-      .value { @include pixelated; color: var(--white); font-size: var(--font-10); }
+      .currency {
+        color: var(--green);
+        font-family: sans-serif;
+      }
+      .value {
+        @include pixelated;
+        color: var(--white);
+        font-size: var(--font-10);
+      }
     }
   }
 
@@ -122,9 +125,15 @@ const formattedSellValue = computed(() => {
     display: flex;
     gap: $spacing-md;
 
-    .btn-cancel { @include btn-vicio('neutral', 'sm'); }
-    .btn-confirm-rocket { @include btn-vicio('danger', 'sm'); }
-    .btn-confirm-release { @include btn-vicio('success', 'sm'); }
+    .btn-cancel {
+      @include btn-vicio('neutral', 'sm');
+    }
+    .btn-confirm-rocket {
+      @include btn-vicio('danger', 'sm');
+    }
+    .btn-confirm-release {
+      @include btn-vicio('success', 'sm');
+    }
   }
 }
 </style>

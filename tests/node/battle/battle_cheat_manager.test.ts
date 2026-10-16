@@ -1,4 +1,4 @@
-import { describe, it, beforeAll, vi } from 'vitest';
+import { describe, it, beforeAll, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { Battle } from '@pkmn/sim';
 import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
@@ -35,7 +35,14 @@ describe('BattleCheatManager - Unit Tests', () => {
     battle.setPlayer('p2', { name: 'Player 2', team: pikachuTeam as any });
 
     const cheats: CertifiedBattleHistoryEntry[] = [
-      { turnCount: 1, battleTurn: 1, p1Choice: 'move 1', p2Choice: 'move 1', p1PreHeal: true, p1Heal: true }
+      {
+        turnCount: 1,
+        battleTurn: 1,
+        p1Choice: 'move 1',
+        p2Choice: 'move 1',
+        p1PreHeal: true,
+        p1Heal: true
+      }
     ];
 
     const manager = new BattleCheatManager(cheats);
@@ -143,7 +150,9 @@ describe('BattleCheatManager - Unit Tests', () => {
     battle.setPlayer('p1', { name: 'Player 1', team: pikachuTeam as any });
     battle.setPlayer('p2', { name: 'Player 2', team: pikachuTeam as any });
 
-    const manager = new BattleCheatManager([{ turnCount: 1, battleTurn: 1, p1Choice: 'move 1', p2Choice: 'move 1', p1Heal: true }]);
+    const manager = new BattleCheatManager([
+      { turnCount: 1, battleTurn: 1, p1Choice: 'move 1', p2Choice: 'move 1', p1Heal: true }
+    ]);
     const p1Mon = battle.p1.pokemon[0];
     if (!p1Mon) throw new Error('Pokemon not found');
     p1Mon.hp = 1;
@@ -163,7 +172,7 @@ describe('BattleCheatManager - Unit Tests', () => {
 
     const manager = new BattleCheatManager([
       { turnCount: 1, battleTurn: 2, p1Choice: '', p2Choice: '', p1Heal: true },
-      { turnCount: 2, battleTurn: 2, p1Choice: '', p2Choice: '' },
+      { turnCount: 2, battleTurn: 2, p1Choice: '', p2Choice: '' }
     ]);
     const p1Mon = battle.p1.pokemon[0];
     if (!p1Mon) throw new Error('Pokemon not found');
@@ -177,7 +186,20 @@ describe('BattleCheatManager - Unit Tests', () => {
 
   it('supports all 4 seats (p1, p2, p3, p4) generically for heals and PP refills', () => {
     const manager = new BattleCheatManager([
-      { turnCount: 1, battleTurn: 1, p1Choice: '', p2Choice: '', p1Heal: true, p2Heal: true, p3Heal: true, p4Heal: true, p1PpRefill: true, p2PpRefill: true, p3PpRefill: true, p4PpRefill: true }
+      {
+        turnCount: 1,
+        battleTurn: 1,
+        p1Choice: '',
+        p2Choice: '',
+        p1Heal: true,
+        p2Heal: true,
+        p3Heal: true,
+        p4Heal: true,
+        p1PpRefill: true,
+        p2PpRefill: true,
+        p3PpRefill: true,
+        p4PpRefill: true
+      }
     ]);
 
     const healMap = (manager as any).postHealMap as Map<number, Record<string, boolean>>;

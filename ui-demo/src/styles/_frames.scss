@@ -8,7 +8,7 @@
   border-radius: 0 !important;
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     clip-path: var(--clip-#{$var-name}-border);
@@ -36,27 +36,33 @@
 }
 
 // 2. CURVAS ESCALONADAS BRESENHAM (XS -> XXL)
-.pv-curve-xs, .pv-frame-curve-xs {
+.pv-curve-xs,
+.pv-frame-curve-xs {
   @include pv-frame-shape('curve-xs');
 }
 
-.pv-curve-sm, .pv-frame-curve-sm {
+.pv-curve-sm,
+.pv-frame-curve-sm {
   @include pv-frame-shape('curve-sm');
 }
 
-.pv-curve-md, .pv-frame-curve-md {
+.pv-curve-md,
+.pv-frame-curve-md {
   @include pv-frame-shape('curve-md');
 }
 
-.pv-curve-lg, .pv-frame-curve-lg {
+.pv-curve-lg,
+.pv-frame-curve-lg {
   @include pv-frame-shape('curve-lg');
 }
 
-.pv-curve-xl, .pv-frame-curve-xl {
+.pv-curve-xl,
+.pv-frame-curve-xl {
   @include pv-frame-shape('curve-xl');
 }
 
-.pv-curve-xxl, .pv-frame-curve-xxl {
+.pv-curve-xxl,
+.pv-frame-curve-xxl {
   @include pv-frame-shape('curve-xxl');
 }
 
@@ -98,14 +104,20 @@
   box-sizing: border-box;
 
   &.has-cast-shadow {
-    filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85)));
+    filter: Drop-Shadow(
+      calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0
+        var(--color-cast-shadow, Rgba(0, 0, 0, 0.85))
+    );
   }
 
   // Modales y ventanas semánticas con sombra proyectada pixelada 1:1
   &.shadow-curve-xl,
   &.shadow-curve-xxl,
   &.shadow-chamfer-xl {
-    filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85)));
+    filter: Drop-Shadow(
+      calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0
+        var(--color-cast-shadow, Rgba(0, 0, 0, 0.85))
+    );
   }
 }
 

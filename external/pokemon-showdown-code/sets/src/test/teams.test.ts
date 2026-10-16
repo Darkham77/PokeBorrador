@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 
-import {Team, Teams} from '../teams';
+import { Team, Teams } from '../teams';
 
-import {GEN} from './data';
+import { GEN } from './data';
 
 const readTeam = (file: string) => fs.readFileSync(`${__dirname}/fixtures/${file}`, 'utf8');
 const TEAM: string = readTeam('team');
@@ -12,12 +12,11 @@ describe('Team', () => {
   it('importTeam + exportTeam', () => {
     const t = Team.import(TEAM)!;
     expect(t.export()).toEqual(TEAM);
-    expect(Teams.exportTeams([t]))
-      .toEqual('=== Untitled 1 ===\n\n' + TEAM + '\n');
+    expect(Teams.exportTeams([t])).toEqual('=== Untitled 1 ===\n\n' + TEAM + '\n');
   });
 
   it('pack + unpack', () => {
-    const u = Team.unpack((Team.import(TEAM)!.pack()))!;
+    const u = Team.unpack(Team.import(TEAM)!.pack())!;
     expect(u.export(GEN[7])).toEqual(TEAM);
   });
 
@@ -37,18 +36,23 @@ describe('Team', () => {
     const team = Team.import(TEAM)!.team;
 
     const alakazam = team[0];
-    const magnezone = team[0] = team[3];
+    const magnezone = (team[0] = team[3]);
     team[3] = alakazam;
 
     const canon = Team.canonicalize(team, GEN[9]);
-    expect(canon.map(s => s.species)).toEqual([
-      'magnezone', 'alakazam', 'gliscor', 'magearna', 'tangrowth', 'tornadustherian',
+    expect(canon.map((s) => s.species)).toEqual([
+      'magnezone',
+      'alakazam',
+      'gliscor',
+      'magearna',
+      'tangrowth',
+      'tornadustherian'
     ]);
     expect(alakazam.name).toBeUndefined();
     expect(alakazam.level).toBe(100);
     expect(alakazam.ivs!.atk).toBe(0);
     expect(alakazam.moves).toEqual(['focusblast', 'psychic', 'recover', 'shadowball']);
-    expect(magnezone.ivs).toEqual({hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31});
+    expect(magnezone.ivs).toEqual({ hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 });
     expect(magnezone.hpType).toBe('Fire');
   });
 
@@ -81,8 +85,7 @@ describe('Teams', () => {
     expect(imported[1].name).toBe('Cloyster');
     expect(imported[1].folder).toBe('RBY');
 
-    expect(Teams.toString(imported))
-      .toEqual(TEAMS.replace(/\[ou\]/, '[gen6ou]'));
+    expect(Teams.toString(imported)).toEqual(TEAMS.replace(/\[ou\]/, '[gen6ou]'));
     expect(Teams.importTeam('')).toBeUndefined();
 
     expect(Teams.importTeam(TEAMS, GEN[9])).toEqual(imported[0]);
@@ -97,13 +100,23 @@ describe('Teams', () => {
   it('including packed', () => {
     const teams = Teams.importTeams(TEAMS);
     const team = Team.import(TEAM)!;
-    let both = 'ou]RBY/Cloyster|' + (teams[1].pack()) + '\n' +
-        Teams.exportTeams([teams[0]]) + '|' + team.pack();
+    let both =
+      'ou]RBY/Cloyster|' +
+      teams[1].pack() +
+      '\n' +
+      Teams.exportTeams([teams[0]]) +
+      '|' +
+      team.pack();
     let imported = Teams.importTeams(both, GEN[9]);
     expect(imported[0].gen).toBe(6);
 
-    both = 'gen1ou]RBY/Cloyster|' + (teams[1].pack()) + '\n' +
-        Teams.exportTeams([teams[0]]) + '|' + team.pack();
+    both =
+      'gen1ou]RBY/Cloyster|' +
+      teams[1].pack() +
+      '\n' +
+      Teams.exportTeams([teams[0]]) +
+      '|' +
+      team.pack();
     imported = Teams.importTeams(both, GEN[9]);
     expect(imported).toHaveLength(3);
 

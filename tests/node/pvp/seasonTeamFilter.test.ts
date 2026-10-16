@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { evaluatePokemonForSeason, buildAutoRankedTeam } from '@/logic/pvp/seasonTeamFilter';
 import { getSeasonalThemeForMonth } from '@/data/system/rankedData';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -78,7 +78,7 @@ describe('seasonTeamFilter - Frontera Kanto & Johto', () => {
     const autoTeam = buildAutoRankedTeam(pool, frontierRules, 6);
     expect(autoTeam.length).toBe(6);
     // None should be Dragonite High (Lv 85) or Castform (Gen 3)
-    const uids = autoTeam.map(p => p.uid);
+    const uids = autoTeam.map((p) => p.uid);
     expect(uids).not.toContain('p1');
     expect(uids).not.toContain('p2');
     for (const p of autoTeam) {

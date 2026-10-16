@@ -6,16 +6,17 @@
 import {
   Generations,
   Pokemon as SmogonPokemon,
-  Move   as SmogonMove,
+  Move as SmogonMove,
   Field,
   Side,
   calculate,
   type GenerationNum,
-  type State,
+  type State
 } from '@smogon/calc';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleStages } from '@/types/battle/battle';
+import type { BattleConditionKey, BattleStages } from '@/types/battle/battle';
 import type { Move } from '@/types/pokemon/pokemon';
+import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry.ts';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { toID } from '@/logic/utils/strings.ts';
 import { requireAbilityId } from '@/data/battle/abilities';
@@ -89,20 +90,22 @@ function addToCache(key: string, result: SmogonTooltipResult): void {
 
 /** Map special-case species IDs. Same as AI's damageCalculator. */
 function resolveSpecies(id: string): string {
+  // open-record: Special-case Showdown species names normalization map
   const map: Record<string, string> = {
-    nidoranf: 'Nidoran-F', nidoranm: 'Nidoran-M',
-    farfetchd: "Farfetch'd", mrmime: 'Mr. Mime',
-    hooh: 'Ho-Oh', jangmoo: 'Jangmo-o',
+    nidoranf: 'Nidoran-F',
+    nidoranm: 'Nidoran-M',
+    farfetchd: "Farfetch'd",
+    mrmime: 'Mr. Mime',
+    hooh: 'Ho-Oh',
+    jangmoo: 'Jangmo-o'
   };
   const normalized = toID(id);
-  return map[normalized] ?? (id.charAt(0).toUpperCase() + id.slice(1));
+  return map[normalized] ?? id.charAt(0).toUpperCase() + id.slice(1);
 }
 
 import type { PokemonStatus } from '@/types/pokemon/pokemon';
 
-function toSmogonStatus(
-  status: string | null | undefined
-): PokemonStatus {
+function toSmogonStatus(status: string | null | undefined): PokemonStatus {
   if (!status) return '';
   const s = status as PokemonStatus;
   if (s === 'par' || s === 'brn' || s === 'psn' || s === 'slp' || s === 'frz' || s === 'tox') {
@@ -135,9 +138,9 @@ function buildSmogonPokemon(
         spa: stages.spa ?? 0,
         spd: stages.spd ?? 0,
         spe: stages.spe ?? 0,
-        hp: 0,
+        hp: 0
       },
-      curHP: p.hp,
+      curHP: p.hp
       // Pass isCrit via boosts is not possible directly; handled in Move
     });
   } catch {
@@ -146,7 +149,7 @@ function buildSmogonPokemon(
 
   // Inject actual game stats, bypassing the base-stat + EV/IV formula.
   // rawStats is a public mutable property on SmogonPokemon.
-  pkmn.rawStats.hp  = p.maxHp;
+  pkmn.rawStats.hp = p.maxHp;
   pkmn.rawStats.atk = p.atk;
   pkmn.rawStats.def = p.def;
   pkmn.rawStats.spa = p.spa;
@@ -154,7 +157,7 @@ function buildSmogonPokemon(
   pkmn.rawStats.spe = p.spe;
 
   // Inject into stats as well since the Smogon calculator evaluates this directly.
-  pkmn.stats.hp  = p.maxHp;
+  pkmn.stats.hp = p.maxHp;
   pkmn.stats.atk = p.atk;
   pkmn.stats.def = p.def;
   pkmn.stats.spa = p.spa;
@@ -164,35 +167,37 @@ function buildSmogonPokemon(
   pkmn.originalCurHP = Math.min(p.hp, p.maxHp);
 
   // Override clone() to ensure custom stats are not reset when cloned by the calculator.
-  pkmn.clone = function() {
+  const customClone = function (this: SmogonPokemon) {
     const c = SmogonPokemon.prototype.clone.call(this);
     c.rawStats = { ...this.rawStats };
     c.stats = { ...this.stats };
     c.originalCurHP = this.originalCurHP;
-    c.clone = this.clone;
+    c.clone = customClone;
     return c;
   };
+  pkmn.clone = customClone;
 
   void isCrit; // crit is handled on the Move object
   return pkmn;
 }
 
-const SHOWDOWN_CALC_WEATHER_MAP: Record<string, State.Field['weather']> = {
-  sun:           'Sun',
-  rain:          'Rain',
-  sandstorm:     'Sand',
-  hail:          'Hail',
-  snow:          'Snow',
-  intense_sun:   'Harsh Sunshine',
-  heavy_rain:    'Heavy Rain',
-  strong_winds:  'Strong Winds',
+const SHOWDOWN_CALC_WEATHER_MAP: Partial<Record<WeatherId, State.Field['weather']>> = {
+  sun: 'Sun',
+  rain: 'Rain',
+  sandstorm: 'Sand',
+  hail: 'Hail',
+  snow: 'Snow',
+  intense_sun: 'Harsh Sunshine',
+  heavy_rain: 'Heavy Rain',
+  strong_winds: 'Strong Winds'
 };
 
+// open-record: Terrain name display label mapped to Smogon field terrain
 const TERRAIN_MAP: Record<string, State.Field['terrain']> = {
   'Electric Terrain': 'Electric',
-  'Grassy Terrain':   'Grassy',
-  'Misty Terrain':    'Misty',
-  'Psychic Terrain':  'Psychic',
+  'Grassy Terrain': 'Grassy',
+  'Misty Terrain': 'Misty',
+  'Psychic Terrain': 'Psychic'
 };
 
 function buildField(state: TooltipStateCtx): Field {
@@ -200,60 +205,56 @@ function buildField(state: TooltipStateCtx): Field {
   const ec = state.enemySideConditions ?? {};
 
   const attackerSide = new Side({
-    isReflect:     !!sc['reflect'],
+    isReflect: !!sc['reflect'],
     isLightScreen: !!sc['lightscreen'],
-    isAuroraVeil:  !!sc['auroraveil'],
-    isTailwind:    !!sc['tailwind'],
-    isSR:          !!sc['stealthrock'],
-    spikes:        Math.min(3, sc['spikes']?.turns ?? 0),
+    isAuroraVeil: !!sc['auroraveil'],
+    isTailwind: !!sc['tailwind'],
+    isSR: !!sc['stealthrock'],
+    spikes: Math.min(3, sc['spikes']?.turns ?? 0)
   });
   const defenderSide = new Side({
-    isReflect:     !!ec['reflect'],
+    isReflect: !!ec['reflect'],
     isLightScreen: !!ec['lightscreen'],
-    isAuroraVeil:  !!ec['auroraveil'],
-    isTailwind:    !!ec['tailwind'],
-    isSR:          !!ec['stealthrock'],
-    spikes:        Math.min(3, ec['spikes']?.turns ?? 0),
+    isAuroraVeil: !!ec['auroraveil'],
+    isTailwind: !!ec['tailwind'],
+    isSR: !!ec['stealthrock'],
+    spikes: Math.min(3, ec['spikes']?.turns ?? 0)
   });
 
-  const weather = state.isGym
-    ? undefined
-    : SHOWDOWN_CALC_WEATHER_MAP[state.weather?.type ?? ''];
+  const weatherId = state.weather?.type;
+  const weather =
+    !state.isGym && weatherId && isWeatherId(weatherId)
+      ? SHOWDOWN_CALC_WEATHER_MAP[weatherId]
+      : undefined;
 
-  const terrain = state.terrain
-    ? TERRAIN_MAP[state.terrain]
-    : undefined;
+  const terrain = state.terrain ? TERRAIN_MAP[state.terrain] : undefined;
 
   return new Field({ weather, terrain, attackerSide, defenderSide });
 }
 
 // ── Helper to calculate speed ───────────────────────────────────────────────
 
-function getEffectiveSpeed(
-  p: SmogonPokemon,
-  side: Side,
-  field: Field
-): number {
+function getEffectiveSpeed(p: SmogonPokemon, side: Side, field: Field): number {
   let spd = p.stats.spe;
-  
+
   // 1. Boosts
   const boost = p.boosts.spe ?? 0;
   if (boost > 0) {
-    spd = Math.floor(spd * (2 + boost) / 2);
+    spd = Math.floor((spd * (2 + boost)) / 2);
   } else if (boost < 0) {
-    spd = Math.floor(spd * 2 / (2 - boost));
+    spd = Math.floor((spd * 2) / (2 - boost));
   }
-  
+
   // 2. Paralysis (drops speed to 50% in Gen 7+)
   if (p.status === 'par') {
     spd = Math.floor(spd * 0.5);
   }
-  
+
   // 3. Tailwind
   if (side.isTailwind) {
     spd *= 2;
   }
-  
+
   // 4. Weather speed abilities
   const weather = field.weather;
   const abilityId = p.ability ? requireAbilityId(toID(p.ability)) : '';
@@ -265,13 +266,13 @@ function getEffectiveSpeed(
   ) {
     spd *= 2;
   }
-  
+
   // 5. Choice Scarf
   const itemId = p.item ? toID(p.item) : '';
   if (itemId === 'choicescarf') {
     spd = Math.floor(spd * CHOICE_ITEM_STAT_MULTIPLIER);
   }
-  
+
   return spd;
 }
 
@@ -280,8 +281,8 @@ function getEffectiveSpeed(
 export interface TooltipStateCtx {
   weather?: { type: string; turns: number } | null;
   terrain?: string | null;
-  playerSideConditions?: Partial<Record<string, { turns: number }>>;
-  enemySideConditions?: Partial<Record<string, { turns: number }>>;
+  playerSideConditions?: Partial<Record<BattleConditionKey, { turns: number }>>;
+  enemySideConditions?: Partial<Record<BattleConditionKey, { turns: number }>>;
   isGym?: boolean;
 }
 
@@ -310,15 +311,20 @@ function buildTooltipCacheKey(
   enemyStages: Partial<BattleStages>
 ): string {
   return [
-    attacker.uid, attacker.hp, attacker.status ?? '',
+    attacker.uid,
+    attacker.hp,
+    attacker.status ?? '',
     JSON.stringify(playerStages),
-    defender.uid, defender.hp, defender.status ?? '',
+    defender.uid,
+    defender.hp,
+    defender.status ?? '',
     JSON.stringify(enemyStages),
     moveId,
-    state.weather?.type ?? '', state.terrain ?? '',
+    state.weather?.type ?? '',
+    state.terrain ?? '',
     state.isGym ? '1' : '0',
     JSON.stringify(state.playerSideConditions ?? {}),
-    JSON.stringify(state.enemySideConditions ?? {}),
+    JSON.stringify(state.enemySideConditions ?? {})
   ].join('|');
 }
 
@@ -335,13 +341,27 @@ function evaluateTerrainReductions(
 
   const normTerrain = terrain.toLowerCase(); // text-ok: UI text display localization string
   const normMoveType = (moveType ?? '').toLowerCase(); // text-ok: UI text display localization string
-  const defTypes = (defPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok: UI text display localization string
-  const isDefGrounded = !defTypes.includes('flying') && defPkmn.ability !== 'Levitate' && defPkmn.item !== 'airballoon' && defPkmn.item !== 'Air Balloon';
-  const atkTypes = (atkPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok: UI text display localization string
-  const isAtkGrounded = !atkTypes.includes('flying') && atkPkmn.ability !== 'Levitate' && atkPkmn.item !== 'airballoon' && atkPkmn.item !== 'Air Balloon';
+  const defTypes = (defPkmn.types ?? []).map((t) => t.toLowerCase()); // text-ok: UI text display localization string
+  const isDefGrounded =
+    !defTypes.includes('flying') &&
+    defPkmn.ability !== 'Levitate' &&
+    defPkmn.item !== 'airballoon' &&
+    defPkmn.item !== 'Air Balloon';
+  const atkTypes = (atkPkmn.types ?? []).map((t) => t.toLowerCase()); // text-ok: UI text display localization string
+  const isAtkGrounded =
+    !atkTypes.includes('flying') &&
+    atkPkmn.ability !== 'Levitate' &&
+    atkPkmn.item !== 'airballoon' &&
+    atkPkmn.item !== 'Air Balloon';
 
-  if (isDefGrounded && normTerrain.includes('grassy') && (moveId === 'earthquake' || moveId === 'bulldoze' || moveId === 'magnitude')) {
-    terrainReductions.push('Daño de Terremoto/Terratemblor/Magnitud reducido a la mitad por Terreno de Hierba');
+  if (
+    isDefGrounded &&
+    normTerrain.includes('grassy') &&
+    (moveId === 'earthquake' || moveId === 'bulldoze' || moveId === 'magnitude')
+  ) {
+    terrainReductions.push(
+      'Daño de Terremoto/Terratemblor/Magnitud reducido a la mitad por Terreno de Hierba'
+    );
   }
   if (isDefGrounded && normTerrain.includes('misty') && normMoveType === 'dragon') {
     terrainReductions.push('Daño Dragón reducido a la mitad por Terreno de Niebla');
@@ -352,10 +372,17 @@ function evaluateTerrainReductions(
   return terrainReductions;
 }
 
-function resolveRecoilBounds(recoil: { recoil?: unknown }, atkMaxHp: number): { rclMin: number; rclMax: number } {
+function resolveRecoilBounds(
+  recoil: { recoil?: unknown },
+  atkMaxHp: number
+): { rclMin: number; rclMax: number } {
   const rcl = recoil.recoil;
-  const rclMin = Array.isArray(rcl) ? (atkMaxHp * Number(rcl[0])) / 100 : (atkMaxHp * Number(rcl)) / 100;
-  const rclMax = Array.isArray(rcl) ? (atkMaxHp * Number(rcl[1])) / 100 : (atkMaxHp * Number(rcl)) / 100;
+  const rclMin = Array.isArray(rcl)
+    ? (atkMaxHp * Number(rcl[0])) / 100
+    : (atkMaxHp * Number(rcl)) / 100;
+  const rclMax = Array.isArray(rcl)
+    ? (atkMaxHp * Number(rcl[1])) / 100
+    : (atkMaxHp * Number(rcl)) / 100;
   return { rclMin, rclMax };
 }
 
@@ -366,43 +393,53 @@ function resolveRecoilBounds(recoil: { recoil?: unknown }, atkMaxHp: number): { 
  * Cached with a 512-entry LRU per (attacker, defender, move, field) key.
  */
 export function calculateDamageForTooltip(
-  attacker:     Pokemon,
-  defender:     Pokemon,
-  move:         Move,
-  state:        TooltipStateCtx,
+  attacker: Pokemon,
+  defender: Pokemon,
+  move: Move,
+  state: TooltipStateCtx,
   playerStages: Partial<BattleStages>,
-  enemyStages:  Partial<BattleStages>
+  enemyStages: Partial<BattleStages>
 ): SmogonTooltipResult | null {
-  if (!move.id) throw new Error(`[smogonAdapter] Move missing immutable ID for move '${move.name}' on ${attacker.name}`);
+  if (!move.id)
+    throw new Error(
+      `[smogonAdapter] Move missing immutable ID for move '${move.name}' on ${attacker.name}`
+    );
   const moveId = requirePokemonMoveId(toID(move.id));
 
-  const cacheKey = buildTooltipCacheKey(attacker, defender, moveId, state, playerStages, enemyStages);
+  const cacheKey = buildTooltipCacheKey(
+    attacker,
+    defender,
+    moveId,
+    state,
+    playerStages,
+    enemyStages
+  );
   const cached = cache.get(cacheKey);
   if (cached) return cached;
 
   try {
-    const atkPkmn  = buildSmogonPokemon(attacker, playerStages);
-    const defPkmn  = buildSmogonPokemon(defender,  enemyStages);
-    const field    = buildField(state);
-    const smMove   = new SmogonMove(GEN, moveId);
+    const atkPkmn = buildSmogonPokemon(attacker, playerStages);
+    const defPkmn = buildSmogonPokemon(defender, enemyStages);
+    const field = buildField(state);
+    const smMove = new SmogonMove(GEN, moveId);
     const smMoveCrit = new SmogonMove(GEN, moveId, { isCrit: true });
 
-    const result     = calculate(GEN, atkPkmn, defPkmn, smMove, field);
+    const result = calculate(GEN, atkPkmn, defPkmn, smMove, field);
 
     // For crit we rebuild the Pokemon objects to get fresh rawStats
     const atkPkmnC = buildSmogonPokemon(attacker, playerStages);
-    const defPkmnC = buildSmogonPokemon(defender,  enemyStages);
+    const defPkmnC = buildSmogonPokemon(defender, enemyStages);
     const resultCrit = calculate(GEN, atkPkmnC, defPkmnC, smMoveCrit, field);
 
-    const [minDmg, maxDmg]         = result.range();
+    const [minDmg, maxDmg] = result.range();
     const [critMinDmg, critMaxDmg] = resultCrit.range();
     const defMaxHp = defender.maxHp;
 
-    const pct = (v: number) => defMaxHp > 0 ? (v / defMaxHp) * 100 : 0;
+    const pct = (v: number) => (defMaxHp > 0 ? (v / defMaxHp) * 100 : 0);
 
     const koChance = result.kochance(false);
     const recovery = result.recovery();
-    const recoil   = result.recoil();
+    const recoil = result.recoil();
 
     const atkMaxHp = attacker.maxHp;
     const recMin = typeof recovery.recovery[0] === 'number' ? recovery.recovery[0] : 0;
@@ -438,7 +475,7 @@ export function calculateDamageForTooltip(
       critMaxPercent: pct(critMaxDmg),
       koChance: { chance: koChance.chance, n: koChance.n },
       recovery: { min: recMin, max: recMax, text: translateRecoveryText(recovery.text) },
-      recoil:   { min: rclMin, max: rclMax, text: translateRecoilText(recoil.text) },
+      recoil: { min: rclMin, max: rclMax, text: translateRecoilText(recoil.text) },
       // Advanced calculations
       smogonDesc: result.desc(),
       attackerSpeed,
@@ -454,10 +491,14 @@ export function calculateDamageForTooltip(
       breaksProtect: !!smMove.breaksProtect,
       hasCrashDamage: !!smMove.hasCrashDamage,
       terrainReductions,
-      isLeechSeedActive: !!state.enemySideConditions?.['leechseed'],
-      isForesightActive: !!state.playerSideConditions?.['foresight'],
+      isLeechSeedActive: !!(state.enemySideConditions as Record<string, unknown> | undefined)?.[
+        'leechseed'
+      ], // open-record: Dynamic side condition check
+      isForesightActive: !!(state.playerSideConditions as Record<string, unknown> | undefined)?.[
+        'foresight'
+      ], // open-record: Dynamic side condition check
       attackerTera: atkPkmn.teraType,
-      defenderTera: defPkmn.teraType,
+      defenderTera: defPkmn.teraType
     };
 
     addToCache(cacheKey, out);

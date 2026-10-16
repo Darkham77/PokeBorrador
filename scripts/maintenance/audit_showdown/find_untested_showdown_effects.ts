@@ -13,7 +13,10 @@ export interface UntestedEffectReport {
  * Escanea dinámicamente la totalidad de data/ en external/ y verifica
  * contra la totalidad de las suites de test del proyecto.
  */
-export function findUntestedShowdownEffects(showdownDataPath: string, testsPath: string): UntestedEffectReport {
+export function findUntestedShowdownEffects(
+  showdownDataPath: string,
+  testsPath: string
+): UntestedEffectReport {
   const untestedMoves: string[] = []; // no-domain: Non-domain utility collection or data structure
   const untestedAbilities: string[] = []; // no-domain: Non-domain utility collection or data structure
   const untestedItems: string[] = []; // no-domain: Non-domain utility collection or data structure
@@ -22,15 +25,20 @@ export function findUntestedShowdownEffects(showdownDataPath: string, testsPath:
     return { untestedMoves, untestedAbilities, untestedItems };
   }
 
-  const testFiles = getFilesRecursively(testsPath).filter(f => f.endsWith('.ts') || f.endsWith('.spec.ts'));
-  const testBundleContent = testFiles.map(f => readFileSync(f, 'utf-8')).join('\n').toLowerCase();
+  const testFiles = getFilesRecursively(testsPath).filter(
+    (f) => f.endsWith('.ts') || f.endsWith('.spec.ts')
+  );
+  const testBundleContent = testFiles
+    .map((f) => readFileSync(f, 'utf-8'))
+    .join('\n')
+    .toLowerCase();
 
   const scan = (dataFile: string): string[] => {
     const untested: string[] = []; // no-domain: Non-domain utility collection or data structure
     const fullPath = join(showdownDataPath, dataFile);
     if (!existsSync(fullPath)) return untested;
     const content = readFileSync(fullPath, 'utf-8');
-    const ids = Array.from(content.matchAll(/^\s*([a-z0-9]+):\s*\{/gm)).map(m => m[1]);
+    const ids = Array.from(content.matchAll(/^\s*([a-z0-9]+):\s*\{/gm)).map((m) => m[1]);
     for (const id of ids) {
       if (id && id.length > 2 && !testBundleContent.includes(id)) {
         untested.push(id);

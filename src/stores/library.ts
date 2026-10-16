@@ -1,21 +1,21 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 export const useLibraryStore = defineStore('library', () => {
-  const isOpen = ref(false)
-  const currentTab = ref('gimnasios')
+  const isOpen = ref(false);
+  const currentTab = ref('gimnasios');
 
   function open(tab = 'gimnasios') {
-    currentTab.value = tab
-    isOpen.value = true
+    currentTab.value = tab;
+    isOpen.value = true;
   }
 
   function close() {
-    isOpen.value = false
+    isOpen.value = false;
   }
 
   function switchTab(tab: string) {
-    currentTab.value = tab
+    currentTab.value = tab;
   }
 
   return {
@@ -24,5 +24,5 @@ export const useLibraryStore = defineStore('library', () => {
     open,
     close,
     switchTab
-  }
-})
+  };
+});

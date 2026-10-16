@@ -1,4 +1,4 @@
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 %combatant-pixel-render {
   image-rendering: -webkit-optimize-contrast !important;
@@ -40,7 +40,7 @@
     will-change: transform;
   }
 
-  .sprite-animator, 
+  .sprite-animator,
   .sprite-idle-wrapper {
     @extend %combatant-layer-base;
   }
@@ -124,7 +124,7 @@
     height: 100%;
     object-fit: contain;
     object-position: center;
-    &.is-silhouette { 
+    &.is-silhouette {
       @include pokemon-silhouette;
     }
   }
@@ -193,10 +193,12 @@
   height: 100%;
   overflow: visible;
 
-  &.is-floating-species { 
+  &.is-floating-species {
     transform: Translatey(-40px);
 
-    @media (width <= 690px) { transform: Translatey(-18px); } 
+    @media (width <= 690px) {
+      transform: Translatey(-18px);
+    }
   }
 }
 
@@ -325,7 +327,7 @@
 .ground-effects-container {
   position: absolute;
   left: 50%;
-  z-index: calc(var(--z-map-spawns) + 5); 
+  z-index: calc(var(--z-map-spawns) + 5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -340,7 +342,7 @@
   position: absolute;
   display: flex;
   gap: $spacing-sm;
-  
+
   &.spikes {
     .spike-item {
       display: inline-block;
@@ -373,7 +375,7 @@
       filter: Drop-Shadow(0 0 4px Rgb(168 85 247 / 70%));
     }
   }
-  
+
   &.ingrain {
     .root-item {
       display: inline-block;

@@ -44,7 +44,7 @@ export interface OrganicMountainResult {
 
 const DEFAULT_SCALE = 0.05;
 const DEFAULT_OCTAVES = 4;
-const DEFAULT_TIER1_THRESHOLD = 0.40;
+const DEFAULT_TIER1_THRESHOLD = 0.4;
 const DEFAULT_TIER2_THRESHOLD = 0.58;
 const DEFAULT_PALETTE: MountainPalette = 'brown';
 const DEFAULT_MAX_STAIRS = 2;
@@ -57,7 +57,10 @@ const DEFAULT_MAX_STAIRS = 2;
 export function generateOrganicHeightmap(
   width: number,
   height: number,
-  options?: Pick<OrganicMountainOptions, 'seed' | 'scale' | 'octaves' | 'tier1Threshold' | 'tier2Threshold'>
+  options?: Pick<
+    OrganicMountainOptions,
+    'seed' | 'scale' | 'octaves' | 'tier1Threshold' | 'tier2Threshold'
+  >
 ): number[][] {
   const seed = options?.seed ?? 42;
   const scale = options?.scale ?? DEFAULT_SCALE;
@@ -145,7 +148,12 @@ export function findStairCandidates(
       const footElevL = matrix[y + 1]?.[x] ?? 0;
       const footElevR = matrix[y + 1]?.[x + 1] ?? 0;
 
-      if (elevL !== fromElev || elevR !== fromElev || footElevL !== toElev || footElevR !== toElev) {
+      if (
+        elevL !== fromElev ||
+        elevR !== fromElev ||
+        footElevL !== toElev ||
+        footElevR !== toElev
+      ) {
         continue;
       }
 

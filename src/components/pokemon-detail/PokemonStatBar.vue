@@ -1,66 +1,80 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { MAX_SINGLE_STAT_IV, PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay'
-import type { StatBarMode } from '@/types/pokemon/pokemon'
+import { computed } from 'vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { MAX_SINGLE_STAT_IV, PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+import type { StatBarMode } from '@/types/pokemon/pokemon';
 
 interface Props {
-  label: string
-  value: number
-  max?: number
-  color?: string
-  iv?: number | null
-  mode?: StatBarMode
+  label: string;
+  value: number;
+  max?: number;
+  color?: string;
+  iv?: number | null;
+  mode?: StatBarMode;
 }
 
-const DEFAULT_MAX_BASE_STAT = 255
+const DEFAULT_MAX_BASE_STAT = 255;
 
 const props = withDefaults(defineProps<Props>(), {
   max: DEFAULT_MAX_BASE_STAT,
   color: '$white',
   iv: null,
   mode: 'full'
-})
+});
 
-const mainFillWidthPercent = computed(() => `${Math.min((props.value / props.max) * PERCENT_BASE_MULTIPLIER, PERCENT_BASE_MULTIPLIER)}%`)
+const mainFillWidthPercent = computed(
+  () => `${Math.min((props.value / props.max) * PERCENT_BASE_MULTIPLIER, PERCENT_BASE_MULTIPLIER)}%`
+);
 const ivFillWidthPercent = computed(() => {
-  if (props.iv === null || props.iv === undefined) return '0%'
-  return `${(Number(props.iv) / MAX_SINGLE_STAT_IV) * PERCENT_BASE_MULTIPLIER}%`
-})
+  if (props.iv === null || props.iv === undefined) return '0%';
+  return `${(Number(props.iv) / MAX_SINGLE_STAT_IV) * PERCENT_BASE_MULTIPLIER}%`;
+});
 
 const getIvColor = (val: number) => {
-  if (val >= 28) return 'Rgba(107, 203, 119, 1)' 
-  if (val >= 15) return 'Rgba(255, 217, 61, 1)' 
-  if (val >= 8) return 'Rgba(255, 159, 67, 1)' 
-  return 'Rgba(255, 89, 89, 1)' 
-}
+  if (val >= 28) return 'Rgba(107, 203, 119, 1)';
+  if (val >= 15) return 'Rgba(255, 217, 61, 1)';
+  if (val >= 8) return 'Rgba(255, 159, 67, 1)';
+  return 'Rgba(255, 89, 89, 1)';
+};
 
 const getStatGrade = (iv: number) => {
-  if (iv === 31) return { label: 'S', color: 'Rgba(255, 239, 61, 1)' }
-  if (iv >= 25) return { label: 'A', color: 'Rgba(52, 211, 153, 1)' }
-  if (iv >= 15) return { label: 'B', color: 'Rgba(96, 165, 250, 1)' }
-  if (iv >= 5) return { label: 'C', color: 'Rgba(245, 158, 11, 1)' }
-  return { label: 'D', color: 'Rgba(148, 163, 184, 1)' }
-}
+  if (iv === 31) return { label: 'S', color: 'Rgba(255, 239, 61, 1)' };
+  if (iv >= 25) return { label: 'A', color: 'Rgba(52, 211, 153, 1)' };
+  if (iv >= 15) return { label: 'B', color: 'Rgba(96, 165, 250, 1)' };
+  if (iv >= 5) return { label: 'C', color: 'Rgba(245, 158, 11, 1)' };
+  return { label: 'D', color: 'Rgba(148, 163, 184, 1)' };
+};
+
+type StatShortKey = 'HP' | 'ATK' | 'DEF' | 'SPA' | 'SPD' | 'SPE';
 
 const getStatLabel = (key: string) => {
-  const map: Record<string, { name: string, desc: string }> = {
-    'HP': { name: 'Puntos de Salud', desc: 'Determina cuánto daño puede recibir el Pokémon antes de debilitarse.' },
-    'ATK': { name: 'Ataque Físico', desc: 'Aumenta el daño de los movimientos de categoría Física.' },
-    'DEF': { name: 'Defensa Física', desc: 'Reduce el daño recibido por movimientos de categoría Física.' },
-    'SPA': { name: 'Ataque Especial', desc: 'Aumenta el daño de los movimientos de categoría Especial.' },
-    'SPD': { name: 'Defensa Especial', desc: 'Reduce el daño recibido por movimientos de categoría Especial.' },
-    'SPE': { name: 'Velocidad', desc: 'Determina qué Pokémon ataca primero en cada turno.' }
-  }
-  return map[key] || { name: key, desc: '' }
-}
+  const map: Record<StatShortKey, { name: string; desc: string }> = {
+    HP: {
+      name: 'Puntos de Salud',
+      desc: 'Determina cuánto daño puede recibir el Pokémon antes de debilitarse.'
+    },
+    ATK: { name: 'Ataque Físico', desc: 'Aumenta el daño de los movimientos de categoría Física.' },
+    DEF: {
+      name: 'Defensa Física',
+      desc: 'Reduce el daño recibido por movimientos de categoría Física.'
+    },
+    SPA: {
+      name: 'Ataque Especial',
+      desc: 'Aumenta el daño de los movimientos de categoría Especial.'
+    },
+    SPD: {
+      name: 'Defensa Especial',
+      desc: 'Reduce el daño recibido por movimientos de categoría Especial.'
+    },
+    SPE: { name: 'Velocidad', desc: 'Determina qué Pokémon ataca primero en cada turno.' }
+  };
+  // open-record: Stat metadata dictionary
+  return (map as Record<string, { name: string; desc: string }>)[key] || { name: key, desc: '' };
+};
 </script>
 
 <template>
-  <div
-    class="vicio-stat-bar-row"
-    :class="['mode-' + mode]"
-  >
+  <div class="vicio-stat-bar-row" :class="['mode-' + mode]">
     <div class="stat-info">
       <PVTooltip
         :title="getStatLabel(label).name"
@@ -75,10 +89,10 @@ const getStatLabel = (key: string) => {
     <div class="stat-visuals">
       <!-- Main Stat Bar (Real Value or IV) -->
       <div class="track main-track">
-        <div 
-          class="fill main-fill" 
-          :style="{ 
-            width: mainFillWidthPercent, 
+        <div
+          class="fill main-fill"
+          :style="{
+            width: mainFillWidthPercent,
             background: mode === 'iv' ? getIvColor(value) : color,
             '--glow': (mode === 'iv' ? getIvColor(value) : color) + '66'
           }"
@@ -86,14 +100,11 @@ const getStatLabel = (key: string) => {
       </div>
 
       <!-- Secondary IV Bar (only in full mode) -->
-      <div
-        v-if="mode === 'full' && iv !== null"
-        class="track iv-track"
-      >
-        <div 
-          class="fill iv-fill" 
-          :style="{ 
-            width: ivFillWidthPercent, 
+      <div v-if="mode === 'full' && iv !== null" class="track iv-track">
+        <div
+          class="fill iv-fill"
+          :style="{
+            width: ivFillWidthPercent,
             background: getIvColor(iv as number)
           }"
         />
@@ -101,25 +112,21 @@ const getStatLabel = (key: string) => {
     </div>
 
     <!-- Meta Info (Right Side) -->
-    <div
-      v-if="mode !== 'stat' && (iv !== null || mode === 'iv')"
-      class="stat-meta"
-    >
+    <div v-if="mode !== 'stat' && (iv !== null || mode === 'iv')" class="stat-meta">
       <span
         class="grade"
-        :style="{ color: getStatGrade(mode === 'iv' ? (value || 0) : (iv || 0)).color }"
-      >{{ getStatGrade(mode === 'iv' ? (value || 0) : (iv || 0)).label }}</span>
-      <span
-        v-if="mode === 'full'"
-        class="iv-num"
-        :style="{ color: getIvColor(iv || 0) }"
-      >{{ iv }} IV</span>
+        :style="{ color: getStatGrade(mode === 'iv' ? value || 0 : iv || 0).color }"
+        >{{ getStatGrade(mode === 'iv' ? value || 0 : iv || 0).label }}</span
+      >
+      <span v-if="mode === 'full'" class="iv-num" :style="{ color: getIvColor(iv || 0) }"
+        >{{ iv }} IV</span
+      >
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .vicio-stat-bar-row {
   position: relative;
@@ -158,7 +165,10 @@ const getStatLabel = (key: string) => {
     color: Rgb(148 163 184 / 100%);
     font-size: var(--font-10);
 
-    @media (width <= 480px) { width: 45px; font-size: var(--font-8); }
+    @media (width <= 480px) {
+      width: 45px;
+      font-size: var(--font-8);
+    }
   }
   .stat-value {
     @include pixelated;
@@ -170,16 +180,19 @@ const getStatLabel = (key: string) => {
     font-weight: bold;
     text-align: right;
 
-    @media (width <= 480px) { min-width: 40px; font-size: var(--font-12); }
+    @media (width <= 480px) {
+      min-width: 40px;
+      font-size: var(--font-12);
+    }
   }
 }
 
-.stat-visuals { 
+.stat-visuals {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: $spacing-sm-alt;
-  min-width: 0; 
+  min-width: 0;
   padding: 2px 0;
   flex: 1;
 
@@ -200,14 +213,15 @@ const getStatLabel = (key: string) => {
 .fill {
   height: 100%;
   border-radius: inherit;
-  
 }
 
 .main-track {
   height: 18px;
   border-radius: $radius-9;
 
-  @media (width <= 480px) { height: 12px; }
+  @media (width <= 480px) {
+    height: 12px;
+  }
 }
 
 .main-fill {
@@ -219,7 +233,9 @@ const getStatLabel = (key: string) => {
   border-radius: $radius-md-alt;
   margin-top: 2px;
 
-  @media (width <= 480px) { height: 8px; }
+  @media (width <= 480px) {
+    height: 8px;
+  }
 }
 
 .iv-fill {
@@ -249,7 +265,9 @@ const getStatLabel = (key: string) => {
     font-weight: bold;
     text-shadow: 0 0 5px currentColor;
 
-    @media (width <= 480px) { font-size: var(--font-10); }
+    @media (width <= 480px) {
+      font-size: var(--font-10);
+    }
   }
   .iv-num {
     @include pixelated;
@@ -258,7 +276,9 @@ const getStatLabel = (key: string) => {
     font-size: var(--font-9);
     opacity: 0.9;
 
-    @media (width <= 480px) { font-size: var(--font-8); }
+    @media (width <= 480px) {
+      font-size: var(--font-8);
+    }
   }
 }
 

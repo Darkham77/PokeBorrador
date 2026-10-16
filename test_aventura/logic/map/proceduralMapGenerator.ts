@@ -71,7 +71,6 @@ import {
   countTotalTilesPlaced
 } from './proceduralMapHelpers.ts';
 
-
 import {
   CANONICAL_PALETTES,
   getBiomePalette,
@@ -144,7 +143,9 @@ export class ProceduralMapGenerator {
     }
 
     // Resolve Path Autotiling for each cell
-    resolvePathAutotiling(isPathCell, palette, baseLayer, width, height, (t, c) => this.makeCell(t, c));
+    resolvePathAutotiling(isPathCell, palette, baseLayer, width, height, (t, c) =>
+      this.makeCell(t, c)
+    );
 
     // 3. Town Pass (Intelligent Urban Zoning: Streets, Lots, Civic & Residential Allocation)
     if (withTown) {
@@ -154,7 +155,8 @@ export class ProceduralMapGenerator {
         includeGym: options.cityConfig?.includeGym ?? true,
         includeLab: options.cityConfig?.includeLab ?? false,
         plazaType: options.cityConfig?.plazaType ?? 'fountain',
-        propsDensity: options.cityConfig?.propsDensity ?? options.propsDensity ?? DEFAULT_CITY_PROPS_DENSITY,
+        propsDensity:
+          options.cityConfig?.propsDensity ?? options.propsDensity ?? DEFAULT_CITY_PROPS_DENSITY,
         includeFences: options.cityConfig?.includeFences ?? options.includeFences ?? true
       };
 
@@ -175,12 +177,18 @@ export class ProceduralMapGenerator {
       });
 
       // Re-resolve Path Autotiling for all newly connected avenues and doorways
-      resolvePathAutotiling(isPathCell, palette, baseLayer, width, height, (t, c) => this.makeCell(t, c));
+      resolvePathAutotiling(isPathCell, palette, baseLayer, width, height, (t, c) =>
+        this.makeCell(t, c)
+      );
     }
 
     // 3.5 Compute Organic Biome Distribution via Simplex Noise FBM & Quantile Thresholding
     const centerExclusion = withTown
-      ? { x: branchX, y: midY, radius: Math.floor(Math.min(width, height) * ROUTE_TOWN_CENTER_EXCLUSION_RATIO) }
+      ? {
+          x: branchX,
+          y: midY,
+          radius: Math.floor(Math.min(width, height) * ROUTE_TOWN_CENTER_EXCLUSION_RATIO)
+        }
       : undefined;
 
     const biomeDist = computeBiomeDistribution({
@@ -241,32 +249,39 @@ export class ProceduralMapGenerator {
       makeCell: (t, c) => this.makeCell(t, c)
     });
 
-      // 7.5 - 10.5 Jumpable Ledges, Tall Grass, Flowers, Bushes & Route Scenic Props
-      const ledgeY1 = Math.floor(height * ROUTE_LEDGE_NORTH_RATIO);
-      const ledgeY2 = Math.floor(height * ROUTE_LEDGE_SOUTH_RATIO);
-      const candidateLedgeRows = [ledgeY1, ledgeY1 + 1, ledgeY1 - 1, ledgeY2, ledgeY2 + 1, ledgeY2 - 1];
+    // 7.5 - 10.5 Jumpable Ledges, Tall Grass, Flowers, Bushes & Route Scenic Props
+    const ledgeY1 = Math.floor(height * ROUTE_LEDGE_NORTH_RATIO);
+    const ledgeY2 = Math.floor(height * ROUTE_LEDGE_SOUTH_RATIO);
+    const candidateLedgeRows = [
+      ledgeY1,
+      ledgeY1 + 1,
+      ledgeY1 - 1,
+      ledgeY2,
+      ledgeY2 + 1,
+      ledgeY2 - 1
+    ];
 
-      stampFloraLedgesAndProps({
-        width,
-        height,
-        midY,
-        seed,
-        prng,
-        mapType,
-        withTown,
-        candidateLedgeRows,
-        palette,
-        isPathCell,
-        baseLayer,
-        elevationLayer,
-        objectLayer,
-        collisionGrid,
-        warps,
-        spawns,
-        propsDensity: options.propsDensity,
-        includeFences: options.includeFences,
-        makeCell: (t, c) => this.makeCell(t, c)
-      });
+    stampFloraLedgesAndProps({
+      width,
+      height,
+      midY,
+      seed,
+      prng,
+      mapType,
+      withTown,
+      candidateLedgeRows,
+      palette,
+      isPathCell,
+      baseLayer,
+      elevationLayer,
+      objectLayer,
+      collisionGrid,
+      warps,
+      spawns,
+      propsDensity: options.propsDensity,
+      includeFences: options.includeFences,
+      makeCell: (t, c) => this.makeCell(t, c)
+    });
 
     // 11. Custom Predefined Multitile Structures (if specified in options)
     stampCustomStructures({
@@ -351,4 +366,3 @@ export function generateProceduralMap(
 }
 
 export { stampStructure } from './structureStamper.ts';
-

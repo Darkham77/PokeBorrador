@@ -27,21 +27,33 @@ function matchesActiveTag(item: FilterablePokemonItem, p: Pokemon, tag: string):
   if (tag === 'box') return item._source === 'box';
   if (tag === 'friendship-evo') return isReadyForFriendshipEvolution(p);
   if (tag === 'friendship-max') {
-    return (p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE) >= FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD;
+    return (
+      (p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE) >= FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD
+    );
   }
-  return (isPokemonTagId(tag) || tag === 'favorite' || tag === 'comp') ? hasPokemonTag(p, tag) : false;
+  return isPokemonTagId(tag) || tag === 'favorite' || tag === 'comp'
+    ? hasPokemonTag(p, tag)
+    : false;
 }
 
-export function matchesPokemonCriteria(item: FilterablePokemonItem, criteria: PokemonFilterCriteria): boolean {
+export function matchesPokemonCriteria(
+  item: FilterablePokemonItem,
+  criteria: PokemonFilterCriteria
+): boolean {
   const p = item.pokemon;
   if (!p) return false;
   if (isBlockedByBattleSwitch(p, criteria)) return false;
   if (criteria.allowedIds && !criteria.allowedIds.includes(p.uid)) return false;
-  if (criteria.allowedSpecies && criteria.allowedSpecies.length > 0 && !criteria.allowedSpecies.includes(p.id)) return false;
+  if (
+    criteria.allowedSpecies &&
+    criteria.allowedSpecies.length > 0 &&
+    !criteria.allowedSpecies.includes(p.id)
+  )
+    return false;
   if (criteria.excludeUids && criteria.excludeUids.includes(p.uid)) return false;
   if (!matchesSearchQuery(p, criteria.searchQuery)) return false;
   if (criteria.activeTags && criteria.activeTags.length > 0) {
-    if (!criteria.activeTags.every(tag => matchesActiveTag(item, p, tag))) return false;
+    if (!criteria.activeTags.every((tag) => matchesActiveTag(item, p, tag))) return false;
   }
   return true;
 }

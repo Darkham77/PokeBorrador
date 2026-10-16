@@ -56,7 +56,8 @@ export function clearActivePvPSession(): void {
  * Retrieves the active PvP session if present and not expired (< 60s).
  * If expired, cleans up storage and returns null.
  */
-export function getActivePvPSession(): PvPActiveSession | null { // result-ok: Operation result wrapper payload
+export function getActivePvPSession(): PvPActiveSession | null {
+  // result-ok: Operation result wrapper payload
   if (typeof window === 'undefined' || !window.sessionStorage) return null;
   try {
     const raw = window.sessionStorage.getItem(PVP_ACTIVE_MATCH_STORAGE_KEY);
@@ -108,9 +109,7 @@ export function determineLegalAutoPick(
     }
 
     if (playerTeam && playerTeam.length > 0) {
-      const benchIndex = playerTeam.findIndex(
-        (p, idx) => idx > 0 && p && p.hp > 0 && !p.fainted
-      );
+      const benchIndex = playerTeam.findIndex((p, idx) => idx > 0 && p && p.hp > 0 && !p.fainted);
       if (benchIndex !== -1) {
         return {
           type: 'switch',

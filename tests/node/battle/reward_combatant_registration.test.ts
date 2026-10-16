@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { ref } from 'vue';
 import type { Pokemon } from '@/types/pokemon/pokemon.ts';
 import type { BattleState } from '@/types/battle/battle.ts';
@@ -64,7 +64,9 @@ describe('Reward Combatant Registration and Faint Sequence Parity', () => {
       } as unknown as BattleContext['fsm'],
       faintedSides: ref(new Set<string>()),
       addLog: vi.fn(),
-      BATTLE_STATES: { ACTIVE_BATTLE: 'ACTIVE_BATTLE' } as unknown as BattleContext['BATTLE_STATES'],
+      BATTLE_STATES: {
+        ACTIVE_BATTLE: 'ACTIVE_BATTLE'
+      } as unknown as BattleContext['BATTLE_STATES'],
       BATTLE_SUBSTATES: {
         ENEMY_REPLACEMENT_SEQ: 'ENEMY_REPLACEMENT_SEQ',
         TYPE_CHECK: 'TYPE_CHECK',

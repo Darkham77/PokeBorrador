@@ -1,90 +1,88 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui'
-import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
-import { gsap } from 'gsap'
-import { useAuthStore } from '@/stores/auth'
-import { useGameStore } from '@/stores/game'
-import { useGTSStore } from '@/stores/gts'
-import BaseModal from '@/components/common/BaseModal.vue'
-import { formatCurrency } from '@/logic/utils/formatters'
+import { useUIStore } from '@/stores/ui';
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue';
+import { gsap } from 'gsap';
+import { useAuthStore } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { useGTSStore } from '@/stores/gts';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { formatCurrency } from '@/logic/utils/formatters';
 
-const MARKET_ANIM_CARD_Y_OFFSET_PX = 12
-const MARKET_ANIM_MYCARD_X_OFFSET_PX = -15
-const MARKET_ANIM_CARD_DURATION_SEC = 0.25
-const MARKET_ANIM_CARD_STAGGER_SEC = 0.02
-const MARKET_ANIM_MYCARD_DURATION_SEC = 0.22
-const MARKET_ANIM_MYCARD_STAGGER_SEC = 0.03
+const MARKET_ANIM_CARD_Y_OFFSET_PX = 12;
+const MARKET_ANIM_MYCARD_X_OFFSET_PX = -15;
+const MARKET_ANIM_CARD_DURATION_SEC = 0.25;
+const MARKET_ANIM_CARD_STAGGER_SEC = 0.02;
+const MARKET_ANIM_MYCARD_DURATION_SEC = 0.22;
+const MARKET_ANIM_MYCARD_STAGGER_SEC = 0.03;
 
 // Subcomponents
-import MarketExplorer from '../market/MarketExplorer.vue'
-import MarketFilters from '../market/MarketFilters.vue'
-import MarketPublish from '../market/MarketPublish.vue'
-import MarketMyItems from '../market/MarketMyItems.vue'
+import MarketExplorer from '../market/MarketExplorer.vue';
+import MarketFilters from '../market/MarketFilters.vue';
+import MarketPublish from '../market/MarketPublish.vue';
+import MarketMyItems from '../market/MarketMyItems.vue';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const authStore = useAuthStore()
-const gameStore = useGameStore()
-const gtsStore = useGTSStore()
+const authStore = useAuthStore();
+const gameStore = useGameStore();
+const gtsStore = useGTSStore();
 
-const activeTab = ref('explore') // 'explore' | 'publish' | 'my_items'
+const activeTab = ref('explore'); // 'explore' | 'publish' | 'my_items'
 
-watch(() => props.show, async (isVisible) => {
-  if (isVisible) {
-    activeTab.value = 'explore'
-    await Promise.all([
-      gtsStore.fetchListings(),
-      gtsStore.fetchUserData()
-    ])
+watch(
+  () => props.show,
+  async (isVisible) => {
+    if (isVisible) {
+      activeTab.value = 'explore';
+      await Promise.all([gtsStore.fetchListings(), gtsStore.fetchUserData()]);
+    }
   }
-})
+);
 
-const ui = useUIStore()
-const isSmallScreen = computed(() => ui.isSmallScreen)
+const ui = useUIStore();
+const isSmallScreen = computed(() => ui.isSmallScreen);
 
 const TABS = [
   { id: 'explore', label: 'EXPLORAR', icon: '🔍' },
   { id: 'publish', label: 'PUBLICAR', icon: '🚀' },
   { id: 'my_items', label: 'MIS ITEMS', icon: '📦' }
-]
+];
 
 onMounted(async () => {
-  const { initSQLite } = await import('@/logic/db/sqliteEngine')
-  await initSQLite()
-  await Promise.all([
-    gtsStore.fetchListings(),
-    gtsStore.fetchUserData()
-  ])
+  const { initSQLite } = await import('@/logic/db/sqliteEngine');
+  await initSQLite();
+  await Promise.all([gtsStore.fetchListings(), gtsStore.fetchUserData()]);
   if (authStore.sessionMode === 'online') {
-    gtsStore.initRealtime()
+    gtsStore.initRealtime();
   }
-  animateGrid()
-})
+  animateGrid();
+});
 
 onUnmounted(() => {
-  gtsStore.stopRealtime()
-})
+  gtsStore.stopRealtime();
+});
 
-const MARKET_ANIM_CARD_SCALE_START = 0.98
+const MARKET_ANIM_CARD_SCALE_START = 0.98;
 
 // GSAP Grid stagger animation
 const animateGrid = () => {
   nextTick(() => {
     // 1. Target explorer cards
-    const explorerCards = document.querySelectorAll('.listing-card')
+    const explorerCards = document.querySelectorAll('.listing-card');
     if (explorerCards.length > 0) {
-      gsap.killTweensOf(explorerCards)
-      gsap.fromTo(explorerCards,
+      gsap.killTweensOf(explorerCards);
+      gsap.fromTo(
+        explorerCards,
         { opacity: 0, y: MARKET_ANIM_CARD_Y_OFFSET_PX, scale: MARKET_ANIM_CARD_SCALE_START },
         {
           opacity: 1,
@@ -95,14 +93,15 @@ const animateGrid = () => {
           ease: 'power2.out',
           clearProps: 'transform,scale'
         }
-      )
+      );
     }
 
     // 2. Target user's active publications cards
-    const myCards = document.querySelectorAll('.my-listing-card')
+    const myCards = document.querySelectorAll('.my-listing-card');
     if (myCards.length > 0) {
-      gsap.killTweensOf(myCards)
-      gsap.fromTo(myCards,
+      gsap.killTweensOf(myCards);
+      gsap.fromTo(
+        myCards,
         { opacity: 0, x: MARKET_ANIM_MYCARD_X_OFFSET_PX },
         {
           opacity: 1,
@@ -112,25 +111,25 @@ const animateGrid = () => {
           ease: 'power2.out',
           clearProps: 'transform'
         }
-      )
+      );
     }
-  })
-}
+  });
+};
 
 // Watch active tab or listings change to animate items grid
 watch(activeTab, (newTab) => {
   if (newTab === 'explore') {
-    gtsStore.fetchListings()
+    gtsStore.fetchListings();
   }
-})
+});
 
 watch([activeTab, () => gtsStore.listings, () => gtsStore.myListings], () => {
-  animateGrid()
-})
+  animateGrid();
+});
 
 const close = () => {
-  emit('close')
-}
+  emit('close');
+};
 </script>
 
 <template>
@@ -151,10 +150,9 @@ const close = () => {
           <div class="title-text-wrap">
             <span class="main-title">
               GLOBAL TRADE STATION
-              <span
-                v-if="authStore.sessionMode === 'offline'"
-                class="offline-badge"
-              >MERCADO LOCAL</span>
+              <span v-if="authStore.sessionMode === 'offline'" class="offline-badge"
+                >MERCADO LOCAL</span
+              >
             </span>
             <span class="sub-title">MERCADO MUNDIAL DE ENTRENADORES</span>
           </div>
@@ -170,7 +168,9 @@ const close = () => {
           <!-- Publicaciones activas -->
           <div class="stat-node listings-limit">
             <span class="gts-stat-label">PUBLICACIONES</span>
-            <span class="value">{{ gtsStore.activeMyListings.length }} / {{ gtsStore.MAX_LISTINGS }}</span>
+            <span class="value"
+              >{{ gtsStore.activeMyListings.length }} / {{ gtsStore.MAX_LISTINGS }}</span
+            >
           </div>
         </div>
       </div>
@@ -228,4 +228,3 @@ const close = () => {
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_gts.scss"></style>
-

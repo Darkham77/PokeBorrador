@@ -1,4 +1,4 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 /* --- PREMIUM HEADER STRUCTURE SHARED STYLING --- */
 .header-left {
@@ -49,7 +49,11 @@
 
 @include responsive(hud-mobile) {
   .header-left {
-    .header-main-title { font-size: var(--font-8); }
-    .header-sub-title { font-size: var(--font-6); }
+    .header-main-title {
+      font-size: var(--font-8);
+    }
+    .header-sub-title {
+      font-size: var(--font-6);
+    }
   }
 }

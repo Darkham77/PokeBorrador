@@ -35,7 +35,15 @@ export interface TreePlacement {
   readonly prefabFile: string;
 }
 
-export type WildernessPropType = 'flower' | 'fence_h' | 'fence_v' | 'boulder' | 'bush' | 'log' | 'sapling' | 'signpost';
+export type WildernessPropType =
+  | 'flower'
+  | 'fence_h'
+  | 'fence_v'
+  | 'boulder'
+  | 'bush'
+  | 'log'
+  | 'sapling'
+  | 'signpost';
 
 export interface WildernessPropPlacement {
   readonly type: WildernessPropType;
@@ -63,7 +71,7 @@ import {
   WILDERNESS_PRNG_OFFSET,
   TALL_GRASS_MIN_PATCHES,
   TALL_GRASS_MAX_PATCHES,
-  TALL_GRASS_DENSITY_DIVISOR,
+  TALL_GRASS_DENSITY_DIVISOR
 } from '../../config/wildernessConfig.ts';
 
 /**
@@ -95,7 +103,12 @@ export function generateWildernessLayer(
   );
 
   // 2. Generate Tall Grass Encounter Patches (4x3 to 8x6) in corridors along paths
-  const targetPatches = options?.tallGrassPatchCount ?? Math.max(TALL_GRASS_MIN_PATCHES, Math.min(Math.floor((W * H) / TALL_GRASS_DENSITY_DIVISOR), TALL_GRASS_MAX_PATCHES));
+  const targetPatches =
+    options?.tallGrassPatchCount ??
+    Math.max(
+      TALL_GRASS_MIN_PATCHES,
+      Math.min(Math.floor((W * H) / TALL_GRASS_DENSITY_DIVISOR), TALL_GRASS_MAX_PATCHES)
+    );
   const tallGrassBlocked: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
   for (const poi of pois) {
     if (poi.type === 'dungeon_forest') {

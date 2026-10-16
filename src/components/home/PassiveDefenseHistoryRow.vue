@@ -23,12 +23,16 @@ const eloDeltaText = computed(() => {
     const delta = Number(rep.report_data.deltaElo);
     return delta > 0 ? `+${delta} ELO` : `${delta} ELO`;
   }
-  return rep.result === 'victory' ? `+${DEFAULT_VICTORY_ELO_DELTA} ELO` : `${DEFAULT_DEFEAT_ELO_DELTA} ELO`;
+  return rep.result === 'victory'
+    ? `+${DEFAULT_VICTORY_ELO_DELTA} ELO`
+    : `${DEFAULT_DEFEAT_ELO_DELTA} ELO`;
 });
 
 const opponentFactionLabel = computed(() => {
   const rep = props.report;
-  const faction = rep.opponent_profile?.faction || (typeof rep.report_data?.faction === 'string' ? rep.report_data.faction : undefined);
+  const faction =
+    rep.opponent_profile?.faction ||
+    (typeof rep.report_data?.faction === 'string' ? rep.report_data.faction : undefined);
   if (!faction) return 'SIN BANDO';
   const clean = faction.trim().toLowerCase();
   if (clean === 'union') return 'UNIÓN';
@@ -38,7 +42,9 @@ const opponentFactionLabel = computed(() => {
 
 const opponentFactionClass = computed(() => {
   const rep = props.report;
-  const faction = rep.opponent_profile?.faction || (typeof rep.report_data?.faction === 'string' ? rep.report_data.faction : undefined);
+  const faction =
+    rep.opponent_profile?.faction ||
+    (typeof rep.report_data?.faction === 'string' ? rep.report_data.faction : undefined);
   if (!faction) return '';
   const clean = faction.trim().toLowerCase();
   if (clean === 'union' || clean === 'poder') return clean;
@@ -71,36 +77,39 @@ function handleViewTrainerProfile() {
     id="passive-defense-history-row-div-viewtrainerprofile"
     class="history-row"
     :class="report.result"
+    role="button"
+    tabindex="0"
     @click="handleViewTrainerProfile"
   >
     <div class="trainer-avatar-col">
       <TrainerAvatar
         :profile="report.opponent_profile"
-        :player-class="String(report.opponent_profile?.playerClass || report.report_data?.playerClass || 'Entrenador')"
+        :player-class="
+          String(
+            report.opponent_profile?.playerClass || report.report_data?.playerClass || 'Entrenador'
+          )
+        "
         :size="AVATAR_SIZE_PX"
       />
     </div>
     <div class="rep-details">
       <div class="trainer-header-row">
-        <span class="rep-opponent text-outline">{{ report.opponent_profile?.username || report.report_data?.opponent || 'Rival' }}</span>
-        <span
-          class="rep-faction-badge"
-          :class="opponentFactionClass"
-        >{{ opponentFactionLabel }}</span>
+        <span class="rep-opponent text-outline">{{
+          report.opponent_profile?.username || report.report_data?.opponent || 'Rival'
+        }}</span>
+        <span class="rep-faction-badge" :class="opponentFactionClass">{{
+          opponentFactionLabel
+        }}</span>
       </div>
       <div class="rep-meta-row">
-        <span
-          v-if="report.report_data?.turns"
-          class="rep-turns"
-        >{{ report.report_data.turns }} turnos</span>
+        <span v-if="report.report_data?.turns" class="rep-turns"
+          >{{ report.report_data.turns }} turnos</span
+        >
         <span class="rep-date">{{ formattedDate }}</span>
       </div>
     </div>
     <div class="rep-badges-col">
-      <span
-        class="result-badge text-outline"
-        :class="report.result"
-      >
+      <span class="result-badge text-outline" :class="report.result">
         {{ report.result === 'victory' ? 'VICTORIA' : 'DERROTA' }}
       </span>
       <span

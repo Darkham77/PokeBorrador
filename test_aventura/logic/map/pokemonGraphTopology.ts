@@ -44,15 +44,21 @@ const MULBERRY_CONSTANTS = {
   SECONDARY_SHIFT: 7,
   OUTPUT_SHIFT: 14,
   MIX_FACTOR: 61,
-  DIVISOR: 4294967296,
+  DIVISOR: 4294967296
 } as const;
 
 function createPRNG(seed: number): () => number {
-  let s = (seed >>> 0) || 1;
+  let s = seed >>> 0 || 1;
   return () => {
     s = (s + 0x6d2b79f5) >>> 0;
     let t = Math.imul(s ^ (s >>> MULBERRY_CONSTANTS.INITIAL_SHIFT), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> MULBERRY_CONSTANTS.SECONDARY_SHIFT), MULBERRY_CONSTANTS.MIX_FACTOR | t)) ^ t;
+    t =
+      (t +
+        Math.imul(
+          t ^ (t >>> MULBERRY_CONSTANTS.SECONDARY_SHIFT),
+          MULBERRY_CONSTANTS.MIX_FACTOR | t
+        )) ^
+      t;
     return ((t ^ (t >>> MULBERRY_CONSTANTS.OUTPUT_SHIFT)) >>> 0) / MULBERRY_CONSTANTS.DIVISOR;
   };
 }
@@ -116,7 +122,8 @@ function wouldCreateCrossing(
   const hi1 = Math.max(nfIdx, ntIdx);
 
   for (const e of edges) {
-    if (e.kind === 'main_chain' || e.kind === 'branch_stub' || e.kind === 'wormhole_tunnel') continue;
+    if (e.kind === 'main_chain' || e.kind === 'branch_stub' || e.kind === 'wormhole_tunnel')
+      continue;
 
     const efIdx = orderMap.get(e.fromId);
     const etIdx = orderMap.get(e.toId);
@@ -144,18 +151,19 @@ function nodeDegree(edges: readonly TopologyGraphEdge[], nodeId: string): number
 
 /** Checks if an edge already exists between two nodes. */
 function edgeExists(edges: readonly TopologyGraphEdge[], a: string, b: string): boolean {
-  return edges.some(
-    (e) => (e.fromId === a && e.toId === b) || (e.fromId === b && e.toId === a)
-  );
+  return edges.some((e) => (e.fromId === a && e.toId === b) || (e.fromId === b && e.toId === a));
 }
 
 // ---------------------------------------------------------------------------
 // Phase 1A: Generate Main Chain (T1.2)
 // ---------------------------------------------------------------------------
 
-function generateMainChain(
-  _prng: () => number
-): { nodes: TopologyGraphNode[]; edges: TopologyGraphEdge[]; chainOrder: string[] } { // domain-ok: Identificador o estructura procedural de aventura
+function generateMainChain(_prng: () => number): {
+  nodes: TopologyGraphNode[];
+  edges: TopologyGraphEdge[];
+  chainOrder: string[];
+} {
+  // domain-ok: Identificador o estructura procedural de aventura
   const nodes: TopologyGraphNode[] = [];
   const edges: TopologyGraphEdge[] = [];
   const chainOrder: string[] = []; // domain-ok: dynamic node id list
@@ -304,7 +312,8 @@ function assignPortCity(
 ): void {
   // Pick a gym city in the mid-to-late range (progression 3-7) as port
   const candidates = nodes.filter(
-    (n) => n.role === 'gym_city' && n.gymNumber !== undefined && n.gymNumber >= 3 && n.gymNumber <= 7
+    (n) =>
+      n.role === 'gym_city' && n.gymNumber !== undefined && n.gymNumber >= 3 && n.gymNumber <= 7
   );
 
   if (candidates.length === 0) return;
@@ -373,8 +382,8 @@ function addSecondaryNodes(
   chainOrder: readonly string[],
   prng: () => number
 ): void {
-  const secondaryCount = MIN_SECONDARY_NODES +
-    Math.floor(prng() * (MAX_SECONDARY_NODES - MIN_SECONDARY_NODES + 1));
+  const secondaryCount =
+    MIN_SECONDARY_NODES + Math.floor(prng() * (MAX_SECONDARY_NODES - MIN_SECONDARY_NODES + 1));
 
   const secondaryRoles = ['secondary_dungeon', 'secondary_cave', 'secondary_landmark'] as const;
   let nextNodeIdx = nodes.length;
@@ -466,9 +475,7 @@ export function validateGraphInvariants(graph: PokemonTopologyGraph): GraphValid
   }
 
   // 6. Cycle count (3-5): count independent cycles via Euler formula: C = E - V + 1 (for connected graph)
-  const cycleEdges = edges.filter(
-    (e) => e.kind === 'cycle' || e.kind === 'surf_route'
-  );
+  const cycleEdges = edges.filter((e) => e.kind === 'cycle' || e.kind === 'surf_route');
   if (cycleEdges.length < MIN_CYCLES) {
     errors.push(`Expected at least ${MIN_CYCLES} cycles, found ${cycleEdges.length}`);
   }
@@ -541,9 +548,7 @@ export interface PokemonTopologyOptions {
  * Returns a pure abstract graph with NO spatial coordinates.
  * Spatial embedding is handled by Phase 2 (orthogonalGraphEmbedding.ts).
  */
-export function generatePokemonTopology(
-  options?: PokemonTopologyOptions
-): PokemonTopologyGraph {
+export function generatePokemonTopology(options?: PokemonTopologyOptions): PokemonTopologyGraph {
   const seed = options?.seed ?? 42;
   const prng = createPRNG(seed);
 

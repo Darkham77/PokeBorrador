@@ -1,4 +1,4 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 @mixin move-detail-item {
   display: flex;
@@ -13,22 +13,28 @@
     border: none;
   }
 
-  .d-label { 
-    color: var(--white); 
-    font-size: var(--font-6); 
-    opacity: 0.4; 
+  .d-label {
+    color: var(--white);
+    font-size: var(--font-6);
+    opacity: 0.4;
 
-    @media (width <= 560px) { min-width: 25px; font-size: var(--font-5); opacity: 0.6; }
+    @media (width <= 560px) {
+      min-width: 25px;
+      font-size: var(--font-5);
+      opacity: 0.6;
+    }
   }
-  .d-val { 
+  .d-val {
     display: flex;
     align-items: center;
-    gap: $spacing-2xs; 
-    color: var(--white); 
-    font-size: var(--font-7); 
+    gap: $spacing-2xs;
+    color: var(--white);
+    font-size: var(--font-7);
     font-weight: 900;
 
-    @media (width <= 560px) { font-size: var(--font-6); }
+    @media (width <= 560px) {
+      font-size: var(--font-6);
+    }
 
     .infinity-emoji {
       font-family: $font-family-sans !important;

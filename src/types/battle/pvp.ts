@@ -13,7 +13,15 @@ import {
   type RankedTierId
 } from '@/data/system/rankedData.ts';
 
-export const PVP_BATTLE_PHASES = ['sync', 'choosing', 'resolving', 'animating', 'faint_switch', 'over', 'waiting'] as const;
+export const PVP_BATTLE_PHASES = [
+  'sync',
+  'choosing',
+  'resolving',
+  'animating',
+  'faint_switch',
+  'over',
+  'waiting'
+] as const;
 export type PvPBattlePhase = (typeof PVP_BATTLE_PHASES)[number];
 
 export interface PvPAction {
@@ -276,7 +284,9 @@ export function appendPersonalMatchHistory(
   newMatch: PersonalPvPMatchSummary
 ): PersonalPvPMatchSummary[] {
   const current = history || [];
-  const filtered = current.filter(m => m.battleCode !== newMatch.battleCode && m.id !== newMatch.id);
+  const filtered = current.filter(
+    (m) => m.battleCode !== newMatch.battleCode && m.id !== newMatch.id
+  );
   return [newMatch, ...filtered].slice(0, MAX_PERSONAL_MATCH_HISTORY);
 }
 

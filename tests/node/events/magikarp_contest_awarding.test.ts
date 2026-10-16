@@ -1,4 +1,4 @@
-import { describe, it, vi, beforeEach } from 'vitest';
+import { describe, it, vi, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 
@@ -18,7 +18,10 @@ vi.mock('@/logic/db/sqliteEngine.ts', () => ({
   persistSQLite: vi.fn(async () => {})
 }));
 
-import { emulateAwardEventAutomated, emulateClaimAward } from '@/logic/db/rpcEmulations/eventRpc.ts';
+import {
+  emulateAwardEventAutomated,
+  emulateClaimAward
+} from '@/logic/db/rpcEmulations/eventRpc.ts';
 import { queryLocal } from '@/logic/db/sqliteEngine.ts';
 import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts';
 
@@ -98,17 +101,20 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
       }
     };
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO events_config (id, name, icon, type, active, manual, config, description)
       VALUES (?, ?, ?, ?, 1, 0, ?, ?)
-    `, [
-      'hora_magikarp',
-      'Hora de Pesca del Magikarp',
-      '🎣',
-      'competition',
-      JSON.stringify(eventConfig),
-      '¡Captura el Magikarp con mejores IVs!'
-    ]);
+    `,
+      [
+        'hora_magikarp',
+        'Hora de Pesca del Magikarp',
+        '🎣',
+        'competition',
+        JSON.stringify(eventConfig),
+        '¡Captura el Magikarp con mejores IVs!'
+      ]
+    );
 
     // 3. Insert 4 players with different IVs
     const players = [
@@ -126,29 +132,36 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
         level: 15
       };
 
-      await queryLocal(`
+      await queryLocal(
+        `
         INSERT INTO competition_entries (id, event_id, player_id, player_name, player_email, pokemon_uid, data, submitted_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
-        `entry_${p.id}`,
-        'hora_magikarp',
-        p.id,
-        p.name,
-        p.email,
-        `poke_${p.id}`,
-        JSON.stringify(entryData),
-        '2026-08-26T12:00:00Z'
-      ]);
+      `,
+        [
+          `entry_${p.id}`,
+          'hora_magikarp',
+          p.id,
+          p.name,
+          p.email,
+          `poke_${p.id}`,
+          JSON.stringify(entryData),
+          '2026-08-26T12:00:00Z'
+        ]
+      );
     }
 
     // 4. Run automated awarding
-    const awardResult = await emulateAwardEventAutomated(mockSqliteDb, { target_event_id: 'hora_magikarp' });
+    const awardResult = await emulateAwardEventAutomated(mockSqliteDb, {
+      target_event_id: 'hora_magikarp'
+    });
     assert.strictEqual(awardResult.error, null);
     const awardData = awardResult.data as { ok?: boolean; success?: boolean }; // domain-ok: Open dynamic text or non-domain string payload
     assert.ok(awardData?.ok || awardData?.success);
 
     // 5. Verify competition_results table
-    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', ['hora_magikarp']);
+    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', [
+      'hora_magikarp'
+    ]);
     assert.ok(resultRows.length > 0, 'Should create a row in competition_results');
     const resultRow = resultRows[0] as { winners: string };
     const winners = JSON.parse(resultRow.winners) as Array<{
@@ -172,10 +185,12 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     assert.strictEqual(winners[2]?.score, 120);
 
     // Verify player_4 is not in podium
-    assert.ok(!winners.some(w => w.player_id === 'player_4'));
+    assert.ok(!winners.some((w) => w.player_id === 'player_4'));
 
     // 6. Verify awards table
-    const awards = (await queryLocal('SELECT * FROM awards WHERE event_id = ?', ['hora_magikarp'])) as unknown as Array<{
+    const awards = (await queryLocal('SELECT * FROM awards WHERE event_id = ?', [
+      'hora_magikarp'
+    ])) as unknown as Array<{
       id: string;
       winner_id: string;
       prize: string;
@@ -183,10 +198,10 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     }>;
 
     assert.strictEqual(awards.length, 3);
-    const awardP1 = awards.find(a => a.winner_id === 'player_1');
-    const awardP2 = awards.find(a => a.winner_id === 'player_2');
-    const awardP3 = awards.find(a => a.winner_id === 'player_3');
-    const awardP4 = awards.find(a => a.winner_id === 'player_4');
+    const awardP1 = awards.find((a) => a.winner_id === 'player_1');
+    const awardP2 = awards.find((a) => a.winner_id === 'player_2');
+    const awardP3 = awards.find((a) => a.winner_id === 'player_3');
+    const awardP4 = awards.find((a) => a.winner_id === 'player_4');
 
     assert.ok(awardP1);
     assert.ok(awardP2);
@@ -205,12 +220,17 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     // 7. Test claiming an award
     const claimRes = await emulateClaimAward(mockSqliteDb, { p_award_id: awardP1.id });
     assert.strictEqual(claimRes.error, null);
-    const claimData = claimRes.data as { ok?: boolean; prize?: { type: string; amount: number; rank?: string } }; // domain-ok: Open dynamic text or non-domain string payload
+    const claimData = claimRes.data as {
+      ok?: boolean;
+      prize?: { type: string; amount: number; rank?: string };
+    }; // domain-ok: Open dynamic text or non-domain string payload
     assert.ok(claimData?.ok);
     assert.deepStrictEqual(claimData?.prize, { type: 'money', amount: 50000, rank: 'first' });
 
     // Verify award is now claimed in DB
-    const claimedRows = await queryLocal('SELECT claimed, received_at FROM awards WHERE id = ?', [awardP1.id]);
+    const claimedRows = await queryLocal('SELECT claimed, received_at FROM awards WHERE id = ?', [
+      awardP1.id
+    ]);
     const claimedRow = claimedRows[0] as { claimed: number; received_at: string | null };
     assert.strictEqual(claimedRow.claimed, 1);
     assert.ok(claimedRow.received_at !== null);
@@ -221,7 +241,10 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     assert.strictEqual(repeatData?.ok, false);
 
     // 8. Verify entries table was cleaned up
-    const remainingEntries = await queryLocal('SELECT * FROM competition_entries WHERE event_id = ?', ['hora_magikarp']);
+    const remainingEntries = await queryLocal(
+      'SELECT * FROM competition_entries WHERE event_id = ?',
+      ['hora_magikarp']
+    );
     assert.strictEqual(remainingEntries.length, 0);
   });
 
@@ -239,17 +262,20 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
       }
     };
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO events_config (id, name, icon, type, active, manual, config, description)
       VALUES (?, ?, ?, ?, 1, 0, ?, ?)
-    `, [
-      'hora_magikarp_solo',
-      'Hora Magikarp Solo',
-      '🎣',
-      'competition',
-      JSON.stringify(eventConfig),
-      'Concurso individual'
-    ]);
+    `,
+      [
+        'hora_magikarp_solo',
+        'Hora Magikarp Solo',
+        '🎣',
+        'competition',
+        JSON.stringify(eventConfig),
+        'Concurso individual'
+      ]
+    );
 
     const entryData = {
       species: 'magikarp',
@@ -260,24 +286,31 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
       ivs: { hp: 30, atk: 25, def: 28, spa: 27, spd: 25, spe: 30 }
     };
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO competition_entries (id, event_id, player_id, player_name, player_email, pokemon_uid, data, submitted_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      'entry_solo_1',
-      'hora_magikarp_solo',
-      'solo_player_1',
-      'Entrenador_Solitario',
-      'solo@test.com',
-      'poke_solo_1',
-      JSON.stringify(entryData),
-      '2026-08-26T12:00:00Z'
-    ]);
+    `,
+      [
+        'entry_solo_1',
+        'hora_magikarp_solo',
+        'solo_player_1',
+        'Entrenador_Solitario',
+        'solo@test.com',
+        'poke_solo_1',
+        JSON.stringify(entryData),
+        '2026-08-26T12:00:00Z'
+      ]
+    );
 
-    const awardResult = await emulateAwardEventAutomated(mockSqliteDb, { target_event_id: 'hora_magikarp_solo' });
+    const awardResult = await emulateAwardEventAutomated(mockSqliteDb, {
+      target_event_id: 'hora_magikarp_solo'
+    });
     assert.strictEqual(awardResult.error, null);
 
-    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', ['hora_magikarp_solo']);
+    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', [
+      'hora_magikarp_solo'
+    ]);
     assert.strictEqual(resultRows.length, 1);
     const resultRow = resultRows[0] as { winners: string };
     const winners = JSON.parse(resultRow.winners) as Array<{
@@ -296,7 +329,9 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     assert.strictEqual(winners[0]?.entry_data.nickname, 'SoloChampion');
     assert.strictEqual(winners[0]?.entry_data.total_ivs, 165);
 
-    const awards = (await queryLocal('SELECT * FROM awards WHERE event_id = ?', ['hora_magikarp_solo'])) as unknown as Array<{
+    const awards = (await queryLocal('SELECT * FROM awards WHERE event_id = ?', [
+      'hora_magikarp_solo'
+    ])) as unknown as Array<{
       winner_id: string;
       prize: string;
     }>;
@@ -321,17 +356,20 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
       }
     };
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO events_config (id, name, icon, type, active, manual, config, description)
       VALUES (?, ?, ?, ?, 1, 0, ?, ?)
-    `, [
-      'hora_magikarp_duo',
-      'Hora Magikarp Duo',
-      '🎣',
-      'competition',
-      JSON.stringify(eventConfig),
-      'Concurso de 2 jugadores'
-    ]);
+    `,
+      [
+        'hora_magikarp_duo',
+        'Hora Magikarp Duo',
+        '🎣',
+        'competition',
+        JSON.stringify(eventConfig),
+        'Concurso de 2 jugadores'
+      ]
+    );
 
     const participants = [
       {
@@ -359,25 +397,32 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
         level: 15
       };
 
-      await queryLocal(`
+      await queryLocal(
+        `
         INSERT INTO competition_entries (id, event_id, player_id, player_name, player_email, pokemon_uid, data, submitted_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
-        `entry_${p.id}`,
-        'hora_magikarp_duo',
-        p.id,
-        p.name,
-        p.email,
-        `poke_${p.id}`,
-        JSON.stringify(entryData),
-        '2026-08-26T12:00:00Z'
-      ]);
+      `,
+        [
+          `entry_${p.id}`,
+          'hora_magikarp_duo',
+          p.id,
+          p.name,
+          p.email,
+          `poke_${p.id}`,
+          JSON.stringify(entryData),
+          '2026-08-26T12:00:00Z'
+        ]
+      );
     }
 
-    const awardResult = await emulateAwardEventAutomated(mockSqliteDb, { target_event_id: 'hora_magikarp_duo' });
+    const awardResult = await emulateAwardEventAutomated(mockSqliteDb, {
+      target_event_id: 'hora_magikarp_duo'
+    });
     assert.strictEqual(awardResult.error, null);
 
-    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', ['hora_magikarp_duo']);
+    const resultRows = await queryLocal('SELECT * FROM competition_results WHERE event_id = ?', [
+      'hora_magikarp_duo'
+    ]);
     assert.strictEqual(resultRows.length, 1);
     const winners = JSON.parse((resultRows[0] as { winners: string }).winners) as Array<{
       rank: string;
@@ -402,14 +447,16 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     assert.strictEqual(winners[1]?.score, 140);
     assert.strictEqual(winners[1]?.entry_data.nickname, 'Magikarp_Silver');
 
-    const awards = (await queryLocal('SELECT * FROM awards WHERE event_id = ?', ['hora_magikarp_duo'])) as unknown as Array<{
+    const awards = (await queryLocal('SELECT * FROM awards WHERE event_id = ?', [
+      'hora_magikarp_duo'
+    ])) as unknown as Array<{
       winner_id: string;
       prize: string;
     }>;
 
     assert.strictEqual(awards.length, 2, 'Only 2 awards should be generated');
-    const firstAward = awards.find(a => a.winner_id === 'duo_p1');
-    const secondAward = awards.find(a => a.winner_id === 'duo_p2');
+    const firstAward = awards.find((a) => a.winner_id === 'duo_p1');
+    const secondAward = awards.find((a) => a.winner_id === 'duo_p2');
     assert.ok(firstAward);
     assert.ok(secondAward);
 
@@ -431,17 +478,20 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
       }
     };
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO events_config (id, name, icon, type, active, manual, config, description)
       VALUES (?, ?, ?, ?, 1, 0, ?, ?)
-    `, [
-      'hora_magikarp_prune',
-      'Hora Magikarp Pruning Test',
-      '🎣',
-      'competition',
-      JSON.stringify(eventConfig),
-      'Test de purga de historial'
-    ]);
+    `,
+      [
+        'hora_magikarp_prune',
+        'Hora Magikarp Pruning Test',
+        '🎣',
+        'competition',
+        JSON.stringify(eventConfig),
+        'Test de purga de historial'
+      ]
+    );
 
     // Insert 105 mock historical results with distinct ended_at timestamps
     const TOTAL_HISTORICAL_RESULTS = 105;
@@ -450,15 +500,25 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     for (let i = 1; i <= TOTAL_HISTORICAL_RESULTS; i++) {
       const padIdx = String(i).padStart(3, '0');
       const timestamp = `2026-08-01T${String(Math.floor(i / 60)).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}:00Z`;
-      await queryLocal(`
+      await queryLocal(
+        `
         INSERT INTO competition_results (id, event_id, winners, ended_at)
         VALUES (?, ?, ?, ?)
-      `, [
-        `history_result_${padIdx}`,
-        'hora_magikarp_old',
-        JSON.stringify([{ rank: 'first', player_id: `player_${padIdx}`, player_name: `Trainer_${padIdx}`, score: 100 }]),
-        timestamp
-      ]);
+      `,
+        [
+          `history_result_${padIdx}`,
+          'hora_magikarp_old',
+          JSON.stringify([
+            {
+              rank: 'first',
+              player_id: `player_${padIdx}`,
+              player_name: `Trainer_${padIdx}`,
+              score: 100
+            }
+          ]),
+          timestamp
+        ]
+      );
     }
 
     const preCountRows = await queryLocal('SELECT COUNT(*) as cnt FROM competition_results');
@@ -466,33 +526,49 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     assert.strictEqual(preCount, TOTAL_HISTORICAL_RESULTS);
 
     // Enroll a new participant and award the event
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO competition_entries (id, event_id, player_id, player_name, player_email, pokemon_uid, data, submitted_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      'entry_prune_1',
-      'hora_magikarp_prune',
-      'player_prune_1',
-      'Entrenador_Nuevo',
-      'nuevo@test.com',
-      'poke_prune_1',
-      JSON.stringify({ species: 'magikarp', name: 'Magikarp', nickname: 'NewKarp', total_ivs: 180 }),
-      '2026-08-26T12:00:00Z'
-    ]);
+    `,
+      [
+        'entry_prune_1',
+        'hora_magikarp_prune',
+        'player_prune_1',
+        'Entrenador_Nuevo',
+        'nuevo@test.com',
+        'poke_prune_1',
+        JSON.stringify({
+          species: 'magikarp',
+          name: 'Magikarp',
+          nickname: 'NewKarp',
+          total_ivs: 180
+        }),
+        '2026-08-26T12:00:00Z'
+      ]
+    );
 
     await emulateAwardEventAutomated(mockSqliteDb, { target_event_id: 'hora_magikarp_prune' });
 
     // Verify competition_results is pruned down to MAX_CAP (100)
     const postCountRows = await queryLocal('SELECT COUNT(*) as cnt FROM competition_results');
     const postCount = (postCountRows[0] as { cnt: number }).cnt;
-    assert.strictEqual(postCount, MAX_CAP, 'Should prune database to exactly 100 competition_results');
+    assert.strictEqual(
+      postCount,
+      MAX_CAP,
+      'Should prune database to exactly 100 competition_results'
+    );
 
     // Verify oldest 6 entries (history_result_001 to history_result_006) were deleted
-    const oldestDeleted = await queryLocal('SELECT id FROM competition_results WHERE id = ?', ['history_result_001']);
+    const oldestDeleted = await queryLocal('SELECT id FROM competition_results WHERE id = ?', [
+      'history_result_001'
+    ]);
     assert.strictEqual(oldestDeleted.length, 0, 'Oldest results must be purged from database');
 
     // Verify newest entry exists
-    const newestSaved = await queryLocal('SELECT id FROM competition_results WHERE event_id = ?', ['hora_magikarp_prune']);
+    const newestSaved = await queryLocal('SELECT id FROM competition_results WHERE event_id = ?', [
+      'hora_magikarp_prune'
+    ]);
     assert.strictEqual(newestSaved.length, 1, 'Newest result must be preserved');
   });
 });

@@ -1,23 +1,27 @@
-import { NATURE_DATA, NATURES } from '@/data/battle/natures'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { calculateTotalBaseStats } from '@/logic/pokemon/statsMath'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
-import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
-import { ABILITY_TRANSLATIONS_ES } from '@/data/battle/abilities'
-import { isEnabledPokemonId } from '@/data/system/constants'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { PokemonType } from '@/data/battle/types'
-import type { ItemId } from '@/data/inventory/items'
-import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { PokedexStatus } from '@/types/pokemon/pokemon'
+import { NATURE_DATA, NATURES } from '@/data/battle/natures';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { calculateTotalBaseStats } from '@/logic/pokemon/statsMath';
+import {
+  getMechanicalWeather,
+  WEATHER_UI_METADATA,
+  WEATHER_VISUAL_METADATA
+} from '@/logic/weather/weatherRegistry';
+import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
+import { ABILITY_TRANSLATIONS_ES } from '@/data/battle/abilities';
+import { isEnabledPokemonId } from '@/data/system/constants';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { PokemonType } from '@/data/battle/types';
+import type { ItemId } from '@/data/inventory/items';
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PokedexStatus } from '@/types/pokemon/pokemon';
 import {
   REPEL_ENCOUNTER_RATE_MODIFIER,
   SUPER_REPEL_ENCOUNTER_RATE_MODIFIER,
   MAX_REPEL_ENCOUNTER_RATE_MODIFIER,
   SUPER_ROD_SPAWN_BUDGET,
   STANDARD_ROD_SPAWN_BUDGET,
-  DEFAULT_FISHING_RATE_WEIGHT,
-} from '@/logic/constants/encounters.ts'
+  DEFAULT_FISHING_RATE_WEIGHT
+} from '@/logic/constants/encounters.ts';
 
 const TRAVEL_INCENSE_ITEM_IDS = [
   'incensefire',
@@ -25,13 +29,14 @@ const TRAVEL_INCENSE_ITEM_IDS = [
   'incensegrass',
   'incensenormal',
   'incenseghost',
-  'incensepsychic',
-] as const satisfies readonly ItemId[]
+  'incensepsychic'
+] as const satisfies readonly ItemId[];
 
-export type TravelIncenseItemId = (typeof TRAVEL_INCENSE_ITEM_IDS)[number]
+export type TravelIncenseItemId = (typeof TRAVEL_INCENSE_ITEM_IDS)[number];
 
-const SPAWN_PERCENTAGE_DIFF_THRESHOLD_PCT = 0.05
-const LUCKY_EGG_EXP_MULTIPLIER = 1.5 as const;
+import { LUCKY_EGG_EXP_MULTIPLIER } from '@/logic/constants/gameplay.ts';
+
+const SPAWN_PERCENTAGE_DIFF_THRESHOLD_PCT = 0.05;
 
 const TRAVEL_BUFF_ITEM_IDS = [
   'repel',
@@ -40,10 +45,10 @@ const TRAVEL_BUFF_ITEM_IDS = [
   'luckyegg',
   'amuletcoin',
   'ticketshiny',
-  ...TRAVEL_INCENSE_ITEM_IDS,
-] as const satisfies readonly ItemId[]
+  ...TRAVEL_INCENSE_ITEM_IDS
+] as const satisfies readonly ItemId[];
 
-export type TravelBuffItemId = (typeof TRAVEL_BUFF_ITEM_IDS)[number]
+export type TravelBuffItemId = (typeof TRAVEL_BUFF_ITEM_IDS)[number];
 
 export const TRAVEL_INCENSE_TYPES: Record<TravelIncenseItemId, PokemonType> = {
   incensefire: 'fire',
@@ -51,83 +56,85 @@ export const TRAVEL_INCENSE_TYPES: Record<TravelIncenseItemId, PokemonType> = {
   incensegrass: 'grass',
   incensenormal: 'normal',
   incenseghost: 'ghost',
-  incensepsychic: 'psychic',
+  incensepsychic: 'psychic'
 };
 
-export const TRAVEL_BUFF_ITEM_IDS_SET: ReadonlySet<string> = new Set(TRAVEL_BUFF_ITEM_IDS)
-export const TRAVEL_INCENSE_ITEM_IDS_SET: ReadonlySet<string> = new Set(TRAVEL_INCENSE_ITEM_IDS)
+export const TRAVEL_BUFF_ITEM_IDS_SET: ReadonlySet<string> = new Set(TRAVEL_BUFF_ITEM_IDS);
+export const TRAVEL_INCENSE_ITEM_IDS_SET: ReadonlySet<string> = new Set(TRAVEL_INCENSE_ITEM_IDS);
 
 export function isTravelBuffItemId(value: ItemId): value is TravelBuffItemId {
-  return TRAVEL_BUFF_ITEM_IDS_SET.has(value)
+  return TRAVEL_BUFF_ITEM_IDS_SET.has(value);
 }
 
 export function isTravelIncenseItemId(value: TravelBuffItemId): value is TravelIncenseItemId {
-  return TRAVEL_INCENSE_ITEM_IDS_SET.has(value)
+  return TRAVEL_INCENSE_ITEM_IDS_SET.has(value);
 }
 
-
 export interface SelectableSpeciesOption {
-  id: PokemonSpeciesId
-  name: string
-  icon: string
+  id: PokemonSpeciesId;
+  name: string;
+  icon: string;
 }
 
 export function getSelectableSpecies(bypassWhitelist = false): SelectableSpeciesOption[] {
-  const db = pokemonDataProvider.getPokemonDb()
+  const db = pokemonDataProvider.getPokemonDb();
   return Object.keys(db)
-    .filter((id): id is PokemonSpeciesId => isPokemonSpeciesId(id) && (bypassWhitelist || isEnabledPokemonId(id)))
-    .map(id => ({
+    .filter(
+      (id): id is PokemonSpeciesId =>
+        isPokemonSpeciesId(id) && (bypassWhitelist || isEnabledPokemonId(id))
+    )
+    .map((id) => ({
       id,
       name: db[id]?.name ?? id, // domain-ok: UI text display localization string
       icon: pokemonDataProvider.getSpriteUrl(id)
-    }))
+    }));
 }
 
 export function getSelectableNatures() {
-  return NATURES.map(n => ({ id: n, name: NATURE_DATA[n].name }))
+  return NATURES.map((n) => ({ id: n, name: NATURE_DATA[n].name }));
 }
 
 export function getSelectableAbilities() {
   return Object.entries(ABILITY_TRANSLATIONS_ES).map(([id, data]) => ({
     id,
     name: data.name
-  }))
+  }));
 }
-
 
 interface VisibilityResult {
-  isSeen: boolean
-  isCaught: boolean
+  isSeen: boolean;
+  isCaught: boolean;
 }
-
 
 export function translateWeather(w: string): string {
-  const visual = WEATHER_VISUAL_METADATA[w]
-  if (visual) return visual.label
-  const mech = getMechanicalWeather(w)
-  return WEATHER_UI_METADATA[mech]?.label || w
+  const visual = WEATHER_VISUAL_METADATA[w];
+  if (visual) return visual.label;
+  const mech = getMechanicalWeather(w);
+  return WEATHER_UI_METADATA[mech]?.label || w;
 }
 
-export function calculateActiveTravelModifiers(items: ReadonlySet<TravelBuffItemId> | readonly TravelBuffItemId[]) {
-  const itemSet = items instanceof Set ? items : new Set(items)
-  let encounterRateMod = 0
-  let expMultiplier = 1.0
-  let moneyMultiplier = 1.0
-  let shinyChanceMod = 1.0
-  let typeFocus: PokemonType | null = null
+export function calculateActiveTravelModifiers(
+  items: ReadonlySet<TravelBuffItemId> | readonly TravelBuffItemId[]
+) {
+  const itemSet = items instanceof Set ? items : new Set(items);
+  let encounterRateMod = 0;
+  let expMultiplier = 1.0;
+  let moneyMultiplier = 1.0;
+  let shinyChanceMod = 1.0;
+  let typeFocus: PokemonType | null = null;
 
-  if (itemSet.has('repel')) encounterRateMod = REPEL_ENCOUNTER_RATE_MODIFIER
-  else if (itemSet.has('superrepel')) encounterRateMod = SUPER_REPEL_ENCOUNTER_RATE_MODIFIER
-  else if (itemSet.has('maxrepel')) encounterRateMod = MAX_REPEL_ENCOUNTER_RATE_MODIFIER
+  if (itemSet.has('repel')) encounterRateMod = REPEL_ENCOUNTER_RATE_MODIFIER;
+  else if (itemSet.has('superrepel')) encounterRateMod = SUPER_REPEL_ENCOUNTER_RATE_MODIFIER;
+  else if (itemSet.has('maxrepel')) encounterRateMod = MAX_REPEL_ENCOUNTER_RATE_MODIFIER;
 
-  if (itemSet.has('luckyegg')) expMultiplier = LUCKY_EGG_EXP_MULTIPLIER
-  if (itemSet.has('amuletcoin')) moneyMultiplier = 2.0
-  if (itemSet.has('ticketshiny')) shinyChanceMod = 2.0
+  if (itemSet.has('luckyegg')) expMultiplier = LUCKY_EGG_EXP_MULTIPLIER;
+  if (itemSet.has('amuletcoin')) moneyMultiplier = 2.0;
+  if (itemSet.has('ticketshiny')) shinyChanceMod = 2.0;
 
   for (const incenseItemId of TRAVEL_INCENSE_ITEM_IDS) {
     if (itemSet.has(incenseItemId)) {
-      typeFocus = TRAVEL_INCENSE_TYPES[incenseItemId]
-      break
+      typeFocus = TRAVEL_INCENSE_TYPES[incenseItemId];
+      break;
     }
   }
 
@@ -137,9 +144,8 @@ export function calculateActiveTravelModifiers(items: ReadonlySet<TravelBuffItem
     moneyMultiplier,
     shinyChanceMod,
     typeFocus
-  }
+  };
 }
-
 
 function getPokedexVisibility(
   id: string,
@@ -147,46 +153,46 @@ function getPokedexVisibility(
   seenPokedex: ReadonlySet<string> | readonly string[],
   caughtPokedex: ReadonlySet<string> | readonly string[]
 ): VisibilityResult {
-  const hasSeen = 'has' in seenPokedex ? seenPokedex.has(id) : seenPokedex.includes(id)
-  const hasCaught = 'has' in caughtPokedex ? caughtPokedex.has(id) : caughtPokedex.includes(id)
-  let isSeen = hasSeen || hasCaught
-  let isCaught = hasCaught
+  const hasSeen = 'has' in seenPokedex ? seenPokedex.has(id) : seenPokedex.includes(id);
+  const hasCaught = 'has' in caughtPokedex ? caughtPokedex.has(id) : caughtPokedex.includes(id);
+  let isSeen = hasSeen || hasCaught;
+  let isCaught = hasCaught;
 
   if (debugPokedexMode === 'none') {
-    isSeen = false
-    isCaught = false
+    isSeen = false;
+    isCaught = false;
   } else if (debugPokedexMode === 'caught') {
-    isSeen = true
-    isCaught = true
+    isSeen = true;
+    isCaught = true;
   } else if (debugPokedexMode === 'seen') {
-    isSeen = true
+    isSeen = true;
   }
 
-  return { isSeen, isCaught }
+  return { isSeen, isCaught };
 }
 
 function getPokemonBasicData(id: string, isSeen: boolean) {
-  const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-  const name = isSeen ? (data?.name ?? id.toUpperCase()) : 'Desconocido' // text-ok: UI text display localization string
-  const types = data ? ([data.type, data.type2].filter((t): t is PokemonType => Boolean(t))) : []
-  const hp = data?.hp || 0
-  const atk = data?.atk || 0
-  const def = data?.def || 0
-  const spa = data?.spa || 0
-  const spd = data?.spd || 0
-  const spe = data?.spe || 0
-  const totalStats = calculateTotalBaseStats(data)
+  const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null;
+  const name = isSeen ? (data?.name ?? id.toUpperCase()) : 'Desconocido'; // text-ok: UI text display localization string
+  const types = data ? [data.type, data.type2].filter((t): t is PokemonType => Boolean(t)) : [];
+  const hp = data?.hp || 0;
+  const atk = data?.atk || 0;
+  const def = data?.def || 0;
+  const spa = data?.spa || 0;
+  const spd = data?.spd || 0;
+  const spe = data?.spe || 0;
+  const totalStats = calculateTotalBaseStats(data);
 
-  return { name, types, hp, atk, def, spa, spd, spe, totalStats }
+  return { name, types, hp, atk, def, spa, spd, spe, totalStats };
 }
 
 export interface SpawnStatusFlags {
-  isVisitor: boolean
-  isExclusive: boolean
-  isBlocked: boolean
-  isInCurrentCycle: boolean
-  isBuffed: boolean
-  isDebuffed: boolean
+  isVisitor: boolean;
+  isExclusive: boolean;
+  isBlocked: boolean;
+  isInCurrentCycle: boolean;
+  isBuffed: boolean;
+  isDebuffed: boolean;
 }
 
 export function getSpawnStatus({
@@ -197,166 +203,194 @@ export function getSpawnStatus({
   isBuffed,
   isDebuffed
 }: SpawnStatusFlags) {
-  let spawnType = 'Común'
-  let statusClass = 'common'
+  let spawnType = 'Común';
+  let statusClass = 'common';
   if (isVisitor) {
-    spawnType = 'Visitante'
-    statusClass = 'visitor'
+    spawnType = 'Visitante';
+    statusClass = 'visitor';
   } else if (isExclusive) {
-    spawnType = 'Exclusivo'
-    statusClass = 'exclusive'
+    spawnType = 'Exclusivo';
+    statusClass = 'exclusive';
   } else if (isBlocked) {
-    spawnType = 'Bloqueado'
-    statusClass = 'blocked'
+    spawnType = 'Bloqueado';
+    statusClass = 'blocked';
   } else if (!isInCurrentCycle) {
-    spawnType = 'Fuera de hora'
-    statusClass = 'blocked'
+    spawnType = 'Fuera de hora';
+    statusClass = 'blocked';
   } else if (isBuffed) {
-    spawnType = 'Potenciado'
-    statusClass = 'buffed'
+    spawnType = 'Potenciado';
+    statusClass = 'buffed';
   } else if (isDebuffed) {
-    spawnType = 'Debilitado'
-    statusClass = 'debuffed'
+    spawnType = 'Debilitado';
+    statusClass = 'debuffed';
   }
-  return { spawnType, statusClass }
+  return { spawnType, statusClass };
 }
 
 interface SimpleEventStore {
   globalMultipliers?: {
-    shiny?: number
-  }
-  getSpeciesBonuses: (id: PokemonSpeciesId) => { shiny?: number; rate?: number } | null | undefined
+    shiny?: number;
+  };
+  getSpeciesBonuses: (id: PokemonSpeciesId) => { shiny?: number; rate?: number } | null | undefined;
 }
 
-export function getSharedShinyEventLines(id: PokemonSpeciesId, eventStore: SimpleEventStore): string[] {
-  const lines: string[] = [] // no-domain: Non-domain utility collection or data structure
-  const globalShiny = eventStore.globalMultipliers?.shiny || 1
+export function getSharedShinyEventLines(
+  id: PokemonSpeciesId,
+  eventStore: SimpleEventStore
+): string[] {
+  const lines: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const globalShiny = eventStore.globalMultipliers?.shiny || 1;
   if (globalShiny !== 1) {
-    lines.push(`• Evento Shiny Global: x${globalShiny.toFixed(1)} de probabilidad Shiny`)
+    lines.push(`• Evento Shiny Global: x${globalShiny.toFixed(1)} de probabilidad Shiny`);
   }
-  const speciesBonuses = eventStore.getSpeciesBonuses(id)
+  const speciesBonuses = eventStore.getSpeciesBonuses(id);
   if (speciesBonuses && speciesBonuses.shiny && speciesBonuses.shiny !== 1) {
-    lines.push(`• Evento Shiny Especie: x${speciesBonuses.shiny.toFixed(1)} de probabilidad Shiny`)
+    lines.push(`• Evento Shiny Especie: x${speciesBonuses.shiny.toFixed(1)} de probabilidad Shiny`);
   }
-  return lines
+  return lines;
 }
 
 export interface SpawnTooltipData {
-  percentage: number
-  basePercentage: number
-  multiplier: number
-  spawnType: string
+  percentage: number;
+  basePercentage: number;
+  multiplier: number;
+  spawnType: string;
 }
 
 export function getSpawnCommonTooltipLines(poke: SpawnTooltipData, weather: string): string[] {
-  const lines: string[] = [] // no-domain: Non-domain utility collection or data structure
+  const lines: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (poke.multiplier !== 1) {
-    const change = poke.multiplier > 1 ? 'Aumento por Clima' : 'Reducción por Clima'
-    const label = translateWeather(weather)
-    lines.push(`• ${change}: x${poke.multiplier} (${label})`)
+    const change = poke.multiplier > 1 ? 'Aumento por Clima' : 'Reducción por Clima';
+    const label = translateWeather(weather);
+    lines.push(`• ${change}: x${poke.multiplier} (${label})`);
   }
   if (poke.spawnType === 'Visitante') {
-    const label = translateWeather(weather)
-    const diffVal = poke.percentage - poke.basePercentage
-    lines.push(`• Pokémon Visitante del clima (${label}): +${diffVal.toFixed(1)}% de probabilidad activa`)
+    const label = translateWeather(weather);
+    const diffVal = poke.percentage - poke.basePercentage;
+    lines.push(
+      `• Pokémon Visitante del clima (${label}): +${diffVal.toFixed(1)}% de probabilidad activa`
+    );
   } else if (poke.spawnType === 'Exclusivo') {
-    const label = translateWeather(weather)
-    const diffExclusive = poke.percentage - poke.basePercentage
-    lines.push(`• Pokémon Exclusivo del clima (${label}): +${diffExclusive.toFixed(1)}% de probabilidad activa`)
+    const label = translateWeather(weather);
+    const diffExclusive = poke.percentage - poke.basePercentage;
+    lines.push(
+      `• Pokémon Exclusivo del clima (${label}): +${diffExclusive.toFixed(1)}% de probabilidad activa`
+    );
 
-    const diffNet = poke.percentage - poke.basePercentage
+    const diffNet = poke.percentage - poke.basePercentage;
     if (Math.abs(diffNet) > SPAWN_PERCENTAGE_DIFF_THRESHOLD_PCT) {
-      const direction = diffNet > 0 ? 'Aumento' : 'Reducción' // spanish-ok: UI Spanish text localization label
-      const detail = diffNet > 0
-        ? 'redistribución proporcional al bloquearse, penalizarse o cambiar de hora otros Pokémon'
-        : 'redistribución proporcional al inyectarse nuevos Pokémon o potenciarse otros encuentros'
-      lines.push(`• ${direction} neto: ${diffNet > 0 ? '+' : ''}${diffNet.toFixed(1)}% (${detail})`)
+      const direction = diffNet > 0 ? 'Aumento' : 'Reducción'; // spanish-ok: UI Spanish text localization label
+      const detail =
+        diffNet > 0
+          ? 'redistribución proporcional al bloquearse, penalizarse o cambiar de hora otros Pokémon'
+          : 'redistribución proporcional al inyectarse nuevos Pokémon o potenciarse otros encuentros';
+      lines.push(
+        `• ${direction} neto: ${diffNet > 0 ? '+' : ''}${diffNet.toFixed(1)}% (${detail})`
+      );
     }
   }
-  return lines
+  return lines;
 }
 
 export function redistributeWeatherSpawns(
   rates: number[],
-  pool: string[],
+  pool: readonly PokemonSpeciesId[],
   weather: string,
-  exclusives: string[]
+  exclusives: readonly PokemonSpeciesId[]
 ): void {
-  if (!weather || weather === 'clear') return
+  if (!weather || weather === 'clear') return;
 
-  const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1)
-  const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1)
+  const visitorIndices = rates.map((r, i) => (r < 0 ? i : -1)).filter((i) => i !== -1);
+  const nativeIndices = rates.map((r, i) => (r >= 0 ? i : -1)).filter((i) => i !== -1);
 
-  nativeIndices.forEach(idx => {
-    const spId = pool[idx]
+  nativeIndices.forEach((idx) => {
+    const spId = pool[idx];
     if (spId) {
-      const isExclusive = exclusives.includes(spId)
+      const isExclusive = exclusives.includes(spId);
       if (!isExclusive) {
-        rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather)
+        rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather);
       }
     }
-  })
+  });
 
   if (visitorIndices.length > 0) {
-    const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0)
-    const visitorQuota = totalNativeWeight / 9
-    const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0)
-    visitorIndices.forEach(idx => {
-      const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1)
-      rates[idx] = visitorQuota * relativeWeight
-    })
+    const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0);
+    const visitorQuota = totalNativeWeight / 9;
+    const sumRelativeWeights = visitorIndices.reduce(
+      (sum, idx) => sum + Math.abs(rates[idx] || 0),
+      0
+    );
+    visitorIndices.forEach((idx) => {
+      const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1);
+      rates[idx] = visitorQuota * relativeWeight;
+    });
   }
 }
 
-export function applyFishingRodBudget(rates: number[], pool: string[], fishingRodType: string): void {
+export function applyFishingRodBudget(
+  rates: number[],
+  pool: string[],
+  fishingRodType: string
+): void {
   if ((fishingRodType === 'good' || fishingRodType === 'super') && pool.length > 0) {
-    let budget = fishingRodType === 'super' ? SUPER_ROD_SPAWN_BUDGET : STANDARD_ROD_SPAWN_BUDGET
-    const indexedPool = pool.map((id, index) => ({ id, index, rate: rates[index] || DEFAULT_FISHING_RATE_WEIGHT }))
-      .sort((a, b) => a.rate - b.rate)
+    let budget = fishingRodType === 'super' ? SUPER_ROD_SPAWN_BUDGET : STANDARD_ROD_SPAWN_BUDGET;
+    const indexedPool = pool
+      .map((id, index) => ({ id, index, rate: rates[index] || DEFAULT_FISHING_RATE_WEIGHT }))
+      .sort((a, b) => a.rate - b.rate);
 
     for (let i = 0; i < indexedPool.length; i++) {
-      const item = indexedPool[i]!
+      const item = indexedPool[i]!;
       if (i === indexedPool.length - 1) {
-        rates[item.index] = (rates[item.index] || DEFAULT_FISHING_RATE_WEIGHT) + budget
-        budget = 0
+        rates[item.index] = (rates[item.index] || DEFAULT_FISHING_RATE_WEIGHT) + budget;
+        budget = 0;
       } else {
-        const portion = Math.round(budget / 2)
-        rates[item.index] = (rates[item.index] || DEFAULT_FISHING_RATE_WEIGHT) + portion
-        budget -= portion
+        const portion = Math.round(budget / 2);
+        rates[item.index] = (rates[item.index] || DEFAULT_FISHING_RATE_WEIGHT) + portion;
+        budget -= portion;
       }
     }
   }
 }
 
 export interface RouteSpawnMappedItem {
-  id: PokemonSpeciesId
-  name: string
-  isSeen: boolean
-  isCaught: boolean
-  sprite: string
-  percentage: number
-  baseRate: number
-  basePercentage: number
-  diff: number
-  spawnType: string
-  statusClass: string
-  multiplier: number
-  types: string[]
-  hp: number
-  atk: number
-  def: number
-  spa: number
-  spd: number
-  spe: number
-  totalStats: number
-  isEventBoosted?: boolean
-  eventRateMult?: number
-  eventShinyMult?: number
+  id: PokemonSpeciesId;
+  name: string;
+  isSeen: boolean;
+  isCaught: boolean;
+  sprite: string;
+  percentage: number;
+  baseRate: number;
+  basePercentage: number;
+  diff: number;
+  spawnType: string;
+  statusClass: string;
+  multiplier: number;
+  types: string[];
+  hp: number;
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+  totalStats: number;
+  isEventBoosted?: boolean;
+  eventRateMult?: number;
+  eventShinyMult?: number;
 }
 
 function buildRouteSpawnItem(
   id: PokemonSpeciesId,
-  pData: { name: string; types: string[]; hp: number; atk: number; def: number; spa: number; spd: number; spe: number; totalStats: number },
+  pData: {
+    name: string;
+    types: string[];
+    hp: number;
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+    totalStats: number;
+  },
   isSeen: boolean,
   isCaught: boolean,
   sprite: string,
@@ -393,38 +427,47 @@ function buildRouteSpawnItem(
     isEventBoosted: eventMeta?.isEventBoosted,
     eventRateMult: eventMeta?.eventRateMult,
     eventShinyMult: eventMeta?.eventShinyMult
-  }
+  };
 }
 
-function resolveEventBoostedStatus(statusClass: string, speciesBonuses: { rate: number; shiny: number }) {
-  const isEventBoosted = speciesBonuses.rate > 1 || speciesBonuses.shiny > 1
+function resolveEventBoostedStatus(
+  statusClass: string,
+  speciesBonuses: { rate: number; shiny: number }
+) {
+  const isEventBoosted = speciesBonuses.rate > 1 || speciesBonuses.shiny > 1;
   return {
     isEventBoosted,
     finalStatusClass: isEventBoosted ? 'event-boosted' : statusClass,
     eventRateMult: speciesBonuses.rate,
     eventShinyMult: speciesBonuses.shiny
-  }
+  };
 }
 
 export interface BuildRouteSpawnParams {
-  id: PokemonSpeciesId
-  percentage: number
-  baseRate: number
-  basePercentage: number
-  diff: number
-  spawnType: string
-  statusClass: string
-  multiplier: number
-  debugPokedexMode: PokedexStatus | null
-  seenPokedex: readonly string[]
-  caughtPokedex: readonly string[]
-  speciesBonuses: { rate: number; shiny: number }
+  id: PokemonSpeciesId;
+  percentage: number;
+  baseRate: number;
+  basePercentage: number;
+  diff: number;
+  spawnType: string;
+  statusClass: string;
+  multiplier: number;
+  debugPokedexMode: PokedexStatus | null;
+  seenPokedex: readonly string[];
+  caughtPokedex: readonly string[];
+  speciesBonuses: { rate: number; shiny: number };
 }
 
 export function createPopulatedRouteSpawnItem(params: BuildRouteSpawnParams): RouteSpawnMappedItem {
-  const { isSeen, isCaught } = getPokedexVisibility(params.id, params.debugPokedexMode, params.seenPokedex, params.caughtPokedex)
-  const pData = getPokemonBasicData(params.id, isSeen)
-  const { isEventBoosted, finalStatusClass, eventRateMult, eventShinyMult } = resolveEventBoostedStatus(params.statusClass, params.speciesBonuses)
+  const { isSeen, isCaught } = getPokedexVisibility(
+    params.id,
+    params.debugPokedexMode,
+    params.seenPokedex,
+    params.caughtPokedex
+  );
+  const pData = getPokemonBasicData(params.id, isSeen);
+  const { isEventBoosted, finalStatusClass, eventRateMult, eventShinyMult } =
+    resolveEventBoostedStatus(params.statusClass, params.speciesBonuses);
 
   return buildRouteSpawnItem(
     params.id,
@@ -444,5 +487,5 @@ export function createPopulatedRouteSpawnItem(params: BuildRouteSpawnParams): Ro
       eventRateMult,
       eventShinyMult
     }
-  )
+  );
 }

@@ -43,7 +43,8 @@ class RocketPoliceSimWrapper extends BaseBattleSimulation {
       const modalStore = useModalStore();
 
       modalStore.closeAll();
-      gameStore.state.playerClass = p.playerClass as import('../../../src/data/player/playerClasses.ts').PlayerClassId;
+      gameStore.state.playerClass =
+        p.playerClass as import('../../../src/data/player/playerClasses.ts').PlayerClassId;
       gameStore.state.classLevel = p.classLevel;
       gameStore.state.classData = {
         captureStreak: 0,
@@ -64,7 +65,9 @@ class RocketPoliceSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Rocket Police Criminality and Difficulty E2E Simulation (Tier 3)', () => {
-  test('should display criminality bar progression with excess levels and reset to 0% after police resolution', async ({ page }) => {
+  test('should display criminality bar progression with excess levels and reset to 0% after police resolution', async ({
+    page
+  }) => {
     const sim = new RocketPoliceSimWrapper(page, 'TestRocketPolice');
     await sim.setup();
 
@@ -158,7 +161,8 @@ test.describe('Rocket Police Criminality and Difficulty E2E Simulation (Tier 3)'
     const battleData = await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const store = useBattleStore();
-      const state = (store.state as { value?: typeof store.state } | undefined)?.value || store.state;
+      const state =
+        (store.state as { value?: typeof store.state } | undefined)?.value || store.state;
       return {
         isBattleActive: Boolean(store.isBattleActive),
         archetype: state?.trainerArchetype,
@@ -199,6 +203,9 @@ test.describe('Rocket Police Criminality and Difficulty E2E Simulation (Tier 3)'
     });
     // Bail for level 10 at 200% criminality: 10^2 * 80 * 2.0 = 16,000. 50,000 - 16,000 = 34,000.
     // If Quick Steal triggered upon encounter (+10 criminality), criminality became 210%: 10^2 * 80 * 2.1 = 16,800. 50,000 - 16,800 = 33,200.
-    expect([EXPECTED_REMAINING_MONEY_AFTER_BAIL, EXPECTED_REMAINING_MONEY_AFTER_BAIL_WITH_STEAL]).toContain(finalMoney);
+    expect([
+      EXPECTED_REMAINING_MONEY_AFTER_BAIL,
+      EXPECTED_REMAINING_MONEY_AFTER_BAIL_WITH_STEAL
+    ]).toContain(finalMoney);
   });
 });

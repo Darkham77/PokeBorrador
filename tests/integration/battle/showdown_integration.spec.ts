@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
@@ -27,8 +27,24 @@ describe('Showdown Integration & Adapters', () => {
         nature: 'adamant',
         isShiny: false,
         moves: [
-          { id: 'tackle', name: 'Placaje', pp: 35, maxPp: 35, power: 40, type: 'normal', cat: 'physical' },
-          { id: 'growl', name: 'Gruñido', pp: 40, maxPp: 40, power: 0, type: 'normal', cat: 'status' }
+          {
+            id: 'tackle',
+            name: 'Placaje',
+            pp: 35,
+            maxPp: 35,
+            power: 40,
+            type: 'normal',
+            cat: 'physical'
+          },
+          {
+            id: 'growl',
+            name: 'Gruñido',
+            pp: 40,
+            maxPp: 40,
+            power: 0,
+            type: 'normal',
+            cat: 'status'
+          }
         ],
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
       } as unknown as Pokemon;
@@ -51,7 +67,15 @@ describe('Showdown Integration & Adapters', () => {
         ability: 'lightningrod',
         nature: 'hardy',
         moves: [
-          { id: 'stoneedge', name: 'Roca Afilada', pp: 5, maxPp: 5, power: 100, type: 'rock', cat: 'physical' }
+          {
+            id: 'stoneedge',
+            name: 'Roca Afilada',
+            pp: 5,
+            maxPp: 5,
+            power: 100,
+            type: 'rock',
+            cat: 'physical'
+          }
         ]
       } as unknown as Pokemon;
 
@@ -165,10 +189,7 @@ describe('Showdown Integration & Adapters', () => {
         addLog: () => {}
       } as unknown as BattleContext;
 
-      const turnLogs = [
-        '|move|p1a: Bulbasaur|Fly||[still]',
-        '|-prepare|p1a: Bulbasaur|Fly'
-      ];
+      const turnLogs = ['|move|p1a: Bulbasaur|Fly||[still]', '|-prepare|p1a: Bulbasaur|Fly'];
 
       for (const line of turnLogs) {
         await parseShowdownLogLine(mockContext, line, turnLogs);
@@ -186,9 +207,9 @@ describe('Showdown Integration & Adapters', () => {
         { uid: 'vaporeon-uid', name: 'Vaporeon' } as Pokemon,
         { uid: 'chispa-uid', name: 'Chispa' } as Pokemon
       ];
-      
+
       const playerTeamList = [...team];
-      const initialPlayerIdx = playerTeamList.findIndex(p => p.uid === initialPlayer.uid);
+      const initialPlayerIdx = playerTeamList.findIndex((p) => p.uid === initialPlayer.uid);
       if (initialPlayerIdx > 0) {
         const [p] = playerTeamList.splice(initialPlayerIdx, 1);
         if (p) playerTeamList.unshift(p);
@@ -208,7 +229,7 @@ describe('Showdown Integration & Adapters', () => {
         { uid: 'chispa-uid', hp: 0 } as Pokemon
       ];
 
-      const p1Hps = initialPlayerTeamOrder.map(uid => team.find(p => p?.uid === uid)?.hp ?? 0);
+      const p1Hps = initialPlayerTeamOrder.map((uid) => team.find((p) => p?.uid === uid)?.hp ?? 0);
       expect(p1Hps).toEqual([120, 30, 0]);
     });
   });
@@ -221,7 +242,7 @@ describe('Showdown Integration & Adapters', () => {
       const p1Team = [mapToShowdownSet(playerPoke)];
       const p2Team = [mapToShowdownSet(enemyPoke)];
 
-      const battle = new Battle({ 
+      const battle = new Battle({
         formatid: getShowdownFormatId()
       });
 
@@ -236,18 +257,18 @@ describe('Showdown Integration & Adapters', () => {
     it('debería reproducir el error de elección inválida cuando los HP están desincronizados por el orden de cambio (Dugtrio/Rhydon) y verificar que con el orden inicial funciona', () => {
       const rhydon = makePokemon('rhydon', 50)!;
       const dugtrio = makePokemon('dugtrio', 42)!;
-      
+
       const p1Team = [mapToShowdownSet(makePokemon('magikarp', 1)!)];
       const p2Team = [mapToShowdownSet(rhydon), mapToShowdownSet(dugtrio)];
 
       // Caso 1: Desincronizado (Bug)
       {
-        const battle = new Battle({ 
+        const battle = new Battle({
           formatid: getShowdownFormatId()
         });
         battle.setPlayer('p1', { name: 'Player', team: p1Team });
         battle.setPlayer('p2', { name: 'Giovanni', team: p2Team });
-        
+
         // Registrar el primer turno y hacer que p2 cambie a Dugtrio
         battle.choose('p1', 'move 1');
         battle.choose('p2', 'switch 2');
@@ -255,7 +276,9 @@ describe('Showdown Integration & Adapters', () => {
         const p2Hps = [0, 136]; // El bug: enviar HPs en orden inicial [Rhydon=0, Dugtrio=136] cuando mons está en orden cambiado
         const mons = battle.p2.pokemon;
         p2Hps.forEach((hp, index) => {
-          const pokemon = mons[index] as unknown as { hp: number; fainted: boolean; status: string } | undefined;
+          const pokemon = mons[index] as unknown as
+            | { hp: number; fainted: boolean; status: string }
+            | undefined;
           if (pokemon) {
             pokemon.hp = hp;
             if (hp <= 0) {
@@ -273,7 +296,7 @@ describe('Showdown Integration & Adapters', () => {
 
       // Caso 2: Sincronizado en orden inicial (Solución)
       {
-        const battle = new Battle({ 
+        const battle = new Battle({
           formatid: getShowdownFormatId()
         });
         battle.setPlayer('p1', { name: 'Player', team: p1Team });
@@ -286,7 +309,9 @@ describe('Showdown Integration & Adapters', () => {
         const p2Hps = [136, 0]; // La solución: enviar HPs en el orden actual/cambiado [Dugtrio=136, Rhydon=0]
         const mons = battle.p2.pokemon;
         p2Hps.forEach((hp, index) => {
-          const pokemon = mons[index] as unknown as { hp: number; fainted: boolean; status: string } | undefined;
+          const pokemon = mons[index] as unknown as
+            | { hp: number; fainted: boolean; status: string }
+            | undefined;
           if (pokemon) {
             pokemon.hp = hp;
             if (hp <= 0) {
@@ -312,13 +337,21 @@ describe('Showdown Integration & Adapters', () => {
       const dugtrio = makePokemon('dugtrio', 42)!;
       // Forzar que tenga terremoto (si es que no lo tiene)
       dugtrio.moves = [
-        { id: 'earthquake', name: 'Terremoto', pp: 10, maxPp: 10, power: 100, type: 'ground', cat: 'physical' }
+        {
+          id: 'earthquake',
+          name: 'Terremoto',
+          pp: 10,
+          maxPp: 10,
+          power: 100,
+          type: 'ground',
+          cat: 'physical'
+        }
       ] as unknown as import('@/types/pokemon/pokemon').Move[];
 
       const p1Team = [mapToShowdownSet(makePokemon('vaporeon', 50)!)];
       const p2Team = [mapToShowdownSet(dugtrio)];
 
-      const battle = new Battle({ 
+      const battle = new Battle({
         formatid: getShowdownFormatId()
       });
 
@@ -338,19 +371,50 @@ describe('Showdown Integration & Adapters', () => {
       try {
         const enemy = makePokemon('gengar', 50)!;
         enemy.moves = [
-          { id: 'shadowball', name: 'Bola Sombra', pp: 15, maxPp: 15, power: 80, type: 'ghost', cat: 'special' },
-          { id: 'sludgebomb', name: 'Bomba Lodo', pp: 10, maxPp: 10, power: 120, type: 'poison', cat: 'special' }
+          {
+            id: 'shadowball',
+            name: 'Bola Sombra',
+            pp: 15,
+            maxPp: 15,
+            power: 80,
+            type: 'ghost',
+            cat: 'special'
+          },
+          {
+            id: 'sludgebomb',
+            name: 'Bomba Lodo',
+            pp: 10,
+            maxPp: 10,
+            power: 120,
+            type: 'poison',
+            cat: 'special'
+          }
         ] as unknown as import('@/types/pokemon/pokemon').Move[];
 
         const player = makePokemon('vaporeon', 50)!;
-        const stages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 } as BattleStages;
+        const stages = {
+          atk: 0,
+          def: 0,
+          spa: 0,
+          spd: 0,
+          spe: 0,
+          accuracy: 0,
+          evasion: 0,
+          reflect: 0,
+          lightScreen: 0,
+          safeguard: 0,
+          mist: 0,
+          spikes: 0
+        } as BattleStages;
 
         // Caso 1: Sin desactivar, puede elegir Bomba Lodo (potencia 90 > Bola Sombra 80)
         const move1 = decideEnemyMove(enemy, player, stages, false);
-        expect(move1?.id).toBe('sludgebomb'); 
+        expect(move1?.id).toBe('sludgebomb');
 
         // Caso 2: Bomba Lodo desactivada, debe elegir Bola Sombra
-        enemy.disabledMove = { id: 'sludgebomb' } as unknown as import('@/types/pokemon/pokemon').Move;
+        enemy.disabledMove = {
+          id: 'sludgebomb'
+        } as unknown as import('@/types/pokemon/pokemon').Move;
         const move2 = decideEnemyMove(enemy, player, stages, false);
         expect(move2?.id).toBe('shadowball');
       } finally {

@@ -5,7 +5,11 @@ function handleCombatResultFeedback(ctx: SBCtx): boolean {
   switch (type) {
     case '-crit': {
       const target = getPoke(parts[2] || '');
-      store.addLog(target ? `¡Golpe crítico contra ${target.name}!` : '¡Golpe crítico!', 'log-info', target || '⚡');
+      store.addLog(
+        target ? `¡Golpe crítico contra ${target.name}!` : '¡Golpe crítico!',
+        'log-info',
+        target || '⚡'
+      );
       return true;
     }
     case '-supereffective':
@@ -44,7 +48,9 @@ function handleMessageFeedback(ctx: SBCtx): void {
 function handleTargetEventFeedback(ctx: SBCtx): void {
   const target = ctx.getPoke(ctx.parts[2] || '');
   if (ctx.type === '-notarget') {
-    const text = target ? `¡No hay objetivo para el movimiento de ${target.name}!` : '¡No hay objetivo válido!';
+    const text = target
+      ? `¡No hay objetivo para el movimiento de ${target.name}!`
+      : '¡No hay objetivo válido!';
     ctx.store.addLog(text, 'log-info', target || undefined);
     return;
   }

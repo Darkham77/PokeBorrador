@@ -8,7 +8,10 @@ import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts'
 
 describe('Urban Boundary Curbs & Asset Integrity (Phase 2)', () => {
   it('guarantees poke_fence_picket.png has 100% alpha transparency (no baked-in green background)', async () => {
-    const assetPath = path.resolve(process.cwd(), 'test_aventura/assets/canon/props/poke_fence_picket.png');
+    const assetPath = path.resolve(
+      process.cwd(),
+      'test_aventura/assets/canon/props/poke_fence_picket.png'
+    );
     const { data, info } = await sharp(assetPath).raw().toBuffer({ resolveWithObject: true });
     expect(info.channels).toBe(4);
     // Top-left pixel [0, 0] must be completely transparent (alpha = 0)

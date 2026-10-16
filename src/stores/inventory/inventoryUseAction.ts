@@ -7,7 +7,7 @@ import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { consumeItem } from '@/stores/inventory/inventoryHelpers.ts';
 import type { Pokemon, Move, PokemonStorageLocation } from '@/types/pokemon/pokemon';
-import type { ItemEffectResult } from '@/types/inventory/items';
+import type { ItemEffectResult, ItemEffectResultType } from '@/types/inventory/items';
 import { useAudioStore } from '@/stores/audio.ts';
 import type { GameState } from '@/types/system/game';
 import { requireItemId, ITEMS_BY_ID, type ItemId } from '@/data/inventory/items';
@@ -15,9 +15,20 @@ import { useErrorStore } from '@/stores/errorStore.ts';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 const HEAL_ITEM_IDS = [
-  'potion', 'superpotion', 'hyperpotion', 'maxpotion',
-  'revive', 'revivemax', 'antidote', 'burnheal',
-  'paralyzeheal', 'awakening', 'iceheal', 'fullheal', 'sodapop', 'lemonade'
+  'potion',
+  'superpotion',
+  'hyperpotion',
+  'maxpotion',
+  'revive',
+  'revivemax',
+  'antidote',
+  'burnheal',
+  'paralyzeheal',
+  'awakening',
+  'iceheal',
+  'fullheal',
+  'sodapop',
+  'lemonade'
 ] as const satisfies readonly ItemId[];
 type HealItemId = (typeof HEAL_ITEM_IDS)[number];
 
@@ -37,14 +48,19 @@ interface PostEffectParams {
   gameStore: ReturnType<typeof useGameStore>;
 }
 
-const POST_EFFECT_HANDLERS: Record<string, (p: PostEffectParams) => boolean> = {
+const POST_EFFECT_HANDLERS: Partial<
+  Record<ItemEffectResultType, (p: PostEffectParams) => boolean>
+> = {
   relearner: ({ pokemon, uiStore }) => {
     uiStore.activePokemonForRelearner = pokemon;
     useModalStore().open('MoveRelearner');
     return false; // Handled by MoveRelearnerModal
   },
   evolution: ({ result, pokemon, itemId, uiStore }) => {
-    if (!result.targetId) throw new Error(`[executeUseItem] Evolution item ${itemId} did not provide a target species id.`);
+    if (!result.targetId)
+      throw new Error(
+        `[executeUseItem] Evolution item ${itemId} did not provide a target species id.`
+      );
     uiStore.startEvolution(pokemon, requirePokemonSpeciesId(result.targetId), itemId);
     return true;
   },
@@ -53,15 +69,21 @@ const POST_EFFECT_HANDLERS: Record<string, (p: PostEffectParams) => boolean> = {
     return true;
   },
   learn_move: ({ result, pokemon, itemId, uiStore, gameStore }) => {
-    if (!result.moveName) throw new Error(`[executeUseItem] Learn-move item ${itemId} did not provide a canonical move id.`);
+    if (!result.moveName)
+      throw new Error(
+        `[executeUseItem] Learn-move item ${itemId} did not provide a canonical move id.`
+      );
     const moveId = result.moveName;
     const moveData = pokemonDataProvider.getMoveData(moveId);
-    if (!moveData) throw new Error(`[executeUseItem] No se encontró información en la base de datos para el movimiento: ${moveId}`);
-    const moveObj = { 
+    if (!moveData)
+      throw new Error(
+        `[executeUseItem] No se encontró información en la base de datos para el movimiento: ${moveId}`
+      );
+    const moveObj = {
       id: moveId,
-      name: moveData.name, 
-      pp: moveData.pp, 
-      maxPP: moveData.pp 
+      name: moveData.name,
+      pp: moveData.pp,
+      maxPP: moveData.pp
     };
 
     if (pokemon.moves.length < 4) {
@@ -69,42 +91,56 @@ const POST_EFFECT_HANDLERS: Record<string, (p: PostEffectParams) => boolean> = {
       uiStore.notify(`¡${pokemon.name} aprendió ${moveData.name}!`, '📖');
       return true;
     }
-    uiStore.addToLearnQueue({ 
-      pokemon, 
+    uiStore.addToLearnQueue({
+      pokemon,
       move: moveObj as Move,
       onComplete: () => {
         consumeItem(gameStore, itemId);
-        gameStore.save(false);
+        void gameStore.save(false);
       }
     });
     return false;
   },
   nature_patch: ({ context, index, uiStore }) => {
-    uiStore.activePokemonForNature = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
+    uiStore.activePokemonForNature =
+      context !== null && index !== null
+        ? { context: context as PokemonStorageLocation, index }
+        : null;
     useModalStore().open('NaturePatch');
     return false; // Handled by NaturePatchModal on confirm
   },
   pp_up: ({ context, index, itemId, uiStore }) => {
-    uiStore.activePokemonForPPUp = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
+    uiStore.activePokemonForPPUp =
+      context !== null && index !== null
+        ? { context: context as PokemonStorageLocation, index }
+        : null;
     uiStore.activeItemForPPUp = itemId;
     useModalStore().open('PPUp');
     return false; // Handled by PPUpModal on confirm
   },
   ppmax: ({ context, index, itemId, uiStore }) => {
-    uiStore.activePokemonForPPUp = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
+    uiStore.activePokemonForPPUp =
+      context !== null && index !== null
+        ? { context: context as PokemonStorageLocation, index }
+        : null;
     uiStore.activeItemForPPUp = itemId;
     useModalStore().open('PPUp');
     return false; // Handled by PPUpModal on confirm
   },
   ability_pill: ({ context, index, uiStore }) => {
-    uiStore.activePokemonForAbility = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
+    uiStore.activePokemonForAbility =
+      context !== null && index !== null
+        ? { context: context as PokemonStorageLocation, index }
+        : null;
     useModalStore().open('AbilityPill');
     return false; // Handled by AbilityPillModal on confirm
   }
 };
 
 function applyPostItemEffect(params: PostEffectParams): boolean {
-  const handler = params.result.resultType ? POST_EFFECT_HANDLERS[params.result.resultType] : undefined;
+  const handler = params.result.resultType
+    ? POST_EFFECT_HANDLERS[params.result.resultType]
+    : undefined;
   if (handler) {
     return handler(params);
   }
@@ -156,7 +192,7 @@ function handleGlobalItemUsage(
   const result = (effectFn as (p: GameState) => ItemEffectResult)(gameStore.state);
   if (result.success) {
     consumeItem(gameStore, itemId);
-    gameStore.save(false);
+    void gameStore.save(false);
   }
   return result;
 }
@@ -192,7 +228,7 @@ function applyPokemonItemUsage(params: {
 
   if (shouldConsumeImmediately) {
     consumeItem(gameStore, itemId);
-    gameStore.save(false);
+    void gameStore.save(false);
   }
 
   return result;
@@ -201,9 +237,9 @@ function applyPokemonItemUsage(params: {
 function playItemAudio(itemId: ItemId): void {
   const audioStore = useAudioStore();
   if (isHealItemId(itemId)) {
-    audioStore.play('heal');
+    void audioStore.play('heal');
   } else {
-    audioStore.play('item');
+    void audioStore.play('item');
   }
 }
 
@@ -218,7 +254,10 @@ export function executeUseItem(
     const itemId = validateItemExists(itemName);
     const dbItem = ITEMS_BY_ID[itemId];
 
-    const battleResult = handleBattleItemUsage(itemId, context, index, { isBattleActive: uiStore.isBattleActive, nonCombat: dbItem?.nonCombat });
+    const battleResult = handleBattleItemUsage(itemId, context, index, {
+      isBattleActive: uiStore.isBattleActive,
+      nonCombat: dbItem?.nonCombat
+    });
     if (battleResult) return battleResult;
 
     const globalResult = handleGlobalItemUsage(itemId, gameStore);
@@ -235,7 +274,10 @@ export function executeUseItem(
     return result;
   } catch (error) {
     const errorStore = useErrorStore();
-    errorStore.setError(error as Error, { type: 'Item Usage Error', source: `executeUseItem(${itemName})` });
+    errorStore.setError(error as Error, {
+      type: 'Item Usage Error',
+      source: `executeUseItem(${itemName})`
+    });
     return { success: false, message: '¡Ocurrió un error al usar el objeto!' };
   }
 }

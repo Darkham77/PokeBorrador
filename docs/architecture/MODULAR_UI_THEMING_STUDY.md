@@ -36,14 +36,14 @@ Layer 6: Co-located Component Styles (117 files)
 
 ### Critical Findings & Fragmentation Inventory
 
-| Fragmented Area | Current Finding | Exact Files Affected | Generalization & Polymorphic Fix |
-| :--- | :--- | :--- | :--- |
-| **Inputs & Selects** | **11 fragmented input classes**, each declaring redundant `border-radius: 8px-12px`, backgrounds, and focus borders. | `_login.scss` (`.auth-input`), `BagView.vue` (`.search-input`), `PokedexControls.vue` (`.pdex-search-input`), `BoxFilters.vue` (`.box-search-input`), `SocialRankingsTheater.vue` (`.pv-retro-input`), `TradeSidePanel.vue` (`.money-input`), `PromptModal.vue` (`.prompt-input`), `RenameModal.vue` (`.vicio-input`), `ShopItemCard.vue` (`.qty-input`), `PokemonSelectionFilters.vue` (`.ps-search-input`), `_buttons.scss` (`@mixin premium-search-input`). | Generalize into universal token `--ui-control-clip` and apply globally to `input, select, textarea` in `_base.scss`. Single source of truth. |
-| **Hardcoded Curvature** | **~390 instances of hardcoded `border-radius: Xpx`** throughout cards, pills, modals, and HUD anchors. | Scattered across all 117 co-located `.styles.scss` files and global component sheets. | Replace with CSS custom property `--ui-panel-radius` / `--ui-panel-clip`. In GBA mode, radius is 0 and clip-path polygon creates the 4px stepped stair. |
-| **Combat Status HUD (The Wingull Box)** | Currently uses `.glass-card` with modern smooth `border-radius: 18px` and blurred pseudo-elements. | `src/components/battle/BattleInfoCard.styles.scss` (lines 4-37). | Direct target for the GBA Wingull box: 4px stepped 3-level corners, light bevel on top/left, and 45° cast shadow. |
-| **HP & Resource Bars** | Pill bars hardcoding `border-radius: 4px` with smooth CSS widths. | `src/components/battle/HPBar.vue` (`.hp-bar-outer`), `_battle-hud.scss`, `BoxPokemonCard.vue`. | Apply `--ui-control-clip` (2-step 4px corner) to outer bar; discrete pixel steps on inner fill. |
-| **Modals & Windows** | Over 25 game modals route through `BaseModal.vue` and `_base-modal.scss`, where `.corners-all` hardcodes `border-radius: 24px`. | `BaseModal.vue`, `_base-modal.scss`, all modal instances (`InventoryModal`, `RankingModal`, `TrainerProfileModal`, etc.). | Modify `_base-modal.scss` to read `var(--ui-panel-clip)`. **Instantly transforms 100% of modals in the game without touching individual modal files.** |
-| **Buttons & Triggers** | `_buttons.scss` (684 lines) defines `btn-vicio-*` variants hardcoding `$radius: 15px / 8px / 4px`. | `_buttons.scss`, `_login.scss`, `BattleArenaControls.vue`, and 40+ component views. | Hook `@mixin btn-vicio-size` into `var(--ui-btn-clip)`. Every button in the game inherits the 4px stepped GBA silhouette. |
+| Fragmented Area                         | Current Finding                                                                                                                 | Exact Files Affected                                                                                                                                                                                                                                                                                                                                                                                                                                           | Generalization & Polymorphic Fix                                                                                                                        |
+| :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Inputs & Selects**                    | **11 fragmented input classes**, each declaring redundant `border-radius: 8px-12px`, backgrounds, and focus borders.            | `_login.scss` (`.auth-input`), `BagView.vue` (`.search-input`), `PokedexControls.vue` (`.pdex-search-input`), `BoxFilters.vue` (`.box-search-input`), `SocialRankingsTheater.vue` (`.pv-retro-input`), `TradeSidePanel.vue` (`.money-input`), `PromptModal.vue` (`.prompt-input`), `RenameModal.vue` (`.vicio-input`), `ShopItemCard.vue` (`.qty-input`), `PokemonSelectionFilters.vue` (`.ps-search-input`), `_buttons.scss` (`@mixin premium-search-input`). | Generalize into universal token `--ui-control-clip` and apply globally to `input, select, textarea` in `_base.scss`. Single source of truth.            |
+| **Hardcoded Curvature**                 | **~390 instances of hardcoded `border-radius: Xpx`** throughout cards, pills, modals, and HUD anchors.                          | Scattered across all 117 co-located `.styles.scss` files and global component sheets.                                                                                                                                                                                                                                                                                                                                                                          | Replace with CSS custom property `--ui-panel-radius` / `--ui-panel-clip`. In GBA mode, radius is 0 and clip-path polygon creates the 4px stepped stair. |
+| **Combat Status HUD (The Wingull Box)** | Currently uses `.glass-card` with modern smooth `border-radius: 18px` and blurred pseudo-elements.                              | `src/components/battle/BattleInfoCard.styles.scss` (lines 4-37).                                                                                                                                                                                                                                                                                                                                                                                               | Direct target for the GBA Wingull box: 4px stepped 3-level corners, light bevel on top/left, and 45° cast shadow.                                       |
+| **HP & Resource Bars**                  | Pill bars hardcoding `border-radius: 4px` with smooth CSS widths.                                                               | `src/components/battle/HPBar.vue` (`.hp-bar-outer`), `_battle-hud.scss`, `BoxPokemonCard.vue`.                                                                                                                                                                                                                                                                                                                                                                 | Apply `--ui-control-clip` (2-step 4px corner) to outer bar; discrete pixel steps on inner fill.                                                         |
+| **Modals & Windows**                    | Over 25 game modals route through `BaseModal.vue` and `_base-modal.scss`, where `.corners-all` hardcodes `border-radius: 24px`. | `BaseModal.vue`, `_base-modal.scss`, all modal instances (`InventoryModal`, `RankingModal`, `TrainerProfileModal`, etc.).                                                                                                                                                                                                                                                                                                                                      | Modify `_base-modal.scss` to read `var(--ui-panel-clip)`. **Instantly transforms 100% of modals in the game without touching individual modal files.**  |
+| **Buttons & Triggers**                  | `_buttons.scss` (684 lines) defines `btn-vicio-*` variants hardcoding `$radius: 15px / 8px / 4px`.                              | `_buttons.scss`, `_login.scss`, `BattleArenaControls.vue`, and 40+ component views.                                                                                                                                                                                                                                                                                                                                                                            | Hook `@mixin btn-vicio-size` into `var(--ui-btn-clip)`. Every button in the game inherits the 4px stepped GBA silhouette.                               |
 
 ---
 
@@ -57,7 +57,7 @@ The senior architectural approach recognizes that **80% of the game's UI is gove
 3. `src/styles/core/mixins/_buttons.scss` (The Master Button Mixin used across all buttons)
 4. `src/styles/components/_base-modal.scss` (The Master Modal Stylesheet governing all 25+ modals)
 
-+ **1 Global Rule** in `src/styles/core/_base.scss` binding native `input, select, textarea`.
+- **1 Global Rule** in `src/styles/core/_base.scss` binding native `input, select, textarea`.
 
 Refactoring these 4 master files automatically transforms over 80% of the entire game into the 4px GBA stepped pixel theme on day one. The remaining 20% consists of specialized battle widgets (`BattleInfoCard.styles.scss`, `HPBar.vue`) that receive dedicated retro styling.
 
@@ -112,16 +112,16 @@ Instead of treating every card, modal, input, and banner as a unique CSS snowfla
 
 CSS variables naturally follow lexical scope and DOM inheritance:
 
-+ When set on `:root` or `html[data-theme="..."]`, child components automatically inherit geometry, bevels, and shadows without passing Vue props or importing theme-specific SCSS files.
-+ Modifying `--px-scale: 4px` on the parent automatically re-calculates all polygon step coordinates for all nested components simultaneously through CSS `calc()`.
+- When set on `:root` or `html[data-theme="..."]`, child components automatically inherit geometry, bevels, and shadows without passing Vue props or importing theme-specific SCSS files.
+- Modifying `--px-scale: 4px` on the parent automatically re-calculates all polygon step coordinates for all nested components simultaneously through CSS `calc()`.
 
 ### Pillar 3: Polymorphism (Visual, Component & Motion)
 
-+ **Visual Polymorphism (CSS)**: A single class `.pv-panel` renders as a **4px stepped GBA box with dual-tone bevels and hard cast shadow** in the GBA theme, but renders as a **smooth 24px rounded card with Gaussian blur** in the Modern theme. The HTML DOM structure remains 100% identical.
-+ **Component Polymorphism (Vue)**: Generic wrapper components (`PVPanel`) accept an `as` prop (`div`, `section`, `form`, `dialog`) allowing them to assume any semantic HTML role while applying the current theme's visual skin.
-+ **Motion Polymorphism (GSAP)**: The animation registry provides theme-aware easing functions:
-  + `modern`: Smooth continuous tweens (`power3.out`, `sine.inOut`).
-  + `gba-wingull`: Quantized discrete tweens (`snap: { x: 4, y: 4 }` or `steps(4)`) for true retro movement fidelity.
+- **Visual Polymorphism (CSS)**: A single class `.pv-panel` renders as a **4px stepped GBA box with dual-tone bevels and hard cast shadow** in the GBA theme, but renders as a **smooth 24px rounded card with Gaussian blur** in the Modern theme. The HTML DOM structure remains 100% identical.
+- **Component Polymorphism (Vue)**: Generic wrapper components (`PVPanel`) accept an `as` prop (`div`, `section`, `form`, `dialog`) allowing them to assume any semantic HTML role while applying the current theme's visual skin.
+- **Motion Polymorphism (GSAP)**: The animation registry provides theme-aware easing functions:
+  - `modern`: Smooth continuous tweens (`power3.out`, `sine.inOut`).
+  - `gba-wingull`: Quantized discrete tweens (`snap: { x: 4, y: 4 }` or `steps(4)`) for true retro movement fidelity.
 
 ### Pillar 4: Modularization (Strict Layered Separation)
 
@@ -216,7 +216,7 @@ A true GBA battle box cannot be achieved with a single CSS border because it has
 ### Layer 2: GBA Wingull Theme (`src/styles/tokens/_theme-gba-wingull.scss`)
 
 ```scss
-[data-theme="gba-wingull"] {
+[data-theme='gba-wingull'] {
   --px-scale: 4px;
   $s: var(--px-scale);
 
@@ -299,7 +299,8 @@ A true GBA battle box cannot be achieved with a single CSS border because it has
 ### Layer 3: Modern Glassmorphic Theme (`src/styles/tokens/_theme-modern.scss`)
 
 ```scss
-[data-theme="modern"], :root {
+[data-theme='modern'],
+:root {
   --ui-panel-clip: none;
   --ui-control-clip: none;
   --ui-btn-clip: none;
@@ -335,16 +336,16 @@ Any card, modal, or panel in the game wraps its content in `<PVPanel>`. It handl
 <!-- src/components/ui/PVPanel.vue -->
 <script setup lang="ts">
 interface Props {
-  as?: string
-  castShadow?: boolean
-  customClass?: string
+  as?: string;
+  castShadow?: boolean;
+  customClass?: string;
 }
 
 withDefaults(defineProps<Props>(), {
   as: 'div',
   castShadow: true,
   customClass: ''
-})
+});
 </script>
 
 <template>
@@ -451,15 +452,15 @@ graph TD
 
 All buttons across Poké Vicio map to a strict matrix of 7 semantic intents:
 
-| Variant | Role / Intent | Background Token | Hard Shadow Token (GBA) | Text & Highlight |
-| :--- | :--- | :--- | :--- | :--- |
-| **`primary`** | Main action, login, battle start, submit. | `--ui-btn-primary-bg` (`#bf5af2` / `#ffd60a`) | `--ui-btn-primary-shadow` (`#6b21a8` / `#b45309`) | Contrast text + top inset highlight |
-| **`secondary`** | Neutral alternatives, dismiss, options. | `--ui-btn-secondary-bg` (`#334155`) | `--ui-btn-secondary-shadow` (`#0f172a`) | White text with dark outline |
-| **`success`** | Claim rewards, buy items, evolve Pokémon. | `--ui-btn-success-bg` (`#16a34a`) | `--ui-btn-success-shadow` (`#14532d`) | White text with dark outline |
-| **`danger`** | Discard, forfeit match, logout, reset. | `--ui-btn-danger-bg` (`#dc2626`) | `--ui-btn-danger-shadow` (`#7f1d1d`) | White text with dark outline |
-| **`warning`** | High-stakes trade, replace move, alert. | `--ui-btn-warning-bg` (`#d97706`) | `--ui-btn-warning-shadow` (`#78350f`) | Dark text with gold highlight |
-| **`info`** | Pokédex inspect, stats drawer, filters. | `--ui-btn-info-bg` (`#2563eb`) | `--ui-btn-info-shadow` (`#1e3a8a`) | White text with cyan highlight |
-| **`ghost`** | Sub-navigation, icon toggles, minimal HUD. | `transparent` (surface on hover) | `none` (1px virtual border) | Muted text, illuminates on hover |
+| Variant         | Role / Intent                              | Background Token                              | Hard Shadow Token (GBA)                           | Text & Highlight                    |
+| :-------------- | :----------------------------------------- | :-------------------------------------------- | :------------------------------------------------ | :---------------------------------- |
+| **`primary`**   | Main action, login, battle start, submit.  | `--ui-btn-primary-bg` (`#bf5af2` / `#ffd60a`) | `--ui-btn-primary-shadow` (`#6b21a8` / `#b45309`) | Contrast text + top inset highlight |
+| **`secondary`** | Neutral alternatives, dismiss, options.    | `--ui-btn-secondary-bg` (`#334155`)           | `--ui-btn-secondary-shadow` (`#0f172a`)           | White text with dark outline        |
+| **`success`**   | Claim rewards, buy items, evolve Pokémon.  | `--ui-btn-success-bg` (`#16a34a`)             | `--ui-btn-success-shadow` (`#14532d`)             | White text with dark outline        |
+| **`danger`**    | Discard, forfeit match, logout, reset.     | `--ui-btn-danger-bg` (`#dc2626`)              | `--ui-btn-danger-shadow` (`#7f1d1d`)              | White text with dark outline        |
+| **`warning`**   | High-stakes trade, replace move, alert.    | `--ui-btn-warning-bg` (`#d97706`)             | `--ui-btn-warning-shadow` (`#78350f`)             | Dark text with gold highlight       |
+| **`info`**      | Pokédex inspect, stats drawer, filters.    | `--ui-btn-info-bg` (`#2563eb`)                | `--ui-btn-info-shadow` (`#1e3a8a`)                | White text with cyan highlight      |
+| **`ghost`**     | Sub-navigation, icon toggles, minimal HUD. | `transparent` (surface on hover)              | `none` (1px virtual border)                       | Muted text, illuminates on hover    |
 
 ### 2. Parametric Size System (Scale Engine)
 
@@ -497,11 +498,13 @@ In Generation 3 cartridges and arcade cabinets, pressing a button physically pus
 
 ```scss
 @mixin pv-btn-tactile {
-  box-shadow: 
+  box-shadow:
     inset 0 var(--px-scale, 4px) 0 rgba(255, 255, 255, 0.35), // Top plastic bevel highlight
-    0 var(--btn-depth) 0 var(--btn-shadow-color);              // 3D extrusion block
+    0 var(--btn-depth) 0 var(--btn-shadow-color); // 3D extrusion block
 
-  transition: transform 0.08s cubic-bezier(0, 0, 0.2, 1), filter 0.1s;
+  transition:
+    transform 0.08s cubic-bezier(0, 0, 0.2, 1),
+    filter 0.1s;
 
   &:hover:not(:disabled) {
     filter: brightness(1.1);
@@ -510,8 +513,8 @@ In Generation 3 cartridges and arcade cabinets, pressing a button physically pus
   &:active:not(:disabled) {
     // Physical press: travels down by exactly the extrusion depth, shadow disappears
     transform: translateY(var(--btn-depth));
-    box-shadow: 
-      inset 0 var(--px-scale, 4px) 0 rgba(0, 0, 0, 0.3),     // Inset shadow when pressed
+    box-shadow:
+      inset 0 var(--px-scale, 4px) 0 rgba(0, 0, 0, 0.3), // Inset shadow when pressed
       0 0 0 transparent;
   }
 
@@ -531,13 +534,27 @@ All existing legacy button classes automatically map to the new unified engine, 
 
 ```scss
 // src/styles/components/_buttons.scss
-.btn-vicio-primary    { @include pv-btn('primary', 'md'); }
-.btn-vicio-secondary  { @include pv-btn('secondary', 'md'); }
-.btn-vicio-danger     { @include pv-btn('danger', 'md'); }
-.btn-vicio-success    { @include pv-btn('success', 'md'); }
-.pv-button-retro      { @include pv-btn('primary', 'md'); }
-.auth-btn             { @include pv-btn('primary', 'lg', true); }
-.update-btn           { @include pv-btn('danger', 'md'); }
+.btn-vicio-primary {
+  @include pv-btn('primary', 'md');
+}
+.btn-vicio-secondary {
+  @include pv-btn('secondary', 'md');
+}
+.btn-vicio-danger {
+  @include pv-btn('danger', 'md');
+}
+.btn-vicio-success {
+  @include pv-btn('success', 'md');
+}
+.pv-button-retro {
+  @include pv-btn('primary', 'md');
+}
+.auth-btn {
+  @include pv-btn('primary', 'lg', true);
+}
+.update-btn {
+  @include pv-btn('danger', 'md');
+}
 ```
 
 ---
@@ -557,44 +574,44 @@ timeline
 
 ### Phase 1: Design Tokens & Contract Setup (Non-Breaking)
 
-+ Create `src/styles/tokens/_contracts.scss` with universal defaults.
-+ Create `src/styles/tokens/_theme-gba-wingull.scss` and `_theme-modern.scss`.
-+ Wire tokens into `src/styles/_index.scss`.
-+ **Impact**: Zero breaking changes, existing views continue functioning unchanged.
+- Create `src/styles/tokens/_contracts.scss` with universal defaults.
+- Create `src/styles/tokens/_theme-gba-wingull.scss` and `_theme-modern.scss`.
+- Wire tokens into `src/styles/_index.scss`.
+- **Impact**: Zero breaking changes, existing views continue functioning unchanged.
 
 ### Phase 2: Core Mixin Hooking (Instant 60% Codebase Coverage)
 
-+ Update `src/styles/core/mixins/_shell.scss`:
-  + Modify `@mixin shell` and `@mixin card-premium` to read `var(--ui-panel-clip)` and `var(--ui-panel-radius)`.
-+ Update `src/styles/core/mixins/_buttons.scss`:
-  + Modify `@mixin btn-vicio-base` and `@mixin btn-vicio-size` to use `var(--ui-btn-clip)` and `var(--ui-btn-radius)`.
-+ Update `src/components/common/BaseModal.vue`:
-  + Hook modal root into `var(--ui-panel-clip)`.
-+ **Result**: Every modal in the game (`Inventory`, `Shop`, `Box`, `Pokedex`, `Gyms`, `Social`, `War`), all cards, and all HUD buttons instantly adopt the active theme!
+- Update `src/styles/core/mixins/_shell.scss`:
+  - Modify `@mixin shell` and `@mixin card-premium` to read `var(--ui-panel-clip)` and `var(--ui-panel-radius)`.
+- Update `src/styles/core/mixins/_buttons.scss`:
+  - Modify `@mixin btn-vicio-base` and `@mixin btn-vicio-size` to use `var(--ui-btn-clip)` and `var(--ui-btn-radius)`.
+- Update `src/components/common/BaseModal.vue`:
+  - Hook modal root into `var(--ui-panel-clip)`.
+- **Result**: Every modal in the game (`Inventory`, `Shop`, `Box`, `Pokedex`, `Gyms`, `Social`, `War`), all cards, and all HUD buttons instantly adopt the active theme!
 
 ### Phase 3: Form Controls & View Normalization
 
-+ Replace custom `.auth-input`, `.search-input`, and `.filter-input` styles with unified token-based classes.
-+ Update `_base.scss` so standard HTML `<input>`, `<select>`, and `<textarea>` elements consume `var(--ui-control-clip)` and `var(--ui-control-radius)` by default.
+- Replace custom `.auth-input`, `.search-input`, and `.filter-input` styles with unified token-based classes.
+- Update `_base.scss` so standard HTML `<input>`, `<select>`, and `<textarea>` elements consume `var(--ui-control-clip)` and `var(--ui-control-radius)` by default.
 
 ### Phase 4: Pinia `useThemeStore` & Runtime Switching
 
-+ Create `src/stores/theme.ts`:
-  + State: `activeTheme: 'gba-wingull' | 'modern' | 'cyber-neon'`, `pixelScale: 2 | 3 | 4`.
-  + Effect: Synchronizes with `document.documentElement.setAttribute('data-theme', activeTheme)`.
-  + Persistence: Saves choice in `safeStorage` (offline/online safe).
-+ Add visual Theme Selector in Player Settings (`ProfileView` / `SettingsModal`).
+- Create `src/stores/theme.ts`:
+  - State: `activeTheme: 'gba-wingull' | 'modern' | 'cyber-neon'`, `pixelScale: 2 | 3 | 4`.
+  - Effect: Synchronizes with `document.documentElement.setAttribute('data-theme', activeTheme)`.
+  - Persistence: Saves choice in `safeStorage` (offline/online safe).
+- Add visual Theme Selector in Player Settings (`ProfileView` / `SettingsModal`).
 
 ---
 
 ## 7. Performance & Memory Impact Analysis
 
-| Performance Metric | Modern Glassmorphism | GBA Wingull (4px Stepped) | Analysis & Rationale |
-| :--- | :--- | :--- | :--- |
-| **Compositing Pass** | 12–16 ms / frame | **3–5 ms / frame** (300% faster) | Eliminates `backdrop-filter: blur(12px)`. Blurring requires multi-pass Gaussian texture sampling on GPU. |
-| **Hardware Acceleration** | Requires GPU context switch for backdrop textures. | **Direct Zero-Copy GPU Polygon** | `clip-path: polygon()` is baked into the vertex buffer; rasterized in a single draw-call. |
-| **Input Latency** | Occasional repaint lag during typing in heavy views. | **Zero Latency (120 FPS)** | Sharp borders eliminate sub-pixel antialiasing passes while typing. |
-| **Mobile Battery & Thermals** | High GPU fillrate consumption on Retina/OLED displays. | **Significantly Cooler & Lighter** | Pure flat/dithered color fills without Gaussian shader operations. |
+| Performance Metric            | Modern Glassmorphism                                   | GBA Wingull (4px Stepped)          | Analysis & Rationale                                                                                     |
+| :---------------------------- | :----------------------------------------------------- | :--------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| **Compositing Pass**          | 12–16 ms / frame                                       | **3–5 ms / frame** (300% faster)   | Eliminates `backdrop-filter: blur(12px)`. Blurring requires multi-pass Gaussian texture sampling on GPU. |
+| **Hardware Acceleration**     | Requires GPU context switch for backdrop textures.     | **Direct Zero-Copy GPU Polygon**   | `clip-path: polygon()` is baked into the vertex buffer; rasterized in a single draw-call.                |
+| **Input Latency**             | Occasional repaint lag during typing in heavy views.   | **Zero Latency (120 FPS)**         | Sharp borders eliminate sub-pixel antialiasing passes while typing.                                      |
+| **Mobile Battery & Thermals** | High GPU fillrate consumption on Retina/OLED displays. | **Significantly Cooler & Lighter** | Pure flat/dithered color fills without Gaussian shader operations.                                       |
 
 ---
 

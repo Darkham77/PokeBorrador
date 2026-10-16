@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { mount } from '@vue/test-utils';
 import MissionCard from '@/components/events/MissionCard.vue';
 import type { DetailedMissionReward } from '@/logic/player/classMissionsData';
@@ -64,7 +64,9 @@ describe('MissionCard.vue', () => {
     expect(wrapper.text()).toContain('6H · REQUISITO: NV. 1');
     expect(wrapper.find('.rules-box').exists()).toBe(true);
     expect(wrapper.find('.rules-badge').text()).toBe('REGLAS / REQUISITOS');
-    expect(wrapper.find('.rules-desc').text()).toContain('Requiere sacrificar 1 Pokémon tipo VENENO');
+    expect(wrapper.find('.rules-desc').text()).toContain(
+      'Requiere sacrificar 1 Pokémon tipo VENENO'
+    );
 
     expect(wrapper.text()).toContain('RECOMPENSAS DETALLADAS');
     expect(wrapper.text()).toContain('Dinero Base');
@@ -95,7 +97,9 @@ describe('MissionCard.vue', () => {
     expect(wrapper.classes()).toContain('is-available');
     expect(wrapper.classes()).not.toContain('is-locked');
     expect(wrapper.find('.requirement-banner.is-available-req').exists()).toBe(true);
-    expect(wrapper.find('.requirement-banner.is-available-req').text()).toContain('Listo para desplegar');
+    expect(wrapper.find('.requirement-banner.is-available-req').text()).toContain(
+      'Listo para desplegar'
+    );
   });
 
   it('renders locked dotted blue card state with unmet requirement chip', () => {
@@ -115,7 +119,9 @@ describe('MissionCard.vue', () => {
     expect(wrapper.classes()).toContain('is-locked');
     expect(wrapper.classes()).not.toContain('is-available');
     expect(wrapper.find('.requirement-banner.is-unmet').exists()).toBe(true);
-    expect(wrapper.find('.requirement-banner.is-unmet').text()).toContain('Requiere Nivel de Entrenador 15');
+    expect(wrapper.find('.requirement-banner.is-unmet').text()).toContain(
+      'Requiere Nivel de Entrenador 15'
+    );
     expect(wrapper.find('button.btn-deliver').attributes('disabled')).toBeDefined();
   });
 
@@ -126,7 +132,8 @@ describe('MissionCard.vue', () => {
         title: '6H · REQUISITO: NV. 1',
         dialogue: 'Extorsión local.',
         activationReq: 'Requiere 1 Pokémon tipo VENENO en Equipo o Caja.',
-        rewardConditions: 'Dinero calculado por Nivel (60%) e IVs (40%). 1 Pepita y 50 EXP al finalizar.',
+        rewardConditions:
+          'Dinero calculado por Nivel (60%) e IVs (40%). 1 Pepita y 50 EXP al finalizar.',
         btnText: 'DESPLEGAR',
         btnDisabled: false,
         isCompleted: false
@@ -136,7 +143,9 @@ describe('MissionCard.vue', () => {
     expect(wrapper.find('.deploy-badge').text()).toBe('REQUISITO DE DESPLIEGUE');
     expect(wrapper.text()).toContain('Requiere 1 Pokémon tipo VENENO en Equipo o Caja.');
     expect(wrapper.find('.reward-badge').text()).toBe('CÓMO SE GANAN LAS RECOMPENSAS');
-    expect(wrapper.text()).toContain('Dinero calculado por Nivel (60%) e IVs (40%). 1 Pepita y 50 EXP al finalizar.');
+    expect(wrapper.text()).toContain(
+      'Dinero calculado por Nivel (60%) e IVs (40%). 1 Pepita y 50 EXP al finalizar.'
+    );
   });
 
   it('renders active operation box with assigned pokemon, guaranteed loot, and single timer without duplicate banners', () => {

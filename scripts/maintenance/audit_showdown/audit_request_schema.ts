@@ -12,7 +12,10 @@ export interface SchemaAuditResult {
  * Extrae dinámicamente los campos del Request JSON generados por Showdown (side.ts)
  * y verifica que estén presentes en los tipos TypeScript del proyecto (src/types/).
  */
-export function auditRequestSchema(showdownSimPath: string, srcTypesPath: string): SchemaAuditResult {
+export function auditRequestSchema(
+  showdownSimPath: string,
+  srcTypesPath: string
+): SchemaAuditResult {
   const missingFieldsInTypes: string[] = []; // no-domain: Non-domain utility collection or data structure
   const mismatchedTypes: string[] = []; // no-domain: Non-domain utility collection or data structure
 
@@ -25,12 +28,12 @@ export function auditRequestSchema(showdownSimPath: string, srcTypesPath: string
 
   // Extrae dinámicamente los campos del objeto de request que Showdown genera en getRequestData()
   const requestFieldMatches = Array.from(sideContent.matchAll(/(\w+):\s*(?:this\.|pokemon\.|{)/g))
-    .map(m => m[1] || '')
+    .map((m) => m[1] || '')
     .filter(Boolean);
-  const canonicalRequestFields = [...new Set(requestFieldMatches)].filter(f => f && f.length > 2);
+  const canonicalRequestFields = [...new Set(requestFieldMatches)].filter((f) => f && f.length > 2);
 
   // Agrega el contenido de todos los archivos de tipos del proyecto
-  const typeFiles = getFilesRecursively(srcTypesPath).filter(f => f.endsWith('.ts'));
+  const typeFiles = getFilesRecursively(srcTypesPath).filter((f) => f.endsWith('.ts'));
   let combinedTypes = '';
   for (const file of typeFiles) {
     combinedTypes += `\n${readFileSync(file, 'utf-8')}`;

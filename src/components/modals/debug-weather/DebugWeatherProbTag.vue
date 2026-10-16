@@ -1,24 +1,21 @@
 <script setup lang="ts">
 /**
  * src/components/modals/debug-weather/DebugWeatherProbTag.vue
- * 
+ *
  * Weather probability tag with modifiers and encounter spawns.
  */
 
-import type { WeatherProbData } from '../debugWeatherTypes'
-import DebugWeatherModifiers from './DebugWeatherModifiers.vue'
-import DebugWeatherSpawns from './DebugWeatherSpawns.vue'
+import type { WeatherProbData } from '../debugWeatherTypes';
+import DebugWeatherModifiers from './DebugWeatherModifiers.vue';
+import DebugWeatherSpawns from './DebugWeatherSpawns.vue';
 
 defineProps<{
-  prob: WeatherProbData
-}>()
+  prob: WeatherProbData;
+}>();
 </script>
 
 <template>
-  <div 
-    class="prob-tag"
-    :class="prob.weather"
-  >
+  <div class="prob-tag" :class="prob.weather">
     <div class="prob-header">
       <span class="emoji">{{ prob.icon }}</span>
       <span class="label">{{ prob.label }}</span>

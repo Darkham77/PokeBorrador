@@ -43,16 +43,18 @@ interface GsapHoverElement extends HTMLElement {
 export const gsapHover: Directive = {
   mounted(el: HTMLElement, binding) {
     const hoverEl = el as GsapHoverElement;
-    const options: GsapHoverOptions = getOptions(binding.value as string | GsapHoverOptions | undefined);
+    const options: GsapHoverOptions = getOptions(
+      binding.value as string | GsapHoverOptions | undefined
+    );
     el.dataset.gsapHover = 'true';
-    
+
     // Save original styles/values if needed for resets
     const originalTransform = el.style.transform;
-    
+
     const onMouseEnter = () => {
       // Clear previous tween on enter to avoid conflicts
       cleanupTween(el);
-      
+
       const targetVars: gsap.TweenVars = {
         duration: options.duration ?? DEFAULT_HOVER_DURATION_SEC,
         ease: options.ease ?? 'power1.out',
@@ -64,7 +66,7 @@ export const gsapHover: Directive = {
       if (options.y !== undefined) targetVars.y = options.y;
       if (options.rotation !== undefined) targetVars.rotation = options.rotation;
       if (options.opacity !== undefined) targetVars.opacity = options.opacity;
-      
+
       // Inject inline-block for inline elements to support transforms
       const computedStyle = window.getComputedStyle(el);
       if (computedStyle.display === 'inline') {
@@ -77,7 +79,7 @@ export const gsapHover: Directive = {
 
     const onMouseLeave = () => {
       cleanupTween(el);
-      
+
       const tween = gsap.to(el, {
         scale: 1,
         x: 0,
@@ -131,13 +133,13 @@ export const gsapHover: Directive = {
   unmounted(el: HTMLElement) {
     cleanupTween(el);
     const hoverEl = el as GsapHoverElement;
-    
+
     // Remove listeners
     if (hoverEl._gsapHoverEnter) el.removeEventListener('mouseenter', hoverEl._gsapHoverEnter);
     if (hoverEl._gsapHoverLeave) el.removeEventListener('mouseleave', hoverEl._gsapHoverLeave);
     if (hoverEl._gsapHoverDown) el.removeEventListener('mousedown', hoverEl._gsapHoverDown);
     if (hoverEl._gsapHoverUp) el.removeEventListener('mouseup', hoverEl._gsapHoverUp);
-    
+
     // Clean properties from the element
     delete el.dataset.gsapHover;
     gsap.set(el, { clearProps: 'transform,scale,rotation,opacity,x,y' });
@@ -170,9 +172,17 @@ function getOptions(value: string | GsapHoverOptions | undefined): GsapHoverOpti
       case 'card':
         return { ...defaults, scale: DEFAULT_HOVER_CARD_SCALE, y: DEFAULT_HOVER_CARD_Y_OFFSET_PX };
       case 'widget':
-        return { ...defaults, scale: DEFAULT_HOVER_WIDGET_SCALE, y: DEFAULT_HOVER_DEFAULT_Y_OFFSET_PX };
+        return {
+          ...defaults,
+          scale: DEFAULT_HOVER_WIDGET_SCALE,
+          y: DEFAULT_HOVER_DEFAULT_Y_OFFSET_PX
+        };
       case 'button':
-        return { ...defaults, scale: DEFAULT_HOVER_BUTTON_SCALE, y: DEFAULT_HOVER_BUTTON_Y_OFFSET_PX };
+        return {
+          ...defaults,
+          scale: DEFAULT_HOVER_BUTTON_SCALE,
+          y: DEFAULT_HOVER_BUTTON_Y_OFFSET_PX
+        };
       case 'pill':
         return { ...defaults, scale: DEFAULT_HOVER_PILL_SCALE, y: DEFAULT_HOVER_PILL_Y_OFFSET_PX };
       default:

@@ -7,7 +7,9 @@ console.log('\n--- ⚡ SEEDING TEST USERS (ASH & ENTRENADOR) ---');
 
 const dbPath = path.resolve('scratch/database/manual_user_backup_import.db');
 if (!fs.existsSync(dbPath)) {
-  console.error(`❌ Error: Local database file not found at ${dbPath}. Please run the import or run the dev server first.`);
+  console.error(
+    `❌ Error: Local database file not found at ${dbPath}. Please run the import or run the dev server first.`
+  );
   process.exit(1);
 }
 
@@ -23,9 +25,17 @@ const TEST_POKEMON_INITIAL_FRIENDSHIP = 150;
 const MAX_STAT_IV = 31 as const;
 
 // Helper to create a structured Pokemon object
-function createMockPokemon(id: string, name: string, type: string, type2: string | null, level: number, isShiny: boolean = false, heldItem: string | null = null): Record<string, unknown> {
+function createMockPokemon(
+  id: string,
+  name: string,
+  type: string,
+  type2: string | null,
+  level: number,
+  isShiny: boolean = false,
+  heldItem: string | null = null
+): Record<string, unknown> {
   const uid = `${id}_${crypto.randomUUID().substring(0, 8)}`;
-  
+
   // Calculate mock stats
   const hpBase = 80;
   const atkBase = 80;
@@ -40,7 +50,7 @@ function createMockPokemon(id: string, name: string, type: string, type2: string
     def: Math.floor(((defBase + MAX_STAT_IV) * 2 * level) / 100) + 5,
     spa: Math.floor(((spaBase + MAX_STAT_IV) * 2 * level) / 100) + 5,
     spd: Math.floor(((spdBase + MAX_STAT_IV) * 2 * level) / 100) + 5,
-    spe: Math.floor(((speBase + MAX_STAT_IV) * 2 * level) / 100) + 5,
+    spe: Math.floor(((speBase + MAX_STAT_IV) * 2 * level) / 100) + 5
   };
 
   return {
@@ -55,7 +65,14 @@ function createMockPokemon(id: string, name: string, type: string, type2: string
     level,
     exp: 0,
     expNeeded: 1000,
-    ivs: { hp: MAX_STAT_IV, atk: MAX_STAT_IV, def: MAX_STAT_IV, spa: MAX_STAT_IV, spd: MAX_STAT_IV, spe: MAX_STAT_IV },
+    ivs: {
+      hp: MAX_STAT_IV,
+      atk: MAX_STAT_IV,
+      def: MAX_STAT_IV,
+      spa: MAX_STAT_IV,
+      spd: MAX_STAT_IV,
+      spe: MAX_STAT_IV
+    },
     nature: 'hardy',
     ability: 'pressure',
     gender: 'M',
@@ -78,7 +95,7 @@ function createMockPokemon(id: string, name: string, type: string, type2: string
     def: stats.def,
     spa: stats.spa,
     spd: stats.spd,
-    spe: stats.spe,
+    spe: stats.spe
   };
 }
 
@@ -115,19 +132,19 @@ const entrenadorBox = [
 ];
 
 const mockInventory: Record<string, number> = {
-  'pokeball': 99,
-  'greatball': TEST_INVENTORY_DEFAULT_QTY,
-  'ultraball': 30,
-  'masterball': 10,
-  'potion': 99,
-  'hyperpotion': 99,
-  'revive': TEST_INVENTORY_DEFAULT_QTY,
-  'maxrevive': 10,
-  'rarecandy': 99,
-  'thunderstone': 5,
-  'firestone': 5,
-  'waterstone': 5,
-  'moonstone': 5
+  pokeball: 99,
+  greatball: TEST_INVENTORY_DEFAULT_QTY,
+  ultraball: 30,
+  masterball: 10,
+  potion: 99,
+  hyperpotion: 99,
+  revive: TEST_INVENTORY_DEFAULT_QTY,
+  maxrevive: 10,
+  rarecandy: 99,
+  thunderstone: 5,
+  firestone: 5,
+  waterstone: 5,
+  moonstone: 5
 };
 
 const ashSaveData = {
@@ -142,12 +159,45 @@ const ashSaveData = {
   trainerExp: 0,
   trainerExpNeeded: 10000,
   inventory: { ...mockInventory },
-  map: { currentMap: 'pallet_town', region: 'Kanto', lastNavigateAt: Temporal.Now.instant().epochMilliseconds },
+  map: {
+    currentMap: 'pallet_town',
+    region: 'Kanto',
+    lastNavigateAt: Temporal.Now.instant().epochMilliseconds
+  },
   team: ashTeam,
   box: ashBox,
-  pokedex: ['pikachu', 'charizard', 'blastoise', 'venusaur', 'mewtwo', 'dragonite', 'bulbasaur', 'charmander', 'squirtle'],
-  seenPokedex: ['pikachu', 'charizard', 'blastoise', 'venusaur', 'mewtwo', 'dragonite', 'bulbasaur', 'charmander', 'squirtle'],
-  defeatedGyms: ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'],
+  pokedex: [
+    'pikachu',
+    'charizard',
+    'blastoise',
+    'venusaur',
+    'mewtwo',
+    'dragonite',
+    'bulbasaur',
+    'charmander',
+    'squirtle'
+  ],
+  seenPokedex: [
+    'pikachu',
+    'charizard',
+    'blastoise',
+    'venusaur',
+    'mewtwo',
+    'dragonite',
+    'bulbasaur',
+    'charmander',
+    'squirtle'
+  ],
+  defeatedGyms: [
+    'pewter',
+    'cerulean',
+    'vermilion',
+    'celadon',
+    'fuchsia',
+    'saffron',
+    'cinnabar',
+    'viridian'
+  ],
   gymProgress: {},
   lastGymWins: {},
   lastGymAttempts: {},
@@ -203,8 +253,28 @@ const entrenadorSaveData = {
   trainer: 'ENTRENADOR',
   team: entrenadorTeam,
   box: entrenadorBox,
-  pokedex: ['gyarados', 'alakazam', 'machamp', 'gengar', 'snorlax', 'lapras', 'geodude', 'gastly', 'abra'],
-  seenPokedex: ['gyarados', 'alakazam', 'machamp', 'gengar', 'snorlax', 'lapras', 'geodude', 'gastly', 'abra'],
+  pokedex: [
+    'gyarados',
+    'alakazam',
+    'machamp',
+    'gengar',
+    'snorlax',
+    'lapras',
+    'geodude',
+    'gastly',
+    'abra'
+  ],
+  seenPokedex: [
+    'gyarados',
+    'alakazam',
+    'machamp',
+    'gengar',
+    'snorlax',
+    'lapras',
+    'geodude',
+    'gastly',
+    'abra'
+  ],
   eloRating: ENTRENADOR_INITIAL_ELO,
   playerClass: 'entrenador',
   faction: 'union'
@@ -214,9 +284,11 @@ try {
   db.exec('BEGIN TRANSACTION;');
 
   // Clean old entries
-  db.prepare("DELETE FROM profiles WHERE id IN (?, ?)").run('local_ash', 'local_entrenador');
-  db.prepare("DELETE FROM game_saves WHERE user_id IN (?, ?)").run('local_ash', 'local_entrenador');
-  db.prepare("DELETE FROM friendships WHERE (requester_id = ? AND addressee_id = ?) OR (requester_id = ? AND addressee_id = ?)").run('local_ash', 'local_entrenador', 'local_entrenador', 'local_ash');
+  db.prepare('DELETE FROM profiles WHERE id IN (?, ?)').run('local_ash', 'local_entrenador');
+  db.prepare('DELETE FROM game_saves WHERE user_id IN (?, ?)').run('local_ash', 'local_entrenador');
+  db.prepare(
+    'DELETE FROM friendships WHERE (requester_id = ? AND addressee_id = ?) OR (requester_id = ? AND addressee_id = ?)'
+  ).run('local_ash', 'local_entrenador', 'local_entrenador', 'local_ash');
 
   // Insert Profiles
   const insertProfile = db.prepare(`
@@ -225,8 +297,30 @@ try {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'), strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
   `);
 
-  insertProfile.run('local_ash', 'ASH', 'ash@local', TEST_USER_LEVEL, 'maestro_pokemon', 'union', 'color: #ffcc00; font-weight: bold;', '', 'admin', ASH_INITIAL_ELO);
-  insertProfile.run('local_entrenador', 'ENTRENADOR', 'entrenador@local', TEST_USER_LEVEL, 'entrenador', 'union', '', '', 'admin', ENTRENADOR_INITIAL_ELO);
+  insertProfile.run(
+    'local_ash',
+    'ASH',
+    'ash@local',
+    TEST_USER_LEVEL,
+    'maestro_pokemon',
+    'union',
+    'color: #ffcc00; font-weight: bold;',
+    '',
+    'admin',
+    ASH_INITIAL_ELO
+  );
+  insertProfile.run(
+    'local_entrenador',
+    'ENTRENADOR',
+    'entrenador@local',
+    TEST_USER_LEVEL,
+    'entrenador',
+    'union',
+    '',
+    '',
+    'admin',
+    ENTRENADOR_INITIAL_ELO
+  );
 
   // Insert Saves
   const insertSave = db.prepare(`

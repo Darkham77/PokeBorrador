@@ -1,23 +1,23 @@
 /**
  * src/components/modals/renameHelpers.ts
- * 
+ *
  * Helper functions for RenameModal: validation, local storage synchronization,
  * and remote username update.
  */
-import { validateTrainerName } from '@/logic/validation/schemas'
-import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage'
-import type { GenderId } from '@/types/system/game'
-import type { useGameStore } from '@/stores/game'
+import { validateTrainerName } from '@/logic/validation/schemas';
+import { safeStorage, LOCAL_STORAGE_KEYS } from '@/logic/utils/storage';
+import type { GenderId } from '@/types/system/game';
+import type { useGameStore } from '@/stores/game';
 
 export interface RenameValidationError {
-  message: string
-  icon: string
+  message: string;
+  icon: string;
 }
 
 export interface RenameChangeOptions {
-  genderChanged: boolean
-  nameChanged: boolean
-  canRename: boolean
+  genderChanged: boolean;
+  nameChanged: boolean;
+  canRename: boolean;
 }
 
 export function validateRenameRequest(
@@ -25,35 +25,39 @@ export function validateRenameRequest(
   changes: RenameChangeOptions,
   daysUntilRename: number
 ): RenameValidationError | null {
-  const { genderChanged, nameChanged, canRename } = changes
-  const validation = validateTrainerName(targetName)
+  const { genderChanged, nameChanged, canRename } = changes;
+  const validation = validateTrainerName(targetName);
   if (!validation.success) {
     return {
       message: validation.issues[0]?.message || 'El nombre debe tener entre 3 y 15 caracteres.',
       icon: '⚠️'
-    }
+    };
   }
   if (!nameChanged && !genderChanged) {
-    return { message: 'No se detectaron cambios.', icon: '⚠️' }
+    return { message: 'No se detectaron cambios.', icon: '⚠️' };
   }
   if (!canRename) {
-    return { message: `Faltan ${daysUntilRename} días para poder cambiar de identidad.`, icon: '⏳' }
+    return {
+      message: `Faltan ${daysUntilRename} días para poder cambiar de identidad.`,
+      icon: '⏳'
+    };
   }
-  return null
+  return null;
 }
 
 export async function syncRemoteUsernameChange(
   gameStore: ReturnType<typeof useGameStore>,
   targetName: string
 ): Promise<{ success: boolean; error?: string }> {
-  const res = await gameStore.db.rpc('change_username', { new_username: targetName })
+  const res = await gameStore.db.rpc('change_username', { new_username: targetName });
   if (res.error) {
-    const errorMsg = typeof res.error === 'string'
-      ? res.error
-      : ((res.error as { message: string } | null)?.message || 'Error al cambiar el nombre')
-    return { success: false, error: errorMsg }
+    const errorMsg =
+      typeof res.error === 'string'
+        ? res.error
+        : (res.error as { message: string } | null)?.message || 'Error al cambiar el nombre';
+    return { success: false, error: errorMsg };
   }
-  return { success: true }
+  return { success: true };
 }
 
 export function updateLocalUserStorage(
@@ -64,23 +68,23 @@ export function updateLocalUserStorage(
   nowStr: string,
   nameChanged: boolean
 ): void {
-  const localUserStr = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER)
+  const localUserStr = safeStorage.getItem(LOCAL_STORAGE_KEYS.LOCAL_USER);
   if (localUserStr) {
     interface LocalUser {
       user_metadata?: {
-        username?: string
-        gender?: string
-        last_renamed_at?: string
-        [key: string]: unknown
-      }
-      [key: string]: unknown
+        username?: string;
+        gender?: string;
+        last_renamed_at?: string;
+        [key: string]: unknown;
+      };
+      [key: string]: unknown;
     }
-    const lu = JSON.parse(localUserStr) as LocalUser
-    if (!lu.user_metadata) lu.user_metadata = {}
-    if (nameChanged) lu.user_metadata.username = targetName
-    lu.user_metadata.gender = gender
-    lu.user_metadata.last_renamed_at = nowStr
-    safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(lu))
+    const lu = JSON.parse(localUserStr) as LocalUser;
+    if (!lu.user_metadata) lu.user_metadata = {};
+    if (nameChanged) lu.user_metadata.username = targetName;
+    lu.user_metadata.gender = gender;
+    lu.user_metadata.last_renamed_at = nowStr;
+    safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(lu));
   } else {
     safeStorage.setItem(
       LOCAL_STORAGE_KEYS.LOCAL_USER,
@@ -93,6 +97,6 @@ export function updateLocalUserStorage(
           last_renamed_at: nowStr
         }
       })
-    )
+    );
   }
 }

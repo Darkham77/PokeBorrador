@@ -1,8 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { ref } from 'vue';
 import { mapVisualToOfficialWeather } from '@/logic/weather/weatherGenerationProvider';
-import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '@/logic/weather/weatherVisualMapper';
+import {
+  getLocalizedWeatherName,
+  mapOfficialToVisualWeather
+} from '@/logic/weather/weatherVisualMapper';
 import { useMapStore } from '@/stores/map';
 import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere';
 import type { BattleState } from '@/types/battle/battle';
@@ -100,7 +103,7 @@ describe('Battle Weather, Field Conditions & Atmosphere Isolation Suite', () => 
 
     it('should enforce constant day lighting and block outdoor weather for Gyms and single-sprite arenas', () => {
       const mapStore = useMapStore();
-      
+
       // Simulate outdoor map state (e.g. night, rain)
       mapStore.setGlobalCycle('night');
       mapStore.setGlobalWeather('rain');
@@ -178,7 +181,7 @@ describe('Battle Weather, Field Conditions & Atmosphere Isolation Suite', () => 
 
     it('should reactively update atmosphere and cycle on maps with cycle-specific backgrounds (outdoor routes & multi-sprite interiors)', () => {
       const mapStore = useMapStore();
-      
+
       // Start on Route 1 during daytime
       mapStore.setGlobalCycle('day');
       mapStore.setGlobalWeather(null);

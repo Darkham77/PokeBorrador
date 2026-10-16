@@ -21,11 +21,13 @@ export interface BoxCardClassOptions {
 }
 
 export function resolveBoxCardClasses(options: BoxCardClassOptions): Record<string, boolean> {
+  // open-record: CSS class boolean toggle map
   const p = options.pokemon;
   const isBusy = !!(p?.onMission || p?.onEvent || p?.inDaycare || p?.onDefense);
   const isFast = options.isFastActive ?? options.isPerformanceActive ?? false;
 
   const classes: Record<string, boolean> = {
+    // open-record: CSS class boolean toggle map
     'box-pokemon-card': true,
     selected: options.isSelected,
     'with-badges': options.numBadges > 0,
@@ -97,7 +99,10 @@ export function resolveComputedTypePillSize(
   return defaultSize;
 }
 
-export function resolveCardAuraClass(aura: string | undefined, isPerformanceActive: boolean): string {
+export function resolveCardAuraClass(
+  aura: string | undefined,
+  isPerformanceActive: boolean
+): string {
   if (aura && !isPerformanceActive) {
     return `aura-${aura}-mini`;
   }

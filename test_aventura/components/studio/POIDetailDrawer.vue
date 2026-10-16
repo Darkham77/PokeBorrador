@@ -74,16 +74,10 @@ function onDrawerLeave(el: Element, done: () => void): void {
     @enter="onDrawerEnter"
     @leave="onDrawerLeave"
   >
-    <aside
-      v-if="currentPoi"
-      class="poi-detail-drawer"
-    >
+    <aside v-if="currentPoi" class="poi-detail-drawer">
       <header class="drawer-header">
         <div class="poi-title-block">
-          <div
-            class="poi-type-tag"
-            :class="currentPoi.type"
-          >
+          <div class="poi-type-tag" :class="currentPoi.type">
             {{ currentPoi.type }}
           </div>
           <h3 class="poi-name">
@@ -104,9 +98,7 @@ function onDrawerLeave(el: Element, done: () => void): void {
       <div class="drawer-body">
         <!-- Geographical Location -->
         <section class="drawer-section">
-          <h4 class="section-title">
-            Ubicación Geográfica
-          </h4>
+          <h4 class="section-title">Ubicación Geográfica</h4>
           <div class="meta-grid">
             <div class="meta-item">
               <span class="lbl">Coordenadas Grid</span>
@@ -118,7 +110,9 @@ function onDrawerLeave(el: Element, done: () => void): void {
             </div>
             <div class="meta-item">
               <span class="lbl">Huella Urbana</span>
-              <span class="val">{{ currentPoi.footprint.width }} × {{ currentPoi.footprint.height }} tiles</span>
+              <span class="val"
+                >{{ currentPoi.footprint.width }} × {{ currentPoi.footprint.height }} tiles</span
+              >
             </div>
             <div class="meta-item">
               <span class="lbl">Preferencia Terreno</span>
@@ -128,13 +122,8 @@ function onDrawerLeave(el: Element, done: () => void): void {
         </section>
 
         <!-- Urban Architecture (Buildings & Layout) -->
-        <section
-          v-if="currentPoi.urbanLayout"
-          class="drawer-section"
-        >
-          <h4 class="section-title">
-            Distribución Urbanística
-          </h4>
+        <section v-if="currentPoi.urbanLayout" class="drawer-section">
+          <h4 class="section-title">Distribución Urbanística</h4>
           <div class="urban-summary">
             <div class="stat-bubble">
               <span class="b-count">{{ currentPoi.urbanLayout.buildings.length }}</span>
@@ -152,13 +141,17 @@ function onDrawerLeave(el: Element, done: () => void): void {
 
           <!-- Buildings List -->
           <ul class="buildings-list">
-            <li
-              v-for="b in currentPoi.urbanLayout.buildings"
-              :key="b.id"
-              class="building-item"
-            >
+            <li v-for="b in currentPoi.urbanLayout.buildings" :key="b.id" class="building-item">
               <span class="b-icon">
-                {{ b.type === 'pokecenter' ? '🏥' : b.type === 'pokemart' ? '🛒' : b.type === 'gym' ? '🏛️' : '🏠' }}
+                {{
+                  b.type === 'pokecenter'
+                    ? '🏥'
+                    : b.type === 'pokemart'
+                      ? '🛒'
+                      : b.type === 'gym'
+                        ? '🏛️'
+                        : '🏠'
+                }}
               </span>
               <div class="b-meta">
                 <span class="b-type">{{ b.type }}</span>
@@ -170,9 +163,7 @@ function onDrawerLeave(el: Element, done: () => void): void {
 
         <!-- Incident Route Network Connections -->
         <section class="drawer-section">
-          <h4 class="section-title">
-            Rutas de Conexión ({{ incidentRoutes.length }})
-          </h4>
+          <h4 class="section-title">Rutas de Conexión ({{ incidentRoutes.length }})</h4>
           <ul class="routes-list">
             <li
               v-for="edge in incidentRoutes"
@@ -180,14 +171,15 @@ function onDrawerLeave(el: Element, done: () => void): void {
               :key="edge.id"
               class="route-item"
               :class="{ 'is-selected': store.selectedRouteId === edge.id }"
+              role="button"
+              tabindex="0"
               @click="store.selectRoute(edge.id)"
             >
               <div class="route-lead">
-                <span
-                  class="route-bullet"
-                  :class="edge.routeType"
-                />
-                <span class="dest-name"><span class="icon">→</span> {{ getDestinationName(edge) }}</span>
+                <span class="route-bullet" :class="edge.routeType" />
+                <span class="dest-name"
+                  ><span class="icon">→</span> {{ getDestinationName(edge) }}</span
+                >
               </div>
               <div class="route-meta">
                 <span class="route-type-badge">{{ edge.routeType }}</span>

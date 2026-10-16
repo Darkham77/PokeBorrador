@@ -1,57 +1,51 @@
 <script setup lang="ts">
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { PokemonType } from '@/data/battle/types'
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PokemonType } from '@/data/battle/types';
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
 
 interface Props {
-  pokemon: Pokemon
-  tierInfo: { tier: string; color: string; bg: string } | null
-  pokemonSpriteUrl: string
-  pokemonTypes: PokemonType[]
-  natureData: { name: string; desc: string } | null
-  abilityData: { name: string; desc: string }
+  pokemon: Pokemon;
+  tierInfo: { tier: string; color: string; bg: string } | null;
+  pokemonSpriteUrl: string;
+  pokemonTypes: PokemonType[];
+  natureData: { name: string; desc: string } | null;
+  abilityData: { name: string; desc: string };
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'detail'): void
-}>()
+  (e: 'detail'): void;
+}>();
 </script>
 
 <template>
   <div
-    id="box-pokemon-menu-summary-div-1" 
-    class="pokemon-summary-card" 
+    id="box-pokemon-menu-summary-div-1"
+    role="button"
+    tabindex="0"
+    class="pokemon-summary-card"
     :style="{ '--tier-color': tierInfo?.color }"
     @click.stop="emit('detail')"
   >
     <div class="sprite-box">
-      <PVSpriteFX
-        :is-shiny="pokemon.isShiny"
-        :is-guardian="pokemon.isGuardian"
-      >
+      <PVSpriteFX :is-shiny="pokemon.isShiny" :is-guardian="pokemon.isGuardian">
         <img
           :src="pokemonSpriteUrl"
           :alt="pokemon.name || 'Pokémon'"
           class="menu-sprite"
           width="32"
           height="32"
-        >
+        />
       </PVSpriteFX>
     </div>
 
     <div class="summary-meta">
       <div class="box-types-row">
-        <PokemonTypeTag
-          v-for="t in pokemonTypes" 
-          :key="t"
-          :type="t"
-          size="sm"
-        />
+        <PokemonTypeTag v-for="t in pokemonTypes" :key="t" :type="t" size="sm" />
       </div>
 
       <div class="nature-ability">
@@ -63,10 +57,7 @@ const emit = defineEmits<{
         >
           <span class="interactive-text">{{ natureData.name }}</span>
         </PVTooltip>
-        <span
-          v-if="natureData && pokemon.ability"
-          class="sep"
-        >|</span>
+        <span v-if="natureData && pokemon.ability" class="sep">|</span>
         <PVTooltip
           v-if="pokemon.ability"
           :title="abilityData.name"
@@ -78,17 +69,12 @@ const emit = defineEmits<{
       </div>
 
       <div class="tags-row">
-        <UnifiedBadgePill 
-          :pokemon="pokemon" 
-          size="md" 
-          :vertical="false"
-          inline
-        />
+        <UnifiedBadgePill :pokemon="pokemon" size="md" :vertical="false" inline />
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/box-menu" as *;
+@use '@/styles/components/box-menu' as *;
 </style>

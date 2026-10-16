@@ -9,24 +9,33 @@ export class UpdateLifecycleSimulation extends BaseE2ESimulation {
   }
 
   public async notifyOutdatedClient(client: string, server: string): Promise<void> {
-    await this.page.evaluate(async ({ c, s }) => {
-      const { useUpdateStore } = await import('../../../src/stores/update.ts');
-      useUpdateStore().notifyOutdatedClient({ client: c, server: s });
-    }, { c: client, s: server });
+    await this.page.evaluate(
+      async ({ c, s }) => {
+        const { useUpdateStore } = await import('../../../src/stores/update.ts');
+        useUpdateStore().notifyOutdatedClient({ client: c, server: s });
+      },
+      { c: client, s: server }
+    );
   }
 
   public async notifyDbIncompatible(client: string, server: string, db: string): Promise<void> {
-    await this.page.evaluate(async ({ c, s, d }) => {
-      const { useUpdateStore } = await import('../../../src/stores/update.ts');
-      useUpdateStore().notifyDbIncompatible({ client: c, server: s, db: d });
-    }, { c: client, s: server, d: db });
+    await this.page.evaluate(
+      async ({ c, s, d }) => {
+        const { useUpdateStore } = await import('../../../src/stores/update.ts');
+        useUpdateStore().notifyDbIncompatible({ client: c, server: s, db: d });
+      },
+      { c: client, s: server, d: db }
+    );
   }
 
   public async notifyOutdatedServer(client: string, server: string): Promise<void> {
-    await this.page.evaluate(async ({ c, s }) => {
-      const { useUpdateStore } = await import('../../../src/stores/update.ts');
-      useUpdateStore().notifyOutdatedServer({ client: c, server: s });
-    }, { c: client, s: server });
+    await this.page.evaluate(
+      async ({ c, s }) => {
+        const { useUpdateStore } = await import('../../../src/stores/update.ts');
+        useUpdateStore().notifyOutdatedServer({ client: c, server: s });
+      },
+      { c: client, s: server }
+    );
   }
 
   public async emitPwaNeedRefresh(): Promise<void> {
@@ -39,7 +48,9 @@ export class UpdateLifecycleSimulation extends BaseE2ESimulation {
   public async notifyChunkLoadError(): Promise<void> {
     await this.page.evaluate(async () => {
       const { useUpdateStore } = await import('../../../src/stores/update.ts');
-      useUpdateStore().notifyChunkLoadError(new Error('Failed to fetch dynamically imported module'));
+      useUpdateStore().notifyChunkLoadError(
+        new Error('Failed to fetch dynamically imported module')
+      );
     });
   }
 
@@ -55,12 +66,18 @@ export class UpdateLifecycleSimulation extends BaseE2ESimulation {
   }
 }
 
-async function assertActionRedirectsToLogin(page: Page, sim: UpdateLifecycleSimulation, buttonSelector: string): Promise<void> {
+async function assertActionRedirectsToLogin(
+  page: Page,
+  sim: UpdateLifecycleSimulation,
+  buttonSelector: string
+): Promise<void> {
   const actionBtn = page.locator(buttonSelector);
   await actionBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
   await actionBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-  await page.waitForURL(url => url.pathname.endsWith('/login'), { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await page.waitForURL((url) => url.pathname.endsWith('/login'), {
+    timeout: MAX_PER_ACTION_TIMEOUT_MS
+  });
 
   expect(page.url()).toContain('/login');
   const isUserLoggedIn = await sim.isUserLoggedIn();
@@ -70,12 +87,17 @@ async function assertActionRedirectsToLogin(page: Page, sim: UpdateLifecycleSimu
   await expect(localTab).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 }
 
-async function assertUpdateOverlayRedirectsToLogin(page: Page, sim: UpdateLifecycleSimulation): Promise<void> {
+async function assertUpdateOverlayRedirectsToLogin(
+  page: Page,
+  sim: UpdateLifecycleSimulation
+): Promise<void> {
   await assertActionRedirectsToLogin(page, sim, '#app-loading-overlay-update-btn');
 }
 
 test.describe('System Update Lifecycle & Version Compatibility Simulation', () => {
-  test('should display update overlay when client is outdated, log out on click, and navigate to /login', async ({ page }) => {
+  test('should display update overlay when client is outdated, log out on click, and navigate to /login', async ({
+    page
+  }) => {
     const sim = new UpdateLifecycleSimulation(page, 'UpdateTestUser1');
 
     await sim.setup();
@@ -85,7 +107,9 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await assertUpdateOverlayRedirectsToLogin(page, sim);
   });
 
-  test('should display database lock overlay when db is incompatible and exit cleanly to /login', async ({ page }) => {
+  test('should display database lock overlay when db is incompatible and exit cleanly to /login', async ({
+    page
+  }) => {
     const sim = new UpdateLifecycleSimulation(page, 'UpdateTestUser2');
 
     await sim.setup();
@@ -95,7 +119,9 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await assertActionRedirectsToLogin(page, sim, '#version-lock-logout-btn');
   });
 
-  test('should display server lock overlay when server is outdated and exit cleanly to /login', async ({ page }) => {
+  test('should display server lock overlay when server is outdated and exit cleanly to /login', async ({
+    page
+  }) => {
     const sim = new UpdateLifecycleSimulation(page, 'UpdateTestUser3');
 
     await sim.setup();
@@ -105,7 +131,9 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await assertActionRedirectsToLogin(page, sim, '#version-lock-logout-btn');
   });
 
-  test('should handle live Service Worker update during gameplay and cleanly redirect to /login', async ({ page }) => {
+  test('should handle live Service Worker update during gameplay and cleanly redirect to /login', async ({
+    page
+  }) => {
     const sim = new UpdateLifecycleSimulation(page, 'UpdateTestUser4');
 
     await sim.setup();
@@ -115,7 +143,9 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await assertUpdateOverlayRedirectsToLogin(page, sim);
   });
 
-  test('should display update overlay when chunk load error occurs and navigate cleanly to /login', async ({ page }) => {
+  test('should display update overlay when chunk load error occurs and navigate cleanly to /login', async ({
+    page
+  }) => {
     const sim = new UpdateLifecycleSimulation(page, 'UpdateTestUser5');
 
     await sim.setup();
@@ -125,7 +155,9 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await assertUpdateOverlayRedirectsToLogin(page, sim);
   });
 
-  test('should allow executing update from login screen via update button without loop', async ({ page }) => {
+  test('should allow executing update from login screen via update button without loop', async ({
+    page
+  }) => {
     await page.goto('/login');
 
     // Wait for the login screen to be active
@@ -143,7 +175,9 @@ test.describe('System Update Lifecycle & Version Compatibility Simulation', () =
     await updateBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     // After clicking update, page performs cache-busting reload and remains on /login
-    await page.waitForURL(url => url.pathname.endsWith('/login'), { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await page.waitForURL((url) => url.pathname.endsWith('/login'), {
+      timeout: MAX_PER_ACTION_TIMEOUT_MS
+    });
 
     expect(page.url()).toContain('/login');
     await expect(localTab).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });

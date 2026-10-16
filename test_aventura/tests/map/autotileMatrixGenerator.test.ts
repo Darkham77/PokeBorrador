@@ -69,4 +69,3 @@ describe('autotileMatrixGenerator', () => {
     expect(grid3x3ToBitmask(fullGrid)).toBe(255);
   });
 });
-

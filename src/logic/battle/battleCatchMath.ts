@@ -1,4 +1,10 @@
-import type { PurePokemon, PureCatchOptions, PureBattleWeather, PureBattleStages, CatchRateResult } from './battleMathTypes.ts'
+import type {
+  PurePokemon,
+  PureCatchOptions,
+  PureBattleWeather,
+  PureBattleStages,
+  CatchRateResult
+} from './battleMathTypes.ts';
 const CATCH_MATH_65535_MAX = 65535;
 const CATCH_MATH_256_MAX = 256;
 const CATCH_MATH_255_MAX = 255;
@@ -7,7 +13,7 @@ const POKEDEX_CRITICAL_THRESHOLDS = {
   LOW: 50,
   MEDIUM: 100,
   HIGH: 150,
-  VERY_HIGH: 200,
+  VERY_HIGH: 200
 } as const;
 const CATCH_MATH_FALLBACK_HP = 10;
 const DEFAULT_FALLBACK_CATCH_RATE = 45;
@@ -20,32 +26,38 @@ import { getEffectiveStatPure } from './battleMath.ts';
 import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
 import type { ItemId } from '@/data/inventory/items';
 
-const BALL_BEHAVIORS: Partial<Record<ItemId, { guaranteed?: boolean, mult?: number | ((p: PurePokemon, c: PureCatchOptions) => number) }>> = {
+const BALL_BEHAVIORS: Partial<
+  Record<
+    ItemId,
+    { guaranteed?: boolean; mult?: number | ((p: PurePokemon, c: PureCatchOptions) => number) }
+  >
+> = {
   masterball: { guaranteed: true },
   ultraball: { mult: 2.0 },
   greatball: { mult: 1.5 },
   netball: {
-      mult: (p, c) => {
-        const isWaterOrBug = (p.type === 'water' || p.type2 === 'water' || p.type === 'bug' || p.type2 === 'bug')
-        const mech = getMechanicalWeather(c.weather?.type)
-        const isRain = mech === 'rain'
-        return (isWaterOrBug || isRain) ? 3.5 : 1.0
-      }
-    },
-  duskball: {
-      mult: (_p, c) => {
-        const cycle = c.cycle || 'day'
-        const isNight = cycle === 'night' || cycle === 'dusk'
-        const isCave = !!c.isCave
-        const mech = getMechanicalWeather(c.weather?.type)
-        const isFog = mech === 'fog'
-        return (isNight || isCave || isFog) ? 3.0 : 1.0
-      }
-    },
-  timerball: {
-      mult: (_p, c) => Math.min(4.0, 1.0 + ((c.turnCount || 1) * 0.3))
+    mult: (p, c) => {
+      const isWaterOrBug =
+        p.type === 'water' || p.type2 === 'water' || p.type === 'bug' || p.type2 === 'bug';
+      const mech = getMechanicalWeather(c.weather?.type);
+      const isRain = mech === 'rain';
+      return isWaterOrBug || isRain ? 3.5 : 1.0;
     }
-}
+  },
+  duskball: {
+    mult: (_p, c) => {
+      const cycle = c.cycle || 'day';
+      const isNight = cycle === 'night' || cycle === 'dusk';
+      const isCave = !!c.isCave;
+      const mech = getMechanicalWeather(c.weather?.type);
+      const isFog = mech === 'fog';
+      return isNight || isCave || isFog ? 3.0 : 1.0;
+    }
+  },
+  timerball: {
+    mult: (_p, c) => Math.min(4.0, 1.0 + (c.turnCount || 1) * 0.3)
+  }
+};
 
 const POKEDEX_CRITICAL_HIGH_FACTOR = 1.5 as const;
 const POKEDEX_CRITICAL_MAX_FACTOR = 2.5 as const;
@@ -63,9 +75,9 @@ export function getPokedexCriticalFactor(pokedexCount: number): number {
 }
 
 export function calculateCriticalCaptureThreshold(a: number, pokedexCount: number): number {
-  const p = getPokedexCriticalFactor(pokedexCount)
-  if (p <= 0) return 0
-  return Math.floor((Math.min(CATCH_MATH_255_MAX, a) * p) / CRITICAL_CAPTURE_DIVISOR)
+  const p = getPokedexCriticalFactor(pokedexCount);
+  if (p <= 0) return 0;
+  return Math.floor((Math.min(CATCH_MATH_255_MAX, a) * p) / CRITICAL_CAPTURE_DIVISOR);
 }
 
 import {
@@ -85,20 +97,27 @@ function calculateClassMultiplier(ctx: PureCatchOptions): {
   let trainerIvPenaltyApplied = false;
 
   if (ctx.playerClass === 'cazabichos' && ctx.activeTeam) {
-    const bugCount = ctx.activeTeam.filter(p => p.type1 === 'bug' || p.type2 === 'bug').length;
+    const bugCount = ctx.activeTeam.filter((p) => p.type1 === 'bug' || p.type2 === 'bug').length;
     if (bugCount > 0) {
       bugSynergyBonus = Math.min(BUG_SYNERGY_MAX_BONUS, bugCount * BUG_SYNERGY_BONUS_PER_BUG);
       classMultiplier += bugSynergyBonus;
     }
   } else if (ctx.playerClass === 'entrenador' && (ctx.ivTotal ?? 0) > TRAINER_HIGH_IV_THRESHOLD) {
     trainerIvPenaltyApplied = true;
-    classMultiplier = Math.max(MIN_CLASS_MULTIPLIER_FLOOR, classMultiplier - TRAINER_IV_PENALTY_RATE);
+    classMultiplier = Math.max(
+      MIN_CLASS_MULTIPLIER_FLOOR,
+      classMultiplier - TRAINER_IV_PENALTY_RATE
+    );
   }
 
   return { classMultiplier, bugSynergyBonus, trainerIvPenaltyApplied };
 }
 
-function resolveBallMultiplier(rawBallType: ItemId, pokemon: PurePokemon, ctx: PureCatchOptions): number {
+function resolveBallMultiplier(
+  rawBallType: ItemId,
+  pokemon: PurePokemon,
+  ctx: PureCatchOptions
+): number {
   const behavior = BALL_BEHAVIORS[rawBallType];
   if (!behavior) return 1.0;
   if (typeof behavior.mult === 'function') return behavior.mult(pokemon, ctx);
@@ -126,10 +145,18 @@ export function calculateCatchRatePure(
   ctx: PureCatchOptions = {}
 ): CatchRateResult {
   const behavior = BALL_BEHAVIORS[rawBallType] ?? { mult: 1.0 };
-  const { classMultiplier, bugSynergyBonus, trainerIvPenaltyApplied } = calculateClassMultiplier(ctx);
+  const { classMultiplier, bugSynergyBonus, trainerIvPenaltyApplied } =
+    calculateClassMultiplier(ctx);
 
   if (behavior.guaranteed) {
-    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: false, bugSynergyBonus, trainerIvPenaltyApplied };
+    return {
+      caught: true,
+      shakes: 3,
+      isCritical: false,
+      statusMultiplierApplied: false,
+      bugSynergyBonus,
+      trainerIvPenaltyApplied
+    };
   }
 
   const ballMult = resolveBallMultiplier(rawBallType, pokemon, ctx);
@@ -147,15 +174,25 @@ export function calculateCatchRatePure(
   const statusApplied = statusMult > 1.0;
 
   if (rawRate >= CATCH_MATH_255_MAX) {
-    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: statusApplied, bugSynergyBonus, trainerIvPenaltyApplied };
+    return {
+      caught: true,
+      shakes: 3,
+      isCritical: false,
+      statusMultiplierApplied: statusApplied,
+      bugSynergyBonus,
+      trainerIvPenaltyApplied
+    };
   }
 
   const finalRate = Math.max(1, rawRate);
-  const b = Math.floor(CATCH_MATH_65535_MAX * Math.pow(finalRate / CATCH_MATH_255_MAX, SHAKE_POWER_EXPONENT));
+  const b = Math.floor(
+    CATCH_MATH_65535_MAX * Math.pow(finalRate / CATCH_MATH_255_MAX, SHAKE_POWER_EXPONENT)
+  );
 
   const pokedexCount = ctx.pokedexCount ?? 0;
   const ccThreshold = calculateCriticalCaptureThreshold(finalRate, pokedexCount);
-  const isCritical = !!ctx.forceCritical || (ccThreshold > 0 && Math.random() * CATCH_MATH_256_MAX < ccThreshold);
+  const isCritical =
+    !!ctx.forceCritical || (ccThreshold > 0 && Math.random() * CATCH_MATH_256_MAX < ccThreshold);
 
   if (isCritical) {
     return {
@@ -188,43 +225,45 @@ export function calculateEscapeChancePure(
   playerStages: PureBattleStages = {},
   enemyStages: PureBattleStages = {}
 ): boolean {
-  const pAb = (playerPoke.ability || '').toLowerCase().replace(/[^a-z0-9]/g, '')
-  const pItem = (playerPoke.heldItem || '').toLowerCase().replace(/[^a-z0-9]/g, '')
-  const isGhost = playerPoke.type === 'ghost' || playerPoke.type2 === 'ghost'
+  const pAb = (playerPoke.ability || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const pItem = (playerPoke.heldItem || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const isGhost = playerPoke.type === 'ghost' || playerPoke.type2 === 'ghost';
 
   // Abilities, items, or types that guarantee escape and ignore trapping
   if (pAb === 'runaway' || pItem === 'smokeball' || pItem === 'shedshell' || isGhost) {
-    return true
+    return true;
   }
 
   // Trapping abilities of the wild Pokémon
-  const eAb = (wildPoke.ability || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  const eAb = (wildPoke.ability || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   if (eAb === 'shadowtag' && pAb !== 'shadowtag') {
-    return false
+    return false;
   }
   if (eAb === 'arenatrap') {
-    const isFloating = playerPoke.type === 'flying' || playerPoke.type2 === 'flying' || pAb === 'levitate'
-    if (!isFloating) return false
+    const isFloating =
+      playerPoke.type === 'flying' || playerPoke.type2 === 'flying' || pAb === 'levitate';
+    if (!isFloating) return false;
   }
   if (eAb === 'magnetpull') {
-    const isSteel = playerPoke.type === 'steel' || playerPoke.type2 === 'steel'
-    if (isSteel) return false
+    const isSteel = playerPoke.type === 'steel' || playerPoke.type2 === 'steel';
+    if (isSteel) return false;
   }
 
   // Effective speed calculation with stat stages and weather
-  const pSpe = getEffectiveStatPure(playerPoke, 'spe', playerStages, weather)
-  const eSpe = getEffectiveStatPure(wildPoke, 'spe', enemyStages, weather)
-  const safeESpe = Math.max(1, eSpe)
+  const pSpe = getEffectiveStatPure(playerPoke, 'spe', playerStages, weather);
+  const eSpe = getEffectiveStatPure(wildPoke, 'spe', enemyStages, weather);
+  const safeESpe = Math.max(1, eSpe);
 
   if (pSpe >= safeESpe) {
-    return true
+    return true;
   }
 
-  const enemyQuarter = Math.max(1, Math.floor(safeESpe / 4))
-  const f = Math.floor((pSpe * ESCAPE_BASE_MULTIPLIER) / enemyQuarter) + ESCAPE_ATTEMPT_BONUS * attempts
+  const enemyQuarter = Math.max(1, Math.floor(safeESpe / 4));
+  const f =
+    Math.floor((pSpe * ESCAPE_BASE_MULTIPLIER) / enemyQuarter) + ESCAPE_ATTEMPT_BONUS * attempts;
   if (f >= CATCH_MATH_256_MAX) {
-    return true
+    return true;
   }
 
-  return Math.floor(Math.random() * CATCH_MATH_256_MAX) < f
+  return Math.floor(Math.random() * CATCH_MATH_256_MAX) < f;
 }

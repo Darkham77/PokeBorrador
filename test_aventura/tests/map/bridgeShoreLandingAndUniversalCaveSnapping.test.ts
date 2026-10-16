@@ -66,10 +66,7 @@ describe('Bridge Shore Landing and Universal Cave Snapping Engine', () => {
       ].some((n) => {
         const ny = y + n.dy;
         const nx = x + n.dx;
-        return (
-          routeNetwork.bridgeGrid[ny]?.[nx] &&
-          continent.cells[ny]?.[nx]?.terrain === 'water'
-        );
+        return routeNetwork.bridgeGrid[ny]?.[nx] && continent.cells[ny]?.[nx]?.terrain === 'water';
       });
       expect(hasWaterBridgeNeighbor).toBe(true);
     }
@@ -88,7 +85,10 @@ describe('Bridge Shore Landing and Universal Cave Snapping Engine', () => {
     let cliffX = -1;
     for (let y = 10; y < 50; y++) {
       for (let x = 10; x < 50; x++) {
-        if ((continent.heightmap[y]?.[x] ?? 0) >= 1 && (continent.heightmap[y + 1]?.[x] ?? 0) === 0) {
+        if (
+          (continent.heightmap[y]?.[x] ?? 0) >= 1 &&
+          (continent.heightmap[y + 1]?.[x] ?? 0) === 0
+        ) {
           cliffY = y;
           cliffX = x;
           break;
@@ -131,7 +131,13 @@ describe('Bridge Shore Landing and Universal Cave Snapping Engine', () => {
   it('guarantees all Kanto caves have authentic south-facing orientation and ground-level doorways', () => {
     const { continent, pois } = buildCanonicalRegionMap('kanto');
 
-    const caveIds = ['mtmoon_west', 'mtmoon_east', 'rocktunnel_north', 'rocktunnel_south', 'diglettcave'];
+    const caveIds = [
+      'mtmoon_west',
+      'mtmoon_east',
+      'rocktunnel_north',
+      'rocktunnel_south',
+      'diglettcave'
+    ];
     for (const id of caveIds) {
       const cave = pois.find((p) => p.id === id);
       expect(cave, `Cave ${id} must exist`).toBeDefined();

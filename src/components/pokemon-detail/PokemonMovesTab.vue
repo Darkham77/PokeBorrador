@@ -1,98 +1,79 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useWindowListener } from '@/composables/ui/useWindowListener'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import MoveTooltip from '@/components/battle/MoveTooltip.vue'
-import BattleMovesGrid from '@/components/battle/BattleMovesGrid.vue'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
+import { ref } from 'vue';
+import { useWindowListener } from '@/composables/ui/useWindowListener';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import MoveTooltip from '@/components/battle/MoveTooltip.vue';
+import BattleMovesGrid from '@/components/battle/BattleMovesGrid.vue';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 
-import type { Move } from '@/types/pokemon/pokemon'
+import type { Move } from '@/types/pokemon/pokemon';
 
 interface MoveDetail extends Move {
-  level?: number
+  level?: number;
 }
 
 interface Props {
-  isInstance?: boolean
-  currentMoves?: (Move | null)[]
-  moveDetails: MoveDetail[]
-  canReorder?: boolean
+  isInstance?: boolean;
+  currentMoves?: (Move | null)[];
+  moveDetails: MoveDetail[];
+  canReorder?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   isInstance: false,
   currentMoves: () => [],
   canReorder: true
-})
+});
 
 const emit = defineEmits<{
-  (e: 'reorder-moves', fromIndex: number, toIndex: number): void
-}>()
+  (e: 'reorder-moves', fromIndex: number, toIndex: number): void;
+}>();
 
-const MOBILE_VIEWPORT_MAX_WIDTH_PX = 600
+const MOBILE_VIEWPORT_MAX_WIDTH_PX = 600;
 
-const isSmallScreen = ref(typeof window !== 'undefined' ? window.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH_PX : false)
+const isSmallScreen = ref(
+  typeof window !== 'undefined' ? window.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH_PX : false
+);
 const handleResize = () => {
-  isSmallScreen.value = window.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH_PX
-}
-useWindowListener('resize', handleResize)
+  isSmallScreen.value = window.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH_PX;
+};
+useWindowListener('resize', handleResize);
 
 function handleReorder(fromIndex: number, toIndex: number) {
-  emit('reorder-moves', fromIndex, toIndex)
+  emit('reorder-moves', fromIndex, toIndex);
 }
 </script>
 
 <template>
   <div class="pdex-moves-pane">
-    <div
-      v-if="isInstance"
-      class="current-moves-section"
-    >
-      <h4 class="vp-section-title">
-        MOVIMIENTOS ACTUALES
-      </h4>
+    <div v-if="isInstance" class="current-moves-section">
+      <h4 class="vp-section-title">MOVIMIENTOS ACTUALES</h4>
 
-      <BattleMovesGrid 
+      <BattleMovesGrid
         :moves="currentMoves"
         :can-reorder="canReorder"
         @reorder-moves="handleReorder"
       />
     </div>
 
-    <h4 class="vp-section-title">
-      APRENDIZAJE POR NIVEL
-    </h4>
+    <h4 class="vp-section-title">APRENDIZAJE POR NIVEL</h4>
     <div class="table-responsive-wrapper">
       <div class="vp-moves-list-grid">
         <!-- Header -->
         <div class="grid-header">
-          <div class="h-col">
-            NV
-          </div>
-          <div class="h-col">
-            ATAQUE
-          </div>
-          <div class="h-col">
-            TIPO
-          </div>
-          <div class="h-col">
-            CAT
-          </div>
-          <div class="h-col">
-            POT
-          </div>
-          <div class="h-col">
-            PREC
-          </div>
-          <div class="h-col">
-            PP
-          </div>
+          <div class="h-col">NV</div>
+          <div class="h-col">ATAQUE</div>
+          <div class="h-col">TIPO</div>
+          <div class="h-col">CAT</div>
+          <div class="h-col">POT</div>
+          <div class="h-col">PREC</div>
+          <div class="h-col">PP</div>
         </div>
 
         <!-- Rows -->
         <div class="grid-body">
-          <PVTooltip 
-            v-for="m in moveDetails" 
+          <PVTooltip
+            v-for="m in moveDetails"
             :key="m.name"
             tag="div"
             class="grid-row"
@@ -110,22 +91,19 @@ function handleReorder(fromIndex: number, toIndex: number) {
               {{ m.name }}
             </div>
             <div class="grid-cell move-type">
-              <PokemonTypeTag
-                :type="m.type || 'normal'"
-                :size="isSmallScreen ? 'ssm' : 'sm'"
-              />
+              <PokemonTypeTag :type="m.type || 'normal'" :size="isSmallScreen ? 'ssm' : 'sm'" />
             </div>
             <div class="grid-cell move-cat pixelated">
-              <span class="emoji">{{ m.cat === 'physical' ? '⚔️' : m.cat === 'special' ? '✨' : '🔮' }}</span> {{ (m.cat === 'physical' ? 'FÍSICO' : m.cat === 'special' ? 'ESPECIAL' : 'ESTADO') }}
+              <span class="emoji">{{
+                m.cat === 'physical' ? '⚔️' : m.cat === 'special' ? '✨' : '🔮'
+              }}</span>
+              {{ m.cat === 'physical' ? 'FÍSICO' : m.cat === 'special' ? 'ESPECIAL' : 'ESTADO' }}
             </div>
             <div class="grid-cell move-power pixelated">
               {{ m.power }}
             </div>
             <div class="grid-cell move-acc pixelated">
-              <span
-                v-if="m.acc === 1000"
-                class="emoji infinity-emoji"
-              >♾️</span>
+              <span v-if="m.acc === 1000" class="emoji infinity-emoji">♾️</span>
               <template v-else>
                 {{ m.acc }}
               </template>
@@ -141,7 +119,7 @@ function handleReorder(fromIndex: number, toIndex: number) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/pokemon-detail/_vicio-panes";
+@use '@/styles/components/pokemon-detail/_vicio-panes';
 
 :deep(.pv-tooltip-wrapper) {
   display: block;

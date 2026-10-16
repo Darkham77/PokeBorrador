@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useUIStore } from '@/stores/ui'
+import { useUIStore } from '@/stores/ui';
 import { onMounted, computed } from 'vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import EventMissions from '@/components/events/EventMissions.vue';
@@ -15,12 +15,12 @@ withDefaults(defineProps<Props>(), {
 
 const breedingStore = useBreedingStore();
 
-const ui = useUIStore()
-const isSmallScreen = computed(() => ui.isSmallScreen)
+const ui = useUIStore();
+const isSmallScreen = computed(() => ui.isSmallScreen);
 
 const emit = defineEmits<{
-  close: []
-}>()
+  close: [];
+}>();
 
 onMounted(() => {
   breedingStore.loadDaycare();
@@ -59,8 +59,8 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .missions-modal-header {
   @include shop-header;

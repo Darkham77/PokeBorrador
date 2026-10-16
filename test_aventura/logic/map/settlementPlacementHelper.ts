@@ -20,12 +20,7 @@ export interface BoundingBox2D {
  * Checks whether two 2D bounding boxes overlap on the tile grid.
  */
 export function checkBoundingBoxOverlap(a: BoundingBox2D, b: BoundingBox2D): boolean {
-  return (
-    a.x < b.x + b.width &&
-    a.x + a.width > b.x &&
-    a.y < b.y + b.height &&
-    a.y + a.height > b.y
-  );
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
 
 /**
@@ -34,7 +29,13 @@ export function checkBoundingBoxOverlap(a: BoundingBox2D, b: BoundingBox2D): boo
  */
 export function checkBuildingCollision(
   buildings: readonly UrbanBuildingPlacement[],
-  candidate: { readonly id?: string; readonly x: number; readonly y: number; readonly width: number; readonly height: number }
+  candidate: {
+    readonly id?: string;
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  }
 ): boolean;
 export function checkBuildingCollision(
   poi: POINode,
@@ -47,7 +48,13 @@ export function checkBuildingCollision(
 export function checkBuildingCollision(
   poiOrBuildings: POINode | readonly UrbanBuildingPlacement[],
   candidateOrId:
-    | { readonly id?: string; readonly x: number; readonly y: number; readonly width: number; readonly height: number }
+    | {
+        readonly id?: string;
+        readonly x: number;
+        readonly y: number;
+        readonly width: number;
+        readonly height: number;
+      }
     | string,
   x?: number,
   y?: number,
@@ -148,7 +155,12 @@ export function findFreePlacementSpot(
  */
 function blocksGateway(
   poi: POINode,
-  candidate: { readonly x: number; readonly y: number; readonly width: number; readonly height: number }
+  candidate: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  }
 ): boolean {
   if (!poi.gateways || poi.gateways.length === 0) return false;
   for (const gw of poi.gateways) {

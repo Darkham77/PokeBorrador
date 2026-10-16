@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch, onUnmounted, type Ref } from 'vue'
-import { gsap } from 'gsap'
-import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
-import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue'
-import { getPokemonVisualBadges } from '@/logic/constants/tags'
-import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities'
-import { useUIStore } from '@/stores/ui'
-import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
-import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay'
-import { resolveCardStatusIndicators } from '@/components/pokemon/pokemonDisplayCardHelper'
+import { computed, inject, ref, watch, onUnmounted, type Ref } from 'vue';
+import { gsap } from 'gsap';
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue';
+import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue';
+import { getPokemonVisualBadges } from '@/logic/constants/tags';
+import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities';
+import { useUIStore } from '@/stores/ui';
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue';
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
+import { resolveCardStatusIndicators } from '@/components/pokemon/pokemonDisplayCardHelper';
 import {
   resolveBoxCardClasses,
   resolveHpRatio,
@@ -22,170 +22,196 @@ import {
   resolveBoxTierInfo,
   resolveComputedTypePillSize,
   resolveCardAuraClass
-} from './boxPokemonCardHelper'
+} from './boxPokemonCardHelper';
 
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { ComponentPillSize } from '@/types/system/game'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { ComponentPillSize } from '@/types/system/game';
 
-const uiStore = useUIStore()
+const uiStore = useUIStore();
 
-const props = withDefaults(defineProps<{
-  pokemon: Pokemon
-  index: number
-  isSelected?: boolean
-  selectionType?: string | null
-  isFastMode?: boolean
-  hideStats?: boolean
-  typePillSize?: ComponentPillSize
-}>(), {
-  isSelected: false,
-  selectionType: null,
-  isFastMode: false,
-  hideStats: false,
-  typePillSize: 'sm'
-})
-
-const isModalFast = inject<Ref<boolean> | null>('isModalFastMode', null) ?? inject<Ref<boolean> | null>('isModalPerformanceMode', null)
-const isFastActive = computed(() => {
-  if (props.isFastMode || uiStore.isSimplifiedModalsMode) return true
-  
-  if (isModalFast !== null) {
-    return isModalFast.value
-  } else {
-    return uiStore.isFastMode
+const props = withDefaults(
+  defineProps<{
+    pokemon: Pokemon;
+    index: number;
+    isSelected?: boolean;
+    selectionType?: string | null;
+    isFastMode?: boolean;
+    hideStats?: boolean;
+    typePillSize?: ComponentPillSize;
+  }>(),
+  {
+    isSelected: false,
+    selectionType: null,
+    isFastMode: false,
+    hideStats: false,
+    typePillSize: 'sm'
   }
-})
+);
+
+const isModalFast =
+  inject<Ref<boolean> | null>('isModalFastMode', null) ??
+  inject<Ref<boolean> | null>('isModalPerformanceMode', null);
+const isFastActive = computed(() => {
+  if (props.isFastMode || uiStore.isSimplifiedModalsMode) return true;
+
+  if (isModalFast !== null) {
+    return isModalFast.value;
+  }
+  return uiStore.isFastMode;
+});
 
 const cardEmit = defineEmits<{
-  (e: 'click', event: MouseEvent, index: number): void
-}>()
+  (e: 'click', event: MouseEvent, index: number): void;
+}>();
 
-const visualBadges = computed(() => props.pokemon ? getPokemonVisualBadges(props.pokemon) : [])
-const numBadges = computed(() => visualBadges.value.length)
-const tierInfo = computed(() => resolveBoxTierInfo(props.pokemon))
-const spriteUrl = computed(() => props.pokemon ? getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
-  isShiny: props.pokemon.isShiny 
-}) : '')
+const visualBadges = computed(() => (props.pokemon ? getPokemonVisualBadges(props.pokemon) : []));
+const numBadges = computed(() => visualBadges.value.length);
+const tierInfo = computed(() => resolveBoxTierInfo(props.pokemon));
+const spriteUrl = computed(() =>
+  props.pokemon
+    ? getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
+        isShiny: props.pokemon.isShiny
+      })
+    : ''
+);
 
-const hpRatio = computed(() => resolveHpRatio(props.pokemon?.hp, props.pokemon?.maxHp))
-const statColor = computed(() => resolveStatColor(hpRatio.value))
+const hpRatio = computed(() => resolveHpRatio(props.pokemon?.hp, props.pokemon?.maxHp));
+const statColor = computed(() => resolveStatColor(hpRatio.value));
 
 const totalIvs = computed(() => {
-  if (props.hideStats || !props.pokemon) return 0
-  return calculateTotalIVs(props.pokemon.ivs)
-})
+  if (props.hideStats || !props.pokemon) return 0;
+  return calculateTotalIVs(props.pokemon.ivs);
+});
 
 const totalPower = computed(() => {
-  if (props.hideStats || !props.pokemon) return 0
-  return calculateTotalPower(props.pokemon)
-})
+  if (props.hideStats || !props.pokemon) return 0;
+  return calculateTotalPower(props.pokemon);
+});
 
-const fieldPassive = computed(() => props.pokemon ? getFieldPassiveBadges(props.pokemon) : null)
-const statusIndicators = computed(() => props.pokemon ? resolveCardStatusIndicators(props.pokemon, fieldPassive.value) : [])
+const fieldPassive = computed(() => (props.pokemon ? getFieldPassiveBadges(props.pokemon) : null));
+const statusIndicators = computed(() =>
+  props.pokemon ? resolveCardStatusIndicators(props.pokemon, fieldPassive.value) : []
+);
 
-const computedTypePillSize = computed(() => resolveComputedTypePillSize(props.pokemon, props.typePillSize))
-const auraClass = computed(() => resolveCardAuraClass(props.pokemon?.aura, isFastActive.value))
+const computedTypePillSize = computed(() =>
+  resolveComputedTypePillSize(props.pokemon, props.typePillSize)
+);
+const auraClass = computed(() => resolveCardAuraClass(props.pokemon?.aura, isFastActive.value));
 
-const cardClasses = computed(() => resolveBoxCardClasses({
-  isSelected: props.isSelected,
-  selectionType: props.selectionType,
-  numBadges: numBadges.value,
-  isFastActive: isFastActive.value,
-  isPremium: tierInfo.value.isPremium,
-  pokemon: props.pokemon
-}))
+const cardClasses = computed(() =>
+  resolveBoxCardClasses({
+    isSelected: props.isSelected,
+    selectionType: props.selectionType,
+    numBadges: numBadges.value,
+    isFastActive: isFastActive.value,
+    isPremium: tierInfo.value.isPremium,
+    pokemon: props.pokemon
+  })
+);
 
 const handleSpriteError = (e: Event) => {
-  (e.target as HTMLImageElement).style.display = 'none'
-}
+  (e.target as HTMLImageElement).style.display = 'none';
+};
 
 // --- ANIMACIONES DE GSAP ---
-const animatedHpRatio = ref(hpRatio.value)
-watch(hpRatio, (newVal) => {
-  gsap.to(animatedHpRatio, {
-    value: newVal,
-    duration: 0.3,
-    ease: 'power2.out'
-  })
-}, { immediate: true })
+const animatedHpRatio = ref(hpRatio.value);
+watch(
+  hpRatio,
+  (newVal) => {
+    gsap.to(animatedHpRatio, {
+      value: newVal,
+      duration: 0.3,
+      ease: 'power2.out'
+    });
+  },
+  { immediate: true }
+);
 
-const hpFillWidthPercent = computed(() => `${animatedHpRatio.value * PERCENT_BASE_MULTIPLIER}%`)
+const hpFillWidthPercent = computed(() => `${animatedHpRatio.value * PERCENT_BASE_MULTIPLIER}%`);
 
-const selectedBorderRef = ref<HTMLElement | null>(null)
-const checkBoxRef = ref<HTMLElement | null>(null)
-let borderPulseTween: gsap.core.Tween | null = null
-let checkBoxTween: gsap.core.Tween | null = null
+const selectedBorderRef = ref<HTMLElement | null>(null);
+const checkBoxRef = ref<HTMLElement | null>(null);
+let borderPulseTween: gsap.core.Tween | null = null;
+let checkBoxTween: gsap.core.Tween | null = null;
 
 const startBorderPulse = () => {
-  if (borderPulseTween) borderPulseTween.kill()
-  if (!selectedBorderRef.value) return
-  borderPulseTween = gsap.fromTo(selectedBorderRef.value, 
-    { opacity: 0.3 }, 
-    { 
-      opacity: 0.8, 
-      duration: 1.0, 
-      yoyo: true, 
-      repeat: -1, 
-      ease: 'sine.inOut' 
+  if (borderPulseTween) borderPulseTween.kill();
+  if (!selectedBorderRef.value) return;
+  borderPulseTween = gsap.fromTo(
+    selectedBorderRef.value,
+    { opacity: 0.3 },
+    {
+      opacity: 0.8,
+      duration: 1.0,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
     }
-  )
-}
+  );
+};
 
 const stopBorderPulse = () => {
   if (borderPulseTween) {
-    borderPulseTween.kill()
-    borderPulseTween = null
+    borderPulseTween.kill();
+    borderPulseTween = null;
   }
-}
+};
 
 const animateCheckBox = (isSelected: boolean) => {
-  if (checkBoxTween) checkBoxTween.kill()
-  if (!checkBoxRef.value) return
-  
+  if (checkBoxTween) checkBoxTween.kill();
+  if (!checkBoxRef.value) return;
+
   if (isSelected) {
-    checkBoxTween = gsap.fromTo(checkBoxRef.value,
+    checkBoxTween = gsap.fromTo(
+      checkBoxRef.value,
       { scale: 1, boxShadow: 'none' },
-      { 
-        scale: 1.1, 
-        boxShadow: '0 0 15px rgba(239, 68, 68, 0.5)', 
-        duration: 0.2, 
-        ease: 'back.out(1.7)' 
+      {
+        scale: 1.1,
+        boxShadow: '0 0 15px rgba(239, 68, 68, 0.5)',
+        duration: 0.2,
+        ease: 'back.out(1.7)'
       }
-    )
+    );
   } else {
     checkBoxTween = gsap.to(checkBoxRef.value, {
       scale: 1,
       boxShadow: 'none',
       duration: 0.2,
       ease: 'power2.out'
-    })
+    });
   }
-}
+};
 
-watch(() => props.isSelected, (newVal) => {
-  if (newVal) {
-    gsap.delayedCall(0, startBorderPulse)
-    gsap.delayedCall(0, () => animateCheckBox(true))
-  } else {
-    stopBorderPulse()
-    gsap.delayedCall(0, () => animateCheckBox(false))
-  }
-}, { immediate: true })
+watch(
+  () => props.isSelected,
+  (newVal) => {
+    if (newVal) {
+      gsap.delayedCall(0, startBorderPulse);
+      gsap.delayedCall(0, () => animateCheckBox(true));
+    } else {
+      stopBorderPulse();
+      gsap.delayedCall(0, () => animateCheckBox(false));
+    }
+  },
+  { immediate: true }
+);
 
 onUnmounted(() => {
-  stopBorderPulse()
-  if (checkBoxTween) checkBoxTween.kill()
-})
+  stopBorderPulse();
+  if (checkBoxTween) checkBoxTween.kill();
+});
 </script>
 
 <template>
   <div
     id="box-pokemon-card-div-1"
     :class="cardClasses"
-    :style="{ 
+    :style="{
       '--tier-color': tierInfo.color,
       '--tier-color-rgb': tierInfo.rgb
     }"
+    role="button"
+    tabindex="0"
     @click.stop="cardEmit('click', $event, props.index)"
   >
     <div class="top-right-column">
@@ -198,10 +224,7 @@ onUnmounted(() => {
 
       <!-- Indicadores de Estado -->
       <div class="card-status-indicators">
-        <FriendshipSealBadge
-          :friendship="props.pokemon?.friendship"
-          size="sm"
-        />
+        <FriendshipSealBadge :friendship="props.pokemon?.friendship" size="sm" />
         <PVTooltip
           v-for="indicator in statusIndicators"
           :key="indicator.key"
@@ -216,10 +239,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Píldora de Insignias Centralizada -->
-    <UnifiedBadgePill 
-      :pokemon="props.pokemon" 
-      size="sm"
-    />
+    <UnifiedBadgePill :pokemon="props.pokemon" size="sm" />
 
     <!-- Sprite Section -->
     <div class="box-sprite-wrapper">
@@ -245,13 +265,11 @@ onUnmounted(() => {
           :class="[auraClass]"
           alt="pokemon"
           width="32"
-        
           height="32"
           @error="handleSpriteError"
-        >
+        />
       </PVSpriteFX>
     </div>
-
 
     <!-- Info Footer -->
     <div class="card-info">
@@ -259,43 +277,26 @@ onUnmounted(() => {
         <span
           class="box-pokemon-name"
           :class="{ 'is-species': !props.pokemon.nickname, 'is-nickname': props.pokemon.nickname }"
-        >{{ props.pokemon.nickname || props.pokemon.name }}</span>
-        <span
-          v-if="props.pokemon.nickname"
-          class="box-pokemon-species-sub"
-        >{{ props.pokemon.name }}</span>
+          >{{ props.pokemon.nickname || props.pokemon.name }}</span
+        >
+        <span v-if="props.pokemon.nickname" class="box-pokemon-species-sub">{{
+          props.pokemon.name
+        }}</span>
       </div>
-      <PokemonTypePills 
-        :pokemon="props.pokemon" 
-        :size="computedTypePillSize"
-        class="box-types"
-      />
+      <PokemonTypePills :pokemon="props.pokemon" :size="computedTypePillSize" class="box-types" />
       <div class="stats-column">
         <div class="level-gender-row">
-          <div class="m-badge-level">
-            Nv. {{ props.pokemon.level }}
-          </div>
-          <PVGenderBadge
-            v-if="props.pokemon.gender"
-            :gender="props.pokemon.gender"
-            size="mini"
-          />
+          <div class="m-badge-level">Nv. {{ props.pokemon.level }}</div>
+          <PVGenderBadge v-if="props.pokemon.gender" :gender="props.pokemon.gender" size="mini" />
         </div>
-        <div
-          v-if="!props.hideStats"
-          class="m-badge-iv"
-        >
-          IV {{ totalIvs }}
-        </div>
+        <div v-if="!props.hideStats" class="m-badge-iv">IV {{ totalIvs }}</div>
         <PVTooltip
           v-if="!props.hideStats"
           title="PODER TOTAL"
           description="Suma de estadísticas base, IVs genéticos y bonificación de EVs (4 EVs = 1 IV)."
           position="top"
         >
-          <div class="m-badge-tot">
-            TOT {{ totalPower }}
-          </div>
+          <div class="m-badge-tot">TOT {{ totalPower }}</div>
         </PVTooltip>
       </div>
 
@@ -303,24 +304,17 @@ onUnmounted(() => {
       <div class="hp-bar-mini">
         <div
           class="hp-fill"
-          :style="{ 
-            width: hpFillWidthPercent, 
-            background: statColor 
+          :style="{
+            width: hpFillWidthPercent,
+            background: statColor
           }"
         />
       </div>
     </div>
 
     <!-- Selection Indicator (Inventory Style) -->
-    <div
-      v-if="props.selectionType"
-      class="selection-check"
-    >
-      <div
-        ref="checkBoxRef"
-        class="check-box"
-        :class="{ checked: props.isSelected }"
-      >
+    <div v-if="props.selectionType" class="selection-check">
+      <div ref="checkBoxRef" class="check-box" :class="{ checked: props.isSelected }">
         <svg
           v-if="props.isSelected"
           viewBox="0 0 24 24"
@@ -337,29 +331,27 @@ onUnmounted(() => {
     </div>
 
     <!-- Borde de selección animado con GSAP -->
-    <div
-      v-if="props.isSelected"
-      ref="selectedBorderRef"
-      class="selected-border-pulse"
-    />
+    <div v-if="props.isSelected" ref="selectedBorderRef" class="selected-border-pulse" />
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .box-pokemon-card {
   @include premium-card-hover(var(--tier-color, #1e293b), 1.02, -4px);
   @include pokemon-card-standard(20px);
 
-  transform: Translatez(0); 
+  transform: Translatez(0);
   border-color: var(--tier-color, Rgb(255 255 255 / 15%));
-  
+
   &.is-premium-tier {
     @include pokemon-card-premium-tier;
   }
 
-  &.is-on-mission, &.is-on-event, &.is-busy {
+  &.is-on-mission,
+  &.is-on-event,
+  &.is-busy {
     .box-card-sprite {
       opacity: 0.6;
       will-change: transform, filter, opacity;
@@ -443,12 +435,14 @@ onUnmounted(() => {
   // --- FAST / PERFORMANCE MODE OVERRIDES ---
   &.fast-mode,
   &.performance-mode {
-    will-change: auto; 
-    
+    will-change: auto;
+
     &:hover {
       filter: Brightness(1.1);
-      &::before { opacity: 0 !important; }
-      
+      &::before {
+        opacity: 0 !important;
+      }
+
       :deep(.box-card-sprite) {
         transform: Translatey(-4px);
       }
@@ -458,7 +452,7 @@ onUnmounted(() => {
       background: Rgb(var(--tier-color-rgb), 0.2) !important;
       border-color: var(--tier-color) !important;
       box-shadow: none !important;
-      
+
       &:hover {
         background: Rgb(var(--tier-color-rgb), 0.3) !important;
         box-shadow: none !important;

@@ -9,7 +9,11 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { PendingAward, PastCompetitionWinner } from '@/types/system/stores.ts';
 import { hashString, mulberry32 } from '@/logic/utils/math.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
-import { getPokemonPhysicalWeight, getPokemonPhysicalHeight, getPhysicalDimensionTier } from '@/logic/pokemon/physicalDimensionsMath.ts';
+import {
+  getPokemonPhysicalWeight,
+  getPokemonPhysicalHeight,
+  getPhysicalDimensionTier
+} from '@/logic/pokemon/physicalDimensionsMath.ts';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine.ts';
 import { calculateTotalIVs } from '@/logic/pokemon/statsMath.ts';
 import type {
@@ -17,7 +21,8 @@ import type {
   SubCompetitionOrder,
   SubCompetitionEvaluationResult,
   ResolvedSubCompetitionOrder,
-  ResolvedAwardCategory
+  ResolvedAwardCategory,
+  SubCompetitionMetric
 } from './eventCompetitions.ts';
 
 const TARGET_MAX_MULTIPLIER = 1.15;
@@ -79,7 +84,7 @@ export function evaluateDimensionMetric(
   const rawNum = isWeight ? getPokemonPhysicalWeight(pokemon) : getPokemonPhysicalHeight(pokemon);
   const unit = isWeight ? 'kg' : 'm';
   const spec = pokemonDataProvider.getPokemonData(pokemon.id, true);
-  const baseDim = isWeight ? (spec?.weight || null) : (spec?.height || null);
+  const baseDim = isWeight ? spec?.weight || null : spec?.height || null;
   const tier = getPhysicalDimensionTier(rawNum, baseDim);
 
   const maxTarget = baseDim ? (baseDim * TARGET_MAX_MULTIPLIER).toFixed(1) : null;
@@ -121,7 +126,7 @@ export function getSubCompIcon(metric: string): string {
   return '🏆';
 }
 
-const METRIC_TITLES: Record<string, { max: string; min: string }> = {
+const METRIC_TITLES: Partial<Record<SubCompetitionMetric, { max: string; min: string }>> = {
   weight: { max: 'Mayor Peso', min: 'Menor Peso' },
   height: { max: 'Mayor Altura', min: 'Menor Altura' },
   level: { max: 'Mayor Nivel', min: 'Menor Nivel' },
@@ -138,18 +143,27 @@ export function getSubCompTitle(eventId: string, sub: SubCompetitionConfig): str
   if (sub.metric === 'stat_iv' && sub.targetStat) {
     return `Mayor IV en ${sub.targetStat.toUpperCase()}${speciesSuffix}`; // domain-ok: Open dynamic text or non-domain string payload
   }
-  const labelEntry = METRIC_TITLES[sub.metric];
+  const labelEntry = METRIC_TITLES[sub.metric as SubCompetitionMetric];
   if (labelEntry) {
     return labelEntry[dir] + speciesSuffix;
   }
   return (sub.name || 'Categoría') + speciesSuffix;
 }
 
-const METRIC_DESCRIPTIONS: Record<string, { max: string; min: string }> = {
-  weight: { max: 'Premia al Pokémon con Mayor Peso (kg)', min: 'Premia al Pokémon con Menor Peso (kg)' },
-  height: { max: 'Premia al Pokémon con Mayor Altura (m)', min: 'Premia al Pokémon con Menor Altura (m)' },
+const METRIC_DESCRIPTIONS: Partial<Record<SubCompetitionMetric, { max: string; min: string }>> = {
+  weight: {
+    max: 'Premia al Pokémon con Mayor Peso (kg)',
+    min: 'Premia al Pokémon con Menor Peso (kg)'
+  },
+  height: {
+    max: 'Premia al Pokémon con Mayor Altura (m)',
+    min: 'Premia al Pokémon con Menor Altura (m)'
+  },
   level: { max: 'Premia al Pokémon con Mayor Nivel', min: 'Premia al Pokémon con Menor Nivel' },
-  friendship: { max: 'Premia al Pokémon con Mayor Amistad (0 a 255)', min: 'Premia al Pokémon con Menor Amistad' }
+  friendship: {
+    max: 'Premia al Pokémon con Mayor Amistad (0 a 255)',
+    min: 'Premia al Pokémon con Menor Amistad'
+  }
 };
 
 export function getSubCompDescription(eventId: string, sub: SubCompetitionConfig): string {
@@ -162,7 +176,7 @@ export function getSubCompDescription(eventId: string, sub: SubCompetitionConfig
   if (sub.metric === 'stat_iv' && sub.targetStat) {
     return `Premia al Pokémon con mayor IV en ${sub.targetStat.toUpperCase()} (0 a 31)${speciesText}.`;
   }
-  const descEntry = METRIC_DESCRIPTIONS[sub.metric];
+  const descEntry = METRIC_DESCRIPTIONS[sub.metric as SubCompetitionMetric];
   if (descEntry) {
     return `${descEntry[dir]}${speciesText}.`;
   }
@@ -170,7 +184,7 @@ export function getSubCompDescription(eventId: string, sub: SubCompetitionConfig
 }
 
 function toRecord(obj: unknown): Record<string, unknown> | null {
-  return (obj && typeof obj === 'object') ? (obj as Record<string, unknown>) : null; // open-record: Generic key-value data dictionary container
+  return obj && typeof obj === 'object' ? (obj as Record<string, unknown>) : null; // open-record: Generic key-value data dictionary container
 }
 
 function extractDeepNumber(rec: Record<string, unknown>, path: string): number | null {
@@ -195,7 +209,9 @@ export function parseEntryScore(obj: unknown, sortBy: string): number {
   if (strippedVal !== null) return strippedVal;
 
   const dataRec = toRecord(rec.data);
-  const scoreVal = (rec.score ?? dataRec?.score ?? rec.total_ivs ?? dataRec?.total_ivs) as number | undefined;
+  const scoreVal = (rec.score ?? dataRec?.score ?? rec.total_ivs ?? dataRec?.total_ivs) as
+    | number
+    | undefined;
   return typeof scoreVal === 'number' && !isNaN(scoreVal) ? scoreVal : 0;
 }
 
@@ -210,7 +226,10 @@ export function parseEntryObtainedAt(obj: unknown): number {
   const rec = toRecord(obj);
   if (!rec) return Infinity;
   const dataRec = toRecord(rec.data);
-  const val = (rec.obtained_at ?? dataRec?.obtained_at ?? rec.obtainedAt) as number | null | undefined;
+  const val = (rec.obtained_at ?? dataRec?.obtained_at ?? rec.obtainedAt) as
+    | number
+    | null
+    | undefined;
   return typeof val === 'number' && !isNaN(val) && val > 0 ? val : Infinity;
 }
 
@@ -228,15 +247,23 @@ export function parseAwardPrizePayload(rawPrize: unknown): Record<string, unknow
   return {};
 }
 
-function hasMatchingPrizeItems(candidatePrize: unknown, prizeItems: Record<string, number>): boolean {
+import type { ItemId } from '@/data/inventory/items.ts';
+
+function hasMatchingPrizeItems(
+  candidatePrize: unknown,
+  prizeItems: Partial<Record<ItemId, number>>
+): boolean {
   if (!candidatePrize || typeof candidatePrize !== 'object') return false;
-  const candidateItems = ((candidatePrize as Record<string, unknown>).items || {}) as Record<string, number>; // open-record: Generic key-value data dictionary container
+  const candidateItems = ((candidatePrize as Record<string, unknown>).items || {}) as Record<
+    string,
+    number
+  >; // open-record: Generic key-value data dictionary container
   const candidateKeys = Object.keys(candidateItems);
-  return candidateKeys.length > 0 && candidateKeys.every(k => k in prizeItems);
+  return candidateKeys.length > 0 && candidateKeys.every((k) => k in prizeItems);
 }
 
 function matchCategoryIdFromPrizeItems(
-  prizeItems: Record<string, number>,
+  prizeItems: Partial<Record<ItemId, number>>,
   subComps: readonly SubCompetitionConfig[]
 ): string | null {
   const prizeItemKeys = Object.keys(prizeItems);
@@ -261,7 +288,9 @@ function matchCategoryIdFromWinners(
   winners?: PastCompetitionWinner[]
 ): string | null {
   if (!winners || winners.length === 0) return null;
-  const userWinners = award.winner_id ? winners.filter(w => w.player_id === award.winner_id) : winners;
+  const userWinners = award.winner_id
+    ? winners.filter((w) => w.player_id === award.winner_id)
+    : winners;
   if (userWinners.length === 1 && userWinners[0]?.category_id) {
     return userWinners[0].category_id;
   }
@@ -283,7 +312,9 @@ export function resolveAwardCategoryId(
   subComps: readonly SubCompetitionConfig[] = [],
   winners?: PastCompetitionWinner[]
 ): string | null {
-  const directCatId = (award.category_id || (parsedPrize.category_id as string | undefined) || '') as string;
+  const directCatId = (award.category_id ||
+    (parsedPrize.category_id as string | undefined) ||
+    '') as string;
   if (directCatId) return directCatId;
 
   if (subComps.length > 0) {
@@ -305,12 +336,14 @@ const PREFIX_VISUALS: readonly {
 }[] = [
   {
     prefix: 'weight',
-    title: (eventId, catId) => getSubCompTitle(eventId, { id: catId, metric: 'weight', order: 'auto', name: 'Peso' }),
+    title: (eventId, catId) =>
+      getSubCompTitle(eventId, { id: catId, metric: 'weight', order: 'auto', name: 'Peso' }),
     icon: '⚖️'
   },
   {
     prefix: 'height',
-    title: (eventId, catId) => getSubCompTitle(eventId, { id: catId, metric: 'height', order: 'auto', name: 'Altura' }),
+    title: (eventId, catId) =>
+      getSubCompTitle(eventId, { id: catId, metric: 'height', order: 'auto', name: 'Altura' }),
     icon: '📏'
   },
   { prefix: 'friendship', title: () => 'Mayor Amistad', icon: '💖' },

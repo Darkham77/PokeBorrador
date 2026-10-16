@@ -1,13 +1,13 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { setActivePinia, createPinia } from 'pinia'
-import RankedTournamentDetailModal from '@/components/modals/RankedTournamentDetailModal.vue'
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
+import RankedTournamentDetailModal from '@/components/modals/RankedTournamentDetailModal.vue';
 
 describe('RankedTournamentDetailModal.vue', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-  })
+    setActivePinia(createPinia());
+  });
 
   it('renders tournament card with banner, rules, and exclusive master reward', () => {
     const wrapper = mount(RankedTournamentDetailModal, {
@@ -24,14 +24,14 @@ describe('RankedTournamentDetailModal.vue', () => {
           PokemonTypeTag: true
         }
       }
-    })
+    });
 
-    expect(wrapper.text()).toContain('TORNEO DE TEMPORADA')
-    expect(wrapper.text()).toContain('Frontera Kanto & Johto')
-    expect(wrapper.text()).toContain('RECOMPENSA EXCLUSIVA MAESTRO')
-    expect(wrapper.find('.season-tournament-card').exists()).toBe(true)
-    expect(wrapper.find('.tournament-banner-wrapper').exists()).toBe(true)
-  })
+    expect(wrapper.text()).toContain('TORNEO DE TEMPORADA');
+    expect(wrapper.text()).toContain('Frontera Kanto & Johto');
+    expect(wrapper.text()).toContain('RECOMPENSA EXCLUSIVA MAESTRO');
+    expect(wrapper.find('.season-tournament-card').exists()).toBe(true);
+    expect(wrapper.find('.tournament-banner-wrapper').exists()).toBe(true);
+  });
 
   it('resolves theme from medal prop if themeId is omitted', () => {
     const wrapper = mount(RankedTournamentDetailModal, {
@@ -56,10 +56,10 @@ describe('RankedTournamentDetailModal.vue', () => {
           PokemonTypeTag: true
         }
       }
-    })
+    });
 
-    expect(wrapper.text()).toContain('Copa Monotipo')
-    expect(wrapper.text()).toContain('Monotipo')
-    expect(wrapper.text()).toContain('charizard')
-  })
-})
+    expect(wrapper.text()).toContain('Copa Monotipo');
+    expect(wrapper.text()).toContain('Monotipo');
+    expect(wrapper.text()).toContain('charizard');
+  });
+});

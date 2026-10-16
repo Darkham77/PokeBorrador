@@ -11,9 +11,9 @@ Frontend Developers / Systems Engineers.
 - Follow standard repository modularity guidelines.
 - **Multi-Category Sub-Competition System & Flexible Criteria**: Global competition events support multiple concurrent sub-competitions (minimum 3 by default: IVs, Weight, Height, with support for arbitrary additional sub-categories like Level, Friendship, or Specific Stat IVs).
 - **Multi-Species Competition Scoping (IV vs Physical Dimensions)**:
-  - *Genetic IVs (`total_ivs`, `stat_iv`)*: Always evaluated globally across all participating event species in a shared category (`category_id: 'ivs'`).
-  - *Physical Dimensions (`weight`, `height`)*: Evaluated strictly **intra-species** (`category_id: '<metric>_<species>'`, e.g. `weight_horsea`, `height_horsea`). Different species never compete against each other in weight or height unless explicitly configured as a global open event (such as `gran_concurso_sabado` with `competitionScope: 'global'`).
-  - *Slot Availability & Anti-Duplication*: Players may occupy 1 slot for global IVs plus 1 slot per physical metric for each participating species, provided each registered Pokémon UID is unique.
+  - _Genetic IVs (`total_ivs`, `stat_iv`)_: Always evaluated globally across all participating event species in a shared category (`category_id: 'ivs'`).
+  - _Physical Dimensions (`weight`, `height`)_: Evaluated strictly **intra-species** (`category_id: '<metric>_<species>'`, e.g. `weight_horsea`, `height_horsea`). Different species never compete against each other in weight or height unless explicitly configured as a global open event (such as `gran_concurso_sabado` with `competitionScope: 'global'`).
+  - _Slot Availability & Anti-Duplication_: Players may occupy 1 slot for global IVs plus 1 slot per physical metric for each participating species, provided each registered Pokémon UID is unique.
 - **Metric Evaluation Direction, Determinism & Direct Nomenclature Mandate**:
   - Sub-competitions, category badges, chips, and tooltips MUST state direct, unambiguous criteria (`Mayor IVs`, `Mayor Peso` / `Menor Peso`, `Mayor Altura` / `Menor Altura`, `Mayor Nivel`, `Mayor Amistad`).
   - Florid, slang, or flavor adjectives ("Titán", "Miniatura", "Gran Salto", "XXL", "XXS", "Genética Superior") are STRICTLY FORBIDDEN across all competition UI chips, sub-competition headers, and tooltips.
@@ -33,10 +33,10 @@ Frontend Developers / Systems Engineers.
   - Saturday competition is a Global Open Championship running all day (00:00 to 23:59) where any Pokémon caught during the day is eligible, offering top-tier prizes alongside the weekend 2x EXP bonus.
 - **Monthly 4-Week Thematic Rotation**: Weekday competitions (Tuesday & Thursday) rotate weekly across 4 distinct monthly themes (Week 1: Magikarp/Aquatic & Bug Catching; Week 2: Exotic Marine & Safari Park; Week 3: Deep Sea & Ancient Fossils/Caves; Week 4: Mystic Waters & Haunted Night).
 - **Modular Monthly Events Schedule & Conflict Prevention**:
-  - *Monthly Community Day (`comunidad_mensual`)*: Runs strictly on the **last Sunday of each month** (`type: 'monthly', trigger: 'last_sunday'`, 00:00 to 23:59), featuring a designated Pokémon with 3x spawn and 4x shiny rate, completely avoiding Saturdays to eliminate schedule collisions with the Saturday Global Open Championship.
-  - *Faction War Championship (`guerra_facciones_mensual`)*: Runs during the **2nd weekend of each month** (`type: 'monthly', trigger: 'second_weekend'`, Saturday 00:00 to Sunday 23:59), awarding 2x faction points and 2x Battle Coins during mid-month territorial battles.
+  - _Monthly Community Day (`comunidad_mensual`)_: Runs strictly on the **last Sunday of each month** (`type: 'monthly', trigger: 'last_sunday'`, 00:00 to 23:59), featuring a designated Pokémon with 3x spawn and 4x shiny rate, completely avoiding Saturdays to eliminate schedule collisions with the Saturday Global Open Championship.
+  - _Faction War Championship (`guerra_facciones_mensual`)_: Runs during the **2nd weekend of each month** (`type: 'monthly', trigger: 'second_weekend'`, Saturday 00:00 to Sunday 23:59), awarding 2x faction points and 2x Battle Coins during mid-month territorial battles.
 - **Dynamic Event Window & Countdown Resolution**: All event time windows (`getEventCurrentWindow`) and upcoming occurrences (`getUpcomingEventOccurrences`) MUST support weekly recurring schedules and all modular monthly recurring schedules (`type: 'monthly'`, supporting triggers `last_sunday`, `second_weekend`, and `last_weekend`). Active event cards (`EventCard.vue`) and HUD buff overlays (`buffs.ts`) MUST dynamically compute remaining seconds and time labels against `getEventCurrentWindow`, ensuring real-time countdown updates across server time modifications without falling back to `0` or `'Indefinido'`.
-- **Resilient Event Config Parsing & Wildcard '*' Open Tournament Contract**:
+- **Resilient Event Config Parsing & Wildcard '\*' Open Tournament Contract**:
   - Event `config` and `schedule` properties MUST always be parsed via `safeParse` to prevent `SyntaxError` on malformed, primitive, or corrupted payloads.
   - Open competition events (`species: '*'`) signify global participation across all species and must NEVER be passed to `requirePokemonSpeciesId` or treated as literal Pokémon species identifiers.
   - Multi-species lists (comma-separated), rotation theme entries (`rotationTheme: 'weekly_4'`), and single species must always be resolved via `resolveWeeklyRotation` and filtered with `isPokemonSpeciesId(token)` before modifying spawn pools, computing rates, or rendering UI badges.
@@ -79,4 +79,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- *This directory contains specialized domain logic and files with no subdirectories.*
+- _This directory contains specialized domain logic and files with no subdirectories._

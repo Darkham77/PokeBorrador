@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import DebugWeatherSeasonCard from './debug-weather/DebugWeatherSeasonCard.vue'
-import type { PrecomputedRouteData } from './debugWeatherTypes.ts'
-import type { WeatherTableRouteId } from '@/data/world/weather-tables'
+import DebugWeatherSeasonCard from './debug-weather/DebugWeatherSeasonCard.vue';
+import type { PrecomputedRouteData } from './debugWeatherTypes.ts';
+import type { WeatherTableRouteId } from '@/data/world/weather-tables';
 
 defineProps<{
-  route: PrecomputedRouteData
-  isExpanded: boolean
-}>()
+  route: PrecomputedRouteData;
+  isExpanded: boolean;
+}>();
 
 const emit = defineEmits<{
-  (e: 'toggle', routeId: WeatherTableRouteId): void
-}>()
+  (e: 'toggle', routeId: WeatherTableRouteId): void;
+}>();
 </script>
 
 <template>
@@ -25,10 +25,7 @@ const emit = defineEmits<{
       <span class="id-tag">#{{ route.routeId }}</span>
     </h2>
 
-    <div
-      v-if="isExpanded"
-      class="seasons-grid"
-    >
+    <div v-if="isExpanded" class="seasons-grid">
       <DebugWeatherSeasonCard
         v-for="season in route.seasons"
         :key="season.seasonId"

@@ -25,10 +25,10 @@ a convenient way to get started, simply depend on a transpiled and minified vers
 This package can be used to parse sets and teams **without any dependencies**:
 
 ```ts
-import {Sets} from '@pkmn/sets';
+import { Sets } from '@pkmn/sets';
 
 const set = Sets.importSet(
-`Tangrowth @ Assault Vest
+  `Tangrowth @ Assault Vest
 Ability: Regenerator
 EVs: 248 HP / 8 Def / 252 SpD
 Sassy Nature
@@ -37,7 +37,8 @@ IVs: 30 Atk / 30 Def
 - Knock Off
 - Hidden Power [Ice]
 - Earthquake
-`);
+`
+);
 ```
 
 If you need to be able to unpack teams sent over the wire from old Pokémon Showdown server
@@ -52,12 +53,12 @@ compatible with the `Dex` type from
 codebase:
 
 ```ts
-import {Dex} from '@pkmn/dex';
-import {Sets} from '@pkmn/sets';
+import { Dex } from '@pkmn/dex';
+import { Sets } from '@pkmn/sets';
 
 const set = Sets.unpack(
   'Tangrowth||AssaultVest|H|GigaDrain,KnockOff,PowerWhip' +
-  ',Earthquake|Sassy|248,,8,,252,||,30,30,,,|||,Ice,',
+    ',Earthquake|Sassy|248,,8,,252,||,30,30,,,|||,Ice,',
   Dex.forGen(6)
 );
 ```

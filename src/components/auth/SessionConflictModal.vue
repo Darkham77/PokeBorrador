@@ -1,44 +1,39 @@
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth'
-import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
-import { useGsapTransition } from '@/composables/ui/useGsapTransition'
+import { useAuthStore } from '@/stores/auth';
+import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue';
+import { useGsapTransition } from '@/composables/ui/useGsapTransition';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 defineOptions({
   inheritAttrs: false
-})
+});
 
 defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const authStore = useAuthStore()
-const { beforeEnter, enter, leave } = useGsapTransition({ type: 'fade' })
+const authStore = useAuthStore();
+const { beforeEnter, enter, leave } = useGsapTransition({ type: 'fade' });
 
 function handleReconnect() {
-  window.location.reload()
+  window.location.reload();
 }
 
 async function handleLogout() {
-  await authStore.logout()
+  await authStore.logout();
 }
 </script>
 
 <template>
   <Teleport to="body">
-    <Transition
-      :css="false"
-      @before-enter="beforeEnter"
-      @enter="enter"
-      @leave="leave"
-    >
+    <Transition :css="false" @before-enter="beforeEnter" @enter="enter" @leave="leave">
       <PVLoadingOverlay
         v-if="show"
         theme="warning"
@@ -74,7 +69,7 @@ async function handleLogout() {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .action-btn {
   width: 100%;

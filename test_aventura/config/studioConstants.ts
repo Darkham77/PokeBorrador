@@ -83,7 +83,7 @@ export const CITY_PLAZA_RADIUS_TILES = 1;
 export const MAX_BUILDABLE_ELEVATION = 2;
 
 /** Base tree spawn probability threshold. */
-export const TREE_SPAWN_BASE_THRESHOLD = 0.60;
+export const TREE_SPAWN_BASE_THRESHOLD = 0.6;
 
 /** Probability threshold separating pine trees from oak trees. */
 export const PINE_TREE_THRESHOLD = 0.4;

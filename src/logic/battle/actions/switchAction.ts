@@ -1,34 +1,40 @@
-import type { BattleContext } from '@/types/battle/battleContext'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts'
-import { getActiveCombatTeam } from '../battleTeamCoordinator.ts'
-import { checkLockedVolatiles, resetPlayerStages } from './switchActionHelpers.ts'
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts';
+import { getActiveCombatTeam } from '../battleTeamCoordinator.ts';
+import { checkLockedVolatiles, resetPlayerStages } from './switchActionHelpers.ts';
 
-export async function executeSwitch(ctx: BattleContext, targetIdentifier: number | string, isForced = false) {
-  const active = ctx.activeBattle.value
-  if (!active) return
+export async function executeSwitch(
+  ctx: BattleContext,
+  targetIdentifier: number | string,
+  isForced = false
+) {
+  const active = ctx.activeBattle.value;
+  if (!active) return;
   if (active.isExecutingSwitch) {
     console.warn('[switchAction] executeSwitch already executing. Aborting duplicate call.');
-    return
+    return;
   }
   if (ctx.fsm.currentState?.value === ctx.BATTLE_STATES.REORDER_TEAM) {
-    console.warn('[switchAction] executeSwitch called while already transitioning in REORDER_TEAM. Aborting duplicate call.');
-    return
+    console.warn(
+      '[switchAction] executeSwitch called while already transitioning in REORDER_TEAM. Aborting duplicate call.'
+    );
+    return;
   }
 
-  active.isExecutingSwitch = true
+  active.isExecutingSwitch = true;
   try {
-    await runSwitchSequence(ctx, targetIdentifier, isForced)
+    await runSwitchSequence(ctx, targetIdentifier, isForced);
   } finally {
     if (ctx.activeBattle.value) {
-      ctx.activeBattle.value.isExecutingSwitch = false
+      ctx.activeBattle.value.isExecutingSwitch = false;
     }
   }
 }
 
 interface SwitchForcedOptions {
-  isForced: boolean
-  isRevivingTarget: boolean
+  isForced: boolean;
+  isRevivingTarget: boolean;
 }
 
 function isSwitchActionReallyForced(
@@ -36,64 +42,68 @@ function isSwitchActionReallyForced(
   oldPoke: Pokemon | null | undefined,
   { isForced, isRevivingTarget }: SwitchForcedOptions
 ): boolean {
-  const req = ctx.activeBattle.value?.playerRequest
-  const forceSw = req?.forceSwitch
-  const isForceBool = typeof forceSw === 'boolean' && forceSw
-  const isForceArr = Array.isArray(forceSw) && forceSw.some(Boolean)
-  const hasForceSwitch = !isRevivingTarget && (isForceBool || isForceArr)
+  const req = ctx.activeBattle.value?.playerRequest;
+  const forceSw = req?.forceSwitch;
+  const isForceBool = typeof forceSw === 'boolean' && forceSw;
+  const isForceArr = Array.isArray(forceSw) && forceSw.some(Boolean);
+  const hasForceSwitch = !isRevivingTarget && (isForceBool || isForceArr);
 
-  const fsmState = ctx.fsm.currentState?.value as string
-  const fsmSubState = ctx.fsm.currentSubState?.value as string
-  const isFaintState = fsmState === 'PLAYER_FAINT_SEQ'
-    || fsmSubState === 'PLAYER_FAINT_SEQ'
-    || fsmSubState === 'SWITCH_MENU'
-    || ctx.uiStore?.isBattleSwitchForced === true
-    || !oldPoke
-    || (oldPoke && oldPoke.hp <= 0)
+  const fsmState = ctx.fsm.currentState?.value as string;
+  const fsmSubState = ctx.fsm.currentSubState?.value as string;
+  const isFaintState =
+    fsmState === 'PLAYER_FAINT_SEQ' ||
+    fsmSubState === 'PLAYER_FAINT_SEQ' ||
+    fsmSubState === 'SWITCH_MENU' ||
+    ctx.uiStore?.isBattleSwitchForced === true ||
+    !oldPoke ||
+    (oldPoke && oldPoke.hp <= 0);
 
-  return isForced || hasForceSwitch || Boolean(isFaintState)
+  return isForced || hasForceSwitch || Boolean(isFaintState);
 }
 
 function resolveSwitchTarget(
   ctx: BattleContext,
   targetIdentifier: number | string
 ): { targetMon: Pokemon | undefined; teamIndex: number } {
-  const combatTeam = getActiveCombatTeam(ctx)
-  const isStringId = typeof targetIdentifier === 'string'
+  const combatTeam = getActiveCombatTeam(ctx);
+  const isStringId = typeof targetIdentifier === 'string';
   const targetMon = isStringId
-    ? combatTeam.find(p => p && p.uid === targetIdentifier)
-    : combatTeam[targetIdentifier]
-  const resolvedIndex = typeof targetIdentifier === 'number'
-    ? targetIdentifier
-    : combatTeam.findIndex(p => p && p.uid === targetIdentifier)
-  const teamIndex = resolvedIndex !== -1 ? resolvedIndex : 0
-  return { targetMon, teamIndex }
+    ? combatTeam.find((p) => p && p.uid === targetIdentifier)
+    : combatTeam[targetIdentifier];
+  const resolvedIndex =
+    typeof targetIdentifier === 'number'
+      ? targetIdentifier
+      : combatTeam.findIndex((p) => p && p.uid === targetIdentifier);
+  const teamIndex = resolvedIndex !== -1 ? resolvedIndex : 0;
+  return { targetMon, teamIndex };
 }
 
 function isTrappedSynchronous(ctx: BattleContext): boolean {
-  if (ctx.isPlayerTrapped?.value) return true
-  const reqActive = ctx.activeBattle.value?.playerRequest?.active?.[0]
-  if (reqActive?.trapped || reqActive?.maybeTrapped) return true
-  const player = ctx.activeBattle.value?.player
-  if (!player) return false
-  if (player.trapped) return true
-  const vc = player.volatileCounters
-  return Boolean(vc?.['partiallytrapped'] || vc?.['trapped'] || vc?.['bide'])
+  if (ctx.isPlayerTrapped?.value) return true;
+  const reqActive = ctx.activeBattle.value?.playerRequest?.active?.[0];
+  if (reqActive?.trapped || reqActive?.maybeTrapped) return true;
+  const player = ctx.activeBattle.value?.player;
+  if (!player) return false;
+  if (player.trapped) return true;
+  const vc = player.volatileCounters;
+  return Boolean(vc?.['partiallytrapped'] || vc?.['trapped'] || vc?.['bide']);
 }
 
 async function checkSwitchTrapBlocked(ctx: BattleContext): Promise<boolean> {
-  const isTrapped = isTrappedSynchronous(ctx) || await (async () => {
-    const { isPlayerTrappedInWorker } = await import('../showdownWorkerClient.ts')
-    return await isPlayerTrappedInWorker()
-  })()
+  const isTrapped =
+    isTrappedSynchronous(ctx) ||
+    (await (async () => {
+      const { isPlayerTrappedInWorker } = await import('../showdownWorkerClient.ts');
+      return await isPlayerTrappedInWorker();
+    })());
 
   if (isTrapped) {
-    const { useUIStore } = await import('@/stores/ui')
-    useUIStore().notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')
-    await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT)
-    return true
+    const { useUIStore } = await import('@/stores/ui');
+    useUIStore().notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫');
+    await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT);
+    return true;
   }
-  return false
+  return false;
 }
 
 async function executeSwitchAnimationsAndRegistration(
@@ -104,26 +114,26 @@ async function executeSwitchAnimationsAndRegistration(
   reallyForced: boolean
 ): Promise<void> {
   if (oldPoke && oldPoke.hp > 0 && !reallyForced) {
-    const { processSwitchSwapAnimations } = await import('./switchSequenceHelper.ts')
-    await processSwitchSwapAnimations(ctx, oldPoke, newPoke, teamIndex)
+    const { processSwitchSwapAnimations } = await import('./switchSequenceHelper.ts');
+    await processSwitchSwapAnimations(ctx, oldPoke, newPoke, teamIndex);
   } else {
-    const { processSwitchCallAnimations } = await import('./switchSequenceHelper.ts')
-    await processSwitchCallAnimations(ctx, newPoke, teamIndex)
+    const { processSwitchCallAnimations } = await import('./switchSequenceHelper.ts');
+    await processSwitchCallAnimations(ctx, newPoke, teamIndex);
   }
 
-  if (!ctx.activeBattle.value) return
+  if (!ctx.activeBattle.value) return;
 
   if (!ctx.activeBattle.value.participants) {
-    ctx.activeBattle.value.participants = []
+    ctx.activeBattle.value.participants = [];
   }
   if (!ctx.activeBattle.value.participants.includes(newPoke.uid)) {
-    ctx.activeBattle.value.participants.push(newPoke.uid)
+    ctx.activeBattle.value.participants.push(newPoke.uid);
   }
 
-  ctx.playerStages.value = resetPlayerStages(ctx.playerStages.value)
-  Reflect.set(ctx.activeBattle.value, '_playerSwitchLogged', true)
-  ctx.addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
-  ctx.persistBattle()
+  ctx.playerStages.value = resetPlayerStages(ctx.playerStages.value);
+  Reflect.set(ctx.activeBattle.value, '_playerSwitchLogged', true);
+  ctx.addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke);
+  ctx.persistBattle();
 }
 
 async function finalizeSwitchTurn(
@@ -133,73 +143,83 @@ async function finalizeSwitchTurn(
   reallyForced: boolean
 ): Promise<void> {
   if (!reallyForced) {
-    const { processNonForcedSwitchWorkerTurn } = await import('./switchWorkerTurn.ts')
-    await processNonForcedSwitchWorkerTurn(ctx, newPoke, oldPoke || null)
+    const { processNonForcedSwitchWorkerTurn } = await import('./switchWorkerTurn.ts');
+    await processNonForcedSwitchWorkerTurn(ctx, newPoke, oldPoke || null);
   } else {
-    const { processForcedSwitchWorkerTurn } = await import('./switchWorkerTurn.ts')
-    await processForcedSwitchWorkerTurn(ctx, newPoke)
+    const { processForcedSwitchWorkerTurn } = await import('./switchWorkerTurn.ts');
+    await processForcedSwitchWorkerTurn(ctx, newPoke);
   }
 
-  const { useUIStore } = await import('@/stores/ui')
-  const { useModalStore } = await import('@/stores/modals')
-  useModalStore().close('PokemonSelection')
+  const { useUIStore } = await import('@/stores/ui');
+  const { useModalStore } = await import('@/stores/modals');
+  useModalStore().close('PokemonSelection');
 
   if (newPoke.hp > 0 && !ctx.activeBattle.value?.over) {
-    useUIStore().isBattleSwitchForced = false
-    ctx.persistBattle()
-    await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT)
+    useUIStore().isBattleSwitchForced = false;
+    ctx.persistBattle();
+    await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT);
   } else {
-    ctx.persistBattle()
+    ctx.persistBattle();
   }
 }
 
-async function runSwitchSequence(ctx: BattleContext, targetIdentifier: number | string, isForced = false) {
-  const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, persistBattle } = ctx
+async function runSwitchSequence(
+  ctx: BattleContext,
+  targetIdentifier: number | string,
+  isForced = false
+) {
+  const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, persistBattle } = ctx;
 
-  const oldPoke = activeBattle.value?.player
-  const req = activeBattle.value?.playerRequest
-  const isRevivingTarget = isRevivingForceSwitchRequest(req)
-  const reallyForced = isSwitchActionReallyForced(ctx, oldPoke, { isForced, isRevivingTarget })
+  const oldPoke = activeBattle.value?.player;
+  const req = activeBattle.value?.playerRequest;
+  const isRevivingTarget = isRevivingForceSwitchRequest(req);
+  const reallyForced = isSwitchActionReallyForced(ctx, oldPoke, { isForced, isRevivingTarget });
 
-  if (!reallyForced && await checkSwitchTrapBlocked(ctx)) {
-    return
+  if (!reallyForced && (await checkSwitchTrapBlocked(ctx))) {
+    return;
   }
 
-  await fsm.transition(BATTLE_STATES.REORDER_TEAM)
-  await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY)
+  await fsm.transition(BATTLE_STATES.REORDER_TEAM);
+  await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY);
 
-  const { targetMon: newPoke, teamIndex } = resolveSwitchTarget(ctx, targetIdentifier)
+  const { targetMon: newPoke, teamIndex } = resolveSwitchTarget(ctx, targetIdentifier);
   if (!newPoke || (newPoke.hp <= 0 && !isRevivingTarget)) {
-    console.warn(`[switchAction] Cannot switch to fainted or missing Pokémon: ${newPoke?.name ?? 'unknown'}`)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-    return
+    console.warn(
+      `[switchAction] Cannot switch to fainted or missing Pokémon: ${newPoke?.name ?? 'unknown'}`
+    );
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+    return;
   }
 
-  await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT)
+  await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT);
   if (!activeBattle.value) {
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-    return
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+    return;
   }
 
   if (isRevivingTarget) {
-    const { processForcedSwitchWorkerTurn } = await import('./switchWorkerTurn.ts')
-    await processForcedSwitchWorkerTurn(ctx, newPoke, true)
-    persistBattle()
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-    return
+    const { processForcedSwitchWorkerTurn } = await import('./switchWorkerTurn.ts');
+    await processForcedSwitchWorkerTurn(ctx, newPoke, true);
+    persistBattle();
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+    return;
   }
 
-  if (oldPoke && !reallyForced && checkLockedVolatiles(oldPoke as { volatileCounters?: Record<string, number> })) { // domain-ok: Open dynamic text or non-domain string payload
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-    return
+  if (
+    oldPoke &&
+    !reallyForced &&
+    checkLockedVolatiles(oldPoke as { volatileCounters?: Record<string, number> }) // open-record: Dynamic Showdown volatile status counter dictionary
+  ) {
+    // domain-ok: Open dynamic text or non-domain string payload
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+    return;
   }
 
   if (oldPoke && oldPoke.uid === newPoke.uid) {
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-    return
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+    return;
   }
 
-  await executeSwitchAnimationsAndRegistration(ctx, oldPoke, newPoke, teamIndex, reallyForced)
-  await finalizeSwitchTurn(ctx, newPoke, oldPoke, reallyForced)
+  await executeSwitchAnimationsAndRegistration(ctx, oldPoke, newPoke, teamIndex, reallyForced);
+  await finalizeSwitchTurn(ctx, newPoke, oldPoke, reallyForced);
 }
-

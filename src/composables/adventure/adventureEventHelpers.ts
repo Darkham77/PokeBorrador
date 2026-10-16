@@ -1,31 +1,39 @@
-import { makePokemon } from '@/logic/pokemon/pokemonFactory'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { MapLocation } from '@/types/pokemon/encounters'
-import { requireMapRouteId } from '@/data/world/map-assets'
-import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
-import type { AdventureTriggerType, ActiveAdventureEvent } from './useAdventureEvents.ts'
-import type { ItemId } from '@/data/inventory/items'
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MapLocation } from '@/types/pokemon/encounters';
+import { requireMapRouteId } from '@/data/world/map-assets';
+import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
+import type { AdventureTriggerType, ActiveAdventureEvent } from './useAdventureEvents.ts';
+import type { ItemId } from '@/data/inventory/items';
 
-export function determineAvailableEventTypes(mapId: AdventureNodeId, mapData: MapLocation): AdventureTriggerType[] {
-  const isCaveOrMountain = mapData.isMountain || mapId.includes('cave') || mapId.includes('tunnel') || mapId.includes('moon') || mapId.includes('road')
-  const isWaterMap = mapId.includes('seafoam') || ['route19', 'route20', 'route21'].includes(mapId)
-  const hasFishing = !!mapData.fishing
+export function determineAvailableEventTypes(
+  mapId: AdventureNodeId,
+  mapData: MapLocation
+): AdventureTriggerType[] {
+  const isCaveOrMountain =
+    mapData.isMountain ||
+    mapId.includes('cave') ||
+    mapId.includes('tunnel') ||
+    mapId.includes('moon') ||
+    mapId.includes('road');
+  const isWaterMap = mapId.includes('seafoam') || ['route19', 'route20', 'route21'].includes(mapId);
+  const hasFishing = !!mapData.fishing;
 
-  const eventTypes: AdventureTriggerType[] = ['combat']
+  const eventTypes: AdventureTriggerType[] = ['combat'];
 
   if (isWaterMap) {
-    eventTypes.push('fishing')
+    eventTypes.push('fishing');
   } else if (isCaveOrMountain) {
-    eventTypes.push('obstacle_rock_smash')
-    eventTypes.push('obstacle_strength')
+    eventTypes.push('obstacle_rock_smash');
+    eventTypes.push('obstacle_strength');
   } else {
-    eventTypes.push('obstacle_cut')
+    eventTypes.push('obstacle_cut');
     if (hasFishing) {
-      eventTypes.push('fishing')
+      eventTypes.push('fishing');
     }
   }
 
-  return eventTypes
+  return eventTypes;
 }
 
 export function pickRandomAdventureType(
@@ -33,10 +41,10 @@ export function pickRandomAdventureType(
   probabilityThreshold: number
 ): AdventureTriggerType {
   if (Math.random() > probabilityThreshold && eventTypes.length > 1) {
-    const nonCombatTypes = eventTypes.filter(t => t !== 'combat')
-    return nonCombatTypes[Math.floor(Math.random() * nonCombatTypes.length)]!
+    const nonCombatTypes = eventTypes.filter((t) => t !== 'combat');
+    return nonCombatTypes[Math.floor(Math.random() * nonCombatTypes.length)]!;
   }
-  return 'combat'
+  return 'combat';
 }
 
 export function buildAdventureEventTemplates(
@@ -44,16 +52,23 @@ export function buildAdventureEventTemplates(
   mapData: MapLocation,
   targetMapId?: AdventureNodeId
 ) {
-  const isCaveOrMountain = mapData.isMountain || mapId.includes('cave') || mapId.includes('tunnel') || mapId.includes('moon') || mapId.includes('road')
-  const isWaterMap = mapId.includes('seafoam') || ['route19', 'route20', 'route21'].includes(mapId)
-  const destinationName = mapData.name || mapId
+  const isCaveOrMountain =
+    mapData.isMountain ||
+    mapId.includes('cave') ||
+    mapId.includes('tunnel') ||
+    mapId.includes('moon') ||
+    mapId.includes('road');
+  const isWaterMap = mapId.includes('seafoam') || ['route19', 'route20', 'route21'].includes(mapId);
+  const destinationName = mapData.name || mapId;
 
   return {
     combat: {
       title: targetMapId ? `¡Emboscada al entrar a ${destinationName}!` : '¡Encuentro de Combate!',
       desc: isWaterMap
         ? 'Un entrenador en bañador surge del oleaje y te desafía a un combate acuático.'
-        : (isCaveOrMountain ? 'Un montañero te desafía en la penumbra del sendero.' : 'Un entrenador rival sale de la hierba alta y te desafía.'),
+        : isCaveOrMountain
+          ? 'Un montañero te desafía en la penumbra del sendero.'
+          : 'Un entrenador rival sale de la hierba alta y te desafía.',
       moRequired: undefined
     },
     obstacle_cut: {
@@ -78,7 +93,7 @@ export function buildAdventureEventTemplates(
         : 'Te detienes junto a un estanque en la ruta a probar suerte con la caña.',
       moRequired: undefined
     }
-  }
+  };
 }
 
 export function generateWildAdventureEncounter(
@@ -87,37 +102,37 @@ export function generateWildAdventureEncounter(
   typeFocus: string | null,
   shinyMultiplier: number
 ) {
-  if (spawns.length === 0) return null
+  if (spawns.length === 0) return null;
 
-  let chosenSpawn = spawns[Math.floor(Math.random() * spawns.length)]!
+  let chosenSpawn = spawns[Math.floor(Math.random() * spawns.length)]!;
   if (typeFocus) {
-    const typeMatch = spawns.find(s => s.toLowerCase().includes(typeFocus))
-    if (typeMatch) chosenSpawn = typeMatch
+    const typeMatch = spawns.find((s) => s.toLowerCase().includes(typeFocus));
+    if (typeMatch) chosenSpawn = typeMatch;
   }
-  const pokemonName = chosenSpawn.charAt(0).toUpperCase() + chosenSpawn.slice(1)
-  const DEFAULT_MAP_MIN_LEVEL = 5 as const
-  const DEFAULT_MAP_MAX_LEVEL = 10 as const
-  const minLv = mapData.lv?.[0] || DEFAULT_MAP_MIN_LEVEL
-  const maxLv = mapData.lv?.[1] || DEFAULT_MAP_MAX_LEVEL
-  const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv
+  const pokemonName = chosenSpawn.charAt(0).toUpperCase() + chosenSpawn.slice(1);
+  const DEFAULT_MAP_MIN_LEVEL = 5 as const;
+  const DEFAULT_MAP_MAX_LEVEL = 10 as const;
+  const minLv = mapData.lv?.[0] || DEFAULT_MAP_MIN_LEVEL;
+  const maxLv = mapData.lv?.[1] || DEFAULT_MAP_MAX_LEVEL;
+  const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
 
-  const generated = makePokemon(chosenSpawn, level, { shinyMultiplier })
-  if (!generated) return null
+  const generated = makePokemon(chosenSpawn, level, { shinyMultiplier });
+  if (!generated) return null;
 
-  const wildPoke = generated as Pokemon
+  const wildPoke = generated as Pokemon;
   const combatDesc = wildPoke.isShiny
     ? `✨ ¡Un ${pokemonName} VARIOPINTO (Shiny) salvaje apareció brillando en el sendero! (Tasa Shiny: x${shinyMultiplier.toFixed(1)})`
-    : `¡Un ${pokemonName} salvaje apareció en el sendero y te desafía a un combate!`
+    : `¡Un ${pokemonName} salvaje apareció en el sendero y te desafía a un combate!`;
 
-  return { wildPoke, combatDesc }
+  return { wildPoke, combatDesc };
 }
 
 export interface ObstacleEventConfig {
-  inventoryStore: { addItem: (id: ItemId, qty: number) => void }
-  injectedItems: { value: Set<ItemId> }
-  travelLog: { value: string[] }
-  triggerExtraLoot: (id: ItemId, qty: number) => void
-  resumeTravelAfterEvent: () => void
+  inventoryStore: { addItem: (id: ItemId, qty: number) => void };
+  injectedItems: { value: Set<ItemId> };
+  travelLog: { value: string[] };
+  triggerExtraLoot: (id: ItemId, qty: number) => void;
+  resumeTravelAfterEvent: () => void;
 }
 
 export function resolveAdventureObstacleCut(
@@ -125,20 +140,22 @@ export function resolveAdventureObstacleCut(
   isManualExploration: boolean,
   onFinished: () => void
 ) {
-  config.inventoryStore.addItem('berrybronze', 2)
-  config.injectedItems.value.add('berrybronze')
-  config.inventoryStore.addItem('berrysilver', 1)
-  config.injectedItems.value.add('berrysilver')
-  config.travelLog.value.push('✂️ ¡Cortas el arbusto con MO Corte y recolectas bayas del árbol!')
-  config.travelLog.value.push('🫐 +2 Baya de Bronce, +1 Baya de Plata obtenidas en tu mochila de pruebas.')
+  config.inventoryStore.addItem('berrybronze', 2);
+  config.injectedItems.value.add('berrybronze');
+  config.inventoryStore.addItem('berrysilver', 1);
+  config.injectedItems.value.add('berrysilver');
+  config.travelLog.value.push('✂️ ¡Cortas el arbusto con MO Corte y recolectas bayas del árbol!');
+  config.travelLog.value.push(
+    '🫐 +2 Baya de Bronce, +1 Baya de Plata obtenidas en tu mochila de pruebas.'
+  );
 
-  config.triggerExtraLoot('berrybronze', 1)
+  config.triggerExtraLoot('berrybronze', 1);
 
   if (isManualExploration) {
-    onFinished()
-    return
+    onFinished();
+    return;
   }
-  config.resumeTravelAfterEvent()
+  config.resumeTravelAfterEvent();
 }
 
 export function resolveAdventureObstacleStrength(
@@ -146,49 +163,48 @@ export function resolveAdventureObstacleStrength(
   isManualExploration: boolean,
   onFinished: () => void
 ) {
-  config.inventoryStore.addItem('nugget', 1)
-  config.injectedItems.value.add('nugget')
-  config.travelLog.value.push('💪 ¡Empujas la roca con MO Fuerza y descubres un cofre oculto!')
-  config.travelLog.value.push('📦 +1 Pepita obtenida en tu mochila de pruebas.')
+  config.inventoryStore.addItem('nugget', 1);
+  config.injectedItems.value.add('nugget');
+  config.travelLog.value.push('💪 ¡Empujas la roca con MO Fuerza y descubres un cofre oculto!');
+  config.travelLog.value.push('📦 +1 Pepita obtenida en tu mochila de pruebas.');
 
-  config.triggerExtraLoot('nugget', 1)
+  config.triggerExtraLoot('nugget', 1);
 
   if (isManualExploration) {
-    onFinished()
-    return
+    onFinished();
+    return;
   }
-  config.resumeTravelAfterEvent()
+  config.resumeTravelAfterEvent();
 }
 
 export interface CombatEventConfig {
-  gameStore: { state: { team?: Pokemon[] } }
-  travelLog: { value: string[] }
-  getTravelTween: () => gsap.core.Tween | null
-  getMarkerTimeline: () => gsap.core.Timeline | null
-  isPaused: { value: boolean }
-  currentMapId: { value: AdventureNodeId }
-  isTraveling: { value: boolean }
-  battleStore: { startBattle: (p: Pokemon, options?: Record<string, unknown>) => void }
+  gameStore: { state: { team?: Pokemon[] } };
+  travelLog: { value: string[] };
+  getTravelTween: () => gsap.core.Tween | null;
+  getMarkerTimeline: () => gsap.core.Timeline | null;
+  isPaused: { value: boolean };
+  currentMapId: { value: AdventureNodeId };
+  isTraveling: { value: boolean };
+  battleStore: { startBattle: (p: Pokemon, options?: Record<string, unknown>) => void };
 }
 
-export function resolveAdventureCombatEvent(
-  config: CombatEventConfig,
-  evt: ActiveAdventureEvent
-) {
-  const healthy = (config.gameStore.state.team || []).some((p: Pokemon) => p && p.hp > 0)
+export function resolveAdventureCombatEvent(config: CombatEventConfig, evt: ActiveAdventureEvent) {
+  const healthy = (config.gameStore.state.team || []).some((p: Pokemon) => p && p.hp > 0);
   if (!healthy) {
-    config.travelLog.value.push('⚠️ No tienes Pokémon conscientes en tu equipo de pruebas para combatir.')
-    return
+    config.travelLog.value.push(
+      '⚠️ No tienes Pokémon conscientes en tu equipo de pruebas para combatir.'
+    );
+    return;
   }
 
-  const travelTween = config.getTravelTween()
-  const markerTimeline = config.getMarkerTimeline()
-  if (travelTween) travelTween.pause()
-  if (markerTimeline) markerTimeline.pause()
-  config.isPaused.value = true
+  const travelTween = config.getTravelTween();
+  const markerTimeline = config.getMarkerTimeline();
+  if (travelTween) travelTween.pause();
+  if (markerTimeline) markerTimeline.pause();
+  config.isPaused.value = true;
 
   if (evt.isTrainer && evt.enemyTeam && evt.enemyTeam.length > 0 && evt.enemyTeam[0]) {
-    config.travelLog.value.push(`💥 Iniciando combate contra el entrenador ${evt.trainerName}...`)
+    config.travelLog.value.push(`💥 Iniciando combate contra el entrenador ${evt.trainerName}...`);
     config.battleStore.startBattle(evt.enemyTeam[0], {
       locationId: requireMapRouteId(config.currentMapId.value),
       wasSearching: !config.isTraveling.value,
@@ -199,19 +215,21 @@ export function resolveAdventureCombatEvent(
       trainerQuote: evt.quote,
       persistenceMode: config.isTraveling.value ? 'local' : undefined,
       cannotEscape: true
-    })
+    });
   } else {
-    let wild = evt.wildPokemon
+    let wild = evt.wildPokemon;
     if (!wild) {
-      wild = makePokemon('rattata', 5) as Pokemon
+      wild = makePokemon('rattata', 5) as Pokemon;
     }
 
-    config.travelLog.value.push(`💥 Iniciando combate de pruebas contra ${wild?.name} (Nivel ${wild?.level})...`)
+    config.travelLog.value.push(
+      `💥 Iniciando combate de pruebas contra ${wild?.name} (Nivel ${wild?.level})...`
+    );
     config.battleStore.startBattle(wild!, {
       locationId: requireMapRouteId(config.currentMapId.value),
       wasSearching: !config.isTraveling.value,
       persistenceMode: config.isTraveling.value ? 'local' : undefined,
       cannotEscape: config.isTraveling.value
-    })
+    });
   }
 }

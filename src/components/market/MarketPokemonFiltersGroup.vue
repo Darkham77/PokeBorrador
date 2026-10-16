@@ -1,40 +1,53 @@
 <script setup lang="ts">
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { POKEMON_TYPES } from '@/data/battle/types'
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { POKEMON_TYPES } from '@/data/battle/types';
 
-const _MARKET_TYPE_FILTERS = ['all', ...POKEMON_TYPES] as const
-type MarketTypeFilter = (typeof _MARKET_TYPE_FILTERS)[number]
+const _MARKET_TYPE_FILTERS = ['all', ...POKEMON_TYPES] as const;
+type MarketTypeFilter = (typeof _MARKET_TYPE_FILTERS)[number];
 
-const types = ['all', ...POKEMON_TYPES] as const satisfies readonly MarketTypeFilter[]
-const tiers = ['all', 'S+', 'S', 'A', 'B', 'C', 'D', 'F'] as const
+const types = ['all', ...POKEMON_TYPES] as const satisfies readonly MarketTypeFilter[];
+const tiers = ['all', 'S+', 'S', 'A', 'B', 'C', 'D', 'F'] as const;
 
 defineProps<{
-  currentTier: string
-  currentType: string
-}>()
+  currentTier: string;
+  currentType: string;
+}>();
 
 const emit = defineEmits<{
-  (e: 'change-tier', val: string): void
-  (e: 'change-type', val: string): void
-}>()
+  (e: 'change-tier', val: string): void;
+  (e: 'change-type', val: string): void;
+}>();
 
 const getTypeEmoji = (type: string) => {
-  const emojis: Record<string, string> = {
-    fire: '🔥', water: '💧', grass: '🌿', electric: '⚡', psychic: '🔮',
-    normal: '🔘', rock: '🪨', ground: '🏜️', poison: '☣️', bug: '🐛',
-    flying: '🦅', ghost: '👻', ice: '❄️', dragon: '🐲', fighting: '🥊',
-    dark: '🌑', steel: '⚙️', all: '📂'
-  }
-  return emojis[type] || '❓'
-}
+  const emojis: Record<MarketTypeFilter, string> = {
+    fire: '🔥',
+    water: '💧',
+    grass: '🌿',
+    electric: '⚡',
+    psychic: '🔮',
+    normal: '🔘',
+    rock: '🪨',
+    ground: '🏜️',
+    poison: '☣️',
+    bug: '🐛',
+    flying: '🦅',
+    ghost: '👻',
+    ice: '❄️',
+    dragon: '🐲',
+    fighting: '🥊',
+    dark: '🌑',
+    steel: '⚙️',
+    fairy: '🧚',
+    all: '📂'
+  };
+  return emojis[type as MarketTypeFilter] || '❓';
+};
 </script>
 
 <template>
   <div class="pokemon-filters-group">
     <div class="filter-group">
-      <div class="group-label">
-        Tier
-      </div>
+      <div class="group-label">Tier</div>
       <div class="tags-grid">
         <button
           v-for="t in tiers"
@@ -50,15 +63,9 @@ const getTypeEmoji = (type: string) => {
     </div>
 
     <div class="filter-group">
-      <div class="group-label">
-        Tipo
-      </div>
+      <div class="group-label">Tipo</div>
       <div class="types-grid">
-        <PVTooltip
-          v-for="t in types"
-          :key="t"
-          :title="t === 'all' ? 'Todos' : t"
-        >
+        <PVTooltip v-for="t in types" :key="t" :title="t === 'all' ? 'Todos' : t">
           <button
             :id="`market-filters-type-${t}`"
             class="type-btn"
@@ -74,7 +81,7 @@ const getTypeEmoji = (type: string) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .pokemon-filters-group {
   display: flex;

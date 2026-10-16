@@ -62,11 +62,13 @@ export function computeViewportWheelZoom(params: ViewportWheelZoomParams): {
   const cursorY = params.event.clientY - rect.top;
 
   const zoomFactor = params.event.deltaY < 0 ? params.zoomInStep : params.zoomOutStep;
-  const nextZoom = Math.max(params.minZoom, Math.min(params.maxZoom, params.currentZoom * zoomFactor));
+  const nextZoom = Math.max(
+    params.minZoom,
+    Math.min(params.maxZoom, params.currentZoom * zoomFactor)
+  );
 
   const newPanX = cursorX - (cursorX - params.currentPanX) * (nextZoom / params.currentZoom);
   const newPanY = cursorY - (cursorY - params.currentPanY) * (nextZoom / params.currentZoom);
 
   return { nextZoom, newPanX, newPanY };
 }
-

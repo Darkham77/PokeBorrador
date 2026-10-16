@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import AdventureModal from './AdventureModal.vue'
-import { useMapLensStore } from '../../stores/mapLens.ts'
-import { MAP_LENSES } from '../../types/map/mapLenses.ts'
+import AdventureModal from './AdventureModal.vue';
+import { useMapLensStore } from '../../stores/mapLens.ts';
+import { MAP_LENSES } from '../../types/map/mapLenses.ts';
 
 const props = defineProps<{
-  show: boolean
-}>()
+  show: boolean;
+}>();
 
-const mapLensStore = useMapLensStore()
+const mapLensStore = useMapLensStore();
 
 const emit = defineEmits<{
-  (e: 'unlockAll'): void
-  (e: 'giveAllMOs'): void
-  (e: 'triggerSwarm'): void
-  (e: 'hardReset'): void
-  (e: 'close'): void
-}>()
+  (e: 'unlockAll'): void;
+  (e: 'giveAllMOs'): void;
+  (e: 'triggerSwarm'): void;
+  (e: 'hardReset'): void;
+  (e: 'close'): void;
+}>();
 </script>
 
 <template>
@@ -40,7 +40,11 @@ const emit = defineEmits<{
             :key="lens"
             type="button"
             class="p-2 text-xs font-bold rounded-lg border text-center transition-colors"
-            :class="mapLensStore.activeLens === lens ? 'bg-purple-600 border-purple-400 text-white' : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'"
+            :class="
+              mapLensStore.activeLens === lens
+                ? 'bg-purple-600 border-purple-400 text-white'
+                : 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'
+            "
             @click="mapLensStore.setLens(lens)"
           >
             {{ lens }}

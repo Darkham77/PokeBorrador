@@ -1,28 +1,28 @@
 // ui-demo/src/data/mockSelectionPokemon.ts
 
-import type { PokemonGender } from '@/types/pokemon/pokemon'
+import type { PokemonGender } from '@/types/pokemon/pokemon';
 
-export const MOCK_SELECTION_SOURCES = ['team', 'box'] as const
-export type MockSelectionSource = (typeof MOCK_SELECTION_SOURCES)[number]
+export const MOCK_SELECTION_SOURCES = ['team', 'box'] as const;
+export type MockSelectionSource = (typeof MOCK_SELECTION_SOURCES)[number];
 
 export interface SelectionDemoPokemon {
-  uid: string // domain-ok: Open dynamic text or non-domain string payload
-  id: number
-  name: string // domain-ok: Open dynamic text or non-domain string payload
-  nickname?: string // domain-ok: Open dynamic text or non-domain string payload
-  gender?: PokemonGender
-  level: number
-  ivs: number
-  total: number
-  types: { id: string; label: string }[]
-  hp: number
-  maxHp: number
-  tier: string // domain-ok: Open dynamic text or non-domain string payload
-  tierColor: string // domain-ok: Open dynamic text or non-domain string payload
-  tierBg: string // domain-ok: Open dynamic text or non-domain string payload
-  source: MockSelectionSource
-  badges: string[] // domain-ok: Open dynamic text or non-domain string payload
-  seasonViolation?: string // domain-ok: Open dynamic text or non-domain string payload
+  uid: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: number;
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  nickname?: string; // domain-ok: Open dynamic text or non-domain string payload
+  gender?: PokemonGender;
+  level: number;
+  ivs: number;
+  total: number;
+  types: { id: string; label: string }[];
+  hp: number;
+  maxHp: number;
+  tier: string; // domain-ok: Open dynamic text or non-domain string payload
+  tierColor: string; // domain-ok: Open dynamic text or non-domain string payload
+  tierBg: string; // domain-ok: Open dynamic text or non-domain string payload
+  source: MockSelectionSource;
+  badges: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  seasonViolation?: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export const MOCK_SELECTION_ITEMS: SelectionDemoPokemon[] = [
@@ -269,4 +269,4 @@ export const MOCK_SELECTION_ITEMS: SelectionDemoPokemon[] = [
     badges: ['31', 'star'],
     seasonViolation: 'Nivel excede el límite de la temporada...'
   }
-]
+];

@@ -106,7 +106,13 @@ describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
     const wilderness9 = generateWildernessLayer(continent9, pois9, route9.pathGrid, { seed: 999 });
 
     // Inspect blits in the region of the mountain in Map 9
-    const blits9 = buildMapBlitInstructions(continent9, pois9, route9.pathGrid, route9.bridgeGrid, wilderness9);
+    const blits9 = buildMapBlitInstructions(
+      continent9,
+      pois9,
+      route9.pathGrid,
+      route9.bridgeGrid,
+      wilderness9
+    );
     const mountainBlitFiles = new Set(
       blits9.instructions
         .filter((b) => b.px >= 1100 && b.px <= 1650 && b.py >= 1300 && b.py <= 1750)
@@ -115,7 +121,8 @@ describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
 
     const illegalMountainProps = wilderness9.props.filter((p) => {
       const elev = continent9.heightmap[p.y]?.[p.x] ?? 0;
-      const isPlainProp = p.type === 'fence_h' || p.type === 'flower' || p.type === 'bush' || p.type === 'sapling';
+      const isPlainProp =
+        p.type === 'fence_h' || p.type === 'flower' || p.type === 'bush' || p.type === 'sapling';
       return elev > 0 && isPlainProp;
     });
 
@@ -169,7 +176,12 @@ describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
         // Adjacent to a bridge?
         let nearBridge = false;
         if (!nearPOI) {
-          for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          for (const [dx, dy] of [
+            [0, 1],
+            [0, -1],
+            [1, 0],
+            [-1, 0]
+          ]) {
             if (route2.bridgeGrid[y + dy!]?.[x + dx!]) {
               nearBridge = true;
               break;
@@ -187,10 +199,22 @@ describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
     let head = 0;
     while (head < queue.length) {
       const curr = queue[head++]!;
-      for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+      for (const [dx, dy] of [
+        [0, 1],
+        [0, -1],
+        [1, 0],
+        [-1, 0]
+      ]) {
         const nx = curr.x + dx!;
         const ny = curr.y + dy!;
-        if (nx >= 0 && nx < W && ny >= 0 && ny < H && route2.pathGrid[ny]![nx] && !visited[ny]![nx]) {
+        if (
+          nx >= 0 &&
+          nx < W &&
+          ny >= 0 &&
+          ny < H &&
+          route2.pathGrid[ny]![nx] &&
+          !visited[ny]![nx]
+        ) {
           visited[ny]![nx] = true;
           queue.push({ x: nx, y: ny });
         }
@@ -350,7 +374,13 @@ describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
     const pois2 = placeRegionalPOIs(continent2, { targetCount: 10, seed: 222 });
     const route2 = generateRouteNetwork(continent2, pois2, { allowBridges: true });
     const wild2 = generateWildernessLayer(continent2, pois2, route2.pathGrid);
-    const blit2 = buildMapBlitInstructions(continent2, pois2, route2.pathGrid, route2.bridgeGrid, wild2);
+    const blit2 = buildMapBlitInstructions(
+      continent2,
+      pois2,
+      route2.pathGrid,
+      route2.bridgeGrid,
+      wild2
+    );
 
     const viridianTrees = blit2.instructions.filter((i) => i.filename.includes('viridian'));
     expect(viridianTrees.length).toBeGreaterThanOrEqual(8);
@@ -373,14 +403,25 @@ describe('multiMapAuditFixes (10-Continent Audit Suite)', () => {
     const route6 = generateRouteNetwork(continent6, pois6, { allowBridges: true });
     const wild6 = generateWildernessLayer(continent6, pois6, route6.pathGrid);
 
-    const propsAdjacentToWater: { x: number; y: number; prop: string; neighborWater: string }[] = [];
+    const propsAdjacentToWater: { x: number; y: number; prop: string; neighborWater: string }[] =
+      [];
     for (const prop of wild6.props) {
-      for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+      for (const [dx, dy] of [
+        [0, 1],
+        [0, -1],
+        [1, 0],
+        [-1, 0]
+      ]) {
         const nx = prop.x + dx!;
         const ny = prop.y + dy!;
         const terr = continent6.terrainMatrix[ny]?.[nx];
         if (terr === 'water' || terr === 'water_deep') {
-          propsAdjacentToWater.push({ x: prop.x, y: prop.y, prop: prop.prefabFile, neighborWater: `${nx},${ny}` });
+          propsAdjacentToWater.push({
+            x: prop.x,
+            y: prop.y,
+            prop: prop.prefabFile,
+            neighborWater: `${nx},${ny}`
+          });
         }
       }
     }

@@ -34,7 +34,7 @@ function checkSpeciesEligibility(
   if (!effectiveSpecies || effectiveSpecies === '*') {
     return { eligible: true };
   }
-  const allowedSpecies = effectiveSpecies.split(',').map(s => s.trim().toLowerCase());
+  const allowedSpecies = effectiveSpecies.split(',').map((s) => s.trim().toLowerCase());
   if (!allowedSpecies.includes(pokemonSpeciesKey)) {
     return { eligible: false, reason: `Especie no permitida. Requiere: ${effectiveSpecies}` };
   }
@@ -87,7 +87,10 @@ function checkCaptureDateEligibility(
   const { startMs, endMs } = resolveEventTimeframe(event, cfg, date);
   if (startMs !== null && endMs !== null) {
     if (rawObtainedAt < startMs || rawObtainedAt > endMs) {
-      return { eligible: false, reason: 'El Pokémon no fue capturado dentro del periodo del evento' };
+      return {
+        eligible: false,
+        reason: 'El Pokémon no fue capturado dentro del periodo del evento'
+      };
     }
     return { eligible: true };
   }
@@ -120,34 +123,56 @@ export function isPokemonEligibleForEvent(
   return checkCaptureDateEligibility(event, cfg, pokemon, date);
 }
 
-function checkNatureFilter(allowedNatures: string[] | undefined, pokeNature?: string): { eligible: boolean; reason?: string } {
+function checkNatureFilter(
+  allowedNatures: string[] | undefined,
+  pokeNature?: string
+): { eligible: boolean; reason?: string } {
   if (allowedNatures && allowedNatures.length > 0) {
     if (!pokeNature || !allowedNatures.includes(pokeNature)) {
-      return { eligible: false, reason: `Naturaleza no permitida. Requiere: ${allowedNatures.join(', ')}` };
+      return {
+        eligible: false,
+        reason: `Naturaleza no permitida. Requiere: ${allowedNatures.join(', ')}`
+      };
     }
   }
   return { eligible: true };
 }
 
-function checkAbilityFilter(allowedAbilities: string[] | undefined, pokeAbility?: string): { eligible: boolean; reason?: string } {
+function checkAbilityFilter(
+  allowedAbilities: string[] | undefined,
+  pokeAbility?: string
+): { eligible: boolean; reason?: string } {
   if (allowedAbilities && allowedAbilities.length > 0) {
     if (!pokeAbility || !allowedAbilities.includes(pokeAbility)) {
-      return { eligible: false, reason: `Habilidad no permitida. Requiere: ${allowedAbilities.join(', ')}` };
+      return {
+        eligible: false,
+        reason: `Habilidad no permitida. Requiere: ${allowedAbilities.join(', ')}`
+      };
     }
   }
   return { eligible: true };
 }
 
-function checkGenderFilter(requiredGender: string | undefined | null, pokeGender?: PokemonGender): { eligible: boolean; reason?: string } {
+function checkGenderFilter(
+  requiredGender: string | undefined | null,
+  pokeGender?: PokemonGender
+): { eligible: boolean; reason?: string } {
   if (requiredGender !== undefined && requiredGender !== null) {
     if (pokeGender !== requiredGender) {
-      return { eligible: false, reason: `Género no coincide. Requiere: ${requiredGender === 'm' ? 'Macho' : requiredGender === 'f' ? 'Hembra' : 'Sin género'}` };
+      return {
+        eligible: false,
+        reason: `Género no coincide. Requiere: ${requiredGender === 'm' ? 'Macho' : requiredGender === 'f' ? 'Hembra' : 'Sin género'}`
+      };
     }
   }
   return { eligible: true };
 }
 
-function checkLevelFilter(minLevel?: number, maxLevel?: number, pokeLevel?: number): { eligible: boolean; reason?: string } {
+function checkLevelFilter(
+  minLevel?: number,
+  maxLevel?: number,
+  pokeLevel?: number
+): { eligible: boolean; reason?: string } {
   const currentLevel = pokeLevel || 1;
   if (minLevel !== undefined && currentLevel < minLevel) {
     return { eligible: false, reason: `Nivel insuficiente. Mínimo requerido: Nv. ${minLevel}` };
@@ -198,7 +223,10 @@ export function isPokemonEligibleForSubCompetition(
 
   // 1. Target species check for species-scoped categories
   if (subComp.targetSpecies && pokemon.id !== subComp.targetSpecies) {
-    return { eligible: false, reason: `Esta categoría está reservada exclusivamente para ${subComp.targetSpecies}` };
+    return {
+      eligible: false,
+      reason: `Esta categoría está reservada exclusivamente para ${subComp.targetSpecies}`
+    };
   }
 
   // 2. Global event eligibility (species whitelist, catch period)
@@ -222,14 +250,18 @@ export function getEligiblePokemonForSubCompetition(
 ): Pokemon[] {
   return pokemonList
     .filter((p): p is Pokemon => p !== null && p !== undefined)
-    .filter(p => isPokemonEligibleForSubCompetition(event, subComp, p, date).eligible);
+    .filter((p) => isPokemonEligibleForSubCompetition(event, subComp, p, date).eligible);
 }
 
 /**
  * Checks whether a given Pokémon UID is already registered in another sub-competition of the same event.
  */
 export function isPokemonEnrolledInOtherSubCompetition(
-  userEntries: Record<string, { event_id?: string; category_id?: string; pokemon_uid?: string } | undefined>,
+  userEntries: Record<
+    // open-record: Composite event_id:categoryId key
+    string,
+    { event_id?: string; category_id?: string; pokemon_uid?: string } | undefined
+  >,
   eventId: string,
   categoryId: string,
   pokemonUid: string

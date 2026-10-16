@@ -1,49 +1,55 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { gsap } from 'gsap'
-import { libraryContent, libraryCategories } from '@/data/system/libraryData'
-import BaseModal from '@/components/common/BaseModal.vue'
-import { useGsapTransition } from '@/composables/ui/useGsapTransition'
-import { sanitizeHtml } from '@/logic/utils/sanitizeHtml'
+import { ref, computed, watch } from 'vue';
+import { gsap } from 'gsap';
+import { libraryContent, libraryCategories } from '@/data/system/libraryData';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { useGsapTransition } from '@/composables/ui/useGsapTransition';
+import { sanitizeHtml } from '@/logic/utils/sanitizeHtml';
 
 interface Props {
-  show?: boolean
-  initialTab?: string
+  show?: boolean;
+  initialTab?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   initialTab: 'gimnasios'
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
 // Default to 'gimnasios' if initialTab is null or not in categories
-const selectedTab = ref(props.initialTab || 'gimnasios')
-const contentFade = ref(true)
-const { beforeEnter, enter, leave } = useGsapTransition({ type: 'fade', duration: 0.2 })
+const selectedTab = ref(props.initialTab || 'gimnasios');
+const contentFade = ref(true);
+const { beforeEnter, enter, leave } = useGsapTransition({ type: 'fade', duration: 0.2 });
 
-watch(() => props.initialTab, (newTab) => {
-  if (newTab) selectedTab.value = newTab
-})
+watch(
+  () => props.initialTab,
+  (newTab) => {
+    if (newTab) selectedTab.value = newTab;
+  }
+);
 
 const currentContent = computed(() => {
-  return (libraryContent as Record<string, string>)[selectedTab.value] || '<h1>Próximamente</h1><p>En construcción.</p>' // open-record: Generic dynamic key-value JSON container
-})
+  return (
+    (libraryContent as Record<string, string>)[selectedTab.value] || // open-record: Generic dynamic key-value JSON container
+    '<h1>Próximamente</h1><p>En construcción.</p>'
+  );
+});
 
-const TAB_SWITCH_FADE_DELAY_SEC = 0.15
+const TAB_SWITCH_FADE_DELAY_SEC = 0.15;
 
 const selectTab = (tabId: string) => {
-  if (selectedTab.value === tabId) return
-  
-  contentFade.value = false
+  if (selectedTab.value === tabId) return;
+
+  contentFade.value = false;
   gsap.delayedCall(TAB_SWITCH_FADE_DELAY_SEC, () => {
-    selectedTab.value = tabId
-    contentFade.value = true
-  })
-}
+    selectedTab.value = tabId;
+    contentFade.value = true;
+  });
+};
 </script>
 
 <template>
@@ -65,6 +71,8 @@ const selectTab = (tabId: string) => {
             v-for="cat in libraryCategories"
             id="library-modal-div-1"
             :key="cat.id"
+            role="button"
+            tabindex="0"
             class="library-nav-item"
             :class="{ active: selectedTab === cat.id }"
             @click.stop="selectTab(cat.id)"
@@ -76,17 +84,8 @@ const selectTab = (tabId: string) => {
       </aside>
 
       <main class="library-content custom-scrollbar-vicio">
-        <Transition
-          :css="false"
-          @before-enter="beforeEnter"
-          @enter="enter"
-          @leave="leave"
-        >
-          <div
-            v-if="contentFade"
-            id="library-article-content"
-            class="library-article"
-          >
+        <Transition :css="false" @before-enter="beforeEnter" @enter="enter" @leave="leave">
+          <div v-if="contentFade" id="library-article-content" class="library-article">
             <!-- fallow-ignore-next-line security-sink -->
             <!-- html-injection-ok: Sanitized library article content -->
             <!-- eslint-disable-next-line vue/no-v-html -->
@@ -99,8 +98,8 @@ const selectTab = (tabId: string) => {
 </template>
 
 <style lang="scss" scoped>
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .library-container {
   display: grid;
@@ -144,7 +143,7 @@ const selectTab = (tabId: string) => {
   inset: 0;
   overflow-y: auto !important;
   overflow-x: hidden;
-  
+
   @media (width <= 900px) {
     position: relative;
     display: flex;
@@ -246,8 +245,8 @@ const selectTab = (tabId: string) => {
   :deep(ul) {
     margin-bottom: 20px;
     padding-left: 20px;
-    li { 
-      color: Rgb(255 255 255 / 80%); 
+    li {
+      color: Rgb(255 255 255 / 80%);
       margin-bottom: 10px;
     }
   }
@@ -266,14 +265,14 @@ const selectTab = (tabId: string) => {
     border-collapse: separate;
     border-spacing: 0;
     overflow: hidden;
-    
+
     %cell-base {
       padding: 12px 16px;
       text-align: left;
       border-bottom: 1px solid Rgb(255 255 255 / 5%);
     }
-    
-    th { 
+
+    th {
       @extend %cell-base;
 
       background: Rgb(255 255 255 / 5%);
@@ -281,11 +280,11 @@ const selectTab = (tabId: string) => {
       font-size: var(--font-10);
       text-transform: uppercase;
     }
-    
+
     tr:last-child td {
       border-bottom: none;
     }
-    
+
     td {
       @extend %cell-base;
 

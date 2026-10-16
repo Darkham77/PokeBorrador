@@ -1,8 +1,8 @@
 /**
  * scripts/validation/validate_fsm_all.ts
- * 
+ *
  * COORDINADOR DE VALIDACIONES FSM (Node.js 26+)
- * 
+ *
  * Ejecuta todas las validaciones de FSM secuencialmente sin abortar ante fallos,
  * acumulando los resultados para reportar al final si hubo errores.
  */
@@ -29,13 +29,17 @@ function runFsmValidation() {
 
   for (const task of FSM_VALIDATION_TASKS) {
     console.log(styleText('bold', `\n--- 🤖 Ejecutando: ${task.name} ---`));
-    const proc = spawnSync('node', [
-      '--permission',
-      '--experimental-strip-types',
-      '--allow-fs-read=.',
-      '--allow-fs-write=.',
-      ...task.args
-    ], { stdio: 'inherit' });
+    const proc = spawnSync(
+      'node',
+      [
+        '--permission',
+        '--experimental-strip-types',
+        '--allow-fs-read=.',
+        '--allow-fs-write=.',
+        ...task.args
+      ],
+      { stdio: 'inherit' }
+    );
 
     if (proc.status !== 0) {
       anyFailed = true;

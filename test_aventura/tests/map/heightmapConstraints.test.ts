@@ -27,7 +27,7 @@ describe('heightmapConstraints', () => {
       }
 
       const violations = validateHeightmapConstraints(smallPlateau);
-      expect(violations.some(v => v.type === 'footprint_too_small')).toBe(true);
+      expect(violations.some((v) => v.type === 'footprint_too_small')).toBe(true);
     });
 
     it('detects a 6x6 plateau that lacks a 3x3 contiguous walkable core', () => {
@@ -45,7 +45,7 @@ describe('heightmapConstraints', () => {
       }
 
       const violations = validateHeightmapConstraints(hollowRing);
-      expect(violations.some(v => v.type === 'insufficient_walkable_core')).toBe(true);
+      expect(violations.some((v) => v.type === 'insufficient_walkable_core')).toBe(true);
     });
 
     it('passes a solid 7x7 plateau with a valid 3x3 walkable core', () => {
@@ -58,7 +58,11 @@ describe('heightmapConstraints', () => {
       }
 
       const violations = validateHeightmapConstraints(validPlateau);
-      expect(violations.filter(v => v.type === 'footprint_too_small' || v.type === 'insufficient_walkable_core')).toHaveLength(0);
+      expect(
+        violations.filter(
+          (v) => v.type === 'footprint_too_small' || v.type === 'insufficient_walkable_core'
+        )
+      ).toHaveLength(0);
     });
   });
 
@@ -82,7 +86,7 @@ describe('heightmapConstraints', () => {
       }
 
       const violations = validateHeightmapConstraints(stackedGrid);
-      const bufferViolations = violations.filter(v => v.type === 'terrace_buffer_too_small');
+      const bufferViolations = violations.filter((v) => v.type === 'terrace_buffer_too_small');
       expect(bufferViolations.length).toBeGreaterThan(0);
       expect(bufferViolations[0]?.bufferFound).toBe(1);
     });
@@ -105,7 +109,7 @@ describe('heightmapConstraints', () => {
       // Upper drop at row 7 (foot at row 8). Lower drop at row 12. Buffer = 12 - 8 = 4 cells!
 
       const violations = validateHeightmapConstraints(spaciousGrid);
-      const bufferViolations = violations.filter(v => v.type === 'terrace_buffer_too_small');
+      const bufferViolations = violations.filter((v) => v.type === 'terrace_buffer_too_small');
       expect(bufferViolations).toHaveLength(0);
     });
   });
@@ -129,7 +133,7 @@ describe('heightmapConstraints', () => {
       // Small sliver should be demoted to 1
       const sanitized = sanitizeHeightmapMatrix(cramped);
       const violations = validateHeightmapConstraints(sanitized);
-      expect(violations.filter(v => v.type === 'footprint_too_small')).toHaveLength(0);
+      expect(violations.filter((v) => v.type === 'footprint_too_small')).toHaveLength(0);
     });
   });
 
@@ -211,4 +215,3 @@ describe('heightmapConstraints', () => {
     });
   });
 });
-

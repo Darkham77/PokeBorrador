@@ -2,12 +2,26 @@
   "name": "@pkmn/protocol",
   "version": "0.7.3",
   "description": "Parsing logic for Pokémon Showdown's PROTOCOL and SIM-PROTOCOL",
-  "repository": "github:pkmn/ps",
   "license": "MIT",
+  "repository": "github:pkmn/ps",
+  "bin": {
+    "generate-handler": "./generate-handler",
+    "protocol-verifier": "./protocol-verifier"
+  },
+  "files": [
+    "build"
+  ],
   "sideEffects": false,
   "main": "build/index.js",
   "module": "build/index.mjs",
   "types": "build/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "verifier": [
+        "./build/verifier/index.d.ts"
+      ]
+    }
+  },
   "unpkg": "build/index.min.js",
   "exports": {
     ".": {
@@ -19,29 +33,8 @@
       "import": "./build/verifier/index.mjs"
     }
   },
-  "typesVersions": {
-    "*": {
-      "verifier": [
-        "./build/verifier/index.d.ts"
-      ]
-    }
-  },
-  "bin": {
-    "generate-handler": "./generate-handler",
-    "protocol-verifier": "./protocol-verifier"
-  },
   "publishConfig": {
     "access": "public"
-  },
-  "files": [
-    "build"
-  ],
-  "dependencies": {
-    "@pkmn/types": "^4.0.0"
-  },
-  "devDependencies": {
-    "@pkmn/dex": "^0.10.11",
-    "@pkmn/data": "^0.10.11"
   },
   "scripts": {
     "lint": "eslint --cache src",
@@ -51,6 +44,13 @@
     "test": "jest",
     "pretest": "npm run build",
     "posttest": "npm run lint"
+  },
+  "dependencies": {
+    "@pkmn/types": "^4.0.0"
+  },
+  "devDependencies": {
+    "@pkmn/data": "^0.10.11",
+    "@pkmn/dex": "^0.10.11"
   },
   "jest": {
     "preset": "ts-jest",

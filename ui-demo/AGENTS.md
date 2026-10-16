@@ -10,7 +10,7 @@ Frontend / UI Engineers.
 
 - Executable via `npm run ui-demo`.
 - Strictly reuses and extends official game components from `src/` without duplicating business logic or styles.
-- Complies with all repository auditors, ESLint rules, and type checks.
+- Complies with all repository auditors, Oxlint / Vite+ rules, and type checks.
 - Zero-timer event synchronization and GSAP-only animations.
 - **HTML5 Semantic & Element Nesting Standard**: Components and templates MUST adhere to the HTML5 button content model (nesting block elements like `<div>` inside `<button>` is forbidden; use inline elements like `<span>`). Reserved characters like `&` in headings or user-facing text MUST be written as HTML entities (`&amp;`) to guarantee strict `html-validate` compliance.
 

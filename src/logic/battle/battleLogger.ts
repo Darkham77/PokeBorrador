@@ -1,4 +1,3 @@
-
 /**
  * Battle Logger Module
  * Responsible for processing and standardizing battle logs.
@@ -14,16 +13,16 @@ import type { BattleLog, BattleSource, BattleSide } from '@/types/battle/battle'
 interface LogContext {
   gs: {
     state: {
-      team: Pokemon[]
-      playerClass?: string | null
-      avatar_style?: string | null
-    }
-  }
+      team: Pokemon[];
+      playerClass?: string | null;
+      avatar_style?: string | null;
+    };
+  };
   activeBattle?: {
-    trainerSprite?: string | null
-    enemy?: Pokemon | null
-  } | null
-  attackerSide?: BattleSide | null
+    trainerSprite?: string | null;
+    enemy?: Pokemon | null;
+  } | null;
+  attackerSide?: BattleSide | null;
 }
 
 // Re-use exported types
@@ -61,21 +60,31 @@ function resolveStringSourceIcon(source: string): { icon: string; iconType: stri
   try {
     item = getItemById(source);
   } catch {
-    logger.error('BattleLogger', `La fuente de texto "${source}" no es un ID de item registrado en el catálogo.`);
+    logger.error(
+      'BattleLogger',
+      `La fuente de texto "${source}" no es un ID de item registrado en el catálogo.`
+    );
   }
-  const spriteId = (item && item.sprite) ? item.sprite : source;
+  const spriteId = item && item.sprite ? item.sprite : source;
   return {
     icon: getAssetUrl(ASSET_TYPES.ITEM, spriteId),
     iconType: 'item'
   };
 }
 
-function resolveLogIconAndType(msg: string, source: BattleSource, ctx: LogContext): { icon: string | null; iconType: string | null } {
+function resolveLogIconAndType(
+  msg: string,
+  source: BattleSource,
+  ctx: LogContext
+): { icon: string | null; iconType: string | null } {
   if (msg.startsWith('DEBUG:')) {
     return { icon: '⚙️', iconType: 'emoji' };
   }
   if (!source) {
-    logger.warn('BattleLogger', `Log sin fuente detectado: "${msg}". Se recomienda pasar un Pokémon o 'player'/'enemy_trainer'.`);
+    logger.warn(
+      'BattleLogger',
+      `Log sin fuente detectado: "${msg}". Se recomienda pasar un Pokémon o 'player'/'enemy_trainer'.`
+    );
     return { icon: null, iconType: null };
   }
   if (source === 'player') {
@@ -109,10 +118,18 @@ function resolveLogIconAndType(msg: string, source: BattleSource, ctx: LogContex
 
 function resolveLogSide(source: BattleSource, ctx: LogContext): BattleSide | null {
   const { gs, activeBattle, attackerSide } = ctx;
-  if (source === 'player' || (source && typeof source === 'object' && gs.state.team.some((p) => p && p.uid === (source as Pokemon).uid))) {
+  if (
+    source === 'player' ||
+    (source &&
+      typeof source === 'object' &&
+      gs.state.team.some((p) => p && p.uid === (source as Pokemon).uid))
+  ) {
     return 'player';
   }
-  if (source === 'enemy_trainer' || (source && typeof source === 'object' && (source as Pokemon).uid === activeBattle?.enemy?.uid)) {
+  if (
+    source === 'enemy_trainer' ||
+    (source && typeof source === 'object' && (source as Pokemon).uid === activeBattle?.enemy?.uid)
+  ) {
     return 'enemy';
   }
   return attackerSide || 'enemy';
@@ -126,7 +143,12 @@ function resolveLogSide(source: BattleSource, ctx: LogContext): BattleSide | nul
  * @param source Sprite source (Pokemon, 'player', 'enemy_trainer', or item name)
  * @param ctx Required context (gs, activeBattle, attackerSide)
  */
-export function formatBattleLog(msg: string, type: string, source: BattleSource, ctx: LogContext): BattleLog {
+export function formatBattleLog(
+  msg: string,
+  type: string,
+  source: BattleSource,
+  ctx: LogContext
+): BattleLog {
   const { icon, iconType } = resolveLogIconAndType(msg, source, ctx);
   const side = resolveLogSide(source, ctx);
 

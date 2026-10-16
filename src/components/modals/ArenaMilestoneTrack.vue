@@ -1,77 +1,77 @@
 <script setup lang="ts">
-const MILESTONE_CARD_ENTER_X_PX = 4
-const MILESTONE_SPRITE_ENTER_Y_PX = -4
-const MILESTONE_SPRITE_ENTER_SCALE = 1.2
-const MILESTONE_PILL_ENTER_Y_PX = -1
-const MILESTONE_LIST_ENTER_X_PX = 4
-const MILESTONE_LIST_INITIAL_SCALE = 0.95
-const MILESTONE_LIST_DURATION_SEC = 0.4
-const MILESTONE_LIST_STAGGER_SEC = 0.05
-const MILESTONE_HOVER_DURATION_SEC = 0.2
-const MILESTONE_SPRITE_DURATION_SEC = 0.3
-import { ref, onMounted, nextTick } from 'vue'
-import { usePvPStore } from '@/stores/pvp'
-import { useUIStore } from '@/stores/ui'
-import { RANKED_REWARD_MILESTONES, isRankedRewardMilestoneId } from '@/data/system/rankedData'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { Z_LAYERS } from '@/logic/constants/visuals'
-import { gsap } from 'gsap'
+const MILESTONE_CARD_ENTER_X_PX = 4;
+const MILESTONE_SPRITE_ENTER_Y_PX = -4;
+const MILESTONE_SPRITE_ENTER_SCALE = 1.2;
+const MILESTONE_PILL_ENTER_Y_PX = -1;
+const MILESTONE_LIST_ENTER_X_PX = 4;
+const MILESTONE_LIST_INITIAL_SCALE = 0.95;
+const MILESTONE_LIST_DURATION_SEC = 0.4;
+const MILESTONE_LIST_STAGGER_SEC = 0.05;
+const MILESTONE_HOVER_DURATION_SEC = 0.2;
+const MILESTONE_SPRITE_DURATION_SEC = 0.3;
+import { ref, onMounted, nextTick } from 'vue';
+import { usePvPStore } from '@/stores/pvp';
+import { useUIStore } from '@/stores/ui';
+import { RANKED_REWARD_MILESTONES, isRankedRewardMilestoneId } from '@/data/system/rankedData';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import { Z_LAYERS } from '@/logic/constants/visuals';
+import { gsap } from 'gsap';
 
-const pvp = usePvPStore()
-const uiStore = useUIStore()
-const listRef = ref<HTMLElement | null>(null)
-const milestones = RANKED_REWARD_MILESTONES
-const claimingMilestoneId = ref<string | null>(null)
+const pvp = usePvPStore();
+const uiStore = useUIStore();
+const listRef = ref<HTMLElement | null>(null);
+const milestones = RANKED_REWARD_MILESTONES;
+const claimingMilestoneId = ref<string | null>(null);
 
 async function handleClaimMilestone(milestoneId: string) {
-  if (claimingMilestoneId.value) return
-  if (!isRankedRewardMilestoneId(milestoneId)) return
-  claimingMilestoneId.value = milestoneId
+  if (claimingMilestoneId.value) return;
+  if (!isRankedRewardMilestoneId(milestoneId)) return;
+  claimingMilestoneId.value = milestoneId;
   try {
-    await pvp.claimReward(milestoneId)
+    await pvp.claimReward(milestoneId);
   } catch (_err) {
-    uiStore.notify('Error al reclamar la recompensa.', '❌')
+    uiStore.notify('Error al reclamar la recompensa.', '❌');
   } finally {
-    claimingMilestoneId.value = null
+    claimingMilestoneId.value = null;
   }
 }
 
 onMounted(() => {
-  animateList()
-})
+  animateList();
+});
 
 const getItemDesc = (itemId: ItemId) => {
-  const item = getItemById(itemId)
-  return item.desc || 'Recompensa de la Arena de Batalla.'
-}
+  const item = getItemById(itemId);
+  return item.desc || 'Recompensa de la Arena de Batalla.';
+};
 
 const getItemSpriteUrl = (itemId: ItemId) => {
-  const item = getItemById(itemId)
-  const slug = item.sprite || item.id
-  return getAssetUrl(ASSET_TYPES.ITEM, slug)
-}
+  const item = getItemById(itemId);
+  const slug = item.sprite || item.id;
+  return getAssetUrl(ASSET_TYPES.ITEM, slug);
+};
 
 function isUnlocked(eloReq: number) {
-  return (pvp.maxElo || 0) >= eloReq
+  return (pvp.maxElo || 0) >= eloReq;
 }
 
 function isClaimed(id: string | number) {
-  return (pvp.rewardsClaimed || []).includes(id.toString())
+  return (pvp.rewardsClaimed || []).includes(id.toString());
 }
 
-const GSAP_EASE_OVERSHOOT_LIST = 1.15
-const GSAP_EASE_OVERSHOOT_SPRITE = 1.275
+const GSAP_EASE_OVERSHOOT_LIST = 1.15;
+const GSAP_EASE_OVERSHOOT_SPRITE = 1.275;
 
 // GSAP Stagger Entrance Animations for Milestone Cards
 const animateList = () => {
   nextTick(() => {
-    if (!listRef.value) return
-    const cards = listRef.value.querySelectorAll('.milestone-card')
+    if (!listRef.value) return;
+    const cards = listRef.value.querySelectorAll('.milestone-card');
     if (cards.length > 0) {
-      listRef.value.classList.add('list-animating')
-      gsap.killTweensOf(cards)
+      listRef.value.classList.add('list-animating');
+      gsap.killTweensOf(cards);
       gsap.from(cards, {
         opacity: 0,
         x: MILESTONE_LIST_ENTER_X_PX,
@@ -81,36 +81,36 @@ const animateList = () => {
         ease: `back.out(${GSAP_EASE_OVERSHOOT_LIST})`,
         clearProps: 'all',
         onComplete: () => {
-          listRef.value?.classList.remove('list-animating')
+          listRef.value?.classList.remove('list-animating');
         }
-      })
+      });
     }
-  })
-}
+  });
+};
 
 // ── GSAP HOVER HANDLERS ──────────────────────────────────────────────────────
 
 function handleCardEnter(e: MouseEvent, isLocked: boolean) {
-  if (isLocked) return
+  if (isLocked) return;
   gsap.to(e.currentTarget, {
     x: MILESTONE_CARD_ENTER_X_PX,
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderColor: 'rgba(59, 130, 246, 0.2)',
     duration: MILESTONE_HOVER_DURATION_SEC,
     ease: 'power2.out'
-  })
+  });
 }
 
 function handleCardLeave(e: MouseEvent, isClaimed: boolean) {
-  const bg = isClaimed ? 'rgba(34, 197, 94, 0.03)' : 'rgba(255, 255, 255, 0.04)'
-  const border = isClaimed ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 255, 255, 0.04)'
+  const bg = isClaimed ? 'rgba(34, 197, 94, 0.03)' : 'rgba(255, 255, 255, 0.04)';
+  const border = isClaimed ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 255, 255, 0.04)';
   gsap.to(e.currentTarget, {
     x: 0,
     backgroundColor: bg,
     borderColor: border,
     duration: MILESTONE_HOVER_DURATION_SEC,
     ease: 'power2.out'
-  })
+  });
 }
 
 function handleSpriteEnter(e: MouseEvent) {
@@ -120,7 +120,7 @@ function handleSpriteEnter(e: MouseEvent) {
     zIndex: Z_LAYERS.MAP_SPAWNS,
     duration: MILESTONE_SPRITE_DURATION_SEC,
     ease: `back.out(${GSAP_EASE_OVERSHOOT_SPRITE})`
-  })
+  });
 }
 
 function handleSpriteLeave(e: MouseEvent) {
@@ -130,7 +130,7 @@ function handleSpriteLeave(e: MouseEvent) {
     zIndex: Z_LAYERS.MAP_FLOOR,
     duration: MILESTONE_SPRITE_DURATION_SEC,
     ease: 'power2.out'
-  })
+  });
 }
 
 function handlePillEnter(e: MouseEvent) {
@@ -142,7 +142,7 @@ function handlePillEnter(e: MouseEvent) {
     boxShadow: '0 4px 12px rgba(59, 130, 246, 0.1)',
     duration: 0.2,
     ease: 'power2.out'
-  })
+  });
 }
 
 function handlePillLeave(e: MouseEvent) {
@@ -154,32 +154,31 @@ function handlePillLeave(e: MouseEvent) {
     boxShadow: 'none',
     duration: 0.2,
     ease: 'power2.out'
-  })
+  });
 }
 </script>
 
 <template>
   <section class="milestone-track">
     <div class="header-with-timer">
-      <h3 class="text-outline">
-        RECOMPENSAS DE TEMPORADA
-      </h3>
+      <h3 class="text-outline">RECOMPENSAS DE TEMPORADA</h3>
       <span class="season-timer text-outline">
-        {{ (pvp.seasonRange?.daysLeft || 0) > 0 ? `Termina en ${pvp.seasonRange.daysLeft}d` : 'Temporada Finalizada' }}
+        {{
+          (pvp.seasonRange?.daysLeft || 0) > 0
+            ? `Termina en ${pvp.seasonRange.daysLeft}d`
+            : 'Temporada Finalizada'
+        }}
       </span>
     </div>
 
-    <div
-      ref="listRef"
-      class="track-list custom-scrollbar"
-    >
+    <div ref="listRef" class="track-list custom-scrollbar">
       <div
         v-for="m in milestones"
         :key="m.id"
         class="milestone-card"
         :class="{ locked: !isUnlocked(m.elo), claimed: isClaimed(m.id) }"
-        @mouseenter="e => handleCardEnter(e, !isUnlocked(m.elo))"
-        @mouseleave="e => handleCardLeave(e, isClaimed(m.id))"
+        @mouseenter="(e) => handleCardEnter(e, !isUnlocked(m.elo))"
+        @mouseleave="(e) => handleCardLeave(e, isClaimed(m.id))"
       >
         <div class="m-icon">
           <div class="m-icon-sprites">
@@ -193,7 +192,7 @@ function handlePillLeave(e: MouseEvent) {
               height="32"
               @mouseenter="handleSpriteEnter"
               @mouseleave="handleSpriteLeave"
-            >
+            />
           </div>
         </div>
         <div class="m-info">
@@ -217,7 +216,7 @@ function handlePillLeave(e: MouseEvent) {
                   :alt="name"
                   width="32"
                   height="32"
-                >
+                />
                 {{ name }} <span class="qty">x{{ qty }}</span>
               </span>
             </PVTooltip>
@@ -232,16 +231,10 @@ function handlePillLeave(e: MouseEvent) {
         >
           {{ claimingMilestoneId === m.id ? 'RECLAMANDO...' : 'RECLAMAR' }}
         </button>
-        <span
-          v-else-if="isClaimed(m.id)"
-          class="claimed-pill text-outline"
-        >
+        <span v-else-if="isClaimed(m.id)" class="claimed-pill text-outline">
           <span class="emoji">✓</span> RECLAMADO
         </span>
-        <span
-          v-else
-          class="locked-pill text-outline"
-        >
+        <span v-else class="locked-pill text-outline">
           <span class="emoji">🔒</span> BLOQUEADO
         </span>
       </div>
@@ -250,4 +243,3 @@ function handlePillLeave(e: MouseEvent) {
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_arena.scss"></style>
-

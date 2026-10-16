@@ -1,9 +1,9 @@
-@use "@/styles/components/map-card-weather" as *;
+@use '@/styles/components/map-card-weather' as *;
 
 .dust-only {
   z-index: calc(10 * 1);
   opacity: 0.6 !important; // Aumentado para visibilidad
-  transform: Translate3d(0,0,0);
+  transform: Translate3d(0, 0, 0);
   filter: Grayscale(0.2) Contrast(1.1); // Recuperado parte del color original
   will-change: transform, opacity;
 }
@@ -18,7 +18,7 @@
   border-radius: 50% 0;
   background: Linear-Gradient(135deg, var(--green-light, #4ade80), var(--green-dark, #166534));
   opacity: 0; // Default invisible until explicitly animated by GSAP
-  transform: Translate3d(0,0,0); // GPU Promotion
+  transform: Translate3d(0, 0, 0); // GPU Promotion
   pointer-events: none;
   will-change: transform, opacity;
 
@@ -44,7 +44,7 @@
   position: absolute;
   z-index: calc(var(--atmo-z, 0) * 1);
   inset: 0;
-  pointer-events: none; 
+  pointer-events: none;
   overflow: hidden;
   container-type: size; // Permite usar cqw/cqh para las hojas
   contain: layout style paint; // Optimización equilibrada: aisla el renderizado sin forzar buffers rígidos
@@ -97,15 +97,30 @@
 
   &.sun .weather-canvas {
     filter: sepia(0.8) Saturate(2.5) Brightness(1.2) Contrast(1.4);
-    mask-image: Radial-Gradient(ellipse at center, Rgb(0 0 0 / 0%) 30%, Rgb(0 0 0 / 60%) 65%, Rgb(0 0 0 / 100%) 88%);
+    mask-image: Radial-Gradient(
+      ellipse at center,
+      Rgb(0 0 0 / 0%) 30%,
+      Rgb(0 0 0 / 60%) 65%,
+      Rgb(0 0 0 / 100%) 88%
+    );
   }
   &.intense_sun .weather-canvas {
-    filter: sepia(0.6) Saturate(3.0) Brightness(1.35) Contrast(1.6);
-    mask-image: Radial-Gradient(ellipse at center, Rgb(0 0 0 / 0%) 25%, Rgb(0 0 0 / 70%) 60%, Rgb(0 0 0 / 100%) 85%);
+    filter: sepia(0.6) Saturate(3) Brightness(1.35) Contrast(1.6);
+    mask-image: Radial-Gradient(
+      ellipse at center,
+      Rgb(0 0 0 / 0%) 25%,
+      Rgb(0 0 0 / 70%) 60%,
+      Rgb(0 0 0 / 100%) 85%
+    );
   }
   &.heatwave .weather-canvas {
-    filter: sepia(1) Saturate(5.0) hue-Rotate(-25deg) Brightness(1.1) Contrast(1.9);
-    mask-image: Radial-Gradient(ellipse at center, Rgb(0 0 0 / 0%) 20%, Rgb(0 0 0 / 80%) 55%, Rgb(0 0 0 / 100%) 80%);
+    filter: sepia(1) Saturate(5) hue-Rotate(-25deg) Brightness(1.1) Contrast(1.9);
+    mask-image: Radial-Gradient(
+      ellipse at center,
+      Rgb(0 0 0 / 0%) 20%,
+      Rgb(0 0 0 / 80%) 55%,
+      Rgb(0 0 0 / 100%) 80%
+    );
   }
 
   // Sandwich Architecture: Pure particles layer without background tint or shadows
@@ -114,7 +129,19 @@
     box-shadow: none !important;
 
     // Suppress heavy background pseudoelements, except for camera-level atmospheric vignettes
-    &:not(.cold, .coldwave, .heatwave, .sun, .intense_sun, .fog, .snow, .blizzard, .mist, .wind, .strong_winds) {
+    &:not(
+      .cold,
+      .coldwave,
+      .heatwave,
+      .sun,
+      .intense_sun,
+      .fog,
+      .snow,
+      .blizzard,
+      .mist,
+      .wind,
+      .strong_winds
+    ) {
       &::before,
       &::after {
         display: none !important;

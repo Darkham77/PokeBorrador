@@ -1,72 +1,71 @@
-import { vi, beforeEach, afterEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { setupTestTeamGenerators, setupTemporalMock } from './helpers/setupTestEnvironment.ts'
+import { vi, beforeEach, afterEach } from 'vite-plus/test';
+import { setActivePinia, createPinia } from 'pinia';
+import { setupTestTeamGenerators, setupTemporalMock } from './helpers/setupTestEnvironment.ts';
 
-setupTestTeamGenerators()
+setupTestTeamGenerators();
 
 /**
  * tests/vitest.setup.ts
  * Global setup for Vitest environment.
  */
 
-process.removeAllListeners('warning')
+process.removeAllListeners('warning');
 process.on('warning', (warning) => {
   if (warning.name === 'ExperimentalWarning' || warning.message?.includes('--localstorage-file')) {
-    return
+    return;
   }
-  console.warn(warning.name, warning.message)
-})
+  console.warn(warning.name, warning.message);
+});
 
-const activeDelayedCalls = new Set<NodeJS.Timeout | number>()
+const activeDelayedCalls = new Set<NodeJS.Timeout | number>();
 
 // Initialize Pinia for all tests
 beforeEach(() => {
-  setActivePinia(createPinia())
-})
+  setActivePinia(createPinia());
+});
 
 afterEach(() => {
   for (const timer of activeDelayedCalls) {
-    clearTimeout(timer)
+    clearTimeout(timer);
   }
-  activeDelayedCalls.clear()
+  activeDelayedCalls.clear();
 
   if (typeof document !== 'undefined' && document.body) {
-    document.body.innerHTML = ''
+    document.body.innerHTML = '';
   }
-})
+});
 
 // Mock Temporal.Now to work with Vitest fake timers (which mock Date.now)
-setupTemporalMock()
-
+setupTemporalMock();
 
 // Mock ResizeObserver (Missing in JSDOM)
 class ResizeObserverMock {
-  observe = vi.fn()
-  unobserve = vi.fn()
-  disconnect = vi.fn()
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
 }
 
 Object.defineProperty(global, 'ResizeObserver', {
   value: ResizeObserverMock,
   writable: true
-})
+});
 
 // Mock IntersectionObserver (Missing in JSDOM)
 class IntersectionObserverMock {
-  observe = vi.fn()
-  unobserve = vi.fn()
-  disconnect = vi.fn()
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
 }
 
 Object.defineProperty(global, 'IntersectionObserver', {
   value: IntersectionObserverMock,
   writable: true
-})
+});
 // Mock matchMedia (Missing in JSDOM)
 if (typeof window !== 'undefined') {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: vi.fn().mockImplementation(query => ({
+    value: vi.fn().mockImplementation((query) => ({
       matches: false,
       media: query,
       onchange: null,
@@ -74,9 +73,9 @@ if (typeof window !== 'undefined') {
       removeListener: vi.fn(), // deprecated
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
-  })
+      dispatchEvent: vi.fn()
+    }))
+  });
 }
 
 // Mock Canvas 2D context for JSDOM
@@ -105,19 +104,19 @@ if (typeof HTMLCanvasElement !== 'undefined') {
         rotate: vi.fn(),
         arc: vi.fn(),
         ellipse: vi.fn(),
-        fill: vi.fn(),
-      }
+        fill: vi.fn()
+      };
     }
-    return null
-  }) as unknown as typeof HTMLCanvasElement.prototype.getContext
+    return null;
+  }) as unknown as typeof HTMLCanvasElement.prototype.getContext;
 
-  HTMLCanvasElement.prototype.toDataURL = vi.fn().mockReturnValue('data:image/png;base64,mock')
+  HTMLCanvasElement.prototype.toDataURL = vi.fn().mockReturnValue('data:image/png;base64,mock');
 }
 
 // Mock Location.reload for JSDOM navigation
 if (typeof window !== 'undefined' && window.location) {
   try {
-    vi.spyOn(window.location, 'reload').mockImplementation(() => {})
+    vi.spyOn(window.location, 'reload').mockImplementation(() => {});
   } catch {
     // Ignore if not spyable
   }
@@ -147,7 +146,11 @@ vi.mock('gsap', () => {
       triggerSyncComplete(vars);
       return createMockTween();
     },
-    fromTo: (_target: unknown, _fromVars: Record<string, unknown>, toVars: Record<string, unknown>) => {
+    fromTo: (
+      _target: unknown,
+      _fromVars: Record<string, unknown>,
+      toVars: Record<string, unknown>
+    ) => {
       triggerSyncComplete(toVars);
       return createMockTween();
     },
@@ -156,34 +159,36 @@ vi.mock('gsap', () => {
       return createMockTween();
     },
     delayedCall: (delay: number, callback: () => void) => {
-      let timerId: NodeJS.Timeout | number | null = null
+      let timerId: NodeJS.Timeout | number | null = null;
       timerId = setTimeout(() => {
-        if (timerId !== null) activeDelayedCalls.delete(timerId)
-        if (typeof callback === 'function') callback()
-      }, delay * 1000)
+        if (timerId !== null) activeDelayedCalls.delete(timerId);
+        if (typeof callback === 'function') callback();
+      }, delay * 1000);
       if (typeof timerId === 'object' && timerId && 'unref' in timerId) {
-        (timerId as NodeJS.Timeout).unref()
+        (timerId as NodeJS.Timeout).unref();
       }
-      activeDelayedCalls.add(timerId)
-      return { 
+      activeDelayedCalls.add(timerId);
+      return {
         kill: () => {
           if (timerId !== null) {
-            clearTimeout(timerId)
-            activeDelayedCalls.delete(timerId)
+            clearTimeout(timerId);
+            activeDelayedCalls.delete(timerId);
           }
         },
         eventCallback: vi.fn().mockReturnThis(),
         progress: vi.fn().mockReturnThis(),
         pause: vi.fn().mockReturnThis(),
         play: vi.fn().mockReturnThis()
-      }
+      };
     },
-    context: (fn: (self: {
-      add: (addFn: () => void) => unknown;
-      revert: () => void;
-      kill: () => void;
-      selector: (selector: string) => Element[];
-    }) => void) => {
+    context: (
+      fn: (self: {
+        add: (addFn: () => void) => unknown;
+        revert: () => void;
+        kill: () => void;
+        selector: (selector: string) => Element[];
+      }) => void
+    ) => {
       const self = {
         add: (addFn: () => void) => {
           addFn();
@@ -211,21 +216,27 @@ vi.mock('gsap', () => {
       eventCallback: vi.fn().mockReturnThis(),
       progress: vi.fn().mockReturnValue(1),
       isActive: vi.fn().mockReturnValue(false),
-      totalDuration: vi.fn().mockReturnValue(0.01),
+      totalDuration: vi.fn().mockReturnValue(0.01)
     }),
     utils: {
-      clamp: (min: number, max: number, v?: number) => v !== undefined ? Math.min(Math.max(v, min), max) : (val: number) => Math.min(Math.max(val, min), max),
-      toArray: (val: unknown) => Array.isArray(val) ? val : [val],
+      clamp: (min: number, max: number, v?: number) =>
+        v !== undefined
+          ? Math.min(Math.max(v, min), max)
+          : (val: number) => Math.min(Math.max(val, min), max),
+      toArray: (val: unknown) => (Array.isArray(val) ? val : [val]),
       random: (min: number, max: number) => Math.random() * (max - min) + min,
       interpolate: (a: number, b: number, p: number) => a + (b - a) * p,
-      unitize: (fn: (val: string) => number | string, unit = 'px') => (v: string) => `${fn(v)}${unit}`,
+      unitize:
+        (fn: (val: string) => number | string, unit = 'px') =>
+        (v: string) =>
+          `${fn(v)}${unit}`
     },
     ticker: {
       add: vi.fn(),
       remove: vi.fn(),
       sleep: vi.fn(),
       wake: vi.fn(),
-      lagSmoothing: vi.fn(),
+      lagSmoothing: vi.fn()
     }
   };
   return { gsap: gsapMock, default: gsapMock };

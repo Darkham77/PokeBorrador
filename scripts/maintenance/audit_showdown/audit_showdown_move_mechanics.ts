@@ -9,7 +9,10 @@ export interface MoveParityResult {
  * Detecta efectos secundarios especiales en data/moves.ts de Showdown
  * y verifica que se manejen dinámicamente en el bridge o motor de batalla.
  */
-export function auditShowdownMoveMechanics(showdownMovesPath: string, moveExecutorPath: string): MoveParityResult {
+export function auditShowdownMoveMechanics(
+  showdownMovesPath: string,
+  moveExecutorPath: string
+): MoveParityResult {
   const missingMoveExecutors: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(showdownMovesPath) || !existsSync(moveExecutorPath)) {
     return { missingMoveExecutors };
@@ -18,7 +21,9 @@ export function auditShowdownMoveMechanics(showdownMovesPath: string, moveExecut
   const showdownContent = readFileSync(showdownMovesPath, 'utf-8');
   const executorContent = readFileSync(moveExecutorPath, 'utf-8').toLowerCase();
 
-  const movesWithSpecialSecondary = Array.from(showdownContent.matchAll(/([a-z0-9]+):\s*\{[^}]*secondary:\s*\{/gi)).map(m => m[1]);
+  const movesWithSpecialSecondary = Array.from(
+    showdownContent.matchAll(/([a-z0-9]+):\s*\{[^}]*secondary:\s*\{/gi)
+  ).map((m) => m[1]);
 
   for (const moveId of movesWithSpecialSecondary) {
     if (moveId && !executorContent.includes(moveId.toLowerCase())) {

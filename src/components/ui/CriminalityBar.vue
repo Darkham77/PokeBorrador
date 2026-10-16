@@ -1,72 +1,58 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { useUIStore } from '@/stores/ui'
-import { useBattleStore } from '@/stores/battle/battle'
-import { calculatePoliceBonusLevel } from '@/logic/player/classMath'
-import { useGsapTransition } from '@/composables/ui/useGsapTransition'
+import { computed } from 'vue';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useUIStore } from '@/stores/ui';
+import { useBattleStore } from '@/stores/battle/battle';
+import { calculatePoliceBonusLevel } from '@/logic/player/classMath';
+import { useGsapTransition } from '@/composables/ui/useGsapTransition';
 
-const SLIDE_TRANSITION_OFFSET_PX = 30 as const
+const SLIDE_TRANSITION_OFFSET_PX = 30 as const;
 
-const classStore = usePlayerClassStore()
-const uiStore = useUIStore()
-const battleStore = useBattleStore()
-const { beforeEnter, enter, leave } = useGsapTransition({ type: 'slide-right', xOffset: SLIDE_TRANSITION_OFFSET_PX })
+const classStore = usePlayerClassStore();
+const uiStore = useUIStore();
+const battleStore = useBattleStore();
+const { beforeEnter, enter, leave } = useGsapTransition({
+  type: 'slide-right',
+  xOffset: SLIDE_TRANSITION_OFFSET_PX
+});
 
 const isFastMode = computed(() => {
-  return uiStore.isFastMode || battleStore.isBattleActive
-})
+  return uiStore.isFastMode || battleStore.isBattleActive;
+});
 
-const isRocket = computed(() => classStore.playerClass === 'rocket')
-const criminality = computed(() => classStore.classData.criminality || 0)
-const activeTab = computed(() => uiStore.activeTab)
+const isRocket = computed(() => classStore.playerClass === 'rocket');
+const criminality = computed(() => classStore.classData.criminality || 0);
+const activeTab = computed(() => uiStore.activeTab);
 
 // Only shown in the map tab for Team Rocket when fast mode is not active
-const isVisible = computed(() => isRocket.value && activeTab.value === 'map' && !isFastMode.value)
-const isMax = computed(() => criminality.value >= 100)
+const isVisible = computed(() => isRocket.value && activeTab.value === 'map' && !isFastMode.value);
+const isMax = computed(() => criminality.value >= 100);
 const percentLabelText = computed(() => {
   if (criminality.value > 100) {
-    const bonusLv = calculatePoliceBonusLevel(criminality.value)
+    const bonusLv = calculatePoliceBonusLevel(criminality.value);
     if (bonusLv > 0) {
-      return `${criminality.value}% (+${bonusLv} LV)`
+      return `${criminality.value}% (+${bonusLv} LV)`;
     }
   }
-  return `${criminality.value}%`
-})
+  return `${criminality.value}%`;
+});
 </script>
 
 <template>
-  <Transition
-    :css="false"
-    @before-enter="beforeEnter"
-    @enter="enter"
-    @leave="leave"
-  >
-    <div
-      v-if="isVisible"
-      id="criminality-bar"
-      class="criminality-container"
-    >
-      <div class="label press-start">
-        CRIMEN
-      </div>
+  <Transition :css="false" @before-enter="beforeEnter" @enter="enter" @leave="leave">
+    <div v-if="isVisible" id="criminality-bar" class="criminality-container">
+      <div class="label press-start">CRIMEN</div>
       <div class="bar-bg">
-        <div 
+        <div
           id="criminality-bar-fill"
           v-gsap-loop="{ effect: 'blink-red', duration: 0.5, active: isMax }"
-          class="bar-fill" 
+          class="bar-fill"
           :style="{ height: Math.min(100, criminality) + '%' }"
         >
-          <div
-            v-if="isMax"
-            class="glow-effect"
-          />
+          <div v-if="isMax" class="glow-effect" />
         </div>
       </div>
-      <div 
-        id="criminality-percent-label"
-        class="percent-label"
-      >
+      <div id="criminality-percent-label" class="percent-label">
         {{ percentLabelText }}
       </div>
     </div>
@@ -74,8 +60,8 @@ const percentLabelText = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .criminality-container {
   position: fixed;
@@ -104,7 +90,9 @@ const percentLabelText = computed(() => {
   transform: Rotate(180deg);
   writing-mode: vertical-lr;
   margin-bottom: 8px;
-  text-shadow: 1px 1px var(--black), 0 0 5px Rgb(239 68 68 / 40%);
+  text-shadow:
+    1px 1px var(--black),
+    0 0 5px Rgb(239 68 68 / 40%);
 }
 
 .bar-bg {
@@ -134,7 +122,9 @@ const percentLabelText = computed(() => {
   font-weight: 800;
   transform: Rotate(180deg);
   margin-top: 8px;
-  text-shadow: 1px 1px var(--black), 0 0 5px Rgb(239 68 68 / 40%);
+  text-shadow:
+    1px 1px var(--black),
+    0 0 5px Rgb(239 68 68 / 40%);
   writing-mode: vertical-lr;
 }
 </style>

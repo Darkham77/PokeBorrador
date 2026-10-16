@@ -27,9 +27,7 @@ export const DEFLATE_MAX_BLOCK_SIZE = 65535 as const;
 export const ZLIB_HEADER_CMF = 0x78 as const;
 export const ZLIB_HEADER_FLG = 0x01 as const;
 
-export const PNG_SIGNATURE_BYTES: readonly number[] = [
-  137, 80, 78, 71, 13, 10, 26, 10
-] as const;
+export const PNG_SIGNATURE_BYTES: readonly number[] = [137, 80, 78, 71, 13, 10, 26, 10] as const;
 
 export const PNG_CHUNK_IHDR_BYTES: readonly number[] = [73, 72, 68, 82] as const; // 'IHDR'
 export const PNG_CHUNK_IDAT_BYTES: readonly number[] = [73, 68, 65, 84] as const; // 'IDAT'

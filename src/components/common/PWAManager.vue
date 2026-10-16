@@ -1,75 +1,78 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
-import { useStorage } from '@vueuse/core'
-import { useAuthStore } from '@/stores/auth'
-import { useAudioStore } from '@/stores/audio'
-import { useLoadingStore } from '@/stores/loading'
-import { logger } from '@/logic/utils/logger'
-import { usePWA } from '@/composables/system/usePWA'
-import { gameBus } from '@/logic/events/gameBus'
-import BaseModal from './BaseModal.vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { useStorage } from '@vueuse/core';
+import { useAuthStore } from '@/stores/auth';
+import { useAudioStore } from '@/stores/audio';
+import { useLoadingStore } from '@/stores/loading';
+import { logger } from '@/logic/utils/logger';
+import { usePWA } from '@/composables/system/usePWA';
+import { gameBus } from '@/logic/events/gameBus';
+import BaseModal from './BaseModal.vue';
 
-const authStore = useAuthStore()
-const audioStore = useAudioStore()
-const loadingStore = useLoadingStore()
-const { handleUpdate } = usePWA()
+const authStore = useAuthStore();
+const audioStore = useAudioStore();
+const loadingStore = useLoadingStore();
+const { handleUpdate } = usePWA();
 
-const showPermissionsModal = ref(false)
-const hasAcceptedPermissions = useStorage('pwa_permissions_accepted', false)
+const showPermissionsModal = ref(false);
+const hasAcceptedPermissions = useStorage('pwa_permissions_accepted', false);
 
 // Permission Management
 const checkPermissions = () => {
-  const notificationNeeded = 'Notification' in window && Notification.permission === 'default'
-  
+  const notificationNeeded = 'Notification' in window && Notification.permission === 'default';
+
   // If previously accepted and notifications are unchanged, attempt enabling audio without modal
   if (hasAcceptedPermissions.value && !notificationNeeded) {
-    audioStore.init()
-    return
+    audioStore.init();
+    return;
   }
-  
+
   // If anything is missing, show the modal
-  showPermissionsModal.value = true
-}
+  showPermissionsModal.value = true;
+};
 
 // Watch for user login and initial game loading completion before requesting permissions
 watch(
   [() => authStore.user, () => loadingStore.isGateOpen],
   ([user, isGateOpen]) => {
     if (user && isGateOpen) {
-      checkPermissions()
+      checkPermissions();
     }
   },
   { immediate: true }
-)
+);
 
 const handlePermissions = async () => {
   // Guardar que el usuario ya aceptó
-  hasAcceptedPermissions.value = true
+  hasAcceptedPermissions.value = true;
 
   // 1. Activar Audio (requiere interacción)
-  audioStore.init()
-  await audioStore.resume()
-  
+  audioStore.init();
+  await audioStore.resume();
+
   // 2. Pedir Notificaciones
   if ('Notification' in window && Notification.permission === 'default') {
-    await Notification.requestPermission()
+    await Notification.requestPermission();
   }
-  
-  showPermissionsModal.value = false
-}
+
+  showPermissionsModal.value = false;
+};
 
 const handleForceUpdate = () => {
-  logger.info('PWA', 'Received FORCE_PWA_UPDATE from GameBus. Delegating to atomic handleUpdate...')
-  handleUpdate({ forceNoSave: true })
-}
+  logger.info(
+    'PWA',
+    'Received FORCE_PWA_UPDATE from GameBus. Delegating to atomic handleUpdate...'
+  );
+  handleUpdate({ forceNoSave: true });
+};
 
 onMounted(() => {
-  gameBus.on('FORCE_PWA_UPDATE', handleForceUpdate)
-})
+  gameBus.on('FORCE_PWA_UPDATE', handleForceUpdate);
+});
 
 onUnmounted(() => {
-  gameBus.off('FORCE_PWA_UPDATE', handleForceUpdate)
-})
+  gameBus.off('FORCE_PWA_UPDATE', handleForceUpdate);
+});
 </script>
 
 <template>
@@ -140,11 +143,11 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: $spacing-md-15;
-  
+
   .p-icon {
     font-size: var(--font-20);
   }
-  
+
   .p-text {
     color: Rgb(255 255 255 / 80%);
     font-size: var(--font-12);
@@ -153,7 +156,7 @@ onUnmounted(() => {
 
 .pv-button-retro {
   @include pixelated;
-  
+
   width: 100%;
   padding: 12px 24px;
   border: none;
@@ -163,12 +166,12 @@ onUnmounted(() => {
   font-size: var(--font-12);
   cursor: pointer;
   box-shadow: $shadow-retro-yellow;
-  
+
   &:hover {
     transform: Translatey(-2px);
     box-shadow: $shadow-retro-yellow-hover;
   }
-  
+
   &:active {
     transform: Translatey(2px);
     box-shadow: $shadow-retro-yellow-active;

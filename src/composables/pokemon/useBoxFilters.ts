@@ -1,64 +1,65 @@
-import { ref, computed, type Ref } from 'vue'
-import { useStorage, refDebounced } from '@vueuse/core'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { FRIENDSHIP_SEAL_TIERS } from '@/types/pokemon/friendship'
-import { matchesAllBoxFilters, checkHasActiveFilters } from './boxFilterPredicates.ts'
-import { sortBoxItems } from './boxSortComparators.ts'
-import type { PokemonFilterTagId } from '@/logic/constants/tags'
+import { ref, computed, type Ref } from 'vue';
+import { useStorage, refDebounced } from '@vueuse/core';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { FRIENDSHIP_SEAL_TIERS } from '@/types/pokemon/friendship';
+import { matchesAllBoxFilters, checkHasActiveFilters } from './boxFilterPredicates.ts';
+import { sortBoxItems } from './boxSortComparators.ts';
+import type { PokemonFilterTagId } from '@/logic/constants/tags';
 
-export const FRIENDSHIP_SEAL_TIER_FILTERS = ['all', ...FRIENDSHIP_SEAL_TIERS] as const
-type FriendshipSealTierFilter = (typeof FRIENDSHIP_SEAL_TIER_FILTERS)[number]
+export const FRIENDSHIP_SEAL_TIER_FILTERS = ['all', ...FRIENDSHIP_SEAL_TIERS] as const;
+type FriendshipSealTierFilter = (typeof FRIENDSHIP_SEAL_TIER_FILTERS)[number];
 
 const DEFAULT_FILTER_DEBOUNCE_MS = 150 as const;
 
 interface FilterState {
-  tier: string
-  type: string
-  levelMin: number
-  levelMax: number
-  friendshipMin: number
-  friendshipMax: number
-  ivTotalMin: number
-  ivTotalMax: number
-  ivAny31: boolean
-  ivMin: number
-  ivMax: number
-  bstMin: number
-  bstMax: number
-  ivHP: number
-  ivATK: number
-  ivDEF: number
-  ivSPA: number
-  ivSPD: number
-  ivSPE: number
-  evHP: number
-  evATK: number
-  evDEF: number
-  evSPA: number
-  evSPD: number
-  evSPE: number
-  search: string
-  isOpen: boolean
-  tags: PokemonFilterTagId[]
-  friendshipSealTier: FriendshipSealTierFilter
-  friendshipEvoReady: boolean
-  friendshipMaxOnly: boolean
+  tier: string;
+  type: string;
+  levelMin: number;
+  levelMax: number;
+  friendshipMin: number;
+  friendshipMax: number;
+  ivTotalMin: number;
+  ivTotalMax: number;
+  ivAny31: boolean;
+  ivMin: number;
+  ivMax: number;
+  bstMin: number;
+  bstMax: number;
+  ivHP: number;
+  ivATK: number;
+  ivDEF: number;
+  ivSPA: number;
+  ivSPD: number;
+  ivSPE: number;
+  evHP: number;
+  evATK: number;
+  evDEF: number;
+  evSPA: number;
+  evSPD: number;
+  evSPE: number;
+  search: string;
+  isOpen: boolean;
+  tags: PokemonFilterTagId[];
+  friendshipSealTier: FriendshipSealTierFilter;
+  friendshipEvoReady: boolean;
+  friendshipMaxOnly: boolean;
 }
 
 export function useBoxFilters(box: Ref<(Pokemon | null)[]>, options?: { debounceMs?: number }) {
-  const sortMode = useStorage('box_sort_mode', 'recent')
-  const sortDirection = useStorage('box_sort_direction', 'desc')
-  const isFiltersOpen = ref(false)
+  const sortMode = useStorage('box_sort_mode', 'recent');
+  const sortDirection = useStorage('box_sort_direction', 'desc');
+  const isFiltersOpen = ref(false);
 
-  const isTestEnv = typeof process !== 'undefined' && (!!process.env.VITEST || process.env.NODE_ENV === 'test')
-  const defaultDebounce = isTestEnv ? 0 : DEFAULT_FILTER_DEBOUNCE_MS
-  const debounceDuration = options?.debounceMs ?? defaultDebounce
-  
-const MAX_TOTAL_IVS = 186
-const MAX_BST_FILTER = 1000
-const MAX_SINGLE_IV = 31
-const MAX_POKEMON_LEVEL_CONST = 100
-const MAX_POKEMON_FRIENDSHIP_CONST = 255
+  const isTestEnv =
+    typeof process !== 'undefined' && (!!process.env.VITEST || process.env.NODE_ENV === 'test');
+  const defaultDebounce = isTestEnv ? 0 : DEFAULT_FILTER_DEBOUNCE_MS;
+  const debounceDuration = options?.debounceMs ?? defaultDebounce;
+
+  const MAX_TOTAL_IVS = 186;
+  const MAX_BST_FILTER = 1000;
+  const MAX_SINGLE_IV = 31;
+  const MAX_POKEMON_LEVEL_CONST = 100;
+  const MAX_POKEMON_FRIENDSHIP_CONST = 255;
 
   const filters = ref<FilterState>({
     tier: 'all',
@@ -91,40 +92,45 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
     tags: [],
     friendshipSealTier: 'all',
     friendshipEvoReady: false,
-    friendshipMaxOnly: false,
-  })
+    friendshipMaxOnly: false
+  });
 
-  const debouncedSearch = debounceDuration > 0
-    ? refDebounced(computed(() => filters.value.search), debounceDuration)
-    : computed(() => filters.value.search)
+  const debouncedSearch =
+    debounceDuration > 0
+      ? refDebounced(
+          computed(() => filters.value.search),
+          debounceDuration
+        )
+      : computed(() => filters.value.search);
 
-  const hasActiveFilters = computed(() => checkHasActiveFilters(filters.value))
+  const hasActiveFilters = computed(() => checkHasActiveFilters(filters.value));
 
   const processedBoxList = computed(() => {
-    if (!box.value) return []
-    
-    let list = box.value.map((p: Pokemon | null, i: number) => ({ p, index: i }))
+    if (!box.value) return [];
 
-    const effectiveFilters = debouncedSearch.value === filters.value.search
-      ? filters.value
-      : { ...filters.value, search: debouncedSearch.value }
+    let list = box.value.map((p: Pokemon | null, i: number) => ({ p, index: i }));
+
+    const effectiveFilters =
+      debouncedSearch.value === filters.value.search
+        ? filters.value
+        : { ...filters.value, search: debouncedSearch.value };
 
     // Apply Filters
     list = list.filter(({ p }: { p: Pokemon | null }) => {
-      if (!p) return false // Skip empty slots
-      return matchesAllBoxFilters(p, effectiveFilters)
-    })
+      if (!p) return false; // Skip empty slots
+      return matchesAllBoxFilters(p, effectiveFilters);
+    });
 
     // Apply Sorting
     if (sortMode.value !== 'none') {
-      list = sortBoxItems(list, sortMode.value, sortDirection.value)
+      list = sortBoxItems(list, sortMode.value, sortDirection.value);
     }
 
-    return list
-  })
+    return list;
+  });
 
   function toggleFilters() {
-    isFiltersOpen.value = !isFiltersOpen.value
+    isFiltersOpen.value = !isFiltersOpen.value;
   }
 
   function resetFilters() {
@@ -159,14 +165,14 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
       friendshipMax: MAX_POKEMON_FRIENDSHIP_CONST,
       friendshipSealTier: 'all',
       friendshipEvoReady: false,
-      friendshipMaxOnly: false,
-    }
-    sortMode.value = 'none'
-    sortDirection.value = 'desc'
+      friendshipMaxOnly: false
+    };
+    sortMode.value = 'none';
+    sortDirection.value = 'desc';
   }
 
   function setBoxSort(mode: string) {
-    sortMode.value = mode
+    sortMode.value = mode;
   }
 
   return {
@@ -179,5 +185,5 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
     toggleFilters,
     resetFilters,
     setBoxSort
-  }
+  };
 }

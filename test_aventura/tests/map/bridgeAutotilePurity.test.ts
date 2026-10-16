@@ -33,10 +33,7 @@ describe('Canonical Bridge Engine - Plank Direction & Shore Purity', () => {
     // In a continuous vertical bridge, all tiles must be vertical bridge tiles (vLeft, vRight, vMid).
     // It must NEVER use hTop, hBot, or hMid, which have vertical planks and horizontal railings!
     const horizontalPlankGlitches = blits.filter(
-      (b) =>
-        b.file.includes('h_mid') ||
-        b.file.includes('h_top') ||
-        b.file.includes('h_bot')
+      (b) => b.file.includes('h_mid') || b.file.includes('h_top') || b.file.includes('h_bot')
     );
 
     expect(
@@ -69,10 +66,7 @@ describe('Canonical Bridge Engine - Plank Direction & Shore Purity', () => {
     });
 
     const verticalPlankGlitches = blits.filter(
-      (b) =>
-        b.file.includes('v_mid') ||
-        b.file.includes('v_left') ||
-        b.file.includes('v_right')
+      (b) => b.file.includes('v_mid') || b.file.includes('v_left') || b.file.includes('v_right')
     );
 
     expect(
@@ -81,4 +75,3 @@ describe('Canonical Bridge Engine - Plank Direction & Shore Purity', () => {
     ).toHaveLength(0);
   });
 });
-

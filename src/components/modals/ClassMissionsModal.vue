@@ -1,45 +1,47 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { useGameStore } from '@/stores/game'
-import { getEloTier } from '@/logic/pvp/rankedEngine'
-import BaseModal from '@/components/common/BaseModal.vue'
+import { computed } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { useGameStore } from '@/stores/game';
+import { getEloTier } from '@/logic/pvp/rankedEngine';
+import BaseModal from '@/components/common/BaseModal.vue';
 
 // Sub-components
-import ClassDashboard from './class/ClassDashboard.vue'
+import ClassDashboard from './class/ClassDashboard.vue';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
-defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs: false });
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const uiStore = useUIStore()
-const classStore = usePlayerClassStore()
-const gameStore = useGameStore()
+const uiStore = useUIStore();
+const classStore = usePlayerClassStore();
+const gameStore = useGameStore();
 
-const ui = useUIStore()
-const isSmallScreen = computed(() => ui.isSmallScreen)
+const ui = useUIStore();
+const isSmallScreen = computed(() => ui.isSmallScreen);
 
-const currentClass = computed(() => classStore.currentClassDef)
-const trainerLevel = computed(() => gameStore.state.trainerLevel || 1)
-const classLevel = computed(() => classStore.classLevel)
-const trainerRank = computed(() => getEloTier(gameStore.state.eloRating).name)
+const currentClass = computed(() => classStore.currentClassDef);
+const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
+const classLevel = computed(() => classStore.classLevel);
+const trainerRank = computed(() => getEloTier(gameStore.state.eloRating).name);
 
-const close = () => { emit('close') }
+const close = () => {
+  emit('close');
+};
 
 const handleSelect = () => {
-  uiStore.open('ClassSelection')
-  close()
-}
+  uiStore.open('ClassSelection');
+  close();
+};
 </script>
 
 <template>
@@ -48,13 +50,13 @@ const handleSelect = () => {
     title="GESTIÓN DE CLASE"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     :title-color="currentClass?.color || 'var(--yellow)'"
-    :header-background="currentClass ? (currentClass.color + '1A') : 'rgba(15, 23, 42, 0.8)'"
+    :header-background="currentClass ? currentClass.color + '1A' : 'rgba(15, 23, 42, 0.8)'"
     :max-width="isSmallScreen ? '100dvw' : '1000px'"
     :show-close-button="true"
     padding="raw"
     @close="close"
   >
-    <div 
+    <div
       class="class-modal-shell custom-scrollbar-vicio"
       :style="{ '--cls-color': currentClass?.color || '#3b82f6' }"
     >

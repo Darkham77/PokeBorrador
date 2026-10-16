@@ -1,91 +1,103 @@
 <script setup lang="ts">
-import { computed, toValue } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useBattleStore } from '@/stores/battle/battle'
-import { useUIStore } from '@/stores/ui'
-import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
-import { isRevivingForceSwitchRequest } from '@/logic/battle/helpers/requestHelper.ts'
-import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay'
+import { computed, toValue } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useUIStore } from '@/stores/ui';
+import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
+import { isRevivingForceSwitchRequest } from '@/logic/battle/helpers/requestHelper.ts';
+import { MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay';
 
-import { useLivePvPStore } from '@/stores/livePvP'
+import { useLivePvPStore } from '@/stores/livePvP';
 
-const gameStore = useGameStore()
-const battleStore = useBattleStore()
-const uiStore = useUIStore()
-const livePvP = useLivePvPStore()
+const gameStore = useGameStore();
+const battleStore = useBattleStore();
+const uiStore = useUIStore();
+const livePvP = useLivePvPStore();
 
 const team = computed<Pokemon[]>(() => {
   if (battleStore.isPvP && battleStore.state?.playerTeam) {
-    return (battleStore.state.playerTeam || []).filter(Boolean) as Pokemon[]
+    return (battleStore.state.playerTeam || []).filter(Boolean) as Pokemon[];
   }
-  const rawTeam = (gameStore.state.team || []).filter(Boolean) as Pokemon[]
-  return rawTeam
-})
-const activePokemonUid = computed(() => battleStore.state?.player?.uid)
-const emptySlotsCount = computed(() => Math.max(0, MAX_POKEMON_TEAM_SIZE - team.value.length))
+  const rawTeam = (gameStore.state.team || []).filter(Boolean) as Pokemon[];
+  return rawTeam;
+});
+const activePokemonUid = computed(() => battleStore.state?.player?.uid);
+const emptySlotsCount = computed(() => Math.max(0, MAX_POKEMON_TEAM_SIZE - team.value.length));
 
 const hasPendingForcedSwitch = computed(() => {
-  const forceSwitch = battleStore.state?.playerRequest?.forceSwitch
-  return Array.isArray(forceSwitch) ? forceSwitch.some(Boolean) : forceSwitch === true
-})
-const isSelectingReviveTarget = computed(() => isRevivingForceSwitchRequest(battleStore.state?.playerRequest))
+  const forceSwitch = battleStore.state?.playerRequest?.forceSwitch;
+  return Array.isArray(forceSwitch) ? forceSwitch.some(Boolean) : forceSwitch === true;
+});
+const isSelectingReviveTarget = computed(() =>
+  isRevivingForceSwitchRequest(battleStore.state?.playerRequest)
+);
 
 const canSwitch = computed(() => {
-  if (toValue(battleStore.currentSubState) === 'SWITCH_MENU' || hasPendingForcedSwitch.value) return true
-  
-  const p = battleStore.state?.player
-  if (!p) return false
-  
-  if (p.hp <= 0) return true // If active Pokémon is fainted, switching is always allowed
-  
-  if (battleStore.isProcessing || battleStore.isIntroAnimating) return false
-  if (battleStore.isPlayerTrapped || p.volatileCounters?.['partiallytrapped'] || p.trapped) return false
-  
+  if (toValue(battleStore.currentSubState) === 'SWITCH_MENU' || hasPendingForcedSwitch.value)
+    return true;
+
+  const p = battleStore.state?.player;
+  if (!p) return false;
+
+  if (p.hp <= 0) return true; // If active Pokémon is fainted, switching is always allowed
+
+  if (battleStore.isProcessing || battleStore.isIntroAnimating) return false;
+  if (battleStore.isPlayerTrapped || p.volatileCounters?.['partiallytrapped'] || p.trapped)
+    return false;
+
   if (isPokemonLocked(p)) {
-    return false
+    return false;
   }
-  
-  return true
-})
+
+  return true;
+});
 
 const handleSwitch = (index: number) => {
-  const pokemon = team.value[index]
-  if (!pokemon) return
+  const pokemon = team.value[index];
+  if (!pokemon) return;
 
-  const originalTeam = battleStore.isPvP ? (battleStore.state?.playerTeam || []) : (gameStore.state.team || [])
-  const originalIndex = originalTeam.findIndex((p) => p && p.uid === pokemon.uid)
+  const originalTeam = battleStore.isPvP
+    ? battleStore.state?.playerTeam || []
+    : gameStore.state.team || [];
+  const originalIndex = originalTeam.findIndex((p) => p && p.uid === pokemon.uid);
   if (originalIndex === -1) {
-    console.warn('[BattleQuickTeam] Could not find original index for UID:', pokemon.uid)
-    return
+    console.warn('[BattleQuickTeam] Could not find original index for UID:', pokemon.uid);
+    return;
   }
 
-  const isForced = uiStore.isBattleSwitchForced || toValue(battleStore.currentSubState) === 'SWITCH_MENU'
-  console.debug(`[BattleQuickTeam] handleSwitch clicked for index: ${index} (original: ${originalIndex}), pokemon: ${pokemon.name}, hp: ${pokemon.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`)
-  
-  if ((pokemon.hp <= 0 && !isSelectingReviveTarget.value) || pokemon.uid === activePokemonUid.value) {
-    console.debug(`[BattleQuickTeam] handleSwitch early return check failed`)
-    return
+  const isForced =
+    uiStore.isBattleSwitchForced || toValue(battleStore.currentSubState) === 'SWITCH_MENU';
+  console.debug(
+    `[BattleQuickTeam] handleSwitch clicked for index: ${index} (original: ${originalIndex}), pokemon: ${pokemon.name}, hp: ${pokemon.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`
+  );
+
+  if (
+    (pokemon.hp <= 0 && !isSelectingReviveTarget.value) ||
+    pokemon.uid === activePokemonUid.value
+  ) {
+    console.debug(`[BattleQuickTeam] handleSwitch early return check failed`);
+    return;
   }
   if (!canSwitch.value) {
-    console.debug(`[BattleQuickTeam] handleSwitch canSwitch is false`)
-    return
+    console.debug(`[BattleQuickTeam] handleSwitch canSwitch is false`);
+    return;
   }
-  
+
   if (livePvP.battleState.active) {
-    livePvP._commitPick({ type: 'switch', switchIndex: originalIndex })
+    livePvP._commitPick({ type: 'switch', switchIndex: originalIndex });
   } else {
-    console.debug(`[BattleQuickTeam] Calling battleStore.executeSwitch with originalIndex: ${originalIndex}, isForced: ${isForced}`)
-    battleStore.executeSwitch(originalIndex, isForced)
+    console.debug(
+      `[BattleQuickTeam] Calling battleStore.executeSwitch with originalIndex: ${originalIndex}, isForced: ${isForced}`
+    );
+    battleStore.executeSwitch(originalIndex, isForced);
   }
-}
+};
 </script>
 
 <template>
-  <div 
-    class="battle-quick-team premium-frame"
-  >
+  <div class="battle-quick-team premium-frame">
     <div class="quick-team-grid">
       <BoxPokemonCard
         v-for="(pokemon, index) in team"
@@ -98,7 +110,7 @@ const handleSwitch = (index: number) => {
         type-pill-size="ssm"
         class="quick-card-override"
         :data-pokemon-uid="pokemon.uid"
-        :class="{ 
+        :class="{
           'is-active': pokemon.uid === activePokemonUid,
           'is-fainted': pokemon.hp <= 0 && !isSelectingReviveTarget,
           'is-revive-target': pokemon.hp <= 0 && isSelectingReviveTarget,
@@ -108,17 +120,13 @@ const handleSwitch = (index: number) => {
       />
 
       <!-- Slots Vacíos para mantener la estructura 2x3 -->
-      <div 
-        v-for="i in emptySlotsCount" 
-        :key="'empty-' + i" 
-        class="empty-slot-card"
-      />
+      <div v-for="i in emptySlotsCount" :key="'empty-' + i" class="empty-slot-card" />
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .battle-quick-team {
   @include gpu-layer;
@@ -128,7 +136,7 @@ const handleSwitch = (index: number) => {
   flex-direction: column;
   height: 100% !important;
   min-height: 100%;
-  padding: 0 !important; 
+  padding: 0 !important;
   border: none !important;
   background: transparent !important;
   overflow: hidden auto !important;
@@ -198,7 +206,6 @@ const handleSwitch = (index: number) => {
     transform: Scale(0.98);
     border-color: var(--tier-color) !important;
     box-shadow: var(--shadow-card);
-
   }
 
   &.is-fainted {

@@ -111,9 +111,11 @@ function renderTileLayer(
         } else {
           ctx.fillStyle = cell.tileId.includes('water')
             ? '#12759e'
-            : (cell.tileId.includes('path') || cell.tileId.includes('terrain')
+            : cell.tileId.includes('path') || cell.tileId.includes('terrain')
               ? '#bc9052'
-              : (cell.tileId.includes('elevation') || cell.tileId.includes('mountain') ? '#8e6642' : '#318236'));
+              : cell.tileId.includes('elevation') || cell.tileId.includes('mountain')
+                ? '#8e6642'
+                : '#318236';
           ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
       }
@@ -215,12 +217,21 @@ function renderCanvas(): void {
       ctx.fillRect(warp.x * TILE_SIZE, warp.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
       ctx.strokeStyle = '#a16207';
       ctx.lineWidth = 2;
-      ctx.strokeRect(warp.x * TILE_SIZE + 1, warp.y * TILE_SIZE + 1, SUBTILE_INNER_SIZE, SUBTILE_INNER_SIZE);
+      ctx.strokeRect(
+        warp.x * TILE_SIZE + 1,
+        warp.y * TILE_SIZE + 1,
+        SUBTILE_INNER_SIZE,
+        SUBTILE_INNER_SIZE
+      );
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('W', warp.x * TILE_SIZE + TILE_CENTER_OFFSET, warp.y * TILE_SIZE + TILE_CENTER_OFFSET);
+      ctx.fillText(
+        'W',
+        warp.x * TILE_SIZE + TILE_CENTER_OFFSET,
+        warp.y * TILE_SIZE + TILE_CENTER_OFFSET
+      );
     }
 
     for (const spawn of map.entities.spawns) {
@@ -228,13 +239,22 @@ function renderCanvas(): void {
       ctx.fillRect(spawn.x * TILE_SIZE, spawn.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
       ctx.strokeStyle = '#0e7490';
       ctx.lineWidth = 2;
-      ctx.strokeRect(spawn.x * TILE_SIZE + 1, spawn.y * TILE_SIZE + 1, SUBTILE_INNER_SIZE, SUBTILE_INNER_SIZE);
+      ctx.strokeRect(
+        spawn.x * TILE_SIZE + 1,
+        spawn.y * TILE_SIZE + 1,
+        SUBTILE_INNER_SIZE,
+        SUBTILE_INNER_SIZE
+      );
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       const label = spawn.id.includes('player') ? '★' : 'S';
-      ctx.fillText(label, spawn.x * TILE_SIZE + TILE_CENTER_OFFSET, spawn.y * TILE_SIZE + TILE_CENTER_OFFSET);
+      ctx.fillText(
+        label,
+        spawn.x * TILE_SIZE + TILE_CENTER_OFFSET,
+        spawn.y * TILE_SIZE + TILE_CENTER_OFFSET
+      );
     }
   }
 
@@ -279,7 +299,12 @@ function renderCanvas(): void {
         ctx.restore();
         ctx.strokeStyle = fits ? '#22c55e' : '#ef4444';
         ctx.lineWidth = 2;
-        ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, tpl.footprint.width * TILE_SIZE, tpl.footprint.height * TILE_SIZE);
+        ctx.strokeRect(
+          x * TILE_SIZE,
+          y * TILE_SIZE,
+          tpl.footprint.width * TILE_SIZE,
+          tpl.footprint.height * TILE_SIZE
+        );
       } else if (store.activeTool === 'eraser') {
         ctx.strokeStyle = '#ef4444';
         ctx.lineWidth = 2;
@@ -301,7 +326,14 @@ function renderCanvas(): void {
     ctx.font = 'bold 10px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const arrow = store.playerDirection === 'up' ? '▲' : store.playerDirection === 'down' ? '▼' : store.playerDirection === 'left' ? '◀' : '▶';
+    const arrow =
+      store.playerDirection === 'up'
+        ? '▲'
+        : store.playerDirection === 'down'
+          ? '▼'
+          : store.playerDirection === 'left'
+            ? '◀'
+            : '▶';
     ctx.fillText(arrow, px + TILE_CENTER_OFFSET, py + TILE_CENTER_OFFSET);
   }
 }
@@ -400,7 +432,8 @@ function executeToolAction(x: number, y: number): void {
   } else if (tool === 'eyedropper') {
     const map = store.currentMap;
     if (map) {
-      const cell = map.layers[store.activeLayer === 'collision' ? 'ground' : store.activeLayer][y]?.[x];
+      const cell =
+        map.layers[store.activeLayer === 'collision' ? 'ground' : store.activeLayer][y]?.[x];
       if (cell?.tileId) {
         store.selectedTileId = cell.tileId;
         store.activeTool = 'brush';
@@ -511,6 +544,9 @@ defineExpose({
 <template>
   <div
     id="studio-viewport"
+    tabindex="0"
+    role="region"
+    aria-label="Lienzo de diseño de metatiles"
     class="studio-canvas-container"
     :class="{ 'space-panning': isSpacePressed }"
     @wheel="onWheel"
@@ -527,16 +563,13 @@ defineExpose({
         transformOrigin: '0 0'
       }"
     >
-      <canvas
-        ref="canvasRef"
-        class="viewport-canvas"
-      />
+      <canvas ref="canvasRef" class="viewport-canvas" />
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .studio-canvas-container {
   position: relative;

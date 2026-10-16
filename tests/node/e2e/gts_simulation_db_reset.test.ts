@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { BaseE2ESimulation } from '../../../scripts/e2e/base_simulation.ts';
 import type { Page } from '@playwright/test';
 import fs from 'node:fs';
@@ -20,8 +20,8 @@ describe('GTS Multi-Account Simulation DB Reset & Isolation Parity', () => {
       setViewportSize: vi.fn().mockResolvedValue(undefined),
       request: {
         post: mockPost,
-        get: vi.fn().mockResolvedValue({ ok: true, status: 200 }),
-      },
+        get: vi.fn().mockResolvedValue({ ok: true, status: 200 })
+      }
     } as unknown as Page;
   });
 
@@ -33,7 +33,12 @@ describe('GTS Multi-Account Simulation DB Reset & Isolation Parity', () => {
     const primary = new TestE2ESimulation(mockPage, 'GtsSeller');
     expect(primary.getIsSharedDatabase()).toBe(false);
 
-    const secondary = new TestE2ESimulation(mockPage, 'GtsBuyer', undefined, primary.getSqliteKey());
+    const secondary = new TestE2ESimulation(
+      mockPage,
+      'GtsBuyer',
+      undefined,
+      primary.getSqliteKey()
+    );
     expect(secondary.getIsSharedDatabase()).toBe(true);
     expect(secondary.getSqliteKey()).toBe(primary.getSqliteKey());
   });
@@ -54,7 +59,7 @@ describe('GTS Multi-Account Simulation DB Reset & Isolation Parity', () => {
 
     // Dev server must receive cleanup request with x-db-key
     expect(mockPost).toHaveBeenCalledWith('/api/dev-sim-db-cleanup', {
-      headers: { 'x-db-key': primary.getSqliteKey() },
+      headers: { 'x-db-key': primary.getSqliteKey() }
     });
   });
 
@@ -65,7 +70,12 @@ describe('GTS Multi-Account Simulation DB Reset & Isolation Parity', () => {
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
     fs.writeFileSync(dbPath, 'seller state with listings');
 
-    const secondary = new TestE2ESimulation(mockPage, 'GtsBuyer', undefined, primary.getSqliteKey());
+    const secondary = new TestE2ESimulation(
+      mockPage,
+      'GtsBuyer',
+      undefined,
+      primary.getSqliteKey()
+    );
 
     // When secondary is shared, cleanupSimulationDb should not wipe disk or call endpoint
     if (!secondary.getIsSharedDatabase()) {

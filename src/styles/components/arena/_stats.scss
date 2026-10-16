@@ -1,5 +1,5 @@
-@use "@/styles/core/tools" as *;
-@use "@/styles/core/mixins" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/core/mixins' as *;
 
 .rank-card {
   padding: 10px 12px;
@@ -115,7 +115,9 @@
   height: 40px;
   border: 2px solid var(--tier-color);
   border-radius: 50%;
-  background: Radial-Gradient(circle at 35% 35%, Rgb(255 255 255 / 5%) 0%, Rgb(0 0 0 / 40%) 100%), Rgb(255 255 255 / 1%);
+  background:
+    Radial-Gradient(circle at 35% 35%, Rgb(255 255 255 / 5%) 0%, Rgb(0 0 0 / 40%) 100%),
+    Rgb(255 255 255 / 1%);
   box-shadow: var(--shadow-card);
 
   overflow: hidden;
@@ -136,7 +138,8 @@
     display: inline-block;
     font-size: var(--font-24);
     line-height: 1;
-    filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 50%)) Drop-Shadow(0 0 8px color-mix(in sRGB, var(--tier-color) 50%, transparent));
+    filter: Drop-Shadow(0 2px 4px Rgb(0 0 0 / 50%))
+      Drop-Shadow(0 0 8px color-mix(in sRGB, var(--tier-color) 50%, transparent));
     user-select: none;
     will-change: transform;
   }
@@ -185,26 +188,26 @@
   padding: 6px 4px;
   border: 1px solid Rgb(255 255 255 / 2%);
   border-radius: $radius-md;
-  background: Rgb(0 0 0 / 15%); 
+  background: Rgb(0 0 0 / 15%);
   text-align: center;
   align-self: center;
   overflow: visible;
 
-  .val { 
-    display: block; 
-    color: var(--white); 
-    font-size: var(--font-11); 
+  .val {
+    display: block;
+    color: var(--white);
+    font-size: var(--font-11);
     font-weight: bold;
     line-height: 1.35;
     white-space: nowrap;
     overflow: visible;
     padding-top: 1px;
   }
-  .lab { 
-    @include pixelated; 
+  .lab {
+    @include pixelated;
 
-    color: var(--gray, #94a3b8); 
-    font-size: var(--font-7); 
+    color: var(--gray, #94a3b8);
+    font-size: var(--font-7);
     font-weight: bold;
     line-height: 1.2;
     margin-top: 2px;
@@ -227,16 +230,16 @@
   margin-bottom: 12px;
 
   .title-group {
-    h3 { 
-      margin: 0; 
-      color: var(--white); 
-      font-size: var(--font-11); 
+    h3 {
+      margin: 0;
+      color: var(--white);
+      font-size: var(--font-11);
       font-weight: 800;
     }
-    p { 
-      margin: 4px 0 0; 
-      color: Rgb(148 163 184 / 50%); 
-      font-size: var(--font-9); 
+    p {
+      margin: 4px 0 0;
+      color: Rgb(148 163 184 / 50%);
+      font-size: var(--font-9);
     }
   }
 }
@@ -261,23 +264,23 @@
   }
 }
 
-.def-status { 
-  @include pixelated; 
+.def-status {
+  @include pixelated;
 
-  padding: 8px 12px; 
-  border-radius: $radius-lg; 
-  font-size: var(--font-8); 
-  font-weight: bold; 
+  padding: 8px 12px;
+  border-radius: $radius-lg;
+  font-size: var(--font-8);
+  font-weight: bold;
   text-align: center;
 
-  &.active { 
-    border: 1px solid Rgb(34 197 94 / 15%); 
-    background: Rgb(34 197 94 / 8%); 
+  &.active {
+    border: 1px solid Rgb(34 197 94 / 15%);
+    background: Rgb(34 197 94 / 8%);
     color: Rgb(74 222 128 / 100%);
   }
-  &.inactive { 
-    border: 1px solid Rgb(239 68 68 / 15%); 
-    background: Rgb(239 68 68 / 8%); 
+  &.inactive {
+    border: 1px solid Rgb(239 68 68 / 15%);
+    background: Rgb(239 68 68 / 8%);
     color: Rgb(248 113 113 / 100%);
   }
 }

@@ -7,7 +7,7 @@
  * - Inventory item usability (isItemUsableOn) zero-allocation checks and cloning purity.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { handleItemUsage } from '@/logic/battle/battleItems';
 import { gameBus } from '@/logic/events/gameBus';
 import { isValidTarget } from '@/logic/items/itemEffects';
@@ -17,8 +17,8 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 
 vi.mock('@/logic/events/gameBus', () => ({
   gameBus: {
-    emit: vi.fn(),
-  },
+    emit: vi.fn()
+  }
 }));
 
 vi.mock('gsap', () => {
@@ -29,15 +29,15 @@ vi.mock('gsap', () => {
         return {
           then: (cb?: () => void) => {
             if (cb) cb();
-          },
+          }
         };
-      }),
-    },
+      })
+    }
   };
 });
 
 vi.mock('@/logic/utils/gsapHelpers', () => ({
-  awaitAnimation: vi.fn(() => Promise.resolve()),
+  awaitAnimation: vi.fn(() => Promise.resolve())
 }));
 
 describe('Inventory Domain Suite', () => {
@@ -50,7 +50,7 @@ describe('Inventory Domain Suite', () => {
         addLog: vi.fn(),
         audio: { ballHit: vi.fn(), wobble: vi.fn(), caught: vi.fn() },
         consumeItem: vi.fn(),
-        eventStore: { globalMultipliers: { catch: 1 } },
+        eventStore: { globalMultipliers: { catch: 1 } }
       } as unknown as Parameters<typeof handleItemUsage>[3];
     });
 
@@ -64,7 +64,7 @@ describe('Inventory Domain Suite', () => {
       expect(gameBus.emit).toHaveBeenCalledWith('PLAY_CATCH_ENERGY', {
         side: 'enemy',
         ballId: 'pokeball',
-        isCritical: false,
+        isCritical: false
       });
     });
   });
@@ -76,7 +76,7 @@ describe('Inventory Domain Suite', () => {
       hp: 10,
       maxHp: 40,
       status: null,
-      moves: [{ name: 'Placaje', pp: 10, maxPP: 35 }],
+      moves: [{ name: 'Placaje', pp: 10, maxPP: 35 }]
     } as unknown as Pokemon;
 
     it('should return true for Potions if HP is low', () => {

@@ -6,7 +6,7 @@
  * and database roundtrip persistence across all active database engines.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { describeWithDatabase } from '../../dbTestHelper.ts';
 import { serializeState } from '@/logic/auth/saveSerializer.ts';
 import { validateAndSanitize } from '@/logic/auth/saveSanitizer.ts';
@@ -59,7 +59,7 @@ describe('Class Deployment Persistence - Serialization & Sanitization (RED -> GR
     // 2. validateAndSanitize must NOT strip activeMission
     const validation = validateAndSanitize(serialized);
     expect(validation.valid).toBe(true);
-    if (!validation.valid) throw new Error(validation.error);
+    if (!validation.valid || !validation.data) throw new Error(validation.error ?? 'Missing data');
 
     const sanitizedMission = (validation.data.classData as any).activeMission;
     expect(sanitizedMission).toBeDefined();
@@ -70,73 +70,82 @@ describe('Class Deployment Persistence - Serialization & Sanitization (RED -> GR
     expect(sanitizedMission?.projectedReward).toBe(25000);
 
     // 3. healStuckMissions must NOT unmark pokemon because activeMission is recognized
-    const fixedAny = healStuckMissions(validation.data.team as any, validation.data.box as any, sanitizedMission);
+    const fixedAny = healStuckMissions(
+      validation.data.team as any,
+      validation.data.box as any,
+      sanitizedMission
+    );
     expect(fixedAny).toBe(false);
     expect((validation.data.box[0] as any)?.onMission).toBe(true);
   });
 });
 
-describeWithDatabase('Class Deployment Persistence - Multi-Engine Database Parity', (_engine, getDb) => {
-  it('persists and restores activeMission across database save and load cycles', async () => {
-    const db = getDb();
-    const testUserId = crypto.randomUUID();
+describeWithDatabase(
+  'Class Deployment Persistence - Multi-Engine Database Parity',
+  (_engine, getDb) => {
+    it('persists and restores activeMission across database save and load cycles', async () => {
+      const db = getDb();
+      const testUserId = crypto.randomUUID();
 
-    const ekans = makePokemon('ekans', 15)!;
-    ekans.uid = 'sacrifice-ekans-db-uid';
-    ekans.onMission = true;
+      const ekans = makePokemon('ekans', 15)!;
+      ekans.uid = 'sacrifice-ekans-db-uid';
+      ekans.onMission = true;
 
-    const missionEndsAt = 1780021600000;
-    const missionStartedAt = 1780000000000;
+      const missionEndsAt = 1780021600000;
+      const missionStartedAt = 1780000000000;
 
-    const testState: GameState = {
-      ...INITIAL_STATE,
-      trainer: 'TestDeployer',
-      playerClass: 'rocket',
-      classLevel: 5,
-      classXP: 500,
-      team: [makePokemon('pikachu', 25)!],
-      box: [ekans],
-      classData: {
-        ...INITIAL_STATE.classData,
-        blackMarketSales: 15,
-        criminality: 25,
-        activeMission: {
-          id: 'mission_12h',
-          startedAt: missionStartedAt,
-          endsAt: missionEndsAt,
-          targetPokemonUid: ekans.uid,
-          projectedReward: 45000
+      const testState: GameState = {
+        ...INITIAL_STATE,
+        trainer: 'TestDeployer',
+        playerClass: 'rocket',
+        classLevel: 5,
+        classXP: 500,
+        team: [makePokemon('pikachu', 25)!],
+        box: [ekans],
+        classData: {
+          ...INITIAL_STATE.classData,
+          blackMarketSales: 15,
+          criminality: 25,
+          activeMission: {
+            id: 'mission_12h',
+            startedAt: missionStartedAt,
+            endsAt: missionEndsAt,
+            targetPokemonUid: ekans.uid,
+            projectedReward: 45000
+          }
         }
-      }
-    };
+      };
 
-    const serialized = serializeState(testState);
-    const sanitized = validateAndSanitize(serialized);
-    expect(sanitized.valid).toBe(true);
-    if (!sanitized.valid) throw new Error(sanitized.error);
+      const serialized = serializeState(testState);
+      const sanitized = validateAndSanitize(serialized);
+      expect(sanitized.valid).toBe(true);
+      if (!sanitized.valid) throw new Error(sanitized.error);
 
-    // Save to DB
-    await db.run(
-      'INSERT INTO game_saves (user_id, save_data, last_save_id) VALUES (?, ?, ?)',
-      [testUserId, JSON.stringify(sanitized.data), crypto.randomUUID()]
-    );
+      // Save to DB
+      await db.run('INSERT INTO game_saves (user_id, save_data, last_save_id) VALUES (?, ?, ?)', [
+        testUserId,
+        JSON.stringify(sanitized.data),
+        crypto.randomUUID()
+      ]);
 
-    // Load from DB
-    const rows = await db.query<{ save_data: unknown }>(
-      'SELECT save_data FROM game_saves WHERE user_id = ?',
-      [testUserId]
-    );
-    expect(rows.length).toBe(1);
-    const loadedData = typeof rows[0]!.save_data === 'string'
-      ? (JSON.parse(rows[0]!.save_data as string) as any)
-      : (rows[0]!.save_data as any);
+      // Load from DB
+      const rows = await db.query<{ save_data: unknown }>(
+        'SELECT save_data FROM game_saves WHERE user_id = ?',
+        [testUserId]
+      );
+      expect(rows.length).toBe(1);
+      const loadedData =
+        typeof rows[0]!.save_data === 'string'
+          ? (JSON.parse(rows[0]!.save_data as string) as any)
+          : (rows[0]!.save_data as any);
 
-    expect(loadedData).toBeDefined();
-    expect(loadedData?.classData).toBeDefined();
-    expect(loadedData?.classData?.activeMission).toBeDefined();
-    expect(loadedData?.classData?.activeMission).not.toBeNull();
-    expect(loadedData?.classData?.activeMission?.id).toBe('mission_12h');
-    expect(loadedData?.classData?.activeMission?.endsAt).toBe(missionEndsAt);
-    expect(loadedData?.classData?.activeMission?.targetPokemonUid).toBe(ekans.uid);
-  });
-});
+      expect(loadedData).toBeDefined();
+      expect(loadedData?.classData).toBeDefined();
+      expect(loadedData?.classData?.activeMission).toBeDefined();
+      expect(loadedData?.classData?.activeMission).not.toBeNull();
+      expect(loadedData?.classData?.activeMission?.id).toBe('mission_12h');
+      expect(loadedData?.classData?.activeMission?.endsAt).toBe(missionEndsAt);
+      expect(loadedData?.classData?.activeMission?.targetPokemonUid).toBe(ekans.uid);
+    });
+  }
+);

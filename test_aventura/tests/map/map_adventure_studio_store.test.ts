@@ -71,7 +71,11 @@ describe('Map Adventure Studio Store (useMapAdventureStudioStore)', () => {
     // Connect pallet and pewter directly
     store.toggleConnection('pallet', 'pewter');
     expect(store.connections.length).toBe(initialConnections + 1);
-    expect(store.connections.some(([a, b]: any) => (a === 'pallet' && b === 'pewter') || (a === 'pewter' && b === 'pallet'))).toBe(true);
+    expect(
+      store.connections.some(
+        ([a, b]: any) => (a === 'pallet' && b === 'pewter') || (a === 'pewter' && b === 'pallet')
+      )
+    ).toBe(true);
 
     // Toggle again removes the connection
     store.toggleConnection('pallet', 'pewter');
@@ -83,14 +87,18 @@ describe('Map Adventure Studio Store (useMapAdventureStudioStore)', () => {
     expect(store.nodes['pallet']).toBeDefined();
 
     // Pallet connects to route1 and route21
-    const palletConnectionsBefore = store.connections.filter(([a, b]: any) => a === 'pallet' || b === 'pallet');
+    const palletConnectionsBefore = store.connections.filter(
+      ([a, b]: any) => a === 'pallet' || b === 'pallet'
+    );
     expect(palletConnectionsBefore.length).toBeGreaterThan(0);
 
     store.deleteNode('pallet');
 
     expect(store.nodes['pallet']).toBeUndefined();
     expect(store.officialMapMapping['pallet']).toBeUndefined();
-    const palletConnectionsAfter = store.connections.filter(([a, b]: any) => a === 'pallet' || b === 'pallet');
+    const palletConnectionsAfter = store.connections.filter(
+      ([a, b]: any) => a === 'pallet' || b === 'pallet'
+    );
     expect(palletConnectionsAfter.length).toBe(0);
   });
 

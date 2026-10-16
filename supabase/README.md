@@ -1,6 +1,6 @@
 # Supabase Configurator & Deployment Manager
 
-CLI orchestration and automation tool (`setup_supabase.ts`) designed to manage multi-server Supabase deployments under a **"Zero-Touch"** approach and a purist Git architecture, fully running on **native Node.js (version governed by `package.json` / `.nvmrc`)**.
+CLI orchestration and automation tool (`setup_supabase.ts`) designed to manage multi-server Supabase deployments under a **"Zero-Touch"** approach and a purist Git architecture, fully running on **native Node.js (version governed by `package.json` / `.node-version`)**.
 
 ---
 
@@ -48,7 +48,7 @@ graph TD
 
 ## Prerequisites
 
-- **Node.js** (version governed by the project SSoT in `package.json` [`engines.node`] and `.nvmrc`)
+- **Node.js** (version governed by the project SSoT in `package.json` [`engines.node`] and `.node-version`)
 - **Docker** and **Docker Compose** (to build and publish images)
 - **Git** (for selective Supabase cloning)
 
@@ -174,7 +174,7 @@ npm run supabase:manage all
 npm run supabase:manage add
 ```
 
-*The wizard will ask for the name (e.g. `staging`), game metadata, Tenant ID, and domains.*
+_The wizard will ask for the name (e.g. `staging`), game metadata, Tenant ID, and domains._
 
 1. Generate deployment files so encryption keys and `generated/staging.env` are created:
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { SPECIAL_ACTIONS } from '@/logic/battle/actions/specialActions';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleStages } from '@/types/battle/battle';
@@ -49,16 +49,34 @@ describe('Special Battle Actions Mechanics Suite (Tier 1)', () => {
     const addLog = (msg: string) => logs.push(msg);
 
     const grassTgt = createMockPokemon({ name: 'Oddish', type: 'grass' });
-    SPECIAL_ACTIONS['leech_seed']?.(createMockPokemon(), grassTgt, createStages(), createStages(), addLog);
+    SPECIAL_ACTIONS['leech_seed']?.(
+      createMockPokemon(),
+      grassTgt,
+      createStages(),
+      createStages(),
+      addLog
+    );
     expect(logs).toContain('¡No afecta a Oddish!');
     expect(grassTgt.seeded).toBeFalsy();
 
     const waterTgt = createMockPokemon({ name: 'Squirtle', type: 'water', type2: null });
-    SPECIAL_ACTIONS['leech_seed']?.(createMockPokemon(), waterTgt, createStages(), createStages(), addLog);
+    SPECIAL_ACTIONS['leech_seed']?.(
+      createMockPokemon(),
+      waterTgt,
+      createStages(),
+      createStages(),
+      addLog
+    );
     expect(waterTgt.seeded).toBe(true);
     expect(logs).toContain('¡Squirtle fue infectado por drenadoras!');
 
-    SPECIAL_ACTIONS['leech_seed']?.(createMockPokemon(), waterTgt, createStages(), createStages(), addLog);
+    SPECIAL_ACTIONS['leech_seed']?.(
+      createMockPokemon(),
+      waterTgt,
+      createStages(),
+      createStages(),
+      addLog
+    );
     expect(logs).toContain('¡Squirtle ya está infectado!');
   });
 
@@ -66,7 +84,13 @@ describe('Special Battle Actions Mechanics Suite (Tier 1)', () => {
     const logs: string[] = [];
     const addLog = (msg: string) => logs.push(msg);
 
-    const ghostSrc = createMockPokemon({ name: 'Gengar', type: 'ghost', type2: 'poison', hp: 100, maxHp: 100 });
+    const ghostSrc = createMockPokemon({
+      name: 'Gengar',
+      type: 'ghost',
+      type2: 'poison',
+      hp: 100,
+      maxHp: 100
+    });
     const tgt = createMockPokemon({ name: 'Pikachu', type: 'electric', type2: null });
     const srcStages = createStages();
 
@@ -87,7 +111,13 @@ describe('Special Battle Actions Mechanics Suite (Tier 1)', () => {
     const addLog = (msg: string) => logs.push(msg);
 
     const src = createMockPokemon({ name: 'Gengar' });
-    SPECIAL_ACTIONS['destiny_bond']?.(src, createMockPokemon(), createStages(), createStages(), addLog);
+    SPECIAL_ACTIONS['destiny_bond']?.(
+      src,
+      createMockPokemon(),
+      createStages(),
+      createStages(),
+      addLog
+    );
     expect(src.destinyBond).toBe(true);
 
     const perishTgt = createMockPokemon({ name: 'Lapras' });
@@ -167,7 +197,11 @@ describe('Special Battle Actions Mechanics Suite (Tier 1)', () => {
     const logs: string[] = [];
     const addLog = (msg: string) => logs.push(msg);
 
-    const src = createMockPokemon({ name: 'Alakazam', heldItem: 'leftovers', ability: 'magicguard' });
+    const src = createMockPokemon({
+      name: 'Alakazam',
+      heldItem: 'leftovers',
+      ability: 'magicguard'
+    });
     const tgt = createMockPokemon({ name: 'Machamp', heldItem: 'choicescarf', ability: 'noguard' });
 
     SPECIAL_ACTIONS['trick']?.(src, tgt, createStages(), createStages(), addLog);
@@ -187,10 +221,22 @@ describe('Special Battle Actions Mechanics Suite (Tier 1)', () => {
     const addLog = (msg: string) => logs.push(msg);
 
     const src = createMockPokemon({ name: 'Swalot' });
-    SPECIAL_ACTIONS['stockpile']?.(src, createMockPokemon(), createStages(), createStages(), addLog);
+    SPECIAL_ACTIONS['stockpile']?.(
+      src,
+      createMockPokemon(),
+      createStages(),
+      createStages(),
+      addLog
+    );
     expect(src.volatileCounters?.['stockpile']).toBe(1);
 
-    SPECIAL_ACTIONS['stockpile']?.(src, createMockPokemon(), createStages(), createStages(), addLog);
+    SPECIAL_ACTIONS['stockpile']?.(
+      src,
+      createMockPokemon(),
+      createStages(),
+      createStages(),
+      addLog
+    );
     expect(src.volatileCounters?.['stockpile']).toBe(2);
 
     SPECIAL_ACTIONS['spit_up']?.(src, createMockPokemon(), createStages(), createStages(), addLog);

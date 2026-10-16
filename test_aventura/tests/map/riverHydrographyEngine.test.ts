@@ -85,9 +85,8 @@ describe('riverHydrographyEngine', () => {
   });
 
   it('drains an interior lake to ocean with downhill gradient descent and >= 2 cell width', async () => {
-    const { generateProceduralRiverDrainage } = await import(
-      '../../logic/map/continent/riverHydrographyEngine.ts'
-    );
+    const { generateProceduralRiverDrainage } =
+      await import('../../logic/map/continent/riverHydrographyEngine.ts');
     const W = 64;
     const H = 64;
     // Map with ocean border (outer 4 cells are water)
@@ -138,9 +137,8 @@ describe('riverHydrographyEngine', () => {
   });
 
   it('safely omits river drainage without error when there are no interior lakes', async () => {
-    const { generateProceduralRiverDrainage } = await import(
-      '../../logic/map/continent/riverHydrographyEngine.ts'
-    );
+    const { generateProceduralRiverDrainage } =
+      await import('../../logic/map/continent/riverHydrographyEngine.ts');
     const W = 40;
     const H = 40;
     // Map with only ocean borders and solid grass center (no interior lakes)
@@ -160,9 +158,8 @@ describe('riverHydrographyEngine', () => {
   });
 
   it('avoids immediate coast (< 35 tiles) and traverses toward a distant basin with organic meanders', async () => {
-    const { generateProceduralRiverDrainage } = await import(
-      '../../logic/map/continent/riverHydrographyEngine.ts'
-    );
+    const { generateProceduralRiverDrainage } =
+      await import('../../logic/map/continent/riverHydrographyEngine.ts');
     const W = 120;
     const H = 120;
     // Map with perimeter ocean (outer 4 cells are water)

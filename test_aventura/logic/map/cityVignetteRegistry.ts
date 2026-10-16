@@ -56,7 +56,11 @@ export interface VignetteBlueprint {
   readonly width: number;
   readonly height: number;
   readonly prerequisites: VignettePrerequisites;
-  readonly build: (originX: number, originY: number, seed: number) => {
+  readonly build: (
+    originX: number,
+    originY: number,
+    seed: number
+  ) => {
     readonly buildings: readonly UrbanBuildingPlacement[];
     readonly props: readonly UrbanPropPlacement[];
     readonly internalStreets: readonly { readonly x: number; readonly y: number }[];
@@ -77,7 +81,7 @@ const LCG_CONSTANTS = {
 
 /** Deterministic pseudo-random helper */
 function createLcg(seed: number): () => number {
-  let s = (seed >>> 0) || LCG_CONSTANTS.DEFAULT_SEED;
+  let s = seed >>> 0 || LCG_CONSTANTS.DEFAULT_SEED;
   return () => {
     s = (s * LCG_CONSTANTS.MULTIPLIER + LCG_CONSTANTS.INCREMENT) | 0;
     return (s >>> 0) / LCG_CONSTANTS.DIVISOR;
@@ -113,9 +117,24 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
       ];
 
       const props: UrbanPropPlacement[] = [
-        { type: 'fence_h', x: ox + 4, y: oy + 1, prefabFile: getAssetFilename('poke_fence_wood_h') },
-        { type: 'fence_h', x: ox + 4, y: oy + 2, prefabFile: getAssetFilename('poke_fence_wood_h') },
-        { type: 'signpost', x: ox + 4, y: oy + 3, prefabFile: getAssetFilename('poke_signpost_wood') },
+        {
+          type: 'fence_h',
+          x: ox + 4,
+          y: oy + 1,
+          prefabFile: getAssetFilename('poke_fence_wood_h')
+        },
+        {
+          type: 'fence_h',
+          x: ox + 4,
+          y: oy + 2,
+          prefabFile: getAssetFilename('poke_fence_wood_h')
+        },
+        {
+          type: 'signpost',
+          x: ox + 4,
+          y: oy + 3,
+          prefabFile: getAssetFilename('poke_signpost_wood')
+        },
         { type: 'bench', x: ox + 5, y: oy + 4, prefabFile: getAssetFilename('poke_bench') }
       ];
 
@@ -173,9 +192,24 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
         { type: 'bench', x: ox + 1, y: oy + 1, prefabFile: getAssetFilename('poke_bench') },
         { type: 'lamp', x: ox + 3, y: oy + 1, prefabFile: getAssetFilename('poke_street_lamp') },
         { type: 'fence_h', x: ox, y: oy, prefabFile: getAssetFilename('poke_fence_white_h_mid') },
-        { type: 'fence_h', x: ox + 1, y: oy, prefabFile: getAssetFilename('poke_fence_white_h_mid') },
-        { type: 'fence_h', x: ox + 2, y: oy, prefabFile: getAssetFilename('poke_fence_white_h_mid') },
-        { type: 'fence_h', x: ox + 3, y: oy, prefabFile: getAssetFilename('poke_fence_white_h_mid') }
+        {
+          type: 'fence_h',
+          x: ox + 1,
+          y: oy,
+          prefabFile: getAssetFilename('poke_fence_white_h_mid')
+        },
+        {
+          type: 'fence_h',
+          x: ox + 2,
+          y: oy,
+          prefabFile: getAssetFilename('poke_fence_white_h_mid')
+        },
+        {
+          type: 'fence_h',
+          x: ox + 3,
+          y: oy,
+          prefabFile: getAssetFilename('poke_fence_white_h_mid')
+        }
       ];
 
       const pavedPlazaCells: { x: number; y: number }[] = [];
@@ -203,8 +237,18 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
     prerequisites: { minScale: 'city' },
     build: (ox, oy) => {
       const props: UrbanPropPlacement[] = [
-        { type: 'crates', x: ox, y: oy, prefabFile: getAssetFilename('poke_port_cargo_crates_double') },
-        { type: 'crates', x: ox + 2, y: oy, prefabFile: getAssetFilename('poke_port_cargo_crates_stack') },
+        {
+          type: 'crates',
+          x: ox,
+          y: oy,
+          prefabFile: getAssetFilename('poke_port_cargo_crates_double')
+        },
+        {
+          type: 'crates',
+          x: ox + 2,
+          y: oy,
+          prefabFile: getAssetFilename('poke_port_cargo_crates_stack')
+        },
         { type: 'bench', x: ox + 5, y: oy, prefabFile: getAssetFilename('poke_bench') },
         { type: 'lamp', x: ox + 6, y: oy + 2, prefabFile: getAssetFilename('poke_street_lamp') },
         { type: 'signpost', x: ox, y: oy + 3, prefabFile: getAssetFilename('poke_sign_blue_metal') }
@@ -243,9 +287,24 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
         { type: 'bench', x: ox + 4, y: oy + 2, prefabFile: getAssetFilename('poke_bench') },
         // Perimeter flower pots
         { type: 'flower', x: ox, y: oy, prefabFile: getAssetFilename('poke_flower_pot_circular') },
-        { type: 'flower', x: ox + 5, y: oy, prefabFile: getAssetFilename('poke_flower_pot_circular') },
-        { type: 'flower', x: ox, y: oy + 5, prefabFile: getAssetFilename('poke_flower_pot_circular') },
-        { type: 'flower', x: ox + 5, y: oy + 5, prefabFile: getAssetFilename('poke_flower_pot_circular') },
+        {
+          type: 'flower',
+          x: ox + 5,
+          y: oy,
+          prefabFile: getAssetFilename('poke_flower_pot_circular')
+        },
+        {
+          type: 'flower',
+          x: ox,
+          y: oy + 5,
+          prefabFile: getAssetFilename('poke_flower_pot_circular')
+        },
+        {
+          type: 'flower',
+          x: ox + 5,
+          y: oy + 5,
+          prefabFile: getAssetFilename('poke_flower_pot_circular')
+        },
         // Street lamp
         { type: 'lamp', x: ox + 5, y: oy + 1, prefabFile: getAssetFilename('poke_street_lamp') }
       ];
@@ -277,10 +336,20 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
     prerequisites: { minScale: 'city', requiresWater: true },
     build: (ox, oy) => {
       const props: UrbanPropPlacement[] = [
-        { type: 'crates', x: ox + 1, y: oy, prefabFile: getAssetFilename('poke_port_cargo_crates_double') },
+        {
+          type: 'crates',
+          x: ox + 1,
+          y: oy,
+          prefabFile: getAssetFilename('poke_port_cargo_crates_double')
+        },
         { type: 'bench', x: ox + 4, y: oy, prefabFile: getAssetFilename('poke_bench') },
         { type: 'lamp', x: ox, y: oy + 1, prefabFile: getAssetFilename('poke_street_lamp') },
-        { type: 'lamp', x: ox + 6, y: oy + 1, prefabFile: getAssetFilename('poke_street_lamp_left') }
+        {
+          type: 'lamp',
+          x: ox + 6,
+          y: oy + 1,
+          prefabFile: getAssetFilename('poke_street_lamp_left')
+        }
       ];
 
       const pavedPlazaCells: { x: number; y: number }[] = [];
@@ -310,7 +379,12 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
     prerequisites: { minScale: 'town' },
     build: (ox, oy, seed) => {
       const rng = createLcg(seed);
-      const roofs = ['house_pallet_blue', 'house_cerulean_orange', 'house_green_plain', 'house_purple'] as const;
+      const roofs = [
+        'house_pallet_blue',
+        'house_cerulean_orange',
+        'house_green_plain',
+        'house_purple'
+      ] as const;
       const roofA = roofs[Math.floor(rng() * roofs.length)]!;
       const roofB = roofs[(Math.floor(rng() * roofs.length) + 1) % roofs.length]!;
 
@@ -344,10 +418,30 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
 
       const props: UrbanPropPlacement[] = [
         { type: 'flower', x: ox + 4, y: oy + 2, prefabFile: getAssetFilename('poke_flowers_red') },
-        { type: 'mailbox', x: ox + metaA.doorOffsets[0]!.dx + 1, y: oy + metaA.height, prefabFile: getAssetFilename('poke_mailbox') },
-        { type: 'mailbox', x: ox + 5 + metaB.doorOffsets[0]!.dx - 1, y: oy + metaB.height, prefabFile: getAssetFilename('poke_mailbox') },
-        { type: 'flower', x: ox, y: oy + metaA.height + 1, prefabFile: getAssetFilename('poke_flowers_red') },
-        { type: 'flower', x: ox + 9, y: oy + metaB.height + 1, prefabFile: getAssetFilename('poke_flowers_red') }
+        {
+          type: 'mailbox',
+          x: ox + metaA.doorOffsets[0]!.dx + 1,
+          y: oy + metaA.height,
+          prefabFile: getAssetFilename('poke_mailbox')
+        },
+        {
+          type: 'mailbox',
+          x: ox + 5 + metaB.doorOffsets[0]!.dx - 1,
+          y: oy + metaB.height,
+          prefabFile: getAssetFilename('poke_mailbox')
+        },
+        {
+          type: 'flower',
+          x: ox,
+          y: oy + metaA.height + 1,
+          prefabFile: getAssetFilename('poke_flowers_red')
+        },
+        {
+          type: 'flower',
+          x: ox + 9,
+          y: oy + metaB.height + 1,
+          prefabFile: getAssetFilename('poke_flowers_red')
+        }
       ];
 
       const internalStreets = [
@@ -411,8 +505,18 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
     prerequisites: { minScale: 'city' },
     build: (ox, oy) => {
       const props: UrbanPropPlacement[] = [
-        { type: 'crates', x: ox, y: oy, prefabFile: getAssetFilename('poke_port_cargo_crates_double') },
-        { type: 'crates', x: ox + 2, y: oy, prefabFile: getAssetFilename('poke_port_cargo_crates_stack') },
+        {
+          type: 'crates',
+          x: ox,
+          y: oy,
+          prefabFile: getAssetFilename('poke_port_cargo_crates_double')
+        },
+        {
+          type: 'crates',
+          x: ox + 2,
+          y: oy,
+          prefabFile: getAssetFilename('poke_port_cargo_crates_stack')
+        },
         { type: 'fence_h', x: ox + 4, y: oy, prefabFile: getAssetFilename('poke_fence_wood_h') },
         { type: 'fence_h', x: ox + 5, y: oy, prefabFile: getAssetFilename('poke_fence_wood_h') },
         { type: 'lamp', x: ox + 5, y: oy + 2, prefabFile: getAssetFilename('poke_street_lamp') }
@@ -459,12 +563,15 @@ const BLUEPRINTS: readonly VignetteBlueprint[] = [
 ];
 
 // O(1) typed lookup dictionary
-const initialRegistry: Record<string, VignetteBlueprint> = {};
+const initialRegistry: Partial<Record<CityVignetteType, VignetteBlueprint>> = {};
 export const VIGNETTE_BLUEPRINTS_BY_ID: Record<CityVignetteType, VignetteBlueprint> = Object.freeze(
-  BLUEPRINTS.reduce<Record<CityVignetteType, VignetteBlueprint>>((acc, bp) => {
-    acc[bp.id] = bp;
-    return acc;
-  }, initialRegistry as Record<CityVignetteType, VignetteBlueprint>)
+  BLUEPRINTS.reduce<Record<CityVignetteType, VignetteBlueprint>>(
+    (acc, bp) => {
+      acc[bp.id] = bp;
+      return acc;
+    },
+    initialRegistry as Record<CityVignetteType, VignetteBlueprint>
+  )
 );
 
 /**

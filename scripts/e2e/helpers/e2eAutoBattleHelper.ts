@@ -8,10 +8,7 @@ import {
 import { isMatchingUid } from '../../../src/logic/battle/showdownUidMapper.ts';
 import type { CertifiedBattleCase } from '../fuzzer/generators/fuzzer_team_generator.ts';
 import { clickResilient } from './e2eLogger.ts';
-import {
-  waitForWaitInput,
-  type WindowWithResolver
-} from './battleEventHelpers.ts';
+import { waitForWaitInput, type WindowWithResolver } from './battleEventHelpers.ts';
 
 export type CertifiedTestBatch = CertifiedBattleCase;
 
@@ -51,28 +48,50 @@ interface DebugStore {
   };
 }
 
-export async function resolveTargetUidForSlot(page: Page, slotNum: number, _label: string): Promise<string | null> {
-  return await page.evaluate(async ({ slotNum }) => {
-    try {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return null;
-      const store = resolver();
-      const state = store.state;
-      if (!state) return null;
-      
-      const { ShowdownTeamResolver } = (await import('../../../src/logic/battle/showdownTeamResolver.ts')) as { ShowdownTeamResolver: { getPokemonByShowdownSlot: (team: unknown[], request: unknown, slot: number) => { uid?: string } | null | undefined } };
-      
-      const gameStore = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.() as { state: { team: unknown[] } } | undefined;
-      const team = gameStore?.state?.team || [];
-      const pokemon = ShowdownTeamResolver.getPokemonByShowdownSlot(team, state.playerRequest, slotNum);
-      if (pokemon && pokemon.uid) {
-        return pokemon.uid;
+export async function resolveTargetUidForSlot(
+  page: Page,
+  slotNum: number,
+  _label: string
+): Promise<string | null> {
+  return await page.evaluate(
+    async ({ slotNum }) => {
+      try {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        if (!resolver) return null;
+        const store = resolver();
+        const state = store.state;
+        if (!state) return null;
+
+        const { ShowdownTeamResolver } =
+          (await import('../../../src/logic/battle/showdownTeamResolver.ts')) as {
+            ShowdownTeamResolver: {
+              getPokemonByShowdownSlot: (
+                team: unknown[],
+                request: unknown,
+                slot: number
+              ) => { uid?: string } | null | undefined;
+            };
+          };
+
+        const gameStore = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.() as
+          | { state: { team: unknown[] } }
+          | undefined;
+        const team = gameStore?.state?.team || [];
+        const pokemon = ShowdownTeamResolver.getPokemonByShowdownSlot(
+          team,
+          state.playerRequest,
+          slotNum
+        );
+        if (pokemon && pokemon.uid) {
+          return pokemon.uid;
+        }
+        return null;
+      } catch (_err: unknown) {
+        return null;
       }
-      return null;
-    } catch (_err: unknown) {
-      return null;
-    }
-  }, { slotNum });
+    },
+    { slotNum }
+  );
 }
 
 export async function confirmAndStartBattle(page: Page): Promise<void> {
@@ -82,7 +101,10 @@ export async function confirmAndStartBattle(page: Page): Promise<void> {
       await clickResilient(confirmBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
     }
   } catch (error: unknown) {
-    console.debug('[E2E AutoBattle] Confirm button already dismounted or non-visible:', error instanceof Error ? error.message : String(error));
+    console.debug(
+      '[E2E AutoBattle] Confirm button already dismounted or non-visible:',
+      error instanceof Error ? error.message : String(error)
+    );
   }
 
   try {
@@ -90,7 +112,10 @@ export async function confirmAndStartBattle(page: Page): Promise<void> {
     await startBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   } catch (error: unknown) {
-    console.debug('[E2E AutoBattle] Start button already dismounted or non-visible:', error instanceof Error ? error.message : String(error));
+    console.debug(
+      '[E2E AutoBattle] Start button already dismounted or non-visible:',
+      error instanceof Error ? error.message : String(error)
+    );
   }
 }
 
@@ -100,22 +125,32 @@ export async function executeNativeAutoBattle(page: Page): Promise<void> {
   });
 
   try {
-    await page.waitForFunction(() => {
-      const isBattleInDom = Boolean(document.querySelector('#battle-view, .battle-arena, #battle-controls-layout'));
-      if (!isBattleInDom) return false;
-      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
-      if (!store || !active) return false;
-      const fsmState = store.currentFsmState;
-      const fsmSubState = store.currentSubState;
-      return !store.isProcessing
-        && fsmState === 'ACTIVE_BATTLE'
-        && (fsmSubState === 'WAIT_INPUT' || fsmSubState === 'SWITCH_MENU')
-        && active.over === false;
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await page.waitForFunction(
+      () => {
+        const isBattleInDom = Boolean(
+          document.querySelector('#battle-view, .battle-arena, #battle-controls-layout')
+        );
+        if (!isBattleInDom) return false;
+        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
+        if (!store || !active) return false;
+        const fsmState = store.currentFsmState;
+        const fsmSubState = store.currentSubState;
+        return (
+          !store.isProcessing &&
+          fsmState === 'ACTIVE_BATTLE' &&
+          (fsmSubState === 'WAIT_INPUT' || fsmSubState === 'SWITCH_MENU') &&
+          active.over === false
+        );
+      },
+      undefined,
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+    );
   } catch (err: unknown) {
     const debugInfo = await page.evaluate(() => {
-      const isBattleInDom = Boolean(document.querySelector('#battle-view, .battle-arena, #battle-controls-layout'));
+      const isBattleInDom = Boolean(
+        document.querySelector('#battle-view, .battle-arena, #battle-controls-layout')
+      );
       const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
       const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
       return {
@@ -135,16 +170,20 @@ export async function executeNativeAutoBattle(page: Page): Promise<void> {
   while (true) {
     await waitForWaitInput(page);
     const battleOver = await page.evaluate(() => {
-      const isBattleInDom = Boolean(document.querySelector('#battle-view, .battle-arena, #battle-controls-layout'));
+      const isBattleInDom = Boolean(
+        document.querySelector('#battle-view, .battle-arena, #battle-controls-layout')
+      );
       if (!isBattleInDom) return true;
       const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
       if (!store) return true;
       const active = (store.activeBattle || store.state) as { over?: boolean } | undefined;
       const fsmState = store.currentFsmState;
-      return active?.over === true ||
+      return (
+        active?.over === true ||
         fsmState === 'EXIT_BATTLE' ||
         fsmState === 'REWARDS_PHASE' ||
-        fsmState === 'SEARCH_PHASE';
+        fsmState === 'SEARCH_PHASE'
+      );
     });
     if (battleOver) {
       return;
@@ -152,7 +191,13 @@ export async function executeNativeAutoBattle(page: Page): Promise<void> {
 
     const stateInfo = await page.evaluate(() => {
       const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      const active = (store?.activeBattle || store?.state) as { turnCount?: number; player?: { name?: string; hp?: number }; enemy?: { name?: string; hp?: number } } | undefined;
+      const active = (store?.activeBattle || store?.state) as
+        | {
+            turnCount?: number;
+            player?: { name?: string; hp?: number };
+            enemy?: { name?: string; hp?: number };
+          }
+        | undefined;
       return {
         turn: active?.turnCount,
         fsm: store?.currentFsmState,
@@ -160,23 +205,27 @@ export async function executeNativeAutoBattle(page: Page): Promise<void> {
         pName: active?.player?.name,
         pHp: active?.player?.hp,
         eName: active?.enemy?.name,
-        eHp: active?.enemy?.hp,
+        eHp: active?.enemy?.hp
       };
     });
-    console.debug(`[E2E-AUTO-BATTLE] Turn ${stateInfo.turn} | FSM: ${stateInfo.fsm}/${stateInfo.sub} | Player: ${stateInfo.pName} (${stateInfo.pHp} HP) vs Enemy: ${stateInfo.eName} (${stateInfo.eHp} HP)`);
+    console.debug(
+      `[E2E-AUTO-BATTLE] Turn ${stateInfo.turn} | FSM: ${stateInfo.fsm}/${stateInfo.sub} | Player: ${stateInfo.pName} (${stateInfo.pHp} HP) vs Enemy: ${stateInfo.eName} (${stateInfo.eHp} HP)`
+    );
 
     const actionTaken = await handleBattleInput(page);
     if (!actionTaken) {
       const battleState = await page.evaluate(() => {
         const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-        const active = (store?.activeBattle || store?.state) as { over?: boolean; playerRequest?: unknown; enemyRequest?: unknown } | undefined;
+        const active = (store?.activeBattle || store?.state) as
+          | { over?: boolean; playerRequest?: unknown; enemyRequest?: unknown }
+          | undefined;
         return {
           fsm: store?.currentFsmState,
           subState: store?.currentSubState,
           isProcessing: store?.isProcessing,
           isOver: active?.over,
           playerRequest: active?.playerRequest,
-          enemyRequest: active?.enemyRequest,
+          enemyRequest: active?.enemyRequest
         };
       });
       throw new Error(`[E2E] Failed to take battle input in state: ${JSON.stringify(battleState)}`);
@@ -191,8 +240,12 @@ export async function handleSwitchMenuInput(page: Page, choice?: string): Promis
     const targetUid = await resolveTargetUidForSlot(page, switchSlot, 'SWITCH_MENU');
 
     if (targetUid) {
-      const modalItem = page.locator(`.base-modal-root .list-item[data-pokemon-uid="${targetUid}"], .list-item[data-pokemon-uid="${targetUid}"]`).first();
-      const isModalItemVisible = (await modalItem.count()) > 0 && await modalItem.isVisible();
+      const modalItem = page
+        .locator(
+          `.base-modal-root .list-item[data-pokemon-uid="${targetUid}"], .list-item[data-pokemon-uid="${targetUid}"]`
+        )
+        .first();
+      const isModalItemVisible = (await modalItem.count()) > 0 && (await modalItem.isVisible());
       if (isModalItemVisible) {
         await clickResilient(modalItem, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
         return true;
@@ -210,14 +263,20 @@ export async function handleSwitchMenuInput(page: Page, choice?: string): Promis
     return true;
   }
 
-  const modalItem = page.locator('.base-modal-root .list-item:not(.is-fainted):not(.is-selected), .list-item[id^="pokemon-select-"]:not(.is-fainted)').first();
-  const isModalItemVisible = (await modalItem.count()) > 0 && await modalItem.isVisible();
+  const modalItem = page
+    .locator(
+      '.base-modal-root .list-item:not(.is-fainted):not(.is-selected), .list-item[id^="pokemon-select-"]:not(.is-fainted)'
+    )
+    .first();
+  const isModalItemVisible = (await modalItem.count()) > 0 && (await modalItem.isVisible());
   if (isModalItemVisible) {
     await clickResilient(modalItem, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
     return !choice;
   }
 
-  const activeSwitchBtn = page.locator('[id^="battle-switch-"]:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
+  const activeSwitchBtn = page
+    .locator('[id^="battle-switch-"]:not(.is-active):not(.is-fainted):not(.is-disabled)')
+    .first();
   await activeSwitchBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
   await clickResilient(activeSwitchBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   return !choice;
@@ -229,7 +288,8 @@ export async function handleMoveChoice(page: Page, cleanChoice: string): Promise
 
   const moveIdx = parseInt(moveToken || '1', 10) - 1;
   const struggleOverlay = page.locator('#struggle-overlay');
-  const isStruggleActive = (await struggleOverlay.count()) > 0 && await struggleOverlay.isVisible();
+  const isStruggleActive =
+    (await struggleOverlay.count()) > 0 && (await struggleOverlay.isVisible());
 
   let moveBtn;
   if (isStruggleActive) {
@@ -242,7 +302,7 @@ export async function handleMoveChoice(page: Page, cleanChoice: string): Promise
 
       const playerRequest = store.state?.playerRequest;
       const active = playerRequest?.active;
-      const activeMon = (active && active.length > 0) ? active[0] : null;
+      const activeMon = active && active.length > 0 ? active[0] : null;
       if (!activeMon) return idx;
       const movesList = activeMon.moves;
       if (!movesList) return idx;
@@ -298,7 +358,7 @@ export async function handleItemChoice(page: Page, cleanChoice: string): Promise
   const translatedName = ITEM_TRANSLATIONS[itemId] || itemId;
 
   const quickCard = page.locator(`.quick-item-card[data-item-id="${itemId}"]`);
-  const isQuickVisible = (await quickCard.count()) > 0 && await quickCard.isVisible();
+  const isQuickVisible = (await quickCard.count()) > 0 && (await quickCard.isVisible());
 
   if (isQuickVisible) {
     await clickResilient(quickCard, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
@@ -307,7 +367,9 @@ export async function handleItemChoice(page: Page, cleanChoice: string): Promise
     await bagBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await clickResilient(bagBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    const backpackItem = page.locator(`#inventory-item-${toID(translatedName)}, .inventory-item-card`).first();
+    const backpackItem = page
+      .locator(`#inventory-item-${toID(translatedName)}, .inventory-item-card`)
+      .first();
     await backpackItem.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await clickResilient(backpackItem, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
@@ -319,7 +381,9 @@ export async function handleItemChoice(page: Page, cleanChoice: string): Promise
       const battleStore = resolver();
       const pinia = battleStore._p;
       const gameStore = pinia?._s?.get('game');
-      const team = [...(gameStore?.state?.team || [])].filter((p): p is NonNullable<typeof p> => p != null);
+      const team = [...(gameStore?.state?.team || [])].filter(
+        (p): p is NonNullable<typeof p> => p != null
+      );
       return team[idx]?.uid || null;
     } catch (_e) {
       return null;
@@ -350,7 +414,10 @@ export async function executeSpecificChoice(page: Page, choice: string): Promise
     }
     return true;
   } catch (e) {
-    console.error(`[E2E] Strict Choice '${choice}' failed to execute in the UI. Aborting test. Error:`, e);
+    console.error(
+      `[E2E] Strict Choice '${choice}' failed to execute in the UI. Aborting test. Error:`,
+      e
+    );
     throw e;
   }
 }
@@ -360,23 +427,34 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     return true;
   }
 
-  await page.waitForFunction(() => {
-    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return true;
-    return !resolver().isProcessing;
-  }, undefined, { timeout: MAX_UI_SETTLE_TIMEOUT_MS });
-
-  await page.waitForFunction(() => {
-    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return true;
-    try {
+  await page.waitForFunction(
+    () => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return true;
       return !resolver().isProcessing;
-    } catch {
-      return true;
-    }
-  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    },
+    undefined,
+    { timeout: MAX_UI_SETTLE_TIMEOUT_MS }
+  );
 
-  await page.locator('#battle-controls-layout.is-ui-locked, .battle-controls-layout.is-ui-locked').first().waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await page.waitForFunction(
+    () => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return true;
+      try {
+        return !resolver().isProcessing;
+      } catch {
+        return true;
+      }
+    },
+    undefined,
+    { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+  );
+
+  await page
+    .locator('#battle-controls-layout.is-ui-locked, .battle-controls-layout.is-ui-locked')
+    .first()
+    .waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
   const subState = await page.evaluate(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
@@ -392,14 +470,16 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
   const isModalOpen = await page.evaluate(async () => {
     try {
       const { useModalStore } = await import('@/stores/modals');
-      return useModalStore().stack.some(m => !m.closing);
+      return useModalStore().stack.some((m) => !m.closing);
     } catch {
       return false;
     }
   });
 
   if (isModalOpen && subState === 'WAIT_INPUT') {
-    console.debug('[E2E-HANDLE-INPUT] Blocking modal is currently open during WAIT_INPUT. Skipping input.');
+    console.debug(
+      '[E2E-HANDLE-INPUT] Blocking modal is currently open during WAIT_INPUT. Skipping input.'
+    );
     return false;
   }
 
@@ -408,7 +488,11 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
   }
 
   if (!choice) {
-    const firstMoveBtn = page.locator('#move-panel button[id^="move-btn-"]:not([disabled]):not(.disabled-move), button[id^="move-btn-"]:not([disabled]):not(.disabled-move)').first();
+    const firstMoveBtn = page
+      .locator(
+        '#move-panel button[id^="move-btn-"]:not([disabled]):not(.disabled-move), button[id^="move-btn-"]:not([disabled]):not(.disabled-move)'
+      )
+      .first();
     await firstMoveBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await clickResilient(firstMoveBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
     return true;
@@ -417,7 +501,10 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
   return executeSpecificChoice(page, choice);
 }
 
-export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefined): Promise<boolean> {
+export async function checkIfChoiceIsInvalid(
+  page: Page,
+  choice: string | undefined
+): Promise<boolean> {
   if (!choice) return false;
   return await page.evaluate((ch) => {
     try {
@@ -446,7 +533,8 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
         if (!targetPoke) {
           return true;
         }
-        const isFnt = targetPoke.condition.endsWith(' fnt') || targetPoke.condition.startsWith('0/');
+        const isFnt =
+          targetPoke.condition.endsWith(' fnt') || targetPoke.condition.startsWith('0/');
         const isInvalid = !!targetPoke.active || isFnt;
         return !!isInvalid;
       }
@@ -459,47 +547,54 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
 
 export async function verifyHpParity(page: Page): Promise<void> {
   try {
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return false;
-      const store = resolver();
-      const playerHp = store.state?.player?.hp ?? 0;
-      const playerMaxHp = store.state?.player?.maxHp ?? 1;
-      const enemyHp = store.state?.enemy?.hp ?? 0;
-      const enemyMaxHp = store.state?.enemy?.maxHp ?? 1;
+    await page.waitForFunction(
+      () => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        if (!resolver) return false;
+        const store = resolver();
+        const playerHp = store.state?.player?.hp ?? 0;
+        const playerMaxHp = store.state?.player?.maxHp ?? 1;
+        const enemyHp = store.state?.enemy?.hp ?? 0;
+        const enemyMaxHp = store.state?.enemy?.maxHp ?? 1;
 
-      const simBattle = (window as WindowWithResolver).__SIMULATOR_BATTLE__;
-      if (simBattle) {
-        const simP1Hp = simBattle.p1?.active?.[0]?.hp;
-        const simP2Hp = simBattle.p2?.active?.[0]?.hp;
-        if (simP1Hp !== undefined && simP1Hp !== playerHp) return false;
-        if (simP2Hp !== undefined && simP2Hp !== enemyHp) return false;
-      }
+        const simBattle = (window as WindowWithResolver).__SIMULATOR_BATTLE__;
+        if (simBattle) {
+          const simP1Hp = simBattle.p1?.active?.[0]?.hp;
+          const simP2Hp = simBattle.p2?.active?.[0]?.hp;
+          if (simP1Hp !== undefined && simP1Hp !== playerHp) return false;
+          if (simP2Hp !== undefined && simP2Hp !== enemyHp) return false;
+        }
 
-      if (playerHp > 0) {
-        const el = document.querySelector('.player-card .hp-values');
-        const text = el?.textContent ?? '';
-        if (!text.includes(`${playerHp}/${playerMaxHp}`)) return false;
-      }
-      if (enemyHp > 0) {
-        const el = document.querySelector('.enemy-card .hp-values');
-        const text = el?.textContent ?? '';
-        if (!text.includes(`${enemyHp}/${enemyMaxHp}`)) return false;
-      }
-      return true;
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+        if (playerHp > 0) {
+          const el = document.querySelector('.player-card .hp-values');
+          const text = el?.textContent ?? '';
+          if (!text.includes(`${playerHp}/${playerMaxHp}`)) return false;
+        }
+        if (enemyHp > 0) {
+          const el = document.querySelector('.enemy-card .hp-values');
+          const text = el?.textContent ?? '';
+          if (!text.includes(`${enemyHp}/${enemyMaxHp}`)) return false;
+        }
+        return true;
+      },
+      undefined,
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+    );
   } catch (err) {
     const diagnosis = await page.evaluate(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return { storePlayer: 'null', storeEnemy: 'null', domPlayer: 'null', domEnemy: 'null' };
+      if (!resolver)
+        return { storePlayer: 'null', storeEnemy: 'null', domPlayer: 'null', domEnemy: 'null' };
       const store = resolver();
       const storePlayer = `${store.state?.player?.hp}/${store.state?.player?.maxHp}`;
-      const storeEnemy  = `${store.state?.enemy?.hp}/${store.state?.enemy?.maxHp}`;
-      const domPlayer   = document.querySelector('.player-card .hp-values')?.textContent ?? 'null';
-      const domEnemy    = document.querySelector('.enemy-card .hp-values')?.textContent ?? 'null';
+      const storeEnemy = `${store.state?.enemy?.hp}/${store.state?.enemy?.maxHp}`;
+      const domPlayer = document.querySelector('.player-card .hp-values')?.textContent ?? 'null';
+      const domEnemy = document.querySelector('.enemy-card .hp-values')?.textContent ?? 'null';
       return { storePlayer, storeEnemy, domPlayer, domEnemy };
     });
-    console.error(`[E2E ERROR] HP Mismatch — Store player: ${diagnosis.storePlayer}, DOM player: "${diagnosis.domPlayer}" | Store enemy: ${diagnosis.storeEnemy}, DOM enemy: "${diagnosis.domEnemy}"`);
+    console.error(
+      `[E2E ERROR] HP Mismatch — Store player: ${diagnosis.storePlayer}, DOM player: "${diagnosis.domPlayer}" | Store enemy: ${diagnosis.storeEnemy}, DOM enemy: "${diagnosis.domEnemy}"`
+    );
     throw err;
   }
 }
@@ -519,10 +614,14 @@ export async function dispatchReplayChoice(
     const switchSlot = Number(normalizedChoice.slice('switch '.length));
     const targetUid = action.targetUid;
     if (!Number.isInteger(switchSlot) || switchSlot < 1 || !targetUid) {
-      throw new Error(`[E2E-CERTIFIED-REPLAY] Certified switch target cannot be resolved. context=${JSON.stringify({ choice: action.choice, activePlayerUid: action.activePlayerUid, requestSlots: action.requestSlots })}`);
+      throw new Error(
+        `[E2E-CERTIFIED-REPLAY] Certified switch target cannot be resolved. context=${JSON.stringify({ choice: action.choice, activePlayerUid: action.activePlayerUid, requestSlots: action.requestSlots })}`
+      );
     }
     if (targetUid === action.activePlayerUid) {
-      throw new Error(`[E2E-CERTIFIED-REPLAY] Certified switch resolves to the active client Pokémon. context=${JSON.stringify({ choice: action.choice, targetUid, requestSlots: action.requestSlots })}`);
+      throw new Error(
+        `[E2E-CERTIFIED-REPLAY] Certified switch resolves to the active client Pokémon. context=${JSON.stringify({ choice: action.choice, targetUid, requestSlots: action.requestSlots })}`
+      );
     }
     const certifiedTarget = page.locator(`#battle-switch-${targetUid}`).first();
     await certifiedTarget.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
@@ -530,7 +629,9 @@ export async function dispatchReplayChoice(
   } else if (normalizedChoice === 'struggle') {
     await clickResilient(page.locator('#struggle-overlay #move-btn-0:not([disabled])').first());
   } else if (normalizedChoice === '') {
-    throw new Error('[E2E-CERTIFIED-REPLAY] The game exposed player input for a P2-only certified step; the automatic opponent transition is missing.');
+    throw new Error(
+      '[E2E-CERTIFIED-REPLAY] The game exposed player input for a P2-only certified step; the automatic opponent transition is missing.'
+    );
   } else {
     throw new Error(`[E2E-CERTIFIED-REPLAY] Unsupported certified UI choice: "${action.choice}".`);
   }
@@ -545,7 +646,8 @@ export async function checkIfReplayEndingOrOver(page: Page): Promise<boolean> {
     const debug = (window as WindowWithResolver).__VITE_DEBUG__;
     const history = Reflect.get(debug ?? {}, 'history');
     const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
-    const isReplayComplete = Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length;
+    const isReplayComplete =
+      Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length;
     const workerEnded = Reflect.get(debug ?? {}, 'certifiedReplayWorkerEnded') === true;
     return isReplayComplete && workerEnded;
   });
@@ -553,35 +655,71 @@ export async function checkIfReplayEndingOrOver(page: Page): Promise<boolean> {
 
 function verifyFinalStateTeam(
   seat: 'p1' | 'p2',
-  expectedTeam: Array<{ uid?: string; name: string; hp: number; maxHp: number; status?: string; fainted: boolean }>,
-  clientState: { p1: Array<{ uid: string; name: string; hp: number; maxHp: number; status: string; fainted: boolean }>; p2: Array<{ uid: string; name: string; hp: number; maxHp: number; status: string; fainted: boolean }> }
+  expectedTeam: Array<{
+    uid?: string;
+    name: string;
+    hp: number;
+    maxHp: number;
+    status?: string;
+    fainted: boolean;
+  }>,
+  clientState: {
+    p1: Array<{
+      uid: string;
+      name: string;
+      hp: number;
+      maxHp: number;
+      status: string;
+      fainted: boolean;
+    }>;
+    p2: Array<{
+      uid: string;
+      name: string;
+      hp: number;
+      maxHp: number;
+      status: string;
+      fainted: boolean;
+    }>;
+  }
 ): void {
   expectedTeam.forEach((expected) => {
     const targetUid = expected.uid;
     if (!targetUid) {
-      throw new Error(`[E2E-PARITY] ${seat} Pokémon ${expected.name} is missing mandatory UID in verification.`);
+      throw new Error(
+        `[E2E-PARITY] ${seat} Pokémon ${expected.name} is missing mandatory UID in verification.`
+      );
     }
-    const clientPoke = clientState[seat].find(p => isMatchingUid(p.uid, targetUid));
+    const clientPoke = clientState[seat].find((p) => isMatchingUid(p.uid, targetUid));
     if (clientPoke) {
       if (clientPoke.fainted !== expected.fainted) {
-        throw new Error(`[E2E-PARITY] ${seat} ${targetUid} fainted mismatch: expected=${expected.fainted}, actual=${clientPoke.fainted}, hp=${clientPoke.hp}/${clientPoke.maxHp}.`);
+        throw new Error(
+          `[E2E-PARITY] ${seat} ${targetUid} fainted mismatch: expected=${expected.fainted}, actual=${clientPoke.fainted}, hp=${clientPoke.hp}/${clientPoke.maxHp}.`
+        );
       }
       if (clientPoke.maxHp !== expected.maxHp) {
-        throw new Error(`[E2E-PARITY] ${seat} ${targetUid} max HP mismatch: expected=${expected.maxHp}, actual=${clientPoke.maxHp}.`);
+        throw new Error(
+          `[E2E-PARITY] ${seat} ${targetUid} max HP mismatch: expected=${expected.maxHp}, actual=${clientPoke.maxHp}.`
+        );
       }
       if (!expected.fainted) {
         if (clientPoke.hp !== expected.hp) {
-          throw new Error(`[E2E-PARITY] ${seat} ${targetUid} HP mismatch: expected=${expected.hp}, actual=${clientPoke.hp}.`);
+          throw new Error(
+            `[E2E-PARITY] ${seat} ${targetUid} HP mismatch: expected=${expected.hp}, actual=${clientPoke.hp}.`
+          );
         }
         if (expected.status !== undefined) {
           const expectedStatus = expected.status || '';
           if (clientPoke.status !== expectedStatus) {
-            throw new Error(`[E2E-PARITY] ${seat} ${targetUid} status mismatch: expected=${expectedStatus}, actual=${clientPoke.status}.`);
+            throw new Error(
+              `[E2E-PARITY] ${seat} ${targetUid} status mismatch: expected=${expectedStatus}, actual=${clientPoke.status}.`
+            );
           }
         }
       }
     } else {
-      throw new Error(`[E2E] Expected ${seat} pokemon with prefix ${expected.name} not found in client state.`);
+      throw new Error(
+        `[E2E] Expected ${seat} pokemon with prefix ${expected.name} not found in client state.`
+      );
     }
   });
 }
@@ -596,21 +734,31 @@ export async function executeAutoBattle(
     }
   });
 
-  await page.waitForFunction(() => {
-    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    return !!resolver?.().state;
-  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await page.waitForFunction(
+    () => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      return !!resolver?.().state;
+    },
+    undefined,
+    { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+  );
 
   while (true) {
-    await page.waitForFunction(() => {
-      const readiness = window.__VITE_DEBUG__?.getScriptedReplayReadiness?.();
-      return readiness?.isReady === true;
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await page.waitForFunction(
+      () => {
+        const readiness = window.__VITE_DEBUG__?.getScriptedReplayReadiness?.();
+        return readiness?.isReady === true;
+      },
+      undefined,
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+    );
 
     const eventDetail = await page.evaluate(() => {
       const readiness = window.__VITE_DEBUG__?.getScriptedReplayReadiness?.();
       if (!readiness?.isReady) {
-        throw new Error(`[E2E-CERTIFIED-REPLAY] Scripted replay readiness disappeared before action dispatch. context=${JSON.stringify(readiness)}`);
+        throw new Error(
+          `[E2E-CERTIFIED-REPLAY] Scripted replay readiness disappeared before action dispatch. context=${JSON.stringify(readiness)}`
+        );
       }
       return readiness;
     });
@@ -628,46 +776,80 @@ export async function executeAutoBattle(
       const history = Reflect.get(debug ?? {}, 'history');
       const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
       if (!Array.isArray(history) || typeof historyIndex !== 'number') {
-        throw new Error(`[E2E-CERTIFIED-REPLAY] Missing certified history cursor. context=${JSON.stringify({ hasHistory: Array.isArray(history), historyIndex })}`);
+        throw new Error(
+          `[E2E-CERTIFIED-REPLAY] Missing certified history cursor. context=${JSON.stringify({ hasHistory: Array.isArray(history), historyIndex })}`
+        );
       }
       if (historyIndex >= history.length) {
-        return { choice: '', historyIndex, terminal: true, targetUid: '', activePlayerUid: '', requestSlots: [] };
+        return {
+          choice: '',
+          historyIndex,
+          terminal: true,
+          targetUid: '',
+          activePlayerUid: '',
+          requestSlots: []
+        };
       }
       const step = history[historyIndex] as { p1Choice?: unknown } | undefined;
       if (!step || typeof step.p1Choice !== 'string') {
-        throw new Error(`[E2E-CERTIFIED-REPLAY] Missing P1 choice at certified history index ${historyIndex}.`);
+        throw new Error(
+          `[E2E-CERTIFIED-REPLAY] Missing P1 choice at certified history index ${historyIndex}.`
+        );
       }
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const battleStore = resolver?.();
       const playerRequest = battleStore?.state?.playerRequest;
       const gameStore = debug?.getGameStore?.() as { state?: { team?: unknown[] } } | undefined;
       if (!battleStore?.state || battleStore.state.over === true) {
-        return { choice: '', historyIndex, terminal: true, targetUid: '', activePlayerUid: '', requestSlots: [] };
+        return {
+          choice: '',
+          historyIndex,
+          terminal: true,
+          targetUid: '',
+          activePlayerUid: '',
+          requestSlots: []
+        };
       }
       if (!playerRequest || !gameStore?.state?.team) {
-        throw new Error(`[E2E-CERTIFIED-REPLAY] Live battle is missing a request or local team for UI slot mapping. context=${JSON.stringify({
-          hasPlayerRequest: Boolean(playerRequest),
-          hasLocalTeam: Boolean(gameStore?.state?.team),
-          fsm: battleStore.currentFsmState,
-          subState: battleStore.currentSubState,
-        })}`);
+        throw new Error(
+          `[E2E-CERTIFIED-REPLAY] Live battle is missing a request or local team for UI slot mapping. context=${JSON.stringify(
+            {
+              hasPlayerRequest: Boolean(playerRequest),
+              hasLocalTeam: Boolean(gameStore?.state?.team),
+              fsm: battleStore.currentFsmState,
+              subState: battleStore.currentSubState
+            }
+          )}`
+        );
       }
-      const { ShowdownTeamResolver } = await import('../../../src/logic/battle/showdownTeamResolver.ts');
+      const { ShowdownTeamResolver } =
+        await import('../../../src/logic/battle/showdownTeamResolver.ts');
       const normalizedChoice = step.p1Choice.trim().toLowerCase();
-      const switchSlot = normalizedChoice.startsWith('switch ') ? Number(normalizedChoice.slice('switch '.length)) : null;
-      const target = switchSlot === null ? null : ShowdownTeamResolver.getPokemonByShowdownSlot(
-        gameStore.state.team as Parameters<typeof ShowdownTeamResolver.getPokemonByShowdownSlot>[0],
-        playerRequest,
-        switchSlot,
-      );
-      const requestSlots = playerRequest.side?.pokemon?.map((pokemon: PlayerRequestPokemonSlot) => ({ uid: pokemon.uid ?? '', active: pokemon.active === true })) ?? [];
+      const switchSlot = normalizedChoice.startsWith('switch ')
+        ? Number(normalizedChoice.slice('switch '.length))
+        : null;
+      const target =
+        switchSlot === null
+          ? null
+          : ShowdownTeamResolver.getPokemonByShowdownSlot(
+              gameStore.state.team as Parameters<
+                typeof ShowdownTeamResolver.getPokemonByShowdownSlot
+              >[0],
+              playerRequest,
+              switchSlot
+            );
+      const requestSlots =
+        playerRequest.side?.pokemon?.map((pokemon: PlayerRequestPokemonSlot) => ({
+          uid: pokemon.uid ?? '',
+          active: pokemon.active === true
+        })) ?? [];
       return {
         choice: step.p1Choice,
         historyIndex,
         terminal: false,
         targetUid: target?.uid ?? '',
         activePlayerUid: battleStore.state.player?.uid ?? '',
-        requestSlots,
+        requestSlots
       };
     });
 
@@ -677,15 +859,21 @@ export async function executeAutoBattle(
 
     await dispatchReplayChoice(page, action);
 
-    await page.waitForFunction(({ previousHistoryIndex }) => {
-      const debug = window.__VITE_DEBUG__;
-      const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
-      const store = window.__VITE_DEBUG_STORE_RESOLVER__?.();
-      const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
-      return (typeof historyIndex === 'number' && historyIndex > previousHistoryIndex)
-        || !active
-        || active.over === true;
-    }, { previousHistoryIndex: action.historyIndex }, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await page.waitForFunction(
+      ({ previousHistoryIndex }) => {
+        const debug = window.__VITE_DEBUG__;
+        const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
+        const store = window.__VITE_DEBUG_STORE_RESOLVER__?.();
+        const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
+        return (
+          (typeof historyIndex === 'number' && historyIndex > previousHistoryIndex) ||
+          !active ||
+          active.over === true
+        );
+      },
+      { previousHistoryIndex: action.historyIndex },
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+    );
 
     const isEndingOrOver = await checkIfReplayEndingOrOver(page);
     if (isEndingOrOver) {
@@ -693,17 +881,26 @@ export async function executeAutoBattle(
     }
   }
 
-  await page.waitForFunction(() => {
-    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return true;
-    const store = resolver();
-    const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
-    const debug = (window as WindowWithResolver).__VITE_DEBUG__;
-    const history = Reflect.get(debug ?? {}, 'history');
-    const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
-    const isReplayComplete = Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length;
-    return !active || active.over || store.currentFsmState !== 'ACTIVE_BATTLE' || isReplayComplete;
-  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await page.waitForFunction(
+    () => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return true;
+      const store = resolver();
+      const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
+      const debug = (window as WindowWithResolver).__VITE_DEBUG__;
+      const history = Reflect.get(debug ?? {}, 'history');
+      const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
+      const isReplayComplete =
+        Array.isArray(history) &&
+        typeof historyIndex === 'number' &&
+        historyIndex >= history.length;
+      return (
+        !active || active.over || store.currentFsmState !== 'ACTIVE_BATTLE' || isReplayComplete
+      );
+    },
+    undefined,
+    { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+  );
 
   if (finalState) {
     const isBattleOver = await page.evaluate(() => {
@@ -715,7 +912,9 @@ export async function executeAutoBattle(
       const debug = (window as WindowWithResolver).__VITE_DEBUG__;
       const history = Reflect.get(debug ?? {}, 'history');
       const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
-      return Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length;
+      return (
+        Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length
+      );
     });
 
     expect(isBattleOver).toBe(true);
@@ -725,26 +924,42 @@ export async function executeAutoBattle(
       const history = Reflect.get(debug ?? {}, 'history');
       const trace = Reflect.get(debug ?? {}, 'certifiedReplaySubmissionTrace');
       if (!Array.isArray(history) || !Array.isArray(trace)) {
-        throw new Error(`[E2E-CERTIFICATION] Missing replay history or worker submission trace. context=${JSON.stringify({ hasHistory: Array.isArray(history), hasTrace: Array.isArray(trace) })}`);
+        throw new Error(
+          `[E2E-CERTIFICATION] Missing replay history or worker submission trace. context=${JSON.stringify({ hasHistory: Array.isArray(history), hasTrace: Array.isArray(trace) })}`
+        );
       }
       if (trace.length !== history.length) {
         return { traceLength: trace.length, historyLength: history.length, mismatch: null };
       }
-      interface ReplayStep { p1Choice?: string; p2Choice?: string }
+      interface ReplayStep {
+        p1Choice?: string;
+        p2Choice?: string;
+      }
       for (let index = 0; index < history.length; index++) {
         const expected = history[index] as ReplayStep | undefined;
         const actual = trace[index] as ReplayStep | undefined;
-        if (!expected || !actual || expected.p1Choice !== actual.p1Choice || expected.p2Choice !== actual.p2Choice) {
-          return { traceLength: trace.length, historyLength: history.length, mismatch: { index, expected, actual } };
+        if (
+          !expected ||
+          !actual ||
+          expected.p1Choice !== actual.p1Choice ||
+          expected.p2Choice !== actual.p2Choice
+        ) {
+          return {
+            traceLength: trace.length,
+            historyLength: history.length,
+            mismatch: { index, expected, actual }
+          };
         }
       }
       return null;
     });
     if (replayTraceMismatch) {
-      throw new Error(`[E2E-CERTIFICATION] Worker submissions diverged from the certified JSON. context=${JSON.stringify(replayTraceMismatch)}`);
+      throw new Error(
+        `[E2E-CERTIFICATION] Worker submissions diverged from the certified JSON. context=${JSON.stringify(replayTraceMismatch)}`
+      );
     }
 
-    const clientState = await page.evaluate(() => {
+    const clientState = (await page.evaluate(() => {
       interface LocalDebugObject {
         [key: string]: unknown;
         isScriptedReplayMode?: boolean;
@@ -759,7 +974,10 @@ export async function executeAutoBattle(
       }
 
       const win = window as WindowWithDebug;
-      const workerFinalState = Reflect.get(win.__VITE_DEBUG__ ?? {}, 'certifiedReplayWorkerFinalState');
+      const workerFinalState = Reflect.get(
+        win.__VITE_DEBUG__ ?? {},
+        'certifiedReplayWorkerFinalState'
+      );
       if (workerFinalState) {
         return workerFinalState;
       }
@@ -771,7 +989,9 @@ export async function executeAutoBattle(
       if (!resolver || !debug?.getGameStore) return { p1: [], p2: [] };
       const store = resolver();
       const gameStore = debug.getGameStore();
-      const formatTeam = (team: Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string }>) =>
+      const formatTeam = (
+        team: Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string }>
+      ) =>
         team.map((p) => ({
           uid: p.uid,
           name: p.name,
@@ -781,18 +1001,48 @@ export async function executeAutoBattle(
           fainted: p.hp <= 0
         }));
 
-      const p1Team = (gameStore.state?.team ?? []) as Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string }>;
-      const p2Team = (store.state?.enemyTeam ?? []) as Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string }>;
+      const p1Team = (gameStore.state?.team ?? []) as Array<{
+        uid: string;
+        name: string;
+        hp: number;
+        maxHp: number;
+        status?: string;
+      }>;
+      const p2Team = (store.state?.enemyTeam ?? []) as Array<{
+        uid: string;
+        name: string;
+        hp: number;
+        maxHp: number;
+        status?: string;
+      }>;
       return { p1: formatTeam(p1Team), p2: formatTeam(p2Team) };
-    }) as {
-      p1: Array<{ uid: string; name: string; hp: number; maxHp: number; status: string; fainted: boolean }>;
-      p2: Array<{ uid: string; name: string; hp: number; maxHp: number; status: string; fainted: boolean }>;
+    })) as {
+      p1: Array<{
+        uid: string;
+        name: string;
+        hp: number;
+        maxHp: number;
+        status: string;
+        fainted: boolean;
+      }>;
+      p2: Array<{
+        uid: string;
+        name: string;
+        hp: number;
+        maxHp: number;
+        status: string;
+        fainted: boolean;
+      }>;
     };
 
     (['p1', 'p2'] as const).forEach((seat) => {
       const expectedTeam = finalState[seat];
       if (expectedTeam) {
-        verifyFinalStateTeam(seat, expectedTeam as Parameters<typeof verifyFinalStateTeam>[1], clientState);
+        verifyFinalStateTeam(
+          seat,
+          expectedTeam as Parameters<typeof verifyFinalStateTeam>[1],
+          clientState
+        );
       }
     });
   }

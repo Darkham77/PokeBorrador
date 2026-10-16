@@ -104,7 +104,7 @@ State Architects / Frontend Developers.
 - **State Corruption Detection & Fail-Fast Mandate**: When loading or reading persisted arrays and sub-entities (such as daycare missions, eggs, or inventories) that may contain legacy or malformed items lacking mandatory properties:
   1. Never introduce silent runtime fallbacks inside UI components or stores.
   2. The store MUST validate entity completeness (e.g. via an `isValid<Entity>` guard) and verify that dynamic reward IDs match canonical Showdown domain IDs (`isItemId(reward.id)`).
-  3. In accordance with the *Absolute Prohibition on Runtime Auto-Heal Mandate*, stores MUST NOT attempt to dynamically auto-heal or synthesize corrupt data in memory; corrupt states MUST fail loudly via error logging and boundary locks (`saveBlocked = true`) so the corruption is resolved at the static SQL migration layer.
+  3. In accordance with the _Absolute Prohibition on Runtime Auto-Heal Mandate_, stores MUST NOT attempt to dynamically auto-heal or synthesize corrupt data in memory; corrupt states MUST fail loudly via error logging and boundary locks (`saveBlocked = true`) so the corruption is resolved at the static SQL migration layer.
 - **Store Action Decomposition & Sub-Directory DOX Registration**:
   - When Pinia stores exceed Fallow complexity thresholds, their business actions should be decomposed into dedicated domain action modules under a subdirectory (e.g. `src/stores/events/eventEnrollmentActions.ts` and `src/stores/events/eventAwardsActions.ts`).
   - Any newly created actions subdirectory under `src/stores/` MUST contain its own mandatory `AGENTS.md` file and be linked under the `## Child DOX Index` of `src/stores/AGENTS.md`.

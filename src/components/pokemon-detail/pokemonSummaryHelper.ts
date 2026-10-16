@@ -80,7 +80,10 @@ export function resolveDimensionTooltipTitle(
 ): string {
   if (isInstance && instancePhysicalData) {
     const val = dimension === 'ALTURA' ? instancePhysicalData.height : instancePhysicalData.weight;
-    const tier = dimension === 'ALTURA' ? instancePhysicalData.heightTier.label : instancePhysicalData.weightTier.label;
+    const tier =
+      dimension === 'ALTURA'
+        ? instancePhysicalData.heightTier.label
+        : instancePhysicalData.weightTier.label;
     return `${dimension}: ${val}${unit} (${tier})`;
   }
   return `${dimension} (ESPECIE)`;
@@ -94,9 +97,11 @@ export function resolveDimensionTooltipDesc(
   unit: SummaryDimensionUnit
 ): string {
   if (isInstance && instancePhysicalData) {
-    return dimension === 'ALTURA' ? instancePhysicalData.heightTooltip : instancePhysicalData.weightTooltip;
+    return dimension === 'ALTURA'
+      ? instancePhysicalData.heightTooltip
+      : instancePhysicalData.weightTooltip;
   }
-  const raw = Array.isArray(speciesDimension) ? speciesDimension[0] : (speciesDimension || null);
+  const raw = Array.isArray(speciesDimension) ? speciesDimension[0] : speciesDimension || null;
   return createSpeciesDimensionTooltip(dimension, unit, raw);
 }
 

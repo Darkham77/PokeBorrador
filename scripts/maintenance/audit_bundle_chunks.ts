@@ -34,34 +34,36 @@ const BUDGETS: ChunkBudget[] = [
   {
     name: 'auth',
     matcher: (f) => f.startsWith('auth-'),
-    limit: 150 * 1024,
+    limit: 150 * 1024
   },
   {
     name: 'sqliteEngine',
     matcher: (f) => f.startsWith('sqliteEngine-'),
-    limit: 500 * 1024,
+    limit: 500 * 1024
   },
   {
     name: 'game-data-system',
     matcher: (f) => f.startsWith('game-data-system-'),
-    limit: 1500 * 1024,
+    limit: 1500 * 1024
   },
   {
     name: 'vendor-smogon-calc',
     matcher: (f) => f.startsWith('vendor-smogon-calc-'),
-    limit: 500 * 1024,
+    limit: 500 * 1024
   },
   {
     name: 'game (main view route)',
     matcher: (f) => f.startsWith('game-') && !f.startsWith('game-data-'),
-    limit: 500 * 1024,
-  },
+    limit: 500 * 1024
+  }
 ];
 
 function analyzeBundleStats(): boolean {
   if (!fs.existsSync(STATS_FILE)) return false;
   const content = fs.readFileSync(STATS_FILE, 'utf8');
-  const match = content.match(/window\.data\s*=\s*(\{.*?\});<\/script>/s) || content.match(/const\s+data\s*=\s*(\{.*?\});/s);
+  const match =
+    content.match(/window\.data\s*=\s*(\{.*?\});<\/script>/s) ||
+    content.match(/const\s+data\s*=\s*(\{.*?\});/s);
   if (!match || !match[1]) return false;
 
   const data: VisualizerData = JSON.parse(match[1]);
@@ -70,11 +72,19 @@ function analyzeBundleStats(): boolean {
     metaMap.set(uid, meta);
   }
 
-  const moduleMap = new Map<string, { rendered: number; gzip: number; heavyChunkCount: number; count: number }>();
+  const moduleMap = new Map<
+    string,
+    { rendered: number; gzip: number; heavyChunkCount: number; count: number }
+  >();
   for (const [, part] of Object.entries(data.nodeParts)) {
     const meta = metaMap.get(part.metaUid);
     if (!meta || part.renderedLength <= 0) continue;
-    const existing = moduleMap.get(meta.id) || { rendered: 0, gzip: 0, heavyChunkCount: 0, count: 0 };
+    const existing = moduleMap.get(meta.id) || {
+      rendered: 0,
+      gzip: 0,
+      heavyChunkCount: 0,
+      count: 0
+    };
     existing.rendered += part.renderedLength;
     existing.gzip += part.gzipLength;
     existing.count += 1;
@@ -95,9 +105,13 @@ function analyzeBundleStats(): boolean {
     const rKB = (m.rendered / 1024).toFixed(1) + ' KB';
     const gKB = (m.gzip / 1024).toFixed(1) + ' KB';
     const dupe = m.heavyChunkCount > 1 ? ` \x1b[33m[x${m.heavyChunkCount} chunks]\x1b[0m` : '';
-    console.log(` ${(idx + 1).toString().padStart(2)}. ${rKB.padStart(10)} (gzip: ${gKB.padStart(GZIP_SIZE_COLUMN_WIDTH)}) | ${m.id}${dupe}`);
+    console.log(
+      ` ${(idx + 1).toString().padStart(2)}. ${rKB.padStart(10)} (gzip: ${gKB.padStart(GZIP_SIZE_COLUMN_WIDTH)}) | ${m.id}${dupe}`
+    );
     if (m.heavyChunkCount > 1 && m.rendered > HEAVY_CHUNK_THRESHOLD_KB * 1024) {
-      console.error(`\x1b[31m  ⚠️ High-severity duplicate module in multiple chunks: ${m.id}\x1b[0m`);
+      console.error(
+        `\x1b[31m  ⚠️ High-severity duplicate module in multiple chunks: ${m.id}\x1b[0m`
+      );
       hasErrors = true;
     }
   });
@@ -128,12 +142,21 @@ function evaluateSingleChunk(f: string): boolean {
     }
   }
 
-  if (shouldDisplay || f.includes('auth') || f.includes('sqlite') || f.includes('migration') || f.includes('game-data') || f.includes('pkmn')) {
+  if (
+    shouldDisplay ||
+    f.includes('auth') ||
+    f.includes('sqlite') ||
+    f.includes('migration') ||
+    f.includes('game-data') ||
+    f.includes('pkmn')
+  ) {
     console.log(`  ${status} ${sizeKB.padStart(CHUNK_SIZE_COLUMN_WIDTH)} KB │ ${f}${note}`);
   }
 
   if (f.startsWith('vendor-pkmn-sim-') || f.startsWith('vendor-randoms-')) {
-    console.error(`\x1b[31m  ❌ Architectural violation: Showdown chunk "${f}" detected in client bundle (dist/assets).\x1b[0m`);
+    console.error(
+      `\x1b[31m  ❌ Architectural violation: Showdown chunk "${f}" detected in client bundle (dist/assets).\x1b[0m`
+    );
     hasError = true;
   }
 
@@ -143,7 +166,9 @@ function evaluateSingleChunk(f: string): boolean {
 function analyzeDistChunks(): boolean {
   if (!fs.existsSync(DIST_DIR)) return false;
   const files = fs.readdirSync(DIST_DIR);
-  const jsFiles = files.filter(f => f.endsWith('.js') && !f.endsWith('.br') && !f.endsWith('.gz'));
+  const jsFiles = files.filter(
+    (f) => f.endsWith('.js') && !f.endsWith('.br') && !f.endsWith('.gz')
+  );
 
   console.log('\n📊 Production JS Chunks Status:');
   console.log('─'.repeat(TABLE_SEPARATOR_WIDTH));
@@ -166,7 +191,9 @@ function auditBundle(): void {
 
   if (!fs.existsSync(STATS_FILE) && !fs.existsSync(DIST_DIR)) {
     console.error('\x1b[31m❌ Error: No production build or bundle stats found.\x1b[0m');
-    console.error('Please run \x1b[36mnpm run build:analyze\x1b[0m or \x1b[36mnpm run build\x1b[0m first.');
+    console.error(
+      'Please run \x1b[36mnpm run build:analyze\x1b[0m or \x1b[36mnpm run build\x1b[0m first.'
+    );
     process.exit(1);
   }
 
@@ -175,10 +202,14 @@ function auditBundle(): void {
   if (analyzeDistChunks()) hasErrors = true;
 
   if (hasErrors) {
-    console.error('\n\x1b[31m❌ Bundle audit failed: One or more chunks exceed architectural size limits.\x1b[0m');
+    console.error(
+      '\n\x1b[31m❌ Bundle audit failed: One or more chunks exceed architectural size limits.\x1b[0m'
+    );
     process.exit(1);
   } else {
-    console.log('\n\x1b[32m✨ Bundle audit passed: All critical chunk size gates satisfied.\x1b[0m\n');
+    console.log(
+      '\n\x1b[32m✨ Bundle audit passed: All critical chunk size gates satisfied.\x1b[0m\n'
+    );
     process.exit(0);
   }
 }

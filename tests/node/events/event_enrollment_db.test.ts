@@ -5,7 +5,7 @@
  * support clean upserts without UUID syntax violations across both SQLite and PostgreSQL.
  */
 
-import { it } from 'vitest';
+import { it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { describeWithDatabase } from '../../dbTestHelper.ts';
 
@@ -52,7 +52,7 @@ describeWithDatabase('Competition Entries Dual Database Integration', (engine, g
           FROM information_schema.columns 
           WHERE table_schema = ${schema} AND table_name = 'competition_entries'
         `;
-        const idCol = cols.find(c => c.column_name === 'id');
+        const idCol = cols.find((c) => c.column_name === 'id');
         assert.ok(idCol, 'competition_entries must have an id column');
         assert.strictEqual(idCol.data_type, 'uuid', 'id column in PostgreSQL must be of type uuid');
 
@@ -96,7 +96,11 @@ describeWithDatabase('Competition Entries Dual Database Integration', (engine, g
         `;
 
         assert.strictEqual(updatedRows.length, 1);
-        assert.strictEqual(updatedRows[0]!.id, row.id, 'Upsert must retain the original UUID id on conflict update');
+        assert.strictEqual(
+          updatedRows[0]!.id,
+          row.id,
+          'Upsert must retain the original UUID id on conflict update'
+        );
         assert.strictEqual(updatedRows[0]!.pokemon_uid, 'pk-rattata-test-456');
       } finally {
         await sql.end();

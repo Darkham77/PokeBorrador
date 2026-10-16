@@ -34,7 +34,10 @@ async function executeLanDevSelect(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'query', sql, params })
   });
-  const json = await res.json() as { data: Record<string, unknown>[]; error: unknown };
+  const json = (await res.json()) as {
+    data: Record<string, unknown>[]; // open-record: Dynamic LAN Dev database row payload
+    error: unknown;
+  };
   if (json.error) return { data: null, error: json.error };
 
   const data = json.data || [];
@@ -78,21 +81,31 @@ async function executeLanDevUpsertRows(
     const r = row as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     const cols = Object.keys(r);
     const marks = cols.map(() => '?').join(',');
-    const vals = cols.map(c => r[c] === undefined || r[c] === null ? null : typeof r[c] === 'object' ? JSON.stringify(r[c]) : r[c]);
+    const vals = cols.map((c) =>
+      r[c] === undefined || r[c] === null
+        ? null
+        : typeof r[c] === 'object'
+          ? JSON.stringify(r[c])
+          : r[c]
+    );
     const sql = `INSERT OR REPLACE INTO ${table} (${cols.join(',')}) VALUES (${marks})`;
     const res = await fetch('/api/dev-lan-pvp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'run', sql, params: vals })
     });
-    const json = await res.json() as { lastInsertRowid?: number; error?: unknown };
+    const json = (await res.json()) as { lastInsertRowid?: number; error?: unknown };
     if (json.error) throw json.error;
     lastInsertedRowId = json.lastInsertRowid;
   }
   return lastInsertedRowId;
 }
 
-async function queryLanDevRowById(table: string, rowid: number | undefined): Promise<Record<string, unknown>[]> {
+async function queryLanDevRowById(
+  table: string,
+  rowid: number | undefined
+): Promise<Record<string, unknown>[]> {
+  // open-record: Dynamic LAN Dev database row payload
   if (rowid === null || rowid === undefined) return [];
   const res = await fetch('/api/dev-lan-pvp', {
     method: 'POST',
@@ -103,7 +116,10 @@ async function queryLanDevRowById(table: string, rowid: number | undefined): Pro
       params: [rowid]
     })
   });
-  const json = await res.json() as { data?: Record<string, unknown>[]; error?: unknown };
+  const json = (await res.json()) as {
+    data?: Record<string, unknown>[]; // open-record: Dynamic LAN Dev database row payload
+    error?: unknown;
+  };
   return json.data || [];
 }
 
@@ -115,7 +131,7 @@ async function executeLanDevUpsert(
 ): Promise<DBResponse> {
   try {
     const lastInsertedRowId = await executeLanDevUpsertRows(table, actionData);
-    if (chain.some(s => s.type === 'select')) {
+    if (chain.some((s) => s.type === 'select')) {
       const rows = await queryLanDevRowById(table, lastInsertedRowId);
       hydrateLocalRows(table, rows);
       return formatLocalResult(rows, final);
@@ -135,11 +151,18 @@ async function executeLanDevUpdate(
 ): Promise<DBResponse> {
   try {
     const data = actionData as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    const setClause = Object.keys(data).map(k => `${k} = ?`).join(',');
-    const params: unknown[] = Object.values(data).map(v => v === undefined || v === null ? null : typeof v === 'object' ? JSON.stringify(v) : v);
+    const setClause = Object.keys(data)
+      .map((k) => `${k} = ?`)
+      .join(',');
+    const params: unknown[] = Object.values(data).map((v) =>
+      v === undefined || v === null ? null : typeof v === 'object' ? JSON.stringify(v) : v
+    );
     const where: string[] = []; // no-domain: Non-domain utility collection or data structure
-    chain.forEach(s => {
-      if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1] ?? null); }
+    chain.forEach((s) => {
+      if (s.type === 'eq') {
+        where.push(`${String(s.args[0])} = ?`);
+        params.push(s.args[1] ?? null);
+      }
     });
     let sql = `UPDATE ${table} SET ${setClause}`;
     if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
@@ -148,7 +171,7 @@ async function executeLanDevUpdate(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'run', sql, params })
     });
-    const json = await res.json() as { error?: unknown };
+    const json = (await res.json()) as { error?: unknown };
     if (json.error) return { data: null, error: json.error };
     return { data: actionData, error: null };
   } catch (e: unknown) {
@@ -165,13 +188,16 @@ async function executeLanDevDelete(
   try {
     const params: unknown[] = [];
     const where: string[] = []; // no-domain: Non-domain utility collection or data structure
-    chain.forEach(s => {
-      if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
+    chain.forEach((s) => {
+      if (s.type === 'eq') {
+        where.push(`${String(s.args[0])} = ?`);
+        params.push(s.args[1]);
+      }
       if (s.type === 'in') {
         const list = s.args[1];
         if (Array.isArray(list) && list.length > 0) {
           const marks = list.map(() => '?').join(',');
-          where.push(`${s.args[0]} IN (${marks})`);
+          where.push(`${String(s.args[0])} IN (${marks})`);
           params.push(...list);
         }
       }
@@ -183,7 +209,7 @@ async function executeLanDevDelete(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'run', sql, params })
     });
-    const json = await res.json() as { error?: unknown };
+    const json = (await res.json()) as { error?: unknown };
     if (json.error) return { data: null, error: json.error };
     return { data: null, error: null };
   } catch (e: unknown) {

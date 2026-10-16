@@ -5,14 +5,22 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 /**
  * Get type effectiveness multiplier
  */
-export function getTypeEffectiveness(moveType: string | undefined, defType: string | undefined, attacker: Pokemon | null = null): number {
+export function getTypeEffectiveness(
+  moveType: string | undefined,
+  defType: string | undefined,
+  attacker: Pokemon | null = null
+): number {
   if (!moveType || !defType) return 1;
-  
+
   const mType = moveType as PokemonType;
   const dType = defType as PokemonType;
 
   // Scrappy logic: Normal/Fighting can hit Ghost
-  if (attacker?.ability === 'scrappy' && dType === 'ghost' && (mType === 'normal' || mType === 'fighting')) {
+  if (
+    attacker?.ability === 'scrappy' &&
+    dType === 'ghost' &&
+    (mType === 'normal' || mType === 'fighting')
+  ) {
     return 1;
   }
 
@@ -24,7 +32,11 @@ export function getTypeEffectiveness(moveType: string | undefined, defType: stri
 /**
  * Get combined effectiveness for dual types
  */
-export function getCombinedEffectiveness(moveType: string, defender: Partial<Pokemon>, attacker: Pokemon | null = null): number {
+export function getCombinedEffectiveness(
+  moveType: string,
+  defender: Partial<Pokemon>,
+  attacker: Pokemon | null = null
+): number {
   let eff = getTypeEffectiveness(moveType, defender.type, attacker);
   if (defender.type2) {
     eff *= getTypeEffectiveness(moveType, defender.type2, attacker);

@@ -1,56 +1,59 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import BaseModal from '@/components/common/BaseModal.vue'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { getMoveDescription } from '@/logic/pokemon/pokemonUtils'
-import { toPokemonType } from '@/data/battle/types'
-import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants'
+import { computed } from 'vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getMoveDescription } from '@/logic/pokemon/pokemonUtils';
+import { toPokemonType } from '@/data/battle/types';
+import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants';
 
-import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
+import { isPokemonMoveId, type PokemonMoveId, type MoveCategory } from '@/data/battle/moves';
 
 interface Props {
-  show?: boolean
-  moveId?: PokemonMoveId
+  show?: boolean;
+  moveId?: PokemonMoveId;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   moveId: undefined
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
 const md = computed(() => {
-  if (!props.moveId || !isPokemonMoveId(props.moveId)) return null
-  const mData = pokemonDataProvider.getMoveData(props.moveId)
-  if (!mData) throw new Error(`[MoveDetailModal] No se encontró información en la base de datos para el movimiento: ${props.moveId}`)
-  return mData
-})
+  if (!props.moveId || !isPokemonMoveId(props.moveId)) return null;
+  const mData = pokemonDataProvider.getMoveData(props.moveId);
+  if (!mData)
+    throw new Error(
+      `[MoveDetailModal] No se encontró información en la base de datos para el movimiento: ${props.moveId}`
+    );
+  return mData;
+});
 
 const typeColor = computed(() => {
-  if (!md.value) return '#aaa'
-  return TYPE_COLORS[moveType.value] || '#aaa'
-})
+  if (!md.value) return '#aaa';
+  return TYPE_COLORS[moveType.value] || '#aaa';
+});
 
-const moveType = computed(() => toPokemonType(md.value?.type || 'normal'))
+const moveType = computed(() => toPokemonType(md.value?.type || 'normal'));
 
 const catInfo = computed(() => {
-  if (!md.value) return { icon: '', text: '' }
-  const cats: Record<string, { icon: string, text: string }> = {
+  if (!md.value) return { icon: '', text: '' };
+  const cats: Record<MoveCategory, { icon: string; text: string }> = {
     physical: { icon: '⚔️', text: 'Físico' },
     special: { icon: '✨', text: 'Especial' },
     status: { icon: '🔮', text: 'Estado' }
-  }
-  return cats[md.value.cat] ?? { icon: '', text: '' }
-})
+  };
+  return cats[md.value.cat as MoveCategory] ?? { icon: '', text: '' };
+});
 
 const description = computed(() => {
-  if (!props.moveId || !md.value) return ''
-  return getMoveDescription(props.moveId, md.value)
-})
+  if (!props.moveId || !md.value) return '';
+  return getMoveDescription(props.moveId, md.value);
+});
 </script>
 
 <template>
@@ -60,19 +63,15 @@ const description = computed(() => {
     max-width="420px"
     @close="emit('close')"
   >
-    <div 
+    <div
       v-if="md"
       class="move-detail-container"
-      :style="{ 
+      :style="{
         '--move-accent': typeColor
       }"
     >
       <div class="type-cat-row">
-        <PokemonTypeTag
-          :type="moveType"
-          size="md"
-          class="pixelated"
-        />
+        <PokemonTypeTag :type="moveType" size="md" class="pixelated" />
         <span class="cat-badge">
           <span class="emoji icon">{{ catInfo.icon }}</span>
           <span class="text pixelated">{{ catInfo.text.toUpperCase() }}</span>
@@ -96,9 +95,7 @@ const description = computed(() => {
       </div>
 
       <div class="description-box">
-        <h4 class="desc-title pixelated">
-          EFECTO EN COMBATE
-        </h4>
+        <h4 class="desc-title pixelated">EFECTO EN COMBATE</h4>
         <p class="desc-text">
           {{ description }}
         </p>
@@ -106,11 +103,7 @@ const description = computed(() => {
     </div>
 
     <template #footer>
-      <button
-        id="move-detail-close-btn"
-        class="action-btn pixelated"
-        @click.stop="emit('close')"
-      >
+      <button id="move-detail-close-btn" class="action-btn pixelated" @click.stop="emit('close')">
         VOLVER
       </button>
     </template>
@@ -118,7 +111,7 @@ const description = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .move-detail-container {
   display: flex;
@@ -142,7 +135,9 @@ const description = computed(() => {
   border-radius: $radius-xl;
   background: Rgb(255 255 255 / 3%);
 
-  .icon { font-size: var(--font-14); }
+  .icon {
+    font-size: var(--font-14);
+  }
   .text {
     color: var(--slate-400);
     font-size: var(--font-9);
@@ -163,7 +158,6 @@ const description = computed(() => {
   border-radius: $radius-2xl-alt;
   background: Rgb(255 255 255 / 2%);
   text-align: center;
-  
 
   &:hover {
     background: Rgb(255 255 255 / 4%);
@@ -184,7 +178,7 @@ const description = computed(() => {
     font-family: $font-family-ui;
     font-size: var(--font-26);
     font-weight: 900;
-    
+
     small {
       font-size: var(--font-14);
       opacity: 0.5;
@@ -214,16 +208,16 @@ const description = computed(() => {
     content: '';
   }
 
-  .label { 
-    color: var(--slate-300); 
-    font-size: var(--font-9); 
+  .label {
+    color: var(--slate-300);
+    font-size: var(--font-9);
     font-weight: bold;
     letter-spacing: 1px;
   }
-  
-  .val { 
-    color: var(--move-accent); 
-    font-size: var(--font-20); 
+
+  .val {
+    color: var(--move-accent);
+    font-size: var(--font-20);
     font-weight: 900;
     text-shadow: 0 0 10px Rgb(from var(--move-accent, #fff) r g b / 10%);
   }
@@ -267,7 +261,6 @@ const description = computed(() => {
   color: var(--slate-300);
   font-size: var(--font-10);
   cursor: pointer;
-  
 
   &:hover {
     background: var(--move-accent);
@@ -280,7 +273,7 @@ const description = computed(() => {
 
 :deep(.base-modal-card) {
   border-top: 1px solid var(--move-accent) !important;
-  
+
   &::after {
     position: absolute;
     top: 0;

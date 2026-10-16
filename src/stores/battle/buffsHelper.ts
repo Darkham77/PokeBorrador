@@ -1,25 +1,31 @@
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getEventCurrentWindow, safeParse, resolveWeeklyRotation, type Event as GameEvent, type EventConfig } from '@/logic/events/eventEngine'
-import { isItemId, type ItemId } from '@/data/inventory/items'
-import type { GameState } from '@/types/system/game'
-import type { GatheringToolTier } from '@/types/pokemon/encounters'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import {
+  getEventCurrentWindow,
+  safeParse,
+  resolveWeeklyRotation,
+  type Event as GameEvent,
+  type EventConfig
+} from '@/logic/events/eventEngine';
+import { isItemId, type ItemId } from '@/data/inventory/items';
+import type { GameState } from '@/types/system/game';
+import type { GatheringToolTier } from '@/types/pokemon/encounters';
 
 export interface ActiveBuffItem {
-  id: string
-  secs: number
-  name: string
-  desc: string
-  icon: string
-  isEmoji?: boolean
-  isEvent?: boolean
-  event?: GameEvent
-  tier?: GatheringToolTier
+  id: string;
+  secs: number;
+  name: string;
+  desc: string;
+  icon: string;
+  isEmoji?: boolean;
+  isEvent?: boolean;
+  event?: GameEvent;
+  tier?: GatheringToolTier;
 }
 
-const BUFF_DURATION_MIN = 20
-const LUCKY_EGG_EXP_BOOST_PCT = 50
-const BUFF_DURATION_30_MIN_MIN = 30
-const INFINITE_EVENT_SECS_FALLBACK = 86400
+const BUFF_DURATION_MIN = 20;
+const LUCKY_EGG_EXP_BOOST_PCT = 50;
+const BUFF_DURATION_30_MIN_MIN = 30;
+const INFINITE_EVENT_SECS_FALLBACK = 86400;
 
 const EVENT_MULTIPLIER_CONFIGS = [
   { key: 'speciesRateMult', icon: '🎯', label: 'Aparición' },
@@ -31,50 +37,59 @@ const EVENT_MULTIPLIER_CONFIGS = [
   { key: 'bugCatchingMult', icon: '🦗', label: 'Caza Bichos' },
   { key: 'casinoLuckyMult', icon: '🎰', label: 'Suerte Casino' },
   { key: 'hatchMult', icon: '🥚', label: 'Velocidad Eclosión' }
-] as const satisfies readonly { key: keyof EventConfig; icon: string; label: string }[]
+] as const satisfies readonly { key: keyof EventConfig; icon: string; label: string }[];
 
 function formatSpeciesBonus(rawSpecies?: string): string | null {
-  if (!rawSpecies || rawSpecies === '*') return null
+  if (!rawSpecies || rawSpecies === '*') return null;
   const speciesNames = rawSpecies
     .split(',')
-    .map(s => s.trim())
+    .map((s) => s.trim())
     .filter(Boolean)
-    .map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
-    .join(', ')
-  return speciesNames ? `Especies: ${speciesNames}` : null
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
+    .join(', ');
+  return speciesNames ? `Especies: ${speciesNames}` : null;
 }
 
 function formatShinyBonus(cfg: EventConfig): string | null {
-  const mult = (cfg.speciesShinyMult && cfg.speciesShinyMult > 1) ? cfg.speciesShinyMult : ((cfg.shinyMult && cfg.shinyMult > 1) ? cfg.shinyMult : 0)
-  return mult > 1 ? `✨ x${mult} Shiny` : null
+  const mult =
+    cfg.speciesShinyMult && cfg.speciesShinyMult > 1
+      ? cfg.speciesShinyMult
+      : cfg.shinyMult && cfg.shinyMult > 1
+        ? cfg.shinyMult
+        : 0;
+  return mult > 1 ? `✨ x${mult} Shiny` : null;
 }
 
-export function formatEventBonusDescription(cfg: EventConfig, ev: GameEvent, rotation: { title?: string; species?: string } | null): string {
-  const bonusParts: string[] = [] // domain-ok: Open dynamic text or non-domain string payload
-  const speciesPart = formatSpeciesBonus(rotation?.species || cfg.species)
+export function formatEventBonusDescription(
+  cfg: EventConfig,
+  ev: GameEvent,
+  rotation: { title?: string; species?: string } | null
+): string {
+  const bonusParts: string[] = []; // domain-ok: Open dynamic text or non-domain string payload
+  const speciesPart = formatSpeciesBonus(rotation?.species || cfg.species);
   if (speciesPart) {
-    bonusParts.push(speciesPart)
+    bonusParts.push(speciesPart);
   }
 
-  const shinyPart = formatShinyBonus(cfg)
+  const shinyPart = formatShinyBonus(cfg);
   if (shinyPart) {
-    bonusParts.push(shinyPart)
+    bonusParts.push(shinyPart);
   }
 
   for (const item of EVENT_MULTIPLIER_CONFIGS) {
-    const val = cfg[item.key]
+    const val = cfg[item.key];
     if (typeof val === 'number' && val > 1) {
-      bonusParts.push(`${item.icon} x${val} ${item.label}`)
+      bonusParts.push(`${item.icon} x${val} ${item.label}`);
     }
   }
 
   if (ev.type === 'competition') {
-    bonusParts.push('🏆 Competición Activa')
+    bonusParts.push('🏆 Competición Activa');
   }
 
   return bonusParts.length > 0
     ? bonusParts.join(' · ')
-    : (ev.description || '¡Evento especial activo!')
+    : ev.description || '¡Evento especial activo!';
 }
 
 export function buildActiveEventBuffs(
@@ -83,28 +98,31 @@ export function buildActiveEventBuffs(
   nowInstant: Temporal.Instant,
   zdt: Temporal.ZonedDateTime
 ): ActiveBuffItem[] {
-  const list: ActiveBuffItem[] = []
+  const list: ActiveBuffItem[] = [];
 
   for (const ev of activeEvents) {
-    const window = getEventCurrentWindow(ev, nowInstant)
-    let secsLeft = 0
+    const window = getEventCurrentWindow(ev, nowInstant);
+    let secsLeft = 0;
     if (window) {
-      secsLeft = Math.max(0, Math.floor((window.end.epochMilliseconds - nowMs) / 1000))
+      secsLeft = Math.max(0, Math.floor((window.end.epochMilliseconds - nowMs) / 1000));
     } else if (ev.end_at) {
       try {
-        const endInstant = Temporal.Instant.from(ev.end_at)
-        secsLeft = Math.max(0, Math.floor((endInstant.epochMilliseconds - nowMs) / 1000))
+        const endInstant = Temporal.Instant.from(ev.end_at);
+        secsLeft = Math.max(0, Math.floor((endInstant.epochMilliseconds - nowMs) / 1000));
       } catch {
-        secsLeft = 0
+        secsLeft = 0;
       }
     } else if (ev.manual) {
-      secsLeft = INFINITE_EVENT_SECS_FALLBACK
+      secsLeft = INFINITE_EVENT_SECS_FALLBACK;
     }
 
-    const cfg = safeParse(ev.config) as EventConfig
-    const rotation = cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations ? resolveWeeklyRotation(cfg, zdt) : null
-    const eventTitle = rotation?.title || ev.name
-    const eventDesc = formatEventBonusDescription(cfg, ev, rotation)
+    const cfg = safeParse(ev.config) as EventConfig;
+    const rotation =
+      cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations
+        ? resolveWeeklyRotation(cfg, zdt)
+        : null;
+    const eventTitle = rotation?.title || ev.name;
+    const eventDesc = formatEventBonusDescription(cfg, ev, rotation);
 
     list.push({
       id: `event_${ev.id}`,
@@ -115,10 +133,10 @@ export function buildActiveEventBuffs(
       isEmoji: true,
       isEvent: true,
       event: ev
-    })
+    });
   }
 
-  return list
+  return list;
 }
 
 interface ToolTierConfig {
@@ -209,14 +227,62 @@ interface SimpleBuffDef {
 }
 
 const SIMPLE_BUFF_DEFS: readonly SimpleBuffDef[] = [
-  { key: 'shinyBoostSecs', id: 'shiny', name: '✨ Ticket Shiny', desc: 'Aumenta la probabilidad de encontrar Pokémon shiny.', itemId: 'ticketshiny' }, // spanish-ok: UI Spanish text localization label
-  { key: 'amuletCoinSecs', id: 'amulet', name: '💰 Moneda Amuleto', desc: 'Duplica el dinero ganado en combate.', itemId: 'amuletcoin' }, // spanish-ok: UI Spanish text localization label
-  { key: 'luckyEggSecs', id: 'lucky-egg', name: '🥚 Huevo Suerte Pequeño', desc: `Aumenta la EXP ganada en un ${LUCKY_EGG_EXP_BOOST_PCT}% durante ${BUFF_DURATION_30_MIN_MIN} minutos.`, itemId: 'luckyegg' }, // spanish-ok: UI Spanish text localization label
-  { key: 'safariTicketSecs', id: 'safari', name: '🎫 Ticket Safari', desc: 'Permite entrar a la Zona Safari.', itemId: 'ticketsafari' }, // spanish-ok: UI Spanish text localization label
-  { key: 'ceruleanTicketSecs', id: 'cerulean', name: '🌀 Ticket Cueva Celeste', desc: 'Permite entrar a la Cueva Celeste.', itemId: 'ticketcerulean' }, // spanish-ok: UI Spanish text localization label
-  { key: 'articunoTicketSecs', id: 'articuno', name: '❄️ Ticket Articuno', desc: 'Permite entrar a las Islas Espuma.', itemId: 'ticketarticuno' }, // spanish-ok: UI Spanish text localization label
-  { key: 'mewtwoTicketSecs', id: 'mewtwo', name: '🧬 Ticket Mewtwo', desc: 'Permite entrar a la Cueva Celeste (Mewtwo).', itemId: 'ticketmewtwo' }, // spanish-ok: UI Spanish text localization label
-  { key: 'ivScannerSecs', id: 'iv-scanner', name: '🔍 Escáner de IVs', desc: 'Muestra los IVs totales de Pokémon salvajes.', itemId: 'ivscanner' } // spanish-ok: UI Spanish text localization label
+  {
+    key: 'shinyBoostSecs',
+    id: 'shiny',
+    name: '✨ Ticket Shiny',
+    desc: 'Aumenta la probabilidad de encontrar Pokémon shiny.',
+    itemId: 'ticketshiny'
+  }, // spanish-ok: UI Spanish text localization label
+  {
+    key: 'amuletCoinSecs',
+    id: 'amulet',
+    name: '💰 Moneda Amuleto',
+    desc: 'Duplica el dinero ganado en combate.',
+    itemId: 'amuletcoin'
+  }, // spanish-ok: UI Spanish text localization label
+  {
+    key: 'luckyEggSecs',
+    id: 'lucky-egg',
+    name: '🥚 Huevo Suerte Pequeño',
+    desc: `Aumenta la EXP ganada en un ${LUCKY_EGG_EXP_BOOST_PCT}% durante ${BUFF_DURATION_30_MIN_MIN} minutos.`,
+    itemId: 'luckyegg'
+  }, // spanish-ok: UI Spanish text localization label
+  {
+    key: 'safariTicketSecs',
+    id: 'safari',
+    name: '🎫 Ticket Safari',
+    desc: 'Permite entrar a la Zona Safari.',
+    itemId: 'ticketsafari'
+  }, // spanish-ok: UI Spanish text localization label
+  {
+    key: 'ceruleanTicketSecs',
+    id: 'cerulean',
+    name: '🌀 Ticket Cueva Celeste',
+    desc: 'Permite entrar a la Cueva Celeste.',
+    itemId: 'ticketcerulean'
+  }, // spanish-ok: UI Spanish text localization label
+  {
+    key: 'articunoTicketSecs',
+    id: 'articuno',
+    name: '❄️ Ticket Articuno',
+    desc: 'Permite entrar a las Islas Espuma.',
+    itemId: 'ticketarticuno'
+  }, // spanish-ok: UI Spanish text localization label
+  {
+    key: 'mewtwoTicketSecs',
+    id: 'mewtwo',
+    name: '🧬 Ticket Mewtwo',
+    desc: 'Permite entrar a la Cueva Celeste (Mewtwo).',
+    itemId: 'ticketmewtwo'
+  }, // spanish-ok: UI Spanish text localization label
+  {
+    key: 'ivScannerSecs',
+    id: 'iv-scanner',
+    name: '🔍 Escáner de IVs',
+    desc: 'Muestra los IVs totales de Pokémon salvajes.',
+    itemId: 'ivscanner'
+  } // spanish-ok: UI Spanish text localization label
 ] as const;
 
 const INCENSE_TYPES_MAP: Partial<Record<ItemId, string>> = {
@@ -242,7 +308,9 @@ export function buildActivePlayerItemBuffs(s: GameState): ActiveBuffItem[] {
   }
 
   if (s.fishingRodSecs > 0) {
-    list.push(buildToolBuff('fishing-rod', s.fishingRodSecs, s.fishingRodType, '🎣', FISHING_ROD_CONFIGS));
+    list.push(
+      buildToolBuff('fishing-rod', s.fishingRodSecs, s.fishingRodType, '🎣', FISHING_ROD_CONFIGS)
+    );
   }
 
   if (s.pickaxeSecs > 0) {
@@ -267,7 +335,9 @@ export function buildActivePlayerItemBuffs(s: GameState): ActiveBuffItem[] {
   }
 
   if (s.incenseSecs > 0) {
-    const tName = (s.incenseType && isItemId(s.incenseType) ? INCENSE_TYPES_MAP[s.incenseType] : undefined) || 'Desconocido';
+    const tName =
+      (s.incenseType && isItemId(s.incenseType) ? INCENSE_TYPES_MAP[s.incenseType] : undefined) ||
+      'Desconocido';
     list.push({
       id: 'incense',
       secs: s.incenseSecs,

@@ -1,42 +1,35 @@
 <script setup lang="ts">
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 interface Evolution {
-  to: PokemonSpeciesId
-  requirement: string
-  isSeen: boolean
-  isCaught: boolean
+  to: PokemonSpeciesId;
+  requirement: string;
+  isSeen: boolean;
+  isCaught: boolean;
 }
 
 interface Props {
-  evolutions: Evolution[]
-  speciesName: string
-  speciesId: PokemonSpeciesId
+  evolutions: Evolution[];
+  speciesName: string;
+  speciesId: PokemonSpeciesId;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
-const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
+const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id);
 
 const getEvolutionName = (evo: Evolution): string => {
-  if (!evo.isSeen) return 'Desconocido'
-  return pokemonDataProvider.getPokemonData(evo.to)?.name || evo.to
-}
+  if (!evo.isSeen) return 'Desconocido';
+  return pokemonDataProvider.getPokemonData(evo.to)?.name || evo.to;
+};
 </script>
 
 <template>
   <div class="tab-pane evolve-pane">
-    <div
-      v-if="evolutions.length > 0"
-      class="evo-chain"
-    >
-      <div
-        v-for="evo in evolutions"
-        :key="evo.to"
-        class="evo-step"
-      >
+    <div v-if="evolutions.length > 0" class="evo-chain">
+      <div v-for="evo in evolutions" :key="evo.to" class="evo-step">
         <div class="evo-from">
           <img
             :src="getSprite(speciesId)"
@@ -44,7 +37,7 @@ const getEvolutionName = (evo: Evolution): string => {
             class="evo-sprite"
             width="32"
             height="32"
-          >
+          />
           <span class="evo-target-name">{{ speciesName }}</span>
         </div>
         <div class="evo-arrow">
@@ -58,17 +51,12 @@ const getEvolutionName = (evo: Evolution): string => {
                 :src="getSprite(evo.to)"
                 :alt="getEvolutionName(evo)"
                 class="evo-sprite"
-                :class="{ 'silhouette': !evo.isCaught }"
+                :class="{ silhouette: !evo.isCaught }"
                 width="32"
                 height="32"
-              >
+              />
             </template>
-            <div
-              v-else
-              class="evo-unknown-placeholder"
-            >
-              ?
-            </div>
+            <div v-else class="evo-unknown-placeholder">?</div>
           </div>
           <span class="evo-target-name">
             {{ getEvolutionName(evo) }}
@@ -76,15 +64,12 @@ const getEvolutionName = (evo: Evolution): string => {
         </div>
       </div>
     </div>
-    <div
-      v-else
-      class="no-evo"
-    >
+    <div v-else class="no-evo">
       <span>Este Pokémon no evoluciona.</span>
     </div>
   </div>
 </template>
 
 <style lang="scss">
-@use "@/styles/components/pokedex-detail";
+@use '@/styles/components/pokedex-detail';
 </style>

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { calculateEscapeChancePure } from '@/logic/battle/battleCatchMath';
@@ -48,12 +48,7 @@ describe('Battle Flee, Escapes & Counter-Attack Domain Suite', () => {
         type: 'normal'
       };
 
-      const canEscape = calculateEscapeChance(
-        playerPoke as Pokemon,
-        enemyPoke as Pokemon,
-        0,
-        {}
-      );
+      const canEscape = calculateEscapeChance(playerPoke as Pokemon, enemyPoke as Pokemon, 0, {});
 
       expect(canEscape).toBe(true);
     });
@@ -102,10 +97,14 @@ describe('Battle Flee, Escapes & Counter-Attack Domain Suite', () => {
       const groundedPlayer = { spe: 50, type: 'normal' };
       const arenaTrapEnemy = { spe: 20, type: 'ground', ability: 'arenatrap' };
 
-      expect(calculateEscapeChancePure(groundedPlayer as any, arenaTrapEnemy as any, 0, null)).toBe(false);
+      expect(calculateEscapeChancePure(groundedPlayer as any, arenaTrapEnemy as any, 0, null)).toBe(
+        false
+      );
 
       const flyingPlayer = { spe: 50, type: 'flying' };
-      expect(calculateEscapeChancePure(flyingPlayer as any, arenaTrapEnemy as any, 0, null)).toBe(true);
+      expect(calculateEscapeChancePure(flyingPlayer as any, arenaTrapEnemy as any, 0, null)).toBe(
+        true
+      );
     });
   });
 
@@ -241,7 +240,9 @@ describe('Battle Flee, Escapes & Counter-Attack Domain Suite', () => {
       await executeFlee(ctx);
 
       expect(openConfirmMock).not.toHaveBeenCalled();
-      expect(loggedMessages).toContain('¡No puedes huir mientras estás ejecutando un movimiento bloqueado o atrapado!');
+      expect(loggedMessages).toContain(
+        '¡No puedes huir mientras estás ejecutando un movimiento bloqueado o atrapado!'
+      );
     });
   });
 
@@ -330,8 +331,8 @@ describe('Battle Flee, Escapes & Counter-Attack Domain Suite', () => {
       expect(fsmTransitions).toContain('ACTIVE_BATTLE:VACATE_SEAT');
 
       expect(handleWithdrawSpy).toHaveBeenCalledWith({ side: 'player', pokemon: p1 });
-      expect(busEvents.some(e => e.side === 'enemy' && e.type === 'flee')).toBe(true);
-      expect(busEvents.some(e => e.side === 'player' && e.type === 'flee')).toBe(false);
+      expect(busEvents.some((e) => e.side === 'enemy' && e.type === 'flee')).toBe(true);
+      expect(busEvents.some((e) => e.side === 'player' && e.type === 'flee')).toBe(false);
 
       expect(activeBattleRef.value?.playerFled).toBe(true);
       expect(endBattleSpy).toHaveBeenCalledWith(false, true);
@@ -349,7 +350,7 @@ describe('Battle Flee, Escapes & Counter-Attack Domain Suite', () => {
 
       gameBus.off('TRIGGER_COMBATANT_ESCAPE', escapeListener);
 
-      expect(busEvents.some(e => e.side === 'enemy' && e.type === 'teleport')).toBe(true);
+      expect(busEvents.some((e) => e.side === 'enemy' && e.type === 'teleport')).toBe(true);
     });
   });
 
@@ -357,8 +358,20 @@ describe('Battle Flee, Escapes & Counter-Attack Domain Suite', () => {
     it('restores cannotEscape as false for wild battles on F5 reload even if stale cannotEscape was saved', async () => {
       const battleStore = useBattleStore();
 
-      const mockPlayer = { uid: 'p1', id: 'gengar', hp: 34, maxHp: 162, moves: [] } as unknown as Pokemon;
-      const mockEnemy = { uid: 'pidgeotto-1', id: 'pidgeotto', hp: 15, maxHp: 15, moves: [] } as unknown as Pokemon;
+      const mockPlayer = {
+        uid: 'p1',
+        id: 'gengar',
+        hp: 34,
+        maxHp: 162,
+        moves: []
+      } as unknown as Pokemon;
+      const mockEnemy = {
+        uid: 'pidgeotto-1',
+        id: 'pidgeotto',
+        hp: 15,
+        maxHp: 15,
+        moves: []
+      } as unknown as Pokemon;
 
       const staleSavedData = {
         locationId: 'route1',
@@ -411,8 +424,20 @@ describe('Battle Flee, Escapes & Counter-Attack Domain Suite', () => {
     it('restores cannotEscape as false for ongoing wild combat with turnCount > 0', async () => {
       const battleStore = useBattleStore();
 
-      const mockPlayer = { uid: 'p1', id: 'gengar', hp: 34, maxHp: 162, moves: [] } as unknown as Pokemon;
-      const mockEnemy = { uid: 'pidgeotto-1', id: 'pidgeotto', hp: 15, maxHp: 15, moves: [] } as unknown as Pokemon;
+      const mockPlayer = {
+        uid: 'p1',
+        id: 'gengar',
+        hp: 34,
+        maxHp: 162,
+        moves: []
+      } as unknown as Pokemon;
+      const mockEnemy = {
+        uid: 'pidgeotto-1',
+        id: 'pidgeotto',
+        hp: 15,
+        maxHp: 15,
+        moves: []
+      } as unknown as Pokemon;
 
       const staleSavedData = {
         locationId: 'route1',
@@ -466,7 +491,12 @@ describe('Battle Flee, Escapes & Counter-Attack Domain Suite', () => {
     it('keeps allowFlee as false strictly for trainer, gym, and pvp battles', () => {
       const battleStore = useBattleStore();
 
-      battleStore.state = { isTrainer: false, isGym: false, isPvP: false, isGuardian: false } as any;
+      battleStore.state = {
+        isTrainer: false,
+        isGym: false,
+        isPvP: false,
+        isGuardian: false
+      } as any;
       expect(battleStore.uiConfig.allowFlee).toBe(true);
 
       battleStore.state = { isTrainer: true, isGym: false, isPvP: false } as any;

@@ -8,7 +8,9 @@ import { join } from 'node:path';
 export function auditShowdownEvents(showdownSimPath: string): string[] {
   const eventsFound: string[] = [];
   try {
-    const files = readdirSync(showdownSimPath).filter((f) => f.endsWith('.ts') || f.endsWith('.js'));
+    const files = readdirSync(showdownSimPath).filter(
+      (f) => f.endsWith('.ts') || f.endsWith('.js')
+    );
     for (const file of files) {
       const content = readFileSync(join(showdownSimPath, file), 'utf-8');
       const matches = content.matchAll(/this\.add\(['"]\|([a-z0-9_-]+)/gi);

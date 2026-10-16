@@ -1,41 +1,41 @@
 // @vitest-environment jsdom
 // jsdom-ok: Requires browser localStorage and navigator.storage for simulated reward saving
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { simulatePastEventAndMissionsReward } from '@/logic/debug/rewardsDebugSimulation'
-import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards'
-import { useEventStore } from '@/stores/events'
-import { useGameStore } from '@/stores/game'
-import { useAuthStore } from '@/stores/auth'
-import { useUIStore } from '@/stores/ui'
-import { useModalStore } from '@/stores/modals'
-import { useGTSStore } from '@/stores/gts'
-import { usePvPStore } from '@/stores/pvp'
-import { makePokemon } from '@/logic/pokemon/pokemonFactory'
-import type { AuthUser } from '@/types/auth/auth'
-import type { Event as GameEvent } from '@/logic/events/eventEngine'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { createPinia, setActivePinia } from 'pinia';
+import { simulatePastEventAndMissionsReward } from '@/logic/debug/rewardsDebugSimulation';
+import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards';
+import { useEventStore } from '@/stores/events';
+import { useGameStore } from '@/stores/game';
+import { useAuthStore } from '@/stores/auth';
+import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
+import { useGTSStore } from '@/stores/gts';
+import { usePvPStore } from '@/stores/pvp';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import type { AuthUser } from '@/types/auth/auth';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
 
 describe('reproduce claim all rewards bug', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-  })
+    setActivePinia(createPinia());
+  });
 
   it('reproduces claiming all rewards after debug simulation', async () => {
-    const eventStore = useEventStore()
-    const gameStore = useGameStore()
-    const authStore = useAuthStore()
-    const uiStore = useUIStore()
-    const modalStore = useModalStore()
-    const gtsStore = useGTSStore()
-    const pvpStore = usePvPStore()
+    const eventStore = useEventStore();
+    const gameStore = useGameStore();
+    const authStore = useAuthStore();
+    const uiStore = useUIStore();
+    const modalStore = useModalStore();
+    const gtsStore = useGTSStore();
+    const pvpStore = usePvPStore();
 
-    authStore.user = { id: 'local_user', user_metadata: { username: 'Franco' } } as AuthUser
-    gameStore.state.starterChosen = true
-    gameStore.state.trainer = 'Franco'
-    const poke = makePokemon('pikachu', 25)!
-    gameStore.state.team = [poke]
+    authStore.user = { id: 'local_user', user_metadata: { username: 'Franco' } } as AuthUser;
+    gameStore.state.starterChosen = true;
+    gameStore.state.trainer = 'Franco';
+    const poke = makePokemon('pikachu', 25)!;
+    gameStore.state.team = [poke];
 
-    const nowInstant = Temporal.Now.instant()
+    const nowInstant = Temporal.Now.instant();
     eventStore.allEvents = [
       {
         id: 'gran_concurso_sabado',
@@ -52,20 +52,28 @@ describe('reproduce claim all rewards bug', () => {
           }
         }
       } as unknown as GameEvent
-    ]
+    ];
 
-    await simulatePastEventAndMissionsReward(eventStore, gameStore, authStore, uiStore, modalStore, gtsStore, pvpStore)
+    await simulatePastEventAndMissionsReward(
+      eventStore,
+      gameStore,
+      authStore,
+      uiStore,
+      modalStore,
+      gtsStore,
+      pvpStore
+    );
 
-    const { totalClaimableRewards, claimAllRewards } = useUnifiedRewards()
+    const { totalClaimableRewards, claimAllRewards } = useUnifiedRewards();
 
-    const saveSpy = vi.spyOn(gameStore, 'save')
-    const saveGameSpy = vi.spyOn(gameStore, 'saveGame')
+    const saveSpy = vi.spyOn(gameStore, 'save');
+    const saveGameSpy = vi.spyOn(gameStore, 'saveGame');
 
-    await claimAllRewards()
+    await claimAllRewards();
 
     // A bulk claim should execute claims without triggering an individual full save per item,
     // and instead perform at most 1 consolidated atomic save at the end.
-    expect(saveSpy.mock.calls.length + saveGameSpy.mock.calls.length).toBeLessThanOrEqual(1)
-    expect(totalClaimableRewards.value).toBe(0)
-  })
-})
+    expect(saveSpy.mock.calls.length + saveGameSpy.mock.calls.length).toBeLessThanOrEqual(1);
+    expect(totalClaimableRewards.value).toBe(0);
+  });
+});

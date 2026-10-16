@@ -1,13 +1,13 @@
 /**
  * scripts/auditors/domain_data/validate_pokemon.ts
- * 
+ *
  * POKEMON INTEGRITY VALIDATOR (Node.js 26+ Native)
  * Validates integrity of POKEMON_DB stats, types, abilities, and learnsets against Showdown Dex.
  */
 
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor, normalizePosixPath , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, normalizePosixPath, createRuleCapabilities } from '@francogp/auditor';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '../../../src/data/system/constants.ts';
@@ -66,10 +66,14 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
         'pokemon-missing-learnset': 'Learnset vacío o no definido'
       },
       ruleRemediations: {
-        'pokemon-invalid-species': 'Verify pokemon ID exists in Showdown Gen 3 Dex or remove from enabled list',
-        'pokemon-base-stat-mismatch': 'Update base stats in pokemonDB.ts to match Showdown canonical stats',
-        'pokemon-type-mismatch': 'Align pokemon primary and secondary types with Showdown canonical types',
-        'pokemon-invalid-learnset-move': 'Replace or remove invalid move ID from pokemon learnset array',
+        'pokemon-invalid-species':
+          'Verify pokemon ID exists in Showdown Gen 3 Dex or remove from enabled list',
+        'pokemon-base-stat-mismatch':
+          'Update base stats in pokemonDB.ts to match Showdown canonical stats',
+        'pokemon-type-mismatch':
+          'Align pokemon primary and secondary types with Showdown canonical types',
+        'pokemon-invalid-learnset-move':
+          'Replace or remove invalid move ID from pokemon learnset array',
         'pokemon-missing-learnset': 'Define at least one valid move entry in pokemon learnset'
       },
       requiredFiles: [DB_FILE],
@@ -79,7 +83,11 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
     });
   }
 
-  private validateBaseStats(corePoke: PokemonBaseData, species: { baseStats: Record<string, number> }, tag: string): void {
+  private validateBaseStats(
+    corePoke: PokemonBaseData,
+    species: { baseStats: Record<string, number> },
+    tag: string
+  ): void {
     for (const stat of STAT_KEYS) {
       const coreVal = corePoke[stat];
       const sdVal = species.baseStats[stat];
@@ -96,13 +104,17 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
     }
   }
 
-  private validateTypes(corePoke: PokemonBaseData, species: { types: string[] }, tag: string): void {
+  private validateTypes(
+    corePoke: PokemonBaseData,
+    species: { types: string[] },
+    tag: string
+  ): void {
     const coreTypes: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (corePoke.type) coreTypes.push(corePoke.type);
     const type2 = (corePoke as { type2?: string }).type2;
     if (type2) coreTypes.push(type2);
 
-    const sdTypes = species.types.map(t => t.toLowerCase());
+    const sdTypes = species.types.map((t) => t.toLowerCase());
     const coreTypesStr = coreTypes.slice().sort().join(',');
     const sdTypesStr = sdTypes.slice().sort().join(',');
 
@@ -119,7 +131,10 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
   }
 
   public override async runAudit(): Promise<void> {
-    const pokemonDataFiles = await this.context.collectFiles(['src/data/pokemon'], new Set(['.ts', '.json']));
+    const pokemonDataFiles = await this.context.collectFiles(
+      ['src/data/pokemon'],
+      new Set(['.ts', '.json'])
+    );
     for (const f of pokemonDataFiles) {
       this.recordScanned(normalizePosixPath(path.relative(this.projectRoot, f)));
     }
@@ -129,8 +144,9 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
     let enabledPokemon: Array<[string, PokemonBaseData]> = [];
 
     this.runSubAuditorSync('pokemon-invalid-species', () => {
-      enabledPokemon = (Object.entries(POKEMON_DB) as Array<[string, PokemonBaseData]>)
-        .filter(([id]) => isEnabledPokemonId(id));
+      enabledPokemon = (Object.entries(POKEMON_DB) as Array<[string, PokemonBaseData]>).filter(
+        ([id]) => isEnabledPokemonId(id)
+      );
 
       for (const [coreId, corePoke] of enabledPokemon) {
         const tag = `[${corePoke.name} (${coreId})]`;
@@ -154,7 +170,11 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
       for (const [coreId, corePoke] of enabledPokemon) {
         const species = validSpeciesMap.get(coreId);
         if (!species) continue;
-        this.validateBaseStats(corePoke, species as { baseStats: Record<string, number> }, `[${corePoke.name} (${coreId})]`);
+        this.validateBaseStats(
+          corePoke,
+          species as { baseStats: Record<string, number> },
+          `[${corePoke.name} (${coreId})]`
+        );
       }
     });
 
@@ -162,7 +182,11 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
       for (const [coreId, corePoke] of enabledPokemon) {
         const species = validSpeciesMap.get(coreId);
         if (!species) continue;
-        this.validateTypes(corePoke, species as { types: string[] }, `[${corePoke.name} (${coreId})]`);
+        this.validateTypes(
+          corePoke,
+          species as { types: string[] },
+          `[${corePoke.name} (${coreId})]`
+        );
       }
     });
 
@@ -207,6 +231,10 @@ export class PokemonDbAuditor extends BaseAuditor<PokemonDbRuleId> {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new PokemonDbAuditor());
 }

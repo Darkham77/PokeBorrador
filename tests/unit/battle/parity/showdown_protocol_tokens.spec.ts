@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
 import { handleStageEvents } from '@/logic/battle/showdownBridgeStages';
 
@@ -6,7 +6,13 @@ describe('Showdown Protocol Tokens Parity Suite', () => {
   describe('Unhandled Log Token |bigerror|', () => {
     it('should parse |bigerror| token without returning false', () => {
       const mockStore = { addLog: () => {} };
-      const ctx = { store: mockStore, type: 'bigerror', parts: ['bigerror', 'sim exception'], line: '|bigerror|sim exception', getPoke: () => null };
+      const ctx = {
+        store: mockStore,
+        type: 'bigerror',
+        parts: ['bigerror', 'sim exception'],
+        line: '|bigerror|sim exception',
+        getPoke: () => null
+      };
       expect(handleMiscEvents(ctx as any)).toBe(true);
     });
   });
@@ -14,7 +20,13 @@ describe('Showdown Protocol Tokens Parity Suite', () => {
   describe('Unhandled Log Token |debug|', () => {
     it('should parse |debug| token without returning false', () => {
       const mockStore = { addLog: () => {} };
-      const ctx = { store: mockStore, type: 'debug', parts: ['debug', 'sim debug info'], line: '|debug|sim debug info', getPoke: () => null };
+      const ctx = {
+        store: mockStore,
+        type: 'debug',
+        parts: ['debug', 'sim debug info'],
+        line: '|debug|sim debug info',
+        getPoke: () => null
+      };
       expect(handleMiscEvents(ctx as any)).toBe(true);
     });
   });
@@ -22,7 +34,13 @@ describe('Showdown Protocol Tokens Parity Suite', () => {
   describe('Unhandled Log Token |event|', () => {
     it('should parse |event| token without returning false', () => {
       const mockStore = { addLog: () => {} };
-      const ctx = { store: mockStore, type: 'event', parts: ['event', 'custom event'], line: '|event|custom event', getPoke: () => null };
+      const ctx = {
+        store: mockStore,
+        type: 'event',
+        parts: ['event', 'custom event'],
+        line: '|event|custom event',
+        getPoke: () => null
+      };
       expect(handleMiscEvents(ctx as any)).toBe(true);
     });
   });
@@ -62,7 +80,13 @@ describe('Showdown Protocol Tokens Parity Suite', () => {
   describe('Unhandled Log Token |rated|', () => {
     it('should parse |rated| token without returning false', () => {
       const mockStore = { addLog: () => {} };
-      const ctx = { store: mockStore, type: 'rated', parts: ['rated'], line: '|rated', getPoke: () => null };
+      const ctx = {
+        store: mockStore,
+        type: 'rated',
+        parts: ['rated'],
+        line: '|rated',
+        getPoke: () => null
+      };
       expect(handleMiscEvents(ctx as any)).toBe(true);
     });
   });
@@ -89,7 +113,7 @@ describe('Showdown Protocol Tokens Parity Suite', () => {
       };
 
       const handled = handleStageEvents(ctx as any);
-      
+
       expect(handled).toBe(true);
       expect(mockStore.playerStages.value.atk).toBe(6);
     });
@@ -98,7 +122,13 @@ describe('Showdown Protocol Tokens Parity Suite', () => {
   describe('Unhandled Log Token |showteam|', () => {
     it('should parse |showteam| token without returning false', () => {
       const mockStore = { addLog: () => {} };
-      const ctx = { store: mockStore, type: 'showteam', parts: ['showteam', 'p1'], line: '|showteam|p1', getPoke: () => null };
+      const ctx = {
+        store: mockStore,
+        type: 'showteam',
+        parts: ['showteam', 'p1'],
+        line: '|showteam|p1',
+        getPoke: () => null
+      };
       expect(handleMiscEvents(ctx as any)).toBe(true);
     });
   });
@@ -130,7 +160,13 @@ describe('Showdown Protocol Tokens Parity Suite', () => {
   describe('Unhandled Log Token |-terastallize|', () => {
     it('should parse |-terastallize| token without returning false', () => {
       const mockStore = { addLog: () => {} };
-      const ctx = { store: mockStore, type: '-terastallize', parts: ['-terastallize', 'p1a: Pikachu', 'Electric'], line: '|-terastallize|p1a: Pikachu|Electric', getPoke: () => ({ name: 'Pikachu' }) };
+      const ctx = {
+        store: mockStore,
+        type: '-terastallize',
+        parts: ['-terastallize', 'p1a: Pikachu', 'Electric'],
+        line: '|-terastallize|p1a: Pikachu|Electric',
+        getPoke: () => ({ name: 'Pikachu' })
+      };
       expect(handleMiscEvents(ctx as any)).toBe(true);
     });
   });
@@ -138,7 +174,13 @@ describe('Showdown Protocol Tokens Parity Suite', () => {
   describe('Unhandled Log Token |tier|', () => {
     it('should parse |tier| token without returning false', () => {
       const mockStore = { addLog: () => {} };
-      const ctx = { store: mockStore, type: 'tier', parts: ['tier', '[Gen 9] Custom Game'], line: '|tier|[Gen 9] Custom Game', getPoke: () => null };
+      const ctx = {
+        store: mockStore,
+        type: 'tier',
+        parts: ['tier', '[Gen 9] Custom Game'],
+        line: '|tier|[Gen 9] Custom Game',
+        getPoke: () => null
+      };
       expect(handleMiscEvents(ctx as any)).toBe(true);
     });
   });
@@ -146,7 +188,13 @@ describe('Showdown Protocol Tokens Parity Suite', () => {
   describe('Unhandled Log Token |-zpower|', () => {
     it('should parse |-zpower| token when line lacks p1 prefix', () => {
       const mockStore = { addLog: () => {} };
-      const ctx = { store: mockStore, type: '-zpower', parts: ['-zpower', 'p1a: Pikachu'], line: '|-zpower|p1a: Pikachu', getPoke: () => null };
+      const ctx = {
+        store: mockStore,
+        type: '-zpower',
+        parts: ['-zpower', 'p1a: Pikachu'],
+        line: '|-zpower|p1a: Pikachu',
+        getPoke: () => null
+      };
       expect(handleMiscEvents(ctx as any)).toBe(true);
     });
   });

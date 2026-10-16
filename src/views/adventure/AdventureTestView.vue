@@ -1,23 +1,29 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { useAdventureSimulation } from '@/composables/adventure/useAdventureSimulation'
-import { gsapHover as vGsapHover } from '@/directives/gsapHover'
-import { gsapLoop as vGsapLoop } from '@/directives/gsapLoop'
-import MapCard from '@/components/map/MapCard.vue'
-import ArchaeologyModal from '@/components/modals/ArchaeologyModal.vue'
-import FishingModal from '@/components/modals/FishingModal.vue'
-import PreTravelModal from '@/components/adventure/PreTravelModal.vue'
-import AdventureManualSidebar from '@/components/adventure/AdventureManualSidebar.vue'
-import AdventureDirectionPad from '@/components/adventure/AdventureDirectionPad.vue'
-import type { MapLocation } from '@/types/pokemon/encounters'
-import type { GraphEdge, AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import AdventureEventModal from '@/components/adventure/AdventureEventModal.vue'
+import { onMounted, computed } from 'vue';
+import { useAdventureSimulation } from '@/composables/adventure/useAdventureSimulation';
+import { gsapHover as vGsapHover } from '@/directives/gsapHover';
+import { gsapLoop as vGsapLoop } from '@/directives/gsapLoop';
+import MapCard from '@/components/map/MapCard.vue';
+import ArchaeologyModal from '@/components/modals/ArchaeologyModal.vue';
+import FishingModal from '@/components/modals/FishingModal.vue';
+import PreTravelModal from '@/components/adventure/PreTravelModal.vue';
+import AdventureManualSidebar from '@/components/adventure/AdventureManualSidebar.vue';
+import AdventureDirectionPad from '@/components/adventure/AdventureDirectionPad.vue';
+import AdventureEventModal from '@/components/adventure/AdventureEventModal.vue';
+import type { MapLocation } from '@/types/pokemon/encounters';
+import type {
+  GraphEdge,
+  AdventureNodeId
+} from '../../../test_aventura/logic/adventure/kantoGraph.ts';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import {
+  CARD_W,
+  CARD_H,
+  type AdventureMoType
+} from '@/composables/adventure/helpers/adventureSimulationConstants.ts';
 
-const CARD_W = 320
-const CARD_H = 220
-const CARD_HALF_W = CARD_W / 2
-const CARD_HALF_H = CARD_H / 2
+const CARD_HALF_W = CARD_W / 2;
+const CARD_HALF_H = CARD_H / 2;
 
 const {
   originMap,
@@ -85,13 +91,17 @@ const {
   isEdgeOnPath,
   isEdgeTraversable,
   hasBicycle
-} = useAdventureSimulation()
+} = useAdventureSimulation();
 
 const edgeEndpointsMap = computed(() => {
-  const map: Record<string, { x1: number; y1: number; x2: number; y2: number; midLeft: string; midTop: string }> = {}
+  const map: Record<
+    // open-record: Edge composite key string (from-to) to geometry mapping
+    string,
+    { x1: number; y1: number; x2: number; y2: number; midLeft: string; midTop: string }
+  > = {};
   for (const edge of graphEdges.value) {
-    const fromPos = nodePositions.value[edge.from]
-    const toPos = nodePositions.value[edge.to]
+    const fromPos = nodePositions.value[edge.from];
+    const toPos = nodePositions.value[edge.to];
     if (fromPos && toPos) {
       map[`${edge.from}-${edge.to}`] = {
         x1: fromPos.x + CARD_HALF_W,
@@ -100,86 +110,99 @@ const edgeEndpointsMap = computed(() => {
         y2: toPos.y + CARD_HALF_H,
         midLeft: `${(fromPos.x + toPos.x + CARD_W) / 2}px`,
         midTop: `${(fromPos.y + toPos.y + CARD_H) / 2}px`
-      }
+      };
     }
   }
-  return map
-})
+  return map;
+});
 
 const getZoomCenter = () => {
-  const vp = viewportRef.value
-  if (!vp) return undefined
-  const cx = cameraX.value
-  const cy = cameraY.value
-  const scale = cameraScale.value
-  const x = (vp.clientWidth / 2 - cx) / scale
-  const y = (vp.clientHeight / 2 - cy) / scale
-  return { x, y }
-}
+  const vp = viewportRef.value;
+  if (!vp) return undefined;
+  const cx = cameraX.value;
+  const cy = cameraY.value;
+  const scale = cameraScale.value;
+  const x = (vp.clientWidth / 2 - cx) / scale;
+  const y = (vp.clientHeight / 2 - cy) / scale;
+  return { x, y };
+};
 
 const handleZoomIn = () => {
-  zoomIn(getZoomCenter)
-}
+  zoomIn(getZoomCenter);
+};
 
 const handleZoomOut = () => {
-  zoomOut(getZoomCenter)
-}
+  zoomOut(getZoomCenter);
+};
 
 const centerOnActiveNode = () => {
-  const originPos = nodePositions.value[originMap.value]
+  const originPos = nodePositions.value[originMap.value];
   if (originPos) {
-    jumpToPoint(originPos.x + CARD_W / 2, originPos.y + CARD_H / 2)
+    jumpToPoint(originPos.x + CARD_W / 2, originPos.y + CARD_H / 2);
   }
-}
+};
 
 onMounted(() => {
-  const originPos = nodePositions.value[originMap.value]
+  const originPos = nodePositions.value[originMap.value];
   if (originPos) {
-    jumpToPoint(originPos.x + CARD_W / 2, originPos.y + CARD_H / 2)
+    jumpToPoint(originPos.x + CARD_W / 2, originPos.y + CARD_H / 2);
   }
-})
+});
 
-const MO_EMOJI_MAP: Record<string, string> = {
+const MO_EMOJI_MAP: Record<AdventureMoType, string> = {
   surf: '🌊',
   cut: '🌳',
   strength: '🪨',
-  rock_smash: '🧱'
-}
+  rock_smash: '🧱',
+  flash: '💡',
+  waterfall: '🌊',
+  fly: '🕊️'
+};
 
 function getMoEmoji(mo?: string): string {
-  return (mo && MO_EMOJI_MAP[mo]) || '🔑'
+  return (mo && (MO_EMOJI_MAP as Record<string, string>)[mo]) || '🔑'; // open-record: MO emoji lookup table
 }
 
 function getMoTooltipTitle(mo: string): string {
   // domain-ok: UI display label for MO
-  return `Requisito: MO ${mo.toUpperCase()} (${moLabels[mo] || mo})`
+  const label = (moLabels as Record<string, string>)[mo] || mo; // open-record: MO labels dictionary
+  return `Requisito: MO ${mo.toUpperCase()} (${label})`;
 }
 
 function getMoTooltipDesc(mo: string): string {
   return activeHMs.value.has(mo)
     ? '▲ ¡Desbloqueado! Puedes transitar.'
-    : '▼ Falta MO activada en tu equipo para pasar.'
+    : '▼ Falta MO activada en tu equipo para pasar.';
 }
 
 function isMoUnlocked(mo: string): boolean {
-  return activeHMs.value.has(mo)
+  return activeHMs.value.has(mo);
 }
 
-function getEdgeClass(edge: GraphEdge): Record<string, boolean> {
+function getEdgeClass(edge: GraphEdge): {
+  'edge-on-path': boolean;
+  'edge-blocked': boolean;
+  'edge-mo': boolean;
+} {
   return {
     'edge-on-path': isEdgeOnPath(edge.from, edge.to),
     'edge-blocked': !isEdgeTraversable(edge),
     'edge-mo': Boolean(edge.mo)
-  }
+  };
 }
 
-function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
+function getNodeClass(nodeId: AdventureNodeId): {
+  'is-origin': boolean;
+  'is-destination': boolean;
+  'is-on-path': boolean;
+  'is-current': boolean;
+} {
   return {
     'is-origin': nodeId === originMap.value,
     'is-destination': nodeId === destinationMap.value,
     'is-on-path': pathSet.value.has(nodeId),
     'is-current': nodeId === currentMapId.value && isTraveling.value
-  }
+  };
 }
 </script>
 
@@ -187,20 +210,17 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
   <div class="adv-test-container">
     <!-- Header -->
     <div class="adv-header-retro">
-      <h1 class="adv-pixel-text">
-        Simulador de Viaje y MOs
-      </h1>
+      <h1 class="adv-pixel-text">Simulador de Viaje y MOs</h1>
     </div>
 
     <div class="adv-main-content">
       <!-- Banner de Advertencia de Equipo sin Pokémon con Vida -->
-      <div 
-        v-if="!hasHealthyTeam" 
-        v-gsap-loop="'pulse-shadow'"
-        class="adv-team-warning-banner"
-      >
+      <div v-if="!hasHealthyTeam" v-gsap-loop="'pulse-shadow'" class="adv-team-warning-banner">
         <span class="emoji warning-icon">⚠️</span>
-        <span class="warning-text">Equipo debilitado o vacío. Añade o cura tus Pokémon en el panel de trucos para poder viajar o explorar.</span>
+        <span class="warning-text"
+          >Equipo debilitado o vacío. Añade o cura tus Pokémon en el panel de trucos para poder
+          viajar o explorar.</span
+        >
       </div>
 
       <!-- Upper Section: Manual Travel UI (50%) -->
@@ -293,10 +313,7 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
               :viewBox="`0 0 ${CANVAS_W} ${CANVAS_H}`"
               preserveAspectRatio="none"
             >
-              <template
-                v-for="edge in graphEdges"
-                :key="`${edge.from}-${edge.to}`"
-              >
+              <template v-for="edge in graphEdges" :key="`${edge.from}-${edge.to}`">
                 <line
                   v-if="edgeEndpointsMap[`${edge.from}-${edge.to}`]"
                   :x1="edgeEndpointsMap[`${edge.from}-${edge.to}`]!.x1"
@@ -309,17 +326,14 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
             </svg>
 
             <!-- MO Obstacle Icons HTML Overlay (interactive tooltips and rich icons) -->
-            <template
-              v-for="edge in graphEdges"
-              :key="'mo-icon-' + edge.from + '-' + edge.to"
-            >
+            <template v-for="edge in graphEdges" :key="'mo-icon-' + edge.from + '-' + edge.to">
               <div
                 v-if="edge.mo && edgeEndpointsMap[`${edge.from}-${edge.to}`]"
                 class="adv-mo-obstacle-overlay"
                 :style="{
                   left: edgeEndpointsMap[`${edge.from}-${edge.to}`]!.midLeft,
                   top: edgeEndpointsMap[`${edge.from}-${edge.to}`]!.midTop,
-                  '--world-overlay-scale': worldOverlayScale,
+                  '--world-overlay-scale': worldOverlayScale
                 }"
               >
                 <PVTooltip
@@ -339,24 +353,16 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
             </template>
 
             <!-- Pokemon Center Overlays -->
-            <template
-              v-for="pc in pokemonCenterOverlays"
-              :key="'pc-' + pc.id"
-            >
+            <template v-for="pc in pokemonCenterOverlays" :key="'pc-' + pc.id">
               <div
                 class="adv-pokemon-center-overlay"
                 :style="{
                   left: `${pc.x}px`,
                   top: `${pc.y}px`,
-                  '--world-overlay-scale': worldOverlayScale,
+                  '--world-overlay-scale': worldOverlayScale
                 }"
               >
-                <div
-                  v-gsap-loop="'pulse-shadow'"
-                  class="emoji adv-pc-icon-bubble"
-                >
-                  🏥
-                </div>
+                <div v-gsap-loop="'pulse-shadow'" class="emoji adv-pc-icon-bubble">🏥</div>
               </div>
             </template>
 
@@ -375,7 +381,7 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
               @click.stop="startManualTravel(nodeId)"
             >
               <MapCard
-                :map="(mapLocationsById[nodeId] as MapLocation)"
+                :map="mapLocationsById[nodeId] as MapLocation"
                 :is-locked="false"
                 :cycle="mapStore.currentCycle"
                 :weather="getWeatherForMap(nodeId)"
@@ -391,14 +397,11 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
               class="adv-travel-marker"
               :style="{
                 left: `${markerX}px`,
-                top: `${markerY}px`,
+                top: `${markerY}px`
               }"
             >
               <div class="marker-dot" />
-              <div
-                ref="glowMarkerRef"
-                class="marker-glow"
-              />
+              <div ref="glowMarkerRef" class="marker-glow" />
             </div>
           </div>
         </div>
@@ -406,19 +409,11 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
     </div>
 
     <!-- Floating Progress Bar -->
-    <div
-      v-if="isTraveling"
-      class="adv-floating-progress"
-    >
+    <div v-if="isTraveling" class="adv-floating-progress">
       <div class="adv-progress-bar">
-        <div
-          class="adv-progress-fill"
-          :style="{ width: `${travelProgress}%` }"
-        />
+        <div class="adv-progress-fill" :style="{ width: `${travelProgress}%` }" />
       </div>
-      <div class="adv-progress-text adv-pixel-text">
-        {{ travelProgress }}%
-      </div>
+      <div class="adv-progress-text adv-pixel-text">{{ travelProgress }}%</div>
     </div>
 
     <!-- Event Modal -->
@@ -459,8 +454,16 @@ function getNodeClass(nodeId: AdventureNodeId): Record<string, boolean> {
       @fail="handleMinigameFail('fishing')"
       @close="showFishing = false"
     />
+
+    <!-- Adventure Event Modal -->
+    <AdventureEventModal
+      v-if="activeEvent"
+      :active-event="activeEvent"
+      :active-h-ms="activeHMs"
+      @resolve="resolveEvent"
+      @resume="resumeTravelAfterEvent"
+    />
   </div>
 </template>
 
 <style src="./AdventureTestView.styles.scss" lang="scss"></style>
-

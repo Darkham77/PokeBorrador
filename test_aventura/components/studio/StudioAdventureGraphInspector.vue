@@ -3,7 +3,11 @@ import { computed, ref } from 'vue';
 import { useMapAdventureStudioStore } from '../../stores/mapAdventureStudio';
 import { CELL_BIOME, type CellBiomeType } from '../../types/map/kantoGridModel';
 import { STAMPING_PREFABS_CATALOG } from '../../data/map/regionRegistry.ts';
-import type { StampingPrefabDefinition, UrbanScale, AdventureProjectNode } from '../../types/map/adventureWorldTypes';
+import type {
+  StampingPrefabDefinition,
+  UrbanScale,
+  AdventureProjectNode
+} from '../../types/map/adventureWorldTypes';
 import { CANVAS_TILE_SIZE } from '../../config/studioConstants.ts';
 
 const store = useMapAdventureStudioStore();
@@ -36,11 +40,27 @@ const nodeTypes = [
 ] as const;
 
 const urbanScales = [
-  { value: 'metropolis', label: '👑 Metrópolis (Capital / Silph)', desc: 'Silph Co., Centro, Tienda, Gimnasio Oro, Casas, Farolas y Bancos' },
-  { value: 'city', label: '🏙️ Ciudad (Gimnasio Oficial)', desc: 'Gimnasio, Centro, Tienda, Casas, Farolas y Buzones' },
-  { value: 'town', label: '🏘️ Pueblo (Centro + Tienda)', desc: 'Centro Pokémon, Tienda, Casas, Farolas y Flores' },
+  {
+    value: 'metropolis',
+    label: '👑 Metrópolis (Capital / Silph)',
+    desc: 'Silph Co., Centro, Tienda, Gimnasio Oro, Casas, Farolas y Bancos'
+  },
+  {
+    value: 'city',
+    label: '🏙️ Ciudad (Gimnasio Oficial)',
+    desc: 'Gimnasio, Centro, Tienda, Casas, Farolas y Buzones'
+  },
+  {
+    value: 'town',
+    label: '🏘️ Pueblo (Centro + Tienda)',
+    desc: 'Centro Pokémon, Tienda, Casas, Farolas y Flores'
+  },
   { value: 'village', label: '🏡 Aldea (Asentamiento)', desc: 'Centro Pokémon, Casas y Buzón' },
-  { value: 'hamlet', label: '🌾 Caserío / Villa Inicial', desc: 'Laboratorio de Oak, Casas y Flores' }
+  {
+    value: 'hamlet',
+    label: '🌾 Caserío / Villa Inicial',
+    desc: 'Laboratorio de Oak, Casas y Flores'
+  }
 ] as const;
 
 const moOptions = [
@@ -136,7 +156,11 @@ function handleDisconnect(neighborId: string) {
 }
 
 // --- 2. Terrain Mode State ---
-const biomeOptions: readonly { readonly biome: CellBiomeType; readonly label: string; readonly color: string }[] = [
+const biomeOptions: readonly {
+  readonly biome: CellBiomeType;
+  readonly label: string;
+  readonly color: string;
+}[] = [
   { biome: CELL_BIOME.GRASS, label: 'Césped Llano', color: '#318236' },
   { biome: CELL_BIOME.DIRT_PATH, label: 'Sendero de Tierra', color: '#bc9052' },
   { biome: CELL_BIOME.WATER, label: 'Agua / Río / Mar', color: '#12759e' },
@@ -175,22 +199,14 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
 </script>
 
 <template>
-  <aside
-    id="studio-adventure-inspector"
-    class="adventure-inspector"
-  >
+  <aside id="studio-adventure-inspector" class="adventure-inspector">
     <!-- ========================================== -->
     <!-- MODE 1: GRAFO (Paradas y Rutas Vectoriales) -->
     <!-- ========================================== -->
-    <div
-      v-if="store.activeMode === 'graph'"
-      class="mode-content"
-    >
+    <div v-if="store.activeMode === 'graph'" class="mode-content">
       <!-- Teleport Bar -->
       <section class="inspector-section section-teleport">
-        <h4 class="section-title">
-          <span class="icon">📍</span> SALTAR A UBICACIÓN
-        </h4>
+        <h4 class="section-title"><span class="icon">📍</span> SALTAR A UBICACIÓN</h4>
         <div class="teleport-grid">
           <button
             v-for="loc in canonicalLocations"
@@ -211,10 +227,7 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
         class="inspector-section section-node-details"
       >
         <div class="node-header">
-          <span
-            class="type-badge"
-            :class="selectedNode.type"
-          >{{ selectedNode.type }}</span>
+          <span class="type-badge" :class="selectedNode.type">{{ selectedNode.type }}</span>
           <span class="node-id">ID: {{ store.selectedNodeId }}</span>
         </div>
 
@@ -224,66 +237,54 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
 
         <!-- Urban Scale Selector (Maqueta Urbana de la Parada) -->
         <div class="urban-scale-box">
-          <label
-            for="select-urban-scale"
-            class="form-label"
-          >
+          <label for="select-urban-scale" class="form-label">
             <span class="emoji-inline">🏛️</span> Maqueta Urbana (Escala)
           </label>
           <select
             id="select-urban-scale"
             :value="selectedNode.urbanScale || 'town'"
             class="form-select urban-scale-select"
-            @change="(e) => {
-              if (store.selectedNodeId) {
-                store.setNodeUrbanScale(store.selectedNodeId, (e.target as HTMLSelectElement).value as UrbanScale);
+            @change="
+              (e) => {
+                if (store.selectedNodeId) {
+                  store.setNodeUrbanScale(
+                    store.selectedNodeId,
+                    (e.target as HTMLSelectElement).value as UrbanScale
+                  );
+                }
               }
-            }"
+            "
           >
-            <option
-              v-for="s in urbanScales"
-              :key="s.value"
-              :value="s.value"
-            >
+            <option v-for="s in urbanScales" :key="s.value" :value="s.value">
               {{ s.label }}
             </option>
           </select>
           <div class="urban-scale-desc">
-            {{ urbanScales.find(s => s.value === (selectedNode?.urbanScale || 'town'))?.desc }}
+            {{ urbanScales.find((s) => s.value === (selectedNode?.urbanScale || 'town'))?.desc }}
           </div>
         </div>
 
         <!-- Form fields -->
         <div class="form-group">
-          <label
-            for="input-node-name"
-            class="form-label"
-          >Nombre Visible</label>
+          <label for="input-node-name" class="form-label">Nombre Visible</label>
           <input
             id="input-node-name"
             v-model="selectedNode.name"
             type="text"
             class="form-input"
             @change="store.triggerRebake"
-          >
+          />
         </div>
 
         <div class="form-group">
-          <label
-            for="select-node-type"
-            class="form-label"
-          >Tipo de Parada</label>
+          <label for="select-node-type" class="form-label">Tipo de Parada</label>
           <select
             id="select-node-type"
             v-model="selectedNode.type"
             class="form-select"
             @change="store.triggerRebake"
           >
-            <option
-              v-for="t in nodeTypes"
-              :key="t.value"
-              :value="t.value"
-            >
+            <option v-for="t in nodeTypes" :key="t.value" :value="t.value">
               {{ t.label }}
             </option>
           </select>
@@ -291,7 +292,9 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
 
         <!-- Coordinates with fine-tuning -->
         <div class="form-group coords-group">
-          <label class="form-label">Coordenadas canónicas ({{ selectedNode.x }}, {{ selectedNode.y }})</label>
+          <label class="form-label"
+            >Coordenadas canónicas ({{ selectedNode.x }}, {{ selectedNode.y }})</label
+          >
           <div class="nudge-controls">
             <span class="axis-label">X:</span>
             <button
@@ -325,46 +328,33 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
               id="check-has-center"
               v-model="selectedNode.hasCenter"
               type="checkbox"
+              aria-label="Dispone de Centro Pokémon"
               class="form-checkbox"
               @change="store.triggerRebake"
-            >
+            />
             <span><span class="icon">❤️</span> Centro Pokémon</span>
           </label>
         </div>
 
         <div class="form-group">
-          <label
-            for="select-node-mo"
-            class="form-label"
-          >Requisito de MO / Bloqueo</label>
+          <label for="select-node-mo" class="form-label">Requisito de MO / Bloqueo</label>
           <select
             id="select-node-mo"
             v-model="selectedNode.requiresMO"
             class="form-select"
             @change="store.triggerRebake"
           >
-            <option
-              v-for="mo in moOptions"
-              :key="mo.value"
-              :value="mo.value"
-            >
+            <option v-for="mo in moOptions" :key="mo.value" :value="mo.value">
               {{ mo.label }}
             </option>
           </select>
         </div>
 
         <!-- Connected Routes -->
-        <div
-          v-if="connectedNeighbors.length > 0"
-          class="form-group connections-group"
-        >
+        <div v-if="connectedNeighbors.length > 0" class="form-group connections-group">
           <label class="form-label">Rutas Conectadas ({{ connectedNeighbors.length }})</label>
           <div class="connected-list">
-            <div
-              v-for="neighborId in connectedNeighbors"
-              :key="neighborId"
-              class="connected-item"
-            >
+            <div v-for="neighborId in connectedNeighbors" :key="neighborId" class="connected-item">
               <span class="connected-name">{{ store.nodes[neighborId]?.name || neighborId }}</span>
               <button
                 id="studio-adventure-graph-inspector-btn-disconnect"
@@ -380,11 +370,7 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
 
         <!-- Actions -->
         <div class="node-actions-grid">
-          <button
-            id="btn-node-connect"
-            class="btn-action btn-connect"
-            @click="handleStartConnect"
-          >
+          <button id="btn-node-connect" class="btn-action btn-connect" @click="handleStartConnect">
             <span class="icon">🔗</span> Conectar Ruta
           </button>
           <button
@@ -398,17 +384,15 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
       </section>
 
       <!-- Empty Selection Overview -->
-      <section
-        v-else
-        class="inspector-section empty-selection"
-      >
+      <section v-else class="inspector-section empty-selection">
         <div class="overview-badge">
           <span class="icon text-3xl">🌍</span>
           <h3 class="overview-title">
             {{ store.activeProject?.name || 'Región' }}
           </h3>
           <p class="overview-desc">
-            Haz clic o arrastra cualquier parada en el mapa para editar sus atributos, o salta directamente con los botones superiores.
+            Haz clic o arrastra cualquier parada en el mapa para editar sus atributos, o salta
+            directamente con los botones superiores.
           </p>
         </div>
 
@@ -432,16 +416,12 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
     <!-- ========================================== -->
     <!-- MODE 2: TERRENO (Pinceles de Biomas)       -->
     <!-- ========================================== -->
-    <div
-      v-else-if="store.activeMode === 'terrain'"
-      class="mode-content"
-    >
+    <div v-else-if="store.activeMode === 'terrain'" class="mode-content">
       <section class="inspector-section">
-        <h4 class="section-title">
-          <span class="icon">🖌️</span> PINCELES DE TERRENO
-        </h4>
+        <h4 class="section-title"><span class="icon">🖌️</span> PINCELES DE TERRENO</h4>
         <p class="mode-help-text">
-          Selecciona un bioma y tamaño de brocha. Pinta arrastrando con el mouse directamente sobre el mapa.
+          Selecciona un bioma y tamaño de brocha. Pinta arrastrando con el mouse directamente sobre
+          el mapa.
         </p>
 
         <!-- Biomes Selection -->
@@ -455,10 +435,7 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
             :class="{ 'is-selected': store.selectedBiome === b.biome }"
             @click="store.selectedBiome = b.biome"
           >
-            <span
-              class="biome-color-swatch"
-              :style="{ background: b.color }"
-            />
+            <span class="biome-color-swatch" :style="{ background: b.color }" />
             <span class="biome-label">{{ b.label }}</span>
           </button>
         </div>
@@ -468,7 +445,7 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
           <label class="form-label">Tamaño de Brocha Cuadrada</label>
           <div class="grid grid-cols-4 gap-2">
             <button
-              v-for="bs in ([1, 2, 4, 8] as const)"
+              v-for="bs in [1, 2, 4, 8] as const"
               :id="`btn-inspector-brush-${bs}`"
               :key="bs"
               type="button"
@@ -476,19 +453,18 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
               :class="{ 'is-active': store.brushSize === bs }"
               @click="store.brushSize = bs"
             >
-              <span class="brush-size-val">
-                {{ bs }}x{{ bs }}
-              </span>
-              <span class="brush-px">
-                {{ getBrushPixelSize(bs) }}px
-              </span>
+              <span class="brush-size-val"> {{ bs }}x{{ bs }} </span>
+              <span class="brush-px"> {{ getBrushPixelSize(bs) }}px </span>
             </button>
           </div>
         </div>
 
         <div class="autotile-info-box mt-4">
-          <span class="text-emerald-400 font-bold"><span class="icon">✨</span> Autotiling Inteligente:</span>
-          Los bordes y esquinas de 8 vecinos se recalculan dinámicamente con cada pincelada, manteniendo la matriz de colisión sincronizada.
+          <span class="text-emerald-400 font-bold"
+            ><span class="icon">✨</span> Autotiling Inteligente:</span
+          >
+          Los bordes y esquinas de 8 vecinos se recalculan dinámicamente con cada pincelada,
+          manteniendo la matriz de colisión sincronizada.
         </div>
       </section>
     </div>
@@ -496,17 +472,16 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
     <!-- ========================================== -->
     <!-- MODE 3: ESTRUCTURAS (Edificios & Props)    -->
     <!-- ========================================== -->
-    <div
-      v-else-if="store.activeMode === 'structures'"
-      class="mode-content"
-    >
+    <div v-else-if="store.activeMode === 'structures'" class="mode-content">
       <!-- If a structure is selected -->
       <section
         v-if="selectedStructure && store.selectedStructureIndex !== null"
         class="inspector-section"
       >
         <div class="flex items-center justify-between pb-2 border-b border-slate-700">
-          <span class="text-amber-400 font-bold text-xs uppercase">Estructura #{{ store.selectedStructureIndex + 1 }}</span>
+          <span class="text-amber-400 font-bold text-xs uppercase"
+            >Estructura #{{ store.selectedStructureIndex + 1 }}</span
+          >
           <button
             id="studio-adventure-graph-inspector-btn-store-selectedstructureindex"
             class="btn-close-sm"
@@ -525,7 +500,9 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
 
         <!-- Coordinates fine tuning -->
         <div class="form-group coords-group mt-3">
-          <label class="form-label">Posición Pixel ({{ selectedStructure.x }}, {{ selectedStructure.y }})</label>
+          <label class="form-label"
+            >Posición Pixel ({{ selectedStructure.x }}, {{ selectedStructure.y }})</label
+          >
           <div class="nudge-controls">
             <span class="axis-label">X:</span>
             <button
@@ -563,14 +540,12 @@ function handleStructureCoordNudge(axis: CoordAxis, delta: number) {
 
       <!-- Stamping Palette -->
       <section class="inspector-section">
-        <h4 class="section-title">
-          <span class="icon">🏛️</span> PALETA DE ESTAMPADO GBA
-        </h4>
+        <h4 class="section-title"><span class="icon">🏛️</span> PALETA DE ESTAMPADO GBA</h4>
 
         <!-- Category filter -->
         <div class="flex gap-1 mb-3">
           <button
-            v-for="cat in (['all', 'buildings', 'props'] as const)"
+            v-for="cat in ['all', 'buildings', 'props'] as const"
             :id="'btn-structure-cat-' + cat"
             :key="cat"
             class="filter-tab-btn"

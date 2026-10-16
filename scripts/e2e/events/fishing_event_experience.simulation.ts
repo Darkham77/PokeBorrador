@@ -24,76 +24,104 @@ class FishingEventSimulation extends BaseBattleSimulation {
   }
 
   public async setupFishingEventScenario(): Promise<void> {
-    await this.page.evaluate(async ({ power, pp, statValue }) => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useEventStore } = await import('../../../src/stores/events.ts');
-      const { useMapStore } = await import('../../../src/stores/map.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+    await this.page.evaluate(
+      async ({ power, pp, statValue }) => {
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { useEventStore } = await import('../../../src/stores/events.ts');
+        const { useMapStore } = await import('../../../src/stores/map.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
-      const gameStore = useGameStore();
-      const eventStore = useEventStore();
-      const mapStore = useMapStore();
+        const gameStore = useGameStore();
+        const eventStore = useEventStore();
+        const mapStore = useMapStore();
 
-      // Configure Pikachu with high level and strong stats for immediate knockout
-      const pika = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: 50 });
-      pika.name = 'Pikachu';
-      pika.nickname = 'Pikachu';
-      pika.moves = [{ id: 'thunderbolt', name: 'Thunderbolt', type: 'electric', cat: 'special', power, acc: 100, pp, maxPP: pp }];
-      pika.atk = statValue;
-      pika.spa = statValue;
+        // Configure Pikachu with high level and strong stats for immediate knockout
+        const pika = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('pikachu'),
+          level: 50
+        });
+        pika.name = 'Pikachu';
+        pika.nickname = 'Pikachu';
+        pika.moves = [
+          {
+            id: 'thunderbolt',
+            name: 'Thunderbolt',
+            type: 'electric',
+            cat: 'special',
+            power,
+            acc: 100,
+            pp,
+            maxPP: pp
+          }
+        ];
+        pika.atk = statValue;
+        pika.spa = statValue;
 
-      gameStore.state.starterChosen = true;
-      gameStore.state.team = [pika];
-      gameStore.state.box = [];
-      gameStore.state.inventory = {};
+        gameStore.state.starterChosen = true;
+        gameStore.state.team = [pika];
+        gameStore.state.box = [];
+        gameStore.state.inventory = {};
 
-      mapStore.currentMap = 'route22';
+        mapStore.currentMap = 'route22';
 
-      // Set mock events: Dia de Pesca (fishingMult: 2) & Doble Exp (expMult: 2)
-      eventStore.allEvents = [
-        {
-          id: 'dia_pesca',
-          name: 'Día de Pesca',
-          icon: '🎣',
-          type: 'boost',
-          active: true,
-          manual: true,
-          config: { fishingMult: 2 },
-          description: '¡Doble probabilidad de pesca!'
-        },
-        {
-          id: 'doble_exp',
-          name: 'Doble EXP',
-          icon: '⭐',
-          type: 'boost',
-          active: true,
-          manual: true,
-          config: { expMult: 2 },
-          description: '¡El doble de experiencia en combates!'
-        }
-      ];
-      eventStore.activeEvents = [...eventStore.allEvents];
+        // Set mock events: Dia de Pesca (fishingMult: 2) & Doble Exp (expMult: 2)
+        eventStore.allEvents = [
+          {
+            id: 'dia_pesca',
+            name: 'Día de Pesca',
+            icon: '🎣',
+            type: 'boost',
+            active: true,
+            manual: true,
+            config: { fishingMult: 2 },
+            description: '¡Doble probabilidad de pesca!'
+          },
+          {
+            id: 'doble_exp',
+            name: 'Doble EXP',
+            icon: '⭐',
+            type: 'boost',
+            active: true,
+            manual: true,
+            config: { expMult: 2 },
+            description: '¡El doble de experiencia en combates!'
+          }
+        ];
+        eventStore.activeEvents = [...eventStore.allEvents];
 
-      await gameStore.saveGame();
-    }, { power: DEFAULT_ATTACK_POWER, pp: DEFAULT_ATTACK_PP, statValue: OVERPOWERED_STAT_VALUE });
+        await gameStore.saveGame();
+      },
+      { power: DEFAULT_ATTACK_POWER, pp: DEFAULT_ATTACK_PP, statValue: OVERPOWERED_STAT_VALUE }
+    );
 
     const mapaBtn = this.page.locator('#nav-map-btn').filter({ visible: true }).first();
     await mapaBtn.waitFor({ state: 'visible', timeout: 15000 });
   }
 
-  public async startWildBattleAgainst(enemySpecies: string, level = DEFAULT_WILD_ENEMY_LEVEL): Promise<void> {
-    await this.page.evaluate(async ({ species, lvl }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+  public async startWildBattleAgainst(
+    enemySpecies: string,
+    level = DEFAULT_WILD_ENEMY_LEVEL
+  ): Promise<void> {
+    await this.page.evaluate(
+      async ({ species, lvl }) => {
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
-      const enemy = pokemonDebugService.generate({ id: requirePokemonSpeciesId(species), level: lvl });
-      enemy.hp = 1;
-      enemy.maxHp = 50;
+        const enemy = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId(species),
+          level: lvl
+        });
+        enemy.hp = 1;
+        enemy.maxHp = 50;
 
-      await useBattleStore().startBattle(enemy, { locationId: 'route22', isTrainer: false });
-    }, { species: enemySpecies, lvl: level });
+        await useBattleStore().startBattle(enemy, { locationId: 'route22', isTrainer: false });
+      },
+      { species: enemySpecies, lvl: level }
+    );
   }
 
   public async hookBattleLogs(): Promise<void> {
@@ -114,14 +142,19 @@ class FishingEventSimulation extends BaseBattleSimulation {
       const win = window as WindowWithCapturedLogs;
       const captured = win.__CAPTURED_COMBAT_LOGS__ || [];
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const current = (useBattleStore().battleLogs || []).map(l => l.msg);
+      const current = (useBattleStore().battleLogs || []).map((l) => l.msg);
       return Array.from(new Set([...captured, ...current]));
     });
   }
 
-  public async verifyFishingOddsWithBonus(): Promise<{ normalWeight: number; eventWeight: number; hasEventRatio: boolean }> {
+  public async verifyFishingOddsWithBonus(): Promise<{
+    normalWeight: number;
+    eventWeight: number;
+    hasEventRatio: boolean;
+  }> {
     return await this.page.evaluate(async () => {
-      const { calculateEncounterTypeWeights } = await import('../../../src/logic/encounters/encounterHelpers.ts');
+      const { calculateEncounterTypeWeights } =
+        await import('../../../src/logic/encounters/encounterHelpers.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       type MapLocation = import('../../../src/types/pokemon/encounters.ts').MapLocation;
 
@@ -146,8 +179,18 @@ class FishingEventSimulation extends BaseBattleSimulation {
         }
       };
 
-      const baseWeights = calculateEncounterTypeWeights(testLocation, 'clear', { faction: null, fishingRodType: 'standard', fishingRodSecs: 0 }, { eventFishingBonus: 1 });
-      const boostedWeights = calculateEncounterTypeWeights(testLocation, 'clear', { faction: null, fishingRodType: 'standard', fishingRodSecs: 0 }, { eventFishingBonus: 2 });
+      const baseWeights = calculateEncounterTypeWeights(
+        testLocation,
+        'clear',
+        { faction: null, fishingRodType: 'standard', fishingRodSecs: 0 },
+        { eventFishingBonus: 1 }
+      );
+      const boostedWeights = calculateEncounterTypeWeights(
+        testLocation,
+        'clear',
+        { faction: null, fishingRodType: 'standard', fishingRodSecs: 0 },
+        { eventFishingBonus: 2 }
+      );
 
       return {
         normalWeight: baseWeights.fishingWeight,
@@ -159,7 +202,9 @@ class FishingEventSimulation extends BaseBattleSimulation {
 }
 
 test.describe('Fishing & EXP Event Special Scenarios Simulation', () => {
-  test('debería aplicar el multiplicador de EXP de evento, reflejarlo en los logs de combate como (+XX EXP evento) y duplicar las probabilidades de pesca', async ({ page }) => {
+  test('debería aplicar el multiplicador de EXP de evento, reflejarlo en los logs de combate como (+XX EXP evento) y duplicar las probabilidades de pesca', async ({
+    page
+  }) => {
     const sim = new FishingEventSimulation(page, 'FisherTrainer');
 
     // 1. Setup session & UI
@@ -188,13 +233,18 @@ test.describe('Fishing & EXP Event Special Scenarios Simulation', () => {
     await awaitBattleFlowCompletion(page);
 
     // 6. Validar que en los logs de combate la experiencia indique el desglose del evento
-    await expect.poll(async () => {
-      const logs = await sim.getCombatLogMessages();
-      return logs.some(l => l.includes('EXP') && l.includes('EXP evento'));
-    }, { timeout: 15000 }).toBe(true);
+    await expect
+      .poll(
+        async () => {
+          const logs = await sim.getCombatLogMessages();
+          return logs.some((l) => l.includes('EXP') && l.includes('EXP evento'));
+        },
+        { timeout: 15000 }
+      )
+      .toBe(true);
 
     const logs = await sim.getCombatLogMessages();
-    const expLog = logs.find(l => l.includes('EXP') && l.includes('EXP evento'));
+    const expLog = logs.find((l) => l.includes('EXP') && l.includes('EXP evento'));
     expect(expLog).toBeDefined();
     expect(expLog).toMatch(/\(\+\d+\s+EXP evento\)/);
 

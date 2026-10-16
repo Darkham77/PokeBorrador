@@ -1,4 +1,4 @@
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .fossil-cloning {
   padding: 10px 0;
@@ -11,7 +11,7 @@
   align-items: center;
   gap: $spacing-lg;
   margin-bottom: 24px;
-  
+
   h3 {
     @include pixelated;
 
@@ -196,11 +196,26 @@
     text-transform: uppercase;
     white-space: nowrap;
 
-    &:nth-child(1) { width: 15%; text-align: left; }
-    &:nth-child(2) { width: 20%; text-align: center; }
-    &:nth-child(3) { width: 25%; text-align: center; }
-    &:nth-child(4) { width: 15%; text-align: center; }
-    &:nth-child(5) { width: 25%; text-align: right; }
+    &:nth-child(1) {
+      width: 15%;
+      text-align: left;
+    }
+    &:nth-child(2) {
+      width: 20%;
+      text-align: center;
+    }
+    &:nth-child(3) {
+      width: 25%;
+      text-align: center;
+    }
+    &:nth-child(4) {
+      width: 15%;
+      text-align: center;
+    }
+    &:nth-child(5) {
+      width: 25%;
+      text-align: right;
+    }
   }
 
   td {
@@ -210,11 +225,21 @@
     white-space: nowrap;
     vertical-align: middle;
 
-    &:nth-child(1) { text-align: left; }
-    &:nth-child(2) { text-align: center; }
-    &:nth-child(3) { text-align: center; }
-    &:nth-child(4) { text-align: center; }
-    &:nth-child(5) { text-align: right; }
+    &:nth-child(1) {
+      text-align: left;
+    }
+    &:nth-child(2) {
+      text-align: center;
+    }
+    &:nth-child(3) {
+      text-align: center;
+    }
+    &:nth-child(4) {
+      text-align: center;
+    }
+    &:nth-child(5) {
+      text-align: right;
+    }
   }
 }
 

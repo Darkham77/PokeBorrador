@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useBreedingStore } from '@/stores/breeding'
-import { useUIStore } from '@/stores/ui'
-import { useModalStore } from '@/stores/modals'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import BaseModal from '@/components/common/BaseModal.vue'
-import DaycareSlot from '@/components/breeding/DaycareSlot.vue'
-import BreedingSummary from '@/components/breeding/BreedingSummary.vue'
-import EggWarehouse from '@/components/breeding/EggWarehouse.vue'
-import IncubatingEggs from '@/components/breeding/IncubatingEggs.vue'
-import FossilCloning from '@/components/breeding/FossilCloning.vue'
+import { computed, onMounted } from 'vue';
+import { useBreedingStore } from '@/stores/breeding';
+import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import BaseModal from '@/components/common/BaseModal.vue';
+import DaycareSlot from '@/components/breeding/DaycareSlot.vue';
+import BreedingSummary from '@/components/breeding/BreedingSummary.vue';
+import EggWarehouse from '@/components/breeding/EggWarehouse.vue';
+import IncubatingEggs from '@/components/breeding/IncubatingEggs.vue';
+import FossilCloning from '@/components/breeding/FossilCloning.vue';
 
 interface Props {
-  show?: boolean
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const breedingStore = useBreedingStore()
-const uiStore = useUIStore()
-const modalStore = useModalStore()
+const breedingStore = useBreedingStore();
+const uiStore = useUIStore();
+const modalStore = useModalStore();
 
-const isSmallScreen = computed(() => uiStore.isSmallScreen)
+const isSmallScreen = computed(() => uiStore.isSmallScreen);
 
 const openPicker = (slotIdx: number) => {
   modalStore.open('PokemonSelection', {
@@ -36,31 +36,31 @@ const openPicker = (slotIdx: number) => {
     daycareSlotIdx: slotIdx,
     autoConfirm: true,
     onConfirm: (selected: Pokemon[]) => {
-      const first = selected?.[0]
+      const first = selected?.[0];
       if (first) {
-        breedingStore.deposit(first, slotIdx)
+        breedingStore.deposit(first, slotIdx);
       }
     }
-  })
-}
+  });
+};
 
 const withdraw = (slotIdx: number) => {
-  const pokemon = breedingStore.slots[slotIdx]?.pokemon
-  if (!pokemon) return
+  const pokemon = breedingStore.slots[slotIdx]?.pokemon;
+  if (!pokemon) return;
 
   uiStore.openConfirm({
     title: 'RETIRAR POKÉMON',
     message: `¿Quieres retirar a ${pokemon.name} de la guardería?`,
     onConfirm: () => {
-      breedingStore.withdraw(slotIdx)
+      breedingStore.withdraw(slotIdx);
     }
-  })
-}
+  });
+};
 
 onMounted(() => {
-  breedingStore.loadDaycare()
-  breedingStore.checkDailyReset()
-})
+  breedingStore.loadDaycare();
+  breedingStore.checkDailyReset();
+});
 </script>
 
 <template>
@@ -81,7 +81,10 @@ onMounted(() => {
     <div class="daycare-modal-container custom-scrollbar-vicio">
       <div class="daycare-header-hint">
         <span class="emoji hint-icon">🔮</span>
-        <p>Deposita dos Pokémon compatibles para conseguir huevos. Revisa su vigor y dales Piedra Eterna o Lazo Destino para heredar cualidades.</p>
+        <p>
+          Deposita dos Pokémon compatibles para conseguir huevos. Revisa su vigor y dales Piedra
+          Eterna o Lazo Destino para heredar cualidades.
+        </p>
       </div>
 
       <!-- Upper section: Crianza (Slots & Compatibility) -->
@@ -134,8 +137,8 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .daycare-modal-container {
   --daycare-pink: #f36;
@@ -163,7 +166,7 @@ onMounted(() => {
   border-radius: $radius-xl;
   background: Rgb(255 51 102 / 6%);
   box-shadow: var(--shadow-glow-amber);
-  
+
   .hint-icon {
     font-size: var(--font-18);
   }
@@ -188,26 +191,26 @@ onMounted(() => {
   align-items: stretch;
   gap: $spacing-md;
   grid-template-columns: 1fr 290px 1fr;
-  grid-template-areas: "slot-a compat slot-b";
+  grid-template-areas: 'slot-a compat slot-b';
 
   .daycare-slot-a {
     grid-area: slot-a;
   }
-  
+
   .daycare-slot-b {
     grid-area: slot-b;
   }
-  
+
   .compat-summary-wrapper {
     grid-area: compat;
   }
-  
+
   @media (width <= 950px) {
     grid-template-columns: 1fr 1fr;
-    grid-template-areas: 
-      "slot-a slot-b"
-      "compat compat";
-    
+    grid-template-areas:
+      'slot-a slot-b'
+      'compat compat';
+
     .compat-summary-wrapper {
       width: 100%;
     }
@@ -215,12 +218,12 @@ onMounted(() => {
 
   @media (width <= 550px) {
     grid-template-columns: 1fr;
-    grid-template-areas: 
-      "slot-a"
-      "slot-b"
-      "compat";
+    grid-template-areas:
+      'slot-a'
+      'slot-b'
+      'compat';
   }
-  
+
   // Make Slot components flex-1
   & > :deep(.daycare-slot-legacy) {
     min-height: unset;
@@ -228,7 +231,7 @@ onMounted(() => {
     background: Rgb(20 10 15 / 55%);
     flex: 1;
     box-shadow: var(--shadow-card);
-    
+
     &.empty {
       background: Rgb(0 0 0 / 25%);
       border-color: Rgb(255 51 102 / 20%);
@@ -255,7 +258,7 @@ onMounted(() => {
   border-radius: $radius-2xl;
   background: Rgb(255 51 102 / 2%);
   box-shadow: var(--shadow-2xl);
-  
+
   @media (width <= 950px) {
     width: 100%;
   }

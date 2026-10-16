@@ -1,7 +1,20 @@
 import type { Ref } from 'vue';
 import type { GameState, GenderId } from '@/types/system/game';
-import type { Pokemon, PokemonSelectionSource, PokemonCompetitionRank } from '@/types/pokemon/pokemon';
-import type { BattleState, BattleStages, BattleLog, BattleSource, BattleSide, BattleDifficulty, BattleMinigame, PersistenceMode } from '@/types/battle/battle';
+import type {
+  Pokemon,
+  PokemonSelectionSource,
+  PokemonCompetitionRank
+} from '@/types/pokemon/pokemon';
+import type {
+  BattleState,
+  BattleStages,
+  BattleLog,
+  BattleSource,
+  BattleSide,
+  BattleDifficulty,
+  BattleMinigame,
+  PersistenceMode
+} from '@/types/battle/battle';
 import type { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
 import type { Event, GlobalMultipliers } from '@/logic/events/eventEngine';
 import type { AuthUser, SessionMode } from '@/types/auth/auth';
@@ -19,6 +32,7 @@ import type { ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { PokemonTagId } from '@/logic/constants/tags';
 import type { FactionId } from '@/types/system/game';
+import type { WarEventType } from '@/logic/war/warEngine';
 
 export interface WorldMap {
   id: MapRouteId;
@@ -33,10 +47,15 @@ export interface WorldMap {
   isIndoors?: boolean;
   isCrystalCave?: boolean;
   fishing?: { pool: string[]; rates: number[]; lv: [number, number] };
-  weather?: Partial<Record<WeatherId, {
-    visitors: Partial<Record<PokemonSpeciesId, number>>;
-    exclusive?: Partial<Record<PokemonSpeciesId, number>>;
-  }>>;
+  weather?: Partial<
+    Record<
+      WeatherId,
+      {
+        visitors: Partial<Record<PokemonSpeciesId, number>>;
+        exclusive?: Partial<Record<PokemonSpeciesId, number>>;
+      }
+    >
+  >;
 }
 
 export interface DominanceInfo {
@@ -44,7 +63,7 @@ export interface DominanceInfo {
   since?: number;
   union?: number;
   poder?: number;
-  guardian?: { id: PokemonSpeciesId, captured: boolean } | null;
+  guardian?: { id: PokemonSpeciesId; captured: boolean } | null;
 }
 
 export interface BattleOptions {
@@ -91,11 +110,26 @@ export interface GameStore {
   isEngineReady: boolean;
   isReady: boolean;
   isSaveLocked: boolean;
-  addPokemon: (p: Pokemon, options?: { silent?: boolean; source?: string; notify?: boolean }) => void;
+  addPokemon: (
+    p: Pokemon,
+    options?: { silent?: boolean; source?: string; notify?: boolean }
+  ) => void;
   removePokemon: (uid: string) => void;
   scheduleSave: (delayMs?: number, forceRemote?: boolean) => void;
   withBatchSave: <T>(action: () => Promise<T>, showNotifOnEnd?: boolean) => Promise<T>;
-  save: (showNotif?: boolean, immediate?: boolean, forceRemote?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
+  save: (
+    showNotif?: boolean,
+    immediate?: boolean,
+    forceRemote?: boolean
+  ) => Promise<{
+    success: boolean;
+    migrated?: boolean;
+    lastSaveId?: string; // domain-ok: Open dynamic text or non-domain string payload
+    rollback?: boolean;
+    outOfSync?: boolean;
+    error?: string; // domain-ok: Open dynamic text or non-domain string payload
+    remote?: boolean;
+  } | void>;
   loadGame: () => Promise<void>;
   registerPokedex: (speciesId: PokemonSpeciesId) => void;
   addTrainerExp: (amount: number) => void;
@@ -105,7 +139,19 @@ export interface GameStore {
   togglePokeTag: (context: PokemonSelectionSource, index: number, tagId: PokemonTagId) => void;
   reorderMoves: (pokemon: Pokemon, from: number, to: number) => void;
   fetchClaimQueue: () => Promise<void>;
-  saveGame: (showNotif?: boolean, immediate?: boolean, forceRemote?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
+  saveGame: (
+    showNotif?: boolean,
+    immediate?: boolean,
+    forceRemote?: boolean
+  ) => Promise<{
+    success: boolean;
+    migrated?: boolean;
+    lastSaveId?: string; // domain-ok: Open dynamic text or non-domain string payload
+    rollback?: boolean;
+    outOfSync?: boolean;
+    error?: string; // domain-ok: Open dynamic text or non-domain string payload
+    remote?: boolean;
+  } | void>;
 }
 
 export interface BattleStore {
@@ -125,9 +171,18 @@ export interface BattleStore {
   fsm: {
     currentState: Ref<BattleStateName>;
     currentSubState: Ref<BattleSubStateName | null>;
-    transition: (newState: BattleStateName | BattleSubStateName, newSubState?: BattleSubStateName | null, delayMs?: number) => Promise<void>;
+    transition: (
+      newState: BattleStateName | BattleSubStateName,
+      newSubState?: BattleSubStateName | null,
+      delayMs?: number
+    ) => Promise<void>;
   };
-  addLog: (msg: string, type?: string, source?: BattleSource | null, sideOverride?: BattleSide | null) => void;
+  addLog: (
+    msg: string, // domain-ok: Open dynamic text or non-domain string payload
+    type?: string, // domain-ok: Open dynamic text or non-domain string payload
+    source?: BattleSource | null,
+    sideOverride?: BattleSide | null
+  ) => void;
   startBattle: (enemy: Pokemon, options?: BattleOptions) => Promise<void>;
   _startBattle: (enemy: Pokemon, options?: BattleOptions) => Promise<void>;
   executeMove: (moveIndex: number) => Promise<void>;
@@ -298,7 +353,11 @@ export interface EventStore {
   fetchPastEvents: () => Promise<void>;
   fetchUserEntries: () => Promise<void>;
   checkPendingAwards: (notifyOnPending?: boolean) => Promise<void>;
-  submitCompetitionEntry: (eventId: string, categoryIdOrUid: string, maybeUid?: string) => Promise<void>;
+  submitCompetitionEntry: (
+    eventId: string, // domain-ok: Open dynamic text or non-domain string payload
+    categoryIdOrUid: string, // domain-ok: Open dynamic text or non-domain string payload
+    maybeUid?: string // domain-ok: Open dynamic text or non-domain string payload
+  ) => Promise<void>;
   claimAward: (awardId: string) => Promise<string | null>;
   claimAllEventAwards: (eventId: string) => Promise<{ success: boolean; claimedCount: number }>;
   discardAward: (awardId: string) => Promise<boolean>;
@@ -322,11 +381,13 @@ export interface CompetitionParticipant {
 export interface CompetitionResult {
   id: string; // domain-ok: Open dynamic text or non-domain string payload
   event_id: string; // domain-ok: Open dynamic text or non-domain string payload
-  winners: {
-    first?: { player_name: string; score: number };
-    second?: { player_name: string; score: number };
-    third?: { player_name: string; score: number };
-  } | PastCompetitionWinner[];
+  winners:
+    | {
+        first?: { player_name: string; score: number };
+        second?: { player_name: string; score: number };
+        third?: { player_name: string; score: number };
+      }
+    | PastCompetitionWinner[];
   ended_at: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
@@ -336,7 +397,12 @@ export interface WarStore {
   weeklyPoints: number;
   mapDominance: Partial<Record<MapRouteId, DominanceInfo>>;
   dailyGuardianCaptures: MapRouteId[];
-  addPoints: (mapId: MapRouteId, eventType: string, success: boolean, customPoints?: number) => Promise<number>;
+  addPoints: (
+    mapId: MapRouteId,
+    eventType: WarEventType,
+    success: boolean,
+    customPoints?: number
+  ) => Promise<number>;
   claimGuardian: (mapId: MapRouteId, isDefeat?: boolean) => Promise<void>;
 }
 

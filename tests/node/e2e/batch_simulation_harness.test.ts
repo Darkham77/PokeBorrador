@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   resolveBatchResumptionIndex,
   interleaveHeavyBatches,
@@ -65,11 +65,11 @@ describe('Batch Simulation Harness Helpers', () => {
         { id: '3', heavy: false },
         { id: '4', heavy: false },
         { id: '5', heavy: true },
-        { id: '6', heavy: false },
+        { id: '6', heavy: false }
       ];
-      const interleaved = interleaveHeavyBatches(items, item => item.heavy);
+      const interleaved = interleaveHeavyBatches(items, (item) => item.heavy);
       expect(interleaved.length).toBe(items.length);
-      expect(interleaved.map(i => i.id).sort()).toEqual(items.map(i => i.id).sort());
+      expect(interleaved.map((i) => i.id).sort()).toEqual(items.map((i) => i.id).sort());
     });
 
     it('returns identical array when there are no heavy items', () => {
@@ -144,8 +144,10 @@ describe('Batch Simulation Harness Helpers', () => {
 
   describe('Fuzzer Worker Batch Serialization', () => {
     it('should execute a single batch and verify playerChoices, enemyChoices and seed are non-empty', async () => {
-      const { generateTestBatches } = await import('../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts');
-      const { runStandaloneBatch } = await import('../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts');
+      const { generateTestBatches } =
+        await import('../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts');
+      const { runStandaloneBatch } =
+        await import('../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts');
 
       const batches = generateTestBatches(1);
       const targetBatch = batches[0];
@@ -160,4 +162,3 @@ describe('Batch Simulation Harness Helpers', () => {
     });
   });
 });
-

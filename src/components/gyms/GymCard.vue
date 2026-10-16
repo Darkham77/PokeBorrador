@@ -1,41 +1,41 @@
 <script setup lang="ts">
-import { computed, onMounted, useTemplateRef } from 'vue'
-import { gsap } from 'gsap'
-import { useGymsStore } from '@/stores/gyms'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
-import GymRewardPanel from './GymRewardPanel.vue'
-import { toPokemonType } from '@/data/battle/types'
-import type { Gym } from '@/data/world/gyms'
-import { BATTLE_DIFFICULTIES, type BattleDifficulty } from '@/types/battle/battle'
+import { computed, onMounted, useTemplateRef } from 'vue';
+import { gsap } from 'gsap';
+import { useGymsStore } from '@/stores/gyms';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
+import GymRewardPanel from './GymRewardPanel.vue';
+import { toPokemonType } from '@/data/battle/types';
+import type { Gym } from '@/data/world/gyms';
+import { BATTLE_DIFFICULTIES, type BattleDifficulty } from '@/types/battle/battle';
 import {
   getPokemonTypeIcon,
   formatDifficultyLabel,
   resolveGymButtonGradient,
   resolveGymButtonShadow,
   resolveGymHeaderGradient
-} from './gymCardHelper'
+} from './gymCardHelper';
 
-const GYM_CARD_HOVER_BG_OPACITY_PERCENT = 0.05
-const GYM_CARD_HOVER_BTN_BG_OPACITY_PERCENT = 0.15
-const GYM_CARD_HOVER_BTN_SCALE_BOOST = 1.05
+const GYM_CARD_HOVER_BG_OPACITY_PERCENT = 0.05;
+const GYM_CARD_HOVER_BTN_BG_OPACITY_PERCENT = 0.15;
+const GYM_CARD_HOVER_BTN_SCALE_BOOST = 1.05;
 
 interface Props {
-  gym: Gym
-  isDefeated?: boolean
-  isLocked?: boolean
-  isReaffirming?: boolean
+  gym: Gym;
+  isDefeated?: boolean;
+  isLocked?: boolean;
+  isReaffirming?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isDefeated: false,
   isLocked: false,
   isReaffirming: false
-})
+});
 
-const gymsStore = useGymsStore()
-const selectedDifficulty = defineModel<BattleDifficulty>('difficulty', { default: 'easy' })
-const cardRef = useTemplateRef<HTMLElement>('cardRef')
+const gymsStore = useGymsStore();
+const selectedDifficulty = defineModel<BattleDifficulty>('difficulty', { default: 'easy' });
+const cardRef = useTemplateRef<HTMLElement>('cardRef');
 
 const GYM_CARD_MOUNT_OFFSET_Y = 20;
 const GYM_CARD_HOVER_SCALE = 1.02;
@@ -49,39 +49,41 @@ onMounted(() => {
       duration: 0.8,
       ease: 'back.out(1.2)',
       delay: Math.random() * GYM_CARD_MOUNT_MAX_RANDOM_DELAY_SEC
-    })
+    });
   }
-})
+});
 
 const handleChallenge = () => {
-  if (props.isLocked) return
-  gymsStore.challengeGym(props.gym.id, selectedDifficulty.value)
-}
+  if (props.isLocked) return;
+  gymsStore.challengeGym(props.gym.id, selectedDifficulty.value);
+};
 
 const handleRematch = () => {
-  if (props.isLocked) return
-  gymsStore.challengeRematch(props.gym.id)
-}
+  if (props.isLocked) return;
+  gymsStore.challengeRematch(props.gym.id);
+};
 
-const typeIcon = computed(() => getPokemonTypeIcon(props.gym.type))
+const typeIcon = computed(() => getPokemonTypeIcon(props.gym.type));
 
 const leaderSpriteUrl = computed(() => {
-  return getAssetUrl(ASSET_TYPES.TRAINER, props.gym.leader.toLowerCase()) // domain-ok: Open dynamic text or non-domain string payload
-})
+  return getAssetUrl(ASSET_TYPES.TRAINER, props.gym.leader.toLowerCase()); // domain-ok: Open dynamic text or non-domain string payload
+});
 
-const headerBgStyle = computed(() => ({ background: resolveGymHeaderGradient(props.gym.typeColor) }))
+const headerBgStyle = computed(() => ({
+  background: resolveGymHeaderGradient(props.gym.typeColor)
+}));
 const challengeBtnStyle = computed(() => ({
   background: resolveGymButtonGradient(props.gym.typeColor),
   boxShadow: resolveGymButtonShadow(props.gym.typeColor)
-}))
-const isHardDefeated = computed(() => gymsStore.isDifficultyDefeated(props.gym.id, 'hard'))
-const isRematchAvailable = computed(() => gymsStore.isRematchAvailable(props.gym.id))
-const isRematchDone = computed(() => gymsStore.isRematchDoneToday(props.gym.id))
-const currentDifficultyLabel = computed(() => formatDifficultyLabel(selectedDifficulty.value))
-const cardClasses = computed(() => ({ defeated: props.isDefeated, locked: props.isLocked }))
+}));
+const isHardDefeated = computed(() => gymsStore.isDifficultyDefeated(props.gym.id, 'hard'));
+const isRematchAvailable = computed(() => gymsStore.isRematchAvailable(props.gym.id));
+const isRematchDone = computed(() => gymsStore.isRematchDoneToday(props.gym.id));
+const currentDifficultyLabel = computed(() => formatDifficultyLabel(selectedDifficulty.value));
+const cardClasses = computed(() => ({ defeated: props.isDefeated, locked: props.isLocked }));
 
 const handleMouseEnter = () => {
-  if (props.isLocked || !cardRef.value) return
+  if (props.isLocked || !cardRef.value) return;
   gsap.to(cardRef.value, {
     scale: GYM_CARD_HOVER_SCALE,
     y: GYM_CARD_HOVER_OFFSET_Y,
@@ -89,9 +91,9 @@ const handleMouseEnter = () => {
     ease: 'back.out(1.7)',
     borderColor: props.gym.typeColor,
     boxShadow: `0 20px 60px rgba(0, 0, 0, 0.8), 0 0 15px ${props.gym.typeColor}33`
-  })
-  
-  const sprite = cardRef.value.querySelector('.leader-sprite')
+  });
+
+  const sprite = cardRef.value.querySelector('.leader-sprite');
   if (sprite) {
     gsap.to(sprite, {
       scale: 1.1,
@@ -99,12 +101,12 @@ const handleMouseEnter = () => {
       filter: 'drop-shadow(0 15px 15px rgba(0,0,0,0.6))',
       duration: 0.4,
       ease: 'back.out(1.7)'
-    })
+    });
   }
-}
+};
 
 const handleMouseLeave = () => {
-  if (props.isLocked || !cardRef.value) return
+  if (props.isLocked || !cardRef.value) return;
   gsap.to(cardRef.value, {
     scale: 1,
     y: 0,
@@ -112,9 +114,9 @@ const handleMouseLeave = () => {
     ease: 'power2.out',
     borderColor: 'rgba(255, 255, 255, 0.15)',
     boxShadow: 'none'
-  })
-  
-  const sprite = cardRef.value.querySelector('.leader-sprite')
+  });
+
+  const sprite = cardRef.value.querySelector('.leader-sprite');
   if (sprite) {
     gsap.to(sprite, {
       scale: 1,
@@ -122,9 +124,9 @@ const handleMouseLeave = () => {
       filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))',
       duration: 0.4,
       ease: 'power2.out'
-    })
+    });
   }
-}
+};
 
 const handleBtnEnter = (e: MouseEvent) => {
   gsap.to(e.currentTarget, {
@@ -132,8 +134,8 @@ const handleBtnEnter = (e: MouseEvent) => {
     backgroundColor: `rgba(255, 255, 255, ${GYM_CARD_HOVER_BTN_BG_OPACITY_PERCENT})`,
     duration: 0.3,
     ease: 'power2.out'
-  })
-}
+  });
+};
 
 const handleBtnLeave = (e: MouseEvent) => {
   gsap.to(e.currentTarget, {
@@ -141,8 +143,8 @@ const handleBtnLeave = (e: MouseEvent) => {
     backgroundColor: `rgba(255, 255, 255, ${GYM_CARD_HOVER_BG_OPACITY_PERCENT})`,
     duration: 0.3,
     ease: 'power2.out'
-  })
-}
+  });
+};
 </script>
 
 <template>
@@ -154,30 +156,19 @@ const handleBtnLeave = (e: MouseEvent) => {
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
-    <div
-      class="pv-card-header"
-      :style="headerBgStyle"
-    >
+    <div class="pv-card-header" :style="headerBgStyle">
       <div class="header-main">
         <div class="leader-info">
           <div class="type-row">
             <span class="emoji type-icon">{{ typeIcon }}</span>
-            <span
-              class="gym-tag"
-              :style="{ color: gym.typeColor }"
-            >{{ gym.name }}</span>
+            <span class="gym-tag" :style="{ color: gym.typeColor }">{{ gym.name }}</span>
           </div>
-          <div class="location">
-            <span class="emoji">📍</span> {{ gym.city }}
-          </div>
+          <div class="location"><span class="emoji">📍</span> {{ gym.city }}</div>
           <div class="leader-title">
             Líder: <span>{{ gym.leader }}</span>
           </div>
           <div class="badges-row">
-            <PokemonTypeTag
-              :type="toPokemonType(gym.type)"
-              size="md"
-            />
+            <PokemonTypeTag :type="toPokemonType(gym.type)" size="md" />
           </div>
         </div>
         <div class="leader-sprite-box">
@@ -187,44 +178,38 @@ const handleBtnLeave = (e: MouseEvent) => {
             class="leader-sprite"
             width="32"
             height="32"
-          >
+          />
         </div>
       </div>
 
       <!-- Panel de Recompensa de Medalla Destacada -->
-      <GymRewardPanel
-        :gym="gym"
-        :difficulty="selectedDifficulty"
-      />
+      <GymRewardPanel :gym="gym" :difficulty="selectedDifficulty" />
     </div>
 
     <div class="pv-card-footer">
       <div class="preview-box">
         <div class="progress-txt">
-          ESTADO: <span :class="{ 'text-won': isDefeated }">{{ isDefeated ? 'COMPLETADO' : 'PENDIENTE' }}</span>
+          ESTADO:
+          <span :class="{ 'text-won': isDefeated }">{{
+            isDefeated ? 'COMPLETADO' : 'PENDIENTE'
+          }}</span>
         </div>
       </div>
 
       <div class="action-box">
-        <div
-          v-if="isLocked"
-          class="locked-tag"
-        >
+        <div v-if="isLocked" class="locked-tag">
           <span class="emoji">🔒</span> BLOQUEADO ({{ gym.badgesRequired }} Medallas)
         </div>
-        <div
-          v-else
-          class="challenge-group"
-        >
+        <div v-else class="challenge-group">
           <!-- Selector de dificultad siempre disponible para permitir rematches en otros niveles -->
           <div class="diff-selector">
             <button
-              v-for="d in BATTLE_DIFFICULTIES" 
-              id="gym-card-btn-1" 
+              v-for="d in BATTLE_DIFFICULTIES"
+              id="gym-card-btn-1"
               :key="d"
               class="diff-btn"
-              :class="{ 
-                active: selectedDifficulty === d, 
+              :class="{
+                active: selectedDifficulty === d,
                 [d]: true,
                 'is-won': gymsStore.isDifficultyDefeated(gym.id, d)
               }"
@@ -233,17 +218,13 @@ const handleBtnLeave = (e: MouseEvent) => {
               @mouseleave="handleBtnLeave"
             >
               {{ formatDifficultyLabel(d) }}
-              <span
-                v-if="gymsStore.isDifficultyDefeated(gym.id, d)"
-                class="won-dot"
-              ><span class="emoji">✓</span></span>
+              <span v-if="gymsStore.isDifficultyDefeated(gym.id, d)" class="won-dot"
+                ><span class="emoji">✓</span></span
+              >
             </button>
           </div>
 
-          <div
-            v-if="isDefeated"
-            class="won-tag"
-          >
+          <div v-if="isDefeated" class="won-tag">
             <span class="emoji">✅</span> VICTORIA OBTENIDA en {{ currentDifficultyLabel }}
           </div>
 
@@ -257,19 +238,12 @@ const handleBtnLeave = (e: MouseEvent) => {
             >
               <span class="emoji">🔥</span> REVANCHA DIARIA (Lv 70-80)
             </button>
-            <div
-              v-else-if="isRematchDone"
-              class="rematch-completed-tag"
-            >
+            <div v-else-if="isRematchDone" class="rematch-completed-tag">
               <span class="emoji">✓</span> Revancha Diaria Completada Hoy
             </div>
           </template>
 
-          <button
-            class="pv-challenge-btn"
-            :style="challengeBtnStyle"
-            @click.stop="handleChallenge"
-          >
+          <button class="pv-challenge-btn" :style="challengeBtnStyle" @click.stop="handleChallenge">
             <span class="emoji">⚔️</span> {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR LÍDER' }}
           </button>
         </div>

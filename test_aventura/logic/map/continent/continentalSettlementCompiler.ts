@@ -77,7 +77,8 @@ export function compileContinentalSettlementPois(
 
   // Invariant: At least one urban settlement POI MUST be strictly adjacent to ocean water,
   // and EXACTLY ONE city POI has hasPort === true.
-  const portNode = embedded.nodes.find((n) => n.hasPort) ?? embedded.nodes.find((n) => n.role === 'gym_city');
+  const portNode =
+    embedded.nodes.find((n) => n.hasPort) ?? embedded.nodes.find((n) => n.role === 'gym_city');
   const chosenPortNodeId = portNode?.id;
 
   for (const en of embedded.nodes) {
@@ -113,16 +114,17 @@ export function compileContinentalSettlementPois(
       hasPort = true;
     } else if (en.role === 'gym_city') {
       hasGym = true;
-      const gymNames: Record<number, { name: string; type: POIType; pref: POITerrainPreference }> = {
-        1: { name: 'Ciudad Plateada', type: 'city', pref: 'mountain_plateau' },
-        2: { name: 'Ciudad Celeste', type: 'city', pref: 'flat_grass' },
-        3: { name: 'Ciudad Carmín', type: 'city', pref: 'coast_water' },
-        4: { name: 'Ciudad Celadón', type: 'metropolis', pref: 'flat_grass' },
-        5: { name: 'Ciudad Fucsia', type: 'city', pref: 'flat_grass' },
-        6: { name: 'Ciudad Azafrán', type: 'city', pref: 'flat_grass' },
-        7: { name: 'Isla Canela', type: 'city', pref: 'flat_grass' },
-        8: { name: 'Ciudad Verde', type: 'city', pref: 'flat_grass' }
-      };
+      const gymNames: Record<number, { name: string; type: POIType; pref: POITerrainPreference }> =
+        {
+          1: { name: 'Ciudad Plateada', type: 'city', pref: 'mountain_plateau' },
+          2: { name: 'Ciudad Celeste', type: 'city', pref: 'flat_grass' },
+          3: { name: 'Ciudad Carmín', type: 'city', pref: 'coast_water' },
+          4: { name: 'Ciudad Celadón', type: 'metropolis', pref: 'flat_grass' },
+          5: { name: 'Ciudad Fucsia', type: 'city', pref: 'flat_grass' },
+          6: { name: 'Ciudad Azafrán', type: 'city', pref: 'flat_grass' },
+          7: { name: 'Isla Canela', type: 'city', pref: 'flat_grass' },
+          8: { name: 'Ciudad Verde', type: 'city', pref: 'flat_grass' }
+        };
       const def = en.gymNumber ? gymNames[en.gymNumber] : undefined;
       if (def) {
         name = def.name;
@@ -152,10 +154,12 @@ export function compileContinentalSettlementPois(
           if (cx < 1 || cx >= width - 1 || cy < 1 || cy >= height - 2) continue;
 
           const mCell = continent.resolvedMountain.cellDetails[cy]?.[cx];
-          const isSouthWall = mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'));
+          const isSouthWall =
+            mCell && (mCell.role.includes('edge_south') || mCell.role.includes('cliff'));
           const frontElev = continent.heightmap[cy + 1]?.[cx] ?? 0;
           const frontTerrain = continent.terrainMatrix[cy + 1]?.[cx];
-          const frontIsGround = frontElev === 0 && frontTerrain !== 'water' && frontTerrain !== 'water_deep';
+          const frontIsGround =
+            frontElev === 0 && frontTerrain !== 'water' && frontTerrain !== 'water_deep';
           if (!isSouthWall || !frontIsGround) continue;
 
           const dst = Math.hypot(dx, dy);
@@ -194,7 +198,13 @@ export function compileContinentalSettlementPois(
       tier: en.role === 'starter' ? 0 : 1
     };
 
-    if (type === 'metropolis' || type === 'city' || type === 'town' || type === 'pokemon_league' || type === 'route_gate') {
+    if (
+      type === 'metropolis' ||
+      type === 'city' ||
+      type === 'town' ||
+      type === 'pokemon_league' ||
+      type === 'route_gate'
+    ) {
       let poiSeed = seed;
       for (let i = 0; i < poiNode.id.length; i++) {
         poiSeed = (Math.imul(poiSeed, HASH_PRIME_FACTOR) + poiNode.id.charCodeAt(i)) >>> 0;
@@ -214,7 +224,11 @@ export function compileContinentalSettlementPois(
 
       // Ensure dry land for terminal footprint and continuous beach promenade along harbor coast
       for (let dy = -PORT_TERMINAL_NORTH_PADDING; dy < gateH; dy++) {
-        for (let dx = -PORT_TERMINAL_LATERAL_FLANK_RADIUS; dx < gateW + PORT_TERMINAL_LATERAL_FLANK_RADIUS; dx++) {
+        for (
+          let dx = -PORT_TERMINAL_LATERAL_FLANK_RADIUS;
+          dx < gateW + PORT_TERMINAL_LATERAL_FLANK_RADIUS;
+          dx++
+        ) {
           const gy = gateY + dy;
           const gx = gateX + dx;
           if (gy < 0 || gy >= height || gx < 0 || gx >= width) continue;
@@ -247,7 +261,12 @@ export function compileContinentalSettlementPois(
       if (poiNode.urbanLayout?.props) {
         (poiNode.urbanLayout as { props: typeof poiNode.urbanLayout.props }).props =
           poiNode.urbanLayout.props.filter((p) => {
-            return !(p.x >= gateX && p.x < gateX + gateW && p.y >= gateY - 2 && p.y < gateY + gateH);
+            return !(
+              p.x >= gateX &&
+              p.x < gateX + gateW &&
+              p.y >= gateY - 2 &&
+              p.y < gateY + gateH
+            );
           });
       }
 
@@ -307,14 +326,22 @@ export function compileContinentalSettlementPois(
         pois.push(islandNode);
       } else {
         const configureMinorIslet = () => {
-          const archetypeIdx = Math.abs(island.cx * ARCHETYPE_PRIME_X + island.cy * ARCHETYPE_PRIME_Y + seed) % 3;
+          const archetypeIdx =
+            Math.abs(island.cx * ARCHETYPE_PRIME_X + island.cy * ARCHETYPE_PRIME_Y + seed) % 3;
           if (archetypeIdx === 0) {
             // 1. Santuario / Mazmorra: rocky elevation h=1 with cave entrance / ancient ruin
             for (let dy = -1; dy <= 1; dy++) {
               for (let dx = -1; dx <= 1; dx++) {
                 const rx = island.cx + dx;
                 const ry = island.cy + dy;
-                if (rx < 0 || rx >= width || ry < 0 || ry >= height || continent.terrainMatrix[ry]?.[rx] !== 'grass') continue;
+                if (
+                  rx < 0 ||
+                  rx >= width ||
+                  ry < 0 ||
+                  ry >= height ||
+                  continent.terrainMatrix[ry]?.[rx] !== 'grass'
+                )
+                  continue;
                 (continent.heightmap as number[][])[ry]![rx] = 1;
               }
             }
@@ -398,5 +425,3 @@ export function compileContinentalSettlementPois(
     activeCorridors
   };
 }
-
-

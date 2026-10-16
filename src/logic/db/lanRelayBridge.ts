@@ -27,9 +27,10 @@ class LanRelayBridge {
   private isConnecting = false;
 
   constructor() {
-    this.clientId = typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `client_${Math.random().toString(36).substring(2)}`;
+    this.clientId =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `client_${Math.random().toString(36).substring(2)}`;
   }
 
   get isSupported(): boolean {

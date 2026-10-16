@@ -16,8 +16,8 @@ For the markdown parser to correctly render an alert banner instead of a standar
 #### ❌ Incorrect Indentations
 
 ```markdown
-  > [!NOTE]
-  > This is indented by spaces and will not render as a banner.
+> [!NOTE]
+> This is indented by spaces and will not render as a banner.
 
 - > [!IMPORTANT]
   > This is preceded by a list bullet and will render as a bullet item.

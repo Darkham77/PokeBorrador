@@ -16,15 +16,12 @@ defineProps<Props>();
 <template>
   <div class="egg-stage-wrapper">
     <div class="egg-sprite">
-      <EggSprite
-        size="120"
-        :tint="tint"
-      />
+      <EggSprite size="120" :tint="tint" />
     </div>
     <div class="glow-ring" />
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/hatch-animation-modal";
+@use '@/styles/components/hatch-animation-modal';
 </style>

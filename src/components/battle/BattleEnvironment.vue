@@ -1,33 +1,36 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useBattleBackground, type BattleBackgroundLocationId } from '@/composables/battle/useBattleBackground'
+import { computed } from 'vue';
+import {
+  useBattleBackground,
+  type BattleBackgroundLocationId
+} from '@/composables/battle/useBattleBackground';
 
 interface Props {
-  locationId?: BattleBackgroundLocationId
-  currentCycle?: string
+  locationId?: BattleBackgroundLocationId;
+  currentCycle?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   locationId: 'route1',
   currentCycle: 'dia'
-})
+});
 
-const { getBackgroundUrl } = useBattleBackground()
+const { getBackgroundUrl } = useBattleBackground();
 
 const bgData = computed(() => {
-  return getBackgroundUrl(props.locationId, props.currentCycle)
-})
+  return getBackgroundUrl(props.locationId, props.currentCycle);
+});
 
 const handleBackgroundError = (e: Event) => {
-  const target = e.target as HTMLImageElement
-  const currentSrc = target.src
+  const target = e.target as HTMLImageElement;
+  const currentSrc = target.src;
   if (currentSrc.includes('_')) {
-    const baseSrc = currentSrc.substring(0, currentSrc.lastIndexOf('_')) + '.webp'
+    const baseSrc = currentSrc.substring(0, currentSrc.lastIndexOf('_')) + '.webp';
     if (baseSrc !== currentSrc) {
-      target.src = baseSrc
+      target.src = baseSrc;
     }
   }
-}
+};
 </script>
 
 <template>
@@ -36,26 +39,29 @@ const handleBackgroundError = (e: Event) => {
     data-weathers="raindance sunnyday electricterrain grassyterrain mistyterrain psychicterrain"
   >
     <!-- Fondo dinámico -->
-    <img 
-      :src="bgData.url" 
+    <img
+      :src="bgData.url"
       alt="Fondo de arena de combate"
-      class="arena-bg" 
+      class="arena-bg"
       width="1920"
       height="1080"
       @error="handleBackgroundError"
-    >
+    />
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .arena-bg {
   @include pixelated;
 
   position: absolute;
-  top: 0; left: 0;
-  z-index: calc(var(--z-base) + 1); width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  z-index: calc(var(--z-base) + 1);
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   filter: var(--weather-filter, Brightness(1) Contrast(1));
   will-change: filter;
@@ -67,4 +73,3 @@ const handleBackgroundError = (e: Event) => {
   pointer-events: none;
 }
 </style>
-

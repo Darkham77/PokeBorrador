@@ -41,7 +41,7 @@ The universal pixel border generator uses Bresenham/circle arc trigonometry quan
 function generatePoints(radius, pixelSize, offset = 0) {
   const coords = [];
   const lastCoords = { x: -1, y: -1 };
-  
+
   for (let i = 270; i > 225; i--) {
     const x = parseInt(radius * Math.sin((2 * Math.PI * i) / 360) + radius + 0.5) * pixelSize;
     const y = parseInt(radius * Math.cos((2 * Math.PI * i) / 360) + radius + 0.5) * pixelSize;
@@ -55,26 +55,35 @@ function generatePoints(radius, pixelSize, offset = 0) {
 }
 
 function flipCoords(coords) {
-  return [...coords, ...coords.map(({ x, y }) => ({ x: y, y: x })).reverse()]
-    .filter(({ x, y }, i, arr) => !i || arr[i - 1].x !== x || arr[i - 1].y !== y);
+  return [...coords, ...coords.map(({ x, y }) => ({ x: y, y: x })).reverse()].filter(
+    ({ x, y }, i, arr) => !i || arr[i - 1].x !== x || arr[i - 1].y !== y
+  );
 }
 
 function insetCoords(coords, pixelSize, offset) {
-  return coords.map(({ x, y }) => ({
-    x: x + pixelSize * offset,
-    y: y + pixelSize * Math.floor(offset / 2),
-  })).reduce((ret, item) => {
-    if (ret.length > 0 && ret[ret.length - 1].x === ret[ret.length - 1].y) return ret;
-    ret.push(item);
-    return ret;
-  }, []);
+  return coords
+    .map(({ x, y }) => ({
+      x: x + pixelSize * offset,
+      y: y + pixelSize * Math.floor(offset / 2)
+    }))
+    .reduce((ret, item) => {
+      if (ret.length > 0 && ret[ret.length - 1].x === ret[ret.length - 1].y) return ret;
+      ret.push(item);
+      return ret;
+    }, []);
 }
 
 function mergeCoords(coords) {
   return coords.reduce((result, point, index) => {
     if (index !== coords.length - 1 && point.x === 0 && coords[index + 1].x === 0) return result;
     if (index !== 0 && point.y === 0 && coords[index - 1].y === 0) return result;
-    if (index !== 0 && index !== coords.length - 1 && point.x === coords[index - 1].x && point.x === coords[index + 1].x) return result;
+    if (
+      index !== 0 &&
+      index !== coords.length - 1 &&
+      point.x === coords[index - 1].x &&
+      point.x === coords[index + 1].x
+    )
+      return result;
     result.push(point);
     return result;
   }, []);
@@ -83,7 +92,12 @@ function mergeCoords(coords) {
 function addCorners(coords) {
   return coords.reduce((result, point, i) => {
     result.push(point);
-    if (coords.length > 1 && i < coords.length - 1 && coords[i + 1].x !== point.x && coords[i + 1].y !== point.y) {
+    if (
+      coords.length > 1 &&
+      i < coords.length - 1 &&
+      coords[i + 1].x !== point.x &&
+      coords[i + 1].y !== point.y
+    ) {
       result.push({ x: coords[i + 1].x, y: point.y });
     }
     return result;
@@ -99,34 +113,38 @@ function mirrorCoords(coords, offset = 0) {
   return [
     ...coords.map(({ x, y }) => ({
       x: offset ? `${x + offset}px` : `${x}px`,
-      y: offset ? `${y + offset}px` : `${y}px`,
+      y: offset ? `${y + offset}px` : `${y}px`
     })),
     ...coords.map(({ x, y }) => ({
       x: edgeCoord(y, offset),
-      y: offset ? `${x + offset}px` : `${x}px`,
+      y: offset ? `${x + offset}px` : `${x}px`
     })),
     ...coords.map(({ x, y }) => ({
       x: edgeCoord(x, offset),
-      y: edgeCoord(y, offset),
+      y: edgeCoord(y, offset)
     })),
     ...coords.map(({ x, y }) => ({
       x: offset ? `${y + offset}px` : `${y}px`,
-      y: edgeCoord(x, offset),
-    })),
+      y: edgeCoord(x, offset)
+    }))
   ];
 }
 
 function generatePath(coords, reverse = false) {
   const mirrored = mirrorCoords(coords);
-  return (reverse ? mirrored : mirrored.reverse()).map(p => `${p.x} ${p.y}`).join(', ');
+  return (reverse ? mirrored : mirrored.reverse()).map((p) => `${p.x} ${p.y}`).join(', ');
 }
 
 function getPixelFramePolygons(radius, pixelSize, borderWidth = 1) {
   const outerCoords = flipCoords(generatePoints(radius, pixelSize));
   const outerPath = generatePath(outerCoords);
-  const innerCoords = addCorners(flipCoords(
-    borderWidth < radius ? insetCoords(generatePoints(radius, pixelSize), pixelSize, borderWidth) : generatePoints(2, pixelSize, borderWidth)
-  ));
+  const innerCoords = addCorners(
+    flipCoords(
+      borderWidth < radius
+        ? insetCoords(generatePoints(radius, pixelSize), pixelSize, borderWidth)
+        : generatePoints(2, pixelSize, borderWidth)
+    )
+  );
   const innerPath = generatePath(innerCoords, true);
   const borderPath = `${outerPath}, 0px 50%, ${borderWidth * pixelSize}px 50%, ${innerPath}, ${borderWidth * pixelSize}px 50%, 0px 50%`;
   return { outerPath, innerPath, borderPath };
@@ -153,9 +171,18 @@ function updatePixelScale(pixelSize) {
   document.documentElement.style.setProperty('--clip-pill', `polygon(${lPill.outerPath})`);
 
   // Level 2: Controls, Tabs & Inputs
-  document.documentElement.style.setProperty('--clip-control-outer', `polygon(${lControl.outerPath})`);
-  document.documentElement.style.setProperty('--clip-control-border', `polygon(${lControl.borderPath})`);
-  document.documentElement.style.setProperty('--clip-control-inner', `polygon(${lControl.innerPath})`);
+  document.documentElement.style.setProperty(
+    '--clip-control-outer',
+    `polygon(${lControl.outerPath})`
+  );
+  document.documentElement.style.setProperty(
+    '--clip-control-border',
+    `polygon(${lControl.borderPath})`
+  );
+  document.documentElement.style.setProperty(
+    '--clip-control-inner',
+    `polygon(${lControl.innerPath})`
+  );
   document.documentElement.style.setProperty('--clip-control', `polygon(${lControl.outerPath})`);
 
   // Level 3: Action Buttons (Distinct Curved Step Contour)
@@ -166,7 +193,10 @@ function updatePixelScale(pixelSize) {
 
   // Level 4: Panels, Modals & Cards
   document.documentElement.style.setProperty('--clip-panel-outer', `polygon(${lPanel.outerPath})`);
-  document.documentElement.style.setProperty('--clip-panel-border', `polygon(${lPanel.borderPath})`);
+  document.documentElement.style.setProperty(
+    '--clip-panel-border',
+    `polygon(${lPanel.borderPath})`
+  );
   document.documentElement.style.setProperty('--clip-panel-inner', `polygon(${lPanel.innerPath})`);
   document.documentElement.style.setProperty('--clip-panel', `polygon(${lPanel.outerPath})`);
 }
@@ -178,12 +208,12 @@ function updatePixelScale(pixelSize) {
 
 To avoid visual monotony and maintain clear affordances, elements are partitioned into 4 distinct geometric tiers:
 
-| Tier | Target UI Components | Radius ($R$) | Visual Profile | CSS Variables |
-| :--- | :--- | :---: | :--- | :--- |
-| **Level 1** | Type Pills, Status Badges, Stepper Buttons, Micro Tags | `R = 2` | Compact micro-bevel with single-pixel chamfer. | `--clip-pill-outer`, `--clip-pill-border` |
-| **Level 2** | Navigation Tabs, Input Fields, Inventory/Move Slots | `R = 2` | Stepped rectangular arcade frame. Highly structured. | `--clip-control-outer`, `--clip-control-border` |
-| **Level 3** | Action & Interactive Buttons (`.pv-btn`) | `R = 5` | **3-Step Curved Pixel Contour**. Organic rounded push button. | `--clip-btn-outer`, `--clip-btn-border` |
-| **Level 4** | Dialog Windows, Panels, Modals, Status HUDs | `R = 4` | Heavy structural window with cast shadow. | `--clip-panel-outer`, `--clip-panel-border` |
+| Tier        | Target UI Components                                   | Radius ($R$) | Visual Profile                                                | CSS Variables                                   |
+| :---------- | :----------------------------------------------------- | :----------: | :------------------------------------------------------------ | :---------------------------------------------- |
+| **Level 1** | Type Pills, Status Badges, Stepper Buttons, Micro Tags |   `R = 2`    | Compact micro-bevel with single-pixel chamfer.                | `--clip-pill-outer`, `--clip-pill-border`       |
+| **Level 2** | Navigation Tabs, Input Fields, Inventory/Move Slots    |   `R = 2`    | Stepped rectangular arcade frame. Highly structured.          | `--clip-control-outer`, `--clip-control-border` |
+| **Level 3** | Action & Interactive Buttons (`.pv-btn`)               |   `R = 5`    | **3-Step Curved Pixel Contour**. Organic rounded push button. | `--clip-btn-outer`, `--clip-btn-border`         |
+| **Level 4** | Dialog Windows, Panels, Modals, Status HUDs            |   `R = 4`    | Heavy structural window with cast shadow.                     | `--clip-panel-outer`, `--clip-panel-border`     |
 
 ### CSS Frame Primitives
 
@@ -263,10 +293,10 @@ In accordance with the project's high-contrast retro protocol (`@mixin text-outl
 - **8-Direction Canonical Outline**:
 
   ```css
-  text-shadow: 
-    1px 1px 0 #000, 
-    -1px -1px 0 #000, 
-    1px -1px 0 #000, 
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
     -1px 1px 0 #000,
     0 1px 0 #000,
     0 -1px 0 #000,
@@ -279,7 +309,7 @@ In accordance with the project's high-contrast retro protocol (`@mixin text-outl
   - `letter-spacing: 0.8px;`
   - `padding: 4px 8px;`
   - `line-height: 1;`
-  This guarantees that all 18 elemental types and status indicators (`FUEGO`, `AGUA`, `ELÉCTRICO`, `PAR`, etc.) maintain crisp letter interiors and complete 360° contrast.
+    This guarantees that all 18 elemental types and status indicators (`FUEGO`, `AGUA`, `ELÉCTRICO`, `PAR`, etc.) maintain crisp letter interiors and complete 360° contrast.
 
 ### 4.2 Multiline Text Line Height (`line-height: 1.4`)
 
@@ -312,8 +342,24 @@ When a text label or tab title wraps across two lines (e.g. `POKÉMON` + `(6)`):
 <!-- CANONICAL CLOSE BUTTON -->
 <button class="pv-frame-pill pv-window-close" title="Cerrar">
   <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true">
-    <line x1="2" y1="2" x2="8" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="square" />
-    <line x1="8" y1="2" x2="2" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="square" />
+    <line
+      x1="2"
+      y1="2"
+      x2="8"
+      y2="8"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="square"
+    />
+    <line
+      x1="8"
+      y1="2"
+      x2="2"
+      y2="8"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="square"
+    />
   </svg>
 </button>
 ```
@@ -344,9 +390,10 @@ As governed by `/project-standards` (`ui_ux_standards.md` & `sass_styling_manual
 3. **Optical `-2px` Offset**: The master `.emoji` class applies `transform: translateY(-2px);` to align the emoji's optical center directly with the geometric center of the pixel text:
 
 ```css
-.emoji:not(i):not([class*="fa"]),
+.emoji:not(i):not([class*='fa']),
 .emoji {
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+  font-family:
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -409,9 +456,7 @@ Applying a dark drop-shadow directly on a clipped panel wrapper often causes the
 Buttons feature 7 semantic color variants and 4 scales (XS, SM, MD, LG):
 
 ```html
-<button class="pv-frame-btn pv-btn pv-btn-primary pv-btn-md">
-  CONFIRMAR
-</button>
+<button class="pv-frame-btn pv-btn pv-btn-primary pv-btn-md">CONFIRMAR</button>
 ```
 
 ```css
@@ -424,25 +469,76 @@ Buttons feature 7 semantic color variants and 4 scales (XS, SM, MD, LG):
   align-items: center;
   justify-content: center;
   gap: 8px;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.35);
   transition: transform 0.05s ease;
 }
 
 /* Scales */
-.pv-btn-xs { height: 22px; padding: 0 8px; font-size: 8px; }
-.pv-btn-sm { height: 28px; padding: 0 12px; font-size: 8px; }
-.pv-btn-md { height: 36px; padding: 0 16px; font-size: 9px; }
-.pv-btn-lg { height: 44px; padding: 0 24px; font-size: 11px; }
+.pv-btn-xs {
+  height: 22px;
+  padding: 0 8px;
+  font-size: 8px;
+}
+.pv-btn-sm {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 8px;
+}
+.pv-btn-md {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 9px;
+}
+.pv-btn-lg {
+  height: 44px;
+  padding: 0 24px;
+  font-size: 11px;
+}
 
 /* Color Themes */
-.pv-btn-primary   { background: #2563eb; color: #fff; --frame-border: #1d4ed8; }
-.pv-btn-secondary { background: #475569; color: #fff; --frame-border: #334155; }
-.pv-btn-success   { background: #16a34a; color: #fff; --frame-border: #15803d; }
-.pv-btn-danger    { background: #dc2626; color: #fff; --frame-border: #b91c1c; }
-.pv-btn-warning   { background: #d97706; color: #fff; --frame-border: #b45309; }
-.pv-btn-info      { background: #0891b2; color: #fff; --frame-border: #0e7490; }
-.pv-btn-ghost     { background: rgba(255,255,255,0.06); color: #94a3b8; --frame-border: rgba(255,255,255,0.15); text-shadow: none; }
+.pv-btn-primary {
+  background: #2563eb;
+  color: #fff;
+  --frame-border: #1d4ed8;
+}
+.pv-btn-secondary {
+  background: #475569;
+  color: #fff;
+  --frame-border: #334155;
+}
+.pv-btn-success {
+  background: #16a34a;
+  color: #fff;
+  --frame-border: #15803d;
+}
+.pv-btn-danger {
+  background: #dc2626;
+  color: #fff;
+  --frame-border: #b91c1c;
+}
+.pv-btn-warning {
+  background: #d97706;
+  color: #fff;
+  --frame-border: #b45309;
+}
+.pv-btn-info {
+  background: #0891b2;
+  color: #fff;
+  --frame-border: #0e7490;
+}
+.pv-btn-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  --frame-border: rgba(255, 255, 255, 0.15);
+  text-shadow: none;
+}
 ```
 
 ### 7.2 Elemental Type Pills & Status Badges
@@ -466,10 +562,10 @@ Used for Pokémon types (Fire, Water, Grass, etc.) and battle conditions (PAR, P
   justify-content: center;
   letter-spacing: 0.8px;
   line-height: 1;
-  text-shadow: 
-    1px 1px 0 #000, 
-    -1px -1px 0 #000, 
-    1px -1px 0 #000, 
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
     -1px 1px 0 #000,
     0 1px 0 #000,
     0 -1px 0 #000,
@@ -478,10 +574,22 @@ Used for Pokémon types (Fire, Water, Grass, etc.) and battle conditions (PAR, P
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
-.type-fire     { background: #f97316; --frame-border: #9a3412; }
-.type-water    { background: #0284c7; --frame-border: #075985; }
-.type-grass    { background: #16a34a; --frame-border: #14532d; }
-.type-electric { background: #eab308; --frame-border: #854d0e; }
+.type-fire {
+  background: #f97316;
+  --frame-border: #9a3412;
+}
+.type-water {
+  background: #0284c7;
+  --frame-border: #075985;
+}
+.type-grass {
+  background: #16a34a;
+  --frame-border: #14532d;
+}
+.type-electric {
+  background: #eab308;
+  --frame-border: #854d0e;
+}
 
 .pv-status-badge {
   padding: 3px 6px;
@@ -493,17 +601,20 @@ Used for Pokémon types (Fire, Water, Grass, etc.) and battle conditions (PAR, P
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  text-shadow: 
-    1px 1px 0 #000, 
-    -1px -1px 0 #000, 
-    1px -1px 0 #000, 
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
     -1px 1px 0 #000,
     0 1px 0 #000,
     0 -1px 0 #000,
     1px 0 0 #000,
     -1px 0 0 #000;
 }
-.status-par { background: #eab308; --frame-border: #854d0e; }
+.status-par {
+  background: #eab308;
+  --frame-border: #854d0e;
+}
 ```
 
 ### 7.3 Combat Move Slots
@@ -575,15 +686,17 @@ Recessed inventory squares with continuous 360° bevel and active/hover glow:
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: inset 2px 2px 0 var(--color-slot-bevel-dark, #05080f),
-              inset -2px -2px 0 var(--color-slot-bevel-hi, #202b42);
+  box-shadow:
+    inset 2px 2px 0 var(--color-slot-bevel-dark, #05080f),
+    inset -2px -2px 0 var(--color-slot-bevel-hi, #202b42);
   cursor: pointer;
 }
 .pv-slot-recessed.selected {
   --frame-border: #bf5af2;
-  box-shadow: inset 2px 2px 0 #7928ca,
-              inset -2px -2px 0 #d946ef,
-              0 0 12px rgba(191, 90, 242, 0.45);
+  box-shadow:
+    inset 2px 2px 0 #7928ca,
+    inset -2px -2px 0 #d946ef,
+    0 0 12px rgba(191, 90, 242, 0.45);
 }
 .slot-qty-tag {
   position: absolute;
@@ -604,7 +717,7 @@ UI state transitions MUST NOT use native CSS transition delay loops or `@keyfram
 
 ```javascript
 // Hover & Active Microswitch Interaction
-document.querySelectorAll('.pv-btn').forEach(btn => {
+document.querySelectorAll('.pv-btn').forEach((btn) => {
   btn.addEventListener('mouseenter', () => {
     if (btn.disabled) return;
     gsap.to(btn, { y: -2, duration: 0.12, ease: 'power2.out' });
@@ -619,7 +732,7 @@ document.querySelectorAll('.pv-btn').forEach(btn => {
   });
   btn.addEventListener('mouseup', () => {
     if (btn.disabled) return;
-    gsap.to(btn, { y: -2, duration: 0.10, ease: 'back.out(2)' });
+    gsap.to(btn, { y: -2, duration: 0.1, ease: 'back.out(2)' });
   });
 });
 ```
@@ -642,8 +755,13 @@ Before committing any UI modification:
    ```javascript
    import { chromium } from 'playwright';
    const browser = await chromium.launch({ headless: true });
-   const page = await browser.newPage({ viewport: { width: 1200, height: 800 }, deviceScaleFactor: 2 });
-   await page.goto('file:///' + process.cwd().replace(/\\/g, '/') + '/docs/ui_templates/pixel_ui_template.html');
+   const page = await browser.newPage({
+     viewport: { width: 1200, height: 800 },
+     deviceScaleFactor: 2
+   });
+   await page.goto(
+     'file:///' + process.cwd().replace(/\\/g, '/') + '/docs/ui_templates/pixel_ui_template.html'
+   );
    const el = await page.$('.pv-move-slot');
    await el.screenshot({ path: 'scratch/verify.png' });
    await browser.close();

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { FIRE_RED_MAPS, VISIBLE_WORLD_MAPS, getMapLocationById } from '@/data/world/maps.ts';
 import { hasMapEncounterSpawns, isMapVisibleInWorld } from '@/logic/encounters/encounterHelpers.ts';
 import { generateEncounter } from '@/logic/encounters/encounters.ts';
@@ -14,16 +14,16 @@ describe('Map Visibility and Encounter Pool Integrity', () => {
 
   it('should maintain exact parity between VISIBLE_WORLD_MAPS and isMapVisibleInWorld filter', () => {
     expect(VISIBLE_WORLD_MAPS.length).toBe(27);
-    expect(VISIBLE_WORLD_MAPS.some(m => m.id === 'stadium')).toBe(false);
+    expect(VISIBLE_WORLD_MAPS.some((m) => m.id === 'stadium')).toBe(false);
 
-    const dynamicallyVisibleIds = FIRE_RED_MAPS.filter(isMapVisibleInWorld).map(m => m.id);
-    const visibleWorldMapIds = VISIBLE_WORLD_MAPS.map(m => m.id);
+    const dynamicallyVisibleIds = FIRE_RED_MAPS.filter(isMapVisibleInWorld).map((m) => m.id);
+    const visibleWorldMapIds = VISIBLE_WORLD_MAPS.map((m) => m.id);
     expect(dynamicallyVisibleIds.length).toBe(VISIBLE_WORLD_MAPS.length);
     expect(visibleWorldMapIds).toEqual(dynamicallyVisibleIds);
   });
 
   it('should ensure all 27 exploration routes and caves have encounter spawns and are visible', () => {
-    const wildMaps = FIRE_RED_MAPS.filter(m => m.id !== 'stadium');
+    const wildMaps = FIRE_RED_MAPS.filter((m) => m.id !== 'stadium');
     expect(wildMaps.length).toBe(27);
 
     for (const map of wildMaps) {

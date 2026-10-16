@@ -9,7 +9,7 @@
  * 5. Multi-Engine Database Persistence Parity across SQLite and PostgreSQL (describeWithDatabase).
  */
 
-import { it, expect, beforeAll } from 'vitest';
+import { it, expect, beforeAll } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import crypto from 'node:crypto';
 import { describeWithDatabase } from '../../dbTestHelper.ts';
@@ -19,7 +19,7 @@ import {
   calculateFriendshipLevelUpDelta,
   isReadyForFriendshipEvolution,
   getFriendshipTooltipDetails,
-  applyFriendshipDelta,
+  applyFriendshipDelta
 } from '../../../src/logic/pokemon/friendshipLogic.ts';
 import { FRIENDSHIP_BOUNDS } from '../../../src/types/pokemon/friendship.ts';
 import { DEFAULT_FRIENDSHIP_VALUE } from '../../../src/logic/constants/gameplay.ts';
@@ -160,7 +160,7 @@ describeWithDatabase('Friendship Lifecycle & Persistence Parity Suite', (_engine
       ...INITIAL_STATE,
       trainer: 'FriendshipMaster',
       team: [p1, p2, p3, p4, p5, p6],
-      box: [boxMon],
+      box: [boxMon]
     };
 
     // 1. Serialization
@@ -172,10 +172,11 @@ describeWithDatabase('Friendship Lifecycle & Persistence Parity Suite', (_engine
     if (!sanitized.valid) throw new Error(sanitized.error);
 
     // 3. Database Insertion
-    await db.run(
-      'INSERT INTO game_saves (user_id, save_data, last_save_id) VALUES (?, ?, ?)',
-      [testUserId, JSON.stringify(sanitized.data), crypto.randomUUID()]
-    );
+    await db.run('INSERT INTO game_saves (user_id, save_data, last_save_id) VALUES (?, ?, ?)', [
+      testUserId,
+      JSON.stringify(sanitized.data),
+      crypto.randomUUID()
+    ]);
 
     // 4. Database Retrieval
     const rows = await db.query<{ save_data: unknown }>(
@@ -185,9 +186,8 @@ describeWithDatabase('Friendship Lifecycle & Persistence Parity Suite', (_engine
     expect(rows.length).toBe(1);
 
     const rawSaveData = rows[0]!.save_data;
-    const loadedData = typeof rawSaveData === 'string'
-      ? (JSON.parse(rawSaveData) as any)
-      : (rawSaveData as any);
+    const loadedData =
+      typeof rawSaveData === 'string' ? (JSON.parse(rawSaveData) as any) : (rawSaveData as any);
 
     expect(loadedData).toBeDefined();
     expect(Array.isArray(loadedData.team)).toBe(true);

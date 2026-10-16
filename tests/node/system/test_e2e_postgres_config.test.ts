@@ -1,5 +1,5 @@
 // test-fragmentation-ok: Isolated single-purpose regression test for E2E Postgres config resolution
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { resolveInitialDbSession } from '../../../src/logic/db/dbClientFactory.ts';
 
 import { switchServer, supabase } from '../../../src/logic/db/supabase.ts';

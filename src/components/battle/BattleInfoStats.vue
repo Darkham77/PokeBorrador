@@ -1,45 +1,45 @@
 <script setup lang="ts">
-import type { Pokemon, PokemonEVs, PokemonIVs } from '@/types/pokemon/pokemon'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { isStatId } from '@/logic/pokemon/statsMath'
+import type { Pokemon, PokemonEVs, PokemonIVs } from '@/types/pokemon/pokemon';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { isStatId } from '@/logic/pokemon/statsMath';
 interface AdminStatItem {
-  key: string
-  label: string
-  icon: string
+  key: string;
+  label: string;
+  icon: string;
 }
 
 interface StatBreakdown {
-  base: number
-  final: number
+  base: number;
+  final: number;
 }
 
 const props = defineProps<{
-  adminStatConfig: AdminStatItem[]
-  getStatModifier: (key: string) => number
-  getBreakdown: (key: string) => StatBreakdown
-  pokemon?: Pokemon | null
-}>()
+  adminStatConfig: AdminStatItem[];
+  getStatModifier: (key: string) => number;
+  getBreakdown: (key: string) => StatBreakdown;
+  pokemon?: Pokemon | null;
+}>();
 
 function getEvValue(key: string): number {
-  if (!props.pokemon?.evs) return 0
-  const evs = props.pokemon.evs as PokemonEVs // domain-ok: Open dynamic text or non-domain string payload
-  return Number(evs[key as keyof PokemonEVs] || 0)
+  if (!props.pokemon?.evs) return 0;
+  const evs = props.pokemon.evs as PokemonEVs; // domain-ok: Open dynamic text or non-domain string payload
+  return Number(evs[key as keyof PokemonEVs] || 0);
 }
 
 function getIvValue(key: string): number {
-  if (!props.pokemon?.ivs) return 0
-  const ivs = props.pokemon.ivs as PokemonIVs // domain-ok: Open dynamic text or non-domain string payload
-  return Number(ivs[key as keyof PokemonIVs] || 0)
+  if (!props.pokemon?.ivs) return 0;
+  const ivs = props.pokemon.ivs as PokemonIVs; // domain-ok: Open dynamic text or non-domain string payload
+  return Number(ivs[key as keyof PokemonIVs] || 0);
 }
 
 function getSpeciesBaseStat(key: string): number {
-  if (!props.pokemon?.id) return 0
+  if (!props.pokemon?.id) return 0;
   try {
-    const data = pokemonDataProvider.getPokemonData(props.pokemon.id, true)
-    if (!data) return 0
-    return isStatId(key) ? Number(data[key] || 0) : 0
+    const data = pokemonDataProvider.getPokemonData(props.pokemon.id, true);
+    if (!data) return 0;
+    return isStatId(key) ? Number(data[key] || 0) : 0;
   } catch {
-    return 0
+    return 0;
   }
 }
 </script>
@@ -59,9 +59,11 @@ function getSpeciesBaseStat(key: string): number {
       v-for="st in adminStatConfig"
       :key="st.key"
       class="grid-stat-row"
-      :class="{ 
-        'is-up': getBreakdown(st.key).final > getBreakdown(st.key).base || getStatModifier(st.key) > 0, 
-        'is-down': getBreakdown(st.key).final < getBreakdown(st.key).base || getStatModifier(st.key) < 0 
+      :class="{
+        'is-up':
+          getBreakdown(st.key).final > getBreakdown(st.key).base || getStatModifier(st.key) > 0,
+        'is-down':
+          getBreakdown(st.key).final < getBreakdown(st.key).base || getStatModifier(st.key) < 0
       }"
     >
       <span class="stat-name-col">{{ st.label }}</span>
@@ -69,14 +71,16 @@ function getSpeciesBaseStat(key: string): number {
       <span class="stat-iv-col">{{ getIvValue(st.key) }}</span>
       <span class="stat-ev-col">{{ getEvValue(st.key) }}</span>
       <span class="stat-val-col">{{ getBreakdown(st.key).base }}</span>
-      <span class="stat-mult-col">{{ getStatModifier(st.key) > 0 ? `+${getStatModifier(st.key)}` : getStatModifier(st.key) }}</span>
+      <span class="stat-mult-col">{{
+        getStatModifier(st.key) > 0 ? `+${getStatModifier(st.key)}` : getStatModifier(st.key)
+      }}</span>
       <span class="stat-final-col">{{ getBreakdown(st.key).final }}</span>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .stats-comparison-grid {
   @include pixelated;
@@ -127,7 +131,7 @@ function getSpeciesBaseStat(key: string): number {
     }
 
     .stat-ev-col {
-      color: var(--yellow, #FACC15);
+      color: var(--yellow, #facc15);
     }
 
     .stat-mult-col {
@@ -140,13 +144,15 @@ function getSpeciesBaseStat(key: string): number {
     }
 
     &.is-up {
-      .stat-mult-col, .stat-final-col {
+      .stat-mult-col,
+      .stat-final-col {
         color: var(--emerald-500);
       }
     }
 
     &.is-down {
-      .stat-mult-col, .stat-final-col {
+      .stat-mult-col,
+      .stat-final-col {
         color: var(--red-light);
       }
     }

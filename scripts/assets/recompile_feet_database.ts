@@ -15,7 +15,7 @@ async function main() {
   console.log('✅ Recompilación completada con éxito.');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('❌ Error recompilando base de datos de pies:', err);
   process.exit(1);
 });

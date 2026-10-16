@@ -1,140 +1,166 @@
 <script setup lang="ts">
-import { computed, watch, onMounted, onUnmounted, provide, ref, nextTick } from 'vue'
-import { gsap } from 'gsap'
-import { storeToRefs } from 'pinia'
-import { useBattleStore } from '@/stores/battle/battle'
-import { useUIStore } from '@/stores/ui'
-import { useMapStore } from '@/stores/map'
-import { useAudioStore } from '@/stores/audio'
-import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
-import { isMapRouteId } from '@/data/world/map-assets'
-import { requireWeatherSeasonId } from '@/data/world/weather-tables'
-import { useCombatCamera } from '@/composables/battle/useCombatCamera'
-import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-import { MAX_PRNG_SEED_RANGE } from '@/logic/constants/visuals'
-import {
-  GSAP_FAST_DURATION_SEC,
-  ARENA_INITIAL_LOAD_DELAY_SEC
-} from '@/logic/constants/animations'
+import { computed, watch, onMounted, onUnmounted, provide, ref, nextTick } from 'vue';
+import { gsap } from 'gsap';
+import { storeToRefs } from 'pinia';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useUIStore } from '@/stores/ui';
+import { useMapStore } from '@/stores/map';
+import { useAudioStore } from '@/stores/audio';
+import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts';
+import { isMapRouteId } from '@/data/world/map-assets';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { useCombatCamera } from '@/composables/battle/useCombatCamera';
+import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
+import { MAX_PRNG_SEED_RANGE } from '@/logic/constants/visuals';
+import { GSAP_FAST_DURATION_SEC, ARENA_INITIAL_LOAD_DELAY_SEC } from '@/logic/constants/animations';
 
 // Composables
-import { useBattleShadows } from '@/composables/battle/useBattleShadows'
-import { useBattleAnimations } from '@/composables/battle/useBattleAnimations'
-import { useBattleHud } from '@/composables/battle/useBattleHud'
-import { useBattleMinigames } from '@/composables/battle/useBattleMinigames'
-import { useBattleArenaCoordinator } from '@/composables/battle/useBattleArenaCoordinator'
-import { useBattleCombatants } from '@/composables/battle/useBattleCombatants'
-import { useBattleTrainerVisuals } from '@/composables/battle/useBattleTrainerVisuals'
-import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere'
-import type { BattleSide } from '@/types/battle/battle'
-import { createBattleAnimationsBridge } from './helpers/battleAnimationsBridge.ts'
-import { useGsapTransition } from '@/composables/ui/useGsapTransition'
+import { useBattleShadows } from '@/composables/battle/useBattleShadows';
+import { useBattleAnimations } from '@/composables/battle/useBattleAnimations';
+import { useBattleHud } from '@/composables/battle/useBattleHud';
+import { useBattleMinigames } from '@/composables/battle/useBattleMinigames';
+import { useBattleArenaCoordinator } from '@/composables/battle/useBattleArenaCoordinator';
+import { useBattleCombatants } from '@/composables/battle/useBattleCombatants';
+import { useBattleTrainerVisuals } from '@/composables/battle/useBattleTrainerVisuals';
+import { useBattleAtmosphere } from '@/composables/battle/useBattleAtmosphere';
+import type { BattleSide } from '@/types/battle/battle';
+import { createBattleAnimationsBridge } from './helpers/battleAnimationsBridge.ts';
+import { useGsapTransition } from '@/composables/ui/useGsapTransition';
 
 const {
   beforeEnter: beforeFadeOverlayEnter,
   enter: onFadeOverlayEnter,
   leave: onFadeOverlayLeave
-} = useGsapTransition({ type: 'fade', duration: 0.3 })
+} = useGsapTransition({ type: 'fade', duration: 0.3 });
 
 // Componentes
-import VirtualSpace from './VirtualSpace.vue'
-import VirtualEntity from './VirtualEntity.vue'
-import BattleEnvironment from './BattleEnvironment.vue'
-import BattleArenaEnemyCombatant from './BattleArenaEnemyCombatant.vue'
-import BattleArenaPlayerCombatant from './BattleArenaPlayerCombatant.vue'
-import BattleCombatantStatusOverlay from './BattleCombatantStatusOverlay.vue'
-import CombatGrass from './CombatGrass.vue'
-import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
-import CameraZoomControls from './CameraZoomControls.vue'
-import BattleArenaHud from './BattleArenaHud.vue'
-import BattleTrainerSpeechBubble from './BattleTrainerSpeechBubble.vue'
-import BattleTrainerEntities from './BattleTrainerEntities.vue'
-import PvPTurnTimerClock from './PvPTurnTimerClock.vue'
-import BattleSpectatorOverlay from './BattleSpectatorOverlay.vue'
-import BattleReplayControls from './BattleReplayControls.vue'
-import { playTrainerAnimation } from './helpers/trainerEntranceAnims.ts'
+import VirtualSpace from './VirtualSpace.vue';
+import VirtualEntity from './VirtualEntity.vue';
+import BattleEnvironment from './BattleEnvironment.vue';
+import BattleArenaEnemyCombatant from './BattleArenaEnemyCombatant.vue';
+import BattleArenaPlayerCombatant from './BattleArenaPlayerCombatant.vue';
+import BattleCombatantStatusOverlay from './BattleCombatantStatusOverlay.vue';
+import CombatGrass from './CombatGrass.vue';
+import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue';
+import CameraZoomControls from './CameraZoomControls.vue';
+import BattleArenaHud from './BattleArenaHud.vue';
+import BattleTrainerSpeechBubble from './BattleTrainerSpeechBubble.vue';
+import BattleTrainerEntities from './BattleTrainerEntities.vue';
+import PvPTurnTimerClock from './PvPTurnTimerClock.vue';
+import BattleSpectatorOverlay from './BattleSpectatorOverlay.vue';
+import BattleReplayControls from './BattleReplayControls.vue';
+import { playTrainerAnimation } from './helpers/trainerEntranceAnims.ts';
 
 const {
   BASE_ENTITY_SIZE_PLAYER,
   BASE_STANDING_TRAINER_SIZE_PLAYER,
   BASE_ENTITY_SIZE_ENEMY,
   OBJECT_SCALE
-} = WORLD_CONSTANTS
+} = WORLD_CONSTANTS;
 
-const battleStore = useBattleStore()
-const { isSearching } = storeToRefs(battleStore)
-const mapStore = useMapStore()
-const uiStore = useUIStore()
-const audioStore = useAudioStore()
-const currentWeatherSeason = computed(() => requireWeatherSeasonId(mapStore.currentSeason.id))
+const battleStore = useBattleStore();
+const { isSearching } = storeToRefs(battleStore);
+const mapStore = useMapStore();
+const uiStore = useUIStore();
+const audioStore = useAudioStore();
+const currentWeatherSeason = computed(() => requireWeatherSeasonId(mapStore.currentSeason.id));
 const atmosphereSeed = computed(() => {
-  const locId = battleStore.state?.locationId
+  const locId = battleStore.state?.locationId;
   if (locId && isMapRouteId(locId)) {
-    return getWeatherAnimSeed(locId)
+    return getWeatherAnimSeed(locId);
   }
-  return getWeatherAnimSeed(mapStore.currentMap)
-})
+  return getWeatherAnimSeed(mapStore.currentMap);
+});
 
 // Force High Fidelity in Battle
-provide('forceHighFidelity', true)
-provide('isModalFastMode', computed(() => false))
-provide('isModalPerformanceMode', computed(() => false))
+provide('forceHighFidelity', true);
+provide(
+  'isModalFastMode',
+  computed(() => false)
+);
+provide(
+  'isModalPerformanceMode',
+  computed(() => false)
+);
 
-const arenaRef = ref<HTMLElement | null>(null)
-const trainerEntitiesRef = ref<{ getTrainerElement: () => HTMLElement | null } | null>(null)
-const { cameraStyles, worldStyles, showGuides, minZoom } = useCombatCamera(arenaRef)
+const arenaRef = ref<HTMLElement | null>(null);
+const trainerEntitiesRef = ref<{ getTrainerElement: () => HTMLElement | null } | null>(null);
+const { cameraStyles, worldStyles, showGuides, minZoom } = useCombatCamera(arenaRef);
 
-const showRivalAlert = ref(false)
-const rivalFlickerRef = ref<HTMLElement | null>(null)
-const rivalExclamationRef = ref<HTMLElement | null>(null)
+const showRivalAlert = ref(false);
+const rivalFlickerRef = ref<HTMLElement | null>(null);
+const rivalExclamationRef = ref<HTMLElement | null>(null);
 
-const battle = computed(() => battleStore.state)
-const enemy = computed(() => battle.value?.enemy)
-const player = computed(() => battle.value?.player)
-const p1Pos = computed(() => getCombatantPosition('player'))
-const p2Pos = computed(() => getCombatantPosition('enemy'))
+const battle = computed(() => battleStore.state);
+const enemy = computed(() => battle.value?.enemy);
+const player = computed(() => battle.value?.player);
+const p1Pos = computed(() => getCombatantPosition('player'));
+const p2Pos = computed(() => getCombatantPosition('enemy'));
 
 // Unique encounter seed: regenerated at the start of each battle so that
 // bushes (CombatGrass) are visually distinct across encounters.
-const grassSeed = ref(Math.floor(Math.random() * MAX_PRNG_SEED_RANGE))
-watch(() => battle.value?.enemy?.uid, (newUid, oldUid) => {
-  if (newUid && newUid !== oldUid) {
-    grassSeed.value = Math.floor(Math.random() * MAX_PRNG_SEED_RANGE)
+const grassSeed = ref(Math.floor(Math.random() * MAX_PRNG_SEED_RANGE));
+watch(
+  () => battle.value?.enemy?.uid,
+  (newUid, oldUid) => {
+    if (newUid && newUid !== oldUid) {
+      grassSeed.value = Math.floor(Math.random() * MAX_PRNG_SEED_RANGE);
+    }
   }
-})
+);
 
-const { playerBackSpriteUrl, trainerDialogText } = useBattleTrainerVisuals(battle)
+const { playerBackSpriteUrl, trainerDialogText } = useBattleTrainerVisuals(battle);
 
 // Inicializar Composables
 const {
-  currentPlayerShadowKey, currentEnemyShadowKey,
-  enemyGroundY, playerGroundY,
-  syncEnemyShadow, syncPlayerShadow, preloadCombatCoords
-} = useBattleShadows()
+  currentPlayerShadowKey,
+  currentEnemyShadowKey,
+  enemyGroundY,
+  playerGroundY,
+  syncEnemyShadow,
+  syncPlayerShadow,
+  preloadCombatCoords
+} = useBattleShadows();
 
-const animations = useBattleAnimations(battleStore, enemy)
-const localAnimations = createBattleAnimationsBridge(animations)
-battleStore.animations = localAnimations
+const animations = useBattleAnimations(battleStore, enemy);
+const localAnimations = createBattleAnimationsBridge(animations);
+battleStore.animations = localAnimations;
 const {
-  isInitialLoad, isFaintInProgress, faintedPokemonSnapshot,
-  playerAnimState, enemyAnimState, catchSparkles,
-  isIntroInProgress, initListeners, cleanupListeners,
-  trainerAnimState, isTrainerVisible, isGlobalFadeActive,
-  isWildEntryAnimation, wildRevealActive, isEmerging, upcomingIsEmerging, isCaptureSequenceActive,
-  resetAll, getPokemonAnimState, getPokemonBallId, getPokemonCaptureActive,
-  getPokemonIsShaking, getPokemonIsBlinking, getPokemonIsHealing, silhouetteOpacity,
+  isInitialLoad,
+  isFaintInProgress,
+  faintedPokemonSnapshot,
+  playerAnimState,
+  enemyAnimState,
+  catchSparkles,
+  isIntroInProgress,
+  initListeners,
+  cleanupListeners,
+  trainerAnimState,
+  isTrainerVisible,
+  isGlobalFadeActive,
+  isWildEntryAnimation,
+  wildRevealActive,
+  isEmerging,
+  upcomingIsEmerging,
+  isCaptureSequenceActive,
+  resetAll,
+  getPokemonAnimState,
+  getPokemonBallId,
+  getPokemonCaptureActive,
+  getPokemonIsShaking,
+  getPokemonIsBlinking,
+  getPokemonIsHealing,
+  silhouetteOpacity,
   isCriticalCaptureActive
-} = animations
+} = animations;
 
-initListeners()
+initListeners();
 
 // Reactive z-index for front bush via VirtualEntity :z-index prop.
 // Behind pokemon (+1) when emerging or in encounter intro phase; in front (+3) otherwise.
 const frontBushZIndex = computed(() => {
-  return bushIsBehind.value
-    ? 'calc(var(--z-map-spawns) + 1)'
-    : 'calc(var(--z-map-spawns) + 3)'
-})
+  return bushIsBehind.value ? 'calc(var(--z-map-spawns) + 1)' : 'calc(var(--z-map-spawns) + 3)';
+});
 
 const {
   handleMinigameCancel,
@@ -142,9 +168,9 @@ const {
   handleFishingFail,
   handleArchaeologySuccess,
   handleArchaeologyFail
-} = useBattleMinigames(battleStore, mapStore, uiStore, enemy, resetAll)
+} = useBattleMinigames(battleStore, mapStore, uiStore, enemy, resetAll);
 
-const { playerCombatants, enemyCombatants } = useBattleCombatants(battleStore, player, enemy)
+const { playerCombatants, enemyCombatants } = useBattleCombatants(battleStore, player, enemy);
 
 const {
   isEnemyHudSuppressed,
@@ -160,34 +186,38 @@ const {
   isEnemyTechnicalHidden,
   isPlayerTechnicalHidden,
   shouldShowEncounterLayers
-} = useBattleHud(animations, battleStore, enemy)
+} = useBattleHud(animations, battleStore, enemy);
 
-const {
-  computedWeather,
-  effectiveCycle,
-  isAtmosphereLayerVisible,
-  arenaAtmosphereStyles
-} = useBattleAtmosphere(battle)
+const { computedWeather, effectiveCycle, isAtmosphereLayerVisible, arenaAtmosphereStyles } =
+  useBattleAtmosphere(battle);
 
 // Unified Style Orchestration to prevent reactivity breaks in templates
 const arenaContentStyles = computed(() => {
   return {
     ...cameraStyles.value,
     ...arenaAtmosphereStyles.value
-  }
-})
+  };
+});
 
 // Synchronization Watchers
 // Watcher to synchronize shadows (Player and Enemy)
-watch([enemy, p2Pos, () => enemyAnimState.value], ([data, pos, anim]) => {
-  // Pokémon is visible if the slot is occupied
-  const visible = !!data
-  syncEnemyShadow(visible, data || null, pos, anim)
-}, { immediate: true, deep: true })
+watch(
+  [enemy, p2Pos, () => enemyAnimState.value],
+  ([data, pos, anim]) => {
+    // Pokémon is visible if the slot is occupied
+    const visible = !!data;
+    syncEnemyShadow(visible, data || null, pos, anim);
+  },
+  { immediate: true, deep: true }
+);
 
-watch([player, p1Pos, () => playerAnimState.value], ([p, pos, anim]) => {
-  syncPlayerShadow(p || null, pos, anim)
-}, { immediate: true, deep: true })
+watch(
+  [player, p1Pos, () => playerAnimState.value],
+  ([p, pos, anim]) => {
+    syncPlayerShadow(p || null, pos, anim);
+  },
+  { immediate: true, deep: true }
+);
 
 useBattleArenaCoordinator({
   battleStore,
@@ -199,164 +229,184 @@ useBattleArenaCoordinator({
   handleArchaeologySuccess,
   handleArchaeologyFail,
   handleMinigameCancel
-})
+});
 
-
-watch(isIntroInProgress, (val) => {
-  battleStore.isIntroAnimating = val
-  if (window.__VITE_DEBUG__?.isScriptedReplayMode) {
-    window.__VITE_DEBUG__.certifiedReplayIntroDiagnostics = {
-      isIntroInProgress: val,
-      isWildEntryAnimation: isWildEntryAnimation.value,
-      wildRevealActive: wildRevealActive.value,
-      isEmerging: isEmerging.value,
-      upcomingIsEmerging: upcomingIsEmerging.value,
-      trainerAnimState: trainerAnimState.value,
-      isCaptureSequenceActive: isCaptureSequenceActive.value
+watch(
+  isIntroInProgress,
+  (val) => {
+    battleStore.isIntroAnimating = val;
+    if (window.__VITE_DEBUG__?.isScriptedReplayMode) {
+      window.__VITE_DEBUG__.certifiedReplayIntroDiagnostics = {
+        isIntroInProgress: val,
+        isWildEntryAnimation: isWildEntryAnimation.value,
+        wildRevealActive: wildRevealActive.value,
+        isEmerging: isEmerging.value,
+        upcomingIsEmerging: upcomingIsEmerging.value,
+        trainerAnimState: trainerAnimState.value,
+        isCaptureSequenceActive: isCaptureSequenceActive.value
+      };
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+);
 
-const triggerPreloadCoords = () => preloadCombatCoords(
-  battle.value?.player || null,
-  battle.value?.enemy || null,
-  p1Pos.value,
-  p2Pos.value,
-  battle.value?.playerTeam || [],
-  battle.value?.enemyTeam || []
-)
+const triggerPreloadCoords = () =>
+  preloadCombatCoords(
+    battle.value?.player || null,
+    battle.value?.enemy || null,
+    p1Pos.value,
+    p2Pos.value,
+    battle.value?.playerTeam || [],
+    battle.value?.enemyTeam || []
+  );
 
 onMounted(async () => {
-  await triggerPreloadCoords()
-  const tl = gsap.timeline()
-  tl.to({}, { duration: ARENA_INITIAL_LOAD_DELAY_SEC })
-  tl.add(() => { isInitialLoad.value = false })
-})
+  await triggerPreloadCoords();
+  const tl = gsap.timeline();
+  tl.to({}, { duration: ARENA_INITIAL_LOAD_DELAY_SEC });
+  tl.add(() => {
+    isInitialLoad.value = false;
+  });
+});
 
 onUnmounted(() => {
   if (battleStore.animations === localAnimations) {
-    battleStore.animations = undefined
+    battleStore.animations = undefined;
   }
-  cleanupListeners()
-})
+  cleanupListeners();
+});
 
 // GSAP: Animación de Entrenador
-watch(trainerAnimState, async (newState) => {
-  if (!newState) return
-  await nextTick()
-  const el = trainerEntitiesRef.value?.getTrainerElement()
-  if (!el || !(el instanceof HTMLElement)) return
-  const isRocket = Boolean(
-    battle.value?.trainerArchetype === 'rocket' ||
-    battle.value?.trainerSprite?.includes('rocket') ||
-    battle.value?.trainerSprite?.includes('grunt') ||
-    battle.value?.trainerName?.toLowerCase().includes('rocket') ||
-    battle.value?.trainerName?.toLowerCase().includes('grunt')
-  )
-  playTrainerAnimation(
-    newState,
-    el,
-    { isRival: !!battle.value?.isRival, isRocket },
-    showRivalAlert,
-    rivalFlickerRef,
-    rivalExclamationRef,
-    audioStore
-  )
-}, { immediate: true })
+watch(
+  trainerAnimState,
+  async (newState) => {
+    if (!newState) return;
+    await nextTick();
+    const el = trainerEntitiesRef.value?.getTrainerElement();
+    if (!el || !(el instanceof HTMLElement)) return;
+    const isRocket = Boolean(
+      battle.value?.trainerArchetype === 'rocket' ||
+      battle.value?.trainerSprite?.includes('rocket') ||
+      battle.value?.trainerSprite?.includes('grunt') ||
+      battle.value?.trainerName?.toLowerCase().includes('rocket') ||
+      battle.value?.trainerName?.toLowerCase().includes('grunt')
+    );
+    playTrainerAnimation(
+      newState,
+      el,
+      { isRival: !!battle.value?.isRival, isRocket },
+      showRivalAlert,
+      rivalFlickerRef,
+      rivalExclamationRef,
+      audioStore
+    );
+  },
+  { immediate: true }
+);
 
 const showStandingTrainers = computed(() => {
-  return battleStore.isBattleActive && 
-         battleStore.currentFsmState !== 'FIRST_INTRO' && 
-         battleStore.currentFsmState !== 'INITIALIZING' &&
-         battleStore.currentFsmState !== 'SEARCH_PHASE'
-})
+  return (
+    battleStore.isBattleActive &&
+    battleStore.currentFsmState !== 'FIRST_INTRO' &&
+    battleStore.currentFsmState !== 'INITIALIZING' &&
+    battleStore.currentFsmState !== 'SEARCH_PHASE'
+  );
+});
 
 watch(showStandingTrainers, (show) => {
   if (show) {
-    isTrainerVisible.value = false
-    trainerAnimState.value = null
+    isTrainerVisible.value = false;
+    trainerAnimState.value = null;
   }
-})
+});
 
-watch(() => battleStore.currentSubState, async (sub) => {
-  if (sub === 'PRELOAD_FINAL_COORDS') await triggerPreloadCoords()
-})
+watch(
+  () => battleStore.currentSubState,
+  async (sub) => {
+    if (sub === 'PRELOAD_FINAL_COORDS') await triggerPreloadCoords();
+  }
+);
 
 // Force camera update when battle activates to avoid "black screen" glitch
-watch(() => battleStore.isBattleActive, (active) => {
-  if (active) {
-    const tl = gsap.timeline()
-    tl.to({}, { duration: GSAP_FAST_DURATION_SEC })
-    tl.add(() => {
-      if (arenaRef.value) {
-        window.dispatchEvent(new Event('resize'))
-      }
-    })
+watch(
+  () => battleStore.isBattleActive,
+  (active) => {
+    if (active) {
+      const tl = gsap.timeline();
+      tl.to({}, { duration: GSAP_FAST_DURATION_SEC });
+      tl.add(() => {
+        if (arenaRef.value) {
+          window.dispatchEvent(new Event('resize'));
+        }
+      });
+    }
   }
-})
+);
 
 // Zoom controls are now managed by CameraZoomControls component
-const isGrassVisible = computed(() => shouldShowEncounterLayers.value && !enemyIsFloating.value)
-const enemySparkles = computed(() => catchSparkles.value.filter(s => s.side === 'enemy'))
-const playerSparkles = computed(() => catchSparkles.value.filter(s => s.side === 'player'))
+const isGrassVisible = computed(() => shouldShowEncounterLayers.value && !enemyIsFloating.value);
+const enemySparkles = computed(() => catchSparkles.value.filter((s) => s.side === 'enemy'));
+const playerSparkles = computed(() => catchSparkles.value.filter((s) => s.side === 'player'));
 
 function isEnemyAttacker(uid?: string): boolean {
-  return battleStore.attackerSide === 'enemy' && uid === enemy.value?.uid
+  return battleStore.attackerSide === 'enemy' && uid === enemy.value?.uid;
 }
 
 function isPlayerAttacker(uid?: string): boolean {
-  return battleStore.attackerSide === 'player' && uid === player.value?.uid
+  return battleStore.attackerSide === 'player' && uid === player.value?.uid;
 }
 
 function isEnemyFainting(uid?: string): boolean {
-  return isFaintInProgress.value &&
+  return (
+    isFaintInProgress.value &&
     faintedPokemonSnapshot.value?.side === 'enemy' &&
     battleStore.uiConfig.isWild &&
     faintedPokemonSnapshot.value?.uid === uid
+  );
 }
 
 function isCombatantFainting(side: BattleSide, uid?: string): boolean {
-  return isFaintInProgress.value &&
+  return (
+    isFaintInProgress.value &&
     faintedPokemonSnapshot.value?.side === side &&
     (uid === undefined || faintedPokemonSnapshot.value?.uid === uid)
+  );
 }
 
 function isEnemyHidden(uid?: string): boolean {
-  if (isEnemyTechnicalHidden.value || !activeEnemyData.value) return true
-  return activeEnemyData.value.uid ? uid !== activeEnemyData.value.uid : false
+  if (isEnemyTechnicalHidden.value || !activeEnemyData.value) return true;
+  return activeEnemyData.value.uid ? uid !== activeEnemyData.value.uid : false;
 }
 
 function isPlayerHidden(uid?: string): boolean {
-  return isPlayerTechnicalHidden.value && uid === player.value?.uid
+  return isPlayerTechnicalHidden.value && uid === player.value?.uid;
 }
 
 const isTrainerSpeechBubbleVisible = computed(() => {
-  if (!battleStore.uiConfig.isNpc) return false
-  const state = battleStore.currentFsmState
-  const sub = battleStore.currentSubState
-  return (state === 'FIRST_INTRO' && sub === 'SHOW_DIALOGS') ||
-         (state === 'SEARCH_PHASE' && sub === 'COMBAT_OR_FLEE')
-})
+  if (!battleStore.uiConfig.isNpc) return false;
+  const state = battleStore.currentFsmState;
+  const sub = battleStore.currentSubState;
+  return (
+    (state === 'FIRST_INTRO' && sub === 'SHOW_DIALOGS') ||
+    (state === 'SEARCH_PHASE' && sub === 'COMBAT_OR_FLEE')
+  );
+});
 
 const showFloatingControls = computed(() => {
-  const cfg = battleStore.uiConfig
-  return cfg.showTurnTimer || cfg.showSpectatorBadge || cfg.showReplayControls
-})
+  const cfg = battleStore.uiConfig;
+  return cfg.showTurnTimer || cfg.showSpectatorBadge || cfg.showReplayControls;
+});
 
-const isFxSuppressed = computed(() => isSearching.value || isIntroInProgress.value)
-const currentTrainerName = computed(() => battle.value?.trainerName || 'Entrenador')
+const isFxSuppressed = computed(() => isSearching.value || isIntroInProgress.value);
+const currentTrainerName = computed(() => battle.value?.trainerName || 'Entrenador');
 
 function getCombatantKey(prefix: string, uid?: string, id?: string): string {
-  return `${prefix}-${uid ?? id ?? 'active'}`
+  return `${prefix}-${uid ?? id ?? 'active'}`;
 }
 </script>
 
 <template>
-  <div
-    ref="arenaRef"
-    class="battle-arena"
-    :class="{ 'is-fading': isGlobalFadeActive }"
-  >
+  <div ref="arenaRef" class="battle-arena" :class="{ 'is-fading': isGlobalFadeActive }">
     <!-- Overlay de Transición Global (The Void / Exit) -->
     <Transition
       :css="false"
@@ -364,24 +414,12 @@ function getCombatantKey(prefix: string, uid?: string, id?: string): string {
       @enter="onFadeOverlayEnter"
       @leave="onFadeOverlayLeave"
     >
-      <div
-        v-if="isGlobalFadeActive"
-        class="global-transition-overlay"
-      />
+      <div v-if="isGlobalFadeActive" class="global-transition-overlay" />
     </Transition>
-    <div
-      class="battle-arena-content"
-      :style="arenaContentStyles"
-    >
-      <VirtualSpace
-        :show-guides="showGuides"
-        :world-styles="worldStyles"
-      >
+    <div class="battle-arena-content" :style="arenaContentStyles">
+      <VirtualSpace :show-guides="showGuides" :world-styles="worldStyles">
         <!-- Entorno (Solo fondo) -->
-        <BattleEnvironment
-          :location-id="battle?.locationId"
-          :current-cycle="effectiveCycle"
-        />
+        <BattleEnvironment :location-id="battle?.locationId" :current-cycle="effectiveCycle" />
 
         <!-- Sándwich Clima: Capa Trasera (Ambiente, Tinte de Cielo y Bruma cubriendo a los sprites) -->
         <AtmosphereLayer
@@ -590,30 +628,18 @@ function getCombatantKey(prefix: string, uid?: string, id?: string): string {
     <CameraZoomControls :min-zoom="minZoom" />
 
     <!-- Controles Flotantes PvP, Replay y Espectador (Flotando sobre el suelo del viewport sin reducir la cámara) -->
-    <div
-      v-if="showFloatingControls"
-      class="battle-arena-floating-controls"
-    >
-      <PvPTurnTimerClock v-if="battleStore.uiConfig.showTurnTimer && !battleStore.isIntroAnimating" />
+    <div v-if="showFloatingControls" class="battle-arena-floating-controls">
+      <PvPTurnTimerClock
+        v-if="battleStore.uiConfig.showTurnTimer && !battleStore.isIntroAnimating"
+      />
       <BattleSpectatorOverlay v-if="battleStore.uiConfig.showSpectatorBadge" />
       <BattleReplayControls v-if="battleStore.uiConfig.showReplayControls" />
     </div>
 
     <!-- Rival Special Presentation Alert -->
-    <div
-      v-show="showRivalAlert"
-      class="rival-alert-overlay"
-    >
-      <div
-        ref="rivalFlickerRef"
-        class="rival-alert-flicker"
-      />
-      <div
-        ref="rivalExclamationRef"
-        class="rival-alert-exclamation"
-      >
-        !
-      </div>
+    <div v-show="showRivalAlert" class="rival-alert-overlay">
+      <div ref="rivalFlickerRef" class="rival-alert-flicker" />
+      <div ref="rivalExclamationRef" class="rival-alert-exclamation">!</div>
     </div>
   </div>
 </template>

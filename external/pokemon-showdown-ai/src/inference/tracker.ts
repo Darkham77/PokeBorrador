@@ -26,19 +26,21 @@ export class PokemonTracker {
 
     if (baseSets.length === 0) {
       // No known sets — create a generic unknown set
-      this.sets = [{
-        moves: [],
-        ability: 'unknown',
-        item: 'unknown',
-        role: 'unknown',
-        probability: 1.0,
-      }];
+      this.sets = [
+        {
+          moves: [],
+          ability: 'unknown',
+          item: 'unknown',
+          role: 'unknown',
+          probability: 1.0
+        }
+      ];
     } else {
       // Initialize equal probability across all known sets
       const prob = 1.0 / baseSets.length;
-      this.sets = baseSets.map(s => ({
+      this.sets = baseSets.map((s) => ({
         ...s,
-        probability: prob,
+        probability: prob
       }));
     }
   }
@@ -105,7 +107,7 @@ export class PokemonTracker {
       let matches = false;
       switch (field) {
         case 'move':
-          matches = set.moves.some(m => toId(m) === value);
+          matches = set.moves.some((m) => toId(m) === value);
           break;
         case 'ability':
           matches = toId(set.ability) === value;
@@ -158,10 +160,10 @@ export class PokemonTracker {
   getInferredInfo(): InferredInfo {
     return {
       pokemon: this.species,
-      possibleSets: this.sets.filter(s => s.probability > 0),
+      possibleSets: this.sets.filter((s) => s.probability > 0),
       likelyMoves: this.computeMoveProbabilities(),
       likelyAbility: this.computeAbilityProbabilities(),
-      likelyItem: this.computeItemProbabilities(),
+      likelyItem: this.computeItemProbabilities()
     };
   }
 

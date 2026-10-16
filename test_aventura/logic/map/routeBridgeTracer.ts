@@ -63,23 +63,35 @@ function computeHorizontalCompanionY(
 
   const minX = Math.min(...pts.map((p) => p.x));
   const maxX = Math.max(...pts.map((p) => p.x));
-  const minusValidWater = fixedY - 1 >= 0 && pts.every((p) => continentMap.cells[fixedY - 1]?.[p.x]?.terrain === 'water');
-  const plusValidWater = fixedY + 1 < H && pts.every((p) => continentMap.cells[fixedY + 1]?.[p.x]?.terrain === 'water');
+  const minusValidWater =
+    fixedY - 1 >= 0 && pts.every((p) => continentMap.cells[fixedY - 1]?.[p.x]?.terrain === 'water');
+  const plusValidWater =
+    fixedY + 1 < H && pts.every((p) => continentMap.cells[fixedY + 1]?.[p.x]?.terrain === 'water');
 
   let minusLandScore = 0;
   if (minusValidWater) {
-    if (minX - 1 >= 0 && continentMap.cells[fixedY - 1]?.[minX - 1]?.terrain !== 'water') minusLandScore++;
-    if (maxX + 1 < W && continentMap.cells[fixedY - 1]?.[maxX + 1]?.terrain !== 'water') minusLandScore++;
+    if (minX - 1 >= 0 && continentMap.cells[fixedY - 1]?.[minX - 1]?.terrain !== 'water')
+      minusLandScore++;
+    if (maxX + 1 < W && continentMap.cells[fixedY - 1]?.[maxX + 1]?.terrain !== 'water')
+      minusLandScore++;
   }
 
   let plusLandScore = 0;
   if (plusValidWater) {
-    if (minX - 1 >= 0 && continentMap.cells[fixedY + 1]?.[minX - 1]?.terrain !== 'water') plusLandScore++;
-    if (maxX + 1 < W && continentMap.cells[fixedY + 1]?.[maxX + 1]?.terrain !== 'water') plusLandScore++;
+    if (minX - 1 >= 0 && continentMap.cells[fixedY + 1]?.[minX - 1]?.terrain !== 'water')
+      plusLandScore++;
+    if (maxX + 1 < W && continentMap.cells[fixedY + 1]?.[maxX + 1]?.terrain !== 'water')
+      plusLandScore++;
   }
 
   if (minusValidWater && plusValidWater) {
-    return plusLandScore > minusLandScore ? fixedY + 1 : (minusLandScore > plusLandScore ? fixedY - 1 : (fixedY + 1 < H ? fixedY + 1 : fixedY - 1));
+    return plusLandScore > minusLandScore
+      ? fixedY + 1
+      : minusLandScore > plusLandScore
+        ? fixedY - 1
+        : fixedY + 1 < H
+          ? fixedY + 1
+          : fixedY - 1;
   }
   if (plusValidWater) return fixedY + 1;
   if (minusValidWater) return fixedY - 1;
@@ -112,7 +124,8 @@ function traceHorizontalBridgeSegment(
     if (landX < 0 || landX >= W) return;
     const cFixed = continentMap.cells[fixedY]?.[landX]?.terrain;
     const cComp = continentMap.cells[compY]?.[landX]?.terrain;
-    const shoreTerr = (cFixed && cFixed !== 'water') ? cFixed : ((cComp && cComp !== 'water') ? cComp : 'sand');
+    const shoreTerr =
+      cFixed && cFixed !== 'water' ? cFixed : cComp && cComp !== 'water' ? cComp : 'sand';
     for (const cy of [fixedY, compY]) {
       if (continentMap.cells[cy]?.[landX]?.terrain === 'water') {
         (continentMap.cells[cy]![landX]! as { terrain: string }).terrain = shoreTerr;
@@ -147,23 +160,35 @@ function computeVerticalCompanionX(
 
   const minY = Math.min(...pts.map((p) => p.y));
   const maxY = Math.max(...pts.map((p) => p.y));
-  const minusValidWater = fixedX - 1 >= 0 && pts.every((p) => continentMap.cells[p.y]?.[fixedX - 1]?.terrain === 'water');
-  const plusValidWater = fixedX + 1 < W && pts.every((p) => continentMap.cells[p.y]?.[fixedX + 1]?.terrain === 'water');
+  const minusValidWater =
+    fixedX - 1 >= 0 && pts.every((p) => continentMap.cells[p.y]?.[fixedX - 1]?.terrain === 'water');
+  const plusValidWater =
+    fixedX + 1 < W && pts.every((p) => continentMap.cells[p.y]?.[fixedX + 1]?.terrain === 'water');
 
   let minusLandScore = 0;
   if (minusValidWater) {
-    if (minY - 1 >= 0 && continentMap.cells[minY - 1]?.[fixedX - 1]?.terrain !== 'water') minusLandScore++;
-    if (maxY + 1 < H && continentMap.cells[maxY + 1]?.[fixedX - 1]?.terrain !== 'water') minusLandScore++;
+    if (minY - 1 >= 0 && continentMap.cells[minY - 1]?.[fixedX - 1]?.terrain !== 'water')
+      minusLandScore++;
+    if (maxY + 1 < H && continentMap.cells[maxY + 1]?.[fixedX - 1]?.terrain !== 'water')
+      minusLandScore++;
   }
 
   let plusLandScore = 0;
   if (plusValidWater) {
-    if (minY - 1 >= 0 && continentMap.cells[minY - 1]?.[fixedX + 1]?.terrain !== 'water') plusLandScore++;
-    if (maxY + 1 < H && continentMap.cells[maxY + 1]?.[fixedX + 1]?.terrain !== 'water') plusLandScore++;
+    if (minY - 1 >= 0 && continentMap.cells[minY - 1]?.[fixedX + 1]?.terrain !== 'water')
+      plusLandScore++;
+    if (maxY + 1 < H && continentMap.cells[maxY + 1]?.[fixedX + 1]?.terrain !== 'water')
+      plusLandScore++;
   }
 
   if (minusValidWater && plusValidWater) {
-    return minusLandScore > plusLandScore ? fixedX - 1 : (plusLandScore > minusLandScore ? fixedX + 1 : (fixedX - 1 >= 0 ? fixedX - 1 : fixedX + 1));
+    return minusLandScore > plusLandScore
+      ? fixedX - 1
+      : plusLandScore > minusLandScore
+        ? fixedX + 1
+        : fixedX - 1 >= 0
+          ? fixedX - 1
+          : fixedX + 1;
   }
   if (minusValidWater) return fixedX - 1;
   if (plusValidWater) return fixedX + 1;
@@ -196,7 +221,8 @@ function traceVerticalBridgeSegment(
     if (landY < 0 || landY >= H) return;
     const cFixed = continentMap.cells[landY]?.[fixedX]?.terrain;
     const cComp = continentMap.cells[landY]?.[compX]?.terrain;
-    const shoreTerr = (cFixed && cFixed !== 'water') ? cFixed : ((cComp && cComp !== 'water') ? cComp : 'sand');
+    const shoreTerr =
+      cFixed && cFixed !== 'water' ? cFixed : cComp && cComp !== 'water' ? cComp : 'sand';
     for (const cx of [fixedX, compX]) {
       if (continentMap.cells[landY]?.[cx]?.terrain === 'water') {
         (continentMap.cells[landY]![cx]! as { terrain: string }).terrain = shoreTerr;
@@ -309,14 +335,23 @@ function placeSurfRockObstacles(
     const isH: boolean = Math.abs(dx) >= Math.abs(dy);
 
     const offsets = isH
-      ? [{ ox: 0, oy: -SURF_ROCK_FLANK_OFFSET }, { ox: 0, oy: SURF_ROCK_FLANK_OFFSET }]
-      : [{ ox: -SURF_ROCK_FLANK_OFFSET, oy: 0 }, { ox: SURF_ROCK_FLANK_OFFSET, oy: 0 }];
+      ? [
+          { ox: 0, oy: -SURF_ROCK_FLANK_OFFSET },
+          { ox: 0, oy: SURF_ROCK_FLANK_OFFSET }
+        ]
+      : [
+          { ox: -SURF_ROCK_FLANK_OFFSET, oy: 0 },
+          { ox: SURF_ROCK_FLANK_OFFSET, oy: 0 }
+        ];
 
     for (const off of offsets) {
       const rx: number = pt.x + off.ox;
       const ry: number = pt.y + off.oy;
       if (
-        rx >= 0 && rx < W && ry >= 0 && ry < H &&
+        rx >= 0 &&
+        rx < W &&
+        ry >= 0 &&
+        ry < H &&
         continentMap.cells[ry]?.[rx]?.terrain === 'water' &&
         !bridgeGrid[ry]?.[rx]
       ) {
@@ -348,22 +383,24 @@ function stampFishingBalconies(
 
     if (isRunHorizontal) {
       const stemY1 = p.y;
-      const stemY2 = stemY1 + 1 < H && bridgeGrid[stemY1 + 1]![p.x]
-        ? stemY1 + 1
-        : stemY1 - 1 >= 0 && bridgeGrid[stemY1 - 1]![p.x]
-          ? stemY1 - 1
-          : stemY1;
+      const stemY2 =
+        stemY1 + 1 < H && bridgeGrid[stemY1 + 1]![p.x]
+          ? stemY1 + 1
+          : stemY1 - 1 >= 0 && bridgeGrid[stemY1 - 1]![p.x]
+            ? stemY1 - 1
+            : stemY1;
       const maxY = Math.max(stemY1, stemY2);
       if (maxY + 1 < H && continentMap.cells[maxY + 1]?.[p.x]?.terrain === 'water') {
         bridgeGrid[maxY + 1]![p.x] = true;
       }
     } else {
       const stemX1 = p.x;
-      const stemX2 = stemX1 + 1 < W && bridgeGrid[p.y]![stemX1 + 1]
-        ? stemX1 + 1
-        : stemX1 - 1 >= 0 && bridgeGrid[p.y]![stemX1 - 1]
-          ? stemX1 - 1
-          : stemX1;
+      const stemX2 =
+        stemX1 + 1 < W && bridgeGrid[p.y]![stemX1 + 1]
+          ? stemX1 + 1
+          : stemX1 - 1 >= 0 && bridgeGrid[p.y]![stemX1 - 1]
+            ? stemX1 - 1
+            : stemX1;
       const maxX = Math.max(stemX1, stemX2);
       const minX = Math.min(stemX1, stemX2);
       if (maxX + 1 < W && continentMap.cells[p.y]?.[maxX + 1]?.terrain === 'water') {
@@ -438,8 +475,7 @@ export function traceWaterSpansAndBridges(ctx: BridgeWaterSpanContext): void {
   let waterRunStart = -1;
   for (let i = 0; i <= path.length; i++) {
     const isWater =
-      i < path.length &&
-      continentMap.cells[path[i]!.y]![path[i]!.x]!.terrain === 'water';
+      i < path.length && continentMap.cells[path[i]!.y]![path[i]!.x]!.terrain === 'water';
     if (isWater && waterRunStart === -1) {
       waterRunStart = i;
     } else if (!isWater && waterRunStart !== -1) {
@@ -453,12 +489,28 @@ export function traceWaterSpansAndBridges(ctx: BridgeWaterSpanContext): void {
         const companions: SegmentCompanion[] = [];
         for (const seg of segments) {
           const comp = seg.isHorizontal
-            ? traceHorizontalBridgeSegment(seg, continentMap, bridgeGrid, mutableTerrainMatrix, W, H)
+            ? traceHorizontalBridgeSegment(
+                seg,
+                continentMap,
+                bridgeGrid,
+                mutableTerrainMatrix,
+                W,
+                H
+              )
             : traceVerticalBridgeSegment(seg, continentMap, bridgeGrid, mutableTerrainMatrix, W, H);
           companions.push(comp);
         }
         fillBridgeCornerJunctions(segments, companions, continentMap, bridgeGrid, W, H);
-        connectBridgeShoreEnds(path, waterRunStart, waterRunEnd, companions, continentMap, pathGrid, W, H);
+        connectBridgeShoreEnds(
+          path,
+          waterRunStart,
+          waterRunEnd,
+          companions,
+          continentMap,
+          pathGrid,
+          W,
+          H
+        );
       } else {
         placeSurfRockObstacles(waterPts, continentMap, bridgeGrid, maritimeRockObstacles, W, H);
       }

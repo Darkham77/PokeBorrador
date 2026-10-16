@@ -46,9 +46,7 @@ function selectActiveLayer(layer: StudioLayer): void {
   <div class="studio-layers-panel">
     <div class="panel-header">
       <span class="icon header-icon">📑</span>
-      <h4 class="panel-title">
-        CAPAS &amp; VISIBILIDAD
-      </h4>
+      <h4 class="panel-title">CAPAS &amp; VISIBILIDAD</h4>
     </div>
 
     <!-- Active Layer Selection -->
@@ -59,6 +57,8 @@ function selectActiveLayer(layer: StudioLayer): void {
           v-for="l in layers"
           :id="'layer-row-' + l.id"
           :key="l.id"
+          role="button"
+          tabindex="0"
           class="layer-item"
           :class="{ active: store.activeLayer === l.id }"
           @click="selectActiveLayer(l.id)"
@@ -74,10 +74,7 @@ function selectActiveLayer(layer: StudioLayer): void {
           </button>
           <span class="icon layer-icon">{{ l.icon }}</span>
           <span class="layer-name">{{ l.name }}</span>
-          <span
-            v-if="store.activeLayer === l.id"
-            class="icon active-indicator"
-          >✏️</span>
+          <span v-if="store.activeLayer === l.id" class="icon active-indicator">✏️</span>
         </div>
       </div>
     </div>
@@ -88,22 +85,15 @@ function selectActiveLayer(layer: StudioLayer): void {
     <div class="overlays-section">
       <span class="section-label">Guías y Metadatos:</span>
       <div class="overlays-list">
-        <div
-          v-for="o in overlays"
-          :id="'overlay-row-' + o.key"
-          :key="o.key"
-          class="overlay-item"
-        >
-          <label
-            :id="'label-chk-' + o.key"
-            class="checkbox-label"
-          >
+        <div v-for="o in overlays" :id="'overlay-row-' + o.key" :key="o.key" class="overlay-item">
+          <label :id="'label-chk-' + o.key" class="checkbox-label">
             <input
               :id="'chk-overlay-' + o.key"
               type="checkbox"
+              :aria-label="'Visibilidad de ' + o.label"
               :checked="store.layerVisibility[o.key]"
               @change="toggleVisibility(o.key)"
-            >
+            />
             <span class="icon overlay-icon">{{ o.icon }}</span>
             <span class="overlay-name">{{ o.label }}</span>
           </label>
@@ -114,7 +104,7 @@ function selectActiveLayer(layer: StudioLayer): void {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .studio-layers-panel {
   display: flex;
@@ -236,7 +226,7 @@ function selectActiveLayer(layer: StudioLayer): void {
       font-size: var(--font-11);
       cursor: pointer;
 
-      input[type="checkbox"] {
+      input[type='checkbox'] {
         accent-color: var(--sky);
         cursor: pointer;
       }

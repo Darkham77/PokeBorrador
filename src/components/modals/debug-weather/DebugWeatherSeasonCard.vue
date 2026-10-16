@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/modals/debug-weather/DebugWeatherSeasonCard.vue
- * 
+ *
  * Renders a season card and iterates its daily cycle rows.
  */
 
@@ -20,20 +20,12 @@ defineProps<{
     </h3>
 
     <div class="cycles-list">
-      <div
-        v-for="cycle in season.cycles"
-        :key="cycle.cycleId"
-        class="cycle-row"
-      >
+      <div v-for="cycle in season.cycles" :key="cycle.cycleId" class="cycle-row">
         <div class="cycle-name">
           {{ cycle.label }}
         </div>
         <div class="probs-tags">
-          <DebugWeatherProbTag
-            v-for="prob in cycle.probs"
-            :key="prob.weather"
-            :prob="prob"
-          />
+          <DebugWeatherProbTag v-for="prob in cycle.probs" :key="prob.weather" :prob="prob" />
         </div>
       </div>
     </div>

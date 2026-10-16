@@ -1,40 +1,44 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import MapCard from '@/components/map/MapCard.vue'
-import type { MapLocation } from '@/types/pokemon/encounters'
-import { gsapHover as vGsapHover } from '@/directives/gsapHover'
-import type { WeatherId } from '@/logic/weather/weatherRegistry'
-import type { DayPhase } from '@/logic/utils/timeUtils'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts'
-import type { CardinalDirection } from '@/types/system/game'
-import AdventureDirectionButton from './AdventureDirectionButton.vue'
-import type { DirectionConnectionItem } from './adventureDirectionTypes'
+import { computed } from 'vue';
+import MapCard from '@/components/map/MapCard.vue';
+import type { MapLocation } from '@/types/pokemon/encounters';
+import { gsapHover as vGsapHover } from '@/directives/gsapHover';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { AdventureNodeId } from '../../../test_aventura/logic/adventure/kantoGraph.ts';
+import type { CardinalDirection } from '@/types/system/game';
+import AdventureDirectionButton from './AdventureDirectionButton.vue';
+import type { DirectionConnectionItem } from './adventureDirectionTypes';
 
 interface Props {
-  adjacentConnections: Record<CardinalDirection, DirectionConnectionItem[]>
-  isTraveling: boolean
-  hasHealthyTeam: boolean
-  activeHMs: Set<string>
-  originMap: AdventureNodeId
-  mapLocationsById: Partial<Record<AdventureNodeId, MapLocation>>
-  currentCycle: DayPhase
+  adjacentConnections: Record<CardinalDirection, DirectionConnectionItem[]>;
+  isTraveling: boolean;
+  hasHealthyTeam: boolean;
+  activeHMs: Set<string>;
+  originMap: AdventureNodeId;
+  mapLocationsById: Partial<Record<AdventureNodeId, MapLocation>>;
+  currentCycle: DayPhase;
 
-  getWeatherForMap: (mapId: AdventureNodeId) => WeatherId
-  getSpawnPoolForMap: (map: MapLocation) => { generic: PokemonSpeciesId[]; specific: PokemonSpeciesId[]; rates: Partial<Record<PokemonSpeciesId, number>> }
-  pokemonCenterNodes: readonly AdventureNodeId[]
+  getWeatherForMap: (mapId: AdventureNodeId) => WeatherId;
+  getSpawnPoolForMap: (map: MapLocation) => {
+    generic: PokemonSpeciesId[];
+    specific: PokemonSpeciesId[];
+    rates: Partial<Record<PokemonSpeciesId, number>>;
+  };
+  pokemonCenterNodes: readonly AdventureNodeId[];
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const originLocation = computed(() => props.mapLocationsById[props.originMap] ?? null)
-const isTravelDisabled = computed(() => props.isTraveling || !props.hasHealthyTeam)
+const originLocation = computed(() => props.mapLocationsById[props.originMap] ?? null);
+const isTravelDisabled = computed(() => props.isTraveling || !props.hasHealthyTeam);
 
 const emit = defineEmits<{
-  (e: 'travel', target: AdventureNodeId): void
-  (e: 'explore'): void
-  (e: 'heal'): void
-}>()
+  (e: 'travel', target: AdventureNodeId): void;
+  (e: 'explore'): void;
+  (e: 'heal'): void;
+}>();
 </script>
 
 <template>
@@ -82,11 +86,8 @@ const emit = defineEmits<{
         />
 
         <!-- Actions Overlay -->
-        <div
-          v-if="!isTraveling"
-          class="adv-card-actions-overlay"
-        >
-          <button 
+        <div v-if="!isTraveling" class="adv-card-actions-overlay">
+          <button
             id="adv-direction-explore-btn"
             v-gsap-hover
             class="adv-action-btn explore-btn"
@@ -95,7 +96,7 @@ const emit = defineEmits<{
           >
             <span class="emoji">🔍</span> Explorar Zona
           </button>
-          <button 
+          <button
             v-if="pokemonCenterNodes.includes(originMap)"
             id="adv-direction-heal-btn"
             v-gsap-hover

@@ -35,11 +35,11 @@ export const STREET_LAMP: MapPropDefinition = {
   layer: 'decorations',
   tiles: [
     ['tile_objects_props_873cabc657'], // row 0: lantern top
-    ['tile_objects_props_c305f4c3fd']  // row 1: pole base
+    ['tile_objects_props_c305f4c3fd'] // row 1: pole base
   ],
   collisionMask: [
     [0], // lantern top is walkable
-    [1]  // pole base is solid
+    [1] // pole base is solid
   ],
   description: 'Farola de iluminación urbana para bulevares y aceras peatonales.'
 };
@@ -55,12 +55,8 @@ export const MAILBOX: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_water_77167d265c']
-  ],
-  collisionMask: [
-    [1]
-  ],
+  tiles: [['tile_water_77167d265c']],
+  collisionMask: [[1]],
   description: 'Buzón de correo postal para viviendas residenciales.'
 };
 
@@ -75,12 +71,8 @@ export const BENCH_WOODEN: MapPropDefinition = {
   width: 2,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_terrain_d2ff41d6a1', 'tile_terrain_5065b9bc0d']
-  ],
-  collisionMask: [
-    [1, 1]
-  ],
+  tiles: [['tile_terrain_d2ff41d6a1', 'tile_terrain_5065b9bc0d']],
+  collisionMask: [[1, 1]],
   description: 'Banco de madera para plazas y parques públicos.'
 };
 
@@ -95,12 +87,8 @@ export const BENCH_STONE: MapPropDefinition = {
   width: 2,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_terrain_d2ff41d6a1', 'tile_terrain_5065b9bc0d']
-  ],
-  collisionMask: [
-    [1, 1]
-  ],
+  tiles: [['tile_terrain_d2ff41d6a1', 'tile_terrain_5065b9bc0d']],
+  collisionMask: [[1, 1]],
   description: 'Banco cívico de piedra para plazas monumentales.'
 };
 
@@ -115,12 +103,8 @@ export const FLOWER_POT: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_water_eacfe78863']
-  ],
-  collisionMask: [
-    [1]
-  ],
+  tiles: [['tile_water_eacfe78863']],
+  collisionMask: [[1]],
   description: 'Maceta decorativa para accesos y esquinas de plazas.'
 };
 
@@ -135,12 +119,8 @@ export const SIGNPOST: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_uncategorized_fc044b0dfa']
-  ],
-  collisionMask: [
-    [1]
-  ],
+  tiles: [['tile_uncategorized_fc044b0dfa']],
+  collisionMask: [[1]],
   description: 'Cartel indicador de madera para cruces de caminos y edificios.'
 };
 
@@ -155,12 +135,8 @@ export const FENCE_WHITE: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_structures_3ec4411b84']
-  ],
-  collisionMask: [
-    [1]
-  ],
+  tiles: [['tile_structures_3ec4411b84']],
+  collisionMask: [[1]],
   description: 'Valla blanca ornamental para delimitar jardines urbanos.'
 };
 
@@ -175,12 +151,8 @@ export const FENCE_WOOD: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_structures_49093abef3']
-  ],
-  collisionMask: [
-    [1]
-  ],
+  tiles: [['tile_structures_49093abef3']],
+  collisionMask: [[1]],
   description: 'Valla rústica para senderos, desniveles y rutas silvestres.'
 };
 
@@ -195,12 +167,8 @@ export const TRASH_BIN: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_objects_props_66454cdc8a']
-  ],
-  collisionMask: [
-    [1]
-  ],
+  tiles: [['tile_objects_props_66454cdc8a']],
+  collisionMask: [[1]],
   description: 'Papelera de metal para esquinas y paseos urbanos.'
 };
 
@@ -215,12 +183,8 @@ export const FLOWERS_RED: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_vegetation_bd659dae6f']
-  ],
-  collisionMask: [
-    [0]
-  ],
+  tiles: [['tile_vegetation_bd659dae6f']],
+  collisionMask: [[0]],
   description: 'Flores silvestres rojas transitables.'
 };
 
@@ -235,12 +199,8 @@ export const FLOWERS_YELLOW: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_vegetation_6d432cbe6d']
-  ],
-  collisionMask: [
-    [0]
-  ],
+  tiles: [['tile_vegetation_6d432cbe6d']],
+  collisionMask: [[0]],
   description: 'Flores silvestres amarillas transitables.'
 };
 
@@ -255,12 +215,8 @@ export const FLOWERS_BLUE: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_vegetation_13f0a9ea38']
-  ],
-  collisionMask: [
-    [0]
-  ],
+  tiles: [['tile_vegetation_13f0a9ea38']],
+  collisionMask: [[0]],
   description: 'Brotes y flores azules transitables.'
 };
 
@@ -275,12 +231,8 @@ export const WOOD_STUMP: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_objects_props_7256ee1de0']
-  ],
-  collisionMask: [
-    [1]
-  ],
+  tiles: [['tile_objects_props_7256ee1de0']],
+  collisionMask: [[1]],
   description: 'Tocón de árbol talado para pastos y bosques.'
 };
 
@@ -295,12 +247,8 @@ export const TRIMMED_HEDGE: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_vegetation_77ac70f502']
-  ],
-  collisionMask: [
-    [1]
-  ],
+  tiles: [['tile_vegetation_77ac70f502']],
+  collisionMask: [[1]],
   description: 'Seto verde recortado para perímetro de solares y jardines.'
 };
 
@@ -315,12 +263,8 @@ export const FIELD_ROCK: MapPropDefinition = {
   width: 1,
   height: 1,
   layer: 'decorations',
-  tiles: [
-    ['tile_objects_props_d9240538d8']
-  ],
-  collisionMask: [
-    [1]
-  ],
+  tiles: [['tile_objects_props_d9240538d8']],
+  collisionMask: [[1]],
   description: 'Pequeño peñasco de campo para rutas y claros.'
 };
 
@@ -328,6 +272,7 @@ export const FIELD_ROCK: MapPropDefinition = {
  * Canonical O(1) Map Props Registry
  */
 export const MAP_PROPS_REGISTRY: Record<string, MapPropDefinition> = {
+  // open-record: Map prop definitions catalog indexed by prop id
   [STREET_LAMP.id]: STREET_LAMP,
   [MAILBOX.id]: MAILBOX,
   [BENCH_WOODEN.id]: BENCH_WOODEN,

@@ -19,7 +19,6 @@ import {
 } from '../../logic/map/mountainAutotileEngine.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 
-
 describe('mountainAutotileEngine', () => {
   describe('compute8NeighborElevationMask', () => {
     it('detects a completely surrounded center cell (mask = 255)', () => {
@@ -160,7 +159,7 @@ describe('mountainAutotileEngine', () => {
       expect(result.primaryTiles[0]?.length).toBe(7);
 
       // (2, 5) is elevation 0, but receives a projected foot from (2, 4)
-      expect(result.cliffFootOverlays.some(o => o.targetX === 2 && o.targetY === 5)).toBe(true);
+      expect(result.cliffFootOverlays.some((o) => o.targetX === 2 && o.targetY === 5)).toBe(true);
 
       // (2, 5) must be flagged as occupied by cliff foot
       expect(result.occupiedFootCells[5]?.[2]).toBe(true);
@@ -255,8 +254,8 @@ describe('mountainAutotileEngine', () => {
       expect(stamped.cellDetails[4]?.[3]?.role).toBe('stairs_r');
 
       // Cliff foot overlays at y=5 must be stairs_L and stairs_R with occupiesCell = false
-      const footL = stamped.cliffFootOverlays.find(ov => ov.targetX === 2 && ov.targetY === 5);
-      const footR = stamped.cliffFootOverlays.find(ov => ov.targetX === 3 && ov.targetY === 5);
+      const footL = stamped.cliffFootOverlays.find((ov) => ov.targetX === 2 && ov.targetY === 5);
+      const footR = stamped.cliffFootOverlays.find((ov) => ov.targetX === 3 && ov.targetY === 5);
       expect(footL).toBeDefined();
       expect(footL?.tile).toBe(CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK.stairs_L);
       expect(footL?.occupiesCell).toBe(false);
@@ -295,7 +294,7 @@ describe('mountainAutotileEngine', () => {
       expect(stamped.primaryTiles[3]?.[4]).toBe(CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK.floor);
 
       // Foot overlays at y=4 must also be rock-tier stairs
-      const footL = stamped.cliffFootOverlays.find(ov => ov.targetX === 3 && ov.targetY === 4);
+      const footL = stamped.cliffFootOverlays.find((ov) => ov.targetX === 3 && ov.targetY === 4);
       expect(footL?.tile).toBe(CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK.stairs_L);
       expect(footL?.occupiesCell).toBe(false);
       expect(stamped.occupiedFootCells[4]?.[3]).toBe(false);
@@ -375,5 +374,3 @@ describe('mountainAutotileEngine', () => {
     });
   });
 });
-
-

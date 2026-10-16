@@ -1,72 +1,62 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
-import type { PokemonEgg } from '@/types/pokemon/pokemon'
-import { getEggSpecies } from '@/logic/breeding/breedingEngine'
-import EggSprite from '@/components/common/EggSprite.vue'
-import { NPC_EGG_TINT } from '@/logic/constants/gameplay'
+import { computed } from 'vue';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import type { PokemonEgg } from '@/types/pokemon/pokemon';
+import { getEggSpecies } from '@/logic/breeding/breedingEngine';
+import EggSprite from '@/components/common/EggSprite.vue';
+import { NPC_EGG_TINT } from '@/logic/constants/gameplay';
 
 interface Props {
-  egg: PokemonEgg
+  egg: PokemonEgg;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'hatch', egg: PokemonEgg): void
-}>()
+  (e: 'hatch', egg: PokemonEgg): void;
+}>();
 
-const isReady = computed(() => props.egg.ready || props.egg.steps <= 0)
+const isReady = computed(() => props.egg.ready || props.egg.steps <= 0);
 
-const eggTint = computed(() => props.egg.tint || (props.egg.isNpc ? NPC_EGG_TINT : undefined))
+const eggTint = computed(() => props.egg.tint || (props.egg.isNpc ? NPC_EGG_TINT : undefined));
 
 const eggName = computed(() => {
-  const egg = props.egg
+  const egg = props.egg;
   if ((egg.scanned || egg.predictedInfo) && egg.pokemonId) {
-    const speciesId = getEggSpecies(egg.pokemonId)
-    return POKEMON_DB[speciesId]?.name || 'Huevo Pokémon'
+    const speciesId = getEggSpecies(egg.pokemonId);
+    return POKEMON_DB[speciesId]?.name || 'Huevo Pokémon';
   }
   if (egg.isNpc) {
-    return 'Huevo Misterioso'
+    return 'Huevo Misterioso';
   }
-  return 'Huevo Pokémon'
-})
+  return 'Huevo Pokémon';
+});
 
 const progress = computed(() => {
-  const egg = props.egg
+  const egg = props.egg;
   if (!egg.totalSteps) {
-    return { walked: 0, total: egg.steps, percentage: 0, isLegacy: true }
+    return { walked: 0, total: egg.steps, percentage: 0, isLegacy: true };
   }
-  const walked = Math.max(0, egg.totalSteps - egg.steps)
+  const walked = Math.max(0, egg.totalSteps - egg.steps);
   return {
     walked,
     total: egg.totalSteps,
     percentage: Math.min(100, Math.max(0, (walked / egg.totalSteps) * 100)),
     isLegacy: false
-  }
-})
+  };
+});
 </script>
 
 <template>
-  <div
-    class="egg-card"
-    :class="{ ready: isReady, 'npc-egg-card': egg.isNpc }"
-  >
+  <div class="egg-card" :class="{ ready: isReady, 'npc-egg-card': egg.isNpc }">
     <!-- Upper Main Row (Sprite + Progress details) -->
     <div class="egg-main-row">
       <!-- Free-floating Egg Sprite -->
       <div class="egg-visual">
         <span class="egg-sprite">
-          <EggSprite
-            :tint="eggTint"
-            size="38"
-            class="egg-sprite-img"
-          />
+          <EggSprite :tint="eggTint" size="38" class="egg-sprite-img" />
         </span>
-        <span
-          v-if="egg.isShiny"
-          class="emoji shiny-star"
-        >✨</span>
+        <span v-if="egg.isShiny" class="emoji shiny-star">✨</span>
       </div>
 
       <!-- Progress and Info details -->
@@ -75,20 +65,12 @@ const progress = computed(() => {
           <div class="name">
             {{ eggName }}
           </div>
-          <span
-            v-if="egg.isNpc"
-            class="npc-origin-badge"
-          >
-            REGALO NPC
-          </span>
+          <span v-if="egg.isNpc" class="npc-origin-badge"> REGALO NPC </span>
         </div>
 
         <div class="progress-container">
           <div class="progress-bar-wrapper">
-            <div
-              class="progress-bar"
-              :style="{ width: `${progress.percentage}%` }"
-            />
+            <div class="progress-bar" :style="{ width: `${progress.percentage}%` }" />
           </div>
           <div class="progress-text">
             <span class="steps-val">
@@ -96,10 +78,13 @@ const progress = computed(() => {
                 {{ Math.ceil(egg.steps).toLocaleString() }} pasos restantes
               </template>
               <template v-else>
-                {{ Math.floor(progress.walked).toLocaleString() }} / {{ progress.total.toLocaleString() }} pasos
+                {{ Math.floor(progress.walked).toLocaleString() }} /
+                {{ progress.total.toLocaleString() }} pasos
               </template>
             </span>
-            <span class="pct-val">{{ progress.isLegacy ? '?' : Math.round(progress.percentage) + '%' }}</span>
+            <span class="pct-val">{{
+              progress.isLegacy ? '?' : Math.round(progress.percentage) + '%'
+            }}</span>
           </div>
         </div>
       </div>
@@ -115,10 +100,7 @@ const progress = computed(() => {
       >
         <span class="emoji">🐣</span> ECLOSIONAR HUEVO
       </button>
-      <div
-        v-else
-        class="walking-label"
-      >
+      <div v-else class="walking-label">
         <span><span class="emoji">🚶</span> Caminando...</span>
       </div>
     </div>
@@ -126,7 +108,7 @@ const progress = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .egg-card {
   position: relative;
@@ -189,7 +171,7 @@ const progress = computed(() => {
   width: 48px;
   height: 48px;
   filter: Drop-Shadow(0 4px 6px Rgb(0 0 0 / 30%));
-  
+
   .egg-sprite {
     display: flex;
     justify-content: center;

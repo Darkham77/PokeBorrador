@@ -31,7 +31,9 @@ const REGIONAL_SEED_PRIME = 31;
 const GRID_COORD_PRIME = 17;
 
 const localSeed = computed(() => {
-  return Math.abs(props.regionalSeed * REGIONAL_SEED_PRIME + props.poi.gridX * GRID_COORD_PRIME + props.poi.gridY);
+  return Math.abs(
+    props.regionalSeed * REGIONAL_SEED_PRIME + props.poi.gridX * GRID_COORD_PRIME + props.poi.gridY
+  );
 });
 </script>
 
@@ -39,6 +41,9 @@ const localSeed = computed(() => {
   <div
     id="regional-local-map-modal-div-1"
     class="local-editor-modal-backdrop"
+    role="button"
+    tabindex="-1"
+    aria-label="Cerrar modal"
     @click.self="emit('close')"
   >
     <div class="local-editor-modal">
@@ -46,7 +51,9 @@ const localSeed = computed(() => {
         <div class="header-title">
           <span class="modal-icon">🏙️</span>
           <h3>Editor Local: {{ props.poi.name }}</h3>
-          <span class="dimension-badge">{{ localDimensions.width }} × {{ localDimensions.height }}</span>
+          <span class="dimension-badge"
+            >{{ localDimensions.width }} × {{ localDimensions.height }}</span
+          >
         </div>
         <button
           id="regional-local-map-modal-btn-cerrar"

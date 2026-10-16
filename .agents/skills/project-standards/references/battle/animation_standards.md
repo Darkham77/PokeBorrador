@@ -119,10 +119,10 @@ When an animation affects the flow of combat, it MUST block the state machine un
 
 ## 12. Animation State Hygiene
 
- Every global blocking state (e.g., `isIntroAnimating`) MUST have a guaranteed reset mechanism.
+Every global blocking state (e.g., `isIntroAnimating`) MUST have a guaranteed reset mechanism.
 
 - **Rule**: The cleanup (`flag = false`) MUST be called in the `onComplete` callback of the GSAP timeline.
-- **FSM State & Visual Synchronization**: Clear minigame active flags (e.g., `isFishing = false`, `isArchaeology = false`) and run visual reset routines (`resetAll()`) *before* executing FSM transitions (like completing the battle flow). This prevents race conditions and ensures visual state hygiene.
+- **FSM State & Visual Synchronization**: Clear minigame active flags (e.g., `isFishing = false`, `isArchaeology = false`) and run visual reset routines (`resetAll()`) _before_ executing FSM transitions (like completing the battle flow). This prevents race conditions and ensures visual state hygiene.
 
 ## 13. Aesthetic Reveal Delays (Shadow & Metadata)
 
@@ -388,10 +388,10 @@ When determining whether a Pokémon has explicit ground (`floating: false`) or f
 
 ```typescript
 // ❌ Wrong: treats explicit false as "not floating" but skips the check
-if (data.isFloating) return true
+if (data.isFloating) return true;
 
 // ✅ Correct: respects explicit false (ground species) and falls through to type-based fallback only when undefined
-if (data.isFloating !== undefined) return data.isFloating
+if (data.isFloating !== undefined) return data.isFloating;
 ```
 
 - **Why**: Using `if (data.isFloating)` as a truthiness check silently ignores the `false` case, causing ground-species with a Flying type to be incorrectly classified as floating. This suppresses `CombatGrass` bushes and misaligns the shadow layer.
@@ -412,11 +412,11 @@ When two GSAP animations are the visual inverse of each other (e.g., `catching` 
 
 ```typescript
 // ✅ Symmetric — both are power2.inOut
-gsap.to(sprite, { scale: 0, duration: 0.4, ease: "power2.inOut" }) // catching
-gsap.to(sprite, { scale: 1, duration: 0.4, ease: "power2.inOut" }) // releasing
+gsap.to(sprite, { scale: 0, duration: 0.4, ease: 'power2.inOut' }); // catching
+gsap.to(sprite, { scale: 1, duration: 0.4, ease: 'power2.inOut' }); // releasing
 
 // ❌ Asymmetric — back.out has an elastic overshoot phase that makes it feel slower
-gsap.to(sprite, { scale: 1, duration: 0.4, ease: "back.out(1.2)" }) // releasing
+gsap.to(sprite, { scale: 1, duration: 0.4, ease: 'back.out(1.2)' }); // releasing
 ```
 
 - **Why**: `back.out()` spends extra time in the overshoot phase (scale > 1) before settling. Even with equal `duration`, users perceive this as a longer, slower animation compared to a clean `power2.inOut`.
@@ -429,21 +429,21 @@ When the battle orchestrator needs to advance through FSM states that have assoc
 
 ```typescript
 // Wrong: timing is a guess. If the animation changes, the timer goes stale silently.
-await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
-await sleep(1000) // guessing how long the sprite takes to slide in
-await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
-await sleep(1500) // guessing how long dialogs take
+await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER);
+await sleep(1000); // guessing how long the sprite takes to slide in
+await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS);
+await sleep(1500); // guessing how long dialogs take
 ```
 
 ### ✅ Correct Pattern (bridge-based)
 
 ```typescript
 // Correct: the orchestrator awaits the real GSAP timeline from the animation bridge.
-await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
-if (ctx.animations?.triggerTrainerEntry) await ctx.animations.triggerTrainerEntry()
+await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER);
+if (ctx.animations?.triggerTrainerEntry) await ctx.animations.triggerTrainerEntry();
 
-await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
-if (ctx.animations?.triggerTrainerDialogs) await ctx.animations.triggerTrainerDialogs()
+await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS);
+if (ctx.animations?.triggerTrainerDialogs) await ctx.animations.triggerTrainerDialogs();
 ```
 
 ### Extending the bridge
@@ -591,6 +591,6 @@ To prevent visual effects and particles from darkening during nighttime cycles w
 
 ## 50. Combat Spritesheet Stepping vs GSAP Orchestration
 
-1. **Spritesheet Stepping Rate**: Frame stepping in combatant spritesheet loops (`useBattleCombatantSpriteLoop.ts`) is governed by canonical constants: `POKEMON_SPRITE_IDLE_FPS = 10.4` (8 *1.30) and `POKEMON_SPRITE_VARIATION_FPS = 13` (10* 1.30), reflecting a 30% speedup over default rates.
+1. **Spritesheet Stepping Rate**: Frame stepping in combatant spritesheet loops (`useBattleCombatantSpriteLoop.ts`) is governed by canonical constants: `POKEMON_SPRITE_IDLE_FPS = 10.4` (8 _1.30) and `POKEMON_SPRITE_VARIATION_FPS = 13` (10_ 1.30), reflecting a 30% speedup over default rates.
 2. **Decoupling from Organic Tweens**: Stepping speed adjustments apply strictly to spritesheet frame translation (`currentStep * frameWidth`). They must never alter GSAP breathing timelines, shadow pulses, floating offsets, or combat action tweens.
 3. **Design Tool Speed Parity**: All sprite preview canvases, dev tools, and inspection cards (such as `ShadowEditorCard.vue`) MUST synchronize with `POKEMON_SPRITE_IDLE_FPS` to preserve 1:1 animation timing with the active game.

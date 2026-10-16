@@ -1,9 +1,9 @@
 // src/styles/views/_box.scss
-@use "box/header";
-@use "box/controls";
-@use "box/filters";
-@use "box/grid";
-@use "@/styles/core/tools" as *;
+@use 'box/header';
+@use 'box/controls';
+@use 'box/filters';
+@use 'box/grid';
+@use '@/styles/core/tools' as *;
 
 .box-view {
   @include gpu-layer;

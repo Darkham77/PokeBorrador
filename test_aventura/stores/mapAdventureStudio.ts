@@ -45,7 +45,10 @@ import type { PlacedStructure } from '../types/map/kantoTileEngineTypes.ts';
 import type { GeneratedMap } from '../logic/map/proceduralMapGenerator.ts';
 import { defaultTilesRegistry } from '../logic/map/tilesRegistry.ts';
 import { getAllStructureTemplates, registerStructureTemplate } from '../config/mapStructures.ts';
-import { saveCustomTilesToStorage, saveCustomStructuresToStorage } from '../logic/map/customAssetsStorage.ts';
+import {
+  saveCustomTilesToStorage,
+  saveCustomStructuresToStorage
+} from '../logic/map/customAssetsStorage.ts';
 import { generateLocalMapForNode } from '../logic/map/nodeLocalMapGenerator.ts';
 import { useMapStudioStore } from './mapStudio.ts';
 
@@ -89,6 +92,7 @@ const INITIAL_CONTINENT_PAN_Y = -70;
 export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () => {
   // 1. Projects Management & Persistence
   const projects = ref<Record<string, AdventureProject>>({
+    // open-record: Adventure projects dictionary keyed by project id
     kanto_canonical: getKantoDefaultProject(),
     johto_canonical: getJohtoDefaultProject()
   });
@@ -99,15 +103,22 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   const activeEditingNodeId = ref<string | null>(null);
 
   // 3. Core Graph Data (Synched to Active Project)
-  const nodes = ref<Record<string, AdventureProjectNode>>(cloneReactive(projects.value[activeProjectId.value]!.nodes));
+  const nodes = ref<Record<string, AdventureProjectNode>>( // open-record: Adventure project nodes keyed by node id
+    cloneReactive(projects.value[activeProjectId.value]!.nodes)
+  );
   const connections = ref<[string, string][]>(cloneReactive(defaultConnections));
-  const officialMapMapping = ref<Record<string, string>>(cloneReactive(defaultOfficialMapIdMap));
+  const officialMapMapping = ref<Record<string, string>>(cloneReactive(defaultOfficialMapIdMap)); // open-record: Map node to official map id mapping
 
   // 4. Terrain Painting Mode State
   const brushSize = ref<BrushSize>(2);
   const selectedBiome = ref<CellBiomeType>(CELL_BIOME.DIRT_PATH);
-  const customTerrain = ref<Record<string, CellBiomeType>>({});
-  const terrainPaintTrigger = ref<{ gx: number; gy: number; size: number; biome: CellBiomeType } | null>(null);
+  const customTerrain = ref<Record<string, CellBiomeType>>({}); // open-record: Coordinate key string (col,row) to biome mapping
+  const terrainPaintTrigger = ref<{
+    gx: number;
+    gy: number;
+    size: number;
+    biome: CellBiomeType;
+  } | null>(null);
 
   // 5. Structures & Props Mode State
   const customStructures = ref<PlacedStructure[]>([]);
@@ -159,7 +170,11 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   const canRedo = computed(() => future.value.length > 0);
 
   const activeProject = computed<AdventureProject>(() => {
-    return projects.value[activeProjectId.value] || projects.value.kanto_canonical || getKantoDefaultProject();
+    return (
+      projects.value[activeProjectId.value] ||
+      projects.value.kanto_canonical ||
+      getKantoDefaultProject()
+    );
   });
 
   const hasManualModifications = computed(() => {
@@ -171,7 +186,12 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
     saveToStorage();
   }
 
-  function teleportTo(targetPxX: number, targetPxY: number, vpW = DEFAULT_VIEWPORT_WIDTH, vpH = DEFAULT_VIEWPORT_HEIGHT): void {
+  function teleportTo(
+    targetPxX: number,
+    targetPxY: number,
+    vpW = DEFAULT_VIEWPORT_WIDTH,
+    vpH = DEFAULT_VIEWPORT_HEIGHT
+  ): void {
     panX.value = Math.round(vpW / 2 - targetPxX * zoom.value);
     panY.value = Math.round(vpH / 2 - targetPxY * zoom.value);
   }
@@ -193,13 +213,15 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   function undo(): void {
     const prevStr = history.value.pop();
     if (!prevStr) return;
-    future.value.push(JSON.stringify({
-      nodes: nodes.value,
-      connections: connections.value,
-      officialMapMapping: officialMapMapping.value,
-      customTerrain: customTerrain.value,
-      customStructures: customStructures.value
-    }));
+    future.value.push(
+      JSON.stringify({
+        nodes: nodes.value,
+        connections: connections.value,
+        officialMapMapping: officialMapMapping.value,
+        customTerrain: customTerrain.value,
+        customStructures: customStructures.value
+      })
+    );
     const prev = JSON.parse(prevStr);
     nodes.value = prev.nodes;
     connections.value = prev.connections;
@@ -212,13 +234,15 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   function redo(): void {
     const nextStr = future.value.pop();
     if (!nextStr) return;
-    history.value.push(JSON.stringify({
-      nodes: nodes.value,
-      connections: connections.value,
-      officialMapMapping: officialMapMapping.value,
-      customTerrain: customTerrain.value,
-      customStructures: customStructures.value
-    }));
+    history.value.push(
+      JSON.stringify({
+        nodes: nodes.value,
+        connections: connections.value,
+        officialMapMapping: officialMapMapping.value,
+        customTerrain: customTerrain.value,
+        customStructures: customStructures.value
+      })
+    );
     const next = JSON.parse(nextStr);
     nodes.value = next.nodes;
     connections.value = next.connections;
@@ -249,11 +273,20 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   }
 
   function createProject(name: string, archetype: RegionArchetype): string {
-    const newProj = archetype === 'johto'
-      ? { ...getJohtoDefaultProject(), id: `johto_${Temporal.Now.instant().epochMilliseconds}`, name }
-      : archetype === 'kanto'
-        ? { ...getKantoDefaultProject(), id: `kanto_${Temporal.Now.instant().epochMilliseconds}`, name }
-        : getBlankDefaultProject(name);
+    const newProj =
+      archetype === 'johto'
+        ? {
+            ...getJohtoDefaultProject(),
+            id: `johto_${Temporal.Now.instant().epochMilliseconds}`,
+            name
+          }
+        : archetype === 'kanto'
+          ? {
+              ...getKantoDefaultProject(),
+              id: `kanto_${Temporal.Now.instant().epochMilliseconds}`,
+              name
+            }
+          : getBlankDefaultProject(name);
 
     projects.value[newProj.id] = newProj;
     selectProject(newProj.id);
@@ -309,8 +342,12 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
     cur.config = { ...proceduralConfig.value };
     cur.customTerrain = { ...customTerrain.value };
     cur.customBuildings = cloneReactive(customStructures.value);
-    const customTiles = defaultTilesRegistry.getAllTiles().filter(t => t.subcategory === 'custom' || t.tags.includes('custom'));
-    const customTemplates = getAllStructureTemplates().filter(s => !['kanto_house_small', 'pokemart', 'pokemon_center'].includes(s.id));
+    const customTiles = defaultTilesRegistry
+      .getAllTiles()
+      .filter((t) => t.subcategory === 'custom' || t.tags.includes('custom'));
+    const customTemplates = getAllStructureTemplates().filter(
+      (s) => !['kanto_house_small', 'pokemart', 'pokemon_center'].includes(s.id)
+    );
     if (customTiles.length > 0) cur.customTiles = customTiles;
     if (customTemplates.length > 0) cur.customStructures = customTemplates;
     cur.updatedAt = Temporal.Now.instant().toString();
@@ -334,7 +371,13 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
   }
 
   // --- Structure & Prop Manipulation Actions ---
-  function addStructure(style: string, x: number, y: number, w = DEFAULT_STRUCTURE_WIDTH, h = DEFAULT_STRUCTURE_HEIGHT): void {
+  function addStructure(
+    style: string,
+    x: number,
+    y: number,
+    w = DEFAULT_STRUCTURE_WIDTH,
+    h = DEFAULT_STRUCTURE_HEIGHT
+  ): void {
     pushHistory();
     customStructures.value.push({ style, x: Math.round(x), y: Math.round(y), w, h });
     selectedStructureIndex.value = customStructures.value.length - 1;
@@ -440,7 +483,8 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
     saveToStorage();
   }
 
-  function getLocalMapForNode(nodeId: string): GeneratedMap | null { // domain-ok: Identificador o estructura procedural de aventura
+  function getLocalMapForNode(nodeId: string): GeneratedMap | null {
+    // domain-ok: Identificador o estructura procedural de aventura
     const node = nodes.value[nodeId];
     return node?.localMap ?? null;
   }
@@ -483,12 +527,13 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
 
     const allDiscovered = Object.keys(nodes.value);
     const mockInventory: Record<string, boolean> = {
-      'Corte': true, // spanish-ok: Estructura o identificador procedural de aventura
-      'Surf': true, // spanish-ok: Estructura o identificador procedural de aventura
-      'Vuelo': true, // spanish-ok: Estructura o identificador procedural de aventura
-      'Flauta': true,
-      'Medallas': true,
-      'Bicicleta': true // spanish-ok: Estructura o identificador procedural de aventura
+      // open-record: Mock inventory state for testing pathfinding
+      Corte: true, // spanish-ok: Estructura o identificador procedural de aventura
+      Surf: true, // spanish-ok: Estructura o identificador procedural de aventura
+      Vuelo: true, // spanish-ok: Estructura o identificador procedural de aventura
+      Flauta: true,
+      Medallas: true,
+      Bicicleta: true // spanish-ok: Estructura o identificador procedural de aventura
     };
 
     const result = dijkstra(sId, tId, nodes.value, mockInventory, allDiscovered, connections.value);
@@ -535,7 +580,10 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
 
   // Viewport Actions
   function setZoom(newZoom: number): void {
-    zoom.value = Math.max(ADVENTURE_MIN_ZOOM, Math.min(ADVENTURE_MAX_ZOOM, Number(newZoom.toFixed(2))));
+    zoom.value = Math.max(
+      ADVENTURE_MIN_ZOOM,
+      Math.min(ADVENTURE_MAX_ZOOM, Number(newZoom.toFixed(2)))
+    );
   }
 
   function setPan(x: number, y: number): void {
@@ -665,7 +713,10 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
 
   function exportContinentalMapPng(canvasElement?: HTMLCanvasElement | null): string | null {
     if (typeof window === 'undefined' || typeof document === 'undefined') return null;
-    const canvas = canvasElement || (document.getElementById('regional-tile-canvas') as HTMLCanvasElement) || (document.getElementById('adventure-map-canvas') as HTMLCanvasElement);
+    const canvas =
+      canvasElement ||
+      (document.getElementById('regional-tile-canvas') as HTMLCanvasElement) ||
+      (document.getElementById('adventure-map-canvas') as HTMLCanvasElement);
     if (!canvas) {
       console.warn('[MapAdventureStudio] Canvas element not found for PNG export');
       return null;
@@ -686,9 +737,11 @@ export const useMapAdventureStudioStore = defineStore('mapAdventureStudio', () =
     const connJson = JSON.stringify(connections.value, null, 2);
     const mapIdJson = JSON.stringify(officialMapMapping.value, null, 2);
 
-    return `export const rawNodes: Record<string, MapNode> = ${nodesJson};\n\n` +
+    return (
+      `export const rawNodes: Record<string, MapNode> = ${nodesJson};\n\n` +
       `export const connections: [string, string][] = ${connJson};\n\n` +
-      `export const officialMapIdMap: Record<string, string> = ${mapIdJson};\n`;
+      `export const officialMapIdMap: Record<string, string> = ${mapIdJson};\n`
+    );
   }
 
   async function copyTypeScriptCode(): Promise<boolean> {

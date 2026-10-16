@@ -4,30 +4,78 @@
  * Exhaustive unit tests verifying ALL combinations of forced switch requests,
  * double faints, revival blessing, item uses, and seat resolutions in ShowdownBattleEngine.
  */
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
 import { ShowdownBattleAgent } from '../../../src/logic/battle/helpers/showdownBattleAgent.ts';
-import { classifyRequest, requiresAction } from '../../../src/logic/battle/helpers/requestHelper.ts';
+import {
+  classifyRequest,
+  requiresAction
+} from '../../../src/logic/battle/helpers/requestHelper.ts';
 
 class TestAgent extends ShowdownBattleAgent {}
 
 function createTestBattle(seed: [number, number, number, number] = [1, 2, 3, 4]) {
   const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, seed);
   ShowdownLogEnricher.setupRealtimeEnrichment(battle);
-  
+
   const team1 = [
-    { name: 'Bulbasaur', species: 'Bulbasaur', item: '', ability: 'Overgrow', moves: ['tackle', 'growl', 'vinewhip', 'amnesia'], level: 50, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } },
-    { name: 'Charmander', species: 'Charmander', item: '', ability: 'Blaze', moves: ['scratch', 'ember'], level: 50, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } },
-    { name: 'Squirtle', species: 'Squirtle', item: '', ability: 'Torrent', moves: ['tackle', 'watergun'], level: 50, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }
+    {
+      name: 'Bulbasaur',
+      species: 'Bulbasaur',
+      item: '',
+      ability: 'Overgrow',
+      moves: ['tackle', 'growl', 'vinewhip', 'amnesia'],
+      level: 50,
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+    },
+    {
+      name: 'Charmander',
+      species: 'Charmander',
+      item: '',
+      ability: 'Blaze',
+      moves: ['scratch', 'ember'],
+      level: 50,
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+    },
+    {
+      name: 'Squirtle',
+      species: 'Squirtle',
+      item: '',
+      ability: 'Torrent',
+      moves: ['tackle', 'watergun'],
+      level: 50,
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+    }
   ];
 
   const team2 = [
-    { name: 'Pikachu', species: 'Pikachu', item: '', ability: 'Static', moves: ['thunderbolt', 'quickattack'], level: 50, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } },
-    { name: 'Eevee', species: 'Eevee', item: '', ability: 'RunAway', moves: ['tackle'], level: 50, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }
+    {
+      name: 'Pikachu',
+      species: 'Pikachu',
+      item: '',
+      ability: 'Static',
+      moves: ['thunderbolt', 'quickattack'],
+      level: 50,
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+    },
+    {
+      name: 'Eevee',
+      species: 'Eevee',
+      item: '',
+      ability: 'RunAway',
+      moves: ['tackle'],
+      level: 50,
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+    }
   ];
 
   battle.setPlayer('p1', { name: 'Player 1', team: team1 as any });
@@ -115,7 +163,10 @@ describe('Forced Switch Combinations & Engine Parity Tests', () => {
     engine.executeTurn({ p1Choice: 'move 1', p2Choice: 'move 1' });
 
     // If both fainted, both are in force-switch request
-    if (classifyRequest(battle.p1.activeRequest) === 'force-switch' && classifyRequest(battle.p2.activeRequest) === 'force-switch') {
+    if (
+      classifyRequest(battle.p1.activeRequest) === 'force-switch' &&
+      classifyRequest(battle.p2.activeRequest) === 'force-switch'
+    ) {
       const out = engine.executeTurn({
         p1Agent: new TestAgent('p1'),
         p2Agent: new TestAgent('p2')

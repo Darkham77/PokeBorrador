@@ -1,60 +1,50 @@
 <script setup lang="ts">
-import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { DetailSpeciesHeaderData } from './pokemonSummaryTypes.ts'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { DetailSpeciesHeaderData } from './pokemonSummaryTypes.ts';
 
-const NATIONAL_ID_PADDING_LENGTH = 3
+const NATIONAL_ID_PADDING_LENGTH = 3;
 
 interface Props {
-  species: DetailSpeciesHeaderData
-  targetPokemon?: Pokemon | null
-  isInstance?: boolean
+  species: DetailSpeciesHeaderData;
+  targetPokemon?: Pokemon | null;
+  isInstance?: boolean;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'editNickname'): void
-}>()
+  (e: 'editNickname'): void;
+}>();
 </script>
 
 <template>
   <header class="pdex-custom-header">
-    <div
-      class="poke-identity"
-      :class="{ 'has-nickname': targetPokemon?.nickname }"
-    >
+    <div class="poke-identity" :class="{ 'has-nickname': targetPokemon?.nickname }">
       <span class="p-id">#{{ species.nationalId.padStart(NATIONAL_ID_PADDING_LENGTH, '0') }}</span>
-      <div
-        class="name-with-edit"
-        style="display: flex; align-items: center; gap: $spacing-sm;"
-      >
+      <div class="name-with-edit" style="display: flex; align-items: center; gap: $spacing-sm">
         <button
-          v-if="isInstance" 
-          id="pokemon-detail-header-btn-1" 
-          class="edit-nick-btn" 
-          style=" padding: 0;font-size: var(--font-10); opacity: 0.5; cursor: pointer; flex-shrink: 0;"
+          v-if="isInstance"
+          id="pokemon-detail-header-btn-1"
+          class="edit-nick-btn"
+          style="
+            padding: 0;
+            font-size: var(--font-10);
+            opacity: 0.5;
+            cursor: pointer;
+            flex-shrink: 0;
+          "
           @click.stop="emit('editNickname')"
         >
           <span class="emoji">✏️</span>
         </button>
-        <PVGenderBadge
-          v-if="targetPokemon?.gender"
-          :gender="targetPokemon.gender"
-          size="sm"
-        />
+        <PVGenderBadge v-if="targetPokemon?.gender" :gender="targetPokemon.gender" size="sm" />
         <div class="name-container">
-          <span
-            v-if="targetPokemon?.nickname"
-            class="p-nickname-prefix"
-          >
+          <span v-if="targetPokemon?.nickname" class="p-nickname-prefix">
             {{ targetPokemon.nickname }}
           </span>
-          <h2
-            class="p-name"
-            style="margin: 0;"
-          >
+          <h2 class="p-name" style="margin: 0">
             {{ species.name.toUpperCase() }}
           </h2>
         </div>
@@ -63,18 +53,13 @@ const emit = defineEmits<{
 
     <div class="header-right">
       <div class="p-types">
-        <PokemonTypeTag
-          v-for="t in species.type"
-          :key="t"
-          :type="t"
-          size="md"
-        />
+        <PokemonTypeTag v-for="t in species.type" :key="t" :type="t" size="md" />
       </div>
     </div>
   </header>
 </template>
 
 <style scoped lang="scss">
-@use "../../styles/components/pokedex-detail" as *;
-@use "../../styles/components/unified-pokemon-detail" as *;
+@use '../../styles/components/pokedex-detail' as *;
+@use '../../styles/components/unified-pokemon-detail' as *;
 </style>

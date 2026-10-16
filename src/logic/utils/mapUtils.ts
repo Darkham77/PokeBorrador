@@ -1,7 +1,7 @@
 /** Increments a key in a string-keyed numeric record (e.g. inventory). */
-export function incrementRecordKey(
-  record: Partial<Record<string, number>>,
-  key: string,
+export function incrementRecordKey<K extends string>(
+  record: Partial<Record<K, number>>,
+  key: K,
   amount: number = 1
 ): number {
   const next = (record[key] ?? 0) + amount;

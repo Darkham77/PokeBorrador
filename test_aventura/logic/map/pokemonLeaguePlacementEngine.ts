@@ -8,7 +8,11 @@
  * and exclusive checkpoint gatehouse.
  */
 
-import type { ContinentMapResult, MountainStairLocation, ResolvedMountainMapResult } from './continentGenerator.ts';
+import type {
+  ContinentMapResult,
+  MountainStairLocation,
+  ResolvedMountainMapResult
+} from './continentGenerator.ts';
 import type { POINode, POIGateway } from '../../types/map/poiTypes.ts';
 import type { POITemplate } from './regionalPoiCatalog.ts';
 import type { POIPlacementOptions } from './poiPlacementEngine.ts';
@@ -30,16 +34,24 @@ export interface PokemonLeaguePlacementContext {
   readonly activeCatalog: readonly POITemplate[];
   readonly placedNodes: POINode[];
   readonly options?: POIPlacementOptions;
-  isAreaFree(bx: number, by: number, bw: number, bh: number, buffer?: number): boolean;
-  markAreaOccupied(bx: number, by: number, bw: number, bh: number): void;
-  getSettlementContext(): SettlementTerrainContext;
+  readonly isAreaFree: (bx: number, by: number, bw: number, bh: number, buffer?: number) => boolean;
+  readonly markAreaOccupied: (bx: number, by: number, bw: number, bh: number) => void;
+  readonly getSettlementContext: () => SettlementTerrainContext;
 }
 
 /**
  * Places the regional Pokémon League if present in catalog and map scale allows.
  */
 export function placePokemonLeague(ctx: PokemonLeaguePlacementContext): void {
-  const { continentMap, activeCatalog, placedNodes, options, isAreaFree, markAreaOccupied, getSettlementContext } = ctx;
+  const {
+    continentMap,
+    activeCatalog,
+    placedNodes,
+    options,
+    isAreaFree,
+    markAreaOccupied,
+    getSettlementContext
+  } = ctx;
   const W = continentMap.width;
   const H = continentMap.height;
 
@@ -80,7 +92,10 @@ export function placePokemonLeague(ctx: PokemonLeaguePlacementContext): void {
 
       if (validPlateau) {
         // Score prioritizes higher elevation and central northern location
-        const distToNorthCenter = Math.hypot(x + lW / 2 - W / 2, y + lH / 2 - H * LEAGUE_SEARCH_CENTER_Y_RATIO);
+        const distToNorthCenter = Math.hypot(
+          x + lW / 2 - W / 2,
+          y + lH / 2 - H * LEAGUE_SEARCH_CENTER_Y_RATIO
+        );
         const score = totalElev * LEAGUE_ELEVATION_SCORE_WEIGHT - distToNorthCenter;
         if (score > bestScore) {
           bestScore = score;
@@ -123,7 +138,8 @@ export function placePokemonLeague(ctx: PokemonLeaguePlacementContext): void {
     seed: options?.seed,
     defaultPalette: continentMap.mountainPalette
   });
-  (continentMap as { geologicalClusters: GeologicalClusterResult }).geologicalClusters = updatedClusters;
+  (continentMap as { geologicalClusters: GeologicalClusterResult }).geologicalClusters =
+    updatedClusters;
 
   const mapH = continentMap.height;
   const mapW = continentMap.width;
@@ -137,15 +153,16 @@ export function placePokemonLeague(ctx: PokemonLeaguePlacementContext): void {
   }
 
   // Re-resolve mountain autotile grid so the entire League massif forms a solid unscalable cliff face
-  const pal = updatedClusters.paletteMatrix[bestLeagueY]?.[bestLeagueX] ?? continentMap.mountainPalette ?? 'brown';
-  (continentMap as { resolvedMountain: ResolvedMountainMapResult }).resolvedMountain = resolveMountainMapGrid(
-    continentMap.heightmap,
-    {
+  const pal =
+    updatedClusters.paletteMatrix[bestLeagueY]?.[bestLeagueX] ??
+    continentMap.mountainPalette ??
+    'brown';
+  (continentMap as { resolvedMountain: ResolvedMountainMapResult }).resolvedMountain =
+    resolveMountainMapGrid(continentMap.heightmap, {
       palette: pal,
       paletteMatrix: updatedClusters.paletteMatrix,
       stairs: currentStairs
-    }
-  );
+    });
 
   const leagueGateways: POIGateway[] = [
     { x: midAvenueX, y: bestLeagueY + lH - 1, direction: 'south' }

@@ -1,7 +1,7 @@
-import type { PokemonType } from '@/data/battle/types'
-import type { BattleDifficulty } from '@/types/battle/battle'
+import { isPokemonType, type PokemonType } from '@/data/battle/types';
+import type { BattleDifficulty } from '@/types/battle/battle';
 
-const POKEMON_TYPE_ICONS: Readonly<Record<string, string>> = {
+const POKEMON_TYPE_ICONS: Readonly<Partial<Record<PokemonType, string>>> = {
   rock: '🪨',
   water: '💧',
   electric: '⚡',
@@ -10,33 +10,36 @@ const POKEMON_TYPE_ICONS: Readonly<Record<string, string>> = {
   psychic: '🔮',
   fire: '🔥',
   ground: '🌍'
-} as const
+} as const;
 
-const DEFAULT_TYPE_ICON = '🏆' as const
+const DEFAULT_TYPE_ICON = '🏆' as const;
 
-export function getPokemonTypeIcon(type: PokemonType | string): string {
-  return POKEMON_TYPE_ICONS[type] || DEFAULT_TYPE_ICON
+export function getPokemonTypeIcon(type: string): string {
+  if (isPokemonType(type)) {
+    return POKEMON_TYPE_ICONS[type] || DEFAULT_TYPE_ICON;
+  }
+  return DEFAULT_TYPE_ICON;
 }
 
 export function formatDifficultyLabel(difficulty: BattleDifficulty): string {
   switch (difficulty) {
     case 'easy':
-      return 'FÁCIL'
+      return 'FÁCIL';
     case 'normal':
-      return 'NORMAL'
+      return 'NORMAL';
     case 'hard':
-      return 'DIFÍCIL'
+      return 'DIFÍCIL';
   }
 }
 
 export function resolveGymButtonGradient(color: string): string {
-  return `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`
+  return `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`;
 }
 
 export function resolveGymButtonShadow(color: string): string {
-  return `0 8px 25px ${color}44`
+  return `0 8px 25px ${color}44`;
 }
 
 export function resolveGymHeaderGradient(color: string): string {
-  return `linear-gradient(180deg, ${color}15 0%, transparent 100%)`
+  return `linear-gradient(180deg, ${color}15 0%, transparent 100%)`;
 }

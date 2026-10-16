@@ -1,6 +1,6 @@
 <script lang="ts">
-const DEFAULT_SPARKLE_COUNT = 5
-const DEFAULT_RADIUS_PX = 40
+const DEFAULT_SPARKLE_COUNT = 5;
+const DEFAULT_RADIUS_PX = 40;
 </script>
 
 <script setup lang="ts">
@@ -9,23 +9,23 @@ const DEFAULT_RADIUS_PX = 40
  * Centralized orchestrator for visual effects on Pokémon sprites.
  * 1:1 MIGRATION - Modularized with identical logic.
  */
-import { computed, inject, type Ref, ref, watch, nextTick, onUnmounted, type PropType } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import { useBattleStore } from '@/stores/battle/battle'
-import { gsap } from 'gsap'
-import PVStatusFX from './PVStatusFX.vue'
-import PVAuraFX from './PVAuraFX.vue'
-import { resolveEffectSettings } from '@/data/battle/fx-configs'
-import { Z_LAYERS } from '@/logic/constants/visuals'
+import { computed, inject, type Ref, ref, watch, nextTick, onUnmounted, type PropType } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import { useBattleStore } from '@/stores/battle/battle';
+import { gsap } from 'gsap';
+import PVStatusFX from './PVStatusFX.vue';
+import PVAuraFX from './PVAuraFX.vue';
+import { resolveEffectSettings } from '@/data/battle/fx-configs';
+import { Z_LAYERS } from '@/logic/constants/visuals';
 
 import {
   applyVolatileFXTweens,
   applyStatusFXTweens,
   applyGuardianFXTween
-} from './spritePersistentFXHelpers.ts'
+} from './spritePersistentFXHelpers.ts';
 
-const MAX_PERSISTENT_FX_RETRIES = 3
-const PERSISTENT_FX_RETRY_DELAY_SEC = 0.1
+const MAX_PERSISTENT_FX_RETRIES = 3;
+const PERSISTENT_FX_RETRY_DELAY_SEC = 0.1;
 
 interface FXData {
   type: string;
@@ -34,14 +34,14 @@ interface FXData {
   active?: boolean;
 }
 
-const battleStore = useBattleStore()
-const uiStore = useUIStore()
+const battleStore = useBattleStore();
+const uiStore = useUIStore();
 
 const props = defineProps({
   pokeId: { type: [String, Number], default: null },
   isShiny: { type: Boolean, default: false },
   isGuardian: { type: Boolean, default: false },
-  status: { type: String, default: null }, 
+  status: { type: String, default: null },
   isConfused: { type: Boolean, default: false },
   isTaunted: { type: Boolean, default: false },
   isSubstitute: { type: Boolean, default: false },
@@ -76,20 +76,22 @@ const props = defineProps({
   isBattle: { type: Boolean, default: false },
   hideStatusOverlay: { type: Boolean, default: false },
   overlayOnly: { type: Boolean, default: false }
-})
+});
 
-const isModalFast = inject<Ref<boolean> | null>('isModalFastMode', null) ?? inject<Ref<boolean> | null>('isModalPerformanceMode', null)
-const forceHighFidelity = inject<boolean>('forceHighFidelity', false)
+const isModalFast =
+  inject<Ref<boolean> | null>('isModalFastMode', null) ??
+  inject<Ref<boolean> | null>('isModalPerformanceMode', null);
+const forceHighFidelity = inject<boolean>('forceHighFidelity', false);
 
 const isSimplified = computed(() => {
-  if (props.isSilhouette) return true
-  if (forceHighFidelity) return false
-  if (!props.enabled || uiStore.isSimplifiedModalsMode) return true
-  if (isModalFast !== null) return isModalFast.value
-  return uiStore.isFastMode
-})
+  if (props.isSilhouette) return true;
+  if (forceHighFidelity) return false;
+  if (!props.enabled || uiStore.isSimplifiedModalsMode) return true;
+  if (isModalFast !== null) return isModalFast.value;
+  return uiStore.isFastMode;
+});
 
-const animSeed = Math.random()
+const animSeed = Math.random();
 
 const wrapperClasses = computed(() => ({
   'pv-fx-wrapper': true,
@@ -109,14 +111,14 @@ const wrapperClasses = computed(() => ({
   'is-protected': props.isProtected && !isSimplified.value,
   'is-enduring': props.isEnduring && !isSimplified.value,
   'is-lock-on': props.isLockOn && !isSimplified.value
-}))
+}));
 
-const isAnimStateHidden = computed(() =>
-  props.animState === 'trapped' || props.animState === 'releasing'
-)
+const isAnimStateHidden = computed(
+  () => props.animState === 'trapped' || props.animState === 'releasing'
+);
 
 const secondaryEffects = computed(() => {
-  if (isAnimStateHidden.value) return []
+  if (isAnimStateHidden.value) return [];
   return [
     { active: props.isShiny, emoji: '⭐', type: 'shiny' },
     { active: props.isConfused, emoji: '💫', type: 'confused' },
@@ -131,21 +133,21 @@ const secondaryEffects = computed(() => {
     { active: props.isTrapped, emoji: '🕸️', type: 'trapped' },
     { active: props.isIngrained, emoji: '🌳', type: 'ingrained' },
     { active: props.isPerishSong, emoji: '⏳', type: 'perishsong' }
-  ].filter(e => e.active)
-})
+  ].filter((e) => e.active);
+});
 
 const tacticalEffects = computed(() => {
-  if (isAnimStateHidden.value) return []
+  if (isAnimStateHidden.value) return [];
   return [
     { active: props.isProtected, emoji: '🛡️', type: 'protected' },
     { active: props.isEnduring, emoji: '✊', type: 'enduring' },
     { active: props.isFocusEnergy, emoji: '🎯', type: 'focus' },
     { active: props.isLockOn, emoji: '👁️', type: 'lockon' }
-  ].filter(e => e.active)
-})
+  ].filter((e) => e.active);
+});
 
 const fieldEffects = computed(() => {
-  if (isAnimStateHidden.value) return []
+  if (isAnimStateHidden.value) return [];
   return [
     { active: props.hasReflect, emoji: '🧱', type: 'reflect' },
     { active: props.hasLightScreen, emoji: '🕯️', type: 'lightscreen' },
@@ -154,89 +156,139 @@ const fieldEffects = computed(() => {
     { active: props.hasSpikes, emoji: '🌵', type: 'spikes' },
     { active: props.hasStealthRock, emoji: '🪨', type: 'stealthrock' },
     { active: props.hasToxicSpikes, emoji: '☠️', type: 'toxicspikes' }
-  ].filter(e => e.active)
-})
+  ].filter((e) => e.active);
+});
 
 const activeStatusEffects = computed(() => {
-  if (!props.status || isSimplified.value || isAnimStateHidden.value) return []
-  const map: Record<string, string> = { brn: '🔥', psn: '☠️', slp: '💤', par: '⚡', frz: '❄️', tox: '☠️' }
-  return [{ type: props.status, emoji: map[props.status] || '' }]
-})
+  if (!props.status || isSimplified.value || isAnimStateHidden.value) return [];
+  const map: Record<string, string> = {
+    // open-record: Status effect emoji map
+    brn: '🔥',
+    psn: '☠️',
+    slp: '💤',
+    par: '⚡',
+    frz: '❄️',
+    tox: '☠️'
+  };
+  return [{ type: props.status, emoji: map[props.status] || '' }];
+});
 
-const spriteLayerRef = ref<HTMLElement | null>(null)
-const activeTweens: gsap.core.Tween[] = []
+const spriteLayerRef = ref<HTMLElement | null>(null);
+const activeTweens: gsap.core.Tween[] = [];
 
 const refreshPersistentFX = (retryCount = 0) => {
-  if (props.overlayOnly || !spriteLayerRef.value) return
-  const statusWrapper = spriteLayerRef.value.querySelector('.pokemon-sprite-status-wrapper') as HTMLElement
-  const img = spriteLayerRef.value.querySelector('img') as HTMLElement
-  const target = statusWrapper || img
+  if (props.overlayOnly || !spriteLayerRef.value) return;
+  const statusWrapper = spriteLayerRef.value.querySelector(
+    '.pokemon-sprite-status-wrapper'
+  ) as HTMLElement;
+  const img = spriteLayerRef.value.querySelector('img') as HTMLElement;
+  const target = statusWrapper || img;
   if (!target && retryCount < MAX_PERSISTENT_FX_RETRIES) {
-    const t = gsap.delayedCall(PERSISTENT_FX_RETRY_DELAY_SEC, () => refreshPersistentFX(retryCount + 1))
-    activeTweens.push(t)
-    return
+    const t = gsap.delayedCall(PERSISTENT_FX_RETRY_DELAY_SEC, () =>
+      refreshPersistentFX(retryCount + 1)
+    );
+    activeTweens.push(t);
+    return;
   }
-  activeTweens.forEach(t => t.kill())
-  activeTweens.length = 0
-  if (!target) return
+  activeTweens.forEach((t) => t.kill());
+  activeTweens.length = 0;
+  if (!target) return;
 
-  gsap.set(target, { filter: '', x: 0, y: 0, rotation: 0 })
-  gsap.set(spriteLayerRef.value, { filter: '' })
+  gsap.set(target, { filter: '', x: 0, y: 0, rotation: 0 });
+  gsap.set(spriteLayerRef.value, { filter: '' });
 
-  const isImmobilized = props.status === 'frz' || props.isTrapped || props.animState === 'catching'
+  const isImmobilized = props.status === 'frz' || props.isTrapped || props.animState === 'catching';
 
-  applyVolatileFXTweens(target, props, isImmobilized, activeTweens)
-  applyStatusFXTweens(target, props.status, isImmobilized, activeTweens)
+  applyVolatileFXTweens(target, props, isImmobilized, activeTweens);
+  applyStatusFXTweens(target, props.status, isImmobilized, activeTweens);
 
   if (props.isGuardian && !props.status && spriteLayerRef.value) {
-    applyGuardianFXTween(spriteLayerRef.value, Boolean(props.vibrant), animSeed, activeTweens)
+    applyGuardianFXTween(spriteLayerRef.value, Boolean(props.vibrant), animSeed, activeTweens);
   }
-}
+};
 
-watch([() => props.pokeId, () => props.status, () => props.isConfused, () => props.isTaunted, () => props.isSubstitute, () => props.isFlinched, () => props.isDisabled, () => props.isEncored, () => props.isCursed, () => props.isGuardian, isSimplified], () => {
-  nextTick(() => refreshPersistentFX())
-}, { immediate: true })
+watch(
+  [
+    () => props.pokeId,
+    () => props.status,
+    () => props.isConfused,
+    () => props.isTaunted,
+    () => props.isSubstitute,
+    () => props.isFlinched,
+    () => props.isDisabled,
+    () => props.isEncored,
+    () => props.isCursed,
+    () => props.isGuardian,
+    isSimplified
+  ],
+  () => {
+    nextTick(() => refreshPersistentFX());
+  },
+  { immediate: true }
+);
 
 onUnmounted(() => {
-  activeTweens.forEach(t => t.kill())
-})
+  activeTweens.forEach((t) => t.kill());
+});
 
 // --- DEBUG OVERLAY (1:1 Logic) ---
 const allActiveFXDebug = computed(() => {
-  if (!battleStore.debugShowFxRadius || props.hideStatusOverlay) return []
-  const effects = [...activeStatusEffects.value, ...secondaryEffects.value, ...tacticalEffects.value, ...fieldEffects.value]
+  if (!battleStore.debugShowFxRadius || props.hideStatusOverlay) return [];
+  const effects = [
+    ...activeStatusEffects.value,
+    ...secondaryEffects.value,
+    ...tacticalEffects.value,
+    ...fieldEffects.value
+  ];
   return effects.map((fx: FXData) => {
-    const settings = resolveEffectSettings(fx.type, props.radius, { isField: fx.isField, isSimplified: isSimplified.value, isBattle: props.isBattle, spriteScale: props.spriteScale, pokeScale: props.pokeScale })
-    const shape = settings.shape; const offset = settings.offset || { x: 0, y: 0 }; 
-    const area = settings.area as { x: [number, number], y?: [number, number] }
-const BORDER_RADIUS_CIRCLE_PERCENT = '50%'
-const DEBUG_OVERLAY_TRANSLATE_PERCENT = -50
-const DEBUG_CENTER_OFFSET_PERCENT = 50
-const DEFAULT_DEBUG_Y_RANGE_PERCENT: readonly [number, number] = [-10, 10] as const
+    const settings = resolveEffectSettings(fx.type, props.radius, {
+      isField: fx.isField,
+      isSimplified: isSimplified.value,
+      isBattle: props.isBattle,
+      spriteScale: props.spriteScale,
+      pokeScale: props.pokeScale
+    });
+    const shape = settings.shape;
+    const offset = settings.offset || { x: 0, y: 0 };
+    const area = settings.area as { x: [number, number]; y?: [number, number] };
+    const BORDER_RADIUS_CIRCLE_PERCENT = '50%';
+    const DEBUG_OVERLAY_TRANSLATE_PERCENT = -50;
+    const DEBUG_CENTER_OFFSET_PERCENT = 50;
+    const DEFAULT_DEBUG_Y_RANGE_PERCENT: readonly [number, number] = [-10, 10] as const;
 
-    const style: Record<string, string> = { 
-      position: 'absolute', 
-      border: '1px solid ' + (shape === 'circle' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 165, 0, 0.8)'), 
-      pointerEvents: 'none', 
-      zIndex: String(Z_LAYERS.HUD), 
-      borderRadius: shape === 'circle' ? BORDER_RADIUS_CIRCLE_PERCENT : '2px' 
-    }
+    const style: Record<string, string> = {
+      // open-record: Dynamic debug overlay CSS styles
+      position: 'absolute',
+      border:
+        '1px solid ' + (shape === 'circle' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 165, 0, 0.8)'),
+      pointerEvents: 'none',
+      zIndex: String(Z_LAYERS.HUD),
+      borderRadius: shape === 'circle' ? BORDER_RADIUS_CIRCLE_PERCENT : '2px'
+    };
 
     if (shape === 'circle') {
-      const radius = area.x[1]; style.width = `${radius * 2}%`; style.height = `${radius * 2}%`; style.top = `${DEBUG_CENTER_OFFSET_PERCENT + offset.y}%`; style.left = `${DEBUG_CENTER_OFFSET_PERCENT + offset.x}%`; style.transform = `translate(${DEBUG_OVERLAY_TRANSLATE_PERCENT}%, ${DEBUG_OVERLAY_TRANSLATE_PERCENT}%)`
+      const radius = area.x[1];
+      style.width = `${radius * 2}%`;
+      style.height = `${radius * 2}%`;
+      style.top = `${DEBUG_CENTER_OFFSET_PERCENT + offset.y}%`;
+      style.left = `${DEBUG_CENTER_OFFSET_PERCENT + offset.x}%`;
+      style.transform = `translate(${DEBUG_OVERLAY_TRANSLATE_PERCENT}%, ${DEBUG_OVERLAY_TRANSLATE_PERCENT}%)`;
     } else {
-      const xRange = area.x; const yRange = area.y || DEFAULT_DEBUG_Y_RANGE_PERCENT; style.width = `${xRange[1] - xRange[0]}%`; style.height = `${yRange[1] - yRange[0]}%`; style.left = `${DEBUG_CENTER_OFFSET_PERCENT + (xRange[0] + xRange[1]) / 2 + offset.x}%`; style.top = `${DEBUG_CENTER_OFFSET_PERCENT + (yRange[0] + yRange[1]) / 2 + offset.y}%`; style.transform = `translate(${DEBUG_OVERLAY_TRANSLATE_PERCENT}%, ${DEBUG_OVERLAY_TRANSLATE_PERCENT}%)`
+      const xRange = area.x;
+      const yRange = area.y || DEFAULT_DEBUG_Y_RANGE_PERCENT;
+      style.width = `${xRange[1] - xRange[0]}%`;
+      style.height = `${yRange[1] - yRange[0]}%`;
+      style.left = `${DEBUG_CENTER_OFFSET_PERCENT + (xRange[0] + xRange[1]) / 2 + offset.x}%`;
+      style.top = `${DEBUG_CENTER_OFFSET_PERCENT + (yRange[0] + yRange[1]) / 2 + offset.y}%`;
+      style.transform = `translate(${DEBUG_OVERLAY_TRANSLATE_PERCENT}%, ${DEBUG_OVERLAY_TRANSLATE_PERCENT}%)`;
     }
-    return { id: fx.type, style, label: `${fx.type.toUpperCase()} (${shape})` }
-  })
-})
+    return { id: fx.type, style, label: `${fx.type.toUpperCase()} (${shape})` };
+  });
+});
 </script>
 
 <template>
-  <div
-    :class="wrapperClasses"
-    :style="{ '--fx-seed': animSeed, '--fx-radius': radius }"
-  >
+  <div :class="wrapperClasses" :style="{ '--fx-seed': animSeed, '--fx-radius': radius }">
     <div
       v-if="!overlayOnly"
       ref="spriteLayerRef"
@@ -290,7 +342,7 @@ const DEFAULT_DEBUG_Y_RANGE_PERCENT: readonly [number, number] = [-10, 10] as co
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 %pixel-fx-render {
   image-rendering: -webkit-optimize-contrast !important;
@@ -303,8 +355,11 @@ const DEFAULT_DEBUG_Y_RANGE_PERCENT: readonly [number, number] = [-10, 10] as co
   @extend %pixel-fx-render;
 
   position: relative;
-  display: flex; justify-content: center; align-items: center;
-  width: fit-content; height: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  height: fit-content;
 
   &.is-simplified {
     :deep(img:not(.is-silhouette)) {
@@ -348,8 +403,12 @@ const DEFAULT_DEBUG_Y_RANGE_PERCENT: readonly [number, number] = [-10, 10] as co
   @extend %pixel-fx-render;
 
   position: relative;
-  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 2); display: flex; justify-content: center; align-items: center;
-  width: 100%; height: 100%;
+  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
   will-change: transform;
 
   &.is-guardian {
@@ -362,19 +421,41 @@ const DEFAULT_DEBUG_Y_RANGE_PERCENT: readonly [number, number] = [-10, 10] as co
 }
 
 .debug-guide {
-  position: absolute; top: 50%; left: 50%; z-index: calc(v-bind('Z_LAYERS.OVERLAY') - 1);
-  display: flex; justify-content: center; align-items: center;
-  border: 1px dashed; border-radius: 50%; transform: Translate(-50%, -50%); pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: calc(v-bind('Z_LAYERS.OVERLAY') - 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px dashed;
+  border-radius: 50%;
+  transform: Translate(-50%, -50%);
+  pointer-events: none;
   .label {
-    position: absolute; bottom: -18px;
-    padding: 2px 5px; border-radius: $radius-xs-alt; background: Rgb(0 0 0 / 90%); color: var(--white);
-    font-family: $font-family-mono; font-size: var(--font-10); font-weight: bold; line-height: 1.2;
-    transform: Scale(calc(1 / var(--camera-scale, 1))); white-space: nowrap;
+    position: absolute;
+    bottom: -18px;
+    padding: 2px 5px;
+    border-radius: $radius-xs-alt;
+    background: Rgb(0 0 0 / 90%);
+    color: var(--white);
+    font-family: $font-family-mono;
+    font-size: var(--font-10);
+    font-weight: bold;
+    line-height: 1.2;
+    transform: Scale(calc(1 / var(--camera-scale, 1)));
+    white-space: nowrap;
     transform-origin: center top;
   }
-  &.debug-fx-radius { border: 2px solid var(--orange-500); background: Rgb(255 153 0 / 20%);
+  &.debug-fx-radius {
+    border: 2px solid var(--orange-500);
+    background: Rgb(255 153 0 / 20%);
     border-color: var(--orange-500);
-    .label { border: 1px solid var(--orange-500); background: Rgb(40 20 0 / 90%); color: var(--amber); }
+    .label {
+      border: 1px solid var(--orange-500);
+      background: Rgb(40 20 0 / 90%);
+      color: var(--amber);
+    }
   }
 }
 </style>

@@ -88,7 +88,7 @@ export abstract class ShowdownBattleAgent {
       return 'pass';
     }
 
-    const validMoves = slotReq.moves.filter(m => !m.disabled && (m.pp === undefined || m.pp > 0));
+    const validMoves = slotReq.moves.filter((m) => !m.disabled && (m.pp === undefined || m.pp > 0));
     if (validMoves.length === 0) {
       return this.handleNoValidMoves(slotReq, fullRequest);
     }
@@ -110,11 +110,14 @@ export abstract class ShowdownBattleAgent {
     const chosenIndices = new Set<number>();
 
     const actions = forceSwitchList.map((mustSwitch, slotIdx) => {
-      const isObjReviving = typeof mustSwitch === 'object' && mustSwitch !== null && Boolean(Reflect.get(mustSwitch, 'reviving'));
+      const isObjReviving =
+        typeof mustSwitch === 'object' &&
+        mustSwitch !== null &&
+        Boolean(Reflect.get(mustSwitch, 'reviving'));
       const slotPoke = team[slotIdx];
       const isPokeReviving = Boolean(slotPoke && Reflect.get(slotPoke, 'reviving'));
       const isReviving = isObjReviving || isPokeReviving;
-      
+
       // Find the first valid bench pokemon (fainted if reviving, non-fainted otherwise) that hasn't been chosen yet
       const targetIdx = team.findIndex((p, idx) => {
         if (p.active || chosenIndices.has(idx)) return false;
@@ -135,7 +138,9 @@ export abstract class ShowdownBattleAgent {
     return !!(slotReq.trapped || slotReq.maybeTrapped);
   }
 
-  protected isFainted(target?: string | { condition?: string; hp?: number; fainted?: boolean } | null): boolean {
+  protected isFainted(
+    target?: string | { condition?: string; hp?: number; fainted?: boolean } | null
+  ): boolean {
     if (!target) return false;
     if (typeof target === 'object') {
       if (target.fainted === true || target.hp === 0 || String(target.hp) === '0') return true;
@@ -143,7 +148,15 @@ export abstract class ShowdownBattleAgent {
       return false;
     }
     const cond = String(target).trim().toLowerCase();
-    return cond === 'fnt' || cond.endsWith('fnt') || cond === '0' || cond.startsWith('0/') || cond.startsWith('0 ') || cond.includes('fnt') || cond.includes('0 hp');
+    return (
+      cond === 'fnt' ||
+      cond.endsWith('fnt') ||
+      cond === '0' ||
+      cond.startsWith('0/') ||
+      cond.startsWith('0 ') ||
+      cond.includes('fnt') ||
+      cond.includes('0 hp')
+    );
   }
 
   protected findBenchCandidate(team: NonNullable<ChoiceRequest['side']>['pokemon']): number | null {

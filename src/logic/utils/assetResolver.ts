@@ -1,4 +1,3 @@
-
 /**
  * assetResolver.ts
  * Centralized logic for resolving optimized asset URLs.

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { gsap } from 'gsap'
-import { GSAP_FAST_DURATION_SEC } from '@/logic/constants/animations.ts'
-import { useUIStore } from '@/stores/ui.ts'
+import { gsap } from 'gsap';
+import { GSAP_FAST_DURATION_SEC } from '@/logic/constants/animations.ts';
+import { useUIStore } from '@/stores/ui.ts';
 
-const GAME_VIEW_TRANSITION_Y_PX = 10
-const uiStore = useUIStore()
+const GAME_VIEW_TRANSITION_Y_PX = 10;
+const uiStore = useUIStore();
 
 const onBeforeEnter = (el: Element) => {
-  gsap.set(el, { opacity: 0, y: GAME_VIEW_TRANSITION_Y_PX })
-}
+  gsap.set(el, { opacity: 0, y: GAME_VIEW_TRANSITION_Y_PX });
+};
 
 const onEnter = (el: Element, done: () => void) => {
   gsap.to(el, {
@@ -17,8 +17,8 @@ const onEnter = (el: Element, done: () => void) => {
     duration: GSAP_FAST_DURATION_SEC,
     ease: 'power2.out',
     onComplete: done
-  })
-}
+  });
+};
 
 const onLeave = (el: Element, done: () => void) => {
   gsap.to(el, {
@@ -27,48 +27,41 @@ const onLeave = (el: Element, done: () => void) => {
     duration: GSAP_FAST_DURATION_SEC,
     ease: 'power2.in',
     onComplete: done
-  })
-}
+  });
+};
 
 const onNavItemMouseEnter = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
+  const target = event.currentTarget as HTMLElement;
   gsap.to(target, {
     backgroundColor: 'Rgba(255, 255, 255, 0.05)',
     color: '#ffffff',
     duration: GSAP_FAST_DURATION_SEC,
     overwrite: 'auto'
-  })
-}
+  });
+};
 
 const onNavItemMouseLeave = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
-  const isActive = target.classList.contains('active')
-  
+  const target = event.currentTarget as HTMLElement;
+  const isActive = target.classList.contains('active');
+
   gsap.to(target, {
     backgroundColor: isActive ? 'Rgba(255, 184, 0, 0.1)' : 'transparent',
     color: isActive ? 'var(--yellow)' : 'var(--gray)',
     duration: 0.2,
     overwrite: 'auto'
-  })
-}
+  });
+};
 </script>
 
 <template>
   <div class="game-view">
     <div class="stars" />
     <div class="game-container">
-      <div class="placeholder-hud">
-        HUD (Migrada a LegacyInterface)
-      </div>
+      <div class="placeholder-hud">HUD (Migrada a LegacyInterface)</div>
 
       <main class="content-area">
         <router-view v-slot="{ Component }">
-          <transition
-            mode="out-in"
-            @before-enter="onBeforeEnter"
-            @enter="onEnter"
-            @leave="onLeave"
-          >
+          <transition mode="out-in" @before-enter="onBeforeEnter" @enter="onEnter" @leave="onLeave">
             <component :is="Component" />
           </transition>
         </router-view>
@@ -112,7 +105,7 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .game-view {
   min-height: 100dvh;

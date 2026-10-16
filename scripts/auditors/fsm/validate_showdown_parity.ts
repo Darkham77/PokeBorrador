@@ -21,7 +21,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
-import { BaseAuditor, SharedAstContext, normalizePosixPath , createRuleCapabilities} from '@francogp/auditor';
+import {
+  BaseAuditor,
+  SharedAstContext,
+  normalizePosixPath,
+  createRuleCapabilities
+} from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -43,15 +48,7 @@ export const CANONICAL_SHOWDOWN_PROTOCOL_TOKENS = {
     '-curestatusall',
     '-sethp'
   ],
-  LIFECYCLE_FLOW: [
-    'player',
-    'win',
-    'tie',
-    'turn',
-    'upkeep',
-    'switch',
-    'drag'
-  ],
+  LIFECYCLE_FLOW: ['player', 'win', 'tie', 'turn', 'upkeep', 'switch', 'drag'],
   STAT_STAGES: [
     '-boost',
     '-setboost',
@@ -170,7 +167,8 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
         'missing-protocol-token': 'Token de protocolo sin handler'
       },
       ruleRemediations: {
-        'missing-protocol-token': 'Add protocol token handler in showdownBridge or register token in ignore list'
+        'missing-protocol-token':
+          'Add protocol token handler in showdownBridge or register token in ignore list'
       },
       requiresAst: true,
       coverage: {
@@ -185,7 +183,7 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
 
     await this.runSubAuditor('missing-protocol-token', async () => {
       const battleFiles = await this.context.collectFiles(['src/logic/battle'], new Set(['.ts']));
-      const bridgeFiles = battleFiles.filter(f => {
+      const bridgeFiles = battleFiles.filter((f) => {
         const base = path.basename(f);
         return base.startsWith('showdownBridge') && base.endsWith('.ts');
       });
@@ -226,7 +224,10 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
           }
 
           // 4. Match binary equality checks (type === 'switch')
-          if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken) {
+          if (
+            ts.isBinaryExpression(node) &&
+            node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken
+          ) {
             if (ts.isStringLiteral(node.right)) {
               handledTokens.add(node.right.text);
             } else if (ts.isStringLiteral(node.left)) {
@@ -267,6 +268,10 @@ export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
 }
 
 // Canonical CLI Entrypoint
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new ShowdownParityAuditor());
 }

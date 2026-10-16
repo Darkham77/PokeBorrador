@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import type { EloTier } from '@/logic/pvp/rankedEngine'
+import type { EloTier } from '@/logic/pvp/rankedEngine';
 
 interface DisplayTierItem {
-  code: string
-  tier: EloTier
-  rewardsDesc: string
+  code: string;
+  tier: EloTier;
+  rewardsDesc: string;
 }
 
 defineProps<{
-  currentTier: EloTier
-  currentElo: number
-  nextTier: EloTier | null
-  pointsToNextTier: number
-  isSearching: boolean
-  displayTiers: DisplayTierItem[]
-}>()
+  currentTier: EloTier;
+  currentElo: number;
+  nextTier: EloTier | null;
+  pointsToNextTier: number;
+  isSearching: boolean;
+  displayTiers: DisplayTierItem[];
+}>();
 
 const emit = defineEmits<{
-  (e: 'search-ranked'): void
-  (e: 'cancel-search'): void
-}>()
+  (e: 'search-ranked'): void;
+  (e: 'cancel-search'): void;
+}>();
 </script>
 
 <template>
@@ -29,49 +29,35 @@ const emit = defineEmits<{
         <span class="emoji season-icon">🏆</span>
         <div class="season-title-box">
           <span class="season-label">TEMPORADA COMPETITIVA</span>
-          <h3 class="season-name">
-            TEMPORADA 1: RENACER DE KANTO
-          </h3>
+          <h3 class="season-name">TEMPORADA 1: RENACER DE KANTO</h3>
         </div>
       </div>
 
       <div class="player-rank-status">
-        <div
-          class="tier-badge-large"
-          :style="{ borderColor: currentTier.color }"
-        >
+        <div class="tier-badge-large" :style="{ borderColor: currentTier.color }">
           <img
             v-if="currentTier.sprite"
             :src="currentTier.sprite"
             :alt="currentTier.name"
             class="tier-sprite-large"
-          
             width="32"
             height="32"
-          >
-          <span
-            v-else
-            class="tier-icon emoji"
-          >{{ currentTier.icon }}</span>
+          />
+          <span v-else class="tier-icon emoji">{{ currentTier.icon }}</span>
           <div class="tier-info">
-            <span
-              class="tier-name"
-              :style="{ color: currentTier.color }"
-            >{{ currentTier.name }}</span>
+            <span class="tier-name" :style="{ color: currentTier.color }">{{
+              currentTier.name
+            }}</span>
             <span class="tier-elo">{{ currentElo }} LP</span>
           </div>
         </div>
-        <div
-          v-if="nextTier"
-          class="tier-progress-info"
-        >
-          <span class="progress-label">Siguiente Rango: <strong>{{ nextTier.name }}</strong></span>
+        <div v-if="nextTier" class="tier-progress-info">
+          <span class="progress-label"
+            >Siguiente Rango: <strong>{{ nextTier.name }}</strong></span
+          >
           <span class="progress-sub">Faltan {{ pointsToNextTier }} LP para ascender</span>
         </div>
-        <div
-          v-else
-          class="tier-progress-info"
-        >
+        <div v-else class="tier-progress-info">
           <span class="progress-label max-rank">¡RANGO MÁXIMO ALCANZADO!</span>
           <span class="progress-sub">Compite por el Top 1 del Salón de la Fama</span>
         </div>
@@ -89,14 +75,8 @@ const emit = defineEmits<{
         >
           <span class="emoji">⚔️</span> BUSCAR COMBATE RANKED
         </button>
-        <div
-          v-else
-          class="searching-status-box"
-        >
-          <div
-            v-gsap-loop="'spin'"
-            class="searching-spinner"
-          />
+        <div v-else class="searching-status-box">
+          <div v-gsap-loop="'spin'" class="searching-spinner" />
           <span class="searching-text">Buscando rival en tu rango...</span>
           <button
             id="btn-cancel-ranked-matchmaking"
@@ -128,9 +108,7 @@ const emit = defineEmits<{
 
     <!-- TIER REWARDS PREVIEW -->
     <div class="rewards-preview-card">
-      <h4 class="rewards-title">
-        <span class="emoji">🎁</span> RECOMPENSAS DE TEMPORADA
-      </h4>
+      <h4 class="rewards-title"><span class="emoji">🎁</span> RECOMPENSAS DE TEMPORADA</h4>
       <div class="tiers-rewards-grid">
         <div
           v-for="tier in displayTiers"
@@ -144,18 +122,11 @@ const emit = defineEmits<{
               :src="tier.tier.sprite"
               :alt="tier.tier.name"
               class="tier-sprite-mini"
-            
               width="32"
               height="32"
-            >
-            <span
-              v-else
-              class="tier-emoji"
-            >{{ tier.tier.icon }}</span>
-            <span
-              class="tier-label"
-              :style="{ color: tier.tier.color }"
-            >{{ tier.tier.name }}</span>
+            />
+            <span v-else class="tier-emoji">{{ tier.tier.icon }}</span>
+            <span class="tier-label" :style="{ color: tier.tier.color }">{{ tier.tier.name }}</span>
           </div>
           <div class="reward-col">
             <span class="reward-desc">{{ tier.rewardsDesc }}</span>

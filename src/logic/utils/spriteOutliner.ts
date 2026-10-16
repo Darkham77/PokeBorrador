@@ -25,20 +25,24 @@ function obtainWorkerInstance(): Worker | null {
   if (typeof window === 'undefined' || !window.Worker || !window.OffscreenCanvas) {
     return null;
   }
-  
+
   if (!spriteWorker) {
     try {
-      spriteWorker = new Worker(
-        new URL('./spriteOutliner.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
-      
+      spriteWorker = new Worker(new URL('./spriteOutliner.worker.ts', import.meta.url), {
+        type: 'module'
+      });
+
       spriteWorker.onmessage = (event) => {
-        const payload = event.data as { jobId: number; success: boolean; blob: Blob | null; error?: string };
+        const payload = event.data as {
+          jobId: number;
+          success: boolean;
+          blob: Blob | null;
+          error?: string;
+        };
         const { jobId, success, blob, error } = payload;
         const job = pendingJobs.get(jobId);
         if (!job) return;
-        
+
         pendingJobs.delete(jobId);
         if (success && blob) {
           try {
@@ -53,7 +57,7 @@ function obtainWorkerInstance(): Worker | null {
           job.resolve(job.originalUrl);
         }
       };
-      
+
       spriteWorker.onerror = (err) => {
         // Resolve all pending jobs with their originalUrl so callers do not hang
         for (const [, job] of pendingJobs) {
@@ -92,14 +96,14 @@ async function processSpriteFallback(
   type: SpriteOutlineType
 ): Promise<string> {
   const img = await loadImage(originalUrl);
-  
+
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Could not get 2D context from canvas');
 
   const r = type === 'silhouette' ? 1 : 3;
   const padding = type === 'silhouette' ? 4 : r;
-  
+
   canvas.width = img.naturalWidth + padding * 2;
   canvas.height = img.naturalHeight + padding * 2;
 
@@ -117,7 +121,7 @@ async function processSpriteFallback(
   if (type === 'silhouette') {
     ctx.filter = 'blur(2px)';
   }
-  
+
   for (let x = -r; x <= r; x++) {
     for (let y = -r; y <= r; y++) {
       if (x * x + y * y > r * r) continue;
@@ -144,10 +148,7 @@ async function processSpriteFallback(
  * Generates an outlined or silhouette version of a sprite dynamically.
  * Delegates work to a Web Worker, falling back to main-thread canvas if unavailable.
  */
-export function getProcessedSprite(
-  originalUrl: string,
-  type: SpriteOutlineType
-): Promise<string> {
+export function getProcessedSprite(originalUrl: string, type: SpriteOutlineType): Promise<string> {
   const cacheKey = `${originalUrl}-${type}`;
 
   // 1. Check in-memory session cache
@@ -164,7 +165,7 @@ export function getProcessedSprite(
     try {
       const worker = obtainWorkerInstance();
       let resultUrl = '';
-      
+
       if (worker) {
         // Delegate to Web Worker asynchronously
         resultUrl = await new Promise<string>((resolve, reject) => {
@@ -181,7 +182,7 @@ export function getProcessedSprite(
         // Main thread fallback (e.g. JSDom / tests)
         resultUrl = await processSpriteFallback(originalUrl, type);
       }
-      
+
       outlineCache.set(cacheKey, resultUrl);
       return resultUrl;
     } catch (error) {
@@ -206,7 +207,7 @@ async function processAuraFallback(
   blurRadius: number
 ): Promise<string> {
   const img = await loadImage(maskUrl);
-  
+
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Could not get 2D context from canvas');
@@ -256,7 +257,7 @@ export function getProcessedAura(
     try {
       const worker = obtainWorkerInstance();
       let resultUrl = '';
-      
+
       if (worker) {
         // Delegate to Web Worker asynchronously
         resultUrl = await new Promise<string>((resolve, reject) => {
@@ -274,7 +275,7 @@ export function getProcessedAura(
         // Main thread fallback (e.g. JSDom / tests)
         resultUrl = await processAuraFallback(maskUrl, fillColor, blurRadius);
       }
-      
+
       auraCache.set(cacheKey, resultUrl);
       return resultUrl;
     } catch (error) {
@@ -288,4 +289,3 @@ export function getProcessedAura(
   auraProcessingCache.set(cacheKey, promise);
   return promise;
 }
-

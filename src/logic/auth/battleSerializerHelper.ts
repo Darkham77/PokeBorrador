@@ -89,25 +89,28 @@ function serializeSlotEffects(effects?: PendingSlotEffect[]): PendingSlotEffect[
     targetSlot: effect.targetSlot,
     turnsLeft: effect.turnsLeft,
     damage: effect.damage,
-    ...(effect.sourceName ? { sourceName: effect.sourceName } : {}),
+    ...(effect.sourceName ? { sourceName: effect.sourceName } : {})
   }));
 }
 
 function serializeEnemyTeamForSave(rawEnemyTeam: Pokemon[] | null): Pokemon[] | null {
   if (!rawEnemyTeam) return null;
-  return rawEnemyTeam.map(p => ({
+  return rawEnemyTeam.map((p) => ({
     ...p,
     ability: p.ability ? requireAbilityId(p.ability) : p.ability,
     friendship: p.friendship ?? DEFAULT_POKEMON_FRIENDSHIP_FALLBACK,
     exp: p.exp ?? 0,
-    expNeeded: p.expNeeded ?? 1,
+    expNeeded: p.expNeeded ?? 1
   }));
 }
 
 type BattleSerializeInput = BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon };
 
 function serializeBattleTrainerMeta(battle: BattleSerializeInput) {
-  const isRival = Boolean((battle as { isRival?: boolean }).isRival || (battle as { trainerArchetype?: string }).trainerArchetype === 'rival');
+  const isRival = Boolean(
+    (battle as { isRival?: boolean }).isRival ||
+    (battle as { trainerArchetype?: string }).trainerArchetype === 'rival'
+  );
   return {
     isGym: battle.isGym || false,
     gymId: battle.gymId || null,
@@ -117,7 +120,7 @@ function serializeBattleTrainerMeta(battle: BattleSerializeInput) {
     trainerSprite: battle.trainerSprite || null,
     trainerArchetype: battle.trainerArchetype || null,
     quote: battle.quote || null,
-    locationId: battle.locationId || null,
+    locationId: battle.locationId || null
   };
 }
 
@@ -132,13 +135,17 @@ function serializeBattleTurnAndEscape(battle: BattleSerializeInput) {
     isCapture: Boolean(battle.isCapture),
     lastDamage: typeof battle.lastDamage === 'number' ? battle.lastDamage : undefined,
     enemyUsedItem: Boolean(battle.enemyUsedItem),
-    playerUsedItem: Boolean(battle.playerUsedItem),
+    playerUsedItem: Boolean(battle.playerUsedItem)
   };
 }
 
 function serializeBattleWeatherAndField(battle: BattleSerializeInput) {
   const weather = battle.weather
-    ? { type: requireWeatherId(battle.weather.type), visual: battle.weather.visual || undefined, turns: battle.weather.turns }
+    ? {
+        type: requireWeatherId(battle.weather.type),
+        visual: battle.weather.visual || undefined,
+        turns: battle.weather.turns
+      }
     : null;
   return {
     weather,
@@ -147,7 +154,7 @@ function serializeBattleWeatherAndField(battle: BattleSerializeInput) {
     fieldConditions: battle.fieldConditions || null,
     playerSideConditions: battle.playerSideConditions || null,
     enemySideConditions: battle.enemySideConditions || null,
-    pendingSlotEffects: serializeSlotEffects(battle.pendingSlotEffects),
+    pendingSlotEffects: serializeSlotEffects(battle.pendingSlotEffects)
   };
 }
 
@@ -162,17 +169,18 @@ function serializeBattleRewardsAndEconomy(battle: BattleSerializeInput) {
     enemyMaxLevel: typeof battle.enemyMaxLevel === 'number' ? battle.enemyMaxLevel : null,
     rewardTM: battle.rewardTM || null,
     enemyInventory: battle.enemyInventory || null,
-    stolenResources,
+    stolenResources
   };
 }
 
-function serializeCombatBattle(
-  battle: BattleSerializeInput
-): ActiveBattleSerialized | null {
+function serializeCombatBattle(battle: BattleSerializeInput): ActiveBattleSerialized | null {
   try {
-    const rawEnemyTeam = battle.enemyTeam && battle.enemyTeam.length > 0
-      ? battle.enemyTeam
-      : (battle.enemy ? [battle.enemy] : null);
+    const rawEnemyTeam =
+      battle.enemyTeam && battle.enemyTeam.length > 0
+        ? battle.enemyTeam
+        : battle.enemy
+          ? [battle.enemy]
+          : null;
 
     return {
       ...serializeBattleTrainerMeta(battle),
@@ -191,7 +199,7 @@ function serializeCombatBattle(
       playerStages: battle.playerStages || null,
       enemyStages: battle.enemyStages || null,
       enemyTeam: serializeEnemyTeamForSave(rawEnemyTeam as Pokemon[] | null),
-      timestamp: Temporal.Now.instant().epochMilliseconds,
+      timestamp: Temporal.Now.instant().epochMilliseconds
     };
   } catch (e) {
     logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
@@ -202,18 +210,23 @@ function serializeCombatBattle(
 const DEFAULT_PVP_TRAINER_NAME = 'Rival' as const;
 const DEFAULT_PVP_TURN_COUNT = 1 as const;
 
-function extractPvPEnemyTeam(battle: BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }): Pokemon[] | null {
+function extractPvPEnemyTeam(
+  battle: BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }
+): Pokemon[] | null {
   if (battle.enemyTeam) return battle.enemyTeam as Pokemon[];
   if (battle.enemy) return [battle.enemy];
   return null;
 }
 
-function serializePvPBattle(battle: BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }): ActiveBattleSerialized {
+function serializePvPBattle(
+  battle: BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }
+): ActiveBattleSerialized {
   const rawEnemyTeam = extractPvPEnemyTeam(battle);
   const rawPlayerTeam = (battle.playerTeam as Pokemon[] | null) ?? null;
   const trainerName = battle.trainerName || battle.pvpOpponentName || DEFAULT_PVP_TRAINER_NAME;
   const locationId = battle.locationId ? requireMapRouteId(battle.locationId) : null;
-  const turnCount = typeof battle.turnCount === 'number' ? battle.turnCount : DEFAULT_PVP_TURN_COUNT;
+  const turnCount =
+    typeof battle.turnCount === 'number' ? battle.turnCount : DEFAULT_PVP_TURN_COUNT;
   const battleLogs = Array.isArray(battle.battleLogs) ? battle.battleLogs : [];
 
   return {
@@ -233,7 +246,7 @@ function serializePvPBattle(battle: BattleState & Partial<ActiveBattleSerialized
     turnCount,
     battleLogs,
     weather: battle.weather ?? null,
-    over: Boolean(battle.over),
+    over: Boolean(battle.over)
   };
 }
 
@@ -250,19 +263,27 @@ function serializeSearchingBattle(
     trainerSprite: null,
     trainerArchetype: null,
     quote: null,
-    locationId: battle.locationId ? requireMapRouteId(battle.locationId) : (fallbackMapId ? requireMapRouteId(fallbackMapId) : null),
+    locationId: battle.locationId
+      ? requireMapRouteId(battle.locationId)
+      : fallbackMapId
+        ? requireMapRouteId(fallbackMapId)
+        : null,
     wasSearching: true,
     minigame: null,
     isCave: Boolean(battle.isCave),
     isIndoors: Boolean(battle.isIndoors),
     isCrystalCave: Boolean(battle.isCrystalCave),
     enemyTeam: null,
-    timestamp: Temporal.Now.instant().epochMilliseconds,
+    timestamp: Temporal.Now.instant().epochMilliseconds
   };
 }
 
-export function serializeActiveBattle(state: GameState | SaveDataDto): ActiveBattleSerialized | null {
-  const battle = state.activeBattle as (BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }) | null;
+export function serializeActiveBattle(
+  state: GameState | SaveDataDto
+): ActiveBattleSerialized | null {
+  const battle = state.activeBattle as
+    | (BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon })
+    | null;
   if (!battle || battle.over) return null;
 
   if (battle.isPvP) {

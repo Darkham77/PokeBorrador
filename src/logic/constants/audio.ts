@@ -54,21 +54,21 @@ export const AUDIO_NOISE_FILTERS_HZ = {
 
 /** Standard chiptune musical note frequencies in Hz. */
 export const AUDIO_FREQUENCIES_HZ = {
-  A1: 55.00,
+  A1: 55.0,
   E2: 82.41,
-  A2: 110.00,
+  A2: 110.0,
   B2: 123.47,
   E3: 164.81,
-  FSHARP3: 185.00,
-  A3: 220.00,
+  FSHARP3: 185.0,
+  A3: 220.0,
   B3: 246.94,
   C4: 261.63,
   D4: 293.66,
   E4: 329.63,
   FSHARP4: 369.99,
-  G4: 392.00,
-  GSHARP4: 415.30,
-  A4: 440.00,
+  G4: 392.0,
+  GSHARP4: 415.3,
+  A4: 440.0,
   B4: 493.88,
   C5: 523.25,
   CSHARP5: 554.37,
@@ -76,20 +76,20 @@ export const AUDIO_FREQUENCIES_HZ = {
   E5: 659.25,
   F5: 698.46,
   G5: 783.99,
-  A5: 880.00,
+  A5: 880.0,
   B5: 987.77,
-  C6: 1046.50,
+  C6: 1046.5,
   CSHARP6: 1108.73,
   D6: 1174.66,
   E6: 1318.51,
   G6: 1567.98,
-  A6: 1760.00,
+  A6: 1760.0,
   B6: 1975.53,
   HIGH_GLIDE_END: 2000,
   SIREN_LOW: 600,
   SIREN_HIGH: 900,
   RIVAL_GLIDE_START: 80,
-  RIVAL_GLIDE_END: 40,
+  RIVAL_GLIDE_END: 40
 } as const;
 
 /** Total iteration steps for evolution sound sweep. */
@@ -104,7 +104,7 @@ export const MONEY_SOUND_STEPS = 3;
  */
 export const AUDIO_SOUND_PARAMS = {
   SHINY: {
-    ARP_GAP_SEC: 0.10,
+    ARP_GAP_SEC: 0.1,
     NOTE_DURATION_SEC: 0.11,
     NOTE_VOLUME: 0.28,
     SPARKLE_GLIDE_DURATION_SEC: 0.25,
@@ -116,13 +116,13 @@ export const AUDIO_SOUND_PARAMS = {
     GLIDE_DURATION_SEC: 0.22,
     GLIDE_VOLUME: 0.55,
     NOISE_DURATION_SEC: 0.18,
-    NOISE_VOLUME: 0.40,
+    NOISE_VOLUME: 0.4,
     STINGER_OFFSET_SEC: 0.18,
     E2_DURATION_SEC: 0.55,
-    E2_VOLUME: 0.40,
+    E2_VOLUME: 0.4,
     B2_OFFSET_SEC: 0.02,
-    B2_DURATION_SEC: 0.50,
-    B2_VOLUME: 0.30
+    B2_DURATION_SEC: 0.5,
+    B2_VOLUME: 0.3
   },
   LEVEL_UP: {
     STEP_GAP_SEC: 0.1,
@@ -132,7 +132,7 @@ export const AUDIO_SOUND_PARAMS = {
   CAPTURE_SUCCESS: {
     NOTE_DURATION_SEC: 0.12,
     NOTE_VOLUME: 0.12,
-    FINAL_DURATION_SEC: 0.40,
+    FINAL_DURATION_SEC: 0.4,
     FINAL_VOLUME: 0.15
   },
   BALL_HIT: {
@@ -143,7 +143,7 @@ export const AUDIO_SOUND_PARAMS = {
   },
   WOBBLE: {
     NOTE_DURATION_SEC: 0.06,
-    NOTE_VOLUME: 0.20
+    NOTE_VOLUME: 0.2
   },
   FAINT: {
     GLIDE_DURATION_SEC: 0.6,
@@ -176,7 +176,7 @@ export const AUDIO_SOUND_PARAMS = {
   },
   MESSAGE_SENT: {
     NOTE_DURATION_SEC: 0.04,
-    NOTE_VOLUME: 0.10
+    NOTE_VOLUME: 0.1
   },
   MONEY: {
     STEP_INTERVAL_SEC: 0.06,
@@ -194,17 +194,17 @@ export const AUDIO_SOUND_PARAMS = {
     NOTE_DURATION_SEC: 0.08,
     NOTE_VOLUME: 0.25,
     FINAL_OFFSET_SEC: 0.32,
-    FINAL_DURATION_SEC: 0.40
+    FINAL_DURATION_SEC: 0.4
   },
   DEFEAT: {
     STEP_INTERVAL_SEC: 0.15,
     NOTE_DURATION_SEC: 0.12,
     NOTE_VOLUME: 0.25,
     GLIDE_OFFSET_SEC: 0.45,
-    GLIDE_DURATION_SEC: 0.50,
+    GLIDE_DURATION_SEC: 0.5,
     GLIDE_VOLUME: 0.25,
     NOISE_OFFSET_SEC: 0.45,
-    NOISE_DURATION_SEC: 0.30,
+    NOISE_DURATION_SEC: 0.3,
     NOISE_VOLUME: 0.15
   },
   STEAL: {
@@ -236,7 +236,6 @@ export const AUDIO_SOUND_PARAMS = {
     NOTE_VOLUME: 0.18
   }
 } as const;
-
 
 /** Global master gain volume for the audio context (0.15 = ~15% loudness). */
 export const AUDIO_MASTER_GAIN_VOLUME = 0.15;

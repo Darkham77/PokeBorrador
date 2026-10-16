@@ -13,9 +13,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  generateWildernessLayer
-} from '../../logic/map/wildernessVegetationEngine.ts';
+import { generateWildernessLayer } from '../../logic/map/wildernessVegetationEngine.ts';
 import { generateContinentMap } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
 import { generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';

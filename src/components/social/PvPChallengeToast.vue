@@ -1,38 +1,38 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { gsap } from 'gsap'
-import { useLivePvPStore } from '@/stores/livePvP'
-import { useSocialStore } from '@/stores/social/social'
-import { useGameStore } from '@/stores/game'
-import { useAudioStore } from '@/stores/audio'
-import { logger } from '@/logic/utils/logger'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
+import { ref, computed, watch } from 'vue';
+import { gsap } from 'gsap';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useSocialStore } from '@/stores/social/social';
+import { useGameStore } from '@/stores/game';
+import { useAudioStore } from '@/stores/audio';
+import { logger } from '@/logic/utils/logger';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 
-const TOAST_ENTER_Y_OFFSET = -30
-const TOAST_ANIM_DURATION_SEC = 0.4
-const TOAST_EASE_OVERSHOOT = 1.3
+const TOAST_ENTER_Y_OFFSET = -30;
+const TOAST_ANIM_DURATION_SEC = 0.4;
+const PVP_TOAST_EASE_OVERSHOOT = 1.3;
 
-const livePvPStore = useLivePvPStore()
-const socialStore = useSocialStore()
-const gameStore = useGameStore()
-const audioStore = useAudioStore()
+const livePvPStore = useLivePvPStore();
+const socialStore = useSocialStore();
+const gameStore = useGameStore();
+const audioStore = useAudioStore();
 
 interface ChallengerInfo {
-  id: string
-  username: string
-  level: number
-  playerClass?: string
-  avatar_style?: string
-  nick_style?: string
-  gender?: string
+  id: string;
+  username: string;
+  level: number;
+  playerClass?: string;
+  avatar_style?: string;
+  nick_style?: string;
+  gender?: string;
 }
 
-const challenger = ref<ChallengerInfo | null>(null)
+const challenger = ref<ChallengerInfo | null>(null);
 
-const activeInvite = computed(() => livePvPStore.activeInvite)
+const activeInvite = computed(() => livePvPStore.activeInvite);
 
 async function resolveChallenger(senderId: string) {
-  const friend = socialStore.friends.find(f => f.id === senderId)
+  const friend = socialStore.friends.find((f) => f.id === senderId);
   if (friend) {
     challenger.value = {
       id: friend.id,
@@ -42,17 +42,27 @@ async function resolveChallenger(senderId: string) {
       avatar_style: friend.avatar_style,
       nick_style: friend.nick_style,
       gender: friend.gender
-    }
-    return
+    };
+    return;
   }
 
   if (gameStore.db) {
     try {
-      const { data } = await gameStore.db
+      const { data } = (await gameStore.db
         .from('profiles')
         .select('id, username, level, player_class, nick_style, avatar_style, gender')
         .eq('id', senderId)
-        .single() as { data: { id: string; username: string; level: number; player_class?: string; nick_style?: string; avatar_style?: string; gender?: string } | null }
+        .single()) as {
+        data: {
+          id: string;
+          username: string;
+          level: number;
+          player_class?: string;
+          nick_style?: string;
+          avatar_style?: string;
+          gender?: string;
+        } | null;
+      };
 
       if (data) {
         challenger.value = {
@@ -63,11 +73,11 @@ async function resolveChallenger(senderId: string) {
           avatar_style: data.avatar_style,
           nick_style: data.nick_style,
           gender: data.gender
-        }
-        return
+        };
+        return;
       }
     } catch (err) {
-      logger.warn('[PvPChallengeToast] Error resolviendo perfil del retador:', err)
+      logger.warn('[PvPChallengeToast] Error resolviendo perfil del retador:', err);
     }
   }
 
@@ -75,41 +85,48 @@ async function resolveChallenger(senderId: string) {
     id: senderId,
     username: 'Entrenador Rival',
     level: 1
-  }
+  };
 }
 
 watch(
   () => activeInvite.value,
   (inv) => {
     if (inv) {
-      const senderId = inv.sender_id || inv.challenger_id || ''
+      const senderId = inv.sender_id || inv.challenger_id || '';
       if (senderId) {
-        resolveChallenger(senderId)
+        resolveChallenger(senderId);
       }
-      audioStore.play('pvpChallenge')
+      audioStore.play('pvpChallenge');
     } else {
-      challenger.value = null
+      challenger.value = null;
     }
   },
   { immediate: true }
-)
+);
 
 const formatLabel = computed(() => {
-  const fmt = activeInvite.value?.config?.format
-  return fmt === '6v6' ? '6v6' : '3v3'
-})
+  const fmt = activeInvite.value?.config?.format;
+  return fmt === '6v6' ? '6v6' : '3v3';
+});
 
 const levelRuleLabel = computed(() => {
-  const rule = activeInvite.value?.config?.levelRule
-  return rule === 'flat50' ? 'Nivel 50' : 'Nivel Real'
-})
+  const rule = activeInvite.value?.config?.levelRule;
+  return rule === 'flat50' ? 'Nivel 50' : 'Nivel Real';
+});
 
 function onEnter(el: Element, done: () => void) {
   gsap.fromTo(
     el,
     { opacity: 0, y: TOAST_ENTER_Y_OFFSET, scale: 0.9 },
-    { opacity: 1, y: 0, scale: 1, duration: TOAST_ANIM_DURATION_SEC, ease: `back.out(${TOAST_EASE_OVERSHOOT})`, onComplete: done }
-  )
+    {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: TOAST_ANIM_DURATION_SEC,
+      ease: `back.out(${PVP_TOAST_EASE_OVERSHOOT})`,
+      onComplete: done
+    }
+  );
 }
 
 function onLeave(el: Element, done: () => void) {
@@ -120,32 +137,24 @@ function onLeave(el: Element, done: () => void) {
     duration: 0.25,
     ease: 'power2.in',
     onComplete: done
-  })
+  });
 }
 
 async function handleAccept() {
-  if (!activeInvite.value) return
-  await livePvPStore.acceptInvite(activeInvite.value.id)
+  if (!activeInvite.value) return;
+  await livePvPStore.acceptInvite(activeInvite.value.id);
 }
 
 async function handleDecline() {
-  if (!activeInvite.value) return
-  await livePvPStore.declineInvite(activeInvite.value.id)
+  if (!activeInvite.value) return;
+  await livePvPStore.declineInvite(activeInvite.value.id);
 }
 </script>
 
 <template>
   <Teleport to="body">
-    <Transition
-      :css="false"
-      @enter="onEnter"
-      @leave="onLeave"
-    >
-      <div
-        v-if="activeInvite"
-        id="pvp-challenge-toast"
-        class="pvp-toast-card"
-      >
+    <Transition :css="false" @enter="onEnter" @leave="onLeave">
+      <div v-if="activeInvite" id="pvp-challenge-toast" class="pvp-toast-card">
         <div class="toast-glow-border" />
         <div class="toast-content">
           <div class="toast-avatar-col">
@@ -163,10 +172,7 @@ async function handleDecline() {
               <span class="swords-emoji">⚔️</span>
               <span class="toast-title">¡DESAFÍO PVP!</span>
             </div>
-            <div
-              v-gsap-nick="challenger?.nick_style || 'normal'"
-              class="challenger-name"
-            >
+            <div v-gsap-nick="challenger?.nick_style || 'normal'" class="challenger-name">
               {{ challenger?.username || 'Rival' }}
             </div>
             <div class="challenge-meta">

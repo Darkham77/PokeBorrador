@@ -17,7 +17,7 @@
  *   A forceSwitch request is a NEW request on the same battleTurn — it requires its own
  *   separate choose() call, independent of the normal move phase.
  */
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
@@ -33,27 +33,45 @@ import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
 function makeTeams() {
   const p1Team = [
     {
-      name: 'Attacker', species: 'Machamp', item: '', ability: 'Guts',
-      moves: ['crosschop'], nature: 'Adamant', gender: 'M', level: 100,
+      name: 'Attacker',
+      species: 'Machamp',
+      item: '',
+      ability: 'Guts',
+      moves: ['crosschop'],
+      nature: 'Adamant',
+      gender: 'M',
+      level: 100,
       evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
-      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-    },
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+    }
   ];
   // p2 lead: extremely frail (1 HP, via minimal EVs/IVs) so it faints in 1 hit.
   // p2 reserve: tanky to survive.
   const p2Team = [
     {
-      name: 'FrailLead', species: 'Shedinja', item: '', ability: 'WonderGuard',
-      moves: ['shadowsneak'], nature: 'Hardy', gender: 'N', level: 1,
+      name: 'FrailLead',
+      species: 'Shedinja',
+      item: '',
+      ability: 'WonderGuard',
+      moves: ['shadowsneak'],
+      nature: 'Hardy',
+      gender: 'N',
+      level: 1,
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-      ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+      ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
     },
     {
-      name: 'TankyReserve', species: 'Blissey', item: '', ability: 'NaturalCure',
-      moves: ['softboiled'], nature: 'Bold', gender: 'F', level: 100,
+      name: 'TankyReserve',
+      species: 'Blissey',
+      item: '',
+      ability: 'NaturalCure',
+      moves: ['softboiled'],
+      nature: 'Bold',
+      gender: 'F',
+      level: 100,
       evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 0, spe: 0 },
-      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-    },
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+    }
   ];
   return { p1Team, p2Team };
 }
@@ -63,7 +81,10 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
     // Validate that the request classifier correctly identifies forceSwitch requests
     // from the Showdown format (array of booleans).
     const forceSwitchReq = { forceSwitch: [true], side: { name: 'p2', id: 'p2', pokemon: [] } };
-    const normalMoveReq = { active: [{ moves: [{ id: 'tackle', pp: 35, maxpp: 35 }] }], side: { name: 'p2', id: 'p2', pokemon: [] } };
+    const normalMoveReq = {
+      active: [{ moves: [{ id: 'tackle', pp: 35, maxpp: 35 }] }],
+      side: { name: 'p2', id: 'p2', pokemon: [] }
+    };
     const waitReq = { wait: true, side: { name: 'p1', id: 'p1', pokemon: [] } };
 
     assert.strictEqual(classifyRequest(forceSwitchReq), 'force-switch');
@@ -96,7 +117,11 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
 
     assert.strictEqual(classifyRequest(p1Req), 'move', 'p1 must start with a move request');
     assert.strictEqual(classifyRequest(p2Req), 'move', 'p2 must start with a move request');
-    assert.strictEqual(battle.turn, turnBefore, 'Turn should not advance before choices are committed');
+    assert.strictEqual(
+      battle.turn,
+      turnBefore,
+      'Turn should not advance before choices are committed'
+    );
   });
 
   it('executeTurn correctly separates normal-move choice and forceSwitch choice into distinct engine calls', () => {
@@ -118,12 +143,21 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
     // We use 2 Pokémon for p2 so forceSwitch can actually pick slot 2.
     // p1 uses a single sturdy mon.
     battle.setPlayer('p1', {
-      name: 'P1', team: [{
-        name: 'Sturdy', species: 'Machamp', item: '', ability: 'Guts',
-        moves: ['crosschop', 'tackle'], nature: 'Hardy', gender: 'M', level: 100,
-        evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
-        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-      }],
+      name: 'P1',
+      team: [
+        {
+          name: 'Sturdy',
+          species: 'Machamp',
+          item: '',
+          ability: 'Guts',
+          moves: ['crosschop', 'tackle'],
+          nature: 'Hardy',
+          gender: 'M',
+          level: 100,
+          evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+        }
+      ]
     });
     battle.setPlayer('p2', { name: 'P2', team: p2Team });
 
@@ -133,12 +167,26 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
     // --- Iteration 1: normal move turn ---
     const p1ReqBefore = battle.p1.activeRequest;
     const p2ReqBefore = battle.p2.activeRequest;
-    assert.strictEqual(classifyRequest(p1ReqBefore), 'move', 'p1 should have move request on turn 1');
-    assert.strictEqual(classifyRequest(p2ReqBefore), 'move', 'p2 should have move request on turn 1');
+    assert.strictEqual(
+      classifyRequest(p1ReqBefore),
+      'move',
+      'p1 should have move request on turn 1'
+    );
+    assert.strictEqual(
+      classifyRequest(p2ReqBefore),
+      'move',
+      'p2 should have move request on turn 1'
+    );
 
     const turn1 = engine.executeTurn({ p1Choice: 'move 1', p2Choice: 'move 1' });
-    assert.ok(turn1.p1AcceptedChoice === 'move 1', `p1 accepted choice on turn 1 should be "move 1", got: "${turn1.p1AcceptedChoice}"`);
-    assert.ok(turn1.p2AcceptedChoice === 'move 1', `p2 accepted choice on turn 1 should be "move 1", got: "${turn1.p2AcceptedChoice}"`);
+    assert.ok(
+      turn1.p1AcceptedChoice === 'move 1',
+      `p1 accepted choice on turn 1 should be "move 1", got: "${turn1.p1AcceptedChoice}"`
+    );
+    assert.ok(
+      turn1.p2AcceptedChoice === 'move 1',
+      `p2 accepted choice on turn 1 should be "move 1", got: "${turn1.p2AcceptedChoice}"`
+    );
 
     // After turn 1: Shedinja (p2 lead) may or may not have fainted depending on WonderGuard.
     // If it fainted, p2 now has forceSwitch. If not, we skip this test branch.
@@ -147,8 +195,11 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
 
     if (classifyRequest(p2ReqAfter) === 'force-switch') {
       // ✅ The interesting case: forceSwitch is active for p2
-      assert.notStrictEqual(classifyRequest(p1ReqAfter), 'move',
-        'p1 should NOT have a move request while p2 has an outstanding forceSwitch');
+      assert.notStrictEqual(
+        classifyRequest(p1ReqAfter),
+        'move',
+        'p1 should NOT have a move request while p2 has an outstanding forceSwitch'
+      );
 
       // --- Iteration 2: forceSwitch turn ---
       // The engine must produce a switch choice for p2, NOT another move.
@@ -159,7 +210,7 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
       assert.ok(
         turn2.p2AcceptedChoice.startsWith('switch'),
         `[BUG REPRODUCTION] p2 forceSwitch choice must be "switch X", got: "${turn2.p2AcceptedChoice}". ` +
-        `If this says "move 1", the fuzzer engine is recording the wrong choice for forceSwitch turns.`
+          `If this says "move 1", the fuzzer engine is recording the wrong choice for forceSwitch turns.`
       );
       assert.ok(
         !turn2.p2AcceptedChoice.startsWith('move'),
@@ -168,7 +219,9 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
     } else {
       // WonderGuard blocked Cross Chop (Fighting type vs Bug/Ghost = not very effective immunity).
       // Skip the forceSwitch branch — test still passes but documents the reason.
-      console.debug('[SKIP] Shedinja survived turn 1 (WonderGuard blocked). ForceSwitch branch not exercised.');
+      console.debug(
+        '[SKIP] Shedinja survived turn 1 (WonderGuard blocked). ForceSwitch branch not exercised.'
+      );
     }
   });
 
@@ -181,30 +234,52 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
 
     const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, [7, 0, 0, 0]);
     battle.setPlayer('p1', {
-      name: 'P1', team: [{
-        name: 'Attacker', species: 'Machamp', item: '', ability: 'NoGuard',
-        moves: ['crosschop'], nature: 'Adamant', gender: 'M', level: 100,
-        evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
-        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-      }],
+      name: 'P1',
+      team: [
+        {
+          name: 'Attacker',
+          species: 'Machamp',
+          item: '',
+          ability: 'NoGuard',
+          moves: ['crosschop'],
+          nature: 'Adamant',
+          gender: 'M',
+          level: 100,
+          evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+        }
+      ]
     });
     battle.setPlayer('p2', {
-      name: 'P2', team: [
+      name: 'P2',
+      team: [
         // Extremely weak lead: minimum level, minimum stats, no defensive investment
         {
-          name: 'WeakLead', species: 'Ralts', item: '', ability: 'Synchronize',
-          moves: ['growl'], nature: 'Hardy', gender: 'M', level: 1,
+          name: 'WeakLead',
+          species: 'Ralts',
+          item: '',
+          ability: 'Synchronize',
+          moves: ['growl'],
+          nature: 'Hardy',
+          gender: 'M',
+          level: 1,
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-          ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+          ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
         },
         // Reserve: tanky enough to survive
         {
-          name: 'TankyReserve', species: 'Blissey', item: '', ability: 'NaturalCure',
-          moves: ['softboiled'], nature: 'Bold', gender: 'F', level: 100,
+          name: 'TankyReserve',
+          species: 'Blissey',
+          item: '',
+          ability: 'NaturalCure',
+          moves: ['softboiled'],
+          nature: 'Bold',
+          gender: 'F',
+          level: 100,
           evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 0, spe: 0 },
-          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        },
-      ],
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+        }
+      ]
     });
 
     const engine = new ShowdownBattleEngine({ mode: 'fuzzer' });
@@ -222,8 +297,12 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
 
       // Mimick what fuzzer agent decides: for move → 'move 1'; for forceSwitch → 'switch 2'
       const p1Choice = classifyRequest(p1Req) === 'move' ? 'move 1' : 'pass';
-      const p2Choice = classifyRequest(p2Req) === 'force-switch' ? 'switch 2'
-        : classifyRequest(p2Req) === 'move' ? 'move 1' : 'pass';
+      const p2Choice =
+        classifyRequest(p2Req) === 'force-switch'
+          ? 'switch 2'
+          : classifyRequest(p2Req) === 'move'
+            ? 'move 1'
+            : 'pass';
 
       const { p2AcceptedChoice } = engine.executeTurn({ p1Choice, p2Choice });
 
@@ -242,7 +321,7 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
       assert.ok(
         forceSwitchChoiceSlot.startsWith('switch'),
         `[BUG REPRODUCED] enemyChoices[1] should be "switch X" (forceSwitch after faint) but got: "${forceSwitchChoiceSlot}". ` +
-        `This is the exact bug causing Playwright sim lote #17 to fail with "Can't switch: fainted Pokémon".`
+          `This is the exact bug causing Playwright sim lote #17 to fail with "Can't switch: fainted Pokémon".`
       );
     }
 
@@ -258,28 +337,50 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
 
     const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, [13, 0, 0, 0]);
     battle.setPlayer('p1', {
-      name: 'P1', team: [{
-        name: 'Attacker', species: 'Machamp', item: '', ability: 'NoGuard',
-        moves: ['crosschop'], nature: 'Adamant', gender: 'M', level: 100,
-        evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
-        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-      }],
+      name: 'P1',
+      team: [
+        {
+          name: 'Attacker',
+          species: 'Machamp',
+          item: '',
+          ability: 'NoGuard',
+          moves: ['crosschop'],
+          nature: 'Adamant',
+          gender: 'M',
+          level: 100,
+          evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+        }
+      ]
     });
     battle.setPlayer('p2', {
-      name: 'P2', team: [
+      name: 'P2',
+      team: [
         {
-          name: 'WeakLead', species: 'Ralts', item: '', ability: 'Synchronize',
-          moves: ['growl'], nature: 'Hardy', gender: 'M', level: 1,
+          name: 'WeakLead',
+          species: 'Ralts',
+          item: '',
+          ability: 'Synchronize',
+          moves: ['growl'],
+          nature: 'Hardy',
+          gender: 'M',
+          level: 1,
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-          ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+          ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
         },
         {
-          name: 'Reserve', species: 'Blissey', item: '', ability: 'NaturalCure',
-          moves: ['softboiled'], nature: 'Bold', gender: 'F', level: 100,
+          name: 'Reserve',
+          species: 'Blissey',
+          item: '',
+          ability: 'NaturalCure',
+          moves: ['softboiled'],
+          nature: 'Bold',
+          gender: 'F',
+          level: 100,
           evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 0, spe: 0 },
-          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        },
-      ],
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+        }
+      ]
     });
 
     // BUGGED choices: forceSwitch slot contains "move 1" instead of "switch 2"
@@ -303,7 +404,9 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
     const p2ReqAfterT1 = battle.p2.activeRequest;
     if (classifyRequest(p2ReqAfterT1) !== 'force-switch') {
       // Ralts survived (seed variant) — skip this specific assertion branch.
-      console.debug('[SKIP] Ralts survived turn 1 in this seed. ForceSwitch rejection not exercised.');
+      console.debug(
+        '[SKIP] Ralts survived turn 1 in this seed. ForceSwitch rejection not exercised.'
+      );
       return;
     }
 
@@ -329,28 +432,50 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
 
     const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, [13, 0, 0, 0]);
     battle.setPlayer('p1', {
-      name: 'P1', team: [{
-        name: 'Attacker', species: 'Machamp', item: '', ability: 'NoGuard',
-        moves: ['crosschop'], nature: 'Adamant', gender: 'M', level: 100,
-        evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
-        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-      }],
+      name: 'P1',
+      team: [
+        {
+          name: 'Attacker',
+          species: 'Machamp',
+          item: '',
+          ability: 'NoGuard',
+          moves: ['crosschop'],
+          nature: 'Adamant',
+          gender: 'M',
+          level: 100,
+          evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+        }
+      ]
     });
     battle.setPlayer('p2', {
-      name: 'P2', team: [
+      name: 'P2',
+      team: [
         {
-          name: 'WeakLead', species: 'Ralts', item: '', ability: 'Synchronize',
-          moves: ['growl'], nature: 'Hardy', gender: 'M', level: 1,
+          name: 'WeakLead',
+          species: 'Ralts',
+          item: '',
+          ability: 'Synchronize',
+          moves: ['growl'],
+          nature: 'Hardy',
+          gender: 'M',
+          level: 1,
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-          ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+          ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
         },
         {
-          name: 'Reserve', species: 'Blissey', item: '', ability: 'NaturalCure',
-          moves: ['softboiled'], nature: 'Bold', gender: 'F', level: 100,
+          name: 'Reserve',
+          species: 'Blissey',
+          item: '',
+          ability: 'NaturalCure',
+          moves: ['softboiled'],
+          nature: 'Bold',
+          gender: 'F',
+          level: 100,
           evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 0, spe: 0 },
-          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        },
-      ],
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+        }
+      ]
     });
 
     // CORRECT choices: forceSwitch slot contains "switch 2"
@@ -382,4 +507,3 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
     );
   });
 });
-

@@ -18,10 +18,13 @@ class PvpPassiveDefenseSimWrapper extends BaseE2ESimulation {
     }, rules);
   }
 
-  public async setDefendingRoster(roster: Array<{ id: PokemonSpeciesId; level: number; uid?: string }>): Promise<void> {
+  public async setDefendingRoster(
+    roster: Array<{ id: PokemonSpeciesId; level: number; uid?: string }>
+  ): Promise<void> {
     await this.page.evaluate(async (mons) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const gameStore = useGameStore();
 
       const generated = mons.map((m, i) => {
@@ -31,7 +34,7 @@ class PvpPassiveDefenseSimWrapper extends BaseE2ESimulation {
       });
 
       gameStore.state.team = generated;
-      gameStore.state.pvpTeam6 = generated.map(g => g.uid);
+      gameStore.state.pvpTeam6 = generated.map((g) => g.uid);
     }, roster);
   }
 
@@ -66,7 +69,9 @@ class PvpPassiveDefenseSimWrapper extends BaseE2ESimulation {
 test.describe('PvP Passive Defense Lifecycle E2E Simulation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test('displays login reminder toast when passive defense is disabled and pending flag is set', async ({ page }) => {
+  test('displays login reminder toast when passive defense is disabled and pending flag is set', async ({
+    page
+  }) => {
     const sim = new PvpPassiveDefenseSimWrapper(page, 'PvpDefUserReminder');
     await sim.setup();
 
@@ -82,11 +87,15 @@ test.describe('PvP Passive Defense Lifecycle E2E Simulation', () => {
     await expect(reminderToast.first()).toBeVisible({ timeout: 10000 });
 
     // Verify sessionStorage flag was consumed
-    const flagValue = await page.evaluate(() => sessionStorage.getItem('pvp_login_reminder_pending'));
+    const flagValue = await page.evaluate(() =>
+      sessionStorage.getItem('pvp_login_reminder_pending')
+    );
     expect(flagValue).toBeNull();
   });
 
-  test('displays ineligible warning cartel and blocks activation when defending team violates season rules', async ({ page }) => {
+  test('displays ineligible warning cartel and blocks activation when defending team violates season rules', async ({
+    page
+  }) => {
     const sim = new PvpPassiveDefenseSimWrapper(page, 'PvpDefUserIneligible');
     await sim.setup();
     await sim.navigateToHome();
@@ -131,7 +140,9 @@ test.describe('PvP Passive Defense Lifecycle E2E Simulation', () => {
     await expect(toggleBtn).toContainText('DESACTIVADO');
   });
 
-  test('automatically deactivates passive defense when defending team changes to contain an ineligible pokemon', async ({ page }) => {
+  test('automatically deactivates passive defense when defending team changes to contain an ineligible pokemon', async ({
+    page
+  }) => {
     const sim = new PvpPassiveDefenseSimWrapper(page, 'PvpDefUserAutoDeactivate');
     await sim.setup();
     await sim.navigateToHome();
@@ -144,9 +155,7 @@ test.describe('PvP Passive Defense Lifecycle E2E Simulation', () => {
     });
 
     // 2. Set 100% legal roster and activate defense
-    await sim.setDefendingRoster([
-      { id: 'pikachu', level: 50, uid: 'legal_pika_1' }
-    ]);
+    await sim.setDefendingRoster([{ id: 'pikachu', level: 50, uid: 'legal_pika_1' }]);
     await sim.setPassiveActive(true);
 
     const widget = page.locator('#widget-passive-defense');
@@ -154,9 +163,7 @@ test.describe('PvP Passive Defense Lifecycle E2E Simulation', () => {
     await expect(toggleBtn).toContainText('ACTIVADO', { timeout: 10000 });
 
     // 3. Mutate defending team to introduce an ineligible Pokemon (level 80)
-    await sim.setDefendingRoster([
-      { id: 'pikachu', level: 80, uid: 'now_illegal_pika' }
-    ]);
+    await sim.setDefendingRoster([{ id: 'pikachu', level: 80, uid: 'now_illegal_pika' }]);
 
     // 4. Verify reactive watcher triggers auto-deactivation
     const deactivationToast = page.locator('#notification-stack .toast-item .toast-msg', {
@@ -166,7 +173,9 @@ test.describe('PvP Passive Defense Lifecycle E2E Simulation', () => {
     await expect(toggleBtn).toContainText('DESACTIVADO', { timeout: 10000 });
   });
 
-  test('keeps defense active and synchronizes snapshot when legal roster changes', async ({ page }) => {
+  test('keeps defense active and synchronizes snapshot when legal roster changes', async ({
+    page
+  }) => {
     const sim = new PvpPassiveDefenseSimWrapper(page, 'PvpDefUserLegalSync');
     await sim.setup();
     await sim.navigateToHome();
@@ -179,9 +188,7 @@ test.describe('PvP Passive Defense Lifecycle E2E Simulation', () => {
     });
 
     // 2. Set legal roster and activate defense
-    await sim.setDefendingRoster([
-      { id: 'pikachu', level: 50, uid: 'legal_pika_init' }
-    ]);
+    await sim.setDefendingRoster([{ id: 'pikachu', level: 50, uid: 'legal_pika_init' }]);
     await sim.setPassiveActive(true);
 
     const widget = page.locator('#widget-passive-defense');
@@ -189,9 +196,7 @@ test.describe('PvP Passive Defense Lifecycle E2E Simulation', () => {
     await expect(toggleBtn).toContainText('ACTIVADO', { timeout: 10000 });
 
     // 3. Swap to another legal Pokémon (level 50 Raichu)
-    await sim.setDefendingRoster([
-      { id: 'raichu', level: 50, uid: 'legal_raichu_swap' }
-    ]);
+    await sim.setDefendingRoster([{ id: 'raichu', level: 50, uid: 'legal_raichu_swap' }]);
 
     // 4. Assert defense remains active
     await expect(toggleBtn).toContainText('ACTIVADO', { timeout: 10000 });

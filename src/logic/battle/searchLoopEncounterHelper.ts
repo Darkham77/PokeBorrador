@@ -39,13 +39,16 @@ function buildSearchEncounterOptions(
 }
 
 async function tryGenerateCazabichosEncounter(ctx: BattleContext, routeId: MapRouteId) {
-  if (ctx.gs.state.playerClass !== 'cazabichos' || Math.random() >= CAZABICHOS_SPECIAL_ENCOUNTER_CHANCE) {
+  if (
+    ctx.gs.state.playerClass !== 'cazabichos' ||
+    Math.random() >= CAZABICHOS_SPECIAL_ENCOUNTER_CHANCE
+  ) {
     return null;
   }
   const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
   const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider');
   const mapsList = pokemonDataProvider.getMaps();
-  const currentMapData = mapsList.find(m => m.id === routeId);
+  const currentMapData = mapsList.find((m) => m.id === routeId);
   const minLv = currentMapData?.lv?.[0] ?? 5;
   const maxLv = currentMapData?.lv?.[1] ?? minLv;
   const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;

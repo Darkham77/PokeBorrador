@@ -1,5 +1,12 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS, getLevelEvolution, getStoneEvolution, getTradeEvolution } from '@/data/pokemon/evolutionData';
+import {
+  EVOLUTION_TABLE,
+  STONE_EVOLUTIONS,
+  TRADE_EVOLUTIONS,
+  getLevelEvolution,
+  getStoneEvolution,
+  getTradeEvolution
+} from '@/data/pokemon/evolutionData';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { PokemonData, LearnsetMove } from '@/types/system/database';
@@ -17,7 +24,7 @@ export function evolvePokemonData(pokemon: Pokemon, toId: PokemonSpeciesId) {
   const targetSpeciesId = requirePokemonSpeciesId(toId);
   const toData: PokemonData | null = pokemonDataProvider.getPokemonData(targetSpeciesId);
   if (!toData) return null;
-  
+
   const fromId = pokemon.id;
   const oldMaxHp = pokemon.maxHp;
 
@@ -27,7 +34,7 @@ export function evolvePokemonData(pokemon: Pokemon, toId: PokemonSpeciesId) {
   pokemon.type = toData.type;
   pokemon.type2 = toData.type2;
   pokemon.isFloating = toData.isFloating;
-  
+
   // Update ability if incompatible
   const abilityList = pokemonDataProvider.getSpeciesAbilities(targetSpeciesId);
   if (!pokemon.ability || !abilityList.includes(pokemon.ability)) {
@@ -37,22 +44,24 @@ export function evolvePokemonData(pokemon: Pokemon, toId: PokemonSpeciesId) {
     }
     pokemon.ability = requireAbilityId(ability);
   }
-  
+
   // Recalculate stats
   recalcPokemonStats(pokemon);
   // Heal proportionally
   pokemon.hp = Math.min(pokemon.hp + (pokemon.maxHp - oldMaxHp), pokemon.maxHp);
-  
+
   // Pending moves from the new learnset for current level
   const pendingMoves: Move[] = [];
   if (toData.learnset) {
-    (toData.learnset as LearnsetMove[]).filter(m => m.lv === pokemon.level).forEach(m => {
-      if (!pokemon.moves.find(em => em && em.id === m.id)) {
-        pendingMoves.push({ id: m.id, name: m.name, pp: m.pp, maxPP: m.pp });
-      }
-    });
+    (toData.learnset as LearnsetMove[])
+      .filter((m) => m.lv === pokemon.level)
+      .forEach((m) => {
+        if (!pokemon.moves.find((em) => em && em.id === m.id)) {
+          pendingMoves.push({ id: m.id, name: m.name, pp: m.pp, maxPP: m.pp });
+        }
+      });
   }
-  
+
   return { pendingMoves, fromId, toId: targetSpeciesId };
 }
 
@@ -60,7 +69,9 @@ const TYROGUE_EVO_MIN_LEVEL = 20;
 const WILD_STONE_EVO_MIN_LEVEL = 36;
 const WILD_TRADE_EVO_MIN_LEVEL = 36;
 
-export const FRIENDSHIP_EVOLUTION_MAP: Readonly<Record<string, string>> = Object.freeze({
+export const FRIENDSHIP_EVOLUTION_MAP: Readonly<
+  Partial<Record<PokemonSpeciesId, PokemonSpeciesId>>
+> = Object.freeze({
   golbat: 'crobat',
   chansey: 'blissey',
   pichu: 'pikachu',
@@ -78,7 +89,7 @@ export const FRIENDSHIP_EVOLUTION_MAP: Readonly<Record<string, string>> = Object
   meowthalola: 'persianalola',
   munchlax: 'snorlax',
   azurill: 'marill',
-  eevee: 'sylveon',
+  eevee: 'sylveon'
 });
 
 /**
@@ -87,8 +98,12 @@ export const FRIENDSHIP_EVOLUTION_MAP: Readonly<Record<string, string>> = Object
 export function checkLevelUpEvolution(pokemon: Pokemon): PokemonSpeciesId | null {
   // Tyrogue special case
   if (pokemon.id === 'tyrogue' && pokemon.level >= TYROGUE_EVO_MIN_LEVEL) {
-    const toId = pokemon.atk > pokemon.def ? 'hitmonlee' : 
-                 (pokemon.def > pokemon.atk ? 'hitmonchan' : 'hitmontop');
+    const toId =
+      pokemon.atk > pokemon.def
+        ? 'hitmonlee'
+        : pokemon.def > pokemon.atk
+          ? 'hitmonchan'
+          : 'hitmontop';
     return requirePokemonSpeciesId(toId);
   }
 
@@ -106,7 +121,7 @@ export function checkLevelUpEvolution(pokemon: Pokemon): PokemonSpeciesId | null
   const evo = getLevelEvolution(pokemon.id);
   if (!evo || pokemon.level < evo.level) return null;
   if (evo.to === pokemon.id) return null;
-  
+
   if (!pokemonDataProvider.getPokemonData(evo.to, true)) return null;
   return evo.to;
 }
@@ -133,7 +148,7 @@ function buildPreEvoMap(): Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> {
   }
   for (const [from, data] of Object.entries(STONE_EVOLUTIONS)) {
     const to = requirePokemonSpeciesId(data.to);
-    const baseFrom = from.startsWith('eevee_') ? 'eevee' : (from.split('_')[0] || from);
+    const baseFrom = from.startsWith('eevee_') ? 'eevee' : from.split('_')[0] || from;
     if (!preEvo[to]) preEvo[to] = requirePokemonSpeciesId(baseFrom);
   }
   for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {
@@ -153,7 +168,11 @@ function backtrackToBaseSpecies(id: string): PokemonSpeciesId {
   return current;
 }
 
-const EEVEE_EVOLUTIONS = ['vaporeon', 'jolteon', 'flareon'] as const satisfies readonly PokemonSpeciesId[];
+const EEVEE_EVOLUTIONS = [
+  'vaporeon',
+  'jolteon',
+  'flareon'
+] as const satisfies readonly PokemonSpeciesId[];
 
 function tryLevelEvolution(evolved: PokemonSpeciesId, level: number): PokemonSpeciesId | null {
   const levelEvo = getLevelEvolution(evolved);
@@ -233,5 +252,5 @@ export function checkStoneEvolution(pokemon: Pokemon, stoneId: ItemId): PokemonS
   const evo = getStoneEvolution(pokemon.id);
   if (!evo) return null;
 
-  return (evo.stone === stoneId) ? evo.to : null;
+  return evo.stone === stoneId ? evo.to : null;
 }

@@ -1,39 +1,31 @@
 <script setup lang="ts">
-import type { RankedSeasonMedal } from '@/types/battle/pvp.ts'
-import { usePvPStore } from '@/stores/pvp'
-import ProfileRankedMedalItem from './ProfileRankedMedalItem.vue'
+import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
+import { usePvPStore } from '@/stores/pvp';
+import ProfileRankedMedalItem from './ProfileRankedMedalItem.vue';
 
 interface Props {
-  medals?: RankedSeasonMedal[]
+  medals?: RankedSeasonMedal[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   medals: () => []
-})
+});
 
-const pvpStore = usePvPStore()
+const pvpStore = usePvPStore();
 </script>
 
 <template>
   <div class="profile-section-card ranked-medals-card">
-    <div class="section-label">
-      MEDALLAS DE TEMPORADA RANKED ({{ props.medals.length }})
-    </div>
+    <div class="section-label">MEDALLAS DE TEMPORADA RANKED ({{ props.medals.length }})</div>
 
     <!-- Empty State -->
-    <div
-      v-if="props.medals.length === 0"
-      class="empty-ranked-medals"
-    >
+    <div v-if="props.medals.length === 0" class="empty-ranked-medals">
       <span class="emoji empty-icon">🎖️</span>
       <span class="empty-text">Sin medallas de temporada competitiva aún.</span>
     </div>
 
     <!-- Medals Shelf / Grid -->
-    <div
-      v-else
-      class="ranked-medals-shelf"
-    >
+    <div v-else class="ranked-medals-shelf">
       <ProfileRankedMedalItem
         v-for="medal in props.medals"
         :key="medal.id"
@@ -45,7 +37,7 @@ const pvpStore = usePvPStore()
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_profile-shared";
+@use '@/styles/components/_profile-shared';
 
 .ranked-medals-card {
   margin-top: 10px;

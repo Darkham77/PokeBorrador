@@ -1,4 +1,4 @@
-import { test, describe } from 'vitest';
+import { test, describe } from 'vite-plus/test';
 import assert from 'node:assert';
 import {
   hashStringTo32Bit,
@@ -14,11 +14,10 @@ import {
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 describe('Pokémon Physical Dimensions Gaussian Math & Tiers', () => {
-
   test('Deterministic Hash & PRNG: same seed always yields identical numbers', () => {
     const seed1 = 'poke-uid-12345-h';
     const seed2 = 'poke-uid-12345-h';
-    
+
     const hash1 = hashStringTo32Bit(seed1);
     const hash2 = hashStringTo32Bit(seed2);
     assert.strictEqual(hash1, hash2);
@@ -82,11 +81,14 @@ describe('Pokémon Physical Dimensions Gaussian Math & Tiers', () => {
 
     // Bell curve concentration: central region should contain ~50% of the distribution
     const mRatio = countTierM / SAMPLE_COUNT;
-    assert.ok(mRatio > 0.40 && mRatio < 0.65, `Central tier ratio ${mRatio} should be ~50%`);
+    assert.ok(mRatio > 0.4 && mRatio < 0.65, `Central tier ratio ${mRatio} should be ~50%`);
 
     // Extreme rarity: tails (< 0.1 or > 0.9) should be very rare (< 1% total, vs 20% in uniform distribution)
     const extremeRatio = countTierExtreme / SAMPLE_COUNT;
-    assert.ok(extremeRatio < 0.01, `Extreme tier ratio ${extremeRatio} must be < 1% in Gaussian distribution`);
+    assert.ok(
+      extremeRatio < 0.01,
+      `Extreme tier ratio ${extremeRatio} must be < 1% in Gaussian distribution`
+    );
   });
 
   test('Size Tier Classification (XXS to XXL)', () => {
@@ -137,7 +139,7 @@ describe('Pokémon Physical Dimensions Gaussian Math & Tiers', () => {
       uid: 'custom-pika-uid',
       id: 'pikachu',
       height: 0.8, // 100% bigger (XXL)
-      weight: 3.0  // 50% lighter (XXS)
+      weight: 3.0 // 50% lighter (XXS)
     } as unknown as Pokemon;
 
     const mockSpecies = {
@@ -182,9 +184,15 @@ describe('Pokémon Physical Dimensions Gaussian Math & Tiers', () => {
   });
 
   test('filterAndSortPokemon correctly sorts by weight and height in both directions', async () => {
-    const { filterAndSortPokemon } = await import('../../../src/logic/pokemon/pokemonSelectionFilter.ts');
+    const { filterAndSortPokemon } =
+      await import('../../../src/logic/pokemon/pokemonSelectionFilter.ts');
 
-    const heavy = { uid: 'u-heavy', id: 'snorlax', weight: 460.0, height: 2.1 } as unknown as Pokemon;
+    const heavy = {
+      uid: 'u-heavy',
+      id: 'snorlax',
+      weight: 460.0,
+      height: 2.1
+    } as unknown as Pokemon;
     const light = { uid: 'u-light', id: 'pichu', weight: 2.0, height: 0.3 } as unknown as Pokemon;
     const mid = { uid: 'u-mid', id: 'pikachu', weight: 6.0, height: 0.4 } as unknown as Pokemon;
 
@@ -229,26 +237,40 @@ describe('Pokémon Physical Dimensions Gaussian Math & Tiers', () => {
   });
 
   test('G-Max and special forms fallback to baseSpecies weight and height (not 0.0 kg)', async () => {
-    const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider.ts');
+    const { pokemonDataProvider } =
+      await import('../../../src/logic/providers/pokemonDataProvider.ts');
     const { makePokemon } = await import('../../../src/logic/pokemon/pokemonFactory.ts');
 
     const gmaxData = pokemonDataProvider.getPokemonData('eeveegmax', true);
     assert.ok(gmaxData, 'eeveegmax data should exist');
-    assert.ok(gmaxData.weight !== null && gmaxData.weight > 0, `eeveegmax weight should be > 0, got ${gmaxData.weight}`);
+    assert.ok(
+      gmaxData.weight !== null && gmaxData.weight > 0,
+      `eeveegmax weight should be > 0, got ${gmaxData.weight}`
+    );
 
     const gmaxPoke = { uid: 'test-eevee-gmax-uid', id: 'eeveegmax' } as unknown as Pokemon;
     const calcWeight = getPokemonPhysicalWeight(gmaxPoke);
-    assert.ok(calcWeight > 0, `getPokemonPhysicalWeight for eeveegmax must be > 0, got ${calcWeight}`);
+    assert.ok(
+      calcWeight > 0,
+      `getPokemonPhysicalWeight for eeveegmax must be > 0, got ${calcWeight}`
+    );
 
     const createdPika = makePokemon('pikachu', 5);
     assert.ok(createdPika, 'pikachu must be created');
-    assert.ok(typeof createdPika.height === 'number' && createdPika.height > 0, `created pikachu must have height > 0, got ${createdPika?.height}`);
-    assert.ok(typeof createdPika.weight === 'number' && createdPika.weight > 0, `created pikachu must have weight > 0, got ${createdPika?.weight}`);
+    assert.ok(
+      typeof createdPika.height === 'number' && createdPika.height > 0,
+      `created pikachu must have height > 0, got ${createdPika?.height}`
+    );
+    assert.ok(
+      typeof createdPika.weight === 'number' && createdPika.weight > 0,
+      `created pikachu must have weight > 0, got ${createdPika?.weight}`
+    );
 
     const createdGmax = makePokemon('eeveegmax', 5, { bypassWhitelist: true });
     assert.ok(createdGmax, 'eeveegmax must be created');
-    assert.ok(typeof createdGmax.weight === 'number' && createdGmax.weight > 0, `created eeveegmax must have weight > 0, got ${createdGmax?.weight}`);
+    assert.ok(
+      typeof createdGmax.weight === 'number' && createdGmax.weight > 0,
+      `created eeveegmax must have weight > 0, got ${createdGmax?.weight}`
+    );
   });
-
 });
-

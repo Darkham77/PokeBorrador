@@ -21,10 +21,7 @@ import {
   type CellBiomeType
 } from '../../types/map/kantoGridModel.ts';
 import { defaultPrefabsRegistry } from './prefabsRegistry.ts';
-import {
-  CANONICAL_PALETTES,
-  type ThemeBiomePalette
-} from './proceduralMapGenerator.ts';
+import { CANONICAL_PALETTES, type ThemeBiomePalette } from './proceduralMapGenerator.ts';
 import {
   MULBERRY32_CONFIG,
   CONTINENTAL_SEED_OFFSETS,
@@ -64,9 +61,9 @@ export interface ContinentalWorldGenResult {
   readonly config: ProceduralGenerationConfig;
   readonly themeSource: CanonicalThemeSource;
   readonly themePalette: ThemeBiomePalette;
-  readonly nodes: Record<string, AdventureProjectNode>;
+  readonly nodes: Record<string, AdventureProjectNode>; // open-record: Procedural adventure nodes indexed by node id
   readonly connections: [string, string][];
-  readonly customTerrain: Record<string, CellBiomeType>;
+  readonly customTerrain: Record<string, CellBiomeType>; // open-record: Coordinate key string (col,row) to biome mapping
   readonly svgPathData: string;
 }
 
@@ -172,7 +169,8 @@ export function generateProceduralContinentalTerrain(
   seed: number,
   config?: ProceduralGenerationConfig
 ): Record<string, CellBiomeType> {
-  const customTerrain: Record<string, CellBiomeType> = {};
+  // open-record: Coordinate key string (col,row) to biome mapping
+  const customTerrain: Record<string, CellBiomeType> = {}; // open-record: Coordinate key string (col,row) to biome mapping
   const gridW = Math.ceil(width / KANTO_TILE_SIZE);
   const gridH = Math.ceil(height / KANTO_TILE_SIZE);
 
@@ -188,10 +186,13 @@ export function generateProceduralContinentalTerrain(
   const mountainPercent = config?.mountainPercent ?? CONTINENTAL_PIPELINE_DEFAULTS.mountainPercent;
   const forestPercent = config?.forestPercent ?? CONTINENTAL_PIPELINE_DEFAULTS.forestPercent;
 
-  const waterThreshold = nCfg.waterBaseThreshold + ((waterPercent - nCfg.waterThresholdOffsetPercent) / nCfg.percentDivisor) * nCfg.waterThresholdScaleFactor;
+  const waterThreshold =
+    nCfg.waterBaseThreshold +
+    ((waterPercent - nCfg.waterThresholdOffsetPercent) / nCfg.percentDivisor) *
+      nCfg.waterThresholdScaleFactor;
 
   // Satellite island configurations (deterministic offsets based on seed PRNG)
-  const islands = CONTINENTAL_ISLAND_TEMPLATES.map(tpl => ({
+  const islands = CONTINENTAL_ISLAND_TEMPLATES.map((tpl) => ({
     x: tpl.baseX + (prng() - tpl.centerOffset) * tpl.coordJitter,
     y: tpl.baseY + (prng() - tpl.centerOffset) * tpl.coordJitter,
     r: tpl.baseR + prng() * tpl.rVariance
@@ -213,7 +214,10 @@ export function generateProceduralContinentalTerrain(
       const wny = ny + warpY * nCfg.warpMultiplier;
 
       // Base landmass: box-like falloff with domain warping creates organic coastlines (NOT an oval/ellipse)
-      const boxDist = Math.max(Math.abs(wnx) * nCfg.boxFalloffWeightX, Math.abs(wny) * nCfg.boxFalloffWeightY);
+      const boxDist = Math.max(
+        Math.abs(wnx) * nCfg.boxFalloffWeightX,
+        Math.abs(wny) * nCfg.boxFalloffWeightY
+      );
       const distFalloff = Math.max(0, nCfg.distFalloffMax - boxDist);
 
       // Coastal roughness FBM for natural bays, coves, and ragged shores
@@ -223,7 +227,10 @@ export function generateProceduralContinentalTerrain(
       // Deep bay carving: negative noise values carve natural gulfs and sea inlets deep into the continent
       const [bx, by] = rotateGA(gx + nCfg.bayOffset, gy + nCfg.bayOffset);
       const bayCarve = fbm2D(coastalNoise, bx, by, nCfg.bayFbm);
-      const bayPenalty = bayCarve < nCfg.bayPenaltyThreshold ? (bayCarve + nCfg.bayPenaltyOffset) * nCfg.bayPenaltyMultiplier : 0;
+      const bayPenalty =
+        bayCarve < nCfg.bayPenaltyThreshold
+          ? (bayCarve + nCfg.bayPenaltyOffset) * nCfg.bayPenaltyMultiplier
+          : 0;
 
       let landVal = distFalloff + coastNoise * nCfg.coastWeight + bayPenalty;
 
@@ -237,7 +244,11 @@ export function generateProceduralContinentalTerrain(
       }
 
       // Guarantee ocean perimeter at map borders (2-tile margin)
-      const isOuterEdge = (gx <= nCfg.outerEdgeMarginMin || gx >= gridW - nCfg.outerEdgeMarginMaxOffset || gy <= nCfg.outerEdgeMarginMin || gy >= gridH - nCfg.outerEdgeMarginMaxOffset);
+      const isOuterEdge =
+        gx <= nCfg.outerEdgeMarginMin ||
+        gx >= gridW - nCfg.outerEdgeMarginMaxOffset ||
+        gy <= nCfg.outerEdgeMarginMin ||
+        gy >= gridH - nCfg.outerEdgeMarginMaxOffset;
 
       if (isOuterEdge || landVal < waterThreshold) {
         customTerrain[`${gx}_${gy}`] = CELL_BIOME.WATER;
@@ -249,13 +260,17 @@ export function generateProceduralContinentalTerrain(
       const rv = fbm2D(ridgeNoise, rx, ry, nCfg.ridgeFbm);
       const ridge = nCfg.distFalloffMax - Math.abs(rv);
 
-      const mountainThreshold = nCfg.mountainBaseThreshold - (mountainPercent / nCfg.percentDivisor) * nCfg.mountainFactor;
-      const isMountain = ridge > mountainThreshold && landVal > (waterThreshold + nCfg.mountainWaterClearance);
+      const mountainThreshold =
+        nCfg.mountainBaseThreshold - (mountainPercent / nCfg.percentDivisor) * nCfg.mountainFactor;
+      const isMountain =
+        ridge > mountainThreshold && landVal > waterThreshold + nCfg.mountainWaterClearance;
 
       // Moisture FBM for dense contiguous forests
       const [mx, my] = rotateGA(gx + nCfg.moistOffset, gy + nCfg.moistOffset);
       const moist = fbm2D(moistNoise, mx, my, nCfg.moistFbm);
-      const forestThreshold = nCfg.forestBaseThreshold - ((forestPercent - nCfg.forestPercentOffset) / nCfg.percentDivisor) * nCfg.forestFactor;
+      const forestThreshold =
+        nCfg.forestBaseThreshold -
+        ((forestPercent - nCfg.forestPercentOffset) / nCfg.percentDivisor) * nCfg.forestFactor;
 
       let biome: CellBiomeType;
 
@@ -281,19 +296,21 @@ export function scatterUrbanNodes(
   width: number,
   height: number,
   seed: number,
-  terrain: Record<string, CellBiomeType>,
+  terrain: Record<string, CellBiomeType>, // open-record: Coordinate key string (col,row) to biome mapping
   targetCount: number = CONTINENTAL_URBAN_SCATTER_CONFIG.defaultTargetCount
 ): Record<string, AdventureProjectNode> {
+  // open-record: Procedural adventure nodes indexed by node id
   const prng = mulberry32(seed + CONTINENTAL_SEED_OFFSETS.urbanScatter);
   const gridW = Math.ceil(width / KANTO_TILE_SIZE);
   const gridH = Math.ceil(height / KANTO_TILE_SIZE);
 
   const uCfg = CONTINENTAL_URBAN_SCATTER_CONFIG;
-  const nodes: Record<string, AdventureProjectNode> = {};
+  const nodes: Record<string, AdventureProjectNode> = {}; // open-record: Procedural adventure nodes indexed by node id
   const placedPositions: { x: number; y: number }[] = [];
 
   // Urban scales hierarchy distribution
-  const scalePool: readonly UrbanScale[] = [ // domain-ok: Weighted frequency distribution pool of urban scales
+  const scalePool: readonly UrbanScale[] = [
+    // domain-ok: Weighted frequency distribution pool of urban scales
     'metropolis',
     'city',
     'city',
@@ -318,7 +335,10 @@ export function scatterUrbanNodes(
 
     // Ensure candidate tile and its immediate neighborhood are on walkable plains/forests
     // Uses 2-tile clearance initially, relaxes to 1-tile clearance after 400 attempts
-    const clrDist = attempts > uCfg.relaxationAttemptThreshold ? uCfg.clearanceDistRelaxed : uCfg.clearanceDistInitial;
+    const clrDist =
+      attempts > uCfg.relaxationAttemptThreshold
+        ? uCfg.clearanceDistRelaxed
+        : uCfg.clearanceDistInitial;
     let hasClearance = true;
     for (let dy = -clrDist; dy <= clrDist; dy++) {
       for (let dx = -clrDist; dx <= clrDist; dx++) {
@@ -379,7 +399,7 @@ export function scatterUrbanNodes(
  * Guarantees 100% graph connectivity with 0 orphan nodes and rich alternative routes.
  */
 export function generateRoadNetwork(
-  nodes: Record<string, AdventureProjectNode>
+  nodes: Record<string, AdventureProjectNode> // open-record: Procedural adventure nodes indexed by node id
 ): [string, string][] {
   const nodeIds = Object.keys(nodes);
   const n = nodeIds.length;
@@ -410,7 +430,7 @@ export function generateRoadNetwork(
   allEdges.sort((a, b) => a.weight - b.weight);
 
   // 2. Kruskal's MST algorithm with Disjoint-Set / Union-Find
-  const parent: Record<string, string> = {};
+  const parent: Record<string, string> = {}; // open-record: Disjoint-set union-find parent mapping
   for (const id of nodeIds) parent[id] = id;
 
   function find(i: string): string {
@@ -441,8 +461,11 @@ export function generateRoadNetwork(
   }
 
   // 3. Add short alternative chords (up to N/2 extra edges) to form cycles without orphan chains
-  const connections: [string, string][] = mstEdges.map(e => [e.u, e.v]);
-  const extraEdgesCount = Math.max(1, Math.floor(n / CONTINENTAL_ROAD_NETWORK_CONFIG.cycleChordDivisor));
+  const connections: [string, string][] = mstEdges.map((e) => [e.u, e.v]);
+  const extraEdgesCount = Math.max(
+    1,
+    Math.floor(n / CONTINENTAL_ROAD_NETWORK_CONFIG.cycleChordDivisor)
+  );
 
   let added = 0;
   for (const re of remainingEdges) {
@@ -461,7 +484,7 @@ export function generateRoadNetwork(
  * 4. Generate SVG Path Data String for Vector Road Connections
  */
 export function generateSvgRoadPathData(
-  nodes: Record<string, AdventureProjectNode>,
+  nodes: Record<string, AdventureProjectNode>, // open-record: Procedural adventure nodes indexed by node id
   connections: [string, string][]
 ): string {
   const pathCommands: string[] = []; // no-domain: Estructura o identificador procedural de aventura
@@ -491,8 +514,8 @@ export function generateSvgRoadPathData(
  * - BRIDGE over water, DIRT_PATH over walkable terrain
  */
 export function rasterizeRoadsOnTerrain(
-  terrain: Record<string, CellBiomeType>,
-  nodes: Record<string, AdventureProjectNode>,
+  terrain: Record<string, CellBiomeType>, // open-record: Coordinate key string (col,row) to biome mapping
+  nodes: Record<string, AdventureProjectNode>, // open-record: Procedural adventure nodes indexed by node id
   connections: readonly (readonly [string, string])[],
   gridW: number,
   gridH: number,
@@ -565,8 +588,14 @@ export function rasterizeRoadsOnTerrain(
         paintRoadBrush(cx, cy, Math.floor(roadWidth / 2));
         if (cx === x2 && cy === y2) break;
         const e2 = 2 * aerr;
-        if (e2 > -ady) { aerr -= ady; cx += asx; }
-        if (e2 < adx) { aerr += adx; cy += asy; }
+        if (e2 > -ady) {
+          aerr -= ady;
+          cx += asx;
+        }
+        if (e2 < adx) {
+          aerr += adx;
+          cy += asy;
+        }
       }
       continue;
     }
@@ -603,13 +632,15 @@ export function rasterizeRoadsOnTerrain(
       if (terrain[`${wgx}_${wgy}`] === CELL_BIOME.MOUNTAIN_DIRT) {
         // Try shifting perpendicular in both directions
         for (let shift = 1; shift <= rCfg.maxMountainPerpShifts; shift++) {
-          const testA = terrain[`${Math.round(wx + perpX * shift)}_${Math.round(wy + perpY * shift)}`];
+          const testA =
+            terrain[`${Math.round(wx + perpX * shift)}_${Math.round(wy + perpY * shift)}`];
           if (testA !== CELL_BIOME.MOUNTAIN_DIRT && testA !== undefined) {
             wx += perpX * shift;
             wy += perpY * shift;
             break;
           }
-          const testB = terrain[`${Math.round(wx - perpX * shift)}_${Math.round(wy - perpY * shift)}`];
+          const testB =
+            terrain[`${Math.round(wx - perpX * shift)}_${Math.round(wy - perpY * shift)}`];
           if (testB !== CELL_BIOME.MOUNTAIN_DIRT && testB !== undefined) {
             wx -= perpX * shift;
             wy -= perpY * shift;
@@ -634,18 +665,20 @@ export function rasterizeRoadsOnTerrain(
         // Catmull-Rom interpolation for smooth curves
         const tt = t * t;
         const ttt = tt * t;
-        const cx = Math.round(0.5 * (
-          (2 * p1.x) +
-          (-p0.x + p2.x) * t +
-          (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * tt +
-          (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * ttt
-        ));
-        const cy = Math.round(0.5 * (
-          (2 * p1.y) +
-          (-p0.y + p2.y) * t +
-          (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * tt +
-          (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * ttt
-        ));
+        const cx = Math.round(
+          0.5 *
+            (2 * p1.x +
+              (-p0.x + p2.x) * t +
+              (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * tt +
+              (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * ttt)
+        );
+        const cy = Math.round(
+          0.5 *
+            (2 * p1.y +
+              (-p0.y + p2.y) * t +
+              (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * tt +
+              (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * ttt)
+        );
 
         // Variable road width: wider near cities
         const nearCity = isNearCity(cx, cy, rCfg.nearCityRadiusTiles);
@@ -710,7 +743,14 @@ export function bakeUrbanMaquette(
 
   const layout = CONTINENTAL_MAQUETTE_LAYOUTS[scale] ?? CONTINENTAL_MAQUETTE_LAYOUTS.town!;
 
-  const h = ((Math.abs(Math.round(cx * mCfg.hashMultipliers.x + cy * mCfg.hashMultipliers.y + _seed * mCfg.hashMultipliers.seed))) >>> 0);
+  const h =
+    Math.abs(
+      Math.round(
+        cx * mCfg.hashMultipliers.x +
+          cy * mCfg.hashMultipliers.y +
+          _seed * mCfg.hashMultipliers.seed
+      )
+    ) >>> 0;
   const allB = defaultPrefabsRegistry.getByCategory('buildings');
   const housePrefabs = allB.filter((b) => b.id.includes('house') || b.id.includes('cottage'));
   const getHouse = (offset: number, fallback: string) => {
@@ -745,8 +785,8 @@ export function bakeUrbanMaquette(
  * and compact central civic squares for metropolises/cities (no giant empty helipads).
  */
 function stampUrbanPlazasOnTerrain(
-  terrain: Record<string, CellBiomeType>,
-  nodes: Record<string, AdventureProjectNode>,
+  terrain: Record<string, CellBiomeType>, // open-record: Coordinate key string (col,row) to biome mapping
+  nodes: Record<string, AdventureProjectNode>, // open-record: Procedural adventure nodes indexed by node id
   gridW: number,
   gridH: number
 ): void {
@@ -807,7 +847,8 @@ export function generateCompleteContinentalWorld(
   const height = options.height ?? KANTO_WORLD_HEIGHT;
   const seed = options.seed;
   const archetype = options.archetype ?? 'agnostic';
-  const themeSource: CanonicalThemeSource = options.themeSource ?? options.config?.themeSource ?? 'firered';
+  const themeSource: CanonicalThemeSource =
+    options.themeSource ?? options.config?.themeSource ?? 'firered';
   if (!validateAntiFrankensteinPalette(themeSource)) {
     throw new Error(`Invalid canonical theme source: ${themeSource}`);
   }
@@ -839,7 +880,14 @@ export function generateCompleteContinentalWorld(
   const gridW = Math.ceil(width / KANTO_TILE_SIZE);
   const gridH = Math.ceil(height / KANTO_TILE_SIZE);
   stampUrbanPlazasOnTerrain(customTerrain, nodes, gridW, gridH);
-  rasterizeRoadsOnTerrain(customTerrain, nodes, connections, gridW, gridH, config.roadWidth ?? pipe.roadWidth);
+  rasterizeRoadsOnTerrain(
+    customTerrain,
+    nodes,
+    connections,
+    gridW,
+    gridH,
+    config.roadWidth ?? pipe.roadWidth
+  );
 
   // 5. SVG Vector Path String
   const svgPathData = generateSvgRoadPathData(nodes, connections);

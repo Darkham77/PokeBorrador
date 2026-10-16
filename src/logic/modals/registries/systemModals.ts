@@ -15,7 +15,9 @@ export const SYSTEM_MODAL_REGISTRY = {
   Cosmetics: defineAsyncComponent(() => import('@/components/modals/CosmeticsModal.vue')),
   ClassSelection: defineAsyncComponent(() => import('@/components/modals/ClassSelectionModal.vue')),
   ClassMissions: defineAsyncComponent(() => import('@/components/modals/ClassMissionsModal.vue')),
-  PassiveTeamEditor: defineAsyncComponent(() => import('@/components/modals/PassiveTeamEditorModal.vue')),
+  PassiveTeamEditor: defineAsyncComponent(
+    () => import('@/components/modals/PassiveTeamEditorModal.vue')
+  ),
   FactionChoice: defineAsyncComponent(() => import('@/components/modals/FactionChoiceModal.vue')),
   SocialCenter: defineAsyncComponent(() => import('@/components/social/SocialCenterModal.vue')),
   FactionWar: defineAsyncComponent(() => import('@/components/modals/FactionWarModal.vue')),
@@ -26,12 +28,18 @@ export const SYSTEM_MODAL_REGISTRY = {
   DaycareMissions: defineAsyncComponent(() => import('@/components/modals/EventMissionsModal.vue')),
   EventMissions: defineAsyncComponent(() => import('@/components/modals/EventMissionsModal.vue')),
   EventDetail: defineAsyncComponent(() => import('@/components/modals/EventDetailModal.vue')),
-  EventSlotAction: defineAsyncComponent(() => import('@/components/modals/EventSlotActionModal.vue')),
-  EventAutoEnroll: defineAsyncComponent(() => import('@/components/modals/EventAutoEnrollModal.vue')),
+  EventSlotAction: defineAsyncComponent(
+    () => import('@/components/modals/EventSlotActionModal.vue')
+  ),
+  EventAutoEnroll: defineAsyncComponent(
+    () => import('@/components/modals/EventAutoEnrollModal.vue')
+  ),
   RouteSpawns: defineAsyncComponent(() => import('@/components/modals/RouteSpawnsModal.vue')),
   DebugStackTest: defineAsyncComponent(() => import('@/components/modals/DebugStackTestModal.vue')),
-  DebugWeatherTables: defineAsyncComponent(() => import('@/components/modals/DebugWeatherTablesModal.vue')),
-  Trade: defineAsyncComponent(() => import('@/components/market/TradeView.vue')),
+  DebugWeatherTables: defineAsyncComponent(
+    () => import('@/components/modals/DebugWeatherTablesModal.vue')
+  ),
+  Trade: defineAsyncComponent(() => import('@/components/market/TradeView.vue'))
 };
 
 export type SystemModalKey = keyof typeof SYSTEM_MODAL_REGISTRY;

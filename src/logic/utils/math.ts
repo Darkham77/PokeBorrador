@@ -1,8 +1,8 @@
 /**
  * src/logic/utils/math.ts
- * 
+ *
  * GLOBAL MATHEMATICAL TOOLS AND PRNG
- * 
+ *
  * Centralizes pure pseudorandom number generation (PRNG) functions
  * and hashing algorithms to prevent duplication across domains (weather, combat, etc.).
  */
@@ -28,14 +28,14 @@ export function mulberry32(a: number): () => number {
   };
 }
 
-/** 
+/**
  * DJB2 hash: Converts a string into an unsigned 32-bit integer.
  * Ideal for generating numeric seeds from string identifiers (e.g. mapId).
  */
 export function hashString(str: string): number {
   let hash = DJB2_INITIAL_HASH_SEED;
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash = (hash << 5) + hash + str.charCodeAt(i);
   }
   return hash >>> 0;
 }

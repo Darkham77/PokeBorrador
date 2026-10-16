@@ -7,7 +7,7 @@ import {
   MAX_INDIVIDUAL_VALUE,
   DIAMANTE_SPEED_INDIVIDUAL_VALUE,
   SEASONAL_BATTLE_COINS,
-  DEFAULT_FEATURED_REPLAYS_LIMIT,
+  DEFAULT_FEATURED_REPLAYS_LIMIT
 } from '@/logic/pvp/rankedEngine.ts';
 import { ALPHANUMERIC_RADIX } from '@/logic/constants/gameplay.ts';
 import type { DBResponse } from '@/types/system/database';
@@ -41,7 +41,7 @@ const TIER_THRESHOLDS = {
   DIAMANTE: 2700,
   PLATINO: 2100,
   ORO: 1600,
-  PLATA: 1200,
+  PLATA: 1200
 } as const;
 
 function resolveRankedTier(elo: number): string {
@@ -53,7 +53,12 @@ function resolveRankedTier(elo: number): string {
   return 'bronce';
 }
 
-function generateTierPrizes(tier: string, seasonName: string, rank: number, elo: number): Record<string, unknown>[] {
+function generateTierPrizes(
+  tier: string,
+  seasonName: string,
+  rank: number,
+  elo: number
+): Record<string, unknown>[] {
   const prizes: Record<string, unknown>[] = [
     {
       type: 'ranked_medal',
@@ -67,25 +72,63 @@ function generateTierPrizes(tier: string, seasonName: string, rank: number, elo:
   switch (tier) {
     case 'maestro':
       prizes.push(
-        { type: 'pokemon', species: 'eevee', level: STANDARD_COMPETITIVE_LEVEL, shiny: true, ivs: { hp: MAX_INDIVIDUAL_VALUE, atk: MAX_INDIVIDUAL_VALUE, def: MAX_INDIVIDUAL_VALUE, spa: MAX_INDIVIDUAL_VALUE, spd: MAX_INDIVIDUAL_VALUE, spe: MAX_INDIVIDUAL_VALUE } },
+        {
+          type: 'pokemon',
+          species: 'eevee',
+          level: STANDARD_COMPETITIVE_LEVEL,
+          shiny: true,
+          ivs: {
+            hp: MAX_INDIVIDUAL_VALUE,
+            atk: MAX_INDIVIDUAL_VALUE,
+            def: MAX_INDIVIDUAL_VALUE,
+            spa: MAX_INDIVIDUAL_VALUE,
+            spd: MAX_INDIVIDUAL_VALUE,
+            spe: MAX_INDIVIDUAL_VALUE
+          }
+        },
         { type: 'item', item: 'Ticket Cueva Celeste', qty: 3 },
         { type: 'item', item: 'Ticket Islas Espumas', qty: 3 },
-        { type: 'bc', amount: SEASONAL_BATTLE_COINS.MAESTRO, battleCoins: SEASONAL_BATTLE_COINS.MAESTRO }
+        {
+          type: 'bc',
+          amount: SEASONAL_BATTLE_COINS.MAESTRO,
+          battleCoins: SEASONAL_BATTLE_COINS.MAESTRO
+        }
       );
       break;
     case 'diamante':
       prizes.push(
-        { type: 'pokemon', species: 'eevee', level: STANDARD_COMPETITIVE_LEVEL, shiny: false, ivs: { hp: MAX_INDIVIDUAL_VALUE, atk: MAX_INDIVIDUAL_VALUE, def: MAX_INDIVIDUAL_VALUE, spa: MAX_INDIVIDUAL_VALUE, spd: MAX_INDIVIDUAL_VALUE, spe: DIAMANTE_SPEED_INDIVIDUAL_VALUE } },
+        {
+          type: 'pokemon',
+          species: 'eevee',
+          level: STANDARD_COMPETITIVE_LEVEL,
+          shiny: false,
+          ivs: {
+            hp: MAX_INDIVIDUAL_VALUE,
+            atk: MAX_INDIVIDUAL_VALUE,
+            def: MAX_INDIVIDUAL_VALUE,
+            spa: MAX_INDIVIDUAL_VALUE,
+            spd: MAX_INDIVIDUAL_VALUE,
+            spe: DIAMANTE_SPEED_INDIVIDUAL_VALUE
+          }
+        },
         { type: 'item', item: 'Ticket Cueva Celeste', qty: 2 },
         { type: 'item', item: 'Ticket Islas Espumas', qty: 2 },
-        { type: 'bc', amount: SEASONAL_BATTLE_COINS.DIAMANTE, battleCoins: SEASONAL_BATTLE_COINS.DIAMANTE }
+        {
+          type: 'bc',
+          amount: SEASONAL_BATTLE_COINS.DIAMANTE,
+          battleCoins: SEASONAL_BATTLE_COINS.DIAMANTE
+        }
       );
       break;
     case 'platino':
       prizes.push(
         { type: 'item', item: 'Ticket Cueva Celeste', qty: 2 },
         { type: 'item', item: 'Ticket Islas Espumas', qty: 2 },
-        { type: 'bc', amount: SEASONAL_BATTLE_COINS.PLATINO, battleCoins: SEASONAL_BATTLE_COINS.PLATINO }
+        {
+          type: 'bc',
+          amount: SEASONAL_BATTLE_COINS.PLATINO,
+          battleCoins: SEASONAL_BATTLE_COINS.PLATINO
+        }
       );
       break;
     case 'oro':
@@ -98,13 +141,19 @@ function generateTierPrizes(tier: string, seasonName: string, rank: number, elo:
     case 'plata':
       prizes.push(
         { type: 'item', item: 'Ticket Cueva Celeste', qty: 1 },
-        { type: 'bc', amount: SEASONAL_BATTLE_COINS.PLATA, battleCoins: SEASONAL_BATTLE_COINS.PLATA }
+        {
+          type: 'bc',
+          amount: SEASONAL_BATTLE_COINS.PLATA,
+          battleCoins: SEASONAL_BATTLE_COINS.PLATA
+        }
       );
       break;
     default:
-      prizes.push(
-        { type: 'bc', amount: SEASONAL_BATTLE_COINS.BRONCE, battleCoins: SEASONAL_BATTLE_COINS.BRONCE }
-      );
+      prizes.push({
+        type: 'bc',
+        amount: SEASONAL_BATTLE_COINS.BRONCE,
+        battleCoins: SEASONAL_BATTLE_COINS.BRONCE
+      });
       break;
   }
 
@@ -127,10 +176,10 @@ async function fetchEligibleRankedPlayers(): Promise<StoredEligiblePlayer[]> {
     ORDER BY elo_rating DESC, id ASC
   `);
 
-  return rawRows.map(r => ({
+  return rawRows.map((r) => ({
     id: String(r.id),
-    username: String(r.username || ''),
-    email: String(r.email || ''),
+    username: typeof r.username === 'string' ? r.username : '',
+    email: typeof r.email === 'string' ? r.email : '',
     elo: Number(r.elo) || MIN_INITIAL_ELO,
     wins: Number(r.wins) || 0,
     losses: Number(r.losses) || 0,
@@ -168,10 +217,21 @@ async function distributeSeasonalAwards(
 
     for (let i = 0; i < prizes.length; i++) {
       const awardId = `award_${targetEventKey}_${player.id}_${i}_${nowEpochMs}`;
-      await queryLocal(`
+      await queryLocal(
+        `
         INSERT INTO awards (id, event_id, winner_id, winner_name, winner_email, prize, awarded_at, claimed, received_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL)
-      `, [awardId, targetEventKey, player.id, player.username, player.email, JSON.stringify(prizes[i]), nowIso]);
+      `,
+        [
+          awardId,
+          targetEventKey,
+          player.id,
+          player.username,
+          player.email,
+          JSON.stringify(prizes[i]),
+          nowIso
+        ]
+      );
       awardsCount++;
     }
   }
@@ -192,7 +252,9 @@ export async function emulateAwardRankedSeasonAutomated(
   const targetEventId = 'ranked_season_' + (targetSeasonName || 'actual');
 
   try {
-    const rulesRows = await queryLocal('SELECT * FROM ranked_rules_config WHERE id = ?', ['current']);
+    const rulesRows = await queryLocal('SELECT * FROM ranked_rules_config WHERE id = ?', [
+      'current'
+    ]);
     const rulesRow = rulesRows[0] as { last_awarded_at?: string } | undefined;
     const now = getServerInstant();
     const nowIso = now.toString();
@@ -217,10 +279,13 @@ export async function emulateAwardRankedSeasonAutomated(
     // Save podium to competition_results
     if (podium.length > 0) {
       const resultId = `result_${targetEventId}_${now.epochMilliseconds}`;
-      await queryLocal(`
+      await queryLocal(
+        `
         INSERT INTO competition_results (id, event_id, winners, ended_at)
         VALUES (?, ?, ?, ?)
-      `, [resultId, targetEventId, JSON.stringify(podium), nowIso]);
+      `,
+        [resultId, targetEventId, JSON.stringify(podium), nowIso]
+      );
     }
 
     // Proportional ELO Soft Reset: Math.floor(max(1000, 1000 + (elo - 1000) / 2))
@@ -230,17 +295,23 @@ export async function emulateAwardRankedSeasonAutomated(
     `);
 
     // Update ranked_rules_config execution record
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO ranked_rules_config (id, season_name, last_awarded_at, updated_at)
       VALUES ('current', ?, ?, ?)
       ON CONFLICT (id) DO UPDATE SET
         last_awarded_at = excluded.last_awarded_at,
         updated_at = excluded.updated_at
-    `, [targetSeasonName, nowIso, nowIso]);
+    `,
+      [targetSeasonName, nowIso, nowIso]
+    );
 
     await persistSQLite();
 
-    logger.info('DBRouter', `[RankedRPC] Successfully awarded ranked season "${targetSeasonName}" to ${eligiblePlayers.length} players (${awardsCount} awards).`);
+    logger.info(
+      'DBRouter',
+      `[RankedRPC] Successfully awarded ranked season "${targetSeasonName}" to ${eligiblePlayers.length} players (${awardsCount} awards).`
+    );
     return {
       data: {
         ok: true,
@@ -268,7 +339,8 @@ export async function emulateRecordPassiveBattleResult(
   context: { userId: string; username: string } = { userId: 'local_user', username: 'Invitado' }
 ): Promise<DBResponse> {
   const defenderId = (params.p_defender_id || params.defender_id) as string;
-  const result = String(params.p_result || params.result || '');
+  const rawResult = params.p_result || params.result;
+  const result = typeof rawResult === 'string' ? rawResult : '';
   const deltaElo = Number(params.p_delta_elo ?? params.delta_elo ?? 0);
   const reportData = params.p_report_data || params.report_data || {};
   const callerId = context.userId || 'local_user';
@@ -281,42 +353,63 @@ export async function emulateRecordPassiveBattleResult(
     const reportDataStr = typeof reportData === 'string' ? reportData : JSON.stringify(reportData);
     const nowIso = getServerInstant().toString();
 
-    await queryLocal(`
+    await queryLocal(
+      `
       INSERT INTO passive_battle_reports (user_id, opponent_id, result, report_data, created_at)
       VALUES (?, ?, ?, ?, ?)
-    `, [defenderId, callerId, result, reportDataStr, nowIso]);
+    `,
+      [defenderId, callerId, result, reportDataStr, nowIso]
+    );
 
-    await queryLocal(`
+    await queryLocal(
+      `
       UPDATE profiles
       SET elo_rating = MAX(${MIN_INITIAL_ELO}, COALESCE(elo_rating, ${MIN_INITIAL_ELO}) + ?)
       WHERE id = ?
-    `, [deltaElo, defenderId]);
+    `,
+      [deltaElo, defenderId]
+    );
 
     await persistSQLite();
 
-    logger.info('DBRouter', `[RankedRPC] Recorded passive battle against defender ${defenderId}: result=${result}, deltaElo=${deltaElo}`);
+    logger.info(
+      'DBRouter',
+      `[RankedRPC] Recorded passive battle against defender ${defenderId}: result=${result}, deltaElo=${deltaElo}`
+    );
     return { data: { ok: true, success: true }, error: null };
   } catch (err) {
-    logger.error('DBRouter', `[RankedRPC] Error recording passive battle result: ${(err as Error).message}`);
+    logger.error(
+      'DBRouter',
+      `[RankedRPC] Error recording passive battle result: ${(err as Error).message}`
+    );
     return { data: null, error: (err as Error).message };
   }
 }
 
 const TOP_REPLAY_PLAYERS_LIMIT = 10 as const;
 
-async function checkReplayParticipantsTop10(p1UserUid: string, p2UserUid: string, initialIsTop10: boolean): Promise<boolean> {
+async function checkReplayParticipantsTop10(
+  p1UserUid: string,
+  p2UserUid: string,
+  initialIsTop10: boolean
+): Promise<boolean> {
   if (initialIsTop10 || (!p1UserUid && !p2UserUid)) return initialIsTop10;
   const top10Rows = await queryLocal(`
     SELECT id FROM profiles
     ORDER BY COALESCE(elo_rating, ${MIN_INITIAL_ELO}) DESC
     LIMIT ${TOP_REPLAY_PLAYERS_LIMIT}
   `);
-  const top10Ids = new Set(top10Rows.map(r => String(r.id)));
+  const top10Ids = new Set(top10Rows.map((r) => String(r.id)));
   return top10Ids.has(p1UserUid) || (Boolean(p2UserUid) && top10Ids.has(p2UserUid));
 }
 
 function resolveBattleReplayCode(rawCode?: unknown): string {
-  const trimmed = String(rawCode || '').trim();
+  const trimmed =
+    typeof rawCode === 'string'
+      ? rawCode.trim()
+      : typeof rawCode === 'number'
+        ? String(rawCode).trim()
+        : '';
   if (trimmed) return trimmed;
   const p1 = Math.random().toString(ALPHANUMERIC_RADIX).substring(2, 6).toUpperCase();
   const p2 = Math.random().toString(ALPHANUMERIC_RADIX).substring(2, 6).toUpperCase();
@@ -329,16 +422,32 @@ interface ExistingReplayRecord {
   created_at?: unknown;
 }
 
-async function handleExistingReplayViews(existing: ExistingReplayRecord, battleCode: string): Promise<DBResponse> {
-  await queryLocal('UPDATE battle_replays SET views_count = views_count + 1 WHERE battle_code = ?', [battleCode]);
+async function handleExistingReplayViews(
+  existing: ExistingReplayRecord,
+  battleCode: string
+): Promise<DBResponse> {
+  await queryLocal(
+    'UPDATE battle_replays SET views_count = views_count + 1 WHERE battle_code = ?',
+    [battleCode]
+  );
   await persistSQLite();
   return {
     data: {
       ok: true,
-      replayId: String(existing.id ?? ''),
+      replayId:
+        typeof existing.id === 'string'
+          ? existing.id
+          : typeof existing.id === 'number'
+            ? String(existing.id)
+            : '',
       battleCode,
       isTop10Archived: Boolean(existing.is_top10_archived),
-      createdAt: String(existing.created_at ?? '')
+      createdAt:
+        typeof existing.created_at === 'string'
+          ? existing.created_at
+          : typeof existing.created_at === 'number'
+            ? String(existing.created_at)
+            : ''
     },
     error: null
   };
@@ -364,18 +473,25 @@ function normalizePublishReplayPayload(
   context: { userId: string; username: string }
 ): NormalizedReplayPayload {
   const battleCode = resolveBattleReplayCode(payload.battleCode || payload.battle_code);
-  const seasonId = String(payload.seasonId || payload.season_id || 'TEMPORADA ACTUAL');
-  const themeId = String(payload.themeId || payload.theme_id || 'masters_allstars');
+  const rawSeasonId = payload.seasonId || payload.season_id;
+  const seasonId = typeof rawSeasonId === 'string' ? rawSeasonId : 'TEMPORADA ACTUAL';
+  const rawThemeId = payload.themeId || payload.theme_id;
+  const themeId = typeof rawThemeId === 'string' ? rawThemeId : 'masters_allstars';
 
   const rawP1 = (payload.p1 || payload.p1_data || {}) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
   const rawP2 = (payload.p2 || payload.p2_data || {}) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
 
-  let p1UserUid = String(payload.p1_user_id || rawP1.userId || context.userId || '');
-  const p2UserUid = String(payload.p2_user_id || rawP2.userId || '');
+  const rawP1Uid = payload.p1_user_id || rawP1.userId || context.userId;
+  let p1UserUid =
+    typeof rawP1Uid === 'string' ? rawP1Uid : typeof rawP1Uid === 'number' ? String(rawP1Uid) : '';
+  const rawP2Uid = payload.p2_user_id || rawP2.userId;
+  const p2UserUid =
+    typeof rawP2Uid === 'string' ? rawP2Uid : typeof rawP2Uid === 'number' ? String(rawP2Uid) : '';
   if (!p1UserUid) p1UserUid = 'local_user';
 
   const turnsCount = Number(payload.turnsCount ?? payload.turns_count ?? 0);
-  const winnerSide = String(payload.winnerSide || payload.winner_side || 'p1');
+  const rawWinnerSide = payload.winnerSide || payload.winner_side;
+  const winnerSide = typeof rawWinnerSide === 'string' ? rawWinnerSide : 'p1';
   const choiceStream = payload.choiceStream || payload.choice_stream || [];
   const initialSeed = payload.initialSeed || payload.initial_seed || [0, 0, 0, 0];
   const isTop10Requested = Boolean(payload.isTop10Archived || payload.is_top10_archived);
@@ -400,31 +516,36 @@ async function insertNewBattleReplay(
   norm: NormalizedReplayPayload,
   isTop10: boolean
 ): Promise<{ replayUid: string; createdAt: string }> {
-  const replayUid = globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `replay_${getServerInstant().epochMilliseconds}`;
+  const replayUid = globalThis.crypto?.randomUUID
+    ? globalThis.crypto.randomUUID()
+    : `replay_${getServerInstant().epochMilliseconds}`;
   const nowIso = getServerInstant().toString();
 
-  await queryLocal(`
+  await queryLocal(
+    `
     INSERT INTO battle_replays (
       id, battle_code, season_id, theme_id, p1_user_id, p2_user_id,
       p1_data, p2_data, turns_count, winner_side, choice_stream,
       initial_seed, is_top10_archived, views_count, created_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
-  `, [
-    replayUid,
-    norm.battleCode,
-    norm.seasonId,
-    norm.themeId,
-    norm.p1UserUid || null,
-    norm.p2UserUid || null,
-    JSON.stringify(norm.rawP1),
-    JSON.stringify(norm.rawP2),
-    norm.turnsCount,
-    norm.winnerSide,
-    JSON.stringify(norm.choiceStream),
-    JSON.stringify(norm.initialSeed),
-    isTop10 ? 1 : 0,
-    nowIso
-  ]);
+  `,
+    [
+      replayUid,
+      norm.battleCode,
+      norm.seasonId,
+      norm.themeId,
+      norm.p1UserUid || null,
+      norm.p2UserUid || null,
+      JSON.stringify(norm.rawP1),
+      JSON.stringify(norm.rawP2),
+      norm.turnsCount,
+      norm.winnerSide,
+      JSON.stringify(norm.choiceStream),
+      JSON.stringify(norm.initialSeed),
+      isTop10 ? 1 : 0,
+      nowIso
+    ]
+  );
 
   await persistSQLite();
   return { replayUid, createdAt: nowIso };
@@ -451,7 +572,10 @@ export async function emulatePublishBattleReplay(
     );
 
     // Check if battle code already exists (views count increment)
-    const existingRows = await queryLocal('SELECT id, created_at, is_top10_archived, views_count FROM battle_replays WHERE battle_code = ?', [norm.battleCode]);
+    const existingRows = await queryLocal(
+      'SELECT id, created_at, is_top10_archived, views_count FROM battle_replays WHERE battle_code = ?',
+      [norm.battleCode]
+    );
     const existing = existingRows[0];
     if (existing) {
       return await handleExistingReplayViews(existing, norm.battleCode);
@@ -459,7 +583,10 @@ export async function emulatePublishBattleReplay(
 
     const { replayUid, createdAt } = await insertNewBattleReplay(norm, isTop10);
 
-    logger.info('DBRouter', `[RankedRPC] Published battle replay ${norm.battleCode} (id=${replayUid}, isTop10=${isTop10})`);
+    logger.info(
+      'DBRouter',
+      `[RankedRPC] Published battle replay ${norm.battleCode} (id=${replayUid}, isTop10=${isTop10})`
+    );
     return {
       data: {
         ok: true,
@@ -471,7 +598,10 @@ export async function emulatePublishBattleReplay(
       error: null
     };
   } catch (err) {
-    logger.error('DBRouter', `[RankedRPC] Error publishing battle replay: ${(err as Error).message}`);
+    logger.error(
+      'DBRouter',
+      `[RankedRPC] Error publishing battle replay: ${(err as Error).message}`
+    );
     return { data: null, error: (err as Error).message };
   }
 }
@@ -484,10 +614,14 @@ export async function emulateGetFeaturedReplays(
   _sqliteDb: SQLiteDatabase,
   params: Record<string, unknown> = {}
 ): Promise<DBResponse> {
-  const limit = Math.min(MAX_FEATURED_REPLAYS_LIMIT, Math.max(1, Number(params.p_limit ?? params.limit ?? DEFAULT_FEATURED_REPLAYS_LIMIT)));
+  const limit = Math.min(
+    MAX_FEATURED_REPLAYS_LIMIT,
+    Math.max(1, Number(params.p_limit ?? params.limit ?? DEFAULT_FEATURED_REPLAYS_LIMIT))
+  );
 
   try {
-    const rows = await queryLocal(`
+    const rows = await queryLocal(
+      `
       SELECT 
         id,
         battle_code as battleCode,
@@ -503,18 +637,20 @@ export async function emulateGetFeaturedReplays(
       FROM battle_replays
       ORDER BY is_top10_archived DESC, created_at DESC
       LIMIT ?
-    `, [limit]);
+    `,
+      [limit]
+    );
 
-    const replays = rows.map(r => {
+    const replays = rows.map((r) => {
       let p1: unknown;
       let p2: unknown;
       try {
-        p1 = typeof r.p1_data === 'string' ? JSON.parse(r.p1_data) : (r.p1_data || {});
+        p1 = typeof r.p1_data === 'string' ? JSON.parse(r.p1_data) : r.p1_data || {};
       } catch {
         p1 = {};
       }
       try {
-        p2 = typeof r.p2_data === 'string' ? JSON.parse(r.p2_data) : (r.p2_data || {});
+        p2 = typeof r.p2_data === 'string' ? JSON.parse(r.p2_data) : r.p2_data || {};
       } catch {
         p2 = {};
       }
@@ -536,8 +672,10 @@ export async function emulateGetFeaturedReplays(
 
     return { data: replays, error: null };
   } catch (err) {
-    logger.error('DBRouter', `[RankedRPC] Error getting featured replays: ${(err as Error).message}`);
+    logger.error(
+      'DBRouter',
+      `[RankedRPC] Error getting featured replays: ${(err as Error).message}`
+    );
     return { data: null, error: (err as Error).message };
   }
 }
-

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip'
+import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip';
 
 defineProps<{
-  activeDetails: ActiveMoveDetails
-}>()
+  activeDetails: ActiveMoveDetails;
+}>();
 </script>
 
 <template>
@@ -13,9 +13,7 @@ defineProps<{
       v-if="activeDetails.recovery && activeDetails.recovery.text"
       class="extra-effect-section recovery-section"
     >
-      <div class="calc-section-title">
-        RECUPERACIÓN
-      </div>
+      <div class="calc-section-title">RECUPERACIÓN</div>
       <div class="extra-effect-row">
         <span class="emoji">💚</span>
         <span class="extra-effect-text boosted">{{ activeDetails.recovery.text }}</span>
@@ -27,9 +25,7 @@ defineProps<{
       v-if="activeDetails.recoil && activeDetails.recoil.text"
       class="extra-effect-section recoil-section"
     >
-      <div class="calc-section-title">
-        RETROCESO
-      </div>
+      <div class="calc-section-title">RETROCESO</div>
       <div class="extra-effect-row">
         <span class="emoji">🔥</span>
         <span class="extra-effect-text penalized">{{ activeDetails.recoil.text }}</span>
@@ -41,14 +37,8 @@ defineProps<{
       v-if="activeDetails.fieldConditions && activeDetails.fieldConditions.length > 0"
       class="extra-effect-section field-section"
     >
-      <div class="calc-section-title">
-        CONDICIONES DE CAMPO
-      </div>
-      <div
-        v-for="cond in activeDetails.fieldConditions"
-        :key="cond"
-        class="field-condition-row"
-      >
+      <div class="calc-section-title">CONDICIONES DE CAMPO</div>
+      <div v-for="cond in activeDetails.fieldConditions" :key="cond" class="field-condition-row">
         <span class="emoji">◆</span>
         <span class="field-condition-text">{{ cond }}</span>
       </div>
@@ -57,14 +47,12 @@ defineProps<{
       <div
         v-if="activeDetails.smogonDesc"
         class="formula-breakdown-box smogon-desc-box"
-        style="margin-top: 4px;"
+        style="margin-top: 4px"
       >
-        <div class="calc-section-title">
-          ANÁLISIS COMPLETO (SMOGON)
-        </div>
+        <div class="calc-section-title">ANÁLISIS COMPLETO (SMOGON)</div>
         <div
           class="formula-text smogon-desc-text"
-          style=" font-size: var(--font-7); line-height: 1.2;text-shadow: none;"
+          style="font-size: var(--font-7); line-height: 1.2; text-shadow: none"
         >
           {{ activeDetails.smogonDesc }}
         </div>
@@ -74,7 +62,7 @@ defineProps<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_move-tooltip-shared.scss" as *;
+@use '@/styles/components/_move-tooltip-shared.scss' as *;
 
 .calc-section-title {
   @include calc-section-title-mixin;

@@ -56,7 +56,11 @@ const CERTIFIED_CANONICAL_PROPS = [
 describe('Canonical Prefabs & Certified Buildings Integrity (SSoT)', () => {
   it('should verify all certified canonical buildings exist on disk with valid 32px geometry', async () => {
     for (const bldg of CERTIFIED_CANONICAL_BUILDINGS) {
-      const targetPath = path.resolve(ROOT_DIR, 'test_aventura/assets/prefabs/buildings', bldg.file);
+      const targetPath = path.resolve(
+        ROOT_DIR,
+        'test_aventura/assets/prefabs/buildings',
+        bldg.file
+      );
       expect(fs.existsSync(targetPath), `Missing building file: ${bldg.file}`).toBe(true);
 
       const meta = await sharp(targetPath).metadata();
@@ -65,7 +69,10 @@ describe('Canonical Prefabs & Certified Buildings Integrity (SSoT)', () => {
       expect(bldg.w % 32, `${bldg.file} width not multiple of 32`).toBe(0);
       expect(bldg.h % 32, `${bldg.file} height not multiple of 32`).toBe(0);
 
-      const { data } = await sharp(targetPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+      const { data } = await sharp(targetPath)
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
       const topLeftAlpha = data[3]!;
       const topRightAlpha = data[(bldg.w - 1) * 4 + 3]!;
       expect(topLeftAlpha, `${bldg.file} top-left corner must be transparent`).toBe(0);

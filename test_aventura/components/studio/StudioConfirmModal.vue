@@ -25,18 +25,19 @@ function handleCancel() {
       <header class="modal-header">
         <div class="flex items-center gap-2 text-amber-400">
           <span class="icon text-2xl">⚠️</span>
-          <h3 class="modal-title">
-            ¿Regenerar Terreno Procedural?
-          </h3>
+          <h3 class="modal-title">¿Regenerar Terreno Procedural?</h3>
         </div>
       </header>
 
       <div class="modal-body">
         <p class="modal-text">
-          Has realizado <strong class="text-amber-300">modificaciones manuales</strong> en el mapa (pinceladas de terreno o estructuras personalizadas).
+          Has realizado <strong class="text-amber-300">modificaciones manuales</strong> en el mapa
+          (pinceladas de terreno o estructuras personalizadas).
         </p>
         <p class="modal-subtext">
-          Al regenerar con la semilla seleccionada, el mapa se recalculará desde cero en base a las fórmulas algorítmicas y <strong>se descartarán los cambios manuales</strong> que no hayas exportado a JSON.
+          Al regenerar con la semilla seleccionada, el mapa se recalculará desde cero en base a las
+          fórmulas algorítmicas y <strong>se descartarán los cambios manuales</strong> que no hayas
+          exportado a JSON.
         </p>
       </div>
 

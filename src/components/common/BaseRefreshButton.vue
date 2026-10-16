@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { useTemplateRef, watch, onWatcherCleanup } from 'vue'
-import { gsap } from 'gsap'
+import { useTemplateRef, watch, onWatcherCleanup } from 'vue';
+import { gsap } from 'gsap';
 
-import type { RefreshButtonSize, RefreshButtonVariant } from './baseRefreshButtonTypes'
+import type { RefreshButtonSize, RefreshButtonVariant } from './baseRefreshButtonTypes';
 
 interface Props {
-  id?: string
-  loading?: boolean
-  disabled?: boolean
-  title?: string
-  size?: RefreshButtonSize
-  variant?: RefreshButtonVariant
-  label?: string
-  ariaLabel?: string
+  id?: string;
+  loading?: boolean;
+  disabled?: boolean;
+  title?: string;
+  size?: RefreshButtonSize;
+  variant?: RefreshButtonVariant;
+  label?: string;
+  ariaLabel?: string;
 }
 
 const {
@@ -24,30 +24,34 @@ const {
   variant = 'circle',
   label = undefined,
   ariaLabel = undefined
-} = defineProps<Props>()
+} = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'click', event: MouseEvent): void
-}>()
+  (e: 'click', event: MouseEvent): void;
+}>();
 
-const iconRef = useTemplateRef<SVGElement>('iconRef')
+const iconRef = useTemplateRef<SVGElement>('iconRef');
 
-watch(() => loading, (isLoading) => {
-  if (isLoading && iconRef.value) {
-    const spinTween = gsap.to(iconRef.value, {
-      rotation: '+=360',
-      duration: 1,
-      repeat: -1,
-      ease: 'none'
-    })
-    onWatcherCleanup(() => {
-      spinTween.kill()
-      if (iconRef.value) {
-        gsap.set(iconRef.value, { rotation: 0 })
-      }
-    })
-  }
-}, { immediate: true })
+watch(
+  () => loading,
+  (isLoading) => {
+    if (isLoading && iconRef.value) {
+      const spinTween = gsap.to(iconRef.value, {
+        rotation: '+=360',
+        duration: 1,
+        repeat: -1,
+        ease: 'none'
+      });
+      onWatcherCleanup(() => {
+        spinTween.kill();
+        if (iconRef.value) {
+          gsap.set(iconRef.value, { rotation: 0 });
+        }
+      });
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -76,17 +80,14 @@ watch(() => loading, (isLoading) => {
     >
       <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
     </svg>
-    <span
-      v-if="label || $slots.default"
-      class="btn-label"
-    >
+    <span v-if="label || $slots.default" class="btn-label">
       <slot>{{ label }}</slot>
     </span>
   </button>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .btn-refresh-header {
   @include btn-refresh-header;

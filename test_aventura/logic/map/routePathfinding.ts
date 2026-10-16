@@ -7,12 +7,7 @@
  */
 
 import type { ContinentMapResult } from './continentGenerator.ts';
-import type {
-  POINode,
-  RouteEdge,
-  RouteWaypoint,
-  RouteType
-} from '../../types/map/poiTypes.ts';
+import type { POINode, RouteEdge, RouteWaypoint, RouteType } from '../../types/map/poiTypes.ts';
 
 const LAKE_BRIDGE_STEP_COST = 1.25;
 const OCEAN_BRIDGE_STEP_COST = 3.5;
@@ -77,7 +72,12 @@ export function computeOceanGrid(continentMap: ContinentMapResult): boolean[][] 
   let head = 0;
   while (head < queue.length) {
     const curr = queue[head++]!;
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+    for (const [dx, dy] of [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0]
+    ]) {
       const nx = curr.x + dx!;
       const ny = curr.y + dy!;
       if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
@@ -133,7 +133,12 @@ export function findPathAStar(
 
     const currG = gScore.get(key(curr.x, curr.y)) ?? Infinity;
 
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+    for (const [dx, dy] of [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0]
+    ]) {
       const nx = curr.x + dx!;
       const ny = curr.y + dy!;
 
@@ -309,7 +314,6 @@ export const getBestGateway = (
   };
 };
 
-
 export function rerouteIncidentEdges(
   continentMap: ContinentMapResult,
   nodes: readonly POINode[],
@@ -384,9 +388,7 @@ export function rerouteIncidentEdges(
     const startPt = getBestGateway(nodeA, midBx, midBy);
     const goalPt = getBestGateway(nodeB, midAx, midAy);
 
-    const activeExclusions = excludedZones.filter(
-      (z) => z.id !== nodeA.id && z.id !== nodeB.id
-    );
+    const activeExclusions = excludedZones.filter((z) => z.id !== nodeA.id && z.id !== nodeB.id);
 
     const pathResult = findPathAStar(
       continentMap,

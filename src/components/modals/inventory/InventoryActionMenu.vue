@@ -1,47 +1,47 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import BaseModal from '@/components/common/BaseModal.vue'
-import { useUIStore } from '@/stores/ui'
-import { getItemById } from '@/data/inventory/items'
-import { isItemUsableOutsideCombat } from '@/stores/inventory/inventory'
-import { isEquippableHeldItem } from '@/stores/inventory/inventoryHelpers'
-import type { Item } from '@/stores/inventory/inventory'
-import type { ItemMenuAction } from '@/types/inventory/items'
+import { computed } from 'vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import { useUIStore } from '@/stores/ui';
+import { getItemById } from '@/data/inventory/items';
+import { isItemUsableOutsideCombat } from '@/stores/inventory/inventory';
+import { isEquippableHeldItem } from '@/stores/inventory/inventoryHelpers';
+import type { Item } from '@/stores/inventory/inventory';
+import type { ItemMenuAction } from '@/types/inventory/items';
 
 interface Props {
-  show: boolean
-  item: Item | null
-  battleMode?: boolean
+  show: boolean;
+  item: Item | null;
+  battleMode?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   battleMode: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'action', type: ItemMenuAction): void
-}>()
+  (e: 'close'): void;
+  (e: 'action', type: ItemMenuAction): void;
+}>();
 
-const uiStore = useUIStore()
+const uiStore = useUIStore();
 
 const isItemUsableOrEquippable = computed(() => {
-  if (!props.item) return false
-  const dbItem = getItemById(props.item.id)
-  if (!dbItem) return false
-  return isItemUsableOutsideCombat(dbItem)
-})
+  if (!props.item) return false;
+  const dbItem = getItemById(props.item.id);
+  if (!dbItem) return false;
+  return isItemUsableOutsideCombat(dbItem);
+});
 
 const isItemHeld = computed(() => {
-  if (!props.item) return false
-  const dbItem = getItemById(props.item.id)
-  if (!dbItem) return false
-  return isEquippableHeldItem(dbItem)
-})
+  if (!props.item) return false;
+  const dbItem = getItemById(props.item.id);
+  if (!dbItem) return false;
+  return isEquippableHeldItem(dbItem);
+});
 
 const handleSelect = (actionType: ItemMenuAction) => {
-  emit('action', actionType)
-}
+  emit('action', actionType);
+};
 </script>
 
 <template>
@@ -71,18 +71,10 @@ const handleSelect = (actionType: ItemMenuAction) => {
         class="menu-btn vicio-primary"
         @click.stop="handleSelect('use')"
       >
-        <template v-if="isItemHeld">
-          <span class="emoji icon">🎒</span> EQUIPAR
-        </template>
-        <template v-else>
-          <span class="emoji icon">✨</span> USAR
-        </template>
+        <template v-if="isItemHeld"> <span class="emoji icon">🎒</span> EQUIPAR </template>
+        <template v-else> <span class="emoji icon">✨</span> USAR </template>
       </button>
-      <button
-        v-if="!battleMode"
-        class="menu-btn vicio-warning"
-        @click.stop="handleSelect('sell')"
-      >
+      <button v-if="!battleMode" class="menu-btn vicio-warning" @click.stop="handleSelect('sell')">
         <span class="emoji icon">💰</span> VENDER
       </button>
       <button
@@ -97,7 +89,7 @@ const handleSelect = (actionType: ItemMenuAction) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .action-menu-header {
   @include pixelated;
@@ -117,12 +109,20 @@ const handleSelect = (actionType: ItemMenuAction) => {
   .menu-btn {
     width: 100%;
     margin-bottom: 8px;
-    
-    &.vicio-primary { @include btn-vicio('primary', 'md', true); }
-    &.vicio-warning { @include btn-vicio('primary', 'md', true); }
-    &.vicio-danger  { @include btn-vicio('danger', 'md', true); }
-    
-    .icon { font-size: var(--font-16); }
+
+    &.vicio-primary {
+      @include btn-vicio('primary', 'md', true);
+    }
+    &.vicio-warning {
+      @include btn-vicio('primary', 'md', true);
+    }
+    &.vicio-danger {
+      @include btn-vicio('danger', 'md', true);
+    }
+
+    .icon {
+      font-size: var(--font-16);
+    }
   }
 }
 </style>

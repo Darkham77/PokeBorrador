@@ -91,7 +91,7 @@ export const BIOME_WEIGHT_PRESETS = {
   OCCASIONAL: 15,
   RARE: 10,
   VERY_RARE: 5,
-  TRACE: 1,
+  TRACE: 1
 } as const;
 
 /** Maximum random seed range for procedural scene generation. */
@@ -122,7 +122,7 @@ export const WEATHER_ATMOSPHERE_FILTERS = {
   DUSK_HUE: -10,
   MORNING_BRIGHTNESS: 1.1,
   MORNING_SATURATE: 0.9,
-  MORNING_HUE: 5,
+  MORNING_HUE: 5
 } as const;
 
 /** Preset values for weather atmosphere CSS filters. */
@@ -140,8 +140,8 @@ export const WEATHER_EFFECT_PRESETS = {
   BLIZZARD_BRIGHTNESS: 0.95,
   BLIZZARD_SATURATE: 0.65,
   BLIZZARD_CONTRAST: 1.15,
-  HAIL_BRIGHTNESS: 0.90,
-  HAIL_SATURATE: 0.70,
+  HAIL_BRIGHTNESS: 0.9,
+  HAIL_SATURATE: 0.7,
   HAIL_CONTRAST: 1.15,
   RAIN_HEAVY_BRIGHTNESS: 0.65,
   RAIN_STANDARD_BRIGHTNESS: 0.8,
@@ -195,5 +195,8 @@ export const Z_LAYERS = {
   TOOLTIP: 15000,
   TOAST: 20000,
   MAX: 100000,
-  CRITICAL: 999999,
+  CRITICAL: 999999
 } as const;
+
+/** Standard feedback display duration in milliseconds when copying text to clipboard (2000 ms). */
+export const CLIPBOARD_COPIED_DUR_MS = 2000;

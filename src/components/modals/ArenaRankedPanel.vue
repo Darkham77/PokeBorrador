@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import ArenaRankedOverview from "@/components/modals/ArenaRankedOverview.vue";
-import ArenaMilestoneTrack from "@/components/modals/ArenaMilestoneTrack.vue";
-import ArenaLeaderboardSection from "@/components/modals/ArenaLeaderboardSection.vue";
+import ArenaRankedOverview from '@/components/modals/ArenaRankedOverview.vue';
+import ArenaMilestoneTrack from '@/components/modals/ArenaMilestoneTrack.vue';
+import ArenaLeaderboardSection from '@/components/modals/ArenaLeaderboardSection.vue';
 </script>
 
 <template>

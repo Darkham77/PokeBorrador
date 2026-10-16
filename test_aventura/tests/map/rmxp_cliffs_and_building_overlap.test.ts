@@ -80,7 +80,12 @@ describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {
         city_beta: { id: 'city_beta', name: 'Bastion Beta', type: 'town', x: 2400, y: 2400 }
       };
 
-      gen.generate(nodes, [], 12345, { autoOcean: false, autoBuildings: true, treeDensity: 0.7, roadWidth: 2 });
+      gen.generate(nodes, [], 12345, {
+        autoOcean: false,
+        autoBuildings: true,
+        treeDensity: 0.7,
+        roadWidth: 2
+      });
 
       const buildings = gen.buildings;
       expect(buildings.length).toBeGreaterThan(0);
@@ -95,12 +100,14 @@ describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {
           const b2w = b2.w ?? 128;
           const b2h = b2.h ?? 128;
 
-          const overlapX = (b1.x < b2.x + b2w) && (b1.x + b1w > b2.x);
-          const overlapY = (b1.y < b2.y + b2h) && (b1.y + b1h > b2.y);
+          const overlapX = b1.x < b2.x + b2w && b1.x + b1w > b2.x;
+          const overlapY = b1.y < b2.y + b2h && b1.y + b1h > b2.y;
 
           const collides = overlapX && overlapY;
           if (collides) {
-            console.error(`Collision detected between ${b1.style} at (${b1.x},${b1.y},${b1w}x${b1h}) and ${b2.style} at (${b2.x},${b2.y},${b2w}x${b2h})`);
+            console.error(
+              `Collision detected between ${b1.style} at (${b1.x},${b1.y},${b1w}x${b1h}) and ${b2.style} at (${b2.x},${b2.y},${b2w}x${b2h})`
+            );
           }
           expect(collides).toBe(false);
         }
@@ -127,7 +134,13 @@ describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {
       }
 
       const nodes: Record<string, KantoNodeCoordinate> = {
-        mountain_city: { id: 'mountain_city', name: 'Cliffview', type: 'town', x: cx * T, y: cy * T }
+        mountain_city: {
+          id: 'mountain_city',
+          name: 'Cliffview',
+          type: 'town',
+          x: cx * T,
+          y: cy * T
+        }
       };
 
       placeProceduralTownArchitectures(gen, nodes);
@@ -167,7 +180,12 @@ describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {
         cinnabar: { id: 'cinnabar', name: 'Cinnabar Island', type: 'town', x: 350, y: 1600 }
       };
 
-      gen.generate(nodes, [], 42, { autoOcean: false, autoBuildings: true, treeDensity: 0.7, roadWidth: 2 });
+      gen.generate(nodes, [], 42, {
+        autoOcean: false,
+        autoBuildings: true,
+        treeDensity: 0.7,
+        roadWidth: 2
+      });
 
       const buildings = gen.buildings;
       expect(buildings.length).toBeGreaterThan(0);
@@ -181,12 +199,14 @@ describe('RMXP Cliffs, Water and Procedural Urban Architecture', () => {
           const b2w = b2.w ?? 128;
           const b2h = b2.h ?? 128;
 
-          const overlapX = (b1.x < b2.x + b2w) && (b1.x + b1w > b2.x);
-          const overlapY = (b1.y < b2.y + b2h) && (b1.y + b1h > b2.y);
+          const overlapX = b1.x < b2.x + b2w && b1.x + b1w > b2.x;
+          const overlapY = b1.y < b2.y + b2h && b1.y + b1h > b2.y;
 
           const collides = overlapX && overlapY;
           if (collides) {
-            console.error(`Canonical collision between ${b1.style} at (${b1.x},${b1.y},${b1w}x${b1h}) and ${b2.style} at (${b2.x},${b2.y},${b2w}x${b2h})`);
+            console.error(
+              `Canonical collision between ${b1.style} at (${b1.x},${b1.y},${b1w}x${b1h}) and ${b2.style} at (${b2.x},${b2.y},${b2w}x${b2h})`
+            );
           }
           expect(collides).toBe(false);
         }

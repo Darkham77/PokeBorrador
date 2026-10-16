@@ -1,6 +1,5 @@
 import { resolveFactionLabel } from '@/components/modals/trainerProfileResolver';
-
-const PODIUM_MEDALS = ['🥇', '🥈', '🥉'] as const;
+import { PODIUM_MEDALS } from '@/types/system/game';
 
 export function isValidFaction(faction?: string | null): boolean {
   if (!faction) return false;

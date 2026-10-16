@@ -16,4 +16,3 @@ export interface PackedFeetDatabase {
 }
 
 export const FEET_COORDINATES_DATA: PackedFeetDatabase = dbJson;
-

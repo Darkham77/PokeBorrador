@@ -4,7 +4,7 @@
  * Faint interruptions during turn log playback and faint HP synchronization to 0.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { ref } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import '../../helpers/battleMockSetup';
@@ -49,7 +49,7 @@ describe('Faint Interrupts Log Playback', () => {
     '|-damage|p1a: Pikachu|0/100 fnt',
     '|faint|p1a: Pikachu',
     '|move|p1a: Pikachu|Thunder|p2a: Arbok',
-    '|-damage|p2a: Arbok|30/100',
+    '|-damage|p2a: Arbok|30/100'
   ];
 
   it('documents regression: without early-break, slower attacker move plays after faint', async () => {
@@ -57,7 +57,7 @@ describe('Faint Interrupts Log Playback', () => {
     for (const line of turnLogsBugScenario) {
       processed.push(line);
     }
-    const playerMoveProcessed = processed.some(l => l.includes('|move|p1a:'));
+    const playerMoveProcessed = processed.some((l) => l.includes('|move|p1a:'));
     expect(playerMoveProcessed).toBe(true);
   });
 
@@ -68,7 +68,7 @@ describe('Faint Interrupts Log Playback', () => {
       (line) => line.startsWith('|faint|')
     );
 
-    const playerMoveAfterFaint = processedLines.some(l => l.includes('|move|p1a:'));
+    const playerMoveAfterFaint = processedLines.some((l) => l.includes('|move|p1a:'));
     expect(playerMoveAfterFaint).toBe(false);
 
     const lastLine = processedLines[processedLines.length - 1];
@@ -81,7 +81,7 @@ describe('Faint Interrupts Log Playback', () => {
       '|-damage|p2a: Geodude|0/80 fnt',
       '|faint|p2a: Geodude',
       '|move|p2a: Geodude|Rock Throw|p1a: Pikachu',
-      '|-damage|p1a: Pikachu|60/100',
+      '|-damage|p1a: Pikachu|60/100'
     ];
 
     const { processedLines } = await runLogPlayback(
@@ -90,7 +90,7 @@ describe('Faint Interrupts Log Playback', () => {
       (line) => line.startsWith('|faint|')
     );
 
-    const enemyMoveAfterFaint = processedLines.some(l => l.includes('|move|p2a:'));
+    const enemyMoveAfterFaint = processedLines.some((l) => l.includes('|move|p2a:'));
     expect(enemyMoveAfterFaint).toBe(false);
   });
 
@@ -115,8 +115,20 @@ describe('Faint HP Sync', () => {
   });
 
   it('should update fainted enemy HP to 0 in enemyTeam array', async () => {
-    const faintedEnemy = { uid: 'e-fainted', name: 'Rhydon', hp: 0, maxHp: 165, moves: [] } as unknown as Pokemon;
-    const nextEnemy = { uid: 'e-next', name: 'Rhyhorn', hp: 137, maxHp: 137, moves: [] } as unknown as Pokemon;
+    const faintedEnemy = {
+      uid: 'e-fainted',
+      name: 'Rhydon',
+      hp: 0,
+      maxHp: 165,
+      moves: []
+    } as unknown as Pokemon;
+    const nextEnemy = {
+      uid: 'e-next',
+      name: 'Rhyhorn',
+      hp: 137,
+      maxHp: 137,
+      moves: []
+    } as unknown as Pokemon;
     const enemyTeam = [faintedEnemy, nextEnemy];
 
     const activeBattle = ref({

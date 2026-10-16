@@ -1,4 +1,4 @@
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 /* --- COMPARTIDO PARA COSMÉTICOS Y MARCOS --- */
 .style-section {
@@ -7,7 +7,11 @@
     align-items: center;
     gap: $spacing-md;
     margin-bottom: 8px;
-    h3 { color: var(--white); font-size: var(--font-18); font-weight: 700; }
+    h3 {
+      color: var(--white);
+      font-size: var(--font-18);
+      font-weight: 700;
+    }
     .badge {
       padding: 2px 8px;
       border-radius: $radius-sm;
@@ -61,7 +65,7 @@
     filter: Grayscale(0.85);
     cursor: not-allowed;
     border-color: Rgb(255 255 255 / 3%);
-    
+
     &:hover {
       background: Rgb(0 0 0 / 25%);
       transform: none;
@@ -75,14 +79,14 @@
     align-items: center;
     gap: $spacing-xs;
     text-align: center;
-    
+
     .style-name {
       display: block;
       color: Rgb(148 163 184 / 100%);
       font-size: var(--font-11);
       font-weight: 600;
     }
-    
+
     .status-tag {
       display: block;
       color: Rgb(59 130 246 / 100%);

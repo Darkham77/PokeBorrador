@@ -55,7 +55,9 @@ export interface HeightmapConstraintOptions {
   readonly isWaterCell?: (x: number, y: number) => boolean;
 }
 
-const DEFAULT_OPTIONS: Required<Omit<HeightmapConstraintOptions, 'isWaterCell'>> & { isWaterCell?: (x: number, y: number) => boolean } = {
+const DEFAULT_OPTIONS: Required<Omit<HeightmapConstraintOptions, 'isWaterCell'>> & {
+  isWaterCell?: (x: number, y: number) => boolean;
+} = {
   minFootprintDimension: 6,
   minWalkableCoreDimension: 3,
   minTerraceBuffer: 3,
@@ -164,13 +166,16 @@ function findElevatedRegions(matrix: ElevationMatrix): readonly ConnectedRegion[
 
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
-        if (!visited[y]![x]! && (matrix[y]![x]! >= z)) {
+        if (!visited[y]![x]! && matrix[y]![x]! >= z) {
           // Flood fill 4-way
           const cells: { x: number; y: number }[] = [];
           const queue: { x: number; y: number }[] = [{ x, y }];
           visited[y]![x] = true;
 
-          let minX = x, maxX = x, minY = y, maxY = y;
+          let minX = x,
+            maxX = x,
+            minY = y,
+            maxY = y;
 
           while (queue.length > 0) {
             const curr = queue.pop()!;
@@ -190,10 +195,12 @@ function findElevatedRegions(matrix: ElevationMatrix): readonly ConnectedRegion[
 
             for (const n of neighbors) {
               if (
-                n.x >= 0 && n.x < W &&
-                n.y >= 0 && n.y < H &&
+                n.x >= 0 &&
+                n.x < W &&
+                n.y >= 0 &&
+                n.y < H &&
                 !visited[n.y]![n.x]! &&
-                (matrix[n.y]![n.x]! >= z)
+                matrix[n.y]![n.x]! >= z
               ) {
                 visited[n.y]![n.x] = true;
                 queue.push(n);
@@ -240,13 +247,12 @@ export function validateHeightmapConstraints(
 
   // 1. Footprint & Walkable Core Rules
   for (const reg of regions) {
-    const minFootprint = reg.elevation >= 3
-      ? Math.min(3, options.minFootprintDimension)
-      : options.minFootprintDimension;
+    const minFootprint =
+      reg.elevation >= 3
+        ? Math.min(3, options.minFootprintDimension)
+        : options.minFootprintDimension;
 
-    const minCore = reg.elevation >= 3
-      ? 0
-      : options.minWalkableCoreDimension;
+    const minCore = reg.elevation >= 3 ? 0 : options.minWalkableCoreDimension;
 
     if (reg.width < minFootprint || reg.height < minFootprint) {
       violations.push({
@@ -262,10 +268,23 @@ export function validateHeightmapConstraints(
     }
 
     // Check walkable core: cells where all 8 neighbors have elevation >= reg.elevation
-    const { coreGrid, coreCount: walkableCoreCount } = computePlateauCoreGrid(reg.cells, matrix, reg.elevation, W, H);
+    const { coreGrid, coreCount: walkableCoreCount } = computePlateauCoreGrid(
+      reg.cells,
+      matrix,
+      reg.elevation,
+      W,
+      H
+    );
 
     // Check if core contains at least a req x req contiguous block
-    const hasCore = hasContiguousCoreBlock(coreGrid, reg.minX, reg.maxX, reg.minY, reg.maxY, minCore);
+    const hasCore = hasContiguousCoreBlock(
+      coreGrid,
+      reg.minX,
+      reg.maxX,
+      reg.minY,
+      reg.maxY,
+      minCore
+    );
 
     if (!hasCore) {
       violations.push({
@@ -466,12 +485,7 @@ export function rectifyHeightmap(
     if (!passChanged) break;
   }
 
-  const pruneShortWallRun = (
-    y: number,
-    start: number,
-    end: number,
-    z: number
-  ): boolean => {
+  const pruneShortWallRun = (y: number, start: number, end: number, z: number): boolean => {
     let modified = false;
     for (let k = start; k < end; k++) {
       if (matrix[y]![k]! === z) {
@@ -502,7 +516,7 @@ export function rectifyHeightmap(
           runStart = -1;
         }
       }
-      if (runStart !== -1 && (W - runStart) < minRun) {
+      if (runStart !== -1 && W - runStart < minRun) {
         if (pruneShortWallRun(y, runStart, W, z)) {
           anyChanged = true;
         }
@@ -554,7 +568,7 @@ export function sanitizeHeightmapMatrix(
   if (W === 0) return [];
 
   // Deep clone
-  const sanitized: number[][] = matrix.map(row => [...row]);
+  const sanitized: number[][] = matrix.map((row) => [...row]);
 
   // Phase 1: Topological Sinkhole Filling (protecting water bodies)
   fillHeightmapHoles(sanitized, options.isWaterCell);
@@ -580,13 +594,12 @@ export function sanitizeHeightmapMatrix(
     // Step 1: Remove small plateaus
     const regions = findElevatedRegions(sanitized);
     for (const reg of regions) {
-      const minFootprint = reg.elevation >= 3
-        ? Math.min(3, options.minFootprintDimension)
-        : options.minFootprintDimension;
+      const minFootprint =
+        reg.elevation >= 3
+          ? Math.min(3, options.minFootprintDimension)
+          : options.minFootprintDimension;
 
-      const minCore = reg.elevation >= 3
-        ? 0
-        : options.minWalkableCoreDimension;
+      const minCore = reg.elevation >= 3 ? 0 : options.minWalkableCoreDimension;
 
       if (reg.width < minFootprint || reg.height < minFootprint) {
         for (const cell of reg.cells) {
@@ -599,7 +612,14 @@ export function sanitizeHeightmapMatrix(
       // Check core
       const { coreGrid } = computePlateauCoreGrid(reg.cells, sanitized, reg.elevation, W, H);
 
-      const hasCore = hasContiguousCoreBlock(coreGrid, reg.minX, reg.maxX, reg.minY, reg.maxY, minCore);
+      const hasCore = hasContiguousCoreBlock(
+        coreGrid,
+        reg.minX,
+        reg.maxX,
+        reg.minY,
+        reg.maxY,
+        minCore
+      );
 
       if (!hasCore) {
         for (const cell of reg.cells) {
@@ -646,10 +666,15 @@ export function sanitizeHeightmapMatrix(
       for (let x = 0; x < W; x++) {
         const curElev = sanitized[y]![x]!;
         if (curElev <= 1) continue;
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        for (const [dx, dy] of [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1]
+        ] as const) {
           const nx = x + dx;
           const ny = y + dy;
-          const nElev = (nx >= 0 && nx < W && ny >= 0 && ny < H) ? sanitized[ny]![nx]! : 0;
+          const nElev = nx >= 0 && nx < W && ny >= 0 && ny < H ? sanitized[ny]![nx]! : 0;
           if (curElev - nElev > 1) {
             sanitized[y]![x] = nElev + 1;
             changed = true;

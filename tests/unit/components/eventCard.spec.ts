@@ -1,20 +1,20 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
-import EventCard from '@/components/modals/EventCard.vue'
-import type { Event } from '@/logic/events/eventEngine'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
+import EventCard from '@/components/modals/EventCard.vue';
+import type { Event } from '@/logic/events/eventEngine';
 
 describe('EventCard.vue', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-  })
+    setActivePinia(createPinia());
+  });
 
   const globalStubs = {
     PVSpriteFX: {
       template: '<div class="pv-sprite-fx-stub"><slot /></div>'
     }
-  }
+  };
 
   it('renders competition category preview buttons for multi-species events', async () => {
     const multiSpeciesEvent: Event = {
@@ -35,22 +35,22 @@ describe('EventCard.vue', () => {
         ]
       }),
       description: 'Gran torneo de pesca multi-especie'
-    }
+    };
 
     const wrapper = mount(EventCard, {
       props: { event: multiSpeciesEvent },
       global: { stubs: globalStubs }
-    })
+    });
 
     // 1. Category preview block should be present
-    expect(wrapper.find('.compact-competition-preview').exists()).toBe(true)
-    expect(wrapper.text()).toContain('CATEGORÍAS EN JUEGO')
-    expect(wrapper.text()).toContain('IVs')
+    expect(wrapper.find('.compact-competition-preview').exists()).toBe(true);
+    expect(wrapper.text()).toContain('CATEGORÍAS EN JUEGO');
+    expect(wrapper.text()).toContain('IVs');
 
     // 2. Category buttons should be present
-    const catButtons = wrapper.findAll('.comp-slot-chip')
-    expect(catButtons.length).toBeGreaterThanOrEqual(1)
-  })
+    const catButtons = wrapper.findAll('.comp-slot-chip');
+    expect(catButtons.length).toBeGreaterThanOrEqual(1);
+  });
 
   it('renders competition category preview for single-species events', () => {
     const singleSpeciesEvent: Event = {
@@ -71,24 +71,24 @@ describe('EventCard.vue', () => {
         ]
       }),
       description: 'Hora dedicada a Magikarp'
-    }
+    };
 
     const wrapper = mount(EventCard, {
       props: { event: singleSpeciesEvent },
       global: { stubs: globalStubs }
-    })
+    });
 
-    expect(wrapper.find('.compact-competition-preview').exists()).toBe(true)
-    expect(wrapper.text()).toContain('CATEGORÍAS EN JUEGO')
-    expect(wrapper.text()).toContain('Mayor IVs')
-    expect(wrapper.text()).toMatch(/Mayor Peso|Menor Peso/)
-    expect(wrapper.text()).toMatch(/Mayor Altura|Menor Altura/)
+    expect(wrapper.find('.compact-competition-preview').exists()).toBe(true);
+    expect(wrapper.text()).toContain('CATEGORÍAS EN JUEGO');
+    expect(wrapper.text()).toContain('Mayor IVs');
+    expect(wrapper.text()).toMatch(/Mayor Peso|Menor Peso/);
+    expect(wrapper.text()).toMatch(/Mayor Altura|Menor Altura/);
 
     // Verify PVTooltips contain Mayor / Menor in their title
-    const tooltips = wrapper.findAllComponents({ name: 'PVTooltip' })
-    const tooltipTitles = tooltips.map(t => t.props('title') as string).filter(Boolean)
-    expect(tooltipTitles.some(t => t.includes('Mayor'))).toBe(true)
-  })
+    const tooltips = wrapper.findAllComponents({ name: 'PVTooltip' });
+    const tooltipTitles = tooltips.map((t) => t.props('title') as string).filter(Boolean);
+    expect(tooltipTitles.some((t) => t.includes('Mayor'))).toBe(true);
+  });
 
   it('renders competition category preview for Saturday Open Championship (global scope)', () => {
     const saturdayEvent: Event = {
@@ -105,26 +105,31 @@ describe('EventCard.vue', () => {
         hasCompetition: true,
         subCompetitions: [
           { id: 'ivs', name: 'Genética Suprema (IVs Totales)', metric: 'total_ivs', order: 'max' },
-          { id: 'weight', name: 'Titanes y Miniaturas (Masa y Peso)', metric: 'weight', order: 'auto' },
+          {
+            id: 'weight',
+            name: 'Titanes y Miniaturas (Masa y Peso)',
+            metric: 'weight',
+            order: 'auto'
+          },
           { id: 'height', name: 'Envergadura y Altura', metric: 'height', order: 'auto' }
         ]
       }),
       description: 'Campeonato Abierto de Sábado'
-    }
+    };
 
     const wrapper = mount(EventCard, {
       props: { event: saturdayEvent },
       global: { stubs: globalStubs }
-    })
+    });
 
-    expect(wrapper.find('.compact-competition-preview').exists()).toBe(true)
-    expect(wrapper.text()).toContain('IVs')
-  })
+    expect(wrapper.find('.compact-competition-preview').exists()).toBe(true);
+    expect(wrapper.text()).toContain('IVs');
+  });
 
   it('opens PokedexDetail modal when clicking on a participant mini sprite', async () => {
-    const { useModalStore } = await import('@/stores/modals')
-    const modalStore = useModalStore()
-    const openSpy = vi.spyOn(modalStore, 'open')
+    const { useModalStore } = await import('@/stores/modals');
+    const modalStore = useModalStore();
+    const openSpy = vi.spyOn(modalStore, 'open');
 
     const singleEvent: Event = {
       id: 'torneo_shellder',
@@ -139,25 +144,26 @@ describe('EventCard.vue', () => {
         hasCompetition: true
       }),
       description: 'Torneo Shellder'
-    }
+    };
 
     const wrapper = mount(EventCard, {
       props: { event: singleEvent },
       global: { stubs: globalStubs }
-    })
+    });
 
-    const miniSprite = wrapper.find('.card-mini-sprite')
-    expect(miniSprite.exists()).toBe(true)
+    const miniSprite = wrapper.find('.card-mini-sprite');
+    expect(miniSprite.exists()).toBe(true);
 
-    await miniSprite.trigger('click')
+    await miniSprite.trigger('click');
     expect(openSpy).toHaveBeenCalledWith('PokedexDetail', {
       speciesId: 'shellder',
       context: 'pokedex'
-    })
-  })
+    });
+  });
 
   it('renders dynamic remaining time countdown for active recurring events instead of Indefinido', () => {
-    const todayJsDay = Temporal.Now.zonedDateTimeISO('America/Argentina/Buenos_Aires').dayOfWeek % 7
+    const todayJsDay =
+      Temporal.Now.zonedDateTimeISO('America/Argentina/Buenos_Aires').dayOfWeek % 7;
     const activeRecurringEvent: Event = {
       id: 'active_today_bonus',
       name: 'Bonus Activo Hoy',
@@ -165,19 +171,24 @@ describe('EventCard.vue', () => {
       type: 'passive_bonus',
       active: true,
       manual: false,
-      schedule: JSON.stringify({ type: 'weekly', days: [todayJsDay], startHour: 0, endHour: 23.99 }),
+      schedule: JSON.stringify({
+        type: 'weekly',
+        days: [todayJsDay],
+        startHour: 0,
+        endHour: 23.99
+      }),
       config: JSON.stringify({ expMult: 2.0 }),
       description: 'Evento de prueba activo hoy'
-    }
+    };
 
     const wrapper = mount(EventCard, {
       props: { event: activeRecurringEvent },
       global: { stubs: globalStubs }
-    })
+    });
 
-    expect(wrapper.text()).toContain('FINALIZA EN:')
-    expect(wrapper.text()).not.toContain('Indefinido')
-  })
+    expect(wrapper.text()).toContain('FINALIZA EN:');
+    expect(wrapper.text()).not.toContain('Indefinido');
+  });
 
   it('renders high-resolution banner image with event-banner-img and allow-aliasing classes', () => {
     const bannerEvent: Event = {
@@ -189,17 +200,16 @@ describe('EventCard.vue', () => {
       manual: false,
       config: JSON.stringify({ banner: 'doble_exp_full' }),
       description: 'Doble EXP'
-    }
+    };
 
     const wrapper = mount(EventCard, {
       props: { event: bannerEvent },
       global: { stubs: globalStubs }
-    })
+    });
 
-    const bannerImg = wrapper.find('.banner-box img')
-    expect(bannerImg.exists()).toBe(true)
-    expect(bannerImg.classes()).toContain('event-banner-img')
-    expect(bannerImg.classes()).toContain('allow-aliasing')
-  })
-})
-
+    const bannerImg = wrapper.find('.banner-box img');
+    expect(bannerImg.exists()).toBe(true);
+    expect(bannerImg.classes()).toContain('event-banner-img');
+    expect(bannerImg.classes()).toContain('allow-aliasing');
+  });
+});

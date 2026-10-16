@@ -6,7 +6,7 @@
  * and sorting helpers.
  *
  * Fully compliant with Node.js 26+ native standards (zero DOM / Vue / Supabase dependencies).
- * 
+ *
  * @module physicalDimensionsMath
  */
 
@@ -56,7 +56,7 @@ export interface PhysicalDimensionTier {
 const DEVIATION_THRESHOLDS = {
   MODERATE: 0.06,
   LARGE: 0.09,
-  EXTREME: 0.125,
+  EXTREME: 0.125
 } as const;
 
 const TIER_CONFIGS: Record<PhysicalDimensionTierId, PhysicalDimensionTier> = {
@@ -160,7 +160,7 @@ export function generateGaussianNormalized(prng: () => number): number {
 
 /**
  * Calculates a single physical dimension value (in meters or kg) using Gaussian bell curve.
- * 
+ *
  * @param seed String seed (e.g. `uid + 'h'` or `uid + 'w'`)
  * @param baseValueOrRange Canonical base number or explicit `[min, max]` range
  * @param factor Variance factor (defaults to 0.15, meaning +/- 15%)
@@ -200,7 +200,7 @@ export function generateGaussianPhysicalDimensionPure(
 
 /**
  * Classifies a physical dimension into its corresponding Size Tier (XXS to XXL).
- * 
+ *
  * @param value Actual instance value (e.g., 1.8)
  * @param baseValue Species canonical base value (e.g., 1.5)
  */
@@ -256,7 +256,8 @@ function createDimensionTooltip(
   const diffStr = `${sign}${diffPct.toFixed(1)}%`;
 
   const variationBullet = diffPct > 0 ? '▲' : diffPct < 0 ? '▼' : '•';
-  const variationLabel = diffPct > 0 ? 'sobre el promedio' : diffPct < 0 ? 'bajo el promedio' : 'promedio exacto';
+  const variationLabel =
+    diffPct > 0 ? 'sobre el promedio' : diffPct < 0 ? 'bajo el promedio' : 'promedio exacto';
 
   return [
     `• Ejemplar: ${value.toFixed(1)}${unit} (${tier.label} - ${tier.name})`,

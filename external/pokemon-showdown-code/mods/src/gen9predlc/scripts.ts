@@ -1,6 +1,6 @@
-import type {ModdedBattleScriptsData} from '@pkmn/sim';
+import type { ModdedBattleScriptsData } from '@pkmn/sim';
 
 export const Scripts: ModdedBattleScriptsData = {
-	gen: 9,
-	inherit: 'gen9dlc1',
+  gen: 9,
+  inherit: 'gen9dlc1'
 };

@@ -1,13 +1,13 @@
 // src/styles/components/pokemon-detail/_evolutions.scss
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 body .evolve-pane {
-      & .evo-chain {
+  & .evo-chain {
     display: flex;
     flex-direction: column;
     gap: $spacing-2xl;
-    
-      & .evo-step {
+
+    & .evo-step {
       @include will-animate(transform, box-shadow);
 
       display: flex;
@@ -21,9 +21,9 @@ body .evolve-pane {
       border: 1px solid Rgb(255 255 255 / 5%);
       border-radius: $radius-3xl;
       background: Rgb(255 255 255 / 3%);
-      
-      
-      .evo-from, .evo-to {
+
+      .evo-from,
+      .evo-to {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -38,35 +38,36 @@ body .evolve-pane {
         width: 64px;
         height: 64px;
         will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 5px 15px Rgb(0 0 0 / 40%));
-        
-        
-        &:hover { transform: Scale(1.2); }
+        filter: Drop-Shadow(0 5px 15px Rgb(0 0 0 / 40%));
+
+        &:hover {
+          transform: Scale(1.2);
+        }
       }
-      
+
       & .evo-arrow {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: $spacing-xs;
         min-width: 60px;
-        
-    & .method { 
-          @include pixelated;
-          @include pixelated; 
 
-          color: var(--yellow); 
-          font-size: var(--font-8); 
-          font-weight: 900; 
+        & .method {
+          @include pixelated;
+          @include pixelated;
+
+          color: var(--yellow);
+          font-size: var(--font-8);
+          font-weight: 900;
           text-transform: uppercase;
         }
-          & .arrow { 
-          color: Rgb(255 255 255 / 10%); 
-          font-size: var(--font-24); 
+        & .arrow {
+          color: Rgb(255 255 255 / 10%);
+          font-size: var(--font-24);
           line-height: 1;
         }
       }
-      
+
       & .evo-sprite-wrap {
         position: relative;
         display: flex;
@@ -81,26 +82,26 @@ body .evolve-pane {
           filter: Brightness(0);
         }
 
-      & .evo-unknown-placeholder {
+        & .evo-unknown-placeholder {
           @include pixelated;
 
           color: Rgb(255 255 255 / 10%);
           font-size: var(--font-24);
         }
       }
-      
-      & .evo-target-name { 
-        color: $white; 
-        font-size: var(--font-8); 
+
+      & .evo-target-name {
+        color: $white;
+        font-size: var(--font-8);
         font-weight: 900;
-        opacity: 0.9; 
-        text-transform: uppercase; 
+        opacity: 0.9;
+        text-transform: uppercase;
         letter-spacing: 0.5px;
         white-space: nowrap;
       }
     }
   }
-  
+
   .no-evo {
     padding: 40px;
     color: Rgb(255 255 255 / 30%);
@@ -113,31 +114,37 @@ body .evolve-pane {
 // Mobile Responsive Fix
 @media (width <= 480px) {
   .evolve-pane {
-      & .evo-chain {
+    & .evo-chain {
       gap: $spacing-md;
-      
+
       & .evo-step {
         gap: $spacing-sm;
         padding: 12px 10px;
         border-radius: $radius-2xl;
-        
-        .evo-from, .evo-to {
+
+        .evo-from,
+        .evo-to {
           gap: $spacing-xs;
           min-width: 60px;
         }
-        
-        .evo-sprite, .sprite-wrap {
+
+        .evo-sprite,
+        .sprite-wrap {
           width: 48px;
           height: 48px;
         }
 
-      & .evo-arrow {
+        & .evo-arrow {
           min-width: 40px;
-          & .arrow { font-size: var(--font-16); }
-    & .method { font-size: var(--font-7); }
+          & .arrow {
+            font-size: var(--font-16);
+          }
+          & .method {
+            font-size: var(--font-7);
+          }
         }
 
-      & .evo-target-name {
+        & .evo-target-name {
           max-width: 60px;
           font-size: var(--font-7);
           line-height: 1.45;

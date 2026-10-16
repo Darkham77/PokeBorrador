@@ -1,122 +1,101 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import BaseModal from '@/components/common/BaseModal.vue'
+import { ref, computed } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import BaseModal from '@/components/common/BaseModal.vue';
 
 interface InventoryItem {
-  id: string
-  name: string
-  sprite?: string
-  qty: number
-  price?: number
+  id: string;
+  name: string;
+  sprite?: string;
+  qty: number;
+  price?: number;
 }
 
 interface Props {
-  item: InventoryItem
-  mode?: string // 'sell' | 'release' | 'use'
-  show?: boolean
+  item: InventoryItem;
+  mode?: string; // 'sell' | 'release' | 'use'
+  show?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'sell',
   show: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'confirm', qty: number): void
-}>()
+  (e: 'close'): void;
+  (e: 'confirm', qty: number): void;
+}>();
 
-const quantity = ref(1)
+const quantity = ref(1);
 
-const maxQuantity = computed(() => props.item.qty || 1)
-const sellPrice = computed(() => Math.floor((props.item.price || 0) * 0.5) * quantity.value)
+const maxQuantity = computed(() => props.item.qty || 1);
+const sellPrice = computed(() => Math.floor((props.item.price || 0) * 0.5) * quantity.value);
 
 const setQuantity = (val: string | number) => {
-  const n = parseInt(val as string)
-  if (isNaN(n)) return
-  quantity.value = Math.max(1, Math.min(maxQuantity.value, n))
-}
+  const n = parseInt(val as string);
+  if (isNaN(n)) return;
+  quantity.value = Math.max(1, Math.min(maxQuantity.value, n));
+};
 
-const increment = () => { if (quantity.value < maxQuantity.value) quantity.value++ }
-const decrement = () => { if (quantity.value > 1) quantity.value-- }
-const setMax = () => { quantity.value = maxQuantity.value }
+const increment = () => {
+  if (quantity.value < maxQuantity.value) quantity.value++;
+};
+const decrement = () => {
+  if (quantity.value > 1) quantity.value--;
+};
+const setMax = () => {
+  quantity.value = maxQuantity.value;
+};
 
 const handleConfirm = () => {
-  emit('confirm', quantity.value)
-}
+  emit('confirm', quantity.value);
+};
 </script>
 
 <template>
-  <BaseModal
-    :show="show"
-    max-width="400px"
-    variant="retro"
-    @close="$emit('close')"
-  >
+  <BaseModal :show="show" max-width="400px" variant="retro" @close="$emit('close')">
     <template #header>
       <div class="quantity-modal-header">
-        <img 
+        <img
           v-if="item.sprite"
-          :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)" 
+          :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
           :alt="item.name || 'Objeto'"
           class="item-mini-sprite"
           width="32"
           height="32"
-        >
+        />
         <div class="title-wrap">
           <div class="main-title">
             {{ item.name }}
           </div>
-          <div class="sub-title">
-            En posesión: {{ item.qty }}
-          </div>
+          <div class="sub-title">En posesión: {{ item.qty }}</div>
         </div>
       </div>
     </template>
 
     <div class="quantity-modal-body">
-      <div class="selector-label">
-        ¿CUÁNTOS DESEAS {{ mode === 'sell' ? 'VENDER' : 'TIRAR' }}?
-      </div>
+      <div class="selector-label">¿CUÁNTOS DESEAS {{ mode === 'sell' ? 'VENDER' : 'TIRAR' }}?</div>
 
       <div class="selector-controls">
-        <button
-          class="control-btn"
-          :disabled="quantity <= 1"
-          @click.stop="decrement"
-        >
-          -
-        </button>
+        <button class="control-btn" :disabled="quantity <= 1" @click.stop="decrement">-</button>
 
         <div class="input-wrapper">
-          <input 
-            type="number" 
-            :value="quantity" 
+          <input
+            type="number"
+            :value="quantity"
             class="quantity-input"
-            @input="e => setQuantity((e.target as HTMLInputElement).value)"
-          >
-          <button
-            class="max-badge"
-            @click.stop="setMax"
-          >
-            MAX
-          </button>
+            @input="(e) => setQuantity((e.target as HTMLInputElement).value)"
+          />
+          <button class="max-badge" @click.stop="setMax">MAX</button>
         </div>
 
-        <button
-          class="control-btn"
-          :disabled="quantity >= maxQuantity"
-          @click.stop="increment"
-        >
+        <button class="control-btn" :disabled="quantity >= maxQuantity" @click.stop="increment">
           +
         </button>
       </div>
 
-      <div
-        v-if="mode === 'sell'"
-        class="profit-summary"
-      >
+      <div v-if="mode === 'sell'" class="profit-summary">
         <div class="summary-line">
           <span class="label">PRECIO UNITARIO:</span>
           <span class="value">₱{{ Math.floor((item.price || 0) * 0.5).toLocaleString() }}</span>
@@ -130,14 +109,9 @@ const handleConfirm = () => {
 
     <template #footer>
       <div class="quantity-modal-footer">
+        <button class="vicio-btn neutral" @click.stop="$emit('close')">CANCELAR</button>
         <button
-          class="vicio-btn neutral"
-          @click.stop="$emit('close')"
-        >
-          CANCELAR
-        </button>
-        <button 
-          class="vicio-btn" 
+          class="vicio-btn"
           :class="mode === 'sell' ? 'primary' : 'danger'"
           @click.stop="handleConfirm"
         >
@@ -149,14 +123,14 @@ const handleConfirm = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_variables" as *;
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_variables' as *;
+@use '@/styles/core/_mixins' as *;
 
 .quantity-modal-header {
   display: flex;
   align-items: center;
   gap: $spacing-lg;
-  
+
   .item-mini-sprite {
     @include pixelated;
 
@@ -208,18 +182,19 @@ const handleConfirm = () => {
       color: var(--white);
       font-size: var(--font-20);
       cursor: pointer;
-      
 
       &:hover:not(:disabled) {
         background: Rgb(255 255 255 / 10%);
         border-color: var(--yellow);
       }
-      &:disabled { opacity: 0.3; }
+      &:disabled {
+        opacity: 0.3;
+      }
     }
 
     .input-wrapper {
       position: relative;
-      
+
       .quantity-input {
         @include pixelated;
 
@@ -232,7 +207,9 @@ const handleConfirm = () => {
         font-size: var(--font-20);
         text-align: center;
         outline: none;
-        &:focus { border-color: var(--yellow); }
+        &:focus {
+          border-color: var(--yellow);
+        }
       }
 
       .max-badge {
@@ -265,15 +242,27 @@ const handleConfirm = () => {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      
-      .label { color: Rgb(255 255 255 / 40%); font-size: var(--font-8); font-weight: 700; }
-      .value { color: var(--white); font-size: var(--font-11); font-weight: 800; }
+
+      .label {
+        color: Rgb(255 255 255 / 40%);
+        font-size: var(--font-8);
+        font-weight: 700;
+      }
+      .value {
+        color: var(--white);
+        font-size: var(--font-11);
+        font-weight: 800;
+      }
 
       &.total {
         margin-top: 4px;
         padding-top: 8px;
         border-top: 1px solid Rgb(255 255 255 / 10%);
-        .value { @include pixelated; color: $green; font-size: var(--font-12); }
+        .value {
+          @include pixelated;
+          color: $green;
+          font-size: var(--font-12);
+        }
       }
     }
   }
@@ -286,9 +275,15 @@ const handleConfirm = () => {
 
   .vicio-btn {
     flex: 1;
-    &.primary { @include btn-vicio-primary('md'); }
-    &.danger { @include btn-vicio-danger('md'); }
-    &.neutral { @include btn-vicio('neutral', 'md'); }
+    &.primary {
+      @include btn-vicio-primary('md');
+    }
+    &.danger {
+      @include btn-vicio-danger('md');
+    }
+    &.neutral {
+      @include btn-vicio('neutral', 'md');
+    }
   }
 }
 </style>

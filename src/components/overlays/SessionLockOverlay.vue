@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
+import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue';
 
 const emit = defineEmits<{
-  reclaim: []
-  dismiss: []
-}>()
+  reclaim: [];
+  dismiss: [];
+}>();
 </script>
 
 <template>
@@ -16,9 +16,7 @@ const emit = defineEmits<{
     :show-spinner="false"
   >
     <div class="lock-content">
-      <p class="warning-box">
-        Este navegador está ahora en modo <strong>SOLO LECTURA</strong>.
-      </p>
+      <p class="warning-box">Este navegador está ahora en modo <strong>SOLO LECTURA</strong>.</p>
     </div>
 
     <template #actions>
@@ -30,11 +28,7 @@ const emit = defineEmits<{
         TOMAR CONTROL DE ESTA SESIÓN
       </button>
 
-      <button
-        id="session-lock-dismiss-btn"
-        class="risk-btn"
-        @click.stop="emit('dismiss')"
-      >
+      <button id="session-lock-dismiss-btn" class="risk-btn" @click.stop="emit('dismiss')">
         CONTINUAR SIN GUARDAR (RIESGO ALTO)
       </button>
     </template>
@@ -42,7 +36,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .lock-content {
   .warning-box {
@@ -68,8 +62,7 @@ const emit = defineEmits<{
   font-weight: bold;
   box-shadow: $shadow-retro-btn;
   cursor: pointer;
-  
-  
+
   &.reclaim-btn {
     background: var(--green);
     color: var(--black);
@@ -94,12 +87,10 @@ const emit = defineEmits<{
   cursor: pointer;
   text-decoration: underline;
   margin-top: 8px;
-  
-  
+
   &:hover {
     color: var(--red-light);
     opacity: 1;
   }
 }
 </style>
-

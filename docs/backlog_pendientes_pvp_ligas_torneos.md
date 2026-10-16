@@ -8,13 +8,13 @@ This document specifies the pending architecture, mechanical design, and impleme
 
 ### Context & Narrative Contract
 
-In `GymsView.vue` and world maps (`maps.ts`, Route 22), the game narrative explicitly directs trainers: *"Defeat the 8 Gym Leaders of Kanto to gain access to the Pokémon League"*. However, once all 8 badges are earned, no playable gauntlet currently exists.
+In `GymsView.vue` and world maps (`maps.ts`, Route 22), the game narrative explicitly directs trainers: _"Defeat the 8 Gym Leaders of Kanto to gain access to the Pokémon League"_. However, once all 8 badges are earned, no playable gauntlet currently exists.
 
 ### Technical Scope & Requirements
 
 - **Location & Route Access**:
-  - Implement Route 23 (Victory Road / *Calle Victoria*) gate verification checking `gameStore.state.badges >= 8`.
-  - Indigo Plateau (*Meseta Añil*) lobby map with Pokémon Center nurse, mart vendor, and league challenge door.
+  - Implement Route 23 (Victory Road / _Calle Victoria_) gate verification checking `gameStore.state.badges >= 8`.
+  - Indigo Plateau (_Meseta Añil_) lobby map with Pokémon Center nurse, mart vendor, and league challenge door.
 - **Consecutive Gauntlet (The Elite Four & Champion)**:
   1. **Lorelei**: Ice/Water specialist (Dewgong, Cloyster, Slowbro, Jynx, Lapras).
   2. **Bruno**: Fighting/Rock specialist (Onix, Hitmonchan, Hitmonlee, Onix, Machamp).
@@ -26,7 +26,7 @@ In `GymsView.vue` and world maps (`maps.ts`, Route 22), the game narrative expli
   - White-out/Defeat resets the gauntlet back to the lobby.
 - **Hall of Fame & Rewards**:
   - Hall of Fame registration recording the player's winning 6 Pokémon with timestamps and stats.
-  - Official cosmetic reward unlock: `av-class-entrenador` (*Campeón de Liga* in `cosmeticsData.ts`).
+  - Official cosmetic reward unlock: `av-class-entrenador` (_Campeón de Liga_ in `cosmeticsData.ts`).
   - Post-game credits sequence and gym leader rematches unlock.
 
 ---

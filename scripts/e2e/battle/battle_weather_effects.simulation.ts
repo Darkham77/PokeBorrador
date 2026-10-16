@@ -1,6 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { armBattleReadyForInput, awaitBattleReadyForInput, clickResilient, openDebugTab, type WindowWithResolver } from '../e2e_helpers.ts';
+import {
+  armBattleReadyForInput,
+  awaitBattleReadyForInput,
+  clickResilient,
+  openDebugTab,
+  type WindowWithResolver
+} from '../e2e_helpers.ts';
 
 const PELIPPER_WEATHER_TEST_LEVEL = 5;
 
@@ -61,8 +67,9 @@ class WeatherSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Weather Effects Verification Simulation', () => {
-
-  test('should render rain weather set through visible controls and clean DOM after battle', async ({ page }) => {
+  test('should render rain weather set through visible controls and clean DOM after battle', async ({
+    page
+  }) => {
     const sim = new WeatherSimWrapper(page, 'TestWeatherRain');
     await sim.setup();
     await sim.setupRainScenario();

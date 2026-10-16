@@ -1,18 +1,18 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { setActivePinia, createPinia } from 'pinia'
-import ProfilePinnedReplaysCard from '@/components/profile/ProfilePinnedReplaysCard.vue'
-import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue'
-import type { BattleReplayRecord, BattleCode, RankedSeasonMedal } from '@/types/battle/pvp'
-import { useModalStore } from '@/stores/modals'
-import { useUIStore } from '@/stores/ui'
-import { usePvPStore } from '@/stores/pvp'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia } from 'pinia';
+import ProfilePinnedReplaysCard from '@/components/profile/ProfilePinnedReplaysCard.vue';
+import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue';
+import type { BattleReplayRecord, BattleCode, RankedSeasonMedal } from '@/types/battle/pvp';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
+import { usePvPStore } from '@/stores/pvp';
 
 describe('Profile Cards Suite', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-  })
+    setActivePinia(createPinia());
+  });
 
   describe('ProfilePinnedReplaysCard.vue', () => {
     const sampleReplays: BattleReplayRecord[] = [
@@ -70,7 +70,7 @@ describe('Profile Cards Suite', () => {
         viewsCount: 10,
         createdAt: '2026-09-05T00:00:00Z'
       }
-    ]
+    ];
 
     it('renders empty state when no pinned replays are passed', () => {
       const wrapper = mount(ProfilePinnedReplaysCard, {
@@ -83,12 +83,12 @@ describe('Profile Cards Suite', () => {
             'gsap-hover': {}
           }
         }
-      })
+      });
 
-      expect(wrapper.text()).toContain('REPETICIONES FIJADAS (0 / 5)')
-      expect(wrapper.text()).toContain('Sin combates fijados en el perfil.')
-      expect(wrapper.find('.empty-sub').exists()).toBe(false)
-    })
+      expect(wrapper.text()).toContain('REPETICIONES FIJADAS (0 / 5)');
+      expect(wrapper.text()).toContain('Sin combates fijados en el perfil.');
+      expect(wrapper.find('.empty-sub').exists()).toBe(false);
+    });
 
     it('shows help hint in empty state when isOwnProfile is true', () => {
       const wrapper = mount(ProfilePinnedReplaysCard, {
@@ -101,11 +101,11 @@ describe('Profile Cards Suite', () => {
             'gsap-hover': {}
           }
         }
-      })
+      });
 
-      expect(wrapper.find('.empty-sub').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Fija tus victorias más épicas')
-    })
+      expect(wrapper.find('.empty-sub').exists()).toBe(true);
+      expect(wrapper.text()).toContain('Fija tus victorias más épicas');
+    });
 
     it('renders list of pinned replays with victory and defeat badges', () => {
       const wrapper = mount(ProfilePinnedReplaysCard, {
@@ -118,18 +118,18 @@ describe('Profile Cards Suite', () => {
             'gsap-hover': {}
           }
         }
-      })
+      });
 
-      expect(wrapper.text()).toContain('REPETICIONES FIJADAS (2 / 5)')
-      expect(wrapper.text()).toContain('VICTORIA')
-      expect(wrapper.text()).toContain('DERROTA')
-      expect(wrapper.text()).toContain('vs Blue (2150 LP)')
-      expect(wrapper.text()).toContain('vs Green (2280 LP)')
-      expect(wrapper.text()).toContain('BTL-WIN1-2026')
-      expect(wrapper.text()).toContain('BTL-LOS1-2026')
+      expect(wrapper.text()).toContain('REPETICIONES FIJADAS (2 / 5)');
+      expect(wrapper.text()).toContain('VICTORIA');
+      expect(wrapper.text()).toContain('DERROTA');
+      expect(wrapper.text()).toContain('vs Blue (2150 LP)');
+      expect(wrapper.text()).toContain('vs Green (2280 LP)');
+      expect(wrapper.text()).toContain('BTL-WIN1-2026');
+      expect(wrapper.text()).toContain('BTL-LOS1-2026');
 
-      expect(wrapper.find('.action-btn.unpin').exists()).toBe(false)
-    })
+      expect(wrapper.find('.action-btn.unpin').exists()).toBe(false);
+    });
 
     it('correctly inverts rival and result when userId matches p2', () => {
       const wrapper = mount(ProfilePinnedReplaysCard, {
@@ -143,11 +143,11 @@ describe('Profile Cards Suite', () => {
             'gsap-hover': {}
           }
         }
-      })
+      });
 
-      expect(wrapper.text()).toContain('DERROTA')
-      expect(wrapper.text()).toContain('vs Red (2200 LP)')
-    })
+      expect(wrapper.text()).toContain('DERROTA');
+      expect(wrapper.text()).toContain('vs Red (2200 LP)');
+    });
 
     it('emits watch-replay when play button is clicked', async () => {
       const wrapper = mount(ProfilePinnedReplaysCard, {
@@ -160,16 +160,16 @@ describe('Profile Cards Suite', () => {
             'gsap-hover': {}
           }
         }
-      })
+      });
 
-      const watchBtn = wrapper.find('#btn-profile-watch-BTL-WIN1-2026')
-      expect(watchBtn.exists()).toBe(true)
+      const watchBtn = wrapper.find('#btn-profile-watch-BTL-WIN1-2026');
+      expect(watchBtn.exists()).toBe(true);
 
-      await watchBtn.trigger('click')
-      const watchEmitted = wrapper.emitted('watch-replay')
-      expect(watchEmitted).toBeTruthy()
-      expect(watchEmitted?.[0]?.[0]).toEqual(sampleReplays[0])
-    })
+      await watchBtn.trigger('click');
+      const watchEmitted = wrapper.emitted('watch-replay');
+      expect(watchEmitted).toBeTruthy();
+      expect(watchEmitted?.[0]?.[0]).toEqual(sampleReplays[0]);
+    });
 
     it('emits unpin-replay when unpin button is clicked on own profile', async () => {
       const wrapper = mount(ProfilePinnedReplaysCard, {
@@ -182,17 +182,17 @@ describe('Profile Cards Suite', () => {
             'gsap-hover': {}
           }
         }
-      })
+      });
 
-      const unpinBtn = wrapper.find('#btn-profile-unpin-rep_1')
-      expect(unpinBtn.exists()).toBe(true)
+      const unpinBtn = wrapper.find('#btn-profile-unpin-rep_1');
+      expect(unpinBtn.exists()).toBe(true);
 
-      await unpinBtn.trigger('click')
-      const unpinEmitted = wrapper.emitted('unpin-replay')
-      expect(unpinEmitted).toBeTruthy()
-      expect(unpinEmitted?.[0]?.[0]).toBe('rep_1')
-    })
-  })
+      await unpinBtn.trigger('click');
+      const unpinEmitted = wrapper.emitted('unpin-replay');
+      expect(unpinEmitted).toBeTruthy();
+      expect(unpinEmitted?.[0]?.[0]).toBe('rep_1');
+    });
+  });
 
   describe('ProfileRankedMedalsCard.vue', () => {
     it('renders empty state when no medals are passed', () => {
@@ -200,12 +200,12 @@ describe('Profile Cards Suite', () => {
         props: {
           medals: []
         }
-      })
+      });
 
-      expect(wrapper.text()).toContain('MEDALLAS DE TEMPORADA RANKED (0)')
-      expect(wrapper.text()).toContain('Sin medallas de temporada competitiva aún.')
-      expect(wrapper.find('.empty-ranked-medals').exists()).toBe(true)
-    })
+      expect(wrapper.text()).toContain('MEDALLAS DE TEMPORADA RANKED (0)');
+      expect(wrapper.text()).toContain('Sin medallas de temporada competitiva aún.');
+      expect(wrapper.find('.empty-ranked-medals').exists()).toBe(true);
+    });
 
     it('renders medal cards with tournament names, tier badges, ELO, and podium tags', () => {
       const testMedals: RankedSeasonMedal[] = [
@@ -227,38 +227,38 @@ describe('Profile Cards Suite', () => {
           finalElo: 2850,
           awardedAt: '2026-10-15T15:00:00Z'
         }
-      ]
+      ];
 
       const wrapper = mount(ProfileRankedMedalsCard, {
         props: {
           medals: testMedals
         }
-      })
+      });
 
-      expect(wrapper.text()).toContain('MEDALLAS DE TEMPORADA RANKED (2)')
-      expect(wrapper.find('.empty-ranked-medals').exists()).toBe(false)
+      expect(wrapper.text()).toContain('MEDALLAS DE TEMPORADA RANKED (2)');
+      expect(wrapper.find('.empty-ranked-medals').exists()).toBe(false);
 
-      const items = wrapper.findAll('.ranked-medal-item')
-      expect(items.length).toBe(2)
+      const items = wrapper.findAll('.ranked-medal-item');
+      expect(items.length).toBe(2);
 
-      expect(items[0]!.text()).toContain('Frontera Kanto & Johto')
-      expect(items[0]!.text()).toContain('Septiembre 2026')
-      expect(items[0]!.text()).toContain('Maestro • 3500 LP')
-      expect(items[0]!.find('.podium-tag').text()).toBe('🥇')
+      expect(items[0]!.text()).toContain('Frontera Kanto & Johto');
+      expect(items[0]!.text()).toContain('Septiembre 2026');
+      expect(items[0]!.text()).toContain('Maestro • 3500 LP');
+      expect(items[0]!.find('.podium-tag').text()).toBe('🥇');
 
-      expect(items[1]!.text()).toContain('Noche de Brujas')
-      expect(items[1]!.text()).toContain('Octubre 2026')
-      expect(items[1]!.text()).toContain('Diamante • 2850 LP')
-      expect(items[1]!.find('.podium-tag').text()).toBe('Top 4')
-    })
+      expect(items[1]!.text()).toContain('Noche de Brujas');
+      expect(items[1]!.text()).toContain('Octubre 2026');
+      expect(items[1]!.text()).toContain('Diamante • 2850 LP');
+      expect(items[1]!.find('.podium-tag').text()).toBe('Top 4');
+    });
 
     it('interacts on click: opens Arena modal when available or notifies when finished', async () => {
-      const modalStore = useModalStore()
-      const uiStore = useUIStore()
-      const pvpStore = usePvPStore()
+      const modalStore = useModalStore();
+      const uiStore = useUIStore();
+      const pvpStore = usePvPStore();
 
-      const openSpy = vi.spyOn(modalStore, 'open')
-      const notifySpy = vi.spyOn(uiStore, 'notify')
+      const openSpy = vi.spyOn(modalStore, 'open');
+      const notifySpy = vi.spyOn(uiStore, 'notify');
 
       pvpStore.currentSeasonRules = {
         name: 'Frontera Kanto & Johto',
@@ -266,7 +266,7 @@ describe('Profile Cards Suite', () => {
         levelCap: 50,
         allowedTypes: [],
         bannedPokemonIds: []
-      }
+      };
 
       const testMedals: RankedSeasonMedal[] = [
         {
@@ -289,29 +289,26 @@ describe('Profile Cards Suite', () => {
           finalElo: 1800,
           awardedAt: '2025-01-15T12:00:00Z'
         }
-      ]
+      ];
 
       const wrapper = mount(ProfileRankedMedalsCard, {
         props: {
           medals: testMedals
         }
-      })
+      });
 
-      const items = wrapper.findAll('.ranked-medal-item')
-      expect(items.length).toBe(2)
+      const items = wrapper.findAll('.ranked-medal-item');
+      expect(items.length).toBe(2);
 
-      await items[0]!.trigger('click')
+      await items[0]!.trigger('click');
       expect(openSpy).toHaveBeenCalledWith('RankedTournamentDetail', {
         themeId: 'johto_kanto_frontier',
         tournamentName: 'Frontera Kanto & Johto',
         medal: testMedals[0]
-      })
+      });
 
-      await items[1]!.trigger('click')
-      expect(notifySpy).toHaveBeenCalledWith(
-        expect.stringContaining('Clásico Kanto'),
-        'ℹ️'
-      )
-    })
-  })
-})
+      await items[1]!.trigger('click');
+      expect(notifySpy).toHaveBeenCalledWith(expect.stringContaining('Clásico Kanto'), 'ℹ️');
+    });
+  });
+});

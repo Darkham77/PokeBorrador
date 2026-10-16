@@ -1,30 +1,30 @@
-import type { Pokemon, Move } from '@/types/pokemon/pokemon'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { PokemonType } from '@/data/battle/types'
-import type { ItemId } from '@/data/inventory/items'
-import type { NatureId } from '@/data/battle/natures'
-import type { AbilityId } from '@/data/battle/abilities'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PokemonType } from '@/data/battle/types';
+import type { ItemId } from '@/data/inventory/items';
+import type { NatureId } from '@/data/battle/natures';
+import type { AbilityId } from '@/data/battle/abilities';
 
 function createDemoPokemon(config: {
-  uid: string // domain-ok: Open dynamic text or non-domain string payload
-  id: PokemonSpeciesId
-  name: string // domain-ok: Open dynamic text or non-domain string payload
-  level: number
-  hp: number
-  maxHp: number
-  atk: number
-  def: number
-  spa: number
-  spd: number
-  spe: number
-  type: PokemonType
-  type2?: PokemonType | null
-  isShiny?: boolean
-  heldItem?: ItemId | null
-  nature: NatureId
-  ability: AbilityId
-  friendship?: number
-  moves: (Move | null)[]
+  uid: string; // domain-ok: Open dynamic text or non-domain string payload
+  id: PokemonSpeciesId;
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  level: number;
+  hp: number;
+  maxHp: number;
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+  type: PokemonType;
+  type2?: PokemonType | null;
+  isShiny?: boolean;
+  heldItem?: ItemId | null;
+  nature: NatureId;
+  ability: AbilityId;
+  friendship?: number;
+  moves: (Move | null)[];
 }): Pokemon {
   return {
     uid: config.uid,
@@ -52,7 +52,7 @@ function createDemoPokemon(config: {
     ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
     evs: { hp: 0, atk: 0, def: 0, spa: 252, spd: 4, spe: 252 },
     moves: config.moves
-  }
+  };
 }
 
 const thunderboltMove: Move = {
@@ -65,7 +65,7 @@ const thunderboltMove: Move = {
   pp: 15,
   maxPP: 15,
   desc: 'Fuerte descarga eléctrica que puede paralizar.'
-}
+};
 
 const surfMove: Move = {
   id: 'surf',
@@ -77,7 +77,7 @@ const surfMove: Move = {
   pp: 15,
   maxPP: 15,
   desc: 'Ola gigante que inunda el campo de batalla.'
-}
+};
 
 const flamethrowerMove: Move = {
   id: 'flamethrower',
@@ -89,7 +89,7 @@ const flamethrowerMove: Move = {
   pp: 15,
   maxPP: 15,
   desc: 'Llama abrasadora que puede causar quemaduras.'
-}
+};
 
 const shadowballMove: Move = {
   id: 'shadowball',
@@ -101,7 +101,7 @@ const shadowballMove: Move = {
   pp: 15,
   maxPP: 15,
   desc: 'Lanza una masa oscura que puede bajar la Def. Esp.'
-}
+};
 
 export const DEMO_TEAM_POKEMON: Pokemon[] = [
   createDemoPokemon({
@@ -216,7 +216,7 @@ export const DEMO_TEAM_POKEMON: Pokemon[] = [
     ability: 'synchronize',
     moves: [shadowballMove]
   })
-]
+];
 
 export const DEMO_BOX_POKEMON: Pokemon[] = [
   createDemoPokemon({
@@ -272,4 +272,4 @@ export const DEMO_BOX_POKEMON: Pokemon[] = [
     ability: 'innerfocus',
     moves: [flamethrowerMove, thunderboltMove]
   })
-]
+];

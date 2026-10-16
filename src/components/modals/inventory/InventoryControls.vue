@@ -1,35 +1,37 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useInventoryStore } from '@/stores/inventory/inventory'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import SortControls from '@/components/common/SortControls.vue'
+import { computed } from 'vue';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import SortControls from '@/components/common/SortControls.vue';
 
 interface Props {
-  multiSelectMode?: string | null
-  selectedCount?: number
+  multiSelectMode?: string | null;
+  selectedCount?: number;
 }
 
 withDefaults(defineProps<Props>(), {
   multiSelectMode: null,
   selectedCount: 0
-})
+});
 
 const emit = defineEmits<{
-  (e: 'update:multiSelectMode', mode: string | null): void
-  (e: 'execute'): void
-  (e: 'cancel'): void
-}>()
+  (e: 'update:multiSelectMode', mode: string | null): void;
+  (e: 'execute'): void;
+  (e: 'cancel'): void;
+}>();
 
-const inventoryStore = useInventoryStore()
+const inventoryStore = useInventoryStore();
 
 const searchQuery = computed({
   get: () => inventoryStore.searchQuery,
-  set: (val: string) => { inventoryStore.searchQuery = val }
-})
+  set: (val: string) => {
+    inventoryStore.searchQuery = val;
+  }
+});
 
 const startMode = (mode: string) => {
-  emit('update:multiSelectMode', mode)
-}
+  emit('update:multiSelectMode', mode);
+};
 </script>
 
 <template>
@@ -44,8 +46,9 @@ const startMode = (mode: string) => {
             v-model="searchQuery"
             type="text"
             placeholder="Buscar objeto..."
+            aria-label="Buscar objeto"
             class="premium-search-input"
-          >
+          />
           <button
             v-if="searchQuery"
             id="inventory-search-clear-btn"
@@ -127,8 +130,8 @@ const startMode = (mode: string) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/tools' as *;
+@use '@/styles/core/_mixins' as *;
 
 .inventory-controls {
   @include gpu-layer;
@@ -193,10 +196,18 @@ const startMode = (mode: string) => {
 }
 
 .vicio-btn {
-  &.primary { @include btn-vicio-primary('sm'); }
-  &.secondary { @include btn-vicio-secondary('sm'); }
-  &.danger { @include btn-vicio-danger('sm'); }
-  &.neutral { @include btn-vicio('neutral', 'sm'); }
+  &.primary {
+    @include btn-vicio-primary('sm');
+  }
+  &.secondary {
+    @include btn-vicio-secondary('sm');
+  }
+  &.danger {
+    @include btn-vicio-danger('sm');
+  }
+  &.neutral {
+    @include btn-vicio('neutral', 'sm');
+  }
 }
 
 @media (width <= 1024px) {
@@ -205,8 +216,12 @@ const startMode = (mode: string) => {
     align-items: stretch;
     gap: $spacing-md;
   }
-  
-  .search-section { max-width: none; }
-  .actions-section { justify-content: space-between; }
+
+  .search-section {
+    max-width: none;
+  }
+  .actions-section {
+    justify-content: space-between;
+  }
 }
 </style>

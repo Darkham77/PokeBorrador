@@ -1,5 +1,5 @@
-import { 
-  getSeasonalThemeForMonth, 
+import {
+  getSeasonalThemeForMonth,
   SEASONAL_ANNUAL_THEMES,
   type RankedTierId,
   type SeasonalThemeId,
@@ -55,11 +55,15 @@ function createSeasonRewardPokemon(
   const rewardConfig = concludedTheme.rewardPokemon?.[tier];
   if (!rewardConfig) return null;
 
-  const created = makePokemon(rewardConfig.species, rewardConfig.level || DEFAULT_REWARD_POKEMON_LEVEL);
+  const created = makePokemon(
+    rewardConfig.species,
+    rewardConfig.level || DEFAULT_REWARD_POKEMON_LEVEL
+  );
   if (!created) return null;
 
   created.isShiny = true;
-  const guaranteedCount = rewardConfig.guaranteedMaxIvs || (tier === 'maestro' ? MAX_IVS_MAESTRO : MAX_IVS_DIAMANTE);
+  const guaranteedCount =
+    rewardConfig.guaranteedMaxIvs || (tier === 'maestro' ? MAX_IVS_MAESTRO : MAX_IVS_DIAMANTE);
   for (let i = 0; i < guaranteedCount && i < POKEMON_STAT_KEYS.length; i++) {
     const statKey = POKEMON_STAT_KEYS[i];
     if (statKey) {
@@ -89,8 +93,12 @@ function createCommemorativeMedal(
   };
 }
 
-function resolveConcludedTheme(currentMonthIndex: number, lastSeasonId?: string): SeasonalThemeConfig { // domain-ok: Historical seasonal theme identifier from GameState
-  const found = SEASONAL_ANNUAL_THEMES.find(t => t.id === lastSeasonId);
+function resolveConcludedTheme(
+  currentMonthIndex: number,
+  lastSeasonId?: string
+): SeasonalThemeConfig {
+  // domain-ok: Historical seasonal theme identifier from GameState
+  const found = SEASONAL_ANNUAL_THEMES.find((t) => t.id === lastSeasonId);
   if (found) return found;
   const prevMonth = currentMonthIndex === 1 ? MONTHS_IN_YEAR : currentMonthIndex - 1;
   return getSeasonalThemeForMonth(prevMonth);
@@ -125,7 +133,9 @@ export function checkAndResolveSeasonEnd(
   const medal = createCommemorativeMedal(concludedTheme, tier, finalElo);
   if (medal) {
     const existingMedals = gameState.rankedMedals || [];
-    const isDuplicate = existingMedals.some(m => m.seasonName === medal.seasonName && m.tier === medal.tier);
+    const isDuplicate = existingMedals.some(
+      (m) => m.seasonName === medal.seasonName && m.tier === medal.tier
+    );
     if (!isDuplicate) {
       gameState.rankedMedals = [...existingMedals, medal];
     }

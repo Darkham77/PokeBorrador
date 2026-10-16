@@ -1,12 +1,12 @@
 // src/styles/views/box/_header.scss
-@use "../../core/tools" as *;
+@use '../../core/tools' as *;
 
 .box-header {
   @include shell-premium(Rgba(15, 23, 42, 0.95));
 
   padding: 20px 30px;
   border-radius: $radius-4xl;
-  
+
   .box-header-content {
     display: flex;
     flex-wrap: wrap;
@@ -22,7 +22,8 @@
       margin: 0 0 12px;
       background: Linear-Gradient(to bottom, var(--white), var(--gray));
       color: var(--white);
-      font-size: var(--font-24); background-clip: text;;;;;;;;;;;;;;;;;;;
+      font-size: var(--font-24);
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     .box-subtitle {

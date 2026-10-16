@@ -1,7 +1,6 @@
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .box-menu-content {
-
   display: flex;
   flex-direction: column;
   gap: $spacing-lg;
@@ -173,8 +172,7 @@
       color: var(--white);
       font-size: var(--font-11);
       cursor: pointer;
-      
-      
+
       &:hover {
         background: Rgb(255 255 255 / 10%);
         border-color: var(--blue);
@@ -193,9 +191,14 @@
       .interactive-text {
         color: Rgb(255 255 255 / 60%);
         border-bottom: 1px dotted Rgb(255 255 255 / 20%);
-        &:hover { color: var(--yellow); border-bottom-color: var(--yellow); }
+        &:hover {
+          color: var(--yellow);
+          border-bottom-color: var(--yellow);
+        }
       }
-      .sep { opacity: 0.2; }
+      .sep {
+        opacity: 0.2;
+      }
     }
 
     .tags-row {
@@ -212,14 +215,21 @@
 
 .menu-action-btn {
   @include btn-vicio('primary', 'sm', true);
-  
-  &.secondary-btn { @include btn-vicio('secondary', 'sm', true); }
-  &.danger-btn { @include btn-vicio('danger', 'sm', true); }
-  &.neutral-btn { @include btn-vicio('neutral', 'sm', true); }
-  &.success-btn { @include btn-vicio('success', 'sm', true); }
+
+  &.secondary-btn {
+    @include btn-vicio('secondary', 'sm', true);
+  }
+  &.danger-btn {
+    @include btn-vicio('danger', 'sm', true);
+  }
+  &.neutral-btn {
+    @include btn-vicio('neutral', 'sm', true);
+  }
+  &.success-btn {
+    @include btn-vicio('success', 'sm', true);
+  }
 
   &.full-width {
-
     grid-column: span 3;
 
     @include responsive(480px) {
@@ -240,7 +250,6 @@
 }
 
 .team-swap-grid {
-
   display: grid;
   gap: $spacing-sm;
   grid-template-columns: repeat(3, 1fr);
@@ -313,7 +322,7 @@
     white-space: nowrap;
     text-shadow: 0 2px 4px Rgb(0 0 0 / 50%);
   }
-  
+
   .ts-types {
     height: 12px;
     transform: Scale(0.8);
@@ -347,7 +356,6 @@
 }
 
 .footer-actions {
-
   display: grid;
   gap: $spacing-md;
   grid-template-columns: repeat(3, 1fr);

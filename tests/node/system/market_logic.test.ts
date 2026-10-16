@@ -1,8 +1,8 @@
-import { test, describe } from 'vitest';
+import { test, describe } from 'vite-plus/test';
 import assert from 'node:assert/strict';
-import { 
-  applyMarketFilters, 
-  buildMarketSaleLabel, 
+import {
+  applyMarketFilters,
+  buildMarketSaleLabel,
   ensureMarketSoldSeenState,
   markMarketSoldSeen,
   isMarketSoldSeen
@@ -68,20 +68,35 @@ describe('Market Logic', () => {
     assert.strictEqual(applyMarketFilters(list, defaultFilters, 'explore').length, 1);
 
     // Filter by search
-    assert.strictEqual(applyMarketFilters(list, { ...defaultFilters, search: 'Pika' }, 'explore').length, 1);
-    assert.strictEqual(applyMarketFilters(list, { ...defaultFilters, search: 'Charm' }, 'explore').length, 0);
+    assert.strictEqual(
+      applyMarketFilters(list, { ...defaultFilters, search: 'Pika' }, 'explore').length,
+      1
+    );
+    assert.strictEqual(
+      applyMarketFilters(list, { ...defaultFilters, search: 'Charm' }, 'explore').length,
+      0
+    );
 
     // Filter by price
-    assert.strictEqual(applyMarketFilters(list, { ...defaultFilters, priceMax: 500 }, 'explore').length, 0);
+    assert.strictEqual(
+      applyMarketFilters(list, { ...defaultFilters, priceMax: 500 }, 'explore').length,
+      0
+    );
 
     // Filter by type
-    assert.strictEqual(applyMarketFilters(list, { ...defaultFilters, type: 'electric' }, 'explore').length, 1);
-    assert.strictEqual(applyMarketFilters(list, { ...defaultFilters, type: 'fire' }, 'explore').length, 0);
+    assert.strictEqual(
+      applyMarketFilters(list, { ...defaultFilters, type: 'electric' }, 'explore').length,
+      1
+    );
+    assert.strictEqual(
+      applyMarketFilters(list, { ...defaultFilters, type: 'fire' }, 'explore').length,
+      0
+    );
   });
 
   test('Market Logic: buildMarketSaleLabel', () => {
     assert.strictEqual(buildMarketSaleLabel(mockListing), 'tu Pokémon Pikachu');
-    
+
     const itemListing: MarketListing = {
       id: 'uuid-2',
       listing_type: 'item',
@@ -96,10 +111,10 @@ describe('Market Logic', () => {
 
   test('Market Logic: state management (seen ids)', () => {
     const state = { marketSoldSeenIds: [] } as unknown as GameState;
-    
+
     const result = ensureMarketSoldSeenState(state);
     assert.deepStrictEqual(result, []);
-    
+
     state.marketSoldSeenIds = ['valid-id', '', '  ', 'invalid-type-simulated'];
     const cleaned = ensureMarketSoldSeenState(state);
     assert.deepStrictEqual(cleaned, ['valid-id']);
@@ -132,6 +147,7 @@ describe('Market Logic', () => {
 
     const result = validateAndSanitize(stateWithNumericId);
     assert.strictEqual(result.valid, true, `Expected validation to succeed, got: ${result.error}`);
+    assert.ok(result.data);
     assert.deepStrictEqual(result.data.marketSoldSeenIds, ['2083620643']);
   });
 });

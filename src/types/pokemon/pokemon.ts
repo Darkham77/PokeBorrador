@@ -42,10 +42,21 @@ export function isVolatileStatusKey(value: string): value is VolatileStatusKey {
 
 export function requireVolatileStatusKey(value: string): VolatileStatusKey {
   if (isVolatileStatusKey(value)) return value;
-  throw new Error(`Invalid volatile status key: ${value}`);
+  throw new Error(`Invalid volatile status key: ${String(value)}`);
 }
 
-export const OBTAINED_METHODS = ['wild', 'trade', 'egg', 'starter', 'gift', 'fishing', 'archaeology', 'gift_starter', 'reward', 'event'] as const;
+export const OBTAINED_METHODS = [
+  'wild',
+  'trade',
+  'egg',
+  'starter',
+  'gift',
+  'fishing',
+  'archaeology',
+  'gift_starter',
+  'reward',
+  'event'
+] as const;
 export type ObtainedMethod = (typeof OBTAINED_METHODS)[number];
 
 export function isPokemonStatus(status: unknown): status is PokemonStatus {
@@ -77,8 +88,6 @@ export interface BreedingCompatibility {
   motherId?: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
-
-
 export type StatSpread = Record<PokemonStatKey, number>;
 
 export type PokemonIVs = Record<PokemonStatKey, number>;
@@ -86,7 +95,17 @@ export type PokemonIVs = Record<PokemonStatKey, number>;
 export type PokemonEVs = Record<PokemonStatKey, number>;
 
 export const MOVE_EFFECT_TYPES = [
-  'status', 'stat', 'flinch', 'confuse', 'trap', 'drain', 'recoil', 'recharge', 'fixed', 'multi', 'heal'
+  'status',
+  'stat',
+  'flinch',
+  'confuse',
+  'trap',
+  'drain',
+  'recoil',
+  'recharge',
+  'fixed',
+  'multi',
+  'heal'
 ] as const;
 export type MoveEffectType = (typeof MOVE_EFFECT_TYPES)[number];
 
@@ -101,7 +120,15 @@ export interface MoveEffect {
   text?: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
-export const SHOWDOWN_BOOST_STAT_KEYS = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'] as const;
+export const SHOWDOWN_BOOST_STAT_KEYS = [
+  'atk',
+  'def',
+  'spa',
+  'spd',
+  'spe',
+  'accuracy',
+  'evasion'
+] as const;
 export type ShowdownBoostStatKey = (typeof SHOWDOWN_BOOST_STAT_KEYS)[number];
 export type MoveEffectBoosts = Partial<Record<ShowdownBoostStatKey, number>>;
 
@@ -150,7 +177,7 @@ export interface Move {
   fixedDmg?: number;
   levelDmg?: boolean;
   halfHP?: boolean;
-  hits?: number | [number, number] | '2-5';
+  hits?: number | [number, number] | readonly number[] | number[] | '2-5';
   recoil?: number | boolean;
   selfKO?: boolean;
   side?: BattleSide;
@@ -289,7 +316,6 @@ export interface PokemonCompetitionTrophy {
   score: number;
   awardedAt: number;
 }
-
 
 export interface PokemonEgg {
   uid: string; // domain-ok: Open dynamic text or non-domain string payload

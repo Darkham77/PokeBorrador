@@ -13,24 +13,26 @@ export interface ModifierContext {
 const DEFAULT_NEUTRAL_MODIFIER = 1.0 as const;
 const DEFAULT_DISCOUNT_MODIFIER = 0 as const;
 
+type ClassModifiers = (typeof PLAYER_CLASSES)[PlayerClassId]['modifiers'];
+
 function resolveExpMultiplier(
-  modifiers: Record<string, number>,
-  playerClass: string,
+  modifiers: ClassModifiers,
+  playerClass: PlayerClassId,
   isTrainer?: boolean
 ): number {
   if (playerClass === 'cazabichos' && isTrainer) {
-    return modifiers.expMultTrainer ?? DEFAULT_NEUTRAL_MODIFIER;
+    return Reflect.get(modifiers, 'expMultTrainer') ?? DEFAULT_NEUTRAL_MODIFIER;
   }
   return modifiers.expMult ?? DEFAULT_NEUTRAL_MODIFIER;
 }
 
 function resolveBcMultiplier(
-  modifiers: Record<string, number>,
-  playerClass: string,
+  modifiers: ClassModifiers,
+  playerClass: PlayerClassId,
   isGym?: boolean
 ): number {
   if (playerClass === 'entrenador' && isGym) {
-    return modifiers.bcGymMult ?? DEFAULT_NEUTRAL_MODIFIER;
+    return Reflect.get(modifiers, 'bcGymMult') ?? DEFAULT_NEUTRAL_MODIFIER;
   }
   return modifiers.bcMult ?? DEFAULT_NEUTRAL_MODIFIER;
 }
@@ -38,81 +40,111 @@ function resolveBcMultiplier(
 /**
  * Returns the processed modifier for a specific type and context.
  */
-export function getClassModifier(playerClass: string, type: string, context: ModifierContext = {}): number {
+export function getClassModifier(
+  playerClass: PlayerClassId,
+  type: string,
+  context: ModifierContext = {}
+): number {
   const fallback = type === 'shopDiscount' ? DEFAULT_DISCOUNT_MODIFIER : DEFAULT_NEUTRAL_MODIFIER;
   if (context.isPvP) return fallback;
 
-  const cls = (PLAYER_CLASSES as Record<string, { modifiers: Record<string, number> }>)[playerClass]; // open-record: Generic key-value data dictionary container
+  const cls = PLAYER_CLASSES[playerClass];
   if (!cls) return fallback;
 
   const m = cls.modifiers;
   if (type === 'expMult') return resolveExpMultiplier(m, playerClass, context.isTrainer);
   if (type === 'bcMult') return resolveBcMultiplier(m, playerClass, context.isGym);
-  if (type === 'shopDiscount') return m.shopDiscount ?? DEFAULT_DISCOUNT_MODIFIER;
+  if (type === 'shopDiscount')
+    return 'shopDiscount' in m
+      ? ((m as Record<string, number>).shopDiscount ?? DEFAULT_DISCOUNT_MODIFIER)
+      : DEFAULT_DISCOUNT_MODIFIER; // open-record: Class modifier shop discount lookup
 
-  return m[type] ?? DEFAULT_NEUTRAL_MODIFIER;
+  return (m as Record<string, number>)[type] ?? DEFAULT_NEUTRAL_MODIFIER; // open-record: Custom class modifier key lookup
 }
 
 export const STANDARD_MISSION_COST = {
   SHORT: 5000,
   MEDIUM: 10000,
-  LONG: 20000,
+  LONG: 20000
 } as const;
 
 export const CRIADOR_MISSION_COST = {
   SHORT: 300,
   MEDIUM: 600,
-  LONG: 1000,
+  LONG: 1000
 } as const;
 
 export const BUG_IV_FLOORS_MAP = {
   SHORT: 5,
   MEDIUM: 10,
-  LONG: 15,
+  LONG: 15
 } as const;
 
 export const BUG_SHINY_DIVISORS_MAP = {
   SHORT: 2,
   MEDIUM: 4,
-  LONG: 8,
+  LONG: 8
 } as const;
 
-const CAZABICHOS_MISSION_DATA: Record<string, Record<string, unknown>> = {
-  mission_6h: { cost: STANDARD_MISSION_COST.SHORT, ivFloor: BUG_IV_FLOORS_MAP.SHORT, shinyDiv: BUG_SHINY_DIVISORS_MAP.SHORT },
-  mission_12h: { cost: STANDARD_MISSION_COST.MEDIUM, ivFloor: BUG_IV_FLOORS_MAP.MEDIUM, shinyDiv: BUG_SHINY_DIVISORS_MAP.MEDIUM },
-  mission_24h: { cost: STANDARD_MISSION_COST.LONG, ivFloor: BUG_IV_FLOORS_MAP.LONG, shinyDiv: BUG_SHINY_DIVISORS_MAP.LONG }
+const CAZABICHOS_MISSION_DATA: Record<MissionId, Record<string, unknown>> = {
+  // open-record: Custom mission payload
+  mission_6h: {
+    cost: STANDARD_MISSION_COST.SHORT,
+    ivFloor: BUG_IV_FLOORS_MAP.SHORT,
+    shinyDiv: BUG_SHINY_DIVISORS_MAP.SHORT
+  },
+  mission_12h: {
+    cost: STANDARD_MISSION_COST.MEDIUM,
+    ivFloor: BUG_IV_FLOORS_MAP.MEDIUM,
+    shinyDiv: BUG_SHINY_DIVISORS_MAP.MEDIUM
+  },
+  mission_24h: {
+    cost: STANDARD_MISSION_COST.LONG,
+    ivFloor: BUG_IV_FLOORS_MAP.LONG,
+    shinyDiv: BUG_SHINY_DIVISORS_MAP.LONG
+  }
 };
 
-const ROCKET_MISSION_DATA: Record<string, Record<string, unknown>> = {
+const ROCKET_MISSION_DATA: Record<MissionId, Record<string, unknown>> = {
+  // open-record: Custom mission payload
   mission_6h: { pokReq: 1, mult: 1.0 },
   mission_12h: { pokReq: 2, mult: 1.3 },
   mission_24h: { pokReq: 3, mult: 1.8 }
 };
 
-const ENTRENADOR_MISSION_DATA: Record<string, Record<string, unknown>> = {
+const ENTRENADOR_MISSION_DATA: Record<MissionId, Record<string, unknown>> = {
+  // open-record: Custom mission payload
   mission_6h: { cost: STANDARD_MISSION_COST.SHORT, blocks: 1, bonusLevel: false },
   mission_12h: { cost: STANDARD_MISSION_COST.MEDIUM, blocks: 2, bonusLevel: false },
   mission_24h: { cost: STANDARD_MISSION_COST.LONG, blocks: 4, bonusLevel: true }
 };
 
-const CRIADOR_VIGOR_SAVE_CHANCE_24H = 0.10;
-const CRIADOR_MISSION_DATA: Record<string, Record<string, unknown>> = {
+const CRIADOR_VIGOR_SAVE_CHANCE_24H = 0.1;
+const CRIADOR_MISSION_DATA: Record<MissionId, Record<string, unknown>> = {
+  // open-record: Custom mission payload
   mission_6h: { cost: CRIADOR_MISSION_COST.SHORT, blocks: 1, vigorSaveChance: 0 },
   mission_12h: { cost: CRIADOR_MISSION_COST.MEDIUM, blocks: 2, vigorSaveChance: 0 },
-  mission_24h: { cost: CRIADOR_MISSION_COST.LONG, blocks: 4, vigorSaveChance: CRIADOR_VIGOR_SAVE_CHANCE_24H }
+  mission_24h: {
+    cost: CRIADOR_MISSION_COST.LONG,
+    blocks: 4,
+    vigorSaveChance: CRIADOR_VIGOR_SAVE_CHANCE_24H
+  }
 };
 
 /**
  * Calculates the rewards and costs for a passive mission.
  */
-export function getMissionCostInfo(missionId: MissionId, playerClass: PlayerClassId): Record<string, unknown> | null {
+export function getMissionCostInfo(
+  missionId: MissionId,
+  playerClass: PlayerClassId
+): Record<string, unknown> | null {
   const cls = (PLAYER_CLASSES as Record<string, { id: string }>)[playerClass]; // open-record: Generic key-value data dictionary container
   if (!cls) return null;
 
   if (playerClass === 'cazabichos') {
     return { type: 'money', ...CAZABICHOS_MISSION_DATA[missionId] };
   }
-  
+
   if (playerClass === 'rocket') {
     return { type: 'pokemon_sacrifice', ...ROCKET_MISSION_DATA[missionId] };
   }

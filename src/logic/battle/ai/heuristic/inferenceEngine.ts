@@ -26,7 +26,8 @@ export class InferenceEngine {
       for (const move of pokemon.knownMoves) {
         if (isPokemonMoveId(move)) tracker.observeMove(move);
       }
-      if (pokemon.knownAbility && isAbilityId(pokemon.knownAbility)) tracker.observeAbility(pokemon.knownAbility);
+      if (pokemon.knownAbility && isAbilityId(pokemon.knownAbility))
+        tracker.observeAbility(pokemon.knownAbility);
       if (pokemon.knownItem && isItemId(pokemon.knownItem)) tracker.observeItem(pokemon.knownItem);
       if (pokemon.itemConsumed) tracker.observeItemConsumed();
     }
@@ -48,7 +49,10 @@ export class InferenceEngine {
     return this.getOrCreate(active).computeMoveProbabilities();
   }
 
-  getLikelyUnrevealed(species: string, threshold = 0.3): Array<{ move: PokemonMoveId; probability: number }> {
+  getLikelyUnrevealed(
+    species: string,
+    threshold = 0.3
+  ): Array<{ move: PokemonMoveId; probability: number }> {
     return this.trackers.get(toID(species))?.getLikelyUnrevealedMoves(threshold) ?? [];
   }
 
@@ -66,8 +70,9 @@ export class InferenceEngine {
   // ──────────────────────────────────────────
 
   private getOrCreate(pokemon: HeuristicPokemonState): PokemonTracker {
-    return this.trackers.getOrInsertComputed(toID(pokemon.species), () => 
-      new PokemonTracker(pokemon.species, this.db.getSets(pokemon.species))
+    return this.trackers.getOrInsertComputed(
+      toID(pokemon.species),
+      () => new PokemonTracker(pokemon.species, this.db.getSets(pokemon.species))
     );
   }
 }

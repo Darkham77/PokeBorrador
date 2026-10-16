@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { makePokemon, validatePokemon } from '@/logic/pokemon/pokemonFactory';
 import { handleItemUsage } from '@/logic/battle/battleItems';
@@ -12,11 +12,11 @@ import type { BattleContext } from '@/types/battle/battleContext';
 import { ref } from 'vue';
 
 vi.mock('@/logic/battle/orchestratorWorkerInitHelper.ts', () => ({
-  initWorkerForBattle: vi.fn(async () => {}),
+  initWorkerForBattle: vi.fn(async () => {})
 }));
 
 vi.mock('@/logic/utils/gsapHelpers', () => ({
-  awaitAnimation: vi.fn(() => Promise.resolve()),
+  awaitAnimation: vi.fn(() => Promise.resolve())
 }));
 
 vi.mock('gsap', () => ({
@@ -24,10 +24,12 @@ vi.mock('gsap', () => ({
     delayedCall: vi.fn((_delay, callback) => {
       if (callback) callback();
       return {
-        then: (cb?: () => void) => { if (cb) cb(); },
+        then: (cb?: () => void) => {
+          if (cb) cb();
+        }
       };
-    }),
-  },
+    })
+  }
 }));
 
 describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
@@ -47,7 +49,7 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
       makePokemon('charmander', 10)!,
       makePokemon('squirtle', 10)!,
       makePokemon('pidgeotto', 10)!,
-      makePokemon('butterfree', 10)!,
+      makePokemon('butterfree', 10)!
     ];
     gameStore.state.team = team;
     gameStore.state.box = [];
@@ -70,7 +72,7 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
       playerTeam: team,
       playerTeamIndex: 0,
       enemyTeamIndex: 0,
-      timestamp: Temporal.Now.instant().epochMilliseconds,
+      timestamp: Temporal.Now.instant().epochMilliseconds
     } as unknown as typeof gameStore.state.activeBattle;
 
     // 3. Serialize game state (simulates saving to localStorage/Supabase mid-battle)
@@ -82,7 +84,7 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
     // 4. Reset in-memory battle and simulate page refresh / state restoration
     const activeBattleRef = ref(null);
     const mockFsm = {
-      transition: vi.fn(async () => {}),
+      transition: vi.fn(async () => {})
     };
 
     const mockCtx = {
@@ -95,14 +97,17 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
       BATTLE_SUBSTATES: { WAIT_INPUT: 'WAIT_INPUT' },
       fsm: mockFsm,
       gs: {
-        state: gameStore.state,
-      },
+        state: gameStore.state
+      }
     } as unknown as BattleContext;
 
     await restoreBattleState(mockCtx, serialized.activeBattle);
 
     expect(activeBattleRef.value).not.toBeNull();
-    const restoredBattle = activeBattleRef.value as unknown as { enemy: Pokemon; _initialEnemy: Pokemon };
+    const restoredBattle = activeBattleRef.value as unknown as {
+      enemy: Pokemon;
+      _initialEnemy: Pokemon;
+    };
     expect(restoredBattle.enemy).toBeDefined();
     expect(restoredBattle.enemy.id).toBe('rattata');
     expect(restoredBattle._initialEnemy).toBeDefined();
@@ -115,10 +120,15 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
       consumeItem: () => {},
       ctx: mockCtx,
       fsm: mockFsm as never,
-      itemId: 'masterball' as const,
+      itemId: 'masterball' as const
     };
 
-    const captureResult = await handleItemUsage('masterball', team[0]!, restoredBattle.enemy!, dummyOptions);
+    const captureResult = await handleItemUsage(
+      'masterball',
+      team[0]!,
+      restoredBattle.enemy!,
+      dummyOptions
+    );
     expect(captureResult.action).toBe('capture');
     expect(captureResult.pokemon).toBeDefined();
 

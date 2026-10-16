@@ -23,7 +23,8 @@ class ClassDeploymentsSimulation extends BaseE2ESimulation {
   public async setupRocketScenario(): Promise<string> {
     return await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const TRAINER_LEVEL = 10;
@@ -42,10 +43,16 @@ class ClassDeploymentsSimulation extends BaseE2ESimulation {
       gameStore.state.classData.activeMission = null;
       gameStore.state.classData.criminality = 0;
 
-      const activePikachu = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: PIKACHU_LEVEL });
+      const activePikachu = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('pikachu'),
+        level: PIKACHU_LEVEL
+      });
       gameStore.state.team = [activePikachu];
 
-      const sacrificeEkans = pokemonDebugService.generate({ id: requirePokemonSpeciesId('ekans'), level: EKANS_LEVEL });
+      const sacrificeEkans = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('ekans'),
+        level: EKANS_LEVEL
+      });
       sacrificeEkans.nickname = 'SACRIFICE_EKANS';
       gameStore.state.box = [sacrificeEkans];
 
@@ -57,7 +64,8 @@ class ClassDeploymentsSimulation extends BaseE2ESimulation {
   public async setupCazabichosScenario(): Promise<void> {
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const TRAINER_LEVEL = 10;
@@ -79,7 +87,10 @@ class ClassDeploymentsSimulation extends BaseE2ESimulation {
       gameStore.state.classData.captureStreak = STREAK_COUNT;
       gameStore.state.classData.longestStreak = STREAK_COUNT;
 
-      const activePikachu = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: PIKACHU_LEVEL });
+      const activePikachu = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('pikachu'),
+        level: PIKACHU_LEVEL
+      });
       gameStore.state.team = [activePikachu];
       gameStore.state.box = [];
 
@@ -90,7 +101,8 @@ class ClassDeploymentsSimulation extends BaseE2ESimulation {
   public async setupEntrenadorScenario(): Promise<string> {
     return await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const TRAINER_LEVEL = 10;
@@ -109,10 +121,16 @@ class ClassDeploymentsSimulation extends BaseE2ESimulation {
       gameStore.state.classXP = 0;
       gameStore.state.classData.activeMission = null;
 
-      const activeCharizard = pokemonDebugService.generate({ id: requirePokemonSpeciesId('charizard'), level: CHARIZARD_LEVEL });
+      const activeCharizard = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('charizard'),
+        level: CHARIZARD_LEVEL
+      });
       gameStore.state.team = [activeCharizard];
 
-      const trainingPikachu = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: PIKACHU_LEVEL });
+      const trainingPikachu = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('pikachu'),
+        level: PIKACHU_LEVEL
+      });
       trainingPikachu.nickname = 'TRAINING_PIKACHU';
       trainingPikachu.exp = 0;
       gameStore.state.box = [trainingPikachu];
@@ -125,7 +143,8 @@ class ClassDeploymentsSimulation extends BaseE2ESimulation {
   public async setupCriadorScenario(): Promise<string> {
     return await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const TRAINER_LEVEL = 10;
@@ -147,7 +166,10 @@ class ClassDeploymentsSimulation extends BaseE2ESimulation {
       gameStore.state.inventory = { everstone: 0 };
       gameStore.state.classData.activeMission = null;
 
-      const activeCharizard = pokemonDebugService.generate({ id: requirePokemonSpeciesId('charizard'), level: CHARIZARD_LEVEL });
+      const activeCharizard = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('charizard'),
+        level: CHARIZARD_LEVEL
+      });
       gameStore.state.team = [activeCharizard];
 
       const breedingEevee = pokemonDebugService.generate({
@@ -170,16 +192,21 @@ class ClassDeploymentsSimulation extends BaseE2ESimulation {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const FAST_FORWARD_OFFSET_MS = 2000;
       const gameStore = useGameStore();
-      const classData = gameStore.state.classData as { activeMission?: { endsAt: number } | null } | undefined;
+      const classData = gameStore.state.classData as
+        | { activeMission?: { endsAt: number } | null }
+        | undefined;
       if (classData?.activeMission) {
-        classData.activeMission.endsAt = Temporal.Now.instant().epochMilliseconds - FAST_FORWARD_OFFSET_MS;
+        classData.activeMission.endsAt =
+          Temporal.Now.instant().epochMilliseconds - FAST_FORWARD_OFFSET_MS;
       }
     });
   }
 }
 
 test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
-  test('1. Rocket: Sacrifices poison pokemon from box, starts 6h mission, collects bounty and nugget in-situ', async ({ page }) => {
+  test('1. Rocket: Sacrifices poison pokemon from box, starts 6h mission, collects bounty and nugget in-situ', async ({
+    page
+  }) => {
     const sim = new ClassDeploymentsSimulation(page, 'RocketDeployUser');
     await sim.setup();
 
@@ -212,7 +239,7 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     const gameState = await page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const store = useGameStore().state;
-      const hasEkans = (store.box || []).some(p => p && p.nickname === 'SACRIFICE_EKANS');
+      const hasEkans = (store.box || []).some((p) => p && p.nickname === 'SACRIFICE_EKANS');
       return {
         hasEkans,
         money: store.money,
@@ -229,7 +256,9 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     expect(gameState.classXP).toBe(EXPECTED_MISSION_CLASS_XP);
   });
 
-  test('2. Cazabichos: Deploys bug expedition directly, collects bug pokemon and net balls in-situ', async ({ page }) => {
+  test('2. Cazabichos: Deploys bug expedition directly, collects bug pokemon and net balls in-situ', async ({
+    page
+  }) => {
     const sim = new ClassDeploymentsSimulation(page, 'CazabichosDeployUser');
     await sim.setup();
 
@@ -258,9 +287,9 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
       const store = useGameStore().state;
       return {
         boxCount: (store.box || []).length,
-        boxSpecies: (store.box || []).map(p => ({ id: p?.id, uid: p?.uid })),
+        boxSpecies: (store.box || []).map((p) => ({ id: p?.id, uid: p?.uid })),
         teamCount: (store.team || []).length,
-        teamSpecies: (store.team || []).map(p => ({ id: p?.id, uid: p?.uid })),
+        teamSpecies: (store.team || []).map((p) => ({ id: p?.id, uid: p?.uid })),
         netballs: store.inventory?.netball || 0,
         streak: store.classData?.captureStreak || 0,
         classXP: store.classXP
@@ -273,7 +302,9 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     expect(gameState.classXP).toBe(EXPECTED_MISSION_CLASS_XP);
   });
 
-  test('3. Entrenador: Deploys sparring mission, pays cost, levels up pokemon and earns Battle Coins in-situ', async ({ page }) => {
+  test('3. Entrenador: Deploys sparring mission, pays cost, levels up pokemon and earns Battle Coins in-situ', async ({
+    page
+  }) => {
     const sim = new ClassDeploymentsSimulation(page, 'TrainerDeployUser');
     await sim.setup();
 
@@ -303,7 +334,7 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     const gameState = await page.evaluate(async (uid) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const store = useGameStore().state;
-      const pika = (store.box || []).find(p => p && p.uid === uid);
+      const pika = (store.box || []).find((p) => p && p.uid === uid);
       return {
         pikaLevel: pika?.level || 0,
         money: store.money,
@@ -318,7 +349,9 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     expect(gameState.classXP).toBe(EXPECTED_MISSION_CLASS_XP);
   });
 
-  test('4. Criador: Deploys genetic incubation, consumes vigor, enhances IVs, and earns breeding items in-situ', async ({ page }) => {
+  test('4. Criador: Deploys genetic incubation, consumes vigor, enhances IVs, and earns breeding items in-situ', async ({
+    page
+  }) => {
     const sim = new ClassDeploymentsSimulation(page, 'BreederDeployUser');
     await sim.setup();
 
@@ -348,8 +381,10 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     const gameState = await page.evaluate(async (uid) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const store = useGameStore().state;
-      const eevee = (store.box || []).find(p => p && p.uid === uid);
-      const totalIvs = eevee?.ivs ? Object.values(eevee.ivs).reduce((acc, val) => acc + (val || 0), 0) : 0;
+      const eevee = (store.box || []).find((p) => p && p.uid === uid);
+      const totalIvs = eevee?.ivs
+        ? Object.values(eevee.ivs).reduce((acc, val) => acc + (val || 0), 0)
+        : 0;
       return {
         eeveeVigor: eevee?.vigor ?? 100,
         totalIvs,
@@ -366,7 +401,9 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     expect(gameState.classXP).toBe(EXPECTED_MISSION_CLASS_XP);
   });
 
-  test('5. F5 Refresh Persistence: Active deployment and countdown timer survive page reload (page.reload)', async ({ page }) => {
+  test('5. F5 Refresh Persistence: Active deployment and countdown timer survive page reload (page.reload)', async ({
+    page
+  }) => {
     const sim = new ClassDeploymentsSimulation(page, 'F5DeployUser');
     await sim.setup();
 
@@ -394,23 +431,33 @@ test.describe('Class Deployments E2E Simulation (All 4 Classes)', () => {
     await sim.reloadAndSync();
 
     // 4. Verify home widget immediately displays active progress & countdown timer post-reload
-    const homeActiveProgress = page.locator('#home-widget-expanded-missions .mission-active-progress');
+    const homeActiveProgress = page.locator(
+      '#home-widget-expanded-missions .mission-active-progress'
+    );
     await expect(homeActiveProgress).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     // 5. Re-open missions modal after reload and verify card also shows active progress
     await sim.openModal('EventMissions');
 
-    const modalMissionCardAfterReload = page.locator('.base-modal-root #mission-card-class-mission_6h');
+    const modalMissionCardAfterReload = page.locator(
+      '.base-modal-root #mission-card-class-mission_6h'
+    );
     await expect(modalMissionCardAfterReload).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    const activeProgressAfterReload = modalMissionCardAfterReload.locator('.mission-active-progress');
+    const activeProgressAfterReload = modalMissionCardAfterReload.locator(
+      '.mission-active-progress'
+    );
     await expect(activeProgressAfterReload).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     // 6. Fast-forward completion and verify claiming still works post-reload
     await sim.fastForwardActiveMission();
 
-    const deliverBtnAfterReload = modalMissionCardAfterReload.locator('#deliver-btn-class-mission_6h');
-    await expect(deliverBtnAfterReload).toHaveText('COBRAR BOTÍN', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    const deliverBtnAfterReload = modalMissionCardAfterReload.locator(
+      '#deliver-btn-class-mission_6h'
+    );
+    await expect(deliverBtnAfterReload).toHaveText('COBRAR BOTÍN', {
+      timeout: MAX_PER_ACTION_TIMEOUT_MS
+    });
     await deliverBtnAfterReload.click();
 
     // 7. Verify collection reset

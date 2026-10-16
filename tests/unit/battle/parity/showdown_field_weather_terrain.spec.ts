@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
 import { ref } from 'vue';
 import { getEffectiveSpeed } from '@/logic/battle/battleEngine';
@@ -16,7 +16,7 @@ describe('Audit Parity - BUG-031: -end disable must also clear moves[i].disabled
       disabledMove: { id: 'hydropump', name: 'Hydro Pump' },
       disabledTurns: 2,
       volatileCounters: {},
-      moves: [mockMove],
+      moves: [mockMove]
     };
     const ctx = {
       store: { activeBattle: { value: {} }, addLog: () => {} },
@@ -26,7 +26,7 @@ describe('Audit Parity - BUG-031: -end disable must also clear moves[i].disabled
       p: null,
       getPoke: () => mockPoke,
       getSide: () => 'player',
-      playerSide: 'p1',
+      playerSide: 'p1'
     } as unknown as Parameters<typeof handleFieldEvents>[0];
 
     await handleFieldEvents(ctx);
@@ -51,7 +51,7 @@ describe('Audit Parity - BUG-032: -fieldend must clear terrain when condition ar
       p: null,
       getPoke: () => null,
       getSide: () => null,
-      playerSide: 'p1',
+      playerSide: 'p1'
     } as unknown as Parameters<typeof handleFieldEvents>[0];
 
     await handleFieldEvents(ctx);
@@ -74,7 +74,7 @@ describe('Audit Parity - BUG-033: -fieldstart terrain detection by substring is 
       p: null,
       getPoke: () => null,
       getSide: () => null,
-      playerSide: 'p1',
+      playerSide: 'p1'
     } as unknown as Parameters<typeof handleFieldEvents>[0];
 
     await handleFieldEvents(ctx);
@@ -113,7 +113,9 @@ describe('Audit Parity - BUG-042: -weather [upkeep] flag suppresses log', () => 
     let logsCount = 0;
     const mockStore = {
       activeBattle: { value: { weather: { type: 'clear' } } },
-      addLog: () => { logsCount++; }
+      addLog: () => {
+        logsCount++;
+      }
     };
     const ctx = {
       store: mockStore,
@@ -170,7 +172,10 @@ describe('Audit Parity - BUG-054: spikes cap at 3 layers', () => {
 // --- From test_bug057_swapsideconditions_null.spec.ts ---
 describe('Audit Parity - BUG-057: -swapsideconditions null safety', () => {
   it('should swap side conditions safely even when one side conditions object is null/undefined', async () => {
-    const battle = { playerSideConditions: { reflect: { turns: 5 } }, enemySideConditions: undefined };
+    const battle = {
+      playerSideConditions: { reflect: { turns: 5 } },
+      enemySideConditions: undefined
+    };
     const ctx = {
       store: { activeBattle: { value: battle }, addLog: () => {} },
       type: '-swapsideconditions',
@@ -181,7 +186,10 @@ describe('Audit Parity - BUG-057: -swapsideconditions null safety', () => {
       playerSide: 'p1'
     };
     await handleFieldEvents(ctx as any);
-    expect((battle.enemySideConditions as unknown as Record<string, { turns: number }> | undefined)?.reflect?.turns).toBe(5);
+    expect(
+      (battle.enemySideConditions as unknown as Record<string, { turns: number }> | undefined)
+        ?.reflect?.turns
+    ).toBe(5);
     expect(battle.playerSideConditions).toBeUndefined();
   });
 });
@@ -192,7 +200,12 @@ describe('Audit Parity - BUG-074: fieldend terrain log clear message', () => {
     let logMsg = '';
     const battle = { terrain: 'electricterrain' };
     const ctx = {
-      store: { activeBattle: { value: battle }, addLog: (msg: string) => { logMsg = msg; } },
+      store: {
+        activeBattle: { value: battle },
+        addLog: (msg: string) => {
+          logMsg = msg;
+        }
+      },
       type: '-fieldend',
       parts: ['', '-fieldend', 'move: Electric Terrain'],
       line: '|-fieldend|move: Electric Terrain',
@@ -212,7 +225,12 @@ describe('Audit Parity - BUG-075: fieldstart gravity message log', () => {
     let logMsg = '';
     const battle = { fieldConditions: {} };
     const ctx = {
-      store: { activeBattle: { value: battle }, addLog: (msg: string) => { logMsg = msg; } },
+      store: {
+        activeBattle: { value: battle },
+        addLog: (msg: string) => {
+          logMsg = msg;
+        }
+      },
       type: '-fieldstart',
       parts: ['', '-fieldstart', 'move: Gravity'],
       line: '|-fieldstart|move: Gravity',
@@ -313,18 +331,18 @@ describe('Audit Parity - Clean Key Sideend Token', () => {
 vi.mock('@/logic/utils/timeUtils', () => ({
   getDayCycle: vi.fn(() => 'night'),
   sleep: vi.fn(async () => {})
-}))
+}));
 
 describe('Battle Weather and Terrain Tests', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-  })
+    setActivePinia(createPinia());
+  });
 
   it('updates battle weather in store when handling -weather events', () => {
     const activeBattle = ref({
       weather: { type: 'clear', visual: 'clear', turns: -1 }
-    })
-    const logs: string[] = []
+    });
+    const logs: string[] = [];
 
     const mockCtx = {
       store: {
@@ -335,15 +353,15 @@ describe('Battle Weather and Terrain Tests', () => {
       parts: ['', '-weather', 'SunnyDay'],
       line: '|-weather|SunnyDay',
       getPoke: () => null
-    } as unknown as SBCtx
+    } as unknown as SBCtx;
 
-    handleFieldEvents(mockCtx)
+    handleFieldEvents(mockCtx);
 
-    expect(activeBattle.value.weather.type).toBe('sun')
-    expect(activeBattle.value.weather.visual).toBe('sun')
-    expect(logs.length).toBeGreaterThan(0)
-    expect(logs[0]).toContain('clima')
-  })
+    expect(activeBattle.value.weather.type).toBe('sun');
+    expect(activeBattle.value.weather.visual).toBe('sun');
+    expect(logs.length).toBeGreaterThan(0);
+    expect(logs[0]).toContain('clima');
+  });
 
   it('correctly calculates speed doubling under Sun for Chlorophyll ability', () => {
     const pokemon = {
@@ -351,22 +369,32 @@ describe('Battle Weather and Terrain Tests', () => {
       name: 'Oddish',
       spe: 100,
       ability: 'chlorophyll'
-    } as unknown as Pokemon
+    } as unknown as Pokemon;
 
     const stages: BattleStages = {
-      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0,
-      reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
-    }
+      atk: 0,
+      def: 0,
+      spa: 0,
+      spd: 0,
+      spe: 0,
+      accuracy: 0,
+      evasion: 0,
+      reflect: 0,
+      lightScreen: 0,
+      safeguard: 0,
+      mist: 0,
+      spikes: 0
+    };
 
-    const clearWeather: BattleWeather = { type: 'clear', visual: 'clear', turns: -1 }
-    const sunWeather: BattleWeather = { type: 'sun', visual: 'sun', turns: 5 }
+    const clearWeather: BattleWeather = { type: 'clear', visual: 'clear', turns: -1 };
+    const sunWeather: BattleWeather = { type: 'sun', visual: 'sun', turns: 5 };
 
-    const speedClear = getEffectiveSpeed(pokemon, stages, { weather: clearWeather })
-    const speedSun = getEffectiveSpeed(pokemon, stages, { weather: sunWeather })
+    const speedClear = getEffectiveSpeed(pokemon, stages, { weather: clearWeather });
+    const speedSun = getEffectiveSpeed(pokemon, stages, { weather: sunWeather });
 
-    expect(speedClear).toBe(100)
-    expect(speedSun).toBe(200) // Chlorophyll doubles speed in sun
-  })
+    expect(speedClear).toBe(100);
+    expect(speedSun).toBe(200); // Chlorophyll doubles speed in sun
+  });
 
   it('correctly calculates speed doubling under Rain for Swift Swim ability', () => {
     const pokemon = {
@@ -374,20 +402,30 @@ describe('Battle Weather and Terrain Tests', () => {
       name: 'Horsea',
       spe: 100,
       ability: 'swiftswim'
-    } as unknown as Pokemon
+    } as unknown as Pokemon;
 
     const stages: BattleStages = {
-      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0,
-      reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
-    }
+      atk: 0,
+      def: 0,
+      spa: 0,
+      spd: 0,
+      spe: 0,
+      accuracy: 0,
+      evasion: 0,
+      reflect: 0,
+      lightScreen: 0,
+      safeguard: 0,
+      mist: 0,
+      spikes: 0
+    };
 
-    const clearWeather: BattleWeather = { type: 'clear', visual: 'clear', turns: -1 }
-    const rainWeather: BattleWeather = { type: 'rain', visual: 'rain', turns: 5 }
+    const clearWeather: BattleWeather = { type: 'clear', visual: 'clear', turns: -1 };
+    const rainWeather: BattleWeather = { type: 'rain', visual: 'rain', turns: 5 };
 
-    const speedClear = getEffectiveSpeed(pokemon, stages, { weather: clearWeather })
-    const speedRain = getEffectiveSpeed(pokemon, stages, { weather: rainWeather })
+    const speedClear = getEffectiveSpeed(pokemon, stages, { weather: clearWeather });
+    const speedRain = getEffectiveSpeed(pokemon, stages, { weather: rainWeather });
 
-    expect(speedClear).toBe(100)
-    expect(speedRain).toBe(200) // Swift Swim doubles speed in rain
-  })
-})
+    expect(speedClear).toBe(100);
+    expect(speedRain).toBe(200); // Swift Swim doubles speed in rain
+  });
+});

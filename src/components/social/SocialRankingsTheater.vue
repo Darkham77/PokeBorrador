@@ -1,100 +1,104 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useGameStore } from '@/stores/game'
-import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue'
-import { useLivePvPStore } from '@/stores/livePvP'
-import { useModalStore } from '@/stores/modals'
-import { formatBattleCodeInput } from '@/logic/pvp/replayCodeGenerator'
-import { isBattleCode, type BattleReplayRecord } from '@/types/battle/pvp'
-import { parseReplayRow } from './socialTheaterHelper'
-import { DEFAULT_FEATURED_REPLAYS_LIMIT } from '@/logic/pvp/rankedEngine'
-import { logger } from '@/logic/utils/logger'
+import { ref, onMounted } from 'vue';
+import { useGameStore } from '@/stores/game';
+import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue';
+import { useLivePvPStore } from '@/stores/livePvP';
+import { useModalStore } from '@/stores/modals';
+import { formatBattleCodeInput } from '@/logic/pvp/replayCodeGenerator';
+import { isBattleCode, type BattleReplayRecord } from '@/types/battle/pvp';
+import { parseReplayRow } from './socialTheaterHelper';
+import { DEFAULT_FEATURED_REPLAYS_LIMIT } from '@/logic/pvp/rankedEngine';
+import { logger } from '@/logic/utils/logger';
 
 const emit = defineEmits<{
-  (e: 'watch-replay', replay: BattleReplayRecord): void
-}>()
+  (e: 'watch-replay', replay: BattleReplayRecord): void;
+}>();
 
-const gameStore = useGameStore()
-const livePvPStore = useLivePvPStore()
-const modalStore = useModalStore()
+const gameStore = useGameStore();
+const livePvPStore = useLivePvPStore();
+const modalStore = useModalStore();
 
-const searchCodeInput = ref('')
-const searchLoading = ref(false)
-const searchError = ref<string | null>(null)
-const featuredReplays = ref<BattleReplayRecord[]>([])
-const listLoading = ref(false)
+const searchCodeInput = ref('');
+const searchLoading = ref(false);
+const searchError = ref<string | null>(null);
+const featuredReplays = ref<BattleReplayRecord[]>([]);
+const listLoading = ref(false);
 
 function onSearchInput(e: Event) {
-  const target = e.target as HTMLInputElement
-  searchCodeInput.value = formatBattleCodeInput(target.value)
+  const target = e.target as HTMLInputElement;
+  searchCodeInput.value = formatBattleCodeInput(target.value);
 }
 
 async function handleSearch() {
-  const code = searchCodeInput.value.trim().toUpperCase()
-  if (!code) return
+  const code = searchCodeInput.value.trim().toUpperCase();
+  if (!code) return;
   if (!isBattleCode(code)) {
-    searchError.value = 'Formato de código inválido (ej: BTL-ABCD-EFGH)'
-    return
+    searchError.value = 'Formato de código inválido (ej: BTL-ABCD-EFGH)';
+    return;
   }
 
-  searchLoading.value = true
-  searchError.value = null
+  searchLoading.value = true;
+  searchError.value = null;
 
   try {
-    if (!gameStore.db) throw new Error('Base de datos no disponible')
+    if (!gameStore.db) throw new Error('Base de datos no disponible');
 
-    const { data, error } = await gameStore.db
+    const { data, error } = (await gameStore.db
       .from('battle_replays')
       .select('*')
       .eq('battle_code', code)
-      .single() as { data: Record<string, unknown> | null; error: unknown }
+      .single()) as { data: Record<string, unknown> | null; error: unknown };
 
     if (error || !data) {
-      searchError.value = 'No se encontró ninguna repetición con ese código.'
-      return
+      searchError.value = 'No se encontró ninguna repetición con ese código.';
+      return;
     }
 
-    const replay = parseReplayRow(data)
-    playReplay(replay)
+    const replay = parseReplayRow(data);
+    playReplay(replay);
   } catch (err) {
-    logger.warn('SocialRankingsTheater', `Error buscando repetición: ${(err as Error).message}`)
-    searchError.value = 'Error al buscar el combate.'
+    logger.warn('SocialRankingsTheater', `Error buscando repetición: ${(err as Error).message}`);
+    searchError.value = 'Error al buscar el combate.';
   } finally {
-    searchLoading.value = false
+    searchLoading.value = false;
   }
 }
 
 async function fetchFeaturedReplays() {
-  if (!gameStore.db) return
-  listLoading.value = true
+  if (!gameStore.db) return;
+  listLoading.value = true;
 
   try {
-    const { data, error } = await gameStore.db.rpc('fn_get_featured_replays', { p_limit: DEFAULT_FEATURED_REPLAYS_LIMIT }) as {
-      data: Record<string, unknown>[] | null
-      error: unknown
-    }
+    const { data, error } = (await gameStore.db.rpc('fn_get_featured_replays', {
+      p_limit: DEFAULT_FEATURED_REPLAYS_LIMIT
+    })) as {
+      data: Record<string, unknown>[] | null;
+      error: unknown;
+    };
 
     if (!error && Array.isArray(data)) {
-      featuredReplays.value = data.map(r => parseReplayRow(r))
+      featuredReplays.value = data.map((r) => parseReplayRow(r));
     }
   } catch (err) {
-    logger.warn('SocialRankingsTheater', `Error cargando repeticiones destacadas: ${(err as Error).message}`)
+    logger.warn(
+      'SocialRankingsTheater',
+      `Error cargando repeticiones destacadas: ${(err as Error).message}`
+    );
   } finally {
-    listLoading.value = false
+    listLoading.value = false;
   }
 }
 
-
 function playReplay(replay: BattleReplayRecord) {
-  emit('watch-replay', replay)
-  modalStore.close('Ranking')
-  modalStore.close('Social')
-  livePvPStore.watchReplay(replay)
+  emit('watch-replay', replay);
+  modalStore.close('Ranking');
+  modalStore.close('Social');
+  livePvPStore.watchReplay(replay);
 }
 
 onMounted(() => {
-  fetchFeaturedReplays()
-})
+  fetchFeaturedReplays();
+});
 </script>
 
 <template>
@@ -106,7 +110,8 @@ onMounted(() => {
         <span class="search-title">BUSCADOR DE REPETICIONES</span>
       </div>
       <p class="search-desc">
-        Introduce un Battle Code para ver la repetición jugada a jugada con Niebla de Guerra auténtica.
+        Introduce un Battle Code para ver la repetición jugada a jugada con Niebla de Guerra
+        auténtica.
       </p>
 
       <div class="search-input-group">
@@ -115,11 +120,12 @@ onMounted(() => {
           type="text"
           :value="searchCodeInput"
           placeholder="BTL-XXXX-XXXX"
+          aria-label="Código de batalla"
           maxlength="14"
           class="pv-retro-input"
           @input="onSearchInput"
           @keyup.enter="handleSearch"
-        >
+        />
         <button
           id="btn-search-replay"
           v-gsap-hover="'button'"
@@ -131,10 +137,7 @@ onMounted(() => {
         </button>
       </div>
 
-      <p
-        v-if="searchError"
-        class="search-error-msg"
-      >
+      <p v-if="searchError" class="search-error-msg">
         <span class="emoji">⚠️</span> {{ searchError }}
       </p>
     </div>
@@ -153,71 +156,46 @@ onMounted(() => {
         />
       </div>
 
-      <div
-        v-if="listLoading"
-        class="loading-state"
-      >
+      <div v-if="listLoading" class="loading-state">
         <span class="loading-spinner emoji">⏳</span>
         <span>Cargando repeticiones del Teatro...</span>
       </div>
 
-      <div
-        v-else-if="featuredReplays.length === 0"
-        class="empty-state"
-      >
+      <div v-else-if="featuredReplays.length === 0" class="empty-state">
         <span class="empty-icon emoji">🎭</span>
         <p>No hay combates archivados todavía este mes.</p>
         <span class="empty-sub">¡Los combates del Top 10 se archivarán aquí automáticamente!</span>
       </div>
 
-      <div
-        v-else
-        id="theater-replays-list"
-        class="replays-grid"
-      >
-        <div
-          v-for="replay in featuredReplays"
-          :key="replay.id"
-          class="replay-card"
-        >
+      <div v-else id="theater-replays-list" class="replays-grid">
+        <div v-for="replay in featuredReplays" :key="replay.id" class="replay-card">
           <div class="replay-card-header">
             <span class="replay-code">{{ replay.battleCode }}</span>
-            <span
-              v-if="replay.isTop10Archived"
-              class="top10-badge"
-            >TOP 10 <span class="emoji">👑</span></span>
+            <span v-if="replay.isTop10Archived" class="top10-badge"
+              >TOP 10 <span class="emoji">👑</span></span
+            >
           </div>
 
           <div class="combatants-matchup">
-            <div
-              class="combatant p1-side"
-              :class="{ winner: replay.winnerSide === 'p1' }"
-            >
+            <div class="combatant p1-side" :class="{ winner: replay.winnerSide === 'p1' }">
               <span class="trainer-name">{{ replay.p1.username }}</span>
               <span class="trainer-meta">{{ replay.p1.tier }} · {{ replay.p1.elo }} ELO</span>
-              <span
-                v-if="replay.winnerSide === 'p1'"
-                class="win-crown emoji"
-              >🏆</span>
+              <span v-if="replay.winnerSide === 'p1'" class="win-crown emoji">🏆</span>
             </div>
 
             <span class="vs-divider">VS</span>
 
-            <div
-              class="combatant p2-side"
-              :class="{ winner: replay.winnerSide === 'p2' }"
-            >
+            <div class="combatant p2-side" :class="{ winner: replay.winnerSide === 'p2' }">
               <span class="trainer-name">{{ replay.p2.username }}</span>
               <span class="trainer-meta">{{ replay.p2.tier }} · {{ replay.p2.elo }} ELO</span>
-              <span
-                v-if="replay.winnerSide === 'p2'"
-                class="win-crown emoji"
-              >🏆</span>
+              <span v-if="replay.winnerSide === 'p2'" class="win-crown emoji">🏆</span>
             </div>
           </div>
 
           <div class="replay-card-footer">
-            <span class="turns-count"><span class="emoji">⏱️</span> {{ replay.turnsCount }} Turnos</span>
+            <span class="turns-count"
+              ><span class="emoji">⏱️</span> {{ replay.turnsCount }} Turnos</span
+            >
             <button
               :id="`btn-watch-replay-${replay.battleCode}`"
               v-gsap-hover="'button'"
@@ -314,11 +292,10 @@ onMounted(() => {
       font-size: var(--font-12);
       font-weight: bold;
     }
-
-
   }
 
-  .loading-state, .empty-state {
+  .loading-state,
+  .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;

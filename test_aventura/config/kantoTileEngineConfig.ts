@@ -59,12 +59,23 @@ export const REGIONAL_MASSIF_BOUNDS = {
 } as const;
 
 export const LPC_PIECE_SLICES: Record<string, { sx: number; sy: number }> = {
-  TL: { sx: 0, sy: 64 }, T: { sx: 32, sy: 64 }, TR: { sx: 64, sy: 64 },
-  L: { sx: 0, sy: 96 }, C: { sx: 32, sy: 96 }, R: { sx: 64, sy: 96 },
-  BL: { sx: 0, sy: 128 }, B: { sx: 32, sy: 128 }, BR: { sx: 64, sy: 128 },
-  F0: { sx: 0, sy: 160 }, F1: { sx: 32, sy: 160 }, F2: { sx: 64, sy: 160 },
-  ITL: { sx: 64, sy: 32 }, ITR: { sx: 32, sy: 32 },
-  IBL: { sx: 64, sy: 0 }, IBR: { sx: 32, sy: 0 },
+  // open-record: Autotile piece slice identifiers mapped to sprite coordinates
+  TL: { sx: 0, sy: 64 },
+  T: { sx: 32, sy: 64 },
+  TR: { sx: 64, sy: 64 },
+  L: { sx: 0, sy: 96 },
+  C: { sx: 32, sy: 96 },
+  R: { sx: 64, sy: 96 },
+  BL: { sx: 0, sy: 128 },
+  B: { sx: 32, sy: 128 },
+  BR: { sx: 64, sy: 128 },
+  F0: { sx: 0, sy: 160 },
+  F1: { sx: 32, sy: 160 },
+  F2: { sx: 64, sy: 160 },
+  ITL: { sx: 64, sy: 32 },
+  ITR: { sx: 32, sy: 32 },
+  IBL: { sx: 64, sy: 0 },
+  IBR: { sx: 32, sy: 0 },
   S0: { sx: 0, sy: 0 }
 };
 

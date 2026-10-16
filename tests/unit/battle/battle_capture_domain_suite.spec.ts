@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 import { ref } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { cleanCapturedPokemonForStorage } from '@/logic/battle/battleCatchProcessor';
@@ -74,15 +74,17 @@ vi.mock('gsap', () => {
     if (callback) callback();
     return {
       kill: () => {},
-      then: (cb?: () => void) => { if (cb) cb(); },
+      then: (cb?: () => void) => {
+        if (cb) cb();
+      }
     };
   });
   const gsapObj = {
-    delayedCall,
+    delayedCall
   };
   return {
     default: gsapObj,
-    gsap: gsapObj,
+    gsap: gsapObj
   };
 });
 
@@ -143,7 +145,9 @@ describe('Battle Capture Domain Suite', () => {
         }
       };
 
-      const resolvedInitial = (activeEnemy2.uid && battleState._initialEnemies?.[activeEnemy2.uid]) || battleState._initialEnemy;
+      const resolvedInitial =
+        (activeEnemy2.uid && battleState._initialEnemies?.[activeEnemy2.uid]) ||
+        battleState._initialEnemy;
       expect(resolvedInitial.id).toBe('pidgey');
       expect(resolvedInitial.uid).toBe('wild-seat-4');
 
@@ -177,7 +181,7 @@ describe('Battle Capture Domain Suite', () => {
       });
 
       expect(res.bugSynergyBonus).toBe(2 * BUG_SYNERGY_BONUS_PER_BUG);
-      expect(res.bugSynergyBonus).toBe(0.10);
+      expect(res.bugSynergyBonus).toBe(0.1);
     });
 
     it('caps bug synergy bonus at +30% maximum', () => {
@@ -197,7 +201,7 @@ describe('Battle Capture Domain Suite', () => {
       });
 
       expect(res.bugSynergyBonus).toBe(BUG_SYNERGY_MAX_BONUS);
-      expect(res.bugSynergyBonus).toBe(0.30);
+      expect(res.bugSynergyBonus).toBe(0.3);
     });
 
     it('gives 0 bonus if team has no bug Pokémon', () => {
@@ -221,7 +225,7 @@ describe('Battle Capture Domain Suite', () => {
       });
 
       expect(res.trainerIvPenaltyApplied).toBe(true);
-      expect(TRAINER_IV_PENALTY_RATE).toBe(0.10);
+      expect(TRAINER_IV_PENALTY_RATE).toBe(0.1);
     });
 
     it('does not apply penalty when target IV total <= 120', () => {
@@ -315,7 +319,7 @@ describe('Battle Capture Domain Suite', () => {
 
       expect(consumedItem).toBe('pokeball');
       expect(fsmTransitions).toContain('ACTIVE_BATTLE:CATCH_PROCESS');
-      expect(fsmTransitions.filter(s => s === 'ACTIVE_BATTLE:CATCH_SHAKE').length).toBe(2);
+      expect(fsmTransitions.filter((s) => s === 'ACTIVE_BATTLE:CATCH_SHAKE').length).toBe(2);
       expect(fsmTransitions).toContain('ACTIVE_BATTLE:CATCH_BREAK');
       expect(fsmTransitions).toContain('ACTIVE_BATTLE:FADEOUT_BALL');
 
@@ -348,9 +352,9 @@ describe('Battle Capture Domain Suite', () => {
           enemy: wildMon,
           _initialEnemy: structuredClone(wildMon),
           over: false,
-          isTrainer: false,
+          isTrainer: false
         }),
-        animations: {},
+        animations: {}
       } as unknown as BattleContext;
 
       const dummyOptions = {
@@ -359,10 +363,15 @@ describe('Battle Capture Domain Suite', () => {
         audio: {} as never,
         consumeItem: () => {},
         ctx: mockCtx,
-        itemId: 'masterball' as const,
+        itemId: 'masterball' as const
       };
 
-      const res = await handleItemUsage('masterball', playerMon as Pokemon, wildMon as Pokemon, dummyOptions);
+      const res = await handleItemUsage(
+        'masterball',
+        playerMon as Pokemon,
+        wildMon as Pokemon,
+        dummyOptions
+      );
 
       expect(res).toBeDefined();
       expect(res.action).toBe('capture');
@@ -401,9 +410,9 @@ describe('Battle Capture Domain Suite', () => {
           enemy: wildMon,
           _initialEnemy: structuredClone(wildMon),
           over: false,
-          isTrainer: false,
+          isTrainer: false
         }),
-        animations: {},
+        animations: {}
       } as unknown as BattleContext;
 
       const dummyOptions = {
@@ -412,7 +421,7 @@ describe('Battle Capture Domain Suite', () => {
         audio: {} as never,
         consumeItem: () => {},
         ctx: mockCtx,
-        itemId: 'masterball' as const,
+        itemId: 'masterball' as const
       };
 
       const res = await handleItemUsage('masterball', playerMon, wildMon, dummyOptions);
@@ -540,7 +549,11 @@ describe('Battle Capture Domain Suite', () => {
       };
 
       // 1. First catch attempt
-      const catchPromise1 = captureAnims.handleCatchRequest({ side: 'enemy', ballId: 'pokeball', pokemon: enemyPoke });
+      const catchPromise1 = captureAnims.handleCatchRequest({
+        side: 'enemy',
+        ballId: 'pokeball',
+        pokemon: enemyPoke
+      });
       expect(captureAnims.seats.value.seat2.exit.animState).toBe('catching');
 
       // Simulate tween registration from BattleCombatant
@@ -549,14 +562,21 @@ describe('Battle Capture Domain Suite', () => {
       expect(captureAnims.seats.value.seat2.exit.animState).toBe('trapped');
 
       // 2. Breakout
-      const releasePromise = captureAnims.handleReleaseRequest({ side: 'enemy', pokemon: enemyPoke });
+      const releasePromise = captureAnims.handleReleaseRequest({
+        side: 'enemy',
+        pokemon: enemyPoke
+      });
       expect(captureAnims.seats.value.seat2.entry.animState).toBe('releasing');
       gameBus.emit('REGISTER_TWEEN', { key: `enemy-${enemyPoke.uid}`, tween: createMockTween() });
       await releasePromise;
       expect(captureAnims.seats.value.seat2.entry.animState).toBeNull();
 
       // 3. Second catch attempt
-      const catchPromise2 = captureAnims.handleCatchRequest({ side: 'enemy', ballId: 'pokeball', pokemon: enemyPoke });
+      const catchPromise2 = captureAnims.handleCatchRequest({
+        side: 'enemy',
+        ballId: 'pokeball',
+        pokemon: enemyPoke
+      });
       expect(captureAnims.seats.value.seat2.exit.animState).toBe('catching');
 
       gameBus.emit('REGISTER_TWEEN', { key: `enemy-${enemyPoke.uid}`, tween: createMockTween() });

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
 import { getEncounterPool } from '@/logic/encounters/routeSpawnMath';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { MapLocation } from '@/types/pokemon/encounters';
@@ -12,7 +12,7 @@ import type { EncounterState } from '@/types/pokemon/encounters';
 import {
   checkDebugForcedEncounter,
   checkRivalSpecialEncounter,
-  checkDefenderSpecialEncounter,
+  checkDefenderSpecialEncounter
 } from '@/logic/encounters/specialEncounterCheckers';
 import * as warEngine from '@/logic/war/warEngine';
 import { getWeatherFamily } from '@/data/system/weatherFamilies';
@@ -21,8 +21,8 @@ import { WEATHER_REGISTRY, type WeatherId } from '@/logic/weather/weatherRegistr
 describe('Encounters & Weather Domain Suite', () => {
   describe('Legendary Tickets Dynamic Spawn Injection', () => {
     const maps = pokemonDataProvider.getMaps();
-    const seafoam = maps.find(m => m.id === 'seafoam_islands') as MapLocation;
-    const cerulean = maps.find(m => m.id === 'cerulean_cave') as MapLocation;
+    const seafoam = maps.find((m) => m.id === 'seafoam_islands') as MapLocation;
+    const cerulean = maps.find((m) => m.id === 'cerulean_cave') as MapLocation;
 
     describe('Articuno Ticket', () => {
       it('does NOT include Articuno when ticket is inactive or 0 secs', () => {
@@ -31,7 +31,9 @@ describe('Encounters & Weather Domain Suite', () => {
       });
 
       it('injects Articuno into Seafoam Islands when ticket is active', () => {
-        const { pool, rates } = getEncounterPool(seafoam, 'day', 'clear', [], { articunoTicketSecs: 1800 });
+        const { pool, rates } = getEncounterPool(seafoam, 'day', 'clear', [], {
+          articunoTicketSecs: 1800
+        });
         expect(pool).toContain('articuno');
         const idx = pool.indexOf('articuno');
         expect(rates[idx]).toBe(1);
@@ -45,7 +47,9 @@ describe('Encounters & Weather Domain Suite', () => {
       });
 
       it('injects Mewtwo into Cerulean Cave when ticket is active', () => {
-        const { pool, rates } = getEncounterPool(cerulean, 'day', 'clear', [], { mewtwoTicketSecs: 1800 });
+        const { pool, rates } = getEncounterPool(cerulean, 'day', 'clear', [], {
+          mewtwoTicketSecs: 1800
+        });
         expect(pool).toContain('mewtwo');
         const idx = pool.indexOf('mewtwo');
         expect(rates[idx]).toBe(0.1);
@@ -54,7 +58,9 @@ describe('Encounters & Weather Domain Suite', () => {
   });
 
   describe('Exact Date Deterministic Weather & Spawn Rates', () => {
-    const zdt = Temporal.ZonedDateTime.from('2026-09-13T18:20:00-03:00[America/Argentina/Buenos_Aires]');
+    const zdt = Temporal.ZonedDateTime.from(
+      '2026-09-13T18:20:00-03:00[America/Argentina/Buenos_Aires]'
+    );
     const instant = zdt.toInstant();
     const epochMs = Number(instant.epochMilliseconds);
     const epochHour = Math.floor(epochMs / 3600000);
@@ -72,7 +78,7 @@ describe('Encounters & Weather Domain Suite', () => {
       expect(cycle).toBe('dusk');
       expect(weatherRoute1).toBe('wind');
 
-      const route1 = FIRE_RED_MAPS.find(m => m.id === 'route1')!;
+      const route1 = FIRE_RED_MAPS.find((m) => m.id === 'route1')!;
       const { pool } = getFinalGroundRates(route1, cycle, weatherRoute1, []);
 
       expect(pool).toContain('pidgeotto');
@@ -83,12 +89,17 @@ describe('Encounters & Weather Domain Suite', () => {
     });
 
     it('checks route weather queries for fog', () => {
-      const allRoutes = FIRE_RED_MAPS.map(m => m.id);
+      const allRoutes = FIRE_RED_MAPS.map((m) => m.id);
       const routesWithFog: string[] = [];
 
       for (const rId of allRoutes) {
         try {
-          const w = getRouteWeather(rId as any, requireWeatherSeasonId(season.id), epochHour, cycle);
+          const w = getRouteWeather(
+            rId as any,
+            requireWeatherSeasonId(season.id),
+            epochHour,
+            cycle
+          );
           if (w === 'fog') routesWithFog.push(rId);
         } catch {
           // Some maps don't have registered weather tables
@@ -105,18 +116,18 @@ describe('Encounters & Weather Domain Suite', () => {
       trainerChance: 0.1,
       repelSecs: 0,
       faction: null,
-      gymProgress: {},
+      gymProgress: {}
     } as unknown as EncounterState;
 
     it('calculates default chances for rival and common trainer', () => {
       const chances = getNpcEncounterChances('route1', dummyState, {}, ['route1', 'route2']);
       expect(chances.length).toBe(4);
 
-      const rival = chances.find(c => c.type === 'rival');
+      const rival = chances.find((c) => c.type === 'rival');
       expect(rival).toBeDefined();
       expect(rival?.active).toBe(true);
 
-      const trainer = chances.find(c => c.type === 'trainer');
+      const trainer = chances.find((c) => c.type === 'trainer');
       expect(trainer).toBeDefined();
       expect(trainer?.name).toBe('Entrenador Común');
     });
@@ -125,11 +136,11 @@ describe('Encounters & Weather Domain Suite', () => {
       const rocketState: EncounterState = {
         ...dummyState,
         playerClass: 'rocket',
-        classData: { criminality: 100 },
+        classData: { criminality: 100 }
       } as unknown as EncounterState;
 
       const chances = getNpcEncounterChances('route1', rocketState, {}, ['route1', 'route2']);
-      const police = chances.find(c => c.type === 'police');
+      const police = chances.find((c) => c.type === 'police');
       expect(police).toBeDefined();
       expect(police?.name).toBe('Oficial de Policía');
     });
@@ -146,7 +157,7 @@ describe('Encounters & Weather Domain Suite', () => {
       trainerChance: 0.1,
       repelSecs: 0,
       faction: 'poder',
-      gymProgress: {},
+      gymProgress: {}
     } as unknown as EncounterState;
 
     it('returns debug forced encounter when forceEncounterType is set', () => {
@@ -165,19 +176,18 @@ describe('Encounters & Weather Domain Suite', () => {
     });
 
     it('ignores special encounters when options.forceEncounter is true', () => {
-      const enc = checkRivalSpecialEncounter({ rivalChancePct: 100 }, dummyState, { forceEncounter: true });
+      const enc = checkRivalSpecialEncounter({ rivalChancePct: 100 }, dummyState, {
+        forceEncounter: true
+      });
       expect(enc).toBeNull();
     });
 
     it('evaluates defender special encounter when defender override is set during dominance phase', () => {
       vi.spyOn(warEngine, 'isDisputePhase').mockReturnValue(false);
 
-      const enc = checkDefenderSpecialEncounter(
-        { defenderChancePct: 100 },
-        'route1',
-        dummyState,
-        { dominanceData: { route1: { winner: 'union' } } }
-      );
+      const enc = checkDefenderSpecialEncounter({ defenderChancePct: 100 }, 'route1', dummyState, {
+        dominanceData: { route1: { winner: 'union' } }
+      });
       expect(enc).toEqual({ type: 'defender', faction: 'union' });
     });
   });
@@ -194,7 +204,10 @@ describe('Encounters & Weather Domain Suite', () => {
         }
       }
 
-      expect(unmappedWeathers, `Unmapped weather tokens found: ${unmappedWeathers.join(', ')}`).toEqual([]);
+      expect(
+        unmappedWeathers,
+        `Unmapped weather tokens found: ${unmappedWeathers.join(', ')}`
+      ).toEqual([]);
     });
 
     it('Showdown internal weather names (raindance, sunnyday, etc.) must resolve to their canonical mechanical weather family', () => {

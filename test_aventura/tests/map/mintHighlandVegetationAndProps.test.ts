@@ -37,17 +37,35 @@ describe('Pattern 4: Mint Highland Vegetation & Prop Integrity', () => {
 
     expect(mintBiomeProps.length).toBeGreaterThan(0);
 
-    const discordantFerns = mintBiomeProps.filter((p) => p.prefabFile === 'poke_fern_wild_bush.png');
-    const faultyPosts = mintBiomeProps.filter((p) => p.prefabFile === 'poke_rock_stone_gray_medium.png');
+    const discordantFerns = mintBiomeProps.filter(
+      (p) => p.prefabFile === 'poke_fern_wild_bush.png'
+    );
+    const faultyPosts = mintBiomeProps.filter(
+      (p) => p.prefabFile === 'poke_rock_stone_gray_medium.png'
+    );
 
-    expect(discordantFerns.length, 'Should not contain poke_fern_wild_bush in Mint Highland').toBe(0);
-    expect(faultyPosts.length, 'Should not contain poke_rock_stone_gray_medium in Mint Highland').toBe(0);
+    expect(discordantFerns.length, 'Should not contain poke_fern_wild_bush in Mint Highland').toBe(
+      0
+    );
+    expect(
+      faultyPosts.length,
+      'Should not contain poke_rock_stone_gray_medium in Mint Highland'
+    ).toBe(0);
 
-    const roundBushes = mintBiomeProps.filter((p) => p.type === 'bush' && p.prefabFile === 'poke_bush_round.png');
-    const mossyBoulders = mintBiomeProps.filter((p) => p.type === 'boulder' && p.prefabFile === 'poke_rock_boulder_mossy_1.png');
+    const roundBushes = mintBiomeProps.filter(
+      (p) => p.type === 'bush' && p.prefabFile === 'poke_bush_round.png'
+    );
+    const mossyBoulders = mintBiomeProps.filter(
+      (p) => p.type === 'boulder' && p.prefabFile === 'poke_rock_boulder_mossy_1.png'
+    );
 
-    expect(roundBushes.length, 'Mint Highland should spawn poke_bush_round bushes').toBeGreaterThan(0);
-    expect(mossyBoulders.length, 'Mint Highland should spawn poke_rock_boulder_mossy_1 boulders').toBeGreaterThan(0);
+    expect(roundBushes.length, 'Mint Highland should spawn poke_bush_round bushes').toBeGreaterThan(
+      0
+    );
+    expect(
+      mossyBoulders.length,
+      'Mint Highland should spawn poke_rock_boulder_mossy_1 boulders'
+    ).toBeGreaterThan(0);
   });
 
   it('guarantees wilderness props never overlap deep water or fall outside bounds', () => {
@@ -75,4 +93,3 @@ describe('Pattern 4: Mint Highland Vegetation & Prop Integrity', () => {
     }
   });
 });
-

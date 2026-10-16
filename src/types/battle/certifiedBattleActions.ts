@@ -26,7 +26,9 @@ export function isCertifiedBattleGameAction(value: unknown): value is CertifiedB
   if (!isRecord(value) || Reflect.get(value, 'kind') !== 'bag-item') return false;
   const itemId = Reflect.get(value, 'itemId');
   const targetSlot = Reflect.get(value, 'targetSlot');
-  return typeof itemId === 'string'
-    && isItemId(itemId)
-    && CERTIFIED_BATTLE_TEAM_SLOTS.some((slot) => slot === targetSlot);
+  return (
+    typeof itemId === 'string' &&
+    isItemId(itemId) &&
+    CERTIFIED_BATTLE_TEAM_SLOTS.some((slot) => slot === targetSlot)
+  );
 }

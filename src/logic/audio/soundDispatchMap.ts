@@ -2,7 +2,30 @@ import * as engine from './audioEngine.ts';
 
 type SoundDispatcher = (eng: typeof engine, ctx: AudioContext, dest: AudioNode) => void;
 
-const SOUND_DISPATCH_MAP: Record<string, SoundDispatcher> = {
+export type SoundDispatchType =
+  | 'shiny'
+  | 'rival'
+  | 'levelUp'
+  | 'evolution'
+  | 'caught'
+  | 'flee'
+  | 'item'
+  | 'sentMsg'
+  | 'receivedMsg'
+  | 'money'
+  | 'heal'
+  | 'faint'
+  | 'wobble'
+  | 'ballHit'
+  | 'statusDamage'
+  | 'victoryTrainer'
+  | 'defeat'
+  | 'steal'
+  | 'siren'
+  | 'pvpChallenge'
+  | 'criticalThrow';
+
+const SOUND_DISPATCH_MAP: Record<SoundDispatchType, SoundDispatcher> = {
   shiny: (eng, ctx, dest) => eng.playShinySound(ctx, dest),
   rival: (eng, ctx, dest) => eng.playRivalEncounterSound(ctx, dest),
   levelUp: (eng, ctx, dest) => eng.playLevelUpSound(ctx, dest),
@@ -23,11 +46,11 @@ const SOUND_DISPATCH_MAP: Record<string, SoundDispatcher> = {
   steal: (eng, ctx, dest) => eng.playStealSound(ctx, dest),
   siren: (eng, ctx, dest) => eng.playSirenSound(ctx, dest),
   pvpChallenge: (eng, ctx, dest) => eng.playPvPChallengeSound(ctx, dest),
-  criticalThrow: (eng, ctx, dest) => eng.playCriticalThrowSound(ctx, dest),
+  criticalThrow: (eng, ctx, dest) => eng.playCriticalThrowSound(ctx, dest)
 };
 
 export function dispatchSound(type: string, ctx: AudioContext, dest: AudioNode): void {
-  const dispatcher = SOUND_DISPATCH_MAP[type];
+  const dispatcher = (SOUND_DISPATCH_MAP as Record<string, SoundDispatcher | undefined>)[type]; // open-record: Sound dispatcher lookup
   if (dispatcher) {
     dispatcher(engine, ctx, dest);
   }

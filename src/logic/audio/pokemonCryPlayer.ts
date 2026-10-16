@@ -7,7 +7,9 @@ const cryPromiseCache = new Map<string, Promise<AudioBuffer>>();
 
 async function fetchCryBuffer(name: string, ctx: AudioContext): Promise<AudioBuffer> {
   const safeName = encodeURIComponent(name.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
-  const safeBase = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+  const safeBase = import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`;
   const cryUrl = new URL(`${safeBase}cries/${safeName}.mp3`, window.location.origin);
   // fallow-ignore-next-line security-sink
   const response = await fetch(cryUrl.href);
@@ -37,7 +39,9 @@ export async function playPokemonCry(
   let buffer = cryCache.get(cryToFetch);
 
   if (!buffer) {
-    const fetchPromise = cryPromiseCache.getOrInsertComputed(cryToFetch, () => fetchCryBuffer(cryToFetch, ctx));
+    const fetchPromise = cryPromiseCache.getOrInsertComputed(cryToFetch, () =>
+      fetchCryBuffer(cryToFetch, ctx)
+    );
     try {
       buffer = await fetchPromise;
       cryCache.set(cryToFetch, buffer);
@@ -46,7 +50,10 @@ export async function playPokemonCry(
       }
     } catch (err) {
       cryPromiseCache.delete(cryToFetch);
-      logger.error('Audio', `Failed to load cry for ${pokemonName} (resolved to ${cryToFetch}): ${String(err)}`);
+      logger.error(
+        'Audio',
+        `Failed to load cry for ${pokemonName} (resolved to ${cryToFetch}): ${String(err)}`
+      );
       return;
     }
   }

@@ -40,8 +40,8 @@ Each log is a pipe-delimited string:
 When parsing in the bridge:
 
 ```ts
-const parts = line.split('|').map(p => p.trim());
-const type  = parts[1];   // Always the message type
+const parts = line.split('|').map((p) => p.trim());
+const type = parts[1]; // Always the message type
 // parts[0] is '' (empty string before leading pipe)
 // parts[2], parts[3]... are arguments
 ```
@@ -62,16 +62,16 @@ const getSide = (rawId: string): 'player' | 'enemy' | null => {
 
 Many logs append optional context tags at the end:
 
-| Tag | Meaning |
-| --- | --- |
-| `[from] move: X` | Effect caused by move X |
-| `[from] ability: X` | Effect caused by ability X |
-| `[from] item: X` | Effect caused by item X |
-| `[of] POKEMON` | Effect belongs to target POKEMON |
-| `[upkeep]` | Occurs during upkeep phase |
-| `[silent]` | Do not log message to player |
-| `[still]` | Do not trigger animation |
-| `[eat]` | Berry was consumed |
+| Tag                 | Meaning                          |
+| ------------------- | -------------------------------- |
+| `[from] move: X`    | Effect caused by move X          |
+| `[from] ability: X` | Effect caused by ability X       |
+| `[from] item: X`    | Effect caused by item X          |
+| `[of] POKEMON`      | Effect belongs to target POKEMON |
+| `[upkeep]`          | Occurs during upkeep phase       |
+| `[silent]`          | Do not log message to player     |
+| `[still]`           | Do not trigger animation         |
+| `[eat]`             | Berry was consumed               |
 
 **Respecting `[silent]`**: If a log contains `[silent]`, do not log messages to the player UI.
 
@@ -111,8 +111,8 @@ case '-miss': {
 ### 3. Determine Side and Combatant Reference
 
 ```ts
-const side     = getSide(parts[2] || '');   // 'player' | 'enemy' | null
-const poke     = getPoke(parts[2] || '');   // Pokemon object from store SSoT
+const side = getSide(parts[2] || ''); // 'player' | 'enemy' | null
+const poke = getPoke(parts[2] || ''); // Pokemon object from store SSoT
 const logStyle = poke === p ? 'log-player' : 'log-enemy';
 ```
 

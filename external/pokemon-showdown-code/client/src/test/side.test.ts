@@ -1,7 +1,7 @@
-import {Effect, ID} from '@pkmn/dex';
-import {DetailedPokemon, Protocol} from '@pkmn/protocol';
+import { Effect, ID } from '@pkmn/dex';
+import { DetailedPokemon, Protocol } from '@pkmn/protocol';
 
-import {Battle, Side} from '../index';
+import { Battle, Side } from '../index';
 
 // NOTE: tested exhaustively in integration/src/test/client.js
 describe('Side', () => {
@@ -14,22 +14,38 @@ describe('Side', () => {
   });
 
   it('#sideConditions', () => {
-    const side = new Side({gen: {num: 8}} as Battle, 0);
+    const side = new Side({ gen: { num: 8 } } as Battle, 0);
 
-    side.addSideCondition({id: 'spikes', name: 'Spikes'} as unknown as Effect, false);
-    expect(side.sideConditions['spikes'])
-      .toEqual({name: 'Spikes', level: 1, minDuration: 0, maxDuration: 0});
-    side.addSideCondition({id: 'spikes', name: 'Spikes'} as unknown as Effect, false);
-    expect(side.sideConditions['spikes'])
-      .toEqual({name: 'Spikes', level: 2, minDuration: 0, maxDuration: 0});
+    side.addSideCondition({ id: 'spikes', name: 'Spikes' } as unknown as Effect, false);
+    expect(side.sideConditions['spikes']).toEqual({
+      name: 'Spikes',
+      level: 1,
+      minDuration: 0,
+      maxDuration: 0
+    });
+    side.addSideCondition({ id: 'spikes', name: 'Spikes' } as unknown as Effect, false);
+    expect(side.sideConditions['spikes']).toEqual({
+      name: 'Spikes',
+      level: 2,
+      minDuration: 0,
+      maxDuration: 0
+    });
 
-    side.addSideCondition({id: 'tailwind', name: 'Tailwind'} as unknown as Effect, false);
-    expect(side.sideConditions['tailwind'])
-      .toEqual({name: 'Tailwind', level: 1, minDuration: 4, maxDuration: 0});
+    side.addSideCondition({ id: 'tailwind', name: 'Tailwind' } as unknown as Effect, false);
+    expect(side.sideConditions['tailwind']).toEqual({
+      name: 'Tailwind',
+      level: 1,
+      minDuration: 4,
+      maxDuration: 0
+    });
 
-    side.addSideCondition({id: 'lightscreen', name: 'Light Screen'} as unknown as Effect, false);
-    expect(side.sideConditions['lightscreen'])
-      .toEqual({name: 'Light Screen', level: 1, minDuration: 5, maxDuration: 8});
+    side.addSideCondition({ id: 'lightscreen', name: 'Light Screen' } as unknown as Effect, false);
+    expect(side.sideConditions['lightscreen']).toEqual({
+      name: 'Light Screen',
+      level: 1,
+      minDuration: 5,
+      maxDuration: 8
+    });
 
     side.removeSideCondition('tailwind' as ID);
     expect(side.sideConditions['tailwind']).toBeUndefined();
@@ -38,11 +54,11 @@ describe('Side', () => {
   it.todo('#addPokemon');
 
   it('#switchIn', () => {
-    const side = new Side({gen: {num: 8}} as Battle, 0);
+    const side = new Side({ gen: { num: 8 } } as Battle, 0);
     let pokemon = side.addPokemon({} as DetailedPokemon);
     pokemon.slot = 2;
     pokemon.lastMove = 'tackle' as ID;
-    pokemon.addVolatile('foo' as ID, {level: 1});
+    pokemon.addVolatile('foo' as ID, { level: 1 });
 
     side.switchIn(pokemon);
 
@@ -53,10 +69,10 @@ describe('Side', () => {
 
     side.lastPokemon = pokemon;
     pokemon.lastMove = 'batonpass' as ID;
-    pokemon.addVolatile('bar' as ID, {level: 1});
+    pokemon.addVolatile('bar' as ID, { level: 1 });
 
     pokemon = side.addPokemon({} as DetailedPokemon);
-    side.switchIn(pokemon, {id: 'batonpass' as ID}, 2);
+    side.switchIn(pokemon, { id: 'batonpass' as ID }, 2);
 
     expect(side.active[2]).toBe(pokemon);
     expect(pokemon.lastMove).toBe('');
@@ -65,7 +81,7 @@ describe('Side', () => {
   });
 
   it('#dragIn', () => {
-    const side = new Side({gen: {num: 8}} as Battle, 0);
+    const side = new Side({ gen: { num: 8 } } as Battle, 0);
     const poke1 = side.addPokemon({} as DetailedPokemon);
     const poke2 = side.addPokemon({} as DetailedPokemon);
 
@@ -121,7 +137,7 @@ describe('Side', () => {
   it.todo('#switchOut');
 
   it('#swapTo', () => {
-    const side = new Side({gen: {num: 8}} as Battle, 0);
+    const side = new Side({ gen: { num: 8 } } as Battle, 0);
     const poke1 = side.addPokemon({} as DetailedPokemon);
     const poke2 = side.addPokemon({} as DetailedPokemon);
 
@@ -159,7 +175,7 @@ describe('Side', () => {
   });
 
   it('#swapWith', () => {
-    const side = new Side({gen: {num: 8}} as Battle, 0);
+    const side = new Side({ gen: { num: 8 } } as Battle, 0);
     const poke1 = side.addPokemon({} as DetailedPokemon);
     const poke2 = side.addPokemon({} as DetailedPokemon);
 
@@ -189,8 +205,8 @@ describe('Side', () => {
   });
 
   it('#faint', () => {
-    const side = new Side({gen: {num: 8}} as Battle, 0);
-    const pokemon = side.addPokemon({details: '', searchid: ''} as DetailedPokemon);
+    const side = new Side({ gen: { num: 8 } } as Battle, 0);
+    const pokemon = side.addPokemon({ details: '', searchid: '' } as DetailedPokemon);
 
     pokemon.addVolatile('baz' as ID);
     pokemon.hp = 100;
@@ -206,13 +222,13 @@ describe('Side', () => {
   });
 
   it('#reset', () => {
-    const side = new Side({gen: {num: 8}} as Battle, 0);
+    const side = new Side({ gen: { num: 8 } } as Battle, 0);
     const pokemon = side.addPokemon({} as DetailedPokemon);
 
     expect(pokemon.side).toBe(side);
     side.active[0] = pokemon;
     side.lastPokemon = pokemon;
-    side.addSideCondition({id: 'tailwind', name: 'Tail Wind'} as Effect, false);
+    side.addSideCondition({ id: 'tailwind', name: 'Tail Wind' } as Effect, false);
 
     side.reset();
 
@@ -224,15 +240,15 @@ describe('Side', () => {
   });
 
   it('#destroy', () => {
-    const side = new Side({gen: {num: 8}} as Battle, 0);
-    const foe = new Side({gen: {num: 8}} as Battle, 1);
+    const side = new Side({ gen: { num: 8 } } as Battle, 0);
+    const foe = new Side({ gen: { num: 8 } } as Battle, 1);
     const pokemon = side.addPokemon({} as DetailedPokemon);
 
     expect(pokemon.side).toBe(side);
     side.active[0] = pokemon;
     side.lastPokemon = pokemon;
     side.foe = foe;
-    side.addSideCondition({id: 'stealthrock', name: 'Stealth Rock'} as Effect, false);
+    side.addSideCondition({ id: 'stealthrock', name: 'Stealth Rock' } as Effect, false);
 
     side.destroy();
 
@@ -240,8 +256,12 @@ describe('Side', () => {
     expect(side.lastPokemon).toBeNull();
     expect(side.active).toEqual([null]);
     expect(side.team).toEqual([]);
-    expect(side.sideConditions['stealthrock'])
-      .toEqual({name: 'Stealth Rock', level: 1, minDuration: 0, maxDuration: 0}); // WTF?
+    expect(side.sideConditions['stealthrock']).toEqual({
+      name: 'Stealth Rock',
+      level: 1,
+      minDuration: 0,
+      maxDuration: 0
+    }); // WTF?
     expect(side.battle).toBeNull();
     expect(side.foe).toBeNull();
   });

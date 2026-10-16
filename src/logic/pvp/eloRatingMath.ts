@@ -27,7 +27,8 @@ export function calculateEloDelta(
   customKFactor?: number
 ): number {
   const pElo = Number(playerElo) || MIN_INITIAL_ELO;
-  const k = customKFactor ?? (pElo >= ELO_HIGH_TIER_THRESHOLD ? ELO_K_FACTOR_HIGH : ELO_K_FACTOR_DEFAULT);
+  const k =
+    customKFactor ?? (pElo >= ELO_HIGH_TIER_THRESHOLD ? ELO_K_FACTOR_HIGH : ELO_K_FACTOR_DEFAULT);
   const expected = calculateExpectedScore(playerElo, opponentElo);
   const actual = won ? 1 : 0;
   return Math.round(k * (actual - expected));
@@ -47,5 +48,10 @@ export function applyEloDelta(currentElo: number, delta: number): number {
  */
 export function calculateSoftResetElo(currentElo: number): number {
   const safeCurrent = Math.max(MIN_INITIAL_ELO, Number(currentElo) || MIN_INITIAL_ELO);
-  return Math.floor(Math.max(MIN_INITIAL_ELO, MIN_INITIAL_ELO + (safeCurrent - MIN_INITIAL_ELO) / ELO_SOFT_RESET_DIVISOR));
+  return Math.floor(
+    Math.max(
+      MIN_INITIAL_ELO,
+      MIN_INITIAL_ELO + (safeCurrent - MIN_INITIAL_ELO) / ELO_SOFT_RESET_DIVISOR
+    )
+  );
 }

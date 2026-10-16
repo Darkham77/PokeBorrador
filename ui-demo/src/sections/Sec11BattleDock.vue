@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { ItemId } from '@/data/inventory/itemIds'
-import type { PokemonType } from '@/data/battle/types'
-import type { PokemonGender } from '@/types/pokemon/pokemon'
+import { ref } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { ItemId } from '@/data/inventory/itemIds';
+import type { PokemonType } from '@/data/battle/types';
+import type { PokemonGender } from '@/types/pokemon/pokemon';
 
 interface DockPokemon {
-  uid: string
-  id: number
-  name: string
-  level: number
-  gender: PokemonGender
-  tier: string
-  tierColor: string
-  passive: string
-  iv: number
-  heldItem?: ItemId
-  isFavorite?: boolean
-  isShiny?: boolean
-  types: { id: string; label: string }[]
-  hpPercent: number
+  uid: string;
+  id: number;
+  name: string;
+  level: number;
+  gender: PokemonGender;
+  tier: string;
+  tierColor: string;
+  passive: string;
+  iv: number;
+  heldItem?: ItemId;
+  isFavorite?: boolean;
+  isShiny?: boolean;
+  types: { id: string; label: string }[];
+  hpPercent: number;
 }
 
-const activeIndex = ref(0) // Gengar active
+const activeIndex = ref(0); // Gengar active
 
 const teamMembers: DockPokemon[] = [
   {
@@ -117,20 +117,20 @@ const teamMembers: DockPokemon[] = [
     types: [{ id: 'fire', label: 'FUEGO' }],
     hpPercent: 100
   }
-]
+];
 
 interface DockMove {
-  id: string
-  name: string
-  typeId: PokemonType
-  typeLabel: string
-  pot: string
-  potBuff?: boolean
-  prec: string
-  cat: string
-  catIcon: string
-  ppCur: number
-  ppMax: number
+  id: string;
+  name: string;
+  typeId: PokemonType;
+  typeLabel: string;
+  pot: string;
+  potBuff?: boolean;
+  prec: string;
+  cat: string;
+  catIcon: string;
+  ppCur: number;
+  ppMax: number;
 }
 
 const moves: DockMove[] = [
@@ -183,12 +183,12 @@ const moves: DockMove[] = [
     ppCur: 5,
     ppMax: 8
   }
-]
+];
 
 interface QuickBagItem {
-  id: ItemId
-  name: string
-  qty: number
+  id: ItemId;
+  name: string;
+  qty: number;
 }
 
 const quickBagItems: QuickBagItem[] = [
@@ -200,20 +200,24 @@ const quickBagItems: QuickBagItem[] = [
   { id: 'revive', name: 'Revivir', qty: 3 },
   { id: 'revivemax', name: 'Max Revivir', qty: 2 },
   { id: 'antidote', name: 'Antídoto', qty: 2 }
-]
+];
 </script>
 
 <template>
   <section class="pv-section">
     <h2 class="section-title">
       <span class="emoji">⚔️</span>
-      <span>11. Barra Inferior de Combate (BattleArenaControls, QuickTeam &amp; QuickBag Canónicos 1:1)</span>
+      <span
+        >11. Barra Inferior de Combate (BattleArenaControls, QuickTeam &amp; QuickBag Canónicos
+        1:1)</span
+      >
     </h2>
 
     <div class="pv-panel-wrap has-cast-shadow">
       <div class="pv-curve-xl battle-dock-container">
         <div class="dock-zone-intro">
-          DOCK INFERIOR DE CONTROL DE COMBATE EN TIEMPO REAL (PARIDAD 1:1 CON src/components/battle/):
+          DOCK INFERIOR DE CONTROL DE COMBATE EN TIEMPO REAL (PARIDAD 1:1 CON
+          src/components/battle/):
         </div>
 
         <div class="battle-dock-grid">
@@ -237,15 +241,9 @@ const quickBagItems: QuickBagItem[] = [
                     :src="getAssetUrl(ASSET_TYPES.ITEM, poke.heldItem)"
                     :alt="poke.heldItem"
                     class="dock-item-icon"
-                  >
-                  <span
-                    v-if="poke.isFavorite"
-                    class="dock-star-icon"
-                  >⭐</span>
-                  <span
-                    v-if="poke.isShiny"
-                    class="dock-shiny-icon"
-                  >🧬</span>
+                  />
+                  <span v-if="poke.isFavorite" class="dock-star-icon">⭐</span>
+                  <span v-if="poke.isShiny" class="dock-shiny-icon">🧬</span>
                 </div>
 
                 <!-- Columna Superior Derecha: Tier y Pasiva -->
@@ -265,7 +263,7 @@ const quickBagItems: QuickBagItem[] = [
                     :src="getAssetUrl(ASSET_TYPES.POKEMON, poke.id, { isShiny: poke.isShiny })"
                     :alt="poke.name"
                     class="dock-poke-sprite"
-                  >
+                  />
                 </div>
 
                 <!-- Nombre del Pokémon -->
@@ -298,10 +296,7 @@ const quickBagItems: QuickBagItem[] = [
 
                 <!-- Barra de HP en el borde inferior -->
                 <div class="dock-card-hp-bar">
-                  <div
-                    class="dock-card-hp-fill"
-                    :style="{ width: `${poke.hpPercent}%` }"
-                  />
+                  <div class="dock-card-hp-fill" :style="{ width: `${poke.hpPercent}%` }" />
                 </div>
               </div>
             </div>
@@ -319,25 +314,14 @@ const quickBagItems: QuickBagItem[] = [
               >
                 <!-- Línea Superior: ?, Nombre, Píldora Tipo, ? -->
                 <div class="dock-move-header">
-                  <button
-                    type="button"
-                    class="dock-move-help-btn"
-                    title="Información del ataque"
-                  >
+                  <button type="button" class="dock-move-help-btn" title="Información del ataque">
                     ?
                   </button>
                   <span class="dock-move-name">{{ m.name }}</span>
-                  <span
-                    class="pv-type-pill pv-type-sm"
-                    :class="`type-${m.typeId}`"
-                  >
+                  <span class="pv-type-pill pv-type-sm" :class="`type-${m.typeId}`">
                     {{ m.typeLabel }}
                   </span>
-                  <button
-                    type="button"
-                    class="dock-move-help-btn"
-                    title="Información del ataque"
-                  >
+                  <button type="button" class="dock-move-help-btn" title="Información del ataque">
                     ?
                   </button>
                 </div>
@@ -346,10 +330,7 @@ const quickBagItems: QuickBagItem[] = [
                 <div class="dock-move-stats">
                   <div class="dock-stat-item">
                     <span class="stat-lbl">POT:</span>
-                    <span
-                      class="stat-val"
-                      :class="{ 'stat-buff': m.potBuff }"
-                    >
+                    <span class="stat-val" :class="{ 'stat-buff': m.potBuff }">
                       {{ m.pot }} {{ m.potBuff ? '▲' : '' }}
                     </span>
                   </div>
@@ -420,7 +401,7 @@ const quickBagItems: QuickBagItem[] = [
                   :src="getAssetUrl(ASSET_TYPES.ITEM, item.id)"
                   :alt="item.name"
                   class="quickbag-item-img"
-                >
+                />
                 <span class="quickbag-qty-tag">x{{ item.qty }}</span>
               </div>
             </div>

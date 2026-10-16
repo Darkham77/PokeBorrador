@@ -1,6 +1,10 @@
 import type { Router } from 'vue-router';
 import { logger } from '@/logic/utils/logger';
-import { checkDBCompatibility, checkAppVersionCompatibility, type DBRouter } from '@/logic/db/dbRouter';
+import {
+  checkDBCompatibility,
+  checkAppVersionCompatibility,
+  type DBRouter
+} from '@/logic/db/dbRouter';
 import type { useUpdateStore } from '@/stores/update';
 import type { useGameStore } from '@/stores/game';
 import type { useBattleStore } from '@/stores/battle/battle';
@@ -34,11 +38,19 @@ export interface RunSessionInitParams {
 }
 
 export async function runSessionInitialization(params: RunSessionInitParams): Promise<void> {
-  const isCompatible = await validateAppAndDbCompatibility(params.gameStore.db as DBRouter, params.updateStore);
+  const isCompatible = await validateAppAndDbCompatibility(
+    params.gameStore.db as DBRouter,
+    params.updateStore
+  );
   if (!isCompatible) return;
 
   await params.gameStore.loadGame();
-  await restoreActiveCombatOrMap(params.gameStore, params.battleStore, params.router, params.uiStore);
+  await restoreActiveCombatOrMap(
+    params.gameStore,
+    params.battleStore,
+    params.router,
+    params.uiStore
+  );
   await reconnectActivePvPSession();
 
   if (params.authStore.user) {
@@ -90,10 +102,16 @@ async function restoreActiveCombatOrMap(
 ): Promise<void> {
   const hasIllegalInTeam = (gameStore.state.team || []).some((p) => p && p.isIllegal);
   if (hasIllegalInTeam && gameStore.state.activeBattle) {
-    logger.warn('App', 'Se detectaron Pokémon ilegales en el equipo durante la carga. Abortando combate persistente y regresando al mapa.');
+    logger.warn(
+      'App',
+      'Se detectaron Pokémon ilegales en el equipo durante la carga. Abortando combate persistente y regresando al mapa.'
+    );
     gameStore.state.activeBattle = null;
-    uiStore.notify('Combate cancelado: se detectaron Pokémon ilegales en tu equipo. Repáralos en el menú de depuración.', '⚠️');
-    router.replace('/game/map');
+    uiStore.notify(
+      'Combate cancelado: se detectaron Pokémon ilegales en tu equipo. Repáralos en el menú de depuración.',
+      '⚠️'
+    );
+    void router.replace('/game/map');
     return;
   }
 
@@ -115,7 +133,10 @@ async function reconnectActivePvPSession(): Promise<void> {
   if (activePvPSession) {
     const { useLivePvPStore } = await import('@/stores/livePvP');
     const livePvPStore = useLivePvPStore();
-    logger.info('App', `Detectada sesión PvP activa (${activePvPSession.matchId}). Intentando reconexión...`);
+    logger.info(
+      'App',
+      `Detectada sesión PvP activa (${activePvPSession.matchId}). Intentando reconexión...`
+    );
     livePvPStore.reconnectBattle(activePvPSession);
   }
 }
@@ -171,16 +192,15 @@ export interface GlobalBlockOptions {
   isStandaloneDevPage: boolean;
 }
 
-export function handleGlobalBlockEvent(
-  e: Event,
-  options: GlobalBlockOptions
-): void {
+export function handleGlobalBlockEvent(e: Event, options: GlobalBlockOptions): void {
   const { isAnyBlockingModalOpen, isStandaloneDevPage } = options;
   if (isStandaloneDevPage) return;
   const target = e.target as HTMLElement | null;
   if (!target || typeof target.closest !== 'function') return;
 
-  const isInsideModal = Boolean(target.closest('.base-modal-root, .base-modal-content, .modal-host'));
+  const isInsideModal = Boolean(
+    target.closest('.base-modal-root, .base-modal-content, .modal-host')
+  );
   if (isInsideModal || isElementOrParentScrollable(target)) {
     e.stopPropagation();
     return;

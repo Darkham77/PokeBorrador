@@ -23,7 +23,7 @@ function toPersistedPokemonGender(gender: PokemonGender | undefined): GenderName
 export function withPersistedPokemonGender(pokemon: Pokemon): PersistedPokemon {
   return {
     ...pokemon,
-    gender: toPersistedPokemonGender(pokemon.gender),
+    gender: toPersistedPokemonGender(pokemon.gender)
   };
 }
 
@@ -71,7 +71,8 @@ function parseRawTeamArray(rawTeam: unknown): unknown[] {
     try {
       const decoded = JSON.parse(rawTeam);
       return Array.isArray(decoded) ? decoded : [];
-    } catch (_e) { // catch-ok: Return empty list on corrupted serialized team payload
+    } catch {
+      // catch-ok: Return empty list on corrupted serialized team payload
       return [];
     }
   }
@@ -80,7 +81,9 @@ function parseRawTeamArray(rawTeam: unknown): unknown[] {
 
 function ensurePokemonUid(rawUid: string | undefined): string {
   if (rawUid) return rawUid;
-  return typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `mon_${Math.random()}`;
+  return typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `mon_${Math.random()}`;
 }
 
 function sanitizeDeserializedPokemon(rawMon: Pokemon): Pokemon {
@@ -121,7 +124,7 @@ export function deserializePokemonTeam(rawTeam: unknown): Pokemon[] {
 function withPersistedEggGender(egg: PokemonEgg): PersistedPokemonEgg {
   return {
     ...egg,
-    gender: toPersistedPokemonGender(egg.gender),
+    gender: toPersistedPokemonGender(egg.gender)
   };
 }
 
@@ -131,7 +134,9 @@ function serializeActiveBattleGenderCodes(activeBattle: unknown): unknown {
   if (!battle.enemyTeam) return activeBattle;
   return {
     ...battle,
-    enemyTeam: battle.enemyTeam.map(enemy => (enemy ? withPersistedPokemonGender(enemy as Pokemon) : null)),
+    enemyTeam: battle.enemyTeam.map((enemy) =>
+      enemy ? withPersistedPokemonGender(enemy as Pokemon) : null
+    )
   };
 }
 
@@ -140,11 +145,11 @@ export function serializeSaveGenderCodes(data: SaveDataDto): unknown {
     ...data,
     team: data.team.map((p) => withPersistedPokemonGender(p as Pokemon)),
     box: data.box.map((p) => (p ? withPersistedPokemonGender(p as Pokemon) : null)),
-    eggs: (data.eggs || []).map(egg => {
+    eggs: (data.eggs || []).map((egg) => {
       if (!egg || typeof egg !== 'object' || !('gender' in egg)) return egg;
       return withPersistedEggGender(egg as PokemonEgg);
     }),
-    activeBattle: serializeActiveBattleGenderCodes(data.activeBattle),
+    activeBattle: serializeActiveBattleGenderCodes(data.activeBattle)
   };
 }
 

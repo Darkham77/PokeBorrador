@@ -110,7 +110,12 @@ describe('Canonical Route Topology & Nature-First Pipeline', () => {
     it('creates an excavated corridor grid where path, bridge and POIs are walkable', () => {
       const pois = placeRegionalPOIs(continent, { targetCount: 18 });
       const network = generateRouteNetwork(continent, pois, { allowBridges: true });
-      const transitable = computeTransitableGrid(continent, network.pathGrid, network.bridgeGrid, pois);
+      const transitable = computeTransitableGrid(
+        continent,
+        network.pathGrid,
+        network.bridgeGrid,
+        pois
+      );
 
       expect(transitable.length).toBe(continent.height);
       expect(transitable[0]!.length).toBe(continent.width);
@@ -147,7 +152,7 @@ describe('Canonical Route Topology & Nature-First Pipeline', () => {
       // Transitable corridor coverage should be between 20% and 65% of total landmass
       const coverageRatio = transitableCount / totalLandCount;
       expect(coverageRatio).toBeGreaterThan(0.15);
-      expect(coverageRatio).toBeLessThan(0.70);
+      expect(coverageRatio).toBeLessThan(0.7);
     });
   });
 
@@ -175,7 +180,9 @@ describe('Canonical Route Topology & Nature-First Pipeline', () => {
 
       const names = new Set(presetPois.map((p) => p.name));
       // Must contain canonical names from preset catalog
-      expect(names.has('Ciudad Celeste') || names.has('Azafran Central') || names.has('Pueblo Paleta')).toBe(true);
+      expect(
+        names.has('Ciudad Celeste') || names.has('Azafran Central') || names.has('Pueblo Paleta')
+      ).toBe(true);
     });
   });
 
@@ -183,7 +190,12 @@ describe('Canonical Route Topology & Nature-First Pipeline', () => {
     it('ensures route_gate POIs seal their lateral flanks as non-transitable', () => {
       const pois = placeRegionalPOIs(continent, { targetCount: 18, generationMode: 'preset' });
       const network = generateRouteNetwork(continent, pois, { allowBridges: true });
-      const transitable = computeTransitableGrid(continent, network.pathGrid, network.bridgeGrid, pois);
+      const transitable = computeTransitableGrid(
+        continent,
+        network.pathGrid,
+        network.bridgeGrid,
+        pois
+      );
 
       const gates = pois.filter((p) => p.type === 'route_gate');
       expect(gates.length).toBeGreaterThan(0);
@@ -212,10 +224,17 @@ describe('Canonical Route Topology & Nature-First Pipeline', () => {
     it('guarantees 100% tall grass canopy clearance (no tree trunk or canopy obscures tall grass)', async () => {
       const pois = placeRegionalPOIs(continent, { targetCount: 18, generationMode: 'preset' });
       const network = generateRouteNetwork(continent, pois, { allowBridges: true });
-      const transitableGrid = computeTransitableGrid(continent, network.pathGrid, network.bridgeGrid, pois);
-      (continent as { transitableGrid?: readonly (readonly boolean[])[] }).transitableGrid = transitableGrid;
+      const transitableGrid = computeTransitableGrid(
+        continent,
+        network.pathGrid,
+        network.bridgeGrid,
+        pois
+      );
+      (continent as { transitableGrid?: readonly (readonly boolean[])[] }).transitableGrid =
+        transitableGrid;
 
-      const { generateWildernessLayer } = await import('../../logic/map/wildernessVegetationEngine.ts');
+      const { generateWildernessLayer } =
+        await import('../../logic/map/wildernessVegetationEngine.ts');
       const wilderness = generateWildernessLayer(continent, pois, network.pathGrid, {
         seed: 42,
         transitableGrid
@@ -242,4 +261,3 @@ describe('Canonical Route Topology & Nature-First Pipeline', () => {
     });
   });
 });
-

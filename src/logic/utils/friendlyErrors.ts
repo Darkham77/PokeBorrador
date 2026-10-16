@@ -7,7 +7,7 @@ import { logger } from './logger.ts';
 
 export const getFriendlyErrorMessage = (error: unknown): string => {
   let message: string;
-  
+
   if (error instanceof Error) {
     message = error.message;
   } else if (typeof error === 'object' && error !== null && 'message' in error) {
@@ -15,7 +15,7 @@ export const getFriendlyErrorMessage = (error: unknown): string => {
   } else {
     message = String(error);
   }
-  
+
   // 1. Connectivity Errors (No Internet)
   if (!navigator.onLine) {
     return '¡No tienes conexión a Internet! Revisa tu señal 🌐';
@@ -40,8 +40,11 @@ export const getFriendlyErrorMessage = (error: unknown): string => {
   }
 
   // 4. Maintenance / 503 Errors
-  const HTTP_SERVICE_UNAVAILABLE_STATUS_CODE = '503'
-  if (message.includes(HTTP_SERVICE_UNAVAILABLE_STATUS_CODE) || message.includes('Service Unavailable')) {
+  const HTTP_SERVICE_UNAVAILABLE_STATUS_CODE = '503';
+  if (
+    message.includes(HTTP_SERVICE_UNAVAILABLE_STATUS_CODE) ||
+    message.includes('Service Unavailable')
+  ) {
     return 'Estamos curando a los Pokémon del servidor (Mantenimiento) 🚧';
   }
 

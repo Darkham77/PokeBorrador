@@ -50,5 +50,5 @@ export function matchResult<T, R, E = Error>(
   onOk: (value: T) => R,
   onErr: (error: E) => R
 ): R {
-  return result.ok ? onOk(result.value) : onErr(result.error);
+  return result.ok ? onOk(result.value as T) : onErr(result.error as E);
 }

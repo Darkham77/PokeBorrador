@@ -20,6 +20,7 @@ Background animations for weather effects (falling snow, moving sand) MUST be ma
 ### The Loop Formula
 
 For an animation to be perfectly seamless:
+
 > **Animation Translation Distance** = **Background Size** (or an exact multiple)
 
 **Example (Snow):**

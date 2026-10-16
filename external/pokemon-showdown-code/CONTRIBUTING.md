@@ -1,4 +1,3 @@
-
 # Contributing
 
 Please read through the index [README](README.md), the READMEs the index links to, and
@@ -43,7 +42,7 @@ subpkg compile sim dex
 
 `subpkg` provides a '`bump`' subcommand that allows for bumping the versions of specific
 sub-packages. For simplicity, `pkmn/ps` keeps the versions of packages which include or are heavily
-dependent on generated code in sync, so the following  helper is recommended:
+dependent on generated code in sync, so the following helper is recommended:
 
 ```sh
 function bump() {

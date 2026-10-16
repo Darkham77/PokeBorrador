@@ -1,73 +1,80 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { RankedSeasonMedal } from '@/types/battle/pvp.ts'
-import { useStatHover } from '@/composables/ui/useStatHover'
-import { RANKED_MEDAL_CONFIGS } from '@/data/system/rankedData.ts'
-import { resolveMedalTournamentInfo } from '@/logic/pvp/rankedEngine.ts'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { useModalStore } from '@/stores/modals'
-import { useUIStore } from '@/stores/ui'
+import { computed } from 'vue';
+import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
+import { useStatHover } from '@/composables/ui/useStatHover';
+import { RANKED_MEDAL_CONFIGS } from '@/data/system/rankedData.ts';
+import { resolveMedalTournamentInfo } from '@/logic/pvp/rankedEngine.ts';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { useModalStore } from '@/stores/modals';
+import { useUIStore } from '@/stores/ui';
 
 interface Props {
-  medal: RankedSeasonMedal
-  currentSeasonRulesName?: string
+  medal: RankedSeasonMedal;
+  currentSeasonRulesName?: string;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const modalStore = useModalStore()
-const uiStore = useUIStore()
-const { handleStatEnter, handleStatLeave } = useStatHover()
+const modalStore = useModalStore();
+const uiStore = useUIStore();
+const { handleStatEnter, handleStatLeave } = useStatHover();
 
 const tierDisplay = computed(() => {
-  const tierId = props.medal.tier
-  const config = RANKED_MEDAL_CONFIGS[tierId]
+  const tierId = props.medal.tier;
+  const config = RANKED_MEDAL_CONFIGS[tierId];
   if (!config) {
-    return { name: tierId, icon: '🎖️', sprite: '', color: '#9E9E9E' }
+    return { name: tierId, icon: '🎖️', sprite: '', color: '#9E9E9E' };
   }
   return {
     name: config.name,
     icon: config.fallbackEmoji,
     sprite: getAssetUrl(ASSET_TYPES.RANK, tierId),
     color: config.color
-  }
-})
+  };
+});
 
 const medalInfo = computed(() => {
-  return resolveMedalTournamentInfo(props.medal, props.currentSeasonRulesName)
-})
+  return resolveMedalTournamentInfo(props.medal, props.currentSeasonRulesName);
+});
 
 const titleText = computed(() => {
-  const info = medalInfo.value
+  const info = medalInfo.value;
   return info.isAvailable
     ? `Ver detalles del torneo ${info.tournamentName}`
-    : `Torneo ${info.tournamentName} (Finalizado)`
-})
+    : `Torneo ${info.tournamentName} (Finalizado)`;
+});
 
 function handleMedalClick() {
-  const info = medalInfo.value
+  const info = medalInfo.value;
   if (info.isAvailable) {
     modalStore.open('RankedTournamentDetail', {
       themeId: info.themeId,
       tournamentName: info.tournamentName,
       medal: props.medal
-    })
+    });
   } else {
-    uiStore.notify(`El torneo "${info.tournamentName}" ya ha finalizado y sus salas no están disponibles.`, 'ℹ️')
+    uiStore.notify(
+      `El torneo "${info.tournamentName}" ya ha finalizado y sus salas no están disponibles.`,
+      'ℹ️'
+    );
   }
 }
 
-const TOP_RANK_THRESHOLD = 10
-const PODIUM_RANK_THRESHOLD = 3
-const PODIUM_ICONS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
+const TOP_RANK_THRESHOLD = 10;
+const PODIUM_RANK_THRESHOLD = 3;
+const PODIUM_ICONS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-const isTopRank = computed(() => Boolean(props.medal.rank && props.medal.rank <= TOP_RANK_THRESHOLD))
-const isPodium = computed(() => Boolean(props.medal.rank && props.medal.rank <= PODIUM_RANK_THRESHOLD))
-const podiumIcon = computed(() => (props.medal.rank ? PODIUM_ICONS[props.medal.rank] : null))
+const isTopRank = computed(() =>
+  Boolean(props.medal.rank && props.medal.rank <= TOP_RANK_THRESHOLD)
+);
+const isPodium = computed(() =>
+  Boolean(props.medal.rank && props.medal.rank <= PODIUM_RANK_THRESHOLD)
+);
+const podiumIcon = computed(() => (props.medal.rank ? PODIUM_ICONS[props.medal.rank] : null));
 const podiumTagClass = computed(() => ({
   'top-1': props.medal.rank === 1,
   'top-3': isPodium.value
-}))
+}));
 </script>
 
 <template>
@@ -92,21 +99,14 @@ const podiumTagClass = computed(() => ({
         :alt="tierDisplay.name"
         class="medal-sprite"
         loading="lazy"
-      
         width="32"
         height="32"
-      >
-      <span
-        v-else
-        class="emoji tier-icon"
-      >{{ tierDisplay.icon }}</span>
+      />
+      <span v-else class="emoji tier-icon">{{ tierDisplay.icon }}</span>
     </div>
 
     <div class="medal-info">
-      <div
-        class="season-name"
-        :title="medalInfo.tournamentName"
-      >
+      <div class="season-name" :title="medalInfo.tournamentName">
         {{ medalInfo.tournamentName }}
       </div>
       <div class="season-meta">
@@ -119,23 +119,13 @@ const podiumTagClass = computed(() => ({
           En Curso
         </span>
       </div>
-      <div
-        class="tier-name"
-        :style="{ color: tierDisplay.color }"
-      >
+      <div class="tier-name" :style="{ color: tierDisplay.color }">
         {{ tierDisplay.name }} • {{ medal.finalElo }} LP
       </div>
     </div>
 
-    <div
-      v-if="isTopRank"
-      class="podium-tag"
-      :class="podiumTagClass"
-    >
-      <span
-        v-if="podiumIcon"
-        class="emoji"
-      >{{ podiumIcon }}</span>
+    <div v-if="isTopRank" class="podium-tag" :class="podiumTagClass">
+      <span v-if="podiumIcon" class="emoji">{{ podiumIcon }}</span>
       <span v-else>Top {{ medal.rank }}</span>
     </div>
   </div>

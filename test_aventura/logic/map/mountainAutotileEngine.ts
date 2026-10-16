@@ -270,16 +270,18 @@ export function resolveMountainAutotileCell(
   style: MountainStyle = 'rock'
 ): ResolvedMountainCell {
   const curElev = matrix[gy]?.[gx] ?? 0;
-  const grassBrush = pal === 'gray'
-    ? CANONICAL_MOUNTAIN_BRUSH_GRAY
-    : pal === 'volcanic'
-      ? CANONICAL_MOUNTAIN_BRUSH_VOLCANIC
-      : CANONICAL_MOUNTAIN_BRUSH_BROWN;
-  const rockBrush = pal === 'gray'
-    ? CANONICAL_MOUNTAIN_BRUSH_GRAY_ROCK
-    : pal === 'volcanic'
-      ? CANONICAL_MOUNTAIN_BRUSH_VOLCANIC
-      : CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK;
+  const grassBrush =
+    pal === 'gray'
+      ? CANONICAL_MOUNTAIN_BRUSH_GRAY
+      : pal === 'volcanic'
+        ? CANONICAL_MOUNTAIN_BRUSH_VOLCANIC
+        : CANONICAL_MOUNTAIN_BRUSH_BROWN;
+  const rockBrush =
+    pal === 'gray'
+      ? CANONICAL_MOUNTAIN_BRUSH_GRAY_ROCK
+      : pal === 'volcanic'
+        ? CANONICAL_MOUNTAIN_BRUSH_VOLCANIC
+        : CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK;
   const activeBrush = style === 'rock' ? rockBrush : grassBrush;
 
   if (curElev <= 0) {
@@ -506,7 +508,9 @@ export function resolveMountainMapGrid(
   const W = matrix[0]?.length ?? 0;
 
   const primaryTiles: string[][] = Array.from({ length: H }, () => Array(W).fill('')); // no-domain: Estructura o identificador procedural de aventura
-  const cellDetails: (ResolvedMountainCell | null)[][] = Array.from({ length: H }, () => Array(W).fill(null));
+  const cellDetails: (ResolvedMountainCell | null)[][] = Array.from({ length: H }, () =>
+    Array(W).fill(null)
+  );
   const occupiedFootCells: boolean[][] = Array.from({ length: H }, () => Array(W).fill(false));
   const cliffFootOverlays: CliffFootOverlay[] = [];
 
@@ -514,9 +518,10 @@ export function resolveMountainMapGrid(
     for (let x = 0; x < W; x++) {
       const elev = matrix[y]?.[x] ?? 0;
       if (elev > 0) {
-        const cellPal = (typeof palOrOptions === 'object' && palOrOptions.paletteMatrix?.[y]?.[x])
-          ? palOrOptions.paletteMatrix[y]![x]!
-          : pal;
+        const cellPal =
+          typeof palOrOptions === 'object' && palOrOptions.paletteMatrix?.[y]?.[x]
+            ? palOrOptions.paletteMatrix[y]![x]!
+            : pal;
         const resolved = resolveMountainAutotileCell(matrix, x, y, cellPal, style);
         cellDetails[y]![x] = resolved;
         primaryTiles[y]![x] = resolved.primaryTile;
@@ -543,9 +548,10 @@ export function resolveMountainMapGrid(
 
   if (stairs && stairs.length > 0) {
     for (const stair of stairs) {
-      const stairPal = (typeof palOrOptions === 'object' && palOrOptions.paletteMatrix?.[stair.y]?.[stair.x])
-        ? palOrOptions.paletteMatrix[stair.y]![stair.x]!
-        : pal;
+      const stairPal =
+        typeof palOrOptions === 'object' && palOrOptions.paletteMatrix?.[stair.y]?.[stair.x]
+          ? palOrOptions.paletteMatrix[stair.y]![stair.x]!
+          : pal;
       result = stampMountainStairs(result, stair.x, stair.y, stairPal, style);
     }
   }
@@ -588,13 +594,15 @@ export function stampMountainStairs(
   const targetElevR = cellR.projectedFoot?.targetElev ?? 0;
   const isRockTier = style === 'rock' || targetElevL > 0 || targetElevR > 0;
 
-  const grassBrush = pal === 'gray' ? CANONICAL_MOUNTAIN_BRUSH_GRAY : CANONICAL_MOUNTAIN_BRUSH_BROWN;
-  const rockBrush = pal === 'gray' ? CANONICAL_MOUNTAIN_BRUSH_GRAY_ROCK : CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK;
+  const grassBrush =
+    pal === 'gray' ? CANONICAL_MOUNTAIN_BRUSH_GRAY : CANONICAL_MOUNTAIN_BRUSH_BROWN;
+  const rockBrush =
+    pal === 'gray' ? CANONICAL_MOUNTAIN_BRUSH_GRAY_ROCK : CANONICAL_MOUNTAIN_BRUSH_BROWN_ROCK;
   const b = isRockTier ? rockBrush : grassBrush;
 
-  const newPrimaryTiles: string[][] = result.primaryTiles.map(r => [...r]); // no-domain: Estructura o identificador procedural de aventura
-  const newCellDetails: (ResolvedMountainCell | null)[][] = result.cellDetails.map(r => [...r]);
-  const newOccupiedFootCells: boolean[][] = result.occupiedFootCells.map(r => [...r]);
+  const newPrimaryTiles: string[][] = result.primaryTiles.map((r) => [...r]); // no-domain: Estructura o identificador procedural de aventura
+  const newCellDetails: (ResolvedMountainCell | null)[][] = result.cellDetails.map((r) => [...r]);
+  const newOccupiedFootCells: boolean[][] = result.occupiedFootCells.map((r) => [...r]);
 
   newPrimaryTiles[startY]![startX] = b.floor;
   newPrimaryTiles[startY]![startX + 1] = b.floor;
@@ -632,7 +640,7 @@ export function stampMountainStairs(
   };
 
   const newOverlays: CliffFootOverlay[] = result.cliffFootOverlays.filter(
-    ov => !(ov.targetY === startY + 1 && (ov.targetX === startX || ov.targetX === startX + 1))
+    (ov) => !(ov.targetY === startY + 1 && (ov.targetX === startX || ov.targetX === startX + 1))
   );
 
   newOverlays.push({
@@ -837,6 +845,3 @@ export function pruneRedundantStairs(
 
   return surviving;
 }
-
-
-

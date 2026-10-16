@@ -2,22 +2,22 @@
 
 const fs = require('fs');
 
-const {Battle} = require('@pkmn/client');
-const {Generations} = require('@pkmn/data');
-const {Protocol} = require('@pkmn/protocol');
-const {Dex} = require('@pkmn/sim');
-const {LogFormatter} = require('@pkmn/view');
+const { Battle } = require('@pkmn/client');
+const { Generations } = require('@pkmn/data');
+const { Protocol } = require('@pkmn/protocol');
+const { Dex } = require('@pkmn/sim');
+const { LogFormatter } = require('@pkmn/view');
 
-const {ExhaustiveRunner, UNLOGGED} = require('./client');
+const { ExhaustiveRunner, UNLOGGED } = require('./client');
 
 const SKIPPED = new Set([]);
 
 describe('client', () => {
   it('test', async () => {
-    const opts = {prng: [1, 2, 3, 4]};
+    const opts = { prng: [1, 2, 3, 4] };
     for (const format of ExhaustiveRunner.FORMATS) {
       opts.format = format;
-      expect(await (new ExhaustiveRunner(opts).run())).toBe(0);
+      expect(await new ExhaustiveRunner(opts).run()).toBe(0);
     }
   });
 
@@ -35,7 +35,7 @@ describe('client', () => {
 
       let actual = '';
       for (const line of input.split('\n')) {
-        const {args, kwArgs} = Protocol.parseBattleLine(line);
+        const { args, kwArgs } = Protocol.parseBattleLine(line);
         if (!UNLOGGED.has(args[0])) actual += formatter.formatText(args, kwArgs);
         battle.add(args, kwArgs);
       }

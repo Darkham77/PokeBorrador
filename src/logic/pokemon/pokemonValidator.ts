@@ -20,7 +20,9 @@ function validateSpeciesBaseData(p: Pokemon): void {
     }
     p.isFloating = base.isFloating;
   } else {
-    throw new Error(`[pokemonFactory] El Pokémon "${p.id}" (UID: ${p.uid}) no existe en la base de datos de especies.`);
+    throw new Error(
+      `[pokemonFactory] El Pokémon "${p.id}" (UID: ${p.uid}) no existe en la base de datos de especies.`
+    );
   }
 }
 
@@ -30,15 +32,21 @@ function validateAbility(p: Pokemon, bypass: boolean): void {
     if (bypass) {
       p.ability = normAbility;
     } else {
-      const validAbilities: AbilityId[] = pokemonDataProvider.getSpeciesAbilities(p.id).map(a => requireAbilityId(toID(a)));
+      const validAbilities: AbilityId[] = pokemonDataProvider
+        .getSpeciesAbilities(p.id)
+        .map((a) => requireAbilityId(toID(a)));
       if (validAbilities.includes(normAbility)) {
         p.ability = normAbility;
       } else {
-        throw new Error(`[pokemonFactory] Habilidad inválida o ilegal (${p.ability}) para especie ${p.id} (UID: ${p.uid}).`);
+        throw new Error(
+          `[pokemonFactory] Habilidad inválida o ilegal (${p.ability}) para especie ${p.id} (UID: ${p.uid}).`
+        );
       }
     }
   } else {
-    throw new Error(`[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) no tiene habilidad definida.`);
+    throw new Error(
+      `[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) no tiene habilidad definida.`
+    );
   }
 }
 
@@ -49,7 +57,10 @@ function validateHeldItem(p: Pokemon): void {
   }
 }
 
-function syncMoveDetails(m: Move, moveData: NonNullable<ReturnType<typeof pokemonDataProvider.getMoveData>>): void {
+function syncMoveDetails(
+  m: Move,
+  moveData: NonNullable<ReturnType<typeof pokemonDataProvider.getMoveData>>
+): void {
   m.id = moveData.id;
   m.name = moveData.name;
   m.power = moveData.power || 0;
@@ -78,31 +89,41 @@ function syncMoveDetails(m: Move, moveData: NonNullable<ReturnType<typeof pokemo
 
 function validateAndSyncMoves(p: Pokemon, bypass: boolean): void {
   if (!p.moves || !Array.isArray(p.moves)) {
-    throw new Error(`[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) no tiene una lista de movimientos válida.`);
+    throw new Error(
+      `[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) no tiene una lista de movimientos válida.`
+    );
   }
 
-  if (p.moves.some(m => m === null || m === undefined)) {
+  if (p.moves.some((m) => m === null || m === undefined)) {
     throw new Error(`[pokemonFactory] Movimiento nulo detectado en ${p.id} (UID: ${p.uid}).`);
   }
 
   p.moves.forEach((m, idx) => {
     if (!m) return;
     if (!m.id) {
-      throw new Error(`[pokemonFactory] Movimiento corrupto o ID inválido ("${m.id}") detectado en la posición ${idx} de ${p.id} (UID: ${p.uid}).`);
+      throw new Error(
+        `[pokemonFactory] Movimiento corrupto o ID inválido ("${m.id}") detectado en la posición ${idx} de ${p.id} (UID: ${p.uid}).`
+      );
     }
 
     const moveData = pokemonDataProvider.getMoveData(m.id);
     if (!moveData) {
-      throw new Error(`[pokemonFactory] Movimiento "${m.id}" no encontrado o no existe en la base de datos para ${p.id} (UID: ${p.uid}).`);
+      throw new Error(
+        `[pokemonFactory] Movimiento "${m.id}" no encontrado o no existe en la base de datos para ${p.id} (UID: ${p.uid}).`
+      );
     }
     if (!bypass && !canLearnMove(p.id, m.id, p.level)) {
-      throw new Error(`[pokemonFactory] Movimiento ilegal "${m.id}" (${moveData.name}) para especie ${p.id} al nivel ${p.level} (UID: ${p.uid}).`);
+      throw new Error(
+        `[pokemonFactory] Movimiento ilegal "${m.id}" (${moveData.name}) para especie ${p.id} al nivel ${p.level} (UID: ${p.uid}).`
+      );
     }
     syncMoveDetails(m, moveData);
   });
 
   if (p.moves.length === 0) {
-    throw new Error(`[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) tiene 0 movimientos configurados.`);
+    throw new Error(
+      `[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) tiene 0 movimientos configurados.`
+    );
   }
 }
 
@@ -113,10 +134,14 @@ function validateHealthAndNature(p: Pokemon): void {
     throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) no tiene género definido.`);
   }
   if (p.hp === undefined || isNaN(p.hp)) {
-    throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) tiene HP inválido o ausente.`);
+    throw new Error(
+      `[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) tiene HP inválido o ausente.`
+    );
   }
   if (p.hp > p.maxHp) {
-    throw new Error(`[pokemonFactory] El HP de ${p.id} (UID: ${p.uid}) supera su HP máximo (${p.hp}/${p.maxHp}).`);
+    throw new Error(
+      `[pokemonFactory] El HP de ${p.id} (UID: ${p.uid}) supera su HP máximo (${p.hp}/${p.maxHp}).`
+    );
   }
 
   if (p.nature) {
@@ -124,7 +149,9 @@ function validateHealthAndNature(p: Pokemon): void {
     if (isNatureId(normNature)) {
       p.nature = toNatureId(normNature);
     } else {
-      throw new Error(`[pokemonFactory] Naturaleza inválida o inexistente "${p.nature}" para ${p.id} (UID: ${p.uid}).`);
+      throw new Error(
+        `[pokemonFactory] Naturaleza inválida o inexistente "${p.nature}" para ${p.id} (UID: ${p.uid}).`
+      );
     }
   } else {
     throw new Error(`[pokemonFactory] Naturaleza ausente para ${p.id} (UID: ${p.uid}).`);
@@ -133,17 +160,23 @@ function validateHealthAndNature(p: Pokemon): void {
 
 function validateLevelAndExp(p: Pokemon): void {
   if (p.level > MAX_POKEMON_LEVEL) {
-    throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) excede el nivel máximo permitido: ${p.level}/${MAX_POKEMON_LEVEL}.`);
+    throw new Error(
+      `[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) excede el nivel máximo permitido: ${p.level}/${MAX_POKEMON_LEVEL}.`
+    );
   }
 
   if (p.level === MAX_POKEMON_LEVEL) {
     if (p.exp < 0) {
-      throw new Error(`[pokemonFactory] Experiencia negativa no permitida para nivel máximo en ${p.id} (UID: ${p.uid}).`);
+      throw new Error(
+        `[pokemonFactory] Experiencia negativa no permitida para nivel máximo en ${p.id} (UID: ${p.uid}).`
+      );
     }
   } else {
     const maxExpAllowed = p.expNeeded - 1;
     if (p.exp > maxExpAllowed) {
-      throw new Error(`[pokemonFactory] La experiencia de ${p.id} (UID: ${p.uid}) supera el límite de su nivel (${p.exp}/${p.expNeeded}).`);
+      throw new Error(
+        `[pokemonFactory] La experiencia de ${p.id} (UID: ${p.uid}) supera el límite de su nivel (${p.exp}/${p.expNeeded}).`
+      );
     }
   }
 }
@@ -162,7 +195,9 @@ function validateVigor(p: Pokemon): void {
     throw new Error(`[pokemonFactory] Vigor actual inválido o ausente en ${p.id} (UID: ${p.uid}).`);
   }
   if (p.vigor > p.maxVigor) {
-    throw new Error(`[pokemonFactory] El vigor supera el vigor máximo en ${p.id} (UID: ${p.uid}) (${p.vigor}/${p.maxVigor}).`);
+    throw new Error(
+      `[pokemonFactory] El vigor supera el vigor máximo en ${p.id} (UID: ${p.uid}) (${p.vigor}/${p.maxVigor}).`
+    );
   }
 }
 
@@ -174,7 +209,9 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
   if (!p) throw new Error('[pokemonFactory] Intento de validar un Pokémon nulo o indefinido.');
   if (!p.volatileCounters) p.volatileCounters = {};
 
-  const isDebugEnv = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+  const isDebugEnv =
+    typeof window !== 'undefined' &&
+    Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
   const bypass = bypassWhitelist || Boolean(p.isIllegal) || isDebugEnv;
 
   validateSpeciesBaseData(p);

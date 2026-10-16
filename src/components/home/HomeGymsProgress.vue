@@ -1,65 +1,66 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { GYMS, type GymId } from '@/data/world/gyms'
-import type { BattleDifficulty } from '@/types/battle/battle'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
-import { useGymsStore } from '@/stores/gyms'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
+import { computed } from 'vue';
+import { GYMS, type GymId } from '@/data/world/gyms';
+import type { BattleDifficulty } from '@/types/battle/battle';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
+import { useGymsStore } from '@/stores/gyms';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const gymsStore = useGymsStore()
+const gameStore = useGameStore();
+const uiStore = useUIStore();
+const gymsStore = useGymsStore();
 
-const defeatedGyms = computed<readonly GymId[]>(() => gameStore.state.defeatedGyms || [])
-const defeatedCount = computed(() => defeatedGyms.value.length)
+const defeatedGyms = computed<readonly GymId[]>(() => gameStore.state.defeatedGyms || []);
+const defeatedCount = computed(() => defeatedGyms.value.length);
 
 const isGymDefeated = (gymId: GymId) => {
-  return defeatedGyms.value.includes(gymId)
-}
+  return defeatedGyms.value.includes(gymId);
+};
 
 const isDiffWon = (gymId: GymId, diff: BattleDifficulty) => {
-  return gymsStore.isDifficultyDefeated(gymId, diff)
-}
+  return gymsStore.isDifficultyDefeated(gymId, diff);
+};
 
 const getWonDiffCount = (gymId: GymId) => {
-  let count = 0
-  if (isDiffWon(gymId, 'easy')) count++
-  if (isDiffWon(gymId, 'normal')) count++
-  if (isDiffWon(gymId, 'hard')) count++
-  return count
-}
+  let count = 0;
+  if (isDiffWon(gymId, 'easy')) count++;
+  if (isDiffWon(gymId, 'normal')) count++;
+  if (isDiffWon(gymId, 'hard')) count++;
+  return count;
+};
 
 const isGymMastered = (gymId: GymId) => {
-  return getWonDiffCount(gymId) === 3
-}
+  return getWonDiffCount(gymId) === 3;
+};
 
 const totalDifficultiesWon = computed(() => {
-  return GYMS.reduce((acc, g) => acc + getWonDiffCount(g.id), 0)
-})
+  return GYMS.reduce((acc, g) => acc + getWonDiffCount(g.id), 0);
+});
 
 const getGymTooltipDesc = (gym: (typeof GYMS)[number]) => {
-  const easy = isDiffWon(gym.id, 'easy') ? '✅ Fácil' : '⏳ Fácil (Pendiente)'
-  const norm = isDiffWon(gym.id, 'normal') ? '✅ Normal' : '⏳ Normal (Pendiente)'
-  const hard = isDiffWon(gym.id, 'hard') ? '✅ Difícil' : '⏳ Difícil (Pendiente)'
-  const count = getWonDiffCount(gym.id)
-  const status = count === 3 ? '👑 ¡Gimnasio Dominado al 100%!' : `${count}/3 Dificultades superadas`
-  
-  let rematchStatus = ''
+  const easy = isDiffWon(gym.id, 'easy') ? '✅ Fácil' : '⏳ Fácil (Pendiente)';
+  const norm = isDiffWon(gym.id, 'normal') ? '✅ Normal' : '⏳ Normal (Pendiente)';
+  const hard = isDiffWon(gym.id, 'hard') ? '✅ Difícil' : '⏳ Difícil (Pendiente)';
+  const count = getWonDiffCount(gym.id);
+  const status =
+    count === 3 ? '👑 ¡Gimnasio Dominado al 100%!' : `${count}/3 Dificultades superadas`;
+
+  let rematchStatus = '';
   if (gymsStore.isRematchAvailable(gym.id)) {
-    rematchStatus = ' | 🔥 ¡Revancha diaria disponible hoy!'
+    rematchStatus = ' | 🔥 ¡Revancha diaria disponible hoy!';
   } else if (gymsStore.isRematchDoneToday(gym.id)) {
-    rematchStatus = ' | ✓ Revancha completada hoy'
+    rematchStatus = ' | ✓ Revancha completada hoy';
   }
 
-  return `${gym.leader} (${gym.city}) · ${status} | ${easy} · ${norm} · ${hard}${rematchStatus}`
-}
+  return `${gym.leader} (${gym.city}) · ${status} | ${easy} · ${norm} · ${hard}${rematchStatus}`;
+};
 
 const openGyms = () => {
-  uiStore.activeTab = 'gyms'
-}
+  uiStore.activeTab = 'gyms';
+};
 </script>
 
 <template>
@@ -68,9 +69,7 @@ const openGyms = () => {
       <div class="title-wrap">
         <span class="emoji card-icon">🏆</span>
         <div class="title-text-group">
-          <h3 class="card-title">
-            GIMNASIOS DE KANTO
-          </h3>
+          <h3 class="card-title">GIMNASIOS DE KANTO</h3>
           <span class="gyms-sub">
             {{ defeatedCount }}/8 Medallas Conquistadas · {{ totalDifficultiesWon }}/24 Dificultades
           </span>
@@ -93,7 +92,12 @@ const openGyms = () => {
       <div class="rematches-banner-left">
         <span class="emoji flame">🔥</span>
         <span class="banner-title">
-          {{ gymsStore.availableRematchesCount }} REVANCHA{{ gymsStore.availableRematchesCount > 1 ? 'S' : '' }} DIARIA{{ gymsStore.availableRematchesCount > 1 ? 'S' : '' }} DISPONIBLE{{ gymsStore.availableRematchesCount > 1 ? 'S' : '' }}
+          {{ gymsStore.availableRematchesCount }} REVANCHA{{
+            gymsStore.availableRematchesCount > 1 ? 'S' : ''
+          }}
+          DIARIA{{ gymsStore.availableRematchesCount > 1 ? 'S' : '' }} DISPONIBLE{{
+            gymsStore.availableRematchesCount > 1 ? 'S' : ''
+          }}
         </span>
       </div>
       <span class="banner-btn">DESAFIAR <span class="emoji">➔</span></span>
@@ -110,11 +114,13 @@ const openGyms = () => {
           id="home-gyms-progress-div-2"
           v-gsap-hover="'pill'"
           class="medal-slot"
-          :class="{ 
+          :class="{
             'is-conquered': isGymDefeated(gym.id),
             'is-mastered': isGymMastered(gym.id),
             'has-rematch': gymsStore.isRematchAvailable(gym.id)
           }"
+          role="button"
+          tabindex="0"
           @click.stop="openGyms"
         >
           <div class="medal-icon-wrap">
@@ -122,47 +128,43 @@ const openGyms = () => {
               :src="getAssetUrl(ASSET_TYPES.BADGE, gym.id)"
               :alt="gym.badgeName"
               class="badge-sprite-img"
-            
               width="32"
               height="32"
-            >
+            />
             <span
               v-if="gymsStore.isRematchAvailable(gym.id)"
               class="rematch-fire-badge emoji"
               title="Revancha diaria disponible"
-            >🔥</span>
-            <span
-              v-if="isGymMastered(gym.id)"
-              class="master-crown emoji"
-            >👑</span>
+              >🔥</span
+            >
+            <span v-if="isGymMastered(gym.id)" class="master-crown emoji">👑</span>
           </div>
           <div class="medal-info">
             <span class="leader-name">{{ gym.leader }}</span>
 
             <!-- Compact 3-difficulty indicators: F (Fácil) | N (Normal) | D (Difícil) -->
             <div class="diff-chips-row">
-              <span
-                class="diff-chip is-easy"
-                :class="{ won: isDiffWon(gym.id, 'easy') }"
-              >F</span>
-              <span
-                class="diff-chip is-normal"
-                :class="{ won: isDiffWon(gym.id, 'normal') }"
-              >N</span>
-              <span
-                class="diff-chip is-hard"
-                :class="{ won: isDiffWon(gym.id, 'hard') }"
-              >D</span>
+              <span class="diff-chip is-easy" :class="{ won: isDiffWon(gym.id, 'easy') }">F</span>
+              <span class="diff-chip is-normal" :class="{ won: isDiffWon(gym.id, 'normal') }"
+                >N</span
+              >
+              <span class="diff-chip is-hard" :class="{ won: isDiffWon(gym.id, 'hard') }">D</span>
             </div>
 
             <span
               class="badge-status"
-              :class="{ 
+              :class="{
                 mastered: isGymMastered(gym.id),
                 partial: isGymDefeated(gym.id) && !isGymMastered(gym.id)
               }"
             >
-              {{ isGymMastered(gym.id) ? 'DOMINADO' : (isGymDefeated(gym.id) ? `${getWonDiffCount(gym.id)}/3` : 'PENDIENTE') }}
+              {{
+                isGymMastered(gym.id)
+                  ? 'DOMINADO'
+                  : isGymDefeated(gym.id)
+                    ? `${getWonDiffCount(gym.id)}/3`
+                    : 'PENDIENTE'
+              }}
             </span>
           </div>
         </div>
@@ -172,7 +174,7 @@ const openGyms = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .home-gyms-progress {
   @include home-section-card;
@@ -458,7 +460,9 @@ const openGyms = () => {
   }
 
   &.is-mastered {
-    background: Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 12%) 0%, Rgb(250 204 21 / 2%) 100%), Rgb(18 22 34 / 95%);
+    background:
+      Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 12%) 0%, Rgb(250 204 21 / 2%) 100%),
+      Rgb(18 22 34 / 95%);
     border-color: Rgb(250 204 21 / 60%);
     box-shadow: var(--shadow-glow-amber);
 

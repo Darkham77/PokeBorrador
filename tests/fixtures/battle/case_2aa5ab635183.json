@@ -26,12 +26,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "pinmissile",
-        "playnice",
-        "playrough",
-        "pluck"
-      ],
+      "moves": ["pinmissile", "playnice", "playrough", "pluck"],
       "uid": "087e979b-6c08-4c36-af0d-4ae8548338a2",
       "stats": {
         "maxHp": 342,
@@ -66,12 +61,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "poisonfang",
-        "poisongas",
-        "poisonjab",
-        "poisonpowder"
-      ],
+      "moves": ["poisonfang", "poisongas", "poisonjab", "poisonpowder"],
       "uid": "8f7aac74-2c92-4db1-9fe7-1ddd33a0ca33",
       "stats": {
         "maxHp": 342,
@@ -106,12 +96,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "poisonsting",
-        "poisontail",
-        "pollenpuff",
-        "poltergeist"
-      ],
+      "moves": ["poisonsting", "poisontail", "pollenpuff", "poltergeist"],
       "uid": "39f2b8e0-5c99-42bc-a54f-861ce5c5164c",
       "stats": {
         "maxHp": 342,
@@ -146,12 +131,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "populationbomb",
-        "pounce",
-        "pound",
-        "powdersnow"
-      ],
+      "moves": ["populationbomb", "pounce", "pound", "powdersnow"],
       "uid": "8b409be7-6d9f-4947-9dfa-7333001dadc4",
       "stats": {
         "maxHp": 342,
@@ -186,12 +166,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "powergem",
-        "powersplit",
-        "powerswap",
-        "powertrick"
-      ],
+      "moves": ["powergem", "powersplit", "powerswap", "powertrick"],
       "uid": "6df2f0cf-25bb-44c4-8a9e-56965123a8a6",
       "stats": {
         "maxHp": 342,
@@ -226,12 +201,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "powertrip",
-        "powerwhip",
-        "precipiceblades",
-        "present"
-      ],
+      "moves": ["powertrip", "powerwhip", "precipiceblades", "present"],
       "uid": "db9fab45-5cc0-4462-9deb-75987f73c353",
       "stats": {
         "maxHp": 342,
@@ -268,12 +238,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "a399eb01-53cb-4b6b-92ad-cfcbf667f07e",
       "stats": {
         "maxHp": 651,
@@ -308,12 +273,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "2be8f48a-ab51-413b-9ab2-2602537352b5",
       "stats": {
         "maxHp": 651,
@@ -348,12 +308,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "79ac0f26-e06c-4681-99b6-1f40ea75ac10",
       "stats": {
         "maxHp": 651,
@@ -388,12 +343,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "f43a6f50-6fd0-4f80-b9be-d8d60e6718f8",
       "stats": {
         "maxHp": 651,
@@ -428,12 +378,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "b83828f9-ad2c-456e-aecb-f879166555bc",
       "stats": {
         "maxHp": 651,
@@ -468,12 +413,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "cbd0e98d-aeb5-4fe7-a936-daf06220a180",
       "stats": {
         "maxHp": 651,
@@ -512,12 +452,7 @@
     "present"
   ],
   "abilitiesToTest": [],
-  "seed": [
-    18588,
-    21544,
-    54523,
-    34263
-  ],
+  "seed": [18588, 21544, 54523, 34263],
   "playerChoices": [
     "move 1",
     "move 2",

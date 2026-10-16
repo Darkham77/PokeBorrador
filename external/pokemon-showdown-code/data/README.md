@@ -23,8 +23,8 @@ a convenient way to get started, simply depend on a transpiled and minified vers
 <script src="https://unpkg.com/@pkmn/data"></script>
 ```
 
-*In this example, [`@pkmn/dex`](../dex) is included as well, because `@pkmn/data` requires a `Dex`
-implementation to be useful.*
+_In this example, [`@pkmn/dex`](../dex) is included as well, because `@pkmn/data` requires a `Dex`
+implementation to be useful._
 
 ## Usage
 
@@ -36,8 +36,8 @@ certainly should be using `@pkmn/dex` instead of `@pkmn/sim` unless you know wha
 ```ts
 import * as dex from '@pkmn/dex';
 import * as sim from '@pkmn/sim';
-import {Dex} from '@pkmn/dex-types';
-import {Generations} from '@pkmn/data';
+import { Dex } from '@pkmn/dex-types';
+import { Generations } from '@pkmn/data';
 
 // dex.Dex implements the @pkmn/dex-types's Dex directly, so this just works without complaints
 const dexGens = new Generations(dex.Dex);
@@ -85,8 +85,8 @@ is built on top of works - for efficiency reasons its only worthwhile to clean u
 are actually relevant to the generation in question.
 
 ```ts
-import {Dex} from '@pkmn/dex';
-import {Generations} from '@pkmn/data';
+import { Dex } from '@pkmn/dex';
+import { Generations } from '@pkmn/data';
 
 const gens = new Generations(Dex);
 assert(gens.get(1).types.get('Ghost').effectiveness['Psychic'] === 0);
@@ -122,9 +122,17 @@ the `Generations` constructor:
 // the artificial 'natDexTier' field which allows Pokémon Showdown to track this so we hardcode it.
 // If using @pkmn/sim instead, this list can be replaced with a `d.natDexTier !== 'Illegal'` check.
 const NATDEX_UNOBTAINABLE_SPECIES = [
-  'Eevee-Starter', 'Floette-Eternal', 'Pichu-Spiky-eared', 'Pikachu-Belle', 'Pikachu-Cosplay',
-  'Pikachu-Libre', 'Pikachu-PhD', 'Pikachu-Pop-Star', 'Pikachu-Rock-Star', 'Pikachu-Starter',
-  'Eternatus-Eternamax',
+  'Eevee-Starter',
+  'Floette-Eternal',
+  'Pichu-Spiky-eared',
+  'Pikachu-Belle',
+  'Pikachu-Cosplay',
+  'Pikachu-Libre',
+  'Pikachu-PhD',
+  'Pikachu-Pop-Star',
+  'Pikachu-Rock-Star',
+  'Pikachu-Starter',
+  'Eternatus-Eternamax'
 ];
 
 const NATDEX_EXISTS = (d: Data, g: GenerationNum) => {
@@ -140,8 +148,13 @@ const NATDEX_EXISTS = (d: Data, g: GenerationNum) => {
   // Filter out the unobtainable species
   if (d.kind === 'Species' && NATDEX_UNOBTAINABLE_SPECIES.includes(d.name)) return false;
   // Nonstandard items other than Z-Crystals and Pokémon-specific items should be filtered
-  return !(d.kind === 'Item' && ['Past', 'Unobtainable'].includes(d.isNonstandard!) &&
-    !d.zMove && !d.itemUser && !d.forcedForme);
+  return !(
+    d.kind === 'Item' &&
+    ['Past', 'Unobtainable'].includes(d.isNonstandard!) &&
+    !d.zMove &&
+    !d.itemUser &&
+    !d.forcedForme
+  );
 };
 
 const gens = new Generations(Dex, NATDEX_EXISTS);
@@ -163,10 +176,10 @@ first requires that the modded `Dex` be wrapped by the `ModdedDex` abstraction p
 [`@pkmn/mods`](../mods):
 
 ```ts
-import {Dex, ID, ModData} from '@pkmn/dex';
-import {ModdexDex} from '@pkmn/mods';
+import { Dex, ID, ModData } from '@pkmn/dex';
+import { ModdexDex } from '@pkmn/mods';
 
-const dex = Dex.mod('gen8bdsp' as ID, await import('@pkmn/mods/gen8bdsp') as ModData);
+const dex = Dex.mod('gen8bdsp' as ID, (await import('@pkmn/mods/gen8bdsp')) as ModData);
 const gens = new Generations(new ModdedDex(dex));
 ```
 

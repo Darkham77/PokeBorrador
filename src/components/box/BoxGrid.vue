@@ -1,20 +1,19 @@
 <script setup lang="ts">
-
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import BoxPokemonCard from './BoxPokemonCard.vue'
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import BoxPokemonCard from './BoxPokemonCard.vue';
 
 interface BoxItem {
-  p: Pokemon
-  index: number
+  p: Pokemon;
+  index: number;
 }
 
 interface Props {
-  displayList: BoxItem[]
-  selection?: number[]
-  selectionType?: string | null
-  isBoxEmpty?: boolean
-  hasActiveFilters?: boolean
-  isFastMode?: boolean
+  displayList: BoxItem[];
+  selection?: number[];
+  selectionType?: string | null;
+  isBoxEmpty?: boolean;
+  hasActiveFilters?: boolean;
+  isFastMode?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -23,32 +22,23 @@ withDefaults(defineProps<Props>(), {
   isBoxEmpty: false,
   hasActiveFilters: false,
   isFastMode: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'pokemonClick', index: number): void
-}>()
+  (e: 'pokemonClick', index: number): void;
+}>();
 </script>
 
 <template>
-  <div
-    v-if="isBoxEmpty"
-    class="empty-state glass-morphism"
-  >
+  <div v-if="isBoxEmpty" class="empty-state glass-morphism">
     <span class="emoji empty-icon">📦</span>
     <p>SISTEMA DE ALMACENAMIENTO VACÍO</p>
   </div>
-  <div
-    v-else-if="displayList.length === 0"
-    class="empty-state glass-morphism"
-  >
+  <div v-else-if="displayList.length === 0" class="empty-state glass-morphism">
     <span class="emoji empty-icon">🔍</span>
     <p>{{ hasActiveFilters ? 'SIN COINCIDENCIAS EN LA RED' : 'ESTA CAJA ESTÁ VACÍA' }}</p>
   </div>
-  <div
-    v-else
-    class="box-grid"
-  >
+  <div v-else class="box-grid">
     <BoxPokemonCard
       v-for="item in displayList"
       id="box-grid-boxpokemoncard-1"
@@ -65,7 +55,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 .empty-state {
   @include flex-center;
@@ -75,13 +65,13 @@ const emit = defineEmits<{
   border: 2px dashed Rgb(255 255 255 / 5%);
   border-radius: $radius-32;
   text-align: center;
-  
+
   .empty-icon {
     font-size: var(--font-40);
     opacity: 0.3;
     margin-bottom: 20px;
     will-change: transform, filter, opacity;
-  filter: Grayscale(1);
+    filter: Grayscale(1);
   }
 
   p {

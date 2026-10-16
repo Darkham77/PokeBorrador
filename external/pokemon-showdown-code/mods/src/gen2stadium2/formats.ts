@@ -23,13 +23,13 @@ export const Formats = [
       'Beat Up Nicknames Mod',
       'Team Preview'
     ],
-    banlist: [ 'Uber' ]
+    banlist: ['Uber']
   },
   {
     name: '[Gen 2] Stadium OU',
     mod: 'gen2stadium2',
     searchShow: false,
-    ruleset: [ 'Standard' ],
-    banlist: [ 'Uber' ]
+    ruleset: ['Standard'],
+    banlist: ['Uber']
   }
 ];

@@ -6,74 +6,76 @@ const common = require('./../../common');
 let battle;
 
 describe('Clear Smog', () => {
-	afterEach(() => {
-		battle.destroy();
-	});
+  afterEach(() => {
+    battle.destroy();
+  });
 
-	it('should remove all stat boosts from the target', () => {
-		battle = common.createBattle([[
-			{ species: "Amoonguss", ability: 'regenerator', moves: ['clearsmog'] },
-		], [
-			{ species: "Sableye", ability: 'prankster', moves: ['calmmind'] },
-		]]);
+  it('should remove all stat boosts from the target', () => {
+    battle = common.createBattle([
+      [{ species: 'Amoonguss', ability: 'regenerator', moves: ['clearsmog'] }],
+      [{ species: 'Sableye', ability: 'prankster', moves: ['calmmind'] }]
+    ]);
 
-		battle.makeChoices('move clearsmog', 'move calmmind');
+    battle.makeChoices('move clearsmog', 'move calmmind');
 
-		assert.equal(battle.p2.pokemon[0].boosts['spa'], 0);
-		assert.equal(battle.p2.pokemon[0].boosts['spd'], 0);
-	});
+    assert.equal(battle.p2.pokemon[0].boosts['spa'], 0);
+    assert.equal(battle.p2.pokemon[0].boosts['spd'], 0);
+  });
 
-	it('should not remove stat boosts from a target behind a substitute', () => {
-		battle = common.createBattle([[
-			{ species: "Amoonguss", ability: 'regenerator', moves: ['clearsmog', 'toxic'] },
-		], [
-			{ species: "Sableye", ability: 'prankster', moves: ['substitute', 'calmmind'] },
-		]]);
+  it('should not remove stat boosts from a target behind a substitute', () => {
+    battle = common.createBattle([
+      [{ species: 'Amoonguss', ability: 'regenerator', moves: ['clearsmog', 'toxic'] }],
+      [{ species: 'Sableye', ability: 'prankster', moves: ['substitute', 'calmmind'] }]
+    ]);
 
-		battle.makeChoices('move toxic', 'move substitute');
-		battle.makeChoices('move clearsmog', 'move calmmind');
+    battle.makeChoices('move toxic', 'move substitute');
+    battle.makeChoices('move clearsmog', 'move calmmind');
 
-		assert.equal(battle.p2.pokemon[0].boosts['spa'], 1);
-		assert.equal(battle.p2.pokemon[0].boosts['spd'], 1);
-	});
+    assert.equal(battle.p2.pokemon[0].boosts['spa'], 1);
+    assert.equal(battle.p2.pokemon[0].boosts['spd'], 1);
+  });
 
-	it('should not remove stat boosts if the target is immune to its attack type', () => {
-		battle = common.createBattle([[
-			{ species: "Amoonguss", ability: 'regenerator', item: 'laggingtail', moves: ['clearsmog'] },
-		], [
-			{ species: "Steelix", ability: 'prankster', moves: ['irondefense'] },
-		]]);
+  it('should not remove stat boosts if the target is immune to its attack type', () => {
+    battle = common.createBattle([
+      [{ species: 'Amoonguss', ability: 'regenerator', item: 'laggingtail', moves: ['clearsmog'] }],
+      [{ species: 'Steelix', ability: 'prankster', moves: ['irondefense'] }]
+    ]);
 
-		battle.makeChoices('move clearsmog', 'move irondefense');
+    battle.makeChoices('move clearsmog', 'move irondefense');
 
-		assert.equal(battle.p2.pokemon[0].boosts['def'], 2);
-	});
+    assert.equal(battle.p2.pokemon[0].boosts['def'], 2);
+  });
 
-	it('should not remove stat boosts from the user', () => {
-		battle = common.createBattle([[
-			{ species: "Amoonguss", ability: 'regenerator', moves: ['clearsmog'] },
-		], [
-			{ species: "Arcanine", ability: 'intimidate', moves: ['morningsun'] },
-		]]);
+  it('should not remove stat boosts from the user', () => {
+    battle = common.createBattle([
+      [{ species: 'Amoonguss', ability: 'regenerator', moves: ['clearsmog'] }],
+      [{ species: 'Arcanine', ability: 'intimidate', moves: ['morningsun'] }]
+    ]);
 
-		battle.makeChoices('move clearsmog', 'move morningsun');
+    battle.makeChoices('move clearsmog', 'move morningsun');
 
-		assert.equal(battle.p1.pokemon[0].boosts['atk'], -1);
-	});
+    assert.equal(battle.p1.pokemon[0].boosts['atk'], -1);
+  });
 
-	it('should trigger before Anger Point activates during critical hits', () => {
-		battle = common.createBattle([[
-			{ species: "Amoonguss", ability: 'regenerator', item: 'scopelens', moves: ['focusenergy', 'clearsmog'] },
-		], [
-			{ species: "Primeape", ability: 'angerpoint', moves: ['bulkup'] },
-		]]);
+  it('should trigger before Anger Point activates during critical hits', () => {
+    battle = common.createBattle([
+      [
+        {
+          species: 'Amoonguss',
+          ability: 'regenerator',
+          item: 'scopelens',
+          moves: ['focusenergy', 'clearsmog']
+        }
+      ],
+      [{ species: 'Primeape', ability: 'angerpoint', moves: ['bulkup'] }]
+    ]);
 
-		battle.makeChoices('move focusenergy', 'move bulkup');
-		assert.equal(battle.p2.pokemon[0].boosts['atk'], 1);
-		assert.equal(battle.p2.pokemon[0].boosts['def'], 1);
+    battle.makeChoices('move focusenergy', 'move bulkup');
+    assert.equal(battle.p2.pokemon[0].boosts['atk'], 1);
+    assert.equal(battle.p2.pokemon[0].boosts['def'], 1);
 
-		battle.makeChoices('move clearsmog', 'move bulkup');
-		assert.equal(battle.p2.pokemon[0].boosts['atk'], 6);
-		assert.equal(battle.p2.pokemon[0].boosts['def'], 0);
-	});
+    battle.makeChoices('move clearsmog', 'move bulkup');
+    assert.equal(battle.p2.pokemon[0].boosts['atk'], 6);
+    assert.equal(battle.p2.pokemon[0].boosts['def'], 0);
+  });
 });

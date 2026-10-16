@@ -2,24 +2,17 @@
   "name": "@pkmn/client",
   "version": "0.7.3",
   "description": "Client battle engine for Pokémon Showdown",
-  "repository": "github:pkmn/ps",
   "license": "MIT",
+  "repository": "github:pkmn/ps",
+  "files": [
+    "build"
+  ],
   "sideEffects": false,
   "main": "build/index.js",
   "module": "build/index.mjs",
   "types": "build/index.d.ts",
   "publishConfig": {
     "access": "public"
-  },
-  "files": [
-    "build"
-  ],
-  "dependencies": {
-    "@pkmn/data": "^0.10.11",
-    "@pkmn/protocol": "^0.7.3"
-  },
-  "devDependencies": {
-    "@pkmn/dex": "^0.10.11"
   },
   "scripts": {
     "lint": "eslint --cache src",
@@ -29,6 +22,13 @@
     "test": "jest",
     "pretest": "npm run build",
     "posttest": "npm run lint"
+  },
+  "dependencies": {
+    "@pkmn/data": "^0.10.11",
+    "@pkmn/protocol": "^0.7.3"
+  },
+  "devDependencies": {
+    "@pkmn/dex": "^0.10.11"
   },
   "jest": {
     "preset": "ts-jest",

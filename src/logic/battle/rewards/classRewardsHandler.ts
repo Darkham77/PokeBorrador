@@ -78,24 +78,40 @@ function calculateSingleCombatantEarnings(
     coins = Math.floor(rawCoins * bcMult * eventMult);
   }
 
-  const exp = active.isGym ? (e.level * GYM_EXP_FACTOR_PER_LEVEL) : (e.level * TRAINER_EXP_FACTOR_PER_LEVEL);
+  const exp = active.isGym
+    ? e.level * GYM_EXP_FACTOR_PER_LEVEL
+    : e.level * TRAINER_EXP_FACTOR_PER_LEVEL;
   return { money, coins, exp };
 }
 
-function applyClassRouteBonuses(ctx: BattleContext, locationId: MapRouteId, baseMoney: number): number {
+function applyClassRouteBonuses(
+  ctx: BattleContext,
+  locationId: MapRouteId,
+  baseMoney: number
+): number {
   let totalMoney = baseMoney;
   const now = Temporal.Now.instant().epochMilliseconds;
 
-  if (ctx.gs.state.playerClass === 'rocket' && ctx.gs.state.classData?.extortedRouteId === locationId) {
+  if (
+    ctx.gs.state.playerClass === 'rocket' &&
+    ctx.gs.state.classData?.extortedRouteId === locationId
+  ) {
     const extTimestamp = Number(ctx.gs.state.classData?.extortedRouteTimestamp || 0);
     if (now - extTimestamp <= ROCKET_EXTORTION_WINDOW_MS) {
       const bonusMoney = Math.floor(totalMoney * 0.5);
       totalMoney += bonusMoney;
-      ctx.addLog(`¡Extorsión activa (+${ROCKET_EXTORTION_BONUS_PCT_TEXT} ₽)! +₽${bonusMoney}`, 'log-info', 'player');
+      ctx.addLog(
+        `¡Extorsión activa (+${ROCKET_EXTORTION_BONUS_PCT_TEXT} ₽)! +₽${bonusMoney}`,
+        'log-info',
+        'player'
+      );
     }
   }
 
-  if (ctx.gs.state.playerClass === 'entrenador' && ctx.gs.state.classData?.officialRouteId === locationId) {
+  if (
+    ctx.gs.state.playerClass === 'entrenador' &&
+    ctx.gs.state.classData?.officialRouteId === locationId
+  ) {
     const offTimestamp = Number(ctx.gs.state.classData?.officialRouteTimestamp || 0);
     if (now - offTimestamp <= BUFF_DURATION_30_MIN_SEC * SECONDS_TO_MS_MULTIPLIER) {
       if (!ctx.gs.state.classData) {
@@ -122,7 +138,9 @@ export function processCurrencyAndTrainerExp(
   combatants: Pokemon[],
   warMods: { moneyMult: number }
 ) {
-  const isGymRematch = Boolean(active.isGym && active.gymId && ctx.gs.state.defeatedGyms.includes(active.gymId));
+  const isGymRematch = Boolean(
+    active.isGym && active.gymId && ctx.gs.state.defeatedGyms.includes(active.gymId)
+  );
   let totalMoneyGained = 0;
   let totalCoinsGained = 0;
   let totalTrainerExpGained = 0;
@@ -142,7 +160,11 @@ export function processCurrencyAndTrainerExp(
     ctx.addLog('¡Moneda Amuleto duplicó el dinero obtenido!', 'log-success', 'player');
   }
   if ((ctx.gs.state.luckyEggSecs || 0) > 0) {
-    ctx.addLog(`¡Huevo Suerte aumentó un ${LUCKY_EGG_EXP_BONUS_PCT_TEXT} la EXP obtenida!`, 'log-success', 'player');
+    ctx.addLog(
+      `¡Huevo Suerte aumentó un ${LUCKY_EGG_EXP_BONUS_PCT_TEXT} la EXP obtenida!`,
+      'log-success',
+      'player'
+    );
   }
   ctx.addLog(`¡Ganaste ₽${totalMoneyGained} en total!`, 'log-info', 'player');
 

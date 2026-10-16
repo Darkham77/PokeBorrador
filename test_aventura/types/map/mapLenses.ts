@@ -27,5 +27,7 @@ export function requireMapLens(value: string): MapLens {
   if (isMapLens(value)) {
     return value;
   }
-  throw new Error(`[DomainTypeFirst] Invalid MapLens: "${value}". Expected one of: ${MAP_LENSES.join(', ')}`);
+  throw new Error(
+    `[DomainTypeFirst] Invalid MapLens: "${value}". Expected one of: ${MAP_LENSES.join(', ')}`
+  );
 }

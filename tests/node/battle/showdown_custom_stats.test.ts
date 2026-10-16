@@ -1,4 +1,4 @@
-import { describe, it, beforeAll, vi } from 'vitest';
+import { describe, it, beforeAll, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { Battle } from '@pkmn/sim';
 import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
@@ -35,7 +35,7 @@ describe('Showdown Custom Stats Injection Unit Tests', () => {
     battle.setPlayer('p1', { name: 'Player 1', team: p1Team as any });
     const pikachu = battle.p1.pokemon[0];
     assert.ok(pikachu);
-    
+
     // El HP estándar de un Pikachu L50 con IVs perfectos sin EVs es 110
     assert.strictEqual(pikachu.maxhp, 110);
     // El Ataque estándar es 75

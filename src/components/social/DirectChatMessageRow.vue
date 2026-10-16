@@ -1,82 +1,79 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import ChatBattleCodeBadge from './ChatBattleCodeBadge.vue'
-import { formatChatTimestamp } from '@/logic/utils/timeUtils.ts'
-import { BATTLE_CODE_REGEX } from '@/logic/constants/gameplay.ts'
-import type { ChatMessage } from '@/stores/social/chatPrivate.ts'
-import type { ProfileCacheItem } from '@/stores/social/chatCosmetics.ts'
+import { computed } from 'vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
+import ChatBattleCodeBadge from './ChatBattleCodeBadge.vue';
+import { formatChatTimestamp } from '@/logic/utils/timeUtils.ts';
+import { BATTLE_CODE_REGEX } from '@/logic/constants/gameplay.ts';
+import type { ChatMessage } from '@/stores/social/chatPrivate.ts';
+import type { ProfileCacheItem } from '@/stores/social/chatCosmetics.ts';
 
 const {
   msg,
   isMe = false,
   cosmetics = null
 } = defineProps<{
-  msg: ChatMessage
-  isMe?: boolean
-  cosmetics?: ProfileCacheItem | null
-}>()
+  msg: ChatMessage;
+  isMe?: boolean;
+  cosmetics?: ProfileCacheItem | null;
+}>();
 
 const emit = defineEmits<{
-  openProfile: [userId: string]
-}>()
+  openProfile: [userId: string];
+}>();
 
 function extractBattleCode(message?: string): string | null {
-  if (!message) return null
-  const match = message.match(BATTLE_CODE_REGEX)
+  if (!message) return null;
+  const match = message.match(BATTLE_CODE_REGEX);
   // domain-ok: UI presentation uppercase battle code
-  return match ? match[0].toUpperCase() : null
+  return match ? match[0].toUpperCase() : null;
 }
 
-const playerClass = computed(() => cosmetics?.player_class || msg.player_class)
-const trainerLevel = computed(() => cosmetics?.trainer_level || msg.trainer_level)
-const avatarStyle = computed(() => cosmetics?.avatar_style || undefined)
-const gender = computed(() => cosmetics?.gender || msg.gender || 'h')
-const username = computed(() => cosmetics?.username || msg.senderName)
-const nickStyle = computed(() => cosmetics?.nick_style || 'normal')
-const formattedTime = computed(() => formatChatTimestamp(msg.timestamp))
-const battleCode = computed(() => extractBattleCode(msg.text))
+const playerClass = computed(() => cosmetics?.player_class || msg.player_class);
+const trainerLevel = computed(() => cosmetics?.trainer_level || msg.trainer_level);
+const avatarStyle = computed(() => cosmetics?.avatar_style || undefined);
+const gender = computed(() => cosmetics?.gender || msg.gender || 'h');
+const username = computed(() => cosmetics?.username || msg.senderName);
+const nickStyle = computed(() => cosmetics?.nick_style || 'normal');
+const formattedTime = computed(() => formatChatTimestamp(msg.timestamp));
+const battleCode = computed(() => extractBattleCode(msg.text));
 </script>
 
 <template>
   <div class="message-row">
     <TrainerAvatar
-      id="direct-chat-message-row-traineravatar-1" 
-      :player-class="playerClass" 
-      :level="trainerLevel" 
+      id="direct-chat-message-row-traineravatar-1"
+      :player-class="playerClass"
+      :level="trainerLevel"
       :avatar-style="avatarStyle"
       :gender="gender"
       :size="32"
       class="clickable-avatar"
       @click.stop="emit('openProfile', msg.senderId || '')"
     />
-    <div
-      class="message-content"
-      :class="{ 'is-me': isMe }"
-    >
+    <div class="message-content" :class="{ 'is-me': isMe }">
       <div class="message-meta">
         <span
           id="direct-chat-message-row-span-2"
           v-gsap-nick="nickStyle"
           class="username clickable-username"
           :class="nickStyle"
+          role="button"
+          tabindex="0"
           @click.stop="emit('openProfile', msg.senderId || '')"
-        >{{ username }}</span>
+          >{{ username }}</span
+        >
         <span class="time">{{ formattedTime }}</span>
       </div>
       <p class="text">
         {{ msg.text }}
       </p>
-      <ChatBattleCodeBadge
-        v-if="battleCode"
-        :battle-code="battleCode"
-      />
+      <ChatBattleCodeBadge v-if="battleCode" :battle-code="battleCode" />
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .message-row {
   display: flex;

@@ -1,7 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { setupTemporalMock } from '../../helpers/setupTestEnvironment.ts';
 import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper';
-import { PVP_TURN_TIMEOUT_SEC, PVP_AFK_MAX_STRIKES, PVP_RECONNECT_WINDOW_SEC } from '@/types/battle/pvp';
+import {
+  PVP_TURN_TIMEOUT_SEC,
+  PVP_AFK_MAX_STRIKES,
+  PVP_RECONNECT_WINDOW_SEC
+} from '@/types/battle/pvp';
 
 describe('PvPTimerManager Wall-Clock & Tab-Minimization Immunity - Unit Tests', () => {
   beforeEach(() => {
@@ -82,7 +86,10 @@ describe('PvPTimerManager Wall-Clock & Tab-Minimization Immunity - Unit Tests', 
   it('manages 60-second reconnection window with wall-clock precision', () => {
     const onRecTick = vi.fn();
     const onRecTimeout = vi.fn();
-    const timer = new PvPTimerManager({ onReconnectTick: onRecTick, onReconnectTimeout: onRecTimeout });
+    const timer = new PvPTimerManager({
+      onReconnectTick: onRecTick,
+      onReconnectTimeout: onRecTimeout
+    });
 
     timer.startReconnectCountdown();
     expect(timer.state.isReconnecting).toBe(true);

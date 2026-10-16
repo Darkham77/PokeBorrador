@@ -7,12 +7,24 @@
 import { toID } from '@/logic/utils/strings.ts';
 import type { SideID } from '@pkmn/sim';
 import type { BattleContext } from '@/types/battle/battleContext';
-import { BATTLE_CONDITION_KEYS, type BattleState, type BattleStages, type BattleTimedCondition } from '@/types/battle/battle';
+import {
+  BATTLE_CONDITION_KEYS,
+  type BattleState,
+  type BattleStages,
+  type BattleTimedCondition
+} from '@/types/battle/battle';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { requireItemId } from '@/data/inventory/items';
 import { requireAbilityId } from '@/data/battle/abilities';
 import { requirePokemonMoveId } from '@/data/battle/moves';
-import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState, HeuristicVolatileKey, HeuristicPokemonMove } from './types.ts';
+import type {
+  HeuristicBattleSnapshot,
+  HeuristicPokemonState,
+  HeuristicSideState,
+  HeuristicFieldState,
+  HeuristicVolatileKey,
+  HeuristicPokemonMove
+} from './types.ts';
 
 /**
  * Builds a HeuristicBattleSnapshot from the live BattleContext.
@@ -23,7 +35,10 @@ export function buildSnapshot(store: BattleContext): HeuristicBattleSnapshot {
   if (!battle) throw new Error('[SnapshotBuilder] activeBattle is null — cannot build snapshot');
 
   const { playerRequest, enemyRequest } = battle;
-  if (!playerRequest) throw new Error('[SnapshotBuilder] playerRequest is null on decision turn — is this turn 1 before INIT_BATTLE_SUCCESS?');
+  if (!playerRequest)
+    throw new Error(
+      '[SnapshotBuilder] playerRequest is null on decision turn — is this turn 1 before INIT_BATTLE_SUCCESS?'
+    );
   if (!enemyRequest) throw new Error('[SnapshotBuilder] enemyRequest is null on decision turn');
 
   const playerTeam = battle.playerTeam ?? [];
@@ -33,7 +48,13 @@ export function buildSnapshot(store: BattleContext): HeuristicBattleSnapshot {
   const turn = battle.turnCount ?? 0;
 
   const mySide = buildSide('p2', enemyTeam, enemyStages, battle.enemy, battle.enemySideConditions);
-  const opponentSide = buildSide('p1', playerTeam, playerStages, battle.player, battle.playerSideConditions);
+  const opponentSide = buildSide(
+    'p1',
+    playerTeam,
+    playerStages,
+    battle.player,
+    battle.playerSideConditions
+  );
 
   const field = buildField(battle);
 
@@ -44,28 +65,29 @@ export function buildSnapshot(store: BattleContext): HeuristicBattleSnapshot {
 // Side builder
 // ──────────────────────────────────────────
 
-
 function buildSide(
   id: SideID,
   team: Pokemon[],
   stages: BattleStages,
   activePoke: Pokemon | null | undefined,
-  sideConditionsRaw: Partial<Record<(typeof BATTLE_CONDITION_KEYS)[number], BattleTimedCondition>> | undefined,
+  sideConditionsRaw:
+    | Partial<Record<(typeof BATTLE_CONDITION_KEYS)[number], BattleTimedCondition>>
+    | undefined
 ): HeuristicSideState {
   const sideConditions = buildSideConditions(sideConditionsRaw);
   const activeName = activePoke?.name ?? '';
 
   const pokemon: HeuristicPokemonState[] = team
     .filter((p): p is Pokemon => !!p)
-    .map(p => buildPokemonState(p, p.name === activeName, stages));
+    .map((p) => buildPokemonState(p, p.name === activeName, stages));
 
-  const activePokemon = pokemon.find(p => p.active) ?? null;
+  const activePokemon = pokemon.find((p) => p.active) ?? null;
 
   return { id, pokemon, activePokemon, sideConditions };
 }
 
 function buildSideConditions(
-  raw: Partial<Record<(typeof BATTLE_CONDITION_KEYS)[number], BattleTimedCondition>> | undefined,
+  raw: Partial<Record<(typeof BATTLE_CONDITION_KEYS)[number], BattleTimedCondition>> | undefined
 ): Map<(typeof BATTLE_CONDITION_KEYS)[number], number> {
   const map = new Map<(typeof BATTLE_CONDITION_KEYS)[number], number>();
   if (!raw) return map;
@@ -82,7 +104,7 @@ const ZERO_POWER = 0 as const;
 
 function buildPokemonMoveInfos(moves: (Move | null)[] | undefined): HeuristicPokemonMove[] {
   const validMoves = (moves || []).filter((m): m is Move => Boolean(m));
-  return validMoves.map(m => {
+  return validMoves.map((m) => {
     const id = requirePokemonMoveId(toID(m.id));
     return {
       id,
@@ -93,26 +115,41 @@ function buildPokemonMoveInfos(moves: (Move | null)[] | undefined): HeuristicPok
       accuracy: m.acc || DEFAULT_ACCURACY,
       pp: m.pp,
       maxpp: m.maxPP,
-      target: 'normal',
+      target: 'normal'
     };
   });
 }
 
-function buildPokemonStatsMap(p: Pokemon): { hp: number; atk: number; def: number; spa: number; spd: number; spe: number } {
+function buildPokemonStatsMap(p: Pokemon): {
+  hp: number;
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+} {
   return {
     hp: p.maxHp,
     atk: p.atk,
     def: p.def,
     spa: p.spa,
     spd: p.spd,
-    spe: p.spe,
+    spe: p.spe
   };
 }
 
 function buildPokemonBoosts(
   active: boolean,
-  stages: BattleStages,
-): { atk: number; def: number; spa: number; spd: number; spe: number; accuracy: number; evasion: number } {
+  stages: BattleStages
+): {
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+  accuracy: number;
+  evasion: number;
+} {
   return {
     atk: active ? (stages.atk ?? 0) : 0,
     def: active ? (stages.def ?? 0) : 0,
@@ -120,11 +157,15 @@ function buildPokemonBoosts(
     spd: active ? (stages.spd ?? 0) : 0,
     spe: active ? (stages.spe ?? 0) : 0,
     accuracy: active ? (stages.acc ?? 0) : 0,
-    evasion: active ? (stages.eva ?? 0) : 0,
+    evasion: active ? (stages.eva ?? 0) : 0
   };
 }
 
-function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): HeuristicPokemonState {
+function buildPokemonState(
+  p: Pokemon,
+  active: boolean,
+  stages: BattleStages
+): HeuristicPokemonState {
   if (!p.id) {
     throw new Error(`[snapshotBuilder] Pokemon missing id: ${p.name}`);
   }
@@ -137,7 +178,7 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
   const rawItem = p.heldItem || p.item;
   const heldItem = rawItem ? requireItemId(rawItem) : ''; // domain-ok: Open dynamic text or non-domain string payload
   const moveInfos = buildPokemonMoveInfos(p.moves);
-  const moveIds = moveInfos.map(m => m.id);
+  const moveIds = moveInfos.map((m) => m.id);
   const stats = buildPokemonStatsMap(p);
 
   return {
@@ -163,7 +204,7 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
     // AI-11 Fix: itemConsumed should only be true if explicitly lost via volatile/log
     itemConsumed: Boolean(p.volatileCounters?.['itemconsumed'] || p.volatileCounters?.['enditem']),
     boosts: buildPokemonBoosts(active, stages),
-    volatiles: buildVolatiles(p),
+    volatiles: buildVolatiles(p)
   };
 }
 
@@ -179,7 +220,8 @@ function buildVolatiles(p: Pokemon): Set<HeuristicVolatileKey> {
   if (p.tauntTurns) v.add('taunt');
   if (p.encoreTurns) v.add('encore');
   // AI-4 Fix: check trapped and maybeTrapped
-  if (p.trapped || p.volatileCounters?.['maybetrapped'] || p.volatileCounters?.['trapped']) v.add('trapped');
+  if (p.trapped || p.volatileCounters?.['maybetrapped'] || p.volatileCounters?.['trapped'])
+    v.add('trapped');
   // AI-9 Fix: only mark choicelock if explicitly tracked in volatileCounters from move execution
   if (p.volatileCounters?.['choicelock']) {
     v.add('choicelock');
@@ -193,7 +235,7 @@ function buildField(battle: BattleState): HeuristicFieldState {
     weather: weather || null,
     terrain: null, // The project does not currently model terrain — extend when added
     trickRoom: false, // Extend when trick room is tracked in BattleState
-    tailwind: { p1: 0, p2: 0 }, // Extend when tailwind is tracked in sideConditions
+    tailwind: { p1: 0, p2: 0 } // Extend when tailwind is tracked in sideConditions
   };
 }
 

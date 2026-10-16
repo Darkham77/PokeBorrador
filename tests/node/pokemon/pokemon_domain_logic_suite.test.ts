@@ -14,7 +14,7 @@
  * 10. Pokedex Migration: Syncing seen and owned species across team and box.
  */
 
-import { describe, it, test, expect, beforeEach } from 'vitest';
+import { describe, it, test, expect, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -52,19 +52,20 @@ interface SaveWrapper {
   last_save_id?: string;
 }
 
-const createMockPoke = (id: PokemonSpeciesId): Pokemon => ({
-  id,
-  name: id,
-  uid: Math.random().toString(),
-  hp: 100,
-  maxHp: 100,
-  level: 5,
-  isShiny: false,
-  ivs: { hp: 0, attack: 0, defense: 0, spAttack: 0, spDefense: 0, speed: 0 },
-  evs: { hp: 0, attack: 0, defense: 0, spAttack: 0, spDefense: 0, speed: 0 },
-  stats: { hp: 100, attack: 10, defense: 10, spAttack: 10, spDefense: 10, speed: 10 },
-  moves: []
-} as unknown as Pokemon);
+const createMockPoke = (id: PokemonSpeciesId): Pokemon =>
+  ({
+    id,
+    name: id,
+    uid: Math.random().toString(),
+    hp: 100,
+    maxHp: 100,
+    level: 5,
+    isShiny: false,
+    ivs: { hp: 0, attack: 0, defense: 0, spAttack: 0, spDefense: 0, speed: 0 },
+    evs: { hp: 0, attack: 0, defense: 0, spAttack: 0, spDefense: 0, speed: 0 },
+    stats: { hp: 100, attack: 10, defense: 10, spAttack: 10, spDefense: 10, speed: 10 },
+    moves: []
+  }) as unknown as Pokemon;
 
 function findAngianemarSave(saves: SaveWrapper[]): SaveWrapper | undefined {
   return saves.find((s) => s.user_id === '259ef49f-54b2-40c6-a797-5951dc966cb4');
@@ -78,7 +79,10 @@ function hasSquirtle(box: (Pokemon | null)[] | undefined): boolean {
   return (box || []).some((p) => p?.id === 'squirtle');
 }
 
-function getPokemonIds(team: (Pokemon | null)[] | undefined, box: (Pokemon | null)[] | undefined): PokemonSpeciesId[] {
+function getPokemonIds(
+  team: (Pokemon | null)[] | undefined,
+  box: (Pokemon | null)[] | undefined
+): PokemonSpeciesId[] {
   const ids: PokemonSpeciesId[] = [];
   if (team) {
     for (const p of team) {
@@ -242,7 +246,11 @@ describe('Pokemon Domain Logic Suite', () => {
     test('ivFloor does not apply when the roll is higher', () => {
       const mockRandom = () => 0.9;
       const result = generateIvPure(mockRandom, 10, false, false);
-      assert.strictEqual(result, 28, 'Should return the roll (28) which is higher than the floor (10)');
+      assert.strictEqual(
+        result,
+        28,
+        'Should return the roll (28) which is higher than the floor (10)'
+      );
     });
 
     test('Guardian Alpha standard (isGuardian) ensures a minimum of 12', () => {
@@ -350,7 +358,7 @@ describe('Pokemon Domain Logic Suite', () => {
 
         assert.strictEqual(stats.spa, stats.atk);
         assert.strictEqual(stats.spd, stats.def);
-        assert.strictEqual(stats.spe, Math.floor((45 * 2 + 0) * 50 / 100 + 5));
+        assert.strictEqual(stats.spe, Math.floor(((45 * 2 + 0) * 50) / 100 + 5));
       });
     });
   });
@@ -387,7 +395,7 @@ describe('Pokemon Domain Logic Suite', () => {
         const md = { cat: 'status' } as unknown as MoveBaseData;
         assert.strictEqual(
           getMoveDescriptionPure('growl', md),
-          'Un movimiento que causa un efecto de estado o alteración.',
+          'Un movimiento que causa un efecto de estado o alteración.'
         );
       });
 
@@ -410,7 +418,7 @@ describe('Pokemon Domain Logic Suite', () => {
         const md = {
           effect: { type: 'status', status: 'brn', chance: 10, text: 'Puede quemar al objetivo.' },
           cat: 'special',
-          power: 40,
+          power: 40
         } as unknown as MoveBaseData;
         assert.ok(getMoveDescriptionPure('ember', md).includes('quemar'));
       });
@@ -419,7 +427,7 @@ describe('Pokemon Domain Logic Suite', () => {
         const md = {
           effect: { type: 'status', status: 'psn', text: 'Envenena al objetivo.' },
           cat: 'special',
-          power: 65,
+          power: 65
         } as unknown as MoveBaseData;
         assert.ok(getMoveDescriptionPure('sludge-bomb', md).includes('Envenena'));
       });
@@ -439,7 +447,7 @@ describe('Pokemon Domain Logic Suite', () => {
         const result = getMoveDescriptionPure('tackle', md);
         assert.ok(
           result.includes('Causa daño'),
-          `Expected default damage description, got: "${result}"`,
+          `Expected default damage description, got: "${result}"`
         );
       });
     });
@@ -455,7 +463,10 @@ describe('Pokemon Domain Logic Suite', () => {
         assert.strictEqual(calculateEvBonusIvs(null), 0);
         assert.strictEqual(calculateEvBonusIvs(undefined), 0);
         assert.strictEqual(calculateEvBonusIvs({}), 0);
-        assert.strictEqual(calculateEvBonusIvs({ hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }), 0);
+        assert.strictEqual(
+          calculateEvBonusIvs({ hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }),
+          0
+        );
       });
 
       it('calculates floor(ev / 4) per stat and sums them up', () => {
@@ -586,19 +597,43 @@ describe('Pokemon Domain Logic Suite', () => {
 
       const initialLastSaveId = userSave.last_save_id;
 
-      assert.strictEqual(hasSquirtle(saveData.box), true, 'Angianemar must have squirtle in their box initially');
-      assert.strictEqual(saveData.pokedex.includes('squirtle'), false, 'Angianemar must NOT have squirtle in their pokedex initially');
+      assert.strictEqual(
+        hasSquirtle(saveData.box),
+        true,
+        'Angianemar must have squirtle in their box initially'
+      );
+      assert.strictEqual(
+        saveData.pokedex.includes('squirtle'),
+        false,
+        'Angianemar must NOT have squirtle in their pokedex initially'
+      );
 
       const pokemonIds = getPokemonIds(saveData.team, saveData.box);
 
-      saveData.pokedex = Array.from(new Set<PokemonSpeciesId>([...(saveData.pokedex || []), ...pokemonIds]));
-      saveData.seenPokedex = Array.from(new Set<PokemonSpeciesId>([...(saveData.seenPokedex || []), ...pokemonIds]));
+      saveData.pokedex = Array.from(
+        new Set<PokemonSpeciesId>([...(saveData.pokedex || []), ...pokemonIds])
+      );
+      saveData.seenPokedex = Array.from(
+        new Set<PokemonSpeciesId>([...(saveData.seenPokedex || []), ...pokemonIds])
+      );
 
       userSave.last_save_id = 'mocked-random-uuid-generation-1234';
 
-      assert.strictEqual(saveData.pokedex.includes('squirtle'), true, 'Squirtle must be in pokedex after migration');
-      assert.strictEqual(saveData.seenPokedex.includes('squirtle'), true, 'Squirtle must be in seenPokedex after migration');
-      assert.notStrictEqual(userSave.last_save_id, initialLastSaveId, 'last_save_id must change after migration');
+      assert.strictEqual(
+        saveData.pokedex.includes('squirtle'),
+        true,
+        'Squirtle must be in pokedex after migration'
+      );
+      assert.strictEqual(
+        saveData.seenPokedex.includes('squirtle'),
+        true,
+        'Squirtle must be in seenPokedex after migration'
+      );
+      assert.notStrictEqual(
+        userSave.last_save_id,
+        initialLastSaveId,
+        'last_save_id must change after migration'
+      );
     });
   });
 });

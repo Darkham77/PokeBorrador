@@ -19,10 +19,7 @@
 
 import type { ContinentMapResult } from './continentGenerator.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
-import {
-  computeGridDistanceField,
-  type GridBfsQueueItem
-} from '../utils/gridBfsUtils.ts';
+import { computeGridDistanceField, type GridBfsQueueItem } from '../utils/gridBfsUtils.ts';
 
 export function computeTransitableGrid(
   continentMap: ContinentMapResult,
@@ -52,17 +49,10 @@ export function computeTransitableGrid(
   }
 
   // 2. Expand outward up to effectiveRadius cells (excluding water bodies)
-  computeGridDistanceField(
-    queue,
-    dist,
-    W,
-    H,
-    effectiveRadius,
-    (nx, ny) => {
-      const terrain = continentMap.terrainMatrix[ny]![nx];
-      return terrain === 'water' || terrain === 'water_deep';
-    }
-  );
+  computeGridDistanceField(queue, dist, W, H, effectiveRadius, (nx, ny) => {
+    const terrain = continentMap.terrainMatrix[ny]![nx];
+    return terrain === 'water' || terrain === 'water_deep';
+  });
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {

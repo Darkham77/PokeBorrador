@@ -1,6 +1,6 @@
-@use "@/styles/core/tools" as *;
-@use "./_event_species_tabs.scss" as *;
-@use "./_event_category_slots.scss" as *;
+@use '@/styles/core/tools' as *;
+@use './_event_species_tabs.scss' as *;
+@use './_event_category_slots.scss' as *;
 
 .retro-btn {
   @include pixelated;
@@ -42,11 +42,15 @@
 
   &.is-active-card {
     border: 1.5px solid Rgb(250 204 21 / 45%);
-    background: Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 8%) 0%, transparent 60%), Linear-Gradient(180deg, #1e1810 0%, #12131a 100%);
+    background:
+      Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 8%) 0%, transparent 60%),
+      Linear-Gradient(180deg, #1e1810 0%, #12131a 100%);
     box-shadow: var(--shadow-card-elevated);
 
     &:hover {
-      background: Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 14%) 0%, transparent 60%), Linear-Gradient(180deg, #282014 0%, #161822 100%);
+      background:
+        Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 14%) 0%, transparent 60%),
+        Linear-Gradient(180deg, #282014 0%, #161822 100%);
       border-color: Rgb(250 204 21 / 85%);
       box-shadow: var(--shadow-2xl);
     }
@@ -395,7 +399,7 @@
         }
       }
     }
-    
+
     .upcoming-badge {
       @include pixelated;
 

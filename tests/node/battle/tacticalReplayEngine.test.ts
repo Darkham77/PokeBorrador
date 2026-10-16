@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { TacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine.ts';
 import type { BattleReplayRecord } from '@/types/battle/pvp.ts';
 

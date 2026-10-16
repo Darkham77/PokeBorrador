@@ -14,24 +14,24 @@ const url = getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu', { isShiny: false });
 
 ## Asset Types & Routing Logic
 
-| Type | Source | Description |
-| :--- | :--- | :--- |
-| `POKEMON` | Local (WebP) | Resolves to local sprites in `/assets/sprites/pokemon/`. Supports `isShiny`, `isBack`, `isAnimated`. |
-| `ITEM` | Local (WebP) | Resolves to `/assets/sprites/crafting/tier[0-3]/` structured by `craftingTier`. |
-| `MAP` | Local (WebP) | Resolves map IDs to `/assets/maps/`. Supports day cycle suffixes and low power mode. |
-| `TRAINER` | Local (WebP) | Resolves trainer/NPC IDs to `/assets/sprites/trainers/` or `/assets/sprites/npc/`. |
-| `BANNER` | Local (WebP) | Route banners in `/assets/ui/banners/`, event banners in `/assets/ui/events/`, Pokécenter in `/assets/ui/pokecenter/`. |
-| `BATTLE_BG` | Local (WebP) | Battle backgrounds in `/assets/maps_battle/`. |
-| `UI` | Local (WebP) | General UI assets in `/assets/ui/`. |
-| `VFX` | Local (WebP) | Visual effects in `/assets/ui/`. |
-| `ATLAS` | Local (WebP) | Atlas sprite graphics in `/assets/ui/`. |
-| `FACTION` | Local (WebP) | Faction icons in `/assets/factions/`. |
-| `RANK` | Local (WebP) | Ranked tier medals in `/assets/sprites/ranked_medals/` (`bronce`, `plata`, `oro`, `platino`, `diamante`, `maestro`). |
-| `ICON` | Local (WebP) | UI icons in `/assets/ui/icons/`. |
-| `ENVIRONMENT` | Local (WebP) | Environment props in `/assets/environment/`. |
-| `FX` | Local (WebP) | Battle FX textures in `/assets/fx/`. |
-| `DATA` | Local (JSON) | Asset data files in `/assets/data/`. |
-| `BADGE` | Local (WebP) | Kanto gym badges in `/assets/sprites/badges/`. |
+| Type          | Source       | Description                                                                                                            |
+| :------------ | :----------- | :--------------------------------------------------------------------------------------------------------------------- |
+| `POKEMON`     | Local (WebP) | Resolves to local sprites in `/assets/sprites/pokemon/`. Supports `isShiny`, `isBack`, `isAnimated`.                   |
+| `ITEM`        | Local (WebP) | Resolves to `/assets/sprites/crafting/tier[0-3]/` structured by `craftingTier`.                                        |
+| `MAP`         | Local (WebP) | Resolves map IDs to `/assets/maps/`. Supports day cycle suffixes and low power mode.                                   |
+| `TRAINER`     | Local (WebP) | Resolves trainer/NPC IDs to `/assets/sprites/trainers/` or `/assets/sprites/npc/`.                                     |
+| `BANNER`      | Local (WebP) | Route banners in `/assets/ui/banners/`, event banners in `/assets/ui/events/`, Pokécenter in `/assets/ui/pokecenter/`. |
+| `BATTLE_BG`   | Local (WebP) | Battle backgrounds in `/assets/maps_battle/`.                                                                          |
+| `UI`          | Local (WebP) | General UI assets in `/assets/ui/`.                                                                                    |
+| `VFX`         | Local (WebP) | Visual effects in `/assets/ui/`.                                                                                       |
+| `ATLAS`       | Local (WebP) | Atlas sprite graphics in `/assets/ui/`.                                                                                |
+| `FACTION`     | Local (WebP) | Faction icons in `/assets/factions/`.                                                                                  |
+| `RANK`        | Local (WebP) | Ranked tier medals in `/assets/sprites/ranked_medals/` (`bronce`, `plata`, `oro`, `platino`, `diamante`, `maestro`).   |
+| `ICON`        | Local (WebP) | UI icons in `/assets/ui/icons/`.                                                                                       |
+| `ENVIRONMENT` | Local (WebP) | Environment props in `/assets/environment/`.                                                                           |
+| `FX`          | Local (WebP) | Battle FX textures in `/assets/fx/`.                                                                                   |
+| `DATA`        | Local (JSON) | Asset data files in `/assets/data/`.                                                                                   |
+| `BADGE`       | Local (WebP) | Kanto gym badges in `/assets/sprites/badges/`.                                                                         |
 
 ## Implementation Guidelines
 

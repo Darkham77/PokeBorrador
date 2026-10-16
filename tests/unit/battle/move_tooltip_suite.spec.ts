@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   calculateMovePower,
   calculateMoveAccuracy,
@@ -79,19 +79,12 @@ describe('Move Tooltip Suite', () => {
         maxPP: 15
       };
 
-      const res = calculateMovePower(
-        move,
-        dummyAttacker,
-        dummyDefender,
-        'clear',
-        undefined,
-        90
-      );
+      const res = calculateMovePower(move, dummyAttacker, dummyDefender, 'clear', undefined, 90);
 
       // 90 * 1.5 (STAB) = 135 * 1.2 (charcoal) = 162
       expect(res.final).toBe(162);
-      expect(res.list.some(l => l.label.includes('STAB'))).toBe(true);
-      expect(res.list.some(l => l.label.includes('charcoal'))).toBe(true);
+      expect(res.list.some((l) => l.label.includes('STAB'))).toBe(true);
+      expect(res.list.some((l) => l.label.includes('charcoal'))).toBe(true);
     });
 
     it('should calculate move accuracy with weather modifications in O(1)', () => {
@@ -153,11 +146,21 @@ describe('Move Tooltip Suite', () => {
 
   describe('Move Tooltip Math Helpers', () => {
     it('should calculate weather ball adaptation correctly', () => {
-      const move = { id: 'weatherball', name: 'Weather Ball', type: 'normal', cat: 'special' } as Move;
-      const attacker = { id: 'charmander', type: 'fire', maxHp: 100, hp: 100 } as unknown as PurePokemon;
+      const move = {
+        id: 'weatherball',
+        name: 'Weather Ball',
+        type: 'normal',
+        cat: 'special'
+      } as Move;
+      const attacker = {
+        id: 'charmander',
+        type: 'fire',
+        maxHp: 100,
+        hp: 100
+      } as unknown as PurePokemon;
       const res = calculateMovePower(move, attacker, null, 'sun', undefined, 50);
       expect(res.final).toBeGreaterThan(50);
-      expect(res.list.some(l => l.label.includes('Weather Ball'))).toBe(true);
+      expect(res.list.some((l) => l.label.includes('Weather Ball'))).toBe(true);
     });
 
     it('should calculate thunder in rain as 100% accuracy', () => {
@@ -188,7 +191,7 @@ describe('Move Tooltip Suite', () => {
         spa: 80,
         level: 50,
         name: 'Charizard',
-        types: ['Fire', 'Flying'],
+        types: ['Fire', 'Flying']
       } as unknown as PurePokemon;
 
       const stat = calculateAttackerStatDisplay(
@@ -237,7 +240,7 @@ describe('Move Tooltip Suite', () => {
         isLeechSeedActive: false,
         isForesightActive: false,
         attackerTera: undefined,
-        defenderTera: undefined,
+        defenderTera: undefined
       };
 
       const range = buildTooltipDamageRange(mockSmogonResult);

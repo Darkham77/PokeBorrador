@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { formatCurrency } from '@/logic/utils/formatters'
+import { formatCurrency } from '@/logic/utils/formatters';
 
 interface Props {
-  money: number
-  classLevel: number
+  money: number;
+  classLevel: number;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 </script>
 
 <template>
@@ -25,9 +25,7 @@ defineProps<Props>()
     <div class="header-stats">
       <div class="stat-node money">
         <span class="shop-stat-label">MIS FONDOS</span>
-        <span class="value">
-          ₽{{ formatCurrency(money) }}
-        </span>
+        <span class="value"> ₽{{ formatCurrency(money) }} </span>
       </div>
 
       <div class="stat-node level">

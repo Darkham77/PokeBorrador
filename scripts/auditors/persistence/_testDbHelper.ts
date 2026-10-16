@@ -1,6 +1,6 @@
 /**
  * scripts/auditors/persistence/_testDbHelper.ts
- * 
+ *
  * Shared test database setup and base schema initialization for persistence validators.
  */
 

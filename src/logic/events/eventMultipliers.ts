@@ -5,12 +5,12 @@
  * without creating circular dependencies between stores.
  */
 
-let activeExpMultiplier = 1 // singleton-ok: Singleton instance state container
+let activeExpMultiplier = 1; // singleton-ok: Singleton instance state container
 
 export function setEventExpMultiplier(mult: number): void {
-  activeExpMultiplier = mult
+  activeExpMultiplier = mult;
 }
 
 export function getEventExpMultiplier(): number {
-  return activeExpMultiplier
+  return activeExpMultiplier;
 }

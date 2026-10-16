@@ -1,37 +1,36 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { AnimatedSpriteData } from '@/data/pokemon/animatedSpriteDatabase'
-import type { CombatantSpriteMode } from '@/types/battle/battle'
-
-const PERCENT_MULTIPLIER = 100
+import { computed } from 'vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { AnimatedSpriteData } from '@/data/pokemon/animatedSpriteDatabase';
+import type { CombatantSpriteMode } from '@/types/battle/battle';
+import { PERCENT_BASE_MULTIPLIER } from '@/logic/constants/gameplay';
 
 const props = defineProps<{
-  pokemon: Pokemon | null
-  isSilhouette: boolean
-  currentMode: CombatantSpriteMode
-  idleImageUrl: string
-  variationImageUrl: string
-  frames: number
-  variationMeta: AnimatedSpriteData | null
-}>()
+  pokemon: Pokemon | null;
+  isSilhouette: boolean;
+  currentMode: CombatantSpriteMode;
+  idleImageUrl: string;
+  variationImageUrl: string;
+  frames: number;
+  variationMeta: AnimatedSpriteData | null;
+}>();
 
 const emit = defineEmits<{
-  (e: 'load', event: Event): void
-  (e: 'error', event: Event): void
-}>()
+  (e: 'load', event: Event): void;
+  (e: 'error', event: Event): void;
+}>();
 
-const filterStyle = computed(() => (props.isSilhouette ? undefined : 'var(--atmosphere-filter)'))
+const filterStyle = computed(() => (props.isSilhouette ? undefined : 'var(--atmosphere-filter)'));
 
 const idleStyle = computed(() => ({
   filter: filterStyle.value,
-  width: `${props.frames * PERCENT_MULTIPLIER}%`
-}))
+  width: `${props.frames * PERCENT_BASE_MULTIPLIER}%`
+}));
 
 const variationStyle = computed(() => ({
   filter: filterStyle.value,
-  width: `${(props.variationMeta?.frames || 1) * PERCENT_MULTIPLIER}%`
-}))
+  width: `${(props.variationMeta?.frames || 1) * PERCENT_BASE_MULTIPLIER}%`
+}));
 
 const hasVariationFrames = computed(() => (props.variationMeta?.frames ?? 0) > 1);
 </script>
@@ -42,7 +41,7 @@ const hasVariationFrames = computed(() => (props.variationMeta?.frames ?? 0) > 1
     width="96"
     height="96"
     class="pokemon-combat-image pokemon-image-idle"
-    :class="{ 
+    :class="{
       'is-silhouette': props.isSilhouette,
       'active-mode': props.currentMode === 'idle'
     }"
@@ -51,7 +50,7 @@ const hasVariationFrames = computed(() => (props.variationMeta?.frames ?? 0) > 1
     :style="idleStyle"
     @load="emit('load', $event)"
     @error="emit('error', $event)"
-  >
+  />
 
   <!-- Imagen VARIACIÓN (v) -->
   <img
@@ -59,7 +58,7 @@ const hasVariationFrames = computed(() => (props.variationMeta?.frames ?? 0) > 1
     width="96"
     height="96"
     class="pokemon-combat-image pokemon-image-variation"
-    :class="{ 
+    :class="{
       'is-silhouette': props.isSilhouette,
       'active-mode': props.currentMode === 'variation'
     }"
@@ -68,11 +67,11 @@ const hasVariationFrames = computed(() => (props.variationMeta?.frames ?? 0) > 1
     :style="variationStyle"
     @load="emit('load', $event)"
     @error="emit('error', $event)"
-  >
+  />
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .pokemon-combat-image {
   @include sprite-render;
@@ -92,7 +91,7 @@ const hasVariationFrames = computed(() => (props.variationMeta?.frames ?? 0) > 1
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
 
-  &.is-silhouette { 
+  &.is-silhouette {
     @include pokemon-silhouette;
   }
 

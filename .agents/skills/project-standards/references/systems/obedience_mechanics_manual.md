@@ -1,6 +1,6 @@
 # Pokémon Obedience & Level Cap Mechanics Manual (Gen I – IX & Poké Vicio)
 
-> **Scope & Authority**: This manual serves as the canonical Single Source of Truth (SSoT) for the **Obedience** (*Obediencia*) mechanic across all mainline Pokémon generations (Generation I through Generation IX, spin-offs *Colosseum*, *XD: Gale of Darkness*, and *Legends: Arceus/Z-A*), as well as the engine architecture blueprint for Poké Vicio.
+> **Scope & Authority**: This manual serves as the canonical Single Source of Truth (SSoT) for the **Obedience** (_Obediencia_) mechanic across all mainline Pokémon generations (Generation I through Generation IX, spin-offs _Colosseum_, _XD: Gale of Darkness_, and _Legends: Arceus/Z-A_), as well as the engine architecture blueprint for Poké Vicio.
 > **Related Systems**:
 >
 > - Gym Progression & Badges: [`gym_system_manual.md`](gym_system_manual.md)
@@ -49,13 +49,13 @@ flowchart LR
     end
 ```
 
-| Dimension | Classic Paradigm (Gen I – VIII) | Modern Paradigm (PLA & Gen IX) |
-| :--- | :--- | :--- |
-| **Evaluated Parameter** | Current Pokémon Level ($L_{\text{current}}$) | Met / Encounter Level ($L_{\text{met}}$) |
-| **Insider Pokémon (Matching OT)** | 100% immune to disobedience; can reach Lv 100 without badges. | Evaluated against badge cap at time of capture. |
-| **Trained Pokémon** | Can reach high levels safely if obtained at low level. | Stays obedient forever if met level $\le$ badge cap when caught. |
-| **Overleveled Wild Captures** | Obeyed unconditionally once caught if player was OT. | Disobeys if caught above the current badge cap. |
-| **Traded Outsiders** | Disobeyed whenever current level exceeded badge cap. | Disobeys if original met/received level exceeded badge cap. |
+| Dimension                         | Classic Paradigm (Gen I – VIII)                               | Modern Paradigm (PLA & Gen IX)                                   |
+| :-------------------------------- | :------------------------------------------------------------ | :--------------------------------------------------------------- |
+| **Evaluated Parameter**           | Current Pokémon Level ($L_{\text{current}}$)                  | Met / Encounter Level ($L_{\text{met}}$)                         |
+| **Insider Pokémon (Matching OT)** | 100% immune to disobedience; can reach Lv 100 without badges. | Evaluated against badge cap at time of capture.                  |
+| **Trained Pokémon**               | Can reach high levels safely if obtained at low level.        | Stays obedient forever if met level $\le$ badge cap when caught. |
+| **Overleveled Wild Captures**     | Obeyed unconditionally once caught if player was OT.          | Disobeys if caught above the current badge cap.                  |
+| **Traded Outsiders**              | Disobeyed whenever current level exceeded badge cap.          | Disobeys if original met/received level exceeded badge cap.      |
 
 > [!IMPORTANT]
 > **Friendship Isolation Principle**: Friendship / Happiness has **EXACTLY ZERO EFFECT** on obedience checks across all generations. A Pokémon with maximum Friendship (`255`) will still disobey if its applicable level exceeds the player's obedience cap. Obedience is governed strictly by Trainer Progression milestones.
@@ -68,101 +68,101 @@ The threshold of maximum obedience level scales according to regional progressio
 
 ### 1. Generation I – IV (Kanto, Johto, Hoenn, Sinnoh)
 
-In Gens I–IV, the cap traditionally increased every 2 badges (or by total badge count in Sinnoh and *Let's Go*):
+In Gens I–IV, the cap traditionally increased every 2 badges (or by total badge count in Sinnoh and _Let's Go_):
 
-| Progress Milestone | Obedience Level Cap ($C$) | Notes |
-| :--- | :---: | :--- |
-| **0 Badges** | **Lv 10** | Default starting cap for traded Pokémon. |
-| **2 Badges** | **Lv 30** | Cascade Badge (Kanto) / Hive Badge (Johto) / Knuckle Badge (Hoenn) / Forest Badge (Sinnoh). |
-| **4 Badges** | **Lv 50** | Rainbow Badge (Kanto) / Fog Badge (Johto) / Heat Badge (Hoenn) / Fen Badge (Sinnoh). |
-| **6 Badges** | **Lv 70** | Marsh Badge (Kanto) / Mineral Badge (Johto) / Feather Badge (Hoenn) / Mine Badge (Sinnoh). |
-| **8 Badges** | **Lv 100** | Earth Badge / Rising Badge / Mind Badge / Beacon Badge (All levels obey). |
+| Progress Milestone | Obedience Level Cap ($C$) | Notes                                                                                       |
+| :----------------- | :-----------------------: | :------------------------------------------------------------------------------------------ |
+| **0 Badges**       |         **Lv 10**         | Default starting cap for traded Pokémon.                                                    |
+| **2 Badges**       |         **Lv 30**         | Cascade Badge (Kanto) / Hive Badge (Johto) / Knuckle Badge (Hoenn) / Forest Badge (Sinnoh). |
+| **4 Badges**       |         **Lv 50**         | Rainbow Badge (Kanto) / Fog Badge (Johto) / Heat Badge (Hoenn) / Fen Badge (Sinnoh).        |
+| **6 Badges**       |         **Lv 70**         | Marsh Badge (Kanto) / Mineral Badge (Johto) / Feather Badge (Hoenn) / Mine Badge (Sinnoh).  |
+| **8 Badges**       |        **Lv 100**         | Earth Badge / Rising Badge / Mind Badge / Beacon Badge (All levels obey).                   |
 
 ### 2. Generation V – VIII (Unova, Kalos, Galar)
 
 In Gens V–VIII, the cap scales continuously with every individual badge obtained:
 
-| Badges Acquired | Obedience Level Cap ($C$) | Typical Regional Progression |
-| :---: | :---: | :--- |
-| **0 Badges** | **Lv 20** | Base starting cap. |
-| **1 Badge** | **Lv 25 – Lv 30** | Trio / Basic / Bug / Grass Gyms. |
-| **2 Badges** | **Lv 30 – Lv 35** | Basic / Toxic / Cliff / Water Gyms. |
-| **3 Badges** | **Lv 35 – Lv 40** | Insect / Castelia / Rumble / Fire Gyms. |
-| **4 Badges** | **Lv 45 – Lv 50** | Bolt / Nimbasa / Plant / Fighting/Ghost Gyms. |
-| **5 Badges** | **Lv 55 – Lv 60** | Quake / Driftveil / Voltage / Fairy Gyms. |
-| **6 Badges** | **Lv 65 – Lv 70** | Jet / Mistralton / Fairy / Rock/Ice Gyms. |
-| **7 Badges** | **Lv 75 – Lv 80** | Freeze / Legend / Psychic / Dark Gyms. |
-| **8 Badges** | **Lv 100** | Dragon / Wave / Iceberg / Dragon Gyms (All levels obey). |
+| Badges Acquired | Obedience Level Cap ($C$) | Typical Regional Progression                             |
+| :-------------: | :-----------------------: | :------------------------------------------------------- |
+|  **0 Badges**   |         **Lv 20**         | Base starting cap.                                       |
+|   **1 Badge**   |     **Lv 25 – Lv 30**     | Trio / Basic / Bug / Grass Gyms.                         |
+|  **2 Badges**   |     **Lv 30 – Lv 35**     | Basic / Toxic / Cliff / Water Gyms.                      |
+|  **3 Badges**   |     **Lv 35 – Lv 40**     | Insect / Castelia / Rumble / Fire Gyms.                  |
+|  **4 Badges**   |     **Lv 45 – Lv 50**     | Bolt / Nimbasa / Plant / Fighting/Ghost Gyms.            |
+|  **5 Badges**   |     **Lv 55 – Lv 60**     | Quake / Driftveil / Voltage / Fairy Gyms.                |
+|  **6 Badges**   |     **Lv 65 – Lv 70**     | Jet / Mistralton / Fairy / Rock/Ice Gyms.                |
+|  **7 Badges**   |     **Lv 75 – Lv 80**     | Freeze / Legend / Psychic / Dark Gyms.                   |
+|  **8 Badges**   |        **Lv 100**         | Dragon / Wave / Iceberg / Dragon Gyms (All levels obey). |
 
 ### 3. Generation VII: Alola Island Challenge Stamps
 
 Alola replaces Gym Badges with Grand Trial Stamps:
 
-| Grand Trial Milestone | Obedience Level Cap ($C$) |
-| :--- | :---: |
-| **No Stamps** | **Lv 20** |
-| **Melemele Island Grand Trial** (Hala) | **Lv 35** |
-| **Akala Island Grand Trial** (Olivia) | **Lv 50** |
-| **Ula'ula Island Grand Trial** (Nanu) | **Lv 65** |
-| **Poni Island Grand Trial** (Hapu) | **Lv 80** |
-| **Pokémon League Champion** | **Lv 100** (All levels obey) |
+| Grand Trial Milestone                  |  Obedience Level Cap ($C$)   |
+| :------------------------------------- | :--------------------------: |
+| **No Stamps**                          |          **Lv 20**           |
+| **Melemele Island Grand Trial** (Hala) |          **Lv 35**           |
+| **Akala Island Grand Trial** (Olivia)  |          **Lv 50**           |
+| **Ula'ula Island Grand Trial** (Nanu)  |          **Lv 65**           |
+| **Poni Island Grand Trial** (Hapu)     |          **Lv 80**           |
+| **Pokémon League Champion**            | **Lv 100** (All levels obey) |
 
-### 4. Hisui (*Pokémon Legends: Arceus*) — Galaxy Team Ranks
+### 4. Hisui (_Pokémon Legends: Arceus_) — Galaxy Team Ranks
 
 In Hisui, obedience scales with Galaxy Expedition Team Star Member Ranks:
 
-| Galaxy Rank | Research Points Required | Obedience Level Cap ($C$) |
-| :--- | :---: | :---: |
-| **0 Stars** (No Rank) | 0 pts | **Lv 10** |
-| **First Star** (1★) | 500 pts | **Lv 20** |
-| **Second Star** (2★) | 1,800 pts | **Lv 30** |
-| **Third Star** (3★) | 3,500 pts | **Lv 40** |
-| **Fourth Star** (4★) | 6,000 pts | **Lv 50** |
-| **Fifth Star** (5★) | 8,500 pts | **Lv 65** |
-| **Sixth Star** (6★) | 11,000 pts | **Lv 80** |
-| **Seventh Star or higher** (7★ – 10★) | $\ge 15,000\text{ pts}$ | **Lv 100** (All levels obey) |
+| Galaxy Rank                           | Research Points Required |  Obedience Level Cap ($C$)   |
+| :------------------------------------ | :----------------------: | :--------------------------: |
+| **0 Stars** (No Rank)                 |          0 pts           |          **Lv 10**           |
+| **First Star** (1★)                   |         500 pts          |          **Lv 20**           |
+| **Second Star** (2★)                  |        1,800 pts         |          **Lv 30**           |
+| **Third Star** (3★)                   |        3,500 pts         |          **Lv 40**           |
+| **Fourth Star** (4★)                  |        6,000 pts         |          **Lv 50**           |
+| **Fifth Star** (5★)                   |        8,500 pts         |          **Lv 65**           |
+| **Sixth Star** (6★)                   |        11,000 pts        |          **Lv 80**           |
+| **Seventh Star or higher** (7★ – 10★) | $\ge 15,000\text{ pts}$  | **Lv 100** (All levels obey) |
 
-### 5. Lumiose (*Pokémon Legends: Z-A*) — Z-A Royale Ranks
+### 5. Lumiose (_Pokémon Legends: Z-A_) — Z-A Royale Ranks
 
 In the Z-A Royale progression system:
 
-| Z-A Royale Tier | Obedience Level Cap ($C$) |
-| :--- | :---: |
-| **Rank Z** (Entry) | **Lv 20** |
+| Z-A Royale Tier       |           Obedience Level Cap ($C$)           |
+| :-------------------- | :-------------------------------------------: |
+| **Rank Z** (Entry)    |                   **Lv 20**                   |
 | **Ranks Y through V** | **Lv 25 to Lv 40+** (Linear scaling per tier) |
-| **Rank A** (Champion) | **Lv 100** (All levels obey) |
+| **Rank A** (Champion) |         **Lv 100** (All levels obey)          |
 
-### 6. Generation IX: Paldea Gym Badges (*Scarlet & Violet*)
+### 6. Generation IX: Paldea Gym Badges (_Scarlet & Violet_)
 
 Evaluated strictly against the Pokémon's **Met Level** ($L_{\text{met}}$):
 
 | Badges Acquired | Obedience Level Cap ($C$) | Wild Capture Penalty Applies Above |
-| :---: | :---: | :---: |
-| **0 Badges** | **Lv 20** | Level 20 |
-| **1 Badge** | **Lv 25** | Level 25 |
-| **2 Badges** | **Lv 30** | Level 30 |
-| **3 Badges** | **Lv 35** | Level 35 |
-| **4 Badges** | **Lv 40** | Level 40 |
-| **5 Badges** | **Lv 45** | Level 45 |
-| **6 Badges** | **Lv 50** | Level 50 |
-| **7 Badges** | **Lv 55** | Level 55 |
-| **8 Badges** | **Lv 100** | Level 100 (No penalties) |
+| :-------------: | :-----------------------: | :--------------------------------: |
+|  **0 Badges**   |         **Lv 20**         |              Level 20              |
+|   **1 Badge**   |         **Lv 25**         |              Level 25              |
+|  **2 Badges**   |         **Lv 30**         |              Level 30              |
+|  **3 Badges**   |         **Lv 35**         |              Level 35              |
+|  **4 Badges**   |         **Lv 40**         |              Level 40              |
+|  **5 Badges**   |         **Lv 45**         |              Level 45              |
+|  **6 Badges**   |         **Lv 50**         |              Level 50              |
+|  **7 Badges**   |         **Lv 55**         |              Level 55              |
+|  **8 Badges**   |        **Lv 100**         |      Level 100 (No penalties)      |
 
 ### 7. Poké Vicio Canonical Progression Matrix
 
 Poké Vicio implements the canonical Kanto progression with smooth 10-level increments:
 
-| # | Badge Name | Gym Leader | City / Location | Poké Vicio Obedience Cap ($C$) |
-| :-: | :--- | :--- | :--- | :---: |
-| **0** | *No Badges* | — | Pallet / Viridian | **Lv 20** |
-| **1** | **Boulder Badge** (Roca) | Brock | Pewter City (`pewter_city`) | **Lv 30** |
-| **2** | **Cascade Badge** (Cascada) | Misty | Cerulean City (`cerulean_city`) | **Lv 40** |
-| **3** | **Thunder Badge** (Trueno) | Lt. Surge | Vermilion City (`vermilion_city`) | **Lv 50** |
-| **4** | **Rainbow Badge** (Arcoíris) | Erika | Celadon City (`celadon_city`) | **Lv 60** |
-| **5** | **Soul Badge** (Alma) | Koga | Fuchsia City (`fuchsia_city`) | **Lv 70** |
-| **6** | **Marsh Badge** (Pantano) | Sabrina | Saffron City (`saffron_city`) | **Lv 80** |
-| **7** | **Volcano Badge** (Volcán) | Blaine | Cinnabar Island (`cinnabar_island`) | **Lv 90** |
-| **8** | **Earth Badge** (Tierra) | Giovanni | Viridian City (`viridian_city`) | **Lv 100** (Full Mastery) |
+|   #   | Badge Name                   | Gym Leader | City / Location                     | Poké Vicio Obedience Cap ($C$) |
+| :---: | :--------------------------- | :--------- | :---------------------------------- | :----------------------------: |
+| **0** | _No Badges_                  | —          | Pallet / Viridian                   |           **Lv 20**            |
+| **1** | **Boulder Badge** (Roca)     | Brock      | Pewter City (`pewter_city`)         |           **Lv 30**            |
+| **2** | **Cascade Badge** (Cascada)  | Misty      | Cerulean City (`cerulean_city`)     |           **Lv 40**            |
+| **3** | **Thunder Badge** (Trueno)   | Lt. Surge  | Vermilion City (`vermilion_city`)   |           **Lv 50**            |
+| **4** | **Rainbow Badge** (Arcoíris) | Erika      | Celadon City (`celadon_city`)       |           **Lv 60**            |
+| **5** | **Soul Badge** (Alma)        | Koga       | Fuchsia City (`fuchsia_city`)       |           **Lv 70**            |
+| **6** | **Marsh Badge** (Pantano)    | Sabrina    | Saffron City (`saffron_city`)       |           **Lv 80**            |
+| **7** | **Volcano Badge** (Volcán)   | Blaine     | Cinnabar Island (`cinnabar_island`) |           **Lv 90**            |
+| **8** | **Earth Badge** (Tierra)     | Giovanni   | Viridian City (`viridian_city`)     |   **Lv 100** (Full Mastery)    |
 
 ---
 
@@ -216,7 +216,7 @@ If Check 1 fails:
 3. Evaluation:
    - If $B < C$: Pokémon **ignores the ordered move** and randomly selects one of its **other 3 moves** (or other available moves in its current learnset).
      - The move executes even if it has $0\text{ PP}$.
-     - $1\text{ PP}$ is deducted from the move *originally ordered* by the player.
+     - $1\text{ PP}$ is deducted from the move _originally ordered_ by the player.
      - In Double Battles (Gen III–IV): Target is randomized among all active combatants on the field (including its own ally!).
    - If $B \ge C$: Pokémon completely refuses to execute any attack.
 
@@ -228,18 +228,18 @@ If $B \ge C$:
 2. Generate pseudo-random integer $R_3 \in [0, 255]$.
 3. Apply tiered outcome:
    - **Sleep Induction**: If $R_3 < \Delta$:
-     - If Pokémon possesses sleep immunities (*Vital Spirit*, *Insomnia*, *Comatose*, active *Uproar*, or *Electric/Misty Terrain*), sleep is blocked and the Pokémon loafs instead.
+     - If Pokémon possesses sleep immunities (_Vital Spirit_, _Insomnia_, _Comatose_, active _Uproar_, or _Electric/Misty Terrain_), sleep is blocked and the Pokémon loafs instead.
      - Otherwise, the Pokémon immediately falls asleep (standard sleep counter assigned).
    - **Confusion Self-Damage**: If $\Delta \le R_3 < 2\Delta$ (i.e. $R_3 - \Delta < \Delta$):
      - Pokémon inflicts damage to itself calculated via standard confusion self-hit formula (40 BP typeless Physical hit).
    - **Passive Inaction**: If $R_3 \ge 2\Delta$:
-     - Pokémon skips its turn displaying an inaction message (*loafing around*, *turned away*, *won't obey*, or *pretended not to notice*).
+     - Pokémon skips its turn displaying an inaction message (_loafing around_, _turned away_, _won't obey_, or _pretended not to notice_).
 
 ---
 
 ### Phase B: Generation V – IX Modernized Quadratic Curve
 
-Starting in Generation V (*Black & White*), Game Freak streamlined the algorithm:
+Starting in Generation V (_Black & White_), Game Freak streamlined the algorithm:
 
 1. **Removed Move Redirection**: Disobedient Pokémon no longer execute alternate moves or attack teammates (preventing multi-target combat desynchronizations in Triple / Rotation / Tera Raid formats).
 2. **Steeper Disobedience Curve**: The primary obedience probability was made quadratic to heavily penalize severe level gaps.
@@ -256,12 +256,12 @@ $$\text{Probability of Obeying (Gen V+)}: P(\text{obey}) \approx \left(\frac{C}{
 
 For a Level 100 Pokémon ($L = 100$) used with 0 Badges ($C = 10$ in Gen IV, $C = 20$ in Gen IX):
 
-| Scenario | Obedience Cap ($C$) | Pokémon Level ($L$) | Gen I–IV Formula ($P$) | Gen V–IX Formula ($P$) |
-| :--- | :---: | :---: | :---: | :---: |
-| **Extreme Overlevel** | $10$ | $100$ | $\frac{10}{110} \approx \mathbf{9.09\%}$ | $\left(\frac{10}{110}\right)^2 \approx \mathbf{0.82\%}$ |
-| **Standard Overlevel (0 Badges)** | $20$ | $50$ | $\frac{20}{70} \approx \mathbf{28.57\%}$ | $\left(\frac{20}{70}\right)^2 \approx \mathbf{8.16\%}$ |
-| **Moderate Overlevel** | $50$ | $60$ | $\frac{50}{110} \approx \mathbf{45.45\%}$ | $\left(\frac{50}{110}\right)^2 \approx \mathbf{20.66\%}$ |
-| **Slight Overlevel** | $70$ | $75$ | $\frac{70}{145} \approx \mathbf{48.27\%}$ | $\left(\frac{70}{145}\right)^2 \approx \mathbf{23.30\%}$ |
+| Scenario                          | Obedience Cap ($C$) | Pokémon Level ($L$) |          Gen I–IV Formula ($P$)           |                  Gen V–IX Formula ($P$)                  |
+| :-------------------------------- | :-----------------: | :-----------------: | :---------------------------------------: | :------------------------------------------------------: |
+| **Extreme Overlevel**             |        $10$         |        $100$        | $\frac{10}{110} \approx \mathbf{9.09\%}$  | $\left(\frac{10}{110}\right)^2 \approx \mathbf{0.82\%}$  |
+| **Standard Overlevel (0 Badges)** |        $20$         |        $50$         | $\frac{20}{70} \approx \mathbf{28.57\%}$  |  $\left(\frac{20}{70}\right)^2 \approx \mathbf{8.16\%}$  |
+| **Moderate Overlevel**            |        $50$         |        $60$         | $\frac{50}{110} \approx \mathbf{45.45\%}$ | $\left(\frac{50}{110}\right)^2 \approx \mathbf{20.66\%}$ |
+| **Slight Overlevel**              |        $70$         |        $75$         | $\frac{70}{145} \approx \mathbf{48.27\%}$ | $\left(\frac{70}{145}\right)^2 \approx \mathbf{23.30\%}$ |
 
 ---
 
@@ -269,24 +269,24 @@ For a Level 100 Pokémon ($L = 100$) used with 0 Badges ($C = 10$ in Gen IV, $C 
 
 The combat log and battle UI communicate disobedience states through standardized strings:
 
-| English Message | Localized Spanish Message | Behavioral Outcome | Active Generations |
-| :--- | :--- | :--- | :--- |
-| `"[POKEMON] used [MOVE] instead!"` | `"[POKEMON] usó [MOVE] en su lugar!"` | Uses random alternative move. | Gen I, Gen II |
-| `"[POKEMON] ignored orders!"` | `"[POKEMON] ignoró las órdenes!"` | Total turn inaction. | Gen I, Gen II, Gen IV |
-| `"[POKEMON] is loafing around!"` | `"[POKEMON] está holgazaneando!"` | Inaction / Slacking. | Gen I – IX (All) |
-| `"[POKEMON] turned away!"` | `"[POKEMON] se dio la vuelta!"` | Inaction / Ignores Trainer. | Gen I – IX (All) |
-| `"[POKEMON] won't obey!"` | `"[POKEMON] no quiere obedecer!"` | Explicit command rejection. | Gen I – IX (All) |
-| `"[POKEMON] pretended not to notice!"` | `"[POKEMON] fingió no darse cuenta!"` | Inaction / Feigned ignorance. | Gen III – IX |
-| `"[POKEMON] began to nap!"` | `"[POKEMON] se puso a dormir!"` | Falls asleep mid-battle. | Gen I – IX (All) |
-| `"[POKEMON] won't obey! It hurt itself in its confusion!"` | `"[POKEMON] no obedece! Está tan confuso que se hirió a sí mismo!"` | Inflicts confusion self-damage. | Gen I – IX (All) |
-| `"[POKEMON] ignored orders while asleep!"` | `"[POKEMON] ignoró las órdenes mientras dormía!"` | Fails *Snore* / *Sleep Talk*. | Gen III – V |
-| `"[POKEMON] ignored orders and kept sleeping!"` | `"[POKEMON] ignoró las órdenes y siguió durmiendo!"` | Fails *Snore* / *Sleep Talk*. | Gen VI – IX |
+| English Message                                            | Localized Spanish Message                                           | Behavioral Outcome              | Active Generations    |
+| :--------------------------------------------------------- | :------------------------------------------------------------------ | :------------------------------ | :-------------------- |
+| `"[POKEMON] used [MOVE] instead!"`                         | `"[POKEMON] usó [MOVE] en su lugar!"`                               | Uses random alternative move.   | Gen I, Gen II         |
+| `"[POKEMON] ignored orders!"`                              | `"[POKEMON] ignoró las órdenes!"`                                   | Total turn inaction.            | Gen I, Gen II, Gen IV |
+| `"[POKEMON] is loafing around!"`                           | `"[POKEMON] está holgazaneando!"`                                   | Inaction / Slacking.            | Gen I – IX (All)      |
+| `"[POKEMON] turned away!"`                                 | `"[POKEMON] se dio la vuelta!"`                                     | Inaction / Ignores Trainer.     | Gen I – IX (All)      |
+| `"[POKEMON] won't obey!"`                                  | `"[POKEMON] no quiere obedecer!"`                                   | Explicit command rejection.     | Gen I – IX (All)      |
+| `"[POKEMON] pretended not to notice!"`                     | `"[POKEMON] fingió no darse cuenta!"`                               | Inaction / Feigned ignorance.   | Gen III – IX          |
+| `"[POKEMON] began to nap!"`                                | `"[POKEMON] se puso a dormir!"`                                     | Falls asleep mid-battle.        | Gen I – IX (All)      |
+| `"[POKEMON] won't obey! It hurt itself in its confusion!"` | `"[POKEMON] no obedece! Está tan confuso que se hirió a sí mismo!"` | Inflicts confusion self-damage. | Gen I – IX (All)      |
+| `"[POKEMON] ignored orders while asleep!"`                 | `"[POKEMON] ignoró las órdenes mientras dormía!"`                   | Fails _Snore_ / _Sleep Talk_.   | Gen III – V           |
+| `"[POKEMON] ignored orders and kept sleeping!"`            | `"[POKEMON] ignoró las órdenes y siguió durmiendo!"`                | Fails _Snore_ / _Sleep Talk_.   | Gen VI – IX           |
 
-### Overworld Manifestations (*Let's Go* Auto-Battle)
+### Overworld Manifestations (_Let's Go_ Auto-Battle)
 
-In Generation IX (*Scarlet & Violet*), disobedience extends directly to real-time overworld exploration:
+In Generation IX (_Scarlet & Violet_), disobedience extends directly to real-time overworld exploration:
 
-- When deployed in **Auto-Battle Mode** (*Let's Go feature*), a disobedient Pokémon ($L_{\text{met}} > C$) refuses to engage wild encounters.
+- When deployed in **Auto-Battle Mode** (_Let's Go feature_), a disobedient Pokémon ($L_{\text{met}} > C$) refuses to engage wild encounters.
 - It displays a **broken blue heart emoticon bubble** (`💔`) over its sprite/model, plays a refusal chirp, and retreats back to the trainer.
 
 ---
@@ -295,15 +295,15 @@ In Generation IX (*Scarlet & Violet*), disobedience extends directly to real-tim
 
 ### 1. The Fateful Encounter Anti-Cheat Lock (Gen III Mew & Deoxys)
 
-In *FireRed, LeafGreen, Emerald, Colosseum*, and *XD: Gale of Darkness*:
+In _FireRed, LeafGreen, Emerald, Colosseum_, and _XD: Gale of Darkness_:
 
-- Mythical Pokémon **Mew** and **Deoxys** contain an internal binary flag: `fatefulEncounter` (*Obedience Bit*).
+- Mythical Pokémon **Mew** and **Deoxys** contain an internal binary flag: `fatefulEncounter` (_Obedience Bit_).
 - If generated via memory-editing devices (Action Replay, GameShark) without this bit active, the engine flags the creature as illegitimate.
 - **Sanction**: The Pokémon **UNCONDITIONALLY DISOBEYS** every battle command, regardless of whether the player holds all 8 Badges or is the Original Trainer. In addition, trading is locked.
 
 ### 2. Shadow Pokémon: Hyper Mode & Reverse Mode
 
-In the Orre region titles (*Colosseum* & *XD: Gale of Darkness*), Shadow Pokémon exhibit unique disobedience mechanics independent of level or badges:
+In the Orre region titles (_Colosseum_ & _XD: Gale of Darkness_), Shadow Pokémon exhibit unique disobedience mechanics independent of level or badges:
 
 ```mermaid
 flowchart TD
@@ -324,34 +324,34 @@ flowchart TD
     end
 ```
 
-| Feature / Dynamic | Hyper Mode (*Pokémon Colosseum*) | Reverse Mode (*Pokémon XD: Gale of Darkness*) |
-| :--- | :--- | :--- |
-| **Trigger Condition** | Random chance in battle while Heart Gauge > 0. | Refined random trigger while Heart Gauge > 0. |
-| **Command Restrictions** | Disobeys if ordered any move other than *Shadow Rush*. | Non-Shadow moves may be refused. |
-| **Erratic Behaviors** | May attack ally Pokémon or attempt to flee battle. | Refuses command; inflicts recoil self-damage each turn. |
-| **Item Interaction** | Bag item usage on Pokémon is completely blocked. | Bag items can still be used on the Pokémon. |
-| **Recovery Method** | Selecting the battle command **"Call"** (*Llamar*). | Selecting **"Call"** (*Llamar*) (also purifies Heart Gauge). |
+| Feature / Dynamic        | Hyper Mode (_Pokémon Colosseum_)                       | Reverse Mode (_Pokémon XD: Gale of Darkness_)                |
+| :----------------------- | :----------------------------------------------------- | :----------------------------------------------------------- |
+| **Trigger Condition**    | Random chance in battle while Heart Gauge > 0.         | Refined random trigger while Heart Gauge > 0.                |
+| **Command Restrictions** | Disobeys if ordered any move other than _Shadow Rush_. | Non-Shadow moves may be refused.                             |
+| **Erratic Behaviors**    | May attack ally Pokémon or attempt to flee battle.     | Refuses command; inflicts recoil self-damage each turn.      |
+| **Item Interaction**     | Bag item usage on Pokémon is completely blocked.       | Bag items can still be used on the Pokémon.                  |
+| **Recovery Method**      | Selecting the battle command **"Call"** (_Llamar_).    | Selecting **"Call"** (_Llamar_) (also purifies Heart Gauge). |
 
 ### 3. Environments Exempt from Obedience Checks (100% Guaranteed Obedience)
 
 To maintain competitive integrity and prevent frustration in cooperative play, the following modes bypass obedience checks:
 
-| Exempt Environment / Feature | Behavior | Engine Rationale |
-| :--- | :---: | :--- |
-| **Multiplayer PvP (Link Battles)** | **100% Guaranteed** | Guarantees balanced eSports & tournament play. |
-| **Battle Tower / Frontier / Subway / Maison / Tree** | **100% Guaranteed** | Competitive battle facility parity. |
-| **Max Raid Battles & Tera Raid Battles** | **100% Guaranteed** | Prevents griefing and failure in cooperative PvE. |
-| **Synchro Machine Mode (Gen IX DLC)** | **Direct Player Control** | The player directly controls the creature's locomotion and attacks. |
+| Exempt Environment / Feature                         |         Behavior          | Engine Rationale                                                    |
+| :--------------------------------------------------- | :-----------------------: | :------------------------------------------------------------------ |
+| **Multiplayer PvP (Link Battles)**                   |    **100% Guaranteed**    | Guarantees balanced eSports & tournament play.                      |
+| **Battle Tower / Frontier / Subway / Maison / Tree** |    **100% Guaranteed**    | Competitive battle facility parity.                                 |
+| **Max Raid Battles & Tera Raid Battles**             |    **100% Guaranteed**    | Prevents griefing and failure in cooperative PvE.                   |
+| **Synchro Machine Mode (Gen IX DLC)**                | **Direct Player Control** | The player directly controls the creature's locomotion and attacks. |
 
 ### 4. Special Move Interactions
 
-- **Multi-Turn Moves** (*Bide, Thrash, Outrage, Petal Dance, Rollout, Ice Ball*):
+- **Multi-Turn Moves** (_Bide, Thrash, Outrage, Petal Dance, Rollout, Ice Ball_):
   - The obedience check is executed **ONLY ON TURN 1** (the initiation turn).
   - If the initial check passes, subsequent locked turns execute automatically without re-checking obedience.
-- **Rage (*Furia*)**:
-  - If a Pokémon using *Rage* disobeys on a subsequent turn, all accumulated Attack stage bonuses from *Rage* are permanently cleared.
-- **Sleep-Activated Moves** (*Snore, Sleep Talk*):
-  - If an overleveled Pokémon is ordered to use *Snore* or *Sleep Talk* while asleep, failing the check outputs `"[POKEMON] ignored orders and kept sleeping!"`.
+- **Rage (_Furia_)**:
+  - If a Pokémon using _Rage_ disobeys on a subsequent turn, all accumulated Attack stage bonuses from _Rage_ are permanently cleared.
+- **Sleep-Activated Moves** (_Snore, Sleep Talk_):
+  - If an overleveled Pokémon is ordered to use _Snore_ or _Sleep Talk_ while asleep, failing the check outputs `"[POKEMON] ignored orders and kept sleeping!"`.
 
 ### 5. Wild Capture Penalty ($BP$) & Met Level Persistence Synergy
 
@@ -359,7 +359,7 @@ The obedience cap acts as a dual gatekeeper across both wild capturing and in-ba
 
 1. **In-Battle Capture Penalty ($BP$)**: If a target wild Pokémon's level $L_{\text{wild}}$ exceeds the trainer's current badge cap $C$ ($L_{\text{wild}} > C$), the base capture formula applies an exponential penalty:
    $$BP = 0.8^{\text{missing badges}}$$
-   *(See [`capturing_manual.md`](capturing_manual.md) for the complete capture rate formula).*
+   _(See [`capturing_manual.md`](capturing_manual.md) for the complete capture rate formula)._
 2. **Atomic Met Level Assignment**: Upon successful capture, the engine permanently records `metLevel = wildPokemon.level` in the Pokémon's persistence schema.
 3. **Continuous Cap Check**: As long as the player's current badge cap $C < \text{metLevel}$, the Pokémon remains subject to disobedience checks in battle. As soon as the player acquires the necessary Gym Badge ($C \ge \text{metLevel}$), the creature obeys 100% unconditionally for all remaining levels up to Level 100.
 
@@ -449,7 +449,11 @@ export function calculateObedienceCheck(
   }
 
   if (roll3Byte < delta * 2) {
-    return { obeys: false, behavior: 'hurt_self_in_confusion', messageKey: 'battle.log.disobey_confusion' };
+    return {
+      obeys: false,
+      behavior: 'hurt_self_in_confusion',
+      messageKey: 'battle.log.disobey_confusion'
+    };
   }
 
   // Passive Inaction Variations
@@ -457,14 +461,14 @@ export function calculateObedienceCheck(
     'loafing',
     'turned_away',
     'wont_obey',
-    'pretended_not_to_notice',
+    'pretended_not_to_notice'
   ];
   const chosenBehavior = loafBehaviors[Math.floor(randomRoll1 * loafBehaviors.length)] ?? 'loafing';
 
   return {
     obeys: false,
     behavior: chosenBehavior,
-    messageKey: `battle.log.disobey_${chosenBehavior}`,
+    messageKey: `battle.log.disobey_${chosenBehavior}`
   };
 }
 ```

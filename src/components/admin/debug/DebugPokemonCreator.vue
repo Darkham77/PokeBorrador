@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import PokemonBaseStats from './PokemonBaseStats.vue'
-import PokemonIVEditor from './PokemonIVEditor.vue'
-import PokemonMovePicker from './PokemonMovePicker.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import PokemonPreview from './PokemonPreview.vue'
-import DebugSearchSelect from './DebugSearchSelect.vue'
-import DebugIllegalModal from './DebugIllegalModal.vue'
-import DebugPokemonCreatorFooter from './DebugPokemonCreatorFooter.vue'
-import { useDebugPokemonCreator } from './useDebugPokemonCreator.ts'
-import { isPokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
+import { computed, ref } from 'vue';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import PokemonBaseStats from './PokemonBaseStats.vue';
+import PokemonIVEditor from './PokemonIVEditor.vue';
+import PokemonMovePicker from './PokemonMovePicker.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
+import PokemonPreview from './PokemonPreview.vue';
+import DebugSearchSelect from './DebugSearchSelect.vue';
+import DebugIllegalModal from './DebugIllegalModal.vue';
+import DebugPokemonCreatorFooter from './DebugPokemonCreatorFooter.vue';
+import { useDebugPokemonCreator } from './useDebugPokemonCreator.ts';
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 
 const {
   config,
@@ -40,44 +40,41 @@ const {
   randomizeOrigin,
   handleRandomize,
   validateLegality
-} = useDebugPokemonCreator()
+} = useDebugPokemonCreator();
 
-const showIllegalModal = ref(false)
-const illegalIssues = ref<string[]>([])
+const showIllegalModal = ref(false);
+const illegalIssues = ref<string[]>([]);
 
 async function executeAction(protocol: string) {
-  if (!window.__VITE_DEBUG__) return
-  
-  const validation = validateLegality()
+  if (!window.__VITE_DEBUG__) return;
+
+  const validation = validateLegality();
   if (!validation.valid) {
-    illegalIssues.value = validation.issues
-    showIllegalModal.value = true
-    return
+    illegalIssues.value = validation.issues;
+    showIllegalModal.value = true;
+    return;
   }
 
-  config.value.protocol = protocol
+  config.value.protocol = protocol;
   if (protocol === 'encounter') {
-    await window.__VITE_DEBUG__.spawnEncounter?.(config.value)
+    await window.__VITE_DEBUG__.spawnEncounter?.(config.value);
   } else {
-    await window.__VITE_DEBUG__.createPokemon?.(config.value)
+    await window.__VITE_DEBUG__.createPokemon?.(config.value);
   }
 }
 
-const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.value.id, config.value.isShiny))
+const currentSprite = computed(() =>
+  pokemonDataProvider.getSpriteUrl(config.value.id, config.value.isShiny)
+);
 </script>
 
 <template>
-  <div
-    ref="creatorRef"
-    class="pokemon-debug-creator"
-  >
+  <div ref="creatorRef" class="pokemon-debug-creator">
     <div class="debug-header-row">
-      <h3 class="debug-section-title">
-        LABORATORIO POKÉMON (ADMIN)
-      </h3>
+      <h3 class="debug-section-title">LABORATORIO POKÉMON (ADMIN)</h3>
       <button
-        id="debug-pokemon-creator-btn-aleatorio" 
-        class="btn-vicio-secondary sm" 
+        id="debug-pokemon-creator-btn-aleatorio"
+        class="btn-vicio-secondary sm"
         @click.stop="handleRandomize"
       >
         <span class="emoji">🎲</span> ALEATORIO
@@ -112,7 +109,11 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           :options="allSpecies"
           tooltip-title="Buscador de especies"
           tooltip-desc="Busca y selecciona la especie base del Pokémon."
-          @select="(opt) => isPokemonSpeciesId(opt.id) && selectSpecies({ id: opt.id, name: opt.name, icon: opt.icon })"
+          @select="
+            (opt) =>
+              isPokemonSpeciesId(opt.id) &&
+              selectSpecies({ id: opt.id, name: opt.name, icon: opt.icon })
+          "
         >
           <template #label-action>
             <PVTooltip
@@ -133,7 +134,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         <div class="debug-input-group">
           <div
             class="label-row"
-            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%"
           >
             <label>NIVEL (1-{{ MAX_POKEMON_LEVEL }})</label>
             <PVTooltip
@@ -159,7 +160,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               type="number"
               min="1"
               :max="MAX_POKEMON_LEVEL"
-            >
+            />
           </PVTooltip>
         </div>
 
@@ -168,7 +169,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         <div class="debug-input-group">
           <div
             class="label-row"
-            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%"
           >
             <label>VALORES INDIVIDUALES (IVS)</label>
             <PVTooltip
@@ -184,10 +185,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               </button>
             </PVTooltip>
           </div>
-          <PokemonIVEditor 
-            :ivs="config.ivs" 
-            @update:iv="(stat, val) => (config.ivs)[stat] = val" 
-          />
+          <PokemonIVEditor :ivs="config.ivs" @update:iv="(stat, val) => (config.ivs[stat] = val)" />
         </div>
 
         <!-- Nature & Ability -->
@@ -268,17 +266,17 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           @toggle-gender="config.gender = config.gender === 'm' ? 'f' : 'm'"
         />
 
-        <PokemonMovePicker 
+        <PokemonMovePicker
           v-model="config.moves"
           :species-moves="speciesMoves"
           @auto-fill="autoFillMoves"
           @random-fill="randomFillMoves"
         />
 
-        <button 
+        <button
           id="debug-creator-random-full-btn"
           class="btn-vicio-secondary sm"
-          style="margin-top: 12px; margin-bottom: 4px;"
+          style="margin-top: 12px; margin-bottom: 4px"
           @click.stop="handleRandomize"
         >
           <span class="emoji">🎲</span> ALEATORIO
@@ -308,7 +306,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         <div class="debug-input-group">
           <div
             class="label-row"
-            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%"
           >
             <label>APODO (NICKNAME)</label>
             <PVTooltip
@@ -324,23 +322,20 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               </button>
             </PVTooltip>
           </div>
-          <PVTooltip
-            title="Apodo"
-            description="Asigna un nombre personalizado al Pokémon."
-          >
+          <PVTooltip title="Apodo" description="Asigna un nombre personalizado al Pokémon.">
             <input
               id="debug-input-nickname"
               v-model="config.nickname"
               type="text"
               placeholder="SIN APODO"
-            >
+            />
           </PVTooltip>
         </div>
 
         <div class="debug-input-group">
           <div
             class="label-row"
-            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%"
           >
             <label>MINIJUEGO</label>
             <PVTooltip
@@ -365,12 +360,8 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               v-model="selectedMinigame"
               class="debug-select-standard"
             >
-              <option value="fishing">
-                🎣 PESCA
-              </option>
-              <option value="archaeology">
-                ⛏️ ARQUEOLOGÍA
-              </option>
+              <option value="fishing">🎣 PESCA</option>
+              <option value="archaeology">⛏️ ARQUEOLOGÍA</option>
             </select>
           </PVTooltip>
         </div>
@@ -378,7 +369,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         <div class="debug-input-group">
           <div
             class="label-row"
-            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%"
           >
             <label>DIFICULTAD MINIJUEGO</label>
             <PVTooltip
@@ -403,21 +394,11 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               v-model="selectedMinigameDifficulty"
               class="debug-select-standard"
             >
-              <option value="auto">
-                🎲 AUTOMÁTICA (Nivel / Rareza)
-              </option>
-              <option value="easy">
-                🟢 FÁCIL
-              </option>
-              <option value="medium">
-                🟡 MEDIO
-              </option>
-              <option value="hard">
-                🟠 DIFÍCIL
-              </option>
-              <option value="expert">
-                🔴 EXPERTO
-              </option>
+              <option value="auto">🎲 AUTOMÁTICA (Nivel / Rareza)</option>
+              <option value="easy">🟢 FÁCIL</option>
+              <option value="medium">🟡 MEDIO</option>
+              <option value="hard">🟠 DIFÍCIL</option>
+              <option value="expert">🔴 EXPERTO</option>
             </select>
           </PVTooltip>
         </div>
@@ -431,10 +412,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           tooltip-desc="Lugar donde se registrará que fue encontrado el Pokémon."
         >
           <template #label-action>
-            <PVTooltip
-              title="Origen al azar"
-              description="Asigna una ruta de origen aleatoria."
-            >
+            <PVTooltip title="Origen al azar" description="Asigna una ruta de origen aleatoria.">
               <button
                 id="debug-creator-random-origin-btn"
                 class="btn-magic-fill btn-random-fill"
@@ -449,10 +427,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
     </div>
 
     <!-- Footer: Protocols -->
-    <DebugPokemonCreatorFooter
-      :selected-minigame="selectedMinigame"
-      @action="executeAction"
-    />
+    <DebugPokemonCreatorFooter :selected-minigame="selectedMinigame" @action="executeAction" />
 
     <!-- Modal de Advertencia de Ilegalidad -->
     <DebugIllegalModal
@@ -467,4 +442,3 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_debug-creator.scss"></style>
-

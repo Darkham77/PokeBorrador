@@ -11,7 +11,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateSettlementLayout, generateAllSettlementLayouts } from '../../logic/map/cityLayoutEngine.ts';
+import {
+  generateSettlementLayout,
+  generateAllSettlementLayouts
+} from '../../logic/map/cityLayoutEngine.ts';
 import type { POINode } from '../../types/map/poiTypes.ts';
 
 describe('cityLayoutEngine', () => {
@@ -89,10 +92,10 @@ describe('cityLayoutEngine', () => {
     // Landmark building from one of the 7 urban archetypes
     expect(
       bTypes.has('condo') ||
-      bTypes.has('bike_shop') ||
-      bTypes.has('dojo') ||
-      bTypes.has('fan_club') ||
-      bTypes.has('house')
+        bTypes.has('bike_shop') ||
+        bTypes.has('dojo') ||
+        bTypes.has('fan_club') ||
+        bTypes.has('house')
     ).toBe(true);
     expect(bTypes.has('gym')).toBe(true);
 
@@ -235,7 +238,12 @@ describe('cityLayoutEngine', () => {
 
     // Verify directional curb tiles are assigned
     const curbFiles = new Set(layout.curbs!.map((c) => c.curbTile));
-    expect(curbFiles.has('poke_curb_n.png') || curbFiles.has('poke_curb_s.png') || curbFiles.has('poke_curb_w.png') || curbFiles.has('poke_curb_e.png')).toBe(true);
+    expect(
+      curbFiles.has('poke_curb_n.png') ||
+        curbFiles.has('poke_curb_s.png') ||
+        curbFiles.has('poke_curb_w.png') ||
+        curbFiles.has('poke_curb_e.png')
+    ).toBe(true);
 
     // Town must have 0 curbs
     const townNode: POINode = {
@@ -294,9 +302,9 @@ describe('cityLayoutEngine', () => {
       for (const b of bldgs) {
         expect(
           b.x >= node.gridX &&
-          b.x + b.width <= node.gridX + node.footprint.width &&
-          b.y >= node.gridY &&
-          b.y + b.height <= node.gridY + node.footprint.height,
+            b.x + b.width <= node.gridX + node.footprint.width &&
+            b.y >= node.gridY &&
+            b.y + b.height <= node.gridY + node.footprint.height,
           `Building ${b.id} (${b.width}x${b.height}) at (${b.x},${b.y}) out of bounds for ${node.id} (${node.footprint.width}x${node.footprint.height})`
         ).toBe(true);
       }
@@ -382,8 +390,8 @@ describe('cityLayoutEngine', () => {
     const cityPropFiles = new Set(cityLayout.props.map((p) => p.prefabFile));
     expect(
       cityPropFiles.has('poke_bench.png') ||
-      cityPropFiles.has('poke_bench_v_left.png') ||
-      cityPropFiles.has('poke_bench_v_right.png')
+        cityPropFiles.has('poke_bench_v_left.png') ||
+        cityPropFiles.has('poke_bench_v_right.png')
     ).toBe(true);
     expect(cityPropFiles.has('poke_street_lamp_left.png')).toBe(true);
     expect(cityPropFiles.has('poke_flower_pot_circular.png')).toBe(true);
@@ -448,13 +456,17 @@ describe('cityLayoutEngine', () => {
 
     // Left and right flank fence coverage for North Gate
     const nFlankLeft = fences.some((f) => f.x < northGate.x && Math.abs(f.y - northGate.y) <= 4);
-    const nFlankRight = fences.some((f) => f.x >= northGate.x + northGate.width && Math.abs(f.y - northGate.y) <= 4);
+    const nFlankRight = fences.some(
+      (f) => f.x >= northGate.x + northGate.width && Math.abs(f.y - northGate.y) <= 4
+    );
     expect(nFlankLeft).toBe(true);
     expect(nFlankRight).toBe(true);
 
     // Left and right flank fence coverage for South Gate
     const sFlankLeft = fences.some((f) => f.x < southGate.x && Math.abs(f.y - southGate.y) <= 4);
-    const sFlankRight = fences.some((f) => f.x >= southGate.x + southGate.width && Math.abs(f.y - southGate.y) <= 4);
+    const sFlankRight = fences.some(
+      (f) => f.x >= southGate.x + southGate.width && Math.abs(f.y - southGate.y) <= 4
+    );
     expect(sFlankLeft).toBe(true);
     expect(sFlankRight).toBe(true);
   });

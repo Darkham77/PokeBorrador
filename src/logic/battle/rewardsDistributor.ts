@@ -9,14 +9,20 @@ import { useModalStore } from '@/stores/modals';
 import type { BattleState } from '@/types/battle/battle.ts';
 import { processGymBattleRewards } from './rewards/gymRewardsHandler.ts';
 import { processCombatantExpAndEvs } from './rewards/combatantExpEvProcessor.ts';
-import { handleRivalSpecialDrops, processCurrencyAndTrainerExp } from './rewards/classRewardsHandler.ts';
+import {
+  handleRivalSpecialDrops,
+  processCurrencyAndTrainerExp
+} from './rewards/classRewardsHandler.ts';
 import { handleNpcBabyEggReward } from './rewards/npcEggRewardsHandler.ts';
+import { LUCKY_EGG_EXP_MULTIPLIER } from '@/logic/constants/gameplay.ts';
 
 const UI_QUEUE_POLL_INTERVAL_MS = 100;
 const EVOLUTION_MODAL_POLL_INTERVAL_MS = 100;
-const LUCKY_EGG_EXP_MULTIPLIER = 1.5 as const;
 
-export function registerRewardCombatant(active: BattleState | null, defeatedPokemon?: Pokemon | null) {
+export function registerRewardCombatant(
+  active: BattleState | null,
+  defeatedPokemon?: Pokemon | null
+) {
   if (!active) return;
   if (!active._rewardCombatants) {
     active._rewardCombatants = [];
@@ -57,7 +63,7 @@ async function claimWarBattlePoints(
   if (primaryEnemy?.isGuardian) {
     await ctx.warStore.claimGuardian(locId, !active.isCapture);
   } else {
-    await ctx.warStore.addPoints(locId, isTr ? 'trainer_win' : 'wild_win', true);
+    await ctx.warStore.addPoints(locId, isTr ? 'TRAINER_WIN' : 'WILD_WIN', true);
   }
 }
 
@@ -66,7 +72,7 @@ function calculateExpMultipliers(ctx: BattleContext, warMods: { expMult: number 
   const eventExpMultiplier = globalMults?.exp || 1;
   let totalExpMult = warMods.expMult + (eventExpMultiplier - 1);
   let totalExpMultWithoutEvent = warMods.expMult;
-  
+
   if ((ctx.gs.state.luckyEggSecs || 0) > 0) {
     totalExpMult *= LUCKY_EGG_EXP_MULTIPLIER;
     totalExpMultWithoutEvent *= LUCKY_EGG_EXP_MULTIPLIER;
@@ -114,8 +120,15 @@ export async function calculateBattleRewards(ctx: BattleContext) {
   await processGymBattleRewards(ctx, active);
 
   // 6. Multipliers & Modifiers
-  const warMods = getBattleRewardModifiers(active.locationId, ctx.gs.state.faction, ctx.warStore.mapDominance);
-  const { totalExpMult, totalExpMultWithoutEvent, eventExpMultiplier } = calculateExpMultipliers(ctx, warMods);
+  const warMods = getBattleRewardModifiers(
+    active.locationId,
+    ctx.gs.state.faction,
+    ctx.warStore.mapDominance
+  );
+  const { totalExpMult, totalExpMultWithoutEvent, eventExpMultiplier } = calculateExpMultipliers(
+    ctx,
+    warMods
+  );
   const classMult = ctx.classStore.getModifier('expMult', { isTrainer: active.isTrainer });
   const participantsSet = new Set(active.participants);
 
@@ -149,14 +162,14 @@ function syncActivePokemonFromTeam(activePoke: Pokemon, teamPoke: Pokemon): void
   activePoke.spa = teamPoke.spa;
   activePoke.spd = teamPoke.spd;
   activePoke.spe = teamPoke.spe;
-  activePoke.moves = teamPoke.moves ? teamPoke.moves.map(m => m ? ({ ...m }) : null) : [];
+  activePoke.moves = teamPoke.moves ? teamPoke.moves.map((m) => (m ? { ...m } : null)) : [];
 }
 
 async function handleDebugLevelUp(
   ctx: BattleContext,
   teamPoke: Pokemon,
   activePlayer: Pokemon,
-  levelsGained: number,
+  levelsGained: number
 ): Promise<void> {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx;
   const fsm = ctx.fsm;
@@ -182,7 +195,7 @@ async function handleDebugLevelUp(
     teamPoke.pendingMoves = allPendingMoves;
 
     const uiStore = useUIStore();
-    uiStore.addToLearnQueue(allPendingMoves.map(m => ({ pokemon: teamPoke, move: m })));
+    uiStore.addToLearnQueue(allPendingMoves.map((m) => ({ pokemon: teamPoke, move: m })));
 
     while (uiStore.learnQueue.length > 0 || uiStore.currentMoveToLearn) {
       await gsapSleep(UI_QUEUE_POLL_INTERVAL_MS);
@@ -190,7 +203,11 @@ async function handleDebugLevelUp(
   }
 
   if (teamPoke.heldItem === 'everstone') {
-    ctx.addLog(`${teamPoke.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', teamPoke);
+    ctx.addLog(
+      `${teamPoke.name} evitó evolucionar debido a la Piedra Eterna.`,
+      'log-info',
+      teamPoke
+    );
   } else {
     const { checkLevelUpEvolution } = await import('@/logic/evolution/evolutionLogic.ts');
     const targetId = checkLevelUpEvolution(teamPoke);
@@ -229,7 +246,7 @@ export async function awardDebugExp(ctx: BattleContext) {
     isActive: true,
     classMult: 1,
     totalExpMult: 1,
-    participantsSet,
+    participantsSet
   });
 
   if (reward) {

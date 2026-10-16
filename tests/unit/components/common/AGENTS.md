@@ -20,8 +20,8 @@ Frontend Developers / QA Engineers.
 
 ## Verification
 
-- Run `node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run tests/unit/components/common/` to execute common component unit tests.
+- Run `npm run test:unit -- tests/unit/components/common/` to execute common component unit tests.
 
 ## Child DOX Index
 
-- *This directory contains specialized domain logic and files with no subdirectories.*
+- _This directory contains specialized domain logic and files with no subdirectories._

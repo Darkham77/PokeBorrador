@@ -23,6 +23,8 @@
     "ui-demo/**/*.ts",
     "ui-demo/**/*.vue",
     "test_aventura/**/*.ts",
-    "test_aventura/**/*.vue"
+    "test_aventura/**/*.vue",
+    "playwright.config.ts",
+    "supabase/**/*.ts"
   ]
 }

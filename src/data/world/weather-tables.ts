@@ -28,7 +28,7 @@ export function requireWeatherTableRouteId(value: string): WeatherTableRouteId {
 }
 
 function isWeatherSeasonId(value: string): value is WeatherSeasonId {
-  return WEATHER_SEASON_IDS.some(id => id === value);
+  return WEATHER_SEASON_IDS.some((id) => id === value);
 }
 
 export function requireWeatherSeasonId(value: string): WeatherSeasonId {

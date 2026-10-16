@@ -26,12 +26,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "decorate",
-        "defendorder",
-        "defensecurl",
-        "defog"
-      ],
+      "moves": ["decorate", "defendorder", "defensecurl", "defog"],
       "uid": "15c92cf5-7910-4cc1-b585-935beb5e27f5",
       "stats": {
         "maxHp": 342,
@@ -66,12 +61,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "destinybond",
-        "detect",
-        "diamondstorm",
-        "dig"
-      ],
+      "moves": ["destinybond", "detect", "diamondstorm", "dig"],
       "uid": "d4d0aaf9-55d7-45b5-89f9-11fe72878300",
       "stats": {
         "maxHp": 342,
@@ -106,12 +96,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "direclaw",
-        "disable",
-        "disarmingvoice",
-        "discharge"
-      ],
+      "moves": ["direclaw", "disable", "disarmingvoice", "discharge"],
       "uid": "18e3c23c-60d2-4aa2-b1b0-c120e769a916",
       "stats": {
         "maxHp": 342,
@@ -146,12 +131,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "dive",
-        "doodle",
-        "doomdesire",
-        "doubleedge"
-      ],
+      "moves": ["dive", "doodle", "doomdesire", "doubleedge"],
       "uid": "d3e6170e-c06d-4df4-b486-e7310c1d861f",
       "stats": {
         "maxHp": 342,
@@ -186,12 +166,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "doublehit",
-        "doublekick",
-        "doubleshock",
-        "doubleteam"
-      ],
+      "moves": ["doublehit", "doublekick", "doubleshock", "doubleteam"],
       "uid": "a4bb1782-7834-4747-967b-0137404046db",
       "stats": {
         "maxHp": 342,
@@ -226,12 +201,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "dracometeor",
-        "dragonascent",
-        "dragonbreath",
-        "dragoncheer"
-      ],
+      "moves": ["dracometeor", "dragonascent", "dragonbreath", "dragoncheer"],
       "uid": "0914229b-9404-4592-a3bb-6fe3763e74b7",
       "stats": {
         "maxHp": 342,
@@ -268,12 +238,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "692acf7e-1505-4e7a-abcc-b59fe8dbd89a",
       "stats": {
         "maxHp": 651,
@@ -308,12 +273,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "97aca6ab-b00d-4ba9-8da8-adfbe8a3098e",
       "stats": {
         "maxHp": 651,
@@ -348,12 +308,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "4ee8990a-6590-412d-8263-a8636425a88a",
       "stats": {
         "maxHp": 651,
@@ -388,12 +343,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "97430699-6492-451c-844e-32fe69a20f20",
       "stats": {
         "maxHp": 651,
@@ -428,12 +378,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "a95aff44-8432-465f-8886-0c7e5e81aa9d",
       "stats": {
         "maxHp": 651,
@@ -468,12 +413,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "thunderbolt",
-        "surf",
-        "flamethrower",
-        "bodyslam"
-      ],
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
       "uid": "ac8f7125-7f4f-4c81-a238-d822d9fd674f",
       "stats": {
         "maxHp": 651,
@@ -512,12 +452,7 @@
     "dragoncheer"
   ],
   "abilitiesToTest": [],
-  "seed": [
-    18588,
-    21544,
-    54523,
-    34263
-  ],
+  "seed": [18588, 21544, 54523, 34263],
   "playerChoices": [
     "move 1",
     "move 2",
@@ -800,9 +735,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 64,
       "p2MovePp": 22,
-      "p1Volatiles": [
-        "defensecurl"
-      ],
+      "p1Volatiles": ["defensecurl"],
       "p1StatStages": {
         "atk": 0,
         "def": 2,
@@ -868,9 +801,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 20,
-      "p1Volatiles": [
-        "destinybond"
-      ],
+      "p1Volatiles": ["destinybond"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -905,9 +836,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 8,
       "p2MovePp": 19,
-      "p1Volatiles": [
-        "stall"
-      ],
+      "p1Volatiles": ["stall"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1071,10 +1000,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 16,
       "p2MovePp": 16,
-      "p1Volatiles": [
-        "twoturnmove",
-        "dig"
-      ],
+      "p1Volatiles": ["twoturnmove", "dig"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -1612,10 +1538,7 @@
       "p2MoveId": "thunderbolt",
       "p1MovePp": 16,
       "p2MovePp": 16,
-      "p1Volatiles": [
-        "twoturnmove",
-        "dive"
-      ],
+      "p1Volatiles": ["twoturnmove", "dive"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,

@@ -1,4 +1,4 @@
-import { describe, it, vi, beforeEach } from 'vitest';
+import { describe, it, vi, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { HeuristicAI } from '../../../src/logic/battle/ai/heuristicAI.ts';
 import type { BattleContext } from '../../../src/types/battle/battleContext.ts';
@@ -31,7 +31,15 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
         spe: 100,
         type: 'electric',
         moves: [
-          { id: 'thunderbolt', name: 'Thunderbolt', power: 90, type: 'electric', cat: 'special', pp: 15, maxPp: 15 }
+          {
+            id: 'thunderbolt',
+            name: 'Thunderbolt',
+            power: 90,
+            type: 'electric',
+            cat: 'special',
+            pp: 15,
+            maxPp: 15
+          }
         ]
       } as unknown as Pokemon;
 
@@ -51,7 +59,15 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
         spe: 78,
         type: 'water',
         moves: [
-          { id: 'watergun', name: 'Water Gun', power: 40, type: 'water', cat: 'special', pp: 25, maxPp: 25 }
+          {
+            id: 'watergun',
+            name: 'Water Gun',
+            power: 40,
+            type: 'water',
+            cat: 'special',
+            pp: 25,
+            maxPp: 25
+          }
         ]
       } as unknown as Pokemon;
 
@@ -71,7 +87,15 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
         spe: 56,
         type: 'normal',
         moves: [
-          { id: 'tackle', name: 'Tackle', power: 40, type: 'normal', cat: 'physical', pp: 35, maxPp: 35 }
+          {
+            id: 'tackle',
+            name: 'Tackle',
+            power: 40,
+            type: 'normal',
+            cat: 'physical',
+            pp: 35,
+            maxPp: 35
+          }
         ]
       } as unknown as Pokemon;
 
@@ -90,7 +114,15 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
         spe: 45,
         type: 'bug',
         moves: [
-          { id: 'tackle', name: 'Tackle', power: 40, type: 'normal', cat: 'physical', pp: 35, maxPp: 35 }
+          {
+            id: 'tackle',
+            name: 'Tackle',
+            power: 40,
+            type: 'normal',
+            cat: 'physical',
+            pp: 35,
+            maxPp: 35
+          }
         ]
       } as unknown as Pokemon;
 
@@ -110,9 +142,30 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
               active: [{ moves: [{ id: 'watergun', pp: 25, disabled: false }] }],
               side: {
                 pokemon: [
-                  { ident: 'p2: Blastoise', details: 'Blastoise, L50', hp: 100, maxhp: 100, active: true, moves: ['watergun'] },
-                  { ident: 'p2: Pidgey', details: 'Pidgey, L20', hp: 30, maxhp: 30, active: false, moves: ['tackle'] },
-                  { ident: 'p2: Caterpie', details: 'Caterpie, L20', hp: 30, maxhp: 30, active: false, moves: ['tackle'] }
+                  {
+                    ident: 'p2: Blastoise',
+                    details: 'Blastoise, L50',
+                    hp: 100,
+                    maxhp: 100,
+                    active: true,
+                    moves: ['watergun']
+                  },
+                  {
+                    ident: 'p2: Pidgey',
+                    details: 'Pidgey, L20',
+                    hp: 30,
+                    maxhp: 30,
+                    active: false,
+                    moves: ['tackle']
+                  },
+                  {
+                    ident: 'p2: Caterpie',
+                    details: 'Caterpie, L20',
+                    hp: 30,
+                    maxhp: 30,
+                    active: false,
+                    moves: ['tackle']
+                  }
                 ]
               }
             },
@@ -120,7 +173,14 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
               active: [{ moves: [{ id: 'thunderbolt', pp: 15, disabled: false }] }],
               side: {
                 pokemon: [
-                  { ident: 'p1: Zapdos', details: 'Zapdos, L50', hp: 100, maxhp: 100, active: true, moves: ['thunderbolt'] }
+                  {
+                    ident: 'p1: Zapdos',
+                    details: 'Zapdos, L50',
+                    hp: 100,
+                    maxhp: 100,
+                    active: true,
+                    moves: ['thunderbolt']
+                  }
                 ]
               }
             }
@@ -136,7 +196,11 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
       // With our fix, shouldSwitch MUST return false because neither Pidgey nor Caterpie is a safe counter!
       const shouldSwitch = ai.shouldSwitch(enemyActive, player, enemyTeam, mockStore);
       randomSpy.mockRestore();
-      assert.strictEqual(shouldSwitch, false, 'AI should stay and fight instead of sacrificing bench mons without a counter');
+      assert.strictEqual(
+        shouldSwitch,
+        false,
+        'AI should stay and fight instead of sacrificing bench mons without a counter'
+      );
     });
   });
 
@@ -158,7 +222,17 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
         spd: 100,
         spe: 80,
         type: 'grass',
-        moves: [{ id: 'solarbeam', name: 'Solar Beam', power: 120, type: 'grass', cat: 'special', pp: 10, maxPp: 10 }]
+        moves: [
+          {
+            id: 'solarbeam',
+            name: 'Solar Beam',
+            power: 120,
+            type: 'grass',
+            cat: 'special',
+            pp: 10,
+            maxPp: 10
+          }
+        ]
       } as unknown as Pokemon;
 
       // Enemy has a Water mon that was JUST sent in (turn 0)
@@ -176,7 +250,17 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
         spd: 95,
         spe: 65,
         type: 'water',
-        moves: [{ id: 'watergun', name: 'Water Gun', power: 40, type: 'water', cat: 'special', pp: 25, maxPp: 25 }]
+        moves: [
+          {
+            id: 'watergun',
+            name: 'Water Gun',
+            power: 40,
+            type: 'water',
+            cat: 'special',
+            pp: 25,
+            maxPp: 25
+          }
+        ]
       } as unknown as Pokemon;
 
       // Bench has a Fire counter (Charizard)
@@ -194,7 +278,17 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
         spd: 85,
         spe: 100,
         type: 'fire',
-        moves: [{ id: 'flamethrower', name: 'Flamethrower', power: 90, type: 'fire', cat: 'special', pp: 15, maxPp: 15 }]
+        moves: [
+          {
+            id: 'flamethrower',
+            name: 'Flamethrower',
+            power: 90,
+            type: 'fire',
+            cat: 'special',
+            pp: 15,
+            maxPp: 15
+          }
+        ]
       } as unknown as Pokemon;
 
       const enemyTeam = [enemyActive, enemyBenchFire];
@@ -213,8 +307,22 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
               active: [{ moves: [{ id: 'watergun', pp: 25, disabled: false }] }],
               side: {
                 pokemon: [
-                  { ident: 'p2: Vaporeon', details: 'Vaporeon, L50', hp: 100, maxhp: 100, active: true, moves: ['watergun'] },
-                  { ident: 'p2: Charizard', details: 'Charizard, L50', hp: 100, maxhp: 100, active: false, moves: ['flamethrower'] }
+                  {
+                    ident: 'p2: Vaporeon',
+                    details: 'Vaporeon, L50',
+                    hp: 100,
+                    maxhp: 100,
+                    active: true,
+                    moves: ['watergun']
+                  },
+                  {
+                    ident: 'p2: Charizard',
+                    details: 'Charizard, L50',
+                    hp: 100,
+                    maxhp: 100,
+                    active: false,
+                    moves: ['flamethrower']
+                  }
                 ]
               }
             },
@@ -222,7 +330,14 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
               active: [{ moves: [{ id: 'solarbeam', pp: 10, disabled: false }] }],
               side: {
                 pokemon: [
-                  { ident: 'p1: Venusaur', details: 'Venusaur, L50', hp: 100, maxhp: 100, active: true, moves: ['solarbeam'] }
+                  {
+                    ident: 'p1: Venusaur',
+                    details: 'Venusaur, L50',
+                    hp: 100,
+                    maxhp: 100,
+                    active: true,
+                    moves: ['solarbeam']
+                  }
                 ]
               }
             }
@@ -237,7 +352,11 @@ describe('HeuristicAI - Anti-Switch Loop & Safe Counter Logic', () => {
       ai.notifyTurnAdvanced?.('enemy-water'); // turn 1
       const switchAttemptTurn1 = ai.shouldSwitch(enemyActive, player, enemyTeam, mockStore);
       randomSpy.mockRestore();
-      assert.strictEqual(switchAttemptTurn1, false, 'Turn 1 switch should be blocked by anti-ping-pong cooldown');
+      assert.strictEqual(
+        switchAttemptTurn1,
+        false,
+        'Turn 1 switch should be blocked by anti-ping-pong cooldown'
+      );
     });
   });
 });

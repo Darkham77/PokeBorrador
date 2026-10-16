@@ -5,7 +5,7 @@
  * are queued and coalesced rather than being dropped with null / success: false.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { saveGame, resetSaveOperationState } from '../../../src/logic/auth/saveService.ts';
 import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
@@ -24,7 +24,10 @@ describe('saveService Concurrency Queue', () => {
       user_metadata: { username: 'TrainerRed' }
     };
 
-    const starter = pokemonDebugService.generate({ id: requirePokemonSpeciesId('charmander'), level: 5 });
+    const starter = pokemonDebugService.generate({
+      id: requirePokemonSpeciesId('charmander'),
+      level: 5
+    });
 
     const state1: GameState = JSON.parse(JSON.stringify(INITIAL_STATE));
     state1.trainer = 'TrainerRed';
@@ -57,7 +60,7 @@ describe('saveService Concurrency Queue', () => {
       rpc: async (_name: string, params: { p_save_data: any; p_expected_id: string | null }) => {
         rpcCallCount++;
         saveIdsReceived.push(params.p_expected_id);
-        await new Promise(resolve => setTimeout(resolve, 30));
+        await new Promise((resolve) => setTimeout(resolve, 30));
         return { data: { success: true, last_save_id: `save-${rpcCallCount}` }, error: null };
       },
       from: () => ({
@@ -77,6 +80,10 @@ describe('saveService Concurrency Queue', () => {
     assert.ok(res2 !== null, 'Save 2 should not be dropped or return null');
     assert.ok(res2?.success, 'Save 2 should succeed via coalesced queue');
     assert.strictEqual(rpcCallCount, 2, 'Both save states should have been saved sequentially');
-    assert.strictEqual(user.last_save_id, 'save-2', 'user.last_save_id should reflect the second save');
+    assert.strictEqual(
+      user.last_save_id,
+      'save-2',
+      'user.last_save_id should reflect the second save'
+    );
   });
 });

@@ -1,4 +1,3 @@
-
 /**
  * src/logic/gym/gymEngine.ts
  * Logic for Gym rewards, rematches, and progress.
@@ -40,18 +39,23 @@ export interface GymVictoryResult {
  * @param {GameState} state - Current player state
  * @returns {GymVictoryResult} { tmDropped, extraCoins, newProgress, isFirstTime }
  */
-export function processGymVictory(gym: Gym, difficulty: BattleDifficulty, state: Partial<GameState>): GymVictoryResult {
-  const diffMap: Record<string, number> = { easy: 1, normal: 2, hard: 3 };
+export function processGymVictory(
+  gym: Gym,
+  difficulty: BattleDifficulty,
+  state: Partial<GameState>
+): GymVictoryResult {
+  const diffMap: Record<BattleDifficulty, number> = { easy: 1, normal: 2, hard: 3 };
   const diffValue = diffMap[difficulty] || 1;
   const gymId = requireGymId(gym.id);
   const isFirstTime = !state.defeatedGyms?.includes(gymId);
-  
+
   let tmDropped = false;
   let extraCoins = 0;
   let newProgress = 0;
   const currentEntry = state.gymProgress?.[gymId];
   if (typeof currentEntry === 'number') newProgress = currentEntry;
-  else if (currentEntry && typeof currentEntry === 'object') newProgress = currentEntry.attempts || 0; // Fallback to attempts or similar if it was object
+  else if (currentEntry && typeof currentEntry === 'object')
+    newProgress = currentEntry.attempts || 0; // Fallback to attempts or similar if it was object
 
   if (isFirstTime) {
     tmDropped = !!gym.rewardTM;
@@ -59,7 +63,7 @@ export function processGymVictory(gym: Gym, difficulty: BattleDifficulty, state:
   } else {
     // Rematch logic
     extraCoins = diffValue * GYM_REMATCH_EXTRA_COINS_PER_DIFF_LEVEL;
-    
+
     let tmChance = 0;
     if (difficulty === 'normal') tmChance = GYM_RATIOS.rematchTMRateNormal;
     else if (difficulty === 'hard') tmChance = GYM_RATIOS.rematchTMRateHard;
@@ -67,7 +71,7 @@ export function processGymVictory(gym: Gym, difficulty: BattleDifficulty, state:
     if (tmChance > 0 && Math.random() < tmChance) {
       tmDropped = !!gym.rewardTM;
     }
-    
+
     newProgress = Math.max(newProgress, diffValue);
   }
 

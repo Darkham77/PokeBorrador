@@ -1,39 +1,37 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useInputAnimations } from '@/composables/ui/useInputAnimations'
-import { queryLocal } from '@/logic/db/sqliteEngine'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { logger } from '@/logic/utils/logger'
+import { ref, onMounted } from 'vue';
+import { useInputAnimations } from '@/composables/ui/useInputAnimations';
+import { queryLocal } from '@/logic/db/sqliteEngine';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { logger } from '@/logic/utils/logger';
 
 interface Props {
-  loading: boolean
-  usernameValue: string
+  loading: boolean;
+  usernameValue: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'update:usernameValue', val: string): void
-  (e: 'localLogin'): void
-}>()
+  (e: 'update:usernameValue', val: string): void;
+  (e: 'localLogin'): void;
+}>();
 
-const {
-  handleInputEnter,
-  handleInputLeave,
-  handleInputFocus,
-  handleInputBlur
-} = useInputAnimations()
+const { handleInputEnter, handleInputLeave, handleInputFocus, handleInputBlur } =
+  useInputAnimations();
 
-const availableProfiles = ref<string[]>([])
+const availableProfiles = ref<string[]>([]);
 
 onMounted(async () => {
   try {
-    const rows = await queryLocal('SELECT username FROM profiles WHERE username IS NOT NULL ORDER BY username ASC')
-    availableProfiles.value = rows.map(r => String(r.username)).filter(Boolean)
+    const rows = await queryLocal(
+      'SELECT username FROM profiles WHERE username IS NOT NULL ORDER BY username ASC'
+    );
+    availableProfiles.value = rows.map((r) => String(r.username)).filter(Boolean);
   } catch (err) {
-    logger.debug('AuthLocalLogin', 'DB no inicializada o sin perfiles aún:', err)
+    logger.debug('AuthLocalLogin', 'DB no inicializada o sin perfiles aún:', err);
   }
-})
+});
 </script>
 
 <template>
@@ -44,6 +42,7 @@ onMounted(async () => {
       class="auth-input"
       type="text"
       placeholder="Nombre de Entrenador"
+      aria-label="Nombre de Entrenador"
       maxlength="15"
       list="local-profiles-list"
       @input="emit('update:usernameValue', ($event.target as HTMLInputElement).value)"
@@ -52,14 +51,10 @@ onMounted(async () => {
       @blur="handleInputBlur"
       @mouseenter="handleInputEnter"
       @mouseleave="handleInputLeave"
-    >
+    />
 
     <datalist id="local-profiles-list">
-      <option
-        v-for="name in availableProfiles"
-        :key="name"
-        :value="name"
-      />
+      <option v-for="name in availableProfiles" :key="name" :value="name" />
     </datalist>
 
     <button
@@ -74,10 +69,9 @@ onMounted(async () => {
         class="auth-btn-icon"
         draggable="false"
         aria-hidden="true"
-      
         width="16"
         height="16"
-      >
+      />
       <span>JUGAR LOCAL</span>
     </button>
   </div>

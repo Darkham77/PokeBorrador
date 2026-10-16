@@ -14,15 +14,15 @@ DevOps / QA Engineers.
 - **Absolute Prohibition on Loading Backups in Tests**: Test files and runners are strictly forbidden from loading, reading, or restoring snapshots from `database/backups/`. All testing data must come exclusively from deterministic test fixtures under `tests/node/fixtures/` (e.g. `tests/node/fixtures/server_franco_backup_fixture.json`).
 - **Dual-Engine Execution**: When Docker PostgreSQL is active, database-enabled tests run against both SQLite (in-memory) and PostgreSQL (ephemeral container). When Docker is missing, tests gracefully fallback to SQLite in RAM and display a clear summary warning.
 - **Subprocess PATH Prepending**: When launching Docker CLI, the orchestrator MUST prepend the resolved binary directory (`path.dirname(dockerBin)`) to `process.env.PATH` to ensure sibling helper binaries (`docker-credential-desktop`) are immediately discoverable.
-- **Node.js 26 Permission Addon Mandate**: Test orchestrators launching Vitest under Node 26 sandboxed permissions MUST declare `--allow-addons` to permit Rolldown platform-specific native addons (`.node`) alongside `--allow-child-process` and `--allow-net`.
-- **Automatic Version SSoT Synchronization**: The test orchestrator (`run_tests.ts`) automatically calls `syncPublicVersionJson()` before starting Vitest, ensuring `public/version.json` matches the canonical version in `package.json` with zero manual intervention.
-- **Node.js 26 V8 Coverage Inspector Permission Mandate**: When executing Vitest with `--coverage` under Node.js permission model, both the test orchestrator (`run_tests.ts`) and Vitest worker pool forks (`test.execArgv` in `vitest.config.ts`) MUST pass `--allow-inspector` to permit V8 coverage session connection via `node:inspector` without `ERR_ACCESS_DENIED`.
+- **Node.js 26 Permission Addon Mandate**: Test orchestrators launching Vite+ / Vitest under Node 26 sandboxed permissions MUST declare `--allow-addons` to permit Rolldown platform-specific native addons (`.node`) alongside `--allow-child-process` and `--allow-net`.
+- **Automatic Version SSoT Synchronization**: The test orchestrator (`run_tests.ts`) automatically calls `syncPublicVersionJson()` before starting test execution, ensuring `public/version.json` matches the canonical version in `package.json` with zero manual intervention.
+- **Node.js 26 V8 Coverage Inspector Permission Mandate**: When executing tests with `--coverage` under Node.js permission model, both the test orchestrator (`run_tests.ts`) and Vite+ worker pool forks (`test.execArgv` in `vite.config.ts`) MUST pass `--allow-inspector` to permit V8 coverage session connection via `node:inspector` without `ERR_ACCESS_DENIED`.
 - **Strict Tuple CLI Arguments Mandate**: Command-line arguments in testing runners and maintenance scripts MUST be typed as immutable tuple arrays (`as const`) to avoid domain type erasure under `validate_domain_types`.
 
 ## Key Files
 
 - [`postgres_test_container.ts`](./postgres_test_container.ts): Modular Docker discovery, ephemeral container lifecycle, and SQL migration runner.
-- [`run_tests.ts`](./run_tests.ts): Test orchestrator managing Docker detection, container lifecycle, SQL migrations, and Vitest execution.
+- [`run_tests.ts`](./run_tests.ts): Test orchestrator managing Docker detection, container lifecycle, SQL migrations, and Vite+ test execution.
 - [`test_aventura_e2e.ts`](./test_aventura_e2e.ts): Playwright end-to-end simulation suite targeting test_aventura sandbox views and semantic IDs.
 
 ## Work Guidance
@@ -37,4 +37,4 @@ DevOps / QA Engineers.
 
 ## Child DOX Index
 
-- *This directory contains specialized domain logic and files with no subdirectories.*
+- _This directory contains specialized domain logic and files with no subdirectories._

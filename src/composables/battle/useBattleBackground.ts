@@ -1,5 +1,11 @@
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { MAP_ROUTE_MAPPING, isBattleMapAssetId, requireBattleMapAssetId, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import {
+  MAP_ROUTE_MAPPING,
+  isBattleMapAssetId,
+  requireBattleMapAssetId,
+  requireMapRouteId,
+  type MapRouteId
+} from '@/data/world/map-assets';
 
 const CYCLE_SUFFIXES = {
   // English keys
@@ -13,10 +19,10 @@ const CYCLE_SUFFIXES = {
   dia: '_dia',
   atardecer: '_atardecer',
   noche: '_noche'
-} as const
+} as const;
 
-type BattleBackgroundCycle = keyof typeof CYCLE_SUFFIXES
-export type BattleBackgroundLocationId = MapRouteId
+type BattleBackgroundCycle = keyof typeof CYCLE_SUFFIXES;
+export type BattleBackgroundLocationId = MapRouteId;
 const BATTLE_BACKGROUND_CYCLES = [
   'morning',
   'dawn',
@@ -26,56 +32,62 @@ const BATTLE_BACKGROUND_CYCLES = [
   'amanecer',
   'dia',
   'atardecer',
-  'noche',
-] as const satisfies readonly BattleBackgroundCycle[]
+  'noche'
+] as const satisfies readonly BattleBackgroundCycle[];
 
 function requireBattleBackgroundCycle(value: string): BattleBackgroundCycle {
-  const cycle = BATTLE_BACKGROUND_CYCLES.find(candidate => candidate === value)
-  if (cycle) return cycle
-  throw new Error(`[useBattleBackground] Invalid battle background cycle: ${value}`)
+  const cycle = BATTLE_BACKGROUND_CYCLES.find((candidate) => candidate === value);
+  if (cycle) return cycle;
+  throw new Error(`[useBattleBackground] Invalid battle background cycle: ${value}`);
 }
 
 export function useBattleBackground() {
   /**
    * Returns the asset URL for a given location and time of day.
-   * @param {BattleBackgroundLocationId} locationId 
+   * @param {BattleBackgroundLocationId} locationId
    * @param {string} cycle - morning | day | dusk | night
    * @param {boolean} _isFishing - Unused (same as normal battle background)
    * @returns {{ url: string, isBakedIn: boolean }}
    */
-  function getBackgroundUrl(locationId: BattleBackgroundLocationId, cycle = 'day', _isFishing = false) {
-    const baseName = MAP_ROUTE_MAPPING[requireMapRouteId(locationId)]
+  function getBackgroundUrl(
+    locationId: BattleBackgroundLocationId,
+    cycle = 'day',
+    _isFishing = false
+  ) {
+    const baseName = MAP_ROUTE_MAPPING[requireMapRouteId(locationId)];
 
-    const suffix = CYCLE_SUFFIXES[requireBattleBackgroundCycle(cycle.toLowerCase())] // text-ok: UI text display localization string
+    const suffix = CYCLE_SUFFIXES[requireBattleBackgroundCycle(cycle.toLowerCase())]; // text-ok: UI text display localization string
 
-    let fileName = `${baseName}${suffix}`
-    let isBakedIn: boolean
+    let fileName = `${baseName}${suffix}`;
+    let isBakedIn: boolean;
 
     if (isBattleMapAssetId(fileName)) {
       // The cycle-suffixed file exists
-      isBakedIn = suffix !== '_dia'
+      isBakedIn = suffix !== '_dia';
     } else {
       // Fallback to day version
-      const dayFileName = `${baseName}_dia`
+      const dayFileName = `${baseName}_dia`;
       if (isBattleMapAssetId(dayFileName)) {
-        fileName = dayFileName
-        isBakedIn = false
+        fileName = dayFileName;
+        isBakedIn = false;
       } else if (isBattleMapAssetId(baseName)) {
         // Fallback to base name without suffix
-        fileName = baseName
-        isBakedIn = false
+        fileName = baseName;
+        isBakedIn = false;
       } else {
-        throw new Error(`[useBattleBackground] No battle background asset for location ${locationId} and cycle ${cycle}`)
+        throw new Error(
+          `[useBattleBackground] No battle background asset for location ${locationId} and cycle ${cycle}`
+        );
       }
     }
 
     return {
       url: getAssetUrl(ASSET_TYPES.BATTLE_BG, requireBattleMapAssetId(fileName)),
       isBakedIn
-    }
+    };
   }
 
   return {
     getBackgroundUrl
-  }
+  };
 }

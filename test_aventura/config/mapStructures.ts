@@ -410,10 +410,30 @@ export const PLAZA_PARK: StructureTemplate = {
   theme: 'universal',
   footprint: { width: 4, height: 4 },
   tiles: [
-    ['tile_structures_house_r2_c0_d6d5b25bac', 'tile_structures_house_r2_c1_0220d79b44', 'tile_structures_house_r2_c3_0220d79b44', 'tile_structures_house_r2_c4_ae8310096a'],
-    ['tile_structures_house_r3_c0_4f9939a49d', 'tile_structures_house_r3_c2_45ae64db09', 'tile_structures_house_r3_c2_45ae64db09', 'tile_structures_house_r3_c4_7a173e79e7'],
-    ['tile_structures_house_r3_c0_4f9939a49d', 'tile_structures_house_r3_c2_45ae64db09', 'tile_structures_house_r3_c2_45ae64db09', 'tile_structures_house_r3_c4_7a173e79e7'],
-    ['tile_structures_house_r4_c0_58e77a02c9', 'tile_structures_house_r4_c2_fa79f48131', 'tile_structures_house_r4_c3_3a6e06b848', 'tile_structures_house_r4_c4_d36c4212f2']
+    [
+      'tile_structures_house_r2_c0_d6d5b25bac',
+      'tile_structures_house_r2_c1_0220d79b44',
+      'tile_structures_house_r2_c3_0220d79b44',
+      'tile_structures_house_r2_c4_ae8310096a'
+    ],
+    [
+      'tile_structures_house_r3_c0_4f9939a49d',
+      'tile_structures_house_r3_c2_45ae64db09',
+      'tile_structures_house_r3_c2_45ae64db09',
+      'tile_structures_house_r3_c4_7a173e79e7'
+    ],
+    [
+      'tile_structures_house_r3_c0_4f9939a49d',
+      'tile_structures_house_r3_c2_45ae64db09',
+      'tile_structures_house_r3_c2_45ae64db09',
+      'tile_structures_house_r3_c4_7a173e79e7'
+    ],
+    [
+      'tile_structures_house_r4_c0_58e77a02c9',
+      'tile_structures_house_r4_c2_fa79f48131',
+      'tile_structures_house_r4_c3_3a6e06b848',
+      'tile_structures_house_r4_c4_d36c4212f2'
+    ]
   ],
   collisionMask: [
     [1, 0, 0, 1],
@@ -427,6 +447,7 @@ export const PLAZA_PARK: StructureTemplate = {
  * Registry dictionary for O(1) lookup of structure templates.
  */
 export const STRUCTURE_TEMPLATES: Record<string, StructureTemplate> = {
+  // open-record: Multitile structure templates catalog indexed by template id
   [KANTO_HOUSE_SMALL.id]: KANTO_HOUSE_SMALL,
   [KANTO_HOUSE_BLUE.id]: KANTO_HOUSE_BLUE,
   [POKEMART.id]: POKEMART,
@@ -440,7 +461,8 @@ export const STRUCTURE_TEMPLATES: Record<string, StructureTemplate> = {
 /**
  * Helper to fetch a structure template by ID.
  */
-export function getStructureTemplate(id: string): StructureTemplate | undefined { // domain-ok: Identificador o estructura procedural de aventura
+export function getStructureTemplate(id: string): StructureTemplate | undefined {
+  // domain-ok: Identificador o estructura procedural de aventura
   return STRUCTURE_TEMPLATES[id];
 }
 
@@ -449,7 +471,7 @@ export function getStructureTemplate(id: string): StructureTemplate | undefined 
  */
 export function getStructureTemplatesByTheme(theme: StructureTheme): readonly StructureTemplate[] {
   return Object.values(STRUCTURE_TEMPLATES).filter(
-    s => s.theme === theme || s.theme === 'universal'
+    (s) => s.theme === theme || s.theme === 'universal'
   );
 }
 
@@ -466,4 +488,3 @@ export function registerStructureTemplate(template: StructureTemplate): void {
 export function getAllStructureTemplates(): readonly StructureTemplate[] {
   return Object.values(STRUCTURE_TEMPLATES);
 }
-

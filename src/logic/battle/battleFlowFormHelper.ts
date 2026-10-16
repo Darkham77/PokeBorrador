@@ -5,7 +5,11 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleStages, LogFn } from '@/types/battle/battle';
 import type { PokemonType } from '@/data/battle/types';
 
-export function updateCastformForm(pokemon: Pokemon | null | undefined, weatherType: string | undefined, addLog: LogFn): void {
+export function updateCastformForm(
+  pokemon: Pokemon | null | undefined,
+  weatherType: string | undefined,
+  addLog: LogFn
+): void {
   if (!pokemon) return;
   if (pokemon.id !== 'castform') return;
   if (pokemon.ability !== 'forecast') return;
@@ -35,13 +39,26 @@ export function updateCastformForm(pokemon: Pokemon | null | undefined, weatherT
     pokemon.type = targetType;
     pokemon.type2 = undefined;
 
-    const formLabels: Record<string, string> = { sunny: 'Soleada', rainy: 'Lluvia', snowy: 'Nieve' };
+    // open-record: Castform weather form labels dictionary
+    const formLabels: Record<string, string> = {
+      sunny: 'Soleada',
+      rainy: 'Lluvia',
+      snowy: 'Nieve'
+    };
     if (targetForm === 'normal') {
       if (currentForm !== 'normal') {
-        addLog(`¡La habilidad Predicción de ${pokemon.name} lo devolvió a su forma normal!`, 'log-info', pokemon);
+        addLog(
+          `¡La habilidad Predicción de ${pokemon.name} lo devolvió a su forma normal!`,
+          'log-info',
+          pokemon
+        );
       }
     } else {
-      addLog(`¡La habilidad Predicción de ${pokemon.name} lo transformó en su Forma ${formLabels[targetForm]}!`, 'log-info', pokemon);
+      addLog(
+        `¡La habilidad Predicción de ${pokemon.name} lo transformó en su Forma ${formLabels[targetForm]}!`,
+        'log-info',
+        pokemon
+      );
     }
   }
 }
@@ -63,10 +80,18 @@ export function handleEntryAbilities(
 
   if (playerPoke.ability === 'intimidate') {
     playerStages.atk = Math.max(MIN_BATTLE_STAT_STAGE, enemyStages.atk - 1);
-    addLog(`¡La Intimidación de ${playerPoke.name} bajó el ataque de ${enemyPoke.name}!`, 'log-info', playerPoke);
+    addLog(
+      `¡La Intimidación de ${playerPoke.name} bajó el ataque de ${enemyPoke.name}!`,
+      'log-info',
+      playerPoke
+    );
   }
   if (enemyPoke.ability === 'intimidate') {
     playerStages.atk = Math.max(MIN_BATTLE_STAT_STAGE, playerStages.atk - 1);
-    addLog(`¡La Intimidación de ${enemyPoke.name} bajó el ataque de ${playerPoke.name}!`, 'log-info', enemyPoke);
+    addLog(
+      `¡La Intimidación de ${enemyPoke.name} bajó el ataque de ${playerPoke.name}!`,
+      'log-info',
+      enemyPoke
+    );
   }
 }

@@ -1,5 +1,13 @@
-import { ChoiceRequest, RequestKind, classifyRequest, type ChoiceRequestPokemon } from '../../../../src/logic/battle/helpers/requestHelper.ts';
-import { ShowdownBattleAgent, ActiveSlotRequest } from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
+import {
+  ChoiceRequest,
+  RequestKind,
+  classifyRequest,
+  type ChoiceRequestPokemon
+} from '../../../../src/logic/battle/helpers/requestHelper.ts';
+import {
+  ShowdownBattleAgent,
+  ActiveSlotRequest
+} from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
 import { Dex } from '@pkmn/sim';
 
 export type SidePokemon = ChoiceRequestPokemon;
@@ -64,7 +72,7 @@ export class BattleAgent extends ShowdownBattleAgent {
     const activePoke = activePokemonList[slotIdx] || team[slotIdx] || team[0];
     const isTrapped = this.isTrapped(slotReq);
     const moves = slotReq.moves ?? [];
-    const isLockedInMove = moves.length > 0 && moves.every(m => m.disabled);
+    const isLockedInMove = moves.length > 0 && moves.every((m) => m.disabled);
     const cannotSwitch = isTrapped || isLockedInMove;
 
     if (this.voluntarySwitchObjective && !cannotSwitch && !this.justSwitched && team.length > 1) {
@@ -93,12 +101,23 @@ export class BattleAgent extends ShowdownBattleAgent {
     }
 
     // Auto-switch if active exhausted test moves but bench has pending ones
-    const activeHasPending = (activePoke?.moves ?? []).some((m: string) => this.movesToTest.has(toCleanId(m)));
-    if (!cannotSwitch && !activeHasPending && this.abilityObjectives.size > 0 && !this.justSwitched) {
+    const activeHasPending = (activePoke?.moves ?? []).some((m: string) =>
+      this.movesToTest.has(toCleanId(m))
+    );
+    if (
+      !cannotSwitch &&
+      !activeHasPending &&
+      this.abilityObjectives.size > 0 &&
+      !this.justSwitched
+    ) {
       for (let index = 0; index < team.length; index++) {
         const candidate = team[index]!;
         const switchIndex = index + 1;
-        if (!candidate.active && !this.isFainted(candidate) && this.abilityObjectives.has(toCleanId(candidate.ability ?? ''))) {
+        if (
+          !candidate.active &&
+          !this.isFainted(candidate) &&
+          this.abilityObjectives.has(toCleanId(candidate.ability ?? ''))
+        ) {
           this.justSwitched = true;
           return `switch ${switchIndex}`;
         }
@@ -109,7 +128,9 @@ export class BattleAgent extends ShowdownBattleAgent {
         const mon = team[i]!;
         const switchIdx = i + 1;
         if (!mon.active && !this.isFainted(mon) && !this.failedSwitches.has(switchIdx)) {
-          const hasPending = (mon.moves ?? []).some((m: string) => this.movesToTest.has(toCleanId(m)));
+          const hasPending = (mon.moves ?? []).some((m: string) =>
+            this.movesToTest.has(toCleanId(m))
+          );
           if (hasPending) {
             this.justSwitched = true;
             return `switch ${switchIdx}`;

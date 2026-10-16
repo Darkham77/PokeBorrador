@@ -226,7 +226,7 @@
   --shell-bg: Rgb(15 18 32 / 100%);
   --shell-border: Rgb(255 255 255 / 15%);
   --shell-edge: Rgb(255 255 255 / 8%);
-  
+
   // Typography Source of Truth (CSS)
   --font-pixel: #{$font-family-pokemon};
   --font-pixel-alt: #{$font-family-pixel};
@@ -256,14 +256,13 @@
   --z-map-ground-fx: 15;
   --z-map-grass-front: 15;
   --z-map-ui: 20;
-  
+
   // Standard Spacing System
   --ui-h-padding: clamp(10px, 4dvw, 16px);
   --ui-v-gap: 32px;
 
   color-scheme: dark;
 }
-
 
 html {
   height: 100%;
@@ -281,7 +280,7 @@ body {
   overflow: hidden !important;
   overscroll-behavior: none !important;
   user-select: none;
-  
+
   // Aggressive anti-blur for the global pixel font
   -webkit-font-smoothing: none !important;
   -moz-osx-font-smoothing: grayscale !important;
@@ -319,43 +318,52 @@ body {
 .global-background-stars {
   position: fixed;
   z-index: var(--z-base);
-  background: 
+  background:
     Radial-Gradient(1200px 600px at 10% -10%, Rgb(59 139 255 / 12%), transparent 60%),
     Radial-Gradient(900px 500px at 110% 10%, Rgb(199 125 255 / 12%), transparent 55%),
-    Radial-Gradient(900px 500px at 50% 120%, Rgb(255 217 61 / 10%), transparent 60%),
-    var(--bg-main);
+    Radial-Gradient(900px 500px at 50% 120%, Rgb(255 217 61 / 10%), transparent 60%), var(--bg-main);
   inset: 0;
   pointer-events: none;
 }
 
 // Global UI basics
-input, select, textarea, button {
+input,
+select,
+textarea,
+button {
   font-family: inherit;
-  &:focus { outline: none; }
+  &:focus {
+    outline: none;
+  }
 }
 
 // Ensure pixel fonts are sharp and not blurry
-h1, h2, h3, h4, h5, h6,
-.label, 
-.pill-value, 
-.font-pixel, 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.label,
+.pill-value,
+.font-pixel,
 .pixelated,
-[style*="Pokemon FireRed LeafGreen"],
-[style*="Silkscreen"],
-[style*="VT323"] {
+[style*='Pokemon FireRed LeafGreen'],
+[style*='Silkscreen'],
+[style*='VT323'] {
   // Only apply pixelated mixin if it has the class or specific font
-  &.pixelated, 
-  &.font-pixel, 
-  &[style*="Pokemon FireRed LeafGreen"],
-  &[style*="Silkscreen"],
-  &[style*="VT323"] {
+  &.pixelated,
+  &.font-pixel,
+  &[style*='Pokemon FireRed LeafGreen'],
+  &[style*='Silkscreen'],
+  &[style*='VT323'] {
     @include pixelated;
   }
 }
 
 // Ultra-aggressive global override for pixel fonts to prevent browser smoothing
-body [style*="Pokemon FireRed LeafGreen"],
-body .font-pixel, 
+body [style*='Pokemon FireRed LeafGreen'],
+body .font-pixel,
 body .pixelated {
   -webkit-font-smoothing: none !important;
   -moz-osx-font-smoothing: grayscale !important;
@@ -369,7 +377,7 @@ img:not(.allow-aliasing, .event-banner-img, .event-banner),
 canvas,
 .pixelated-img,
 .sprite,
-[class*="sprite-"],
+[class*='sprite-'],
 .banner-bg {
   image-rendering: -webkit-optimize-contrast !important;
   #{"image-rendering"}: crisp-edges !important;
@@ -392,8 +400,6 @@ img.event-banner-img {
   #{"image-rendering"}: auto !important;
 }
 
-
-
 // ─── Global Emoji Centering Fix ──────────────────────────────────────────────
 // The pixel font ('Pokemon FireRed LeafGreen') has size-adjust:128%.
 // This inflates the em-square of ANY span that inherits it, making the line-box
@@ -401,7 +407,7 @@ img.event-banner-img {
 // then align to the BASELINE of that tall line-box, appearing visually lower.
 // Universal Master Class: .emoji handles flex, standalone, and inline text centering.
 // ─────────────────────────────────────────────────────────────────────────────
-.emoji:not(i, [class*="fa"]) {
+.emoji:not(i, [class*='fa']) {
   display: inline-flex !important;
   justify-content: center !important;
   align-items: center !important;
@@ -409,8 +415,6 @@ img.event-banner-img {
   line-height: 1 !important;
   vertical-align: middle !important;
 }
-
-
 
 // Global Scrollbar Utility
 .custom-scrollbar-vicio {
@@ -424,7 +428,7 @@ img.event-banner-img {
     border-radius: $radius-xs-alt !important;
     background: Rgb(255 255 255 / 30%) !important;
   }
-  
+
   // scrollbar-width: none;
   // scrollbar-color: transparent transparent;
 }
@@ -438,15 +442,18 @@ img.event-banner-img {
 }
 
 .tint-gold {
-  filter: sepia(1) Saturate(12) hue-Rotate(5deg) Brightness(0.95) Contrast(1.2) Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
+  filter: sepia(1) Saturate(12) hue-Rotate(5deg) Brightness(0.95) Contrast(1.2)
+    Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
 }
 
 .tint-silver-blue {
-  filter: Saturate(0.8) hue-Rotate(180deg) Brightness(1.2) Contrast(1.1) Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
+  filter: Saturate(0.8) hue-Rotate(180deg) Brightness(1.2) Contrast(1.1)
+    Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
 }
 
 .tint-red-gold {
-  filter: Saturate(1.8) hue-Rotate(330deg) Brightness(1.0) Contrast(1.2) Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
+  filter: Saturate(1.8) hue-Rotate(330deg) Brightness(1) Contrast(1.2)
+    Drop-Shadow(0 4px 8px Rgb(0 0 0 / 30%));
 }
 
 // Universal Season Tournament Card (EventCard & Coliseo & Ranking shared standard)
@@ -457,7 +464,9 @@ img.event-banner-img {
   padding: 12px;
   border: 1.5px solid Rgb(250 204 21 / 40%);
   border-radius: $radius-xl-alt;
-  background: Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 10%) 0%, transparent 70%), Linear-Gradient(180deg, #1e1812 0%, #12141c 100%);
+  background:
+    Radial-Gradient(circle at 50% 0%, Rgb(250 204 21 / 10%) 0%, transparent 70%),
+    Linear-Gradient(180deg, #1e1812 0%, #12141c 100%);
   box-shadow: var(--shadow-card-elevated);
   overflow: hidden;
   box-sizing: border-box;
@@ -613,4 +622,3 @@ img.event-banner-img {
     }
   }
 }
-

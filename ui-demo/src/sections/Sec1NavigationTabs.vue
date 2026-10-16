@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { logToInspector } from '../logic/useLiveInspector.ts'
+import { ref } from 'vue';
+import { logToInspector } from '../logic/useLiveInspector.ts';
 
-const activeTab = ref('ENTRENADOR')
-const activePill = ref('OBJETOS')
-const activeServer = ref('ONLINE')
+const activeTab = ref('ENTRENADOR');
+const activePill = ref('OBJETOS');
+const activeServer = ref('ONLINE');
 
 interface MainTabEntry {
-  id: string
-  label: string
-  badge?: string
+  id: string;
+  label: string;
+  badge?: string;
 }
 
 const mainTabs: readonly MainTabEntry[] = [
@@ -17,60 +17,60 @@ const mainTabs: readonly MainTabEntry[] = [
   { id: 'POKÉMON', label: 'POKÉMON', badge: '(6)' },
   { id: 'INVENTARIO', label: 'INVENTARIO' },
   { id: 'AJUSTES', label: 'AJUSTES' }
-]
+];
 
-const pillTabs = ['TODOS (48)', 'OBJETOS', 'POKÉ BALLS', 'BAYAS', 'MTS & MOS', 'CLAVE'] as const
+const pillTabs = ['TODOS (48)', 'OBJETOS', 'POKÉ BALLS', 'BAYAS', 'MTS & MOS', 'CLAVE'] as const;
 
 // WAI-ARIA Tabs Pattern
-const waiAriaActiveTab = ref(1)
+const waiAriaActiveTab = ref(1);
 
 const waiAriaTabs = [
   { id: 1, label: 'Tab 1: Perfil de Entrenador', icon: '👤' },
   { id: 2, label: 'Tab 2: Configuración', icon: '⚙️' },
   { id: 3, label: 'Tab 3: Notificaciones', icon: '🔔' },
   { id: 4, label: 'Tab 4: Estructura WAI-ARIA', icon: '📜' }
-] as const
+] as const;
 
 function selectTab(tab: string) {
-  activeTab.value = tab
-  logToInspector(`Pestaña seleccionada: "${tab}"`)
+  activeTab.value = tab;
+  logToInspector(`Pestaña seleccionada: "${tab}"`);
 }
 
 function selectPill(pill: string) {
-  activePill.value = pill
-  logToInspector(`Sub-pestaña seleccionada: "${pill}"`)
+  activePill.value = pill;
+  logToInspector(`Sub-pestaña seleccionada: "${pill}"`);
 }
 
 function selectServer(server: string) {
-  activeServer.value = server
-  logToInspector(`Servidor seleccionado: "${server}"`)
+  activeServer.value = server;
+  logToInspector(`Servidor seleccionado: "${server}"`);
 }
 
 function switchWaiTab(tabId: number) {
-  waiAriaActiveTab.value = tabId
-  const found = waiAriaTabs.find(t => t.id === tabId)
-  logToInspector(`WAI-ARIA Tab activada: "${found?.label || tabId}" (role="tab")`)
+  waiAriaActiveTab.value = tabId;
+  const found = waiAriaTabs.find((t) => t.id === tabId);
+  logToInspector(`WAI-ARIA Tab activada: "${found?.label || tabId}" (role="tab")`);
 }
 
 function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
-  let targetIdx: number | null = null
-  const len = waiAriaTabs.length
+  let targetIdx: number | null = null;
+  const len = waiAriaTabs.length;
 
   if (e.key === 'ArrowRight') {
-    targetIdx = (currentIdx + 1) % len
+    targetIdx = (currentIdx + 1) % len;
   } else if (e.key === 'ArrowLeft') {
-    targetIdx = (currentIdx - 1 + len) % len
+    targetIdx = (currentIdx - 1 + len) % len;
   } else if (e.key === 'Home') {
-    targetIdx = 0
+    targetIdx = 0;
   } else if (e.key === 'End') {
-    targetIdx = len - 1
+    targetIdx = len - 1;
   }
 
   if (targetIdx !== null) {
-    e.preventDefault()
-    switchWaiTab(waiAriaTabs[targetIdx]!.id)
-    const btn = document.getElementById(`wai-tab-btn-${waiAriaTabs[targetIdx]!.id}`)
-    btn?.focus()
+    e.preventDefault();
+    switchWaiTab(waiAriaTabs[targetIdx]!.id);
+    const btn = document.getElementById(`wai-tab-btn-${waiAriaTabs[targetIdx]!.id}`);
+    btn?.focus();
   }
 }
 </script>
@@ -85,9 +85,7 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
     <div class="pv-panel-wrap has-cast-shadow">
       <div class="pv-frame-panel pv-panel-surface">
         <!-- TABS PRINCIPALES (NIVEL 2) -->
-        <div class="sub-label">
-          PESTAÑAS PRINCIPALES (NIVEL 2):
-        </div>
+        <div class="sub-label">PESTAÑAS PRINCIPALES (NIVEL 2):</div>
         <div class="pv-tab-row">
           <button
             v-for="tab in mainTabs"
@@ -99,10 +97,7 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
             @click="selectTab(tab.id)"
           >
             <span>{{ tab.label }}</span>
-            <span
-              v-if="tab.badge"
-              class="tab-badge"
-            >{{ tab.badge }}</span>
+            <span v-if="tab.badge" class="tab-badge">{{ tab.badge }}</span>
           </button>
         </div>
 
@@ -125,13 +120,8 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
         </div>
 
         <!-- SELECTOR SEGMENTADO DE SERVIDOR -->
-        <div class="sub-label">
-          SELECTOR SEGMENTADO DE SERVIDOR:
-        </div>
-        <div
-          class="pv-server-row"
-          style="max-width: 320px;"
-        >
+        <div class="sub-label">SELECTOR SEGMENTADO DE SERVIDOR:</div>
+        <div class="pv-server-row" style="max-width: 320px">
           <button
             v-gsap-hover="'button'"
             type="button"
@@ -153,21 +143,28 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
         </div>
 
         <!-- SISTEMA OFICIAL DE TABS WAI-ARIA CON NAVEGACIÓN POR TECLADO -->
-        <div
-          class="sub-label"
-          style="margin-top: 16px;"
-        >
+        <div class="sub-label" style="margin-top: 16px">
           SISTEMA WAI-ARIA OFICIAL (ACCESIBLE CON FLECHAS, HOME Y END):
         </div>
         <div
           class="pv-frame-control"
-          style="background: rgba(0, 0, 0, 0.25); padding: 12px; --frame-border: rgba(255, 255, 255, 0.1);"
+          style="
+            background: rgba(0, 0, 0, 0.25);
+            padding: 12px;
+            --frame-border: rgba(255, 255, 255, 0.1);
+          "
         >
           <!-- Tablist Header -->
           <div
             role="tablist"
             aria-label="Pestañas de demostración WAI-ARIA"
-            style="display: flex; gap: 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 6px; margin-bottom: 10px;"
+            style="
+              display: flex;
+              gap: 4px;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+              padding-bottom: 6px;
+              margin-bottom: 10px;
+            "
           >
             <button
               v-for="(t, idx) in waiAriaTabs"
@@ -186,7 +183,8 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px',
-                background: waiAriaActiveTab === t.id ? 'var(--color-control-focus)' : 'transparent',
+                background:
+                  waiAriaActiveTab === t.id ? 'var(--color-control-focus)' : 'transparent',
                 color: waiAriaActiveTab === t.id ? '#ffd60a' : 'var(--color-text-muted)',
                 '--frame-border': waiAriaActiveTab === t.id ? '#ffd60a' : 'transparent',
                 fontWeight: waiAriaActiveTab === t.id ? 'bold' : 'normal'
@@ -200,7 +198,7 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
           </div>
 
           <!-- Tab Panels -->
-          <div style="min-height: 80px; padding: 4px;">
+          <div style="min-height: 80px; padding: 4px">
             <!-- Panel 1 -->
             <div
               v-if="waiAriaActiveTab === 1"
@@ -209,24 +207,43 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
               aria-labelledby="wai-tab-btn-1"
               tabindex="0"
             >
-              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px">
                 <div
                   class="pv-frame-pill"
-                  style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--blue-500); color: var(--white); font-weight: bold; font-size: var(--font-11);"
+                  style="
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: var(--blue-500);
+                    color: var(--white);
+                    font-weight: bold;
+                    font-size: var(--font-11);
+                  "
                 >
                   PK
                 </div>
                 <div>
-                  <div style="font-size: var(--font-9); font-weight: bold; color: var(--color-text-main);">
+                  <div
+                    style="
+                      font-size: var(--font-9);
+                      font-weight: bold;
+                      color: var(--color-text-main);
+                    "
+                  >
                     Ash Ketchum (Maestro Pokémon)
                   </div>
-                  <div style="font-size: var(--font-7); color: var(--color-text-muted);">
+                  <div style="font-size: var(--font-7); color: var(--color-text-muted)">
                     Pueblo Paleta, Kanto • Sesión Activa WAI-ARIA
                   </div>
                 </div>
               </div>
-              <p style="font-size: var(--font-7); color: var(--color-text-muted); line-height: 1.4;">
-                Este panel demuestra el vínculo entre <code style="color: var(--yellow);">aria-controls</code> y <code style="color: var(--yellow);">aria-labelledby</code>. El tab activo mantiene <code style="color: var(--yellow);">tabindex="0"</code> para recibir foco directo.
+              <p style="font-size: var(--font-7); color: var(--color-text-muted); line-height: 1.4">
+                Este panel demuestra el vínculo entre
+                <code style="color: var(--yellow)">aria-controls</code> y
+                <code style="color: var(--yellow)">aria-labelledby</code>. El tab activo mantiene
+                <code style="color: var(--yellow)">tabindex="0"</code> para recibir foco directo.
               </p>
             </div>
 
@@ -238,10 +255,25 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
               aria-labelledby="wai-tab-btn-2"
               tabindex="0"
             >
-              <div style="font-size: var(--font-8); font-weight: bold; color: var(--color-text-gold, #ffd60a); margin-bottom: 6px;">
+              <div
+                style="
+                  font-size: var(--font-8);
+                  font-weight: bold;
+                  color: var(--color-text-gold, #ffd60a);
+                  margin-bottom: 6px;
+                "
+              >
                 PREFERENCIAS DEL SISTEMA
               </div>
-              <div style="display: flex; flex-direction: column; gap: 6px; font-size: var(--font-7); color: var(--color-text-muted);">
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 6px;
+                  font-size: var(--font-7);
+                  color: var(--color-text-muted);
+                "
+              >
                 <div>✓ Modo alto contraste activado con contorno negro 360°</div>
                 <div>✓ Foco automático en primer elemento del modal</div>
                 <div>✓ Animaciones optimizadas con GSAP</div>
@@ -256,12 +288,25 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
               aria-labelledby="wai-tab-btn-3"
               tabindex="0"
             >
-              <div style="font-size: var(--font-8); font-weight: bold; color: var(--sky); margin-bottom: 6px;">
+              <div
+                style="
+                  font-size: var(--font-8);
+                  font-weight: bold;
+                  color: var(--sky);
+                  margin-bottom: 6px;
+                "
+              >
                 CENTRO DE NOTIFICACIONES
               </div>
               <div
                 class="pv-frame-control"
-                style="padding: 6px 10px; background: rgba(56, 189, 248, 0.1); --frame-border: var(--sky); font-size: var(--font-7); color: var(--white);"
+                style="
+                  padding: 6px 10px;
+                  background: rgba(56, 189, 248, 0.1);
+                  --frame-border: var(--sky);
+                  font-size: var(--font-7);
+                  color: var(--white);
+                "
               >
                 🔔 Tienes 3 formularios pendientes de sincronizar con el backend de batalla.
               </div>
@@ -275,13 +320,28 @@ function onTabKeydown(e: KeyboardEvent, currentIdx: number) {
               aria-labelledby="wai-tab-btn-4"
               tabindex="0"
             >
-              <div style="font-size: var(--font-8); font-weight: bold; color: var(--purple-400); margin-bottom: 6px;">
+              <div
+                style="
+                  font-size: var(--font-8);
+                  font-weight: bold;
+                  color: var(--purple-400);
+                  margin-bottom: 6px;
+                "
+              >
                 ESTRUCTURA W3C WAI-ARIA
               </div>
               <pre
                 class="pv-frame-control"
-                style="font-size: var(--font-7); color: var(--purple-400); background: #04070d; padding: 6px; margin: 0; line-height: 1.3;"
-              >&lt;div role="tablist" aria-label="..."&gt;
+                style="
+                  font-size: var(--font-7);
+                  color: var(--purple-400);
+                  background: #04070d;
+                  padding: 6px;
+                  margin: 0;
+                  line-height: 1.3;
+                "
+              >
+&lt;div role="tablist" aria-label="..."&gt;
   &lt;button role="tab" aria-selected="true" aria-controls="panel-1" tabindex="0"&gt;Tab 1&lt;/button&gt;
   &lt;button role="tab" aria-selected="false" aria-controls="panel-2" tabindex="-1"&gt;Tab 2&lt;/button&gt;
 &lt;/div&gt;</pre>

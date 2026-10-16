@@ -30,8 +30,8 @@ Before performing any extraction, unambiguously identify the target environment 
 
 Select only the variables matching the target profile prefix (`SERVER_<profile>_`). When injecting or exporting them for the final service consumption (Supabase, Docker, etc.), **strip the server prefix** to restore the canonical variable name expected by the application.
 
-- *Source in master .env*: `SERVER_server_franco_POSTGRES_PASSWORD=my_password`
-- *Transformed result*: `POSTGRES_PASSWORD=my_password`
+- _Source in master .env_: `SERVER_server_franco_POSTGRES_PASSWORD=my_password`
+- _Transformed result_: `POSTGRES_PASSWORD=my_password`
 
 ### Rule 3: Global Variable Inclusion
 
@@ -63,19 +63,22 @@ When developing or modifying scripts (such as `setup_supabase.ts`), implement a 
 ```typescript
 import fs from 'node:fs/promises';
 
-async function loadServerConfig(masterEnvPath: string, serverProfile: string): Promise<Record<string, string>> {
+async function loadServerConfig(
+  masterEnvPath: string,
+  serverProfile: string
+): Promise<Record<string, string>> {
   const content = await fs.readFile(masterEnvPath, 'utf-8');
   const cleanConfig: Record<string, string> = {};
-  
+
   const prefix = `SERVER_${serverProfile}_`;
   for (const line of content.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) continue;
-    
+
     const idx = trimmed.indexOf('=');
     const key = trimmed.substring(0, idx).trim();
     const value = trimmed.substring(idx + 1).trim();
-    
+
     if (key.startsWith(prefix)) {
       const cleanKey = key.substring(prefix.length);
       cleanConfig[cleanKey] = value;

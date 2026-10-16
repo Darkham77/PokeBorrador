@@ -17,10 +17,14 @@ import {
   generateCompleteContinentalWorld,
   exportContinentalRoutesBundle,
   getCanonicalTileForBiome,
-  validateAntiFrankensteinPalette,
+  validateAntiFrankensteinPalette
 } from '../../logic/map/continentalWorldGenerator.ts';
 import { CELL_BIOME } from '../../types/map/kantoGridModel.ts';
-import { CANONICAL_THEME_SOURCES, type AdventureProject, type UrbanScale } from '../../types/map/adventureWorldTypes.ts';
+import {
+  CANONICAL_THEME_SOURCES,
+  type AdventureProject,
+  type UrbanScale
+} from '../../types/map/adventureWorldTypes.ts';
 
 describe('Continental World Generator (Overworld Studio)', () => {
   const TEST_WIDTH = 1600;
@@ -71,7 +75,9 @@ describe('Continental World Generator (Overworld Studio)', () => {
 
     it('maintains minimum spatial distance between dispersed nodes', () => {
       const terrain = generateProceduralContinentalTerrain(TEST_WIDTH, TEST_HEIGHT, TEST_SEED);
-      const nodes = Object.values(scatterUrbanNodes(TEST_WIDTH, TEST_HEIGHT, TEST_SEED, terrain, 10));
+      const nodes = Object.values(
+        scatterUrbanNodes(TEST_WIDTH, TEST_HEIGHT, TEST_SEED, terrain, 10)
+      );
 
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
@@ -127,8 +133,24 @@ describe('Continental World Generator (Overworld Studio)', () => {
   describe('generateSvgRoadPathData', () => {
     it('produces valid SVG path string for node connections', () => {
       const nodes = {
-        n1: { id: 'n1', name: 'N1', type: 'city' as const, x: 100, y: 150, hasCenter: true, farm: { t: 0, w: 0, m: 0, f: 0 } },
-        n2: { id: 'n2', name: 'N2', type: 'city' as const, x: 300, y: 400, hasCenter: true, farm: { t: 0, w: 0, m: 0, f: 0 } }
+        n1: {
+          id: 'n1',
+          name: 'N1',
+          type: 'city' as const,
+          x: 100,
+          y: 150,
+          hasCenter: true,
+          farm: { t: 0, w: 0, m: 0, f: 0 }
+        },
+        n2: {
+          id: 'n2',
+          name: 'N2',
+          type: 'city' as const,
+          x: 300,
+          y: 400,
+          hasCenter: true,
+          farm: { t: 0, w: 0, m: 0, f: 0 }
+        }
       };
       const connections: [string, string][] = [['n1', 'n2']];
 
@@ -139,7 +161,10 @@ describe('Continental World Generator (Overworld Studio)', () => {
 
   describe('bakeUrbanMaquette', () => {
     const testCases: Array<{ scale: UrbanScale; expectedBuildingStyles: string[] }> = [
-      { scale: 'metropolis', expectedBuildingStyles: ['silph_tower', 'gym_gold', 'pokecenter', 'pokemart'] },
+      {
+        scale: 'metropolis',
+        expectedBuildingStyles: ['silph_tower', 'gym_gold', 'pokecenter', 'pokemart']
+      },
       { scale: 'city', expectedBuildingStyles: ['gym', 'pokecenter', 'pokemart'] },
       { scale: 'town', expectedBuildingStyles: ['pokecenter', 'pokemart', 'house_blue'] },
       { scale: 'village', expectedBuildingStyles: ['pokecenter', 'house_red'] },
@@ -163,7 +188,7 @@ describe('Continental World Generator (Overworld Studio)', () => {
         expect(maquette.buildings.length).toBeGreaterThan(0);
         expect(maquette.props.length).toBeGreaterThan(0);
 
-        const styles = maquette.buildings.map(b => b.style);
+        const styles = maquette.buildings.map((b) => b.style);
         for (const expected of expectedBuildingStyles) {
           expect(styles).toContain(expected);
         }
@@ -173,7 +198,7 @@ describe('Continental World Generator (Overworld Studio)', () => {
 
   describe('rasterizeRoadsOnTerrain', () => {
     it('paints DIRT_PATH over land and BRIDGE over water along connections', () => {
-      const terrain: Record<string, typeof CELL_BIOME[keyof typeof CELL_BIOME]> = {
+      const terrain: Record<string, (typeof CELL_BIOME)[keyof typeof CELL_BIOME]> = {
         '0_0': CELL_BIOME.GRASS,
         '1_0': CELL_BIOME.WATER,
         '2_0': CELL_BIOME.GRASS
@@ -183,8 +208,24 @@ describe('Continental World Generator (Overworld Studio)', () => {
       // With x * 2.5: x1 = 0 -> px = 0 -> tx = 0
       // x2 = (64 / 2.5) -> px = 64 -> tx = 2
       const nodes = {
-        a: { id: 'a', name: 'A', type: 'city' as const, x: 0, y: 0, hasCenter: true, farm: { t: 0, w: 0, m: 0, f: 0 } },
-        b: { id: 'b', name: 'B', type: 'city' as const, x: 64 / 2.5, y: 0, hasCenter: true, farm: { t: 0, w: 0, m: 0, f: 0 } }
+        a: {
+          id: 'a',
+          name: 'A',
+          type: 'city' as const,
+          x: 0,
+          y: 0,
+          hasCenter: true,
+          farm: { t: 0, w: 0, m: 0, f: 0 }
+        },
+        b: {
+          id: 'b',
+          name: 'B',
+          type: 'city' as const,
+          x: 64 / 2.5,
+          y: 0,
+          hasCenter: true,
+          farm: { t: 0, w: 0, m: 0, f: 0 }
+        }
       };
 
       rasterizeRoadsOnTerrain(terrain, nodes, [['a', 'b']], 3, 1, 1);
@@ -233,8 +274,26 @@ describe('Continental World Generator (Overworld Studio)', () => {
           autoBuildings: true
         },
         nodes: {
-          n1: { id: 'n1', name: 'Start Town', type: 'city', x: 200, y: 200, urbanScale: 'hamlet', hasCenter: false, farm: { t: 0, w: 0, m: 0, f: 0 } },
-          n2: { id: 'n2', name: 'Capital City', type: 'league', x: 600, y: 600, urbanScale: 'metropolis', hasCenter: true, farm: { t: 0, w: 0, m: 0, f: 0 } }
+          n1: {
+            id: 'n1',
+            name: 'Start Town',
+            type: 'city',
+            x: 200,
+            y: 200,
+            urbanScale: 'hamlet',
+            hasCenter: false,
+            farm: { t: 0, w: 0, m: 0, f: 0 }
+          },
+          n2: {
+            id: 'n2',
+            name: 'Capital City',
+            type: 'league',
+            x: 600,
+            y: 600,
+            urbanScale: 'metropolis',
+            hasCenter: true,
+            farm: { t: 0, w: 0, m: 0, f: 0 }
+          }
         },
         connections: [['n1', 'n2']],
         customTerrain: {},
@@ -264,7 +323,13 @@ describe('Continental World Generator (Overworld Studio)', () => {
           width: 800,
           height: 800,
           seed: 42,
-          config: { themeSource: theme, treeDensity: 0.7, roadWidth: 2, autoOcean: true, autoBuildings: true }
+          config: {
+            themeSource: theme,
+            treeDensity: 0.7,
+            roadWidth: 2,
+            autoOcean: true,
+            autoBuildings: true
+          }
         });
 
         expect(result.themeSource).toBe(theme);

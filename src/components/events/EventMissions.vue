@@ -28,7 +28,7 @@ const uiStore = useUIStore();
 
 const getMatchingPokesForMission = (mission: DaycareMission) => {
   const allPokes = gameStore.allPokemonList;
-  return allPokes.filter(p => isPokemonEligibleForMission(p, mission));
+  return allPokes.filter((p) => isPokemonEligibleForMission(p, mission));
 };
 
 const canDeliverMission = (mission: DaycareMission) => {
@@ -44,16 +44,16 @@ const getDailyMissionBtnText = (mission: DaycareMission): string => {
 const openDelivery = (idx: number) => {
   const mission = breedingStore.dailyMissions[idx];
   if (!mission) return;
-  
+
   const matchingPokes = getMatchingPokesForMission(mission);
-  
+
   if (matchingPokes.length === 0) {
     uiStore.notify('No tienes ningún Pokémon que cumpla los requisitos de esta misión.', '⚠️');
     return;
   }
 
-  const allowedIds = matchingPokes.map(p => p.uid);
-  
+  const allowedIds = matchingPokes.map((p) => p.uid);
+
   modalStore.open('PokemonSelection', {
     title: 'ENTREGAR POKÉMON',
     subtitle: `Elige el Pokémon para entregar a ${mission.trainerName}`,
@@ -92,7 +92,7 @@ const getMissionRewardItem = (mission: DaycareMission) => {
 
 <template>
   <div class="event-missions">
-    <EventMissionsHeaderBar 
+    <EventMissionsHeaderBar
       :hide-refresh="props.hideRefresh"
       :refresh-count="breedingStore.missionRefreshes"
       @refresh="breedingStore.refreshMissions"
@@ -100,7 +100,7 @@ const getMissionRewardItem = (mission: DaycareMission) => {
 
     <div class="missions-grid">
       <MissionCard
-        v-for="(mission, index) in (breedingStore.dailyMissions as DaycareMission[])"
+        v-for="(mission, index) in breedingStore.dailyMissions as DaycareMission[]"
         :id="'daily-' + index"
         :key="index"
         :avatar="getAssetUrl(ASSET_TYPES.TRAINER, mission.trainerSprite)"
@@ -136,11 +136,11 @@ const getMissionRewardItem = (mission: DaycareMission) => {
   display: grid;
   gap: $spacing-lg;
   grid-template-columns: 1fr;
-  
+
   @media (width >= 600px) {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   @media (width >= 950px) {
     grid-template-columns: 1fr 1fr 1fr;
   }

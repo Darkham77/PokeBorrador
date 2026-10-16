@@ -17,7 +17,11 @@ async function processPendingSlotEffects(active: BattleState, ctx: BattleContext
       if (fsTarget && fsTarget.hp > 0) {
         fsTarget.hp = Math.max(0, fsTarget.hp - effect.damage);
         const fromText = effect.sourceName ? ` de ${effect.sourceName}` : '';
-        ctx.addLog(`¡Se cumplió la premonición${fromText}! ${fsTarget.name} recibió daño.`, 'log-info', fsTarget);
+        ctx.addLog(
+          `¡Se cumplió la premonición${fromText}! ${fsTarget.name} recibió daño.`,
+          'log-info',
+          fsTarget
+        );
         const side = effect.side;
         if (ctx.animations?.handleBlinkRequest) {
           await ctx.animations.handleBlinkRequest({ side });
@@ -47,13 +51,14 @@ function processFieldScreensDecay(ctx: BattleContext): void {
     { stages: ctx.playerStages, name: 'Jugador', log: 'log-player' as const },
     { stages: ctx.enemyStages, name: 'Enemigo', log: 'log-enemy' as const }
   ];
-  sides.forEach(side => {
-    fieldEffects.forEach(effect => {
+  sides.forEach((side) => {
+    fieldEffects.forEach((effect) => {
       const stages = side.stages.value;
       if (stages[effect] > 0) {
         stages[effect]--;
         if (stages[effect] === 0) {
-          const effectLabel = effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect;
+          const effectLabel =
+            effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect;
           ctx.addLog(`¡El efecto de ${effectLabel} del ${side.name} se desvaneció!`, side.log);
         }
       }
@@ -78,15 +83,15 @@ export async function applyEndTurnEffects(ctx: BattleContext): Promise<void> {
   await tickStatus(e, ctx, 'enemy');
   await tickLeechSeed(p, e, ctx);
   await tickLeechSeed(e, p, ctx);
-  
+
   processEndTurnWeatherFade(active.weather, ctx);
   processFieldScreensDecay(ctx);
 
   await applyEndTurnWeather(p, e, active.weather, ctx);
-  
+
   if (p.hp <= 0) await ctx.handleFaint('player');
   if (ctx.isBattleActive.value && e.hp <= 0) await ctx.handleFaint('enemy');
-  
+
   ctx.persistBattle();
   if (active && !active.over) {
     active.turnCount++;

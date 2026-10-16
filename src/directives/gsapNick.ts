@@ -10,19 +10,22 @@ const WATER_FLYING_BOB_OFFSET_PX = -2;
 const activeAnimations = new Map<HTMLElement, gsap.core.Tween | gsap.core.Timeline>();
 
 // Global IntersectionObserver to optimize CPU/GPU overhead by pausing animations when off-screen
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    const el = entry.target as HTMLElement;
-    const anim = activeAnimations.get(el);
-    if (anim) {
-      if (entry.isIntersecting) {
-        anim.play();
-      } else {
-        anim.pause();
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      const el = entry.target as HTMLElement;
+      const anim = activeAnimations.get(el);
+      if (anim) {
+        if (entry.isIntersecting) {
+          anim.play();
+        } else {
+          anim.pause();
+        }
       }
-    }
-  });
-}, { threshold: INTERSECTION_THRESHOLD_RATIO });
+    });
+  },
+  { threshold: INTERSECTION_THRESHOLD_RATIO }
+);
 
 /**
  * Custom Vue Directive to handle premium real-time GSAP animations
@@ -54,47 +57,104 @@ function cleanupAnimation(el: HTMLElement) {
   gsap.set(el, { clearProps: 'textShadow,transform,y,opacity,backgroundPosition' });
 }
 
-const INLINE_BLOCK_STYLES_SET: ReadonlySet<string> = new Set(['water', 'flying', 'psychic', 'admin']); // runtime-set: Fast O(1) membership lookup set
+const INLINE_BLOCK_STYLES_SET: ReadonlySet<string> = new Set([
+  'water',
+  'flying',
+  'psychic',
+  'admin'
+]); // runtime-set: Fast O(1) membership lookup set
 
 function createElementalAnimation(el: HTMLElement, style: string): gsap.core.Tween | null {
   switch (style) {
     case 'fire':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { textShadow: '0 0 5px rgba(239, 68, 68, 1)' },
-        { textShadow: '0 0 15px rgba(249, 115, 22, 1), 0 0 25px rgba(250, 204, 21, 1)', duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          textShadow: '0 0 15px rgba(249, 115, 22, 1), 0 0 25px rgba(250, 204, 21, 1)',
+          duration: 2,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     case 'water':
     case 'flying':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { y: 0 },
-        { y: WATER_FLYING_BOB_OFFSET_PX, duration: 1.5, yoyo: true, repeat: -1, ease: 'power1.inOut' }
+        {
+          y: WATER_FLYING_BOB_OFFSET_PX,
+          duration: 1.5,
+          yoyo: true,
+          repeat: -1,
+          ease: 'power1.inOut'
+        }
       );
     case 'cazabichos':
     case 'grass':
     case 'bug':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { textShadow: '0 0 5px rgba(34, 197, 94, 0.6)' },
-        { textShadow: '0 0 12px rgba(34, 197, 94, 0.8), 0 0 20px rgba(134, 239, 172, 0.4)', duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          textShadow: '0 0 12px rgba(34, 197, 94, 0.8), 0 0 20px rgba(134, 239, 172, 0.4)',
+          duration: 2,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     case 'ice':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { textShadow: '0 0 5px rgba(56, 189, 248, 0.6)' },
-        { textShadow: '0 0 15px rgba(56, 189, 248, 0.9), 0 0 25px rgba(255, 255, 255, 0.8)', duration: 2.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          textShadow: '0 0 15px rgba(56, 189, 248, 0.9), 0 0 25px rgba(255, 255, 255, 0.8)',
+          duration: 2.5,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     case 'psychic':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { scale: 1, textShadow: '0 0 6px rgba(236, 72, 153, 0.5)' },
-        { scale: 1.02, textShadow: '0 0 15px rgba(236, 72, 153, 0.9), 0 0 25px rgba(168, 85, 247, 0.6)', duration: 1.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          scale: 1.02,
+          textShadow: '0 0 15px rgba(236, 72, 153, 0.9), 0 0 25px rgba(168, 85, 247, 0.6)',
+          duration: 1.5,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     case 'poison':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { opacity: 0.85, textShadow: '0 0 4px rgba(168, 85, 247, 0.4)' },
-        { opacity: 1, textShadow: '0 0 12px rgba(168, 85, 247, 0.7)', duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          opacity: 1,
+          textShadow: '0 0 12px rgba(168, 85, 247, 0.7)',
+          duration: 2,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     case 'fairy':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { opacity: 0.9, textShadow: '0 0 6px rgba(244, 114, 182, 0.5)' },
-        { opacity: 1, textShadow: '0 0 18px rgba(244, 114, 182, 0.9), 0 0 30px rgba(253, 244, 255, 0.7)', duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          opacity: 1,
+          textShadow: '0 0 18px rgba(244, 114, 182, 0.9), 0 0 30px rgba(253, 244, 255, 0.7)',
+          duration: 2,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     default:
       return null;
@@ -104,38 +164,83 @@ function createElementalAnimation(el: HTMLElement, style: string): gsap.core.Twe
 function createClassFactionAnimation(el: HTMLElement, style: string): gsap.core.Tween | null {
   switch (style) {
     case 'criador':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { textShadow: '0 0 5px rgba(168, 85, 247, 0.6)' },
-        { textShadow: '0 0 12px rgba(168, 85, 247, 0.8), 0 0 20px rgba(216, 180, 254, 0.4)', duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          textShadow: '0 0 12px rgba(168, 85, 247, 0.8), 0 0 20px rgba(216, 180, 254, 0.4)',
+          duration: 2,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     case 'rocket':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { textShadow: '0 0 6px #ef4444, 0 0 12px #991b1b' },
-        { textShadow: '0 0 12px #ef4444, 0 0 24px #991b1b, 0 0 35px #000', duration: 1.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          textShadow: '0 0 12px #ef4444, 0 0 24px #991b1b, 0 0 35px #000',
+          duration: 1.5,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     case 'entrenador':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { textShadow: '0 0 5px rgba(59, 130, 246, 0.6)' },
-        { textShadow: '0 0 12px rgba(59, 130, 246, 0.8), 0 0 20px rgba(147, 197, 253, 0.4)', duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          textShadow: '0 0 12px rgba(59, 130, 246, 0.8), 0 0 20px rgba(147, 197, 253, 0.4)',
+          duration: 2,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     case 'union':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { textShadow: '0 0 4px #2563eb, 0 0 8px rgba(37, 99, 235, 0.5)' },
-        { textShadow: '0 0 8px #2563eb, 0 0 16px rgba(37, 99, 235, 0.85), 0 0 22px rgba(255, 255, 255, 0.6)', duration: 2.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          textShadow:
+            '0 0 8px #2563eb, 0 0 16px rgba(37, 99, 235, 0.85), 0 0 22px rgba(255, 255, 255, 0.6)',
+          duration: 2.5,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     case 'poder':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { textShadow: '0 0 4px #ef4444, 0 0 8px rgba(239, 68, 68, 0.5)' },
-        { textShadow: '0 0 8px #ef4444, 0 0 16px rgba(239, 68, 68, 0.85), 0 0 22px rgba(251, 191, 36, 0.6)', duration: 2.2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+        {
+          textShadow:
+            '0 0 8px #ef4444, 0 0 16px rgba(239, 68, 68, 0.85), 0 0 22px rgba(251, 191, 36, 0.6)',
+          duration: 2.2,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        }
       );
     case 'spark':
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { opacity: 1 },
-        { opacity: OPACITY_SPARK_MIN_LEVEL, duration: SPARK_ANIM_DURATION_SEC, yoyo: true, repeat: -1, ease: 'steps(1)' }
+        {
+          opacity: OPACITY_SPARK_MIN_LEVEL,
+          duration: SPARK_ANIM_DURATION_SEC,
+          yoyo: true,
+          repeat: -1,
+          ease: 'steps(1)'
+        }
       );
     case 'admin':
       // shimmer-ok: Text gradient clip requires backgroundPosition animation
-      return gsap.fromTo(el,
+      return gsap.fromTo(
+        el,
         { backgroundPosition: '0% center' },
         { backgroundPosition: '200% center', duration: 3, repeat: -1, ease: 'none' }
       );
@@ -159,7 +264,8 @@ function applyAnimation(el: HTMLElement, styleClass: unknown) {
     el.style.display = 'inline-block';
   }
 
-  const anim = createElementalAnimation(el, cleanStyle) ?? createClassFactionAnimation(el, cleanStyle);
+  const anim =
+    createElementalAnimation(el, cleanStyle) ?? createClassFactionAnimation(el, cleanStyle);
 
   if (anim) {
     activeAnimations.set(el, anim);

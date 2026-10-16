@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
@@ -11,12 +11,47 @@ const LOW_HP = 1;
 const CERTIFIED_HEAL_TURN = 2;
 const CERTIFIED_SEED = [1, 2, 3, 4];
 
-function createReplayEngine(history?: CertifiedBattleHistoryEntry[], enemyMove = 'splash'): ShowdownBattleEngine {
+function createReplayEngine(
+  history?: CertifiedBattleHistoryEntry[],
+  enemyMove = 'splash'
+): ShowdownBattleEngine {
   const engine = new ShowdownBattleEngine({ mode: 'replayer', history });
   const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, CERTIFIED_SEED);
   ShowdownLogEnricher.setupRealtimeEnrichment(battle);
-  battle.setPlayer('p1', { name: 'P1', team: [{ name: 'Bulbasaur', species: 'Bulbasaur', item: '', ability: 'Overgrow', moves: ['tackle'], nature: 'Hardy', gender: 'M', level: 50, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }] });
-  battle.setPlayer('p2', { name: 'P2', team: [{ name: 'Blissey', species: 'Blissey', item: '', ability: 'NaturalCure', moves: [enemyMove], nature: 'Hardy', gender: 'M', level: 100, evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }] });
+  battle.setPlayer('p1', {
+    name: 'P1',
+    team: [
+      {
+        name: 'Bulbasaur',
+        species: 'Bulbasaur',
+        item: '',
+        ability: 'Overgrow',
+        moves: ['tackle'],
+        nature: 'Hardy',
+        gender: 'M',
+        level: 50,
+        evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+      }
+    ]
+  });
+  battle.setPlayer('p2', {
+    name: 'P2',
+    team: [
+      {
+        name: 'Blissey',
+        species: 'Blissey',
+        item: '',
+        ability: 'NaturalCure',
+        moves: [enemyMove],
+        nature: 'Hardy',
+        gender: 'M',
+        level: 100,
+        evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 0, spe: 0 },
+        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+      }
+    ]
+  });
   Object.defineProperty(engine, 'battle', { value: battle });
   return engine;
 }
@@ -30,19 +65,39 @@ describe('ShowdownBattleEngine strict fail-loud integrity', () => {
 
     engine.executeTurn({ p1Choice: 'move 1', p2Choice: 'move 1' });
 
-    assert.equal(active.hp, LOW_HP, 'A replay may only heal when its certified history records that heal');
+    assert.equal(
+      active.hp,
+      LOW_HP,
+      'A replay may only heal when its certified history records that heal'
+    );
   });
 
   it('applies a replay heal only when the certified history records its battle turn', () => {
-    const engine = createReplayEngine([{ turnCount: 1, p1Choice: 'move 1', p2Choice: 'move 1', battleTurn: CERTIFIED_HEAL_TURN, p1Heal: true }]);
+    const engine = createReplayEngine([
+      {
+        turnCount: 1,
+        p1Choice: 'move 1',
+        p2Choice: 'move 1',
+        battleTurn: CERTIFIED_HEAL_TURN,
+        p1Heal: true
+      }
+    ]);
     const active = engine.battle.p1.active[0];
     assert.ok(active, 'P1 active Pokémon must exist');
     active.hp = LOW_HP;
 
     const output = engine.executeTurn({ p1Choice: 'move 1', p2Choice: 'move 1' });
 
-    assert.equal(output.battleTurn, CERTIFIED_HEAL_TURN, 'The replay must use the battle turn persisted by the fuzzer');
-    assert.equal(active.hp, active.maxhp, 'A recorded replay heal must restore the same state recorded by the fuzzer');
+    assert.equal(
+      output.battleTurn,
+      CERTIFIED_HEAL_TURN,
+      'The replay must use the battle turn persisted by the fuzzer'
+    );
+    assert.equal(
+      active.hp,
+      active.maxhp,
+      'A recorded replay heal must restore the same state recorded by the fuzzer'
+    );
   });
 
   it('throws when a certified choice stream is exhausted for a required request', () => {
@@ -66,8 +121,40 @@ describe('ShowdownBattleEngine strict fail-loud integrity', () => {
 
   it('throws an explicit error when a choice is rejected instead of applying silent fallbacks', () => {
     const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, [1, 2, 3, 4]);
-    battle.setPlayer('p1', { name: 'P1', team: [{ name: 'Bulbasaur', species: 'Bulbasaur', item: '', ability: 'Overgrow', moves: ['tackle'], nature: 'Hardy', gender: 'M', level: 50, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }] });
-    battle.setPlayer('p2', { name: 'P2', team: [{ name: 'Charmander', species: 'Charmander', item: '', ability: 'Blaze', moves: ['scratch'], nature: 'Hardy', gender: 'M', level: 50, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }] });
+    battle.setPlayer('p1', {
+      name: 'P1',
+      team: [
+        {
+          name: 'Bulbasaur',
+          species: 'Bulbasaur',
+          item: '',
+          ability: 'Overgrow',
+          moves: ['tackle'],
+          nature: 'Hardy',
+          gender: 'M',
+          level: 50,
+          evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+        }
+      ]
+    });
+    battle.setPlayer('p2', {
+      name: 'P2',
+      team: [
+        {
+          name: 'Charmander',
+          species: 'Charmander',
+          item: '',
+          ability: 'Blaze',
+          moves: ['scratch'],
+          nature: 'Hardy',
+          gender: 'M',
+          level: 50,
+          evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+        }
+      ]
+    });
     const engine = new ShowdownBattleEngine({ mode: 'fuzzer' });
     (engine as unknown as { battle: typeof battle }).battle = battle;
 
@@ -75,7 +162,7 @@ describe('ShowdownBattleEngine strict fail-loud integrity', () => {
       () => {
         engine.executeTurn({
           p1Choice: 'switch 2',
-          p2Choice: 'move 1',
+          p2Choice: 'move 1'
         });
       },
       (err: Error) => {

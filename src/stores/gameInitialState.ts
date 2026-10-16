@@ -1,4 +1,10 @@
-import { DEFAULT_INITIAL_ELO, INITIAL_BALLS_COUNT, INITIAL_MONEY, INITIAL_POKEBALL_COUNT, MAX_POKEMON_TEAM_SIZE } from '@/logic/constants/gameplay.ts';
+import {
+  DEFAULT_INITIAL_ELO,
+  INITIAL_BALLS_COUNT,
+  INITIAL_MONEY,
+  INITIAL_POKEBALL_COUNT,
+  MAX_POKEMON_TEAM_SIZE
+} from '@/logic/constants/gameplay.ts';
 import type { GameState } from '@/types/system/game';
 
 export function createInitialGameState(): GameState {
@@ -109,4 +115,3 @@ export function createInitialGameState(): GameState {
 }
 
 export const INITIAL_STATE: Readonly<GameState> = Object.freeze(createInitialGameState());
-

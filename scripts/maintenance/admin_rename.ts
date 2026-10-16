@@ -3,7 +3,7 @@ import { parseArgs } from 'node:util';
 
 async function main() {
   const args = process.argv.slice(2);
-  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
+  const normalized = args.map((a) => (a.includes('=') && !a.startsWith('-') ? `--${a}` : a));
   const { values, positionals } = parseArgs({
     args: normalized,
     allowPositionals: true,
@@ -16,12 +16,15 @@ async function main() {
     }
   });
 
-  const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+  const isHelp =
+    values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
   if (isHelp) {
-    console.log("📖 USO: npm run admin:rename [user=<user_id_o_nombre_actual>] [name=<nuevo_nombre>]");
-    console.log("Opciones:");
-    console.log("  user=<id|username> : ID de usuario o nombre actual en Supabase.");
-    console.log("  name=<nuevo_nombre>: Nuevo nombre a asignar al entrenador.");
+    console.log(
+      '📖 USO: npm run admin:rename [user=<user_id_o_nombre_actual>] [name=<nuevo_nombre>]'
+    );
+    console.log('Opciones:');
+    console.log('  user=<id|username> : ID de usuario o nombre actual en Supabase.');
+    console.log('  name=<nuevo_nombre>: Nuevo nombre a asignar al entrenador.');
     process.exit(0);
   }
 
@@ -29,7 +32,9 @@ async function main() {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    console.error("❌ Falta configuración de Supabase. Revisa VITE_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.");
+    console.error(
+      '❌ Falta configuración de Supabase. Revisa VITE_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.'
+    );
     process.exit(1);
   }
 
@@ -39,15 +44,15 @@ async function main() {
   const newName = values.name || values.username || positionals[1];
 
   if (!targetUser || !newName) {
-    console.log("Uso: npm run admin:rename user=<user_id_o_nombre_actual> name=<nuevo_nombre>");
-    console.log("Ejemplo: npm run admin:rename user=franco_id name=Ash");
+    console.log('Uso: npm run admin:rename user=<user_id_o_nombre_actual> name=<nuevo_nombre>');
+    console.log('Ejemplo: npm run admin:rename user=franco_id name=Ash');
     process.exit(1);
   }
 
   console.log(`Buscando usuario: ${targetUser}...`);
-  
-  let profile: { id: string, username: string } | null;
-  
+
+  let profile: { id: string; username: string } | null;
+
   // Buscar por ID primero, luego por nombre actual
   const { data: firstCheck, error: firstError } = await supabase
     .from('profiles')
@@ -56,7 +61,7 @@ async function main() {
     .single();
 
   const err1 = firstError as PostgrestError | null;
-  const data1 = firstCheck as { id: string, username: string } | null;
+  const data1 = firstCheck as { id: string; username: string } | null;
 
   if (err1 || !data1) {
     console.log(`No encontrado por ID. Buscando por nombre de usuario...`);
@@ -64,21 +69,23 @@ async function main() {
       .from('profiles')
       .select('id, username')
       .ilike('username', targetUser);
-      
+
     const err2 = errByName as PostgrestError | null;
-    const data2 = profilesByName as { id: string, username: string }[] | null;
-      
+    const data2 = profilesByName as { id: string; username: string }[] | null;
+
     if (err2 || !data2 || data2.length === 0) {
       console.error(`❌ Usuario no encontrado.`);
       process.exit(1);
     }
-    
+
     if (data2.length > 1) {
-      console.error(`❌ Hay múltiples usuarios con el nombre '${targetUser}'. Usa su ID explícito.`);
-      data2.forEach(p => console.log(`   - ID: ${p.id} | Nombre: ${p.username}`));
+      console.error(
+        `❌ Hay múltiples usuarios con el nombre '${targetUser}'. Usa su ID explícito.`
+      );
+      data2.forEach((p) => console.log(`   - ID: ${p.id} | Nombre: ${p.username}`));
       process.exit(1);
     }
-    
+
     profile = data2[0] || null;
   } else {
     profile = data1;
@@ -91,7 +98,7 @@ async function main() {
   // ya que este script es de administrador.
   const { error: updateError } = await supabase
     .from('profiles')
-    .update({ 
+    .update({
       username: newName,
       last_renamed_at: null // Reseteamos el cooldown por ser cambio de admin
     })

@@ -15,16 +15,16 @@ interface SocialLoaderData {
   readonly loadedAt: number;
 }
 
-export const useSocialDataLoader = defineBasicLoader('/social', async (): Promise<SocialLoaderData> => {
-  const socialStore = useSocialStore();
-  await Promise.all([
-    socialStore.loadSocialData(),
-    socialStore.refreshFriendsPresence()
-  ]);
+export const useSocialDataLoader = defineBasicLoader(
+  '/social',
+  async (): Promise<SocialLoaderData> => {
+    const socialStore = useSocialStore();
+    await Promise.all([socialStore.loadSocialData(), socialStore.refreshFriendsPresence()]);
 
-  return {
-    friendsCount: socialStore.friends.length,
-    incomingRequestsCount: socialStore.pendingRequests.length,
-    loadedAt: Temporal.Now.instant().epochMilliseconds
-  };
-});
+    return {
+      friendsCount: socialStore.friends.length,
+      incomingRequestsCount: socialStore.pendingRequests.length,
+      loadedAt: Temporal.Now.instant().epochMilliseconds
+    };
+  }
+);

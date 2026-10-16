@@ -1,40 +1,43 @@
-import type { Pokemon, Move } from '@/types/pokemon/pokemon'
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
 
-import type { ItemId } from '@/data/inventory/items'
+import { isItemId } from '@/data/inventory/items';
+import { CANONICAL_CHOICE_ITEMS_SET } from '@/logic/constants/gameplay';
 
 export interface ShowdownMoveRequest {
-  id: string
-  disabled?: boolean
+  id: string;
+  disabled?: boolean;
 }
 
 export interface ShowdownActiveRequest {
-  moves?: ShowdownMoveRequest[]
+  moves?: ShowdownMoveRequest[];
 }
 
 export interface ShowdownPlayerRequest {
-  active?: ShowdownActiveRequest[]
+  active?: ShowdownActiveRequest[];
 }
 
-const CHOICE_ITEM_IDS = ['choiceband', 'choicespecs', 'choicescarf'] as const satisfies readonly ItemId[]
-const CHOICE_ITEMS: ReadonlySet<string> = new Set(CHOICE_ITEM_IDS)
-const COLOR_HEX_SHORT_LENGTH = 3 as const
-const HEX_BYTE_SLICE_TWO = 2 as const
-const HEX_BYTE_SLICE_FOUR = 4 as const
-const HEX_BYTE_SLICE_SIX = 6 as const
-const DEFAULT_WHITE_RGB = '255, 255, 255' as const
-const HEX_RADIX = 16 as const
+const COLOR_HEX_SHORT_LENGTH = 3 as const;
+const HEX_BYTE_SLICE_TWO = 2 as const;
+const HEX_BYTE_SLICE_FOUR = 4 as const;
+const HEX_BYTE_SLICE_SIX = 6 as const;
+const DEFAULT_WHITE_RGB = '255, 255, 255' as const;
+const HEX_RADIX = 16 as const;
 
 export const MOVE_SLOT_GLOW_TYPES = ['gold', 'red'] as const;
 export type MoveSlotGlowType = (typeof MOVE_SLOT_GLOW_TYPES)[number];
 
 function isChoiceLocked(pokemon: Pokemon | null, move: Move): boolean {
-  if (!pokemon?.heldItem || !CHOICE_ITEMS.has(pokemon.heldItem)) {
-    return false
+  if (
+    !pokemon?.heldItem ||
+    !isItemId(pokemon.heldItem) ||
+    !CANONICAL_CHOICE_ITEMS_SET.has(pokemon.heldItem)
+  ) {
+    return false;
   }
-  if (!pokemon.choiceMove) return false
+  if (!pokemon.choiceMove) return false;
 
-  return move.id !== pokemon.choiceMove
+  return move.id !== pokemon.choiceMove;
 }
 
 export function isBattleMoveDisabled(
@@ -43,40 +46,40 @@ export function isBattleMoveDisabled(
   playerInfo: Pokemon | null,
   playerRequest: ShowdownPlayerRequest | undefined
 ): boolean {
-  if (isProcessing) return true
-  if (!move) return true
+  if (isProcessing) return true;
+  if (!move) return true;
   // 1. Absolute Priority: Consult the Showdown request
   if (playerRequest && playerRequest.active?.[0]?.moves) {
-    const reqMoves = playerRequest.active[0].moves
+    const reqMoves = playerRequest.active[0].moves;
     if (reqMoves.length > 0) {
-      const reqMove = reqMoves.find((rm: ShowdownMoveRequest) => rm.id === move.id)
+      const reqMove = reqMoves.find((rm: ShowdownMoveRequest) => rm.id === move.id);
       if (reqMove) {
-        return Boolean(reqMove.disabled)
+        return Boolean(reqMove.disabled);
       }
-      return true
+      return true;
     }
   }
 
-  if (move.disabled === true) return true
+  if (move.disabled === true) return true;
 
   // 2. If Pokémon is in a locked state (lockedmove, twoturnmove, thrash)
   if (isPokemonLocked(playerInfo) && playerInfo?.lastMove) {
     if (move.id !== playerInfo.lastMove.id) {
-      return true
+      return true;
     }
   }
 
   // 3. Choice Items validation (Choice Band, Specs, Scarf)
   if (isChoiceLocked(playerInfo, move)) {
-    return true
+    return true;
   }
 
   // 4. Exhausted PP
   if (move.id !== 'struggle' && move.pp <= 0) {
-    return true
+    return true;
   }
 
-  return false
+  return false;
 }
 
 export function resolveWeatherAuraClass(
@@ -84,45 +87,59 @@ export function resolveWeatherAuraClass(
   hasMoveModifier: boolean,
   weather: { turns?: number; visual?: string; type?: string } | null | undefined
 ): string | null {
-  if (!hasMove || !hasMoveModifier || !weather || weather.turns === 0) return null
-  const wType = (weather.visual || weather.type || '').toLowerCase()
+  if (!hasMove || !hasMoveModifier || !weather || weather.turns === 0) return null;
+  const wType = (weather.visual || weather.type || '').toLowerCase();
 
   if (wType.includes('rain') || wType.includes('storm') || wType.includes('lluvia')) {
-    return 'weather-rain'
+    return 'weather-rain';
   }
   if (wType.includes('sun') || wType.includes('heatwave') || wType.includes('sol')) {
-    return 'weather-sun'
+    return 'weather-sun';
   }
   if (wType.includes('thunder') || wType.includes('tormenta')) {
-    return 'weather-thunderstorm'
+    return 'weather-thunderstorm';
   }
-  if (wType.includes('hail') || wType.includes('snow') || wType.includes('granizo') || wType.includes('nieve')) {
-    return 'weather-hail-snow'
+  if (
+    wType.includes('hail') ||
+    wType.includes('snow') ||
+    wType.includes('granizo') ||
+    wType.includes('nieve')
+  ) {
+    return 'weather-hail-snow';
   }
-  if (wType.includes('fog') || wType.includes('mist') || wType.includes('niebla') || wType.includes('neblina')) {
-    return 'weather-fog'
+  if (
+    wType.includes('fog') ||
+    wType.includes('mist') ||
+    wType.includes('niebla') ||
+    wType.includes('neblina')
+  ) {
+    return 'weather-fog';
   }
-  return null
+  return null;
 }
 
 export function formatMoveName(name: string): string {
-  return name.toUpperCase()
+  return name
+    .toUpperCase()
     .replace(/Ñ/g, 'ñ')
     .replace(/Á/g, 'á')
     .replace(/É/g, 'é')
     .replace(/Í/g, 'í')
     .replace(/Ó/g, 'ó')
-    .replace(/Ú/g, 'ú')
+    .replace(/Ú/g, 'ú');
 }
 
 export function hexToRgbString(hex: string | null | undefined): string {
-  if (!hex) return DEFAULT_WHITE_RGB
-  let h = hex.replace('#', '')
+  if (!hex) return DEFAULT_WHITE_RGB;
+  let h = hex.replace('#', '');
   if (h.length === COLOR_HEX_SHORT_LENGTH) {
-    h = h.split('').map((c: string) => c + c).join('')
+    h = h
+      .split('')
+      .map((c: string) => c + c)
+      .join('');
   }
-  const r = parseInt(h.slice(0, HEX_BYTE_SLICE_TWO), HEX_RADIX)
-  const g = parseInt(h.slice(HEX_BYTE_SLICE_TWO, HEX_BYTE_SLICE_FOUR), HEX_RADIX)
-  const b = parseInt(h.slice(HEX_BYTE_SLICE_FOUR, HEX_BYTE_SLICE_SIX), HEX_RADIX)
-  return `${r}, ${g}, ${b}`
+  const r = parseInt(h.slice(0, HEX_BYTE_SLICE_TWO), HEX_RADIX);
+  const g = parseInt(h.slice(HEX_BYTE_SLICE_TWO, HEX_BYTE_SLICE_FOUR), HEX_RADIX);
+  const b = parseInt(h.slice(HEX_BYTE_SLICE_FOUR, HEX_BYTE_SLICE_SIX), HEX_RADIX);
+  return `${r}, ${g}, ${b}`;
 }

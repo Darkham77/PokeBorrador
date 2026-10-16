@@ -1,6 +1,6 @@
 // src/styles/core/mixins/_shell.scss
-@use "../variables" as *;
-@use "../gpu" as *;
+@use '../variables' as *;
+@use '../gpu' as *;
 
 @mixin shell($bg: Rgba(5, 5, 5, 1), $radius: 20px) {
   @include gpu-layer;
@@ -24,7 +24,6 @@
   border-radius: $radius;
   background: Linear-Gradient(180deg, Rgb(255 255 255 / 8%) 0%, Rgb(0 0 0 / 30%) 100%);
   box-shadow: var(--shadow-card);
-
 }
 
 @mixin home-section-card {
@@ -127,14 +126,12 @@
   transform: none; // NO displacement to avoid stuck hovers
   border-color: transparent !important;
   box-shadow: var(--shadow-card);
-
 }
 
 @mixin shell-selected-blue {
   border: 4px solid var(--blue) !important;
   background: Rgb(59 130 246 / 15%) !important;
   box-shadow: var(--shadow-card);
-
 }
 
 /**

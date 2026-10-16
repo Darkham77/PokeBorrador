@@ -25,9 +25,17 @@ const gtsStore = useGTSStore();
 const isProcessing = ref(false);
 const isCooldown = ref(false);
 
-const pokemonAsset = computed(() => props.claim.asset_data.type === 'pokemon' ? (props.claim.asset_data.data as PokemonAssetData) : null);
-const itemAsset = computed(() => props.claim.asset_data.type === 'item' ? (props.claim.asset_data.data as ItemAssetData) : null);
-const moneyAsset = computed(() => props.claim.asset_data.type === 'money' ? (props.claim.asset_data.data as number) : 0);
+const pokemonAsset = computed(() =>
+  props.claim.asset_data.type === 'pokemon'
+    ? (props.claim.asset_data.data as PokemonAssetData)
+    : null
+);
+const itemAsset = computed(() =>
+  props.claim.asset_data.type === 'item' ? (props.claim.asset_data.data as ItemAssetData) : null
+);
+const moneyAsset = computed(() =>
+  props.claim.asset_data.type === 'money' ? (props.claim.asset_data.data as number) : 0
+);
 
 const soldDetails = computed(() => formatSoldDetails(props.claim, gtsStore.salesHistory));
 
@@ -41,13 +49,15 @@ const onClaim = async () => {
 
   isProcessing.value = true;
   const success = await gameStore.claimAsset(props.claim.id);
-  
+
   if (success) {
     uiStore.notify('¡Activo recibido con éxito!', '🎁');
     isCooldown.value = true;
-    gsap.delayedCall(CLAIM_COOLDOWN_DELAY_SEC, () => { isCooldown.value = false; });
+    gsap.delayedCall(CLAIM_COOLDOWN_DELAY_SEC, () => {
+      isCooldown.value = false;
+    });
   }
-  
+
   isProcessing.value = false;
 };
 </script>
@@ -56,22 +66,22 @@ const onClaim = async () => {
   <div class="claim-card">
     <div class="claim-main">
       <div class="asset-preview-wrapper">
-        <img 
+        <img
           v-if="claim.asset_data.type === 'pokemon' && pokemonAsset"
           :src="getSpriteUrl(pokemonAsset.id)"
           :alt="pokemonAsset?.name || 'Pokémon'"
-          class="pixel-art pokemon-sprite" 
+          class="pixel-art pokemon-sprite"
           width="32"
           height="32"
-        >
+        />
         <img
           v-else
           :src="getAssetIcon(claim.asset_data)"
           :alt="itemAsset?.name || 'Reclamo'"
-          class="pixel-art item-sprite" 
+          class="pixel-art item-sprite"
           width="32"
           height="32"
-        >
+        />
       </div>
       <div class="claim-info">
         <span class="name">
@@ -81,10 +91,7 @@ const onClaim = async () => {
           </template>
           <template v-else-if="claim.asset_data.type === 'money'">
             ₽{{ moneyAsset.toLocaleString() }}
-            <span
-              v-if="soldDetails"
-              class="lvl-label"
-            >{{ soldDetails }}</span>
+            <span v-if="soldDetails" class="lvl-label">{{ soldDetails }}</span>
           </template>
           <template v-else-if="claim.asset_data.type === 'item' && itemAsset">
             {{ itemAsset.name }}
@@ -95,9 +102,9 @@ const onClaim = async () => {
       </div>
     </div>
     <div class="claim-actions">
-      <button 
-        class="btn-vicio-success btn-vicio-sm claim-btn" 
-        :disabled="isProcessing || isCooldown" 
+      <button
+        class="btn-vicio-success btn-vicio-sm claim-btn"
+        :disabled="isProcessing || isCooldown"
         @click.stop="onClaim"
       >
         {{ isProcessing ? '...SINC' : isCooldown ? 'ESPERA' : 'RECLAMAR' }}
@@ -107,7 +114,7 @@ const onClaim = async () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .claim-card {
   display: flex;
@@ -117,7 +124,6 @@ const onClaim = async () => {
   border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 3%);
-  
 
   &:hover {
     background: Rgb(255 255 255 / 5%);
@@ -146,7 +152,7 @@ const onClaim = async () => {
 
 .pixel-art {
   @include pixelated;
-  
+
   &.pokemon-sprite {
     width: 54px;
     height: 54px;
@@ -173,7 +179,8 @@ const onClaim = async () => {
     font-weight: 700;
     line-height: 1.2;
 
-    .lvl-label, .qty-label {
+    .lvl-label,
+    .qty-label {
       color: Rgb(255 255 255 / 50%);
       font-size: var(--font-11);
       font-weight: normal;

@@ -47,7 +47,7 @@ const GRAD2: readonly (readonly [number, number])[] = [
  * Deterministic Mulberry32 32-bit PRNG
  */
 export function createMulberry32(seed: number): () => number {
-  let s = (seed >>> 0) || 1;
+  let s = seed >>> 0 || 1;
   return () => {
     s = (s + MULBERRY_MAGIC_OFFSET) >>> 0;
     let t = Math.imul(s ^ (s >>> MULBERRY_SHIFT_A), 1 | s);
@@ -164,12 +164,7 @@ export class SimplexNoise {
  * Combines multiple octaves of varying frequencies and amplitudes.
  * Returns values normalized in the range [-1.0, 1.0].
  */
-export function fbm2D(
-  noise: SimplexNoise,
-  x: number,
-  y: number,
-  options?: FbmOptions
-): number {
+export function fbm2D(noise: SimplexNoise, x: number, y: number, options?: FbmOptions): number {
   const octaves = Math.max(1, options?.octaves ?? 4);
   const lacunarity = options?.lacunarity ?? 2.0;
   const persistence = options?.persistence ?? 0.5;

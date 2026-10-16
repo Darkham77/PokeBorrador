@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
-import PastEventsList from '@/components/modals/PastEventsList.vue'
-import { useEventStore } from '@/stores/events'
-import type { PastEventHistoryItem } from '@/types/system/stores'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
+import PastEventsList from '@/components/modals/PastEventsList.vue';
+import { useEventStore } from '@/stores/events';
+import type { PastEventHistoryItem } from '@/types/system/stores';
 
 describe('System Past Events & Rewards Claiming Suite', () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-    const eventStore = useEventStore()
+    setActivePinia(createPinia());
+    const eventStore = useEventStore();
     eventStore.allEvents = [
       {
         id: 'hora_magikarp',
@@ -53,8 +53,8 @@ describe('System Past Events & Rewards Claiming Suite', () => {
         },
         description: 'Torneo de criadores'
       }
-    ] as unknown as typeof eventStore.allEvents
-  })
+    ] as unknown as typeof eventStore.allEvents;
+  });
 
   const mockPastEvents: PastEventHistoryItem[] = [
     {
@@ -127,81 +127,84 @@ describe('System Past Events & Rewards Claiming Suite', () => {
       hasUnclaimedAward: false,
       isClaimed: true
     }
-  ]
+  ];
 
   it('renders empty message when no past events exist', () => {
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [], isLoading: false }
-    })
+    });
 
-    expect(wrapper.text()).toContain('No hay concursos concluidos recientemente.')
-  })
+    expect(wrapper.text()).toContain('No hay concursos concluidos recientemente.');
+  });
 
   it('renders loading state when isLoading is true', () => {
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [], isLoading: true }
-    })
+    });
 
-    expect(wrapper.text()).toContain('Cargando historial de eventos...')
-  })
+    expect(wrapper.text()).toContain('Cargando historial de eventos...');
+  });
 
   it('renders past events list with names, icons and podium', () => {
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: mockPastEvents, isLoading: false }
-    })
+    });
 
-    expect(wrapper.text()).toContain('Hora de Pesca del Magikarp')
-    expect(wrapper.text()).toContain('Torneo Eevee')
-    expect(wrapper.text()).toContain('AshKetchum')
-    expect(wrapper.text()).toContain('182 / 186 IVs')
-    expect(wrapper.text()).toContain('Titan')
-    expect(wrapper.text()).toContain('Misty')
-    expect(wrapper.text()).toContain('Brock')
-  })
+    expect(wrapper.text()).toContain('Hora de Pesca del Magikarp');
+    expect(wrapper.text()).toContain('Torneo Eevee');
+    expect(wrapper.text()).toContain('AshKetchum');
+    expect(wrapper.text()).toContain('182 / 186 IVs');
+    expect(wrapper.text()).toContain('Titan');
+    expect(wrapper.text()).toContain('Misty');
+    expect(wrapper.text()).toContain('Brock');
+  });
 
   it('renders claim button when user has an unclaimed award', async () => {
-    const { useUIStore } = await import('@/stores/ui')
-    const { useModalStore } = await import('@/stores/modals')
-    const uiStore = useUIStore()
-    const modalStore = useModalStore()
-    const closeSpy = vi.spyOn(modalStore, 'closeAll')
+    const { useUIStore } = await import('@/stores/ui');
+    const { useModalStore } = await import('@/stores/modals');
+    const uiStore = useUIStore();
+    const modalStore = useModalStore();
+    const closeSpy = vi.spyOn(modalStore, 'closeAll');
 
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: mockPastEvents, isLoading: false }
-    })
+    });
 
-    const claimBtn = wrapper.find('.retro-btn.claim-btn')
-    expect(claimBtn.exists()).toBe(true)
-    expect(claimBtn.text()).toContain('RECLAMAR EN INICIO')
+    const claimBtn = wrapper.find('.retro-btn.claim-btn');
+    expect(claimBtn.exists()).toBe(true);
+    expect(claimBtn.text()).toContain('RECLAMAR EN INICIO');
 
-    await claimBtn.trigger('click')
-    expect(uiStore.activeTab).toBe('home')
-    expect(closeSpy).toHaveBeenCalled()
-  })
+    await claimBtn.trigger('click');
+    expect(uiStore.activeTab).toBe('home');
+    expect(closeSpy).toHaveBeenCalled();
+  });
 
   it('renders claimed badge when user already claimed the award', () => {
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [mockPastEvents[1]!], isLoading: false }
-    })
+    });
 
-    const claimedBadge = wrapper.find('.claimed-badge')
-    expect(claimedBadge.exists()).toBe(true)
-    expect(claimedBadge.text()).toContain('✓ RECLAMADA')
-  })
+    const claimedBadge = wrapper.find('.claimed-badge');
+    expect(claimedBadge.exists()).toBe(true);
+    expect(claimedBadge.text()).toContain('✓ RECLAMADA');
+  });
 
   it('triggers a toast notification on login when there are pending awards', async () => {
-    const eventStore = useEventStore()
-    const { useAuthStore } = await import('@/stores/auth')
-    const { useGameStore } = await import('@/stores/game')
-    const { useUIStore } = await import('@/stores/ui')
-    
-    const authStore = useAuthStore()
-    const gameStore = useGameStore()
-    const uiStore = useUIStore()
+    const eventStore = useEventStore();
+    const { useAuthStore } = await import('@/stores/auth');
+    const { useGameStore } = await import('@/stores/game');
+    const { useUIStore } = await import('@/stores/ui');
 
-    const notifySpy = vi.spyOn(uiStore, 'notify')
-    authStore.user = { id: 'player-1', email: 'ash@pokemon.com' } as import('@/types/auth/auth').AuthUser
-    
+    const authStore = useAuthStore();
+    const gameStore = useGameStore();
+    const uiStore = useUIStore();
+
+    const notifySpy = vi.spyOn(uiStore, 'notify');
+    authStore.user = {
+      id: 'player-1',
+      email: 'ash@pokemon.com'
+    } as import('@/types/auth/auth').AuthUser;
+
     // Mock DB select for pending awards
     gameStore.db = {
       from: vi.fn().mockReturnValue({
@@ -216,78 +219,84 @@ describe('System Past Events & Rewards Claiming Suite', () => {
           })
         })
       })
-    } as unknown as typeof gameStore.db
+    } as unknown as typeof gameStore.db;
 
-    await eventStore.checkPendingAwards(true)
+    await eventStore.checkPendingAwards(true);
 
     expect(notifySpy).toHaveBeenCalledWith(
       '¡Tienes 1 recompensa de evento pendiente por reclamar!',
       '🎁'
-    )
-    expect(eventStore.pendingAwards.length).toBe(1)
-  })
+    );
+    expect(eventStore.pendingAwards.length).toBe(1);
+  });
 
   it('displays the event schedule window (inicio y fin) in PastEventCard header', () => {
     const eventWithWeeklySchedule: PastEventHistoryItem = {
       ...mockPastEvents[0]!,
       event_schedule: { type: 'weekly', days: [2, 4], startHour: 18, endHour: 20 },
       ended_at: '2026-08-27T20:00:00Z'
-    }
+    };
 
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [eventWithWeeklySchedule], isLoading: false }
-    })
+    });
 
-    expect(wrapper.text()).toContain('27/08/2026 · De 18:00 a 20:00 hs')
-  })
+    expect(wrapper.text()).toContain('27/08/2026 · De 18:00 a 20:00 hs');
+  });
 
   it('displays start and end date/time when start_at and end_at are provided', () => {
     const eventWithAbsoluteDates: PastEventHistoryItem = {
       ...mockPastEvents[0]!,
       start_at: '2026-08-20T13:00:00Z', // 10:00 hs in GMT-3
-      end_at: '2026-08-20T21:00:00Z',   // 18:00 hs in GMT-3
+      end_at: '2026-08-20T21:00:00Z', // 18:00 hs in GMT-3
       ended_at: '2026-08-20T21:00:00Z'
-    }
+    };
 
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [eventWithAbsoluteDates], isLoading: false }
-    })
+    });
 
-    expect(wrapper.text()).toContain('20/08/2026 · De 10:00 a 18:00 hs')
-  })
+    expect(wrapper.text()).toContain('20/08/2026 · De 10:00 a 18:00 hs');
+  });
 
   it('displays multi-day start and end dates when start_at and end_at span across different days', () => {
     const multiDayEvent: PastEventHistoryItem = {
       ...mockPastEvents[0]!,
       start_at: '2026-08-20T13:00:00Z', // 20/08/2026 10:00 hs in GMT-3
-      end_at: '2026-08-25T21:00:00Z',   // 25/08/2026 18:00 hs in GMT-3
+      end_at: '2026-08-25T21:00:00Z', // 25/08/2026 18:00 hs in GMT-3
       ended_at: '2026-08-25T21:00:00Z'
-    }
+    };
 
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [multiDayEvent], isLoading: false }
-    })
+    });
 
-    expect(wrapper.text()).toContain('Del 20/08/2026 10:00 hs al 25/08/2026 18:00 hs')
-  })
+    expect(wrapper.text()).toContain('Del 20/08/2026 10:00 hs al 25/08/2026 18:00 hs');
+  });
 
   it('notifies individual toasts for each item, money and battle coins won on claim', async () => {
-    const eventStore = useEventStore()
-    const { useUIStore } = await import('@/stores/ui')
-    const { useGameStore } = await import('@/stores/game')
-    const uiStore = useUIStore()
-    const gameStore = useGameStore()
-    const notifySpy = vi.spyOn(uiStore, 'notify')
+    const eventStore = useEventStore();
+    const { useUIStore } = await import('@/stores/ui');
+    const { useGameStore } = await import('@/stores/game');
+    const uiStore = useUIStore();
+    const gameStore = useGameStore();
+    const notifySpy = vi.spyOn(uiStore, 'notify');
 
     eventStore.pendingAwards = [
       {
         id: 'award-101',
         event_id: 'hora_magikarp',
         winner_id: 'player-1',
-        prize: JSON.stringify({ type: 'mixed', money: 10000, battleCoins: 50, item: 'waterstone', qty: 2 }),
+        prize: JSON.stringify({
+          type: 'mixed',
+          money: 10000,
+          battleCoins: 50,
+          item: 'waterstone',
+          qty: 2
+        }),
         received_at: null
       }
-    ]
+    ];
     eventStore.allEvents = [
       {
         id: 'hora_magikarp',
@@ -311,13 +320,13 @@ describe('System Past Events & Rewards Claiming Suite', () => {
           ]
         }
       }
-    ] as unknown as typeof eventStore.allEvents
+    ] as unknown as typeof eventStore.allEvents;
 
     gameStore.state = {
       money: 1000,
       battleCoins: 10,
       inventory: {}
-    } as unknown as typeof gameStore.state
+    } as unknown as typeof gameStore.state;
 
     gameStore.db = {
       rpc: vi.fn().mockResolvedValue({
@@ -327,14 +336,14 @@ describe('System Past Events & Rewards Claiming Suite', () => {
         },
         error: null
       })
-    } as unknown as typeof gameStore.db
+    } as unknown as typeof gameStore.db;
 
-    await eventStore.claimAward('award-101')
+    await eventStore.claimAward('award-101');
 
-    expect(notifySpy).toHaveBeenCalledWith(expect.stringMatching(/¡Ganaste ₽10[.,]000!/), '💰')
-    expect(notifySpy).toHaveBeenCalledWith('¡Ganaste 50 Battle Coins!', '🪙')
-    expect(notifySpy).toHaveBeenCalledWith('¡Obtuviste Piedra Agua x2!', '🎒')
-  })
+    expect(notifySpy).toHaveBeenCalledWith(expect.stringMatching(/¡Ganaste ₽10[.,]000!/), '💰');
+    expect(notifySpy).toHaveBeenCalledWith('¡Ganaste 50 Battle Coins!', '🪙');
+    expect(notifySpy).toHaveBeenCalledWith('¡Obtuviste Piedra Agua x2!', '🎒');
+  });
 
   it('renders "Evento desconocido" when event_id or event_name starts with custom_ or is missing', () => {
     const customEvent: PastEventHistoryItem = {
@@ -349,15 +358,15 @@ describe('System Past Events & Rewards Claiming Suite', () => {
       isWinner: false,
       hasUnclaimedAward: false,
       isClaimed: false
-    }
+    };
 
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [customEvent], isLoading: false }
-    })
+    });
 
-    expect(wrapper.text()).toContain('Evento desconocido')
-    expect(wrapper.text()).not.toContain('custom_1774821389985')
-  })
+    expect(wrapper.text()).toContain('Evento desconocido');
+    expect(wrapper.text()).not.toContain('custom_1774821389985');
+  });
 
   it('displays the full date with day, month, year and time in PastEventCard header', () => {
     const customEvent: PastEventHistoryItem = {
@@ -372,14 +381,14 @@ describe('System Past Events & Rewards Claiming Suite', () => {
       isWinner: false,
       hasUnclaimedAward: false,
       isClaimed: false
-    }
+    };
 
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [customEvent], isLoading: false }
-    })
+    });
 
-    expect(wrapper.text()).toContain('29/03/2026 · 19:06 hs')
-  })
+    expect(wrapper.text()).toContain('29/03/2026 · 19:06 hs');
+  });
 
   it('disables the info button for archived/unknown events not in the database', () => {
     const customEvent: PastEventHistoryItem = {
@@ -394,42 +403,44 @@ describe('System Past Events & Rewards Claiming Suite', () => {
       isWinner: false,
       hasUnclaimedAward: false,
       isClaimed: false
-    }
+    };
 
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [customEvent], isLoading: false }
-    })
+    });
 
-    const infoBtn = wrapper.find('.event-info-btn')
-    expect(infoBtn.exists()).toBe(true)
-    expect(infoBtn.attributes('disabled')).toBeDefined()
-  })
+    const infoBtn = wrapper.find('.event-info-btn');
+    expect(infoBtn.exists()).toBe(true);
+    expect(infoBtn.attributes('disabled')).toBeDefined();
+  });
 
   it('enables the info button and opens EventDetail modal when event exists in database', async () => {
-    const { useModalStore } = await import('@/stores/modals')
-    const modalStore = useModalStore()
-    const openSpy = vi.spyOn(modalStore, 'open')
+    const { useModalStore } = await import('@/stores/modals');
+    const modalStore = useModalStore();
+    const openSpy = vi.spyOn(modalStore, 'open');
 
-    const eventStore = useEventStore()
+    const eventStore = useEventStore();
     const knownGameEvent = {
       id: 'hora_magikarp',
       name: 'Hora de Pesca del Magikarp',
       description: 'Pesca Magikarp gigantes',
       active: false
-    }
-    eventStore.allEvents = [knownGameEvent as unknown as import('@/logic/events/eventEngine').Event]
+    };
+    eventStore.allEvents = [
+      knownGameEvent as unknown as import('@/logic/events/eventEngine').Event
+    ];
 
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: [mockPastEvents[0]!], isLoading: false }
-    })
+    });
 
-    const infoBtn = wrapper.find('.event-info-btn')
-    expect(infoBtn.exists()).toBe(true)
-    expect(infoBtn.attributes('disabled')).toBeUndefined()
+    const infoBtn = wrapper.find('.event-info-btn');
+    expect(infoBtn.exists()).toBe(true);
+    expect(infoBtn.attributes('disabled')).toBeUndefined();
 
-    await infoBtn.trigger('click')
+    await infoBtn.trigger('click');
     expect(openSpy).toHaveBeenCalledWith('EventDetail', {
       event: expect.objectContaining({ id: 'hora_magikarp' })
-    })
-  })
-})
+    });
+  });
+});

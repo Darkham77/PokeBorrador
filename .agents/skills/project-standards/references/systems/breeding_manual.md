@@ -12,7 +12,7 @@
 ## 1. 🐣 Compatibility & Rules
 
 - **Ditto**: Compatible with any species except Legendaries and the "No-Eggs" undiscovered egg group.
-- **Resulting Species (Universal Baby Form Mandate)**: Always the base evolution (or "Baby") of the **Mother** (`getEggSpecies`). Offspring species MUST strictly belong to the active `ENABLED_POKEMON_IDS` whitelist. For all evolutionary lines with whitelisted baby stages (*Pichu*, *Cleffa*, *Igglybuff*, *Togepi*, *Tyrogue*, *Smoochum*, *Elekid*, *Magby*), eggs, hatch animations (`HatchAnimationModal.vue`), and debug egg creators MUST strictly instantiate the Level 1 Baby form.
+- **Resulting Species (Universal Baby Form Mandate)**: Always the base evolution (or "Baby") of the **Mother** (`getEggSpecies`). Offspring species MUST strictly belong to the active `ENABLED_POKEMON_IDS` whitelist. For all evolutionary lines with whitelisted baby stages (_Pichu_, _Cleffa_, _Igglybuff_, _Togepi_, _Tyrogue_, _Smoochum_, _Elekid_, _Magby_), eggs, hatch animations (`HatchAnimationModal.vue`), and debug egg creators MUST strictly instantiate the Level 1 Baby form.
 - **Legendary Restriction**: Legendaries (`mewtwo`, `mew`, `articuno`, `zapdos`, `moltres`, etc.) cannot breed.
 
 ---

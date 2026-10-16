@@ -5,7 +5,7 @@ import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE } from '@/logic/co
 import { getMovesAtLevel, initializePokemonVigor } from '@/logic/pokemon/pokemonUtils';
 import { getActivePinia } from 'pinia';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
 import { createDefaultEvs } from './evMath.ts';
 import type { ItemId } from '@/data/inventory/items';
@@ -24,7 +24,12 @@ import {
 import { levelUpPokemon as executeLevelUpPokemon } from './pokemonLevelUpHelper.ts';
 
 export { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
-export { canLearnMove, getLegalSpeciesMoves, getRandomLegalMoves, getMaxAllowedMoves } from './pokemonLearnset.ts';
+export {
+  canLearnMove,
+  getLegalSpeciesMoves,
+  getRandomLegalMoves,
+  getMaxAllowedMoves
+} from './pokemonLearnset.ts';
 export { getWildHeldItem, WILD_HELD_ITEMS } from './pokemonWildHeldItems.ts';
 export { validatePokemon } from './pokemonValidator.ts';
 export type { PokemonCreationOptions } from './pokemonCreationHelper.ts';
@@ -36,7 +41,9 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   if (!base) return;
 
   const natureDef = p.nature ? pokemonDataProvider.getNatureData(p.nature) : null;
-  const natureData = natureDef ? { up: natureDef.up, down: natureDef.down } : { up: null, down: null };
+  const natureData = natureDef
+    ? { up: natureDef.up, down: natureDef.down }
+    : { up: null, down: null };
   const isDittoMetalPowder = p.heldItem === 'metalpowder' && p.id === 'ditto';
   const isDittoQuickPowder = p.heldItem === 'quickpowder' && p.id === 'ditto';
 
@@ -72,7 +79,7 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   p.spe = calculated.spe;
 
   const stats: (keyof Pokemon)[] = ['maxHp', 'atk', 'def', 'spa', 'spd', 'spe'];
-  stats.forEach(s => {
+  stats.forEach((s) => {
     const val = p[s] as number;
     if (isNaN(val) || val === undefined) {
       Reflect.set(p, s, DEFAULT_FALLBACK_BASE_STAT);
@@ -89,7 +96,11 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
 /**
  * Factory creating consistent, legal Pokemon objects with strict typed IDs
  */
-export function makePokemon(idVal: PokemonSpeciesId | number | string, level: number, options: PokemonCreationOptions = {}): Pokemon | null {
+export function makePokemon(
+  idVal: string | number,
+  level: number,
+  options: PokemonCreationOptions = {}
+): Pokemon | null {
   if (idVal === undefined || idVal === null || idVal === '') return null;
   const id = requirePokemonSpeciesId(toID(String(idVal)));
 
@@ -103,9 +114,13 @@ export function makePokemon(idVal: PokemonSpeciesId | number | string, level: nu
   const piniaActive = getActivePinia();
   const ivs = computeCreationIVs(options, piniaActive);
 
-  const nature = options.nature ? toNatureId(toID(options.nature)) : NATURES[Math.floor(Math.random() * NATURES.length)] || 'serious';
+  const nature = options.nature
+    ? toNatureId(toID(options.nature))
+    : NATURES[Math.floor(Math.random() * NATURES.length)] || 'serious';
   const abilityList = pokemonDataProvider.getSpeciesAbilities(id);
-  const selectedAbility = options.ability ? toID(options.ability) : abilityList[Math.floor(Math.random() * abilityList.length)];
+  const selectedAbility = options.ability
+    ? toID(options.ability)
+    : abilityList[Math.floor(Math.random() * abilityList.length)];
   if (!selectedAbility) throw new Error(`[pokemonFactory] No ability available for species ${id}`);
   const ability = requireAbilityId(selectedAbility);
   const gender = options.gender !== undefined ? options.gender : assignGender(id);
@@ -118,22 +133,40 @@ export function makePokemon(idVal: PokemonSpeciesId | number | string, level: nu
 
   const p: Pokemon = {
     uid: crypto.randomUUID(),
-    id, name: base.name, type: base.type, type2: base.type2,
+    id,
+    name: base.name,
+    type: base.type,
+    type2: base.type2,
     isFloating: base.isFloating,
     catchRate: base.catchRate,
-    level, exp: 0, expNeeded: getExpNeededPure(level),
-    ivs, nature, ability, gender, isShiny,
+    level,
+    exp: 0,
+    expNeeded: getExpNeededPure(level),
+    ivs,
+    nature,
+    ability,
+    gender,
+    isShiny,
     moves: getMovesAtLevel(id, level, bypass) as Move[],
-    status: '', sleepTurns: 0, friendship: DEFAULT_FRIENDSHIP_VALUE,
+    status: '',
+    sleepTurns: 0,
+    friendship: DEFAULT_FRIENDSHIP_VALUE,
     friendshipSteps: 0,
-    vigor: 0, maxVigor: 0,
+    vigor: 0,
+    maxVigor: 0,
     heldItem,
     nickname: null,
     tags: ['ball:pokeball'],
     obtainedAt: getServerInstant().epochMilliseconds,
     obtainedMethod: options.obtainedMethod ?? 'wild',
     evs: createDefaultEvs(),
-    hp: 0, maxHp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
+    hp: 0,
+    maxHp: 0,
+    atk: 0,
+    def: 0,
+    spa: 0,
+    spd: 0,
+    spe: 0
   };
 
   p.height = Number(getPokemonPhysicalHeight(p).toFixed(1));

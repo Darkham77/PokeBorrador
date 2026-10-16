@@ -31,14 +31,15 @@
 }
 
 // Global Grid Adjustments
-.gym-list, .market-grid {
+.gym-list,
+.market-grid {
   display: grid;
   gap: spacing(4);
-  
+
   @media (width <= 1024px) {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
-  
+
   @media (width <= 600px) {
     gap: $spacing-lg;
     grid-template-columns: 1fr;
@@ -46,7 +47,8 @@
 }
 
 // Ensure the game doesn't overflow on small devices
-html, body {
+html,
+body {
   position: relative;
   width: 100%;
   overflow-x: hidden;

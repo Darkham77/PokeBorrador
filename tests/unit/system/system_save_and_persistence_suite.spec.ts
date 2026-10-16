@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -28,7 +28,10 @@ vi.mock('@/logic/utils/opfsStorage', () => ({
 
 setupLocalStorageMock();
 
-const BACKUP_FIXTURE_PATH = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
+const BACKUP_FIXTURE_PATH = path.resolve(
+  process.cwd(),
+  'tests/node/fixtures/server_franco_backup_fixture.json'
+);
 
 function requirePokemon(id: Parameters<typeof makePokemon>[0], level: number) {
   const p = makePokemon(id, level);
@@ -48,31 +51,42 @@ function createValidGameState(): GameState {
     trainerExp: 0,
     trainerExpNeeded: 100,
     inventory: {},
-    team: [{
-      uid: 'test-poke-1',
-      id: 'pikachu',
-      species: 'pikachu',
-      name: 'Pikachu',
-      level: 5,
-      exp: 0,
-      expNeeded: 100,
-      hp: 35,
-      maxHp: 35,
-      atk: 55,
-      def: 40,
-      spa: 50,
-      spd: 50,
-      spe: 90,
-      type: 'electric',
-      status: '',
-      isShiny: false,
-      vigor: 100,
-      maxVigor: 100,
-      moves: [{ id: 'quickattack', name: 'Ataque Rápido', pp: 30, maxPP: 30, type: 'normal', cat: 'physical' }],
-      ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-      nature: 'hardy',
-      ability: 'static'
-    }],
+    team: [
+      {
+        uid: 'test-poke-1',
+        id: 'pikachu',
+        species: 'pikachu',
+        name: 'Pikachu',
+        level: 5,
+        exp: 0,
+        expNeeded: 100,
+        hp: 35,
+        maxHp: 35,
+        atk: 55,
+        def: 40,
+        spa: 50,
+        spd: 50,
+        spe: 90,
+        type: 'electric',
+        status: '',
+        isShiny: false,
+        vigor: 100,
+        maxVigor: 100,
+        moves: [
+          {
+            id: 'quickattack',
+            name: 'Ataque Rápido',
+            pp: 30,
+            maxPP: 30,
+            type: 'normal',
+            cat: 'physical'
+          }
+        ],
+        ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+        nature: 'hardy',
+        ability: 'static'
+      }
+    ],
     box: [],
     eggs: [],
     pokedex: [],
@@ -103,7 +117,12 @@ function createValidGameState(): GameState {
 
 function seedTestGameSaves(
   db: DatabaseSync,
-  gameSaves: Array<{ user_id: string; save_data: unknown; last_save_id?: string; updated_at?: string }>
+  gameSaves: Array<{
+    user_id: string;
+    save_data: unknown;
+    last_save_id?: string;
+    updated_at?: string;
+  }>
 ): void {
   for (const ddl of TABLES_SCHEMA) {
     db.exec(`CREATE TABLE IF NOT EXISTS ${ddl}`);
@@ -111,9 +130,12 @@ function seedTestGameSaves(
   db.exec(`CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT)`);
   db.exec('BEGIN TRANSACTION;');
 
-  const insertSave = db.prepare('INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)');
+  const insertSave = db.prepare(
+    'INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)'
+  );
   for (const save of gameSaves) {
-    const dataStr = typeof save.save_data === 'string' ? save.save_data : JSON.stringify(save.save_data);
+    const dataStr =
+      typeof save.save_data === 'string' ? save.save_data : JSON.stringify(save.save_data);
     insertSave.run(save.user_id, dataStr, save.last_save_id || '', save.updated_at || '');
   }
 }
@@ -132,7 +154,10 @@ function applySqliteMigrationStatement(db: DatabaseSync, stmt: string): void {
   }
 }
 
-function applySingleMigration(db: DatabaseSync, migration: (typeof DATABASE_MIGRATIONS)[number]): void {
+function applySingleMigration(
+  db: DatabaseSync,
+  migration: (typeof DATABASE_MIGRATIONS)[number]
+): void {
   if (migration.sqlite_sql !== undefined) {
     if (!migration.sqlite_sql.trim()) return;
     try {
@@ -156,7 +181,16 @@ function migrateBackupSaves(filePath: string): Array<{ user_id: string; save_dat
   if (!fs.existsSync(filePath)) return [];
 
   const rawBackup = fs.readFileSync(filePath, 'utf8');
-  const backupData = JSON.parse(rawBackup) as { data?: { game_saves?: Array<{ user_id: string; save_data: unknown; last_save_id?: string; updated_at?: string }> } };
+  const backupData = JSON.parse(rawBackup) as {
+    data?: {
+      game_saves?: Array<{
+        user_id: string;
+        save_data: unknown;
+        last_save_id?: string;
+        updated_at?: string;
+      }>;
+    };
+  };
   const gameSaves = backupData.data?.game_saves || [];
   if (gameSaves.length === 0) return [];
 
@@ -192,7 +226,16 @@ describe('System Save & Persistence Domain Suite', () => {
         locationId: 'pewter_city',
         trainerSprite: 'brock',
         wasSearching: true,
-        battleLogs: [{ id: '1', msg: '¡Combate iniciado!', type: 'log-info', side: 'enemy', icon: null, iconType: null }],
+        battleLogs: [
+          {
+            id: '1',
+            msg: '¡Combate iniciado!',
+            type: 'log-info',
+            side: 'enemy',
+            icon: null,
+            iconType: null
+          }
+        ],
         over: false,
         enemyTeam: [enemyPk],
         participants: [playerPk.uid, enemyPk.uid]
@@ -325,7 +368,7 @@ describe('System Save & Persistence Domain Suite', () => {
       Object.defineProperty(globalThis, 'navigator', {
         value: originalNavigator,
         writable: true,
-        configurable: true,
+        configurable: true
       });
     });
 
@@ -333,11 +376,11 @@ describe('System Save & Persistence Domain Suite', () => {
       Object.defineProperty(globalThis, 'navigator', {
         value: {
           storage: {
-            getDirectory: vi.fn(),
-          },
+            getDirectory: vi.fn()
+          }
         },
         writable: true,
-        configurable: true,
+        configurable: true
       });
 
       expect(isOPFSSupported()).toBe(true);
@@ -347,7 +390,7 @@ describe('System Save & Persistence Domain Suite', () => {
       Object.defineProperty(globalThis, 'navigator', {
         value: {},
         writable: true,
-        configurable: true,
+        configurable: true
       });
 
       expect(isOPFSSupported()).toBe(false);
@@ -357,7 +400,7 @@ describe('System Save & Persistence Domain Suite', () => {
       Object.defineProperty(globalThis, 'navigator', {
         value: {},
         writable: true,
-        configurable: true,
+        configurable: true
       });
 
       const data = new Uint8Array([1, 2, 3]);
@@ -369,7 +412,7 @@ describe('System Save & Persistence Domain Suite', () => {
       Object.defineProperty(globalThis, 'navigator', {
         value: {},
         writable: true,
-        configurable: true,
+        configurable: true
       });
 
       const result = await loadFromOPFS('non_existent_file');
@@ -421,7 +464,7 @@ describe('System Save & Persistence Domain Suite', () => {
 
     it('should prevent concurrent overlapping calls to saveGame', async () => {
       const { writeOpfsFile } = await import('@/logic/utils/opfsStorage');
-      
+
       let resolveSave: (value: void) => void = () => {};
       const savePromise = new Promise<void>((resolve) => {
         resolveSave = resolve;
@@ -448,7 +491,10 @@ describe('System Save & Persistence Domain Suite', () => {
       const secondSavePromise = saveGame(state, user, { db: mockDb, showNotif: false });
 
       resolveSave();
-      const [firstSaveResult, secondSaveResult] = await Promise.all([firstSavePromise, secondSavePromise]);
+      const [firstSaveResult, secondSaveResult] = await Promise.all([
+        firstSavePromise,
+        secondSavePromise
+      ]);
       expect(firstSaveResult?.success).toBe(true);
       expect(secondSaveResult?.success).toBe(true);
     });
@@ -470,7 +516,7 @@ describe('System Save & Persistence Domain Suite', () => {
           `Fallo al sanitizar save migrado de usuario ${row.user_id}: ${sanitizeResult.error}`
         ).toBe(true);
 
-        if (!sanitizeResult.valid) continue;
+        if (!sanitizeResult.valid || !sanitizeResult.data) continue;
 
         const loadedDto = sanitizeResult.data;
         const serialized = serializeState(loadedDto);
@@ -481,7 +527,7 @@ describe('System Save & Persistence Domain Suite', () => {
           `Fallo al validar save serializado para usuario ${row.user_id}: ${roundtripSanitize.error}`
         ).toBe(true);
 
-        if (!roundtripSanitize.valid) continue;
+        if (!roundtripSanitize.valid || !roundtripSanitize.data) continue;
 
         const roundtripData = roundtripSanitize.data;
 

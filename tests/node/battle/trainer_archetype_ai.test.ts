@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { getTrainerAIPreset, TRAINER_TYPE_KEYS } from '../../../src/data/player/trainerTypes.ts';
 import { AI_CONFIG_PRESETS } from '../../../src/logic/battle/ai/heuristic/types.ts';
@@ -15,7 +15,14 @@ describe('Trainer Archetype AI Presets & PvP Passive Defense', () => {
     });
 
     it('should correctly map intermediate archetypes to intermediate preset', () => {
-      const intermediates = ['ornitologo', 'nadador', 'montanero', 'motorista', 'artista', 'criador'] as const;
+      const intermediates = [
+        'ornitologo',
+        'nadador',
+        'montanero',
+        'motorista',
+        'artista',
+        'criador'
+      ] as const;
       for (const arch of intermediates) {
         assert.strictEqual(getTrainerAIPreset(arch), 'intermediate', `Failed for ${arch}`);
       }
@@ -57,12 +64,14 @@ describe('Trainer Archetype AI Presets & PvP Passive Defense', () => {
             isPvP: true,
             isAsynchronous: true,
             isTrainer: true,
-            trainerArchetype: 'default',
+            trainerArchetype: 'default'
           }
         }
       } as unknown as BattleContext;
 
-      const config = (ai as unknown as { getConfig(store?: BattleContext): typeof AI_CONFIG_PRESETS['rival'] }).getConfig(mockStore);
+      const config = (
+        ai as unknown as { getConfig(store?: BattleContext): (typeof AI_CONFIG_PRESETS)['rival'] }
+      ).getConfig(mockStore);
       assert.strictEqual(config.errorRate, 0);
       assert.strictEqual(config.switchCooldownTurns, 1);
     });
@@ -72,12 +81,14 @@ describe('Trainer Archetype AI Presets & PvP Passive Defense', () => {
         activeBattle: {
           value: {
             isTrainer: true,
-            trainerArchetype: 'caza_bichos',
+            trainerArchetype: 'caza_bichos'
           }
         }
       } as unknown as BattleContext;
 
-      const config = (ai as unknown as { getConfig(store?: BattleContext): typeof AI_CONFIG_PRESETS['novice'] }).getConfig(mockStore);
+      const config = (
+        ai as unknown as { getConfig(store?: BattleContext): (typeof AI_CONFIG_PRESETS)['novice'] }
+      ).getConfig(mockStore);
       assert.strictEqual(config.switchAggressiveness, 0);
       assert.strictEqual(config.errorRate, 0.25);
     });
@@ -87,12 +98,14 @@ describe('Trainer Archetype AI Presets & PvP Passive Defense', () => {
         activeBattle: {
           value: {
             isTrainer: true,
-            trainerArchetype: 'rival',
+            trainerArchetype: 'rival'
           }
         }
       } as unknown as BattleContext;
 
-      const config = (ai as unknown as { getConfig(store?: BattleContext): typeof AI_CONFIG_PRESETS['rival'] }).getConfig(mockStore);
+      const config = (
+        ai as unknown as { getConfig(store?: BattleContext): (typeof AI_CONFIG_PRESETS)['rival'] }
+      ).getConfig(mockStore);
       assert.strictEqual(config.errorRate, 0);
       assert.strictEqual(config.switchCooldownTurns, 1);
       assert.strictEqual(config.switchAggressiveness, 0.85);

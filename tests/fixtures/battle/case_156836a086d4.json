@@ -26,12 +26,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "floralhealing",
-        "flowertrick",
-        "fly",
-        "flyingpress"
-      ],
+      "moves": ["floralhealing", "flowertrick", "fly", "flyingpress"],
       "uid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
       "stats": {
         "maxHp": 342,
@@ -66,12 +61,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "focusblast",
-        "focusenergy",
-        "focuspunch",
-        "followme"
-      ],
+      "moves": ["focusblast", "focusenergy", "focuspunch", "followme"],
       "uid": "2f904d15-e060-4cf4-8370-ab8b042b1014",
       "stats": {
         "maxHp": 342,
@@ -106,12 +96,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "forcepalm",
-        "forestscurse",
-        "foulplay",
-        "freezedry"
-      ],
+      "moves": ["forcepalm", "forestscurse", "foulplay", "freezedry"],
       "uid": "96cd8cfc-16b0-4c38-ac6d-37aa0ddb3bcf",
       "stats": {
         "maxHp": 342,
@@ -146,12 +131,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "freezeshock",
-        "freezingglare",
-        "frenzyplant",
-        "frostbreath"
-      ],
+      "moves": ["freezeshock", "freezingglare", "frenzyplant", "frostbreath"],
       "uid": "556eaaa7-8ef5-4a8f-bc61-93d1712c2644",
       "stats": {
         "maxHp": 342,
@@ -186,12 +166,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "furyattack",
-        "furycutter",
-        "furyswipes",
-        "fusionbolt"
-      ],
+      "moves": ["furyattack", "furycutter", "furyswipes", "fusionbolt"],
       "uid": "cac8be62-c5c2-4c06-bea6-a0ebbfb6bfe7",
       "stats": {
         "maxHp": 342,
@@ -226,12 +201,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "fusionflare",
-        "futuresight",
-        "gastroacid",
-        "gigadrain"
-      ],
+      "moves": ["fusionflare", "futuresight", "gastroacid", "gigadrain"],
       "uid": "5c376472-1cbd-4396-bb14-d610cb30a5fe",
       "stats": {
         "maxHp": 342,
@@ -268,12 +238,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "splash",
-        "sunnyday",
-        "raindance",
-        "sandstorm"
-      ],
+      "moves": ["splash", "sunnyday", "raindance", "sandstorm"],
       "uid": "e23a7ba3-7b98-42f3-b70d-11eb5b68ddf5",
       "stats": {
         "maxHp": 651,
@@ -308,12 +273,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "splash",
-        "sunnyday",
-        "raindance",
-        "sandstorm"
-      ],
+      "moves": ["splash", "sunnyday", "raindance", "sandstorm"],
       "uid": "b75df670-adbe-477f-9c0f-00613bb77536",
       "stats": {
         "maxHp": 651,
@@ -348,12 +308,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "splash",
-        "sunnyday",
-        "raindance",
-        "sandstorm"
-      ],
+      "moves": ["splash", "sunnyday", "raindance", "sandstorm"],
       "uid": "74fd82e5-58b5-40a3-8865-46de690c2c01",
       "stats": {
         "maxHp": 651,
@@ -388,12 +343,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "splash",
-        "sunnyday",
-        "raindance",
-        "sandstorm"
-      ],
+      "moves": ["splash", "sunnyday", "raindance", "sandstorm"],
       "uid": "51abd2fa-3497-49fe-8b28-33b23cfbf905",
       "stats": {
         "maxHp": 651,
@@ -428,12 +378,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "splash",
-        "sunnyday",
-        "raindance",
-        "sandstorm"
-      ],
+      "moves": ["splash", "sunnyday", "raindance", "sandstorm"],
       "uid": "8394305b-31b6-4b8c-be01-b30b6318d1aa",
       "stats": {
         "maxHp": 651,
@@ -468,12 +413,7 @@
         "spd": 31,
         "spe": 31
       },
-      "moves": [
-        "splash",
-        "sunnyday",
-        "raindance",
-        "sandstorm"
-      ],
+      "moves": ["splash", "sunnyday", "raindance", "sandstorm"],
       "uid": "f7fc8096-5a23-4a06-ada7-c2253037c457",
       "stats": {
         "maxHp": 651,
@@ -512,12 +452,7 @@
     "gigadrain"
   ],
   "abilitiesToTest": [],
-  "seed": [
-    18588,
-    21544,
-    54523,
-    34263
-  ],
+  "seed": [18588, 21544, 54523, 34263],
   "playerChoices": [
     "move 1",
     "move 2",
@@ -637,10 +572,7 @@
       "p2MoveId": "splash",
       "p1MovePp": 24,
       "p2MovePp": 62,
-      "p1Volatiles": [
-        "twoturnmove",
-        "fly"
-      ],
+      "p1Volatiles": ["twoturnmove", "fly"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,
@@ -946,9 +878,7 @@
       "p2MoveId": "splash",
       "p1MovePp": 48,
       "p2MovePp": 63,
-      "p1Volatiles": [
-        "focusenergy"
-      ],
+      "p1Volatiles": ["focusenergy"],
       "p1StatStages": {
         "atk": 0,
         "def": 0,

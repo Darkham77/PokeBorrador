@@ -6,7 +6,11 @@ import {
   processSpriteSheet,
   type RawImageBuffer
 } from '../../logic/map/continent/spritePipelineEngine';
-import { SPRITE_CATEGORIES, type SlicedSpriteMetadata, type SpriteCategory } from '../../types/map/continentTypes';
+import {
+  SPRITE_CATEGORIES,
+  type SlicedSpriteMetadata,
+  type SpriteCategory
+} from '../../types/map/continentTypes';
 import { defaultPrefabsRegistry, type PrefabCategory } from '../../logic/map/prefabsRegistry';
 
 const DEFAULT_SPRITE_SLICE_TOLERANCE = 25;
@@ -66,7 +70,10 @@ function processImageFile(file: File): void {
       };
 
       const baseName = file.name.replace(/\.png$/i, '');
-      const results = processSpriteSheet(rawBuf, { sourceName: baseName, tolerance: DEFAULT_SPRITE_SLICE_TOLERANCE });
+      const results = processSpriteSheet(rawBuf, {
+        sourceName: baseName,
+        tolerance: DEFAULT_SPRITE_SLICE_TOLERANCE
+      });
       slicedSprites.value = results;
       isProcessing.value = false;
     };
@@ -81,9 +88,17 @@ const filteredSprites = computed(() => {
     return slicedSprites.value.filter((s) => s.category === 'building');
   }
   if (activeTab.value === 'props') {
-    return slicedSprites.value.filter((s) => s.category === 'prop' || s.category === 'tree' || s.category === 'decor');
+    return slicedSprites.value.filter(
+      (s) => s.category === 'prop' || s.category === 'tree' || s.category === 'decor'
+    );
   }
-  return slicedSprites.value.filter((s) => s.category === 'water_edge' || s.category === 'mountain' || s.category === 'snow' || s.category === 'path');
+  return slicedSprites.value.filter(
+    (s) =>
+      s.category === 'water_edge' ||
+      s.category === 'mountain' ||
+      s.category === 'snow' ||
+      s.category === 'path'
+  );
 });
 
 function mapToPrefabCategory(cat: SpriteCategory): PrefabCategory {
@@ -126,6 +141,8 @@ function handleApproveAndIncorporate(): void {
     <div
       id="studio-sprite-pipeline-modal-div-fileinputref-click"
       v-gsap-hover="{ scale: 1.01 }"
+      role="button"
+      tabindex="0"
       class="drop-zone"
       @dragover.prevent
       @drop="handleDrop"
@@ -136,29 +153,25 @@ function handleApproveAndIncorporate(): void {
         ref="fileInputRef"
         type="file"
         accept=".png"
+        aria-label="Seleccionar imagen PNG de spritesheet"
         class="hidden-input"
         @change="handleFileChange"
-      >
+      />
       <span class="drop-icon">📥</span>
-      <p class="drop-text">
-        Arrastra carpetas o imágenes PNG aquí, o haz clic para seleccionar
-      </p>
-      <span class="drop-hint">Elimina fondos transparentes/chroma, separa componentes conexos y clasifica automáticamente</span>
+      <p class="drop-text">Arrastra carpetas o imágenes PNG aquí, o haz clic para seleccionar</p>
+      <span class="drop-hint"
+        >Elimina fondos transparentes/chroma, separa componentes conexos y clasifica
+        automáticamente</span
+      >
     </div>
 
     <!-- Processing Indicator -->
-    <div
-      v-if="isProcessing"
-      class="processing-banner"
-    >
+    <div v-if="isProcessing" class="processing-banner">
       <span><span class="icon">⏳</span> Analizando componentes conexos y removiendo fondo...</span>
     </div>
 
     <!-- Results Catalog with Tab Navigation -->
-    <div
-      v-if="slicedSprites.length > 0"
-      class="results-container"
-    >
+    <div v-if="slicedSprites.length > 0" class="results-container">
       <div class="results-header">
         <h4>Sprites Recortados ({{ slicedSprites.length }})</h4>
         <div class="filter-tabs">
@@ -198,33 +211,25 @@ function handleApproveAndIncorporate(): void {
       </div>
 
       <div class="sprites-grid">
-        <div
-          v-for="sprite in filteredSprites"
-          :key="sprite.id"
-          class="sprite-card"
-        >
+        <div v-for="sprite in filteredSprites" :key="sprite.id" class="sprite-card">
           <div class="sprite-preview-box">
             <img
               :src="sprite.dataUrl"
               :alt="sprite.name"
               class="preview-img"
-            
               width="32"
               height="32"
-            >
+            />
           </div>
           <div class="sprite-info">
             <select
               id="studio-sprite-pipeline-modal-select-category"
               v-model="sprite.category"
+              aria-label="Reclasificar categoría de sprite"
               class="cat-select"
               title="Reclasificar categoría"
             >
-              <option
-                v-for="c in SPRITE_CATEGORIES"
-                :key="c"
-                :value="c"
-              >
+              <option v-for="c in SPRITE_CATEGORIES" :key="c" :value="c">
                 {{ c }}
               </option>
             </select>
@@ -257,7 +262,6 @@ function handleApproveAndIncorporate(): void {
 </template>
 
 <style scoped lang="scss">
-
 .drop-zone {
   padding: 24px;
   border: 2px dashed Rgb(56 189 248 / 40%);
@@ -370,7 +374,8 @@ function handleApproveAndIncorporate(): void {
   align-items: center;
   height: 90px;
   padding: 6px;
-  background: repeating-conic-gradient(var(--slate-800) 0% 25%, var(--slate-700) 0% 50%) 50% / 16px 16px;
+  background: repeating-conic-gradient(var(--slate-800) 0% 25%, var(--slate-700) 0% 50%) 50% / 16px
+    16px;
 
   .preview-img {
     max-width: 100%;

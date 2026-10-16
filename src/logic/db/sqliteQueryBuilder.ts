@@ -1,6 +1,6 @@
 /**
  * src/logic/db/sqliteQueryBuilder.ts
- * 
+ *
  * Query Builder implementation for SQLite in-memory and persisted storage.
  */
 
@@ -67,19 +67,24 @@ function parseOrClause(orString: string, params: unknown[]): string {
   }
   if (current.trim()) parts.push(current.trim());
 
-  const parsedParts = parts.map(part => {
-    if (part.startsWith('and(') && part.endsWith(')')) {
-      const inner = part.slice(4, -1);
-      const innerParts = inner.split(',');
-      const innerSql = innerParts.map(p => parseSingleFilter(p.trim(), params)).filter(Boolean).join(' AND ');
-      return `(${innerSql})`;
-    }
-    if (part.startsWith('or(') && part.endsWith(')')) {
-      const inner = part.slice(3, -1);
-      return `(${parseOrClause(inner, params)})`;
-    }
-    return parseSingleFilter(part, params);
-  }).filter(Boolean);
+  const parsedParts = parts
+    .map((part) => {
+      if (part.startsWith('and(') && part.endsWith(')')) {
+        const inner = part.slice(4, -1);
+        const innerParts = inner.split(',');
+        const innerSql = innerParts
+          .map((p) => parseSingleFilter(p.trim(), params))
+          .filter(Boolean)
+          .join(' AND ');
+        return `(${innerSql})`;
+      }
+      if (part.startsWith('or(') && part.endsWith(')')) {
+        const inner = part.slice(3, -1);
+        return `(${parseOrClause(inner, params)})`;
+      }
+      return parseSingleFilter(part, params);
+    })
+    .filter(Boolean);
 
   return parsedParts.length > 0 ? `(${parsedParts.join(' OR ')})` : '';
 }
@@ -98,12 +103,14 @@ export interface QueryBuilder {
   or: (clause: string) => QueryBuilder;
   order: (col: string, options?: { ascending?: boolean }) => QueryBuilder;
   limit: (n: number) => QueryBuilder;
-  single: () => Promise<{ data: Record<string, unknown> | null, error: string | null }>;
+  single: () => Promise<{ data: Record<string, unknown> | null; error: string | null }>;
   then: (resolve?: (val: Record<string, unknown>[]) => void) => Promise<Record<string, unknown>[]>;
-  insert: (payload: unknown) => Promise<{ data: unknown, error: string | null }>;
-  update: (payload: Record<string, unknown>) => Promise<{ data: Record<string, unknown>, error: string | null }>;
-  delete: () => Promise<{ data: boolean, error: string | null }>;
-  rpc: (_fn: string, _params: unknown) => Promise<{ data: boolean, error: string | null }>;
+  insert: (payload: unknown) => Promise<{ data: unknown; error: string | null }>;
+  update: (
+    payload: Record<string, unknown>
+  ) => Promise<{ data: Record<string, unknown>; error: string | null }>;
+  delete: () => Promise<{ data: boolean; error: string | null }>;
+  rpc: (_fn: string, _params: unknown) => Promise<{ data: boolean; error: string | null }>;
 }
 
 export class SQLiteQueryBuilder implements QueryBuilder {
@@ -169,15 +176,17 @@ export class SQLiteQueryBuilder implements QueryBuilder {
   private _buildWhereClause(params: unknown[]): string {
     const whereParts: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (this._filters.length) {
-      whereParts.push(...this._filters.map((f: QueryFilter) => {
-        if (f.op === 'IN') {
-          const placeholders = (f.val as unknown[]).map(() => '?').join(','); // open-record: Generic key-value data dictionary container
-          (f.val as unknown[]).forEach((v) => params.push(v)); // open-record: Generic key-value data dictionary container
-          return `"${f.col}" IN (${placeholders})`;
-        }
-        params.push(f.val);
-        return `"${f.col}" ${f.op} ?`;
-      }));
+      whereParts.push(
+        ...this._filters.map((f: QueryFilter) => {
+          if (f.op === 'IN') {
+            const placeholders = (f.val as unknown[]).map(() => '?').join(','); // open-record: Generic key-value data dictionary container
+            (f.val as unknown[]).forEach((v) => params.push(v)); // open-record: Generic key-value data dictionary container
+            return `"${f.col}" IN (${placeholders})`;
+          }
+          params.push(f.val);
+          return `"${f.col}" ${f.op} ?`;
+        })
+      );
     }
     if (this._rawClauses.length) {
       for (const rc of this._rawClauses) {
@@ -188,7 +197,10 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return whereParts.length ? ' WHERE ' + whereParts.join(' AND ') : '';
   }
 
-  async then(resolve?: (val: Record<string, unknown>[]) => void): Promise<Record<string, unknown>[]> {
+  // eslint-disable-next-line unicorn/no-thenable
+  async then(
+    resolve?: (val: Record<string, unknown>[]) => void
+  ): Promise<Record<string, unknown>[]> {
     const db = this.getDb();
     if (!db) return [];
     let sql = `SELECT ${this._select} FROM ${this._table}`;
@@ -197,7 +209,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
 
     if (this._order) sql += ` ORDER BY ${this._order}`;
     if (this._limit) sql += ` LIMIT ${this._limit}`;
-    
+
     const res: SQLiteResult[] = db.exec(sql, params);
     if (!res || res.length === 0) {
       if (resolve) resolve([]);
@@ -223,8 +235,10 @@ export class SQLiteQueryBuilder implements QueryBuilder {
       if (typeof item !== 'object' || item === null) continue;
       const r = item as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       const cols = Object.keys(r);
-      const vals = Object.values(r).map(v => (v !== null && typeof v === 'object' && !(v instanceof Uint8Array)) ? JSON.stringify(v) : v);
-      const sql = `INSERT INTO ${this._table} (${cols.map(c => `"${c}"`).join(',')}) VALUES (${cols.map(() => '?').join(',')})`;
+      const vals = Object.values(r).map((v) =>
+        v !== null && typeof v === 'object' && !(v instanceof Uint8Array) ? JSON.stringify(v) : v
+      );
+      const sql = `INSERT INTO ${this._table} (${cols.map((c) => `"${c}"`).join(',')}) VALUES (${cols.map(() => '?').join(',')})`;
       db.run(sql, vals);
     }
     await this.persist();
@@ -235,8 +249,10 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     const db = this.getDb();
     if (!db) return { data: payload, error: 'DB not ready' };
     const cols = Object.keys(payload);
-    const vals = Object.values(payload).map(v => (v !== null && typeof v === 'object' && !(v instanceof Uint8Array)) ? JSON.stringify(v) : v);
-    let sql = `UPDATE ${this._table} SET ` + cols.map(c => `"${c}" = ?`).join(',');
+    const vals = Object.values(payload).map((v) =>
+      v !== null && typeof v === 'object' && !(v instanceof Uint8Array) ? JSON.stringify(v) : v
+    );
+    let sql = `UPDATE ${this._table} SET ` + cols.map((c) => `"${c}" = ?`).join(',');
     const params = [...vals];
     sql += this._buildWhereClause(params);
     db.run(sql, params);
@@ -259,4 +275,3 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return { data: true, error: null };
   }
 }
-

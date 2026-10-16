@@ -10,7 +10,7 @@
  * - Solar Power ability (SpA boost in Sun).
  */
 
-import { describe, it, vi } from 'vitest';
+import { describe, it, vi } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import {
@@ -19,11 +19,10 @@ import {
   getEffectiveStatPure as getEffectiveStat,
   type PurePokemon,
   type PureMove,
-  type PureBattleWeather,
+  type PureBattleWeather
 } from '../../../src/logic/battle/battleMath.ts';
 
 describe('Battle Mechanics Audit – New Weather & Abilities', () => {
-
   // Fix Math.random for deterministic results (max damage roll)
   vi.spyOn(Math, 'random').mockReturnValue(1.0);
 
@@ -37,8 +36,8 @@ describe('Battle Mechanics Audit – New Weather & Abilities', () => {
     it('should boost Electric moves by 1.5x', () => {
       const move: PureMove = { name: 'Rayo', type: 'electric', power: 90, cat: 'special' };
       const withWeather = calculateDamagePure(attacker, defender, move, { weather: thunderstorm });
-      
-      // Damage Calculation: 
+
+      // Damage Calculation:
       // Base: Math.floor((42 * 90 * 2) / 50) + 2 = 153
       // STAB: 1.5x -> 229.5
       // Weather: 1.5x -> floor(floor(153 * 1.5) * 1.5) = floor(229 * 1.5) = 343
@@ -48,7 +47,9 @@ describe('Battle Mechanics Audit – New Weather & Abilities', () => {
     it('should boost Dragon moves by 1.5x', () => {
       const attackerDragon: PurePokemon = { ...attacker, type: 'dragon' };
       const move: PureMove = { name: 'Dragoaliento', type: 'dragon', power: 60, cat: 'special' };
-      const withWeather = calculateDamagePure(attackerDragon, defender, move, { weather: thunderstorm });
+      const withWeather = calculateDamagePure(attackerDragon, defender, move, {
+        weather: thunderstorm
+      });
       assert.strictEqual(withWeather.dmg, 229);
     });
 
@@ -64,7 +65,13 @@ describe('Battle Mechanics Audit – New Weather & Abilities', () => {
   describe('Solar Beam Weather Penalties', () => {
     const attacker: PurePokemon = { level: 100, spa: 200, type: 'grass' };
     const defender: PurePokemon = { level: 100, spd: 100, type: 'normal' };
-    const move: PureMove = { id: 'solarbeam', name: 'Rayo Solar', type: 'grass', power: 120, cat: 'special' };
+    const move: PureMove = {
+      id: 'solarbeam',
+      name: 'Rayo Solar',
+      type: 'grass',
+      power: 120,
+      cat: 'special'
+    };
 
     const sandstorm: PureBattleWeather = { type: 'sandstorm', turns: 5 };
     const rain: PureBattleWeather = { type: 'rain', turns: 5 };
@@ -139,5 +146,4 @@ describe('Battle Mechanics Audit – New Weather & Abilities', () => {
       assert.strictEqual(stat, 100);
     });
   });
-
 });

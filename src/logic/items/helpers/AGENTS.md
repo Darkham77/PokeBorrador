@@ -13,6 +13,7 @@ Frontend Developers / Systems Engineers.
 
 ## Key Files
 
+- `itemEffectResultHelper.ts`: Module implementation.
 - `itemEffectsHelpers.ts`: Module implementation.
 - `itemEvEffects.ts`: Module implementation.
 - `itemEvolutionEffects.ts`: Module implementation.
@@ -31,4 +32,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- *This directory contains specialized domain logic and files with no subdirectories.*
+- _This directory contains specialized domain logic and files with no subdirectories._

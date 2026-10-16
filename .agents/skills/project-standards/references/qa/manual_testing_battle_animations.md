@@ -54,11 +54,11 @@ QA testers can inspect and trigger all states through three synchronized interfa
 The battle engine differentiates between two distinct switch categories:
 
 1. **Involuntary Expulsion / Phazing (`|drag|`)**:
-   - Triggered on the **target** of phazing moves (*Whirlwind*, *Roar*, *Dragon Tail*, *Circle Throw*) or items (*Red Card*).
+   - Triggered on the **target** of phazing moves (_Whirlwind_, _Roar_, _Dragon Tail_, _Circle Throw_) or items (_Red Card_).
    - The victim executes an involuntary expulsion animation (`whirlwind`, `flee`, `knockback`) without returning to a Poké Ball.
    - The replacement Pokémon is dragged into the seat involuntarily (`¡[Pokémon] fue arrastrado al campo!`).
 2. **Voluntary Pivot / Self-Switch (`|switch|`)**:
-   - Triggered on the **user** of pivot moves (*U-turn*, *Volt Switch*, *Flip Turn*, *Parting Shot*, *Chilly Reception*, *Shed Tail*, *Baton Pass*, *Teleport*) or items (*Eject Button*, *Eject Pack*).
+   - Triggered on the **user** of pivot moves (_U-turn_, _Volt Switch_, _Flip Turn_, _Parting Shot_, _Chilly Reception_, _Shed Tail_, _Baton Pass_, _Teleport_) or items (_Eject Button_, _Eject Pack_).
    - The user executes a controlled Poké Ball recall (`handleWithdrawRequest`).
    - The replacement Pokémon is deployed normally via Poké Ball launch (`POKEMON_CALL` -> `RENDER_BALL` -> `handleReleaseRequest`).
 
@@ -122,33 +122,33 @@ stateDiagram-v2
 
 Defined in [`forcedSwitchRegistry.ts`](../../../../../src/logic/battle/helpers/forcedSwitchRegistry.ts) and [`useBattleCombatantState.ts`](../../../../../src/components/battle/useBattleCombatantState.ts):
 
-| Animation Type (`BattleEscapeType`) | GSAP Kinematics & Physics | Duration | Audio Cue | Target State Result |
-| :--- | :--- | :--- | :--- | :--- |
-| **`whirlwind`** | 720° rotation (`rotation: 720`), upward lift (`y: -180px`), lateral ejection (`x: ±200px`), shrink (`scale: 0.1`, `opacity: 0`, `ease: 'power2.in'`). | `0.55s` | `flee` | Seat vacated, sprite cleared. |
-| **`flee`** | Dense smoke particle burst (`30` particles with upward drift) + high-velocity horizontal slide (`x: ±120px`, `scale: 0.7`, `opacity: 0`, `ease: 'power2.in'`). | `0.50s` | `flee` | Seat vacated, particles fade out. |
-| **`knockback`** | Impact shake + elastic backward shove (`x: ±120px`, `scale: 0.5`, `opacity: 0`, `ease: 'back.in(1.7)'`). | `0.35s` | `damage` | Seat vacated, sprite cleared. |
-| **`teleport`** | Vertical stretch (`scaleY: 2.0`, `scaleX: 0.1`), extreme brightness flare (`filter: brightness(3) contrast(1.5)`), fade out (`opacity: 0`, `ease: 'power3.in'`). | `0.40s` | `flee` | Seat vacated, filters cleared. |
-| **`withdraw`** | Centered Poké Ball suction: blue energy filter (`#pixel-energy-optimized`), coordinate shrink to ball anchor (`scale: 0`, `ease: 'power2.inOut'`). | `0.40s` | `ballHit` | Trapped in ball, seat vacated. |
+| Animation Type (`BattleEscapeType`) | GSAP Kinematics & Physics                                                                                                                                        | Duration | Audio Cue | Target State Result               |
+| :---------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------- | :-------- | :-------------------------------- |
+| **`whirlwind`**                     | 720° rotation (`rotation: 720`), upward lift (`y: -180px`), lateral ejection (`x: ±200px`), shrink (`scale: 0.1`, `opacity: 0`, `ease: 'power2.in'`).            | `0.55s`  | `flee`    | Seat vacated, sprite cleared.     |
+| **`flee`**                          | Dense smoke particle burst (`30` particles with upward drift) + high-velocity horizontal slide (`x: ±120px`, `scale: 0.7`, `opacity: 0`, `ease: 'power2.in'`).   | `0.50s`  | `flee`    | Seat vacated, particles fade out. |
+| **`knockback`**                     | Impact shake + elastic backward shove (`x: ±120px`, `scale: 0.5`, `opacity: 0`, `ease: 'back.in(1.7)'`).                                                         | `0.35s`  | `damage`  | Seat vacated, sprite cleared.     |
+| **`teleport`**                      | Vertical stretch (`scaleY: 2.0`, `scaleX: 0.1`), extreme brightness flare (`filter: brightness(3) contrast(1.5)`), fade out (`opacity: 0`, `ease: 'power3.in'`). | `0.40s`  | `flee`    | Seat vacated, filters cleared.    |
+| **`withdraw`**                      | Centered Poké Ball suction: blue energy filter (`#pixel-energy-optimized`), coordinate shrink to ball anchor (`scale: 0`, `ease: 'power2.inOut'`).               | `0.40s`  | `ballHit` | Trapped in ball, seat vacated.    |
 
 ### 2.3 Comprehensive Move & Item Mapping Matrix
 
-| Trigger Name | Trigger ID | Category | Exit Target | Animation Type | Localized Expulsion Combat Log |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Whirlwind** (*Remolino*) | `whirlwind` | Move (Phazing) | Target | `whirlwind` | `¡[Pokémon] fue expulsado por el remolino!` |
-| **Roar** (*Rugido*) | `roar` | Move (Phazing) | Target | `flee` | `¡[Pokémon] huyó asustado por el rugido!` |
-| **Dragon Tail** (*Cola Dragón*) | `dragontail` | Move (Phazing) | Target | `knockback` | `¡[Pokémon] fue arrojado fuera por la cola dragón!` |
-| **Circle Throw** (*Llave Giro*) | `circlethrow` | Move (Phazing) | Target | `knockback` | `¡[Pokémon] fue lanzado fuera del combate!` |
-| **Teleport** (*Teletransporte*) | `teleport` | Move (Pivot/Flee) | User | `teleport` | `¡[Pokémon] se teletransportó lejos!` |
-| **U-turn** (*Ida y Vuelta*) | `uturn` | Move (Pivot) | User | `withdraw` | `¡[Pokémon] dio media vuelta y regresó!` |
-| **Volt Switch** (*Voltiocambio*) | `voltswitch` | Move (Pivot) | User | `withdraw` | `¡[Pokémon] cambió de posición con un chispazo!` |
-| **Flip Turn** (*Viraje*) | `flipturn` | Move (Pivot) | User | `withdraw` | `¡[Pokémon] viró ágilmente y regresó!` |
-| **Parting Shot** (*Última Palabra*) | `partingshot` | Move (Pivot) | User | `withdraw` | `¡[Pokémon] se retira tras su última palabra!` |
-| **Chilly Reception** (*Chiste Helado*) | `chillyreception` | Move (Pivot) | User | `withdraw` | `¡[Pokémon] dejó el campo tras su chiste helado!` |
-| **Shed Tail** (*Cola Descarrilada*) | `shedtail` | Move (Pivot) | User | `withdraw` | `¡[Pokémon] mudó su cola y regresó!` |
-| **Baton Pass** (*Relevo*) | `batonpass` | Move (Pivot) | User | `withdraw` | `¡[Pokémon] pasa el relevo!` |
-| **Red Card** (*Tarjeta Roja*) | `redcard` | Item (Phazing) | Attacker | `knockback` | `¡La Tarjeta Roja expulsó a [Pokémon]!` |
-| **Eject Button** (*Botón Escape*) | `ejectbutton` | Item (Pivot) | Holder | `withdraw` | `¡El Botón Escape activó la retirada de [Pokémon]!` |
-| **Eject Pack** (*Mochila Escape*) | `ejectpack` | Item (Pivot) | Holder | `withdraw` | `¡La Mochila Escape activó la retirada de [Pokémon]!` |
+| Trigger Name                           | Trigger ID        | Category          | Exit Target | Animation Type | Localized Expulsion Combat Log                        |
+| :------------------------------------- | :---------------- | :---------------- | :---------- | :------------- | :---------------------------------------------------- |
+| **Whirlwind** (_Remolino_)             | `whirlwind`       | Move (Phazing)    | Target      | `whirlwind`    | `¡[Pokémon] fue expulsado por el remolino!`           |
+| **Roar** (_Rugido_)                    | `roar`            | Move (Phazing)    | Target      | `flee`         | `¡[Pokémon] huyó asustado por el rugido!`             |
+| **Dragon Tail** (_Cola Dragón_)        | `dragontail`      | Move (Phazing)    | Target      | `knockback`    | `¡[Pokémon] fue arrojado fuera por la cola dragón!`   |
+| **Circle Throw** (_Llave Giro_)        | `circlethrow`     | Move (Phazing)    | Target      | `knockback`    | `¡[Pokémon] fue lanzado fuera del combate!`           |
+| **Teleport** (_Teletransporte_)        | `teleport`        | Move (Pivot/Flee) | User        | `teleport`     | `¡[Pokémon] se teletransportó lejos!`                 |
+| **U-turn** (_Ida y Vuelta_)            | `uturn`           | Move (Pivot)      | User        | `withdraw`     | `¡[Pokémon] dio media vuelta y regresó!`              |
+| **Volt Switch** (_Voltiocambio_)       | `voltswitch`      | Move (Pivot)      | User        | `withdraw`     | `¡[Pokémon] cambió de posición con un chispazo!`      |
+| **Flip Turn** (_Viraje_)               | `flipturn`        | Move (Pivot)      | User        | `withdraw`     | `¡[Pokémon] viró ágilmente y regresó!`                |
+| **Parting Shot** (_Última Palabra_)    | `partingshot`     | Move (Pivot)      | User        | `withdraw`     | `¡[Pokémon] se retira tras su última palabra!`        |
+| **Chilly Reception** (_Chiste Helado_) | `chillyreception` | Move (Pivot)      | User        | `withdraw`     | `¡[Pokémon] dejó el campo tras su chiste helado!`     |
+| **Shed Tail** (_Cola Descarrilada_)    | `shedtail`        | Move (Pivot)      | User        | `withdraw`     | `¡[Pokémon] mudó su cola y regresó!`                  |
+| **Baton Pass** (_Relevo_)              | `batonpass`       | Move (Pivot)      | User        | `withdraw`     | `¡[Pokémon] pasa el relevo!`                          |
+| **Red Card** (_Tarjeta Roja_)          | `redcard`         | Item (Phazing)    | Attacker    | `knockback`    | `¡La Tarjeta Roja expulsó a [Pokémon]!`               |
+| **Eject Button** (_Botón Escape_)      | `ejectbutton`     | Item (Pivot)      | Holder      | `withdraw`     | `¡El Botón Escape activó la retirada de [Pokémon]!`   |
+| **Eject Pack** (_Mochila Escape_)      | `ejectpack`       | Item (Pivot)      | Holder      | `withdraw`     | `¡La Mochila Escape activó la retirada de [Pokémon]!` |
 
 ### 2.4 Special Failure Case: Empty Bench (0 Alive Pokémon)
 
@@ -172,7 +172,7 @@ When a forced switch move targets a Pokémon whose trainer has **no eligible ben
 
    ```javascript
    // Simulate Whirlwind expulsion on player
-   window.__VITE_DEBUG__.triggerAnim('escape_flee', 'player', { type: 'whirlwind' })
+   window.__VITE_DEBUG__.triggerAnim('escape_flee', 'player', { type: 'whirlwind' });
    ```
 
 3. **Verify**:
@@ -183,7 +183,7 @@ When a forced switch move targets a Pokémon whose trainer has **no eligible ben
 
 #### Test Case 2.5.2: Player Dragon Tail on Enemy Trainer (Enemy has bench)
 
-1. In a Trainer battle against an opponent with 2+ Pokémon, select **Cola Dragón** (*Dragon Tail*).
+1. In a Trainer battle against an opponent with 2+ Pokémon, select **Cola Dragón** (_Dragon Tail_).
 2. **Verify**:
    - Damage shake (`PLAY_DAMAGE`) executes on the enemy sprite.
    - Enemy sprite performs knockback recoil (`x: +120px, scale: 0.5, ease: 'back.in(1.7)'`).
@@ -193,7 +193,7 @@ When a forced switch move targets a Pokémon whose trainer has **no eligible ben
 #### Test Case 2.5.3: Whirlwind Against Empty Bench (Failure Verification)
 
 1. Fight a wild Pokémon or a Trainer down to their last Pokémon.
-2. Use **Remolino** (*Whirlwind*) or **Rugido** (*Roar*).
+2. Use **Remolino** (_Whirlwind_) or **Rugido** (_Roar_).
 3. **Verify**:
    - Log outputs: `¡Pero falló!`.
    - Target does NOT move, shake, or disappear.
@@ -258,7 +258,7 @@ If the escape check fails:
 5. If player survives: FSM returns cleanly to `WAIT_INPUT`.
 6. If player HP reaches 0: FSM transitions to `PLAYER_FAINT_SEQ`.
 
-### 3.4 Teleport (*Teletransporte*) Mechanics
+### 3.4 Teleport (_Teletransporte_) Mechanics
 
 - **Wild Encounters (e.g. Abra)**:
   - Abra uses Teleport on Turn 1.
@@ -285,8 +285,8 @@ If the escape check fails:
 1. Using debug console, lower player Speed or set enemy Speed high:
 
    ```javascript
-   window.__VITE_DEBUG__.setStatStage('player', 'spe', -6)
-   window.__VITE_DEBUG__.setStatStage('enemy', 'spe', 6)
+   window.__VITE_DEBUG__.setStatStage('player', 'spe', -6);
+   window.__VITE_DEBUG__.setStatStage('enemy', 'spe', 6);
    ```
 
 2. Attempt to flee until failure triggers.
@@ -300,7 +300,7 @@ If the escape check fails:
 1. In any battle, execute via console:
 
    ```javascript
-   window.__VITE_DEBUG__.triggerAnim('escape_teleport', 'enemy')
+   window.__VITE_DEBUG__.triggerAnim('escape_teleport', 'enemy');
    ```
 
 2. **Verify**:
@@ -316,12 +316,12 @@ If the escape check fails:
 
 Defined in [`combatantActionAnims.ts`](../../../../../src/components/battle/helpers/combatantActionAnims.ts):
 
-| Move Category | Visual Kinematics | Target Transform & Filters | Duration |
-| :--- | :--- | :--- | :--- |
-| **Physical (`atk-physical`)** | Vector dash towards target | Prep: `x: nx * 10px, y: ny * 10px` (0.12s) \| Dash: `x: nx * 40px, y: ny * 40px, scale: 1.15` (0.14s) \| Return: `x: 0, y: 0, scale: 1` (0.18s) | `0.44s` |
-| **Special (`atk-special`)** | Radial pulse & brightness flare | `x: nx * 8px, y: ny * 8px, scale: 1.15` \| `filter: Brightness(1.8)` \| Yoyo repeat: 1, `ease: 'power2.out'` | `0.30s` |
-| **Status (`atk-status`)** | Lateral rotation wobble | `rotation: ±12deg, scale: 1.1` \| `filter: Brightness(1.3)` \| Yoyo repeat: 1, `ease: 'power2.out'` | `0.40s` |
-| **Self-KO (`selfKO` / Explosion)** | High-frequency shake + flash explosion | 1. 6-cycle random jitter `±6px` \| 2. Expand `scale: 1.6, Brightness(3), Drop-Shadow(20px #ffaa00)` (0.2s) \| 3. Collapse `scale: 0, opacity: 0, Brightness(5)` (0.15s) | `0.55s` |
+| Move Category                      | Visual Kinematics                      | Target Transform & Filters                                                                                                                                              | Duration |
+| :--------------------------------- | :------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------- |
+| **Physical (`atk-physical`)**      | Vector dash towards target             | Prep: `x: nx * 10px, y: ny * 10px` (0.12s) \| Dash: `x: nx * 40px, y: ny * 40px, scale: 1.15` (0.14s) \| Return: `x: 0, y: 0, scale: 1` (0.18s)                         | `0.44s`  |
+| **Special (`atk-special`)**        | Radial pulse & brightness flare        | `x: nx * 8px, y: ny * 8px, scale: 1.15` \| `filter: Brightness(1.8)` \| Yoyo repeat: 1, `ease: 'power2.out'`                                                            | `0.30s`  |
+| **Status (`atk-status`)**          | Lateral rotation wobble                | `rotation: ±12deg, scale: 1.1` \| `filter: Brightness(1.3)` \| Yoyo repeat: 1, `ease: 'power2.out'`                                                                     | `0.40s`  |
+| **Self-KO (`selfKO` / Explosion)** | High-frequency shake + flash explosion | 1. 6-cycle random jitter `±6px` \| 2. Expand `scale: 1.6, Brightness(3), Drop-Shadow(20px #ffaa00)` (0.2s) \| 3. Collapse `scale: 0, opacity: 0, Brightness(5)` (0.15s) | `0.55s`  |
 
 ```mermaid
 graph TD
@@ -341,10 +341,10 @@ graph TD
    - Triggered on status damage (Poison / Burn tick).
    - Plays `statusDamage` SFX + brightness pulse `Brightness(1.8), Hue-Rotate(10deg)`.
 3. **Recoil Rebound (`PLAY_RECOIL`)**:
-   - Triggered on moves with recoil (*Take Down*, *Double-Edge*, *Brave Bird*) or *Life Orb*.
+   - Triggered on moves with recoil (_Take Down_, _Double-Edge_, _Brave Bird_) or _Life Orb_.
    - Shoves attacker backwards (`x: -15px, y: 10px` for player; `x: +15px, y: -10px` for enemy) in `0.10s`, then snaps back with `back.out(1.7)` in `0.25s`.
 4. **Healing (`PLAY_HEAL`)**:
-   - Triggered on Potions, *Synthesis*, *Recover*, *Giga Drain*.
+   - Triggered on Potions, _Synthesis_, _Recover_, _Giga Drain_.
    - Plays `heal` chime, lifts sprite `y: -15px`, scales `scale: 1.15`, applies glowing magenta/emerald tint (`brightness(1.4) sepia(0.8) hue-rotate(300deg)`), then smoothly restores in `0.60s`.
 
 ### 4.3 Persistent Status Tints & Particle Layers
@@ -373,7 +373,7 @@ graph TD
 1. Execute via console:
 
    ```javascript
-   window.__VITE_DEBUG__.triggerAnim('heal', 'player')
+   window.__VITE_DEBUG__.triggerAnim('heal', 'player');
    ```
 
 2. **Verify**:
@@ -493,7 +493,7 @@ graph TD
 
 ### 6.3 Double KO (Simultaneous Faint) Resolution
 
-When both combatants faint on the same turn (e.g. *Explosion*, *Destiny Bond*, *Life Orb* / Recoil):
+When both combatants faint on the same turn (e.g. _Explosion_, _Destiny Bond_, _Life Orb_ / Recoil):
 
 1. **Resolution Order**:
    - The primary trigger faints first (e.g. Explosion user faints, then target faints from damage).
@@ -574,28 +574,28 @@ stateDiagram-v2
 
 ## 📋 8. Master QA Manual Verification Matrix
 
-| Test ID | System / Feature | Test Scenario | Preconditions | Trigger / Debug Command | Expected Visual & Audio Output | Associated FSM States | Pass/Fail Criteria |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **QA-FS-01** | Forced Switch | Enemy Whirlwind on Player | Player has 2+ alive Pokémon | `triggerAnim('escape_flee', 'player', { type: 'whirlwind' })` | 720° spiral upward ejection, `flee` sound, incoming Pokémon dragged out | `PLAY_ESCAPE_ANIM` $\rightarrow$ `POKEMON_CALL` | 0 position jumps, log matches |
-| **QA-FS-02** | Forced Switch | Dragon Tail on Enemy Trainer | Enemy Trainer has bench | Execute move **Cola Dragón** | Heavy knockback recoil, `damage` sound, next Pokémon deployed | `PLAY_DAMAGE` $\rightarrow$ `POKEMON_CALL` | Enemy seat smoothly swapped |
-| **QA-FS-03** | Forced Switch | Whirlwind on Empty Bench | Target is last Pokémon alive | Execute **Remolino** | Log shows `¡Pero falló!`, target remains stationary | `ACTIVE_BATTLE` $\rightarrow$ `WAIT_INPUT` | Move fails, 0 visual exit |
-| **QA-FL-01** | Flee System | Wild Flee (Player Faster) | Wild encounter, Player Spe $\ge$ Enemy Spe | Click **HUIR** -> Confirm | Player recalled to ball, Enemy flees with dust particles in parallel | `ESCAPE_PROCESS` $\rightarrow$ `POKEMON_RECALL` | Parallel resolution, 0 frame drops |
-| **QA-FL-02** | Flee System | Wild Flee (Failed Escape) | Player Spe < Enemy Spe | Click **HUIR** -> Confirm | Log `¡No pudiste escapar!`, enemy counter-attacks, turn restores | `ESCAPE_PROCESS` $\rightarrow$ `APPLY_MOVE` | Input restored if player survives |
-| **QA-FL-03** | Flee System | Teleport Escape (Abra) | Encounter with Abra | Abra executes **Teletransporte** | Vertical stretch (`scaleY: 2.0`) + brightness flare, instant escape | `PLAY_ESCAPE_ANIM` (teleport) | Clean exit without faint slide |
-| **QA-AT-01** | Attack FX | Physical Attack Dash | Any active battle | Click **FÍSICO (⚔️)** in debug | Forward dash towards target (`nx * 40px`), pulse scale, elastic return | `PLAY_ATTACK_ANIM` (physical) | Trajectory points to target |
-| **QA-AT-02** | Attack FX | Special Attack Pulse | Any active battle | Click **ESPECIAL (🔮)** in debug | Radial expansion pulse `scale: 1.15` + brightness flare `1.8x` | `PLAY_ATTACK_ANIM` (special) | Sprite pulses in place |
-| **QA-AT-03** | Attack FX | Status Attack Wobble | Any active battle | Click **ESTADO (🧪)** in debug | Lateral rotation tilt ±12° + brightness glow | `PLAY_ATTACK_ANIM` (status) | Smooth rotation, no clipping |
-| **QA-AT-04** | Attack FX | Explosion / Self-KO | Any active battle | Click **EXPLOSIÓN (💥)** in debug | Violent jitter, giant orange flash `1.6x`, shrink to 0 | `PLAY_ATTACK_ANIM` (selfKO) | Explodes and resets cleanly |
-| **QA-AT-05** | Attack FX | Recoil Pushback | Any active battle | Click **RETROCESO (🔙)** in debug | Attacker shoved backwards `15px`, elastic snapback `back.out(1.7)` | `PLAY_RECOIL` | Elastic bounce without lag |
-| **QA-AT-06** | Status FX | Freeze Static Mode | Any active battle | Set status **CONGELADO (🧊)** | Cyan crystal aura + idle floating animation frozen completely | `STATUS_FLASH` | 0 floating movement when frozen |
-| **QA-SW-01** | Switch Flow | Voluntary Player Switch | Party has 2+ Pokémon | Switch Pokémon in Quick Team | Outgoing recalled into ball $\rightarrow$ Incoming released from ball | `POKEMON_RECALL` $\rightarrow$ `POKEMON_CALL` | Seamless coordinate handoff |
-| **QA-SW-02** | Switch Flow | Wild Emergence Jump | Start wild battle | Search grass in map | Silhouette jumps out of bush $\rightarrow$ reveals color at 50% jump peak | `WILD_ENTRY` $\rightarrow$ `ENCOUNTER_ANIM` | Bush behind sprite on landing |
-| **QA-SW-03** | Switch Flow | Trainer Presentation & Retreat | Start Trainer battle | Challenge NPC Trainer | Slide from right $\rightarrow$ dialogue $\rightarrow$ retreat to background `scale: 0.8` | `TRAINER_ENTRY` $\rightarrow$ `T_RETREAT` | Standing trainer visible in BG |
-| **QA-FA-01** | Faint System | Wild Faint Slide Down | Wild battle | Reduce wild enemy HP to 0 | Faint cry $\rightarrow$ drop down `+80px` $\rightarrow$ 13-step blink $\rightarrow$ vanish | `ENEMY_DEFEAT` $\rightarrow$ `PLAY_ENEMY_FAINT` | Shadow vanishes on faint |
-| **QA-FA-02** | Faint System | Player Faint & Whiteout | Player last Pokémon at 0 HP | Reduce player HP to 0 | Faint cry $\rightarrow$ Pokéball recall $\rightarrow$ Defeat Screen modal | `PLAYER_FAINT_SEQ` $\rightarrow$ `DEFEAT_SCREEN` | Defeat audio, safe map return |
-| **QA-FA-03** | Faint System | Double KO Resolution | Both Pokémon faint at once | Explosion or Destiny Bond KO | Primary faints first $\rightarrow$ Secondary faints $\rightarrow$ Bench checked | `PLAYER_FAINT_SEQ` / `ENEMY_REPLACEMENT` | Winner declared without hang |
-| **QA-CA-01** | Catch System | Full Catch Celebration | Wild encounter | Throw Master Ball or Debug Success | Suction $\rightarrow$ 3 Wobbles $\rightarrow$ Golden pulse + 12 rotating stars | `CATCH_PROCESS` $\rightarrow$ `CATCH_SUCCESS` | Saved with correct `ball:` tag |
-| **QA-CA-02** | Catch System | Catch Breakout / Escape | Wild encounter | Throw regular Poké Ball on full HP | Suction $\rightarrow$ 1-2 Wobbles $\rightarrow$ Ball bursts $\rightarrow$ Pokémon re-emerges | `CATCH_PROCESS` $\rightarrow$ `PLAY_RELEASE_ENERGY` | Turn continues smoothly |
+| Test ID      | System / Feature | Test Scenario                  | Preconditions                              | Trigger / Debug Command                                       | Expected Visual & Audio Output                                                               | Associated FSM States                               | Pass/Fail Criteria                 |
+| :----------- | :--------------- | :----------------------------- | :----------------------------------------- | :------------------------------------------------------------ | :------------------------------------------------------------------------------------------- | :-------------------------------------------------- | :--------------------------------- |
+| **QA-FS-01** | Forced Switch    | Enemy Whirlwind on Player      | Player has 2+ alive Pokémon                | `triggerAnim('escape_flee', 'player', { type: 'whirlwind' })` | 720° spiral upward ejection, `flee` sound, incoming Pokémon dragged out                      | `PLAY_ESCAPE_ANIM` $\rightarrow$ `POKEMON_CALL`     | 0 position jumps, log matches      |
+| **QA-FS-02** | Forced Switch    | Dragon Tail on Enemy Trainer   | Enemy Trainer has bench                    | Execute move **Cola Dragón**                                  | Heavy knockback recoil, `damage` sound, next Pokémon deployed                                | `PLAY_DAMAGE` $\rightarrow$ `POKEMON_CALL`          | Enemy seat smoothly swapped        |
+| **QA-FS-03** | Forced Switch    | Whirlwind on Empty Bench       | Target is last Pokémon alive               | Execute **Remolino**                                          | Log shows `¡Pero falló!`, target remains stationary                                          | `ACTIVE_BATTLE` $\rightarrow$ `WAIT_INPUT`          | Move fails, 0 visual exit          |
+| **QA-FL-01** | Flee System      | Wild Flee (Player Faster)      | Wild encounter, Player Spe $\ge$ Enemy Spe | Click **HUIR** -> Confirm                                     | Player recalled to ball, Enemy flees with dust particles in parallel                         | `ESCAPE_PROCESS` $\rightarrow$ `POKEMON_RECALL`     | Parallel resolution, 0 frame drops |
+| **QA-FL-02** | Flee System      | Wild Flee (Failed Escape)      | Player Spe < Enemy Spe                     | Click **HUIR** -> Confirm                                     | Log `¡No pudiste escapar!`, enemy counter-attacks, turn restores                             | `ESCAPE_PROCESS` $\rightarrow$ `APPLY_MOVE`         | Input restored if player survives  |
+| **QA-FL-03** | Flee System      | Teleport Escape (Abra)         | Encounter with Abra                        | Abra executes **Teletransporte**                              | Vertical stretch (`scaleY: 2.0`) + brightness flare, instant escape                          | `PLAY_ESCAPE_ANIM` (teleport)                       | Clean exit without faint slide     |
+| **QA-AT-01** | Attack FX        | Physical Attack Dash           | Any active battle                          | Click **FÍSICO (⚔️)** in debug                                | Forward dash towards target (`nx * 40px`), pulse scale, elastic return                       | `PLAY_ATTACK_ANIM` (physical)                       | Trajectory points to target        |
+| **QA-AT-02** | Attack FX        | Special Attack Pulse           | Any active battle                          | Click **ESPECIAL (🔮)** in debug                              | Radial expansion pulse `scale: 1.15` + brightness flare `1.8x`                               | `PLAY_ATTACK_ANIM` (special)                        | Sprite pulses in place             |
+| **QA-AT-03** | Attack FX        | Status Attack Wobble           | Any active battle                          | Click **ESTADO (🧪)** in debug                                | Lateral rotation tilt ±12° + brightness glow                                                 | `PLAY_ATTACK_ANIM` (status)                         | Smooth rotation, no clipping       |
+| **QA-AT-04** | Attack FX        | Explosion / Self-KO            | Any active battle                          | Click **EXPLOSIÓN (💥)** in debug                             | Violent jitter, giant orange flash `1.6x`, shrink to 0                                       | `PLAY_ATTACK_ANIM` (selfKO)                         | Explodes and resets cleanly        |
+| **QA-AT-05** | Attack FX        | Recoil Pushback                | Any active battle                          | Click **RETROCESO (🔙)** in debug                             | Attacker shoved backwards `15px`, elastic snapback `back.out(1.7)`                           | `PLAY_RECOIL`                                       | Elastic bounce without lag         |
+| **QA-AT-06** | Status FX        | Freeze Static Mode             | Any active battle                          | Set status **CONGELADO (🧊)**                                 | Cyan crystal aura + idle floating animation frozen completely                                | `STATUS_FLASH`                                      | 0 floating movement when frozen    |
+| **QA-SW-01** | Switch Flow      | Voluntary Player Switch        | Party has 2+ Pokémon                       | Switch Pokémon in Quick Team                                  | Outgoing recalled into ball $\rightarrow$ Incoming released from ball                        | `POKEMON_RECALL` $\rightarrow$ `POKEMON_CALL`       | Seamless coordinate handoff        |
+| **QA-SW-02** | Switch Flow      | Wild Emergence Jump            | Start wild battle                          | Search grass in map                                           | Silhouette jumps out of bush $\rightarrow$ reveals color at 50% jump peak                    | `WILD_ENTRY` $\rightarrow$ `ENCOUNTER_ANIM`         | Bush behind sprite on landing      |
+| **QA-SW-03** | Switch Flow      | Trainer Presentation & Retreat | Start Trainer battle                       | Challenge NPC Trainer                                         | Slide from right $\rightarrow$ dialogue $\rightarrow$ retreat to background `scale: 0.8`     | `TRAINER_ENTRY` $\rightarrow$ `T_RETREAT`           | Standing trainer visible in BG     |
+| **QA-FA-01** | Faint System     | Wild Faint Slide Down          | Wild battle                                | Reduce wild enemy HP to 0                                     | Faint cry $\rightarrow$ drop down `+80px` $\rightarrow$ 13-step blink $\rightarrow$ vanish   | `ENEMY_DEFEAT` $\rightarrow$ `PLAY_ENEMY_FAINT`     | Shadow vanishes on faint           |
+| **QA-FA-02** | Faint System     | Player Faint & Whiteout        | Player last Pokémon at 0 HP                | Reduce player HP to 0                                         | Faint cry $\rightarrow$ Pokéball recall $\rightarrow$ Defeat Screen modal                    | `PLAYER_FAINT_SEQ` $\rightarrow$ `DEFEAT_SCREEN`    | Defeat audio, safe map return      |
+| **QA-FA-03** | Faint System     | Double KO Resolution           | Both Pokémon faint at once                 | Explosion or Destiny Bond KO                                  | Primary faints first $\rightarrow$ Secondary faints $\rightarrow$ Bench checked              | `PLAYER_FAINT_SEQ` / `ENEMY_REPLACEMENT`            | Winner declared without hang       |
+| **QA-CA-01** | Catch System     | Full Catch Celebration         | Wild encounter                             | Throw Master Ball or Debug Success                            | Suction $\rightarrow$ 3 Wobbles $\rightarrow$ Golden pulse + 12 rotating stars               | `CATCH_PROCESS` $\rightarrow$ `CATCH_SUCCESS`       | Saved with correct `ball:` tag     |
+| **QA-CA-02** | Catch System     | Catch Breakout / Escape        | Wild encounter                             | Throw regular Poké Ball on full HP                            | Suction $\rightarrow$ 1-2 Wobbles $\rightarrow$ Ball bursts $\rightarrow$ Pokémon re-emerges | `CATCH_PROCESS` $\rightarrow$ `PLAY_RELEASE_ENERGY` | Turn continues smoothly            |
 
 ---
 
@@ -603,13 +603,13 @@ stateDiagram-v2
 
 All manual testing scenarios documented in this manual are automated and covered by the following test suites:
 
-| Section & Animation | Tier 1 Unit Test | Tier 2 Integrity Test | Tier 3 Playwright Simulation |
-| :--- | :--- | :--- | :--- |
-| **1. Forced Switch (Remolino)** | `test_whirlwind_trajectory.spec.ts` | `test_forced_switch_animation_parity.spec.ts` | `battle_forced_switch_ui.simulation.ts` |
-| **2. Escape (Huida / Teleport)** | `test_knockback_teleport_trajectory.spec.ts` | `test_failed_flee_counterattack.spec.ts` | `battle_flee_and_teleport.simulation.ts` |
-| **3. Attack Categories** | `test_attack_action_anims.spec.ts` | `test_attack_action_anims.spec.ts` | `battle_manual_scenarios.simulation.ts` |
-| **4. Manual Switch** | `battle_animation_sequence_parity.spec.ts` | `battle_animation_sequence_parity.spec.ts` | `battle_manual_scenarios.simulation.ts` |
-| **5. Fainting (Wild vs Trainer)** | `test_faint_animation_trajectory.spec.ts` | `battle_animation_sequence_parity.spec.ts` | `battle_catch_breakout_and_whiteout.simulation.ts` |
-| **6. Poké Ball Capture & Breakout** | `test_capture_animation_kinematics.spec.ts` | `test_capture_breakout_integration.spec.ts` | `battle_catch_breakout_and_whiteout.simulation.ts` |
-| **7. Wild Encounter Jump & Shiny** | `test_freeze_static_mode.spec.ts` | `battle_animation_sequence_parity.spec.ts` | `battle_wild_encounter_jump.simulation.ts` |
-| **8. Atmospheric Weather FX** | `useAtmosphereSandstormAnim.spec.ts` | `gym_atmosphere_lifecycle_integration.spec.ts` | `battle_weather_effects.simulation.ts` |
+| Section & Animation                 | Tier 1 Unit Test                             | Tier 2 Integrity Test                          | Tier 3 Playwright Simulation                       |
+| :---------------------------------- | :------------------------------------------- | :--------------------------------------------- | :------------------------------------------------- |
+| **1. Forced Switch (Remolino)**     | `test_whirlwind_trajectory.spec.ts`          | `test_forced_switch_animation_parity.spec.ts`  | `battle_forced_switch_ui.simulation.ts`            |
+| **2. Escape (Huida / Teleport)**    | `test_knockback_teleport_trajectory.spec.ts` | `test_failed_flee_counterattack.spec.ts`       | `battle_flee_and_teleport.simulation.ts`           |
+| **3. Attack Categories**            | `test_attack_action_anims.spec.ts`           | `test_attack_action_anims.spec.ts`             | `battle_manual_scenarios.simulation.ts`            |
+| **4. Manual Switch**                | `battle_animation_sequence_parity.spec.ts`   | `battle_animation_sequence_parity.spec.ts`     | `battle_manual_scenarios.simulation.ts`            |
+| **5. Fainting (Wild vs Trainer)**   | `test_faint_animation_trajectory.spec.ts`    | `battle_animation_sequence_parity.spec.ts`     | `battle_catch_breakout_and_whiteout.simulation.ts` |
+| **6. Poké Ball Capture & Breakout** | `test_capture_animation_kinematics.spec.ts`  | `test_capture_breakout_integration.spec.ts`    | `battle_catch_breakout_and_whiteout.simulation.ts` |
+| **7. Wild Encounter Jump & Shiny**  | `test_freeze_static_mode.spec.ts`            | `battle_animation_sequence_parity.spec.ts`     | `battle_wild_encounter_jump.simulation.ts`         |
+| **8. Atmospheric Weather FX**       | `useAtmosphereSandstormAnim.spec.ts`         | `gym_atmosphere_lifecycle_integration.spec.ts` | `battle_weather_effects.simulation.ts`             |

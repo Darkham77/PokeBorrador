@@ -1,10 +1,30 @@
-
 /**
  * breedingData.ts
  * Stores egg groups, compatibility, and mappings.
  */
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
-export const EGG_GROUPS: Record<string, string[]> = {
+const EGG_GROUP_IDS = [
+  'monster',
+  'water1',
+  'water2',
+  'water3',
+  'bug',
+  'flying',
+  'ground',
+  'fairy',
+  'plant',
+  'humanshape',
+  'mineral',
+  'indeterminate',
+  'dragon',
+  'ditto',
+  'no-eggs'
+] as const;
+
+export type EggGroupId = (typeof EGG_GROUP_IDS)[number];
+
+export const EGG_GROUPS: Partial<Record<PokemonSpeciesId, readonly EggGroupId[]>> = {
   abra: ['humanshape'],
   aerodactyl: ['flying'],
   alakazam: ['humanshape'],
@@ -86,34 +106,34 @@ export const EGG_GROUPS: Record<string, string[]> = {
   voltorb: ['mineral'],
   vulpix: ['ground'],
   wartortle: ['monster', 'water1'],
-  white_stripe_basculin: ['no-eggs'], 
+  basculinwhitestriped: ['no-eggs'],
   wigglytuff: ['fairy'],
   zapdos: ['no-eggs'],
-  zubat: ['flying'],
+  zubat: ['flying']
 };
 
-import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
-export { COMPAT_TEXT }
+import { COMPAT_TEXT } from '@/data/breeding/breedingConstants';
+export { COMPAT_TEXT };
 
-export const EGG_GROUP_TRANSLATIONS: Record<string, string> = {
-  'monster': 'Monstruo',
-  'water1': 'Agua 1',
-  'water2': 'Agua 2',
-  'water3': 'Agua 3',
-  'bug': 'Bicho',
-  'flying': 'Volador',
-  'ground': 'Campo',
-  'fairy': 'Hada',
-  'plant': 'Planta',
-  'humanshape': 'Humanoide',
-  'mineral': 'Mineral',
-  'indeterminate': 'Amorfo',
-  'dragon': 'Dragón',
-  'ditto': 'Ditto',
+export const EGG_GROUP_TRANSLATIONS: Record<EggGroupId, string> = {
+  monster: 'Monstruo',
+  water1: 'Agua 1',
+  water2: 'Agua 2',
+  water3: 'Agua 3',
+  bug: 'Bicho',
+  flying: 'Volador',
+  ground: 'Campo',
+  fairy: 'Hada',
+  plant: 'Planta',
+  humanshape: 'Humanoide',
+  mineral: 'Mineral',
+  indeterminate: 'Amorfo',
+  dragon: 'Dragón',
+  ditto: 'Ditto',
   'no-eggs': 'Desconocido'
 };
 
-export const BABY_MAP: Record<string, string> = {
+export const BABY_MAP: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> = {
   // Baby mappings from any stage in line to baby form
   pikachu: 'pichu',
   raichu: 'pichu',
@@ -148,10 +168,8 @@ export const BABY_MAP: Record<string, string> = {
   togetic: 'togepi',
   togekiss: 'togepi',
   toxtricity: 'toxel',
-  toxtricitylowkey: 'toxel',
+  toxtricitylowkey: 'toxel'
 };
-
-
 
 /**
  * Probability and Inheritance Constants
@@ -173,5 +191,5 @@ import { MILLISECONDS_PER_HOUR } from '@/logic/constants/gameplay';
 export const EGG_SPAWN_INTERVAL_MS: Record<number, number> = {
   1: MILLISECONDS_PER_HOUR * 8, // Low interest: 8h
   2: MILLISECONDS_PER_HOUR * 4, // Compatible: 4h
-  3: MILLISECONDS_PER_HOUR * 2, // Very compatible: 2h
+  3: MILLISECONDS_PER_HOUR * 2 // Very compatible: 2h
 };

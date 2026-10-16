@@ -1,20 +1,20 @@
 <script setup lang="ts">
 interface Props {
-  show: boolean
-  title?: string
-  cardVariant?: 'default' | 'purple' | 'yellow'
-  headerClass?: string
+  show: boolean;
+  title?: string;
+  cardVariant?: 'default' | 'purple' | 'yellow';
+  headerClass?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
   cardVariant: 'default',
   headerClass: 'bg-gradient-to-b from-blue-500 to-blue-700'
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 </script>
 
 <template>
@@ -35,11 +35,7 @@ const emit = defineEmits<{
         'border-yellow': props.cardVariant === 'yellow'
       }"
     >
-      <div
-        v-if="props.title"
-        class="adv-modal-header"
-        :class="props.headerClass"
-      >
+      <div v-if="props.title" class="adv-modal-header" :class="props.headerClass">
         {{ props.title }}
       </div>
       <slot />

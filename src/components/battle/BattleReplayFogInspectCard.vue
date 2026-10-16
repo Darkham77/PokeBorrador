@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { FogOfWarSideState } from '@/logic/battle/replay/tacticalReplayEngine.ts'
+import { computed } from 'vue';
+import type { FogOfWarSideState } from '@/logic/battle/replay/tacticalReplayEngine.ts';
 
 const props = defineProps<{
-  pokemon?: FogOfWarSideState['activePokemon'] | null
-}>()
+  pokemon?: FogOfWarSideState['activePokemon'] | null;
+}>();
 
-const DEFAULT_MOVES_COUNT = 4
+const DEFAULT_MOVES_COUNT = 4;
 
 const revealedMoves = computed(() => {
-  const moves = props.pokemon?.revealedMoves || []
-  return Array.from({ length: DEFAULT_MOVES_COUNT }, (_, idx) => moves[idx] || '???')
-})
+  const moves = props.pokemon?.revealedMoves || [];
+  return Array.from({ length: DEFAULT_MOVES_COUNT }, (_, idx) => moves[idx] || '???');
+});
 </script>
 
 <template>

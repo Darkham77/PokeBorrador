@@ -1,11 +1,6 @@
 export { MAX_PER_ACTION_TIMEOUT_MS } from './simulation_config.ts';
 
-export {
-  flushE2ELogs,
-  logE2EDebug,
-  clickResilient,
-  type E2EPage
-} from './helpers/e2eLogger.ts';
+export { flushE2ELogs, logE2EDebug, clickResilient, type E2EPage } from './helpers/e2eLogger.ts';
 
 export {
   armBattleFlowCompletion,

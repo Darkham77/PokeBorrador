@@ -70,7 +70,8 @@ export function useShadowEditor() {
         const num = parseFloat(val);
         if (!isNaN(num) && num > 0) return num;
       }
-    } catch { // catch-ok: SessionStorage may be unavailable or disabled in sandboxed dev environment
+    } catch {
+      // catch-ok: SessionStorage may be unavailable or disabled in sandboxed dev environment
       // sessionStorage unavailable
     }
     return fallback;
@@ -80,7 +81,8 @@ export function useShadowEditor() {
     if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') return;
     try {
       sessionStorage.setItem(key, val);
-    } catch { // catch-ok: SessionStorage may be unavailable or disabled in sandboxed dev environment
+    } catch {
+      // catch-ok: SessionStorage may be unavailable or disabled in sandboxed dev environment
       // sessionStorage unavailable
     }
   };
@@ -124,20 +126,31 @@ export function useShadowEditor() {
   };
 
   const hasUnsavedChanges = computed(() => {
-    return JSON.stringify(overrides.value) !== initialSavedJson.value ||
-      JSON.stringify(globalShadowConfig.value) !== initialSavedConfigJson.value;
+    return (
+      JSON.stringify(overrides.value) !== initialSavedJson.value ||
+      JSON.stringify(globalShadowConfig.value) !== initialSavedConfigJson.value
+    );
   });
 
   const resetGlobalWidthRatio = () => {
-    globalShadowConfig.value = { ...globalShadowConfig.value, widthRatio: DEFAULT_SHADOW_WIDTH_RATIO };
+    globalShadowConfig.value = {
+      ...globalShadowConfig.value,
+      widthRatio: DEFAULT_SHADOW_WIDTH_RATIO
+    };
   };
 
   const resetGlobalHeightRatio = () => {
-    globalShadowConfig.value = { ...globalShadowConfig.value, heightRatio: DEFAULT_SHADOW_HEIGHT_RATIO };
+    globalShadowConfig.value = {
+      ...globalShadowConfig.value,
+      heightRatio: DEFAULT_SHADOW_HEIGHT_RATIO
+    };
   };
 
   const resetGlobalPixelation = () => {
-    globalShadowConfig.value = { ...globalShadowConfig.value, pixelation: DEFAULT_SHADOW_PIXELATION };
+    globalShadowConfig.value = {
+      ...globalShadowConfig.value,
+      pixelation: DEFAULT_SHADOW_PIXELATION
+    };
   };
 
   const modifiedCount = computed(() => {
@@ -145,7 +158,9 @@ export function useShadowEditor() {
   });
 
   // Extract base feet data from precalculated static DB in O(1)
-  const getPrecalculatedFeet = (fullPath: string): { feetY: number; feetX: number; isFlying: boolean; shadowScale: number } => {
+  const getPrecalculatedFeet = (
+    fullPath: string
+  ): { feetY: number; feetX: number; isFlying: boolean; shadowScale: number } => {
     const pGroup = (FEET_COORDINATES_DATA.p ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
     const nGroup = (FEET_COORDINATES_DATA.n ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
     const tGroup = (FEET_COORDINATES_DATA.t ?? {}) as Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
@@ -211,7 +226,7 @@ export function useShadowEditor() {
           initialSavedConfigJson.value = JSON.stringify(globalShadowConfig.value);
         }
       }
-    } catch (_e) {
+    } catch {
       overrides.value = {};
       initialSavedJson.value = '{}';
     } finally {
@@ -224,19 +239,19 @@ export function useShadowEditor() {
     let result = allEntities.value;
 
     if (selectedCategory.value !== 'all') {
-      result = result.filter(e => e.category === selectedCategory.value);
+      result = result.filter((e) => e.category === selectedCategory.value);
     }
 
     if (selectedCategory.value === 'pokemon' && selectedGen.value !== 'all') {
-      result = result.filter(e => e.category === 'pokemon' && e.gen === selectedGen.value);
+      result = result.filter((e) => e.category === 'pokemon' && e.gen === selectedGen.value);
     }
 
     if (selectedCategory.value === 'pokemon' && selectedGender.value !== 'all') {
-      result = result.filter(e => e.category === 'pokemon' && e.gender === selectedGender.value);
+      result = result.filter((e) => e.category === 'pokemon' && e.gender === selectedGender.value);
     }
 
     if (selectedView.value !== 'all') {
-      result = result.filter(e => {
+      result = result.filter((e) => {
         if (e.category === 'pokemon') return e.view === selectedView.value;
         if (e.category === 'trainer') return e.view === selectedView.value;
         return true;
@@ -245,18 +260,22 @@ export function useShadowEditor() {
 
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.trim().toLowerCase();
-      result = result.filter(e => e.name.toLowerCase().includes(q) || e.key.toLowerCase().includes(q));
+      result = result.filter(
+        (e) => e.name.toLowerCase().includes(q) || e.key.toLowerCase().includes(q)
+      );
     }
 
     if (onlyModified.value) {
-      result = result.filter(e => !!overrides.value[e.key]);
+      result = result.filter((e) => !!overrides.value[e.key]);
     }
 
     return result;
   });
 
   const totalEntities = computed(() => filteredEntities.value.length);
-  const totalPages = computed(() => Math.max(1, Math.ceil(totalEntities.value / DEFAULT_PAGE_SIZE)));
+  const totalPages = computed(() =>
+    Math.max(1, Math.ceil(totalEntities.value / DEFAULT_PAGE_SIZE))
+  );
 
   const pagedEntities = computed(() => {
     const start = (currentPage.value - 1) * DEFAULT_PAGE_SIZE;
@@ -276,7 +295,9 @@ export function useShadowEditor() {
         feetX: Number(feetX.toFixed(4)),
         feetY: Number(feetY.toFixed(4)),
         isFlying,
-        ...(shadowScale !== undefined && shadowScale !== 1.0 ? { shadowScale: Number(shadowScale.toFixed(2)) } : {})
+        ...(shadowScale !== undefined && shadowScale !== 1.0
+          ? { shadowScale: Number(shadowScale.toFixed(2)) }
+          : {})
       }
     };
   };
@@ -310,10 +331,14 @@ export function useShadowEditor() {
       const res = await fetch('/api/dev-save-shadow-overrides', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          overrides: overrides.value,
-          globalShadowConfig: globalShadowConfig.value
-        }, null, 2)
+        body: JSON.stringify(
+          {
+            overrides: overrides.value,
+            globalShadowConfig: globalShadowConfig.value
+          },
+          null,
+          2
+        )
       });
       const data = await res.json();
       if (data.success) {
@@ -387,10 +412,10 @@ export function useShadowEditor() {
 
   if (getCurrentInstance()) {
     onMounted(() => {
-      loadOverrides();
+      void loadOverrides();
     });
   } else {
-    loadOverrides();
+    void loadOverrides();
   }
 
   return {

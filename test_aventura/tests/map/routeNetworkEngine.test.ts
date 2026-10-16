@@ -19,14 +19,8 @@ import {
   type ContinentMapResult
 } from '../../logic/map/continentGenerator.ts';
 import { placeRegionalPOIs } from '../../logic/map/poiPlacementEngine.ts';
-import {
-  buildRouteChain,
-  generateRouteNetwork
-} from '../../logic/map/routeNetworkEngine.ts';
-import {
-  resolvePathGrid,
-  CANONICAL_DIRT_PATH_BRUSH
-} from '../../logic/map/pathAutotileEngine.ts';
+import { buildRouteChain, generateRouteNetwork } from '../../logic/map/routeNetworkEngine.ts';
+import { resolvePathGrid, CANONICAL_DIRT_PATH_BRUSH } from '../../logic/map/pathAutotileEngine.ts';
 import type { WaterTerrainKind } from '../../logic/map/waterAutotileEngine.ts';
 
 describe('routeNetworkEngine & POI systems', () => {
@@ -136,8 +130,10 @@ describe('routeNetworkEngine & POI systems', () => {
           const a = pois[i]!;
           const b = pois[j]!;
 
-          const overlapX = a.gridX < b.gridX + b.footprint.width && a.gridX + a.footprint.width > b.gridX;
-          const overlapY = a.gridY < b.gridY + b.footprint.height && a.gridY + a.footprint.height > b.gridY;
+          const overlapX =
+            a.gridX < b.gridX + b.footprint.width && a.gridX + a.footprint.width > b.gridX;
+          const overlapY =
+            a.gridY < b.gridY + b.footprint.height && a.gridY + a.footprint.height > b.gridY;
 
           expect(overlapX && overlapY).toBe(false);
         }
@@ -163,8 +159,12 @@ describe('routeNetworkEngine & POI systems', () => {
       const { chain, stubs, loops } = buildRouteChain(pois);
 
       // Chain must form a linear path: exactly N-1 edges for N primary nodes
-      const primaryCount = pois.filter((p) =>
-        p.type === 'metropolis' || p.type === 'city' || p.type === 'town' || p.type === 'pokemon_league'
+      const primaryCount = pois.filter(
+        (p) =>
+          p.type === 'metropolis' ||
+          p.type === 'city' ||
+          p.type === 'town' ||
+          p.type === 'pokemon_league'
       ).length;
       expect(chain.length).toBe(primaryCount - 1);
 

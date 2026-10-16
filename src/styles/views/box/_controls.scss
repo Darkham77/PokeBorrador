@@ -1,5 +1,5 @@
 // src/styles/views/box/_controls.scss
-@use "../../core/tools" as *;
+@use '../../core/tools' as *;
 
 .box-controls-wrapper {
   position: relative;
@@ -10,7 +10,7 @@
   @include shell-premium(Rgba(15, 23, 42, 0.95));
 
   display: flex;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
   gap: $spacing-lg $spacing-2xl;
   padding: 12px 20px;
   border: 1px solid Rgb(255 255 255 / 5%);
@@ -21,7 +21,7 @@
   .search-row-integrated {
     display: flex;
     align-items: center;
-    gap: $spacing-lg; 
+    gap: $spacing-lg;
     min-width: 0;
     flex: 1 1 650px;
 
@@ -29,7 +29,7 @@
       flex-wrap: wrap;
       gap: $spacing-md;
       flex: 1 1 100%;
-      
+
       .box-search-wrapper {
         width: 100%;
         min-width: 0;
@@ -43,10 +43,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: $spacing-lg; 
+    gap: $spacing-lg;
     min-width: 300px;
     flex: 1 1 500px;
-    
+
     @media (width <= 1360px) {
       padding-top: 12px;
       border-top: 1px solid Rgb(255 255 255 / 3%);
@@ -70,14 +70,14 @@
     pointer-events: none;
   }
 
-  .box-search-input { 
+  .box-search-input {
     @include pixelated;
 
     width: 100%;
     height: 40px;
     padding: 0 44px;
-    border: 1px solid Rgb(255 255 255 / 10%); 
-    border-radius: $radius-xl; 
+    border: 1px solid Rgb(255 255 255 / 10%);
+    border-radius: $radius-xl;
     background: Rgb(0 0 0 / 30%);
     color: var(--white);
     font-size: var(--font-8);
@@ -123,9 +123,11 @@
   border-radius: $radius-xl;
   background: Rgb(0 0 0 / 30%);
   overflow-x: auto;
-  
-  &::-webkit-scrollbar { height: 4px; }
-  
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
   .box-tab-btn {
     @include pixelated;
 
@@ -138,7 +140,10 @@
     cursor: pointer;
     white-space: nowrap;
 
-    &:hover { background: Rgb(255 255 255 / 5%); color: var(--white); }
+    &:hover {
+      background: Rgb(255 255 255 / 5%);
+      color: var(--white);
+    }
     &.active {
       border: 1px solid Rgb(255 255 255 / 10%);
       background: Rgb(255 255 255 / 10%);
@@ -155,7 +160,7 @@
     padding: 0 12px;
     border-radius: $radius-lg;
     font-size: var(--font-7);
-    margin-left: 12px; 
+    margin-left: 12px;
     flex: 0 0 auto;
 
     &:hover {
@@ -178,7 +183,9 @@
     @media (width <= 900px) {
       padding: 0 8px;
       margin-left: 4px;
-      & .btn-price { display: none; }
+      & .btn-price {
+        display: none;
+      }
     }
   }
 }

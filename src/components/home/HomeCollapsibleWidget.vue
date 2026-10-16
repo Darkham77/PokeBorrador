@@ -1,32 +1,35 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useHomeWidgetsCollapse, type HomeWidgetId } from '@/composables/home/useHomeWidgetsCollapse'
-import { useHomeWidgetBadges } from '@/composables/home/useHomeWidgetBadges'
+import { computed } from 'vue';
+import {
+  useHomeWidgetsCollapse,
+  type HomeWidgetId
+} from '@/composables/home/useHomeWidgetsCollapse';
+import { useHomeWidgetBadges } from '@/composables/home/useHomeWidgetBadges';
 
 interface Props {
-  widgetId: HomeWidgetId
-  title: string
-  icon: string
-  badge?: number | string
-  subtitle?: string
+  widgetId: HomeWidgetId;
+  title: string;
+  icon: string;
+  badge?: number | string;
+  subtitle?: string;
 }
 
-const props = defineProps<Props>()
-const { isCollapsed, toggleCollapse } = useHomeWidgetsCollapse()
-const { getWidgetBadge } = useHomeWidgetBadges()
+const props = defineProps<Props>();
+const { isCollapsed, toggleCollapse } = useHomeWidgetsCollapse();
+const { getWidgetBadge } = useHomeWidgetBadges();
 
-const collapsed = computed(() => isCollapsed(props.widgetId))
+const collapsed = computed(() => isCollapsed(props.widgetId));
 
 const resolvedBadge = computed(() => {
   if (props.badge !== undefined && props.badge !== '') {
-    return props.badge
+    return props.badge;
   }
-  return getWidgetBadge(props.widgetId)
-})
+  return getWidgetBadge(props.widgetId);
+});
 
 const toggle = () => {
-  toggleCollapse(props.widgetId)
-}
+  toggleCollapse(props.widgetId);
+};
 </script>
 
 <template>
@@ -55,32 +58,20 @@ const toggle = () => {
         >
           {{ resolvedBadge }}
         </span>
-        <span
-          v-if="subtitle"
-          class="collapse-sub"
-        >
-          · {{ subtitle }}
-        </span>
+        <span v-if="subtitle" class="collapse-sub"> · {{ subtitle }} </span>
       </span>
       <i class="fas toggle-arrow fa-chevron-down" />
     </button>
   </div>
 
   <!-- Expanded State: Full Widget -->
-  <div
-    v-else
-    :id="`home-widget-expanded-${widgetId}`"
-    class="home-collapsible-expanded"
-  >
-    <slot
-      :is-collapsed="false"
-      :toggle="toggle"
-    />
+  <div v-else :id="`home-widget-expanded-${widgetId}`" class="home-collapsible-expanded">
+    <slot :is-collapsed="false" :toggle="toggle" />
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .home-collapsible-panel {
   width: 100%;

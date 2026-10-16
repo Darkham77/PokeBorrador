@@ -22,8 +22,14 @@ describe('routeGateBarrierEngine', () => {
     for (const seed of seeds) {
       const world = generatePokemonContinentalWorld({ seed, width: 400, height: 400 });
       const gatePois = world.pois.filter((p) => p.type === 'route_gate');
-      expect(gatePois.length, `Expected between 2 and 5 gates for seed ${seed}`).toBeGreaterThanOrEqual(2);
-      expect(gatePois.length, `Expected between 2 and 5 gates for seed ${seed}`).toBeLessThanOrEqual(5);
+      expect(
+        gatePois.length,
+        `Expected between 2 and 5 gates for seed ${seed}`
+      ).toBeGreaterThanOrEqual(2);
+      expect(
+        gatePois.length,
+        `Expected between 2 and 5 gates for seed ${seed}`
+      ).toBeLessThanOrEqual(5);
       counts.push(gatePois.length);
     }
 
@@ -78,7 +84,9 @@ describe('routeGateBarrierEngine', () => {
           const footRight = footLeft + 1;
           const footTop = t.y + t.height - 2;
           const footBottom = t.y + t.height;
-          return cell.x >= footLeft && cell.x <= footRight && cell.y >= footTop && cell.y < footBottom;
+          return (
+            cell.x >= footLeft && cell.x <= footRight && cell.y >= footTop && cell.y < footBottom
+          );
         });
         expect(
           treeOnRoad,
@@ -117,8 +125,14 @@ describe('routeGateBarrierEngine', () => {
       if (foundHorizontal && foundVertical) break;
     }
 
-    expect(foundHorizontal, 'Continental engine must place horizontal route gatehouses for East-West routes').toBe(true);
-    expect(foundVertical, 'Continental engine must place vertical route gatehouses for North-South routes').toBe(true);
+    expect(
+      foundHorizontal,
+      'Continental engine must place horizontal route gatehouses for East-West routes'
+    ).toBe(true);
+    expect(
+      foundVertical,
+      'Continental engine must place vertical route gatehouses for North-South routes'
+    ).toBe(true);
   });
 
   it('guarantees the anti-bypass verification confirms no open grass bypass exists around gate flanks', () => {
@@ -134,7 +148,10 @@ describe('routeGateBarrierEngine', () => {
           props: world.wilderness.props,
           pathGrid: world.pathGrid
         });
-        expect(isHermetic, `Seed ${seed} Gate ${gate.id} has an open unsealed bypass around its flanks`).toBe(true);
+        expect(
+          isHermetic,
+          `Seed ${seed} Gate ${gate.id} has an open unsealed bypass around its flanks`
+        ).toBe(true);
       }
     }
   });

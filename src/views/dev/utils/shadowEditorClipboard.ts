@@ -17,7 +17,8 @@ export async function copySliderValue(value: number): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(value.toString());
       return true;
-    } catch { // catch-ok: Clipboard permission denied or unavailable, fallback to memory
+    } catch {
+      // catch-ok: Clipboard permission denied or unavailable, fallback to memory
       // In-memory fallback is active
     }
   }
@@ -39,7 +40,8 @@ export async function readSliderValue(): Promise<number | null> {
           return num;
         }
       }
-    } catch { // catch-ok: Clipboard permission denied or unavailable, fallback to memory
+    } catch {
+      // catch-ok: Clipboard permission denied or unavailable, fallback to memory
       // Clipboard permission denied or unavailable, fall back to memory
     }
   }
@@ -55,7 +57,8 @@ export async function copyAllValues(snapshot: ShadowCalibrationSnapshot): Promis
     try {
       await navigator.clipboard.writeText(JSON.stringify(snapshot, null, 2));
       return true;
-    } catch { // catch-ok: Clipboard permission denied or unavailable, fallback to memory
+    } catch {
+      // catch-ok: Clipboard permission denied or unavailable, fallback to memory
       // Memory fallback active
     }
   }
@@ -69,7 +72,8 @@ const SCALE_DECIMALS = 2;
 
 function parseRawNumber(val: unknown): number {
   if (typeof val === 'number') return val;
-  return parseFloat(String(val ?? ''));
+  if (typeof val === 'string') return parseFloat(val);
+  return NaN;
 }
 
 function clampCoordinate(val: number): number {
@@ -78,7 +82,10 @@ function clampCoordinate(val: number): number {
 
 function clampShadowScale(val: number): number {
   if (isNaN(val)) return DEFAULT_SHADOW_SCALE;
-  return Math.max(MIN_SHADOW_SCALE, Math.min(MAX_SHADOW_SCALE, Number(val.toFixed(SCALE_DECIMALS))));
+  return Math.max(
+    MIN_SHADOW_SCALE,
+    Math.min(MAX_SHADOW_SCALE, Number(val.toFixed(SCALE_DECIMALS)))
+  );
 }
 
 function parseCalibrationJson(text: string): ShadowCalibrationSnapshot | null {
@@ -98,7 +105,7 @@ function parseCalibrationJson(text: string): ShadowCalibrationSnapshot | null {
       feetX: clampCoordinate(rawX),
       feetY: clampCoordinate(rawY),
       isFlying: Boolean(parsed.isFlying),
-      shadowScale: clampShadowScale(rawScale),
+      shadowScale: clampShadowScale(rawScale)
     };
   } catch {
     return null;
@@ -116,7 +123,8 @@ export async function readAllValues(): Promise<ShadowCalibrationSnapshot | null>
         const parsed = parseCalibrationJson(text);
         if (parsed) return parsed;
       }
-    } catch { // catch-ok: Clipboard permission denied or invalid JSON, fallback to memory
+    } catch {
+      // catch-ok: Clipboard permission denied or invalid JSON, fallback to memory
       // Permission or parse error, fall back to memory
     }
   }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi } from 'vite-plus/test';
 
 vi.mock('@/logic/battle/showdownWorkerClient.ts', () => ({
   showdownWorker: {},
@@ -10,28 +10,28 @@ vi.mock('@/logic/battle/showdownWorkerClient.ts', () => ({
     p1Request: { active: [{ moves: [] }] }
   }),
   syncTeamsFromLastWorkerState: vi.fn().mockResolvedValue(undefined)
-}))
+}));
 
 vi.mock('@/logic/battle/showdownBridge.ts', () => ({
   filterShowdownLogs: vi.fn().mockReturnValue([]),
   parseShowdownLogLine: vi.fn().mockResolvedValue(undefined)
-}))
+}));
 
 vi.mock('@/logic/battle/ai/battleAI.ts', () => ({
   shouldEnemySwitch: vi.fn().mockReturnValue(false),
   findBestSwitchIndex: vi.fn().mockReturnValue(0),
   decideEnemyMove: vi.fn().mockReturnValue({ id: 'submission' })
-}))
+}));
 
 vi.mock('@/logic/battle/resolution.ts', () => ({
   processFaint: vi.fn().mockResolvedValue(undefined)
-}))
+}));
 
-import { processNonForcedSwitchWorkerTurn } from '@/logic/battle/actions/switchWorkerTurn'
+import { processNonForcedSwitchWorkerTurn } from '@/logic/battle/actions/switchWorkerTurn';
 
 describe('processNonForcedSwitchWorkerTurn faint handling', () => {
   it('triggers processFaint when player HP drops to 0 after switch turn', async () => {
-    const transitions: string[] = []
+    const transitions: string[] = [];
     const mockCtx: any = {
       gs: { state: { team: [{ uid: 'p1', name: 'Rattata', hp: 0 }] } },
       activeBattle: {
@@ -47,8 +47,8 @@ describe('processNonForcedSwitchWorkerTurn faint handling', () => {
       },
       fsm: {
         transition: vi.fn((state, subState) => {
-          transitions.push(`${state}:${subState || ''}`)
-          return Promise.resolve()
+          transitions.push(`${state}:${subState || ''}`);
+          return Promise.resolve();
         })
       },
       BATTLE_STATES: { ACTIVE_BATTLE: 'ACTIVE_BATTLE' },
@@ -60,10 +60,14 @@ describe('processNonForcedSwitchWorkerTurn faint handling', () => {
         PLAYER_FAINT_SEQ: 'PLAYER_FAINT_SEQ'
       },
       enemyStages: { value: {} }
-    }
+    };
 
-    await processNonForcedSwitchWorkerTurn(mockCtx, { uid: 'p1', hp: 0, name: 'Rattata' } as any, null)
+    await processNonForcedSwitchWorkerTurn(
+      mockCtx,
+      { uid: 'p1', hp: 0, name: 'Rattata' } as any,
+      null
+    );
 
-    expect(transitions).toContain('ACTIVE_BATTLE:PLAYER_FAINT_SEQ')
-  })
-})
+    expect(transitions).toContain('ACTIVE_BATTLE:PLAYER_FAINT_SEQ');
+  });
+});

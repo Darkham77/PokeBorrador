@@ -8,7 +8,8 @@ import eggMovesJson from './eggMoves.json' with { type: 'json' };
 import type { PokemonMoveId } from '../battle/moves.ts';
 import type { PokemonSpeciesId } from './pokedex.ts';
 
-const EGG_MOVES_MAP: Partial<Record<PokemonSpeciesId, readonly PokemonMoveId[]>> = eggMovesJson as Partial<Record<PokemonSpeciesId, readonly PokemonMoveId[]>>;
+const EGG_MOVES_MAP: Partial<Record<PokemonSpeciesId, readonly PokemonMoveId[]>> =
+  eggMovesJson as Partial<Record<PokemonSpeciesId, readonly PokemonMoveId[]>>;
 const EMPTY_MOVES: readonly PokemonMoveId[] = Object.freeze([]);
 
 export function getSpeciesEggMoves(speciesId: PokemonSpeciesId): readonly PokemonMoveId[] {

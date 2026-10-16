@@ -1,54 +1,53 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import { formatTime } from '@/logic/utils/timeUtils';
 
-import { computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import { formatTime } from '@/logic/utils/timeUtils'
+const uiStore = useUIStore();
 
-const uiStore = useUIStore()
-
-import type { NotificationItem } from '@/types/system/game'
+import type { NotificationItem } from '@/types/system/game';
 
 interface Props {
-  history?: NotificationItem[]
+  history?: NotificationItem[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   history: () => []
-})
+});
 
 const filteredHistory = computed(() => {
-  return props.history.filter(n => !n.message?.toLowerCase().includes('bienvenido'))
-})
+  return props.history.filter((n) => !n.message?.toLowerCase().includes('bienvenido'));
+});
 
 const isHistoryOpen = computed({
   get: () => uiStore.isHistoryOpen,
-  set: (val: boolean) => { uiStore.isHistoryOpen = val }
-})
+  set: (val: boolean) => {
+    uiStore.isHistoryOpen = val;
+  }
+});
 
 /** Returns the best available icon from a potentially legacy-shaped entry. */
 function getIcon(n: NotificationItem): string {
-  const metaIcon = n.meta?.['icon']
-  if (typeof metaIcon === 'string' && metaIcon) return metaIcon
-  return '🔔'
+  const metaIcon = n.meta?.['icon'];
+  if (typeof metaIcon === 'string' && metaIcon) return metaIcon;
+  return '🔔';
 }
 
 /** Returns the display text, falling back to message. */
 function getText(n: NotificationItem): string {
-  return n.message ?? ''
+  return n.message ?? '';
 }
 
 /** Returns the best available timestamp. */
 function getTimestamp(n: NotificationItem): number {
-  return n.timestamp ?? 0
+  return n.timestamp ?? 0;
 }
 </script>
 
 <template>
   <div class="legacy-info-row">
     <div class="notifications-header-legacy">
-      <div class="info-label">
-        NOTIFICACIONES
-      </div>
+      <div class="info-label">NOTIFICACIONES</div>
       <button
         id="profile-notifications-btn-ver-ultimas-10-filteredhistory"
         class="history-btn-legacy"
@@ -58,20 +57,14 @@ function getTimestamp(n: NotificationItem): number {
       </button>
     </div>
 
-    <div
-      v-show="isHistoryOpen"
-      class="history-container-legacy custom-scrollbar"
-    >
-      <div
-        v-for="n in filteredHistory.toReversed()"
-        :key="n.id"
-        class="notification-entry-legacy"
-      >
+    <div v-show="isHistoryOpen" class="history-container-legacy custom-scrollbar">
+      <div v-for="n in filteredHistory.toReversed()" :key="n.id" class="notification-entry-legacy">
         <span class="emoji notif-icon">{{ getIcon(n) }}</span>
         <div class="notif-body">
           <div class="notif-text">
             <template v-if="n.title && n.title !== getIcon(n)">
-              <strong>{{ n.title }}</strong>: {{ getText(n) }}
+              <strong>{{ n.title }}</strong
+              >: {{ getText(n) }}
             </template>
             <template v-else>
               {{ getText(n) }}
@@ -82,10 +75,7 @@ function getTimestamp(n: NotificationItem): number {
           </div>
         </div>
       </div>
-      <div
-        v-if="!props.history.length"
-        class="empty-notif-legacy"
-      >
+      <div v-if="!props.history.length" class="empty-notif-legacy">
         Sin notificaciones recientes.
       </div>
     </div>
@@ -93,7 +83,7 @@ function getTimestamp(n: NotificationItem): number {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .legacy-info-row {
   margin-bottom: 24px;
@@ -124,7 +114,9 @@ function getTimestamp(n: NotificationItem): number {
   color: Rgb(250 204 21 / 100%);
   font-size: var(--font-6);
   cursor: pointer;
-  &:hover { background: Rgb(255 255 255 / 8%); }
+  &:hover {
+    background: Rgb(255 255 255 / 8%);
+  }
 }
 
 .history-container-legacy {
@@ -141,12 +133,26 @@ function getTimestamp(n: NotificationItem): number {
   gap: $spacing-md;
   padding: 12px;
   border-bottom: 1px solid Rgb(255 255 255 / 3%);
-  &:last-child { border-bottom: none; }
-  
-  .notif-icon { font-size: var(--font-16); }
-  .notif-body { flex: 1; }
-  .notif-text { color: Rgb(203 213 225 / 100%); font-size: var(--font-12); line-height: 1.4; }
-  .notif-time { color: Rgb(71 85 105 / 100%); font-size: var(--font-9); margin-top: 4px; }
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .notif-icon {
+    font-size: var(--font-16);
+  }
+  .notif-body {
+    flex: 1;
+  }
+  .notif-text {
+    color: Rgb(203 213 225 / 100%);
+    font-size: var(--font-12);
+    line-height: 1.4;
+  }
+  .notif-time {
+    color: Rgb(71 85 105 / 100%);
+    font-size: var(--font-9);
+    margin-top: 4px;
+  }
 }
 
 .empty-notif-legacy {
@@ -155,5 +161,4 @@ function getTimestamp(n: NotificationItem): number {
   font-size: var(--font-11);
   text-align: center;
 }
-
 </style>

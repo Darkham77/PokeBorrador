@@ -1,6 +1,6 @@
-@use "@/styles/core/tools" as *;
-@use "sass:math";
-@use "sass:string";
+@use '@/styles/core/tools' as *;
+@use 'sass:math';
+@use 'sass:string';
 
 .evolution-overlay {
   @include pixelated;
@@ -51,11 +51,11 @@
   z-index: var(--z-base);
   width: 160px;
   height: 160px;
-  
+
   &.from {
     will-change: transform, filter, opacity;
     filter: Brightness(1);
-    
+
     &.flash-on {
       filter: Brightness(10) Contrast(10) Grayscale(100%);
     }
@@ -98,7 +98,7 @@
   font-size: var(--font-10);
   cursor: pointer;
   box-shadow: var(--shadow-retro-blue);
-  
+
   &:active {
     transform: Translatey(2px);
     box-shadow: var(--shadow-retro-blue-active);

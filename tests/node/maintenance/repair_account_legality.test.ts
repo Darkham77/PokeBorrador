@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { setActivePinia, createPinia } from 'pinia';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
@@ -13,7 +13,10 @@ describe('repair_account_legality maintenance script test suite', () => {
 
   beforeEach(() => {
     setActivePinia(createPinia());
-    tempDbPath = path.join(os.tmpdir(), `test_poke_repair_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`);
+    tempDbPath = path.join(
+      os.tmpdir(),
+      `test_poke_repair_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`
+    );
     using db = new DatabaseSync(tempDbPath);
     db.exec(`
       CREATE TABLE IF NOT EXISTS game_saves (
@@ -29,7 +32,12 @@ describe('repair_account_legality maintenance script test suite', () => {
     pika.illegalReasons = ['Nivel superior al límite'];
 
     const char = makePokemon('charizard', 50)!;
-    char.moves[0] = { id: 'hydropump', name: 'Hydro Pump', pp: 5, maxPP: 5 } as unknown as typeof char.moves[0]; // illegal move for Charizard
+    char.moves[0] = {
+      id: 'hydropump',
+      name: 'Hydro Pump',
+      pp: 5,
+      maxPP: 5
+    } as unknown as (typeof char.moves)[0]; // illegal move for Charizard
 
     const bulba = makePokemon('bulbasaur', 5)!;
 
@@ -88,7 +96,9 @@ describe('repair_account_legality maintenance script test suite', () => {
     expect(summary.pokemonRepaired).toBeGreaterThanOrEqual(1);
 
     using db = new DatabaseSync(tempDbPath);
-    const row = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get('user_illegal_1') as { save_data: string };
+    const row = db
+      .prepare('SELECT save_data FROM game_saves WHERE user_id = ?')
+      .get('user_illegal_1') as { save_data: string };
     const saved = JSON.parse(row.save_data) as SaveDataDto;
 
     expect(saved.team?.[0]?.level).toBeLessThanOrEqual(100);
@@ -119,7 +129,9 @@ describe('repair_account_legality maintenance script test suite', () => {
     expect(summary.pokemonRepaired).toBeGreaterThanOrEqual(2);
 
     using db = new DatabaseSync(tempDbPath);
-    const rows = db.prepare('SELECT user_id, save_data FROM game_saves ORDER BY user_id ASC').all() as Array<{ user_id: string; save_data: string }>;
+    const rows = db
+      .prepare('SELECT user_id, save_data FROM game_saves ORDER BY user_id ASC')
+      .all() as Array<{ user_id: string; save_data: string }>;
 
     expect(rows).toHaveLength(2);
 
@@ -141,4 +153,3 @@ describe('repair_account_legality maintenance script test suite', () => {
     ).rejects.toThrow(/No se encontró ninguna base de datos SQLite/);
   });
 });
-

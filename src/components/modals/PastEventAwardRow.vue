@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/modals/PastEventAwardRow.vue
- * 
+ *
  * Modular award banner for past event category awards and unmatched prizes.
  */
 
@@ -27,9 +27,7 @@ const emit = defineEmits<{
 <template>
   <div class="category-user-award">
     <div class="user-award-left">
-      <span class="user-award-label pixelated">
-        <span class="emoji">🎁</span> {{ label }}
-      </span>
+      <span class="user-award-label pixelated"> <span class="emoji">🎁</span> {{ label }} </span>
       <div class="award-pills-wrap">
         <RewardPillsGroup :prize="prize" />
       </div>
@@ -58,12 +56,7 @@ const emit = defineEmits<{
           <span class="emoji">🗑️</span> DESCARTAR
         </button>
       </template>
-      <div
-        v-else
-        class="claimed-badge mini"
-      >
-        <span class="emoji">✓</span> RECLAMADA
-      </div>
+      <div v-else class="claimed-badge mini"><span class="emoji">✓</span> RECLAMADA</div>
     </div>
   </div>
 </template>

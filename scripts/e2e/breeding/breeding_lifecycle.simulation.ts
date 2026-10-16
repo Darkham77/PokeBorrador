@@ -18,15 +18,22 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
     await this.page.evaluate(
       async ({ levelVal, vigorVal, moneyVal }) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
         const gameStore = useGameStore();
 
-        const ditto = pokemonDebugService.generate({ id: requirePokemonSpeciesId('ditto'), level: levelVal });
+        const ditto = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('ditto'),
+          level: levelVal
+        });
         ditto.vigor = vigorVal;
         ditto.maxVigor = vigorVal;
-        
-        const bulbasaur = pokemonDebugService.generate({ id: requirePokemonSpeciesId('bulbasaur'), level: levelVal });
+
+        const bulbasaur = pokemonDebugService.generate({
+          id: requirePokemonSpeciesId('bulbasaur'),
+          level: levelVal
+        });
         bulbasaur.vigor = vigorVal;
         bulbasaur.maxVigor = vigorVal;
 
@@ -34,7 +41,6 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
         gameStore.state.team = [ditto, bulbasaur];
         gameStore.state.box = [];
         gameStore.state.money = moneyVal;
-
       },
       {
         levelVal: SIMULATION_POKEMON_LEVEL,
@@ -53,8 +59,12 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
         const gameStore = useGameStore();
         const breedingStore = useBreedingStore();
 
-        const p1 = gameStore.state.team.find((p) => p && p.id === 'ditto') || gameStore.state.team[0];
-        const p2 = gameStore.state.team.find((p) => p && p.id === 'bulbasaur') || gameStore.state.team[1] || gameStore.state.box[0];
+        const p1 =
+          gameStore.state.team.find((p) => p && p.id === 'ditto') || gameStore.state.team[0];
+        const p2 =
+          gameStore.state.team.find((p) => p && p.id === 'bulbasaur') ||
+          gameStore.state.team[1] ||
+          gameStore.state.box[0];
         if (!p1 || !p2) throw new Error('Parents not found');
 
         p1.inDaycare = true;
@@ -69,7 +79,8 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
         breedingStore.slots[0] = { pokemon: p1, slotIndex: 0, deposited_at: past };
         breedingStore.slots[1] = { pokemon: p2, slotIndex: 1, deposited_at: past };
 
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
         const activePoke = pokemonDebugService.generate({ id: 'caterpie', level: activeLevel });
         gameStore.state.team = [activePoke];
         gameStore.state.box = [p1, p2];
@@ -97,7 +108,7 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
         isBreeding: breedingStore.isBreeding,
         compatibility: breedingStore.compatibility,
         nextEggTime: breedingStore.nextEggTime,
-        slots: breedingStore.slots.map(slot => ({
+        slots: breedingStore.slots.map((slot) => ({
           depositedAt: slot.deposited_at,
           species: slot.pokemon?.id,
           vigor: slot.pokemon?.vigor
@@ -106,7 +117,9 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
     });
 
     if (generation.warehouseEggs === 0) {
-      throw new Error(`[E2E] Egg generation did not satisfy breeding preconditions: ${JSON.stringify(generation)}`);
+      throw new Error(
+        `[E2E] Egg generation did not satisfy breeding preconditions: ${JSON.stringify(generation)}`
+      );
     }
 
     await this.clickElement('#nav-crianza-btn');
@@ -149,9 +162,13 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
     await hatchContainer.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await hatchContainer.click();
     await hatchContainer.click();
-    await this.page.waitForFunction(() => document.querySelector('#hatch-container'), undefined, { timeout: MAX_UI_SETTLE_TIMEOUT_MS });
+    await this.page.waitForFunction(() => document.querySelector('#hatch-container'), undefined, {
+      timeout: MAX_UI_SETTLE_TIMEOUT_MS
+    });
     await hatchContainer.click();
-    await this.page.waitForFunction(() => document.querySelector('#hatch-container'), undefined, { timeout: MAX_UI_SETTLE_TIMEOUT_MS });
+    await this.page.waitForFunction(() => document.querySelector('#hatch-container'), undefined, {
+      timeout: MAX_UI_SETTLE_TIMEOUT_MS
+    });
     await hatchContainer.click();
 
     await this.clickElement('#hatch-continue-btn', MAX_PER_ACTION_TIMEOUT_MS);
@@ -161,16 +178,20 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
 
   public async verifyNewbornInBox(): Promise<boolean> {
     try {
-      await this.page.waitForFunction(async () => {
-        try {
-          const { useGameStore } = await import('../../../src/stores/game.ts');
-          const gameStore = useGameStore();
-          const allPokemon = [...gameStore.state.team, ...gameStore.state.box];
-          return allPokemon.some((p) => p && p.level === 1 && p.id === 'bulbasaur');
-        } catch {
-          return false;
-        }
-      }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await this.page.waitForFunction(
+        async () => {
+          try {
+            const { useGameStore } = await import('../../../src/stores/game.ts');
+            const gameStore = useGameStore();
+            const allPokemon = [...gameStore.state.team, ...gameStore.state.box];
+            return allPokemon.some((p) => p && p.level === 1 && p.id === 'bulbasaur');
+          } catch {
+            return false;
+          }
+        },
+        undefined,
+        { timeout: MAX_PER_ACTION_TIMEOUT_MS }
+      );
       return true;
     } catch {
       return false;

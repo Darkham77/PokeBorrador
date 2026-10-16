@@ -1,5 +1,5 @@
 // src/styles/components/_move-tooltip-shared.scss
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/tools' as *;
 
 // ==============================================================================
 // COMBAT MOVE TOOLTIP TOKENS (Single Source of Truth for Typography & Sizing)
@@ -53,8 +53,14 @@ $tooltip-smogon-desc-size: 7px;
     color: Rgb(255 255 255 / 60%);
     font-size: $tooltip-breakdown-item-size;
 
-    .boosted { color: var(--emerald-500); font-weight: bold; }
-    .penalized { color: var(--red-light); font-weight: bold; }
+    .boosted {
+      color: var(--emerald-500);
+      font-weight: bold;
+    }
+    .penalized {
+      color: var(--red-light);
+      font-weight: bold;
+    }
   }
 }
 
@@ -68,19 +74,19 @@ $tooltip-smogon-desc-size: 7px;
     color: var(--slate-300);
     font-size: $tooltip-formula-text-size;
     line-height: 1.3;
-    
+
     .boosted {
       color: var(--emerald-500);
       font-weight: bold;
       text-shadow: 0 0 2px Rgb(16 185 129 / 40%);
     }
-    
+
     .penalized {
       color: var(--red-light);
       font-weight: bold;
       text-shadow: 0 0 2px Rgb(239 68 68 / 40%);
     }
-    
+
     .total-result {
       color: var(--yellow);
       font-size: $tooltip-formula-result-size;
@@ -161,12 +167,12 @@ $tooltip-smogon-desc-size: 7px;
   font-size: $tooltip-arrow-size;
   line-height: 1;
   margin-left: 2px;
-  
+
   &.up {
     color: var(--emerald-500);
     text-shadow: 0 0 2px Rgb(16 185 129 / 40%);
   }
-  
+
   &.down {
     color: var(--red-light);
     text-shadow: 0 0 2px Rgb(239 68 68 / 40%);
@@ -275,8 +281,14 @@ $tooltip-smogon-desc-size: 7px;
     font-weight: bold;
     line-height: 1.3;
 
-    &.boosted  { color: var(--emerald-500); text-shadow: 0 0 3px Rgb(16 185 129 / 30%); }
-    &.penalized { color: var(--red-light); text-shadow: 0 0 3px Rgb(239 68 68 / 30%); }
+    &.boosted {
+      color: var(--emerald-500);
+      text-shadow: 0 0 3px Rgb(16 185 129 / 30%);
+    }
+    &.penalized {
+      color: var(--red-light);
+      text-shadow: 0 0 3px Rgb(239 68 68 / 30%);
+    }
   }
 
   .field-condition-row {

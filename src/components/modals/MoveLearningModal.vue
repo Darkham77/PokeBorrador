@@ -1,47 +1,50 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import BaseModal from '@/components/common/BaseModal.vue'
-import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
-import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import { computed } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import BaseModal from '@/components/common/BaseModal.vue';
+import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 
 interface Props {
-  show?: boolean
-  id?: string
+  show?: boolean;
+  id?: string;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
-const uiStore = useUIStore()
+const uiStore = useUIStore();
 
-const currentData = computed(() => uiStore.currentMoveToLearn)
-const pokemon = computed(() => currentData.value?.pokemon as Pokemon)
-const newMove = computed(() => currentData.value?.move as Move)
+const currentData = computed(() => uiStore.currentMoveToLearn);
+const pokemon = computed(() => currentData.value?.pokemon as Pokemon);
+const newMove = computed(() => currentData.value?.move as Move);
 
 const handleReplace = (slotIndex: number) => {
-  if (!pokemon.value || !newMove.value) return
-  
-  const oldMove = pokemon.value.moves[slotIndex]
-  const oldMoveName = oldMove ? oldMove.name : '???'
-  pokemon.value.moves[slotIndex] = { ...newMove.value }
-  
-  uiStore.notify(`¡${pokemon.value.name} olvidó ${oldMoveName} y aprendió ${newMove.value.name}!`, '📖')
-  
+  if (!pokemon.value || !newMove.value) return;
+
+  const oldMove = pokemon.value.moves[slotIndex];
+  const oldMoveName = oldMove ? oldMove.name : '???';
+  pokemon.value.moves[slotIndex] = { ...newMove.value };
+
+  uiStore.notify(
+    `¡${pokemon.value.name} olvidó ${oldMoveName} y aprendió ${newMove.value.name}!`,
+    '📖'
+  );
+
   if (currentData.value?.onComplete) {
-    currentData.value.onComplete()
+    currentData.value.onComplete();
   }
-  uiStore.finishMoveLearning()
-}
+  uiStore.finishMoveLearning();
+};
 
 const handleForget = () => {
-  if (!pokemon.value || !newMove.value) return
-  uiStore.notify(`¡${pokemon.value.name} no aprendió ${newMove.value.name}!`, '📖')
-  
+  if (!pokemon.value || !newMove.value) return;
+  uiStore.notify(`¡${pokemon.value.name} no aprendió ${newMove.value.name}!`, '📖');
+
   if (currentData.value?.onCancel) {
-    currentData.value.onCancel()
+    currentData.value.onCancel();
   }
-  uiStore.finishMoveLearning()
-}
+  uiStore.finishMoveLearning();
+};
 </script>
 
 <template>
@@ -58,19 +61,17 @@ const handleForget = () => {
     <div class="learning-card-body">
       <header class="card-header">
         <h2>APRENDIENDO TÉCNICA</h2>
-        <p><strong>{{ pokemon?.name }}</strong> quiere aprender <span class="highlight">{{ newMove?.name }}</span>.</p>
+        <p>
+          <strong>{{ pokemon?.name }}</strong> quiere aprender
+          <span class="highlight">{{ newMove?.name }}</span
+          >.
+        </p>
       </header>
 
       <div class="new-move-display">
-        <div class="new-move-title">
-          TÉCNICA NUEVA
-        </div>
+        <div class="new-move-title">TÉCNICA NUEVA</div>
         <div class="new-move-slot-wrapper">
-          <BattleMoveSlot
-            :move="newMove"
-            :index="4"
-            :is-processing="false"
-          />
+          <BattleMoveSlot :move="newMove" :index="4" :is-processing="false" />
         </div>
       </div>
 
@@ -80,7 +81,7 @@ const handleForget = () => {
 
       <div class="moves-list">
         <BattleMoveSlot
-          v-for="(m, index) in pokemon?.moves" 
+          v-for="(m, index) in pokemon?.moves"
           :key="index"
           :move="m"
           :index="Number(index)"
@@ -90,11 +91,7 @@ const handleForget = () => {
       </div>
 
       <div class="actions-footer">
-        <button
-          id="btn-move-learn-cancel"
-          class="forget-btn"
-          @click.stop="handleForget"
-        >
+        <button id="btn-move-learn-cancel" class="forget-btn" @click.stop="handleForget">
           <span class="emoji">❌</span> CANCELAR Y NO APRENDER
         </button>
       </div>
@@ -103,7 +100,7 @@ const handleForget = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .learning-card-body {
   padding: 16px;
@@ -126,7 +123,10 @@ const handleForget = () => {
     color: var(--gray);
     font-size: var(--font-13);
     line-height: 1.5;
-    .highlight { color: var(--yellow); font-weight: 800; }
+    .highlight {
+      color: var(--yellow);
+      font-weight: 800;
+    }
   }
 }
 
@@ -188,7 +188,7 @@ const handleForget = () => {
   color: var(--gray);
   font-size: var(--font-9);
   cursor: pointer;
-  
+
   &:hover {
     background: Rgb(239 68 68 / 10%);
     color: Rgb(248 113 113 / 100%);

@@ -25,19 +25,21 @@ const classStore = usePlayerClassStore();
 const ui = useUIStore();
 const isSmallScreen = computed(() => ui.isSmallScreen);
 
-const playerClassList = computed<RenderPlayerClass[]>(() => Object.values(PLAYER_CLASSES).map(cls => ({
-  id: cls.id,
-  name: cls.name,
-  color: cls.color,
-  description: cls.description,
-  bonuses: cls.bonuses,
-  penalties: cls.penalties,
-  technicalBonuses: cls.technicalBonuses,
-  technicalPenalties: cls.technicalPenalties,
-  spriteId: cls.showdownSpriteId,
-})));
+const playerClassList = computed<RenderPlayerClass[]>(() =>
+  Object.values(PLAYER_CLASSES).map((cls) => ({
+    id: cls.id,
+    name: cls.name,
+    color: cls.color,
+    description: cls.description,
+    bonuses: cls.bonuses,
+    penalties: cls.penalties,
+    technicalBonuses: cls.technicalBonuses,
+    technicalPenalties: cls.technicalPenalties,
+    spriteId: cls.showdownSpriteId
+  }))
+);
 
-const close = () => { 
+const close = () => {
   emit('close');
 };
 
@@ -81,8 +83,8 @@ const handleSelect = async (id: PlayerClassId) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .class-selection-container {
   @include smooth-scroll;
@@ -117,11 +119,15 @@ const handleSelect = async (id: PlayerClassId) => {
 }
 
 @media (width <= 1024px) {
-  .classes-grid { grid-template-columns: repeat(2, 1fr); }
+  .classes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (width <= 640px) {
-  .classes-grid { grid-template-columns: 1fr; }
+  .classes-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (width <= 950px) {

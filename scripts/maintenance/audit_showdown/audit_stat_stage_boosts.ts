@@ -16,7 +16,15 @@ export function auditStatStageBoosts(bridgeStagesPath: string): StatStageAuditRe
 
   const content = readFileSync(bridgeStagesPath, 'utf-8');
   const requiredStats = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion']; // no-domain: Non-domain utility collection or data structure
-  const requiredTokens = ['-boost', '-unboost', '-setboost', '-clearboost', '-clearallboost', '-swapboost', '-copyboost']; // no-domain: Non-domain utility collection or data structure
+  const requiredTokens = [
+    '-boost',
+    '-unboost',
+    '-setboost',
+    '-clearboost',
+    '-clearallboost',
+    '-swapboost',
+    '-copyboost'
+  ]; // no-domain: Non-domain utility collection or data structure
 
   for (const stat of requiredStats) {
     if (!content.toLowerCase().includes(stat)) {

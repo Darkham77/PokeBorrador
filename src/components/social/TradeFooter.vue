@@ -1,38 +1,39 @@
 <script setup lang="ts">
 interface Props {
-  message?: string
-  isGift?: boolean
-  isSending?: boolean
+  message?: string;
+  isGift?: boolean;
+  isSending?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   message: '',
   isGift: false,
   isSending: false
-})
+});
 
 const emit = defineEmits<{
-  (e: 'update:message', val: string): void
-  (e: 'update:isGift', val: boolean): void
-  (e: 'send'): void
-}>()
+  (e: 'update:message', val: string): void;
+  (e: 'update:isGift', val: boolean): void;
+  (e: 'send'): void;
+}>();
 
 const handleMessageInput = (e: Event) => {
-  emit('update:message', (e.target as HTMLTextAreaElement).value)
-}
+  emit('update:message', (e.target as HTMLTextAreaElement).value);
+};
 
 const handleGiftChange = (e: Event) => {
-  emit('update:isGift', (e.target as HTMLInputElement).checked)
-}
+  emit('update:isGift', (e.target as HTMLInputElement).checked);
+};
 </script>
 
 <template>
   <div class="trade-footer-controls">
     <div class="message-section">
       <textarea
-        id="trade-footer-textarea-escribe-un-mensaje-para-tu-ofe" 
-        :value="message" 
-        placeholder="Escribe un mensaje para tu oferta..." 
+        id="trade-footer-textarea-escribe-un-mensaje-para-tu-ofe"
+        :value="message"
+        placeholder="Escribe un mensaje para tu oferta..."
+        aria-label="Mensaje para tu oferta"
         class="trade-message-input"
         @input="handleMessageInput"
       />
@@ -44,8 +45,9 @@ const handleGiftChange = (e: Event) => {
           id="trade-footer-input-giftchange"
           :checked="isGift"
           type="checkbox"
+          aria-label="Es un regalo"
           @change="handleGiftChange"
-        >
+        />
         <span class="toggle-label"><span class="emoji">🎁</span> Es un regalo</span>
       </label>
 
@@ -63,7 +65,7 @@ const handleGiftChange = (e: Event) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .trade-footer-controls {
   display: flex;
@@ -83,7 +85,9 @@ const handleGiftChange = (e: Event) => {
   font-size: var(--font-12);
   resize: none;
   outline: none;
-  &:focus { border-color: var(--purple); }
+  &:focus {
+    border-color: var(--purple);
+  }
 }
 
 .action-section {
@@ -98,13 +102,22 @@ const handleGiftChange = (e: Event) => {
   }
 }
 
-.gift-toggle { 
-  display: flex; 
-  align-items: center; 
-  gap: $spacing-md; 
+.gift-toggle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
   cursor: pointer;
-  input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--purple); }
-  .toggle-label { @include pixelated; color: $white; font-size: var(--font-10); }
+  input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--purple);
+  }
+  .toggle-label {
+    @include pixelated;
+    color: $white;
+    font-size: var(--font-10);
+  }
 }
 
 .send-offer-btn {
@@ -119,13 +132,12 @@ const handleGiftChange = (e: Event) => {
   font-weight: 900;
   cursor: pointer;
   box-shadow: var(--shadow-md);
-  
 
   &:hover:not(:disabled) {
     transform: Translatey(-2px);
     box-shadow: var(--shadow-card);
     will-change: transform, filter, opacity;
-  filter: Brightness(1.1);
+    filter: Brightness(1.1);
   }
 
   &:disabled {

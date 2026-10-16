@@ -34,16 +34,16 @@ npm install @pkmn/sim
 ## Usage
 
 ```ts
-import {Dex, BattleStreams, RandomPlayerAI, Teams} from '@pkmn/sim';
-import {TeamGenerators} from '@pkmn/randoms';
+import { Dex, BattleStreams, RandomPlayerAI, Teams } from '@pkmn/sim';
+import { TeamGenerators } from '@pkmn/randoms';
 
 Teams.setGeneratorFactory(TeamGenerators);
 
 const streams = BattleStreams.getPlayerStreams(new BattleStreams.BattleStream());
-const spec = {formatid: 'gen7customgame'};
+const spec = { formatid: 'gen7customgame' };
 
-const p1spec = {name: 'Bot 1', team: Teams.pack(Teams.generate('gen7randombattle'))};
-const p2spec = {name: 'Bot 2', team: Teams.pack(Teams.generate('gen7randombattle'))};
+const p1spec = { name: 'Bot 1', team: Teams.pack(Teams.generate('gen7randombattle')) };
+const p2spec = { name: 'Bot 2', team: Teams.pack(Teams.generate('gen7randombattle')) };
 
 const p1 = new RandomPlayerAI(streams.p1);
 const p2 = new RandomPlayerAI(streams.p2);
@@ -65,7 +65,7 @@ void streams.omniscient.write(`>start ${JSON.stringify(spec)}
 Please see [Pokémon Showdown's existing
 documentation](https://github.com/smogon/pokemon-showdown/blob/master/sim/README.md), in particular
 the [`PROTOCOL.md`](https://github.com/smogon/pokemon-showdown/blob/master/PROTOCOL.md) and
-[`SIM-PROTOCOL.md`]( https://github.com/smogon/pokemon-showdown/blob/master/sim/SIM-PROTOCOL.md)
+[`SIM-PROTOCOL.md`](https://github.com/smogon/pokemon-showdown/blob/master/sim/SIM-PROTOCOL.md)
 files ([`DEX.md`](https://github.com/smogon/pokemon-showdown/blob/master/sim/DEX.md), [`FORMES.md`](https://github.com/smogon/pokemon-showdown/blob/master/data/FORMES.md),
 [`TEAMS.md`](https://github.com/smogon/pokemon-showdown/blob/master/sim/TEAMS.md), [`SIMULATOR.md`](https://github.com/smogon/pokemon-showdown/blob/master/sim/SIMULATOR.md),
 [`NONSTANDARD.md`](https://github.com/smogon/pokemon-showdown/blob/master/sim/NONSTANDARD.md), and
@@ -95,7 +95,7 @@ Pokémon Showdown's `sim/` directory has been modified in the following ways:
   Let's Go, or pet mods). However, the [`@pkmn/mods`](../mods) package provides the information
   required for additional formats, and support for Other Metagames can be achieved with the modified
   `Dex#mod` method. The `Dex#mod` and `Dex.forGen` methods will `throw` if an unsupported mod/gen is
-  requested.  A `Dex#modid` method has also been added which returns the current mod applied to the
+  requested. A `Dex#modid` method has also been added which returns the current mod applied to the
   `Dex`.
 - **random battles are not supported by the `@pkmn/sim` package**. All team generation logic and
   data has been removed from the package and are instead to be provided by the
@@ -116,7 +116,7 @@ Pokémon Showdown's `sim/` directory has been modified in the following ways:
   generation, but since the `Teams` API does not support a generation `evs` will always default to
   0). Using `@pkmn/sets` directly and with the generation provided is the recommended approach to
   avoid any inconsistencies.
-- **`dataDir` and `dataSearch`  have been removed**.
+- **`dataDir` and `dataSearch` have been removed**.
 - in order to be [`@pkmn/dex-types`](../dex/types) compatible, the **asynchronous `learnsets` API
   has been added** (though unlike like with [`@pkmn/dex`](../dex), the learnsets data is loaded at
   startup, not asynchronously), and **`Dex.data.Species` and `Dex.data.Types` 'aliases' have been
@@ -139,8 +139,8 @@ stable, popular formats that require no mods, looking to cut down on bundle size
 users may extend the default formats by providing their own:
 
 ```ts
-import {Dex} from '@pkmn/sim';
-import {Formats} from 'myformats.ts';
+import { Dex } from '@pkmn/sim';
+import { Formats } from 'myformats.ts';
 
 Dex.formats.extend(Formats);
 ```
@@ -153,7 +153,7 @@ curl -o myformats.ts https://raw.githubusercontent.com/smogon/pokemon-showdown/m
 ```
 
 Note that not all of Pokémon Showdown's formats are expected to work out of the box, you may need to
-mod the `Dex` with additional data (including any `Rulesets`). Furthrmore,  formats are
+mod the `Dex` with additional data (including any `Rulesets`). Furthrmore, formats are
 `Dex`-specific, if you mod a `Dex` you must instead call `extend` on that `dex.formats`. Similarly,
 that `dex` then must be passed to whichever object (eg. `Battle`, `BattleStream`, `TeamValidator`,
 etc) needs access to the format. `Dex#mod` will automatically call `extend` if the data provided to

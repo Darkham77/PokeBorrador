@@ -4,7 +4,7 @@
  * Consolidated Suite for Evolution Logic, Showdown Dex Parity, and Stone/Friendship Evolutions.
  */
 
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -63,7 +63,7 @@ function createMockPokemon(partial: Partial<Pokemon>): Pokemon {
     ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
     nature: 'hardy',
     friendship: 70,
-    ...partial,
+    ...partial
   } as Pokemon;
 }
 
@@ -71,19 +71,25 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
   describe('Evolution tables — all IDs valid in Showdown Dex', () => {
     test('EVOLUTION_TABLE: every from-species and to-species exists in Dex', () => {
       const errors: string[] = [];
-      for (const [from, dataEntry] of Object.entries(EVOLUTION_TABLE as Record<string, { level: number; to: string }>)) {
+      for (const [from, dataEntry] of Object.entries(
+        EVOLUTION_TABLE as Record<string, { level: number; to: string }>
+      )) {
         if (!exists(from)) errors.push(`from not in Dex: "${from}"`);
-        if (!exists(dataEntry.to)) errors.push(`to not in Dex:   "${dataEntry.to}"  (from "${from}")`);
+        if (!exists(dataEntry.to))
+          errors.push(`to not in Dex:   "${dataEntry.to}"  (from "${from}")`);
       }
       assert.deepEqual(errors, [], `\n${errors.join('\n')}`);
     });
 
     test('STONE_EVOLUTIONS: every base-species and to-species exists in Dex', () => {
       const errors: string[] = [];
-      for (const [key, dataEntry] of Object.entries(STONE_EVOLUTIONS as Record<string, { stone: string; to: string }>)) {
+      for (const [key, dataEntry] of Object.entries(
+        STONE_EVOLUTIONS as Record<string, { stone: string; to: string }>
+      )) {
         const base = baseFromStoneKey(key);
         if (!exists(base)) errors.push(`base not in Dex:  "${base}"  (key "${key}")`);
-        if (!exists(dataEntry.to)) errors.push(`to not in Dex:    "${dataEntry.to}"  (key "${key}")`);
+        if (!exists(dataEntry.to))
+          errors.push(`to not in Dex:    "${dataEntry.to}"  (key "${key}")`);
       }
       assert.deepEqual(errors, [], `\n${errors.join('\n')}`);
     });
@@ -117,7 +123,7 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
       const allTargets = new Set<string>([
         ...Object.values(EVOLUTION_TABLE as Record<string, { to: string }>).map((d) => d.to),
         ...Object.values(STONE_EVOLUTIONS as Record<string, { to: string }>).map((d) => d.to),
-        ...Object.values(TRADE_EVOLUTIONS as Record<string, string>),
+        ...Object.values(TRADE_EVOLUTIONS as Record<string, string>)
       ]);
 
       const missing: string[] = [];
@@ -164,7 +170,7 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
         ['meowthalola', 'persianalola'],
         ['munchlax', 'snorlax'],
         ['azurill', 'marill'],
-        ['eevee', 'sylveon'],
+        ['eevee', 'sylveon']
       ];
 
       for (const [fromId, expectedToId] of friendshipPairs) {
@@ -180,7 +186,11 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
       const lowFriendshipBulba = createMockPokemon({ id: 'bulbasaur', level: 16, friendship: 0 });
       expect(checkLevelUpEvolution(lowFriendshipBulba)).toBe('ivysaur');
 
-      const highFriendshipBulba = createMockPokemon({ id: 'bulbasaur', level: 16, friendship: 255 });
+      const highFriendshipBulba = createMockPokemon({
+        id: 'bulbasaur',
+        level: 16,
+        friendship: 255
+      });
       expect(checkLevelUpEvolution(highFriendshipBulba)).toBe('ivysaur');
 
       const unreadyBulba = createMockPokemon({ id: 'bulbasaur', level: 15, friendship: 255 });
@@ -217,7 +227,7 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
 
     test('malformed keys (regression guard): no concatenated names allowed', () => {
       const badKeys = Object.keys(STONE_EVOLUTIONS).filter(
-        (k) => k === 'slowpokegalarslowebrogalar' || k === 'slowpokegalarslowkinggalar',
+        (k) => k === 'slowpokegalarslowebrogalar' || k === 'slowpokegalarslowkinggalar'
       );
       assert.deepEqual(badKeys, [], `Malformed keys found: ${badKeys.join(', ')}`);
     });
@@ -227,7 +237,7 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
       assert.ok(result !== null, 'slowpokegalar should resolve via prefix match');
       assert.ok(
         result!.to === 'slowbrogalar' || result!.to === 'slowkinggalar',
-        `Unexpected target: ${result!.to}`,
+        `Unexpected target: ${result!.to}`
       );
     });
 
@@ -238,14 +248,18 @@ describe('Evolution Domain: Tables, Stones & Friendship Suite', () => {
     });
 
     test('checkStoneEvolution: galaricacuff on slowpokegalar → slowbrogalar', () => {
-      const entries = Object.entries(STONE_EVOLUTIONS).filter(([k]) => k.startsWith('slowpokegalar_'));
+      const entries = Object.entries(STONE_EVOLUTIONS).filter(([k]) =>
+        k.startsWith('slowpokegalar_')
+      );
       const cuff = entries.find(([, v]) => v.stone === 'galaricacuff');
       assert.ok(cuff !== undefined, 'galaricacuff entry for slowpokegalar must exist');
       assert.equal(cuff![1].to, 'slowbrogalar');
     });
 
     test('checkStoneEvolution: galaricawreath on slowpokegalar → slowkinggalar', () => {
-      const entries = Object.entries(STONE_EVOLUTIONS).filter(([k]) => k.startsWith('slowpokegalar_'));
+      const entries = Object.entries(STONE_EVOLUTIONS).filter(([k]) =>
+        k.startsWith('slowpokegalar_')
+      );
       const wreath = entries.find(([, v]) => v.stone === 'galaricawreath');
       assert.ok(wreath !== undefined, 'galaricawreath entry for slowpokegalar must exist');
       assert.equal(wreath![1].to, 'slowkinggalar');

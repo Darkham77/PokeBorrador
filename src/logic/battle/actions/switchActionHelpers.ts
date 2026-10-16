@@ -1,12 +1,14 @@
-import type { BattleStages } from '@/types/battle/battle'
+import type { BattleStages } from '@/types/battle/battle';
 
-export function checkLockedVolatiles(oldPoke: { volatileCounters?: Record<string, number> } | null | undefined): boolean {
-  if (!oldPoke || !oldPoke.volatileCounters) return false
-  const volatile = oldPoke.volatileCounters
+export function checkLockedVolatiles(
+  oldPoke: { volatileCounters?: Record<string, number> } | null | undefined // open-record: Dynamic Showdown volatile status counter dictionary
+): boolean {
+  if (!oldPoke || !oldPoke.volatileCounters) return false;
+  const volatile = oldPoke.volatileCounters;
   return !!(
     (volatile['twoturnmove'] && volatile['twoturnmove'] > 0) ||
     (volatile['lockedmove'] && volatile['lockedmove'] > 0)
-  )
+  );
 }
 
 export function resetPlayerStages(currentStages: BattleStages): BattleStages {
@@ -19,5 +21,5 @@ export function resetPlayerStages(currentStages: BattleStages): BattleStages {
     spe: 0,
     acc: 0,
     eva: 0
-  }
+  };
 }

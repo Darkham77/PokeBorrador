@@ -1,5 +1,5 @@
 // src/styles/components/_badges.scss
-@use "../core/tools" as *;
+@use '../core/tools' as *;
 
 /**
  * MASTER BADGE SYSTEM
@@ -22,14 +22,18 @@
   font-family: var(--font-pixel);
   font-size: var(--font-8);
   font-weight: 900;
-  
+
   // Per-size vertical centering
   line-height: 14px;
   box-sizing: border-box;
-  
+
   // High-contrast solid black outline for maximum legibility
   background-clip: padding-box;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000;
   vertical-align: middle;
 }
 
@@ -79,7 +83,7 @@
   $border-width: 1.5px;
   $br: 6px;
 
-  @include pixelated; 
+  @include pixelated;
 
   display: inline-flex;
   justify-content: center;
@@ -93,17 +97,19 @@
   color: var(--tier-color, white);
   font-size: $font-size;
   font-weight: 900;
-  
+
   // Font-specific centering (Pixel fonts usually need 1px lower line-height than height)
   line-height: $actual-size;
   box-shadow: var(--shadow-card);
   border-color: var(--tier-color);
   clip-path: none;
   box-sizing: border-box;
-  
-  &:hover { transform: Scale(1.1);
-  will-change: transform, filter, opacity;
-  filter: Brightness(1.2); }
+
+  &:hover {
+    transform: Scale(1.1);
+    will-change: transform, filter, opacity;
+    filter: Brightness(1.2);
+  }
 
   @if $giant {
     $actual-size: 36px;
@@ -117,8 +123,10 @@
 
 .m-badge-tier {
   @include badge-tier;
-  
-  &.giant, &.is-giant, &.m-badge-tier-giant {
+
+  &.giant,
+  &.is-giant,
+  &.m-badge-tier-giant {
     @include badge-tier(36px, true);
   }
 }
@@ -147,11 +155,17 @@
     filter: Brightness(1.15);
   }
 
-  &.male, &.gender-male, &.gender-m, &.m {
+  &.male,
+  &.gender-male,
+  &.gender-m,
+  &.m {
     background: linear-gradient(135deg, var(--blue-600, #0284c7) 0%, var(--sky-500, #0ea5e9) 100%);
     box-shadow: var(--shadow-glow-blue-sm);
   }
-  &.female, &.gender-female, &.gender-f, &.f {
+  &.female,
+  &.gender-female,
+  &.gender-f,
+  &.f {
     background: linear-gradient(135deg, var(--pink-600, #db2777) 0%, var(--pink-500, #ec4899) 100%);
     box-shadow: var(--shadow-glow-rose);
   }
@@ -186,17 +200,33 @@
   margin-bottom: 2px;
   overflow: visible;
   will-change: transform, filter;
-  
+
   &:hover {
     transform: Scale(1.2);
     filter: Brightness(1.2);
   }
 
-  &.burn, &.brn { filter: Drop-Shadow(0 0 5px $red); }
-  &.paralysis, &.paralyze, &.par { filter: Drop-Shadow(0 0 5px $yellow); }
-  &.poison, &.psn { filter: Drop-Shadow(0 0 5px $purple); }
-  &.sleep, &.slp { filter: Drop-Shadow(0 0 5px $gray); }
-  &.freeze, &.frz { filter: Drop-Shadow(0 0 5px $blue); }
+  &.burn,
+  &.brn {
+    filter: Drop-Shadow(0 0 5px $red);
+  }
+  &.paralysis,
+  &.paralyze,
+  &.par {
+    filter: Drop-Shadow(0 0 5px $yellow);
+  }
+  &.poison,
+  &.psn {
+    filter: Drop-Shadow(0 0 5px $purple);
+  }
+  &.sleep,
+  &.slp {
+    filter: Drop-Shadow(0 0 5px $gray);
+  }
+  &.freeze,
+  &.frz {
+    filter: Drop-Shadow(0 0 5px $blue);
+  }
 
   .stage-arrow {
     @include pixelated;
@@ -223,19 +253,31 @@
       font-size: var(--font-9);
       font-weight: bold;
       line-height: 1;
-      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+      text-shadow:
+        1px 1px 0 #000,
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000;
     }
 
     &.up {
       .stage-glyph {
         color: var(--emerald-500);
-        text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+        text-shadow:
+          1px 1px 0 #000,
+          -1px -1px 0 #000,
+          1px -1px 0 #000,
+          -1px 1px 0 #000;
       }
     }
     &.down {
       .stage-glyph {
         color: var(--red-light);
-        text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+        text-shadow:
+          1px 1px 0 #000,
+          -1px -1px 0 #000,
+          1px -1px 0 #000,
+          -1px 1px 0 #000;
       }
     }
 
@@ -265,7 +307,11 @@
     font-size: var(--font-9);
     font-weight: bold;
     line-height: 1;
-    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    text-shadow:
+      1px 1px 0 #000,
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000;
     pointer-events: none;
     white-space: nowrap;
 
@@ -295,16 +341,16 @@
   border-radius: $radius-sm;
   font-size: var(--font-8);
   font-weight: 900;
-  
-  &.team { 
-    border: 1px solid Rgb(59 139 255 / 20%); 
-    background: Rgb(59 139 255 / 10%); 
-    color: Rgb(59 139 255 / 100%); 
+
+  &.team {
+    border: 1px solid Rgb(59 139 255 / 20%);
+    background: Rgb(59 139 255 / 10%);
+    color: Rgb(59 139 255 / 100%);
   }
-  &.box { 
-    border: 1px solid Rgb(255 255 255 / 10%); 
-    background: Rgb(255 255 255 / 5%); 
-    color: Rgb(136 136 136 / 100%); 
+  &.box {
+    border: 1px solid Rgb(255 255 255 / 10%);
+    background: Rgb(255 255 255 / 5%);
+    color: Rgb(136 136 136 / 100%);
   }
 }
 
@@ -323,7 +369,7 @@
   min-width: 32px;
   height: 32px;
   padding: 0;
-  
+
   .pill-content {
     display: flex;
     justify-content: center;
@@ -333,7 +379,7 @@
     font-family: $font-family-emoji;
     line-height: 1;
   }
-  
+
   .faction-emoji {
     display: flex;
     justify-content: center;
@@ -369,7 +415,7 @@
 
 .interactive-pill {
   @include map-pill-base;
-  
+
   .pill-content,
   .pill-icon {
     display: flex;

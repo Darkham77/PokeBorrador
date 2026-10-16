@@ -1,9 +1,9 @@
 // src/styles/core/mixins/_buttons_special.scss
-@use "sass:color";
-@use "../variables" as *;
-@use "layout" as *;
-@use "../gpu" as *;
-@use "shell" as *;
+@use 'sass:color';
+@use '../variables' as *;
+@use 'layout' as *;
+@use '../gpu' as *;
+@use 'shell' as *;
 
 @mixin gender-select-buttons($radius: 12px) {
   display: flex;

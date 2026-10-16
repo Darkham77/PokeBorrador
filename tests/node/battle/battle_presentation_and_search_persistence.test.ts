@@ -5,13 +5,17 @@
  * and wild search mode persistence / anti-cheat restoration.
  */
 
-import { describe, it, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { ref } from 'vue';
 import { createPinia, setActivePinia } from 'pinia';
 import { serializeState } from '../../../src/logic/auth/saveSerializer.ts';
 import { restoreBattleState } from '../../../src/logic/battle/orchestratorRestoreHelper.ts';
-import { createBattleStateMachine, BATTLE_STATES, BATTLE_SUBSTATES } from '../../../src/logic/battle/battleStateMachine.ts';
+import {
+  createBattleStateMachine,
+  BATTLE_STATES,
+  BATTLE_SUBSTATES
+} from '../../../src/logic/battle/battleStateMachine.ts';
 import type { BattleContext } from '../../../src/types/battle/battleContext.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
 import type { Pokemon, Move } from '../../../src/types/pokemon/pokemon.ts';
@@ -289,7 +293,14 @@ describe('Active Battle Presentation and Search Persistence', () => {
           spikes: { turns: -1 }
         },
         pendingSlotEffects: [
-          { move: 'futuresight', side: 'player', targetSlot: 0, turnsLeft: 1, damage: 65, sourceName: 'Alakazam' }
+          {
+            move: 'futuresight',
+            side: 'player',
+            targetSlot: 0,
+            turnsLeft: 1,
+            damage: 65,
+            sourceName: 'Alakazam'
+          }
         ],
         enemyInventory: { potion: 2 },
         stolenResources: { money: 500, items: { pokeball: 3 } },
@@ -356,7 +367,11 @@ describe('Active Battle Presentation and Search Persistence', () => {
 
     await restoreBattleState(mockCtx as BattleContext, serialized.activeBattle);
 
-    assert.strictEqual(activeBattleRef.value?.player?.uid, playerMon2.uid, 'Should restore active player slot #1 (Charizard)');
+    assert.strictEqual(
+      activeBattleRef.value?.player?.uid,
+      playerMon2.uid,
+      'Should restore active player slot #1 (Charizard)'
+    );
     assert.strictEqual(activeBattleRef.value?.playerTeamIndex, 1);
     assert.strictEqual(activeBattleRef.value?.turnCount, 4);
     assert.strictEqual(activeBattleRef.value?.cannotEscape, true);

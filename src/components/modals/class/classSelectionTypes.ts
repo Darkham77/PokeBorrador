@@ -18,3 +18,6 @@ export interface RenderPlayerClass {
   readonly technicalPenalties: readonly string[];
   readonly spriteId: PlayerClassDefinition['showdownSpriteId'];
 }
+
+/** GSAP transition duration in seconds for hover feedback on class ability/penalty items. */
+export const CLASS_DASHBOARD_HOVER_DURATION_SEC = 0.2;

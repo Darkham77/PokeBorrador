@@ -1,6 +1,6 @@
 # Friendship & Happiness Mechanics Manual (Gen I – IX)
 
-This document is the single source of truth (SSoT) for the **Friendship** (historically referred to as **Happiness**, and internally as *Friendliness*, *Loyalty*, or *Taming*) mechanic across all mainline Pokémon generations (Generation I through Generation IX). It details the mathematical foundations, generation-by-generation behavioral shifts, the Affection divergence/convergence lifecycle, modifiers, action tables, evolution thresholds, and engine implementation rules.
+This document is the single source of truth (SSoT) for the **Friendship** (historically referred to as **Happiness**, and internally as _Friendliness_, _Loyalty_, or _Taming_) mechanic across all mainline Pokémon generations (Generation I through Generation IX). It details the mathematical foundations, generation-by-generation behavioral shifts, the Affection divergence/convergence lifecycle, modifiers, action tables, evolution thresholds, and engine implementation rules.
 
 ---
 
@@ -16,17 +16,17 @@ Friendship is an internal 1-byte unsigned integer metric (`0` to `255`) that tra
 
 ### Generational Evolution Timeline
 
-| Era | Games | Core Defining Mechanics & Paradigm Shifts |
-| :--- | :--- | :--- |
-| **Gen I** | Yellow | **Prototype Starter Only**: Only applies to the starter Pikachu. Tracks emotions via dialogue popups. Exploitable potion interactions. |
-| **Gen II** | Gold, Silver, Crystal | **Universal Introduction**: Expanded to all Pokémon. Base friendship set to 70 (Friend Ball: 200, Eggs: 120). Introduced friendship evolution (threshold 220), Return, Frustration, and grooming. |
-| **Gen III** | Ruby, Sapphire, Emerald, FRLG, Colosseum, XD | **Species Diversity & Modifiers**: Species-specific base friendship introduced (0 to 140). Added Luxury Ball (+1), Soothe Bell (+50%), Met Location (+1), and EV-reducing Berries (Emerald). |
-| **Gen IV** | Diamond, Pearl, Platinum, HGSS | **UI Feedback & Compound Bonuses**: Pokétch app / walking Pokémon mood indicators. Massages (Ribbon Syndicate), Footprint Ribbon, high-friendship Move Tutors (Draco Meteor, Ultimate Starters). Soothe Bell compounds after Luxury Ball. |
-| **Gen V** | Black, White, B2W2 | **Pass Powers & Facilities**: Befriending Pass Powers (+1 to +3). Join Avenue Beauty Salon and Café. Stat Wings (+3/+2/+1). Level 100 Pokémon can gain friendship freely. |
-| **Gen VI** | X, Y, ORAS | **The Great Split (Friendship vs. Affection)**: Introduction of Pokémon-Amie and **Affection** (*Afecto*) as a separate 0–255 / 5-hearts stat. Affection grants in-battle bonuses (1 HP survival, crits, EXP boost) and evolves Sylveon. Friendship remains separate for Return/Frustration/classic evolutions. |
-| **Gen VII** | Sun, Moon, USUM, Let's Go | **Refresh & First Merge Test**: SM/USUM continues separate Affection (Pokémon Refresh / Poké Beans / Isle Avue). *Let's Go Pikachu/Eevee* executes the **first merge**: eliminates separate affection, links in-battle perks to Friendship, and introduces up to +10% raw stat multiplier based on friendship. |
-| **Gen VIII** | Sword, Shield, BDSP, Legends: Arceus | **The Unified Era**: Affection is permanently merged into Friendship. Base friendship lowered from **70 to 50** for most species. Evolution threshold lowered from **220 to 160** (including Sylveon). Return and Frustration are **removed**. Pokémon Camp Curry cooking. In PLA: resource gathering grants friendship; manual menu evolution. |
-| **Gen IX** | Scarlet, Violet | **Picnic & Soft Cap**: Base friendship remains 50. Standard gameplay (battles/walking) **soft-caps at 160**. Reaching 161–255 requires Picnic activities (Pokémon Wash, Sandwiches) or EV items/berries. In-battle perks activate at 220+. Auto-battle (Let's Go mode) grants friendship. |
+| Era          | Games                                        | Core Defining Mechanics & Paradigm Shifts                                                                                                                                                                                                                                                                                                       |
+| :----------- | :------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Gen I**    | Yellow                                       | **Prototype Starter Only**: Only applies to the starter Pikachu. Tracks emotions via dialogue popups. Exploitable potion interactions.                                                                                                                                                                                                          |
+| **Gen II**   | Gold, Silver, Crystal                        | **Universal Introduction**: Expanded to all Pokémon. Base friendship set to 70 (Friend Ball: 200, Eggs: 120). Introduced friendship evolution (threshold 220), Return, Frustration, and grooming.                                                                                                                                               |
+| **Gen III**  | Ruby, Sapphire, Emerald, FRLG, Colosseum, XD | **Species Diversity & Modifiers**: Species-specific base friendship introduced (0 to 140). Added Luxury Ball (+1), Soothe Bell (+50%), Met Location (+1), and EV-reducing Berries (Emerald).                                                                                                                                                    |
+| **Gen IV**   | Diamond, Pearl, Platinum, HGSS               | **UI Feedback & Compound Bonuses**: Pokétch app / walking Pokémon mood indicators. Massages (Ribbon Syndicate), Footprint Ribbon, high-friendship Move Tutors (Draco Meteor, Ultimate Starters). Soothe Bell compounds after Luxury Ball.                                                                                                       |
+| **Gen V**    | Black, White, B2W2                           | **Pass Powers & Facilities**: Befriending Pass Powers (+1 to +3). Join Avenue Beauty Salon and Café. Stat Wings (+3/+2/+1). Level 100 Pokémon can gain friendship freely.                                                                                                                                                                       |
+| **Gen VI**   | X, Y, ORAS                                   | **The Great Split (Friendship vs. Affection)**: Introduction of Pokémon-Amie and **Affection** (_Afecto_) as a separate 0–255 / 5-hearts stat. Affection grants in-battle bonuses (1 HP survival, crits, EXP boost) and evolves Sylveon. Friendship remains separate for Return/Frustration/classic evolutions.                                 |
+| **Gen VII**  | Sun, Moon, USUM, Let's Go                    | **Refresh & First Merge Test**: SM/USUM continues separate Affection (Pokémon Refresh / Poké Beans / Isle Avue). _Let's Go Pikachu/Eevee_ executes the **first merge**: eliminates separate affection, links in-battle perks to Friendship, and introduces up to +10% raw stat multiplier based on friendship.                                  |
+| **Gen VIII** | Sword, Shield, BDSP, Legends: Arceus         | **The Unified Era**: Affection is permanently merged into Friendship. Base friendship lowered from **70 to 50** for most species. Evolution threshold lowered from **220 to 160** (including Sylveon). Return and Frustration are **removed**. Pokémon Camp Curry cooking. In PLA: resource gathering grants friendship; manual menu evolution. |
+| **Gen IX**   | Scarlet, Violet                              | **Picnic & Soft Cap**: Base friendship remains 50. Standard gameplay (battles/walking) **soft-caps at 160**. Reaching 161–255 requires Picnic activities (Pokémon Wash, Sandwiches) or EV items/berries. In-battle perks activate at 220+. Auto-battle (Let's Go mode) grants friendship.                                                       |
 
 ---
 
@@ -36,16 +36,16 @@ When a Pokémon is caught, hatched, or generated, its starting friendship is ass
 
 ### Standard Base Friendship by Category
 
-| Category / Threshold | Species Examples | Notes |
-| :--- | :--- | :--- |
-| **0 Base Friendship** | Buneary, Type: Null, Silvally, Regigigas, Mewtwo, Darkrai, Deoxys, Necrozma, Ghetsis's Hydreigon | Distrustful, synthetic, artificial, or hyper-aggressive Pokémon. |
-| **35 Base Friendship** | Most Legendary & Mythical Pokémon (e.g., Articuno, Zapdos, Moltres, Rayquaza, Dialga, Palkia, Giratina, Reshiram, Zekrom, Kyurem, Zacian, Zamazenta, Koraidon, Miraidon), Ultra Beasts, certain Dragon-types (Dratini, Bagon, Deino). | Aloof or powerful legendary creatures. |
-| **50 Base Friendship** | **Default for ~90% of species in Gen VIII & Gen IX**. | Modern series standard starting value. |
-| **70 Base Friendship** | **Default for ~90% of species in Gen II through Gen VII**. | Legacy series standard starting value. |
-| **100 Base Friendship** | Pokémon hatched from Eggs in *Brilliant Diamond & Shining Pearl*. | BDSP-specific egg hatch value. |
-| **120 Base Friendship** | Standard Egg Hatching (Gen II–VII, SwSh, SV). Starter Pokémon in certain spin-offs/sub-series. | Freshly hatched baby Pokémon. |
-| **140 Base Friendship** | Cleffa, Clefairy, Clefable, Igglybuff, Jigglypuff, Wigglytuff, Chansey, Blissey, Togepi, Togetic, Togekiss, Marill, Azumarill, Happiny, Audino, Shaymin. | Naturally cheerful, gentle, or affectionate species. |
-| **200 Base Friendship** | Any Pokémon caught in a **Friend Ball** (*Amigo Ball*). | Overrides species base friendship upon capture. |
+| Category / Threshold    | Species Examples                                                                                                                                                                                                                      | Notes                                                            |
+| :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------- |
+| **0 Base Friendship**   | Buneary, Type: Null, Silvally, Regigigas, Mewtwo, Darkrai, Deoxys, Necrozma, Ghetsis's Hydreigon                                                                                                                                      | Distrustful, synthetic, artificial, or hyper-aggressive Pokémon. |
+| **35 Base Friendship**  | Most Legendary & Mythical Pokémon (e.g., Articuno, Zapdos, Moltres, Rayquaza, Dialga, Palkia, Giratina, Reshiram, Zekrom, Kyurem, Zacian, Zamazenta, Koraidon, Miraidon), Ultra Beasts, certain Dragon-types (Dratini, Bagon, Deino). | Aloof or powerful legendary creatures.                           |
+| **50 Base Friendship**  | **Default for ~90% of species in Gen VIII & Gen IX**.                                                                                                                                                                                 | Modern series standard starting value.                           |
+| **70 Base Friendship**  | **Default for ~90% of species in Gen II through Gen VII**.                                                                                                                                                                            | Legacy series standard starting value.                           |
+| **100 Base Friendship** | Pokémon hatched from Eggs in _Brilliant Diamond & Shining Pearl_.                                                                                                                                                                     | BDSP-specific egg hatch value.                                   |
+| **120 Base Friendship** | Standard Egg Hatching (Gen II–VII, SwSh, SV). Starter Pokémon in certain spin-offs/sub-series.                                                                                                                                        | Freshly hatched baby Pokémon.                                    |
+| **140 Base Friendship** | Cleffa, Clefairy, Clefable, Igglybuff, Jigglypuff, Wigglytuff, Chansey, Blissey, Togepi, Togetic, Togekiss, Marill, Azumarill, Happiny, Audino, Shaymin.                                                                              | Naturally cheerful, gentle, or affectionate species.             |
+| **200 Base Friendship** | Any Pokémon caught in a **Friend Ball** (_Amigo Ball_).                                                                                                                                                                               | Overrides species base friendship upon capture.                  |
 
 ### Trading & Memory Retention
 
@@ -64,33 +64,33 @@ $$\text{Can Evolve} = \begin{cases} \text{Friendship} \ge 220 & \text{Generation
 
 #### Complete Friendship Evolution Roster
 
-| Base Pokémon | Evolution | Additional Condition |
-| :--- | :--- | :--- |
-| **Golbat** | Crobat | Level up with high friendship. |
-| **Chansey** | Blissey | Level up with high friendship. |
-| **Pichu** | Pikachu | Level up with high friendship. |
-| **Cleffa** | Clefairy | Level up with high friendship. |
-| **Igglybuff** | Jigglypuff | Level up with high friendship. |
-| **Togepi** | Togetic | Level up with high friendship. |
-| **Eevee** | Espeon | Level up during Day (no Fairy move in Gen 8+). |
-| **Eevee** | Umbreon | Level up during Night (no Fairy move in Gen 8+). |
-| **Eevee** | Sylveon | Gen 6–7: 2+ Hearts of Affection + Fairy move. Gen 8+: High Friendship (160+) + Fairy move. |
-| **Azurill** | Marill | Level up with high friendship. |
-| **Budew** | Roselia | Level up during Day with high friendship. |
-| **Buneary** | Lopunny | Level up with high friendship (Starts at 0 friendship!). |
-| **Chingling** | Chimecho | Level up during Night with high friendship. |
-| **Riolu** | Lucario | Level up during Day with high friendship. |
-| **Woobat** | Swoobat | Level up with high friendship. |
-| **Swadloon** | Leavanny | Level up with high friendship. |
-| **Type: Null** | Silvally | Level up with high friendship (Starts at 0 friendship!). |
-| **Alolan Meowth** | Alolan Persian | Level up with high friendship. |
-| **Snom** | Frosmoth | Level up during Night with high friendship. |
+| Base Pokémon      | Evolution      | Additional Condition                                                                       |
+| :---------------- | :------------- | :----------------------------------------------------------------------------------------- |
+| **Golbat**        | Crobat         | Level up with high friendship.                                                             |
+| **Chansey**       | Blissey        | Level up with high friendship.                                                             |
+| **Pichu**         | Pikachu        | Level up with high friendship.                                                             |
+| **Cleffa**        | Clefairy       | Level up with high friendship.                                                             |
+| **Igglybuff**     | Jigglypuff     | Level up with high friendship.                                                             |
+| **Togepi**        | Togetic        | Level up with high friendship.                                                             |
+| **Eevee**         | Espeon         | Level up during Day (no Fairy move in Gen 8+).                                             |
+| **Eevee**         | Umbreon        | Level up during Night (no Fairy move in Gen 8+).                                           |
+| **Eevee**         | Sylveon        | Gen 6–7: 2+ Hearts of Affection + Fairy move. Gen 8+: High Friendship (160+) + Fairy move. |
+| **Azurill**       | Marill         | Level up with high friendship.                                                             |
+| **Budew**         | Roselia        | Level up during Day with high friendship.                                                  |
+| **Buneary**       | Lopunny        | Level up with high friendship (Starts at 0 friendship!).                                   |
+| **Chingling**     | Chimecho       | Level up during Night with high friendship.                                                |
+| **Riolu**         | Lucario        | Level up during Day with high friendship.                                                  |
+| **Woobat**        | Swoobat        | Level up with high friendship.                                                             |
+| **Swadloon**      | Leavanny       | Level up with high friendship.                                                             |
+| **Type: Null**    | Silvally       | Level up with high friendship (Starts at 0 friendship!).                                   |
+| **Alolan Meowth** | Alolan Persian | Level up with high friendship.                                                             |
+| **Snom**          | Frosmoth       | Level up during Night with high friendship.                                                |
 
 ---
 
 ### Friendship-Dependent Move Formulas
 
-#### Return (*Retribución*) — Physical Normal (Gen II – VII)
+#### Return (_Retribución_) — Physical Normal (Gen II – VII)
 
 $$\text{Power} = \max\left(1, \left\lfloor \frac{\text{Friendship}}{2.5} \right\rfloor\right)$$
 
@@ -98,7 +98,7 @@ $$\text{Power} = \max\left(1, \left\lfloor \frac{\text{Friendship}}{2.5} \right\
 - At **70 Friendship** (Base): Base Power = $\lfloor 70 / 2.5 \rfloor = 28$
 - At **255 Friendship** (Max): Base Power = $\lfloor 255 / 2.5 \rfloor = 102$
 
-#### Frustration (*Frustración*) — Physical Normal (Gen II – VII)
+#### Frustration (_Frustración_) — Physical Normal (Gen II – VII)
 
 $$\text{Power} = \max\left(1, \left\lfloor \frac{255 - \text{Friendship}}{2.5} \right\rfloor\right)$$
 
@@ -106,7 +106,7 @@ $$\text{Power} = \max\left(1, \left\lfloor \frac{255 - \text{Friendship}}{2.5} \
 - At **70 Friendship** (Base): Base Power = $\lfloor 185 / 2.5 \rfloor = 74$
 - At **255 Friendship** (Max Friendship): Base Power = $1$
 
-#### Partner Moves (*Let's Go, Pikachu! & Let's Go, Eevee!*)
+#### Partner Moves (_Let's Go, Pikachu! & Let's Go, Eevee!_)
 
 - **Pika Papow** (Pikachu) & **Veevee Volley** (Eevee):
 
@@ -114,7 +114,7 @@ $$\text{Power} = \max\left(20, \left\lfloor \frac{\text{Friendship} \times 100}{
 
 #### Let's Go Stat Boost Formula (LGPE)
 
-In *Pokémon: Let's Go, Pikachu! & Eevee!*, friendship linearly amplifies Attack, Defense, Special Attack, Special Defense, and Speed (excluding HP) by up to 10%:
+In _Pokémon: Let's Go, Pikachu! & Eevee!_, friendship linearly amplifies Attack, Defense, Special Attack, Special Defense, and Speed (excluding HP) by up to 10%:
 
 $$\text{Stat}_{\text{Final}} = \left\lfloor \text{Stat}_{\text{Base}} \times \left(1.0 + \frac{\text{Friendship}}{255} \times 0.10\right) \right\rfloor$$
 
@@ -147,15 +147,15 @@ In Generations VI and VII, Game Freak bifurcated the emotional mechanics into tw
 
 Starting in Gen VIII, these perks trigger strictly when **Friendship** reaches Tier 4 (220+ friendship):
 
-| Tier / Hearts | Friendship Value (Gen 8+) | In-Battle Effect Description | Activation Probability |
-| :---: | :---: | :--- | :---: |
-| **Tier 1** (1 Heart) | 100 – 149 | Special dialogue entry messages upon entering battle. | 100% (Visual only) |
-| **Tier 2** (2 Hearts) | 150 – 189 | **EXP Multiplier**: Boosts battle Exp. Points gained. | **1.2× EXP** ($\approx 4915/4096$) |
-| **Tier 3** (3 Hearts) | 190 – 219 | **Endure Fatal Hit**: Survives a hit that would KO it with 1 HP. | **10.0%** chance |
-| **Tier 4** (4 Hearts) | 220 – 254 | **Enhanced Endure**: Chance to survive fatal hit with 1 HP.<br>**Shake Off Status**: Cleanses Burn/Paralysis/Poison/Sleep/Freeze at end of turn.<br>**Evasion Boost**: Lowers attacker's effective accuracy. | **15.0%** chance<br>**20.0%** per turn<br>**-10%** opponent accuracy |
-| **Tier 5** (5 Hearts) | 255 | **Master Endure**: Highest survival rate.<br>**Critical Hit Boost**: Doubles the critical hit stage rate (e.g., Stage 0 becomes 1/12 instead of 1/24 in Gen 6, or 1/8 instead of 1/16). | **25.0%** chance<br>**2× Critical Stage** |
+|     Tier / Hearts     | Friendship Value (Gen 8+) | In-Battle Effect Description                                                                                                                                                                                 |                        Activation Probability                        |
+| :-------------------: | :-----------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------: |
+| **Tier 1** (1 Heart)  |         100 – 149         | Special dialogue entry messages upon entering battle.                                                                                                                                                        |                          100% (Visual only)                          |
+| **Tier 2** (2 Hearts) |         150 – 189         | **EXP Multiplier**: Boosts battle Exp. Points gained.                                                                                                                                                        |                  **1.2× EXP** ($\approx 4915/4096$)                  |
+| **Tier 3** (3 Hearts) |         190 – 219         | **Endure Fatal Hit**: Survives a hit that would KO it with 1 HP.                                                                                                                                             |                           **10.0%** chance                           |
+| **Tier 4** (4 Hearts) |         220 – 254         | **Enhanced Endure**: Chance to survive fatal hit with 1 HP.<br>**Shake Off Status**: Cleanses Burn/Paralysis/Poison/Sleep/Freeze at end of turn.<br>**Evasion Boost**: Lowers attacker's effective accuracy. | **15.0%** chance<br>**20.0%** per turn<br>**-10%** opponent accuracy |
+| **Tier 5** (5 Hearts) |            255            | **Master Endure**: Highest survival rate.<br>**Critical Hit Boost**: Doubles the critical hit stage rate (e.g., Stage 0 becomes 1/12 instead of 1/24 in Gen 6, or 1/8 instead of 1/16).                      |              **25.0%** chance<br>**2× Critical Stage**               |
 
-*Note: In-battle affection/friendship perks are automatically disabled in official PvP / Competitive multiplayer battles and Battle Facilities (Battle Tower, Battle Maison, Battle Tree).*
+_Note: In-battle affection/friendship perks are automatically disabled in official PvP / Competitive multiplayer battles and Battle Facilities (Battle Tower, Battle Maison, Battle Tree)._
 
 ---
 
@@ -169,38 +169,38 @@ Friendship gain operates under a **diminishing returns** model divided into thre
 
 ### Global Modifiers & Multipliers
 
-1. **Luxury Ball (*Lujo Ball*)**: Adds **+1** to any positive friendship gain event (Gen III onward).
+1. **Luxury Ball (_Lujo Ball_)**: Adds **+1** to any positive friendship gain event (Gen III onward).
 2. **Met Location Bonus**:
-   - *Pokémon Crystal*: Doubles the friendship gain from leveling up if at met location.
-   - *Gen III, V, VI, VII*: Adds **+1** to positive gains if performed at the map where the Pokémon was caught.
-3. **Soothe Bell (*Campana Alivio*)**: Increases positive friendship gains by **+50%** ($\times 1.5$, rounded down).
-   - *Gen III*: Applied directly to base gain before modifiers: $\lfloor \text{Gain} \times 1.5 \rfloor + \text{Bonus}$.
-   - *Gen IV+*: Applied **compounded** after additive modifiers: $\lfloor (\text{Base} + \text{Lux} + \text{Met}) \times 1.5 \rfloor$.
+   - _Pokémon Crystal_: Doubles the friendship gain from leveling up if at met location.
+   - _Gen III, V, VI, VII_: Adds **+1** to positive gains if performed at the map where the Pokémon was caught.
+3. **Soothe Bell (_Campana Alivio_)**: Increases positive friendship gains by **+50%** ($\times 1.5$, rounded down).
+   - _Gen III_: Applied directly to base gain before modifiers: $\lfloor \text{Gain} \times 1.5 \rfloor + \text{Bonus}$.
+   - _Gen IV+_: Applied **compounded** after additive modifiers: $\lfloor (\text{Base} + \text{Lux} + \text{Met}) \times 1.5 \rfloor$.
 4. **Pass / O-Powers (Gen V & VI)**:
-   - *Befriending Power Lv. 1 / 2 / 3*: Adds $+1 / +2 / +3$ flat bonus to all positive changes.
+   - _Befriending Power Lv. 1 / 2 / 3_: Adds $+1 / +2 / +3$ flat bonus to all positive changes.
 
 ---
 
 ### Core Generation Action Matrix
 
-| Event / Action | Bracket: 0–99 | Bracket: 100–199 | Bracket: 200–255 | Applicable Generations |
-| :--- | :---: | :---: | :---: | :--- |
-| **Level Up** | **+5** | **+3** | **+2** | All Gens (I–IX) |
-| **Walking** (128 steps, 50% chance, +2 with Soothe Bell) | **+1** | **+1** | **+1** | All Gens (II–IX) |
-| **Vitamins** (Protein, Iron, Carbos, etc.) | **+5** | **+3** | **+2** | All Gens (I–IX) |
+| Event / Action                                           | Bracket: 0–99 | Bracket: 100–199 | Bracket: 200–255 | Applicable Generations |
+| :------------------------------------------------------- | :-----------: | :--------------: | :--------------: | :--------------------- |
+| **Level Up**                                             |    **+5**     |      **+3**      |      **+2**      | All Gens (I–IX)        |
+| **Walking** (128 steps, 50% chance, +2 with Soothe Bell) |    **+1**     |      **+1**      |      **+1**      | All Gens (II–IX)       |
+| **Vitamins** (Protein, Iron, Carbos, etc.)               |    **+5**     |      **+3**      |      **+2**      | All Gens (I–IX)        |
 
 > **Per-Pokémon Persistent Accumulator (`friendshipSteps`)**:
 > In Poké Vicio, the 128-step counter is tracked independently per Pokémon (`pokemon.friendshipSteps?: number`, 0 to 127) in save data. When walking or completing activities, steps are accumulated onto the leading eligible Pokémon (`hp > 0`, `!isEgg`, `friendship < 255`). Switching party order or storing Pokémon in PC boxes preserves each Pokémon's exact step progress without resetting.
-| **Stat Wings / Feathers** (Gen V+) | **+3** | **+2** | **+1** | Gen V–IX |
-| **EV-Reducing Berries** (Pomeg, Kelpsy, etc.) | **+10** | **+5** | **+2** | Gen III (Emerald)–IX |
-| **Gym Leader / E4 / Champion / Red Battle** | **+3** | **+2** | **+1** | Gen I–VII |
-| **Learning TM / HM / TR** | **+5** | **+3** | **+2** | Gen I–IV (removed in V+) |
-| **Using Battle Items in Combat** (X Attack, etc.)| **+1** | **+1** | **0** | Gen I–VII |
-| **Fainting in Battle** (vs equal/lower level) | **-1** | **-1** | **-1** | All Gens (I–IX) |
-| **Fainting in Battle** (vs foe $\ge 30$ levels higher)| **-5** | **-5** | **-5** | Gen III–V |
-| **Herbal Medicine: EnergyPowder / Heal Powder** | **-5** | **-5** | **-10** | Gen II–IX |
-| **Herbal Medicine: Energy Root** | **-10** | **-10** | **-15** | Gen II–IX |
-| **Herbal Medicine: Revival Herb** | **-15** | **-15** | **-20** | Gen II–IX |
+> | **Stat Wings / Feathers** (Gen V+) | **+3** | **+2** | **+1** | Gen V–IX |
+> | **EV-Reducing Berries** (Pomeg, Kelpsy, etc.) | **+10** | **+5** | **+2** | Gen III (Emerald)–IX |
+> | **Gym Leader / E4 / Champion / Red Battle** | **+3** | **+2** | **+1** | Gen I–VII |
+> | **Learning TM / HM / TR** | **+5** | **+3** | **+2** | Gen I–IV (removed in V+) |
+> | **Using Battle Items in Combat** (X Attack, etc.)| **+1** | **+1** | **0** | Gen I–VII |
+> | **Fainting in Battle** (vs equal/lower level) | **-1** | **-1** | **-1** | All Gens (I–IX) |
+> | **Fainting in Battle** (vs foe $\ge 30$ levels higher)| **-5** | **-5** | **-5** | Gen III–V |
+> | **Herbal Medicine: EnergyPowder / Heal Powder** | **-5** | **-5** | **-10** | Gen II–IX |
+> | **Herbal Medicine: Energy Root** | **-10** | **-10** | **-15** | Gen II–IX |
+> | **Herbal Medicine: Revival Herb** | **-15** | **-15** | **-20** | Gen II–IX |
 
 ---
 
@@ -229,20 +229,20 @@ Friendship gain operates under a **diminishing returns** model divided into thre
 - **Ribbon Syndicate Spa (DPPt/BDSP)**: Awards **+10** (0–99), **+20** (100–199), **+30** (200–255).
 - **Castelia City Massage (BW/B2W2)**: Flat **+5** friendship gain.
 - **Join Avenue Beauty Salon (B2W2)**:
-  - *Make-Up / Brush / Relax*: Huge flat boosts ranging from **+10 to +40** friendship.
-  - *Café Meals (Friendship Lunch / Dinner)*: Boosts friendship by **+10 to +48**.
+  - _Make-Up / Brush / Relax_: Huge flat boosts ranging from **+10 to +40** friendship.
+  - _Café Meals (Friendship Lunch / Dinner)_: Boosts friendship by **+10 to +48**.
 
 #### Generation VIII: Pokémon Camp & Curry Cooking (SwSh)
 
 Cooking curry in Pokémon Camp grants massive party-wide friendship and EXP scaling with the cooking rating:
 
-| Curry Class | Friendship Boost (Party-wide) | Exp. Gained | Wild Visit Chance |
-| :--- | :---: | :---: | :---: |
-| **Koffing Class** (Burnt) | **+1** | Low | 0% |
-| **Wobbuffet Class** (Ordinary) | **+2** | Moderate | 0% |
-| **Milcery Class** (Tasty) | **+4** | High | 10% |
-| **Copperajah Class** (Delicious) | **+7** (Sociability +15) | Very High | 20% |
-| **Charizard Class** (Masterpiece) | **+10** (Sociability +20) | Maximum | 25% |
+| Curry Class                       | Friendship Boost (Party-wide) | Exp. Gained | Wild Visit Chance |
+| :-------------------------------- | :---------------------------: | :---------: | :---------------: |
+| **Koffing Class** (Burnt)         |            **+1**             |     Low     |        0%         |
+| **Wobbuffet Class** (Ordinary)    |            **+2**             |  Moderate   |        0%         |
+| **Milcery Class** (Tasty)         |            **+4**             |    High     |        10%        |
+| **Copperajah Class** (Delicious)  |   **+7** (Sociability +15)    |  Very High  |        20%        |
+| **Charizard Class** (Masterpiece) |   **+10** (Sociability +20)   |   Maximum   |        25%        |
 
 #### Generation VIII: Legends: Arceus Mechanics
 
@@ -267,14 +267,14 @@ Cooking curry in Pokémon Camp grants massive party-wide friendship and EXP scal
 
 Across all regions, dedicated NPCs evaluate the lead Pokémon's friendship value:
 
-| Region & Location | NPC | Threshold Ranges & Dialogue Quotes |
-| :--- | :--- | :--- |
-| **Kanto** (Pallet Town) | Daisy Oak | • **0–49**: *"It's not very friendly toward you."*<br>• **50–99**: *"It's quite cute."*<br>• **100–149**: *"It's warming up to you."*<br>• **150–199**: *"It's friendly towards you. It looks happy."*<br>• **200–254**: *"It trusts you. It adores you."*<br>• **255**: *"It couldn't possibly love you more! It makes me happy just seeing it!"* |
-| **Johto** (Goldenrod City) | Lady near Bike Shop | • **0–49**: *"I get the feeling that it really hates you."*<br>• **50–99**: *"You should treat it better. It's not used to you."*<br>• **100–149**: *"It's cute."*<br>• **150–199**: *"It's friendly toward you. It looks sort of happy."*<br>• **200–254**: *"I get the feeling that it really trusts you."*<br>• **255**: *"It adores you! It couldn't possibly love you more. I even feel jealous!"* |
-| **Hoenn** (Verdanturf Town) | Woman in house | • **0–49**: *"It's very wary. It has scary viciousness in its eyes."*<br>• **50–99**: *"It's not used to you yet."*<br>• **100–149**: *"It's getting used to you."*<br>• **150–199**: *"It likes you quite a lot."*<br>• **200–254**: *"It seems to be very happy. It obviously likes you a whole lot."*<br>• **255**: *"It adores you. It can't possibly love you any more."* |
-| **Sinnoh** (Hearthome City) | Fan Club Chairman / Pokétch App | • **0–49**: 0 Hearts. Pokémon drifts away from finger.<br>• **50–149**: 0 Hearts. Pokémon turns toward finger.<br>• **150–219**: 1 Small Heart.<br>• **220–254**: 2 Small Hearts (Ready to evolve!).<br>• **255**: 2 Large Pulsing Hearts (Eligible for Footprint Ribbon). |
-| **Galar** (Hammerlocke) | Boy in house | • **0–49**: *"You two don't seem quite used to each other yet."*<br>• **50–99**: *"It's warming up to you."*<br>• **100–159**: *"You're getting along pretty well!"*<br>• **160–219**: *"You two are quite good friends!"* (Ready to evolve!)<br>• **220–254**: *"You two are the best of friends!"*<br>• **255**: *"You two are simply inseparable!"* (Awards **Best Friends Ribbon**). |
-| **Paldea** (Cascarrafa) | Woman with Marill | • **0–49**: *"What happened between you two? It looks really angry..."*<br>• **50–99**: *"You're still getting to know each other."*<br>• **100–159**: *"You're getting along well, but you can get closer!"*<br>• **160–219**: *"You're good friends! You can count on each other!"* (Ready to evolve!)<br>• **220–254**: *"You're great friends! You get along swimmingly!"*<br>• **255**: *"You're the best of friends! You couldn't be closer!"* (Awards **Best Friends Ribbon**). |
+| Region & Location           | NPC                             | Threshold Ranges & Dialogue Quotes                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| :-------------------------- | :------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Kanto** (Pallet Town)     | Daisy Oak                       | • **0–49**: _"It's not very friendly toward you."_<br>• **50–99**: _"It's quite cute."_<br>• **100–149**: _"It's warming up to you."_<br>• **150–199**: _"It's friendly towards you. It looks happy."_<br>• **200–254**: _"It trusts you. It adores you."_<br>• **255**: _"It couldn't possibly love you more! It makes me happy just seeing it!"_                                                                                                                                     |
+| **Johto** (Goldenrod City)  | Lady near Bike Shop             | • **0–49**: _"I get the feeling that it really hates you."_<br>• **50–99**: _"You should treat it better. It's not used to you."_<br>• **100–149**: _"It's cute."_<br>• **150–199**: _"It's friendly toward you. It looks sort of happy."_<br>• **200–254**: _"I get the feeling that it really trusts you."_<br>• **255**: _"It adores you! It couldn't possibly love you more. I even feel jealous!"_                                                                                |
+| **Hoenn** (Verdanturf Town) | Woman in house                  | • **0–49**: _"It's very wary. It has scary viciousness in its eyes."_<br>• **50–99**: _"It's not used to you yet."_<br>• **100–149**: _"It's getting used to you."_<br>• **150–199**: _"It likes you quite a lot."_<br>• **200–254**: _"It seems to be very happy. It obviously likes you a whole lot."_<br>• **255**: _"It adores you. It can't possibly love you any more."_                                                                                                         |
+| **Sinnoh** (Hearthome City) | Fan Club Chairman / Pokétch App | • **0–49**: 0 Hearts. Pokémon drifts away from finger.<br>• **50–149**: 0 Hearts. Pokémon turns toward finger.<br>• **150–219**: 1 Small Heart.<br>• **220–254**: 2 Small Hearts (Ready to evolve!).<br>• **255**: 2 Large Pulsing Hearts (Eligible for Footprint Ribbon).                                                                                                                                                                                                             |
+| **Galar** (Hammerlocke)     | Boy in house                    | • **0–49**: _"You two don't seem quite used to each other yet."_<br>• **50–99**: _"It's warming up to you."_<br>• **100–159**: _"You're getting along pretty well!"_<br>• **160–219**: _"You two are quite good friends!"_ (Ready to evolve!)<br>• **220–254**: _"You two are the best of friends!"_<br>• **255**: _"You two are simply inseparable!"_ (Awards **Best Friends Ribbon**).                                                                                               |
+| **Paldea** (Cascarrafa)     | Woman with Marill               | • **0–49**: _"What happened between you two? It looks really angry..."_<br>• **50–99**: _"You're still getting to know each other."_<br>• **100–159**: _"You're getting along well, but you can get closer!"_<br>• **160–219**: _"You're good friends! You can count on each other!"_ (Ready to evolve!)<br>• **220–254**: _"You're great friends! You get along swimmingly!"_<br>• **255**: _"You're the best of friends! You couldn't be closer!"_ (Awards **Best Friends Ribbon**). |
 
 ---
 
@@ -314,7 +314,7 @@ When implementing or extending friendship mechanics in `src/logic/` or `src/stor
        DEFAULT_BASE: 50,
        LEGACY_BASE: 70,
        FRIEND_BALL_BASE: 200,
-       EGG_HATCH_BASE: 120,
+       EGG_HATCH_BASE: 120
      } as const;
      ```
 
@@ -329,7 +329,7 @@ When implementing or extending friendship mechanics in `src/logic/` or `src/stor
 
 ## 9. Friendship Seals & Ribbons UI Specification (Poké Vicio Standard)
 
-To preserve visual cleanliness and prevent card clutter across dense game screens (which already contain HP bars, level badges, IV ratings, and combat tiers), Poké Vicio rejects generic progress bars in favor of the **Friendship Seals & Ribbons System** (*Pines y Cintas de Vínculo*).
+To preserve visual cleanliness and prevent card clutter across dense game screens (which already contain HP bars, level badges, IV ratings, and combat tiers), Poké Vicio rejects generic progress bars in favor of the **Friendship Seals & Ribbons System** (_Pines y Cintas de Vínculo_).
 
 ```text
 [0 — 49]       [50 — 99]        [100 — 159]        [160 — 219]            [220 — 255]
@@ -340,13 +340,13 @@ Sin Vínculo     Sello Brote       Sello Amigo     Vínculo Radiante       Cinta
 
 ### 9.1. Tier Hierarchy & Canonical Thresholds
 
-| Seal Tier ID | Friendship Range | Visual Pin Asset | Enamel & Material Style | Canonical State & Mechanical Unlock |
-| :--- | :---: | :--- | :--- | :--- |
-| `distrust` | `0 – 49` | ⛓️ **Sello Rencor (*Broken Chain*)** | Dark slate / oxidized iron link. | **Hostile / Distrustful**: Fainting or herbal medicine drop. Maximum *Frustration* power. |
-| `sprout` | `50 – 99` | 🌱 **Sello Brote (*Sprout Pin*)** | Emerald / Leaf-green enamel pin with bronze rim. | **Nascent Bond**: Standard wild capture baseline ($50$). |
-| `comrade` | `100 – 159` | 🤝 **Sello Camarada (*Bond Badge*)** | Sapphire-blue metallic crest. | **Attuned Companion**: Comfortably adapted to the trainer. |
-| `radiant_prism` | `160 – 219` | 💎 **Prisma Radiante (*Evo Prism*)** | Amethyst-pink glowing crystal with periodic GSAP sheen. | **¡Evolution Ready!**: Exceeds modern evolution threshold ($\ge 160$). Flashes upon level-up. |
-| `best_friends` | `220 – 255` | 🎀 **Cinta Mejores Amigos (*Best Friends Ribbon*)** | Gold & scarlet silk rosette with dynamic spark aura. | **Master Bond**: Unlocks all single-player miracle combat perks (1 HP endure, status cleanse, critical boosts). |
+| Seal Tier ID    | Friendship Range | Visual Pin Asset                                    | Enamel & Material Style                                 | Canonical State & Mechanical Unlock                                                                             |
+| :-------------- | :--------------: | :-------------------------------------------------- | :------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
+| `distrust`      |     `0 – 49`     | ⛓️ **Sello Rencor (_Broken Chain_)**                | Dark slate / oxidized iron link.                        | **Hostile / Distrustful**: Fainting or herbal medicine drop. Maximum _Frustration_ power.                       |
+| `sprout`        |    `50 – 99`     | 🌱 **Sello Brote (_Sprout Pin_)**                   | Emerald / Leaf-green enamel pin with bronze rim.        | **Nascent Bond**: Standard wild capture baseline ($50$).                                                        |
+| `comrade`       |   `100 – 159`    | 🤝 **Sello Camarada (_Bond Badge_)**                | Sapphire-blue metallic crest.                           | **Attuned Companion**: Comfortably adapted to the trainer.                                                      |
+| `radiant_prism` |   `160 – 219`    | 💎 **Prisma Radiante (_Evo Prism_)**                | Amethyst-pink glowing crystal with periodic GSAP sheen. | **¡Evolution Ready!**: Exceeds modern evolution threshold ($\ge 160$). Flashes upon level-up.                   |
+| `best_friends`  |   `220 – 255`    | 🎀 **Cinta Mejores Amigos (_Best Friends Ribbon_)** | Gold & scarlet silk rosette with dynamic spark aura.    | **Master Bond**: Unlocks all single-player miracle combat perks (1 HP endure, status cleanse, critical boosts). |
 
 ---
 
@@ -378,7 +378,7 @@ In the active team modal (6-card grid), the Friendship Seal is anchored in the *
   - `best_friends` (🎀): Emits faint golden micro-particles upon modal entry.
   - **Hover Event**: The pin scales up $1.15\times$ with an elastic bounce (`gsap.to(pin, { scale: 1.15, duration: 0.2, ease: "back.out(2)" })`) and spawns a retro tooltip:
     > **🎀 Cinta de Mejores Amigos (255/255)**  
-    > *«¡No podría quererte más! Su profundo vínculo activa ventajas milagrosas en combate.»*
+    > _«¡No podría quererte más! Su profundo vínculo activa ventajas milagrosas en combate.»_
 
 #### B. Storage Box Card Layout (`BoxPokemonCard.vue`)
 
@@ -413,7 +413,7 @@ export const FRIENDSHIP_SEAL_TIERS = [
   'sprout',
   'comrade',
   'radiant_prism',
-  'best_friends',
+  'best_friends'
 ] as const;
 
 export type FriendshipSealTier = (typeof FRIENDSHIP_SEAL_TIERS)[number];
@@ -436,7 +436,7 @@ export const FRIENDSHIP_SEAL_MAP: Record<FriendshipSealTier, FriendshipSealMetad
     label: 'Desconfianza',
     iconName: 'seal_distrust.png',
     isEvolutionReady: false,
-    isCombatPerksActive: false,
+    isCombatPerksActive: false
   },
   sprout: {
     id: 'sprout',
@@ -445,7 +445,7 @@ export const FRIENDSHIP_SEAL_MAP: Record<FriendshipSealTier, FriendshipSealMetad
     label: 'Sello Brote',
     iconName: 'seal_sprout.png',
     isEvolutionReady: false,
-    isCombatPerksActive: false,
+    isCombatPerksActive: false
   },
   comrade: {
     id: 'comrade',
@@ -454,7 +454,7 @@ export const FRIENDSHIP_SEAL_MAP: Record<FriendshipSealTier, FriendshipSealMetad
     label: 'Sello Camarada',
     iconName: 'seal_comrade.png',
     isEvolutionReady: false,
-    isCombatPerksActive: false,
+    isCombatPerksActive: false
   },
   radiant_prism: {
     id: 'radiant_prism',
@@ -463,7 +463,7 @@ export const FRIENDSHIP_SEAL_MAP: Record<FriendshipSealTier, FriendshipSealMetad
     label: 'Prisma Radiante',
     iconName: 'seal_radiant_prism.png',
     isEvolutionReady: true,
-    isCombatPerksActive: false,
+    isCombatPerksActive: false
   },
   best_friends: {
     id: 'best_friends',
@@ -472,8 +472,8 @@ export const FRIENDSHIP_SEAL_MAP: Record<FriendshipSealTier, FriendshipSealMetad
     label: 'Cinta de Mejores Amigos',
     iconName: 'ribbon_best_friends.png',
     isEvolutionReady: true,
-    isCombatPerksActive: true,
-  },
+    isCombatPerksActive: true
+  }
 } as const;
 
 export function resolveFriendshipSeal(friendship: number): FriendshipSealMetadata {

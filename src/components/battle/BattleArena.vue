@@ -1,8 +1,18 @@
 <script setup lang="ts">
-
-import { ref, computed, watch, defineAsyncComponent, type Component, onMounted, onUnmounted, nextTick, reactive, onWatcherCleanup } from 'vue'
-import { useWakeLock } from '@vueuse/core'
-import { logger } from '@/logic/utils/logger'
+import {
+  ref,
+  computed,
+  watch,
+  defineAsyncComponent,
+  type Component,
+  onMounted,
+  onUnmounted,
+  nextTick,
+  reactive,
+  onWatcherCleanup
+} from 'vue';
+import { useWakeLock } from '@vueuse/core';
+import { logger } from '@/logic/utils/logger';
 
 const PILL_GLOW_DURATION_SEC = 1.5;
 const PILL_DRIFT_X_PX = 3;
@@ -10,137 +20,159 @@ const PILL_DRIFT_DURATION_SEC = 2.0;
 const PILL_SHAKE_ROTATION_DEG = 2;
 const PILL_SHAKE_HALF_DURATION_SEC = 0.125;
 const PILL_SHAKE_FULL_DURATION_SEC = 0.25;
-import { gsap } from 'gsap'
-import { useBattleStore } from '@/stores/battle/battle'
-import { useUIStore } from '@/stores/ui'
-import { useMapStore } from '@/stores/map'
-import { useDebugStore } from '@/stores/debug'
-import type { PillFxType } from '@/types/system/game'
-import { useGameStore } from '@/stores/game'
-import { getRouteWeather, getWeatherMultiplier, getNpcEncounterChances } from '@/logic/weather/weatherUtils'
-import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherId } from '@/logic/weather/weatherRegistry'
-import { ACTIVE_GENERATION } from '@/data/system/constants'
-import { getWeatherCombatDescription } from '@/logic/weather/weatherCombatDescriptions.ts'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { getEncounterPool, getSpeciesEntries } from '@/logic/encounters/encounters'
-import { getWeatherFamily } from '@/data/system/weatherFamilies.ts'
-import { requireWeatherSeasonId } from '@/data/world/weather-tables'
-import { isMapRouteId, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
-import { requireDayPhase } from '@/logic/utils/timeUtils'
-import type { DayPhase } from '@/types/system/time'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { MapLocation, EncounterState } from '@/types/pokemon/encounters'
-import type { Event as GameEvent } from '@/logic/events/eventEngine'
-import { useRouteSpawnsFishing } from '@/composables/modals/useRouteSpawnsFishing'
-import { useRouteSpawnsArchaeology } from '@/composables/modals/useRouteSpawnsArchaeology'
-import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
+import { gsap } from 'gsap';
+import { useBattleStore } from '@/stores/battle/battle';
+import { useUIStore } from '@/stores/ui';
+import { useMapStore } from '@/stores/map';
+import { useDebugStore } from '@/stores/debug';
+import type { PillFxType } from '@/types/system/game';
+import { useGameStore } from '@/stores/game';
+import { getRouteWeather, getNpcEncounterChances } from '@/logic/weather/weatherUtils';
+import {
+  getMechanicalWeather,
+  requireWeatherId,
+  WEATHER_UI_METADATA,
+  WEATHER_VISUAL_METADATA,
+  type WeatherId
+} from '@/logic/weather/weatherRegistry';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { getWeatherCombatDescription } from '@/logic/weather/weatherCombatDescriptions.ts';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getEncounterPool, getSpeciesEntries } from '@/logic/encounters/encounters';
+import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { isMapRouteId, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { requireDayPhase } from '@/logic/utils/timeUtils';
+import { redistributeWeatherSpawns } from '@/logic/utils/routeSpawnHelpers';
+import type { DayPhase } from '@/types/system/time';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { MapLocation, EncounterState } from '@/types/pokemon/encounters';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import { useRouteSpawnsFishing } from '@/composables/modals/useRouteSpawnsFishing';
+import { useRouteSpawnsArchaeology } from '@/composables/modals/useRouteSpawnsArchaeology';
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils';
 
-const debugStore = useDebugStore()
+const debugStore = useDebugStore();
 const isDebugActive = computed(() => {
-  return debugStore.canAccess && typeof window !== 'undefined' && !!window.__VITE_DEBUG__
-})
-const BattleDebugTools = defineAsyncComponent(() => import('./BattleDebugTools.vue')) as Component
+  return debugStore.canAccess && typeof window !== 'undefined' && !!window.__VITE_DEBUG__;
+});
+const BattleDebugTools = defineAsyncComponent(() => import('./BattleDebugTools.vue')) as Component;
 
-const battleStore = useBattleStore()
-const uiStore = useUIStore()
-const mapStore = useMapStore()
-const gameStore = useGameStore()
+const battleStore = useBattleStore();
+const uiStore = useUIStore();
+const mapStore = useMapStore();
+const gameStore = useGameStore();
 
-const RESPONSIVE_SMALL_SCREEN_MAX_WIDTH_PX = 950
+const RESPONSIVE_SMALL_SCREEN_MAX_WIDTH_PX = 950;
 
 // Responsive logic
 const isSmallScreen = computed(() => {
-  return (uiStore.windowWidth / uiStore.appZoom) < RESPONSIVE_SMALL_SCREEN_MAX_WIDTH_PX
-})
-
+  return uiStore.windowWidth / uiStore.appZoom < RESPONSIVE_SMALL_SCREEN_MAX_WIDTH_PX;
+});
 
 // Sub-components
-import BattleLog from './BattleLog.vue'
-import BattleArenaView from './BattleArenaView.vue'
-import BattleArenaControls from './BattleArenaControls.vue'
-import BaseModal from '@/components/common/BaseModal.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
+import BattleLog from './BattleLog.vue';
+import BattleArenaView from './BattleArenaView.vue';
+import BattleArenaControls from './BattleArenaControls.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
-const battle = computed(() => battleStore.state)
+const battle = computed(() => battleStore.state);
 
 const cycleEmoji = computed(() => {
-  const emojis: Record<string, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' }
-  return emojis[mapStore.currentCycle] || '☀️'
-})
-const seasonEmoji = computed(() => mapStore.currentSeason.icon)
-const currentDayPhase = computed(() => requireDayPhase(mapStore.currentCycle || 'day'))
+  const emojis: Record<DayPhase, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' };
+  return emojis[currentDayPhase.value] || '☀️';
+});
+const seasonEmoji = computed(() => mapStore.currentSeason.icon);
+const currentDayPhase = computed(() => requireDayPhase(mapStore.currentCycle || 'day'));
 const computedWeather = computed<WeatherId>(() => {
   if (battle.value) {
-    if (battle.value.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
-      return requireWeatherId(battle.value.weather.visual || battle.value.weather.type)
+    if (
+      battle.value.weather &&
+      battle.value.weather.type !== 'clear' &&
+      battle.value.weather.type !== 'none'
+    ) {
+      return requireWeatherId(battle.value.weather.visual || battle.value.weather.type);
     }
-    if (battle.value.weather && (battle.value.weather.type === 'none' || battle.value.weather.type === 'clear')) {
-      return requireWeatherId('clear')
+    if (
+      battle.value.weather &&
+      (battle.value.weather.type === 'none' || battle.value.weather.type === 'clear')
+    ) {
+      return requireWeatherId('clear');
     }
-    if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
-    const locId = battle.value.locationId
+    if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather);
+    const locId = battle.value.locationId;
     if (!locId) {
-      throw new Error('[BattleArena] battle.locationId no especificado en batalla activa. Se prohíben fallbacks silenciosos.')
+      throw new Error(
+        '[BattleArena] battle.locationId no especificado en batalla activa. Se prohíben fallbacks silenciosos.'
+      );
     }
     return getRouteWeather(
       requireMapRouteId(locId),
       requireWeatherSeasonId(mapStore.currentSeason.id),
       mapStore.currentEpochHour,
       currentDayPhase.value
-    )
+    );
   }
 
   // Idle state (no active battle, closed modal)
-  if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
-  return requireWeatherId('clear')
-})
+  if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather);
+  return requireWeatherId('clear');
+});
 const weatherEmoji = computed(() => {
-  const visual = WEATHER_VISUAL_METADATA[computedWeather.value]
-  if (visual) return visual.icon
-  const mech = getMechanicalWeather(computedWeather.value)
-  return WEATHER_UI_METADATA[mech]?.icon || ''
-})
+  const visual = WEATHER_VISUAL_METADATA[computedWeather.value];
+  if (visual) return visual.icon;
+  const mech = getMechanicalWeather(computedWeather.value);
+  return WEATHER_UI_METADATA[mech]?.icon || '';
+});
 
 const cycleName = computed(() => {
-  const names: Record<string, string> = { morning: 'Mañana', day: 'Día', dusk: 'Atardecer', night: 'Noche' }
-  return names[mapStore.currentCycle] || 'Día'
-})
-const seasonName = computed(() => mapStore.currentSeason.label)
+  const names: Record<DayPhase, string> = {
+    morning: 'Mañana',
+    day: 'Día',
+    dusk: 'Atardecer',
+    night: 'Noche'
+  };
+  return names[currentDayPhase.value] || 'Día';
+});
+const seasonName = computed(() => mapStore.currentSeason.label);
 const weatherName = computed(() => {
-  const visual = WEATHER_VISUAL_METADATA[computedWeather.value]
-  if (visual) return visual.label
-  const mech = getMechanicalWeather(computedWeather.value)
-  return WEATHER_UI_METADATA[mech]?.label || 'Normal'
-})
+  const visual = WEATHER_VISUAL_METADATA[computedWeather.value];
+  if (visual) return visual.label;
+  const mech = getMechanicalWeather(computedWeather.value);
+  return WEATHER_UI_METADATA[mech]?.label || 'Normal';
+});
 
-const mapsList = computed<MapLocation[]>(() => pokemonDataProvider.getMaps())
+const mapsList = computed<MapLocation[]>(() => pokemonDataProvider.getMaps());
 
 const mapPropForModal = computed(() => {
-  const locId = battle.value?.locationId || mapStore.currentMap
+  const locId = battle.value?.locationId || mapStore.currentMap;
   if (!locId) {
-    const first = mapsList.value[0]
-    if (first) return first
-    throw new Error('[BattleArena] No hay mapas disponibles en el catálogo para el modal de spawns.')
+    const first = mapsList.value[0];
+    if (first) return first;
+    throw new Error(
+      '[BattleArena] No hay mapas disponibles en el catálogo para el modal de spawns.'
+    );
   }
-  const cleanId = isMapRouteId(locId) ? locId : undefined
+  const cleanId = isMapRouteId(locId) ? locId : undefined;
   if (cleanId) {
-    const loc = mapsList.value.find(m => m.id === cleanId)
-    if (loc) return loc
+    const loc = mapsList.value.find((m) => m.id === cleanId);
+    if (loc) return loc;
   }
   // For special non-spawning arenas (gym, pvp) or cities without wild encounters, provide first map
-  const first = mapsList.value[0]
-  if (first) return first
-  throw new Error(`[BattleArena] Mapa no encontrado para locationId: "${locId}"`)
-})
+  const first = mapsList.value[0];
+  if (first) return first;
+  throw new Error(`[BattleArena] Mapa no encontrado para locationId: "${locId}"`);
+});
 
 const routeSpawnsProps = reactive({
   map: computed(() => mapPropForModal.value || mapsList.value[0]),
   weather: computedWeather,
   cycle: currentDayPhase
-})
+});
 
-const { fishingSpawns } = useRouteSpawnsFishing(routeSpawnsProps)
-const { archaeologyRewards } = useRouteSpawnsArchaeology(routeSpawnsProps)
+const { fishingSpawns } = useRouteSpawnsFishing(routeSpawnsProps);
+const { archaeologyRewards } = useRouteSpawnsArchaeology(routeSpawnsProps);
 
 interface FishingSpawnItem {
   id: string;
@@ -159,36 +191,20 @@ function adjustWildRatesForWeather(
   loc: MapLocation,
   weather: WeatherId
 ): void {
-  if (!weather || weather === 'clear') return
-  const visitorIndices = rates.map((r, i) => (r < 0 ? i : -1)).filter(i => i !== -1)
-  const nativeIndices = rates.map((r, i) => (r >= 0 ? i : -1)).filter(i => i !== -1)
+  if (!weather || weather === 'clear') return;
 
-  let wConfig = loc.weather?.[weather]
+  let wConfig = loc.weather?.[weather];
   if (!wConfig && weather) {
-    const family = getWeatherFamily(weather) as keyof NonNullable<typeof loc.weather>
+    const family = getWeatherFamily(weather) as keyof NonNullable<typeof loc.weather>;
     if (family && loc.weather?.[family]) {
-      wConfig = loc.weather[family]
+      wConfig = loc.weather[family];
     }
   }
-  const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : []
+  const exclusives = wConfig?.exclusive
+    ? getSpeciesEntries(wConfig.exclusive).map((entry) => entry.id)
+    : [];
 
-  nativeIndices.forEach(idx => {
-    const spId = pool[idx]
-    if (spId && !exclusives.includes(spId)) {
-      rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather)
-    }
-  })
-
-  if (visitorIndices.length > 0) {
-    const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0)
-    const visitorQuota = totalNativeWeight / 9
-    const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0)
-
-    visitorIndices.forEach(idx => {
-      const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1)
-      rates[idx] = visitorQuota * relativeWeight
-    })
-  }
+  redistributeWeatherSpawns(rates, pool, weather, exclusives);
 }
 
 function buildWildEncounterDebugLines(
@@ -197,136 +213,165 @@ function buildWildEncounterDebugLines(
   weather: WeatherId,
   activeEvents: GameEvent[]
 ): string[] {
-  if (!loc.wild) return []
-  const { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents)
-  const poolCopy = [...pool]
-  const ratesCopy = [...rates]
+  if (!loc.wild) return [];
+  const { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents);
+  const poolCopy = [...pool];
+  const ratesCopy = [...rates];
 
-  adjustWildRatesForWeather(poolCopy, ratesCopy, loc, weather)
+  adjustWildRatesForWeather(poolCopy, ratesCopy, loc, weather);
 
-  const totalRate = ratesCopy.reduce((sum, r) => sum + r, 0)
-  if (totalRate <= 0) return []
+  const totalRate = ratesCopy.reduce((sum, r) => sum + r, 0);
+  if (totalRate <= 0) return [];
 
-  const lines: string[] = [] // text-ok: UI text display localization string
-  lines.push('---', 'Chances actuales (Hierba/Tierra):')
-  let wConfig = loc.weather?.[weather]
+  const lines: string[] = []; // text-ok: UI text display localization string
+  lines.push('---', 'Chances actuales (Hierba/Tierra):');
+  let wConfig = loc.weather?.[weather];
   if (!wConfig && weather) {
-    const family = getWeatherFamily(weather) as keyof NonNullable<typeof loc.weather>
+    const family = getWeatherFamily(weather) as keyof NonNullable<typeof loc.weather>;
     if (family && loc.weather?.[family]) {
-      wConfig = loc.weather[family]
+      wConfig = loc.weather[family];
     }
   }
-  const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : []
-  const visitors = wConfig?.visitors ? getSpeciesEntries(wConfig.visitors).map(entry => entry.id) : []
+  const exclusives = wConfig?.exclusive
+    ? getSpeciesEntries(wConfig.exclusive).map((entry) => entry.id)
+    : [];
+  const visitors = wConfig?.visitors
+    ? getSpeciesEntries(wConfig.visitors).map((entry) => entry.id)
+    : [];
 
   poolCopy.forEach((spId, idx) => {
-    const rateVal = ratesCopy[idx] || 0
-    const pct = (rateVal / totalRate) * 100
-    const name = spId.charAt(0).toUpperCase() + spId.slice(1)
-    let tag = ''
+    const rateVal = ratesCopy[idx] || 0;
+    const pct = (rateVal / totalRate) * 100;
+    const name = spId.charAt(0).toUpperCase() + spId.slice(1);
+    let tag = '';
     if (exclusives.includes(spId)) {
-      tag = ' (Exclusivo)'
+      tag = ' (Exclusivo)';
     } else if (visitors.includes(spId)) {
-      tag = ' (Visitante)'
+      tag = ' (Visitante)';
     }
-    lines.push(`• ${name}: ${pct.toFixed(1)}%${tag}`)
-  })
-  return lines
+    lines.push(`• ${name}: ${pct.toFixed(1)}%${tag}`);
+  });
+  return lines;
 }
 
 function buildFishingDebugLines(spawns?: FishingSpawnItem[]): string[] {
-  if (!spawns || spawns.length === 0) return []
-  const lines: string[] = [] // text-ok: UI text display localization string
-  lines.push('---', '🎣 Pesca:')
+  if (!spawns || spawns.length === 0) return [];
+  const lines: string[] = []; // text-ok: UI text display localization string
+  lines.push('---', '🎣 Pesca:');
   spawns.forEach((fs) => {
-    const realName = pokemonDataProvider.getPokemonData(fs.id)?.name || fs.name
-    lines.push(`• ${realName}: ${fs.percentage.toFixed(1)}%`)
-  })
-  return lines
+    const realName = pokemonDataProvider.getPokemonData(fs.id)?.name || fs.name;
+    lines.push(`• ${realName}: ${fs.percentage.toFixed(1)}%`);
+  });
+  return lines;
 }
 
 function buildArchaeologyDebugLines(rewards?: ArchaeologyRewardItem[]): string[] {
-  if (!rewards || rewards.length === 0) return []
-  const lines: string[] = [] // text-ok: UI text display localization string
-  lines.push('---', '⛏️ Arqueología:')
+  if (!rewards || rewards.length === 0) return [];
+  const lines: string[] = []; // text-ok: UI text display localization string
+  lines.push('---', '⛏️ Arqueología:');
   rewards.forEach((ar) => {
-    lines.push(`• ${ar.name}: ${ar.percentage.toFixed(1)}%`)
-  })
-  return lines
+    lines.push(`• ${ar.name}: ${ar.percentage.toFixed(1)}%`);
+  });
+  return lines;
 }
 
-function buildNpcDebugLines(locId: MapRouteId, gameState: EncounterState, mapIds: readonly MapRouteId[]): string[] {
-  const npcChances = getNpcEncounterChances(locId, gameState, {}, mapIds)
-  if (!npcChances || npcChances.length === 0) return []
-  const lines: string[] = [] // text-ok: UI text display localization string
-  lines.push('---', '👥 Encuentros Especiales:')
-  npcChances.forEach(npc => {
-    const details = npc.details ? ` (${npc.details})` : ''
-    lines.push(`• ${npc.name}: ${npc.chance.toFixed(1)}%${details}`)
-  })
-  return lines
+function buildNpcDebugLines(
+  locId: MapRouteId,
+  gameState: EncounterState,
+  mapIds: readonly MapRouteId[]
+): string[] {
+  const npcChances = getNpcEncounterChances(locId, gameState, {}, mapIds);
+  if (!npcChances || npcChances.length === 0) return [];
+  const lines: string[] = []; // text-ok: UI text display localization string
+  lines.push('---', '👥 Encuentros Especiales:');
+  npcChances.forEach((npc) => {
+    const details = npc.details ? ` (${npc.details})` : '';
+    lines.push(`• ${npc.name}: ${npc.chance.toFixed(1)}%${details}`);
+  });
+  return lines;
 }
 
 const weatherTooltipDescription = computed(() => {
-  const weatherKey = computedWeather.value
-  const desc = getWeatherCombatDescription(weatherKey, ACTIVE_GENERATION)
-  const weatherDescText = desc && desc !== 'Sin efectos en combate.' ? `\n---\nEFECTOS EN COMBATE:\n${desc}` : ''
-  const baseDesc = `Ciclo: ${cycleName.value}\nEstación: ${seasonName.value}\nClima: ${weatherName.value}${weatherDescText}`
-  if (!debugStore.isAdminOrOffline) return baseDesc
+  const weatherKey = computedWeather.value;
+  const desc = getWeatherCombatDescription(weatherKey, ACTIVE_GENERATION);
+  const weatherDescText =
+    desc && desc !== 'Sin efectos en combate.' ? `\n---\nEFECTOS EN COMBATE:\n${desc}` : '';
+  const baseDesc = `Ciclo: ${cycleName.value}\nEstación: ${seasonName.value}\nClima: ${weatherName.value}${weatherDescText}`;
+  if (!debugStore.isAdminOrOffline) return baseDesc;
 
-  const locId = battle.value?.locationId || mapStore.currentMap
-  if (!locId) return baseDesc
-  const loc = mapsList.value.find(m => m.id === locId)
-  if (!loc) return baseDesc
+  const locId = battle.value?.locationId || mapStore.currentMap;
+  if (!locId) return baseDesc;
+  const loc = mapsList.value.find((m) => m.id === locId);
+  if (!loc) return baseDesc;
 
-  const cycle = currentDayPhase.value
-  const weather = computedWeather.value
-  const activeEvents = mapStore.activeEvents || []
+  const cycle = currentDayPhase.value;
+  const weather = computedWeather.value;
+  const activeEvents = mapStore.activeEvents || [];
 
   const lines: string[] = [
     ...buildWildEncounterDebugLines(loc, cycle, weather, activeEvents),
     ...buildFishingDebugLines(fishingSpawns.value),
     ...buildArchaeologyDebugLines(archaeologyRewards.value),
-    ...buildNpcDebugLines(requireMapRouteId(locId), gameStore.state, mapsList.value.map(m => requireMapRouteId(m.id)))
-  ]
+    ...buildNpcDebugLines(
+      requireMapRouteId(locId),
+      gameStore.state,
+      mapsList.value.map((m) => requireMapRouteId(m.id))
+    )
+  ];
 
-  return lines.length > 0 ? `${baseDesc}\n${lines.join('\n')}` : baseDesc
-})
+  return lines.length > 0 ? `${baseDesc}\n${lines.join('\n')}` : baseDesc;
+});
 
-import type { ComponentPublicInstance } from 'vue'
+import type { ComponentPublicInstance } from 'vue';
 
-const envPillRef = ref<ComponentPublicInstance | HTMLElement | null>(null)
-let pillContext: gsap.Context | null = null
+const envPillRef = ref<ComponentPublicInstance | HTMLElement | null>(null);
+let pillContext: gsap.Context | null = null;
 
 const initBattlePillAnimation = () => {
   if (pillContext) {
-    pillContext.revert()
-    pillContext = null
+    pillContext.revert();
+    pillContext = null;
   }
 
   if (!battleStore.isBattleActive || uiStore.isFastMode || uiStore.isLowPowerActive) {
-    return
+    return;
   }
 
-  const refVal = envPillRef.value
-  const el = refVal ? (refVal instanceof HTMLElement ? refVal : (refVal.$el as HTMLElement | null)) : null
-  if (!el) return
+  const refVal = envPillRef.value;
+  const el = refVal
+    ? refVal instanceof HTMLElement
+      ? refVal
+      : (refVal.$el as HTMLElement | null)
+    : null;
+  if (!el) return;
 
   pillContext = gsap.context(() => {
-    const weather = computedWeather.value
-    let type: PillFxType = ''
-    if (['clear', 'sun', 'heatwave', 'cold', 'coldwave', 'sandstorm', 'dust_storm', 'intense_sun'].includes(weather)) {
-      type = 'glow'
+    const weather = computedWeather.value;
+    let type: PillFxType = '';
+    if (
+      [
+        'clear',
+        'sun',
+        'heatwave',
+        'cold',
+        'coldwave',
+        'sandstorm',
+        'dust_storm',
+        'intense_sun'
+      ].includes(weather)
+    ) {
+      type = 'glow';
     } else if (['mist', 'fog', 'wind', 'strong_winds'].includes(weather)) {
-      type = 'drift'
+      type = 'drift';
     } else if (['rain', 'heavy_rain', 'storm', 'thunderstorm', 'hail'].includes(weather)) {
-      type = 'shake'
+      type = 'shake';
     }
 
-    const seed = 0.5
+    const seed = 0.5;
 
     if (type === 'glow') {
-      const tl = gsap.fromTo(el,
+      const tl = gsap.fromTo(
+        el,
         { filter: 'brightness(1.0)', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)' },
         {
           boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4), 0px 0px 8px rgba(255, 204, 0, 0.6)',
@@ -336,8 +381,8 @@ const initBattlePillAnimation = () => {
           repeat: -1,
           ease: 'sine.inOut'
         }
-      )
-      tl.progress(seed)
+      );
+      tl.progress(seed);
     } else if (type === 'drift') {
       const tl = gsap.to(el, {
         x: PILL_DRIFT_X_PX,
@@ -345,54 +390,66 @@ const initBattlePillAnimation = () => {
         yoyo: true,
         repeat: -1,
         ease: 'power1.inOut'
-      })
-      tl.progress(seed)
+      });
+      tl.progress(seed);
     } else if (type === 'shake') {
-      const tl = gsap.timeline({ repeat: -1 })
-      tl.to(el, { rotation: PILL_SHAKE_ROTATION_DEG, duration: PILL_SHAKE_HALF_DURATION_SEC, ease: 'power1.inOut' })
-        .to(el, { rotation: -PILL_SHAKE_ROTATION_DEG, duration: PILL_SHAKE_FULL_DURATION_SEC, ease: 'power1.inOut' })
-        .to(el, { rotation: 0, duration: PILL_SHAKE_HALF_DURATION_SEC, ease: 'power1.inOut' })
-      tl.progress(seed)
+      const tl = gsap.timeline({ repeat: -1 });
+      tl.to(el, {
+        rotation: PILL_SHAKE_ROTATION_DEG,
+        duration: PILL_SHAKE_HALF_DURATION_SEC,
+        ease: 'power1.inOut'
+      })
+        .to(el, {
+          rotation: -PILL_SHAKE_ROTATION_DEG,
+          duration: PILL_SHAKE_FULL_DURATION_SEC,
+          ease: 'power1.inOut'
+        })
+        .to(el, { rotation: 0, duration: PILL_SHAKE_HALF_DURATION_SEC, ease: 'power1.inOut' });
+      tl.progress(seed);
     }
-  }, el)
-}
+  }, el);
+};
 
-const { isSupported: isWakeLockSupported, request: requestWakeLock, release: releaseWakeLock } = useWakeLock()
+const {
+  isSupported: isWakeLockSupported,
+  request: requestWakeLock,
+  release: releaseWakeLock
+} = useWakeLock();
 
 async function enableScreenWakeLock(): Promise<void> {
-  if (!isWakeLockSupported.value) return
+  if (!isWakeLockSupported.value) return;
   try {
-    await requestWakeLock('screen')
+    await requestWakeLock('screen');
   } catch (err) {
-    logger.warn('BattleArena', `No se pudo adquirir Screen WakeLock: ${String(err)}`)
+    logger.warn('BattleArena', `No se pudo adquirir Screen WakeLock: ${String(err)}`);
   }
 }
 
 async function disableScreenWakeLock(): Promise<void> {
-  if (!isWakeLockSupported.value) return
+  if (!isWakeLockSupported.value) return;
   try {
-    await releaseWakeLock()
+    await releaseWakeLock();
   } catch (err) {
-    logger.warn('BattleArena', `Error al liberar Screen WakeLock: ${String(err)}`)
+    logger.warn('BattleArena', `Error al liberar Screen WakeLock: ${String(err)}`);
   }
 }
 
 onMounted(() => {
   if (battleStore.isBattleActive) {
-    void enableScreenWakeLock()
+    void enableScreenWakeLock();
   }
   nextTick(() => {
-    initBattlePillAnimation()
-  })
-})
+    initBattlePillAnimation();
+  });
+});
 
 onUnmounted(() => {
-  void disableScreenWakeLock()
+  void disableScreenWakeLock();
   if (pillContext) {
-    pillContext.revert()
-    pillContext = null
+    pillContext.revert();
+    pillContext = null;
   }
-})
+});
 
 watch(
   [
@@ -403,53 +460,57 @@ watch(
   ],
   () => {
     nextTick(() => {
-      initBattlePillAnimation()
-    })
+      initBattlePillAnimation();
+    });
   },
   { flush: 'post' }
-)
+);
 
 // Body Class & Screen WakeLock Management
-watch(() => battleStore.isBattleActive, (active) => {
-  if (active) {
-    void enableScreenWakeLock()
-    document.body.classList.add('in-battle') // [PureVue-Ignore]
-    onWatcherCleanup(() => {
-      void disableScreenWakeLock()
-      document.body.classList.remove('in-battle') // [PureVue-Ignore]
-    })
-  }
-}, { immediate: true })
+watch(
+  () => battleStore.isBattleActive,
+  (active) => {
+    if (active) {
+      void enableScreenWakeLock();
+      document.body.classList.add('in-battle'); // [PureVue-Ignore]
+      onWatcherCleanup(() => {
+        void disableScreenWakeLock();
+        document.body.classList.remove('in-battle'); // [PureVue-Ignore]
+      });
+    }
+  },
+  { immediate: true }
+);
 
 const handleClose = () => {
   if (battleStore.isFinishing) {
-    battleStore.completeBattleFlow('map')
+    battleStore.completeBattleFlow('map');
   } else {
-    battleStore.flee()
+    battleStore.flee();
   }
-}
+};
 
 const allowFlee = computed(() => {
-  if (battleStore.uiConfig) return battleStore.uiConfig.allowFlee
-  const s = battleStore.state
-  return !s?.isTrainer && !s?.isGym && !s?.isPvP
-})
+  if (battleStore.uiConfig) return battleStore.uiConfig.allowFlee;
+  const s = battleStore.state;
+  return !s?.isTrainer && !s?.isGym && !s?.isPvP;
+});
 
 const showCloseButton = computed(() => {
-  return allowFlee.value || battleStore.isFinishing
-})
+  return allowFlee.value || battleStore.isFinishing;
+});
 
 const preventClose = computed(() => {
-  if (battleStore.isProcessing) return true
-  if (!allowFlee.value && !battleStore.isFinishing) return true
-  if (!battleStore.isFinishing && isPokemonLocked(battleStore.state?.player)) return true
-  return false
-})
+  if (battleStore.isProcessing) return true;
+  if (!allowFlee.value && !battleStore.isFinishing) return true;
+  if (!battleStore.isFinishing && isPokemonLocked(battleStore.state?.player)) return true;
+  return false;
+});
 
 const showEnvironmentPill = computed(() => {
-  if (battleStore.uiConfig) return battleStore.uiConfig.showEnvironmentPill
-  return !battleStore.state?.isPvP
-})
+  if (battleStore.uiConfig) return battleStore.uiConfig.showEnvironmentPill;
+  return !battleStore.state?.isPvP;
+});
 </script>
 
 <template>
@@ -473,10 +534,7 @@ const showEnvironmentPill = computed(() => {
     disable-auto-grow
     @close="handleClose"
   >
-    <div
-      v-if="showEnvironmentPill"
-      class="battle-header-actions"
-    >
+    <div v-if="showEnvironmentPill" class="battle-header-actions">
       <!-- Showdown Canonical Animation Registration Tokens: frz drag brn psn tox slp par confusion flinch attract taunt substitute raindance sunnyday sandstorm hail snow electricterrain grassyterrain mistyterrain psychicterrain trickroom gravity stealthrock spikes toxicspikes mega primal terastallize dynamax -->
       <PVTooltip
         ref="envPillRef"
@@ -493,10 +551,10 @@ const showEnvironmentPill = computed(() => {
 
     <div
       v-if="battle || battleStore.isSearching"
-      id="battle-screen" 
+      id="battle-screen"
       class="battle-screen-grid"
-      :class="{ 
-        'is-finishing': battleStore.isFinishing, 
+      :class="{
+        'is-finishing': battleStore.isFinishing,
         'is-fullscreen': isSmallScreen,
         'is-searching': battleStore.isSearching
       }"
@@ -517,19 +575,12 @@ const showEnvironmentPill = computed(() => {
 
     <!-- GLOBAL BATTLE DEBUG HUD -->
     <Teleport to="body">
-      <div 
-        v-if="battleStore.isBattleActive && isDebugActive" 
-        class="battle-debug-hud-container"
-      >
-        <component
-          :is="BattleDebugTools"
-          v-if="BattleDebugTools"
-        />
+      <div v-if="battleStore.isBattleActive && isDebugActive" class="battle-debug-hud-container">
+        <component :is="BattleDebugTools" v-if="BattleDebugTools" />
       </div>
     </Teleport>
   </BaseModal>
 </template>
-
 
 <style src="./BattleArena.styles.scss" lang="scss"></style>
 <style scoped src="./BattleArena.scoped.scss" lang="scss"></style>

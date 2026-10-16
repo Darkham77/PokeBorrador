@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { PokemonLegalityValidator } from '@/logic/battle/engine/pokemonLegalityValidator';
 
 describe('PokemonLegalityValidator', () => {
@@ -32,7 +32,7 @@ describe('PokemonLegalityValidator', () => {
     };
     const result = PokemonLegalityValidator.validatePokemon(poke);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('cannot legally have ability'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('cannot legally have ability'))).toBe(true);
   });
 
   it('rejects gender on strictly genderless species', () => {
@@ -44,7 +44,7 @@ describe('PokemonLegalityValidator', () => {
     };
     const result = PokemonLegalityValidator.validatePokemon(poke);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('strictly genderless'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('strictly genderless'))).toBe(true);
   });
 
   it('rejects pokemon with more than 4 moves', () => {
@@ -55,6 +55,6 @@ describe('PokemonLegalityValidator', () => {
     };
     const result = PokemonLegalityValidator.validatePokemon(poke);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('maximum allowed is 4'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('maximum allowed is 4'))).toBe(true);
   });
 });

@@ -10,7 +10,6 @@
  * @module weatherMath
  */
 
-
 // ── Day Cycle ────────────────────────────────────────────────────────────────
 
 import type { DayPhase } from '../utils/timeUtils.ts';
@@ -50,18 +49,15 @@ export function getDayCyclePure(now: Temporal.Instant | number): DayPhase {
 import { mulberry32, hashString } from '../utils/math.ts';
 export { mulberry32, hashString };
 
-
-
-
 // ── Route Weather ─────────────────────────────────────────────────────────────
-
 
 /**
  * A nested weather table: seasonId → DayPhase → weatherType → probability (%)
  */
 export type WeatherTable = Record<
+  // open-record: Route weather lookup table indexed by map route ID
   string,
-  Record<string, Record<string, number> | Record<string, Record<string, number>>>
+  Record<string, Record<string, number> | Record<string, Record<string, number>>> // open-record: Nested season and day phase probability map
 >;
 
 /**
@@ -77,7 +73,7 @@ export function getRouteWeatherPure(
   tables: WeatherTable,
   mapId: MapRouteId,
   seasonId: WeatherSeasonId,
-  epochHour: number,
+  epochHour: number
 ): WeatherId {
   const routeTables = tables[mapId];
   if (!routeTables || !routeTables[seasonId]) return 'clear';
@@ -90,11 +86,14 @@ export function getRouteWeatherPure(
   const seed = (mapHash + epochHour) >>> 0;
 
   const prng = mulberry32(seed);
-  prng(); prng(); prng(); // discard correlated seeds
+  prng();
+  prng();
+  prng(); // discard correlated seeds
   const randNum = prng() * PROBABILITY_PERCENT_SCALE;
 
   let cumulative = 0;
-  for (const [weather, prob] of Object.entries(table as Record<string, number>)) { // open-record: Generic key-value data dictionary container
+  for (const [weather, prob] of Object.entries(table as Record<string, number>)) {
+    // open-record: Generic key-value data dictionary container
     cumulative += prob;
     if (randNum < cumulative) return requireWeatherId(weather);
   }
@@ -144,8 +143,9 @@ export function getWeatherAnimSeed(mapId: MapRouteId): number {
   const mapData = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[mapId]; // open-record: Generic key-value data dictionary container
   const keyString = mapData?.name || mapId;
   const charSum = keyString.split('').reduce((acc, char, i) => {
-    return acc + (char.charCodeAt(0) * (i + 1));
+    return acc + char.charCodeAt(0) * (i + 1);
   }, 0);
-  return Math.abs((charSum + sessionWeatherSeed) % WEATHER_SEED_MODULO_SCALE) / WEATHER_SEED_MODULO_SCALE;
+  return (
+    Math.abs((charSum + sessionWeatherSeed) % WEATHER_SEED_MODULO_SCALE) / WEATHER_SEED_MODULO_SCALE
+  );
 }
-

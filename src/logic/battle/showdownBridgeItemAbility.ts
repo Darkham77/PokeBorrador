@@ -4,19 +4,24 @@ import { toID } from '@/logic/utils/strings.ts';
 import { requireAbilityId } from '../../data/battle/abilities.ts';
 import { requireItemId } from '../../data/inventory/items.ts';
 
+// open-record: Showdown cant messages dictionary
 const CANT_MESSAGES: Readonly<Record<string, string>> = {
-  'par': 'está paralizado y no puede moverse',
-  'slp': 'está dormido',
-  'frz': 'está congelado',
-  'attract': 'está enamorado y no puede atacar',
-  'recharge': 'debe recargar',
-  'disable': 'tiene el movimiento desactivado',
-  'flinch': 'retrocedió',
+  par: 'está paralizado y no puede moverse',
+  slp: 'está dormido',
+  frz: 'está congelado',
+  attract: 'está enamorado y no puede atacar',
+  recharge: 'debe recargar',
+  disable: 'tiene el movimiento desactivado',
+  flinch: 'retrocedió',
   'ability: truant': 'está haraganeando (Truant)',
-  'truant': 'está haraganeando (Truant)'
+  truant: 'está haraganeando (Truant)'
 };
 
-function isItemUsedDuringFlinch(target: Pokemon | null | undefined, p: Pokemon | null | undefined, store: SBCtx['store']): boolean {
+function isItemUsedDuringFlinch(
+  target: Pokemon | null | undefined,
+  p: Pokemon | null | undefined,
+  store: SBCtx['store']
+): boolean {
   const isPlayer = target === p;
   const activeBattle = store.activeBattle.value;
   return Boolean(isPlayer ? activeBattle?.playerUsedItem : activeBattle?.enemyUsedItem);
@@ -37,15 +42,13 @@ function applyFlinchStateAndAnimation(
 }
 
 function resolveCantHint(cleanReason: string): string {
-  return CANT_MESSAGES[cleanReason] ?? (cleanReason.includes('truant') ? 'está haraganeando (Truant)' : 'no puede moverse');
+  return (
+    CANT_MESSAGES[cleanReason] ??
+    (cleanReason.includes('truant') ? 'está haraganeando (Truant)' : 'no puede moverse')
+  );
 }
 
-function applyCantEffects(
-  target: Pokemon,
-  reason: string,
-  targetIdent: string,
-  ctx: SBCtx
-): void {
+function applyCantEffects(target: Pokemon, reason: string, targetIdent: string, ctx: SBCtx): void {
   if (target.volatileCounters) {
     delete target.volatileCounters['twoturnmove'];
   }
@@ -63,11 +66,11 @@ function handleCantToken(ctx: SBCtx): boolean {
   const targetIdent = parts[2] || '';
   const target = getPoke(targetIdent);
   const reason = parts[3] || '';
-  
+
   if (reason === 'flinch' && isItemUsedDuringFlinch(target, p, store)) {
     return true;
   }
-  
+
   if (target) {
     applyCantEffects(target, reason, targetIdent, ctx);
   }
@@ -94,7 +97,11 @@ function formatActivateLog(
   return `¡${prefix}${effect} se activó en ${target.name}!`;
 }
 
-function handleActivateToken(target: Pokemon | null | undefined, rawEffect: string, store: SBCtx['store']): boolean {
+function handleActivateToken(
+  target: Pokemon | null | undefined,
+  rawEffect: string,
+  store: SBCtx['store']
+): boolean {
   if (!target) return true;
   const isMoveEffect = rawEffect.startsWith('move: ');
   const isAbilityEffect = rawEffect.startsWith('ability: ');
@@ -106,14 +113,22 @@ function handleActivateToken(target: Pokemon | null | undefined, rawEffect: stri
     target.volatileCounters[requireVolatileStatusKey(cleanEff)] = 1;
   }
 
-  const logMsg = formatActivateLog(target, cleanEff, effect, { isAbility: isAbilityEffect, isMove: isMoveEffect });
+  const logMsg = formatActivateLog(target, cleanEff, effect, {
+    isAbility: isAbilityEffect,
+    isMove: isMoveEffect
+  });
   if (logMsg) {
     store.addLog(logMsg, 'log-info', target);
   }
   return true;
 }
 
-function handleItemToken(target: Pokemon | null | undefined, rawItem: string | undefined, line: string, store: SBCtx['store']): boolean {
+function handleItemToken(
+  target: Pokemon | null | undefined,
+  rawItem: string | undefined,
+  line: string,
+  store: SBCtx['store']
+): boolean {
   if (!target) {
     throw new Error(`[ShowdownBridge] Target pokemon not found for -item line: "${line}"`);
   }
@@ -128,7 +143,12 @@ function handleItemToken(target: Pokemon | null | undefined, rawItem: string | u
   return true;
 }
 
-function handleEndItemToken(target: Pokemon | null | undefined, rawItem: string | undefined, line: string, store: SBCtx['store']): boolean {
+function handleEndItemToken(
+  target: Pokemon | null | undefined,
+  rawItem: string | undefined,
+  line: string,
+  store: SBCtx['store']
+): boolean {
   if (!target) {
     throw new Error(`[ShowdownBridge] Target pokemon not found for -enditem line: "${line}"`);
   }
@@ -144,8 +164,14 @@ function handleEndItemToken(target: Pokemon | null | undefined, rawItem: string 
   return true;
 }
 
-function handleSingleMoveOrTurnToken(target: Pokemon | null | undefined, moveOrEffect: string, store: SBCtx['store']): boolean {
-  const cleanEffect = requireVolatileStatusKey(toID(moveOrEffect.startsWith('move:') ? moveOrEffect.replace('move:', '') : moveOrEffect));
+function handleSingleMoveOrTurnToken(
+  target: Pokemon | null | undefined,
+  moveOrEffect: string,
+  store: SBCtx['store']
+): boolean {
+  const cleanEffect = requireVolatileStatusKey(
+    toID(moveOrEffect.startsWith('move:') ? moveOrEffect.replace('move:', '') : moveOrEffect)
+  );
   if (target) {
     if (!target.volatileCounters) target.volatileCounters = {};
     target.volatileCounters[cleanEffect] = 1;
@@ -160,9 +186,11 @@ function handleAbilityToken(ctx: SBCtx): boolean {
   const target = ctx.getPoke(ctx.parts[2] || '');
   const rawAbility = ctx.parts[3];
   if (!rawAbility) {
-    throw new Error(`[ShowdownBridge] Log line |-ability| is missing ability parameter: "${ctx.line}"`);
+    throw new Error(
+      `[ShowdownBridge] Log line |-ability| is missing ability parameter: "${ctx.line}"`
+    );
   }
-  const fromClause = ctx.parts.find(pKey => pKey.startsWith('[from]'));
+  const fromClause = ctx.parts.find((pKey) => pKey.startsWith('[from]'));
   if (target) {
     const canonicalAbility = requireAbilityId(toID(rawAbility));
     target.ability = canonicalAbility;
@@ -183,7 +211,8 @@ function handleEndAbilityToken(ctx: SBCtx): boolean {
 
 function handleCureTeamToken(ctx: SBCtx): boolean {
   const user = ctx.getPoke(ctx.parts[2] || '');
-  if (user) ctx.store.addLog(`¡El equipo de ${user.name} se curó de todos sus estados!`, 'log-info', user);
+  if (user)
+    ctx.store.addLog(`¡El equipo de ${user.name} se curó de todos sus estados!`, 'log-info', user);
   return true;
 }
 
@@ -206,19 +235,29 @@ function handleSwapToken(ctx: SBCtx): boolean {
   return true;
 }
 
+// open-record: Showdown item and ability token handlers dispatch table
 const ITEM_ABILITY_HANDLERS: Readonly<Record<string, (ctx: SBCtx) => boolean>> = {
-  'cant': handleCantToken,
+  cant: handleCantToken,
   '-cant': handleCantToken,
-  '-activate': (ctx) => handleActivateToken(ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3] || ctx.parts[2] || '', ctx.store),
+  '-activate': (ctx) =>
+    handleActivateToken(
+      ctx.getPoke(ctx.parts[2] || ''),
+      ctx.parts[3] || ctx.parts[2] || '',
+      ctx.store
+    ),
   '-ability': handleAbilityToken,
   '-endability': handleEndAbilityToken,
-  '-item': (ctx) => handleItemToken(ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3], ctx.line, ctx.store),
-  '-enditem': (ctx) => handleEndItemToken(ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3], ctx.line, ctx.store),
+  '-item': (ctx) =>
+    handleItemToken(ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3], ctx.line, ctx.store),
+  '-enditem': (ctx) =>
+    handleEndItemToken(ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3], ctx.line, ctx.store),
   '-cureteam': handleCureTeamToken,
   '-mustrecharge': handleMustRechargeToken,
-  '-singlemove': (ctx) => handleSingleMoveOrTurnToken(ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3] || '', ctx.store),
-  '-singleturn': (ctx) => handleSingleMoveOrTurnToken(ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3] || '', ctx.store),
-  'swap': handleSwapToken
+  '-singlemove': (ctx) =>
+    handleSingleMoveOrTurnToken(ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3] || '', ctx.store),
+  '-singleturn': (ctx) =>
+    handleSingleMoveOrTurnToken(ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3] || '', ctx.store),
+  swap: handleSwapToken
 };
 
 export function handleItemAndAbilityEvents(ctx: SBCtx): boolean {

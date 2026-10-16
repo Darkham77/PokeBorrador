@@ -1,95 +1,97 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventory/inventory'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import BaseModal from '@/components/common/BaseModal.vue'
-import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
-import type { Move } from '@/types/pokemon/pokemon'
+import { computed } from 'vue';
+import { useUIStore } from '@/stores/ui';
+import { useGameStore } from '@/stores/game';
+import { useInventoryStore } from '@/stores/inventory/inventory';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import BaseModal from '@/components/common/BaseModal.vue';
+import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue';
+import type { Move } from '@/types/pokemon/pokemon';
 
-const uiStore = useUIStore()
-const gameStore = useGameStore()
-const inventoryStore = useInventoryStore()
+const uiStore = useUIStore();
+const gameStore = useGameStore();
+const inventoryStore = useInventoryStore();
 
-const isPPMax = computed(() => uiStore.activeItemForPPUp === 'ppmax')
+const isPPMax = computed(() => uiStore.activeItemForPPUp === 'ppmax');
 
 /** Resolve the actual Pokémon from gameStore by index — avoids cross-store ref issues. */
 const ppPokemon = computed(() => {
-  const target = uiStore.activePokemonForPPUp
-  if (!target) return null
-  const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
-  return list[target.index] ?? null
-})
+  const target = uiStore.activePokemonForPPUp;
+  if (!target) return null;
+  const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box;
+  return list[target.index] ?? null;
+});
 
 /** Returns whether a move is already at its maximum possible maxPP. */
 const isMaxed = (move: Move | null): boolean => {
-  if (!move) return true
-  if (!move.id) throw new Error(`[PPUpModal] El movimiento no tiene un ID válido.`)
-  const moveData = pokemonDataProvider.getMoveData(move.id)
-  if (!moveData) throw new Error(`[PPUpModal] No se encontró información para el movimiento: ${move.id}`)
-  const basePP = moveData.pp
-  return move.maxPP >= Math.floor(basePP * 1.6)
-}
+  if (!move) return true;
+  if (!move.id) throw new Error(`[PPUpModal] El movimiento no tiene un ID válido.`);
+  const moveData = pokemonDataProvider.getMoveData(move.id);
+  if (!moveData)
+    throw new Error(`[PPUpModal] No se encontró información para el movimiento: ${move.id}`);
+  const basePP = moveData.pp;
+  return move.maxPP >= Math.floor(basePP * 1.6);
+};
 
 const handleApplyPPUp = (moveIndex: number) => {
-  const pokemon = ppPokemon.value
-  if (!pokemon) return
-  const itemId = uiStore.activeItemForPPUp
-  if (!itemId) return
-  const move = pokemon.moves[moveIndex]
-  if (!move) return
+  const pokemon = ppPokemon.value;
+  if (!pokemon) return;
+  const itemId = uiStore.activeItemForPPUp;
+  if (!itemId) return;
+  const move = pokemon.moves[moveIndex];
+  if (!move) return;
 
-  if (!move.id) throw new Error(`[PPUpModal] El movimiento no tiene un ID válido.`)
-  const moveData = pokemonDataProvider.getMoveData(move.id)
-  if (!moveData) throw new Error(`[PPUpModal] No se encontró información para el movimiento: ${move.id}`)
-  
-  const basePP = moveData.pp
-  const maxPossible = Math.floor(basePP * 1.6)
+  if (!move.id) throw new Error(`[PPUpModal] El movimiento no tiene un ID válido.`);
+  const moveData = pokemonDataProvider.getMoveData(move.id);
+  if (!moveData)
+    throw new Error(`[PPUpModal] No se encontró información para el movimiento: ${move.id}`);
+
+  const basePP = moveData.pp;
+  const maxPossible = Math.floor(basePP * 1.6);
 
   if (move.maxPP >= maxPossible) {
-    uiStore.notify('PP al máximo para este movimiento.', '⚠️')
-    return
+    uiStore.notify('PP al máximo para este movimiento.', '⚠️');
+    return;
   }
 
   if (isPPMax.value) {
     // pp_max: raises maxPP to 160% ceiling permanently — does NOT restore current PP
-    move.maxPP = maxPossible
-    uiStore.notify(`¡El límite máximo de PP de ${move.name} se alcanzó!`, '📈')
+    move.maxPP = maxPossible;
+    uiStore.notify(`¡El límite máximo de PP de ${move.name} se alcanzó!`, '📈');
   } else {
     // pp_up: raises maxPP by +20% permanently — does NOT restore current PP
-    const increase = Math.floor(basePP * 0.2)
-    move.maxPP = Math.min(maxPossible, move.maxPP + increase)
-    uiStore.notify(`¡El límite de PP de ${move.name} aumentó!`, '📈')
+    const increase = Math.floor(basePP * 0.2);
+    move.maxPP = Math.min(maxPossible, move.maxPP + increase);
+    uiStore.notify(`¡El límite de PP de ${move.name} aumentó!`, '📈');
   }
 
   // Consume item only after a move is successfully chosen
-  inventoryStore.removeItem(itemId, 1)
+  inventoryStore.removeItem(itemId, 1);
 
-  close()
-  gameStore.save()
-}
+  close();
+  gameStore.save();
+};
 
 interface Props {
-  id?: string
-  show?: boolean
+  id?: string;
+  show?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   id: 'pp-up-modal',
   show: true
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
 const close = () => {
-  emit('close')
-  uiStore.isPPUpOpen = false
-  uiStore.activeItemForPPUp = null
-  uiStore.activePokemonForPPUp = null
-}
+  emit('close');
+  uiStore.isPPUpOpen = false;
+  uiStore.activeItemForPPUp = null;
+  uiStore.activePokemonForPPUp = null;
+};
 </script>
 
 <template>
@@ -123,20 +125,13 @@ const close = () => {
             :can-reorder="false"
             @use-move="handleApplyPPUp"
           />
-          <span
-            v-if="isMaxed(m)"
-            class="maxed-label"
-          >PP MÁXIMO</span>
+          <span v-if="isMaxed(m)" class="maxed-label">PP MÁXIMO</span>
         </div>
       </div>
     </div>
 
     <template #footer>
-      <button
-        id="pp-up-cancel-btn"
-        class="btn-vicio-secondary btn-vicio-full"
-        @click.stop="close"
-      >
+      <button id="pp-up-cancel-btn" class="btn-vicio-secondary btn-vicio-full" @click.stop="close">
         CANCELAR
       </button>
     </template>
@@ -144,7 +139,7 @@ const close = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .ppup-modal-inner {
   padding: 8px 0;

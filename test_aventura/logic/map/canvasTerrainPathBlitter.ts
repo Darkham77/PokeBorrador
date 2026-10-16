@@ -39,25 +39,21 @@ export interface TerrainPathBlitContext {
  * Renders base terrain, water, urban avenues, plazas, paths, bridges, and mountain cliffs.
  */
 export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
-  const {
-    continent,
-    pois,
-    pathGrid,
-    bridgeGrid,
-    buildingFootprintMask,
-    addBlit,
-    options
-  } = ctx;
+  const { continent, pois, pathGrid, bridgeGrid, buildingFootprintMask, addBlit, options } = ctx;
 
   const H = continent.height;
   const W = continent.width;
 
   // 1. Base Terrain & Water & Coast & Foam
-  const macroBiomesResult = continent.resolvedMacroBiomes ?? (
-    continent.macroBiomes
-      ? resolveMacroBiomeAutotile(continent.macroBiomes.biomeGrid, continent.terrainMatrix, continent.heightmap)
-      : null
-  );
+  const macroBiomesResult =
+    continent.resolvedMacroBiomes ??
+    (continent.macroBiomes
+      ? resolveMacroBiomeAutotile(
+          continent.macroBiomes.biomeGrid,
+          continent.terrainMatrix,
+          continent.heightmap
+        )
+      : null);
 
   const renderCellBaseTerrain = (r: number, c: number) => {
     const px = c * CANVAS_TILE_SIZE;
@@ -72,12 +68,11 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
       const isOuterCorner = Boolean(
         mCell && (mCell.role.includes('corner_outer') || mCell.role === 'peak_isolated')
       );
-      const hasElev0Neighbor = (
+      const hasElev0Neighbor =
         (continent.heightmap[r - 1]?.[c] ?? 0) === 0 ||
         (continent.heightmap[r + 1]?.[c] ?? 0) === 0 ||
         (continent.heightmap[r]?.[c - 1] ?? 0) === 0 ||
-        (continent.heightmap[r]?.[c + 1] ?? 0) === 0
-      );
+        (continent.heightmap[r]?.[c + 1] ?? 0) === 0;
 
       if (isOuterCorner && hasElev0Neighbor) {
         const mbCell = macroBiomesResult?.cellDetails[r]?.[c];
@@ -89,22 +84,34 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
           addBlit('poke_grass_plain.png', px, py);
         }
 
-        if (r > 0 && c > 0 && (mCell?.role === 'corner_outer_sw_top' || mCell?.role === 'edge_west')) {
+        if (
+          r > 0 &&
+          c > 0 &&
+          (mCell?.role === 'corner_outer_sw_top' || mCell?.role === 'edge_west')
+        ) {
           const westNorthMtn = continent.resolvedMountain.cellDetails[r - 1]?.[c - 1];
           if (westNorthMtn?.projectedFoot && !westNorthMtn.projectedFoot.tile.includes('corner')) {
             addBlit(westNorthMtn.projectedFoot.tile, px, py);
           }
-        } else if (r > 0 && c < W - 1 && (mCell?.role === 'corner_outer_se_top' || mCell?.role === 'edge_east')) {
+        } else if (
+          r > 0 &&
+          c < W - 1 &&
+          (mCell?.role === 'corner_outer_se_top' || mCell?.role === 'edge_east')
+        ) {
           const eastNorthMtn = continent.resolvedMountain.cellDetails[r - 1]?.[c + 1];
           if (eastNorthMtn?.projectedFoot && !eastNorthMtn.projectedFoot.tile.includes('corner')) {
             addBlit(eastNorthMtn.projectedFoot.tile, px, py);
           }
         }
       } else {
-        const mtnPal = continent.geologicalClusters?.paletteMatrix?.[r]?.[c] ?? continent.mountainPalette ?? 'brown';
-        const plateauBase = mtnPal === 'gray'
-          ? 'poke_cliff_gray_plateau_rock.png'
-          : 'poke_cliff_brown_plateau_rock.png';
+        const mtnPal =
+          continent.geologicalClusters?.paletteMatrix?.[r]?.[c] ??
+          continent.mountainPalette ??
+          'brown';
+        const plateauBase =
+          mtnPal === 'gray'
+            ? 'poke_cliff_gray_plateau_rock.png'
+            : 'poke_cliff_brown_plateau_rock.png';
         addBlit(plateauBase, px, py);
       }
       return;
@@ -116,7 +123,11 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
           addBlit(t, px, py);
         }
       } else {
-        addBlit(curTerrain === 'water_deep' ? 'poke_water_deep.png' : 'poke_water_ocean_center.png', px, py);
+        addBlit(
+          curTerrain === 'water_deep' ? 'poke_water_deep.png' : 'poke_water_ocean_center.png',
+          px,
+          py
+        );
       }
       return;
     }
@@ -344,85 +355,91 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
 
   // 3b. Canonical GBA Boardwalk Bridges & Shore Steps
   if (bridgeGrid) {
-    const portDockBridgeKeys = options?.portDockBridgeKeys ?? (() => {
-      const keys = new Set<string>();
-      const isWaterCell = (r: number, c: number): boolean => {
-        const t = continent.terrainMatrix[r]?.[c] ?? continent.cells[r]?.[c]?.terrain;
-        return t === 'water' || t === 'water_deep';
-      };
+    const portDockBridgeKeys =
+      options?.portDockBridgeKeys ??
+      (() => {
+        const keys = new Set<string>();
+        const isWaterCell = (r: number, c: number): boolean => {
+          const t = continent.terrainMatrix[r]?.[c] ?? continent.cells[r]?.[c]?.terrain;
+          return t === 'water' || t === 'water_deep';
+        };
 
-      const collectSouthPier = (node: POINode, pierLen: number) => {
-        const startY = node.gridY + node.footprint.height;
-        const px = node.gridX + (node.footprint.width >= 7 ? Math.floor((node.footprint.width - 3) / 2) : 2);
-        for (let dy = 0; dy < pierLen; dy++) {
-          const py = startY + dy;
-          if (py < 0 || py >= H || px < 0 || px + 2 >= W) break;
-          if (!isWaterCell(py, px) || !isWaterCell(py, px + 1) || !isWaterCell(py, px + 2)) break;
-          keys.add(`${px}_${py}`);
-          keys.add(`${px + 1}_${py}`);
-          keys.add(`${px + 2}_${py}`);
-        }
-      };
+        const collectSouthPier = (node: POINode, pierLen: number) => {
+          const startY = node.gridY + node.footprint.height;
+          const px =
+            node.gridX +
+            (node.footprint.width >= 7 ? Math.floor((node.footprint.width - 3) / 2) : 2);
+          for (let dy = 0; dy < pierLen; dy++) {
+            const py = startY + dy;
+            if (py < 0 || py >= H || px < 0 || px + 2 >= W) break;
+            if (!isWaterCell(py, px) || !isWaterCell(py, px + 1) || !isWaterCell(py, px + 2)) break;
+            keys.add(`${px}_${py}`);
+            keys.add(`${px + 1}_${py}`);
+            keys.add(`${px + 2}_${py}`);
+          }
+        };
 
-      const collectNorthPier = (node: POINode, pierLen: number) => {
-        const startY = node.gridY - 1;
-        const px = node.gridX + (node.footprint.width >= 7 ? Math.floor((node.footprint.width - 3) / 2) : 2);
-        let lastPy = startY;
-        for (let dy = 0; dy < pierLen; dy++) {
-          const py = startY - dy;
-          if (py < 0 || py >= H || px < 0 || px + 2 >= W) break;
-          if (!isWaterCell(py, px) || !isWaterCell(py, px + 1) || !isWaterCell(py, px + 2)) break;
-          keys.add(`${px}_${py}`);
-          keys.add(`${px + 1}_${py}`);
-          keys.add(`${px + 2}_${py}`);
-          lastPy = py;
-        }
-        for (let r = lastPy; r <= Math.min(startY, lastPy + 1); r++) {
-          for (let c = px - 2; c <= px + 4; c++) {
-            if (c >= 0 && c < W && isWaterCell(r, c)) {
-              keys.add(`${c}_${r}`);
+        const collectNorthPier = (node: POINode, pierLen: number) => {
+          const startY = node.gridY - 1;
+          const px =
+            node.gridX +
+            (node.footprint.width >= 7 ? Math.floor((node.footprint.width - 3) / 2) : 2);
+          let lastPy = startY;
+          for (let dy = 0; dy < pierLen; dy++) {
+            const py = startY - dy;
+            if (py < 0 || py >= H || px < 0 || px + 2 >= W) break;
+            if (!isWaterCell(py, px) || !isWaterCell(py, px + 1) || !isWaterCell(py, px + 2)) break;
+            keys.add(`${px}_${py}`);
+            keys.add(`${px + 1}_${py}`);
+            keys.add(`${px + 2}_${py}`);
+            lastPy = py;
+          }
+          for (let r = lastPy; r <= Math.min(startY, lastPy + 1); r++) {
+            for (let c = px - 2; c <= px + 4; c++) {
+              if (c >= 0 && c < W && isWaterCell(r, c)) {
+                keys.add(`${c}_${r}`);
+              }
             }
           }
-        }
-      };
+        };
 
-      const collectEastPier = (node: POINode, pierLen: number) => {
-        const startX = node.gridX + node.footprint.width;
-        const py = node.gridY + 2;
-        for (let dx = 0; dx < pierLen; dx++) {
-          const px = startX + dx;
-          if (px < 0 || px >= W || py < 0 || py + 2 >= H) break;
-          if (!isWaterCell(py, px) || !isWaterCell(py + 1, px) || !isWaterCell(py + 2, px)) break;
-          keys.add(`${px}_${py}`);
-          keys.add(`${px}_${py + 1}`);
-          keys.add(`${px}_${py + 2}`);
-        }
-      };
+        const collectEastPier = (node: POINode, pierLen: number) => {
+          const startX = node.gridX + node.footprint.width;
+          const py = node.gridY + 2;
+          for (let dx = 0; dx < pierLen; dx++) {
+            const px = startX + dx;
+            if (px < 0 || px >= W || py < 0 || py + 2 >= H) break;
+            if (!isWaterCell(py, px) || !isWaterCell(py + 1, px) || !isWaterCell(py + 2, px)) break;
+            keys.add(`${px}_${py}`);
+            keys.add(`${px}_${py + 1}`);
+            keys.add(`${px}_${py + 2}`);
+          }
+        };
 
-      const collectWestPier = (node: POINode, pierLen: number) => {
-        const startX = node.gridX - 1;
-        const py = node.gridY + 2;
-        for (let dx = 0; dx < pierLen; dx++) {
-          const px = startX - dx;
-          if (px < 0 || px >= W || py < 0 || py + 2 >= H) break;
-          if (!isWaterCell(py, px) || !isWaterCell(py + 1, px) || !isWaterCell(py + 2, px)) break;
-          keys.add(`${px}_${py}`);
-          keys.add(`${px}_${py + 1}`);
-          keys.add(`${px}_${py + 2}`);
-        }
-      };
+        const collectWestPier = (node: POINode, pierLen: number) => {
+          const startX = node.gridX - 1;
+          const py = node.gridY + 2;
+          for (let dx = 0; dx < pierLen; dx++) {
+            const px = startX - dx;
+            if (px < 0 || px >= W || py < 0 || py + 2 >= H) break;
+            if (!isWaterCell(py, px) || !isWaterCell(py + 1, px) || !isWaterCell(py + 2, px)) break;
+            keys.add(`${px}_${py}`);
+            keys.add(`${px}_${py + 1}`);
+            keys.add(`${px}_${py + 2}`);
+          }
+        };
 
-      for (const node of pois) {
-        if (node.type !== 'port_dock') continue;
-        const facing = node.facing ?? 'south';
-        const pierLength = Math.max(8, Math.max(node.footprint.width, node.footprint.height) + 2);
-        if (facing === 'south') collectSouthPier(node, pierLength);
-        else if (facing === 'north') collectNorthPier(node, pierLength);
-        else if (facing === 'east') collectEastPier(node, pierLength);
-        else if (facing === 'west') collectWestPier(node, pierLength);
-      }
-      return keys;
-    })();
+        for (const node of pois) {
+          if (node.type !== 'port_dock') continue;
+          const facing = node.facing ?? 'south';
+          const pierLength = Math.max(8, Math.max(node.footprint.width, node.footprint.height) + 2);
+          if (facing === 'south') collectSouthPier(node, pierLength);
+          else if (facing === 'north') collectNorthPier(node, pierLength);
+          else if (facing === 'east') collectEastPier(node, pierLength);
+          else if (facing === 'west') collectWestPier(node, pierLength);
+        }
+        return keys;
+      })();
 
     const isPortDockCell = (cx: number, cy: number): boolean =>
       portDockBridgeKeys.has(`${cx}_${cy}`);
@@ -445,14 +462,19 @@ export function renderBaseTerrainAndCliffs(ctx: TerrainPathBlitContext): void {
     const py = r * CANVAS_TILE_SIZE;
 
     if (mCell.role === 'floor_center') {
-      const isRoadOrPlaza = urbanRoadSet.has(`${c}_${r}`) || plazaGrid[r]?.[c] || sanitizedPathGrid[r]?.[c];
+      const isRoadOrPlaza =
+        urbanRoadSet.has(`${c}_${r}`) || plazaGrid[r]?.[c] || sanitizedPathGrid[r]?.[c];
       if (!isRoadOrPlaza) {
         const h = Math.sin(c * CANVAS_RENDERER.PLATEAU_HASH_X + r * CANVAS_RENDERER.PLATEAU_HASH_Y);
         if (h > CANVAS_RENDERER.PLATEAU_ROCK_THRESHOLD) {
-          const mtnPal = continent.geologicalClusters?.paletteMatrix?.[r]?.[c] ?? continent.mountainPalette ?? 'brown';
-          const rockFloor = mtnPal === 'gray'
-            ? 'poke_cliff_gray_plateau_rock.png'
-            : 'poke_cliff_brown_plateau_rock.png';
+          const mtnPal =
+            continent.geologicalClusters?.paletteMatrix?.[r]?.[c] ??
+            continent.mountainPalette ??
+            'brown';
+          const rockFloor =
+            mtnPal === 'gray'
+              ? 'poke_cliff_gray_plateau_rock.png'
+              : 'poke_cliff_brown_plateau_rock.png';
           addBlit(rockFloor, px, py);
         } else {
           addBlit(mCell.primaryTile, px, py);

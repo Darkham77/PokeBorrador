@@ -1,15 +1,31 @@
 import { Ref } from 'vue';
-import { BattleState, BattleStages, BattleLog, type BattleSource, type BattleSide } from '@/types/battle/battle';
+import {
+  BattleState,
+  BattleStages,
+  BattleLog,
+  type BattleSource,
+  type BattleSide
+} from '@/types/battle/battle';
 import { Pokemon, Move } from '@/types/pokemon/pokemon';
-import { GameStore, BattleStore, UIStore, WarStore, EventStore, PlayerClassStore, AudioStore, BattleOptions } from '@/types/system/stores';
+import {
+  GameStore,
+  BattleStore,
+  UIStore,
+  WarStore,
+  EventStore,
+  PlayerClassStore,
+  AudioStore,
+  BattleOptions
+} from '@/types/system/stores';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 import type { ItemId } from '@/data/inventory/items';
 import type { SeatState } from '@/composables/battle/useBattleSeats';
 
 import type { BattleUiConfig } from '@/types/battle/battleConfig';
 import type { PostBattleSequenceCoordinator } from '@/logic/battle/postBattleSequenceCoordinator';
+import type { BattleSeatId } from '@/types/battle/battle';
 
-export type BattleSeatId = 'seat1' | 'seat2' | 'seat3' | 'seat4';
+export type { BattleSeatId };
 
 export interface BattleContext {
   gs: GameStore;
@@ -46,9 +62,14 @@ export interface BattleContext {
   isCave?: boolean;
   isIndoors?: boolean;
   isCrystalCave?: boolean;
-  
+
   handleFaint: (side: BattleSide) => Promise<void>;
-  addLog: (msg: string, type?: string, source?: BattleSource | null, sideOverride?: BattleSide | null) => void;
+  addLog: (
+    msg: string, // domain-ok: Open dynamic text or non-domain string payload
+    type?: string, // domain-ok: Open dynamic text or non-domain string payload
+    source?: BattleSource | null,
+    sideOverride?: BattleSide | null
+  ) => void;
   endBattle: (win: boolean, fled: boolean) => Promise<void>;
   processBattleEndRewards?: () => Promise<void>;
   completeBattleFlow: (option?: string) => Promise<void>;
@@ -59,31 +80,50 @@ export interface BattleContext {
   clearVolatileStatus: (p: Pokemon) => void;
   startBattle: (enemyPoke: Pokemon, options?: BattleOptions) => Promise<void>;
   _startBattle: (enemyPoke: Pokemon, options?: BattleOptions) => Promise<void>;
-  initBattle: (options?: { initialPlayer?: Pokemon | null; initialEnemy?: Pokemon | null; wasSearching?: boolean }) => Promise<void>;
-  
+  initBattle: (options?: {
+    initialPlayer?: Pokemon | null;
+    initialEnemy?: Pokemon | null;
+    wasSearching?: boolean;
+  }) => Promise<void>;
+
   animations?: {
     seats?: Ref<Record<BattleSeatId, SeatState>>;
     triggerSearchEncounter: () => Promise<void>;
     revealWildPokemon: (isInstant?: boolean) => Promise<void>;
     triggerWildEmergence: () => Promise<void>;
-    triggerCatchSparkles: (side: string) => Promise<void>;
-    triggerCriticalCaptureFx?: (side: string) => Promise<void>;
-    handleCatchRequest: (detail: string | { side?: string; ballId?: ItemId; pokemon?: Pokemon; isCritical?: boolean }) => Promise<void>;
-    handleReleaseRequest: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
-    handleWithdrawRequest?: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
-    handleShakeRequest: (detail: string | { side?: string; isCapture?: boolean }) => Promise<void>;
-    handleFaintAnim: (detail: string | { side?: string; isFaint?: boolean; pokemon?: Pokemon } | { detail?: string | { side: string; isFaint?: boolean; pokemon?: Pokemon } }) => Promise<void>;
-    playCatchCelebration: (side: string) => Promise<void>;
-    playBallFadeOut: (side: string) => Promise<void>;
+    triggerCatchSparkles: (side: BattleSide) => Promise<void>;
+    triggerCriticalCaptureFx?: (side: BattleSide) => Promise<void>;
+    handleCatchRequest: (
+      detail:
+        | BattleSide
+        | { side?: BattleSide; ballId?: ItemId; pokemon?: Pokemon; isCritical?: boolean }
+    ) => Promise<void>;
+    handleReleaseRequest: (
+      detail: BattleSide | { side?: BattleSide; pokemon?: Pokemon }
+    ) => Promise<void>;
+    handleWithdrawRequest?: (
+      detail: BattleSide | { side?: BattleSide; pokemon?: Pokemon }
+    ) => Promise<void>;
+    handleShakeRequest: (
+      detail: BattleSide | { side?: BattleSide; isCapture?: boolean }
+    ) => Promise<void>;
+    handleFaintAnim: (
+      detail:
+        | BattleSide
+        | { side?: BattleSide; isFaint?: boolean; pokemon?: Pokemon }
+        | { detail?: BattleSide | { side: BattleSide; isFaint?: boolean; pokemon?: Pokemon } }
+    ) => Promise<void>;
+    playCatchCelebration: (side: BattleSide) => Promise<void>;
+    playBallFadeOut: (side: BattleSide) => Promise<void>;
     triggerTrainerEntry: () => Promise<void>;
     triggerTrainerDialogs: () => Promise<void>;
     triggerTrainerRetreat: () => Promise<void>;
     triggerTrainerExit?: () => Promise<void>;
     triggerPokemonCall: () => Promise<void>;
-    handleHealRequest?: (detail: string | { side?: string }) => Promise<void>;
-    handleBlinkRequest?: (detail: string | { side?: string }) => Promise<void>;
-    triggerFlinchAnim?: (side: string) => Promise<void>;
-    awaitTween?: (key: string) => Promise<void>;
+    handleHealRequest?: (detail: BattleSide | { side?: BattleSide }) => Promise<void>;
+    handleBlinkRequest?: (detail: BattleSide | { side?: BattleSide }) => Promise<void>;
+    triggerFlinchAnim?: (side: BattleSide) => Promise<void>;
+    awaitTween?: (key: string) => Promise<void>; // domain-ok: Open dynamic text or non-domain string payload
     resetAll?: () => void;
   };
 }

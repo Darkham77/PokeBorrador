@@ -1,11 +1,14 @@
-import { defineStore } from 'pinia'
-import { ref, markRaw } from 'vue'
-import gsap from 'gsap'
-import { logger } from '@/logic/utils/logger'
+import { defineStore } from 'pinia';
+import { ref, markRaw } from 'vue';
+import gsap from 'gsap';
+import { logger } from '@/logic/utils/logger';
 
-import { MODAL_OPENING_FALLBACK_DURATION_SEC, MODAL_CLOSING_FALLBACK_DURATION_SEC } from '@/logic/constants/gameplay.ts'
+import {
+  MODAL_OPENING_FALLBACK_DURATION_SEC,
+  MODAL_CLOSING_FALLBACK_DURATION_SEC
+} from '@/logic/constants/gameplay.ts';
 
-import type { Component } from 'vue'
+import type { Component } from 'vue';
 
 export interface Modal {
   id: string;
@@ -17,15 +20,19 @@ export interface Modal {
 }
 
 export const useModalStore = defineStore('modals', () => {
-  const stack = ref<Modal[]>([])
+  const stack = ref<Modal[]>([]);
 
-  const open = (name: string, props: Record<string, unknown> = {}, customComponent?: Component): string | null => {
+  const open = (
+    name: string,
+    props: Record<string, unknown> = {},
+    customComponent?: Component
+  ): string | null => {
     if ((name === 'Confirm' || name === 'Prompt') && isOpen(name)) {
-      logger.warn('ModalStore', `Modal "${name}" is already open. Ignoring duplicate request.`)
-      return null
+      logger.warn('ModalStore', `Modal "${name}" is already open. Ignoring duplicate request.`);
+      return null;
     }
 
-    const id: string = crypto.randomUUID()
+    const id: string = crypto.randomUUID();
     const modal: Modal = {
       id,
       name,
@@ -33,70 +40,72 @@ export const useModalStore = defineStore('modals', () => {
       props,
       opening: true, // Initial state for animations
       closing: false
-    }
+    };
 
-    stack.value.push(modal)
+    stack.value.push(modal);
 
-    // GSAP fallback to ensure the "opening" state doesn't hang 
+    // GSAP fallback to ensure the "opening" state doesn't hang
     // This also allows unit tests to pass by simulating visual completion
-    gsap.delayedCall(MODAL_OPENING_FALLBACK_DURATION_SEC, () => finishOpening(id))
+    gsap.delayedCall(MODAL_OPENING_FALLBACK_DURATION_SEC, () => finishOpening(id));
 
-    return id
-  }
+    return id;
+  };
 
   /**
    * Called by the component when the opening animation finishes.
    */
   const finishOpening = (id: string) => {
-    const target = stack.value.find(m => m.id === id)
+    const target = stack.value.find((m) => m.id === id);
     if (target) {
-      target.opening = false
+      target.opening = false;
     }
-  }
+  };
 
   /**
    * Closes a specific modal by ID or Name.
    */
   const close = (identifier: string) => {
-    const index = stack.value.findLastIndex(m => (m.id === identifier || m.name === identifier) && !m.closing)
+    const index = stack.value.findLastIndex(
+      (m) => (m.id === identifier || m.name === identifier) && !m.closing
+    );
     if (index !== -1) {
-      const modal = stack.value[index]
-      if (!modal || modal.closing) return 
-      modal.closing = true
+      const modal = stack.value[index];
+      if (!modal || modal.closing) return;
+      modal.closing = true;
 
       // GSAP fallback to ensure the modal is eventually removed from the stack
       // even if the component fails to call finalizeClose
-      gsap.delayedCall(MODAL_CLOSING_FALLBACK_DURATION_SEC, () => finalizeClose(modal.id))
+      gsap.delayedCall(MODAL_CLOSING_FALLBACK_DURATION_SEC, () => finalizeClose(modal.id));
     }
-  }
+  };
 
   /**
    * Called by the component when the closing animation finishes.
    */
   const finalizeClose = (id: string) => {
-    const index = stack.value.findIndex(m => m.id === id)
+    const index = stack.value.findIndex((m) => m.id === id);
     if (index !== -1) {
-      stack.value.splice(index, 1)
+      stack.value.splice(index, 1);
     }
-  }
+  };
 
   /**
    * Closes the top-most modal in the stack (LIFO).
    */
   const closeTop = () => {
     if (stack.value.length > 0) {
-      const topModal = stack.value[stack.value.length - 1]
-      if (topModal) close(topModal.id)
+      const topModal = stack.value[stack.value.length - 1];
+      if (topModal) close(topModal.id);
     }
-  }
+  };
 
   const closeAll = () => {
-    stack.value = []
-  }
+    stack.value = [];
+  };
 
   const isOpen = (name: string) => {
-    return stack.value.some(m => m.name === name && !m.closing)
-  }
+    return stack.value.some((m) => m.name === name && !m.closing);
+  };
 
   return {
     stack,
@@ -107,5 +116,5 @@ export const useModalStore = defineStore('modals', () => {
     isOpen,
     finishOpening,
     finalizeClose
-  }
-})
+  };
+});

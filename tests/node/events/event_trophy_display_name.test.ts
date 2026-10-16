@@ -7,7 +7,7 @@
  * ("Torneo de Pesca Acuática") when resolved with species or date.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import {
   getEventDisplayName,
@@ -26,10 +26,26 @@ describe('Event Trophy Thematic Display Name Resolution', () => {
       hasCompetition: true,
       rotationTheme: 'weekly_4',
       weeklyRotations: {
-        '1': { species: 'magikarp,gyarados', banner: 'hora_magikarp_full', title: 'Torneo Magikarp & Gyarados' },
-        '2': { species: 'shellder,staryu,horsea,seadra,goldeen', banner: 'pesca_exotica_full', title: 'Torneo de Pesca Exótica' },
-        '3': { species: 'tentacool,tentacruel,krabby,kingler,poliwag', banner: 'pesca_profunda_full', title: 'Torneo de Pesca Profunda' },
-        '4': { species: 'dratini,dragonair,lapras', banner: 'pesca_mistica_full', title: 'Torneo de Pesca Mística' }
+        '1': {
+          species: 'magikarp,gyarados',
+          banner: 'hora_magikarp_full',
+          title: 'Torneo Magikarp & Gyarados'
+        },
+        '2': {
+          species: 'shellder,staryu,horsea,seadra,goldeen',
+          banner: 'pesca_exotica_full',
+          title: 'Torneo de Pesca Exótica'
+        },
+        '3': {
+          species: 'tentacool,tentacruel,krabby,kingler,poliwag',
+          banner: 'pesca_profunda_full',
+          title: 'Torneo de Pesca Profunda'
+        },
+        '4': {
+          species: 'dratini,dragonair,lapras',
+          banner: 'pesca_mistica_full',
+          title: 'Torneo de Pesca Mística'
+        }
       }
     }
   };
@@ -43,8 +59,16 @@ describe('Event Trophy Thematic Display Name Resolution', () => {
       hasCompetition: true,
       rotationTheme: 'weekly_4',
       weeklyRotations: {
-        '1': { species: 'scyther,pinsir,butterfree,beedrill,venomoth', banner: 'caza_bichos_full', title: 'Concurso de Caza de Bichos' },
-        '2': { species: 'tauros,kangaskhan,chansey,dodrio', banner: 'safari_park_full', title: 'Gran Torneo de la Zona Safari' }
+        '1': {
+          species: 'scyther,pinsir,butterfree,beedrill,venomoth',
+          banner: 'caza_bichos_full',
+          title: 'Concurso de Caza de Bichos'
+        },
+        '2': {
+          species: 'tauros,kangaskhan,chansey,dodrio',
+          banner: 'safari_park_full',
+          title: 'Gran Torneo de la Zona Safari'
+        }
       }
     }
   };
@@ -98,11 +122,13 @@ describe('Event Trophy Thematic Display Name Resolution', () => {
   it('should resolve the correct rotation event name when an historical awarded_at date is provided', async () => {
     const { GAME_TIMEZONE } = await import('@/logic/utils/timeUtils');
 
-    const week1Zdt = Temporal.Instant.from('2026-01-05T10:00:00Z').toZonedDateTimeISO(GAME_TIMEZONE);
+    const week1Zdt =
+      Temporal.Instant.from('2026-01-05T10:00:00Z').toZonedDateTimeISO(GAME_TIMEZONE);
     const displayNameWeek1 = getEventDisplayName(mockFishingEvent, week1Zdt);
     assert.equal(displayNameWeek1, 'Torneo Magikarp & Gyarados');
 
-    const week2Zdt = Temporal.Instant.from('2026-01-12T10:00:00Z').toZonedDateTimeISO(GAME_TIMEZONE);
+    const week2Zdt =
+      Temporal.Instant.from('2026-01-12T10:00:00Z').toZonedDateTimeISO(GAME_TIMEZONE);
     const displayNameWeek2 = getEventDisplayName(mockFishingEvent, week2Zdt);
     assert.equal(displayNameWeek2, 'Torneo de Pesca Exótica');
   });

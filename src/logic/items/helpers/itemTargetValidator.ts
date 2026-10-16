@@ -4,13 +4,34 @@ import { getItemById, requireItemId, type ItemId } from '../../../data/inventory
 import { DEFAULT_MAX_VIGOR } from '@/logic/pokemon/pokemonUtils';
 import { canHeal, canClearStatus, canRevive, canFullRestore, canRestorePP } from '../itemMath.ts';
 import { handleStone } from '../itemEffectHandlers.ts';
-import { EV_BERRIES, VITAMINS, FEATHERS, MOCHIS, canUseVitamin, canUseEvBerry, calculateTotalEvs } from '@/logic/pokemon/evMath.ts';
+import {
+  EV_BERRIES,
+  VITAMINS,
+  FEATHERS,
+  MOCHIS,
+  canUseVitamin,
+  canUseEvBerry,
+  calculateTotalEvs
+} from '@/logic/pokemon/evMath.ts';
 import { getDynamicItemEffect } from './itemEffectsHelpers.ts';
 
 const EVOLUTION_STONES = [
-  'firestone', 'thunderstone', 'waterstone', 'leafstone', 'moonstone',
-  'sunstone', 'dawnstone', 'duskstone', 'icestone', 'shinystone',
-  'ovalstone', 'linkcable', 'whippeddream', 'sachet', 'deepseascale', 'deepseatooth'
+  'firestone',
+  'thunderstone',
+  'waterstone',
+  'leafstone',
+  'moonstone',
+  'sunstone',
+  'dawnstone',
+  'duskstone',
+  'icestone',
+  'shinystone',
+  'ovalstone',
+  'linkcable',
+  'whippeddream',
+  'sachet',
+  'deepseascale',
+  'deepseatooth'
 ] as const satisfies readonly ItemId[];
 const EVOLUTION_STONES_SET: ReadonlySet<string> = new Set(EVOLUTION_STONES); // runtime-set: Fast O(1) membership lookup set
 
@@ -49,7 +70,7 @@ const STATIC_TARGET_VALIDATORS: Partial<Record<ItemId, (p: Pokemon) => boolean>>
   naturepatch: () => true,
   abilitypill: () => true,
   ppup: () => true,
-  ppmax: () => true,
+  ppmax: () => true
 };
 
 function verifyItemExists(resolvedId: ItemId, isTM: boolean, rawInput: string): boolean {
@@ -90,18 +111,28 @@ function validateEvolutionTarget(resolvedId: ItemId, pokemon: Pokemon): boolean 
 }
 
 interface TmOrHeldTargetFlags {
-  isTM: boolean
-  itemExists: boolean
+  isTM: boolean;
+  itemExists: boolean;
 }
 
-function validateTmOrHeldTarget(resolvedId: ItemId, pokemon: Pokemon, { isTM, itemExists }: TmOrHeldTargetFlags): boolean {
+function validateTmOrHeldTarget(
+  resolvedId: ItemId,
+  pokemon: Pokemon,
+  { isTM, itemExists }: TmOrHeldTargetFlags
+): boolean {
   if (isTM) {
     const dynamicRes = getDynamicItemEffect(resolvedId, pokemon);
     return !!(dynamicRes && dynamicRes.success);
   }
   if (itemExists) {
     const itemData = getItemById(resolvedId);
-    if (itemData && (itemData.cat === 'combat_held' || (itemData.cat === 'breeding_held' && itemData.id !== 'vigorrestorer' && !itemData.id.includes('berry')))) {
+    if (
+      itemData &&
+      (itemData.cat === 'combat_held' ||
+        (itemData.cat === 'breeding_held' &&
+          itemData.id !== 'vigorrestorer' &&
+          !itemData.id.includes('berry')))
+    ) {
       return true;
     }
   }

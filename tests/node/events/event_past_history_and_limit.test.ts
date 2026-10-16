@@ -6,17 +6,29 @@
  * and that fetchEvents calls and populates pastEvents.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { ref } from 'vue';
-import { fetchPastEvents, type EventAwardsContext } from '../../../src/stores/events/eventAwardsActions.ts';
+import {
+  fetchPastEvents,
+  type EventAwardsContext
+} from '../../../src/stores/events/eventAwardsActions.ts';
 import type { Event as GameEvent } from '../../../src/logic/events/eventEngine.ts';
-import type { PastEventHistoryItem, PendingAward, CompetitionEntry } from '../../../src/types/system/stores.ts';
+import type {
+  PastEventHistoryItem,
+  PendingAward,
+  CompetitionEntry
+} from '../../../src/types/system/stores.ts';
 
 describe('Event Past History & 20 Limit (Tier 1)', () => {
   it('correctly queries, sorts descending, and limits historical tournaments to 20 items', async () => {
     // 1. Mock DB with 25 results
-    const seededTournaments: Array<{ id: string; event_id: string; winners: string; ended_at: string }> = [];
+    const seededTournaments: Array<{
+      id: string;
+      event_id: string;
+      winners: string;
+      ended_at: string;
+    }> = [];
     for (let i = 1; i <= 25; i++) {
       const pad = String(i).padStart(2, '0');
       const dayStr = String(Math.min(28, i)).padStart(2, '0');
@@ -44,7 +56,9 @@ describe('Event Past History & 20 Limit (Tier 1)', () => {
               order: (_col: string, _opts: { ascending: boolean }) => ({
                 limit: (lim: number) => {
                   // Sort descending by ended_at
-                  const sorted = [...seededTournaments].sort((a, b) => b.ended_at.localeCompare(a.ended_at));
+                  const sorted = [...seededTournaments].sort((a, b) =>
+                    b.ended_at.localeCompare(a.ended_at)
+                  );
                   return Promise.resolve({
                     data: sorted.slice(0, lim),
                     error: null
@@ -89,7 +103,11 @@ describe('Event Past History & 20 Limit (Tier 1)', () => {
 
     await fetchPastEvents(ctx);
 
-    assert.strictEqual(pastEventsRef.value.length, 20, `Expected 20 past events, got ${pastEventsRef.value.length}`);
+    assert.strictEqual(
+      pastEventsRef.value.length,
+      20,
+      `Expected 20 past events, got ${pastEventsRef.value.length}`
+    );
     assert.strictEqual(pastEventsRef.value[0]?.winners[0]?.player_name, 'Campeon_Torneo_25');
     assert.strictEqual(pastEventsRef.value[19]?.winners[0]?.player_name, 'Campeon_Torneo_06');
     assert.strictEqual(pastEventsRef.value[0]?.event_name, 'La Hora del Magikarp');
@@ -103,17 +121,18 @@ describe('Event Past History & 20 Limit (Tier 1)', () => {
           return {
             select: () => ({
               order: () => ({
-                limit: () => Promise.resolve({
-                  data: [
-                    {
-                      id: 'res_custom',
-                      event_id: 'custom_1774821389985',
-                      winners: '[]',
-                      ended_at: '2026-03-29T22:06:00Z'
-                    }
-                  ],
-                  error: null
-                })
+                limit: () =>
+                  Promise.resolve({
+                    data: [
+                      {
+                        id: 'res_custom',
+                        event_id: 'custom_1774821389985',
+                        winners: '[]',
+                        ended_at: '2026-03-29T22:06:00Z'
+                      }
+                    ],
+                    error: null
+                  })
               })
             })
           };

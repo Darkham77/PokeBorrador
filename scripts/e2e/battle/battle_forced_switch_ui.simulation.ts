@@ -18,12 +18,17 @@ class ForcedSwitchSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(async (testLevel) => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { pokemonDebugService } =
+        await import('../../../src/logic/debug/pokemonDebugService.ts');
 
       const gameStore = useGameStore();
       const battleStore = useBattleStore();
 
-      const p1 = pokemonDebugService.generate({ id: 'pikachu', level: testLevel, moves: ['growl', 'tailwhip'] });
+      const p1 = pokemonDebugService.generate({
+        id: 'pikachu',
+        level: testLevel,
+        moves: ['growl', 'tailwhip']
+      });
       const p2 = pokemonDebugService.generate({ id: 'charizard', level: testLevel });
       gameStore.state.team = [p1, p2];
       gameStore.state.starterChosen = true;
@@ -47,35 +52,41 @@ class ForcedSwitchSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupWild1v1Battle(): Promise<void> {
-    await this.page.evaluate(async ({ pLevel, eLevel }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+    await this.page.evaluate(
+      async ({ pLevel, eLevel }) => {
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
 
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
+        const gameStore = useGameStore();
+        const battleStore = useBattleStore();
 
-      const p1 = pokemonDebugService.generate({
-        id: 'pidgeot',
-        level: pLevel,
-        moves: ['whirlwind', 'quickattack']
-      });
-      gameStore.state.team = [p1];
-      gameStore.state.starterChosen = true;
+        const p1 = pokemonDebugService.generate({
+          id: 'pidgeot',
+          level: pLevel,
+          moves: ['whirlwind', 'quickattack']
+        });
+        gameStore.state.team = [p1];
+        gameStore.state.starterChosen = true;
 
-      const wildCaterpie = pokemonDebugService.generate({ id: 'caterpie', level: eLevel });
+        const wildCaterpie = pokemonDebugService.generate({ id: 'caterpie', level: eLevel });
 
-      await battleStore.startBattle(wildCaterpie, {
-        isTrainer: false,
-        locationId: 'route1'
-      });
-    }, { pLevel: TRAINER_TEAM_TEST_LEVEL, eLevel: WILD_CATERPIE_TEST_LEVEL });
+        await battleStore.startBattle(wildCaterpie, {
+          isTrainer: false,
+          locationId: 'route1'
+        });
+      },
+      { pLevel: TRAINER_TEAM_TEST_LEVEL, eLevel: WILD_CATERPIE_TEST_LEVEL }
+    );
     await awaitBattleReadyForInput(this.page);
   }
 }
 
 test.describe('Battle Forced Switch (Phazing) UI Simulations', () => {
-  test('should execute Whirlwind forced ejection on player and drag out bench Pokémon without position jumps', async ({ page }) => {
+  test('should execute Whirlwind forced ejection on player and drag out bench Pokémon without position jumps', async ({
+    page
+  }) => {
     const sim = new ForcedSwitchSimWrapper(page, 'SwitchWhirlwind');
     await sim.setup();
     await sim.setupTrainerBattleWithBench();
@@ -96,7 +107,9 @@ test.describe('Battle Forced Switch (Phazing) UI Simulations', () => {
     await sim.forceFleeDebugger();
   });
 
-  test('should fail cleanly when Whirlwind is used against wild 1v1 target without bench', async ({ page }) => {
+  test('should fail cleanly when Whirlwind is used against wild 1v1 target without bench', async ({
+    page
+  }) => {
     const sim = new ForcedSwitchSimWrapper(page, 'SwitchEmptyBench');
     await sim.setup();
     await sim.setupWild1v1Battle();

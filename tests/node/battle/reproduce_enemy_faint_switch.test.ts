@@ -1,8 +1,11 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
-import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../src/logic/battle/helpers/showdownTeamMapper.ts';
+import {
+  ShowdownTeamMapper,
+  type CustomPokemonSet
+} from '../../../src/logic/battle/helpers/showdownTeamMapper.ts';
 import { ShowdownTeamResolver } from '../../../src/logic/battle/showdownTeamResolver.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
 import type { ShowdownPlayerRequest } from '../../../src/types/battle/battle.ts';
@@ -18,14 +21,16 @@ interface FullCustomSet extends CustomPokemonSet {
 
 describe('Reproduction: Turn 1 KO and forced switch synchronization', () => {
   it('reproduces and verifies the fix for enemy faint and switch sequence', () => {
-    const p1Team: FullCustomSet[] = [{
-      name: 'b5ca6dd1',
-      species: 'aurorus',
-      moves: ['icebeam', 'ancientpower', 'freezedry', 'thunderbolt'],
-      stats: { hp: 244, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
-      uid: 'b5ca6dd1-e233-4455-bad2-40ffae942da5',
-      level: 50
-    }];
+    const p1Team: FullCustomSet[] = [
+      {
+        name: 'b5ca6dd1',
+        species: 'aurorus',
+        moves: ['icebeam', 'ancientpower', 'freezedry', 'thunderbolt'],
+        stats: { hp: 244, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
+        uid: 'b5ca6dd1-e233-4455-bad2-40ffae942da5',
+        level: 50
+      }
+    ];
 
     const p2Team: FullCustomSet[] = [
       {
@@ -89,8 +94,15 @@ describe('Reproduction: Turn 1 KO and forced switch synchronization', () => {
     assert.strictEqual(battle.requestState, 'switch');
 
     // Turn 1 ended in KO, so P2 has forceSwitch: [true]
-    const p2Req = ShowdownTeamMapper.injectUidsIntoRequest(battle, 'p2', battle.p2.activeRequest) as ShowdownPlayerRequest | null;
-    const slot = ShowdownTeamResolver.getShowdownSlotForUid(p2Req, '271ae09c-e91e-4a1c-9406-4dd3d8f4bf68');
+    const p2Req = ShowdownTeamMapper.injectUidsIntoRequest(
+      battle,
+      'p2',
+      battle.p2.activeRequest
+    ) as ShowdownPlayerRequest | null;
+    const slot = ShowdownTeamResolver.getShowdownSlotForUid(
+      p2Req,
+      '271ae09c-e91e-4a1c-9406-4dd3d8f4bf68'
+    );
     assert.strictEqual(slot, 2);
 
     // Faint switch execution: P1 skips, P2 chooses `switch 2` (Sandshrew)

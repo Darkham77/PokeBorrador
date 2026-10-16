@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -6,7 +6,10 @@ import os from 'node:os';
 import assert from 'node:assert/strict';
 import { validateAndSanitize } from '../../../src/logic/auth/saveService.ts';
 import { validatePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
-import { splitSQLStatements, translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
+import {
+  splitSQLStatements,
+  translatePostgresToSqlite
+} from '../../../src/logic/db/sqlTranslator.ts';
 
 const DB_PATH = path.resolve(process.cwd(), 'tests/fixtures/poke_local_ash.db');
 
@@ -14,12 +17,16 @@ function isMigrationAlreadyApplied(db: DatabaseSync, id: string): boolean {
   try {
     const check = db.prepare('SELECT id FROM _migrations WHERE id = ?').get(id);
     return Boolean(check);
-  } catch { // catch-ok: _migrations table might not exist yet
+  } catch {
+    // catch-ok: _migrations table might not exist yet
     return false;
   }
 }
 
-function executeMigrationStatements(db: DatabaseSync, migration: { id: string; sql: string; sqlite_sql?: string }): void {
+function executeMigrationStatements(
+  db: DatabaseSync,
+  migration: { id: string; sql: string; sqlite_sql?: string }
+): void {
   const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
   const isSqliteSpec = migration.sqlite_sql !== undefined;
   const statements = splitSQLStatements(sqlSource);
@@ -29,24 +36,40 @@ function executeMigrationStatements(db: DatabaseSync, migration: { id: string; s
     const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
     try {
       db.exec(sql);
-    } catch (err) { // catch-ok: log and continue
-      console.error(`Error executing statement in migration ${migration.id}:`, sql, (err as Error).message);
+    } catch (err) {
+      // catch-ok: log and continue
+      console.error(
+        `Error executing statement in migration ${migration.id}:`,
+        sql,
+        (err as Error).message
+      );
     }
   }
 
   try {
-    db.prepare('INSERT INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, Temporal.Now.instant().toString());
-  } catch { // catch-ok: ignore duplicate insert error
+    db.prepare('INSERT INTO _migrations (id, applied_at) VALUES (?, ?)').run(
+      migration.id,
+      Temporal.Now.instant().toString()
+    );
+  } catch {
+    // catch-ok: ignore duplicate insert error
   }
 }
 
-function validatePokemonList(list: unknown[], slotName: string, userId: string, errors: string[]): void {
+function validatePokemonList(
+  list: unknown[],
+  slotName: string,
+  userId: string,
+  errors: string[]
+): void {
   list.forEach((p, idx) => {
     if (!p) return;
     try {
       validatePokemon(p as Parameters<typeof validatePokemon>[0]);
     } catch (err) {
-      errors.push(`[User: ${userId}] ${slotName} slot ${idx} (${(p as { id?: string }).id}): ${(err as Error).message}`);
+      errors.push(
+        `[User: ${userId}] ${slotName} slot ${idx} (${(p as { id?: string }).id}): ${(err as Error).message}`
+      );
     }
   });
 }
@@ -75,7 +98,10 @@ function validateSingleSave(row: { user_id: string; save_data: string }, errors:
 
 describe('Local Ash DB Diagnostics', () => {
   it('should run all SQLite migrations on poke_local_ash.db and validate all saves', async () => {
-    const tempDbPath = path.join(os.tmpdir(), `test_local_ash_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`);
+    const tempDbPath = path.join(
+      os.tmpdir(),
+      `test_local_ash_${Temporal.Now.instant().epochMilliseconds}_${Math.random().toString(36).slice(2)}.db`
+    );
     fs.copyFileSync(DB_PATH, tempDbPath);
 
     try {
@@ -100,7 +126,11 @@ describe('Local Ash DB Diagnostics', () => {
       }
 
       console.log('Errors found:', errors);
-      assert.strictEqual(errors.length, 0, `There must be 0 validation errors on the local database. Found: ${errors.length}`);
+      assert.strictEqual(
+        errors.length,
+        0,
+        `There must be 0 validation errors on the local database. Found: ${errors.length}`
+      );
     } finally {
       try {
         fs.unlinkSync(tempDbPath);

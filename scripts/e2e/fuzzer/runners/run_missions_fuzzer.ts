@@ -3,14 +3,20 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Dex } from '@pkmn/sim';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
-import { generateMission, validateMissionPokemon } from '../../../../src/logic/breeding/missionEngine.ts';
+import {
+  generateMission,
+  validateMissionPokemon
+} from '../../../../src/logic/breeding/missionEngine.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
 import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
 import type { NatureId } from '../../../../src/data/battle/natures.ts';
 import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
 import type { PokemonType } from '../../../../src/data/battle/types.ts';
 
-const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_missions_coverage_report.json');
+const REPORT_FILE = path.resolve(
+  process.cwd(),
+  'scripts/e2e/results/fuzzer_missions_coverage_report.json'
+);
 
 async function runMissionsFuzzer() {
   const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
@@ -22,7 +28,12 @@ async function runMissionsFuzzer() {
 
   console.log(`🎯 Ejecutando fuzzer de Misiones sobre 200 misiones aleatorias...`);
 
-  const createMockPoke = (speciesName: string, level: number, ivs: number, nature = 'serious'): Pokemon => {
+  const createMockPoke = (
+    speciesName: string,
+    level: number,
+    ivs: number,
+    nature = 'serious'
+  ): Pokemon => {
     const sId = Dex.toID(speciesName) as PokemonSpeciesId;
     return {
       uid: `mock-${speciesName}-${Math.random().toString(36).substring(2, 7)}`,
@@ -47,7 +58,7 @@ async function runMissionsFuzzer() {
       volatileCounters: {},
       status: '',
       exp: 0,
-      isShiny: false,
+      isShiny: false
     };
   };
 
@@ -88,9 +99,10 @@ async function runMissionsFuzzer() {
         text: mission.reqText,
         matched: isValid
       });
-
     } catch (err: unknown) {
-      errors.push(`Excepción procesando misión de nivel ${trainerLevel}: ${(err as Error).message}`);
+      errors.push(
+        `Excepción procesando misión de nivel ${trainerLevel}: ${(err as Error).message}`
+      );
       failed++;
     }
   }
@@ -100,27 +112,29 @@ async function runMissionsFuzzer() {
     summary: {
       total: 200,
       passed,
-      failed,
+      failed
     },
     results,
     errors,
-    warnings,
+    warnings
   };
 
   await fs.mkdir(path.dirname(REPORT_FILE), { recursive: true });
   await fs.writeFile(REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
   console.log(`💾 Reporte de Misiones guardado en: ${REPORT_FILE}`);
 
-  return [{
-    label: 'Misiones (Missions)',
-    passed,
-    failed,
-    untested: 0,
-    total: 200,
-  }];
+  return [
+    {
+      label: 'Misiones (Missions)',
+      passed,
+      failed,
+      untested: 0,
+      total: 200
+    }
+  ];
 }
 
 await runFuzzerSuite({
   suiteName: 'Fuzzer — Lógica de Misiones (Gen 9)',
-  run: runMissionsFuzzer,
+  run: runMissionsFuzzer
 });

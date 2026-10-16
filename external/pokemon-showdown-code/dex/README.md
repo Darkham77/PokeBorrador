@@ -22,7 +22,7 @@ convenient way to get started, simply depend on a transpiled and minified versio
 ```
 
 Please note that `Learnset` data must be imported separately when using `unpkg`, as
-[outlined below]((#browser)).
+[outlined below](<(#browser)>).
 
 ## Usage
 
@@ -69,23 +69,27 @@ this data on demand helps make the loading experience more reasonable given the 
 package.
 
 ```ts
-import {Dex} from '@pkmn/dex';
+import { Dex } from '@pkmn/dex';
 
 assert(Dex.forGen(1).types.get('Psychic').damageTaken['Ghost'] === 3);
 assert(Dex.types.getEffectiveness('Dark', ['Ghost', 'Psychic']) === 2);
 assert(Dex.forGen(5).species.get('Dragapult').isNonstandard === 'Future');
 assert(Dex.forGen(3).species.get('Chansey').prevo === 'Happiny');
-assert(Dex.forGen(1).species.all().filter(s => !s.isNonstandard).length === 151);
+assert(
+  Dex.forGen(1)
+    .species.all()
+    .filter((s) => !s.isNonstandard).length === 151
+);
 ```
 
 ### `Generations`
 
-The [`@pkmn/data`](../data) package wraps this data layer with `Generations` which  provides an
+The [`@pkmn/data`](../data) package wraps this data layer with `Generations` which provides an
 alternative, higher-level data API than `Dex` which irons out a couple of Pokémon Showdown quirks.
 
 ```ts
-import {Dex} from '@pkmn/dex';
-import {Generations} from '@pkmn/data';
+import { Dex } from '@pkmn/dex';
+import { Generations } from '@pkmn/data';
 
 const gens = new Generations(Dex);
 assert(gens.get(1).types.get('Ghost').effectiveness['Psychic'] === 0);
@@ -101,7 +105,7 @@ Note that Pokémon Showdown has been gradually improving its Dex API such that i
 similar to `@pkmn/data` post
 [pokemon-showdown@13189fdb](https://github.com/smogon/pokemon-showdown/commit/13189fdb). There are
 still several ergonomic advantages to using `@pkmn/data` as outlined in its documentation, though it
-is entirely possible  Pokémon Showdown will continue to be inspired by `@pkmn/data`'s design and
+is entirely possible Pokémon Showdown will continue to be inspired by `@pkmn/data`'s design and
 eventually fully bridge the gap ("`@pkmn/data` - what Pokémon Showdown's data layer will look like
 ~2 years from now").
 
@@ -109,7 +113,7 @@ eventually fully bridge the gap ("`@pkmn/data` - what Pokémon Showdown's data l
 
 The recommended way of using `@pkmn/dex` in a web browser is to **configure your bundler**
 ([Webpack](https://webpack.js.org/), [Rollup](https://rollupjs.org/),
-[Parcel](https://parceljs.org/), etc)  to minimize it and package it with the rest of your
+[Parcel](https://parceljs.org/), etc) to minimize it and package it with the rest of your
 application. If you do not use a bundler, a convenience `index.min.js` is included in the
 package. You simply need to depend on `./node_modules/@pkmn/dex/build/index.min.js` in a
 `script` tag (which is what the unpkg shortcut above is doing), after which **`pkmn.dex` will be
@@ -134,12 +138,12 @@ before `Dex#getLearnsets` is called.
 
 This package is heavily constrained by Pokémon Showdown's data layer - staying as close as possible
 to the Pokémon Showdown's client's and server's repositories' `Dex` APIs (whether or not they are
-desirable) is  primary feature for compatibility purposes. However, this package's `Dex` interface
+desirable) is primary feature for compatibility purposes. However, this package's `Dex` interface
 will break compatibility with Pokémon Showdown to:
 
 - attempt to unify the `client` and `server` logic to provide a more consistent API
 - provide an API that works for as broad a range of clients as possible while still maintaining the
- 'spirit' of Pokémon Showdown's interface
+  'spirit' of Pokémon Showdown's interface
 
 As such, this package does **not** attempt to provide the 'ideal' data layer for any and all Pokémon
 projects - please see the [Pokémon Showdown Core design doc](https://pkmn.cc/ps-core-design) which

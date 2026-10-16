@@ -5,9 +5,13 @@
  * and Showdown turn choice generation / struggle fallbacks.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { ref } from 'vue';
-import { createBattleStateMachine, BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import {
+  createBattleStateMachine,
+  BATTLE_STATES,
+  BATTLE_SUBSTATES
+} from '@/logic/battle/battleStateMachine';
 import { resolveTurnChoices } from '@/logic/battle/battleTurnChoiceHelper';
 import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop';
 import { processFaint } from '@/logic/battle/resolution';
@@ -58,7 +62,7 @@ describe('battleStateMachine Core Transitions & Helpers', () => {
   it('should assign a substate when transitioning directly to a substate', async () => {
     const fsm = createBattleStateMachine();
     fsm.transition(BATTLE_STATES.ACTIVE_BATTLE);
-    
+
     const p = fsm.transition(BATTLE_SUBSTATES.CATCH_PROCESS);
     vi.runAllTimers();
     await p;
@@ -69,7 +73,7 @@ describe('battleStateMachine Core Transitions & Helpers', () => {
 
   it('should assign a substate when transitioning to ACTIVE_BATTLE with a substate argument', async () => {
     const fsm = createBattleStateMachine();
-    
+
     const p = fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
     vi.runAllTimers();
     await p;
@@ -80,7 +84,7 @@ describe('battleStateMachine Core Transitions & Helpers', () => {
 
   it('should clear the substate when transitioning out of ACTIVE_BATTLE', async () => {
     const fsm = createBattleStateMachine();
-    
+
     const p1 = fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN);
     vi.runAllTimers();
     await p1;
@@ -97,7 +101,7 @@ describe('battleStateMachine Core Transitions & Helpers', () => {
 
   it('should handle delayed transitions correctly', async () => {
     const fsm = createBattleStateMachine();
-    
+
     expect(fsm.currentState.value).toBe(BATTLE_STATES.EXIT_BATTLE);
 
     const p = fsm.transition(BATTLE_STATES.INITIALIZING, null, 1000);
@@ -114,7 +118,7 @@ describe('battleStateMachine Core Transitions & Helpers', () => {
 
   it('should clear previous timeout if a new transition is requested before it completes', async () => {
     const fsm = createBattleStateMachine();
-    
+
     fsm.transition(BATTLE_STATES.INITIALIZING, null, 1000);
     const p2 = fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, null, 500);
 
@@ -127,7 +131,7 @@ describe('battleStateMachine Core Transitions & Helpers', () => {
   it('should trigger a console warning on unexpected transitions', async () => {
     const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const fsm = createBattleStateMachine();
-    
+
     const p1 = fsm.transition(BATTLE_STATES.INITIALIZING);
     vi.runAllTimers();
     await p1;
@@ -137,21 +141,21 @@ describe('battleStateMachine Core Transitions & Helpers', () => {
     await p2;
 
     expect(consoleSpy.mock.calls.length).toBeGreaterThan(0);
-    expect(consoleSpy.mock.calls[0]![0]).toMatch(/\[FSM\].*Unexpected transition/);
+    expect(consoleSpy.mock.calls[0]![0]).toMatch(/FSM.*Unexpected transition/);
 
     consoleSpy.mockRestore();
   });
 
   it('should expose isState and isSubState computed helpers properly', async () => {
     const fsm = createBattleStateMachine();
-    
+
     const p = fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CATCH_PROCESS);
     vi.runAllTimers();
     await p;
 
     expect(fsm.isState(BATTLE_STATES.ACTIVE_BATTLE)).toBe(true);
     expect(fsm.isState(BATTLE_STATES.REWARDS_PHASE)).toBe(false);
-    
+
     expect(fsm.isSubState(BATTLE_SUBSTATES.CATCH_PROCESS)).toBe(true);
     expect(fsm.isSubState(BATTLE_SUBSTATES.WAIT_INPUT)).toBe(false);
   });
@@ -201,17 +205,30 @@ describe('Battle Stale Flow Safety Tests', () => {
   it('should ignore processFaint if FSM has already moved to SEARCH_PHASE', async () => {
     await processFaint(mockCtx, 'player');
 
-    expect(mockCtx.fsm.transition).not.toHaveBeenCalledWith(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ);
+    expect(mockCtx.fsm.transition).not.toHaveBeenCalledWith(
+      BATTLE_STATES.ACTIVE_BATTLE,
+      BATTLE_SUBSTATES.PLAYER_FAINT_SEQ
+    );
     expect(mockCtx.faintedSides.value.has('player')).toBe(false);
   });
 
   it('should ignore applyEndTurnEffects if FSM state is not ACTIVE_BATTLE', async () => {
     const { applyEndTurnEffects } = await import('@/logic/battle/battleFlow');
-    
-    mockCtx.activeBattle.value!.enemy = { uid: 'zubat', name: 'Zubat', hp: 50, maxHp: 50, type: 'poison' } as unknown as Pokemon;
+
+    mockCtx.activeBattle.value!.enemy = {
+      uid: 'zubat',
+      name: 'Zubat',
+      hp: 50,
+      maxHp: 50,
+      type: 'poison'
+    } as unknown as Pokemon;
     mockCtx.activeBattle.value!.weather = { type: 'sandstorm', visual: 'sandstorm', turns: 5 };
-    mockCtx.playerStages = { value: {} } as unknown as import('vue').Ref<import('@/types/battle/battle').BattleStages>;
-    mockCtx.enemyStages = { value: {} } as unknown as import('vue').Ref<import('@/types/battle/battle').BattleStages>;
+    mockCtx.playerStages = { value: {} } as unknown as import('vue').Ref<
+      import('@/types/battle/battle').BattleStages
+    >;
+    mockCtx.enemyStages = { value: {} } as unknown as import('vue').Ref<
+      import('@/types/battle/battle').BattleStages
+    >;
 
     await applyEndTurnEffects(mockCtx);
 
@@ -220,11 +237,14 @@ describe('Battle Stale Flow Safety Tests', () => {
 
   it('should transition to COMBAT_OR_FLEE when entering search phase and keep logs intact', async () => {
     mockCtx.fsm.currentState.value = BATTLE_STATES.ACTIVE_BATTLE;
-    
+
     await handleBattleFlowCompletion(mockCtx, 'search');
 
     expect(mockCtx.clearLogs).not.toHaveBeenCalled();
-    expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE);
+    expect(mockCtx.fsm.transition).toHaveBeenCalledWith(
+      BATTLE_STATES.SEARCH_PHASE,
+      BATTLE_SUBSTATES.COMBAT_OR_FLEE
+    );
   });
 });
 
@@ -238,7 +258,7 @@ describe('battleTurnChoiceHelper - resolveTurnChoices', () => {
       name: 'Pikachu',
       hp: 100,
       maxHp: 100,
-      moves: [{ id: 'thunderbolt', name: 'Thunderbolt', pp: 15 }],
+      moves: [{ id: 'thunderbolt', name: 'Thunderbolt', pp: 15 }]
     } as unknown as Pokemon;
 
     const mockEnemy = {
@@ -246,7 +266,7 @@ describe('battleTurnChoiceHelper - resolveTurnChoices', () => {
       name: 'Charmander',
       hp: 100,
       maxHp: 100,
-      moves: [{ id: 'flamethrower', name: 'Flamethrower', pp: 15 }],
+      moves: [{ id: 'flamethrower', name: 'Flamethrower', pp: 15 }]
     } as unknown as Pokemon;
 
     const mockStore = {
@@ -254,24 +274,21 @@ describe('battleTurnChoiceHelper - resolveTurnChoices', () => {
         player: mockPlayer,
         enemy: mockEnemy,
         playerRequest: null,
-        enemyRequest: null,
+        enemyRequest: null
       }),
       enemyStages: ref({}),
       playerStages: ref({}),
-      faintFlags: ref(new Set()),
+      faintFlags: ref(new Set())
     } as unknown as BattleContext;
 
     const move = mockPlayer.moves[0] as Move;
     const eMove = mockEnemy.moves[0] as Move;
 
-    const choices = await resolveTurnChoices(
-      mockStore,
-      mockPlayer,
-      mockEnemy,
-      move,
-      eMove,
-      { isStruggle: false, isWild: true, p2Skip: false }
-    );
+    const choices = await resolveTurnChoices(mockStore, mockPlayer, mockEnemy, move, eMove, {
+      isStruggle: false,
+      isWild: true,
+      p2Skip: false
+    });
 
     expect(choices.p1Choice).toBe('move thunderbolt');
     expect(choices.p2Choice).toBe('move flamethrower');
@@ -284,7 +301,7 @@ describe('battleTurnChoiceHelper - resolveTurnChoices', () => {
       name: 'Magikarp',
       hp: 50,
       maxHp: 50,
-      moves: [],
+      moves: []
     } as unknown as Pokemon;
 
     const mockEnemy = {
@@ -292,26 +309,23 @@ describe('battleTurnChoiceHelper - resolveTurnChoices', () => {
       name: 'Caterpie',
       hp: 50,
       maxHp: 50,
-      moves: [],
+      moves: []
     } as unknown as Pokemon;
 
     const mockStore = {
       activeBattle: ref({
         player: mockPlayer,
-        enemy: mockEnemy,
+        enemy: mockEnemy
       }),
       enemyStages: ref({}),
-      playerStages: ref({}),
+      playerStages: ref({})
     } as unknown as BattleContext;
 
-    const choices = await resolveTurnChoices(
-      mockStore,
-      mockPlayer,
-      mockEnemy,
-      null,
-      null,
-      { isStruggle: true, isWild: true, p2Skip: false }
-    );
+    const choices = await resolveTurnChoices(mockStore, mockPlayer, mockEnemy, null, null, {
+      isStruggle: true,
+      isWild: true,
+      p2Skip: false
+    });
 
     expect(choices.p1Choice).toBe('struggle');
     expect(choices.p2Choice).toBe('struggle');

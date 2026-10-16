@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { handleStageEvents } from '@/logic/battle/showdownBridgeStages';
 import type { ShowdownRequestPokemon } from '@/logic/battle/helpers/showdownTeamMapper';
 import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
@@ -137,7 +137,9 @@ describe('Audit Parity - BUG-065: clearpositiveboost message target', () => {
       store: {
         playerStages: { value: { atk: 2 } },
         enemyStages: { value: {} },
-        addLog: (msg: string) => { logMsg = msg; }
+        addLog: (msg: string) => {
+          logMsg = msg;
+        }
       },
       type: '-clearpositiveboost',
       parts: ['', '-clearpositiveboost', 'p1a: Gyarados'],
@@ -220,8 +222,8 @@ describe('Audit Parity - BUG-068: swapboost swaps all 7 stats', () => {
       parts: ['', '-swapboost', 'p1a: Alakazam', 'p2a: Gengar'],
       line: '|-swapboost|p1a: Alakazam|p2a: Gengar',
       p: playerMon,
-      getPoke: (id: string) => id.includes('Alakazam') ? playerMon : enemyMon,
-      getSide: (id: string) => id.includes('Alakazam') ? 'player' : 'enemy'
+      getPoke: (id: string) => (id.includes('Alakazam') ? playerMon : enemyMon),
+      getSide: (id: string) => (id.includes('Alakazam') ? 'player' : 'enemy')
     };
     handleStageEvents(ctx as any);
     expect(playerStages.accuracy).toBe(-2);
@@ -247,8 +249,8 @@ describe('Audit Parity - BUG-069: copyboost copies all 7 stats', () => {
       parts: ['', '-copyboost', 'p1a: Smeargle', 'p2a: Eevee'],
       line: '|-copyboost|p1a: Smeargle|p2a: Eevee',
       p: playerMon,
-      getPoke: (id: string) => id.includes('Smeargle') ? playerMon : enemyMon,
-      getSide: (id: string) => id.includes('Smeargle') ? 'player' : 'enemy'
+      getPoke: (id: string) => (id.includes('Smeargle') ? playerMon : enemyMon),
+      getSide: (id: string) => (id.includes('Smeargle') ? 'player' : 'enemy')
     };
     handleStageEvents(ctx as any);
     expect(playerStages.accuracy).toBe(2);

@@ -16,12 +16,8 @@ import {
   pruneRedundantStairs,
   type MountainStairLocation
 } from '../../logic/map/mountainAutotileEngine.ts';
-import {
-  clusterMountainMassifs
-} from '../../logic/map/geologicalClusterEngine.ts';
-import {
-  generatePokemonContinentalWorld
-} from '../../logic/map/continent/continentalEngine.ts';
+import { clusterMountainMassifs } from '../../logic/map/geologicalClusterEngine.ts';
+import { generatePokemonContinentalWorld } from '../../logic/map/continent/continentalEngine.ts';
 
 describe('islandSemanticsAndPortIntegration (Tier 1 Architecture Verification)', () => {
   describe('Pillar 1: Mountain Biome Palette Consistency & Redundant Stairs', () => {
@@ -183,7 +179,9 @@ describe('islandSemanticsAndPortIntegration (Tier 1 Architecture Verification)',
       // Check that a port gate / terminal building exists in the settlement or landmark
       const hasPortGate =
         portNode?.buildingFile?.includes('port_vermilion_gate') ||
-        portNode?.urbanLayout?.buildings.some((b) => b.prefabFile.includes('port_vermilion_gate')) ||
+        portNode?.urbanLayout?.buildings.some((b) =>
+          b.prefabFile.includes('port_vermilion_gate')
+        ) ||
         result.pois.some((p) => p.buildingFile?.includes('port_vermilion_gate'));
 
       expect(hasPortGate).toBe(true);

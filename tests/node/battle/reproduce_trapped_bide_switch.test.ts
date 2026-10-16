@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
@@ -102,7 +102,8 @@ describe('Reproduce Trapped Bide Switch Rejection', () => {
   });
 
   it('verifies that syncActiveMovesFromRequest synchronizes trapped state from request', async () => {
-    const { syncActiveMovesFromRequest } = await import('../../../src/stores/battle/battleMoveSync.ts');
+    const { syncActiveMovesFromRequest } =
+      await import('../../../src/stores/battle/battleMoveSync.ts');
 
     const mockActiveState = {
       player: {
@@ -128,8 +129,9 @@ describe('Reproduce Trapped Bide Switch Rejection', () => {
 
   it('verifies that executeBattleSwitch synchronously blocks voluntary switch when player is trapped', async () => {
     const { ref } = await import('vue');
-    const { vi } = await import('vitest');
-    const { executeBattleSwitch } = await import('../../../src/stores/battle/battleSwitchHelper.ts');
+    const { vi } = await import('vite-plus/test');
+    const { executeBattleSwitch } =
+      await import('../../../src/stores/battle/battleSwitchHelper.ts');
 
     const notifyMock = vi.fn();
     const mockCtx = {
@@ -152,12 +154,16 @@ describe('Reproduce Trapped Bide Switch Rejection', () => {
 
     await executeBattleSwitch(mockCtx, 1, false);
 
-    expect(notifyMock).toHaveBeenCalledWith('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫');
+    expect(notifyMock).toHaveBeenCalledWith(
+      '¡No puedes cambiar de Pokémon ahora! (Atrapado)',
+      '🚫'
+    );
     expect(mockCtx.isProcessing.value).toBe(false);
   });
 
   it('verifies that buildPokemonVolatiles displays the 🪤 (ATRAPADO) emoji and text', async () => {
-    const { buildPokemonVolatiles } = await import('../../../src/composables/battle/combatantStatusHelpers.ts');
+    const { buildPokemonVolatiles } =
+      await import('../../../src/composables/battle/combatantStatusHelpers.ts');
 
     const monTrapped = {
       trapped: true

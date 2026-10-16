@@ -1,150 +1,179 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { useAuthStore } from '@/stores/auth.ts'
-import { useGameStore } from '@/stores/game.ts'
-import { useUIStore } from '@/stores/ui.ts'
-import { useAudioStore } from '@/stores/audio.ts'
-import { logger } from '@/logic/utils/logger'
-import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics.ts'
-import { useChatPrivateStore, type ChatMessage } from '@/stores/social/chatPrivate.ts'
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { useAuthStore } from '@/stores/auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useAudioStore } from '@/stores/audio.ts';
+import { logger } from '@/logic/utils/logger';
+import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics.ts';
+import { useChatPrivateStore, type ChatMessage } from '@/stores/social/chatPrivate.ts';
 
-import type { RealtimeChannel } from '@supabase/supabase-js'
-import { validateChatMessage } from '@/logic/validation/schemas'
-import { CHAT_MAX_MESSAGES_HISTORY, CHAT_OPTIMISTIC_DEDUP_WINDOW_MS, CHAT_THROTTLE_INTERVAL_MS, CHAT_MAX_MESSAGE_LENGTH } from '@/logic/constants/gameplay.ts'
+import type { RealtimeChannel } from '@supabase/supabase-js';
+import { validateChatMessage } from '@/logic/validation/schemas';
+import {
+  CHAT_MAX_MESSAGES_HISTORY,
+  CHAT_OPTIMISTIC_DEDUP_WINDOW_MS,
+  CHAT_THROTTLE_INTERVAL_MS,
+  CHAT_MAX_MESSAGE_LENGTH
+} from '@/logic/constants/gameplay.ts';
 
 export const useChatStore = defineStore('chat', () => {
-  const authStore = useAuthStore()
-  const gameStore = useGameStore()
-  const uiStore = useUIStore()
-  const audioStore = useAudioStore()
+  const authStore = useAuthStore();
+  const gameStore = useGameStore();
+  const uiStore = useUIStore();
+  const audioStore = useAudioStore();
 
-  const globalMessages = ref<ChatMessage[]>([])
-  
-  const cosmeticsStore = useChatCosmeticsStore()
-  const profileCosmetics = computed(() => cosmeticsStore.profileCosmetics)
+  const globalMessages = ref<ChatMessage[]>([]);
+
+  const cosmeticsStore = useChatCosmeticsStore();
+  const profileCosmetics = computed(() => cosmeticsStore.profileCosmetics);
   const fetchMissingCosmetics = async (forceIds: string[] = []) => {
-    const uniqueUserIds = new Set<string>()
-    globalMessages.value.forEach(m => { if (m.user_id) uniqueUserIds.add(m.user_id) })
-    Object.keys(privateChats).forEach(friendId => {
-      uniqueUserIds.add(friendId)
-      privateChats[friendId]?.messages.forEach(m => { if (m.senderId) uniqueUserIds.add(m.senderId) })
-    })
-    forceIds.forEach(id => { if (id) uniqueUserIds.add(id) })
-    await cosmeticsStore.fetchMissingCosmetics([...uniqueUserIds])
-  }
+    const uniqueUserIds = new Set<string>();
+    globalMessages.value.forEach((m) => {
+      if (m.user_id) uniqueUserIds.add(m.user_id);
+    });
+    Object.keys(privateChats).forEach((friendId) => {
+      uniqueUserIds.add(friendId);
+      privateChats[friendId]?.messages.forEach((m) => {
+        if (m.senderId) uniqueUserIds.add(m.senderId);
+      });
+    });
+    forceIds.forEach((id) => {
+      if (id) uniqueUserIds.add(id);
+    });
+    await cosmeticsStore.fetchMissingCosmetics([...uniqueUserIds]);
+  };
 
-  const privateStore = useChatPrivateStore()
-  const privateChats = privateStore.privateChats
+  const privateStore = useChatPrivateStore();
+  const privateChats = privateStore.privateChats;
   const activeChatId = computed({
     get: () => privateStore.activeChatId,
-    set: (val: string) => { privateStore.activeChatId = val }
-  })
-  const totalUnreadChats = computed(() => privateStore.totalUnreadChats)
+    set: (val: string) => {
+      privateStore.activeChatId = val;
+    }
+  });
+  const totalUnreadChats = computed(() => privateStore.totalUnreadChats);
 
-  const sendPrivateMessage = privateStore.sendPrivateMessage
-  const openChat = privateStore.openChat
-  const closeChat = privateStore.closeChat
+  const sendPrivateMessage = privateStore.sendPrivateMessage;
+  const openChat = privateStore.openChat;
+  const closeChat = privateStore.closeChat;
 
-  let globalChannel: RealtimeChannel | null = null
-  let lastMessageSentTimestamp = 0
+  let globalChannel: RealtimeChannel | null = null;
+  let lastMessageSentTimestamp = 0;
 
   async function loadGlobalHistory() {
     // If offline, ProxyQuery will handle the local SELECT
 
-    const db = gameStore.db
-    if (!db) return
-    const { data, error } = await db
+    const db = gameStore.db;
+    if (!db) return;
+    const { data, error } = (await db
       .from('global_chat_messages')
       .select('id, user_id, username, message, player_class, trainer_level, gender, created_at')
       .order('created_at', { ascending: false })
-      .limit(CHAT_MAX_MESSAGES_HISTORY) as { data: ChatMessage[] | null, error: unknown }
+      .limit(CHAT_MAX_MESSAGES_HISTORY)) as { data: ChatMessage[] | null; error: unknown };
 
     if (!error && data) {
-      globalMessages.value = data.toReversed()
-      await fetchMissingCosmetics()
+      globalMessages.value = data.toReversed();
+      await fetchMissingCosmetics();
     }
   }
 
   async function initGlobalChat() {
-    if (globalChannel) return
-    
-    await loadGlobalHistory()
+    if (globalChannel) return;
 
-    const db = gameStore.db
-    if (!db) return
-    globalChannel = db.channel('global-chat-room')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'global_chat_messages'
-      }, ({ new: row }: { new: Record<string, unknown> }) => {
-        const validation = validateChatMessage(row)
-        if (!validation.success) {
-          logger.error('Chat', 'Mensaje de chat entrante inválido omitido por esquema incorrecto', validation.issues)
-          return
-        }
+    await loadGlobalHistory();
 
-        // Deduplicate by real Supabase ID
-        const alreadyById = globalMessages.value.some(m => m.id !== undefined && m.id === row.id)
-        if (alreadyById) return
-
-        // Deduplicate own optimistic push: same user_id + same message + close timestamp (<3s)
-        const isOwnOptimistic = row.user_id === authStore.user?.id &&
-          globalMessages.value.some(m => {
-            if (m.user_id !== row.user_id || m.message !== row.message) return false
-            // If optimistic ID is a temporary number (epochMs) and not a UUID, it is the optimistic push
-            if (typeof m.id === 'number') {
-              const diff = Math.abs((m.id as number) - (Temporal.Instant.from(row.created_at as string).epochMilliseconds))
-              return diff < CHAT_OPTIMISTIC_DEDUP_WINDOW_MS
-            }
-            return false
-          })
-
-        if (isOwnOptimistic) {
-          // Replace optimistic message with final one (which has real Supabase ID)
-          const idx = globalMessages.value.findIndex(m =>
-            typeof m.id === 'number' &&
-            m.user_id === row.user_id &&
-            m.message === row.message
-          )
-          if (idx !== -1 && globalMessages.value[idx]) {
-            // Preserve the numeric optimistic ID so Vue doesn't re-animate the element on key change
-            const updatedRow: ChatMessage = {
-              ...row,
-              id: globalMessages.value[idx].id
-            }
-            globalMessages.value = globalMessages.value.with(idx, updatedRow)
+    const db = gameStore.db;
+    if (!db) return;
+    globalChannel = db
+      .channel('global-chat-room')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'global_chat_messages'
+        },
+        ({ new: row }: { new: Record<string, unknown> }) => {
+          const validation = validateChatMessage(row);
+          if (!validation.success) {
+            logger.error(
+              'Chat',
+              'Mensaje de chat entrante inválido omitido por esquema incorrecto',
+              validation.issues
+            );
+            return;
           }
-          return
-        }
 
-        globalMessages.value.push(row as ChatMessage) // domain-ok: Open dynamic text or non-domain string payload
-        if (globalMessages.value.length > CHAT_MAX_MESSAGES_HISTORY) globalMessages.value.shift()
-        
-        const senderId = row.user_id as string
-        const cached = profileCosmetics.value[senderId]
-        const needsUpdate = !cached || cached.username !== row.username || cached.player_class !== row.player_class || cached.trainer_level !== row.trainer_level
-        fetchMissingCosmetics(needsUpdate ? [senderId] : [])
-        
-        // Sonido si el mensaje no es mío
-        if (row.user_id !== authStore.user?.id) {
-          audioStore.play('receivedMsg');
+          // Deduplicate by real Supabase ID
+          const alreadyById = globalMessages.value.some(
+            (m) => m.id !== undefined && m.id === row.id
+          );
+          if (alreadyById) return;
+
+          // Deduplicate own optimistic push: same user_id + same message + close timestamp (<3s)
+          const isOwnOptimistic =
+            row.user_id === authStore.user?.id &&
+            globalMessages.value.some((m) => {
+              if (m.user_id !== row.user_id || m.message !== row.message) return false;
+              // If optimistic ID is a temporary number (epochMs) and not a UUID, it is the optimistic push
+              if (typeof m.id === 'number') {
+                const diff = Math.abs(
+                  (m.id as number) -
+                    Temporal.Instant.from(row.created_at as string).epochMilliseconds
+                );
+                return diff < CHAT_OPTIMISTIC_DEDUP_WINDOW_MS;
+              }
+              return false;
+            });
+
+          if (isOwnOptimistic) {
+            // Replace optimistic message with final one (which has real Supabase ID)
+            const idx = globalMessages.value.findIndex(
+              (m) =>
+                typeof m.id === 'number' && m.user_id === row.user_id && m.message === row.message
+            );
+            if (idx !== -1 && globalMessages.value[idx]) {
+              // Preserve the numeric optimistic ID so Vue doesn't re-animate the element on key change
+              const updatedRow: ChatMessage = {
+                ...row,
+                id: globalMessages.value[idx].id
+              };
+              globalMessages.value = globalMessages.value.with(idx, updatedRow);
+            }
+            return;
+          }
+
+          globalMessages.value.push(row as ChatMessage); // domain-ok: Open dynamic text or non-domain string payload
+          if (globalMessages.value.length > CHAT_MAX_MESSAGES_HISTORY) globalMessages.value.shift();
+
+          const senderId = row.user_id as string;
+          const cached = profileCosmetics.value[senderId];
+          const needsUpdate =
+            !cached ||
+            cached.username !== row.username ||
+            cached.player_class !== row.player_class ||
+            cached.trainer_level !== row.trainer_level;
+          void fetchMissingCosmetics(needsUpdate ? [senderId] : []);
+
+          // Sonido si el mensaje no es mío
+          if (row.user_id !== authStore.user?.id) {
+            void audioStore.play('receivedMsg');
+          }
         }
-      })
-      .subscribe()
+      )
+      .subscribe();
   }
 
-
-
   async function sendGlobalMessage(text: string) {
-    if (!authStore.user || !text.trim() || !gameStore.db) return
+    if (!authStore.user || !text.trim() || !gameStore.db) return;
 
-    const now = Temporal.Now.instant().epochMilliseconds
+    const now = Temporal.Now.instant().epochMilliseconds;
     if (now - lastMessageSentTimestamp < CHAT_THROTTLE_INTERVAL_MS) {
-      uiStore.notify('Debes esperar 1 segundo entre mensajes', '⏳')
-      return
+      uiStore.notify('Debes esperar 1 segundo entre mensajes', '⏳');
+      return;
     }
-    lastMessageSentTimestamp = now
+    lastMessageSentTimestamp = now;
 
     const payload = {
       user_id: authStore.user.id,
@@ -152,33 +181,31 @@ export const useChatStore = defineStore('chat', () => {
       message: text.slice(0, CHAT_MAX_MESSAGE_LENGTH),
       player_class: gameStore.state.playerClass,
       trainer_level: gameStore.state.trainerLevel || 1
-    }
+    };
 
     // Immediate optimistic push before the async insert to prevent race conditions with Realtime
-    const optimisticId = Temporal.Now.instant().epochMilliseconds
+    const optimisticId = Temporal.Now.instant().epochMilliseconds;
     const optimisticRow = {
       id: optimisticId,
       ...payload,
       created_at: Temporal.Now.instant().toString()
-    }
-    globalMessages.value.push(optimisticRow as ChatMessage) // domain-ok: Open dynamic text or non-domain string payload
-    if (globalMessages.value.length > CHAT_MAX_MESSAGES_HISTORY) globalMessages.value.shift()
-    fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : [])
+    };
+    globalMessages.value.push(optimisticRow as ChatMessage); // domain-ok: Open dynamic text or non-domain string payload
+    if (globalMessages.value.length > CHAT_MAX_MESSAGES_HISTORY) globalMessages.value.shift();
+    void fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : []);
 
-    audioStore.play('sentMsg') // Sound on immediate send
+    void audioStore.play('sentMsg'); // Sound on immediate send
 
-    const { error } = await gameStore.db.from('global_chat_messages').insert(payload)
+    const { error } = await gameStore.db.from('global_chat_messages').insert(payload);
     if (error) {
-      logger.error('Chat', `Global message error: ${(error as Error).message}`)
+      logger.error('Chat', `Global message error: ${(error as Error).message}`);
       // If there is an error, remove the optimistic message from list
-      const idx = globalMessages.value.findIndex(m => m.id === optimisticId)
+      const idx = globalMessages.value.findIndex((m) => m.id === optimisticId);
       if (idx !== -1) {
-        globalMessages.value.splice(idx, 1)
+        globalMessages.value.splice(idx, 1);
       }
     }
   }
-
-
 
   return {
     globalMessages,
@@ -192,5 +219,5 @@ export const useChatStore = defineStore('chat', () => {
     openChat,
     closeChat,
     fetchMissingCosmetics
-  }
-})
+  };
+});

@@ -17,11 +17,7 @@ import {
 } from '../../config/mapStructures.ts';
 
 describe('Map Structure Templates & Multitile Stamping System', () => {
-  const templates: StructureTemplate[] = [
-    KANTO_HOUSE_SMALL,
-    POKEMART,
-    POKEMON_CENTER
-  ];
+  const templates: StructureTemplate[] = [KANTO_HOUSE_SMALL, POKEMART, POKEMON_CENTER];
 
   it('verifies all registered templates match their footprint dimensions exactly', () => {
     for (const tmpl of templates) {
@@ -36,7 +32,10 @@ describe('Map Structure Templates & Multitile Stamping System', () => {
       // Check collision mask
       expect(tmpl.collisionMask.length, `${tmpl.id} collision rows must equal height`).toBe(height);
       for (let r = 0; r < height; r++) {
-        expect(tmpl.collisionMask[r]?.length, `${tmpl.id} collision row ${r} cols must equal width`).toBe(width);
+        expect(
+          tmpl.collisionMask[r]?.length,
+          `${tmpl.id} collision row ${r} cols must equal width`
+        ).toBe(width);
       }
     }
   });

@@ -1,23 +1,20 @@
 <script setup lang="ts">
 const emit = defineEmits<{
-  (e: 'dismiss'): void
-}>()
+  (e: 'dismiss'): void;
+}>();
 </script>
 
 <template>
   <div class="auth-pwa-update-panel session-expired-panel">
-    <div class="update-icon emoji">
-      ⚠️
-    </div>
-    <div class="update-title expired-title">
-      SESIÓN EXPIRADA
-    </div>
+    <div class="update-icon emoji">⚠️</div>
+    <div class="update-title expired-title">SESIÓN EXPIRADA</div>
     <div class="update-message">
-      Tu sesión ha expirado o la base de datos fue restaurada. Es necesario reiniciar la sesión para continuar jugando de forma segura.
+      Tu sesión ha expirado o la base de datos fue restaurada. Es necesario reiniciar la sesión para
+      continuar jugando de forma segura.
     </div>
     <button
-      id="login-expired-notice-btn-iniciar-sesi-n" 
-      class="pv-button-retro update-btn expired-btn" 
+      id="login-expired-notice-btn-iniciar-sesi-n"
+      class="pv-button-retro update-btn expired-btn"
       @click.stop="emit('dismiss')"
     >
       INICIAR SESIÓN
@@ -26,7 +23,7 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/views/login" as *;
+@use '@/styles/views/login' as *;
 
 .session-expired-panel {
   background: Rgb(255 68 68 / 10%);

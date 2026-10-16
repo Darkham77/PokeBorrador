@@ -34,10 +34,10 @@ const getCosmetics = (userId: string) => {
       level: gameStore.state.trainerLevel || 1,
       avatar_style: gameStore.state.avatar_style || '',
       nick_style: gameStore.state.nick_style || '',
-      gender: gameStore.state.gender || 'h',
+      gender: gameStore.state.gender || 'h'
     };
   }
-  const friend = socialStore.friends.find(f => f.id === userId);
+  const friend = socialStore.friends.find((f) => f.id === userId);
   if (friend) {
     return {
       username: friend.username,
@@ -45,10 +45,17 @@ const getCosmetics = (userId: string) => {
       level: friend.level,
       avatar_style: friend.avatar_style || '',
       nick_style: friend.nick_style || '',
-      gender: friend.gender || 'h',
+      gender: friend.gender || 'h'
     };
   }
-  return { username: 'Entrenador', playerClass: 'entrenador', level: 1, avatar_style: '', nick_style: '', gender: 'h' };
+  return {
+    username: 'Entrenador',
+    playerClass: 'entrenador',
+    level: 1,
+    avatar_style: '',
+    nick_style: '',
+    gender: 'h'
+  };
 };
 
 const participantId = computed(() =>
@@ -80,10 +87,7 @@ async function onClaim() {
 </script>
 
 <template>
-  <div
-    class="trade-card"
-    :class="mode"
-  >
+  <div class="trade-card" :class="mode">
     <!-- HEADER -->
     <div class="trade-card-header">
       <div class="participant-info">
@@ -103,59 +107,41 @@ async function onClaim() {
             v-gsap-nick="cosmetics.nick_style || 'normal'"
             class="username clickable-username"
             :class="cosmetics.nick_style || 'normal'"
+            role="button"
+            tabindex="0"
             @click.stop="openProfile"
-          >{{ cosmetics.username }}</span>
+            >{{ cosmetics.username }}</span
+          >
 
-          <span
-            v-if="mode === 'incoming'"
-            class="meta"
-          >te ofrece un trato</span>
-          <span
-            v-else-if="mode === 'outgoing'"
-            class="meta"
-          >esperando respuesta...</span>
-          <span
-            v-else-if="mode === 'accepted'"
-            class="meta text-success"
-          >¡ACEPTÓ TU OFERTA! <span class="emoji">🎉</span></span>
+          <span v-if="mode === 'incoming'" class="meta">te ofrece un trato</span>
+          <span v-else-if="mode === 'outgoing'" class="meta">esperando respuesta...</span>
+          <span v-else-if="mode === 'accepted'" class="meta text-success"
+            >¡ACEPTÓ TU OFERTA! <span class="emoji">🎉</span></span
+          >
         </div>
       </div>
-      <span
-        v-if="mode === 'outgoing'"
-        class="waiting-badge"
-      ><span class="emoji">⏳</span> ENVIADA</span>
+      <span v-if="mode === 'outgoing'" class="waiting-badge"
+        ><span class="emoji">⏳</span> ENVIADA</span
+      >
     </div>
 
     <!-- ACCEPTED NOTICE -->
-    <div
-      v-if="mode === 'accepted'"
-      class="success-notice"
-    >
+    <div v-if="mode === 'accepted'" class="success-notice">
       Los activos del intercambio han sido enviados a la subpestaña de <strong>RECLAMOS</strong>.
     </div>
 
     <!-- ASSETS GRID (incoming/outgoing) -->
-    <TradeAssetsGrid
-      v-if="mode !== 'accepted'"
-      :trade="trade"
-      :mode="mode"
-    />
+    <TradeAssetsGrid v-if="mode !== 'accepted'" :trade="trade" :mode="mode" />
 
     <!-- MESSAGE BUBBLE -->
-    <div
-      v-if="trade.message && mode !== 'accepted'"
-      class="trade-message-bubble"
-    >
+    <div v-if="trade.message && mode !== 'accepted'" class="trade-message-bubble">
       <span class="bubble-quote">"</span>
       <span class="msg-text">{{ trade.message }}</span>
       <span class="bubble-quote">"</span>
     </div>
 
     <!-- VALIDATION WARNING -->
-    <div
-      v-if="mode === 'incoming' && canFulfill && !canFulfill.can"
-      class="trade-warning-banner"
-    >
+    <div v-if="mode === 'incoming' && canFulfill && !canFulfill.can" class="trade-warning-banner">
       <span class="emoji">⚠️</span> {{ canFulfill.reason }}
     </div>
 
@@ -206,7 +192,7 @@ async function onClaim() {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_mixins' as *;
 
 .trade-card {
   display: flex;
@@ -216,7 +202,6 @@ async function onClaim() {
   border: 1px solid Rgb(255 255 255 / 5%);
   border-radius: $radius-2xl;
   background: Rgb(255 255 255 / 2%);
-  
 
   &:hover {
     background: Rgb(255 255 255 / 3%);
@@ -229,8 +214,12 @@ async function onClaim() {
     border-color: Rgb(34 197 94 / 10%);
   }
 
-  &.incoming { border-left: 4px solid var(--purple-light); }
-  &.outgoing  { border-left: 4px solid var(--slate-500); }
+  &.incoming {
+    border-left: 4px solid var(--purple-light);
+  }
+  &.outgoing {
+    border-left: 4px solid var(--slate-500);
+  }
 }
 
 /* ── Header ── */
@@ -263,7 +252,10 @@ async function onClaim() {
     font-size: var(--font-11);
     line-height: 1.2;
 
-    &.text-success { color: var(--green-light); font-weight: bold; }
+    &.text-success {
+      color: var(--green-light);
+      font-weight: bold;
+    }
   }
 }
 
@@ -324,7 +316,9 @@ async function onClaim() {
   font-size: var(--font-11);
   line-height: 1.4;
 
-  strong { color: var(--green-light); }
+  strong {
+    color: var(--green-light);
+  }
 }
 
 /* ── Actions ── */
@@ -332,7 +326,10 @@ async function onClaim() {
   display: flex;
   gap: $spacing-sm;
 
-  button { font-weight: bold; flex: 1; }
+  button {
+    font-weight: bold;
+    flex: 1;
+  }
 
   .accept-btn:disabled {
     background: Rgb(255 255 255 / 5%) !important;
@@ -344,19 +341,29 @@ async function onClaim() {
     box-shadow: none !important;
   }
 
-  .cancel-btn, .claim-notif-btn { width: 100%; flex: none; }
+  .cancel-btn,
+  .claim-notif-btn {
+    width: 100%;
+    flex: none;
+  }
 }
 
 /* ── Interactivity ── */
 .clickable-avatar {
   cursor: pointer;
-  
-  &:hover { transform: Scale(1.08); filter: Brightness(1.15); }
+
+  &:hover {
+    transform: Scale(1.08);
+    filter: Brightness(1.15);
+  }
 }
 
 .clickable-username {
   cursor: pointer;
-  
-  &:hover { opacity: 0.85; text-decoration: underline; }
+
+  &:hover {
+    opacity: 0.85;
+    text-decoration: underline;
+  }
 }
 </style>

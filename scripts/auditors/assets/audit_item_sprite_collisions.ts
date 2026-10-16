@@ -10,7 +10,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import path, { resolve } from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { BaseAuditor , createRuleCapabilities} from '@francogp/auditor';
+import { BaseAuditor, createRuleCapabilities } from '@francogp/auditor';
 
 enableCompileCache();
 
@@ -26,7 +26,13 @@ export interface ShopItem {
 export interface SpriteCollisionGroup {
   sprite: string;
   count: number;
-  items: Array<{ id: string; name: string; cat: string; hasRawAsset: boolean; rawAssetPath?: string }>;
+  items: Array<{
+    id: string;
+    name: string;
+    cat: string;
+    hasRawAsset: boolean;
+    rawAssetPath?: string;
+  }>;
 }
 
 export type MissingSpriteReason = 'missing_property' | 'file_not_found';
@@ -47,7 +53,7 @@ export function checkRawAssetExistence(itemSlug: string): { exists: boolean; pat
     resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier0', `${itemSlug}.png`),
     resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier1', `${itemSlug}.png`),
     resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier2', `${itemSlug}.png`),
-    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier3', `${itemSlug}.png`),
+    resolve(process.cwd(), '_raw-assets/public/assets/sprites/crafting/tier3', `${itemSlug}.png`)
   ];
 
   for (const p of possiblePaths) {
@@ -59,7 +65,10 @@ export function checkRawAssetExistence(itemSlug: string): { exists: boolean; pat
 }
 
 export function findSpriteCollisions(items: ShopItem[]): SpriteCollisionGroup[] {
-  const spriteMap = new Map<string, Array<{ id: string; name: string; cat: string; hasRawAsset: boolean; rawAssetPath?: string }>>();
+  const spriteMap = new Map<
+    string,
+    Array<{ id: string; name: string; cat: string; hasRawAsset: boolean; rawAssetPath?: string }>
+  >();
 
   for (const item of items) {
     const sprite = item.sprite?.trim() || 'NO_SPRITE';
@@ -72,7 +81,7 @@ export function findSpriteCollisions(items: ShopItem[]): SpriteCollisionGroup[] 
       name: item.name ?? 'Sin nombre', // text-ok: UI text display localization string
       cat: item.cat || 'unknown',
       hasRawAsset: rawCheck.exists,
-      rawAssetPath: rawCheck.path,
+      rawAssetPath: rawCheck.path
     });
   }
 
@@ -82,7 +91,7 @@ export function findSpriteCollisions(items: ShopItem[]): SpriteCollisionGroup[] 
       collisions.push({
         sprite,
         count: itemList.length,
-        items: itemList,
+        items: itemList
       });
     }
   }
@@ -102,7 +111,7 @@ export function findMissingSprites(items: ShopItem[]): MissingSpriteError[] {
         id: item.id,
         name: item.name ?? 'Sin nombre', // text-ok: UI text display localization string
         expectedPath: '',
-        reason: 'missing_property',
+        reason: 'missing_property'
       });
       continue;
     }
@@ -114,7 +123,7 @@ export function findMissingSprites(items: ShopItem[]): MissingSpriteError[] {
         name: item.name ?? 'Sin nombre', // text-ok: UI text display localization string
         sprite,
         expectedPath: physicalPath,
-        reason: 'file_not_found',
+        reason: 'file_not_found'
       });
     }
   }
@@ -122,9 +131,7 @@ export function findMissingSprites(items: ShopItem[]): MissingSpriteError[] {
   return missing;
 }
 
-export type ItemSpriteCollisionRuleId =
-  | 'item-missing-sprite'
-  | 'item-sprite-collision';
+export type ItemSpriteCollisionRuleId = 'item-missing-sprite' | 'item-sprite-collision';
 
 export const ITEM_SPRITE_COLLISION_RULES: readonly ItemSpriteCollisionRuleId[] = [
   'item-missing-sprite',
@@ -164,8 +171,10 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
         'item-sprite-collision': 'Colisión en sprite de ítem'
       },
       ruleRemediations: {
-        'item-missing-sprite': 'Add missing sprite file to public/assets/sprites or correct sprite path in items.json',
-        'item-sprite-collision': 'Assign unique sprite assets to items sharing duplicate sprite paths'
+        'item-missing-sprite':
+          'Add missing sprite file to public/assets/sprites or correct sprite path in items.json',
+        'item-sprite-collision':
+          'Assign unique sprite assets to items sharing duplicate sprite paths'
       },
       requiredFiles: [itemsPath],
       coverage: {
@@ -215,7 +224,7 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
       const collisions = findSpriteCollisions(shopItems);
       collisionsCount = collisions.length;
       for (const group of collisions) {
-        const itemNames = group.items.map(i => i.id).join(', ');
+        const itemNames = group.items.map((i) => i.id).join(', ');
         this.addViolation({
           ruleId: 'item-sprite-collision',
           severity: 'warning',
@@ -234,6 +243,10 @@ export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionR
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+if (
+  process.argv[1] &&
+  import.meta.filename &&
+  path.basename(process.argv[1]) === path.basename(import.meta.filename)
+) {
   await BaseAuditor.runCli(new ItemSpriteCollisionAuditor());
 }

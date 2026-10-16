@@ -1,87 +1,101 @@
-import { defineStore } from 'pinia'
-import { ref, watch, computed } from 'vue'
-import { logger } from '@/logic/utils/logger.ts'
-import { supabase } from '@/logic/db/supabase.ts'
-import { syncServerTime } from '@/logic/auth/timeSync.ts'
-import { useLoadingStore } from '@/stores/loading.ts'
-import { useModalStore } from '@/stores/modals.ts'
-import { safeStorage, safeSessionStorage, LOCAL_STORAGE_KEYS, SESSION_STORAGE_KEYS } from '@/logic/utils/storage.ts'
-import { SESSION_ID } from '@/logic/auth/sessionId.ts'
-import type { AuthUser, SessionMode } from '@/types/auth/auth.ts'
-import { requireGenderId, type GenderId } from '@/types/system/game.ts'
-import type { Session } from '@supabase/supabase-js'
+import { defineStore } from 'pinia';
+import { ref, watch, computed } from 'vue';
+import { logger } from '@/logic/utils/logger.ts';
+import { supabase } from '@/logic/db/supabase.ts';
+import { syncServerTime } from '@/logic/auth/timeSync.ts';
+import { useLoadingStore } from '@/stores/loading.ts';
+import { useModalStore } from '@/stores/modals.ts';
+import {
+  safeStorage,
+  safeSessionStorage,
+  LOCAL_STORAGE_KEYS,
+  SESSION_STORAGE_KEYS
+} from '@/logic/utils/storage.ts';
+import { SESSION_ID } from '@/logic/auth/sessionId.ts';
+import type { AuthUser, SessionMode } from '@/types/auth/auth.ts';
+import { requireGenderId, type GenderId } from '@/types/system/game.ts';
+import type { Session } from '@supabase/supabase-js';
 import {
   fetchOnlineSessionWithRetry,
   recordSessionIdInProfile,
   fetchProfileMetadata,
   enrichAuthUser
-} from './auth/authSessionVerifier.ts'
-import { isLocalEnvironment } from '@/logic/utils/env.ts'
+} from './auth/authSessionVerifier.ts';
+import { isLocalEnvironment } from '@/logic/utils/env.ts';
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<AuthUser | null>(null)
-  const session = ref<Session | null>(null)
-  const loading = ref(true)
-  const sessionId = ref(SESSION_ID)
-  const sessionConflict = ref(false)
-  const sessionMode = ref<SessionMode>((safeStorage.getItem('pokevicio_session_mode') as SessionMode) || (isLocalEnvironment() ? 'offline' : 'online')) // 'online' | 'offline'
-  const isOnline = ref(navigator.onLine)
-  const connectionLost = ref(false)
-  const isBanned = ref(false)
-  const banReason = ref('')
+  const user = ref<AuthUser | null>(null);
+  const session = ref<Session | null>(null);
+  const loading = ref(true);
+  const sessionId = ref(SESSION_ID);
+  const sessionConflict = ref(false);
+  const sessionMode = ref<SessionMode>(
+    (safeStorage.getItem('pokevicio_session_mode') as SessionMode) ||
+      (isLocalEnvironment() ? 'offline' : 'online')
+  ); // 'online' | 'offline'
+  const isOnline = ref(navigator.onLine);
+  const connectionLost = ref(false);
+  const isBanned = ref(false);
+  const banReason = ref('');
 
-  const currentUserId = computed<string>(() => user.value?.id || 'local_user')
+  const currentUserId = computed<string>(() => user.value?.id || 'local_user');
 
   // Connectivity monitoring (Online mode only)
   if (typeof window !== 'undefined') {
     window.addEventListener('online', () => {
-      isOnline.value = true
-      if (sessionMode.value === 'online') connectionLost.value = false
-    })
+      isOnline.value = true;
+      if (sessionMode.value === 'online') connectionLost.value = false;
+    });
     window.addEventListener('offline', () => {
-      isOnline.value = false
+      isOnline.value = false;
       if (sessionMode.value === 'online') {
-        logger.warn('Auth', 'Conexión perdida en modo Online. Activando advertencia.')
-        connectionLost.value = true
+        logger.warn('Auth', 'Conexión perdida en modo Online. Activando advertencia.');
+        connectionLost.value = true;
       }
-    })
+    });
 
     // Listen for unique session conflicts
     window.addEventListener('session-conflict', () => {
-      logger.error('AuthStore', 'Conflicto de sesión detectado. Bloqueando acceso.')
-      sessionConflict.value = true
-      
+      logger.error('AuthStore', 'Conflicto de sesión detectado. Bloqueando acceso.');
+      sessionConflict.value = true;
+
       // Auto-open modal via ModalStore
       try {
-        const modalStore = useModalStore()
-        modalStore.open('SessionConflict')
+        const modalStore = useModalStore();
+        modalStore.open('SessionConflict');
       } catch (e) {
-        logger.error('AuthStore', `Failed to open SessionConflict modal: ${(e as Error).message}`)
+        logger.error('AuthStore', `Failed to open SessionConflict modal: ${(e as Error).message}`);
       }
-    })
+    });
     // Listen for database connection errors (Supabase unreachability)
     window.addEventListener('db-connection-error', () => {
       if (sessionMode.value === 'online') {
-        logger.warn('AuthStore', 'Error de conexión a DB detectado.')
-        connectionLost.value = true
+        logger.warn('AuthStore', 'Error de conexión a DB detectado.');
+        connectionLost.value = true;
       }
-    })
+    });
   }
 
   // Save session mode for persistence across reload
   watch(sessionMode, (newMode) => {
-    safeStorage.setItem('pokevicio_session_mode', newMode)
-  })
+    safeStorage.setItem('pokevicio_session_mode', newMode);
+  });
 
   // Persist local user changes (like db_version) to avoid re-migrations
-  watch(user, (newUser) => {
-    if (sessionMode.value === 'offline' && newUser) {
-      safeStorage.setItem('pokevicio_local_user', JSON.stringify(newUser))
-    }
-  }, { deep: true })
+  watch(
+    user,
+    (newUser) => {
+      if (sessionMode.value === 'offline' && newUser) {
+        safeStorage.setItem('pokevicio_local_user', JSON.stringify(newUser));
+      }
+    },
+    { deep: true }
+  );
 
   function tryRestoreE2EPostgresSession(): AuthUser | null {
-    const isE2EPostgres = (typeof window !== 'undefined' && (window as { __E2E_DRIVER__?: string }).__E2E_DRIVER__ === 'postgres');
+    const isE2EPostgres =
+      typeof window !== 'undefined' &&
+      (window as { __E2E_DRIVER__?: string }).__E2E_DRIVER__ === 'postgres';
     if (!isE2EPostgres) return null;
     const localUser = safeStorage.getItem('pokevicio_local_user');
     if (localUser) {
@@ -93,7 +107,13 @@ export const useAuthStore = defineStore('auth', () => {
   async function resolveOnlineAuthSession(
     onlineSession: Session | null,
     currentSessionId: string
-  ): Promise<{ user: AuthUser; session: Session | null; isBanned?: boolean; banMsg?: string; sessionInvalid?: boolean } | null> {
+  ): Promise<{
+    user: AuthUser;
+    session: Session | null;
+    isBanned?: boolean;
+    banMsg?: string;
+    sessionInvalid?: boolean;
+  } | null> {
     if (!onlineSession?.user) return null;
     const rawUser = onlineSession.user as AuthUser;
     const isLocalId = rawUser?.id === 'local_user' || rawUser?.id?.startsWith('local_');
@@ -103,14 +123,16 @@ export const useAuthStore = defineStore('auth', () => {
       sessionValid = await recordSessionIdInProfile(rawUser.id, currentSessionId);
     }
 
-    const profileData = isLocalId ? {
-      dbVersion: 1,
-      userGender: requireGenderId('h'),
-      userRole: undefined,
-      isUserBanned: false,
-      banMsg: 'Uso indebido de la plataforma',
-      sessionValid: true,
-    } : await fetchProfileMetadata(rawUser.id);
+    const profileData = isLocalId
+      ? {
+          dbVersion: 1,
+          userGender: requireGenderId('h'),
+          userRole: undefined,
+          isUserBanned: false,
+          banMsg: 'Uso indebido de la plataforma',
+          sessionValid: true
+        }
+      : await fetchProfileMetadata(rawUser.id);
 
     if (profileData.isUserBanned) {
       return { user: rawUser, session: onlineSession, isBanned: true, banMsg: profileData.banMsg };
@@ -150,7 +172,9 @@ export const useAuthStore = defineStore('auth', () => {
     return true;
   }
 
-  async function applyOnlineAuthResult(onlineResult: NonNullable<Awaited<ReturnType<typeof resolveOnlineAuthSession>>>): Promise<boolean> {
+  async function applyOnlineAuthResult(
+    onlineResult: NonNullable<Awaited<ReturnType<typeof resolveOnlineAuthSession>>>
+  ): Promise<boolean> {
     if (onlineResult.isBanned) {
       isBanned.value = true;
       banReason.value = onlineResult.banMsg || '';
@@ -168,7 +192,7 @@ export const useAuthStore = defineStore('auth', () => {
     sessionMode.value = 'online';
     markPvPSessionInitialized();
     startSessionMonitoring();
-    syncServerTime();
+    void syncServerTime();
     return true;
   }
 
@@ -182,7 +206,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     loading.value = true;
-    useLoadingStore().start('auth_init', 'Iniciando sesión...', 'Conectando con el servidor', false, '📶');
+    useLoadingStore().start(
+      'auth_init',
+      'Iniciando sesión...',
+      'Conectando con el servidor',
+      false,
+      '📶'
+    );
     try {
       const e2eUser = tryRestoreE2EPostgresSession();
       if (e2eUser) {
@@ -196,7 +226,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (supabase && typeof supabase.setMode === 'function') supabase.setMode('online');
         const onlineSession = await fetchOnlineSessionWithRetry();
         const onlineResult = await resolveOnlineAuthSession(onlineSession, sessionId.value);
-        if (onlineResult && await applyOnlineAuthResult(onlineResult)) {
+        if (onlineResult && (await applyOnlineAuthResult(onlineResult))) {
           return;
         }
       }
@@ -215,225 +245,258 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function login(email: string, password: string) {
-    const loadingStore = useLoadingStore()
-    loadingStore.start('auth_action', 'Verificando credenciales...', 'Por favor espera', true, '🔑')
-    
+    const loadingStore = useLoadingStore();
+    loadingStore.start(
+      'auth_action',
+      'Verificando credenciales...',
+      'Por favor espera',
+      true,
+      '🔑'
+    );
+
     try {
       if (supabase && typeof supabase.setMode === 'function') {
-        supabase.setMode('online')
+        supabase.setMode('online');
       }
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw error
-      if (!data.user) throw new Error('No user returned')
-      
-      session.value = data.session
-      user.value = data.user as AuthUser
-      sessionMode.value = 'online'
-      safeStorage.setItem('pokevicio_session_mode', 'online')
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      if (!data.user) throw new Error('No user returned');
+
+      session.value = data.session;
+      user.value = data.user as AuthUser;
+      sessionMode.value = 'online';
+      safeStorage.setItem('pokevicio_session_mode', 'online');
       if (supabase && typeof supabase.setMode === 'function') {
-        supabase.setMode('online')
+        supabase.setMode('online');
       }
-      
+
       // Registrar sesión
-      const updateRes = await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id) as { error?: { message?: string } | null }
-      const updateError = updateRes?.error
+      const updateRes = (await supabase
+        .from('profiles')
+        .update({ current_session_id: sessionId.value })
+        .eq('id', data.user.id)) as { error?: { message?: string } | null };
+      const updateError = updateRes?.error;
       if (updateError) {
-        logger.error('Auth', `Login session update failed: ${updateError.message}`)
-        throw new Error(`Error de verificación de sesión: ${updateError.message || 'Error desconocido'}`)
+        logger.error('Auth', `Login session update failed: ${updateError.message}`);
+        throw new Error(
+          `Error de verificación de sesión: ${updateError.message || 'Error desconocido'}`
+        );
       }
-      
+
       interface ProfileData {
         db_version: number;
         is_banned: boolean;
         ban_reason: string | null;
         gender?: GenderId;
       }
-      const profileRes = await supabase.from('profiles').select('db_version, is_banned, ban_reason, gender').eq('id', data.user.id).single() as { data: ProfileData | null, error?: { message?: string } | null }
-      const profile = profileRes.data
-      const profileError = profileRes.error
-      
+      const profileRes = (await supabase
+        .from('profiles')
+        .select('db_version, is_banned, ban_reason, gender')
+        .eq('id', data.user.id)
+        .single()) as { data: ProfileData | null; error?: { message?: string } | null };
+      const profile = profileRes.data;
+      const profileError = profileRes.error;
+
       if (profileError) {
-        logger.error('Auth', `Login profile fetch failed: ${profileError.message}`)
-        throw new Error(`Error de perfil: ${profileError.message || 'Error de lectura de perfil'}`)
+        logger.error('Auth', `Login profile fetch failed: ${profileError.message}`);
+        throw new Error(`Error de perfil: ${profileError.message || 'Error de lectura de perfil'}`);
       }
-      
+
       if (profile?.is_banned) {
-        isBanned.value = true
-        banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
-        await supabase.auth.signOut()
-        user.value = null
-        session.value = null
-        throw new Error('BAN:' + banReason.value)
+        isBanned.value = true;
+        banReason.value = profile.ban_reason || 'Uso indebido de la plataforma';
+        await supabase.auth.signOut();
+        user.value = null;
+        session.value = null;
+        throw new Error('BAN:' + banReason.value);
       }
 
       if (profile && user.value) {
-        user.value.db_version = profile.db_version || 1
+        user.value.db_version = profile.db_version || 1;
         if (!user.value.user_metadata) {
-          user.value.user_metadata = { username: user.value.email || 'user' }
+          user.value.user_metadata = { username: user.value.email || 'user' };
         }
-        user.value.user_metadata.gender = profile.gender || 'h'
+        user.value.user_metadata.gender = profile.gender || 'h';
       }
-      
-      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED, 'true')
-      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING, 'true')
 
-      startSessionMonitoring()
-      syncServerTime()
-      return data
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED, 'true');
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING, 'true');
+
+      startSessionMonitoring();
+      void syncServerTime();
+      return data;
     } finally {
-      loadingStore.finish('auth_action')
+      loadingStore.finish('auth_action');
     }
   }
 
   async function signup(email: string, password: string, username: string, gender: GenderId = 'h') {
-    const { data, error } = await supabase.auth.signUp({ 
-      email, 
-      password, 
-      options: { data: { username, gender } } 
-    })
-    if (error) throw error
-    if (!data.user) throw new Error('No user created')
-    
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { username, gender } }
+    });
+    if (error) throw error;
+    if (!data.user) throw new Error('No user created');
+
     // Crear perfil inicial
-    await supabase.from('profiles').upsert({ 
-      id: data.user.id, 
-      username, 
-      email, 
+    await supabase.from('profiles').upsert({
+      id: data.user.id,
+      username,
+      email,
       gender,
       db_version: 3,
-      created_at: Temporal.Now.instant().toString() 
-    })
-    
-    return data
+      created_at: Temporal.Now.instant().toString()
+    });
+
+    return data;
   }
 
   async function checkDbConnectivity(): Promise<boolean> {
     try {
-      const { error } = await supabase.from('profiles').select('id').limit(1).maybeSingle()
-      return !error
-    } catch (_) {
-      return false
+      const { error } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
+      return !error;
+    } catch {
+      return false;
     }
   }
 
   function startSessionMonitoring() {
-    if (!user.value || sessionMode.value === 'offline') return
-    
+    if (!user.value || sessionMode.value === 'offline') return;
+
     // Subscribe to channel to monitor connection status
-    supabase.channel(`session_check_${user.value.id}`)
-      .subscribe(async (status: string) => {
-        if (status === 'SUBSCRIBED') {
-          connectionLost.value = false
-        }
-        if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-          if (sessionMode.value === 'online') {
-            logger.warn('SESSION', 'Conexión con el servidor perdida (Realtime). Verificando conectividad HTTP...')
-            const isHttpOk = await checkDbConnectivity()
-            if (!isHttpOk) {
-              logger.warn('SESSION', 'Pérdida temporal de conexión HTTP. Reconectando en segundo plano...')
-              connectionLost.value = true
-            } else {
-              logger.info('SESSION', 'Conexión HTTP activa. Desconectando Realtime para evitar spam y continuando en modo degradado.')
-              connectionLost.value = false
-              
-              // Disconnect Realtime to stop recurrent failed WebSocket attempts
-              try {
-                const client = supabase.realClient
-                if (client && client.realtime) {
-                  client.realtime.disconnect()
-                }
-              } catch (err) {
-                logger.warn('Auth', `No se pudo desconectar el cliente de Realtime: ${(err as Error).message}`)
+    supabase.channel(`session_check_${user.value.id}`).subscribe(async (status: string) => {
+      if (status === 'SUBSCRIBED') {
+        connectionLost.value = false;
+      }
+      if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+        if (sessionMode.value === 'online') {
+          logger.warn(
+            'SESSION',
+            'Conexión con el servidor perdida (Realtime). Verificando conectividad HTTP...'
+          );
+          const isHttpOk = await checkDbConnectivity();
+          if (!isHttpOk) {
+            logger.warn(
+              'SESSION',
+              'Pérdida temporal de conexión HTTP. Reconectando en segundo plano...'
+            );
+            connectionLost.value = true;
+          } else {
+            logger.info(
+              'SESSION',
+              'Conexión HTTP activa. Desconectando Realtime para evitar spam y continuando en modo degradado.'
+            );
+            connectionLost.value = false;
+
+            // Disconnect Realtime to stop recurrent failed WebSocket attempts
+            try {
+              const client = supabase.realClient;
+              if (client && client.realtime) {
+                void client.realtime.disconnect();
               }
+            } catch (err) {
+              logger.warn(
+                'Auth',
+                `No se pudo desconectar el cliente de Realtime: ${(err as Error).message}`
+              );
             }
           }
         }
-      })
+      }
+    });
   }
 
-
   async function localLogin(name: string, gender: GenderId = 'h') {
-    loading.value = true
-    const loadingStore = useLoadingStore()
-    loadingStore.start('auth_action', 'Entrando como invitado...', 'Preparando partida local', true, '🎮')
+    loading.value = true;
+    const loadingStore = useLoadingStore();
+    loadingStore.start(
+      'auth_action',
+      'Entrando como invitado...',
+      'Preparando partida local',
+      true,
+      '🎮'
+    );
     try {
       const userData = {
         id: 'local_' + name.toLowerCase().replace(/\s+/g, '_'), // text-ok: UI text display localization string
         email: name + '@local',
         user_metadata: { full_name: name, username: name, gender },
         db_version: 3
-      }
-      user.value = userData as AuthUser
-      sessionMode.value = 'offline'
-      safeStorage.setItem(LOCAL_STORAGE_KEYS.SESSION_MODE, 'offline')
+      };
+      user.value = userData as AuthUser;
+      sessionMode.value = 'offline';
+      safeStorage.setItem(LOCAL_STORAGE_KEYS.SESSION_MODE, 'offline');
       if (supabase && typeof supabase.setMode === 'function') {
-        supabase.setMode('offline')
+        supabase.setMode('offline');
       }
-      connectionLost.value = false 
-      safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(userData))
-      
-      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED, 'true')
-      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING, 'true')
+      connectionLost.value = false;
+      safeStorage.setItem(LOCAL_STORAGE_KEYS.LOCAL_USER, JSON.stringify(userData));
+
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED, 'true');
+      safeSessionStorage.setItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING, 'true');
 
       // Sync time will handle offline state internally
-      syncServerTime()
+      void syncServerTime();
 
       // In local mode there is no online session monitoring
-      sessionConflict.value = false
+      sessionConflict.value = false;
     } finally {
-      loading.value = false
-      loadingStore.finish('auth_action')
+      loading.value = false;
+      loadingStore.finish('auth_action');
     }
   }
 
   async function logout(preventReload = false, preventSave = false) {
-    logger.info('AuthStore', 'Iniciando cierre de sesión...')
+    logger.info('AuthStore', 'Iniciando cierre de sesión...');
 
     // Safe preventative save if game is active and not explicitly prevented
     if (!preventSave) {
       try {
-        const { saveCoordinator } = await import('@/logic/auth/saveCoordinator.ts')
-        logger.info('AuthStore', 'Guardando partida de forma segura antes de cerrar sesión...')
-        await saveCoordinator.executePreLogoutSave()
+        const { saveCoordinator } = await import('@/logic/auth/saveCoordinator.ts');
+        logger.info('AuthStore', 'Guardando partida de forma segura antes de cerrar sesión...');
+        await saveCoordinator.executePreLogoutSave();
       } catch (e) {
-        logger.warn('AuthStore', `Error al guardar antes de cerrar sesión: ${(e as Error).message}`)
+        logger.warn(
+          'AuthStore',
+          `Error al guardar antes de cerrar sesión: ${(e as Error).message}`
+        );
       }
     }
 
     try {
       if (sessionMode.value === 'online') {
-        await supabase.auth.signOut()
+        await supabase.auth.signOut();
       }
     } catch (e) {
-      logger.warn('Auth', `SignOut error: ${(e as Error).message}`)
+      logger.warn('Auth', `SignOut error: ${(e as Error).message}`);
     }
 
-    safeStorage.removeItem(LOCAL_STORAGE_KEYS.LOCAL_USER)
-    safeStorage.removeItem(LOCAL_STORAGE_KEYS.SESSION_MODE)
+    safeStorage.removeItem(LOCAL_STORAGE_KEYS.LOCAL_USER);
+    safeStorage.removeItem(LOCAL_STORAGE_KEYS.SESSION_MODE);
 
-    user.value = null
-    session.value = null
-    sessionMode.value = 'online'
-    safeStorage.setItem(LOCAL_STORAGE_KEYS.SESSION_MODE, 'online')
+    user.value = null;
+    session.value = null;
+    sessionMode.value = 'online';
+    safeStorage.setItem(LOCAL_STORAGE_KEYS.SESSION_MODE, 'online');
     if (supabase && typeof supabase.setMode === 'function') {
-      supabase.setMode('online')
+      supabase.setMode('online');
     }
-    connectionLost.value = false
-    sessionConflict.value = false
+    connectionLost.value = false;
+    sessionConflict.value = false;
 
-    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING)
-    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED)
-    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN, 'true')
+    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_LOGIN_REMINDER_PENDING);
+    safeSessionStorage.removeItem(SESSION_STORAGE_KEYS.PVP_SESSION_INITIALIZED);
+    safeSessionStorage.setItem(SESSION_STORAGE_KEYS.BLOCK_AUTOLOGIN, 'true');
 
     // Navigate cleanly to /login to reset reactive state without looping
     if (!preventReload && import.meta.env.MODE !== 'test') {
-      const baseUrl = import.meta.env.BASE_URL || '/'
-      const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+      const baseUrl = import.meta.env.BASE_URL || '/';
+      const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
       // security-ok: Same-origin redirect to internal /login route
-      window.location.replace(`${window.location.origin}${cleanBase}login`)
+      window.location.replace(`${window.location.origin}${cleanBase}login`);
     }
   }
-
 
   return {
     user,
@@ -450,5 +513,5 @@ export const useAuthStore = defineStore('auth', () => {
     signup,
     logout,
     localLogin
-  }
-})
+  };
+});

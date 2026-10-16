@@ -3,14 +3,19 @@
  *
  * Event Engine - Global Event Multipliers and Core Orchestrator.
  * Delegates scheduling and sub-competition evaluation to specialized sub-modules.
- * 
+ *
  * Absolute isolation: This module does not store state or connect to DB.
  */
 
-import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import {
+  isPokemonSpeciesId,
+  requirePokemonSpeciesId,
+  type PokemonSpeciesId
+} from '@/data/pokemon/pokedex';
 import { getGMT3Date } from '@/logic/utils/timeUtils.ts';
 import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
 import type { SubCompetitionConfig, CompetitionScope } from './eventCompetitions.ts';
+import type { DomainPrizeData } from '@/types/rewards/rewards';
 
 // Re-export scheduling and date helpers
 export * from './eventSchedules.ts';
@@ -64,16 +69,16 @@ export interface EventConfig {
   catchStartDate?: string;
   catchEndDate?: string;
   subCompetitions?: SubCompetitionConfig[];
-  minigameBuffs?: Record<string, MinigameEventBuffs>;
+  minigameBuffs?: Record<string, MinigameEventBuffs>; // open-record: Minigame buff configuration map
   customRules?: Array<{ label: string; value: string; color?: string }>;
   prizes?: {
-    first?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    second?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
-    third?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    first?: DomainPrizeData | Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    second?: DomainPrizeData | Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    third?: DomainPrizeData | Record<string, unknown>; // open-record: Generic key-value data dictionary container
   };
   /** 4-week monthly rotation: week number (1-4) -> rotation data */
   rotationTheme?: RotationTheme;
-  weeklyRotations?: Record<string, WeeklyRotationEntry>;
+  weeklyRotations?: Record<string, WeeklyRotationEntry>; // open-record: Weekly rotation index map
 }
 
 import type { EventTypeKind } from '@/types/system/stores';
@@ -132,20 +137,20 @@ export function getGlobalMultipliers(activeEvents: Event[]): GlobalMultipliers {
 
   for (const ev of activeEvents) {
     const cfg = safeParse(ev.config) as EventConfig;
-    multipliers.exp *= (cfg.expMult || 1);
-    multipliers.money *= (cfg.moneyMult || 1);
-    multipliers.bc *= (cfg.bcMult || 1);
-    multipliers.catch *= (cfg.catchRateMult || 1);
-    multipliers.catchRate *= (cfg.catchRateMult || 1);
-    multipliers.shiny *= (cfg.shinyMult || 1);
-    multipliers.eggShiny *= (cfg.eggShinyMult || 1);
-    multipliers.hatch *= (cfg.hatchMult || 1);
-    multipliers.rival *= (cfg.rivalMult || 1);
-    multipliers.trainer *= (cfg.trainerMult || 1);
-    multipliers.fishing *= (cfg.fishingMult || 1);
-    multipliers.archaeology *= (cfg.archaeologyMult || 1);
-    multipliers.bugCatching *= (cfg.bugCatchingMult || 1);
-    multipliers.casinoLucky *= (cfg.casinoLuckyMult || 1);
+    multipliers.exp *= cfg.expMult || 1;
+    multipliers.money *= cfg.moneyMult || 1;
+    multipliers.bc *= cfg.bcMult || 1;
+    multipliers.catch *= cfg.catchRateMult || 1;
+    multipliers.catchRate *= cfg.catchRateMult || 1;
+    multipliers.shiny *= cfg.shinyMult || 1;
+    multipliers.eggShiny *= cfg.eggShinyMult || 1;
+    multipliers.hatch *= cfg.hatchMult || 1;
+    multipliers.rival *= cfg.rivalMult || 1;
+    multipliers.trainer *= cfg.trainerMult || 1;
+    multipliers.fishing *= cfg.fishingMult || 1;
+    multipliers.archaeology *= cfg.archaeologyMult || 1;
+    multipliers.bugCatching *= cfg.bugCatchingMult || 1;
+    multipliers.casinoLucky *= cfg.casinoLuckyMult || 1;
   }
 
   return multipliers;
@@ -154,7 +159,10 @@ export function getGlobalMultipliers(activeEvents: Event[]): GlobalMultipliers {
 /**
  * Checks if a specific species has active boosts.
  */
-export function getSpeciesBoosts(activeEvents: Event[], speciesId: PokemonSpeciesId): { rate: number; shiny: number } {
+export function getSpeciesBoosts(
+  activeEvents: Event[],
+  speciesId: PokemonSpeciesId
+): { rate: number; shiny: number } {
   let rateMult = 1;
   let shinyMult = 1;
   if (!isPokemonSpeciesId(speciesId)) return { rate: rateMult, shiny: shinyMult };
@@ -162,23 +170,33 @@ export function getSpeciesBoosts(activeEvents: Event[], speciesId: PokemonSpecie
 
   for (const ev of activeEvents) {
     const cfg = safeParse(ev.config) as EventConfig;
-    const rotation = cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations ? resolveWeeklyRotation(cfg, getGMT3Date()) : null;
+    const rotation =
+      cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations
+        ? resolveWeeklyRotation(cfg, getGMT3Date())
+        : null;
     const rawSpecies = rotation?.species ?? cfg.species;
     if (!rawSpecies || rawSpecies === '*') continue;
 
-    const speciesList = rawSpecies.split(',').map(s => s.trim().toLowerCase()).filter(isPokemonSpeciesId);
+    const speciesList = rawSpecies
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(isPokemonSpeciesId);
     if (speciesList.includes(sId)) {
-      rateMult *= (cfg.speciesRateMult || 1);
-      shinyMult *= (cfg.speciesShinyMult || 1);
+      rateMult *= cfg.speciesRateMult || 1;
+      shinyMult *= cfg.speciesShinyMult || 1;
     }
   }
 
   return { rate: rateMult, shiny: shinyMult };
 }
 
-function applyExplicitMinigameBuffs(buffs: MinigameEventBuffs, mb?: Partial<MinigameEventBuffs>): void {
+function applyExplicitMinigameBuffs(
+  buffs: MinigameEventBuffs,
+  mb?: Partial<MinigameEventBuffs>
+): void {
   if (!mb) return;
-  if (mb.encounterRateMult) buffs.encounterRateMult = (buffs.encounterRateMult ?? 1) * mb.encounterRateMult;
+  if (mb.encounterRateMult)
+    buffs.encounterRateMult = (buffs.encounterRateMult ?? 1) * mb.encounterRateMult;
   if (mb.successRateMult) buffs.successRateMult = (buffs.successRateMult ?? 1) * mb.successRateMult;
   if (mb.rareDropMult) buffs.rareDropMult = (buffs.rareDropMult ?? 1) * mb.rareDropMult;
   if (mb.shinyMult) buffs.shinyMult = (buffs.shinyMult ?? 1) * mb.shinyMult;
@@ -186,7 +204,12 @@ function applyExplicitMinigameBuffs(buffs: MinigameEventBuffs, mb?: Partial<Mini
   if (mb.scoreMult) buffs.scoreMult = (buffs.scoreMult ?? 1) * mb.scoreMult;
 }
 
-function applyShortcutMinigameBuffs(buffs: MinigameEventBuffs, minigameId: string, cfg: EventConfig): void { // infra-id-ok: Minigame string identifier
+function applyShortcutMinigameBuffs(
+  buffs: MinigameEventBuffs,
+  minigameId: string,
+  cfg: EventConfig
+): void {
+  // infra-id-ok: Minigame string identifier
   if (minigameId === 'fishing' && cfg.fishingMult) {
     buffs.encounterRateMult = (buffs.encounterRateMult ?? 1) * cfg.fishingMult;
   }
@@ -204,7 +227,8 @@ function applyShortcutMinigameBuffs(buffs: MinigameEventBuffs, minigameId: strin
 /**
  * Calculates aggregated buffs for a specific minigame across all currently active events.
  */
-export function getMinigameBuffs(activeEvents: Event[], minigameId: string): MinigameEventBuffs { // infra-id-ok: Minigame string identifier
+export function getMinigameBuffs(activeEvents: Event[], minigameId: string): MinigameEventBuffs {
+  // infra-id-ok: Minigame string identifier
   const buffs: MinigameEventBuffs = {
     encounterRateMult: 1,
     successRateMult: 1,

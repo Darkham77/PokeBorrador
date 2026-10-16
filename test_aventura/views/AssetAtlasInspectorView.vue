@@ -41,65 +41,53 @@ function handleSheetChange(event: Event): void {
     <!-- Top Global Studio Navigation Bar -->
     <header class="inspector-navbar">
       <div class="nav-brand-group">
-        <h1 class="brand-title">
-          <span class="icon">🎨</span> GBA Asset Atlas Inspector
-        </h1>
+        <h1 class="brand-title"><span class="icon">🎨</span> GBA Asset Atlas Inspector</h1>
         <span class="version-tag">Kanto Canonical Suite</span>
       </div>
 
       <!-- Sheet Selector & Grid Controls -->
       <div class="nav-controls-group">
         <div class="control-item">
-          <label
-            for="sheet-select"
-            class="control-label"
-          >Hoja Maestra:</label>
+          <label for="sheet-select" class="control-label">Hoja Maestra:</label>
           <select
             id="sheet-select"
             :value="atlas.activeSheetId.value"
             class="sheet-dropdown"
             @change="handleSheetChange"
           >
-            <option
-              v-for="sheet in atlas.availableSheets"
-              :key="sheet.id"
-              :value="sheet.id"
-            >
+            <option v-for="sheet in atlas.availableSheets" :key="sheet.id" :value="sheet.id">
               {{ sheet.label }} ({{ sheet.filename }})
             </option>
           </select>
         </div>
 
         <div class="control-item">
-          <label
-            for="grid-select"
-            class="control-label"
-          >Baldosa:</label>
+          <label for="grid-select" class="control-label">Baldosa:</label>
           <select
             id="grid-select"
             v-model.number="atlas.currentGrid.value.tileSize"
             class="grid-dropdown"
           >
-            <option :value="16">
-              16px (Nativo)
-            </option>
-            <option :value="32">
-              32px (2x)
-            </option>
-            <option :value="8">
-              8px (Sub-tile)
-            </option>
+            <option :value="16">16px (Nativo)</option>
+            <option :value="32">32px (2x)</option>
+            <option :value="8">8px (Sub-tile)</option>
           </select>
         </div>
 
         <div class="control-item">
           <span class="control-label">Margen:</span>
-          <span class="grid-badge">X:{{ atlas.currentGrid.value.marginX }}, Y:{{ atlas.currentGrid.value.marginY }}</span>
+          <span class="grid-badge"
+            >X:{{ atlas.currentGrid.value.marginX }}, Y:{{ atlas.currentGrid.value.marginY }}</span
+          >
         </div>
 
         <div class="control-item">
           <span class="control-label">Espaciado:</span>
-          <span class="grid-badge">X:{{ atlas.currentGrid.value.spacingX }}, Y:{{ atlas.currentGrid.value.spacingY }}</span>
+          <span class="grid-badge"
+            >X:{{ atlas.currentGrid.value.spacingX }}, Y:{{
+              atlas.currentGrid.value.spacingY
+            }}</span
+          >
         </div>
 
         <div class="control-item">

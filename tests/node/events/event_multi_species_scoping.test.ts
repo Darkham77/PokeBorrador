@@ -10,7 +10,7 @@
  * 5. Anti-duplication prevents enrolling the same Pokemon into multiple slots of the same event.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 import {
   resolveEventSubCompetitions,
@@ -30,7 +30,10 @@ function mockEvent(id: string, config: EventConfig, schedule?: unknown): Event {
     type: 'competition',
     active: true,
     manual: false,
-    schedule: typeof schedule === 'string' ? schedule : JSON.stringify(schedule || { type: 'weekly', days: [2], startHour: 18, endHour: 22 }),
+    schedule:
+      typeof schedule === 'string'
+        ? schedule
+        : JSON.stringify(schedule || { type: 'weekly', days: [2], startHour: 18, endHour: 22 }),
     config: JSON.stringify(config),
     description: 'Test Description'
   };
@@ -107,7 +110,9 @@ describe('Multi-Species Event Sub-Competition Scoping', () => {
     });
 
     // Week 2 date (Aug 11, 2026)
-    const week2Date = Temporal.ZonedDateTime.from('2026-08-11T19:00:00[America/Argentina/Buenos_Aires]');
+    const week2Date = Temporal.ZonedDateTime.from(
+      '2026-08-11T19:00:00[America/Argentina/Buenos_Aires]'
+    );
     const resolved = resolveEventSubCompetitions(multiSpeciesEvent, week2Date);
 
     // 1 Global IVs + 5 species * 2 physical metrics (weight, height) = 11 total slots
@@ -122,22 +127,22 @@ describe('Multi-Species Event Sub-Competition Scoping', () => {
     assert.equal(globalIvs.targetSpecies, undefined);
 
     // 2. Physical slots for Shellder
-    const shellderWeight = resolved.find(r => r.id === 'weight_shellder');
+    const shellderWeight = resolved.find((r) => r.id === 'weight_shellder');
     assert.ok(shellderWeight, 'weight_shellder must exist');
     assert.equal(shellderWeight.targetSpecies, 'shellder');
     assert.equal(shellderWeight.speciesScope, 'per_species');
     assert.ok(shellderWeight.name.includes('Shellder') || shellderWeight.name.includes('shellder'));
 
-    const shellderHeight = resolved.find(r => r.id === 'height_shellder');
+    const shellderHeight = resolved.find((r) => r.id === 'height_shellder');
     assert.ok(shellderHeight, 'height_shellder must exist');
     assert.equal(shellderHeight.targetSpecies, 'shellder');
 
     // 3. Physical slots for Horsea
-    const horseaWeight = resolved.find(r => r.id === 'weight_horsea');
+    const horseaWeight = resolved.find((r) => r.id === 'weight_horsea');
     assert.ok(horseaWeight, 'weight_horsea must exist');
     assert.equal(horseaWeight.targetSpecies, 'horsea');
 
-    const horseaHeight = resolved.find(r => r.id === 'height_horsea');
+    const horseaHeight = resolved.find((r) => r.id === 'height_horsea');
     assert.ok(horseaHeight, 'height_horsea must exist');
     assert.equal(horseaHeight.targetSpecies, 'horsea');
   });
@@ -149,7 +154,12 @@ describe('Multi-Species Event Sub-Competition Scoping', () => {
       hasCompetition: true,
       subCompetitions: [
         { id: 'ivs', name: 'Genética Suprema (IVs Totales)', metric: 'total_ivs', order: 'max' },
-        { id: 'weight', name: 'Titanes y Miniaturas (Masa y Peso)', metric: 'weight', order: 'auto' },
+        {
+          id: 'weight',
+          name: 'Titanes y Miniaturas (Masa y Peso)',
+          metric: 'weight',
+          order: 'auto'
+        },
         { id: 'height', name: 'Envergadura y Altura', metric: 'height', order: 'auto' }
       ]
     });
@@ -199,7 +209,10 @@ describe('Multi-Species Event Sub-Competition Scoping', () => {
     assert.equal(isPokemonEligibleForSubCompetition(event, ivSlot, pikachu).eligible, false);
 
     // 2. Horsea Weight Slot: ONLY Horsea is eligible, Shellder is rejected
-    assert.equal(isPokemonEligibleForSubCompetition(event, horseaWeightSlot, horsea).eligible, true);
+    assert.equal(
+      isPokemonEligibleForSubCompetition(event, horseaWeightSlot, horsea).eligible,
+      true
+    );
     const shellderCheck = isPokemonEligibleForSubCompetition(event, horseaWeightSlot, shellder);
     assert.equal(shellderCheck.eligible, false);
     assert.ok(shellderCheck.reason?.toLowerCase().includes('horsea'));
@@ -216,13 +229,23 @@ describe('Multi-Species Event Sub-Competition Scoping', () => {
 
     // horsea-1 is enrolled in 'ivs', so it cannot be enrolled into 'weight_horsea'
     assert.equal(
-      isPokemonEnrolledInOtherSubCompetition(userEntries, 'torneo_pesca', 'weight_horsea', 'poke-horsea-1'),
+      isPokemonEnrolledInOtherSubCompetition(
+        userEntries,
+        'torneo_pesca',
+        'weight_horsea',
+        'poke-horsea-1'
+      ),
       true
     );
 
     // horsea-2 is NOT enrolled anywhere, so it is free to enroll
     assert.equal(
-      isPokemonEnrolledInOtherSubCompetition(userEntries, 'torneo_pesca', 'weight_horsea', 'poke-horsea-2'),
+      isPokemonEnrolledInOtherSubCompetition(
+        userEntries,
+        'torneo_pesca',
+        'weight_horsea',
+        'poke-horsea-2'
+      ),
       false
     );
   });

@@ -6,33 +6,33 @@ const common = require('./../../common');
 let battle;
 
 describe('Glare', () => {
-	afterEach(() => {
-		battle.destroy();
-	});
+  afterEach(() => {
+    battle.destroy();
+  });
 
-	it('should ignore natural type immunities', () => {
-		battle = common.createBattle([[
-			{ species: "Arbok", ability: 'noguard', moves: ['glare'] },
-		], [
-			{ species: "Gengar", ability: 'blaze', moves: ['bulkup'] },
-		]]);
-		battle.makeChoices('move glare', 'move bulkup');
-		assert.equal(battle.p2.active[0].status, 'par');
-	});
+  it('should ignore natural type immunities', () => {
+    battle = common.createBattle([
+      [{ species: 'Arbok', ability: 'noguard', moves: ['glare'] }],
+      [{ species: 'Gengar', ability: 'blaze', moves: ['bulkup'] }]
+    ]);
+    battle.makeChoices('move glare', 'move bulkup');
+    assert.equal(battle.p2.active[0].status, 'par');
+  });
 });
 
 describe('Glare [Gen 3]', () => {
-	afterEach(() => {
-		battle.destroy();
-	});
+  afterEach(() => {
+    battle.destroy();
+  });
 
-	it('should not ignore natural type immunities', () => {
-		battle = common.gen(3).createBattle([[
-			{ species: "Arbok", ability: 'noguard', moves: ['glare'] },
-		], [
-			{ species: "Gengar", ability: 'blaze', moves: ['bulkup'] },
-		]]);
-		battle.makeChoices('move glare', 'move bulkup');
-		assert.equal(battle.p2.active[0].status, '');
-	});
+  it('should not ignore natural type immunities', () => {
+    battle = common
+      .gen(3)
+      .createBattle([
+        [{ species: 'Arbok', ability: 'noguard', moves: ['glare'] }],
+        [{ species: 'Gengar', ability: 'blaze', moves: ['bulkup'] }]
+      ]);
+    battle.makeChoices('move glare', 'move bulkup');
+    assert.equal(battle.p2.active[0].status, '');
+  });
 });

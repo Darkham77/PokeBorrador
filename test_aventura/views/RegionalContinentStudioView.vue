@@ -176,10 +176,7 @@ function exportPng(): void {
       />
 
       <!-- Transformed World Canvas + SVG Group -->
-      <div
-        class="transformed-world-layer"
-        :style="transformStyle"
-      >
+      <div class="transformed-world-layer" :style="transformStyle">
         <!-- Layer 1: Pixelated Raster Terrain Canvas -->
         <canvas
           v-show="store.displayMode !== 'pokégear'"

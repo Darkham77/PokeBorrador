@@ -1,8 +1,11 @@
-
-
 import { initSQLite, queryLocal, persistSQLite, type SQLiteDatabase } from './sqliteEngine.ts';
 import type { DBRouter } from './dbRouter.ts';
-import type { DBResponse, ProxyQueryChainItem, SqlProxyAction, SqlProxyCountMode } from '@/types/system/database';
+import type {
+  DBResponse,
+  ProxyQueryChainItem,
+  SqlProxyAction,
+  SqlProxyCountMode
+} from '@/types/system/database';
 import { logger } from '../utils/logger.ts';
 import { isLanDevPvP, executeLanDev } from './proxyQueryLanDev.ts';
 import {
@@ -44,10 +47,7 @@ function initOnlineActionQuery(
   return q;
 }
 
-function applyOnlineQueryChain(
-  query: unknown,
-  chain: ProxyQueryChainItem[]
-): unknown {
+function applyOnlineQueryChain(query: unknown, chain: ProxyQueryChainItem[]): unknown {
   let curQ = query;
   for (const s of chain) {
     if (curQ && typeof curQ === 'object') {
@@ -79,7 +79,11 @@ function applyOnlineFinal(
 
 function notifyOnlineNetworkError(err: unknown) {
   const errMsg = (err instanceof Error ? err.message : String(err)).toLowerCase();
-  if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('failed to fetch')) {
+  if (
+    errMsg.includes('fetch') ||
+    errMsg.includes('network') ||
+    errMsg.includes('failed to fetch')
+  ) {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('db-connection-error'));
     }
@@ -107,24 +111,67 @@ export class ProxyQuery {
     this.actionOpts = null;
   }
 
-  select(cols: string = '*', opts: { count?: SqlProxyCountMode | null, head?: boolean } = {}) { 
-    this.chain.push({ type: 'select', args: [cols, opts] }); 
-    return this; 
+  select(cols: string = '*', opts: { count?: SqlProxyCountMode | null; head?: boolean } = {}) {
+    this.chain.push({ type: 'select', args: [cols, opts] });
+    return this;
   }
-  eq(c: string, v: unknown) { this.chain.push({ type: 'eq', args: [c, v] }); return this; }
-  neq(c: string, v: unknown) { this.chain.push({ type: 'neq', args: [c, v] }); return this; }
-  gt(c: string, v: unknown) { this.chain.push({ type: 'gt', args: [c, v] }); return this; }
-  lt(c: string, v: unknown) { this.chain.push({ type: 'lt', args: [c, v] }); return this; }
-  gte(c: string, v: unknown) { this.chain.push({ type: 'gte', args: [c, v] }); return this; }
-  lte(c: string, v: unknown) { this.chain.push({ type: 'lte', args: [c, v] }); return this; }
-  in(c: string, arr: unknown[]) { this.chain.push({ type: 'in', args: [c, arr] }); return this; }
-  is(c: string, v: unknown) { this.chain.push({ type: 'is', args: [c, v] }); return this; }
-  not(c: string, op: string, v: unknown) { this.chain.push({ type: 'not', args: [c, op, v] }); return this; }
-  or(c: string) { this.chain.push({ type: 'or', args: [c] }); return this; }
-  order(c: string, opts: { ascending?: boolean } = {}) { this.chain.push({ type: 'order', args: [c, opts] }); return this; }
-  limit(n: number) { this.chain.push({ type: 'limit', args: [n] }); return this; }
-  match(obj: Record<string, unknown>) { this.chain.push({ type: 'match', args: [obj] }); return this; }
-  ilike(c: string, v: string) { this.chain.push({ type: 'ilike', args: [c, v] }); return this; }
+  eq(c: string, v: unknown) {
+    this.chain.push({ type: 'eq', args: [c, v] });
+    return this;
+  }
+  neq(c: string, v: unknown) {
+    this.chain.push({ type: 'neq', args: [c, v] });
+    return this;
+  }
+  gt(c: string, v: unknown) {
+    this.chain.push({ type: 'gt', args: [c, v] });
+    return this;
+  }
+  lt(c: string, v: unknown) {
+    this.chain.push({ type: 'lt', args: [c, v] });
+    return this;
+  }
+  gte(c: string, v: unknown) {
+    this.chain.push({ type: 'gte', args: [c, v] });
+    return this;
+  }
+  lte(c: string, v: unknown) {
+    this.chain.push({ type: 'lte', args: [c, v] });
+    return this;
+  }
+  in(c: string, arr: unknown[]) {
+    this.chain.push({ type: 'in', args: [c, arr] });
+    return this;
+  }
+  is(c: string, v: unknown) {
+    this.chain.push({ type: 'is', args: [c, v] });
+    return this;
+  }
+  not(c: string, op: string, v: unknown) {
+    this.chain.push({ type: 'not', args: [c, op, v] });
+    return this;
+  }
+  or(c: string) {
+    this.chain.push({ type: 'or', args: [c] });
+    return this;
+  }
+  order(c: string, opts: { ascending?: boolean } = {}) {
+    this.chain.push({ type: 'order', args: [c, opts] });
+    return this;
+  }
+  limit(n: number) {
+    this.chain.push({ type: 'limit', args: [n] });
+    return this;
+  }
+  match(obj: Record<string, unknown>) {
+    // open-record: Dynamic query filter criteria dictionary
+    this.chain.push({ type: 'match', args: [obj] });
+    return this;
+  }
+  ilike(c: string, v: string) {
+    this.chain.push({ type: 'ilike', args: [c, v] });
+    return this;
+  }
 
   upsert(data: unknown, opts?: unknown) {
     this.action = 'upsert';
@@ -150,11 +197,19 @@ export class ProxyQuery {
     return this;
   }
 
-  async maybeSingle(): Promise<DBResponse> { return this.execute('maybeSingle'); }
-  async single(): Promise<DBResponse> { return this.execute('single'); }
-  
+  async maybeSingle(): Promise<DBResponse> {
+    return this.execute('maybeSingle');
+  }
+  async single(): Promise<DBResponse> {
+    return this.execute('single');
+  }
+
   // compatibility with 'await q'
-  async then<T = DBResponse>(onFulfilled?: (value: DBResponse) => T | Promise<T>, onRejected?: (reason: unknown) => T | Promise<T>): Promise<T | DBResponse> {
+  // eslint-disable-next-line unicorn/no-thenable
+  async then<T = DBResponse>(
+    onFulfilled?: (value: DBResponse) => T | Promise<T>,
+    onRejected?: (reason: unknown) => T | Promise<T>
+  ): Promise<T | DBResponse> {
     try {
       const res = await this.execute();
       return onFulfilled ? onFulfilled(res) : res;
@@ -182,7 +237,10 @@ export class ProxyQuery {
       const finalQ = applyOnlineFinal(chainedQ, final, this.action);
       return await (finalQ as Promise<DBResponse>);
     } catch (err: unknown) {
-      logger.error('DBRouter', `Online query failed for table ${this.table}: ${(err as Error).message}`);
+      logger.error(
+        'DBRouter',
+        `Online query failed for table ${this.table}: ${(err as Error).message}`
+      );
       notifyOnlineNetworkError(err);
       throw err;
     }
@@ -196,7 +254,7 @@ export class ProxyQuery {
     try {
       const sqliteDb = await initSQLite();
       if (!sqliteDb) return { data: null, error: 'Database not initialized' };
-      
+
       if (this.action === 'upsert' || this.action === 'insert') {
         return await this._executeLocalUpsert(sqliteDb, final);
       }
@@ -236,11 +294,19 @@ export class ProxyQuery {
     return formatLocalResult(data, final, count);
   }
 
-  async _executeLocalUpsert(sqliteDb: SQLiteDatabase, final: DBQueryResultShape | null = null): Promise<DBResponse> {
+  async _executeLocalUpsert(
+    sqliteDb: SQLiteDatabase,
+    final: DBQueryResultShape | null = null
+  ): Promise<DBResponse> {
     try {
       const lastInsertedRowId = await executeAllUpsertRows(sqliteDb, this.table, this.actionData);
-      if (this.chain.some(s => s.type === 'select')) {
-        return await resolveUpsertSelectResult(this.table, lastInsertedRowId, final, this.actionData);
+      if (this.chain.some((s) => s.type === 'select')) {
+        return await resolveUpsertSelectResult(
+          this.table,
+          lastInsertedRowId,
+          final,
+          this.actionData
+        );
       }
       return { data: this.actionData, error: null };
     } catch (e: unknown) {
@@ -253,15 +319,24 @@ export class ProxyQuery {
   async _executeLocalUpdate(sqliteDb: SQLiteDatabase): Promise<DBResponse> {
     try {
       const data = this.actionData as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-      const setClause = Object.keys(data).map(k => `${k} = ?`).join(',');
-      const params: unknown[] = Object.values(data).map(v => v === undefined || v === null ? null : typeof v === 'object' ? JSON.stringify(v) : v);
-      
+      const setClause = Object.keys(data)
+        .map((k) => `${k} = ?`)
+        .join(',');
+      const params: unknown[] = Object.values(data).map((v) =>
+        v === undefined || v === null ? null : typeof v === 'object' ? JSON.stringify(v) : v
+      );
+
       const where: string[] = []; // no-domain: Non-domain utility collection or data structure
-      this.chain.forEach(s => {
-        if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1] ?? null); }
+      this.chain.forEach((s) => {
+        if (s.type === 'eq') {
+          where.push(`${String(s.args[0])} = ?`);
+          params.push(s.args[1] ?? null);
+        }
         if (s.type === 'match') {
-          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => { // open-record: Generic key-value data dictionary container
-            where.push(`${k} = ?`); params.push(v ?? null);
+          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => {
+            // open-record: Generic key-value data dictionary container
+            where.push(`${k} = ?`);
+            params.push(v ?? null);
           });
         }
       });
@@ -282,18 +357,21 @@ export class ProxyQuery {
     try {
       const params: unknown[] = [];
       const where: string[] = []; // no-domain: Non-domain utility collection or data structure
-      this.chain.forEach(s => {
-        if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
+      this.chain.forEach((s) => {
+        if (s.type === 'eq') {
+          where.push(`${String(s.args[0])} = ?`);
+          params.push(s.args[1]);
+        }
         if (s.type === 'in') {
           const list = s.args[1];
           if (Array.isArray(list) && list.length > 0) {
             const marks = list.map(() => '?').join(',');
-            where.push(`${s.args[0]} IN (${marks})`);
+            where.push(`${String(s.args[0])} IN (${marks})`);
             params.push(...list);
           }
         }
       });
-      
+
       let sql = `DELETE FROM ${this.table}`;
       if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
       sqliteDb.run(sql, params);
@@ -305,6 +383,4 @@ export class ProxyQuery {
       return { data: null, error: e };
     }
   }
-
 }
-

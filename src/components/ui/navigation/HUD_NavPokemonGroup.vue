@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import PVHUDButton from "@/components/common/PVHUDButton.vue";
-import { useNavigationState } from "@/composables/navigation/useNavigationState";
+import PVHUDButton from '@/components/common/PVHUDButton.vue';
+import { useNavigationState } from '@/composables/navigation/useNavigationState';
 
-withDefaults(defineProps<{
-  position?: string;
-}>(), {
-  position: "top"
-});
+withDefaults(
+  defineProps<{
+    position?: string;
+  }>(),
+  {
+    position: 'top'
+  }
+);
 
 const {
   uiStore,
@@ -23,7 +26,7 @@ const {
 </script>
 
 <template>
-  <div 
+  <div
     class="hud-group relative-box"
     :class="[`pos-${position}`]"
     @mouseenter="handleMouseEnter('POKEMON')"
@@ -32,7 +35,11 @@ const {
     <PVHUDButton
       id="nav-pokemon-btn"
       custom-class="group-btn"
-      :active="['box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' || modalStore.isOpen('TeamManagement')"
+      :active="
+        ['box', 'pokedex'].includes(activeTab) ||
+        uiStore.openHudGroup === 'POKEMON' ||
+        modalStore.isOpen('TeamManagement')
+      "
       @click.stop="toggleGroupMenu('POKEMON')"
     >
       <template #icon>
@@ -43,19 +50,19 @@ const {
 
     <Transition
       :css="false"
-      @before-enter="el => beforeEnter(el, position)"
+      @before-enter="(el) => beforeEnter(el, position)"
       @enter="enter"
       @leave="(el, done) => leave(el, position, done)"
     >
-      <div 
-        v-if="uiStore.openHudGroup === 'POKEMON'"
-        class="hud-submenu"
-      >
+      <div v-if="uiStore.openHudGroup === 'POKEMON'" class="hud-submenu">
         <button
           id="nav-pokemon-team-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('TeamManagement') }"
-          @click.stop="handleTabChange('team', $event); uiStore.openHudGroup = null"
+          @click.stop="
+            handleTabChange('team', $event);
+            uiStore.openHudGroup = null;
+          "
         >
           <span class="emoji">⚡</span>
           <span class="nav-item-label">EQUIPO</span>
@@ -64,7 +71,10 @@ const {
           id="nav-pokemon-pc-btn"
           class="hud-nav-btn"
           :class="{ active: activeTab === 'box' }"
-          @click.stop="handleTabChange('box', $event); uiStore.openHudGroup = null"
+          @click.stop="
+            handleTabChange('box', $event);
+            uiStore.openHudGroup = null;
+          "
         >
           <span class="emoji">📦</span>
           <span class="nav-item-label">CAJA PC</span>
@@ -73,7 +83,10 @@ const {
           id="nav-pokemon-pokedex-btn"
           class="hud-nav-btn"
           :class="{ active: activeTab === 'pokedex' }"
-          @click.stop="handleTabChange('pokedex', $event); uiStore.openHudGroup = null"
+          @click.stop="
+            handleTabChange('pokedex', $event);
+            uiStore.openHudGroup = null;
+          "
         >
           <span class="emoji">📖</span>
           <span class="nav-item-label">POKÉDEX</span>

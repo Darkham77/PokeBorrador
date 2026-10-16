@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { usePvPStore } from '@/stores/pvp'
-import { useGymsStore } from '@/stores/gyms'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { GymId } from '@/data/world/gyms'
+import { ref } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { usePvPStore } from '@/stores/pvp';
+import { useGymsStore } from '@/stores/gyms';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { GymId } from '@/data/world/gyms';
 
-interface ViteDebugBridge extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
+interface ViteDebugBridge extends Record<string, unknown> {
+  // open-record: Generic key-value data dictionary container
   setMoney: (val: number) => void;
   setElo: (val: number) => void;
   setLevel: (val: number) => void;
@@ -19,49 +20,49 @@ interface ViteDebugBridge extends Record<string, unknown> { // open-record: Gene
   setWarCoins: (val: number) => void;
 }
 
-const game = useGameStore()
-const pvp = usePvPStore()
-const gymsStore = useGymsStore()
+const game = useGameStore();
+const pvp = usePvPStore();
+const gymsStore = useGymsStore();
 
-const DEFAULT_DEBUG_MONEY_INPUT = 10000 as const
-const debugMoney = ref(DEFAULT_DEBUG_MONEY_INPUT)
-const debugElo = ref(pvp.elo)
-const debugLevel = ref(game.state.trainerLevel)
-const debugBattleCoins = ref(game.state.battleCoins || 0)
-const debugWarCoins = ref(game.state.warCoins || 0)
-const currentForcedFaction = ref('none')
-const simDifficulty = ref('easy')
+const DEFAULT_DEBUG_MONEY_INPUT = 10000 as const;
+const debugMoney = ref(DEFAULT_DEBUG_MONEY_INPUT);
+const debugElo = ref(pvp.elo);
+const debugLevel = ref(game.state.trainerLevel);
+const debugBattleCoins = ref(game.state.battleCoins || 0);
+const debugWarCoins = ref(game.state.warCoins || 0);
+const currentForcedFaction = ref('none');
+const simDifficulty = ref('easy');
 
 const isDefeated = (gymId: GymId) => {
-  return (game.state.defeatedGyms || []).includes(gymId)
-}
+  return (game.state.defeatedGyms || []).includes(gymId);
+};
 
 const simulateWin = (gymId: GymId) => {
-  getDebugBridge().winGym(gymId, simDifficulty.value)
-}
+  getDebugBridge().winGym(gymId, simDifficulty.value);
+};
 
 const resetAllBadges = () => {
-  getDebugBridge().resetBadges()
-}
+  getDebugBridge().resetBadges();
+};
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge
+const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge;
 
 // Call console commands directly (they handle securityCheck internally)
 const addMoney = () => {
   const current = game.state.money;
-  getDebugBridge().setMoney(current + debugMoney.value)
-}
-const setElo = () => getDebugBridge().setElo(debugElo.value)
-const setLevel = () => getDebugBridge().setLevel(debugLevel.value)
-const setBattleCoins = () => getDebugBridge().setBattleCoins(debugBattleCoins.value)
-const setWarCoins = () => getDebugBridge().setWarCoins(debugWarCoins.value)
+  getDebugBridge().setMoney(current + debugMoney.value);
+};
+const setElo = () => getDebugBridge().setElo(debugElo.value);
+const setLevel = () => getDebugBridge().setLevel(debugLevel.value);
+const setBattleCoins = () => getDebugBridge().setBattleCoins(debugBattleCoins.value);
+const setWarCoins = () => getDebugBridge().setWarCoins(debugWarCoins.value);
 const forceDominance = (f: string) => {
   getDebugBridge().setDominance(f);
-  currentForcedFaction.value = f
-}
+  currentForcedFaction.value = f;
+};
 
 function setFaction(f: string) {
-  getDebugBridge().setFaction(f)
+  getDebugBridge().setFaction(f);
 }
 </script>
 
@@ -74,14 +75,10 @@ function setFaction(f: string) {
           id="debug-stats-tab-input-debugmoney"
           v-model="debugMoney"
           type="number"
-        >
+          aria-label="Dinero"
+        />
         <PVTooltip title="Añade la cantidad de dinero especificada a tu cuenta.">
-          <button
-            id="debug-stats-tab-btn-a-adir"
-            @click.stop="addMoney"
-          >
-            AÑADIR
-          </button>
+          <button id="debug-stats-tab-btn-a-adir" @click.stop="addMoney">AÑADIR</button>
         </PVTooltip>
       </div>
     </div>
@@ -93,14 +90,10 @@ function setFaction(f: string) {
           id="debug-stats-tab-input-debugelo"
           v-model="debugElo"
           type="number"
-        >
+          aria-label="ELO Arena"
+        />
         <PVTooltip title="Establece tu puntuación ELO de la Arena al valor indicado.">
-          <button
-            id="debug-stats-tab-btn-fijar"
-            @click.stop="setElo"
-          >
-            FIJAR
-          </button>
+          <button id="debug-stats-tab-btn-fijar" @click.stop="setElo">FIJAR</button>
         </PVTooltip>
       </div>
     </div>
@@ -112,14 +105,10 @@ function setFaction(f: string) {
           id="debug-stats-tab-input-debuglevel"
           v-model="debugLevel"
           type="number"
-        >
+          aria-label="Nivel Entrenador"
+        />
         <PVTooltip title="Establece tu nivel de entrenador.">
-          <button
-            id="debug-stats-tab-btn-fijar-2"
-            @click.stop="setLevel"
-          >
-            FIJAR
-          </button>
+          <button id="debug-stats-tab-btn-fijar-2" @click.stop="setLevel">FIJAR</button>
         </PVTooltip>
       </div>
     </div>
@@ -131,14 +120,10 @@ function setFaction(f: string) {
           id="debug-stats-tab-input-debugbattlecoins"
           v-model="debugBattleCoins"
           type="number"
-        >
+          aria-label="Battle Coins"
+        />
         <PVTooltip title="Establece tus Battle Coins (BC).">
-          <button
-            id="debug-stats-tab-btn-fijar-3"
-            @click.stop="setBattleCoins"
-          >
-            FIJAR
-          </button>
+          <button id="debug-stats-tab-btn-fijar-3" @click.stop="setBattleCoins">FIJAR</button>
         </PVTooltip>
       </div>
     </div>
@@ -150,14 +135,10 @@ function setFaction(f: string) {
           id="debug-stats-tab-input-debugwarcoins"
           v-model="debugWarCoins"
           type="number"
-        >
+          aria-label="Monedas de Guerra"
+        />
         <PVTooltip title="Establece tus Monedas de Guerra.">
-          <button
-            id="debug-stats-tab-btn-fijar-4"
-            @click.stop="setWarCoins"
-          >
-            FIJAR
-          </button>
+          <button id="debug-stats-tab-btn-fijar-4" @click.stop="setWarCoins">FIJAR</button>
         </PVTooltip>
       </div>
     </div>
@@ -169,8 +150,8 @@ function setFaction(f: string) {
           <div class="sim-diff-selector">
             <span>DIFICULTAD:</span>
             <button
-              v-for="d in ['easy', 'normal', 'hard']" 
-              id="debug-stats-tab-btn-d-charat-0-touppercase" 
+              v-for="d in ['easy', 'normal', 'hard']"
+              id="debug-stats-tab-btn-d-charat-0-touppercase"
               :key="d"
               class="sim-diff-btn"
               :class="{ active: simDifficulty === d, [d]: true }"
@@ -198,6 +179,8 @@ function setFaction(f: string) {
             id="debug-stats-tab-div-1"
             class="badge-debug-item"
             :class="{ active: isDefeated(g.id) }"
+            role="button"
+            tabindex="0"
             @click.stop="simulateWin(g.id)"
           >
             <img
@@ -206,7 +189,7 @@ function setFaction(f: string) {
               class="badge-sprite"
               width="32"
               height="32"
-            >
+            />
             <span class="badge-lbl">{{ g.leader }}</span>
           </div>
         </PVTooltip>
@@ -288,7 +271,7 @@ function setFaction(f: string) {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/debug";
+@use '@/styles/components/debug';
 
 .badges-debug-card {
   grid-column: span 2;
@@ -303,7 +286,9 @@ function setFaction(f: string) {
     align-items: center;
     margin-bottom: 4px;
 
-    label { margin-bottom: 0; }
+    label {
+      margin-bottom: 0;
+    }
   }
 
   .header-actions {
@@ -332,7 +317,7 @@ function setFaction(f: string) {
 
   .sim-diff-btn {
     @include pixelated;
-    
+
     display: flex;
     justify-content: center;
     align-items: center;
@@ -348,9 +333,18 @@ function setFaction(f: string) {
     &.active {
       background: Rgb(255 255 255 / 5%);
       color: var(--white);
-      &.easy { color: var(--emerald); border-color: Rgb(34 197 94 / 50%); }
-      &.normal { color: var(--gold); border-color: Rgb(255 215 0 / 50%); }
-      &.hard { color: var(--red-light); border-color: Rgb(239 68 68 / 50%); }
+      &.easy {
+        color: var(--emerald);
+        border-color: Rgb(34 197 94 / 50%);
+      }
+      &.normal {
+        color: var(--gold);
+        border-color: Rgb(255 215 0 / 50%);
+      }
+      &.hard {
+        color: var(--red-light);
+        border-color: Rgb(239 68 68 / 50%);
+      }
     }
   }
 
@@ -364,14 +358,13 @@ function setFaction(f: string) {
     color: var(--rose);
     font-size: var(--font-6);
     cursor: pointer;
-    
 
     &:hover {
       background: Rgb(239 68 68 / 30%);
       transform: Translatey(-1px);
       border-color: var(--rose);
     }
-    
+
     &:active {
       transform: Translatey(0);
     }

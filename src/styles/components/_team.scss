@@ -14,7 +14,7 @@
   display: grid;
   gap: spacing(3);
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  overflow: visible !important; 
+  overflow: visible !important;
 }
 
 .team-card {
@@ -26,7 +26,9 @@
   cursor: pointer;
 
   &:hover {
-    & .team-sprite { @include pokemon-sprite-hover-standard; }
+    & .team-sprite {
+      @include pokemon-sprite-hover-standard;
+    }
   }
 }
 
@@ -66,13 +68,32 @@
   font-size: var(--font-6);
   flex-shrink: 0;
 
-  &.tier-s-plus { background: Rgb(255 215 0 / 18%); color: $coin-gold; border-color: Rgb(255 215 0 / 30%); }
-  &.tier-s { background: Rgb(255 165 0 / 15%); color: Rgb(255 165 0 / 100%); border-color: Rgb(255 165 0 / 30%); }
-  &.tier-a { background: Rgb(191 90 242 / 15%); color: $purple; border-color: Rgb(191 90 242 / 30%); }
-  &.tier-b { background: Rgb(10 132 255 / 15%); color: $blue; border-color: Rgb(10 132 255 / 30%); }
-  &.tier-c { background: Rgb(50 215 75 / 15%); color: $green; border-color: Rgb(50 215 75 / 30%); }
+  &.tier-s-plus {
+    background: Rgb(255 215 0 / 18%);
+    color: $coin-gold;
+    border-color: Rgb(255 215 0 / 30%);
+  }
+  &.tier-s {
+    background: Rgb(255 165 0 / 15%);
+    color: Rgb(255 165 0 / 100%);
+    border-color: Rgb(255 165 0 / 30%);
+  }
+  &.tier-a {
+    background: Rgb(191 90 242 / 15%);
+    color: $purple;
+    border-color: Rgb(191 90 242 / 30%);
+  }
+  &.tier-b {
+    background: Rgb(10 132 255 / 15%);
+    color: $blue;
+    border-color: Rgb(10 132 255 / 30%);
+  }
+  &.tier-c {
+    background: Rgb(50 215 75 / 15%);
+    color: $green;
+    border-color: Rgb(50 215 75 / 30%);
+  }
 }
-
 
 .gender-badge {
   @include flex-center;
@@ -83,9 +104,15 @@
   font-size: var(--font-10);
   line-height: 1;
   vertical-align: middle;
-  
-  &.male, &.gender-male { color: Rgb(89 166 255 / 100%); }
-  &.female, &.gender-female { color: Rgb(255 126 185 / 100%); }
+
+  &.male,
+  &.gender-male {
+    color: Rgb(89 166 255 / 100%);
+  }
+  &.female,
+  &.gender-female {
+    color: Rgb(255 126 185 / 100%);
+  }
 }
 
 .shiny-badge-mini {

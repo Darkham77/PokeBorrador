@@ -7,7 +7,7 @@
  * - Asserts zero critical errors on repository assets
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   SpriteAuditor,
   SPRITE_RULES,
@@ -24,9 +24,7 @@ describe('SpriteAuditor', () => {
     });
 
     it('declares all expected canonical rules in SPRITE_RULES', () => {
-      const expectedRules: SpriteRuleId[] = [
-        'sprite-missing-asset'
-      ];
+      const expectedRules: SpriteRuleId[] = ['sprite-missing-asset'];
 
       for (const rule of expectedRules) {
         expect(SPRITE_RULES).toContain(rule);
@@ -75,4 +73,3 @@ describe('SpriteAuditor', () => {
     });
   });
 });
-

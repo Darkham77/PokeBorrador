@@ -1,4 +1,3 @@
-
 import { itemEffects } from '../items/itemEffects.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items';
@@ -13,7 +12,10 @@ import type { Item } from '@/types/inventory/items';
  * Attempts to use an item on a Pokémon.
  * @returns {any|null} Result of use or null if it had no effect.
  */
-export function useItemOnPokemon(itemName: ItemId | (string & {}), pokemon: Pokemon): { message: string; pokemon: Pokemon } | null {
+export function useItemOnPokemon(
+  itemName: ItemId | (string & {}),
+  pokemon: Pokemon
+): { message: string; pokemon: Pokemon } | null {
   const itemId = requireItemId(itemName);
 
   // Validate item exists in SHOP_ITEMS
@@ -32,7 +34,7 @@ export function useItemOnPokemon(itemName: ItemId | (string & {}), pokemon: Poke
 
   const effectFn = itemEffects[itemId];
   if (!effectFn) return null;
-  
+
   const result = effectFn(pokemon);
   return result.success ? { message: result.message, pokemon } : null;
 }

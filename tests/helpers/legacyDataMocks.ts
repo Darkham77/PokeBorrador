@@ -1,6 +1,15 @@
 export const LEGENDARIES = new Set([
-  'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
-  'raikou', 'entei', 'suicune', 'lugia', 'hooh', 'celebi'
+  'articuno',
+  'zapdos',
+  'moltres',
+  'mewtwo',
+  'mew',
+  'raikou',
+  'entei',
+  'suicune',
+  'lugia',
+  'hooh',
+  'celebi'
 ]);
 
 export const legacyItemMap: Record<string, string> = {

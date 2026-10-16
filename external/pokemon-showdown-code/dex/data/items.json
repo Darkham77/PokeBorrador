@@ -1,76 +1,76 @@
 {
   "2": {
-    "berryjuice": {"inherit": true, "isNonstandard": null},
-    "blackbelt": {"inherit": true},
-    "blackglasses": {"inherit": true},
+    "berryjuice": { "inherit": true, "isNonstandard": null },
+    "blackbelt": { "inherit": true },
+    "blackglasses": { "inherit": true },
     "brightpowder": {
       "inherit": true,
       "shortDesc": "An attack against the holder has its accuracy out of 255 lowered by 20."
     },
-    "charcoal": {"inherit": true},
-    "dragonfang": {"inherit": true, "shortDesc": "No competitive use."},
+    "charcoal": { "inherit": true },
+    "dragonfang": { "inherit": true, "shortDesc": "No competitive use." },
     "dragonscale": {
       "inherit": true,
       "shortDesc": "Holder's Dragon-type attacks have 1.1x power. Evolves Seadra (trade)."
     },
-    "fastball": {"inherit": true, "isNonstandard": null},
+    "fastball": { "inherit": true, "isNonstandard": null },
     "focusband": {
       "inherit": true,
       "shortDesc": "Holder has a ~11.7% chance to survive an attack that would KO it with 1 HP."
     },
-    "hardstone": {"inherit": true},
-    "heavyball": {"inherit": true, "isNonstandard": null},
-    "kingsrock": {"inherit": true},
+    "hardstone": { "inherit": true },
+    "heavyball": { "inherit": true, "isNonstandard": null },
+    "kingsrock": { "inherit": true },
     "leftovers": {
       "inherit": true,
       "onResidualOrder": 5,
       "onResidualSubOrder": 1
     },
-    "levelball": {"inherit": true, "isNonstandard": null},
-    "lightball": {"inherit": true},
-    "loveball": {"inherit": true, "isNonstandard": null},
+    "levelball": { "inherit": true, "isNonstandard": null },
+    "lightball": { "inherit": true },
+    "loveball": { "inherit": true, "isNonstandard": null },
     "luckypunch": {
       "inherit": true,
       "onModifyCritRatioPriority": -1,
       "shortDesc": "If held by a Chansey, its critical hit ratio is always at stage 2. (25% crit rate)"
     },
-    "lureball": {"inherit": true, "isNonstandard": null},
-    "magnet": {"inherit": true},
-    "metalcoat": {"inherit": true},
+    "lureball": { "inherit": true, "isNonstandard": null },
+    "magnet": { "inherit": true },
+    "metalcoat": { "inherit": true },
     "metalpowder": {
       "inherit": true,
       "shortDesc": "If held by a Ditto, its Defense and Sp. Def are 1.5x, even while Transformed."
     },
-    "miracleseed": {"inherit": true},
-    "moonball": {"inherit": true, "isNonstandard": null},
-    "mysticwater": {"inherit": true},
-    "nevermeltice": {"inherit": true},
-    "poisonbarb": {"inherit": true},
-    "sharpbeak": {"inherit": true},
-    "silverpowder": {"inherit": true},
-    "softsand": {"inherit": true},
-    "spelltag": {"inherit": true},
-    "sportball": {"inherit": true, "isNonstandard": null},
+    "miracleseed": { "inherit": true },
+    "moonball": { "inherit": true, "isNonstandard": null },
+    "mysticwater": { "inherit": true },
+    "nevermeltice": { "inherit": true },
+    "poisonbarb": { "inherit": true },
+    "sharpbeak": { "inherit": true },
+    "silverpowder": { "inherit": true },
+    "softsand": { "inherit": true },
+    "spelltag": { "inherit": true },
+    "sportball": { "inherit": true, "isNonstandard": null },
     "stick": {
       "inherit": true,
       "onModifyCritRatioPriority": -1,
       "shortDesc": "If held by a Farfetch’d, its critical hit ratio is always at stage 2. (25% crit rate)"
     },
-    "thickclub": {"inherit": true},
-    "twistedspoon": {"inherit": true},
-    "berry": {"inherit": true, "isNonstandard": null},
-    "berserkgene": {"inherit": true, "isNonstandard": null},
-    "bitterberry": {"inherit": true, "isNonstandard": null},
-    "burntberry": {"inherit": true, "isNonstandard": null},
-    "goldberry": {"inherit": true, "isNonstandard": null},
-    "iceberry": {"inherit": true, "isNonstandard": null},
-    "mintberry": {"inherit": true, "isNonstandard": null},
-    "miracleberry": {"inherit": true, "isNonstandard": null},
-    "mysteryberry": {"inherit": true, "isNonstandard": null},
-    "pinkbow": {"inherit": true, "isNonstandard": null},
-    "polkadotbow": {"inherit": true, "isNonstandard": null},
-    "przcureberry": {"inherit": true, "isNonstandard": null},
-    "psncureberry": {"inherit": true, "isNonstandard": null},
+    "thickclub": { "inherit": true },
+    "twistedspoon": { "inherit": true },
+    "berry": { "inherit": true, "isNonstandard": null },
+    "berserkgene": { "inherit": true, "isNonstandard": null },
+    "bitterberry": { "inherit": true, "isNonstandard": null },
+    "burntberry": { "inherit": true, "isNonstandard": null },
+    "goldberry": { "inherit": true, "isNonstandard": null },
+    "iceberry": { "inherit": true, "isNonstandard": null },
+    "mintberry": { "inherit": true, "isNonstandard": null },
+    "miracleberry": { "inherit": true, "isNonstandard": null },
+    "mysteryberry": { "inherit": true, "isNonstandard": null },
+    "pinkbow": { "inherit": true, "isNonstandard": null },
+    "polkadotbow": { "inherit": true, "isNonstandard": null },
+    "przcureberry": { "inherit": true, "isNonstandard": null },
+    "psncureberry": { "inherit": true, "isNonstandard": null },
     "quickclaw": {
       "inherit": true,
       "shortDesc": "Each turn, holder has a ~23.4% chance to move first in its priority bracket."
@@ -121,7 +121,7 @@
       "isNonstandard": "Unobtainable",
       "shortDesc": "No competitive use."
     },
-    "fastball": {"inherit": true, "isNonstandard": "Unobtainable"},
+    "fastball": { "inherit": true, "isNonstandard": "Unobtainable" },
     "figyberry": {
       "inherit": true,
       "onResidualOrder": 10,
@@ -137,13 +137,13 @@
       "onModifyAtkPriority": 1,
       "shortDesc": "Holder's Rock-type attacks have 1.1x power."
     },
-    "heavyball": {"inherit": true, "isNonstandard": "Unobtainable"},
+    "heavyball": { "inherit": true, "isNonstandard": "Unobtainable" },
     "iapapaberry": {
       "inherit": true,
       "onResidualOrder": 10,
       "onResidualSubOrder": 4
     },
-    "kingsrock": {"inherit": true},
+    "kingsrock": { "inherit": true },
     "lansatberry": {
       "inherit": true,
       "onResidualOrder": 10,
@@ -153,7 +153,7 @@
       "inherit": true,
       "shortDesc": "The accuracy of attacks against the holder is 0.95x."
     },
-    "levelball": {"inherit": true, "isNonstandard": "Unobtainable"},
+    "levelball": { "inherit": true, "isNonstandard": "Unobtainable" },
     "liechiberry": {
       "inherit": true,
       "onResidualOrder": 10,
@@ -163,8 +163,8 @@
       "inherit": true,
       "shortDesc": "If held by a Pikachu, its Special Attack is doubled."
     },
-    "loveball": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "lureball": {"inherit": true, "isNonstandard": "Unobtainable"},
+    "loveball": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "lureball": { "inherit": true, "isNonstandard": "Unobtainable" },
     "magnet": {
       "inherit": true,
       "onModifySpAPriority": 1,
@@ -186,7 +186,7 @@
       "onModifySpAPriority": 1,
       "shortDesc": "Holder's Grass-type attacks have 1.1x power."
     },
-    "moonball": {"inherit": true, "isNonstandard": "Unobtainable"},
+    "moonball": { "inherit": true, "isNonstandard": "Unobtainable" },
     "mysticwater": {
       "inherit": true,
       "onModifySpAPriority": 1,
@@ -212,7 +212,7 @@
       "onModifyAtkPriority": 1,
       "shortDesc": "Holder's Poison-type attacks have 1.1x power."
     },
-    "quickclaw": {"inherit": true},
+    "quickclaw": { "inherit": true },
     "salacberry": {
       "inherit": true,
       "onResidualOrder": 10,
@@ -254,7 +254,7 @@
       "onModifyAtkPriority": 1,
       "shortDesc": "Holder's Ghost-type attacks have 1.1x power."
     },
-    "sportball": {"inherit": true, "isNonstandard": "Unobtainable"},
+    "sportball": { "inherit": true, "isNonstandard": "Unobtainable" },
     "starfberry": {
       "inherit": true,
       "onResidualOrder": 10,
@@ -272,35 +272,35 @@
     }
   },
   "4": {
-    "adamantorb": {"inherit": true},
-    "bigroot": {"inherit": true},
+    "adamantorb": { "inherit": true },
+    "bigroot": { "inherit": true },
     "blacksludge": {
       "inherit": true,
       "onResidualOrder": 10,
       "onResidualSubOrder": 4
     },
-    "brightpowder": {"inherit": true, "onModifyAccuracyPriority": 5},
-    "choiceband": {"inherit": true},
-    "choicescarf": {"inherit": true},
-    "choicespecs": {"inherit": true},
-    "chopleberry": {"inherit": true},
-    "custapberry": {"inherit": true},
-    "deepseascale": {"inherit": true},
-    "deepseatooth": {"inherit": true},
-    "dracoplate": {"inherit": true, "onTakeItem": true},
-    "dreadplate": {"inherit": true, "onTakeItem": true},
-    "earthplate": {"inherit": true, "onTakeItem": true},
-    "fastball": {"inherit": true, "isNonstandard": null},
-    "fistplate": {"inherit": true, "onTakeItem": true},
+    "brightpowder": { "inherit": true, "onModifyAccuracyPriority": 5 },
+    "choiceband": { "inherit": true },
+    "choicescarf": { "inherit": true },
+    "choicespecs": { "inherit": true },
+    "chopleberry": { "inherit": true },
+    "custapberry": { "inherit": true },
+    "deepseascale": { "inherit": true },
+    "deepseatooth": { "inherit": true },
+    "dracoplate": { "inherit": true, "onTakeItem": true },
+    "dreadplate": { "inherit": true, "onTakeItem": true },
+    "earthplate": { "inherit": true, "onTakeItem": true },
+    "fastball": { "inherit": true, "isNonstandard": null },
+    "fistplate": { "inherit": true, "onTakeItem": true },
     "flameorb": {
       "inherit": true,
       "onResidualOrder": 10,
       "onResidualSubOrder": 20
     },
-    "flameplate": {"inherit": true, "onTakeItem": true},
+    "flameplate": { "inherit": true, "onTakeItem": true },
     "focussash": {
       "inherit": true,
-      "condition": {"duration": 1},
+      "condition": { "duration": 1 },
       "shortDesc": "If holder's HP is full, survives all hits of one attack with at least 1 HP. Single use."
     },
     "fullincense": {
@@ -314,100 +314,100 @@
       "onSetAbility": false,
       "shortDesc": "Can only be held by Giratina. Its Ghost- & Dragon-type attacks have 1.2x power."
     },
-    "heavyball": {"inherit": true, "isNonstandard": null},
-    "icicleplate": {"inherit": true, "onTakeItem": true},
-    "insectplate": {"inherit": true, "onTakeItem": true},
+    "heavyball": { "inherit": true, "isNonstandard": null },
+    "icicleplate": { "inherit": true, "onTakeItem": true },
+    "insectplate": { "inherit": true, "onTakeItem": true },
     "ironball": {
       "inherit": true,
       "shortDesc": "Holder's Speed is halved and it becomes grounded."
     },
-    "ironplate": {"inherit": true, "onTakeItem": true},
-    "kingsrock": {"inherit": true},
+    "ironplate": { "inherit": true, "onTakeItem": true },
+    "kingsrock": { "inherit": true },
     "laggingtail": {
       "inherit": true,
       "onFractionalPriorityPriority": 1,
       "onFractionalPriority": -0.2
     },
-    "laxincense": {"inherit": true, "onModifyAccuracyPriority": 5},
+    "laxincense": { "inherit": true, "onModifyAccuracyPriority": 5 },
     "leftovers": {
       "inherit": true,
       "onResidualOrder": 10,
       "onResidualSubOrder": 4
     },
-    "levelball": {"inherit": true, "isNonstandard": null},
-    "lifeorb": {"inherit": true, "condition": {"duration": 1}},
+    "levelball": { "inherit": true, "isNonstandard": null },
+    "lifeorb": { "inherit": true, "condition": { "duration": 1 } },
     "lightball": {
       "inherit": true,
       "shortDesc": "If held by a Pikachu, its attacks have their power doubled."
     },
-    "loveball": {"inherit": true, "isNonstandard": null},
-    "luckypunch": {"inherit": true},
-    "lureball": {"inherit": true, "isNonstandard": null},
-    "lustrousorb": {"inherit": true},
-    "meadowplate": {"inherit": true, "onTakeItem": true},
+    "loveball": { "inherit": true, "isNonstandard": null },
+    "luckypunch": { "inherit": true },
+    "lureball": { "inherit": true, "isNonstandard": null },
+    "lustrousorb": { "inherit": true },
+    "meadowplate": { "inherit": true, "onTakeItem": true },
     "mentalherb": {
       "inherit": true,
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "shortDesc": "Holder is cured if it is infatuated. Single use."
     },
     "metronome": {
       "inherit": true,
-      "condition": {"inherit": true},
+      "condition": { "inherit": true },
       "shortDesc": "Damage of moves used on consecutive turns is increased. Max 2x after 10 turns."
     },
     "micleberry": {
       "inherit": true,
-      "condition": {"inherit": true, "onSourceModifyAccuracyPriority": 3}
+      "condition": { "inherit": true, "onSourceModifyAccuracyPriority": 3 }
     },
-    "mindplate": {"inherit": true, "onTakeItem": true},
-    "moonball": {"inherit": true, "isNonstandard": null},
-    "razorfang": {"inherit": true},
-    "skyplate": {"inherit": true, "onTakeItem": true},
-    "splashplate": {"inherit": true, "onTakeItem": true},
-    "spookyplate": {"inherit": true, "onTakeItem": true},
-    "sportball": {"inherit": true, "isNonstandard": null},
-    "stick": {"inherit": true},
+    "mindplate": { "inherit": true, "onTakeItem": true },
+    "moonball": { "inherit": true, "isNonstandard": null },
+    "razorfang": { "inherit": true },
+    "skyplate": { "inherit": true, "onTakeItem": true },
+    "splashplate": { "inherit": true, "onTakeItem": true },
+    "spookyplate": { "inherit": true, "onTakeItem": true },
+    "sportball": { "inherit": true, "isNonstandard": null },
+    "stick": { "inherit": true },
     "stickybarb": {
       "inherit": true,
       "onResidualOrder": 10,
       "onResidualSubOrder": 20
     },
-    "stoneplate": {"inherit": true, "onTakeItem": true},
-    "thickclub": {"inherit": true},
+    "stoneplate": { "inherit": true, "onTakeItem": true },
+    "thickclub": { "inherit": true },
     "toxicorb": {
       "inherit": true,
       "onResidualOrder": 10,
       "onResidualSubOrder": 20
     },
-    "toxicplate": {"inherit": true, "onTakeItem": true},
-    "widelens": {"inherit": true, "onSourceModifyAccuracyPriority": 4},
-    "zapplate": {"inherit": true, "onTakeItem": true},
-    "zoomlens": {"inherit": true, "onSourceModifyAccuracyPriority": 4}
+    "toxicplate": { "inherit": true, "onTakeItem": true },
+    "widelens": { "inherit": true, "onSourceModifyAccuracyPriority": 4 },
+    "zapplate": { "inherit": true, "onTakeItem": true },
+    "zoomlens": { "inherit": true, "onSourceModifyAccuracyPriority": 4 }
   },
   "5": {
     "aguavberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Dragon"}
+      "naturalGift": { "basePower": 60, "type": "Dragon" }
     },
     "apicotberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Ground"}
+      "naturalGift": { "basePower": 80, "type": "Ground" }
     },
     "aspearberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Ice"}
+      "naturalGift": { "basePower": 60, "type": "Ice" }
     },
     "babiriberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Steel"}
+      "naturalGift": { "basePower": 60, "type": "Steel" }
     },
     "belueberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Electric"}
+      "naturalGift": { "basePower": 80, "type": "Electric" }
     },
     "blukberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Fire"}
+      "naturalGift": { "basePower": 70, "type": "Fire" }
     },
     "buggem": {
       "inherit": true,
@@ -416,39 +416,39 @@
     },
     "chartiberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Rock"}
+      "naturalGift": { "basePower": 60, "type": "Rock" }
     },
     "cheriberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Fire"}
+      "naturalGift": { "basePower": 60, "type": "Fire" }
     },
     "chestoberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Water"}
+      "naturalGift": { "basePower": 60, "type": "Water" }
     },
     "chilanberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Normal"}
+      "naturalGift": { "basePower": 60, "type": "Normal" }
     },
     "chopleberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Fighting"}
+      "naturalGift": { "basePower": 60, "type": "Fighting" }
     },
     "cobaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Flying"}
+      "naturalGift": { "basePower": 60, "type": "Flying" }
     },
     "colburberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Dark"}
+      "naturalGift": { "basePower": 60, "type": "Dark" }
     },
     "cornnberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Bug"}
+      "naturalGift": { "basePower": 70, "type": "Bug" }
     },
     "custapberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Ghost"}
+      "naturalGift": { "basePower": 80, "type": "Ghost" }
     },
     "darkgem": {
       "inherit": true,
@@ -462,7 +462,7 @@
     },
     "durinberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Water"}
+      "naturalGift": { "basePower": 80, "type": "Water" }
     },
     "electricgem": {
       "inherit": true,
@@ -471,7 +471,7 @@
     },
     "enigmaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Bug"}
+      "naturalGift": { "basePower": 80, "type": "Bug" }
     },
     "fightinggem": {
       "inherit": true,
@@ -480,7 +480,7 @@
     },
     "figyberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Bug"}
+      "naturalGift": { "basePower": 60, "type": "Bug" }
     },
     "firegem": {
       "inherit": true,
@@ -494,7 +494,7 @@
     },
     "ganlonberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Ice"}
+      "naturalGift": { "basePower": 80, "type": "Ice" }
     },
     "ghostgem": {
       "inherit": true,
@@ -508,7 +508,7 @@
     },
     "grepaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Flying"}
+      "naturalGift": { "basePower": 70, "type": "Flying" }
     },
     "groundgem": {
       "inherit": true,
@@ -517,15 +517,15 @@
     },
     "habanberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Dragon"}
+      "naturalGift": { "basePower": 60, "type": "Dragon" }
     },
     "hondewberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Ground"}
+      "naturalGift": { "basePower": 70, "type": "Ground" }
     },
     "iapapaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Dark"}
+      "naturalGift": { "basePower": 60, "type": "Dark" }
     },
     "icegem": {
       "inherit": true,
@@ -534,92 +534,92 @@
     },
     "jabocaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Dragon"}
+      "naturalGift": { "basePower": 80, "type": "Dragon" }
     },
     "kasibberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Ghost"}
+      "naturalGift": { "basePower": 60, "type": "Ghost" }
     },
     "kebiaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Poison"}
+      "naturalGift": { "basePower": 60, "type": "Poison" }
     },
     "kelpsyberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Fighting"}
+      "naturalGift": { "basePower": 70, "type": "Fighting" }
     },
     "lansatberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Flying"}
+      "naturalGift": { "basePower": 80, "type": "Flying" }
     },
     "leppaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Fighting"}
+      "naturalGift": { "basePower": 60, "type": "Fighting" }
     },
     "liechiberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Grass"}
+      "naturalGift": { "basePower": 80, "type": "Grass" }
     },
     "lumberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Flying"}
+      "naturalGift": { "basePower": 60, "type": "Flying" }
     },
-    "mail": {"inherit": true, "isNonstandard": null},
+    "mail": { "inherit": true, "isNonstandard": null },
     "magoberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Ghost"}
+      "naturalGift": { "basePower": 60, "type": "Ghost" }
     },
     "magostberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Rock"}
+      "naturalGift": { "basePower": 70, "type": "Rock" }
     },
     "micleberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Rock"}
+      "naturalGift": { "basePower": 80, "type": "Rock" }
     },
     "nanabberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Water"}
+      "naturalGift": { "basePower": 70, "type": "Water" }
     },
     "nomelberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Dragon"}
+      "naturalGift": { "basePower": 70, "type": "Dragon" }
     },
     "occaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Fire"}
+      "naturalGift": { "basePower": 60, "type": "Fire" }
     },
     "oranberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Poison"}
+      "naturalGift": { "basePower": 60, "type": "Poison" }
     },
     "pamtreberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Steel"}
+      "naturalGift": { "basePower": 70, "type": "Steel" }
     },
     "passhoberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Water"}
+      "naturalGift": { "basePower": 60, "type": "Water" }
     },
     "payapaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Psychic"}
+      "naturalGift": { "basePower": 60, "type": "Psychic" }
     },
     "pechaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Electric"}
+      "naturalGift": { "basePower": 60, "type": "Electric" }
     },
     "persimberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Ground"}
+      "naturalGift": { "basePower": 60, "type": "Ground" }
     },
     "petayaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Poison"}
+      "naturalGift": { "basePower": 80, "type": "Poison" }
     },
     "pinapberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Grass"}
+      "naturalGift": { "basePower": 70, "type": "Grass" }
     },
     "poisongem": {
       "inherit": true,
@@ -628,7 +628,7 @@
     },
     "pomegberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Ice"}
+      "naturalGift": { "basePower": 70, "type": "Ice" }
     },
     "psychicgem": {
       "inherit": true,
@@ -637,23 +637,23 @@
     },
     "qualotberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Poison"}
+      "naturalGift": { "basePower": 70, "type": "Poison" }
     },
     "rabutaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Ghost"}
+      "naturalGift": { "basePower": 70, "type": "Ghost" }
     },
     "rawstberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Grass"}
+      "naturalGift": { "basePower": 60, "type": "Grass" }
     },
     "razzberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Steel"}
+      "naturalGift": { "basePower": 60, "type": "Steel" }
     },
     "rindoberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Grass"}
+      "naturalGift": { "basePower": 60, "type": "Grass" }
     },
     "rockgem": {
       "inherit": true,
@@ -662,27 +662,27 @@
     },
     "rowapberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Dark"}
+      "naturalGift": { "basePower": 80, "type": "Dark" }
     },
     "salacberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Fighting"}
+      "naturalGift": { "basePower": 80, "type": "Fighting" }
     },
     "shucaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Ground"}
+      "naturalGift": { "basePower": 60, "type": "Ground" }
     },
     "sitrusberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Psychic"}
+      "naturalGift": { "basePower": 60, "type": "Psychic" }
     },
     "spelonberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Dark"}
+      "naturalGift": { "basePower": 70, "type": "Dark" }
     },
     "starfberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Psychic"}
+      "naturalGift": { "basePower": 80, "type": "Psychic" }
     },
     "steelgem": {
       "inherit": true,
@@ -691,15 +691,15 @@
     },
     "tamatoberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Psychic"}
+      "naturalGift": { "basePower": 70, "type": "Psychic" }
     },
     "tangaberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Bug"}
+      "naturalGift": { "basePower": 60, "type": "Bug" }
     },
     "wacanberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Electric"}
+      "naturalGift": { "basePower": 60, "type": "Electric" }
     },
     "watergem": {
       "inherit": true,
@@ -708,19 +708,19 @@
     },
     "watmelberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 80, "type": "Fire"}
+      "naturalGift": { "basePower": 80, "type": "Fire" }
     },
     "wepearberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 70, "type": "Electric"}
+      "naturalGift": { "basePower": 70, "type": "Electric" }
     },
     "wikiberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Rock"}
+      "naturalGift": { "basePower": 60, "type": "Rock" }
     },
     "yacheberry": {
       "inherit": true,
-      "naturalGift": {"basePower": 60, "type": "Ice"}
+      "naturalGift": { "basePower": 60, "type": "Ice" }
     },
     "normalgem": {
       "inherit": true,
@@ -732,48 +732,48 @@
       "inherit": true,
       "shortDesc": "Restores 1/8 max HP at 1/2 max HP or less; confuses if -SpD Nature. Single use."
     },
-    "belueberry": {"inherit": true, "isNonstandard": null},
-    "cornnberry": {"inherit": true, "isNonstandard": null},
-    "durinberry": {"inherit": true, "isNonstandard": null},
-    "fastball": {"inherit": true, "isNonstandard": "Unobtainable"},
+    "belueberry": { "inherit": true, "isNonstandard": null },
+    "cornnberry": { "inherit": true, "isNonstandard": null },
+    "durinberry": { "inherit": true, "isNonstandard": null },
+    "fastball": { "inherit": true, "isNonstandard": "Unobtainable" },
     "figyberry": {
       "inherit": true,
       "shortDesc": "Restores 1/8 max HP at 1/2 max HP or less; confuses if -Atk Nature. Single use."
     },
-    "heavyball": {"inherit": true, "isNonstandard": "Unobtainable"},
+    "heavyball": { "inherit": true, "isNonstandard": "Unobtainable" },
     "iapapaberry": {
       "inherit": true,
       "shortDesc": "Restores 1/8 max HP at 1/2 max HP or less; confuses if -Def Nature. Single use."
     },
-    "jabocaberry": {"inherit": true},
-    "levelball": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "lifeorb": {"inherit": true},
-    "loveball": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "lureball": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "machobrace": {"inherit": true, "isNonstandard": null},
+    "jabocaberry": { "inherit": true },
+    "levelball": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "lifeorb": { "inherit": true },
+    "loveball": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "lureball": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "machobrace": { "inherit": true, "isNonstandard": null },
     "magoberry": {
       "inherit": true,
       "shortDesc": "Restores 1/8 max HP at 1/2 max HP or less; confuses if -Spe Nature. Single use."
     },
-    "magostberry": {"inherit": true, "isNonstandard": null},
-    "moonball": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "nanabberry": {"inherit": true, "isNonstandard": null},
-    "nomelberry": {"inherit": true, "isNonstandard": null},
-    "oldamber": {"inherit": true, "isNonstandard": null},
-    "pamtreberry": {"inherit": true, "isNonstandard": null},
-    "rabutaberry": {"inherit": true, "isNonstandard": null},
-    "razzberry": {"inherit": true, "isNonstandard": null},
-    "rockyhelmet": {"inherit": true},
-    "rowapberry": {"inherit": true},
-    "spelonberry": {"inherit": true, "isNonstandard": null},
+    "magostberry": { "inherit": true, "isNonstandard": null },
+    "moonball": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "nanabberry": { "inherit": true, "isNonstandard": null },
+    "nomelberry": { "inherit": true, "isNonstandard": null },
+    "oldamber": { "inherit": true, "isNonstandard": null },
+    "pamtreberry": { "inherit": true, "isNonstandard": null },
+    "rabutaberry": { "inherit": true, "isNonstandard": null },
+    "razzberry": { "inherit": true, "isNonstandard": null },
+    "rockyhelmet": { "inherit": true },
+    "rowapberry": { "inherit": true },
+    "spelonberry": { "inherit": true, "isNonstandard": null },
     "souldew": {
       "inherit": true,
       "onModifySpAPriority": 1,
       "onModifySpDPriority": 2,
       "shortDesc": "If held by a Latias or a Latios, its Sp. Atk and Sp. Def are 1.5x."
     },
-    "watmelberry": {"inherit": true, "isNonstandard": null},
-    "wepearberry": {"inherit": true, "isNonstandard": null},
+    "watmelberry": { "inherit": true, "isNonstandard": null },
+    "wepearberry": { "inherit": true, "isNonstandard": null },
     "wikiberry": {
       "inherit": true,
       "shortDesc": "Restores 1/8 max HP at 1/2 max HP or less; confuses if -SpA Nature. Single use."
@@ -788,181 +788,181 @@
     }
   },
   "7": {
-    "abomasite": {"inherit": true, "isNonstandard": null},
-    "absolite": {"inherit": true, "isNonstandard": null},
-    "aerodactylite": {"inherit": true, "isNonstandard": null},
-    "aggronite": {"inherit": true, "isNonstandard": null},
+    "abomasite": { "inherit": true, "isNonstandard": null },
+    "absolite": { "inherit": true, "isNonstandard": null },
+    "aerodactylite": { "inherit": true, "isNonstandard": null },
+    "aggronite": { "inherit": true, "isNonstandard": null },
     "aguavberry": {
       "inherit": true,
       "shortDesc": "Restores 1/2 max HP at 1/4 max HP or less; confuses if -SpD Nature. Single use."
     },
-    "alakazite": {"inherit": true, "isNonstandard": null},
-    "altarianite": {"inherit": true, "isNonstandard": null},
-    "aloraichiumz": {"inherit": true, "isNonstandard": null},
-    "ampharosite": {"inherit": true, "isNonstandard": null},
-    "armorfossil": {"inherit": true, "isNonstandard": null},
-    "audinite": {"inherit": true, "isNonstandard": null},
-    "banettite": {"inherit": true, "isNonstandard": null},
-    "beedrillite": {"inherit": true, "isNonstandard": null},
-    "belueberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "bignugget": {"inherit": true, "fling": {"basePower": 30}},
-    "blastoisinite": {"inherit": true, "isNonstandard": null},
-    "blazikenite": {"inherit": true, "isNonstandard": null},
-    "blueorb": {"inherit": true, "isNonstandard": null},
-    "blukberry": {"inherit": true, "isNonstandard": null},
-    "buggem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "buginiumz": {"inherit": true, "isNonstandard": null},
-    "cameruptite": {"inherit": true, "isNonstandard": null},
-    "charizarditex": {"inherit": true, "isNonstandard": null},
-    "charizarditey": {"inherit": true, "isNonstandard": null},
-    "clawfossil": {"inherit": true, "isNonstandard": null},
-    "cornnberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "coverfossil": {"inherit": true, "isNonstandard": null},
-    "darkgem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "darkiniumz": {"inherit": true, "isNonstandard": null},
-    "decidiumz": {"inherit": true, "isNonstandard": null},
-    "diancite": {"inherit": true, "isNonstandard": null},
-    "domefossil": {"inherit": true, "isNonstandard": null},
-    "dracoplate": {"inherit": true, "isNonstandard": null},
-    "dragongem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "dragoniumz": {"inherit": true, "isNonstandard": null},
-    "dreadplate": {"inherit": true, "isNonstandard": null},
+    "alakazite": { "inherit": true, "isNonstandard": null },
+    "altarianite": { "inherit": true, "isNonstandard": null },
+    "aloraichiumz": { "inherit": true, "isNonstandard": null },
+    "ampharosite": { "inherit": true, "isNonstandard": null },
+    "armorfossil": { "inherit": true, "isNonstandard": null },
+    "audinite": { "inherit": true, "isNonstandard": null },
+    "banettite": { "inherit": true, "isNonstandard": null },
+    "beedrillite": { "inherit": true, "isNonstandard": null },
+    "belueberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "bignugget": { "inherit": true, "fling": { "basePower": 30 } },
+    "blastoisinite": { "inherit": true, "isNonstandard": null },
+    "blazikenite": { "inherit": true, "isNonstandard": null },
+    "blueorb": { "inherit": true, "isNonstandard": null },
+    "blukberry": { "inherit": true, "isNonstandard": null },
+    "buggem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "buginiumz": { "inherit": true, "isNonstandard": null },
+    "cameruptite": { "inherit": true, "isNonstandard": null },
+    "charizarditex": { "inherit": true, "isNonstandard": null },
+    "charizarditey": { "inherit": true, "isNonstandard": null },
+    "clawfossil": { "inherit": true, "isNonstandard": null },
+    "cornnberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "coverfossil": { "inherit": true, "isNonstandard": null },
+    "darkgem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "darkiniumz": { "inherit": true, "isNonstandard": null },
+    "decidiumz": { "inherit": true, "isNonstandard": null },
+    "diancite": { "inherit": true, "isNonstandard": null },
+    "domefossil": { "inherit": true, "isNonstandard": null },
+    "dracoplate": { "inherit": true, "isNonstandard": null },
+    "dragongem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "dragoniumz": { "inherit": true, "isNonstandard": null },
+    "dreadplate": { "inherit": true, "isNonstandard": null },
     "dreamball": {
       "inherit": true,
       "isNonstandard": "Unobtainable",
       "shortDesc": "A special Poke Ball that appears out of nowhere in a bag at the Entree Forest."
     },
-    "durinberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "earthplate": {"inherit": true, "isNonstandard": null},
-    "eeviumz": {"inherit": true, "isNonstandard": null},
-    "electricgem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "electriumz": {"inherit": true, "isNonstandard": null},
-    "fairiumz": {"inherit": true, "isNonstandard": null},
-    "fairygem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "fightinggem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "fightiniumz": {"inherit": true, "isNonstandard": null},
+    "durinberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "earthplate": { "inherit": true, "isNonstandard": null },
+    "eeviumz": { "inherit": true, "isNonstandard": null },
+    "electricgem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "electriumz": { "inherit": true, "isNonstandard": null },
+    "fairiumz": { "inherit": true, "isNonstandard": null },
+    "fairygem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "fightinggem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "fightiniumz": { "inherit": true, "isNonstandard": null },
     "figyberry": {
       "inherit": true,
       "shortDesc": "Restores 1/2 max HP at 1/4 max HP or less; confuses if -Atk Nature. Single use."
     },
-    "firegem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "firiumz": {"inherit": true, "isNonstandard": null},
-    "fistplate": {"inherit": true, "isNonstandard": null},
-    "flameplate": {"inherit": true, "isNonstandard": null},
-    "flyinggem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "flyiniumz": {"inherit": true, "isNonstandard": null},
-    "galladite": {"inherit": true, "isNonstandard": null},
-    "garchompite": {"inherit": true, "isNonstandard": null},
-    "gardevoirite": {"inherit": true, "isNonstandard": null},
-    "gengarite": {"inherit": true, "isNonstandard": null},
-    "ghostgem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "ghostiumz": {"inherit": true, "isNonstandard": null},
-    "glalitite": {"inherit": true, "isNonstandard": null},
-    "grassgem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "grassiumz": {"inherit": true, "isNonstandard": null},
-    "groundgem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "groundiumz": {"inherit": true, "isNonstandard": null},
-    "gyaradosite": {"inherit": true, "isNonstandard": null},
-    "helixfossil": {"inherit": true, "isNonstandard": null},
-    "heracronite": {"inherit": true, "isNonstandard": null},
-    "houndoominite": {"inherit": true, "isNonstandard": null},
+    "firegem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "firiumz": { "inherit": true, "isNonstandard": null },
+    "fistplate": { "inherit": true, "isNonstandard": null },
+    "flameplate": { "inherit": true, "isNonstandard": null },
+    "flyinggem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "flyiniumz": { "inherit": true, "isNonstandard": null },
+    "galladite": { "inherit": true, "isNonstandard": null },
+    "garchompite": { "inherit": true, "isNonstandard": null },
+    "gardevoirite": { "inherit": true, "isNonstandard": null },
+    "gengarite": { "inherit": true, "isNonstandard": null },
+    "ghostgem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "ghostiumz": { "inherit": true, "isNonstandard": null },
+    "glalitite": { "inherit": true, "isNonstandard": null },
+    "grassgem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "grassiumz": { "inherit": true, "isNonstandard": null },
+    "groundgem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "groundiumz": { "inherit": true, "isNonstandard": null },
+    "gyaradosite": { "inherit": true, "isNonstandard": null },
+    "helixfossil": { "inherit": true, "isNonstandard": null },
+    "heracronite": { "inherit": true, "isNonstandard": null },
+    "houndoominite": { "inherit": true, "isNonstandard": null },
     "iapapaberry": {
       "inherit": true,
       "shortDesc": "Restores 1/2 max HP at 1/4 max HP or less; confuses if -Def Nature. Single use."
     },
-    "icegem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "icicleplate": {"inherit": true, "isNonstandard": null},
-    "iciumz": {"inherit": true, "isNonstandard": null},
-    "inciniumz": {"inherit": true, "isNonstandard": null},
-    "insectplate": {"inherit": true, "isNonstandard": null},
-    "ironplate": {"inherit": true, "isNonstandard": null},
-    "jawfossil": {"inherit": true, "isNonstandard": null},
-    "kangaskhanite": {"inherit": true, "isNonstandard": null},
-    "kommoniumz": {"inherit": true, "isNonstandard": null},
-    "latiasite": {"inherit": true, "isNonstandard": null},
-    "latiosite": {"inherit": true, "isNonstandard": null},
-    "lopunnite": {"inherit": true, "isNonstandard": null},
-    "lucarionite": {"inherit": true, "isNonstandard": null},
-    "luckypunch": {"inherit": true, "isNonstandard": null},
-    "lunaliumz": {"inherit": true, "isNonstandard": null},
-    "lycaniumz": {"inherit": true, "isNonstandard": null},
-    "machobrace": {"inherit": true, "isNonstandard": "Unobtainable"},
+    "icegem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "icicleplate": { "inherit": true, "isNonstandard": null },
+    "iciumz": { "inherit": true, "isNonstandard": null },
+    "inciniumz": { "inherit": true, "isNonstandard": null },
+    "insectplate": { "inherit": true, "isNonstandard": null },
+    "ironplate": { "inherit": true, "isNonstandard": null },
+    "jawfossil": { "inherit": true, "isNonstandard": null },
+    "kangaskhanite": { "inherit": true, "isNonstandard": null },
+    "kommoniumz": { "inherit": true, "isNonstandard": null },
+    "latiasite": { "inherit": true, "isNonstandard": null },
+    "latiosite": { "inherit": true, "isNonstandard": null },
+    "lopunnite": { "inherit": true, "isNonstandard": null },
+    "lucarionite": { "inherit": true, "isNonstandard": null },
+    "luckypunch": { "inherit": true, "isNonstandard": null },
+    "lunaliumz": { "inherit": true, "isNonstandard": null },
+    "lycaniumz": { "inherit": true, "isNonstandard": null },
+    "machobrace": { "inherit": true, "isNonstandard": "Unobtainable" },
     "magoberry": {
       "inherit": true,
       "shortDesc": "Restores 1/2 max HP at 1/4 max HP or less; confuses if -Spe Nature. Single use."
     },
-    "magostberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "mail": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "manectite": {"inherit": true, "isNonstandard": null},
-    "marshadiumz": {"inherit": true, "isNonstandard": null},
-    "mawilite": {"inherit": true, "isNonstandard": null},
-    "meadowplate": {"inherit": true, "isNonstandard": null},
-    "medichamite": {"inherit": true, "isNonstandard": null},
-    "metagrossite": {"inherit": true, "isNonstandard": null},
-    "mewniumz": {"inherit": true, "isNonstandard": null},
-    "mewtwonitex": {"inherit": true, "isNonstandard": null},
-    "mewtwonitey": {"inherit": true, "isNonstandard": null},
-    "mimikiumz": {"inherit": true, "isNonstandard": null},
-    "mindplate": {"inherit": true, "isNonstandard": null},
-    "nanabberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "nomelberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "normaliumz": {"inherit": true, "isNonstandard": null},
-    "pamtreberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "pidgeotite": {"inherit": true, "isNonstandard": null},
-    "pikaniumz": {"inherit": true, "isNonstandard": null},
-    "pikashuniumz": {"inherit": true, "isNonstandard": null},
-    "pinapberry": {"inherit": true, "isNonstandard": null},
-    "pinsirite": {"inherit": true, "isNonstandard": null},
-    "plumefossil": {"inherit": true, "isNonstandard": null},
-    "poisongem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "poisoniumz": {"inherit": true, "isNonstandard": null},
-    "primariumz": {"inherit": true, "isNonstandard": null},
-    "psychicgem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "psychiumz": {"inherit": true, "isNonstandard": null},
-    "rabutaberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "razorfang": {"inherit": true, "isNonstandard": null},
-    "razzberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "redorb": {"inherit": true, "isNonstandard": null},
-    "rockgem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "rockiumz": {"inherit": true, "isNonstandard": null},
-    "rootfossil": {"inherit": true, "isNonstandard": null},
-    "sablenite": {"inherit": true, "isNonstandard": null},
-    "safariball": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "sailfossil": {"inherit": true, "isNonstandard": null},
-    "salamencite": {"inherit": true, "isNonstandard": null},
-    "sceptilite": {"inherit": true, "isNonstandard": null},
-    "scizorite": {"inherit": true, "isNonstandard": null},
-    "sharpedonite": {"inherit": true, "isNonstandard": null},
-    "skullfossil": {"inherit": true, "isNonstandard": null},
-    "skyplate": {"inherit": true, "isNonstandard": null},
-    "slowbronite": {"inherit": true, "isNonstandard": null},
-    "snorliumz": {"inherit": true, "isNonstandard": null},
-    "solganiumz": {"inherit": true, "isNonstandard": null},
-    "spelonberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "splashplate": {"inherit": true, "isNonstandard": null},
-    "spookyplate": {"inherit": true, "isNonstandard": null},
-    "sportball": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "steelgem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "steeliumz": {"inherit": true, "isNonstandard": null},
-    "steelixite": {"inherit": true, "isNonstandard": null},
-    "stick": {"inherit": true, "isNonstandard": null},
-    "stoneplate": {"inherit": true, "isNonstandard": null},
-    "swampertite": {"inherit": true, "isNonstandard": null},
-    "tapuniumz": {"inherit": true, "isNonstandard": null},
-    "toxicplate": {"inherit": true, "isNonstandard": null},
-    "tyranitarite": {"inherit": true, "isNonstandard": null},
-    "ultranecroziumz": {"inherit": true, "isNonstandard": null},
-    "venusaurite": {"inherit": true, "isNonstandard": null},
-    "watergem": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "wateriumz": {"inherit": true, "isNonstandard": null},
-    "watmelberry": {"inherit": true, "isNonstandard": "Unobtainable"},
-    "wepearberry": {"inherit": true, "isNonstandard": "Unobtainable"},
+    "magostberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "mail": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "manectite": { "inherit": true, "isNonstandard": null },
+    "marshadiumz": { "inherit": true, "isNonstandard": null },
+    "mawilite": { "inherit": true, "isNonstandard": null },
+    "meadowplate": { "inherit": true, "isNonstandard": null },
+    "medichamite": { "inherit": true, "isNonstandard": null },
+    "metagrossite": { "inherit": true, "isNonstandard": null },
+    "mewniumz": { "inherit": true, "isNonstandard": null },
+    "mewtwonitex": { "inherit": true, "isNonstandard": null },
+    "mewtwonitey": { "inherit": true, "isNonstandard": null },
+    "mimikiumz": { "inherit": true, "isNonstandard": null },
+    "mindplate": { "inherit": true, "isNonstandard": null },
+    "nanabberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "nomelberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "normaliumz": { "inherit": true, "isNonstandard": null },
+    "pamtreberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "pidgeotite": { "inherit": true, "isNonstandard": null },
+    "pikaniumz": { "inherit": true, "isNonstandard": null },
+    "pikashuniumz": { "inherit": true, "isNonstandard": null },
+    "pinapberry": { "inherit": true, "isNonstandard": null },
+    "pinsirite": { "inherit": true, "isNonstandard": null },
+    "plumefossil": { "inherit": true, "isNonstandard": null },
+    "poisongem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "poisoniumz": { "inherit": true, "isNonstandard": null },
+    "primariumz": { "inherit": true, "isNonstandard": null },
+    "psychicgem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "psychiumz": { "inherit": true, "isNonstandard": null },
+    "rabutaberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "razorfang": { "inherit": true, "isNonstandard": null },
+    "razzberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "redorb": { "inherit": true, "isNonstandard": null },
+    "rockgem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "rockiumz": { "inherit": true, "isNonstandard": null },
+    "rootfossil": { "inherit": true, "isNonstandard": null },
+    "sablenite": { "inherit": true, "isNonstandard": null },
+    "safariball": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "sailfossil": { "inherit": true, "isNonstandard": null },
+    "salamencite": { "inherit": true, "isNonstandard": null },
+    "sceptilite": { "inherit": true, "isNonstandard": null },
+    "scizorite": { "inherit": true, "isNonstandard": null },
+    "sharpedonite": { "inherit": true, "isNonstandard": null },
+    "skullfossil": { "inherit": true, "isNonstandard": null },
+    "skyplate": { "inherit": true, "isNonstandard": null },
+    "slowbronite": { "inherit": true, "isNonstandard": null },
+    "snorliumz": { "inherit": true, "isNonstandard": null },
+    "solganiumz": { "inherit": true, "isNonstandard": null },
+    "spelonberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "splashplate": { "inherit": true, "isNonstandard": null },
+    "spookyplate": { "inherit": true, "isNonstandard": null },
+    "sportball": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "steelgem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "steeliumz": { "inherit": true, "isNonstandard": null },
+    "steelixite": { "inherit": true, "isNonstandard": null },
+    "stick": { "inherit": true, "isNonstandard": null },
+    "stoneplate": { "inherit": true, "isNonstandard": null },
+    "swampertite": { "inherit": true, "isNonstandard": null },
+    "tapuniumz": { "inherit": true, "isNonstandard": null },
+    "toxicplate": { "inherit": true, "isNonstandard": null },
+    "tyranitarite": { "inherit": true, "isNonstandard": null },
+    "ultranecroziumz": { "inherit": true, "isNonstandard": null },
+    "venusaurite": { "inherit": true, "isNonstandard": null },
+    "watergem": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "wateriumz": { "inherit": true, "isNonstandard": null },
+    "watmelberry": { "inherit": true, "isNonstandard": "Unobtainable" },
+    "wepearberry": { "inherit": true, "isNonstandard": "Unobtainable" },
     "wikiberry": {
       "inherit": true,
       "isNonstandard": null,
       "shortDesc": "Restores 1/2 max HP at 1/4 max HP or less; confuses if -SpA Nature. Single use."
     },
-    "zapplate": {"inherit": true, "isNonstandard": null},
+    "zapplate": { "inherit": true, "isNonstandard": null },
     "icestone": {
       "inherit": true,
       "desc": "Evolves Alolan Sandshrew into Alolan Sandslash and Alolan Vulpix into Alolan Ninetales when used."
@@ -977,194 +977,194 @@
     }
   },
   "8": {
-    "adamantcrystal": {"inherit": true, "isNonstandard": "Future"},
-    "berryjuice": {"inherit": true, "isNonstandard": null},
-    "berrysweet": {"inherit": true, "isNonstandard": null},
-    "bugmemory": {"inherit": true, "isNonstandard": null},
-    "burndrive": {"inherit": true, "isNonstandard": null},
-    "chilldrive": {"inherit": true, "isNonstandard": null},
-    "cloversweet": {"inherit": true, "isNonstandard": null},
-    "custapberry": {"inherit": true, "isNonstandard": null},
-    "darkmemory": {"inherit": true, "isNonstandard": null},
-    "deepseascale": {"inherit": true, "isNonstandard": null},
-    "deepseatooth": {"inherit": true, "isNonstandard": null},
-    "dousedrive": {"inherit": true, "isNonstandard": null},
-    "dracoplate": {"inherit": true, "isNonstandard": "Past"},
-    "dragonmemory": {"inherit": true, "isNonstandard": null},
-    "dragonscale": {"inherit": true, "isNonstandard": null},
-    "dreadplate": {"inherit": true, "isNonstandard": "Past"},
-    "dubiousdisc": {"inherit": true, "isNonstandard": null},
-    "earthplate": {"inherit": true, "isNonstandard": "Past"},
-    "electirizer": {"inherit": true, "isNonstandard": null},
-    "electricmemory": {"inherit": true, "isNonstandard": null},
-    "enigmaberry": {"inherit": true, "isNonstandard": null},
-    "fairymemory": {"inherit": true, "isNonstandard": null},
-    "fightingmemory": {"inherit": true, "isNonstandard": null},
-    "firememory": {"inherit": true, "isNonstandard": null},
-    "fistplate": {"inherit": true, "isNonstandard": "Past"},
-    "flameplate": {"inherit": true, "isNonstandard": "Past"},
-    "flowersweet": {"inherit": true, "isNonstandard": null},
-    "flyingmemory": {"inherit": true, "isNonstandard": null},
-    "fossilizedbird": {"inherit": true, "isNonstandard": null},
-    "fossilizeddino": {"inherit": true, "isNonstandard": null},
-    "fossilizeddrake": {"inherit": true, "isNonstandard": null},
-    "fossilizedfish": {"inherit": true, "isNonstandard": null},
-    "fullincense": {"inherit": true, "isNonstandard": null},
-    "ghostmemory": {"inherit": true, "isNonstandard": null},
-    "grassmemory": {"inherit": true, "isNonstandard": null},
-    "griseouscore": {"inherit": true, "isNonstandard": "Future"},
+    "adamantcrystal": { "inherit": true, "isNonstandard": "Future" },
+    "berryjuice": { "inherit": true, "isNonstandard": null },
+    "berrysweet": { "inherit": true, "isNonstandard": null },
+    "bugmemory": { "inherit": true, "isNonstandard": null },
+    "burndrive": { "inherit": true, "isNonstandard": null },
+    "chilldrive": { "inherit": true, "isNonstandard": null },
+    "cloversweet": { "inherit": true, "isNonstandard": null },
+    "custapberry": { "inherit": true, "isNonstandard": null },
+    "darkmemory": { "inherit": true, "isNonstandard": null },
+    "deepseascale": { "inherit": true, "isNonstandard": null },
+    "deepseatooth": { "inherit": true, "isNonstandard": null },
+    "dousedrive": { "inherit": true, "isNonstandard": null },
+    "dracoplate": { "inherit": true, "isNonstandard": "Past" },
+    "dragonmemory": { "inherit": true, "isNonstandard": null },
+    "dragonscale": { "inherit": true, "isNonstandard": null },
+    "dreadplate": { "inherit": true, "isNonstandard": "Past" },
+    "dubiousdisc": { "inherit": true, "isNonstandard": null },
+    "earthplate": { "inherit": true, "isNonstandard": "Past" },
+    "electirizer": { "inherit": true, "isNonstandard": null },
+    "electricmemory": { "inherit": true, "isNonstandard": null },
+    "enigmaberry": { "inherit": true, "isNonstandard": null },
+    "fairymemory": { "inherit": true, "isNonstandard": null },
+    "fightingmemory": { "inherit": true, "isNonstandard": null },
+    "firememory": { "inherit": true, "isNonstandard": null },
+    "fistplate": { "inherit": true, "isNonstandard": "Past" },
+    "flameplate": { "inherit": true, "isNonstandard": "Past" },
+    "flowersweet": { "inherit": true, "isNonstandard": null },
+    "flyingmemory": { "inherit": true, "isNonstandard": null },
+    "fossilizedbird": { "inherit": true, "isNonstandard": null },
+    "fossilizeddino": { "inherit": true, "isNonstandard": null },
+    "fossilizeddrake": { "inherit": true, "isNonstandard": null },
+    "fossilizedfish": { "inherit": true, "isNonstandard": null },
+    "fullincense": { "inherit": true, "isNonstandard": null },
+    "ghostmemory": { "inherit": true, "isNonstandard": null },
+    "grassmemory": { "inherit": true, "isNonstandard": null },
+    "griseouscore": { "inherit": true, "isNonstandard": "Future" },
     "griseousorb": {
       "inherit": true,
       "forcedForme": "Giratina-Origin",
       "itemUser": ["Giratina-Origin"]
     },
-    "groundmemory": {"inherit": true, "isNonstandard": null},
-    "icememory": {"inherit": true, "isNonstandard": null},
-    "icicleplate": {"inherit": true, "isNonstandard": "Past"},
-    "insectplate": {"inherit": true, "isNonstandard": "Past"},
-    "ironplate": {"inherit": true, "isNonstandard": "Past"},
-    "jabocaberry": {"inherit": true, "isNonstandard": null},
-    "keeberry": {"inherit": true, "isNonstandard": null},
-    "laxincense": {"inherit": true, "isNonstandard": null},
-    "leek": {"inherit": true, "isNonstandard": null},
-    "lovesweet": {"inherit": true, "isNonstandard": null},
-    "lustrousglobe": {"inherit": true, "isNonstandard": "Future"},
-    "machobrace": {"inherit": true, "isNonstandard": null},
-    "magmarizer": {"inherit": true, "isNonstandard": null},
-    "marangaberry": {"inherit": true, "isNonstandard": null},
-    "meadowplate": {"inherit": true, "isNonstandard": "Past"},
-    "metalpowder": {"inherit": true, "isNonstandard": null},
-    "micleberry": {"inherit": true, "isNonstandard": null},
-    "mindplate": {"inherit": true, "isNonstandard": "Past"},
-    "oddincense": {"inherit": true, "isNonstandard": null},
-    "poisonmemory": {"inherit": true, "isNonstandard": null},
-    "protector": {"inherit": true, "isNonstandard": null},
-    "psychicmemory": {"inherit": true, "isNonstandard": null},
-    "quickpowder": {"inherit": true, "isNonstandard": null},
-    "razorfang": {"inherit": true, "isNonstandard": "Past"},
-    "ribbonsweet": {"inherit": true, "isNonstandard": null},
-    "rockincense": {"inherit": true, "isNonstandard": null},
-    "rockmemory": {"inherit": true, "isNonstandard": null},
-    "roseincense": {"inherit": true, "isNonstandard": null},
-    "rowapberry": {"inherit": true, "isNonstandard": null},
-    "sachet": {"inherit": true, "isNonstandard": null},
-    "seaincense": {"inherit": true, "isNonstandard": null},
-    "shockdrive": {"inherit": true, "isNonstandard": null},
-    "skyplate": {"inherit": true, "isNonstandard": "Past"},
-    "splashplate": {"inherit": true, "isNonstandard": "Past"},
-    "spookyplate": {"inherit": true, "isNonstandard": "Past"},
-    "starsweet": {"inherit": true, "isNonstandard": null},
-    "stoneplate": {"inherit": true, "isNonstandard": "Past"},
-    "strawberrysweet": {"inherit": true, "isNonstandard": null},
-    "steelmemory": {"inherit": true, "isNonstandard": null},
-    "strangeball": {"inherit": true, "isNonstandard": "Future"},
-    "thickclub": {"inherit": true, "isNonstandard": null},
-    "toxicplate": {"inherit": true, "isNonstandard": "Past"},
-    "tr00": {"inherit": true, "isNonstandard": null},
-    "tr01": {"inherit": true, "isNonstandard": null},
-    "tr02": {"inherit": true, "isNonstandard": null},
-    "tr03": {"inherit": true, "isNonstandard": null},
-    "tr04": {"inherit": true, "isNonstandard": null},
-    "tr05": {"inherit": true, "isNonstandard": null},
-    "tr06": {"inherit": true, "isNonstandard": null},
-    "tr07": {"inherit": true, "isNonstandard": null},
-    "tr08": {"inherit": true, "isNonstandard": null},
-    "tr09": {"inherit": true, "isNonstandard": null},
-    "tr10": {"inherit": true, "isNonstandard": null},
-    "tr11": {"inherit": true, "isNonstandard": null},
-    "tr12": {"inherit": true, "isNonstandard": null},
-    "tr13": {"inherit": true, "isNonstandard": null},
-    "tr14": {"inherit": true, "isNonstandard": null},
-    "tr15": {"inherit": true, "isNonstandard": null},
-    "tr16": {"inherit": true, "isNonstandard": null},
-    "tr17": {"inherit": true, "isNonstandard": null},
-    "tr18": {"inherit": true, "isNonstandard": null},
-    "tr19": {"inherit": true, "isNonstandard": null},
-    "tr20": {"inherit": true, "isNonstandard": null},
-    "tr21": {"inherit": true, "isNonstandard": null},
-    "tr22": {"inherit": true, "isNonstandard": null},
-    "tr23": {"inherit": true, "isNonstandard": null},
-    "tr24": {"inherit": true, "isNonstandard": null},
-    "tr25": {"inherit": true, "isNonstandard": null},
-    "tr26": {"inherit": true, "isNonstandard": null},
-    "tr27": {"inherit": true, "isNonstandard": null},
-    "tr28": {"inherit": true, "isNonstandard": null},
-    "tr29": {"inherit": true, "isNonstandard": null},
-    "tr30": {"inherit": true, "isNonstandard": null},
-    "tr31": {"inherit": true, "isNonstandard": null},
-    "tr32": {"inherit": true, "isNonstandard": null},
-    "tr33": {"inherit": true, "isNonstandard": null},
-    "tr34": {"inherit": true, "isNonstandard": null},
-    "tr35": {"inherit": true, "isNonstandard": null},
-    "tr36": {"inherit": true, "isNonstandard": null},
-    "tr37": {"inherit": true, "isNonstandard": null},
-    "tr38": {"inherit": true, "isNonstandard": null},
-    "tr39": {"inherit": true, "isNonstandard": null},
-    "tr40": {"inherit": true, "isNonstandard": null},
-    "tr41": {"inherit": true, "isNonstandard": null},
-    "tr42": {"inherit": true, "isNonstandard": null},
-    "tr43": {"inherit": true, "isNonstandard": null},
-    "tr44": {"inherit": true, "isNonstandard": null},
-    "tr45": {"inherit": true, "isNonstandard": null},
-    "tr46": {"inherit": true, "isNonstandard": null},
-    "tr47": {"inherit": true, "isNonstandard": null},
-    "tr48": {"inherit": true, "isNonstandard": null},
-    "tr49": {"inherit": true, "isNonstandard": null},
-    "tr50": {"inherit": true, "isNonstandard": null},
-    "tr51": {"inherit": true, "isNonstandard": null},
-    "tr52": {"inherit": true, "isNonstandard": null},
-    "tr53": {"inherit": true, "isNonstandard": null},
-    "tr54": {"inherit": true, "isNonstandard": null},
-    "tr55": {"inherit": true, "isNonstandard": null},
-    "tr56": {"inherit": true, "isNonstandard": null},
-    "tr57": {"inherit": true, "isNonstandard": null},
-    "tr58": {"inherit": true, "isNonstandard": null},
-    "tr59": {"inherit": true, "isNonstandard": null},
-    "tr60": {"inherit": true, "isNonstandard": null},
-    "tr61": {"inherit": true, "isNonstandard": null},
-    "tr62": {"inherit": true, "isNonstandard": null},
-    "tr63": {"inherit": true, "isNonstandard": null},
-    "tr64": {"inherit": true, "isNonstandard": null},
-    "tr65": {"inherit": true, "isNonstandard": null},
-    "tr66": {"inherit": true, "isNonstandard": null},
-    "tr67": {"inherit": true, "isNonstandard": null},
-    "tr68": {"inherit": true, "isNonstandard": null},
-    "tr69": {"inherit": true, "isNonstandard": null},
-    "tr70": {"inherit": true, "isNonstandard": null},
-    "tr71": {"inherit": true, "isNonstandard": null},
-    "tr72": {"inherit": true, "isNonstandard": null},
-    "tr73": {"inherit": true, "isNonstandard": null},
-    "tr74": {"inherit": true, "isNonstandard": null},
-    "tr75": {"inherit": true, "isNonstandard": null},
-    "tr76": {"inherit": true, "isNonstandard": null},
-    "tr77": {"inherit": true, "isNonstandard": null},
-    "tr78": {"inherit": true, "isNonstandard": null},
-    "tr79": {"inherit": true, "isNonstandard": null},
-    "tr80": {"inherit": true, "isNonstandard": null},
-    "tr81": {"inherit": true, "isNonstandard": null},
-    "tr82": {"inherit": true, "isNonstandard": null},
-    "tr83": {"inherit": true, "isNonstandard": null},
-    "tr84": {"inherit": true, "isNonstandard": null},
-    "tr85": {"inherit": true, "isNonstandard": null},
-    "tr86": {"inherit": true, "isNonstandard": null},
-    "tr87": {"inherit": true, "isNonstandard": null},
-    "tr88": {"inherit": true, "isNonstandard": null},
-    "tr89": {"inherit": true, "isNonstandard": null},
-    "tr90": {"inherit": true, "isNonstandard": null},
-    "tr91": {"inherit": true, "isNonstandard": null},
-    "tr92": {"inherit": true, "isNonstandard": null},
-    "tr93": {"inherit": true, "isNonstandard": null},
-    "tr94": {"inherit": true, "isNonstandard": null},
-    "tr95": {"inherit": true, "isNonstandard": null},
-    "tr96": {"inherit": true, "isNonstandard": null},
-    "tr97": {"inherit": true, "isNonstandard": null},
-    "tr98": {"inherit": true, "isNonstandard": null},
-    "tr99": {"inherit": true, "isNonstandard": null},
-    "upgrade": {"inherit": true, "isNonstandard": null},
-    "watermemory": {"inherit": true, "isNonstandard": null},
-    "waveincense": {"inherit": true, "isNonstandard": null},
-    "whippeddream": {"inherit": true, "isNonstandard": null},
-    "zapplate": {"inherit": true, "isNonstandard": "Past"},
+    "groundmemory": { "inherit": true, "isNonstandard": null },
+    "icememory": { "inherit": true, "isNonstandard": null },
+    "icicleplate": { "inherit": true, "isNonstandard": "Past" },
+    "insectplate": { "inherit": true, "isNonstandard": "Past" },
+    "ironplate": { "inherit": true, "isNonstandard": "Past" },
+    "jabocaberry": { "inherit": true, "isNonstandard": null },
+    "keeberry": { "inherit": true, "isNonstandard": null },
+    "laxincense": { "inherit": true, "isNonstandard": null },
+    "leek": { "inherit": true, "isNonstandard": null },
+    "lovesweet": { "inherit": true, "isNonstandard": null },
+    "lustrousglobe": { "inherit": true, "isNonstandard": "Future" },
+    "machobrace": { "inherit": true, "isNonstandard": null },
+    "magmarizer": { "inherit": true, "isNonstandard": null },
+    "marangaberry": { "inherit": true, "isNonstandard": null },
+    "meadowplate": { "inherit": true, "isNonstandard": "Past" },
+    "metalpowder": { "inherit": true, "isNonstandard": null },
+    "micleberry": { "inherit": true, "isNonstandard": null },
+    "mindplate": { "inherit": true, "isNonstandard": "Past" },
+    "oddincense": { "inherit": true, "isNonstandard": null },
+    "poisonmemory": { "inherit": true, "isNonstandard": null },
+    "protector": { "inherit": true, "isNonstandard": null },
+    "psychicmemory": { "inherit": true, "isNonstandard": null },
+    "quickpowder": { "inherit": true, "isNonstandard": null },
+    "razorfang": { "inherit": true, "isNonstandard": "Past" },
+    "ribbonsweet": { "inherit": true, "isNonstandard": null },
+    "rockincense": { "inherit": true, "isNonstandard": null },
+    "rockmemory": { "inherit": true, "isNonstandard": null },
+    "roseincense": { "inherit": true, "isNonstandard": null },
+    "rowapberry": { "inherit": true, "isNonstandard": null },
+    "sachet": { "inherit": true, "isNonstandard": null },
+    "seaincense": { "inherit": true, "isNonstandard": null },
+    "shockdrive": { "inherit": true, "isNonstandard": null },
+    "skyplate": { "inherit": true, "isNonstandard": "Past" },
+    "splashplate": { "inherit": true, "isNonstandard": "Past" },
+    "spookyplate": { "inherit": true, "isNonstandard": "Past" },
+    "starsweet": { "inherit": true, "isNonstandard": null },
+    "stoneplate": { "inherit": true, "isNonstandard": "Past" },
+    "strawberrysweet": { "inherit": true, "isNonstandard": null },
+    "steelmemory": { "inherit": true, "isNonstandard": null },
+    "strangeball": { "inherit": true, "isNonstandard": "Future" },
+    "thickclub": { "inherit": true, "isNonstandard": null },
+    "toxicplate": { "inherit": true, "isNonstandard": "Past" },
+    "tr00": { "inherit": true, "isNonstandard": null },
+    "tr01": { "inherit": true, "isNonstandard": null },
+    "tr02": { "inherit": true, "isNonstandard": null },
+    "tr03": { "inherit": true, "isNonstandard": null },
+    "tr04": { "inherit": true, "isNonstandard": null },
+    "tr05": { "inherit": true, "isNonstandard": null },
+    "tr06": { "inherit": true, "isNonstandard": null },
+    "tr07": { "inherit": true, "isNonstandard": null },
+    "tr08": { "inherit": true, "isNonstandard": null },
+    "tr09": { "inherit": true, "isNonstandard": null },
+    "tr10": { "inherit": true, "isNonstandard": null },
+    "tr11": { "inherit": true, "isNonstandard": null },
+    "tr12": { "inherit": true, "isNonstandard": null },
+    "tr13": { "inherit": true, "isNonstandard": null },
+    "tr14": { "inherit": true, "isNonstandard": null },
+    "tr15": { "inherit": true, "isNonstandard": null },
+    "tr16": { "inherit": true, "isNonstandard": null },
+    "tr17": { "inherit": true, "isNonstandard": null },
+    "tr18": { "inherit": true, "isNonstandard": null },
+    "tr19": { "inherit": true, "isNonstandard": null },
+    "tr20": { "inherit": true, "isNonstandard": null },
+    "tr21": { "inherit": true, "isNonstandard": null },
+    "tr22": { "inherit": true, "isNonstandard": null },
+    "tr23": { "inherit": true, "isNonstandard": null },
+    "tr24": { "inherit": true, "isNonstandard": null },
+    "tr25": { "inherit": true, "isNonstandard": null },
+    "tr26": { "inherit": true, "isNonstandard": null },
+    "tr27": { "inherit": true, "isNonstandard": null },
+    "tr28": { "inherit": true, "isNonstandard": null },
+    "tr29": { "inherit": true, "isNonstandard": null },
+    "tr30": { "inherit": true, "isNonstandard": null },
+    "tr31": { "inherit": true, "isNonstandard": null },
+    "tr32": { "inherit": true, "isNonstandard": null },
+    "tr33": { "inherit": true, "isNonstandard": null },
+    "tr34": { "inherit": true, "isNonstandard": null },
+    "tr35": { "inherit": true, "isNonstandard": null },
+    "tr36": { "inherit": true, "isNonstandard": null },
+    "tr37": { "inherit": true, "isNonstandard": null },
+    "tr38": { "inherit": true, "isNonstandard": null },
+    "tr39": { "inherit": true, "isNonstandard": null },
+    "tr40": { "inherit": true, "isNonstandard": null },
+    "tr41": { "inherit": true, "isNonstandard": null },
+    "tr42": { "inherit": true, "isNonstandard": null },
+    "tr43": { "inherit": true, "isNonstandard": null },
+    "tr44": { "inherit": true, "isNonstandard": null },
+    "tr45": { "inherit": true, "isNonstandard": null },
+    "tr46": { "inherit": true, "isNonstandard": null },
+    "tr47": { "inherit": true, "isNonstandard": null },
+    "tr48": { "inherit": true, "isNonstandard": null },
+    "tr49": { "inherit": true, "isNonstandard": null },
+    "tr50": { "inherit": true, "isNonstandard": null },
+    "tr51": { "inherit": true, "isNonstandard": null },
+    "tr52": { "inherit": true, "isNonstandard": null },
+    "tr53": { "inherit": true, "isNonstandard": null },
+    "tr54": { "inherit": true, "isNonstandard": null },
+    "tr55": { "inherit": true, "isNonstandard": null },
+    "tr56": { "inherit": true, "isNonstandard": null },
+    "tr57": { "inherit": true, "isNonstandard": null },
+    "tr58": { "inherit": true, "isNonstandard": null },
+    "tr59": { "inherit": true, "isNonstandard": null },
+    "tr60": { "inherit": true, "isNonstandard": null },
+    "tr61": { "inherit": true, "isNonstandard": null },
+    "tr62": { "inherit": true, "isNonstandard": null },
+    "tr63": { "inherit": true, "isNonstandard": null },
+    "tr64": { "inherit": true, "isNonstandard": null },
+    "tr65": { "inherit": true, "isNonstandard": null },
+    "tr66": { "inherit": true, "isNonstandard": null },
+    "tr67": { "inherit": true, "isNonstandard": null },
+    "tr68": { "inherit": true, "isNonstandard": null },
+    "tr69": { "inherit": true, "isNonstandard": null },
+    "tr70": { "inherit": true, "isNonstandard": null },
+    "tr71": { "inherit": true, "isNonstandard": null },
+    "tr72": { "inherit": true, "isNonstandard": null },
+    "tr73": { "inherit": true, "isNonstandard": null },
+    "tr74": { "inherit": true, "isNonstandard": null },
+    "tr75": { "inherit": true, "isNonstandard": null },
+    "tr76": { "inherit": true, "isNonstandard": null },
+    "tr77": { "inherit": true, "isNonstandard": null },
+    "tr78": { "inherit": true, "isNonstandard": null },
+    "tr79": { "inherit": true, "isNonstandard": null },
+    "tr80": { "inherit": true, "isNonstandard": null },
+    "tr81": { "inherit": true, "isNonstandard": null },
+    "tr82": { "inherit": true, "isNonstandard": null },
+    "tr83": { "inherit": true, "isNonstandard": null },
+    "tr84": { "inherit": true, "isNonstandard": null },
+    "tr85": { "inherit": true, "isNonstandard": null },
+    "tr86": { "inherit": true, "isNonstandard": null },
+    "tr87": { "inherit": true, "isNonstandard": null },
+    "tr88": { "inherit": true, "isNonstandard": null },
+    "tr89": { "inherit": true, "isNonstandard": null },
+    "tr90": { "inherit": true, "isNonstandard": null },
+    "tr91": { "inherit": true, "isNonstandard": null },
+    "tr92": { "inherit": true, "isNonstandard": null },
+    "tr93": { "inherit": true, "isNonstandard": null },
+    "tr94": { "inherit": true, "isNonstandard": null },
+    "tr95": { "inherit": true, "isNonstandard": null },
+    "tr96": { "inherit": true, "isNonstandard": null },
+    "tr97": { "inherit": true, "isNonstandard": null },
+    "tr98": { "inherit": true, "isNonstandard": null },
+    "tr99": { "inherit": true, "isNonstandard": null },
+    "upgrade": { "inherit": true, "isNonstandard": null },
+    "watermemory": { "inherit": true, "isNonstandard": null },
+    "waveincense": { "inherit": true, "isNonstandard": null },
+    "whippeddream": { "inherit": true, "isNonstandard": null },
+    "zapplate": { "inherit": true, "isNonstandard": "Past" },
     "icyrock": {
       "inherit": true,
       "shortDesc": "Holder's use of Hail lasts 8 turns instead of 5."
@@ -1177,7 +1177,7 @@
   "9": {
     "abilityshield": {
       "name": "Ability Shield",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "ignoreKlutz": true,
       "num": 1881,
       "gen": 9,
@@ -1185,7 +1185,7 @@
     },
     "abomasite": {
       "name": "Abomasite",
-      "megaStone": {"Abomasnow": "Abomasnow-Mega"},
+      "megaStone": { "Abomasnow": "Abomasnow-Mega" },
       "itemUser": ["Abomasnow"],
       "num": 674,
       "gen": 6,
@@ -1194,7 +1194,7 @@
     },
     "absolite": {
       "name": "Absolite",
-      "megaStone": {"Absol": "Absol-Mega"},
+      "megaStone": { "Absol": "Absol-Mega" },
       "itemUser": ["Absol"],
       "num": 677,
       "gen": 6,
@@ -1203,7 +1203,7 @@
     },
     "absolitez": {
       "name": "Absolite Z",
-      "megaStone": {"Absol": "Absol-Mega-Z"},
+      "megaStone": { "Absol": "Absol-Mega-Z" },
       "itemUser": ["Absol"],
       "num": 2638,
       "gen": 9,
@@ -1212,8 +1212,8 @@
     },
     "absorbbulb": {
       "name": "Absorb Bulb",
-      "fling": {"basePower": 30},
-      "boosts": {"spa": 1},
+      "fling": { "basePower": 30 },
+      "boosts": { "spa": 1 },
       "num": 545,
       "gen": 5,
       "shortDesc": "Raises holder's Sp. Atk by 1 stage if hit by a Water-type attack. Single use."
@@ -1229,7 +1229,7 @@
     },
     "adamantorb": {
       "name": "Adamant Orb",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "onBasePowerPriority": 15,
       "itemUser": ["Dialga"],
       "num": 135,
@@ -1238,15 +1238,15 @@
     },
     "adrenalineorb": {
       "name": "Adrenaline Orb",
-      "fling": {"basePower": 30},
-      "boosts": {"spe": 1},
+      "fling": { "basePower": 30 },
+      "boosts": { "spe": 1 },
       "num": 846,
       "gen": 7,
       "shortDesc": "Raises holder's Speed by 1 stage if it gets affected by Intimidate. Single use."
     },
     "aerodactylite": {
       "name": "Aerodactylite",
-      "megaStone": {"Aerodactyl": "Aerodactyl-Mega"},
+      "megaStone": { "Aerodactyl": "Aerodactyl-Mega" },
       "itemUser": ["Aerodactyl"],
       "num": 672,
       "gen": 6,
@@ -1255,7 +1255,7 @@
     },
     "aggronite": {
       "name": "Aggronite",
-      "megaStone": {"Aggron": "Aggron-Mega"},
+      "megaStone": { "Aggron": "Aggron-Mega" },
       "itemUser": ["Aggron"],
       "num": 667,
       "gen": 6,
@@ -1265,21 +1265,21 @@
     "aguavberry": {
       "name": "Aguav Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Dragon"},
+      "naturalGift": { "basePower": 80, "type": "Dragon" },
       "num": 162,
       "gen": 3,
       "shortDesc": "Restores 1/3 max HP at 1/4 max HP or less; confuses if -SpD Nature. Single use."
     },
     "airballoon": {
       "name": "Air Balloon",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 541,
       "gen": 5,
       "shortDesc": "Holder is immune to Ground-type attacks. Pops when holder is hit."
     },
     "alakazite": {
       "name": "Alakazite",
-      "megaStone": {"Alakazam": "Alakazam-Mega"},
+      "megaStone": { "Alakazam": "Alakazam-Mega" },
       "itemUser": ["Alakazam"],
       "num": 679,
       "gen": 6,
@@ -1299,7 +1299,7 @@
     },
     "altarianite": {
       "name": "Altarianite",
-      "megaStone": {"Altaria": "Altaria-Mega"},
+      "megaStone": { "Altaria": "Altaria-Mega" },
       "itemUser": ["Altaria"],
       "num": 755,
       "gen": 6,
@@ -1308,7 +1308,7 @@
     },
     "ampharosite": {
       "name": "Ampharosite",
-      "megaStone": {"Ampharos": "Ampharos-Mega"},
+      "megaStone": { "Ampharos": "Ampharos-Mega" },
       "itemUser": ["Ampharos"],
       "num": 658,
       "gen": 6,
@@ -1318,14 +1318,14 @@
     "apicotberry": {
       "name": "Apicot Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Ground"},
+      "naturalGift": { "basePower": 100, "type": "Ground" },
       "num": 205,
       "gen": 3,
       "shortDesc": "Raises holder's Sp. Def by 1 stage when at 1/4 max HP or less. Single use."
     },
     "armorfossil": {
       "name": "Armor Fossil",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 104,
       "gen": 4,
       "isNonstandard": "Past",
@@ -1334,14 +1334,14 @@
     "aspearberry": {
       "name": "Aspear Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Ice"},
+      "naturalGift": { "basePower": 80, "type": "Ice" },
       "num": 153,
       "gen": 3,
       "shortDesc": "Holder is cured if it is frozen. Single use."
     },
     "assaultvest": {
       "name": "Assault Vest",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "onModifySpDPriority": 1,
       "num": 640,
       "gen": 6,
@@ -1349,7 +1349,7 @@
     },
     "audinite": {
       "name": "Audinite",
-      "megaStone": {"Audino": "Audino-Mega"},
+      "megaStone": { "Audino": "Audino-Mega" },
       "itemUser": ["Audino"],
       "num": 757,
       "gen": 6,
@@ -1358,7 +1358,7 @@
     },
     "auspiciousarmor": {
       "name": "Auspicious Armor",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 2344,
       "gen": 9,
       "shortDesc": "Evolves Charcadet into Armarouge when used."
@@ -1366,14 +1366,14 @@
     "babiriberry": {
       "name": "Babiri Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Steel"},
+      "naturalGift": { "basePower": 80, "type": "Steel" },
       "num": 199,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Steel-type attack. Single use."
     },
     "banettite": {
       "name": "Banettite",
-      "megaStone": {"Banette": "Banette-Mega"},
+      "megaStone": { "Banette": "Banette-Mega" },
       "itemUser": ["Banette"],
       "num": 668,
       "gen": 6,
@@ -1382,7 +1382,7 @@
     },
     "barbaracite": {
       "name": "Barbaracite",
-      "megaStone": {"Barbaracle": "Barbaracle-Mega"},
+      "megaStone": { "Barbaracle": "Barbaracle-Mega" },
       "itemUser": ["Barbaracle"],
       "num": 2581,
       "gen": 9,
@@ -1391,7 +1391,7 @@
     },
     "baxcalibrite": {
       "name": "Baxcalibrite",
-      "megaStone": {"Baxcalibur": "Baxcalibur-Mega"},
+      "megaStone": { "Baxcalibur": "Baxcalibur-Mega" },
       "itemUser": ["Baxcalibur"],
       "num": 2648,
       "gen": 9,
@@ -1407,7 +1407,7 @@
     },
     "beedrillite": {
       "name": "Beedrillite",
-      "megaStone": {"Beedrill": "Beedrill-Mega"},
+      "megaStone": { "Beedrill": "Beedrill-Mega" },
       "itemUser": ["Beedrill"],
       "num": 770,
       "gen": 6,
@@ -1417,7 +1417,7 @@
     "belueberry": {
       "name": "Belue Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Electric"},
+      "naturalGift": { "basePower": 100, "type": "Electric" },
       "onEat": false,
       "num": 183,
       "gen": 3,
@@ -1426,7 +1426,7 @@
     },
     "berryjuice": {
       "name": "Berry Juice",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 43,
       "gen": 2,
       "isNonstandard": "Past",
@@ -1434,21 +1434,21 @@
     },
     "berrysweet": {
       "name": "Berry Sweet",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1111,
       "gen": 8,
       "shortDesc": "Evolves Milcery into Alcremie when held and spun around."
     },
     "bignugget": {
       "name": "Big Nugget",
-      "fling": {"basePower": 130},
+      "fling": { "basePower": 130 },
       "num": 581,
       "gen": 5,
       "shortDesc": "A big nugget of pure gold that gives off a lustrous gleam."
     },
     "bigroot": {
       "name": "Big Root",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onTryHealPriority": 1,
       "num": 296,
       "gen": 4,
@@ -1456,14 +1456,14 @@
     },
     "bindingband": {
       "name": "Binding Band",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 544,
       "gen": 5,
       "shortDesc": "Holder's partial-trapping moves deal 1/6 max HP per turn instead of 1/8."
     },
     "blackbelt": {
       "name": "Black Belt",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "num": 241,
       "gen": 2,
@@ -1471,7 +1471,7 @@
     },
     "blackglasses": {
       "name": "Black Glasses",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "num": 240,
       "gen": 2,
@@ -1479,7 +1479,7 @@
     },
     "blacksludge": {
       "name": "Black Sludge",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onResidualOrder": 5,
       "onResidualSubOrder": 4,
       "num": 281,
@@ -1488,7 +1488,7 @@
     },
     "blastoisinite": {
       "name": "Blastoisinite",
-      "megaStone": {"Blastoise": "Blastoise-Mega"},
+      "megaStone": { "Blastoise": "Blastoise-Mega" },
       "itemUser": ["Blastoise"],
       "num": 661,
       "gen": 6,
@@ -1497,7 +1497,7 @@
     },
     "blazikenite": {
       "name": "Blazikenite",
-      "megaStone": {"Blaziken": "Blaziken-Mega"},
+      "megaStone": { "Blaziken": "Blaziken-Mega" },
       "itemUser": ["Blaziken"],
       "num": 664,
       "gen": 6,
@@ -1517,7 +1517,7 @@
     "blukberry": {
       "name": "Bluk Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Fire"},
+      "naturalGift": { "basePower": 90, "type": "Fire" },
       "onEat": false,
       "num": 165,
       "gen": 3,
@@ -1526,14 +1526,14 @@
     },
     "blunderpolicy": {
       "name": "Blunder Policy",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1121,
       "gen": 8,
       "shortDesc": "If the holder misses due to accuracy, its Speed is raised by 2 stages. Single use."
     },
     "boosterenergy": {
       "name": "Booster Energy",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onSwitchInPriority": -2,
       "num": 1880,
       "gen": 9,
@@ -1541,14 +1541,14 @@
     },
     "bottlecap": {
       "name": "Bottle Cap",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 795,
       "gen": 7,
       "shortDesc": "Used for Hyper Training. One of a Pokemon's stats is calculated with an IV of 31."
     },
     "brightpowder": {
       "name": "Bright Powder",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onModifyAccuracyPriority": -2,
       "num": 213,
       "gen": 2,
@@ -1596,7 +1596,7 @@
     },
     "cameruptite": {
       "name": "Cameruptite",
-      "megaStone": {"Camerupt": "Camerupt-Mega"},
+      "megaStone": { "Camerupt": "Camerupt-Mega" },
       "itemUser": ["Camerupt"],
       "num": 767,
       "gen": 6,
@@ -1605,15 +1605,15 @@
     },
     "cellbattery": {
       "name": "Cell Battery",
-      "fling": {"basePower": 30},
-      "boosts": {"atk": 1},
+      "fling": { "basePower": 30 },
+      "boosts": { "atk": 1 },
       "num": 546,
       "gen": 5,
       "shortDesc": "Raises holder's Attack by 1 if hit by an Electric-type attack. Single use."
     },
     "chandelurite": {
       "name": "Chandelurite",
-      "megaStone": {"Chandelure": "Chandelure-Mega"},
+      "megaStone": { "Chandelure": "Chandelure-Mega" },
       "itemUser": ["Chandelure"],
       "num": 2574,
       "gen": 9,
@@ -1622,7 +1622,7 @@
     },
     "charcoal": {
       "name": "Charcoal",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "num": 249,
       "gen": 2,
@@ -1630,7 +1630,7 @@
     },
     "charizarditex": {
       "name": "Charizardite X",
-      "megaStone": {"Charizard": "Charizard-Mega-X"},
+      "megaStone": { "Charizard": "Charizard-Mega-X" },
       "itemUser": ["Charizard"],
       "num": 660,
       "gen": 6,
@@ -1639,7 +1639,7 @@
     },
     "charizarditey": {
       "name": "Charizardite Y",
-      "megaStone": {"Charizard": "Charizard-Mega-Y"},
+      "megaStone": { "Charizard": "Charizard-Mega-Y" },
       "itemUser": ["Charizard"],
       "num": 678,
       "gen": 6,
@@ -1649,7 +1649,7 @@
     "chartiberry": {
       "name": "Charti Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Rock"},
+      "naturalGift": { "basePower": 80, "type": "Rock" },
       "num": 195,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Rock-type attack. Single use."
@@ -1657,7 +1657,7 @@
     "cheriberry": {
       "name": "Cheri Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Fire"},
+      "naturalGift": { "basePower": 80, "type": "Fire" },
       "num": 149,
       "gen": 3,
       "shortDesc": "Holder cures itself if it is paralyzed. Single use."
@@ -1672,7 +1672,7 @@
     },
     "chesnaughtite": {
       "name": "Chesnaughtite",
-      "megaStone": {"Chesnaught": "Chesnaught-Mega"},
+      "megaStone": { "Chesnaught": "Chesnaught-Mega" },
       "itemUser": ["Chesnaught"],
       "num": 2575,
       "gen": 9,
@@ -1682,7 +1682,7 @@
     "chestoberry": {
       "name": "Chesto Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Water"},
+      "naturalGift": { "basePower": 80, "type": "Water" },
       "num": 150,
       "gen": 3,
       "shortDesc": "Holder wakes up if it is asleep. Single use."
@@ -1690,7 +1690,7 @@
     "chilanberry": {
       "name": "Chilan Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Normal"},
+      "naturalGift": { "basePower": 80, "type": "Normal" },
       "num": 200,
       "gen": 4,
       "shortDesc": "Halves damage taken from a Normal-type attack. Single use."
@@ -1707,7 +1707,7 @@
     },
     "chimechite": {
       "name": "Chimechite",
-      "megaStone": {"Chimecho": "Chimecho-Mega"},
+      "megaStone": { "Chimecho": "Chimecho-Mega" },
       "itemUser": ["Chimecho"],
       "num": 2637,
       "gen": 9,
@@ -1716,14 +1716,14 @@
     },
     "chippedpot": {
       "name": "Chipped Pot",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1254,
       "gen": 8,
       "shortDesc": "Evolves Sinistea-Antique into Polteageist-Antique when used."
     },
     "choiceband": {
       "name": "Choice Band",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onModifyAtkPriority": 1,
       "isChoice": true,
       "num": 220,
@@ -1732,7 +1732,7 @@
     },
     "choicescarf": {
       "name": "Choice Scarf",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "isChoice": true,
       "num": 287,
       "gen": 4,
@@ -1740,7 +1740,7 @@
     },
     "choicespecs": {
       "name": "Choice Specs",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onModifySpAPriority": 1,
       "isChoice": true,
       "num": 297,
@@ -1750,14 +1750,14 @@
     "chopleberry": {
       "name": "Chople Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Fighting"},
+      "naturalGift": { "basePower": 80, "type": "Fighting" },
       "num": 189,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Fighting-type attack. Single use."
     },
     "clawfossil": {
       "name": "Claw Fossil",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 100,
       "gen": 3,
       "isNonstandard": "Past",
@@ -1765,7 +1765,7 @@
     },
     "clearamulet": {
       "name": "Clear Amulet",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onTryBoostPriority": 1,
       "num": 1882,
       "gen": 9,
@@ -1773,7 +1773,7 @@
     },
     "clefablite": {
       "name": "Clefablite",
-      "megaStone": {"Clefable": "Clefable-Mega"},
+      "megaStone": { "Clefable": "Clefable-Mega" },
       "itemUser": ["Clefable"],
       "num": 2559,
       "gen": 9,
@@ -1782,7 +1782,7 @@
     },
     "cloversweet": {
       "name": "Clover Sweet",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1112,
       "gen": 8,
       "shortDesc": "Evolves Milcery into Alcremie when held and spun around."
@@ -1790,7 +1790,7 @@
     "cobaberry": {
       "name": "Coba Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Flying"},
+      "naturalGift": { "basePower": 80, "type": "Flying" },
       "num": 192,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Flying-type attack. Single use."
@@ -1798,14 +1798,14 @@
     "colburberry": {
       "name": "Colbur Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Dark"},
+      "naturalGift": { "basePower": 80, "type": "Dark" },
       "num": 198,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Dark-type attack. Single use."
     },
     "cornerstonemask": {
       "name": "Cornerstone Mask",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "onBasePowerPriority": 15,
       "forcedForme": "Ogerpon-Cornerstone",
       "itemUser": ["Ogerpon-Cornerstone"],
@@ -1816,7 +1816,7 @@
     "cornnberry": {
       "name": "Cornn Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Bug"},
+      "naturalGift": { "basePower": 90, "type": "Bug" },
       "onEat": false,
       "num": 175,
       "gen": 3,
@@ -1825,7 +1825,7 @@
     },
     "coverfossil": {
       "name": "Cover Fossil",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 572,
       "gen": 5,
       "isNonstandard": "Past",
@@ -1833,7 +1833,7 @@
     },
     "covertcloak": {
       "name": "Covert Cloak",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 1885,
       "gen": 9,
       "desc": "The holder is not affected by the secondary effect of another Pokemon's attack. Attacks with secondary effects that are prevented include those with a chance (even 100%) to paralyze, sleep, freeze, burn, poison, confuse, cause the holder to flinch, cause the holder's stat stages to be lowered, as well as Anchor Shot, Eerie Spell, Fling, Psychic Noise, Salt Cure, Spirit Shackle, Syrup Bomb, and Throat Chop. The effect of Sparkling Aria is prevented if the holder is the only target. Secondary effects added by King's Rock, Razor Fang, and the Poison Touch, Stench, and Toxic Chain Abilities are also prevented against the holder.",
@@ -1841,7 +1841,7 @@
     },
     "crabominite": {
       "name": "Crabominite",
-      "megaStone": {"Crabominable": "Crabominable-Mega"},
+      "megaStone": { "Crabominable": "Crabominable-Mega" },
       "itemUser": ["Crabominable"],
       "num": 2644,
       "gen": 9,
@@ -1850,7 +1850,7 @@
     },
     "crackedpot": {
       "name": "Cracked Pot",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1253,
       "gen": 8,
       "shortDesc": "Evolves Sinistea into Polteageist when used."
@@ -1858,7 +1858,7 @@
     "custapberry": {
       "name": "Custap Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Ghost"},
+      "naturalGift": { "basePower": 100, "type": "Ghost" },
       "onFractionalPriorityPriority": -2,
       "num": 210,
       "gen": 4,
@@ -1866,7 +1866,7 @@
     },
     "damprock": {
       "name": "Damp Rock",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "num": 285,
       "gen": 4,
       "shortDesc": "Holder's use of Rain Dance lasts 8 turns instead of 5."
@@ -1903,7 +1903,7 @@
     },
     "darkranite": {
       "name": "Darkranite",
-      "megaStone": {"Darkrai": "Darkrai-Mega"},
+      "megaStone": { "Darkrai": "Darkrai-Mega" },
       "itemUser": ["Darkrai"],
       "num": 2568,
       "gen": 9,
@@ -1912,7 +1912,7 @@
     },
     "dawnstone": {
       "name": "Dawn Stone",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 109,
       "gen": 4,
       "desc": "Evolves male Kirlia into Gallade and female Snorunt into Froslass when used.",
@@ -1931,7 +1931,7 @@
     },
     "deepseascale": {
       "name": "Deep Sea Scale",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onModifySpDPriority": 2,
       "itemUser": ["Clamperl"],
       "num": 227,
@@ -1942,7 +1942,7 @@
     },
     "deepseatooth": {
       "name": "Deep Sea Tooth",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "onModifySpAPriority": 1,
       "itemUser": ["Clamperl"],
       "num": 226,
@@ -1953,7 +1953,7 @@
     },
     "delphoxite": {
       "name": "Delphoxite",
-      "megaStone": {"Delphox": "Delphox-Mega"},
+      "megaStone": { "Delphox": "Delphox-Mega" },
       "itemUser": ["Delphox"],
       "num": 2576,
       "gen": 9,
@@ -1962,7 +1962,7 @@
     },
     "destinyknot": {
       "name": "Destiny Knot",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onAttractPriority": -100,
       "num": 280,
       "gen": 4,
@@ -1970,7 +1970,7 @@
     },
     "diancite": {
       "name": "Diancite",
-      "megaStone": {"Diancie": "Diancie-Mega"},
+      "megaStone": { "Diancie": "Diancie-Mega" },
       "itemUser": ["Diancie"],
       "num": 764,
       "gen": 6,
@@ -1986,7 +1986,7 @@
     },
     "domefossil": {
       "name": "Dome Fossil",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 102,
       "gen": 3,
       "isNonstandard": "Past",
@@ -2013,7 +2013,7 @@
     },
     "dragalgite": {
       "name": "Dragalgite",
-      "megaStone": {"Dragalge": "Dragalge-Mega"},
+      "megaStone": { "Dragalge": "Dragalge-Mega" },
       "itemUser": ["Dragalge"],
       "num": 2582,
       "gen": 9,
@@ -2022,7 +2022,7 @@
     },
     "dragonfang": {
       "name": "Dragon Fang",
-      "fling": {"basePower": 70},
+      "fling": { "basePower": 70 },
       "onBasePowerPriority": 15,
       "num": 250,
       "gen": 2,
@@ -2038,7 +2038,7 @@
     },
     "dragoninite": {
       "name": "Dragoninite",
-      "megaStone": {"Dragonite": "Dragonite-Mega"},
+      "megaStone": { "Dragonite": "Dragonite-Mega" },
       "itemUser": ["Dragonite"],
       "num": 2562,
       "gen": 9,
@@ -2069,14 +2069,14 @@
     },
     "dragonscale": {
       "name": "Dragon Scale",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 235,
       "gen": 2,
       "shortDesc": "Evolves Seadra into Kingdra when traded."
     },
     "drampanite": {
       "name": "Drampanite",
-      "megaStone": {"Drampa": "Drampa-Mega"},
+      "megaStone": { "Drampa": "Drampa-Mega" },
       "itemUser": ["Drampa"],
       "num": 2585,
       "gen": 9,
@@ -2101,7 +2101,7 @@
     },
     "dubiousdisc": {
       "name": "Dubious Disc",
-      "fling": {"basePower": 50},
+      "fling": { "basePower": 50 },
       "num": 324,
       "gen": 4,
       "shortDesc": "Evolves Porygon2 into Porygon-Z when traded."
@@ -2109,7 +2109,7 @@
     "durinberry": {
       "name": "Durin Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Water"},
+      "naturalGift": { "basePower": 100, "type": "Water" },
       "onEat": false,
       "num": 182,
       "gen": 3,
@@ -2125,7 +2125,7 @@
     },
     "duskstone": {
       "name": "Dusk Stone",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 108,
       "gen": 4,
       "desc": "Evolves Murkrow into Honchkrow, Misdreavus into Mismagius, Lampent into Chandelure, and Doublade into Aegislash when used.",
@@ -2142,7 +2142,7 @@
     },
     "eelektrossite": {
       "name": "Eelektrossite",
-      "megaStone": {"Eelektross": "Eelektross-Mega"},
+      "megaStone": { "Eelektross": "Eelektross-Mega" },
       "itemUser": ["Eelektross"],
       "num": 2573,
       "gen": 9,
@@ -2162,7 +2162,7 @@
     },
     "ejectbutton": {
       "name": "Eject Button",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onAfterMoveSecondaryPriority": 2,
       "num": 547,
       "gen": 5,
@@ -2170,7 +2170,7 @@
     },
     "ejectpack": {
       "name": "Eject Pack",
-      "fling": {"basePower": 50},
+      "fling": { "basePower": 50 },
       "onAnySwitchInPriority": -4,
       "onResidualOrder": 29,
       "num": 1119,
@@ -2179,7 +2179,7 @@
     },
     "electirizer": {
       "name": "Electirizer",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 322,
       "gen": 4,
       "shortDesc": "Evolves Electabuzz into Electivire when traded."
@@ -2204,9 +2204,9 @@
     },
     "electricseed": {
       "name": "Electric Seed",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onSwitchInPriority": -1,
-      "boosts": {"def": 1},
+      "boosts": { "def": 1 },
       "num": 881,
       "gen": 7,
       "shortDesc": "If the terrain is Electric Terrain, raises holder's Defense by 1 stage. Single use."
@@ -2225,7 +2225,7 @@
     },
     "emboarite": {
       "name": "Emboarite",
-      "megaStone": {"Emboar": "Emboar-Mega"},
+      "megaStone": { "Emboar": "Emboar-Mega" },
       "itemUser": ["Emboar"],
       "num": 2569,
       "gen": 9,
@@ -2235,14 +2235,14 @@
     "enigmaberry": {
       "name": "Enigma Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Bug"},
+      "naturalGift": { "basePower": 100, "type": "Bug" },
       "num": 208,
       "gen": 3,
       "shortDesc": "Restores 1/4 max HP after holder is hit by a supereffective move. Single use."
     },
     "eviolite": {
       "name": "Eviolite",
-      "fling": {"basePower": 40},
+      "fling": { "basePower": 40 },
       "onModifyDefPriority": 2,
       "onModifySpDPriority": 2,
       "num": 538,
@@ -2251,7 +2251,7 @@
     },
     "excadrite": {
       "name": "Excadrite",
-      "megaStone": {"Excadrill": "Excadrill-Mega"},
+      "megaStone": { "Excadrill": "Excadrill-Mega" },
       "itemUser": ["Excadrill"],
       "num": 2570,
       "gen": 9,
@@ -2260,7 +2260,7 @@
     },
     "expertbelt": {
       "name": "Expert Belt",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 268,
       "gen": 4,
       "shortDesc": "Holder's attacks that are super effective against the target do 1.2x damage."
@@ -2279,7 +2279,7 @@
     },
     "fairyfeather": {
       "name": "Fairy Feather",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 15,
       "num": 2401,
       "gen": 9,
@@ -2305,7 +2305,7 @@
     },
     "falinksite": {
       "name": "Falinksite",
-      "megaStone": {"Falinks": "Falinks-Mega"},
+      "megaStone": { "Falinks": "Falinks-Mega" },
       "itemUser": ["Falinks"],
       "num": 2587,
       "gen": 9,
@@ -2321,7 +2321,7 @@
     },
     "feraligite": {
       "name": "Feraligite",
-      "megaStone": {"Feraligatr": "Feraligatr-Mega"},
+      "megaStone": { "Feraligatr": "Feraligatr-Mega" },
       "itemUser": ["Feraligatr"],
       "num": 2564,
       "gen": 9,
@@ -2361,7 +2361,7 @@
     "figyberry": {
       "name": "Figy Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Bug"},
+      "naturalGift": { "basePower": 80, "type": "Bug" },
       "num": 159,
       "gen": 3,
       "shortDesc": "Restores 1/3 max HP at 1/4 max HP or less; confuses if -Atk Nature. Single use."
@@ -2386,7 +2386,7 @@
     },
     "firestone": {
       "name": "Fire Stone",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 82,
       "gen": 1,
       "desc": "Evolves Vulpix into Ninetales, Growlithe into Arcanine, Eevee into Flareon, and Pansear into Simisear when used.",
@@ -2415,7 +2415,7 @@
     },
     "flameorb": {
       "name": "Flame Orb",
-      "fling": {"basePower": 30, "status": "brn"},
+      "fling": { "basePower": 30, "status": "brn" },
       "onResidualOrder": 28,
       "onResidualSubOrder": 3,
       "num": 273,
@@ -2433,14 +2433,14 @@
     },
     "floatstone": {
       "name": "Float Stone",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 539,
       "gen": 5,
       "shortDesc": "Holder's weight is halved."
     },
     "floettite": {
       "name": "Floettite",
-      "megaStone": {"Floette-Eternal": "Floette-Mega"},
+      "megaStone": { "Floette-Eternal": "Floette-Mega" },
       "itemUser": ["Floette-Eternal"],
       "num": 2579,
       "gen": 9,
@@ -2449,7 +2449,7 @@
     },
     "flowersweet": {
       "name": "Flower Sweet",
-      "fling": {"basePower": 0},
+      "fling": { "basePower": 0 },
       "num": 1113,
       "gen": 8,
       "shortDesc": "Evolves Milcery into Alcremie when held and spun around."
@@ -2486,7 +2486,7 @@
     },
     "focusband": {
       "name": "Focus Band",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onDamagePriority": -40,
       "num": 230,
       "gen": 2,
@@ -2494,7 +2494,7 @@
     },
     "focussash": {
       "name": "Focus Sash",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onDamagePriority": -40,
       "num": 275,
       "gen": 4,
@@ -2502,7 +2502,7 @@
     },
     "fossilizedbird": {
       "name": "Fossilized Bird",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 1105,
       "gen": 8,
       "isNonstandard": "Past",
@@ -2510,7 +2510,7 @@
     },
     "fossilizeddino": {
       "name": "Fossilized Dino",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 1108,
       "gen": 8,
       "isNonstandard": "Past",
@@ -2518,7 +2518,7 @@
     },
     "fossilizeddrake": {
       "name": "Fossilized Drake",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 1107,
       "gen": 8,
       "isNonstandard": "Past",
@@ -2526,7 +2526,7 @@
     },
     "fossilizedfish": {
       "name": "Fossilized Fish",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 1106,
       "gen": 8,
       "isNonstandard": "Past",
@@ -2541,7 +2541,7 @@
     },
     "froslassite": {
       "name": "Froslassite",
-      "megaStone": {"Froslass": "Froslass-Mega"},
+      "megaStone": { "Froslass": "Froslass-Mega" },
       "itemUser": ["Froslass"],
       "num": 2566,
       "gen": 9,
@@ -2550,7 +2550,7 @@
     },
     "fullincense": {
       "name": "Full Incense",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onFractionalPriority": -0.1,
       "num": 316,
       "gen": 4,
@@ -2559,21 +2559,21 @@
     },
     "galaricacuff": {
       "name": "Galarica Cuff",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 1582,
       "gen": 8,
       "shortDesc": "Evolves Galarian Slowpoke into Galarian Slowbro when used."
     },
     "galaricawreath": {
       "name": "Galarica Wreath",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 1592,
       "gen": 8,
       "shortDesc": "Evolves Galarian Slowpoke into Galarian Slowking when used."
     },
     "galladite": {
       "name": "Galladite",
-      "megaStone": {"Gallade": "Gallade-Mega"},
+      "megaStone": { "Gallade": "Gallade-Mega" },
       "itemUser": ["Gallade"],
       "num": 756,
       "gen": 6,
@@ -2583,14 +2583,14 @@
     "ganlonberry": {
       "name": "Ganlon Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Ice"},
+      "naturalGift": { "basePower": 100, "type": "Ice" },
       "num": 202,
       "gen": 3,
       "shortDesc": "Raises holder's Defense by 1 stage when at 1/4 max HP or less. Single use."
     },
     "garchompite": {
       "name": "Garchompite",
-      "megaStone": {"Garchomp": "Garchomp-Mega"},
+      "megaStone": { "Garchomp": "Garchomp-Mega" },
       "itemUser": ["Garchomp"],
       "num": 683,
       "gen": 6,
@@ -2599,7 +2599,7 @@
     },
     "garchompitez": {
       "name": "Garchompite Z",
-      "megaStone": {"Garchomp": "Garchomp-Mega-Z"},
+      "megaStone": { "Garchomp": "Garchomp-Mega-Z" },
       "itemUser": ["Garchomp"],
       "num": 2640,
       "gen": 9,
@@ -2608,7 +2608,7 @@
     },
     "gardevoirite": {
       "name": "Gardevoirite",
-      "megaStone": {"Gardevoir": "Gardevoir-Mega"},
+      "megaStone": { "Gardevoir": "Gardevoir-Mega" },
       "itemUser": ["Gardevoir"],
       "num": 657,
       "gen": 6,
@@ -2617,7 +2617,7 @@
     },
     "gengarite": {
       "name": "Gengarite",
-      "megaStone": {"Gengar": "Gengar-Mega"},
+      "megaStone": { "Gengar": "Gengar-Mega" },
       "itemUser": ["Gengar"],
       "num": 656,
       "gen": 6,
@@ -2656,7 +2656,7 @@
     },
     "glalitite": {
       "name": "Glalitite",
-      "megaStone": {"Glalie": "Glalie-Mega"},
+      "megaStone": { "Glalie": "Glalie-Mega" },
       "itemUser": ["Glalie"],
       "num": 763,
       "gen": 6,
@@ -2665,7 +2665,7 @@
     },
     "glimmoranite": {
       "name": "Glimmoranite",
-      "megaStone": {"Glimmora": "Glimmora-Mega"},
+      "megaStone": { "Glimmora": "Glimmora-Mega" },
       "itemUser": ["Glimmora"],
       "num": 2650,
       "gen": 9,
@@ -2674,14 +2674,14 @@
     },
     "goldbottlecap": {
       "name": "Gold Bottle Cap",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 796,
       "gen": 7,
       "shortDesc": "Used for Hyper Training. All of a Pokemon's stats are calculated with an IV of 31."
     },
     "golisopite": {
       "name": "Golisopite",
-      "megaStone": {"Golisopod": "Golisopod-Mega"},
+      "megaStone": { "Golisopod": "Golisopod-Mega" },
       "itemUser": ["Golisopod"],
       "num": 2645,
       "gen": 9,
@@ -2690,7 +2690,7 @@
     },
     "golurkite": {
       "name": "Golurkite",
-      "megaStone": {"Golurk": "Golurk-Mega"},
+      "megaStone": { "Golurk": "Golurk-Mega" },
       "itemUser": ["Golurk"],
       "num": 2642,
       "gen": 9,
@@ -2729,9 +2729,9 @@
     },
     "grassyseed": {
       "name": "Grassy Seed",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onSwitchInPriority": -1,
-      "boosts": {"def": 1},
+      "boosts": { "def": 1 },
       "num": 884,
       "gen": 7,
       "shortDesc": "If the terrain is Grassy Terrain, raises holder's Defense by 1 stage. Single use."
@@ -2745,7 +2745,7 @@
     },
     "greninjite": {
       "name": "Greninjite",
-      "megaStone": {"Greninja": "Greninja-Mega"},
+      "megaStone": { "Greninja": "Greninja-Mega" },
       "itemUser": ["Greninja"],
       "num": 2577,
       "gen": 9,
@@ -2755,7 +2755,7 @@
     "grepaberry": {
       "name": "Grepa Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Flying"},
+      "naturalGift": { "basePower": 90, "type": "Flying" },
       "onEat": false,
       "num": 173,
       "gen": 3,
@@ -2763,7 +2763,7 @@
     },
     "gripclaw": {
       "name": "Grip Claw",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 286,
       "gen": 4,
       "shortDesc": "Holder's partial-trapping moves always last 7 turns."
@@ -2779,7 +2779,7 @@
     },
     "griseousorb": {
       "name": "Griseous Orb",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "onBasePowerPriority": 15,
       "itemUser": ["Giratina"],
       "num": 112,
@@ -2818,7 +2818,7 @@
     },
     "gyaradosite": {
       "name": "Gyaradosite",
-      "megaStone": {"Gyarados": "Gyarados-Mega"},
+      "megaStone": { "Gyarados": "Gyarados-Mega" },
       "itemUser": ["Gyarados"],
       "num": 676,
       "gen": 6,
@@ -2828,14 +2828,14 @@
     "habanberry": {
       "name": "Haban Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Dragon"},
+      "naturalGift": { "basePower": 80, "type": "Dragon" },
       "num": 197,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Dragon-type attack. Single use."
     },
     "hardstone": {
       "name": "Hard Stone",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "onBasePowerPriority": 15,
       "num": 238,
       "gen": 2,
@@ -2843,7 +2843,7 @@
     },
     "hawluchanite": {
       "name": "Hawluchanite",
-      "megaStone": {"Hawlucha": "Hawlucha-Mega"},
+      "megaStone": { "Hawlucha": "Hawlucha-Mega" },
       "itemUser": ["Hawlucha"],
       "num": 2583,
       "gen": 9,
@@ -2859,7 +2859,7 @@
     },
     "hearthflamemask": {
       "name": "Hearthflame Mask",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "onBasePowerPriority": 15,
       "forcedForme": "Ogerpon-Hearthflame",
       "itemUser": ["Ogerpon-Hearthflame"],
@@ -2869,7 +2869,7 @@
     },
     "heatranite": {
       "name": "Heatranite",
-      "megaStone": {"Heatran": "Heatran-Mega"},
+      "megaStone": { "Heatran": "Heatran-Mega" },
       "itemUser": ["Heatran"],
       "num": 2567,
       "gen": 9,
@@ -2878,7 +2878,7 @@
     },
     "heatrock": {
       "name": "Heat Rock",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "num": 284,
       "gen": 4,
       "shortDesc": "Holder's use of Sunny Day lasts 8 turns instead of 5."
@@ -2892,14 +2892,14 @@
     },
     "heavydutyboots": {
       "name": "Heavy-Duty Boots",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1120,
       "gen": 8,
       "shortDesc": "When switching in, the holder is unaffected by hazards on its side of the field."
     },
     "helixfossil": {
       "name": "Helix Fossil",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 101,
       "gen": 3,
       "isNonstandard": "Past",
@@ -2907,7 +2907,7 @@
     },
     "heracronite": {
       "name": "Heracronite",
-      "megaStone": {"Heracross": "Heracross-Mega"},
+      "megaStone": { "Heracross": "Heracross-Mega" },
       "itemUser": ["Heracross"],
       "num": 680,
       "gen": 6,
@@ -2917,7 +2917,7 @@
     "hondewberry": {
       "name": "Hondew Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Ground"},
+      "naturalGift": { "basePower": 90, "type": "Ground" },
       "onEat": false,
       "num": 172,
       "gen": 3,
@@ -2925,7 +2925,7 @@
     },
     "houndoominite": {
       "name": "Houndoominite",
-      "megaStone": {"Houndoom": "Houndoom-Mega"},
+      "megaStone": { "Houndoom": "Houndoom-Mega" },
       "itemUser": ["Houndoom"],
       "num": 666,
       "gen": 6,
@@ -2935,7 +2935,7 @@
     "iapapaberry": {
       "name": "Iapapa Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Dark"},
+      "naturalGift": { "basePower": 80, "type": "Dark" },
       "num": 163,
       "gen": 3,
       "shortDesc": "Restores 1/3 max HP at 1/4 max HP or less; confuses if -Def Nature. Single use."
@@ -2960,7 +2960,7 @@
     },
     "icestone": {
       "name": "Ice Stone",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 849,
       "gen": 7,
       "desc": "Evolves Alolan Sandshrew into Alolan Sandslash, Alolan Vulpix into Alolan Ninetales, Eevee into Glaceon, and Galarian Darumaka into Galarian Darmanitan when used.",
@@ -2989,7 +2989,7 @@
     },
     "icyrock": {
       "name": "Icy Rock",
-      "fling": {"basePower": 40},
+      "fling": { "basePower": 40 },
       "num": 282,
       "gen": 4,
       "shortDesc": "Holder's use of Snowscape lasts 8 turns instead of 5."
@@ -3016,7 +3016,7 @@
     },
     "ironball": {
       "name": "Iron Ball",
-      "fling": {"basePower": 130},
+      "fling": { "basePower": 130 },
       "num": 278,
       "gen": 4,
       "shortDesc": "Holder is grounded, Speed halved. If Flying type, takes neutral Ground damage."
@@ -3033,14 +3033,14 @@
     "jabocaberry": {
       "name": "Jaboca Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Dragon"},
+      "naturalGift": { "basePower": 100, "type": "Dragon" },
       "num": 211,
       "gen": 4,
       "shortDesc": "If holder is hit by a physical move, attacker loses 1/8 of its max HP. Single use."
     },
     "jawfossil": {
       "name": "Jaw Fossil",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 710,
       "gen": 6,
       "isNonstandard": "Past",
@@ -3048,7 +3048,7 @@
     },
     "kangaskhanite": {
       "name": "Kangaskhanite",
-      "megaStone": {"Kangaskhan": "Kangaskhan-Mega"},
+      "megaStone": { "Kangaskhan": "Kangaskhan-Mega" },
       "itemUser": ["Kangaskhan"],
       "num": 675,
       "gen": 6,
@@ -3058,7 +3058,7 @@
     "kasibberry": {
       "name": "Kasib Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Ghost"},
+      "naturalGift": { "basePower": 80, "type": "Ghost" },
       "num": 196,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Ghost-type attack. Single use."
@@ -3066,7 +3066,7 @@
     "kebiaberry": {
       "name": "Kebia Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Poison"},
+      "naturalGift": { "basePower": 80, "type": "Poison" },
       "num": 190,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Poison-type attack. Single use."
@@ -3074,7 +3074,7 @@
     "keeberry": {
       "name": "Kee Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Fairy"},
+      "naturalGift": { "basePower": 100, "type": "Fairy" },
       "num": 687,
       "gen": 6,
       "shortDesc": "Raises holder's Defense by 1 stage after it is hit by a physical attack. Single use."
@@ -3082,7 +3082,7 @@
     "kelpsyberry": {
       "name": "Kelpsy Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Fighting"},
+      "naturalGift": { "basePower": 90, "type": "Fighting" },
       "onEat": false,
       "num": 170,
       "gen": 3,
@@ -3090,7 +3090,7 @@
     },
     "kingsrock": {
       "name": "King's Rock",
-      "fling": {"basePower": 30, "volatileStatus": "flinch"},
+      "fling": { "basePower": 30, "volatileStatus": "flinch" },
       "onModifyMovePriority": -1,
       "num": 221,
       "gen": 2,
@@ -3110,7 +3110,7 @@
     },
     "laggingtail": {
       "name": "Lagging Tail",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onFractionalPriority": -0.1,
       "num": 279,
       "gen": 4,
@@ -3119,14 +3119,14 @@
     "lansatberry": {
       "name": "Lansat Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Flying"},
+      "naturalGift": { "basePower": 100, "type": "Flying" },
       "num": 206,
       "gen": 3,
       "shortDesc": "Holder gains the Focus Energy effect when at 1/4 max HP or less. Single use."
     },
     "latiasite": {
       "name": "Latiasite",
-      "megaStone": {"Latias": "Latias-Mega"},
+      "megaStone": { "Latias": "Latias-Mega" },
       "itemUser": ["Latias"],
       "num": 684,
       "gen": 6,
@@ -3135,7 +3135,7 @@
     },
     "latiosite": {
       "name": "Latiosite",
-      "megaStone": {"Latios": "Latios-Mega"},
+      "megaStone": { "Latios": "Latios-Mega" },
       "itemUser": ["Latios"],
       "num": 685,
       "gen": 6,
@@ -3144,7 +3144,7 @@
     },
     "laxincense": {
       "name": "Lax Incense",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onModifyAccuracyPriority": -2,
       "num": 255,
       "gen": 3,
@@ -3153,7 +3153,7 @@
     },
     "leafstone": {
       "name": "Leaf Stone",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 85,
       "gen": 1,
       "desc": "Evolves Gloom into Vileplume, Weepinbell into Victreebel, Exeggcute into Exeggutor or Alolan Exeggutor, Eevee into Leafeon, Nuzleaf into Shiftry, and Pansage into Simisage when used.",
@@ -3161,7 +3161,7 @@
     },
     "leek": {
       "name": "Leek",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "itemUser": ["Farfetch’d", "Farfetch’d-Galar", "Sirfetch’d"],
       "num": 259,
       "gen": 8,
@@ -3170,7 +3170,7 @@
     },
     "leftovers": {
       "name": "Leftovers",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onResidualOrder": 5,
       "onResidualSubOrder": 4,
       "num": 234,
@@ -3180,7 +3180,7 @@
     "leppaberry": {
       "name": "Leppa Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Fighting"},
+      "naturalGift": { "basePower": 80, "type": "Fighting" },
       "num": 154,
       "gen": 3,
       "shortDesc": "Restores 10 PP to the first of the holder's moves to reach 0 PP. Single use."
@@ -3195,21 +3195,21 @@
     "liechiberry": {
       "name": "Liechi Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Grass"},
+      "naturalGift": { "basePower": 100, "type": "Grass" },
       "num": 201,
       "gen": 3,
       "shortDesc": "Raises holder's Attack by 1 stage when at 1/4 max HP or less. Single use."
     },
     "lifeorb": {
       "name": "Life Orb",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 270,
       "gen": 4,
       "shortDesc": "Holder's attacks do 1.3x damage, and it loses 1/10 its max HP after the attack."
     },
     "lightball": {
       "name": "Light Ball",
-      "fling": {"basePower": 30, "status": "par"},
+      "fling": { "basePower": 30, "status": "par" },
       "onModifyAtkPriority": 1,
       "onModifySpAPriority": 1,
       "itemUser": [
@@ -3236,14 +3236,14 @@
     },
     "lightclay": {
       "name": "Light Clay",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 269,
       "gen": 4,
       "shortDesc": "Holder's use of Aurora Veil, Light Screen, or Reflect lasts 8 turns instead of 5."
     },
     "loadeddice": {
       "name": "Loaded Dice",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 1886,
       "gen": 9,
       "desc": "The holder's moves that normally hit 2 to 5 times instead hit 4 or 5 times. If the first hit is successful, the holder's use of Triple Kick or Triple Axel hits 3 times, and Population Bomb hits 4 to 10 times, at random.",
@@ -3251,7 +3251,7 @@
     },
     "lopunnite": {
       "name": "Lopunnite",
-      "megaStone": {"Lopunny": "Lopunny-Mega"},
+      "megaStone": { "Lopunny": "Lopunny-Mega" },
       "itemUser": ["Lopunny"],
       "num": 768,
       "gen": 6,
@@ -3267,14 +3267,14 @@
     },
     "lovesweet": {
       "name": "Love Sweet",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1110,
       "gen": 8,
       "shortDesc": "Evolves Milcery into Alcremie when held and spun around."
     },
     "lucarionite": {
       "name": "Lucarionite",
-      "megaStone": {"Lucario": "Lucario-Mega"},
+      "megaStone": { "Lucario": "Lucario-Mega" },
       "itemUser": ["Lucario"],
       "num": 673,
       "gen": 6,
@@ -3283,7 +3283,7 @@
     },
     "lucarionitez": {
       "name": "Lucarionite Z",
-      "megaStone": {"Lucario": "Lucario-Mega-Z"},
+      "megaStone": { "Lucario": "Lucario-Mega-Z" },
       "itemUser": ["Lucario"],
       "num": 2641,
       "gen": 9,
@@ -3292,7 +3292,7 @@
     },
     "luckypunch": {
       "name": "Lucky Punch",
-      "fling": {"basePower": 40},
+      "fling": { "basePower": 40 },
       "itemUser": ["Chansey"],
       "num": 256,
       "gen": 2,
@@ -3302,7 +3302,7 @@
     "lumberry": {
       "name": "Lum Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Flying"},
+      "naturalGift": { "basePower": 80, "type": "Flying" },
       "onAfterSetStatusPriority": -1,
       "num": 157,
       "gen": 3,
@@ -3310,8 +3310,8 @@
     },
     "luminousmoss": {
       "name": "Luminous Moss",
-      "fling": {"basePower": 30},
-      "boosts": {"spd": 1},
+      "fling": { "basePower": 30 },
+      "boosts": { "spd": 1 },
       "num": 648,
       "gen": 6,
       "shortDesc": "Raises holder's Sp. Def by 1 stage if hit by a Water-type attack. Single use."
@@ -3345,7 +3345,7 @@
     },
     "lustrousorb": {
       "name": "Lustrous Orb",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "onBasePowerPriority": 15,
       "itemUser": ["Palkia"],
       "num": 136,
@@ -3373,7 +3373,7 @@
     "machobrace": {
       "name": "Macho Brace",
       "ignoreKlutz": true,
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "num": 215,
       "gen": 3,
       "isNonstandard": "Past",
@@ -3393,14 +3393,14 @@
     },
     "magmarizer": {
       "name": "Magmarizer",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 323,
       "gen": 4,
       "shortDesc": "Evolves Magmar into Magmortar when traded."
     },
     "magnet": {
       "name": "Magnet",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "num": 242,
       "gen": 2,
@@ -3409,7 +3409,7 @@
     "magoberry": {
       "name": "Mago Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Ghost"},
+      "naturalGift": { "basePower": 80, "type": "Ghost" },
       "num": 161,
       "gen": 3,
       "shortDesc": "Restores 1/3 max HP at 1/4 max HP or less; confuses if -Spe Nature. Single use."
@@ -3417,7 +3417,7 @@
     "magostberry": {
       "name": "Magost Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Rock"},
+      "naturalGift": { "basePower": 90, "type": "Rock" },
       "onEat": false,
       "num": 176,
       "gen": 3,
@@ -3433,7 +3433,7 @@
     },
     "malamarite": {
       "name": "Malamarite",
-      "megaStone": {"Malamar": "Malamar-Mega"},
+      "megaStone": { "Malamar": "Malamar-Mega" },
       "itemUser": ["Malamar"],
       "num": 2580,
       "gen": 9,
@@ -3442,14 +3442,14 @@
     },
     "maliciousarmor": {
       "name": "Malicious Armor",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 1861,
       "gen": 9,
       "shortDesc": "Evolves Charcadet into Ceruledge when used."
     },
     "manectite": {
       "name": "Manectite",
-      "megaStone": {"Manectric": "Manectric-Mega"},
+      "megaStone": { "Manectric": "Manectric-Mega" },
       "itemUser": ["Manectric"],
       "num": 682,
       "gen": 6,
@@ -3459,7 +3459,7 @@
     "marangaberry": {
       "name": "Maranga Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Dark"},
+      "naturalGift": { "basePower": 100, "type": "Dark" },
       "num": 688,
       "gen": 6,
       "shortDesc": "Raises holder's Sp. Def by 1 stage after it is hit by a special attack. Single use."
@@ -3484,14 +3484,14 @@
     },
     "masterpieceteacup": {
       "name": "Masterpiece Teacup",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 2404,
       "gen": 9,
       "shortDesc": "Evolves Poltchageist-Artisan into Sinistcha-Masterpiece when used."
     },
     "mawilite": {
       "name": "Mawilite",
-      "megaStone": {"Mawile": "Mawile-Mega"},
+      "megaStone": { "Mawile": "Mawile-Mega" },
       "itemUser": ["Mawile"],
       "num": 681,
       "gen": 6,
@@ -3509,7 +3509,7 @@
     },
     "medichamite": {
       "name": "Medichamite",
-      "megaStone": {"Medicham": "Medicham-Mega"},
+      "megaStone": { "Medicham": "Medicham-Mega" },
       "itemUser": ["Medicham"],
       "num": 665,
       "gen": 6,
@@ -3518,7 +3518,7 @@
     },
     "meganiumite": {
       "name": "Meganiumite",
-      "megaStone": {"Meganium": "Meganium-Mega"},
+      "megaStone": { "Meganium": "Meganium-Mega" },
       "itemUser": ["Meganium"],
       "num": 2563,
       "gen": 9,
@@ -3527,7 +3527,7 @@
     },
     "mentalherb": {
       "name": "Mental Herb",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 219,
       "gen": 3,
       "shortDesc": "Cures holder of Attract, Disable, Encore, Heal Block, Taunt, Torment. Single use."
@@ -3546,7 +3546,7 @@
     },
     "metagrossite": {
       "name": "Metagrossite",
-      "megaStone": {"Metagross": "Metagross-Mega"},
+      "megaStone": { "Metagross": "Metagross-Mega" },
       "itemUser": ["Metagross"],
       "num": 758,
       "gen": 6,
@@ -3561,7 +3561,7 @@
     },
     "metalcoat": {
       "name": "Metal Coat",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "num": 233,
       "gen": 2,
@@ -3570,7 +3570,7 @@
     },
     "metalpowder": {
       "name": "Metal Powder",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onModifyDefPriority": 2,
       "itemUser": ["Ditto"],
       "num": 257,
@@ -3580,8 +3580,8 @@
     },
     "metronome": {
       "name": "Metronome",
-      "fling": {"basePower": 30},
-      "condition": {"onTryMovePriority": -2},
+      "fling": { "basePower": 30 },
+      "condition": { "onTryMovePriority": -2 },
       "num": 277,
       "gen": 4,
       "shortDesc": "Damage of moves used on consecutive turns is increased. Max 2x after 5 turns."
@@ -3599,7 +3599,7 @@
     },
     "mewtwonitex": {
       "name": "Mewtwonite X",
-      "megaStone": {"Mewtwo": "Mewtwo-Mega-X"},
+      "megaStone": { "Mewtwo": "Mewtwo-Mega-X" },
       "itemUser": ["Mewtwo"],
       "num": 662,
       "gen": 6,
@@ -3608,7 +3608,7 @@
     },
     "mewtwonitey": {
       "name": "Mewtwonite Y",
-      "megaStone": {"Mewtwo": "Mewtwo-Mega-Y"},
+      "megaStone": { "Mewtwo": "Mewtwo-Mega-Y" },
       "itemUser": ["Mewtwo"],
       "num": 663,
       "gen": 6,
@@ -3618,8 +3618,8 @@
     "micleberry": {
       "name": "Micle Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Rock"},
-      "condition": {"duration": 2},
+      "naturalGift": { "basePower": 100, "type": "Rock" },
+      "condition": { "duration": 2 },
       "num": 209,
       "gen": 4,
       "shortDesc": "Holder's next move has 1.2x accuracy when at 1/4 max HP or less. Single use."
@@ -3629,12 +3629,7 @@
       "onTakeItem": false,
       "zMove": "Let's Snuggle Forever",
       "zMoveFrom": "Play Rough",
-      "itemUser": [
-        "Mimikyu",
-        "Mimikyu-Busted",
-        "Mimikyu-Totem",
-        "Mimikyu-Busted-Totem"
-      ],
+      "itemUser": ["Mimikyu", "Mimikyu-Busted", "Mimikyu-Totem", "Mimikyu-Busted-Totem"],
       "num": 924,
       "isNonstandard": "Past",
       "gen": 7,
@@ -3651,7 +3646,7 @@
     },
     "miracleseed": {
       "name": "Miracle Seed",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "num": 239,
       "gen": 2,
@@ -3659,7 +3654,7 @@
     },
     "mirrorherb": {
       "name": "Mirror Herb",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onAnySwitchInPriority": -3,
       "onResidualOrder": 29,
       "num": 1883,
@@ -3668,9 +3663,9 @@
     },
     "mistyseed": {
       "name": "Misty Seed",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onSwitchInPriority": -1,
-      "boosts": {"spd": 1},
+      "boosts": { "spd": 1 },
       "num": 883,
       "gen": 7,
       "shortDesc": "If the terrain is Misty Terrain, raises holder's Sp. Def by 1 stage. Single use."
@@ -3684,7 +3679,7 @@
     },
     "moonstone": {
       "name": "Moon Stone",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 81,
       "gen": 1,
       "desc": "Evolves Nidorina into Nidoqueen, Nidorino into Nidoking, Clefairy into Clefable, Jigglypuff into Wigglytuff, Skitty into Delcatty, and Munna into Musharna when used.",
@@ -3692,7 +3687,7 @@
     },
     "muscleband": {
       "name": "Muscle Band",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 16,
       "num": 266,
       "gen": 4,
@@ -3700,7 +3695,7 @@
     },
     "mysticwater": {
       "name": "Mystic Water",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "num": 243,
       "gen": 2,
@@ -3709,7 +3704,7 @@
     "nanabberry": {
       "name": "Nanab Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Water"},
+      "naturalGift": { "basePower": 90, "type": "Water" },
       "onEat": false,
       "num": 166,
       "gen": 3,
@@ -3732,7 +3727,7 @@
     },
     "nevermeltice": {
       "name": "Never-Melt Ice",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "num": 246,
       "gen": 2,
@@ -3741,7 +3736,7 @@
     "nomelberry": {
       "name": "Nomel Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Dragon"},
+      "naturalGift": { "basePower": 90, "type": "Dragon" },
       "onEat": false,
       "num": 178,
       "gen": 3,
@@ -3768,14 +3763,14 @@
     "occaberry": {
       "name": "Occa Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Fire"},
+      "naturalGift": { "basePower": 80, "type": "Fire" },
       "num": 184,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Fire-type attack. Single use."
     },
     "oddincense": {
       "name": "Odd Incense",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 15,
       "num": 314,
       "gen": 4,
@@ -3784,7 +3779,7 @@
     },
     "oldamber": {
       "name": "Old Amber",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 103,
       "gen": 3,
       "isNonstandard": "Past",
@@ -3793,14 +3788,14 @@
     "oranberry": {
       "name": "Oran Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Poison"},
+      "naturalGift": { "basePower": 80, "type": "Poison" },
       "num": 155,
       "gen": 3,
       "shortDesc": "Restores 10 HP when at 1/2 max HP or less. Single use."
     },
     "ovalstone": {
       "name": "Oval Stone",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 110,
       "gen": 4,
       "shortDesc": "Evolves Happiny into Chansey when held and leveled up during the day."
@@ -3808,7 +3803,7 @@
     "pamtreberry": {
       "name": "Pamtre Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Steel"},
+      "naturalGift": { "basePower": 90, "type": "Steel" },
       "onEat": false,
       "num": 180,
       "gen": 3,
@@ -3826,7 +3821,7 @@
     "passhoberry": {
       "name": "Passho Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Water"},
+      "naturalGift": { "basePower": 80, "type": "Water" },
       "num": 185,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Water-type attack. Single use."
@@ -3834,7 +3829,7 @@
     "payapaberry": {
       "name": "Payapa Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Psychic"},
+      "naturalGift": { "basePower": 80, "type": "Psychic" },
       "num": 193,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Psychic-type attack. Single use."
@@ -3842,7 +3837,7 @@
     "pechaberry": {
       "name": "Pecha Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Electric"},
+      "naturalGift": { "basePower": 80, "type": "Electric" },
       "num": 151,
       "gen": 3,
       "shortDesc": "Holder is cured if it is poisoned. Single use."
@@ -3850,7 +3845,7 @@
     "persimberry": {
       "name": "Persim Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Ground"},
+      "naturalGift": { "basePower": 80, "type": "Ground" },
       "num": 156,
       "gen": 3,
       "shortDesc": "Holder is cured if it is confused. Single use."
@@ -3858,14 +3853,14 @@
     "petayaberry": {
       "name": "Petaya Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Poison"},
+      "naturalGift": { "basePower": 100, "type": "Poison" },
       "num": 204,
       "gen": 3,
       "shortDesc": "Raises holder's Sp. Atk by 1 stage when at 1/4 max HP or less. Single use."
     },
     "pidgeotite": {
       "name": "Pidgeotite",
-      "megaStone": {"Pidgeot": "Pidgeot-Mega"},
+      "megaStone": { "Pidgeot": "Pidgeot-Mega" },
       "itemUser": ["Pidgeot"],
       "num": 762,
       "gen": 6,
@@ -3905,7 +3900,7 @@
     "pinapberry": {
       "name": "Pinap Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Grass"},
+      "naturalGift": { "basePower": 90, "type": "Grass" },
       "onEat": false,
       "num": 168,
       "gen": 3,
@@ -3914,7 +3909,7 @@
     },
     "pinsirite": {
       "name": "Pinsirite",
-      "megaStone": {"Pinsir": "Pinsir-Mega"},
+      "megaStone": { "Pinsir": "Pinsir-Mega" },
       "itemUser": ["Pinsir"],
       "num": 671,
       "gen": 6,
@@ -3932,7 +3927,7 @@
     },
     "plumefossil": {
       "name": "Plume Fossil",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 573,
       "gen": 5,
       "isNonstandard": "Past",
@@ -3940,7 +3935,7 @@
     },
     "poisonbarb": {
       "name": "Poison Barb",
-      "fling": {"basePower": 70, "status": "psn"},
+      "fling": { "basePower": 70, "status": "psn" },
       "onBasePowerPriority": 15,
       "num": 245,
       "gen": 2,
@@ -3986,7 +3981,7 @@
     "pomegberry": {
       "name": "Pomeg Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Ice"},
+      "naturalGift": { "basePower": 90, "type": "Ice" },
       "onEat": false,
       "num": 169,
       "gen": 3,
@@ -3995,7 +3990,7 @@
     "poweranklet": {
       "name": "Power Anklet",
       "ignoreKlutz": true,
-      "fling": {"basePower": 70},
+      "fling": { "basePower": 70 },
       "num": 293,
       "gen": 4,
       "shortDesc": "Holder's Speed is halved. The Klutz Ability does not ignore this effect."
@@ -4003,7 +3998,7 @@
     "powerband": {
       "name": "Power Band",
       "ignoreKlutz": true,
-      "fling": {"basePower": 70},
+      "fling": { "basePower": 70 },
       "num": 292,
       "gen": 4,
       "shortDesc": "Holder's Speed is halved. The Klutz Ability does not ignore this effect."
@@ -4011,7 +4006,7 @@
     "powerbelt": {
       "name": "Power Belt",
       "ignoreKlutz": true,
-      "fling": {"basePower": 70},
+      "fling": { "basePower": 70 },
       "num": 290,
       "gen": 4,
       "shortDesc": "Holder's Speed is halved. The Klutz Ability does not ignore this effect."
@@ -4019,14 +4014,14 @@
     "powerbracer": {
       "name": "Power Bracer",
       "ignoreKlutz": true,
-      "fling": {"basePower": 70},
+      "fling": { "basePower": 70 },
       "num": 289,
       "gen": 4,
       "shortDesc": "Holder's Speed is halved. The Klutz Ability does not ignore this effect."
     },
     "powerherb": {
       "name": "Power Herb",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 271,
       "gen": 4,
       "shortDesc": "Holder's two-turn moves complete in one turn (except Sky Drop). Single use."
@@ -4034,7 +4029,7 @@
     "powerlens": {
       "name": "Power Lens",
       "ignoreKlutz": true,
-      "fling": {"basePower": 70},
+      "fling": { "basePower": 70 },
       "num": 291,
       "gen": 4,
       "shortDesc": "Holder's Speed is halved. The Klutz Ability does not ignore this effect."
@@ -4042,7 +4037,7 @@
     "powerweight": {
       "name": "Power Weight",
       "ignoreKlutz": true,
-      "fling": {"basePower": 70},
+      "fling": { "basePower": 70 },
       "num": 294,
       "gen": 4,
       "shortDesc": "Holder's Speed is halved. The Klutz Ability does not ignore this effect."
@@ -4056,7 +4051,7 @@
     },
     "prettyfeather": {
       "name": "Pretty Feather",
-      "fling": {"basePower": 20},
+      "fling": { "basePower": 20 },
       "num": 571,
       "gen": 5,
       "shortDesc": "Though this feather is beautiful, it's just a regular feather and has no effect."
@@ -4074,21 +4069,21 @@
     },
     "prismscale": {
       "name": "Prism Scale",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 537,
       "gen": 5,
       "shortDesc": "Evolves Feebas into Milotic when traded."
     },
     "protectivepads": {
       "name": "Protective Pads",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 880,
       "gen": 7,
       "shortDesc": "Holder's moves are protected from adverse contact effects, except Pickpocket."
     },
     "protector": {
       "name": "Protector",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 321,
       "gen": 4,
       "shortDesc": "Evolves Rhydon into Rhyperior when traded."
@@ -4113,9 +4108,9 @@
     },
     "psychicseed": {
       "name": "Psychic Seed",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onSwitchInPriority": -1,
-      "boosts": {"spd": 1},
+      "boosts": { "spd": 1 },
       "num": 882,
       "gen": 7,
       "shortDesc": "If the terrain is Psychic Terrain, raises holder's Sp. Def by 1 stage. Single use."
@@ -4134,7 +4129,7 @@
     },
     "punchingglove": {
       "name": "Punching Glove",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 23,
       "onModifyMovePriority": 1,
       "num": 1884,
@@ -4143,7 +4138,7 @@
     },
     "pyroarite": {
       "name": "Pyroarite",
-      "megaStone": {"Pyroar": "Pyroar-Mega"},
+      "megaStone": { "Pyroar": "Pyroar-Mega" },
       "itemUser": ["Pyroar"],
       "num": 2578,
       "gen": 9,
@@ -4153,7 +4148,7 @@
     "qualotberry": {
       "name": "Qualot Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Poison"},
+      "naturalGift": { "basePower": 90, "type": "Poison" },
       "onEat": false,
       "num": 171,
       "gen": 3,
@@ -4169,14 +4164,14 @@
     "quickclaw": {
       "onFractionalPriorityPriority": -2,
       "name": "Quick Claw",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 217,
       "gen": 2,
       "shortDesc": "Each turn, holder has a 20% chance to move first in its priority bracket."
     },
     "quickpowder": {
       "name": "Quick Powder",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "itemUser": ["Ditto"],
       "num": 274,
       "gen": 4,
@@ -4186,7 +4181,7 @@
     "rabutaberry": {
       "name": "Rabuta Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Ghost"},
+      "naturalGift": { "basePower": 90, "type": "Ghost" },
       "onEat": false,
       "num": 177,
       "gen": 3,
@@ -4195,7 +4190,7 @@
     },
     "raichunitex": {
       "name": "Raichunite X",
-      "megaStone": {"Raichu": "Raichu-Mega-X"},
+      "megaStone": { "Raichu": "Raichu-Mega-X" },
       "itemUser": ["Raichu"],
       "num": 2635,
       "gen": 9,
@@ -4204,7 +4199,7 @@
     },
     "raichunitey": {
       "name": "Raichunite Y",
-      "megaStone": {"Raichu": "Raichu-Mega-Y"},
+      "megaStone": { "Raichu": "Raichu-Mega-Y" },
       "itemUser": ["Raichu"],
       "num": 2636,
       "gen": 9,
@@ -4213,7 +4208,7 @@
     },
     "rarebone": {
       "name": "Rare Bone",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 106,
       "gen": 4,
       "shortDesc": "No competitive use other than when used with Fling."
@@ -4221,14 +4216,14 @@
     "rawstberry": {
       "name": "Rawst Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Grass"},
+      "naturalGift": { "basePower": 80, "type": "Grass" },
       "num": 152,
       "gen": 3,
       "shortDesc": "Holder is cured if it is burned. Single use."
     },
     "razorclaw": {
       "name": "Razor Claw",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 326,
       "gen": 4,
       "desc": "Holder's critical hit ratio is raised by 1 stage. Evolves Sneasel into Weavile when held and leveled up during the night.",
@@ -4236,7 +4231,7 @@
     },
     "razorfang": {
       "name": "Razor Fang",
-      "fling": {"basePower": 30, "volatileStatus": "flinch"},
+      "fling": { "basePower": 30, "volatileStatus": "flinch" },
       "onModifyMovePriority": -1,
       "num": 327,
       "gen": 4,
@@ -4246,7 +4241,7 @@
     "razzberry": {
       "name": "Razz Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Steel"},
+      "naturalGift": { "basePower": 80, "type": "Steel" },
       "onEat": false,
       "num": 164,
       "gen": 3,
@@ -4255,14 +4250,14 @@
     },
     "reapercloth": {
       "name": "Reaper Cloth",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 325,
       "gen": 4,
       "shortDesc": "Evolves Dusclops into Dusknoir when traded."
     },
     "redcard": {
       "name": "Red Card",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 542,
       "gen": 5,
       "shortDesc": "If holder survives a hit, attacker is forced to switch to a random ally. Single use."
@@ -4286,7 +4281,7 @@
     },
     "ribbonsweet": {
       "name": "Ribbon Sweet",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1115,
       "gen": 8,
       "shortDesc": "Evolves Milcery into Alcremie when held and spun around."
@@ -4294,14 +4289,14 @@
     "rindoberry": {
       "name": "Rindo Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Grass"},
+      "naturalGift": { "basePower": 80, "type": "Grass" },
       "num": 187,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Grass-type attack. Single use."
     },
     "ringtarget": {
       "name": "Ring Target",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onNegateImmunity": false,
       "num": 543,
       "gen": 5,
@@ -4317,7 +4312,7 @@
     },
     "rockincense": {
       "name": "Rock Incense",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 15,
       "num": 315,
       "gen": 4,
@@ -4348,7 +4343,7 @@
     },
     "rockyhelmet": {
       "name": "Rocky Helmet",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "onDamagingHitOrder": 2,
       "num": 540,
       "gen": 5,
@@ -4356,16 +4351,16 @@
     },
     "roomservice": {
       "name": "Room Service",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "onSwitchInPriority": -1,
-      "boosts": {"spe": -1},
+      "boosts": { "spe": -1 },
       "num": 1122,
       "gen": 8,
       "shortDesc": "If Trick Room is active, the holder's Speed is lowered by 1 stage. Single use."
     },
     "rootfossil": {
       "name": "Root Fossil",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 99,
       "gen": 3,
       "isNonstandard": "Past",
@@ -4373,7 +4368,7 @@
     },
     "roseincense": {
       "name": "Rose Incense",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 15,
       "num": 318,
       "gen": 4,
@@ -4383,7 +4378,7 @@
     "roseliberry": {
       "name": "Roseli Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Fairy"},
+      "naturalGift": { "basePower": 80, "type": "Fairy" },
       "num": 686,
       "gen": 6,
       "shortDesc": "Halves damage taken from a supereffective Fairy-type attack. Single use."
@@ -4391,7 +4386,7 @@
     "rowapberry": {
       "name": "Rowap Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Dark"},
+      "naturalGift": { "basePower": 100, "type": "Dark" },
       "num": 212,
       "gen": 4,
       "shortDesc": "If holder is hit by a special move, attacker loses 1/8 of its max HP. Single use."
@@ -4412,7 +4407,7 @@
     },
     "sablenite": {
       "name": "Sablenite",
-      "megaStone": {"Sableye": "Sableye-Mega"},
+      "megaStone": { "Sableye": "Sableye-Mega" },
       "itemUser": ["Sableye"],
       "num": 754,
       "gen": 6,
@@ -4421,7 +4416,7 @@
     },
     "sachet": {
       "name": "Sachet",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 647,
       "gen": 6,
       "isNonstandard": "Past",
@@ -4436,14 +4431,14 @@
     },
     "safetygoggles": {
       "name": "Safety Goggles",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 650,
       "gen": 6,
       "shortDesc": "Holder is immune to powder moves and damage from Sandstorm or Hail."
     },
     "sailfossil": {
       "name": "Sail Fossil",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 711,
       "gen": 6,
       "isNonstandard": "Past",
@@ -4452,14 +4447,14 @@
     "salacberry": {
       "name": "Salac Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Fighting"},
+      "naturalGift": { "basePower": 100, "type": "Fighting" },
       "num": 203,
       "gen": 3,
       "shortDesc": "Raises holder's Speed by 1 stage when at 1/4 max HP or less. Single use."
     },
     "salamencite": {
       "name": "Salamencite",
-      "megaStone": {"Salamence": "Salamence-Mega"},
+      "megaStone": { "Salamence": "Salamence-Mega" },
       "itemUser": ["Salamence"],
       "num": 769,
       "gen": 6,
@@ -4468,7 +4463,7 @@
     },
     "sceptilite": {
       "name": "Sceptilite",
-      "megaStone": {"Sceptile": "Sceptile-Mega"},
+      "megaStone": { "Sceptile": "Sceptile-Mega" },
       "itemUser": ["Sceptile"],
       "num": 753,
       "gen": 6,
@@ -4477,7 +4472,7 @@
     },
     "scizorite": {
       "name": "Scizorite",
-      "megaStone": {"Scizor": "Scizor-Mega"},
+      "megaStone": { "Scizor": "Scizor-Mega" },
       "itemUser": ["Scizor"],
       "num": 670,
       "gen": 6,
@@ -4486,7 +4481,7 @@
     },
     "scolipite": {
       "name": "Scolipite",
-      "megaStone": {"Scolipede": "Scolipede-Mega"},
+      "megaStone": { "Scolipede": "Scolipede-Mega" },
       "itemUser": ["Scolipede"],
       "num": 2571,
       "gen": 9,
@@ -4495,14 +4490,14 @@
     },
     "scopelens": {
       "name": "Scope Lens",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 232,
       "gen": 2,
       "shortDesc": "Holder's critical hit ratio is raised by 1 stage."
     },
     "scovillainite": {
       "name": "Scovillainite",
-      "megaStone": {"Scovillain": "Scovillain-Mega"},
+      "megaStone": { "Scovillain": "Scovillain-Mega" },
       "itemUser": ["Scovillain"],
       "num": 2647,
       "gen": 9,
@@ -4511,7 +4506,7 @@
     },
     "scraftinite": {
       "name": "Scraftinite",
-      "megaStone": {"Scrafty": "Scrafty-Mega"},
+      "megaStone": { "Scrafty": "Scrafty-Mega" },
       "itemUser": ["Scrafty"],
       "num": 2572,
       "gen": 9,
@@ -4520,7 +4515,7 @@
     },
     "seaincense": {
       "name": "Sea Incense",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 15,
       "num": 254,
       "gen": 3,
@@ -4529,7 +4524,7 @@
     },
     "sharpbeak": {
       "name": "Sharp Beak",
-      "fling": {"basePower": 50},
+      "fling": { "basePower": 50 },
       "onBasePowerPriority": 15,
       "num": 244,
       "gen": 2,
@@ -4537,7 +4532,7 @@
     },
     "sharpedonite": {
       "name": "Sharpedonite",
-      "megaStone": {"Sharpedo": "Sharpedo-Mega"},
+      "megaStone": { "Sharpedo": "Sharpedo-Mega" },
       "itemUser": ["Sharpedo"],
       "num": 759,
       "gen": 6,
@@ -4546,7 +4541,7 @@
     },
     "shedshell": {
       "name": "Shed Shell",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onTrapPokemonPriority": -10,
       "onMaybeTrapPokemonPriority": -10,
       "num": 295,
@@ -4555,7 +4550,7 @@
     },
     "shellbell": {
       "name": "Shell Bell",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onAfterMoveSecondarySelfPriority": -1,
       "num": 253,
       "gen": 3,
@@ -4563,7 +4558,7 @@
     },
     "shinystone": {
       "name": "Shiny Stone",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 107,
       "gen": 4,
       "desc": "Evolves Togetic into Togekiss, Roselia into Roserade, Minccino into Cinccino, and Floette into Florges when used.",
@@ -4582,14 +4577,14 @@
     "shucaberry": {
       "name": "Shuca Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Ground"},
+      "naturalGift": { "basePower": 80, "type": "Ground" },
       "num": 191,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Ground-type attack. Single use."
     },
     "silkscarf": {
       "name": "Silk Scarf",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 15,
       "num": 251,
       "gen": 3,
@@ -4597,7 +4592,7 @@
     },
     "silverpowder": {
       "name": "Silver Powder",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 15,
       "num": 222,
       "gen": 2,
@@ -4606,14 +4601,14 @@
     "sitrusberry": {
       "name": "Sitrus Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Psychic"},
+      "naturalGift": { "basePower": 80, "type": "Psychic" },
       "num": 158,
       "gen": 3,
       "shortDesc": "Restores 1/4 max HP when at 1/2 max HP or less. Single use."
     },
     "skarmorite": {
       "name": "Skarmorite",
-      "megaStone": {"Skarmory": "Skarmory-Mega"},
+      "megaStone": { "Skarmory": "Skarmory-Mega" },
       "itemUser": ["Skarmory"],
       "num": 2565,
       "gen": 9,
@@ -4622,7 +4617,7 @@
     },
     "skullfossil": {
       "name": "Skull Fossil",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 105,
       "gen": 4,
       "isNonstandard": "Past",
@@ -4639,7 +4634,7 @@
     },
     "slowbronite": {
       "name": "Slowbronite",
-      "megaStone": {"Slowbro": "Slowbro-Mega"},
+      "megaStone": { "Slowbro": "Slowbro-Mega" },
       "itemUser": ["Slowbro"],
       "num": 760,
       "gen": 6,
@@ -4648,7 +4643,7 @@
     },
     "smoothrock": {
       "name": "Smooth Rock",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 283,
       "gen": 4,
       "shortDesc": "Holder's use of Sandstorm lasts 8 turns instead of 5."
@@ -4666,15 +4661,15 @@
     },
     "snowball": {
       "name": "Snowball",
-      "fling": {"basePower": 30},
-      "boosts": {"atk": 1},
+      "fling": { "basePower": 30 },
+      "boosts": { "atk": 1 },
       "num": 649,
       "gen": 6,
       "shortDesc": "Raises holder's Attack by 1 if hit by an Ice-type attack. Single use."
     },
     "softsand": {
       "name": "Soft Sand",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 15,
       "num": 237,
       "gen": 2,
@@ -4693,7 +4688,7 @@
     },
     "souldew": {
       "name": "Soul Dew",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "itemUser": ["Latios", "Latias"],
       "num": 225,
@@ -4702,7 +4697,7 @@
     },
     "spelltag": {
       "name": "Spell Tag",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "num": 247,
       "gen": 2,
@@ -4711,7 +4706,7 @@
     "spelonberry": {
       "name": "Spelon Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Dark"},
+      "naturalGift": { "basePower": 90, "type": "Dark" },
       "onEat": false,
       "num": 179,
       "gen": 3,
@@ -4745,7 +4740,7 @@
     },
     "staraptite": {
       "name": "Staraptite",
-      "megaStone": {"Staraptor": "Staraptor-Mega"},
+      "megaStone": { "Staraptor": "Staraptor-Mega" },
       "itemUser": ["Staraptor"],
       "num": 2639,
       "gen": 9,
@@ -4755,14 +4750,14 @@
     "starfberry": {
       "name": "Starf Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Psychic"},
+      "naturalGift": { "basePower": 100, "type": "Psychic" },
       "num": 207,
       "gen": 3,
       "shortDesc": "Raises a random stat by 2 when at 1/4 max HP or less (not acc/eva). Single use."
     },
     "starminite": {
       "name": "Starminite",
-      "megaStone": {"Starmie": "Starmie-Mega"},
+      "megaStone": { "Starmie": "Starmie-Mega" },
       "itemUser": ["Starmie"],
       "num": 2561,
       "gen": 9,
@@ -4771,7 +4766,7 @@
     },
     "starsweet": {
       "name": "Star Sweet",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1114,
       "gen": 8,
       "shortDesc": "Evolves Milcery into Alcremie when held and spun around."
@@ -4798,7 +4793,7 @@
     },
     "steelixite": {
       "name": "Steelixite",
-      "megaStone": {"Steelix": "Steelix-Mega"},
+      "megaStone": { "Steelix": "Steelix-Mega" },
       "itemUser": ["Steelix"],
       "num": 761,
       "gen": 6,
@@ -4817,7 +4812,7 @@
     },
     "stick": {
       "name": "Stick",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "itemUser": ["Farfetch’d"],
       "num": 259,
       "gen": 2,
@@ -4826,7 +4821,7 @@
     },
     "stickybarb": {
       "name": "Sticky Barb",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "onResidualOrder": 28,
       "onResidualSubOrder": 3,
       "num": 288,
@@ -4852,14 +4847,14 @@
     },
     "strawberrysweet": {
       "name": "Strawberry Sweet",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1109,
       "gen": 8,
       "shortDesc": "Evolves Milcery into Alcremie when held and spun around."
     },
     "sunstone": {
       "name": "Sun Stone",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 80,
       "gen": 2,
       "desc": "Evolves Gloom into Bellossom, Sunkern into Sunflora, Cottonee into Whimsicott, Petilil into Lilligant, and Helioptile into Heliolisk when used.",
@@ -4867,7 +4862,7 @@
     },
     "swampertite": {
       "name": "Swampertite",
-      "megaStone": {"Swampert": "Swampert-Mega"},
+      "megaStone": { "Swampert": "Swampert-Mega" },
       "itemUser": ["Swampert"],
       "num": 752,
       "gen": 6,
@@ -4876,14 +4871,14 @@
     },
     "sweetapple": {
       "name": "Sweet Apple",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 1116,
       "gen": 8,
       "shortDesc": "Evolves Applin into Appletun when used."
     },
     "syrupyapple": {
       "name": "Syrupy Apple",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 2402,
       "gen": 9,
       "shortDesc": "Evolves Applin into Dipplin when used."
@@ -4891,7 +4886,7 @@
     "tamatoberry": {
       "name": "Tamato Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Psychic"},
+      "naturalGift": { "basePower": 90, "type": "Psychic" },
       "onEat": false,
       "num": 174,
       "gen": 3,
@@ -4900,7 +4895,7 @@
     "tangaberry": {
       "name": "Tanga Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Bug"},
+      "naturalGift": { "basePower": 80, "type": "Bug" },
       "num": 194,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Bug-type attack. Single use."
@@ -4918,7 +4913,7 @@
     },
     "tartapple": {
       "name": "Tart Apple",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 1117,
       "gen": 8,
       "shortDesc": "Evolves Applin into Flapple when used."
@@ -4938,14 +4933,14 @@
     },
     "terrainextender": {
       "name": "Terrain Extender",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "num": 879,
       "gen": 7,
       "shortDesc": "Holder's use of Electric/Grassy/Misty/Psychic Terrain lasts 8 turns instead of 5."
     },
     "thickclub": {
       "name": "Thick Club",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "onModifyAtkPriority": 1,
       "itemUser": ["Marowak", "Marowak-Alola", "Marowak-Alola-Totem", "Cubone"],
       "num": 258,
@@ -4955,15 +4950,15 @@
     },
     "throatspray": {
       "name": "Throat Spray",
-      "fling": {"basePower": 30},
-      "boosts": {"spa": 1},
+      "fling": { "basePower": 30 },
+      "boosts": { "spa": 1 },
       "num": 1118,
       "gen": 8,
       "shortDesc": "Raises holder's Special Attack by 1 stage after it uses a sound move. Single use."
     },
     "thunderstone": {
       "name": "Thunder Stone",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 83,
       "gen": 1,
       "desc": "Evolves Pikachu into Raichu or Alolan Raichu, Eevee into Jolteon, Eelektrik into Eelektross, and Charjabug into Vikavolt when used.",
@@ -4978,7 +4973,7 @@
     },
     "toxicorb": {
       "name": "Toxic Orb",
-      "fling": {"basePower": 30, "status": "tox"},
+      "fling": { "basePower": 30, "status": "tox" },
       "onResidualOrder": 28,
       "onResidualSubOrder": 3,
       "num": 272,
@@ -4996,7 +4991,7 @@
     },
     "tr00": {
       "name": "TR00",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1130,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5004,7 +4999,7 @@
     },
     "tr01": {
       "name": "TR01",
-      "fling": {"basePower": 85},
+      "fling": { "basePower": 85 },
       "num": 1131,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5012,7 +5007,7 @@
     },
     "tr02": {
       "name": "TR02",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1132,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5020,7 +5015,7 @@
     },
     "tr03": {
       "name": "TR03",
-      "fling": {"basePower": 110},
+      "fling": { "basePower": 110 },
       "num": 1133,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5028,7 +5023,7 @@
     },
     "tr04": {
       "name": "TR04",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1134,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5036,7 +5031,7 @@
     },
     "tr05": {
       "name": "TR05",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1135,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5044,7 +5039,7 @@
     },
     "tr06": {
       "name": "TR06",
-      "fling": {"basePower": 110},
+      "fling": { "basePower": 110 },
       "num": 1136,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5052,7 +5047,7 @@
     },
     "tr07": {
       "name": "TR07",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1137,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5060,7 +5055,7 @@
     },
     "tr08": {
       "name": "TR08",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1138,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5068,7 +5063,7 @@
     },
     "tr09": {
       "name": "TR09",
-      "fling": {"basePower": 110},
+      "fling": { "basePower": 110 },
       "num": 1139,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5076,7 +5071,7 @@
     },
     "tr10": {
       "name": "TR10",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 1140,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5084,7 +5079,7 @@
     },
     "tr11": {
       "name": "TR11",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1141,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5092,7 +5087,7 @@
     },
     "tr12": {
       "name": "TR12",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1142,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5100,7 +5095,7 @@
     },
     "tr13": {
       "name": "TR13",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1143,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5108,7 +5103,7 @@
     },
     "tr14": {
       "name": "TR14",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1144,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5116,7 +5111,7 @@
     },
     "tr15": {
       "name": "TR15",
-      "fling": {"basePower": 110},
+      "fling": { "basePower": 110 },
       "num": 1145,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5124,7 +5119,7 @@
     },
     "tr16": {
       "name": "TR16",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1146,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5132,7 +5127,7 @@
     },
     "tr17": {
       "name": "TR17",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1147,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5140,7 +5135,7 @@
     },
     "tr18": {
       "name": "TR18",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1148,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5148,7 +5143,7 @@
     },
     "tr19": {
       "name": "TR19",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1149,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5156,7 +5151,7 @@
     },
     "tr20": {
       "name": "TR20",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1150,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5164,7 +5159,7 @@
     },
     "tr21": {
       "name": "TR21",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1151,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5172,7 +5167,7 @@
     },
     "tr22": {
       "name": "TR22",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1152,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5180,7 +5175,7 @@
     },
     "tr23": {
       "name": "TR23",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1153,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5188,7 +5183,7 @@
     },
     "tr24": {
       "name": "TR24",
-      "fling": {"basePower": 120},
+      "fling": { "basePower": 120 },
       "num": 1154,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5196,7 +5191,7 @@
     },
     "tr25": {
       "name": "TR25",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1155,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5204,7 +5199,7 @@
     },
     "tr26": {
       "name": "TR26",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1156,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5212,7 +5207,7 @@
     },
     "tr27": {
       "name": "TR27",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1157,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5220,7 +5215,7 @@
     },
     "tr28": {
       "name": "TR28",
-      "fling": {"basePower": 120},
+      "fling": { "basePower": 120 },
       "num": 1158,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5228,7 +5223,7 @@
     },
     "tr29": {
       "name": "TR29",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1159,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5236,7 +5231,7 @@
     },
     "tr30": {
       "name": "TR30",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1160,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5244,7 +5239,7 @@
     },
     "tr31": {
       "name": "TR31",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 1161,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5252,7 +5247,7 @@
     },
     "tr32": {
       "name": "TR32",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1162,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5260,7 +5255,7 @@
     },
     "tr33": {
       "name": "TR33",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1163,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5268,7 +5263,7 @@
     },
     "tr34": {
       "name": "TR34",
-      "fling": {"basePower": 120},
+      "fling": { "basePower": 120 },
       "num": 1164,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5276,7 +5271,7 @@
     },
     "tr35": {
       "name": "TR35",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1165,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5284,7 +5279,7 @@
     },
     "tr36": {
       "name": "TR36",
-      "fling": {"basePower": 95},
+      "fling": { "basePower": 95 },
       "num": 1166,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5292,7 +5287,7 @@
     },
     "tr37": {
       "name": "TR37",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1167,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5300,7 +5295,7 @@
     },
     "tr38": {
       "name": "TR38",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1168,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5308,7 +5303,7 @@
     },
     "tr39": {
       "name": "TR39",
-      "fling": {"basePower": 120},
+      "fling": { "basePower": 120 },
       "num": 1169,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5316,7 +5311,7 @@
     },
     "tr40": {
       "name": "TR40",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1170,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5324,7 +5319,7 @@
     },
     "tr41": {
       "name": "TR41",
-      "fling": {"basePower": 85},
+      "fling": { "basePower": 85 },
       "num": 1171,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5332,7 +5327,7 @@
     },
     "tr42": {
       "name": "TR42",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1172,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5340,7 +5335,7 @@
     },
     "tr43": {
       "name": "TR43",
-      "fling": {"basePower": 130},
+      "fling": { "basePower": 130 },
       "num": 1173,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5348,7 +5343,7 @@
     },
     "tr44": {
       "name": "TR44",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1174,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5356,7 +5351,7 @@
     },
     "tr45": {
       "name": "TR45",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1175,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5364,7 +5359,7 @@
     },
     "tr46": {
       "name": "TR46",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1176,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5372,7 +5367,7 @@
     },
     "tr47": {
       "name": "TR47",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1177,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5380,7 +5375,7 @@
     },
     "tr48": {
       "name": "TR48",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1178,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5388,7 +5383,7 @@
     },
     "tr49": {
       "name": "TR49",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1179,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5396,7 +5391,7 @@
     },
     "tr50": {
       "name": "TR50",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1180,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5404,7 +5399,7 @@
     },
     "tr51": {
       "name": "TR51",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1181,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5412,7 +5407,7 @@
     },
     "tr52": {
       "name": "TR52",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1182,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5420,7 +5415,7 @@
     },
     "tr53": {
       "name": "TR53",
-      "fling": {"basePower": 120},
+      "fling": { "basePower": 120 },
       "num": 1183,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5428,7 +5423,7 @@
     },
     "tr54": {
       "name": "TR54",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1184,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5436,7 +5431,7 @@
     },
     "tr55": {
       "name": "TR55",
-      "fling": {"basePower": 120},
+      "fling": { "basePower": 120 },
       "num": 1185,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5444,7 +5439,7 @@
     },
     "tr56": {
       "name": "TR56",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1186,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5452,7 +5447,7 @@
     },
     "tr57": {
       "name": "TR57",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1187,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5460,7 +5455,7 @@
     },
     "tr58": {
       "name": "TR58",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1188,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5468,7 +5463,7 @@
     },
     "tr59": {
       "name": "TR59",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1189,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5476,7 +5471,7 @@
     },
     "tr60": {
       "name": "TR60",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1190,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5484,7 +5479,7 @@
     },
     "tr61": {
       "name": "TR61",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1191,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5492,7 +5487,7 @@
     },
     "tr62": {
       "name": "TR62",
-      "fling": {"basePower": 85},
+      "fling": { "basePower": 85 },
       "num": 1192,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5500,7 +5495,7 @@
     },
     "tr63": {
       "name": "TR63",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1193,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5508,7 +5503,7 @@
     },
     "tr64": {
       "name": "TR64",
-      "fling": {"basePower": 120},
+      "fling": { "basePower": 120 },
       "num": 1194,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5516,7 +5511,7 @@
     },
     "tr65": {
       "name": "TR65",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1195,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5524,7 +5519,7 @@
     },
     "tr66": {
       "name": "TR66",
-      "fling": {"basePower": 120},
+      "fling": { "basePower": 120 },
       "num": 1196,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5532,7 +5527,7 @@
     },
     "tr67": {
       "name": "TR67",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1197,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5540,7 +5535,7 @@
     },
     "tr68": {
       "name": "TR68",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1198,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5548,7 +5543,7 @@
     },
     "tr69": {
       "name": "TR69",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1199,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5556,7 +5551,7 @@
     },
     "tr70": {
       "name": "TR70",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1200,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5564,7 +5559,7 @@
     },
     "tr71": {
       "name": "TR71",
-      "fling": {"basePower": 130},
+      "fling": { "basePower": 130 },
       "num": 1201,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5572,7 +5567,7 @@
     },
     "tr72": {
       "name": "TR72",
-      "fling": {"basePower": 120},
+      "fling": { "basePower": 120 },
       "num": 1202,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5580,7 +5575,7 @@
     },
     "tr73": {
       "name": "TR73",
-      "fling": {"basePower": 120},
+      "fling": { "basePower": 120 },
       "num": 1203,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5588,7 +5583,7 @@
     },
     "tr74": {
       "name": "TR74",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1204,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5596,7 +5591,7 @@
     },
     "tr75": {
       "name": "TR75",
-      "fling": {"basePower": 100},
+      "fling": { "basePower": 100 },
       "num": 1205,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5604,7 +5599,7 @@
     },
     "tr76": {
       "name": "TR76",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1206,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5612,7 +5607,7 @@
     },
     "tr77": {
       "name": "TR77",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1207,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5620,7 +5615,7 @@
     },
     "tr78": {
       "name": "TR78",
-      "fling": {"basePower": 95},
+      "fling": { "basePower": 95 },
       "num": 1208,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5628,7 +5623,7 @@
     },
     "tr79": {
       "name": "TR79",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1209,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5636,7 +5631,7 @@
     },
     "tr80": {
       "name": "TR80",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1210,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5644,7 +5639,7 @@
     },
     "tr81": {
       "name": "TR81",
-      "fling": {"basePower": 95},
+      "fling": { "basePower": 95 },
       "num": 1211,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5652,7 +5647,7 @@
     },
     "tr82": {
       "name": "TR82",
-      "fling": {"basePower": 20},
+      "fling": { "basePower": 20 },
       "num": 1212,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5660,7 +5655,7 @@
     },
     "tr83": {
       "name": "TR83",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1213,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5668,7 +5663,7 @@
     },
     "tr84": {
       "name": "TR84",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1214,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5676,7 +5671,7 @@
     },
     "tr85": {
       "name": "TR85",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1215,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5684,7 +5679,7 @@
     },
     "tr86": {
       "name": "TR86",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1216,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5692,7 +5687,7 @@
     },
     "tr87": {
       "name": "TR87",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1217,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5700,7 +5695,7 @@
     },
     "tr88": {
       "name": "TR88",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1218,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5708,7 +5703,7 @@
     },
     "tr89": {
       "name": "TR89",
-      "fling": {"basePower": 110},
+      "fling": { "basePower": 110 },
       "num": 1219,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5716,7 +5711,7 @@
     },
     "tr90": {
       "name": "TR90",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1220,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5724,7 +5719,7 @@
     },
     "tr91": {
       "name": "TR91",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "num": 1221,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5732,7 +5727,7 @@
     },
     "tr92": {
       "name": "TR92",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1222,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5740,7 +5735,7 @@
     },
     "tr93": {
       "name": "TR93",
-      "fling": {"basePower": 85},
+      "fling": { "basePower": 85 },
       "num": 1223,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5748,7 +5743,7 @@
     },
     "tr94": {
       "name": "TR94",
-      "fling": {"basePower": 95},
+      "fling": { "basePower": 95 },
       "num": 1224,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5756,7 +5751,7 @@
     },
     "tr95": {
       "name": "TR95",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1225,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5764,7 +5759,7 @@
     },
     "tr96": {
       "name": "TR96",
-      "fling": {"basePower": 90},
+      "fling": { "basePower": 90 },
       "num": 1226,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5772,7 +5767,7 @@
     },
     "tr97": {
       "name": "TR97",
-      "fling": {"basePower": 85},
+      "fling": { "basePower": 85 },
       "num": 1227,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5780,7 +5775,7 @@
     },
     "tr98": {
       "name": "TR98",
-      "fling": {"basePower": 85},
+      "fling": { "basePower": 85 },
       "num": 1228,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5788,7 +5783,7 @@
     },
     "tr99": {
       "name": "TR99",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 1229,
       "gen": 8,
       "isNonstandard": "Past",
@@ -5796,7 +5791,7 @@
     },
     "twistedspoon": {
       "name": "Twisted Spoon",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "onBasePowerPriority": 15,
       "num": 248,
       "gen": 2,
@@ -5804,7 +5799,7 @@
     },
     "tyranitarite": {
       "name": "Tyranitarite",
-      "megaStone": {"Tyranitar": "Tyranitar-Mega"},
+      "megaStone": { "Tyranitar": "Tyranitar-Mega" },
       "itemUser": ["Tyranitar"],
       "num": 669,
       "gen": 6,
@@ -5831,21 +5826,21 @@
     },
     "unremarkableteacup": {
       "name": "Unremarkable Teacup",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 2403,
       "gen": 9,
       "shortDesc": "Evolves Poltchageist into Sinistcha when used."
     },
     "upgrade": {
       "name": "Up-Grade",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 252,
       "gen": 2,
       "shortDesc": "Evolves Porygon into Porygon2 when traded."
     },
     "utilityumbrella": {
       "name": "Utility Umbrella",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "num": 1123,
       "gen": 8,
       "desc": "The holder ignores rain- and sun-based effects, including those of its Ability unless it is Orichalcum Pulse or Protosynthesis. Damage and accuracy calculations from attacks used by the holder are affected by rain and sun, but not attacks used against the holder.",
@@ -5853,7 +5848,7 @@
     },
     "venusaurite": {
       "name": "Venusaurite",
-      "megaStone": {"Venusaur": "Venusaur-Mega"},
+      "megaStone": { "Venusaur": "Venusaur-Mega" },
       "itemUser": ["Venusaur"],
       "num": 659,
       "gen": 6,
@@ -5862,7 +5857,7 @@
     },
     "victreebelite": {
       "name": "Victreebelite",
-      "megaStone": {"Victreebel": "Victreebel-Mega"},
+      "megaStone": { "Victreebel": "Victreebel-Mega" },
       "itemUser": ["Victreebel"],
       "num": 2560,
       "gen": 9,
@@ -5872,7 +5867,7 @@
     "wacanberry": {
       "name": "Wacan Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Electric"},
+      "naturalGift": { "basePower": 80, "type": "Electric" },
       "num": 186,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Electric-type attack. Single use."
@@ -5909,7 +5904,7 @@
     },
     "waterstone": {
       "name": "Water Stone",
-      "fling": {"basePower": 30},
+      "fling": { "basePower": 30 },
       "num": 84,
       "gen": 1,
       "desc": "Evolves Poliwhirl into Poliwrath, Shellder into Cloyster, Staryu into Starmie, Eevee into Vaporeon, Lombre into Ludicolo, and Panpour into Simipour when used.",
@@ -5918,7 +5913,7 @@
     "watmelberry": {
       "name": "Watmel Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 100, "type": "Fire"},
+      "naturalGift": { "basePower": 100, "type": "Fire" },
       "onEat": false,
       "num": 181,
       "gen": 3,
@@ -5927,7 +5922,7 @@
     },
     "waveincense": {
       "name": "Wave Incense",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 15,
       "num": 317,
       "gen": 4,
@@ -5936,15 +5931,15 @@
     },
     "weaknesspolicy": {
       "name": "Weakness Policy",
-      "fling": {"basePower": 80},
-      "boosts": {"atk": 2, "spa": 2},
+      "fling": { "basePower": 80 },
+      "boosts": { "atk": 2, "spa": 2 },
       "num": 639,
       "gen": 6,
       "shortDesc": "If holder is hit super effectively, raises Attack, Sp. Atk by 2 stages. Single use."
     },
     "wellspringmask": {
       "name": "Wellspring Mask",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "onBasePowerPriority": 15,
       "forcedForme": "Ogerpon-Wellspring",
       "itemUser": ["Ogerpon-Wellspring"],
@@ -5955,7 +5950,7 @@
     "wepearberry": {
       "name": "Wepear Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 90, "type": "Electric"},
+      "naturalGift": { "basePower": 90, "type": "Electric" },
       "onEat": false,
       "num": 167,
       "gen": 3,
@@ -5964,7 +5959,7 @@
     },
     "whippeddream": {
       "name": "Whipped Dream",
-      "fling": {"basePower": 80},
+      "fling": { "basePower": 80 },
       "num": 646,
       "gen": 6,
       "isNonstandard": "Past",
@@ -5972,7 +5967,7 @@
     },
     "whiteherb": {
       "name": "White Herb",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onAnySwitchInPriority": -2,
       "onResidualOrder": 29,
       "num": 214,
@@ -5981,7 +5976,7 @@
     },
     "widelens": {
       "name": "Wide Lens",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onSourceModifyAccuracyPriority": -2,
       "num": 265,
       "gen": 4,
@@ -5990,14 +5985,14 @@
     "wikiberry": {
       "name": "Wiki Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Rock"},
+      "naturalGift": { "basePower": 80, "type": "Rock" },
       "num": 160,
       "gen": 3,
       "shortDesc": "Restores 1/3 max HP at 1/4 max HP or less; confuses if -SpA Nature. Single use."
     },
     "wiseglasses": {
       "name": "Wise Glasses",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onBasePowerPriority": 16,
       "num": 267,
       "gen": 4,
@@ -6006,7 +6001,7 @@
     "yacheberry": {
       "name": "Yache Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Ice"},
+      "naturalGift": { "basePower": 80, "type": "Ice" },
       "num": 188,
       "gen": 4,
       "shortDesc": "Halves damage taken from a supereffective Ice-type attack. Single use."
@@ -6022,7 +6017,7 @@
     },
     "zeraorite": {
       "name": "Zeraorite",
-      "megaStone": {"Zeraora": "Zeraora-Mega"},
+      "megaStone": { "Zeraora": "Zeraora-Mega" },
       "itemUser": ["Zeraora"],
       "num": 2586,
       "gen": 9,
@@ -6031,7 +6026,7 @@
     },
     "zoomlens": {
       "name": "Zoom Lens",
-      "fling": {"basePower": 10},
+      "fling": { "basePower": 10 },
       "onSourceModifyAccuracyPriority": -2,
       "num": 276,
       "gen": 4,
@@ -6039,7 +6034,7 @@
     },
     "zygardite": {
       "name": "Zygardite",
-      "megaStone": {"Zygarde-Complete": "Zygarde-Mega"},
+      "megaStone": { "Zygarde-Complete": "Zygarde-Mega" },
       "itemUser": ["Zygarde-Complete"],
       "num": 2584,
       "gen": 9,
@@ -6049,7 +6044,7 @@
     "berry": {
       "name": "Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Poison"},
+      "naturalGift": { "basePower": 80, "type": "Poison" },
       "onResidualOrder": 10,
       "num": 155,
       "gen": 2,
@@ -6058,7 +6053,7 @@
     },
     "berserkgene": {
       "name": "Berserk Gene",
-      "boosts": {"atk": 2},
+      "boosts": { "atk": 2 },
       "num": 0,
       "gen": 2,
       "isNonstandard": "Past",
@@ -6067,7 +6062,7 @@
     "bitterberry": {
       "name": "Bitter Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Ground"},
+      "naturalGift": { "basePower": 80, "type": "Ground" },
       "num": 156,
       "gen": 2,
       "isNonstandard": "Past",
@@ -6076,7 +6071,7 @@
     "burntberry": {
       "name": "Burnt Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Ice"},
+      "naturalGift": { "basePower": 80, "type": "Ice" },
       "num": 153,
       "gen": 2,
       "isNonstandard": "Past",
@@ -6085,7 +6080,7 @@
     "goldberry": {
       "name": "Gold Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Psychic"},
+      "naturalGift": { "basePower": 80, "type": "Psychic" },
       "onResidualOrder": 10,
       "num": 158,
       "gen": 2,
@@ -6095,7 +6090,7 @@
     "iceberry": {
       "name": "Ice Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Grass"},
+      "naturalGift": { "basePower": 80, "type": "Grass" },
       "num": 152,
       "gen": 2,
       "isNonstandard": "Past",
@@ -6104,7 +6099,7 @@
     "mintberry": {
       "name": "Mint Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Water"},
+      "naturalGift": { "basePower": 80, "type": "Water" },
       "num": 150,
       "gen": 2,
       "isNonstandard": "Past",
@@ -6113,7 +6108,7 @@
     "miracleberry": {
       "name": "Miracle Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Flying"},
+      "naturalGift": { "basePower": 80, "type": "Flying" },
       "num": 157,
       "gen": 2,
       "isNonstandard": "Past",
@@ -6122,7 +6117,7 @@
     "mysteryberry": {
       "name": "Mystery Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Fighting"},
+      "naturalGift": { "basePower": 80, "type": "Fighting" },
       "num": 154,
       "gen": 2,
       "isNonstandard": "Past",
@@ -6145,7 +6140,7 @@
     "przcureberry": {
       "name": "PRZ Cure Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Fire"},
+      "naturalGift": { "basePower": 80, "type": "Fire" },
       "num": 149,
       "gen": 2,
       "isNonstandard": "Past",
@@ -6154,7 +6149,7 @@
     "psncureberry": {
       "name": "PSN Cure Berry",
       "isBerry": true,
-      "naturalGift": {"basePower": 80, "type": "Electric"},
+      "naturalGift": { "basePower": 80, "type": "Electric" },
       "num": 151,
       "gen": 2,
       "isNonstandard": "Past",
@@ -6162,7 +6157,7 @@
     },
     "crucibellite": {
       "name": "Crucibellite",
-      "megaStone": {"Crucibelle": "Crucibelle-Mega"},
+      "megaStone": { "Crucibelle": "Crucibelle-Mega" },
       "itemUser": ["Crucibelle"],
       "num": -1,
       "gen": 6,
@@ -6171,7 +6166,7 @@
     },
     "vilevial": {
       "name": "Vile Vial",
-      "fling": {"basePower": 60},
+      "fling": { "basePower": 60 },
       "onBasePowerPriority": 15,
       "forcedForme": "Venomicon-Epilogue",
       "itemUser": ["Venomicon-Epilogue"],

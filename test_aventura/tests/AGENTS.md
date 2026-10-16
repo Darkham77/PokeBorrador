@@ -16,7 +16,7 @@ Game Prototyping / Adventure Suite.
 
 ## Work Guidance
 
-- Run tests using `npx vitest run test_aventura/tests/`.
+- Run tests using `npm run test:node -- test_aventura/tests/` (or `npm test -- test_aventura/tests/`).
 
 ## Verification
 

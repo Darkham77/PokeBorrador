@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, useTemplateRef, onMounted, onUnmounted, watch } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/player/playerClasses'
-import { MAX_TRAINER_RANK_LEVEL } from '@/logic/constants/gameplay'
-import gsap from 'gsap'
+import { computed, useTemplateRef, onMounted, onUnmounted, watch } from 'vue';
+import { useGameStore } from '@/stores/game';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/player/playerClasses';
+import { MAX_TRAINER_RANK_LEVEL } from '@/logic/constants/gameplay';
+import gsap from 'gsap';
 
 const XP_STRIPE_SCROLL_DURATION_SEC = 2;
 const XP_BAR_ENTRY_DURATION_SEC = 0.8;
@@ -13,20 +13,20 @@ const XP_BAR_UPDATE_DURATION_SEC = 0.5;
 const DEFAULT_EXP_NEEDED = 100;
 const MAX_UNLOCKS_PREVIEW = 2;
 
-type PlayerClassId = keyof typeof PLAYER_CLASSES
+type PlayerClassId = keyof typeof PLAYER_CLASSES;
 
 function isPlayerClassId(value: string): value is PlayerClassId {
-  return Object.hasOwn(PLAYER_CLASSES, value)
+  return Object.hasOwn(PLAYER_CLASSES, value);
 }
 
 interface Props {
-  level?: number
-  exp?: number
-  expNeeded?: number
-  classId?: PlayerClassId | null
-  classColor?: string
-  hideUnlocks?: boolean
-  title?: string
+  level?: number;
+  exp?: number;
+  expNeeded?: number;
+  classId?: PlayerClassId | null;
+  classColor?: string;
+  hideUnlocks?: boolean;
+  title?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -37,83 +37,94 @@ const props = withDefaults(defineProps<Props>(), {
   classColor: undefined,
   hideUnlocks: false,
   title: 'NIVEL Y EXPERIENCIA'
-})
+});
 
-const gameStore = useGameStore()
-const classStore = usePlayerClassStore()
-const gs = computed(() => gameStore.state)
+const gameStore = useGameStore();
+const classStore = usePlayerClassStore();
+const gs = computed(() => gameStore.state);
 
-const currentLevel = computed(() => props.level !== undefined ? props.level : (gs.value.trainerLevel || 1))
-const currentExp = computed(() => props.level !== undefined && props.level >= MAX_TRAINER_RANK_LEVEL ? 0 : (props.exp !== undefined ? props.exp : (gs.value.trainerExp || 0)))
+const currentLevel = computed(() =>
+  props.level !== undefined ? props.level : gs.value.trainerLevel || 1
+);
+const currentExp = computed(() =>
+  props.level !== undefined && props.level >= MAX_TRAINER_RANK_LEVEL
+    ? 0
+    : props.exp !== undefined
+      ? props.exp
+      : gs.value.trainerExp || 0
+);
 const currentExpNeeded = computed(() => {
-  if (currentLevel.value >= MAX_TRAINER_RANK_LEVEL) return 0
-  return props.expNeeded !== undefined ? props.expNeeded : (gs.value.trainerExpNeeded || DEFAULT_EXP_NEEDED)
-})
+  if (currentLevel.value >= MAX_TRAINER_RANK_LEVEL) return 0;
+  return props.expNeeded !== undefined
+    ? props.expNeeded
+    : gs.value.trainerExpNeeded || DEFAULT_EXP_NEEDED;
+});
 
 const trainerExpPct = computed(() => {
-  if (currentLevel.value >= MAX_TRAINER_RANK_LEVEL) return 100
-  const needed = currentExpNeeded.value
-  if (needed === 0) return 0
-  return Math.min(100, (currentExp.value / needed) * 100)
-})
+  if (currentLevel.value >= MAX_TRAINER_RANK_LEVEL) return 100;
+  const needed = currentExpNeeded.value;
+  if (needed === 0) return 0;
+  return Math.min(100, (currentExp.value / needed) * 100);
+});
 
 const xpRemaining = computed(() => {
-  if (currentLevel.value >= MAX_TRAINER_RANK_LEVEL) return 0
-  return Math.max(0, currentExpNeeded.value - currentExp.value)
-})
+  if (currentLevel.value >= MAX_TRAINER_RANK_LEVEL) return 0;
+  return Math.max(0, currentExpNeeded.value - currentExp.value);
+});
 
 const nextLevel = computed(() => {
-  return Math.min(MAX_TRAINER_RANK_LEVEL, currentLevel.value + 1)
-})
+  return Math.min(MAX_TRAINER_RANK_LEVEL, currentLevel.value + 1);
+});
 
 const nextClassUnlocks = computed(() => {
-  if (props.hideUnlocks) return []
-  
-  const currentClassId = props.classId !== undefined ? props.classId : gs.value.playerClass
-  const cLevel = currentLevel.value
-  if (!currentClassId) return []
-  if (!isPlayerClassId(currentClassId)) throw new Error(`[ProfileXpCard] Invalid player class id: ${currentClassId}`)
+  if (props.hideUnlocks) return [];
 
-  const classDef = PLAYER_CLASSES[currentClassId]
+  const currentClassId = props.classId !== undefined ? props.classId : gs.value.playerClass;
+  const cLevel = currentLevel.value;
+  if (!currentClassId) return [];
+  if (!isPlayerClassId(currentClassId))
+    throw new Error(`[ProfileXpCard] Invalid player class id: ${currentClassId}`);
 
-  const _PROFILE_UNLOCK_TYPES = ['bonus', 'mission'] as const
-  type ProfileUnlockType = (typeof _PROFILE_UNLOCK_TYPES)[number]
+  const classDef = PLAYER_CLASSES[currentClassId];
 
-  const unlocks: { level: number; desc: string; type: ProfileUnlockType }[] = []
+  const _PROFILE_UNLOCK_TYPES = ['bonus', 'mission'] as const;
+  type ProfileUnlockType = (typeof _PROFILE_UNLOCK_TYPES)[number];
+
+  const unlocks: { level: number; desc: string; type: ProfileUnlockType }[] = [];
 
   // 1. Class bonuses
   if (classDef.bonuses && classDef.bonusLevels) {
-    const levels = classDef.bonusLevels
+    const levels = classDef.bonusLevels;
     classDef.bonuses.forEach((bonus: string, index: number) => {
-      const reqLv = levels[index]
+      const reqLv = levels[index];
       if (reqLv !== undefined && reqLv > cLevel) {
         unlocks.push({
           level: reqLv,
           desc: bonus,
           type: 'bonus'
-        })
+        });
       }
-    })
+    });
   }
 
   // 2. Idle missions
-  CLASS_MISSIONS.forEach(mission => {
+  CLASS_MISSIONS.forEach((mission) => {
     if (mission.reqLv > cLevel) {
       unlocks.push({
         level: mission.reqLv,
         desc: mission.name,
         type: 'mission'
-      })
+      });
     }
-  })
+  });
 
   // Sort by level ascending
-  return unlocks.toSorted((a, b) => a.level - b.level)
-})
+  return unlocks.toSorted((a, b) => a.level - b.level);
+});
 
-const xpBarRef = useTemplateRef<HTMLElement>('xpBarRef')
-let stripesTween: gsap.core.Tween | null = null
-let widthTween: gsap.core.Tween | null = null
+const xpBarRef = useTemplateRef<HTMLElement>('xpBarRef');
+let stripesTween: gsap.core.Tween | null = null;
+let widthTween: gsap.core.Tween | null = null;
 
 const initXpBarAnimation = () => {
   if (xpBarRef.value) {
@@ -123,38 +134,38 @@ const initXpBarAnimation = () => {
       duration: XP_STRIPE_SCROLL_DURATION_SEC,
       ease: 'none',
       repeat: -1
-    })
+    });
 
     // Animate the scaleX to the initial percentage
-    gsap.set(xpBarRef.value, { scaleX: 0, transformOrigin: 'left center' })
+    gsap.set(xpBarRef.value, { scaleX: 0, transformOrigin: 'left center' });
     widthTween = gsap.to(xpBarRef.value, {
       scaleX: Math.max(0, Math.min(1, trainerExpPct.value / 100)),
       duration: XP_BAR_ENTRY_DURATION_SEC,
       ease: 'power2.out'
-    })
+    });
   }
-}
+};
 
 onMounted(() => {
-  initXpBarAnimation()
-})
+  initXpBarAnimation();
+});
 
 onUnmounted(() => {
-  if (stripesTween) stripesTween.kill()
-  if (widthTween) widthTween.kill()
-})
+  if (stripesTween) stripesTween.kill();
+  if (widthTween) widthTween.kill();
+});
 
 // Watch for XP changes to animate scale smoothly
 watch(trainerExpPct, (newPct) => {
   if (xpBarRef.value) {
-    if (widthTween) widthTween.kill()
+    if (widthTween) widthTween.kill();
     widthTween = gsap.to(xpBarRef.value, {
       scaleX: Math.max(0, Math.min(1, newPct / 100)),
       duration: XP_BAR_UPDATE_DURATION_SEC,
       ease: 'power2.out'
-    })
+    });
   }
-})
+});
 </script>
 
 <template>
@@ -165,46 +176,49 @@ watch(trainerExpPct, (newPct) => {
     <div class="xp-details">
       <div class="xp-numbers">
         <span class="xp-current">
-          <template v-if="currentLevel >= MAX_TRAINER_RANK_LEVEL">
-            MÁXIMO NIVEL
-          </template>
-          <template v-else>
-            {{ currentExp }} / {{ currentExpNeeded }} EXP
-          </template>
+          <template v-if="currentLevel >= MAX_TRAINER_RANK_LEVEL"> MÁXIMO NIVEL </template>
+          <template v-else> {{ currentExp }} / {{ currentExpNeeded }} EXP </template>
         </span>
         <span class="xp-percent">{{ Math.round(trainerExpPct) }}%</span>
       </div>
 
       <!-- Progress Bar -->
       <div class="xp-bar-container">
-        <div 
+        <div
           ref="xpBarRef"
           class="xp-bar-fill"
-          :style="{ backgroundColor: props.classColor || classStore.currentClassDef?.color || 'var(--purple)' }"
+          :style="{
+            backgroundColor:
+              props.classColor || classStore.currentClassDef?.color || 'var(--purple)'
+          }"
         />
       </div>
 
       <div class="xp-remaining-text">
         <template v-if="currentLevel >= MAX_TRAINER_RANK_LEVEL">
-          <strong :style="{ color: props.classColor || classStore.currentClassDef?.color || '#a855f7' }">¡NIVEL MÁXIMO ALCANZADO!</strong>
+          <strong
+            :style="{ color: props.classColor || classStore.currentClassDef?.color || '#a855f7' }"
+            >¡NIVEL MÁXIMO ALCANZADO!</strong
+          >
         </template>
         <template v-else>
-          Faltan <strong :style="{ color: props.classColor || classStore.currentClassDef?.color || '#a855f7' }"> {{ xpRemaining }} EXP </strong> para el Nivel <strong>{{ nextLevel }}</strong>
+          Faltan
+          <strong
+            :style="{ color: props.classColor || classStore.currentClassDef?.color || '#a855f7' }"
+          >
+            {{ xpRemaining }} EXP
+          </strong>
+          para el Nivel <strong>{{ nextLevel }}</strong>
         </template>
       </div>
     </div>
 
     <!-- Unlocks Section -->
-    <div 
-      v-if="nextClassUnlocks.length > 0" 
-      class="xp-unlocks"
-    >
-      <div class="unlocks-title">
-        Próximos Desbloqueos de Clase:
-      </div>
+    <div v-if="nextClassUnlocks.length > 0" class="xp-unlocks">
+      <div class="unlocks-title">Próximos Desbloqueos de Clase:</div>
       <ul class="unlocks-list">
-        <li 
-          v-for="(unlock, index) in nextClassUnlocks.slice(0, MAX_UNLOCKS_PREVIEW)" 
+        <li
+          v-for="(unlock, index) in nextClassUnlocks.slice(0, MAX_UNLOCKS_PREVIEW)"
           :key="index"
           class="unlock-item"
         >
@@ -217,7 +231,7 @@ watch(trainerExpPct, (newPct) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/_profile-shared";
+@use '@/styles/components/_profile-shared';
 
 .xp-card {
   .xp-details {
@@ -258,7 +272,16 @@ watch(trainerExpPct, (newPct) => {
   .xp-bar-fill {
     height: 100%;
     border-radius: $radius-md-alt;
-    background-image: Linear-Gradient(90deg, Rgb(255 255 255 / 15%) 25%, transparent 25%, transparent 50%, Rgb(255 255 255 / 15%) 50%, Rgb(255 255 255 / 15%) 75%, transparent 75%, transparent);
+    background-image: Linear-Gradient(
+      90deg,
+      Rgb(255 255 255 / 15%) 25%,
+      transparent 25%,
+      transparent 50%,
+      Rgb(255 255 255 / 15%) 50%,
+      Rgb(255 255 255 / 15%) 75%,
+      transparent 75%,
+      transparent
+    );
     background-size: 20px 20px;
   }
 

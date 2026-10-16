@@ -1,5 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { isSecondaryEffectActive, isFieldEffectActive, isDebugEffectActive } from '@/components/admin/debug/debugAudioAnimHelper';
+import { describe, it, expect } from 'vite-plus/test';
+import {
+  isSecondaryEffectActive,
+  isFieldEffectActive,
+  isDebugEffectActive
+} from '@/components/admin/debug/debugAudioAnimHelper';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('debugAudioAnimHelper Unit Suite', () => {
@@ -26,13 +30,26 @@ describe('debugAudioAnimHelper Unit Suite', () => {
         protect: true,
         endure: true,
         focusEnergy: true,
-        lockOn: true,
+        lockOn: true
       } as unknown as Pokemon;
 
       const secondaryTypes = [
-        'confusion', 'taunt', 'substitute', 'disable', 'encore',
-        'perishsong', 'bound', 'attract', 'curse', 'leechseed',
-        'trapped', 'ingrain', 'protect', 'endure', 'focusenergy', 'lockon'
+        'confusion',
+        'taunt',
+        'substitute',
+        'disable',
+        'encore',
+        'perishsong',
+        'bound',
+        'attract',
+        'curse',
+        'leechseed',
+        'trapped',
+        'ingrain',
+        'protect',
+        'endure',
+        'focusenergy',
+        'lockon'
       ];
 
       for (const type of secondaryTypes) {
@@ -42,9 +59,22 @@ describe('debugAudioAnimHelper Unit Suite', () => {
 
     it('correctly detects all 16 secondary statuses via volatileCounters', () => {
       const secondaryTypes = [
-        'confusion', 'taunt', 'substitute', 'disable', 'encore',
-        'perishsong', 'bound', 'attract', 'curse', 'leechseed',
-        'trapped', 'ingrain', 'protect', 'endure', 'focusenergy', 'lockon'
+        'confusion',
+        'taunt',
+        'substitute',
+        'disable',
+        'encore',
+        'perishsong',
+        'bound',
+        'attract',
+        'curse',
+        'leechseed',
+        'trapped',
+        'ingrain',
+        'protect',
+        'endure',
+        'focusenergy',
+        'lockon'
       ];
 
       for (const type of secondaryTypes) {
@@ -94,9 +124,22 @@ describe('debugAudioAnimHelper Unit Suite', () => {
       } as unknown as Pokemon;
 
       const secondaryTypes = [
-        'confusion', 'taunt', 'substitute', 'disable', 'encore',
-        'perishsong', 'bound', 'attract', 'curse', 'leechseed',
-        'trapped', 'ingrain', 'protect', 'endure', 'focusenergy', 'lockon'
+        'confusion',
+        'taunt',
+        'substitute',
+        'disable',
+        'encore',
+        'perishsong',
+        'bound',
+        'attract',
+        'curse',
+        'leechseed',
+        'trapped',
+        'ingrain',
+        'protect',
+        'endure',
+        'focusenergy',
+        'lockon'
       ];
 
       for (const type of secondaryTypes) {
@@ -126,8 +169,12 @@ describe('debugAudioAnimHelper Unit Suite', () => {
     it('detects conditions via fieldConditions or sideConditions', () => {
       expect(isFieldEffectActive('trickroom', { trickroom: { turns: 5 } }, null, null)).toBe(true);
       expect(isFieldEffectActive('gravity', { gravity: { turns: 5 } }, null, null)).toBe(true);
-      expect(isFieldEffectActive('stealthrock', null, { stealthrock: { turns: 1 } }, null)).toBe(true);
-      expect(isFieldEffectActive('toxicspikes', null, { toxicspikes: { turns: 2 } }, null)).toBe(true);
+      expect(isFieldEffectActive('stealthrock', null, { stealthrock: { turns: 1 } }, null)).toBe(
+        true
+      );
+      expect(isFieldEffectActive('toxicspikes', null, { toxicspikes: { turns: 2 } }, null)).toBe(
+        true
+      );
     });
   });
 
@@ -135,7 +182,9 @@ describe('debugAudioAnimHelper Unit Suite', () => {
     it('dispatches to secondary and field handlers cleanly', () => {
       const mockPokemon = { confused: 4 } as unknown as Pokemon;
       expect(isDebugEffectActive('secondary', 'confusion', { poke: mockPokemon })).toBe(true);
-      expect(isDebugEffectActive('field', 'electricterrain', { terrain: 'electricterrain' })).toBe(true);
+      expect(isDebugEffectActive('field', 'electricterrain', { terrain: 'electricterrain' })).toBe(
+        true
+      );
     });
   });
 });

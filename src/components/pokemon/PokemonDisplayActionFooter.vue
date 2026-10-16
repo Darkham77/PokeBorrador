@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import type { VisibleCardActions } from '@/components/pokemon/pokemonDisplayCardHelper.ts'
+import type { VisibleCardActions } from '@/components/pokemon/pokemonDisplayCardHelper.ts';
 
 interface Props {
-  pokemonUid: string
-  index: number
-  visibleActions: VisibleCardActions
-  hasHeldItem: boolean
+  pokemonUid: string;
+  index: number;
+  visibleActions: VisibleCardActions;
+  hasHeldItem: boolean;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  openItem: [index: number]
-  unequipItem: [index: number]
-  openDetail: [index: number]
-  sendToBox: [index: number]
-  select: [index: number]
-}>()
+  openItem: [index: number];
+  unequipItem: [index: number];
+  openDetail: [index: number];
+  sendToBox: [index: number];
+  select: [index: number];
+}>();
 </script>
 
 <template>
@@ -68,5 +68,5 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/pokemon-display-card" as *;
+@use '@/styles/components/pokemon-display-card' as *;
 </style>

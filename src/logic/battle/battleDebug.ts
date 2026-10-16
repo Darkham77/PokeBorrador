@@ -1,24 +1,37 @@
-import { watch } from 'vue'
-import { logger } from '@/logic/utils/logger'
-import { gsapSleep } from '@/logic/utils/gsapHelpers'
-import { gameBus } from '@/logic/events/gameBus'
-import { useAudioStore } from '@/stores/audio'
-import type { BattleContext } from '@/types/battle/battleContext'
-import { requirePokemonStatus, requireVolatileStatusKey, type Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleStages, BattleSide } from '@/types/battle/battle'
-import type { MoveCategory } from '@/data/battle/moves'
-import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle'
-import { requireWeatherId } from '@/logic/weather/weatherRegistry'
-import { requireDayPhase } from '@/logic/utils/timeUtils.ts'
-import { requireItemId } from '@/data/inventory/items'
-import { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts'
-import { isBattleCompletionReady } from './helpers/battleCompletionReadiness.ts'
-import { requiresAction } from './helpers/requestHelper.ts'
-import { projectBattleReadySwitchSlots } from './helpers/battleReadySwitchSlots.ts'
-import { BATTLE_UI_EVENTS, isBattleReadyForInputDetail, type BattleReadyForInputDetail } from '@/types/battle/battleEvents.ts'
-import { CANONICAL_TERRAINS, type CanonicalTerrain, MIN_BATTLE_STAT_STAGE, MAX_BATTLE_STAT_STAGE } from '@/logic/constants/gameplay'
+import { watch } from 'vue';
+import { logger } from '@/logic/utils/logger';
+import { gsapSleep } from '@/logic/utils/gsapHelpers';
+import { gameBus } from '@/logic/events/gameBus';
+import { useAudioStore } from '@/stores/audio';
+import type { BattleContext } from '@/types/battle/battleContext';
+import {
+  requirePokemonStatus,
+  requireVolatileStatusKey,
+  type Pokemon
+} from '@/types/pokemon/pokemon';
+import type { BattleStages, BattleSide } from '@/types/battle/battle';
+import type { MoveCategory } from '@/data/battle/moves';
+import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle';
+import { requireWeatherId } from '@/logic/weather/weatherRegistry';
+import { requireDayPhase } from '@/logic/utils/timeUtils.ts';
+import { requireItemId } from '@/data/inventory/items';
+import { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts';
+import { isBattleCompletionReady } from './helpers/battleCompletionReadiness.ts';
+import { requiresAction } from './helpers/requestHelper.ts';
+import { projectBattleReadySwitchSlots } from './helpers/battleReadySwitchSlots.ts';
+import {
+  BATTLE_UI_EVENTS,
+  isBattleReadyForInputDetail,
+  type BattleReadyForInputDetail
+} from '@/types/battle/battleEvents.ts';
+import {
+  CANONICAL_TERRAINS,
+  type CanonicalTerrain,
+  MIN_BATTLE_STAT_STAGE,
+  MAX_BATTLE_STAT_STAGE
+} from '@/logic/constants/gameplay';
 
-export { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts'
+export { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts';
 
 const DEBUG_INDEFINITE_WEATHER_TURNS = 99;
 const MAX_BATTLE_READY_TIMEOUT_MS = 5000;
@@ -36,20 +49,20 @@ const DEBUG_STATUS_ACTIVE_FLAG = 1;
 const DEBUG_STATUS_INACTIVE_FLAG = 0;
 
 interface ScriptedReplayReadinessDetail extends BattleReadyForInputDetail {
-  isReady: boolean
+  isReady: boolean;
 }
 
 async function executeCatchThrowStep(
   anims: BattleContext['animations'],
   audio: ReturnType<typeof useAudioStore>,
-  side: string,
+  side: BattleSide,
   ballId: ReturnType<typeof requireItemId>,
-  isCritical: boolean,
+  isCritical: boolean
 ): Promise<void> {
   if (isCritical) {
-    audio.play('criticalThrow');
+    void audio.play('criticalThrow');
   }
-  audio.play('ballHit');
+  void audio.play('ballHit');
 
   if (anims?.handleCatchRequest) {
     await anims.handleCatchRequest({ side, ballId, isCritical });
@@ -71,12 +84,12 @@ async function executeCatchThrowStep(
 async function executeCatchShakesStep(
   anims: BattleContext['animations'],
   audio: ReturnType<typeof useAudioStore>,
-  side: string,
-  shakes: number,
+  side: BattleSide,
+  shakes: number
 ): Promise<void> {
   for (let i = 0; i < shakes; i++) {
     await gsapSleep(DEBUG_SHAKE_INITIAL_DELAY_MS);
-    audio.play('wobble');
+    void audio.play('wobble');
     if (anims?.handleShakeRequest) {
       await anims.handleShakeRequest({ side, isCapture: true });
     } else {
@@ -89,10 +102,10 @@ async function executeCatchShakesStep(
 async function executeCatchCelebrationStep(
   anims: BattleContext['animations'],
   audio: ReturnType<typeof useAudioStore>,
-  side: string,
+  side: BattleSide
 ): Promise<void> {
   await gsapSleep(DEBUG_CATCH_AUDIO_DELAY_MS);
-  audio.play('caught');
+  void audio.play('caught');
   if (anims?.playCatchCelebration) {
     await anims.playCatchCelebration(side);
   } else {
@@ -108,6 +121,7 @@ async function executeCatchCelebrationStep(
   }
 }
 
+// open-record: Map of debug animation trigger names to game event names
 const DEBUG_EVENT_MAP: Readonly<Record<string, string>> = {
   release: 'PLAY_RELEASE_ENERGY',
   catch: 'PLAY_CATCH_ENERGY',
@@ -122,10 +136,14 @@ const DEBUG_EVENT_MAP: Readonly<Record<string, string>> = {
   emergence: 'START_BATTLE',
   reveal: 'START_BATTLE',
   encounter: 'ENCOUNTER_ANIM',
-  bush_wiggle: 'WIGGLE_BUSH',
+  bush_wiggle: 'WIGGLE_BUSH'
 };
 
-function handleAttackDebugAnim(ctx: BattleContext, side: string, options: Record<string, unknown>): void {
+function handleAttackDebugAnim(
+  ctx: BattleContext,
+  side: string,
+  options: Record<string, unknown>
+): void {
   if (options.cat === 'recoil') {
     gameBus.emit('PLAY_RECOIL', { side });
     return;
@@ -134,9 +152,12 @@ function handleAttackDebugAnim(ctx: BattleContext, side: string, options: Record
     ctx.attackerSide.value = side as BattleSide;
     ctx.activeMove.value = {
       name: options.cat === 'selfKO' ? 'Autodestrucción' : 'Ataque Debug', // spanish-ok: UI Spanish text localization label
-      cat: options.cat === 'selfKO' ? 'special' : ((options.cat as MoveCategory | undefined) || 'physical'),
+      cat:
+        options.cat === 'selfKO'
+          ? 'special'
+          : (options.cat as MoveCategory | undefined) || 'physical',
       pp: 5,
-      maxPP: 5,
+      maxPP: 5
     };
   }
   gameBus.emit('PLAY_ATTACK_ANIM', { side, cat: options.cat || 'physical' });
@@ -149,7 +170,7 @@ const SCREEN_OR_HAZARD_EFFECTS = [
   'mist',
   'spikes',
   'stealthrock',
-  'toxicspikes',
+  'toxicspikes'
 ] as const;
 type ScreenOrHazardEffect = (typeof SCREEN_OR_HAZARD_EFFECTS)[number];
 
@@ -157,7 +178,7 @@ function toggleScreenOrHazardEffect(
   ctx: BattleContext,
   side: string,
   key: string,
-  val: number,
+  val: number
 ): void {
   const stagesRef = side === 'player' ? ctx.playerStages : ctx.enemyStages;
   const active = ctx.activeBattle.value;
@@ -166,16 +187,20 @@ function toggleScreenOrHazardEffect(
   const newVal = current > 0 ? 0 : val;
   stagesRef.value = {
     ...stagesRef.value,
-    [stageKey]: newVal,
+    [stageKey]: newVal
   };
   if (active) {
     if (side === 'player') {
-      const sideConds: Partial<Record<BattleConditionKey, { turns: number }>> = { ...(active.playerSideConditions || {}) };
+      const sideConds: Partial<Record<BattleConditionKey, { turns: number }>> = {
+        ...active.playerSideConditions
+      };
       if (newVal > 0) sideConds[key as BattleConditionKey] = { turns: newVal };
       else delete sideConds[key as BattleConditionKey];
       active.playerSideConditions = sideConds;
     } else {
-      const sideConds: Partial<Record<BattleConditionKey, { turns: number }>> = { ...(active.enemySideConditions || {}) };
+      const sideConds: Partial<Record<BattleConditionKey, { turns: number }>> = {
+        ...active.enemySideConditions
+      };
       if (newVal > 0) sideConds[key as BattleConditionKey] = { turns: newVal };
       else delete sideConds[key as BattleConditionKey];
       active.enemySideConditions = sideConds;
@@ -184,14 +209,13 @@ function toggleScreenOrHazardEffect(
   }
 }
 
-function toggleTerrainOrFieldEffect(
-  ctx: BattleContext,
-  key: string,
-  val: number,
-): void {
+function toggleTerrainOrFieldEffect(ctx: BattleContext, key: string, val: number): void {
   const active = ctx.activeBattle.value;
   if (!active) return;
-  const updatedConditions: Record<string, { turns: number }> = { ...(active.fieldConditions || {}) }; // open-record: Generic key-value data dictionary container
+  // open-record: Generic key-value data dictionary container
+  const updatedConditions: Record<string, { turns: number }> = {
+    ...active.fieldConditions
+  };
   let newTerrain: string | null = active.terrain ?? null;
   const isTerrain = CANONICAL_TERRAINS.includes(key as CanonicalTerrain);
 
@@ -202,7 +226,7 @@ function toggleTerrainOrFieldEffect(
     }
   } else {
     if (isTerrain) {
-      CANONICAL_TERRAINS.forEach(t => {
+      CANONICAL_TERRAINS.forEach((t) => {
         delete updatedConditions[t];
       });
       newTerrain = key;
@@ -216,22 +240,45 @@ function toggleTerrainOrFieldEffect(
 
 function checkCompletedOrInitialReadiness(
   ctx: BattleContext,
-  win: Window,
+  win: Window
 ): ScriptedReplayReadinessDetail | null {
   const active = ctx.activeBattle.value;
-  if (isBattleCompletionReady({
-    hasActiveBattle: active !== null,
-    isOver: active?.over === true,
-    fsmState: ctx.fsm.currentState.value,
-    fsmSubState: ctx.fsm.currentSubState.value,
-  })) {
-    return { subState: '', p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0, p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0, over: true, playerSwitchSlots: [], isReady: true };
+  if (
+    isBattleCompletionReady({
+      hasActiveBattle: active !== null,
+      isOver: active?.over === true,
+      fsmState: ctx.fsm.currentState.value,
+      fsmSubState: ctx.fsm.currentSubState.value
+    })
+  ) {
+    return {
+      subState: '',
+      p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
+      p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
+      over: true,
+      playerSwitchSlots: [],
+      isReady: true
+    };
   }
   if (!active) {
-    return { subState: ctx.fsm.currentSubState.value ?? '', p1ChoiceIdx: 0, p2ChoiceIdx: 0, over: false, playerSwitchSlots: [], isReady: false };
+    return {
+      subState: ctx.fsm.currentSubState.value ?? '',
+      p1ChoiceIdx: 0,
+      p2ChoiceIdx: 0,
+      over: false,
+      playerSwitchSlots: [],
+      isReady: false
+    };
   }
   if (active.over) {
-    return { subState: '', p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0, p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0, over: true, playerSwitchSlots: projectBattleReadySwitchSlots(active.playerRequest), isReady: true };
+    return {
+      subState: '',
+      p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
+      p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
+      over: true,
+      playerSwitchSlots: projectBattleReadySwitchSlots(active.playerRequest),
+      isReady: true
+    };
   }
   return null;
 }
@@ -246,7 +293,7 @@ export function setupBattleDebug(ctx: BattleContext) {
     return window.__VITE_DEBUG_STORE_RESOLVER__ ? window.__VITE_DEBUG_STORE_RESOLVER__() : null;
   };
 
-  const runFullCatchDebug = async (side = 'enemy', isCritical = false) => {
+  const runFullCatchDebug = async (side: BattleSide = 'enemy', isCritical = false) => {
     const audio = useAudioStore();
     const anims = ctx.animations;
     const ballId = requireItemId('pokeball');
@@ -257,13 +304,18 @@ export function setupBattleDebug(ctx: BattleContext) {
     await executeCatchCelebrationStep(anims, audio, side);
   };
 
-  win.__VITE_DEBUG__.triggerAnim = (type: string, side = 'enemy', options: Record<string, unknown> = {}) => {
+  win.__VITE_DEBUG__.triggerAnim = (
+    type: string,
+    side = 'enemy',
+    options: Record<string, unknown> = {}
+  ) => {
+    const validSide: BattleSide = side === 'player' ? 'player' : 'enemy';
     if (type === 'full_catch_normal') {
-      void runFullCatchDebug(side, false);
+      void runFullCatchDebug(validSide, false);
       return;
     }
     if (type === 'full_catch_critical') {
-      void runFullCatchDebug(side, true);
+      void runFullCatchDebug(validSide, true);
       return;
     }
     if (type === 'attack') {
@@ -275,17 +327,19 @@ export function setupBattleDebug(ctx: BattleContext) {
   };
 
   win.__VITE_DEBUG__.playSound = (id: string) => {
-    useAudioStore().play(id);
+    void useAudioStore().play(id);
   };
 
   win.__VITE_DEBUG__.setStatus = async (side: string, status: string) => {
-    const target = side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy;
+    const target =
+      side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy;
     if (!target) return;
 
-    const resolvedStatus = (status === 'null' || status === 'clear') ? '' : requirePokemonStatus(status);
+    const resolvedStatus =
+      status === 'null' || status === 'clear' ? '' : requirePokemonStatus(status);
     target.status = resolvedStatus;
     if (side === 'player') {
-      const teamTarget = ctx.gs.state.team.find(pokemon => pokemon?.uid === target.uid);
+      const teamTarget = ctx.gs.state.team.find((pokemon) => pokemon?.uid === target.uid);
       if (!teamTarget) {
         throw new Error(`[battleDebug] Active player ${target.uid} is missing from the game team`);
       }
@@ -295,8 +349,13 @@ export function setupBattleDebug(ctx: BattleContext) {
     await applyDebugStatusInWorker(side === 'player' ? 'p1' : 'p2', target.uid, resolvedStatus);
   };
 
-  type SecondaryDebugPredicate = (t: Pokemon & Record<string, unknown>, vc: Record<string, number>) => boolean;
+  type SecondaryDebugPredicate = (
+    t: Pokemon & Record<string, unknown>,
+    // open-record: Volatile counter numeric dictionary keyed by status name
+    vc: Record<string, number>
+  ) => boolean;
 
+  // open-record: Secondary status debug condition predicates indexed by status name
   const SECONDARY_DEBUG_PREDICATES: Record<string, SecondaryDebugPredicate> = {
     confusion: (t, vc) => (Number(t.confused) || 0) > 0 || (vc.confusion || 0) > 0,
     taunt: (t, vc) => (Number(t.tauntTurns) || 0) > 0 || (vc.taunt || 0) > 0,
@@ -316,8 +375,14 @@ export function setupBattleDebug(ctx: BattleContext) {
     lockon: (t, vc) => Boolean(t.lockOn) || (vc.lockon || 0) > 0
   };
 
-  type SecondaryDebugApplier = (t: Pokemon & Record<string, unknown>, vc: Record<string, number>, activating: boolean) => void;
+  type SecondaryDebugApplier = (
+    t: Pokemon & Record<string, unknown>,
+    // open-record: Volatile counter numeric dictionary keyed by status name
+    vc: Record<string, number>,
+    activating: boolean
+  ) => void;
 
+  // open-record: Secondary status debug condition appliers indexed by status name
   const SECONDARY_DEBUG_APPLIERS: Record<string, SecondaryDebugApplier> = {
     confusion: (t, vc, act) => {
       t.confused = act ? DEBUG_TURNS_FOUR : DEBUG_STATUS_INACTIVE_FLAG;
@@ -388,14 +453,17 @@ export function setupBattleDebug(ctx: BattleContext) {
   };
 
   win.__VITE_DEBUG__.setSecondaryStatus = (side: string, type: string) => {
-    const target = (side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy) as (Pokemon & Record<string, unknown>) | undefined; // open-record: Generic key-value data dictionary container
+    const target = (
+      side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy
+    ) as (Pokemon & Record<string, unknown>) | undefined; // open-record: Generic key-value data dictionary container
     if (!target) return;
 
     if (!target.volatileCounters) target.volatileCounters = {};
     const vc = target.volatileCounters as Record<string, number>; // open-record: Generic key-value data dictionary container
 
     const predicate = SECONDARY_DEBUG_PREDICATES[type];
-    const isCurrentlyActive = ((vc[type] || 0) > 0) || Boolean(target[type]) || (predicate ? predicate(target, vc) : false);
+    const isCurrentlyActive =
+      (vc[type] || 0) > 0 || Boolean(target[type]) || (predicate ? predicate(target, vc) : false);
 
     const activating = !isCurrentlyActive;
 
@@ -408,7 +476,7 @@ export function setupBattleDebug(ctx: BattleContext) {
     }
 
     if (side === 'player') {
-      const teamTarget = ctx.gs.state.team.find(pokemon => pokemon?.uid === target.uid);
+      const teamTarget = ctx.gs.state.team.find((pokemon) => pokemon?.uid === target.uid);
       if (teamTarget) {
         Object.assign(teamTarget, {
           confused: target.confused,
@@ -449,7 +517,10 @@ export function setupBattleDebug(ctx: BattleContext) {
 
   win.__VITE_DEBUG__.modifyStatStage = (side: string, stat: keyof BattleStages, delta: number) => {
     const stages = side === 'player' ? ctx.playerStages.value : ctx.enemyStages.value;
-    stages[stat] = Math.max(MIN_BATTLE_STAT_STAGE, Math.min(MAX_BATTLE_STAT_STAGE, (stages[stat] || 0) + delta));
+    stages[stat] = Math.max(
+      MIN_BATTLE_STAT_STAGE,
+      Math.min(MAX_BATTLE_STAT_STAGE, (stages[stat] || 0) + delta)
+    );
   };
 
   win.__VITE_DEBUG__.setFieldEffect = (side: string, effect: string, val: number) => {
@@ -475,9 +546,9 @@ export function setupBattleDebug(ctx: BattleContext) {
     }
     const currState = ctx.fsm.currentState.value || ctx.BATTLE_STATES.ACTIVE_BATTLE;
     if (currState === ctx.BATTLE_STATES.ACTIVE_BATTLE) {
-      ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.FLEE_ATTEMPT);
+      void ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.FLEE_ATTEMPT);
     } else {
-      ctx.fsm.transition(currState, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS);
+      void ctx.fsm.transition(currState, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS);
     }
     await ctx.endBattle(false, true);
   };
@@ -488,24 +559,28 @@ export function setupBattleDebug(ctx: BattleContext) {
 
     const active = ctx.activeBattle.value!;
     const subStateVal = ctx.fsm.currentSubState.value ?? '';
-    const hasPendingSwitch = Boolean(Reflect.get(active, 'switchingToPlayer')) || Boolean(Reflect.get(active, 'switchingToEnemy'));
+    const hasPendingSwitch =
+      Boolean(Reflect.get(active, 'switchingToPlayer')) ||
+      Boolean(Reflect.get(active, 'switchingToEnemy'));
     const isReady = canExecuteScriptedReplayAction({
       isActiveBattle: ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE,
       subState: subStateVal,
       isProcessing: ctx.isProcessing.value,
       isIntroAnimating: ctx.isIntroAnimating.value,
       hasPendingSwitch,
-      hasPendingPlayerAction: requiresAction(active.playerRequest),
+      hasPendingPlayerAction: requiresAction(active.playerRequest)
     });
 
     if (!isReady && subStateVal === 'SWITCH_MENU' && win.__VITE_DEBUG__?.isScriptedReplayMode) {
-      console.debug(`[E2E-CERTIFIED-REPLAY] SWITCH_MENU is not actionable. context=${JSON.stringify({
-        isActiveBattle: ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE,
-        isProcessing: ctx.isProcessing.value,
-        isIntroAnimating: ctx.isIntroAnimating.value,
-        hasPendingSwitch,
-        introDiagnostics: win.__VITE_DEBUG__?.certifiedReplayIntroDiagnostics,
-      })}`);
+      console.debug(
+        `[E2E-CERTIFIED-REPLAY] SWITCH_MENU is not actionable. context=${JSON.stringify({
+          isActiveBattle: ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE,
+          isProcessing: ctx.isProcessing.value,
+          isIntroAnimating: ctx.isIntroAnimating.value,
+          hasPendingSwitch,
+          introDiagnostics: win.__VITE_DEBUG__?.certifiedReplayIntroDiagnostics
+        })}`
+      );
     }
 
     return {
@@ -514,91 +589,103 @@ export function setupBattleDebug(ctx: BattleContext) {
       p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
       over: false,
       playerSwitchSlots: projectBattleReadySwitchSlots(active.playerRequest),
-      isReady,
+      isReady
     };
   };
 
-  win.__VITE_DEBUG__.getScriptedReplayReadiness = getScriptedReplayReadiness
+  win.__VITE_DEBUG__.getScriptedReplayReadiness = getScriptedReplayReadiness;
 
-  win.__VITE_DEBUG__.waitForBattleReady = (timeoutMs = MAX_BATTLE_READY_TIMEOUT_MS, options?: { skipImmediate?: boolean }) => {
+  win.__VITE_DEBUG__.waitForBattleReady = (
+    timeoutMs = MAX_BATTLE_READY_TIMEOUT_MS,
+    options?: { skipImmediate?: boolean }
+  ) => {
     return new Promise((resolve, reject) => {
       const checkCurrentReady = () => {
-        const detail = getScriptedReplayReadiness()
+        const detail = getScriptedReplayReadiness();
         if (detail.over || detail.isReady) {
-          return detail
+          return detail;
         }
-        return null
-      }
+        return null;
+      };
 
       // 1. Chequeo sincrónico inicial
       if (!options?.skipImmediate) {
-        const immediateReady = checkCurrentReady()
+        const immediateReady = checkCurrentReady();
         if (immediateReady) {
-          resolve(immediateReady)
-          return
+          resolve(immediateReady);
+          return;
         }
       }
 
-      let unwatch: (() => void) | null = null
-      let timer: NodeJS.Timeout | null = null
+      let unwatch: (() => void) | null = null;
+      let timer: NodeJS.Timeout | null = null;
 
       const onActivity = () => {
-        const res = checkCurrentReady()
+        const res = checkCurrentReady();
         if (res) {
-          onReady(res)
+          onReady(res);
         } else {
-          resetTimer()
+          resetTimer();
         }
-      }
+      };
 
       const cleanup = () => {
-        if (unwatch) unwatch()
-        if (timer) clearTimeout(timer) // timer-ok: Scripted battle readiness timeout in debug harness
-        window.removeEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler)
-        window.removeEventListener('battle-log-added', onActivity)
-      }
+        if (unwatch) unwatch();
+        if (timer) clearTimeout(timer); // timer-ok: Scripted battle readiness timeout in debug harness
+        window.removeEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler);
+        window.removeEventListener('battle-log-added', onActivity);
+      };
 
       const onReady = (detail: unknown) => {
         if (!isBattleReadyForInputDetail(detail)) {
-          cleanup()
-          reject(new Error(`[battleDebug] Invalid ${BATTLE_UI_EVENTS.READY_FOR_INPUT} detail payload`))
-          return
+          cleanup();
+          reject(
+            new Error(`[battleDebug] Invalid ${BATTLE_UI_EVENTS.READY_FOR_INPUT} detail payload`)
+          );
+          return;
         }
-        cleanup()
-        resolve(detail)
-      }
+        cleanup();
+        resolve(detail);
+      };
 
       const handler = (e: Event) => {
         if (!(e instanceof CustomEvent)) {
-          cleanup()
-          reject(new Error(`[battleDebug] ${BATTLE_UI_EVENTS.READY_FOR_INPUT} must be a CustomEvent`))
-          return
+          cleanup();
+          reject(
+            new Error(`[battleDebug] ${BATTLE_UI_EVENTS.READY_FOR_INPUT} must be a CustomEvent`)
+          );
+          return;
         }
-        onReady(e.detail)
-      }
+        onReady(e.detail);
+      };
 
       const resetTimer = () => {
-        if (timer) clearTimeout(timer) // timer-ok: Scripted battle readiness timeout in debug harness
-        timer = setTimeout(() => { // timer-ok: Scripted battle readiness timeout in debug harness
-          const currentDetail = getScriptedReplayReadiness()
+        if (timer) clearTimeout(timer); // timer-ok: Scripted battle readiness timeout in debug harness
+        timer = setTimeout(() => {
+          // timer-ok: Scripted battle readiness timeout in debug harness
+          const currentDetail = getScriptedReplayReadiness();
           if (currentDetail.isReady || currentDetail.over) {
-            cleanup()
-            resolve(currentDetail)
-            return
+            cleanup();
+            resolve(currentDetail);
+            return;
           }
           if (ctx.isProcessing.value || ctx.isIntroAnimating.value) {
-            resetTimer()
-            return
+            resetTimer();
+            return;
           }
-          cleanup()
-          reject(new Error(`[battleDebug] Timeout (${timeoutMs}ms) waiting for battle-ready-for-input. Current state: ${JSON.stringify(currentDetail)}`))
-        }, timeoutMs)
-      }
+          cleanup();
+          reject(
+            new Error(
+              `[battleDebug] Timeout (${timeoutMs}ms) waiting for battle-ready-for-input. Current state: ${JSON.stringify(currentDetail)}`
+            )
+          );
+        }, timeoutMs);
+      };
 
-      resetTimer()
+      resetTimer();
 
-      window.addEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler, { once: true })
-      window.addEventListener('battle-log-added', onActivity)
+      window.addEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler, { once: true });
+      window.addEventListener('battle-log-added', onActivity);
 
       unwatch = watch(
         [
@@ -610,101 +697,107 @@ export function setupBattleDebug(ctx: BattleContext) {
           () => ctx.player.value?.hp,
           () => ctx.enemy.value?.hp,
           ctx.activeMove,
-          ctx.attackerSide,
+          ctx.attackerSide
         ],
         onActivity,
         { immediate: !options?.skipImmediate }
-      )
-    })
-  }
+      );
+    });
+  };
 
   win.__VITE_DEBUG__.battle = {
     setPlayerStatus: (s: Pokemon['status']) => {
-      const active = ctx.activeBattle.value
+      const active = ctx.activeBattle.value;
       if (active && active.player) {
-        active.player.status = s
-        logger.info('DEBUG', `Status de jugador cambiado a: ${s}`)
+        active.player.status = s;
+        logger.info('DEBUG', `Status de jugador cambiado a: ${s}`);
       }
     },
     setEnemyStatus: (s: Pokemon['status']) => {
-      const active = ctx.activeBattle.value
+      const active = ctx.activeBattle.value;
       if (active && active.enemy) {
-        active.enemy.status = s
-        logger.info('DEBUG', `Status de enemigo cambiado a: ${s}`)
+        active.enemy.status = s;
+        logger.info('DEBUG', `Status de enemigo cambiado a: ${s}`);
       }
     },
-    setPlayerStage: (stat: keyof BattleStages, val: number) => { 
-      ctx.playerStages.value[stat] = val 
-      logger.info('DEBUG', `Stage de jugador ${stat} cambiado a: ${val}`)
+    setPlayerStage: (stat: keyof BattleStages, val: number) => {
+      ctx.playerStages.value[stat] = val;
+      logger.info('DEBUG', `Stage de jugador ${stat} cambiado a: ${val}`);
     },
-    setEnemyStage: (stat: keyof BattleStages, val: number) => { 
-      ctx.enemyStages.value[stat] = val 
-      logger.info('DEBUG', `Stage de enemigo ${stat} cambiado a: ${val}`)
+    setEnemyStage: (stat: keyof BattleStages, val: number) => {
+      ctx.enemyStages.value[stat] = val;
+      logger.info('DEBUG', `Stage de enemigo ${stat} cambiado a: ${val}`);
     },
-    setWeather: (w: string) => { 
-      const active = ctx.activeBattle.value
+    setWeather: (w: string) => {
+      const active = ctx.activeBattle.value;
       if (active) {
-        const weatherId = requireWeatherId(w)
-        const visual = weatherId === 'clear' || weatherId === 'null' ? 'clear' : weatherId
-        active.weather = { type: weatherId, turns: DEBUG_INDEFINITE_WEATHER_TURNS, visual }
-        logger.info('DEBUG', `Clima/Terreno cambiado a: ${weatherId}`)
+        const weatherId = requireWeatherId(w);
+        const visual = weatherId === 'clear' || weatherId === 'null' ? 'clear' : weatherId;
+        active.weather = { type: weatherId, turns: DEBUG_INDEFINITE_WEATHER_TURNS, visual };
+        logger.info('DEBUG', `Clima/Terreno cambiado a: ${weatherId}`);
       }
     },
     fullHeal: () => {
-      const active = ctx.activeBattle.value
+      const active = ctx.activeBattle.value;
       if (active && active.player) {
-        active.player.hp = active.player.maxHp
+        active.player.hp = active.player.maxHp;
         active.player.status = '';
         (active.player as Pokemon & { confused?: number; seeded?: boolean }).confused = 0;
-        (active.player as Pokemon & { confused?: number; seeded?: boolean }).seeded = false
-        
+        (active.player as Pokemon & { confused?: number; seeded?: boolean }).seeded = false;
+
         // Synchronize team HP in the gameStore
-        const team = ctx.gs.state.team
+        const team = ctx.gs.state.team;
         if (team && team[active.playerTeamIndex]) {
-          const tp = team[active.playerTeamIndex]
+          const tp = team[active.playerTeamIndex];
           if (tp) {
-            tp.hp = active.player.maxHp
-            tp.status = ''
+            tp.hp = active.player.maxHp;
+            tp.status = '';
           }
         }
-        
-        logger.info('DEBUG', '¡Curación completa aplicada reactivamente al jugador!')
+
+        logger.info('DEBUG', '¡Curación completa aplicada reactivamente al jugador!');
       }
     },
     killEnemy: async () => {
-      const active = ctx.activeBattle.value
+      const active = ctx.activeBattle.value;
       if (active && active.enemy) {
-        active.enemy.hp = 0
-        
-        logger.warn('DEBUG', 'Enemigo fulminado (HP = 0), iniciando secuencia de debilitamiento/faint...')
-        await ctx.handleFaint('enemy')
+        active.enemy.hp = 0;
+
+        logger.warn(
+          'DEBUG',
+          'Enemigo fulminado (HP = 0), iniciando secuencia de debilitamiento/faint...'
+        );
+        await ctx.handleFaint('enemy');
       }
     },
     freezeClock: (freeze = true) => {
-      const mapStore = window.__VITE_DEBUG_MAP_STORE_RESOLVER__?.()
-      mapStore?.setFreezeClock(freeze)
-      logger.info('DEBUG', `Reloj congelado: ${freeze}`)
+      const mapStore = window.__VITE_DEBUG_MAP_STORE_RESOLVER__?.();
+      mapStore?.setFreezeClock(freeze);
+      logger.info('DEBUG', `Reloj congelado: ${freeze}`);
     },
     setFixedTime: (epochHour: number, cycle?: string, weather?: string) => {
-      const mapStore = window.__VITE_DEBUG_MAP_STORE_RESOLVER__?.()
+      const mapStore = window.__VITE_DEBUG_MAP_STORE_RESOLVER__?.();
       if (mapStore) {
-        mapStore.setFreezeClock(true)
-        mapStore.currentEpochHour = epochHour
-        if (cycle) mapStore.forcedCycle = requireDayPhase(cycle)
-        if (weather) mapStore.globalWeather = requireWeatherId(weather)
+        mapStore.setFreezeClock(true);
+        mapStore.currentEpochHour = epochHour;
+        if (cycle) mapStore.forcedCycle = requireDayPhase(cycle);
+        if (weather) mapStore.globalWeather = requireWeatherId(weather);
       }
-      logger.info('DEBUG', `Horario y clima fijados: epochHour=${epochHour}, cycle=${cycle}, weather=${weather}`)
+      logger.info(
+        'DEBUG',
+        `Horario y clima fijados: epochHour=${epochHour}, cycle=${cycle}, weather=${weather}`
+      );
     },
     animations: () => ctx.animations,
     store: () => {
-      return window.__VITE_DEBUG_STORE_RESOLVER__?.()
+      return window.__VITE_DEBUG_STORE_RESOLVER__?.();
     }
-  }
+  };
 
   if (window.__VITE_DEBUG__) {
     window.__VITE_DEBUG__.setFreezeClock = (freeze = true) => {
-      const mapStore = window.__VITE_DEBUG_MAP_STORE_RESOLVER__?.()
-      mapStore?.setFreezeClock(freeze)
-    }
+      const mapStore = window.__VITE_DEBUG_MAP_STORE_RESOLVER__?.();
+      mapStore?.setFreezeClock(freeze);
+    };
   }
 }

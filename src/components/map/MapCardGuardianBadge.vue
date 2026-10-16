@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * src/components/map/MapCardGuardianBadge.vue
- * 
+ *
  * Renders the top-left route guardian Pokémon status badge in MapCard.
  */
 
@@ -52,19 +52,19 @@ const effectiveSprite = computed(() => {
     position="top"
   >
     <div class="spawn-atmosphere-wrapper">
-      <img 
-        :src="effectiveSprite" 
+      <img
+        :src="effectiveSprite"
         :alt="guardian.isSeen ? guardian.name : 'Pokémon Guardián'"
-        class="guardian-mini-sprite" 
-        :class="{ 
-          captured: guardian.captured, 
+        class="guardian-mini-sprite"
+        :class="{
+          captured: guardian.captured,
           'spawn-silhouette': !processedSprite && !guardian.isCaught,
-          'is-pre-rendered': !!processedSprite 
+          'is-pre-rendered': !!processedSprite
         }"
         :style="{ '--spawn-seed': guardian.seed }"
         width="32"
         height="32"
-      >
+      />
     </div>
     <span :class="['guardian-label', { captured: guardian.captured }]">
       {{ guardian.captured ? 'DERROTADO' : 'GUARDIÁN' }}

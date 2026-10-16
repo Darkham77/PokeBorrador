@@ -36,7 +36,8 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
     await this.page.evaluate(
       async (opts) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { pokemonDebugService } =
+          await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { requireMapRouteId } = await import('../../../src/data/world/map-assets.ts');
 
         useGameStore().state.map.currentMap = requireMapRouteId('route1');
@@ -121,18 +122,24 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
 
   public override async playBattle(): Promise<void> {
     await executeNativeAutoBattle(this.page);
-    await this.page.waitForFunction(() => {
-      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      if (!store || store.isProcessing) return false;
-      const fsmState = store.currentFsmState;
-      const fsmSubState = store.currentSubState;
-      return (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE') ||
-             (fsmState === 'INITIALIZING' && fsmSubState === 'MINIGAME_CHECK') ||
-             (fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT') ||
-             (fsmState === 'FIRST_INTRO') ||
-             (fsmState === 'REWARDS_PHASE') ||
-             fsmState === 'EXIT_BATTLE';
-    }, undefined, { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
+    await this.page.waitForFunction(
+      () => {
+        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        if (!store || store.isProcessing) return false;
+        const fsmState = store.currentFsmState;
+        const fsmSubState = store.currentSubState;
+        return (
+          (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE') ||
+          (fsmState === 'INITIALIZING' && fsmSubState === 'MINIGAME_CHECK') ||
+          (fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT') ||
+          fsmState === 'FIRST_INTRO' ||
+          fsmState === 'REWARDS_PHASE' ||
+          fsmState === 'EXIT_BATTLE'
+        );
+      },
+      undefined,
+      { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS }
+    );
   }
 
   public async forceEncounterType(type: SearchEncounterType): Promise<void> {
@@ -151,46 +158,62 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
   }
 
   public async startEncounterFromUi(type: SearchEncounterType): Promise<void> {
-    await this.page.waitForFunction((encounterType) => {
-      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      if (!store || store.isProcessing) return false;
-      const fsmState = store.currentFsmState;
-      const fsmSubState = store.currentSubState;
-      const isSearchConfirmation = fsmState === 'SEARCH_PHASE'
-        && fsmSubState === 'COMBAT_OR_FLEE';
-      const isBattleInput = fsmState === 'ACTIVE_BATTLE'
-        && fsmSubState === 'WAIT_INPUT';
-      const isExpectedMinigame = (encounterType === 'fishing' || encounterType === 'archaeology')
-        && fsmState === 'INITIALIZING'
-        && fsmSubState === 'MINIGAME_CHECK';
-      return isSearchConfirmation || isBattleInput || isExpectedMinigame;
-    }, type, { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
+    await this.page.waitForFunction(
+      (encounterType) => {
+        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        if (!store || store.isProcessing) return false;
+        const fsmState = store.currentFsmState;
+        const fsmSubState = store.currentSubState;
+        const isSearchConfirmation =
+          fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE';
+        const isBattleInput = fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT';
+        const isExpectedMinigame =
+          (encounterType === 'fishing' || encounterType === 'archaeology') &&
+          fsmState === 'INITIALIZING' &&
+          fsmSubState === 'MINIGAME_CHECK';
+        return isSearchConfirmation || isBattleInput || isExpectedMinigame;
+      },
+      type,
+      { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS }
+    );
 
     const startButton = this.page.locator('#start-encounter-btn').first();
     if (await startButton.isVisible()) await confirmAndStartBattle(this.page);
   }
 
   public async awaitMinigameCheck(type: SearchMinigameType): Promise<void> {
-    await this.page.waitForFunction(() => {
-      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      if (!store || store.isProcessing) return false;
-      const fsmState = store.currentFsmState;
-      const fsmSubState = store.currentSubState;
-      return (fsmState === 'INITIALIZING' && fsmSubState === 'MINIGAME_CHECK') ||
-             (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE');
-    }, undefined, { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
+    await this.page.waitForFunction(
+      () => {
+        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        if (!store || store.isProcessing) return false;
+        const fsmState = store.currentFsmState;
+        const fsmSubState = store.currentSubState;
+        return (
+          (fsmState === 'INITIALIZING' && fsmSubState === 'MINIGAME_CHECK') ||
+          (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE')
+        );
+      },
+      undefined,
+      { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS }
+    );
 
-    const selector = type === 'fishing'
-      ? '#fishing-modal, #rhythm-container, .rhythm-container, .fishing-hint'
-      : '#archaeology-modal, #archaeology-grid, .archaeology-grid';
+    const selector =
+      type === 'fishing'
+        ? '#fishing-modal, #rhythm-container, .rhythm-container, .fishing-hint'
+        : '#archaeology-modal, #archaeology-grid, .archaeology-grid';
 
-    await this.page.locator(selector).first().waitFor({ state: 'attached', timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
+    await this.page
+      .locator(selector)
+      .first()
+      .waitFor({ state: 'attached', timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
   }
 }
 
 test.describe('Sequential Search Loop Battles Simulation', () => {
   // SUITE 1: Modo Manual (autoBattle = false)
-  test('should execute 10 sequential battles in the search loop with autoBattle = false (manual confirmation & full animations)', async ({ page }) => {
+  test('should execute 10 sequential battles in the search loop with autoBattle = false (manual confirmation & full animations)', async ({
+    page
+  }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
     const sim = new SearchLoopSimWrapper(page, 'SearchLoopManual');
@@ -223,7 +246,7 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       const enc = encountersToTest[i]!;
       const nextEnc = encountersToTest[i + 1];
       console.debug(`[E2E-MANUAL-TEST] --- Iniciando Combate ${enc.num}: ${enc.label} ---`);
-      
+
       await sim.forceHealAll();
 
       if (enc.type === 'archaeology') {
@@ -238,16 +261,22 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
 
         // If fishing was won, combat starts directly; if lost, Pokémon escaped and battle flow ended
         try {
-          await page.waitForFunction(() => {
-            const win = window as WindowWithResolver;
-            const store = win.__VITE_DEBUG_STORE_RESOLVER__?.();
-            if (!store || store.isProcessing) return false;
-            const fsmState = store.currentFsmState;
-            const fsmSubState = store.currentSubState;
-            return (fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT') ||
-                   (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE') ||
-                   fsmState === 'INITIALIZING';
-          }, undefined, { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
+          await page.waitForFunction(
+            () => {
+              const win = window as WindowWithResolver;
+              const store = win.__VITE_DEBUG_STORE_RESOLVER__?.();
+              if (!store || store.isProcessing) return false;
+              const fsmState = store.currentFsmState;
+              const fsmSubState = store.currentSubState;
+              return (
+                (fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT') ||
+                (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE') ||
+                fsmState === 'INITIALIZING'
+              );
+            },
+            undefined,
+            { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS }
+          );
         } catch {
           // catch-ok: Timeout reached or state advanced, continue to isBattle check
         }
@@ -268,11 +297,15 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       console.debug(`[E2E-MANUAL-TEST] Combate ${enc.num} finalizado con éxito.`);
     }
 
-    console.debug(`[E2E-MANUAL-TEST] ¡Bucle de ${E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT} combates manuales completado con éxito absoluto!`);
+    console.debug(
+      `[E2E-MANUAL-TEST] ¡Bucle de ${E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT} combates manuales completado con éxito absoluto!`
+    );
   });
 
   // SUITE 2: Modo Automático (autoBattle = true)
-  test('should execute consecutive battles automatically with autoBattle = true (auto start, active move panel, animations progression)', async ({ page }) => {
+  test('should execute consecutive battles automatically with autoBattle = true (auto start, active move panel, animations progression)', async ({
+    page
+  }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
     const sim = new SearchLoopSimWrapper(page, 'SearchLoopAutoRunner');
@@ -290,22 +323,34 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
 
     const AUTO_BATTLES_COUNT = 3;
     for (let i = 1; i <= AUTO_BATTLES_COUNT; i++) {
-      console.debug(`[E2E-AUTOBATTLE-TEST] --- Combate automático ${i} de ${AUTO_BATTLES_COUNT} ---`);
+      console.debug(
+        `[E2E-AUTOBATTLE-TEST] --- Combate automático ${i} de ${AUTO_BATTLES_COUNT} ---`
+      );
       await sim.forceHealAll();
 
       // Esperar a que el combate entre en WAIT_INPUT automáticamente
-      await page.waitForFunction(() => {
-        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-        if (!store) return false;
-        return store.currentFsmState === 'ACTIVE_BATTLE' && store.currentSubState === 'WAIT_INPUT' && !store.isProcessing;
-      }, undefined, { timeout: 20000 });
+      await page.waitForFunction(
+        () => {
+          const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+          if (!store) return false;
+          return (
+            store.currentFsmState === 'ACTIVE_BATTLE' &&
+            store.currentSubState === 'WAIT_INPUT' &&
+            !store.isProcessing
+          );
+        },
+        undefined,
+        { timeout: 20000 }
+      );
 
       // Validar que el panel de movimientos NO esté bloqueado en gris (.is-ui-locked)
       const moveLayout = page.locator('.battle-controls-layout').first();
       await moveLayout.waitFor({ state: 'visible', timeout: 5000 });
-      const isLocked = await moveLayout.evaluate(el => el.classList.contains('is-ui-locked'));
+      const isLocked = await moveLayout.evaluate((el) => el.classList.contains('is-ui-locked'));
       if (isLocked) {
-        throw new Error(`[E2E-AUTOBATTLE-TEST] Move controls are locked in grayscale (.is-ui-locked) on battle ${i}`);
+        throw new Error(
+          `[E2E-AUTOBATTLE-TEST] Move controls are locked in grayscale (.is-ui-locked) on battle ${i}`
+        );
       }
 
       await sim.forceEncounterType('wild');
@@ -313,7 +358,8 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       console.debug(`[E2E-AUTOBATTLE-TEST] Combate automático ${i} completado con éxito.`);
     }
 
-    console.debug('[E2E-AUTOBATTLE-TEST] ¡Todos los combates automáticos se ejecutaron con animaciones y sin bloqueo de UI!');
+    console.debug(
+      '[E2E-AUTOBATTLE-TEST] ¡Todos los combates automáticos se ejecutaron con animaciones y sin bloqueo de UI!'
+    );
   });
 });
-

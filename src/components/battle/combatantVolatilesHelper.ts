@@ -52,10 +52,13 @@ const EMPTY_COMBATANT_VOLATILES: Readonly<CombatantVolatilesProps> = Object.free
   hasMist: false,
   hasSpikes: false,
   hasStealthRock: false,
-  hasToxicSpikes: false,
+  hasToxicSpikes: false
 });
 
-function isVolatileCounterActive(vol: Record<string, number | undefined> | undefined, key: string): boolean {
+function isVolatileCounterActive(
+  vol: Record<string, number | undefined> | undefined, // open-record: Dynamic Showdown volatile status counter dictionary
+  key: string
+): boolean {
   return Boolean(vol && typeof vol[key] === 'number' && (vol[key] as number) > 0);
 }
 
@@ -68,17 +71,23 @@ function computeAfflictionVolatiles(pokemon: Pokemon, isVol: (k: string) => bool
     isEncored: (pokemon.encoreTurns || 0) > 0 || isVol('encore') || isVol('encoreTurns'),
     isCursed: Boolean(pokemon.cursed || isVol('curse')),
     isSeeded: Boolean(pokemon.seeded || isVol('leechseed')),
-    isTrapped: Boolean(pokemon.trapped || (pokemon.bound && pokemon.bound > 0) || isVol('trapped') || isVol('bound') || isVol('partiallytrapped')),
+    isTrapped: Boolean(
+      pokemon.trapped ||
+      (pokemon.bound && pokemon.bound > 0) ||
+      isVol('trapped') ||
+      isVol('bound') ||
+      isVol('partiallytrapped')
+    ),
     isPerishSong: (pokemon.perishSongCount || 0) > 0 || isVol('perishsong'),
     isAttracted: Boolean(pokemon.attracted || isVol('attract')),
-    attracted: Boolean(pokemon.attracted || isVol('attract')),
+    attracted: Boolean(pokemon.attracted || isVol('attract'))
   };
 }
 
 function computeDefensiveAndFieldVolatiles(
   pokemon: Pokemon,
   stages: Partial<BattleStages> | undefined,
-  isVol: (k: string) => boolean,
+  isVol: (k: string) => boolean
 ) {
   return {
     isSubstitute: Boolean(pokemon.substitute || isVol('substitute')),
@@ -93,13 +102,13 @@ function computeDefensiveAndFieldVolatiles(
     hasMist: (stages?.mist || 0) > 0,
     hasSpikes: (stages?.spikes || 0) > 0,
     hasStealthRock: (stages?.stealthrock || 0) > 0,
-    hasToxicSpikes: (stages?.toxicspikes || 0) > 0,
+    hasToxicSpikes: (stages?.toxicspikes || 0) > 0
   };
 }
 
 export function computeCombatantVolatiles(
   pokemon: Pokemon | null | undefined,
-  stages: Partial<BattleStages> | undefined,
+  stages: Partial<BattleStages> | undefined
 ): CombatantVolatilesProps {
   if (!pokemon) {
     return { ...EMPTY_COMBATANT_VOLATILES };
@@ -110,6 +119,6 @@ export function computeCombatantVolatiles(
 
   return {
     ...computeAfflictionVolatiles(pokemon, isVol),
-    ...computeDefensiveAndFieldVolatiles(pokemon, stages, isVol),
+    ...computeDefensiveAndFieldVolatiles(pokemon, stages, isVol)
   };
 }

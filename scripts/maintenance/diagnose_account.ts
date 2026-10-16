@@ -1,23 +1,23 @@
 /**
  * scripts/maintenance/diagnose_account.ts
- * 
+ *
  * DIAGNÓSTICO INTEGRAL DE CUENTAS (Node.js 26+)
  * Descarga o carga los datos de guardado de uno o TODOS los entrenadores desde un servidor Supabase (remoto),
  * base de datos SQLite local o archivo de respaldo JSON, y ejecuta la batería oficial de
  * verificaciones y diagnósticos del proyecto reutilizando los módulos canónicos existentes:
- * 
+ *
  * 1. Estructura y Schema Valibot (`validateSaveData` en `src/logic/validation/schemas.ts`).
  * 2. Legalidad de Pokémon (`checkPokemonLegality` en `src/logic/pokemon/pokemonLegality.ts`).
  * 3. Catálogo de Ítems e Inventario (`SHOP_ITEMS` en `src/data/inventory/items.ts`).
  * 4. Simulación de Migraciones SQL en Memoria (`initTestDatabaseSchema` y `DATABASE_MIGRATIONS`).
- * 
+ *
  * Uso:
  *   # Diagnosticar TODAS las cuentas de un servidor:
  *   npm run database:diagnose-account server=server_franco all
- * 
+ *
  *   # Diagnosticar TODAS las cuentas de un respaldo JSON:
  *   npm run database:diagnose-account file=database/backups/server_franco/backup.json all
- * 
+ *
  *   # Diagnosticar una cuenta específica:
  *   npm run database:diagnose-account server=server_franco user=kenviota@gmail.com
  *   npm run database:diagnose-account file=database/backups/server_franco/backup.json user=Angianemar
@@ -51,7 +51,13 @@ enableCompileCache();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_VERBOSE_ACCOUNTS_LIMIT = 10;
 
-export type DiagnosticFindingCategory = 'valibot' | 'legality' | 'inventory' | 'daycare' | 'pokemon' | 'system';
+export type DiagnosticFindingCategory =
+  | 'valibot'
+  | 'legality'
+  | 'inventory'
+  | 'daycare'
+  | 'pokemon'
+  | 'system';
 
 export interface DiagnosticFinding {
   severity: FindingSeverity;
@@ -97,12 +103,21 @@ async function findUserInAuthFallback(
   userInput: string,
   serverName: string
 ): Promise<LoadedAccountData | null> {
-  console.log(styleText('yellow', `⚠️ No se encontró perfil directo con "${userInput}". Buscando en auth.users...`));
+  console.log(
+    styleText(
+      'yellow',
+      `⚠️ No se encontró perfil directo con "${userInput}". Buscando en auth.users...`
+    )
+  );
   const { data: authUsers } = await supabase.auth.admin.listUsers();
   const cleanId = toID(userInput);
-  const foundAuth = authUsers?.users.find((u: AuthUserCandidate) => (u.email && toID(u.email) === cleanId) || u.id === userInput);
+  const foundAuth = authUsers?.users.find(
+    (u: AuthUserCandidate) => (u.email && toID(u.email) === cleanId) || u.id === userInput
+  );
   if (!foundAuth) {
-    console.error(styleText('red', `❌ Usuario "${userInput}" no encontrado en el servidor ${serverName}.`));
+    console.error(
+      styleText('red', `❌ Usuario "${userInput}" no encontrado en el servidor ${serverName}.`)
+    );
     return null;
   }
   const userId = foundAuth.id;
@@ -113,10 +128,16 @@ async function findUserInAuthFallback(
     .single();
   const saveRow = rawSaveRow as SupabaseSaveDataRow | null;
   if (saveErr || !saveRow) {
-    console.error(styleText('red', `❌ No se encontró partida (game_saves) para el usuario "${userId}" (${foundAuth.email}).`));
+    console.error(
+      styleText(
+        'red',
+        `❌ No se encontró partida (game_saves) para el usuario "${userId}" (${foundAuth.email}).`
+      )
+    );
     return null;
   }
-  const raw = typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
+  const raw =
+    typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
   return {
     userId,
     username: (foundAuth.user_metadata?.username as string) || foundAuth.email || userId,
@@ -127,25 +148,40 @@ async function findUserInAuthFallback(
   };
 }
 
-async function loadFromSupabase(serverName: string, userInput: string): Promise<LoadedAccountData | null> {
+async function getSupabaseClientForServer(serverName: string): Promise<SupabaseClient> {
   const serverConfigs = await readAndParseEnv();
   const conf = findServerConfig(serverConfigs, serverName);
 
   if (!conf) {
-    console.error(styleText('red', `❌ Error: No se encontró la configuración para el servidor "${serverName}" en el archivo .env maestro.`));
+    console.error(
+      styleText(
+        'red',
+        `❌ Error: No se encontró la configuración para el servidor "${serverName}" en el archivo .env maestro.`
+      )
+    );
     process.exit(1);
   }
 
-  const supabaseUrl = conf.SUPABASE_PUBLIC_URL || conf.API_EXTERNAL_URL || conf.SUPABASE_URL || conf.URL;
+  const supabaseUrl =
+    conf.SUPABASE_PUBLIC_URL || conf.API_EXTERNAL_URL || conf.SUPABASE_URL || conf.URL;
   const serviceKey = conf.SERVICE_ROLE_KEY || conf.KEY;
 
   if (!supabaseUrl || !serviceKey) {
-    console.error(styleText('red', `❌ Error: Falta URL o SERVICE_ROLE_KEY para el servidor "${serverName}".`));
+    console.error(
+      styleText('red', `❌ Error: Falta URL o SERVICE_ROLE_KEY para el servidor "${serverName}".`)
+    );
     process.exit(1);
   }
 
   console.log(styleText('cyan', `🔌 Conectando a Supabase [${serverName}] en ${supabaseUrl}...`));
-  const supabase = createClient(supabaseUrl, serviceKey);
+  return createClient(supabaseUrl, serviceKey);
+}
+
+async function loadFromSupabase(
+  serverName: string,
+  userInput: string
+): Promise<LoadedAccountData | null> {
+  const supabase = await getSupabaseClientForServer(serverName);
 
   let profileQuery = supabase.from('profiles').select('id, username, email, trainer_level');
   if (userInput.includes('@')) {
@@ -163,14 +199,24 @@ async function loadFromSupabase(serverName: string, userInput: string): Promise<
 
   const profile = profiles[0]!;
   const userId = profile.id;
-  const { data: saveRow, error: saveErr } = await supabase.from('game_saves').select('save_data, last_save_id').eq('user_id', userId).single();
+  const { data: saveRow, error: saveErr } = await supabase
+    .from('game_saves')
+    .select('save_data, last_save_id')
+    .eq('user_id', userId)
+    .single();
 
   if (saveErr || !saveRow) {
-    console.error(styleText('red', `❌ No se encontró partida en game_saves para "${profile.username}" (${userId}).`));
+    console.error(
+      styleText(
+        'red',
+        `❌ No se encontró partida en game_saves para "${profile.username}" (${userId}).`
+      )
+    );
     return null;
   }
 
-  const raw = typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
+  const raw =
+    typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
   return {
     userId,
     username: profile.username || userId,
@@ -182,32 +228,17 @@ async function loadFromSupabase(serverName: string, userInput: string): Promise<
 }
 
 async function loadAllFromSupabase(serverName: string): Promise<LoadedAccountData[]> {
-  const serverConfigs = await readAndParseEnv();
-  const conf = findServerConfig(serverConfigs, serverName);
-
-  if (!conf) {
-    console.error(styleText('red', `❌ Error: No se encontró la configuración para el servidor "${serverName}".`));
-    process.exit(1);
-  }
-
-  const supabaseUrl = conf.SUPABASE_PUBLIC_URL || conf.API_EXTERNAL_URL || conf.SUPABASE_URL || conf.URL;
-  const serviceKey = conf.SERVICE_ROLE_KEY || conf.KEY;
-
-  if (!supabaseUrl || !serviceKey) {
-    console.error(styleText('red', `❌ Error: Falta URL o SERVICE_ROLE_KEY para el servidor "${serverName}".`));
-    process.exit(1);
-  }
-
-  console.log(styleText('cyan', `🔌 Conectando a Supabase [${serverName}] en ${supabaseUrl}...`));
-  const supabase = createClient(supabaseUrl, serviceKey);
+  const supabase = await getSupabaseClientForServer(serverName);
 
   const { data: profiles } = await supabase.from('profiles').select('id, username, email');
   const profileMap = new Map<string, { username?: string; email?: string }>();
-  for (const p of (profiles || [])) {
+  for (const p of profiles || []) {
     profileMap.set(p.id, { username: p.username, email: p.email });
   }
 
-  const { data: gameSaves, error } = await supabase.from('game_saves').select('user_id, save_data, last_save_id');
+  const { data: gameSaves, error } = await supabase
+    .from('game_saves')
+    .select('user_id, save_data, last_save_id');
   if (error || !gameSaves) {
     console.error(styleText('red', `❌ Error al consultar game_saves: ${error?.message}`));
     return [];
@@ -239,17 +270,29 @@ function loadFromSqlite(dbPath: string, userInput: string): LoadedAccountData | 
   console.log(styleText('cyan', `📂 Abriendo base de datos SQLite: ${targetDb}...`));
   using db = new DatabaseSync(targetDb);
 
-  const profileRow = db.prepare('SELECT id, username, email FROM profiles WHERE id = ? OR username = ? OR email = ?').get(userInput, userInput, userInput) as { id: string; username: string; email?: string } | undefined;
+  const profileRow = db
+    .prepare('SELECT id, username, email FROM profiles WHERE id = ? OR username = ? OR email = ?')
+    .get(userInput, userInput, userInput) as
+    | { id: string; username: string; email?: string }
+    | undefined;
   const targetUserId = profileRow?.id || userInput;
 
-  const saveRow = db.prepare('SELECT user_id, save_data, last_save_id FROM game_saves WHERE user_id = ?').get(targetUserId) as { user_id: string; save_data: string; last_save_id?: string } | undefined;
+  const saveRow = db
+    .prepare('SELECT user_id, save_data, last_save_id FROM game_saves WHERE user_id = ?')
+    .get(targetUserId) as { user_id: string; save_data: string; last_save_id?: string } | undefined;
 
   if (!saveRow) {
-    console.error(styleText('red', `❌ No se encontró partida en game_saves para "${userInput}" en ${targetDb}.`));
+    console.error(
+      styleText(
+        'red',
+        `❌ No se encontró partida en game_saves para "${userInput}" en ${targetDb}.`
+      )
+    );
     return null;
   }
 
-  const raw = typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
+  const raw =
+    typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
   return {
     userId: targetUserId,
     username: profileRow?.username || raw.trainer || targetUserId,
@@ -270,13 +313,19 @@ function loadAllFromSqlite(dbPath: string): LoadedAccountData[] {
   console.log(styleText('cyan', `📂 Abriendo base de datos SQLite: ${targetDb}...`));
   using db = new DatabaseSync(targetDb);
 
-  const profiles = db.prepare('SELECT id, username, email FROM profiles').all() as Array<{ id: string; username?: string; email?: string }>;
+  const profiles = db.prepare('SELECT id, username, email FROM profiles').all() as Array<{
+    id: string;
+    username?: string;
+    email?: string;
+  }>;
   const profileMap = new Map<string, { username?: string; email?: string }>();
   for (const p of profiles) {
     profileMap.set(p.id, { username: p.username, email: p.email });
   }
 
-  const saves = db.prepare('SELECT user_id, save_data, last_save_id FROM game_saves').all() as Array<{ user_id: string; save_data: string; last_save_id?: string }>;
+  const saves = db
+    .prepare('SELECT user_id, save_data, last_save_id FROM game_saves')
+    .all() as Array<{ user_id: string; save_data: string; last_save_id?: string }>;
   const results: LoadedAccountData[] = [];
   for (const s of saves) {
     const raw = typeof s.save_data === 'string' ? JSON.parse(s.save_data) : s.save_data;
@@ -308,10 +357,11 @@ function loadFromBackupFile(filePath: string, userInput: string): LoadedAccountD
   const gameSaves: BackupSaveRow[] = backup.data?.game_saves || [];
   const cleanId = toID(userInput);
 
-  const foundProfile = profiles.find((p: BackupProfileRow) => 
-    (p.email && toID(p.email) === cleanId) ||
-    (p.username && toID(p.username) === cleanId) ||
-    p.id === userInput
+  const foundProfile = profiles.find(
+    (p: BackupProfileRow) =>
+      (p.email && toID(p.email) === cleanId) ||
+      (p.username && toID(p.username) === cleanId) ||
+      p.id === userInput
   );
 
   let targetUserId = foundProfile?.id || userInput;
@@ -328,11 +378,14 @@ function loadFromBackupFile(filePath: string, userInput: string): LoadedAccountD
   }
 
   if (!saveRow) {
-    console.error(styleText('red', `❌ No se encontró usuario o partida para "${userInput}" en el respaldo.`));
+    console.error(
+      styleText('red', `❌ No se encontró usuario o partida para "${userInput}" en el respaldo.`)
+    );
     return null;
   }
 
-  const raw = typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
+  const raw =
+    typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data;
   return {
     userId: targetUserId,
     username: foundProfile?.username || raw.trainer || targetUserId,
@@ -383,7 +436,14 @@ function validateValibotSchema(saveData: GameState, findings: DiagnosticFinding[
   const valibotResult = validateSaveData(saveData);
   if (!valibotResult.success) {
     for (const issue of valibotResult.issues) {
-      const pathStr = issue.path?.map((p) => (p as { type: string; key: unknown }).type === 'array' ? `[${(p as { key: unknown }).key}]` : (p as { key: unknown }).key).join('.') || 'root';
+      const pathStr =
+        issue.path
+          ?.map((p) =>
+            (p as { type: string; key: unknown }).type === 'array'
+              ? `[${(p as { key: unknown }).key}]`
+              : (p as { key: unknown }).key
+          )
+          .join('.') || 'root';
       findings.push({
         severity: 'error',
         category: 'valibot',
@@ -395,8 +455,11 @@ function validateValibotSchema(saveData: GameState, findings: DiagnosticFinding[
   }
 }
 
-function validateInventoryItems(inventory: Record<string, number> | undefined, findings: DiagnosticFinding[]): void {
-  const validItemIds: Set<string> = new Set(SHOP_ITEMS.map(i => i.id));
+function validateInventoryItems(
+  inventory: Record<string, number> | undefined,
+  findings: DiagnosticFinding[]
+): void {
+  const validItemIds: Set<string> = new Set(SHOP_ITEMS.map((i) => i.id));
   if (!inventory) return;
   for (const [itemId, count] of Object.entries(inventory)) {
     if (typeof count !== 'number' || count < 0 || !Number.isInteger(count)) {
@@ -442,7 +505,11 @@ function validatePokemonEntry(
     seenUids.add(poke.uid);
   }
 
-  if (poke.expNeeded === null || poke.expNeeded === undefined || typeof poke.expNeeded !== 'number') {
+  if (
+    poke.expNeeded === null ||
+    poke.expNeeded === undefined ||
+    typeof poke.expNeeded !== 'number'
+  ) {
     findings.push({
       severity: 'error',
       category: 'pokemon',
@@ -482,7 +549,10 @@ function validatePokemonEntry(
   }
 }
 
-function validateDaycareEggs(eggs: readonly unknown[] | undefined, findings: DiagnosticFinding[]): void {
+function validateDaycareEggs(
+  eggs: readonly unknown[] | undefined,
+  findings: DiagnosticFinding[]
+): void {
   if (!Array.isArray(eggs)) return;
   for (let eIdx = 0; eIdx < eggs.length; eIdx++) {
     const egg = eggs[eIdx];
@@ -497,7 +567,8 @@ function validateDaycareEggs(eggs: readonly unknown[] | undefined, findings: Dia
       });
       continue;
     }
-    const eggSpecies = eggObj.id || (typeof eggObj.pokemonId === 'string' ? eggObj.pokemonId : undefined);
+    const eggSpecies =
+      eggObj.id || (typeof eggObj.pokemonId === 'string' ? eggObj.pokemonId : undefined);
     if (eggSpecies && !isEnabledPokemonId(eggSpecies)) {
       findings.push({
         severity: 'error',
@@ -509,13 +580,18 @@ function validateDaycareEggs(eggs: readonly unknown[] | undefined, findings: Dia
   }
 }
 
-function validateDaycareWarehouse(warehouse: readonly unknown[] | undefined, findings: DiagnosticFinding[]): void {
+function validateDaycareWarehouse(
+  warehouse: readonly unknown[] | undefined,
+  findings: DiagnosticFinding[]
+): void {
   if (!Array.isArray(warehouse)) return;
   for (let wIdx = 0; wIdx < warehouse.length; wIdx++) {
     const entry = warehouse[wIdx];
     if (!entry || typeof entry !== 'object') continue;
     const rawSpecies = String((entry as { id?: unknown }).id || '');
-    const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
+    const cleanSpecies = rawSpecies.startsWith('egg_')
+      ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '')
+      : rawSpecies;
     if (cleanSpecies && !isEnabledPokemonId(cleanSpecies)) {
       findings.push({
         severity: 'error',
@@ -557,7 +633,10 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
   return findings;
 }
 
-export function testInMemoryMigrations(saveData: GameState, userId: string): {
+export function testInMemoryMigrations(
+  saveData: GameState,
+  userId: string
+): {
   success: boolean;
   fixedCount: number;
   remainingFindings: DiagnosticFinding[];
@@ -603,7 +682,9 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
   // Legalizar cuentas
   repairAccountsInSqlite({ dbInstance: db, all: true, silent: true });
 
-  const row = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get(userId) as { save_data: string } | undefined;
+  const row = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get(userId) as
+    | { save_data: string }
+    | undefined;
   if (!row) {
     return { success: false, fixedCount: 0, remainingFindings: [] };
   }
@@ -612,8 +693,8 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
   const remainingFindings = runBatteryOfDiagnostics(postMigrationSave);
   const initialFindings = runBatteryOfDiagnostics(saveData);
 
-  const errorBefore = initialFindings.filter(f => f.severity === 'error').length;
-  const errorAfter = remainingFindings.filter(f => f.severity === 'error').length;
+  const errorBefore = initialFindings.filter((f) => f.severity === 'error').length;
+  const errorAfter = remainingFindings.filter((f) => f.severity === 'error').length;
   const fixedCount = Math.max(0, errorBefore - errorAfter);
 
   return {
@@ -699,16 +780,21 @@ function processSingleAccountDiagnosis(
   const pokes = (save.team?.length || 0) + (save.box?.filter(Boolean).length || 0);
 
   const findings = runBatteryOfDiagnostics(save);
-  const errors = findings.filter(f => f.severity === 'error');
-  const warnings = findings.filter(f => f.severity === 'warning');
+  const errors = findings.filter((f) => f.severity === 'error');
+  const warnings = findings.filter((f) => f.severity === 'warning');
 
   const migSim = testInMemoryMigrations(save, acc.userId);
 
-  const statusBadge = errors.length === 0 
-    ? styleText('green', '✔ SANA')
-    : (migSim.success ? styleText('yellow', `⚠️ ${errors.length} ERR (100% Corregible)`) : styleText('red', `❌ ${errors.length} ERR (Requiere Revisión)`));
+  const statusBadge =
+    errors.length === 0
+      ? styleText('green', '✔ SANA')
+      : migSim.success
+        ? styleText('yellow', `⚠️ ${errors.length} ERR (100% Corregible)`)
+        : styleText('red', `❌ ${errors.length} ERR (Requiere Revisión)`);
 
-  console.log(`[${index + 1}/${totalAccounts}] ${styleText('bold', acc.username)} (${styleText('dim', acc.email || acc.userId)}) — Nv.${save.trainerLevel ?? 1} (${pokes} Pokes) ➔ ${statusBadge}`);
+  console.log(
+    `[${index + 1}/${totalAccounts}] ${styleText('bold', acc.username)} (${styleText('dim', acc.email || acc.userId)}) — Nv.${save.trainerLevel ?? 1} (${pokes} Pokes) ➔ ${statusBadge}`
+  );
   if (errors.length > 0 && (!isAll || totalAccounts <= MAX_VERBOSE_ACCOUNTS_LIMIT)) {
     for (const err of errors) {
       console.log(`     ↳ [${styleText('red', err.category)}] ${err.message}`);
@@ -740,28 +826,53 @@ function renderGlobalSummary(
   console.log(styleText('bold', '📋 RESUMEN GLOBAL DE AUDITORÍA'));
   console.log('======================================================');
   console.log(`👤 Cuentas auditadas: ${allSummary.length}`);
-  console.log(`🔴 Total Errores Críticos: ${totalErrors > 0 ? styleText('red', String(totalErrors)) : styleText('green', '0')}`);
-  console.log(`🟡 Total Advertencias de Legalidad: ${totalWarnings > 0 ? styleText('yellow', String(totalWarnings)) : styleText('green', '0')}`);
-  console.log(`🟢 Cuentas con errores corregibles por SQL: ${styleText('green', String(totalFixed))}`);
+  console.log(
+    `🔴 Total Errores Críticos: ${totalErrors > 0 ? styleText('red', String(totalErrors)) : styleText('green', '0')}`
+  );
+  console.log(
+    `🟡 Total Advertencias de Legalidad: ${totalWarnings > 0 ? styleText('yellow', String(totalWarnings)) : styleText('green', '0')}`
+  );
+  console.log(
+    `🟢 Cuentas con errores corregibles por SQL: ${styleText('green', String(totalFixed))}`
+  );
 
-  const faultyAccounts = allSummary.filter(a => a.errorCount > 0);
-  const unfixableAccounts = allSummary.filter(a => a.errorCount > 0 && !a.fixedByMigration);
+  const faultyAccounts = allSummary.filter((a) => a.errorCount > 0);
+  const unfixableAccounts = allSummary.filter((a) => a.errorCount > 0 && !a.fixedByMigration);
 
   if (faultyAccounts.length > 0) {
-    console.log(styleText('yellow', `\n⚠️  Cuentas con errores críticos (${faultyAccounts.length}):`));
+    console.log(
+      styleText('yellow', `\n⚠️  Cuentas con errores críticos (${faultyAccounts.length}):`)
+    );
     for (const f of faultyAccounts) {
-      console.log(`  • ${styleText('bold', f.username)} (${f.email || f.userId}): ${f.errorCount} errores. ¿Corregido por migración SQL?: ${f.fixedByMigration ? styleText('green', 'SÍ ✅') : styleText('red', 'NO ❌')}`);
+      console.log(
+        `  • ${styleText('bold', f.username)} (${f.email || f.userId}): ${f.errorCount} errores. ¿Corregido por migración SQL?: ${f.fixedByMigration ? styleText('green', 'SÍ ✅') : styleText('red', 'NO ❌')}`
+      );
     }
   }
 
   if (unfixableAccounts.length === 0 && faultyAccounts.length > 0) {
-    console.log(styleText('green', `\n🎉 ¡EXCELENTE! El 100% de los errores críticos de todas las cuentas se solucionan automáticamente aplicando las migraciones SQL registradas.`));
+    console.log(
+      styleText(
+        'green',
+        `\n🎉 ¡EXCELENTE! El 100% de los errores críticos de todas las cuentas se solucionan automáticamente aplicando las migraciones SQL registradas.`
+      )
+    );
     if (serverInput) {
-      console.log(styleText('cyan', `\n💡 Para aplicar la migración y corregir todas las cuentas en ${serverInput}:`));
+      console.log(
+        styleText(
+          'cyan',
+          `\n💡 Para aplicar la migración y corregir todas las cuentas en ${serverInput}:`
+        )
+      );
       console.log(styleText('bold', `   npm run database:update server=${serverInput}`));
     }
   } else if (unfixableAccounts.length > 0) {
-    console.log(styleText('red', `\n❌ Hay ${unfixableAccounts.length} cuenta(s) con errores no cubiertos por las migraciones actuales. Se debe revisar caso por caso.`));
+    console.log(
+      styleText(
+        'red',
+        `\n❌ Hay ${unfixableAccounts.length} cuenta(s) con errores no cubiertos por las migraciones actuales. Se debe revisar caso por caso.`
+      )
+    );
   }
 }
 
@@ -783,7 +894,13 @@ interface ParsedDiagnoseCli {
 }
 
 function parseDiagnoseAccountCliArgs(rawArgs: string[]): ParsedDiagnoseCli {
-  const normalized = rawArgs.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['help', 'fix', 'all'].includes(a) ? `--${a}` : a));
+  const normalized = rawArgs.map((a) =>
+    a.includes('=') && !a.startsWith('-')
+      ? `--${a}`
+      : ['help', 'fix', 'all'].includes(a)
+        ? `--${a}`
+        : a
+  );
 
   const { values, positionals } = parseArgs({
     args: normalized,
@@ -800,10 +917,19 @@ function parseDiagnoseAccountCliArgs(rawArgs: string[]): ParsedDiagnoseCli {
     strict: false
   });
 
-  const isHelp = Boolean(values.help || rawArgs.includes('help') || rawArgs.includes('--help') || rawArgs.includes('-h'));
+  const isHelp = Boolean(
+    values.help || rawArgs.includes('help') || rawArgs.includes('--help') || rawArgs.includes('-h')
+  );
   const isAll = Boolean(values.all || rawArgs.includes('all') || values.user === 'all');
-  const userInput = (typeof values.user === 'string' && values.user !== 'all' ? values.user : undefined) || positionals.find(p => !p.startsWith('-') && !p.includes('=') && p !== 'all') || (values.server ? undefined : (positionals[0] !== 'all' ? positionals[0] : undefined));
-  const serverInput = (typeof values.server === 'string' ? values.server : undefined) || (rawArgs.some(a => a.startsWith('server=')) ? rawArgs.find(a => a.startsWith('server='))?.split('=')[1] : undefined);
+  const userInput =
+    (typeof values.user === 'string' && values.user !== 'all' ? values.user : undefined) ||
+    positionals.find((p) => !p.startsWith('-') && !p.includes('=') && p !== 'all') ||
+    (values.server ? undefined : positionals[0] !== 'all' ? positionals[0] : undefined);
+  const serverInput =
+    (typeof values.server === 'string' ? values.server : undefined) ||
+    (rawArgs.some((a) => a.startsWith('server='))
+      ? rawArgs.find((a) => a.startsWith('server='))?.split('=')[1]
+      : undefined);
   const fileInput = typeof values.file === 'string' ? values.file : undefined;
   const dbInput = typeof values.db === 'string' ? values.db : 'poke_local.db';
 
@@ -813,7 +939,12 @@ function parseDiagnoseAccountCliArgs(rawArgs: string[]): ParsedDiagnoseCli {
 function executeAccountDiagnosisLoop(
   accounts: readonly LoadedAccountData[],
   isAll: boolean
-): { allSummary: AccountDiagnosisSummary[]; totalErrors: number; totalWarnings: number; totalFixed: number } {
+): {
+  allSummary: AccountDiagnosisSummary[];
+  totalErrors: number;
+  totalWarnings: number;
+  totalFixed: number;
+} {
   const allSummary: AccountDiagnosisSummary[] = [];
   let totalErrors = 0;
   let totalWarnings = 0;
@@ -831,12 +962,21 @@ function executeAccountDiagnosisLoop(
 }
 
 async function main() {
-  const { isHelp, isAll, userInput, serverInput, fileInput, dbInput } = parseDiagnoseAccountCliArgs(process.argv.slice(2));
+  const { isHelp, isAll, userInput, serverInput, fileInput, dbInput } = parseDiagnoseAccountCliArgs(
+    process.argv.slice(2)
+  );
   if (isHelp) displayHelpAndExit();
 
   if (!isAll && !userInput) {
-    console.error(styleText('yellow', '⚠️ Debes especificar el usuario a diagnosticar con user=<id|email|username> o pasar "all" para diagnosticar todas las cuentas.'));
-    console.log(styleText('gray', 'Ejemplo: npm run database:diagnose-account server=server_franco all'));
+    console.error(
+      styleText(
+        'yellow',
+        '⚠️ Debes especificar el usuario a diagnosticar con user=<id|email|username> o pasar "all" para diagnosticar todas las cuentas.'
+      )
+    );
+    console.log(
+      styleText('gray', 'Ejemplo: npm run database:diagnose-account server=server_franco all')
+    );
     process.exit(1);
   }
 
@@ -852,7 +992,10 @@ async function main() {
 
   console.log(styleText('cyan', `\n📊 Total de cuentas a diagnosticar: ${accounts.length}\n`));
 
-  const { allSummary, totalErrors, totalWarnings, totalFixed } = executeAccountDiagnosisLoop(accounts, isAll);
+  const { allSummary, totalErrors, totalWarnings, totalFixed } = executeAccountDiagnosisLoop(
+    accounts,
+    isAll
+  );
 
   renderGlobalSummary(allSummary, totalErrors, totalWarnings, totalFixed, serverInput);
   saveDiagnosisReport(allSummary);

@@ -32,7 +32,10 @@ export class SaveCoordinator {
   private cloudThrottleMs: number = CLOUD_SAVE_THROTTLE_MS;
   private preLogoutHandler: (() => Promise<void>) | null = null;
 
-  constructor(delayMs: number = DEFAULT_SAVE_DEBOUNCE_MS, cloudThrottleMs: number = CLOUD_SAVE_THROTTLE_MS) {
+  constructor(
+    delayMs: number = DEFAULT_SAVE_DEBOUNCE_MS,
+    cloudThrottleMs: number = CLOUD_SAVE_THROTTLE_MS
+  ) {
     this.defaultDelayMs = delayMs;
     this.cloudThrottleMs = cloudThrottleMs;
     this.registerUnloadHandler();
@@ -79,7 +82,7 @@ export class SaveCoordinator {
   public shouldExecuteCloudSave(forceRemote = false): boolean {
     if (forceRemote) return true;
     if (this.lastCloudSaveTime === 0) return true;
-    return (this.now() - this.lastCloudSaveTime) >= this.cloudThrottleMs;
+    return this.now() - this.lastCloudSaveTime >= this.cloudThrottleMs;
   }
 
   /**

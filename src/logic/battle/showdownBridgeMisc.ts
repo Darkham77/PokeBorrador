@@ -6,9 +6,21 @@ import { handleFeedbackEvent } from './showdownBridgeFeedback.ts';
 import { handleFailEvent, handleTurnOrUpkeep } from './showdownBridgeFailUpkeep.ts';
 
 const IGNORED_PROTOCOL_EVENTS = [
-  'gen', 'gametype', 'teamsize', 'rated', 'tier', 'showteam',
-  'debug', 'bigerror', 'event', '-candynamax', '-center',
-  '-combine', '-waiting', 'custom', '-anim',
+  'gen',
+  'gametype',
+  'teamsize',
+  'rated',
+  'tier',
+  'showteam',
+  'debug',
+  'bigerror',
+  'event',
+  '-candynamax',
+  '-center',
+  '-combine',
+  '-waiting',
+  'custom',
+  '-anim'
 ] as const;
 const IGNORED_PROTOCOL_EVENTS_SET: ReadonlySet<string> = new Set<string>(IGNORED_PROTOCOL_EVENTS); // runtime-set: Fast O(1) membership lookup set
 

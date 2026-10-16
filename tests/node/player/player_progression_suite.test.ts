@@ -6,7 +6,7 @@
  * 2. Player Class Missions: Mission recovery / heal stuck pokemon, mission metadata & rules audit across classes.
  */
 
-import { describe, it, test } from 'vitest';
+import { describe, it, test } from 'vite-plus/test';
 import assert from 'node:assert/strict';
 
 import {
@@ -28,8 +28,8 @@ describe('Player Progression Suite', () => {
       assert.strictEqual(calculateQuickStealChance(1), 0.15);
       assert.strictEqual(calculateQuickStealChance(2), 0.16);
       assert.strictEqual(calculateQuickStealChance(15), 0.29);
-      assert.strictEqual(calculateQuickStealChance(16), 0.30);
-      assert.strictEqual(calculateQuickStealChance(30), 0.30); // limit cap test
+      assert.strictEqual(calculateQuickStealChance(16), 0.3);
+      assert.strictEqual(calculateQuickStealChance(30), 0.3); // limit cap test
       assert.strictEqual(calculateQuickStealChance(0), 0.15); // low bound test
     });
 
@@ -52,14 +52,14 @@ describe('Player Progression Suite', () => {
         { type1: 'bug' },
         { type1: 'fire' },
         { type1: 'water', type2: 'bug' },
-        { type1: 'bicho' },
+        { type1: 'bicho' }
       ];
       // 3 bugs found: +15% bonus => 1.15
       assert.strictEqual(calculateBugSymmetryBonus(teamWithBugs), 1.15);
 
       const massiveBugTeam = Array(10).fill({ type1: 'bug' });
       // Max cap 6 bugs => +30% bonus => 1.30
-      assert.strictEqual(calculateBugSymmetryBonus(massiveBugTeam), 1.30);
+      assert.strictEqual(calculateBugSymmetryBonus(massiveBugTeam), 1.3);
     });
 
     test('calculateTrainerCatchRateModifier', () => {
@@ -88,9 +88,7 @@ describe('Player Progression Suite', () => {
 
   describe('Player Class Missions Integrity & Self-Healing', () => {
     it('healStuckMissions should release pokemon stuck onMission when no activeMission is present', () => {
-      const team = [
-        { uid: 'poke1', name: 'Bulbasaur', onMission: true } as unknown as Pokemon
-      ];
+      const team = [{ uid: 'poke1', name: 'Bulbasaur', onMission: true } as unknown as Pokemon];
       const box = [
         { uid: 'poke2', name: 'Charmander', onMission: true } as unknown as Pokemon,
         { uid: 'poke3', name: 'Squirtle', onMission: false } as unknown as Pokemon
@@ -156,7 +154,10 @@ describe('Player Progression Suite', () => {
 
               assert.ok(details, `Mission details must exist for ${cls} - ${m.id}`);
               assert.ok(details.dialogue.length > 10, 'Dialogue flavor text should be descriptive');
-              assert.ok(details.rulesText.length > 15, 'Rules text must explain requirements and mechanics');
+              assert.ok(
+                details.rulesText.length > 15,
+                'Rules text must explain requirements and mechanics'
+              );
               assert.ok(details.rewards.length >= 2, 'Must have at least 2 detailed reward items');
 
               for (const reward of details.rewards) {
@@ -179,7 +180,10 @@ describe('Player Progression Suite', () => {
       }
 
       it('returns fallback defaults when classId is invalid or undefined', () => {
-        const fallback = getClassMissionDetails('invalid_class' as unknown as PlayerClassId, 'mission_6h');
+        const fallback = getClassMissionDetails(
+          'invalid_class' as unknown as PlayerClassId,
+          'mission_6h'
+        );
         assert.ok(fallback.dialogue.length > 0);
         assert.ok(fallback.rulesText.length > 0);
         assert.ok(fallback.rewards.length > 0);

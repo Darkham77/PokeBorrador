@@ -181,7 +181,7 @@ export function encodeRgbaToPngDataUrl(
     idatData[outPos++] = isFinal;
     idatData[outPos++] = blockLen & 0xff;
     idatData[outPos++] = (blockLen >>> BITS_PER_BYTE) & 0xff;
-    const nlen = (~blockLen) & 0xffff;
+    const nlen = ~blockLen & 0xffff;
     idatData[outPos++] = nlen & 0xff;
     idatData[outPos++] = (nlen >>> BITS_PER_BYTE) & 0xff;
 
@@ -208,7 +208,10 @@ export function encodeRgbaToPngDataUrl(
 
   // IHDR chunk (13 bytes)
   const ihdrLen = PNG_IHDR_LENGTH;
-  png[p++] = 0; png[p++] = 0; png[p++] = 0; png[p++] = ihdrLen;
+  png[p++] = 0;
+  png[p++] = 0;
+  png[p++] = 0;
+  png[p++] = ihdrLen;
   const ihdrStart = p;
   png.set(PNG_CHUNK_IHDR_BYTES, p);
   p += PNG_CHUNK_IHDR_BYTES.length;
@@ -248,7 +251,10 @@ export function encodeRgbaToPngDataUrl(
   png[p++] = idatCrc & 0xff;
 
   // IEND chunk
-  png[p++] = 0; png[p++] = 0; png[p++] = 0; png[p++] = 0;
+  png[p++] = 0;
+  png[p++] = 0;
+  png[p++] = 0;
+  png[p++] = 0;
   const iendStart = p;
   png.set(PNG_CHUNK_IEND_BYTES, p);
   p += PNG_CHUNK_IEND_BYTES.length;
@@ -264,7 +270,8 @@ export function encodeRgbaToPngDataUrl(
   for (let i = 0; i < len; i++) {
     binary += String.fromCharCode(png[i] ?? 0);
   }
-  const base64 = typeof btoa === 'function' ? btoa(binary) : Buffer.from(binary, 'binary').toString('base64');
+  const base64 =
+    typeof btoa === 'function' ? btoa(binary) : Buffer.from(binary, 'binary').toString('base64');
   return `data:image/png;base64,${base64}`;
 }
 
@@ -346,7 +353,8 @@ export function isDiscardableTile(
       g <= CHROMA_TEAL_G_MAX &&
       b >= CHROMA_TEAL_B_MIN &&
       b <= CHROMA_TEAL_B_MAX;
-    const isMagenta = r >= CHROMA_MAGENTA_R_MIN && g <= CHROMA_MAGENTA_G_MAX && b >= CHROMA_MAGENTA_B_MIN;
+    const isMagenta =
+      r >= CHROMA_MAGENTA_R_MIN && g <= CHROMA_MAGENTA_G_MAX && b >= CHROMA_MAGENTA_B_MIN;
     const isLime = r <= CHROMA_LIME_R_MAX && g >= CHROMA_LIME_G_MIN && b <= CHROMA_LIME_B_MAX;
     const isCyan = r <= CHROMA_CYAN_R_MAX && g >= CHROMA_CYAN_G_MIN && b >= CHROMA_CYAN_B_MIN;
 
@@ -378,7 +386,11 @@ export function isDiscardableTile(
   const rangeR = maxR - minR;
   const rangeG = maxG - minG;
   const rangeB = maxB - minB;
-  if (rangeR <= FLAT_COLOR_MAX_RANGE && rangeG <= FLAT_COLOR_MAX_RANGE && rangeB <= FLAT_COLOR_MAX_RANGE) {
+  if (
+    rangeR <= FLAT_COLOR_MAX_RANGE &&
+    rangeG <= FLAT_COLOR_MAX_RANGE &&
+    rangeB <= FLAT_COLOR_MAX_RANGE
+  ) {
     return true;
   }
 
@@ -389,10 +401,11 @@ export function isDiscardableTile(
  * Computes deterministic SHA-256 hash using Web Crypto API.
  */
 export async function computeTileHash(rgba: Uint8ClampedArray | Uint8Array): Promise<string> {
-  const sourceBuffer: ArrayBuffer = rgba.buffer instanceof ArrayBuffer ? rgba.buffer : new Uint8Array(rgba).buffer;
+  const sourceBuffer: ArrayBuffer =
+    rgba.buffer instanceof ArrayBuffer ? rgba.buffer : new Uint8Array(rgba).buffer;
   const hashBuffer = await crypto.subtle.digest('SHA-256', sourceBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const fullHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  const fullHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
   return fullHex.slice(0, TILE_HASH_SLICE_LENGTH);
 }
 
@@ -463,7 +476,8 @@ export async function processTilesetSheet(
       }
 
       const dataUrl = tilePixelsToDataUrl(pixels);
-      const collision: TileCollision = options.category === 'water' ? 'water' : options.category === 'elevation' ? true : false;
+      const collision: TileCollision =
+        options.category === 'water' ? 'water' : options.category === 'elevation' ? true : false;
 
       const metadata: TileMetadata = {
         id: tileId,

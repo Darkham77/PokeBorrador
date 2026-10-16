@@ -1,5 +1,5 @@
-@use "@/styles/core/_variables" as *;
-@use "@/styles/core/_mixins" as *;
+@use '@/styles/core/_variables' as *;
+@use '@/styles/core/_mixins' as *;
 
 .market-my-items {
   @include smooth-scroll;
@@ -108,7 +108,11 @@
     border-radius: $radius-xl;
     background: Rgb(0 0 0 / 20%);
     flex-shrink: 0;
-    .i-sprite { width: 36px; height: 36px; object-fit: contain; }
+    .i-sprite {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+    }
   }
 
   .card-info {
@@ -133,8 +137,18 @@
       display: flex;
       align-items: center;
       gap: $spacing-md-alt;
-      .qty { @include pixelated; color: $gray; font-size: var(--font-8); line-height: 1.3; }
-      .price { @include pixelated; color: $coin-gold; font-size: var(--font-11); line-height: 1.3; }
+      .qty {
+        @include pixelated;
+        color: $gray;
+        font-size: var(--font-8);
+        line-height: 1.3;
+      }
+      .price {
+        @include pixelated;
+        color: $coin-gold;
+        font-size: var(--font-11);
+        line-height: 1.3;
+      }
     }
   }
 }

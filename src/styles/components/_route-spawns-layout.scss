@@ -1,5 +1,5 @@
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
+@use '@/styles/core/_mixins' as *;
+@use '@/styles/core/tools' as *;
 
 .route-spawns-modal-container {
   display: flex;
@@ -76,7 +76,8 @@
     gap: $spacing-md;
   }
 
-  .weather-title-badge, .terrain-title-badge {
+  .weather-title-badge,
+  .terrain-title-badge {
     color: var(--yellow);
     font-family: var(--font-pixel);
     font-size: var(--font-10);
@@ -122,7 +123,7 @@
         font-size: var(--font-7);
         flex-shrink: 0;
         text-transform: uppercase;
-        
+
         .desc-line-icon {
           margin-right: 4px;
         }

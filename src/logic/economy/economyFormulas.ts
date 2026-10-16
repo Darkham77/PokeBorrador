@@ -1,10 +1,9 @@
-
 /**
  * ECONOMY FORMULAS
  * Centralized logic for shop costs, healing prices, and penalties.
  */
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { getPokemonTier } from '../pokemon/tierEngine.ts';
+import { getPokemonTier, type PokemonIvTier } from '../pokemon/tierEngine.ts';
 
 const SECONDS_TO_MS = 1000;
 
@@ -14,14 +13,14 @@ const SECONDS_TO_MS = 1000;
  */
 const HEAL_MULTIPLIER_TIER_S_PLUS = 10;
 
-export const HEAL_COST_TIER_MULTIPLIERS: Record<string, number> = {
+export const HEAL_COST_TIER_MULTIPLIERS: Record<PokemonIvTier, number> = {
   'S+': HEAL_MULTIPLIER_TIER_S_PLUS,
-  'S': 6,
-  'A': 4,
-  'B': 2.5,
-  'C': 1.5,
-  'D': 1.2,
-  'F': 1
+  S: 6,
+  A: 4,
+  B: 2.5,
+  C: 1.5,
+  D: 1.2,
+  F: 1
 };
 
 const ROCKET_HEAL_BASE_PRICE = 20 as const;
@@ -33,13 +32,18 @@ const POKEMON_CENTER_COOLDOWN_MULTIPLIER = 5.5 as const;
 /**
  * Calculates the individual healing cost for a single Pokemon.
  */
-export function calculateIndividualHealCost(pokemon: Pokemon, trainerLevel: number, playerClass: string): number {
+export function calculateIndividualHealCost(
+  pokemon: Pokemon,
+  trainerLevel: number,
+  playerClass: string
+): number {
   if (playerClass !== 'rocket') return 0;
-  
+
   const tierInfo = getPokemonTier(pokemon);
-  const basePrice = ROCKET_HEAL_BASE_PRICE + (trainerLevel * ROCKET_HEAL_PRICE_PER_LEVEL);
-  const multiplier = HEAL_COST_TIER_MULTIPLIERS[tierInfo.tier] || 1;
-  
+  const basePrice = ROCKET_HEAL_BASE_PRICE + trainerLevel * ROCKET_HEAL_PRICE_PER_LEVEL;
+  // open-record: Tier multipliers
+  const multiplier = (HEAL_COST_TIER_MULTIPLIERS as Record<string, number>)[tierInfo.tier] || 1;
+
   return Math.floor(basePrice * multiplier);
 }
 
@@ -49,17 +53,21 @@ export function calculateIndividualHealCost(pokemon: Pokemon, trainerLevel: numb
 export function pokemonNeedsHealing(p: Pokemon): boolean {
   const isDamaged = p.hp < p.maxHp;
   const hasStatus = !!p.status;
-  const needsPP = p.moves?.some(m => m && m.pp < (m.maxPP || DEFAULT_FALLBACK_MOVE_PP)) || false;
-  
+  const needsPP = p.moves?.some((m) => m && m.pp < (m.maxPP || DEFAULT_FALLBACK_MOVE_PP)) || false;
+
   return isDamaged || hasStatus || needsPP;
 }
 
 /**
  * Calculates the total healing cost for a team.
  */
-export function calculateTotalHealCost(team: (Pokemon | null)[], trainerLevel: number, playerClass: string): number {
+export function calculateTotalHealCost(
+  team: (Pokemon | null)[],
+  trainerLevel: number,
+  playerClass: string
+): number {
   if (playerClass !== 'rocket') return 0;
-  
+
   return team.reduce((total, p) => {
     if (p && pokemonNeedsHealing(p)) {
       return total + calculateIndividualHealCost(p, trainerLevel, playerClass);
@@ -74,14 +82,19 @@ export function calculateTotalHealCost(team: (Pokemon | null)[], trainerLevel: n
 export function calculatePokemonCenterCooldown(trainerLevel: number): number {
   if (trainerLevel <= 1) return 0;
   // Potencia: (nivel - 1)^1.5 * 5.5 segundos
-  return Math.floor(Math.pow(trainerLevel - 1, POKEMON_CENTER_COOLDOWN_EXPONENT) * POKEMON_CENTER_COOLDOWN_MULTIPLIER);
+  return Math.floor(
+    Math.pow(trainerLevel - 1, POKEMON_CENTER_COOLDOWN_EXPONENT) *
+      POKEMON_CENTER_COOLDOWN_MULTIPLIER
+  );
 }
 
-export function calculatePokemonCenterRemainingSeconds(lastHealTimestamp: number, trainerLevel: number): number {
+export function calculatePokemonCenterRemainingSeconds(
+  lastHealTimestamp: number,
+  trainerLevel: number
+): number {
   const cooldownSecs = calculatePokemonCenterCooldown(trainerLevel);
   if (cooldownSecs <= 0 || lastHealTimestamp <= 0) return 0;
   const elapsedMs = Temporal.Now.instant().epochMilliseconds - lastHealTimestamp;
-  const remainingMs = (cooldownSecs * SECONDS_TO_MS) - elapsedMs;
+  const remainingMs = cooldownSecs * SECONDS_TO_MS - elapsedMs;
   return remainingMs > 0 ? Math.ceil(remainingMs / SECONDS_TO_MS) : 0;
 }
-

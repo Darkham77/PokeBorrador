@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { DatabaseSync } from 'node:sqlite';
 import { safeParse } from 'valibot';
 import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
@@ -102,12 +102,9 @@ describe('Egg Migration and Sanitization Suite', () => {
     const firstEgg = mockSaveData.eggs[0]!;
     expect(() => requirePokemonSpeciesId(firstEgg.id)).toThrow('Invalid Pokemon species id');
 
-    db.prepare('INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)').run(
-      'user_ash_1',
-      JSON.stringify(mockSaveData),
-      'save_1',
-      Temporal.Now.instant().toString()
-    );
+    db.prepare(
+      'INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)'
+    ).run('user_ash_1', JSON.stringify(mockSaveData), 'save_1', Temporal.Now.instant().toString());
 
     // Apply all registered migrations
     for (const migration of DATABASE_MIGRATIONS) {
@@ -117,7 +114,9 @@ describe('Egg Migration and Sanitization Suite', () => {
     }
 
     // Read back save
-    const row = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get('user_ash_1') as { save_data: string };
+    const row = db
+      .prepare('SELECT save_data FROM game_saves WHERE user_id = ?')
+      .get('user_ash_1') as { save_data: string };
     const migratedSave = JSON.parse(row.save_data);
 
     // Verify egg species IDs are now valid species

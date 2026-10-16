@@ -21,8 +21,8 @@ import { buildMapBlitInstructions } from '../../logic/map/canvasTileRenderer.ts'
 const GRASS_PALETTE_COLORS = [
   '112,200,160', // base grass
   '184,224,160', // light grass
-  '64,176,136',  // grass blade shadow
-  '160,224,192'  // grass blade highlight
+  '64,176,136', // grass blade shadow
+  '160,224,192' // grass blade highlight
 ];
 
 describe('Pattern 3: Macro Biome Path & Mountain Corner Transparency', () => {
@@ -99,7 +99,13 @@ describe('Pattern 3: Macro Biome Path & Mountain Corner Transparency', () => {
     });
     const pois = placeRegionalPOIs(cont, { targetCount: 18, seed: 42 });
     const routes = generateRouteNetwork(cont, pois, { allowBridges: true });
-    const { instructions } = buildMapBlitInstructions(cont, pois, routes.pathGrid, routes.bridgeGrid, null);
+    const { instructions } = buildMapBlitInstructions(
+      cont,
+      pois,
+      routes.pathGrid,
+      routes.bridgeGrid,
+      null
+    );
 
     // Look for mountain outer corners bordering elevation 0 (e.g. at 33, 49)
     const mCell = cont.resolvedMountain.cellDetails[49]?.[33];

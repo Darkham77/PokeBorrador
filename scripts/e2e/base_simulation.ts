@@ -47,10 +47,16 @@ export abstract class BaseE2ESimulation {
       resolvedOptions = options;
     }
 
-    this.driver = resolvedOptions?.driver ||
-      (typeof process !== 'undefined' && process.env.SIM_DB_DRIVER === 'postgres' ? 'postgres' : 'sqlite');
+    this.driver =
+      resolvedOptions?.driver ||
+      (typeof process !== 'undefined' && process.env.SIM_DB_DRIVER === 'postgres'
+        ? 'postgres'
+        : 'sqlite');
     this.isSharedDatabase = Boolean(sqliteKey || resolvedOptions?.sqliteKey);
-    this.sqliteKey = sqliteKey || resolvedOptions?.sqliteKey || `sim_db_${username.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`; // string-ok: Internal string formatting or DOM token identifier
+    this.sqliteKey =
+      sqliteKey ||
+      resolvedOptions?.sqliteKey ||
+      `sim_db_${username.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`; // string-ok: Internal string formatting or DOM token identifier
     this.logBuffer = resolvedBuffer || resolvedOptions?.logBuffer || [];
     this.enableEvents = Boolean(resolvedOptions?.enableEvents);
   }
@@ -82,10 +88,14 @@ export abstract class BaseE2ESimulation {
    * Ejecuta consultas directas de verificación post-test, abstrayendo si la base subyacente
    * es SQLite en memoria o PostgreSQL en Docker vía postgres.js.
    */
-  public async queryTestDb<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {
+  public async queryTestDb<T = Record<string, unknown>>(
+    sql: string,
+    params: unknown[] = []
+  ): Promise<T[]> {
     if (this.driver === 'postgres') {
       const postgres = (await import('postgres')).default;
-      const dbUrl = process.env.TEST_POSTGRES_URL || 'postgres://postgres:postgres@localhost:54329/postgres';
+      const dbUrl =
+        process.env.TEST_POSTGRES_URL || 'postgres://postgres:postgres@localhost:54329/postgres';
       const client = postgres(dbUrl, { max: 1, onnotice: () => {} });
       try {
         let transformedSql = sql;
@@ -124,10 +134,13 @@ export abstract class BaseE2ESimulation {
     }
 
     // Fallback if db is purely in browser memory: evaluate in browser
-    return await this.page.evaluate(async ({ query, args }) => {
-      const { queryLocal } = await import('../../src/logic/db/sqliteEngine.ts');
-      return await queryLocal(query, args) as T[];
-    }, { query: sql, args: params });
+    return await this.page.evaluate(
+      async ({ query, args }) => {
+        const { queryLocal } = await import('../../src/logic/db/sqliteEngine.ts');
+        return (await queryLocal(query, args)) as T[];
+      },
+      { query: sql, args: params }
+    );
   }
 
   /**
@@ -157,18 +170,23 @@ export abstract class BaseE2ESimulation {
       using fixtureDb = new DatabaseSync(fixturePath, { readOnly: true });
       let saveDataJson: string | null = null;
       const targetKey = this.username.toLowerCase();
-      let stmt = fixtureDb.prepare("SELECT save_data FROM game_saves WHERE user_id = ? OR user_id = ? LIMIT 1");
+      let stmt = fixtureDb.prepare(
+        'SELECT save_data FROM game_saves WHERE user_id = ? OR user_id = ? LIMIT 1'
+      );
       let row = stmt.get(`local_${targetKey}`, targetKey) as { save_data: string } | undefined;
       if (!row) {
-        stmt = fixtureDb.prepare("SELECT save_data FROM game_saves WHERE json_extract(save_data, '$.trainer') = ? LIMIT 1");
+        stmt = fixtureDb.prepare(
+          "SELECT save_data FROM game_saves WHERE json_extract(save_data, '$.trainer') = ? LIMIT 1"
+        );
         row = stmt.get(targetKey) as { save_data: string } | undefined;
       }
       if (!row) {
-        stmt = fixtureDb.prepare("SELECT save_data FROM game_saves LIMIT 1");
+        stmt = fixtureDb.prepare('SELECT save_data FROM game_saves LIMIT 1');
         row = stmt.get() as { save_data: string } | undefined;
       }
       if (row && row.save_data) {
-        saveDataJson = typeof row.save_data === 'string' ? row.save_data : JSON.stringify(row.save_data);
+        saveDataJson =
+          typeof row.save_data === 'string' ? row.save_data : JSON.stringify(row.save_data);
       }
 
       if (saveDataJson) {
@@ -176,10 +194,19 @@ export abstract class BaseE2ESimulation {
         const hash = createHash('sha256').update(this.username).digest('hex');
         const deterministicUuid = `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-8${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
         const userEmail = `${this.username.toLowerCase().replace(/[^a-z0-9_]/g, '')}@test.local`;
-        
-        await this.queryTestDb(`INSERT INTO auth.users (id, email, created_at) VALUES ($1, $2, NOW()) ON CONFLICT (id) DO NOTHING;`, [deterministicUuid, userEmail]);
-        await this.queryTestDb(`INSERT INTO public.profiles (id, username, email, created_at) VALUES ($1, $2, $3, NOW()) ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username;`, [deterministicUuid, this.username, userEmail]);
-        await this.queryTestDb(`INSERT INTO public.game_saves (user_id, save_data, last_save_id, updated_at) VALUES ($1, $2, gen_random_uuid(), NOW()) ON CONFLICT (user_id) DO UPDATE SET save_data = EXCLUDED.save_data, updated_at = NOW();`, [deterministicUuid, saveDataJson]);
+
+        await this.queryTestDb(
+          `INSERT INTO auth.users (id, email, created_at) VALUES ($1, $2, NOW()) ON CONFLICT (id) DO NOTHING;`,
+          [deterministicUuid, userEmail]
+        );
+        await this.queryTestDb(
+          `INSERT INTO public.profiles (id, username, email, created_at) VALUES ($1, $2, $3, NOW()) ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username;`,
+          [deterministicUuid, this.username, userEmail]
+        );
+        await this.queryTestDb(
+          `INSERT INTO public.game_saves (user_id, save_data, last_save_id, updated_at) VALUES ($1, $2, gen_random_uuid(), NOW()) ON CONFLICT (user_id) DO UPDATE SET save_data = EXCLUDED.save_data, updated_at = NOW();`,
+          [deterministicUuid, saveDataJson]
+        );
       }
       return;
     }
@@ -202,7 +229,7 @@ export abstract class BaseE2ESimulation {
       const foundInHistory = await this.page.evaluate(async (targetText) => {
         const { useGameStore } = await import('../../src/stores/game.ts');
         const history = useGameStore().state.notificationHistory || [];
-        return history.some(n => n.message?.includes(targetText));
+        return history.some((n) => n.message?.includes(targetText));
       }, text);
       if (foundInHistory) return;
       throw domErr;
@@ -217,14 +244,18 @@ export abstract class BaseE2ESimulation {
       const dbPath = this.getDbPath();
       const fs = await import('node:fs');
       if (fs.existsSync(dbPath)) {
-        try { fs.unlinkSync(dbPath); } catch { // catch-ok: ignore non-existent db
+        try {
+          fs.unlinkSync(dbPath);
+        } catch {
+          // catch-ok: ignore non-existent db
         }
       }
       try {
         await this.page.request.post('/api/dev-sim-db-cleanup', {
           headers: { 'x-db-key': this.sqliteKey }
         });
-      } catch { // catch-ok: ignore if dev server not reachable or in non-browser context
+      } catch {
+        // catch-ok: ignore if dev server not reachable or in non-browser context
       }
     }
   }
@@ -234,7 +265,10 @@ export abstract class BaseE2ESimulation {
    */
   public async setup(): Promise<void> {
     this.startTime = Temporal.Now.instant().epochMilliseconds;
-    await this.page.setViewportSize({ width: SIMULATION_VIEWPORT_WIDTH_PX, height: SIMULATION_VIEWPORT_HEIGHT_PX });
+    await this.page.setViewportSize({
+      width: SIMULATION_VIEWPORT_WIDTH_PX,
+      height: SIMULATION_VIEWPORT_HEIGHT_PX
+    });
 
     // Pre-test State Reset by Inheritance
     if (this.driver === 'sqlite') {
@@ -243,13 +277,26 @@ export abstract class BaseE2ESimulation {
       }
     } else {
       try {
-        await this.queryTestDb(`DELETE FROM market_listings WHERE seller_name = $1 OR seller_name LIKE $2`, [this.username, `${this.username}%`]);
-        await this.queryTestDb(`DELETE FROM claim_queue WHERE user_id IN (SELECT id FROM profiles WHERE username = $1)`, [this.username]);
-        await this.queryTestDb(`DELETE FROM competition_entries WHERE player_name = $1 OR player_name LIKE $2`, [this.username, `${this.username}%`]);
+        await this.queryTestDb(
+          `DELETE FROM market_listings WHERE seller_name = $1 OR seller_name LIKE $2`,
+          [this.username, `${this.username}%`]
+        );
+        await this.queryTestDb(
+          `DELETE FROM claim_queue WHERE user_id IN (SELECT id FROM profiles WHERE username = $1)`,
+          [this.username]
+        );
+        await this.queryTestDb(
+          `DELETE FROM competition_entries WHERE player_name = $1 OR player_name LIKE $2`,
+          [this.username, `${this.username}%`]
+        );
         if (!this.isSharedDatabase) {
-          await this.queryTestDb(`DELETE FROM game_saves WHERE user_id IN (SELECT id FROM profiles WHERE username = $1)`, [this.username]);
+          await this.queryTestDb(
+            `DELETE FROM game_saves WHERE user_id IN (SELECT id FROM profiles WHERE username = $1)`,
+            [this.username]
+          );
         }
-      } catch { // catch-ok: ignore if tables empty or not initialized
+      } catch {
+        // catch-ok: ignore if tables empty or not initialized
       }
     }
 
@@ -260,7 +307,9 @@ export abstract class BaseE2ESimulation {
       const { useEventStore } = await import('../../src/stores/events.ts');
       useEventStore().simEventsEnabled = enableEvents;
     }, this.enableEvents);
-    console.log(`▶️ [${this.driver.toUpperCase()}] [SIM:START] [${this.username}] Escenario listo.`);
+    console.log(
+      `▶️ [${this.driver.toUpperCase()}] [SIM:START] [${this.username}] Escenario listo.`
+    );
   }
 
   /**
@@ -271,7 +320,9 @@ export abstract class BaseE2ESimulation {
     const durationMs = Temporal.Now.instant().epochMilliseconds - this.startTime;
     const durationSec = (durationMs / MS_TO_SECONDS_DIVISOR).toFixed(1);
     const icon = status === 'passed' ? '✅' : '❌';
-    console.log(`${icon} [${this.driver.toUpperCase()}] [SIM:DONE] [${this.username}] ${testName} (${durationSec}s)`);
+    console.log(
+      `${icon} [${this.driver.toUpperCase()}] [SIM:DONE] [${this.username}] ${testName} (${durationSec}s)`
+    );
     flushE2ELogs(this.logBuffer, testName, status, durationMs);
   }
 
@@ -314,10 +365,12 @@ export abstract class BaseE2ESimulation {
    * Recarga la página y espera a que los stores vuelvan a estar sincronizados y listos
    */
   public async reloadAndSync(timeoutMs?: number): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useGameStore } = await import('../../src/stores/game.ts');
-      await useGameStore().saveGame();
-    }).catch(() => void 0);
+    await this.page
+      .evaluate(async () => {
+        const { useGameStore } = await import('../../src/stores/game.ts');
+        await useGameStore().saveGame();
+      })
+      .catch(() => void 0);
     await this.page.reload();
     await waitForStoreReady(this.page, timeoutMs);
   }
@@ -325,7 +378,10 @@ export abstract class BaseE2ESimulation {
   /**
    * Espera a que un selector del DOM esté visible y realiza click resilientemente
    */
-  protected async clickElement(selector: string, timeout = DEFAULT_CLICK_TIMEOUT_MS): Promise<void> {
+  protected async clickElement(
+    selector: string,
+    timeout = DEFAULT_CLICK_TIMEOUT_MS
+  ): Promise<void> {
     const locator = this.page.locator(selector).filter({ visible: true }).first();
     await locator.waitFor({ state: 'visible', timeout });
     await locator.click();

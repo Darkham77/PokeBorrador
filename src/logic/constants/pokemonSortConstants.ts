@@ -1,10 +1,10 @@
 export interface PokemonSortOption {
-  readonly id: string
-  readonly label: string
-  readonly shortLabel: string
-  readonly icon: string
-  readonly desc: string
-  readonly aliases?: readonly string[]
+  readonly id: string;
+  readonly label: string;
+  readonly shortLabel: string;
+  readonly icon: string;
+  readonly desc: string;
+  readonly aliases?: readonly string[];
 }
 
 export const POKEMON_SORT_OPTIONS = [
@@ -76,15 +76,15 @@ export const POKEMON_SORT_OPTIONS = [
     icon: '💖',
     desc: 'Ordenar por nivel de amistad y vínculo.'
   }
-] as const satisfies readonly PokemonSortOption[]
+] as const satisfies readonly PokemonSortOption[];
 
-export type PokemonSortKey = (typeof POKEMON_SORT_OPTIONS)[number]['id']
+export type PokemonSortKey = (typeof POKEMON_SORT_OPTIONS)[number]['id'];
 
 /**
  * Checks if a given active sort key matches an option's id or its aliases.
  */
 export function isSortOptionActive(opt: PokemonSortOption, currentKey: string): boolean {
-  if (opt.id === currentKey) return true
-  if (opt.aliases && opt.aliases.includes(currentKey)) return true
-  return false
+  if (opt.id === currentKey) return true;
+  if (opt.aliases && opt.aliases.includes(currentKey)) return true;
+  return false;
 }

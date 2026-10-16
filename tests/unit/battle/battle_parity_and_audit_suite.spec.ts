@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { createPinia, setActivePinia } from 'pinia';
 import { calculateEscapeChancePure, calculateCatchRatePure } from '@/logic/battle/battleCatchMath';
 import { STAGE_MULTIPLIERS_STAT, STAGE_MULTIPLIERS_ACC } from '@/logic/battle/battleMath';
@@ -29,12 +29,14 @@ class ImmediateTurnWorker {
   postMessage(message: { type: string }): void {
     if (message.type !== 'EXECUTE_TURN') return;
     if (this.listeners.size === 0) {
-      throw new Error('TURN_SUCCESS would be lost because no listener was registered before postMessage.');
+      throw new Error(
+        'TURN_SUCCESS would be lost because no listener was registered before postMessage.'
+      );
     }
     const event = {
-      data: { type: 'TURN_SUCCESS', payload: { logs: [], isOver: false, winner: null } },
+      data: { type: 'TURN_SUCCESS', payload: { logs: [], isOver: false, winner: null } }
     } as MessageEvent;
-    this.listeners.forEach(listener => listener(event));
+    this.listeners.forEach((listener) => listener(event));
   }
 }
 
@@ -70,7 +72,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
 
     it('Suspect 3: STAGE_MULTIPLIERS_ACC negative stage accuracy', () => {
       expect(STAGE_MULTIPLIERS_ACC['-1']).toBe(0.75);
-      expect(STAGE_MULTIPLIERS_ACC['-2']).toBe(0.60);
+      expect(STAGE_MULTIPLIERS_ACC['-2']).toBe(0.6);
     });
 
     it('Suspect 21: STAGE_MULTIPLIERS_STAT -5 value accuracy', () => {
@@ -93,12 +95,28 @@ describe('Battle Parity & Audit Domain Suite', () => {
     });
 
     it('Suspect 13: Catch rate status multiplier for Sleep/Freeze vs Poison/Burn', () => {
-      const slpMon: PurePokemon = { id: 'pikachu', hp: 10, maxHp: 10, level: 50, type: 'electric', catchRate: 45, status: 'slp' };
-      const psnMon: PurePokemon = { id: 'pikachu', hp: 10, maxHp: 10, level: 50, type: 'electric', catchRate: 45, status: 'psn' };
-      
+      const slpMon: PurePokemon = {
+        id: 'pikachu',
+        hp: 10,
+        maxHp: 10,
+        level: 50,
+        type: 'electric',
+        catchRate: 45,
+        status: 'slp'
+      };
+      const psnMon: PurePokemon = {
+        id: 'pikachu',
+        hp: 10,
+        maxHp: 10,
+        level: 50,
+        type: 'electric',
+        catchRate: 45,
+        status: 'psn'
+      };
+
       const slpRes = calculateCatchRatePure(slpMon, 'pokeball', 1, {});
       const psnRes = calculateCatchRatePure(psnMon, 'pokeball', 1, {});
-      
+
       expect(slpRes.statusMultiplierApplied).toBe(true);
       expect(psnRes.statusMultiplierApplied).toBe(true);
     });
@@ -157,18 +175,66 @@ describe('Battle Parity & Audit Domain Suite', () => {
       battle.setPlayer('p1', {
         name: 'Player 1',
         team: [
-          { name: 'Rayquaza', species: 'Rayquaza', level: 55, moves: ['outrage', 'fly'], item: '', ability: 'Air Lock', nature: 'Hardy', gender: 'M', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 252, atk: 252, def: 4, spa: 0, spd: 0, spe: 0 } },
-          { name: 'Charmander', species: 'Charmander', level: 5, moves: ['ember'], item: '', ability: 'Blaze', nature: 'Hardy', gender: 'F', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }
+          {
+            name: 'Rayquaza',
+            species: 'Rayquaza',
+            level: 55,
+            moves: ['outrage', 'fly'],
+            item: '',
+            ability: 'Air Lock',
+            nature: 'Hardy',
+            gender: 'M',
+            ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+            evs: { hp: 252, atk: 252, def: 4, spa: 0, spd: 0, spe: 0 }
+          },
+          {
+            name: 'Charmander',
+            species: 'Charmander',
+            level: 5,
+            moves: ['ember'],
+            item: '',
+            ability: 'Blaze',
+            nature: 'Hardy',
+            gender: 'F',
+            ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+            evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+          }
         ]
       });
       battle.setPlayer('p2', {
         name: 'Player 2',
         team: [
-          { name: 'Dragonite', species: 'Dragonite', level: 23, moves: ['blizzard'], item: '', ability: 'Inner Focus', nature: 'Hardy', gender: 'M', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } },
-          { name: 'Nidoking', species: 'Nidoking', level: 23, moves: ['earthquake'], item: '', ability: 'Poison Point', nature: 'Hardy', gender: 'M', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }
+          {
+            name: 'Dragonite',
+            species: 'Dragonite',
+            level: 23,
+            moves: ['blizzard'],
+            item: '',
+            ability: 'Inner Focus',
+            nature: 'Hardy',
+            gender: 'M',
+            ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+            evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+          },
+          {
+            name: 'Nidoking',
+            species: 'Nidoking',
+            level: 23,
+            moves: ['earthquake'],
+            item: '',
+            ability: 'Poison Point',
+            nature: 'Hardy',
+            gender: 'M',
+            ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+            evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+          }
         ]
       });
-      if (battle.p1.activeRequest && 'teamPreview' in battle.p1.activeRequest && battle.p1.activeRequest.teamPreview) {
+      if (
+        battle.p1.activeRequest &&
+        'teamPreview' in battle.p1.activeRequest &&
+        battle.p1.activeRequest.teamPreview
+      ) {
         battle.choose('p1', 'default');
         battle.choose('p2', 'default');
       }
@@ -195,7 +261,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
 
       await expect(executeTurnInWorker('switch 2', '', false, true)).resolves.toMatchObject({
         isOver: false,
-        winner: null,
+        winner: null
       });
     });
   });
@@ -227,7 +293,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
         subState: 'WAIT_INPUT',
         isProcessing: false,
         isIntroAnimating: false,
-        hasPendingSwitch: false,
+        hasPendingSwitch: false
       });
       expect(ready).toBe(true);
     });
@@ -238,7 +304,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
         subState: 'SWITCH_MENU',
         isProcessing: false,
         isIntroAnimating: true,
-        hasPendingSwitch: true,
+        hasPendingSwitch: true
       });
       expect(ready).toBe(true);
     });
@@ -249,7 +315,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
         subState: 'WAIT_INPUT',
         isProcessing: true,
         isIntroAnimating: false,
-        hasPendingSwitch: false,
+        hasPendingSwitch: false
       });
       expect(ready).toBe(false);
     });
@@ -260,7 +326,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
         subState: 'FIRST_INTRO',
         isProcessing: false,
         isIntroAnimating: false,
-        hasPendingSwitch: false,
+        hasPendingSwitch: false
       });
       expect(notReadySubState).toBe(false);
 
@@ -269,7 +335,7 @@ describe('Battle Parity & Audit Domain Suite', () => {
         subState: 'WAIT_INPUT',
         isProcessing: false,
         isIntroAnimating: true,
-        hasPendingSwitch: false,
+        hasPendingSwitch: false
       });
       expect(notReadyIntro).toBe(false);
     });

@@ -40,6 +40,7 @@ interface TurnRequestsResultLike {
 
 interface BattleStoreStateLike {
   winnerResult?: string;
+  // open-record: Map of dynamic player names to battle side identifiers
   playerNames?: Partial<Record<string, string>>;
 }
 
@@ -63,8 +64,10 @@ function broadcastHostTurnStream(
   turnCount: number
 ): void {
   if (!ch) return;
-  const resolvedWinnerSide = turnRes.winnerSide || (turnRes.winner === 'p1' || turnRes.winner === 'Player' ? 'p1' : (turnRes.winner ? 'p2' : null));
-  ch.send({
+  const resolvedWinnerSide =
+    turnRes.winnerSide ||
+    (turnRes.winner === 'p1' || turnRes.winner === 'Player' ? 'p1' : turnRes.winner ? 'p2' : null);
+  void ch.send({
     type: 'broadcast',
     event: 'pvp_turn_stream',
     payload: {
@@ -83,11 +86,12 @@ function isHostVictory(
   battleStoreState: BattleStoreStateLike | null | undefined
 ): boolean {
   return Boolean(
-    battleStoreState?.winnerResult === 'player'
-    || result.winnerSide === 'p1'
-    || result.winner === 'p1'
-    || result.winner === 'Player'
-    || (battleStoreState?.playerNames && battleStoreState.playerNames[result.winner || ''] === 'player')
+    battleStoreState?.winnerResult === 'player' ||
+    result.winnerSide === 'p1' ||
+    result.winner === 'p1' ||
+    result.winner === 'Player' ||
+    (battleStoreState?.playerNames &&
+      battleStoreState.playerNames[result.winner || ''] === 'player')
   );
 }
 
@@ -115,7 +119,10 @@ async function handlePostTurnTransitions(
       ctx.timerManager.startTurnTimer();
     } else {
       ctx.battleState.phase = 'choosing';
-      await ctx.battleStore.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+      await ctx.battleStore.fsm.transition(
+        BATTLE_STATES.ACTIVE_BATTLE,
+        BATTLE_SUBSTATES.WAIT_INPUT
+      );
       ctx.timerManager.startTurnTimer();
     }
   } else {
@@ -127,7 +134,10 @@ async function handlePostTurnTransitions(
       ctx.battleState.phase = 'waiting';
     } else {
       ctx.battleState.phase = 'choosing';
-      await ctx.battleStore.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
+      await ctx.battleStore.fsm.transition(
+        BATTLE_STATES.ACTIVE_BATTLE,
+        BATTLE_SUBSTATES.WAIT_INPUT
+      );
       ctx.timerManager.startTurnTimer();
     }
   }
@@ -181,7 +191,8 @@ function updateStoreTurnState(
 ): void {
   if (!battleStore.state) return;
 
-  battleStore.state.turnCount = payload.turnNumber ?? payload.turn ?? ((battleStore.state.turnCount || 0) + 1);
+  battleStore.state.turnCount =
+    payload.turnNumber ?? payload.turn ?? (battleStore.state.turnCount || 0) + 1;
   if (payload.request && !isSpectator) {
     battleStore.state.playerRequest = ShowdownPerspectiveAdapter.invertRequest(payload.request);
   }
@@ -322,7 +333,7 @@ export async function executeCommitPick(
     executeCheckReadyToResolve(ctx.battleState, ctx.battleStore, ctx.resolveTurn);
   } else {
     if (ctx.battleState.ch) {
-      ctx.battleState.ch.send({ type: 'broadcast', event: 'pvp_pick', payload: pick });
+      void ctx.battleState.ch.send({ type: 'broadcast', event: 'pvp_pick', payload: pick });
     }
   }
 }
@@ -350,10 +361,7 @@ export interface HandleTurnTimeoutContext {
   commitPick: (pick: PvPAction, isManual?: boolean) => void;
 }
 
-export function executeHandleTurnTimeout(
-  isForfeit: boolean,
-  ctx: HandleTurnTimeoutContext
-): void {
+export function executeHandleTurnTimeout(isForfeit: boolean, ctx: HandleTurnTimeoutContext): void {
   if (isForfeit) {
     ctx.uiStore.notify('Has perdido por inactividad (2 strikes AFK).', '⚠️');
     ctx.forfeit();
@@ -369,7 +377,7 @@ export function executeCheckPostTurn(ctx: CheckPostTurnContext): void {
   const myHp = ctx.battleState.myHp[ctx.battleState.myActiveIdx] || 0;
   const enHp = ctx.battleState.enemyHp[ctx.battleState.enemyActiveIdx] || 0;
   if (myHp <= 0) {
-    if (!ctx.battleState.myHp.some(h => h > 0)) {
+    if (!ctx.battleState.myHp.some((h) => h > 0)) {
       void ctx.endBattle(false, '¡Has sido derrotado!');
     } else {
       ctx.battleState.phase = 'faint_switch';
@@ -377,7 +385,7 @@ export function executeCheckPostTurn(ctx: CheckPostTurnContext): void {
       ctx.timerManager.startTurnTimer();
     }
   } else if (enHp <= 0) {
-    if (!ctx.battleState.enemyHp.some(h => h > 0)) {
+    if (!ctx.battleState.enemyHp.some((h) => h > 0)) {
       void ctx.endBattle(true, '¡Has ganado la batalla!');
     } else {
       ctx.battleState.phase = 'waiting';
@@ -389,5 +397,3 @@ export function executeCheckPostTurn(ctx: CheckPostTurnContext): void {
     ctx.timerManager.startTurnTimer();
   }
 }
-
-

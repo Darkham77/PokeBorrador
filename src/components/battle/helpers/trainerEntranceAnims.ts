@@ -46,7 +46,7 @@ export function playTrainerAnimation(
     gsap.killTweensOf(el);
     if (isRival) {
       if (audioStore && typeof audioStore.play === 'function') {
-        audioStore.play('rival');
+        void audioStore.play('rival');
       }
       showRivalAlert.value = true;
 
@@ -57,17 +57,30 @@ export function playTrainerAnimation(
       });
 
       if (rivalFlickerRef.value) {
-        tlAlert.fromTo(rivalFlickerRef.value,
+        tlAlert.fromTo(
+          rivalFlickerRef.value,
           { opacity: OPACITY_ZERO },
-          { opacity: RIVAL_ALERT_OPACITY_PEAK, duration: RIVAL_ALERT_FLICKER_DURATION_SEC, repeat: RIVAL_ALERT_FLICKER_REPEAT_COUNT, yoyo: true, ease: 'rough' },
+          {
+            opacity: RIVAL_ALERT_OPACITY_PEAK,
+            duration: RIVAL_ALERT_FLICKER_DURATION_SEC,
+            repeat: RIVAL_ALERT_FLICKER_REPEAT_COUNT,
+            yoyo: true,
+            ease: 'rough'
+          },
           0
         );
       }
 
       if (rivalExclamationRef.value) {
-        tlAlert.fromTo(rivalExclamationRef.value,
+        tlAlert.fromTo(
+          rivalExclamationRef.value,
           { scale: 0, opacity: 0 },
-          { scale: RIVAL_EXCLAMATION_POP_SCALE, opacity: TRAINER_SOLID_OPACITY, duration: RIVAL_EXCLAMATION_POP_DURATION_SEC, ease: 'back.out(2)' },
+          {
+            scale: RIVAL_EXCLAMATION_POP_SCALE,
+            opacity: TRAINER_SOLID_OPACITY,
+            duration: RIVAL_EXCLAMATION_POP_DURATION_SEC,
+            ease: 'back.out(2)'
+          },
           RIVAL_ALERT_INITIAL_POP_DELAY_SEC
         );
         tlAlert.to(rivalExclamationRef.value, {
@@ -85,14 +98,45 @@ export function playTrainerAnimation(
         });
       }
 
-      gsap.fromTo(el,
-        { x: RIVAL_SLIDE_INITIAL_X_PERCENT, y: 0, opacity: TRAINER_SOLID_OPACITY, scale: RIVAL_TRAINER_SLIDE_SCALE, transformOrigin: 'bottom center' },
-        { x: '0%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1, transformOrigin: 'bottom center', duration: TRAINER_ENTER_DURATION_SEC, delay: RIVAL_TRAINER_SLIDE_DELAY_SEC, ease: 'back.out(1.2)' }
+      gsap.fromTo(
+        el,
+        {
+          x: RIVAL_SLIDE_INITIAL_X_PERCENT,
+          y: 0,
+          opacity: TRAINER_SOLID_OPACITY,
+          scale: RIVAL_TRAINER_SLIDE_SCALE,
+          transformOrigin: 'bottom center'
+        },
+        {
+          x: '0%',
+          y: 0,
+          opacity: TRAINER_SOLID_OPACITY,
+          scale: 1,
+          transformOrigin: 'bottom center',
+          duration: TRAINER_ENTER_DURATION_SEC,
+          delay: RIVAL_TRAINER_SLIDE_DELAY_SEC,
+          ease: 'back.out(1.2)'
+        }
       );
     } else {
-      gsap.fromTo(el,
-        { x: '150%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1, transformOrigin: 'bottom center' },
-        { x: '0%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1, transformOrigin: 'bottom center', duration: TRAINER_ENTER_DURATION_SEC, ease: 'back.out(1.2)' }
+      gsap.fromTo(
+        el,
+        {
+          x: '150%',
+          y: 0,
+          opacity: TRAINER_SOLID_OPACITY,
+          scale: 1,
+          transformOrigin: 'bottom center'
+        },
+        {
+          x: '0%',
+          y: 0,
+          opacity: TRAINER_SOLID_OPACITY,
+          scale: 1,
+          transformOrigin: 'bottom center',
+          duration: TRAINER_ENTER_DURATION_SEC,
+          ease: 'back.out(1.2)'
+        }
       );
     }
   } else if (newState === 'retreating') {
@@ -113,7 +157,7 @@ export function playTrainerAnimation(
     });
   } else if (newState === 'exiting') {
     if (isRocket && audioStore && typeof audioStore.play === 'function') {
-      audioStore.play('flee');
+      void audioStore.play('flee');
     }
     gsap.to(el, {
       x: `+=${TRAINER_EXIT_X_OFFSET_PX}`,

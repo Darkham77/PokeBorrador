@@ -1,9 +1,8 @@
 import type { GenderName } from '@pkmn/types';
+import { PERCENT_BASE_MULTIPLIER, PERCENT_MAX } from '@/logic/constants/gameplay';
 
 export const DEFAULT_PAGE_SIZE = 50 as const;
-const PERCENT_MULTIPLIER = 100 as const;
 const MIN_PERCENT_VALUE = 0 as const;
-const MAX_PERCENT_VALUE = 100 as const;
 const FIRST_PAGE_INDEX = 1 as const;
 const EMPTY_COUNT = 0 as const;
 
@@ -28,7 +27,10 @@ export const GENERATION_OPTIONS = [
   { label: 'Gen 9', value: 9 }
 ] as const;
 
-export const GENDER_OPTIONS: readonly { label: string; value: 'all' | Extract<GenderName, 'M' | 'F'> }[] = [
+export const GENDER_OPTIONS: readonly {
+  label: string;
+  value: 'all' | Extract<GenderName, 'M' | 'F'>;
+}[] = [
   { label: 'Todos', value: 'all' },
   { label: '♂ Macho (M) / Base', value: 'M' },
   { label: '♀ Hembra (F)', value: 'F' }
@@ -39,7 +41,7 @@ export type ShadowGenOption = (typeof GENERATION_OPTIONS)[number]['value'];
 export type ShadowGenderOption = (typeof GENDER_OPTIONS)[number]['value'];
 
 export function formatRatioPercent(ratio: number): string {
-  return `${Math.round(ratio * PERCENT_MULTIPLIER)}%`;
+  return `${Math.round(ratio * PERCENT_BASE_MULTIPLIER)}%`;
 }
 
 export interface PaginationBounds {
@@ -60,28 +62,27 @@ export function calculatePaginationBounds(
   return { from, to };
 }
 
-export function formatPaginationRange(
-  page: number,
-  pageSize: number,
-  total: number
-): string {
+export function formatPaginationRange(page: number, pageSize: number, total: number): string {
   const { from, to } = calculatePaginationBounds(page, pageSize, total);
   return `Mostrando ${from} - ${to} de ${total} entidades`;
 }
 
 export function isRebuildProgressActive(isRebuilding: boolean, progress: number): boolean {
-  return isRebuilding || (progress > MIN_PERCENT_VALUE && progress < MAX_PERCENT_VALUE);
+  return isRebuilding || (progress > MIN_PERCENT_VALUE && progress < PERCENT_MAX);
 }
 
 const _SAVE_BUTTON_STATES = ['saving', 'unsaved', 'saved'] as const;
 export type SaveButtonState = (typeof _SAVE_BUTTON_STATES)[number];
 
 export interface SaveButtonFlags {
-  isSaving: boolean
-  hasUnsavedChanges: boolean
+  isSaving: boolean;
+  hasUnsavedChanges: boolean;
 }
 
-export function resolveSaveButtonState({ isSaving, hasUnsavedChanges }: SaveButtonFlags): SaveButtonState {
+export function resolveSaveButtonState({
+  isSaving,
+  hasUnsavedChanges
+}: SaveButtonFlags): SaveButtonState {
   if (isSaving) return 'saving';
   if (hasUnsavedChanges) return 'unsaved';
   return 'saved';
